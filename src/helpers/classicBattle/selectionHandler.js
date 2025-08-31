@@ -152,8 +152,8 @@ export function cleanupTimers(store) {
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
  */
-async function emitSelectionEvent(store, stat, playerVal, opponentVal) {
-  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal });
+async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
+  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts });
 
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -198,7 +198,7 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
 
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
-  await emitSelectionEvent(store, stat, playerVal, opponentVal);
+  await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
   let resolvedByMachine = false;
   try {
     await dispatchBattleEvent("statSelected");

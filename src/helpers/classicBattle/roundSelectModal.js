@@ -119,6 +119,9 @@ export async function initRoundSelectModal(onStart) {
         logEvent("battle.start", { pointsToWin: r.value, source: "modal" });
       } catch {}
       modal.close();
+      // Proactively clean up UI affordances before starting heavy work
+      try { cleanupTooltips(); } catch {}
+      try { modal.destroy(); } catch {}
       try {
         if (typeof onStart === "function") await onStart();
         // Bridge the user action to both the UI event bus and the
@@ -128,9 +131,6 @@ export async function initRoundSelectModal(onStart) {
         await dispatchBattleEvent("startClicked");
       } catch (err) {
         console.error("Failed to start battle:", err);
-      } finally {
-        cleanupTooltips();
-        modal.destroy();
       }
     });
     btnWrap.appendChild(btn);

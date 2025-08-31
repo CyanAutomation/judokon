@@ -409,7 +409,15 @@ export function handleStatSelectionTimeout(
       emitBattleEvent("statSelectionStalled");
     } catch {}
     if (isEnabled("autoSelect")) {
-      autoSelectStat(onSelect);
+      try {
+        setTimeout(() => {
+          try {
+            autoSelectStat(onSelect);
+          } catch {}
+        }, 250);
+      } catch {
+        autoSelectStat(onSelect);
+      }
     }
   }, timeoutMs);
 }

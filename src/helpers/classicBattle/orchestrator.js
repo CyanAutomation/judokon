@@ -114,7 +114,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).
-      exposeDebugState("getClassicBattleMachine", machine);
+            exposeDebugState("getClassicBattleMachine", machine);
 
   if (typeof document !== "undefined") {
     document.addEventListener("visibilitychange", () => {

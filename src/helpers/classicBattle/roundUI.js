@@ -72,20 +72,23 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
     return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
   }, store);
   store.stallTimeoutMs = stallTimeoutMs;
-  store.statTimeoutId = setTimeout(
-    () =>
-      handleStatSelectionTimeout(store, (s, opts) => {
-        const playerCard = document.getElementById("player-card");
-        const opponentCard = document.getElementById("opponent-card");
-        const playerVal = getCardStatValue(playerCard, s);
-        let opponentVal = getCardStatValue(opponentCard, s);
-        try {
-          const opp = getOpponentJudoka();
-          const raw = opp && opp.stats ? Number(opp.stats[s]) : NaN;
-          opponentVal = Number.isFinite(raw) ? raw : opponentVal;
-        } catch {}
-        return handleStatSelection(store, s, { playerVal, opponentVal, ...opts });
-      }),
+  // Schedule stall prompt and optional auto-select using the unified helper
+  // without double-wrapping the timeout. The helper manages its own timer
+  // and records `store.autoSelectId` for later cancellation.
+  handleStatSelectionTimeout(
+    store,
+    (s, opts) => {
+      const playerCard = document.getElementById("player-card");
+      const opponentCard = document.getElementById("opponent-card");
+      const playerVal = getCardStatValue(playerCard, s);
+      let opponentVal = getCardStatValue(opponentCard, s);
+      try {
+        const opp = getOpponentJudoka();
+        const raw = opp && opp.stats ? Number(opp.stats[s]) : NaN;
+        opponentVal = Number.isFinite(raw) ? raw : opponentVal;
+      } catch {}
+      return handleStatSelection(store, s, { playerVal, opponentVal, ...opts });
+    },
     store.stallTimeoutMs
   );
   updateDebugPanel();
@@ -125,7 +128,7 @@ export function bindRoundUIEventHandlers() {
     try {
       if (!IS_VITEST) console.log("INFO: statSelected event handler");
     } catch {}
-    const { stat } = e.detail || {};
+    const { stat, opts } = e.detail || {};
     if (!stat) return;
     const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
     if (btn) {
@@ -134,7 +137,11 @@ export function bindRoundUIEventHandlers() {
           console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
       } catch {}
       btn.classList.add("selected");
-      showSnackbar(`You Picked: ${btn.textContent}`);
+      // Suppress the immediate snackbar when the stat was auto-selected due to
+      // stall/timeout so the upcoming cooldown countdown can occupy the snackbar.
+      if (!opts || !opts.delayOpponentMessage) {
+        showSnackbar(`You Picked: ${btn.textContent}`);
+      }
     }
     emitBattleEvent("statButtons:disable");
   });
