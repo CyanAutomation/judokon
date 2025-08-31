@@ -6,7 +6,7 @@ import { createDriftStarter } from "./driftStarter.js";
 describe("timerService drift handling", () => {
   it("startTimer shows fallback on drift", async () => {
     vi.resetModules();
-    vi.doMock("../../../src/helpers/classicBattle/battleDispatcher.js", () => ({
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
       dispatchBattleEvent: vi.fn()
     }));
     const showMessage = vi.fn();
@@ -36,7 +36,7 @@ describe("timerService drift handling", () => {
 
   it("scheduleNextRound shows fallback on drift", async () => {
     vi.resetModules();
-    vi.doMock("../../../src/helpers/classicBattle/battleDispatcher.js", () => ({
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
       dispatchBattleEvent: vi.fn()
     }));
     const showMessage = vi.fn();

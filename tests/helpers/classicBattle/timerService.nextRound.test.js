@@ -34,7 +34,7 @@ describe("timerService next round handling", () => {
       STATS: []
     }));
     dispatchBattleEvent = vi.fn();
-    vi.doMock("../../../src/helpers/classicBattle/battleDispatcher.js", () => ({
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
       dispatchBattleEvent
     }));
   });
