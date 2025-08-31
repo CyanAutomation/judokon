@@ -35,8 +35,8 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
   };
 });
 
-describe("race: statSelected before setMachine does not stall round", () => {
-  it("resolves round via machine after waitingForPlayerAction and clears playerChoice before fallback", async () => {
+describe("race: early stat selection still resolves", () => {
+  it("resolves round directly and dispatches roundResolved without a machine", async () => {
     // DOM setup: cards + header
     const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
@@ -56,19 +56,8 @@ describe("race: statSelected before setMachine does not stall round", () => {
     </ul>`;
     document.body.append(playerCard, opponentCard, header);
 
-    const { onBattleEvent, emitBattleEvent, __resetBattleEventTarget } = await import(
-      "../../../src/helpers/classicBattle/battleEvents.js"
-    );
-    const { domStateListener } = await import(
-      "../../../src/helpers/classicBattle/stateTransitionListeners.js"
-    );
-    __resetBattleEventTarget();
-    onBattleEvent("battleStateChange", domStateListener);
-    emitBattleEvent("battleStateChange", { from: null, to: "waitingForPlayerAction", event: null });
-
     const selectionMod = await import("../../../src/helpers/classicBattle/selectionHandler.js");
     const { handleStatSelection, getPlayerAndOpponentValues } = selectionMod;
-    const resolveDirectSpy = vi.spyOn(selectionMod, "resolveRoundDirect");
 
     const store = {
       selectionMade: false,
@@ -79,27 +68,8 @@ describe("race: statSelected before setMachine does not stall round", () => {
 
     const { playerVal, opponentVal } = getPlayerAndOpponentValues("power");
 
-    // Simulate user click before setMachine: this will schedule a 600ms fallback and attempt to dispatch statSelected
     const p = handleStatSelection(store, "power", { playerVal, opponentVal });
-
-    // Immediately simulate the machine reaching waitingForPlayerAction and consuming the early selection
-    const handlers = await import("../../../src/helpers/classicBattle/orchestratorHandlers.js");
-
-    // Fake machine that routes 'statSelected' into the roundDecision handler
-    const fakeMachine = {
-      context: { store },
-      dispatch: async (eventName) => {
-        if (eventName === "statSelected") {
-          await handlers.roundDecisionEnter(fakeMachine);
-        }
-      }
-    };
-
-    // Start the entry logic, then advance timers to let resolveRound's delay elapse
-    const waitEntry = handlers.waitingForPlayerActionEnter(fakeMachine);
-    // resolveRound uses ~300ms (Math.random=0), fallback at 600ms
     await vi.advanceTimersByTimeAsync(1000);
-    await waitEntry;
     await p;
 
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
@@ -108,13 +78,10 @@ describe("race: statSelected before setMachine does not stall round", () => {
     // Round flow should have proceeded and cleared the choice
     expect(store.playerChoice).toBeNull();
 
-    // Outcome and continue/matchPoint events were dispatched; evaluate may or may not appear depending on state context
+    // Outcome and continue/matchPoint events were dispatched
     const hasOutcome = events.some((e) => String(e).startsWith("outcome="));
     expect(hasOutcome).toBe(true);
-    // Should advance out of decision into either cooldown or matchDecision
+    expect(events.includes("roundResolved")).toBe(true);
     expect(events.includes("continue") || events.includes("matchPointReached")).toBe(true);
-
-    // Fallback should not have invoked a second direct resolution
-    expect(resolveDirectSpy).not.toHaveBeenCalled();
   });
 });
