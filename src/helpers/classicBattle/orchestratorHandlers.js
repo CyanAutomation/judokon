@@ -170,13 +170,6 @@ export async function waitingForMatchStartEnter(machine) {
     helpers.updateDebugPanel?.();
   } catch {}
 }
-/**
- * onExit handler for `waitingForMatchStart` (no-op stub).
- *
- * @pseudocode
- * 1. No cleanup required currently.
- */
-export async function waitingForMatchStartExit() {}
 
 /**
  * @summary TODO: Add summary
@@ -209,12 +202,6 @@ export async function waitingForMatchStartExit() {}
 export async function matchStartEnter(machine) {
   await machine.dispatch("ready", { initial: true });
 }
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export async function matchStartExit() {}
 
 /**
  * onEnter handler for `cooldown` state.
@@ -251,13 +238,6 @@ export async function cooldownEnter(machine, payload) {
   if (payload?.initial) return initStartCooldown(machine);
   return initInterRoundCooldown(machine);
 }
-/**
- * onExit handler for `cooldown` state (no-op).
- *
- * @pseudocode
- * 1. No cleanup required currently; placeholder for future logic.
- */
-export async function cooldownExit() {}
 
 /**
  * onEnter handler for `roundStart` state.
@@ -349,29 +329,6 @@ export async function roundStartEnter(machine) {
     if (state === "roundStart") await machine.dispatch("cardsRevealed");
   });
 }
-/**
- * onExit handler for `roundStart` (no-op placeholder).
- *
- * @pseudocode
- * 1. No cleanup currently required.
- */
-
-/**
- * Ensure the machine transitions to player selection after round start.
- *
- * @pseudocode
- * 1. Start round wrapper or doStartRound asynchronously to render cards.
- * 2. Install a short fallback to advance state in headless/test mode.
- * 3. If rendering fails, emit a scoreboard message and dispatch interrupt.
- * 4. When cards are ready and machine still in roundStart, dispatch 'cardsRevealed'.
- */
-/**
- * onExit handler for `roundStart` (no-op placeholder).
- *
- * @pseudocode
- * 1. No cleanup currently required.
- */
-export async function roundStartExit() {}
 
 /**
  * onEnter handler for `waitingForPlayerAction` state.
@@ -829,12 +786,6 @@ export async function roundOverEnter(machine) {
     store.selectionMade = false;
   }
 }
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export async function roundOverExit() {}
 
 /**
  * @summary TODO: Add summary
@@ -842,12 +793,6 @@ export async function roundOverExit() {}
  * 1. TODO: Add pseudocode
  */
 export async function matchDecisionEnter() {}
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export async function matchDecisionExit() {}
 
 /**
  * @summary TODO: Add summary
@@ -855,12 +800,6 @@ export async function matchDecisionExit() {}
  * 1. TODO: Add pseudocode
  */
 export async function matchOverEnter() {}
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export async function matchOverExit() {}
 
 /**
  * @summary TODO: Add summary
@@ -914,12 +853,6 @@ export async function interruptRoundEnter(machine, payload) {
     await machine.dispatch("restartRound");
   }
 }
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export async function interruptRoundExit() {}
 
 /**
  * @summary TODO: Add summary
@@ -950,12 +883,6 @@ export async function interruptMatchEnter(machine, payload) {
   // Return to lobby via state-table-defined trigger
   await machine.dispatch("toLobby", payload);
 }
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export async function interruptMatchExit() {}
 
 /**
  * @summary TODO: Add summary
@@ -989,12 +916,6 @@ export async function roundModificationEnter(machine, payload) {
     await machine.dispatch("cooldown");
   }
 }
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export async function roundModificationExit() {}
 
 export const onEnterHandlers = {
   waitingForMatchStart: waitingForMatchStartEnter,
@@ -1012,16 +933,6 @@ export const onEnterHandlers = {
 };
 
 export const onExitHandlers = {
-  waitingForMatchStart: waitingForMatchStartExit,
-  matchStart: matchStartExit,
-  cooldown: cooldownExit,
-  roundStart: roundStartExit,
   waitingForPlayerAction: waitingForPlayerActionExit,
-  roundDecision: roundDecisionExit,
-  roundOver: roundOverExit,
-  matchDecision: matchDecisionExit,
-  matchOver: matchOverExit,
-  interruptRound: interruptRoundExit,
-  interruptMatch: interruptMatchExit,
-  roundModification: roundModificationExit
+  roundDecision: roundDecisionExit
 };

@@ -597,7 +597,7 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
     } catch {}
     controls.timer?.stop();
   });
-  
+
   // Start engine-backed countdown on the next tick.
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
   // Fallback to ensure expiration when the engine isn't running.
