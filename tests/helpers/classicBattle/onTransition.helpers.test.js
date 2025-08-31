@@ -49,6 +49,10 @@ describe("onTransition helpers", () => {
   beforeEach(async () => {
     vi.resetModules();
     document.body.innerHTML = "";
+    const { __resetBattleEventTarget } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    __resetBattleEventTarget();
     orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     await orchestrator.initClassicBattleOrchestrator({});
     machine = orchestrator.getBattleStateMachine();

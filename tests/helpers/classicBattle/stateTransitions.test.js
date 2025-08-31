@@ -1,14 +1,21 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
 import { BattleStateMachine } from "../../../src/helpers/classicBattle/stateMachine.js";
 import {
   emitBattleEvent,
   onBattleEvent,
-  offBattleEvent
+  offBattleEvent,
+  __resetBattleEventTarget
 } from "../../../src/helpers/classicBattle/battleEvents.js";
+import { domStateListener } from "../../../src/helpers/classicBattle/stateTransitionListeners.js";
 import { isStateTransition } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
 const statesByName = new Map(CLASSIC_BATTLE_STATES.map((s) => [s.name, s]));
+
+beforeEach(() => {
+  __resetBattleEventTarget();
+  document.body.innerHTML = "";
+});
 
 // Generates a BattleStateMachine scoped to a single transition
 function createMachineForTransition(state, trigger, onTransition) {
@@ -47,12 +54,16 @@ describe("classic battle state table transitions", () => {
           emitBattleEvent("battleStateChange", { from, to, event });
         };
         onBattleEvent("battleStateChange", spy);
+        onBattleEvent("battleStateChange", domStateListener);
+        document.body.dataset.battleState = state.name;
+        delete document.body.dataset.prevBattleState;
         const machine = createMachineForTransition(state, trigger, onTransition);
         await machine.dispatch(trigger.on);
         expect(machine.getState()).toBe(trigger.target);
         expect(spy).toHaveBeenCalled();
         expect(isStateTransition(state.name, trigger.target)).toBe(true);
         offBattleEvent("battleStateChange", spy);
+        offBattleEvent("battleStateChange", domStateListener);
       });
     }
   }
