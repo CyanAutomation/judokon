@@ -14,6 +14,7 @@ import { dispatchBattleEvent } from "./battleDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
+import { awaitCooldownState } from "./awaitCooldownState.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -22,6 +23,23 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @type {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
  */
 let currentNextRound = null;
+
+/**
+ * Mark the Next button as ready and enable it.
+ *
+ * @pseudocode
+ * 1. If `btn` exists:
+ * 2.   - Set `data-next-ready` to "true".
+ * 3.   - Enable the button.
+ *
+ * @param {HTMLButtonElement | null} btn - Next button element.
+ */
+export function markNextReady(btn) {
+  if (btn) {
+    btn.dataset.nextReady = "true";
+    btn.disabled = false;
+  }
+}
 
 // Skip handler utilities moved to skipHandler.js
 
@@ -398,47 +416,12 @@ export function handleStatSelectionTimeout(
 export async function handleNextRoundExpiration(controls, btn) {
   setSkipHandler(null);
   scoreboard.clearTimer();
-  // Mark Next as ready before signaling state progression
-  if (btn) {
-    btn.dataset.nextReady = "true";
-    btn.disabled = false;
-  }
+  markNextReady(btn);
+  await awaitCooldownState();
   try {
-    const state =
-      typeof window !== "undefined" && window.__classicBattleState
-        ? window.__classicBattleState
-        : null;
-    if (!state || state === "cooldown") {
-      await dispatchBattleEvent("ready");
-      // Ensure Next remains marked ready after the transition in case
-      // other handlers mutated the element during state changes.
-      if (btn) {
-        btn.dataset.nextReady = "true";
-        btn.disabled = false;
-      }
-    } else {
-      // If cooldown hasn't begun yet, wait for it and then mark ready.
-      try {
-        const onState = async (e) => {
-          try {
-            const to = e && e.detail ? e.detail.to : null;
-            if (to === "cooldown") {
-              document.removeEventListener("battle:state", onState);
-              await dispatchBattleEvent("ready");
-              if (btn) {
-                btn.dataset.nextReady = "true";
-                btn.disabled = false;
-              }
-            }
-          } catch {}
-        };
-        document.addEventListener("battle:state", onState);
-      } catch {}
-      try {
-        console.warn(`[test] expiration deferred until cooldown; state=${state}`);
-      } catch {}
-    }
+    dispatchBattleEvent("ready");
   } catch {}
+  markNextReady(btn);
   updateDebugPanel();
   if (typeof controls.resolveReady === "function") {
     controls.resolveReady();
