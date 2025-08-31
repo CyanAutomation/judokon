@@ -116,7 +116,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   // in hot-path modules (e.g., selection handling).
   try {
     if (typeof window !== "undefined") {
-      window.__getClassicBattleMachine = () => machine;
+      window.__getClassicBattleMachine = machine;
     }
   } catch {}
 
@@ -164,6 +164,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       };
     }
   } catch {}
+  console.log('initClassicBattleOrchestrator completed');
   return machine;
 }
 

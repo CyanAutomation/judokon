@@ -79,7 +79,8 @@ export const __test = {
   handleCountdownFinished,
   handleRoundResolved,
   handleMatchOver,
-  handleBattleState
+  handleBattleState,
+  onKeyDown
 };
 /**
  * Update the round counter line in the header.
@@ -148,7 +149,12 @@ function renderStartButton() {
     className: "primary-button"
   });
   btn.addEventListener("click", () => {
-    emitBattleEvent("startClicked");
+    try {
+      const machine = window.__getClassicBattleMachine?.();
+      if (machine) machine.dispatch("startClicked");
+    } catch (err) {
+      console.debug("Failed to dispatch startClicked", err);
+    }
     section.remove();
   });
   section.append(btn);
@@ -428,6 +434,7 @@ function stopSelectionCountdown() {
  * dispatch "statSelected" on machine
  */
 function selectStat(stat) {
+  console.log('selectStat called with', stat);
   if (!stat) return;
   stopSelectionCountdown();
   const list = byId("cli-stats");
@@ -439,11 +446,13 @@ function selectStat(stat) {
     if (store) {
       store.playerChoice = stat;
       store.selectionMade = true;
+      console.log('store.playerChoice set to', store.playerChoice);
     }
   } catch {}
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     const machine = window.__getClassicBattleMachine?.();
+    console.log('machine', machine);
     if (machine) machine.dispatch("statSelected");
   } catch {}
 }
@@ -737,6 +746,7 @@ export function handleGlobalKey(key) {
  * return false
  */
 export function handleWaitingForPlayerActionKey(key) {
+  console.log('handleWaitingForPlayerActionKey called with key', key);
   if (key >= "1" && key <= "9") {
     const stat = getStatByIndex(key);
     if (!stat) return false;
@@ -886,8 +896,8 @@ export function handleCooldownKey(key) {
  *   clear countdown text
  */
 export function onKeyDown(e) {
+  console.log('onKeyDown called with key', e.key);
   const key = e.key.toLowerCase();
-  if (key === "tab") return;
   if (!isEnabled("cliShortcuts") && key !== "q") return;
   const state = document.body?.dataset?.battleState || "";
   const table = {
@@ -898,7 +908,7 @@ export function onKeyDown(e) {
   const handler = table[state];
   const handled = handleGlobalKey(key) || (handler ? handler(key) : false);
   const countdown = byId("cli-countdown");
-  if (!handled) {
+  if (!handled && key !== "tab") { // Added key !== "tab"
     if (countdown) countdown.textContent = "Invalid key, press H for help";
   } else if (countdown && countdown.textContent) {
     countdown.textContent = "";
@@ -927,6 +937,13 @@ function handleStatClick(event) {
  * @param {MouseEvent} event - Click event.
  */
 function onClickAdvance(event) {
+  let el = event.target;
+  let path = [];
+  while (el) {
+    path.push(el.tagName + (el.id ? '#' + el.id : ''));
+    el = el.parentElement;
+  }
+  console.log('onClickAdvance path', path.join(' > '));
   const state = document.body?.dataset?.battleState || "";
   if (event.target?.closest?.(".cli-stat")) return;
   if (event.target?.closest?.("#cli-shortcuts")) return;
@@ -1091,6 +1108,7 @@ function installEventBindings() {
 }
 
 async function init() {
+  console.log('init called');
   initSeed();
   store = createBattleStore();
   // Expose store for debug panels if needed
@@ -1133,6 +1151,7 @@ async function init() {
   updateCliShortcutsVisibility();
   const close = byId("cli-shortcuts-close");
   close?.addEventListener("click", (event) => {
+    event.preventDefault();
     event.stopPropagation();
     const sec = byId("cli-shortcuts");
     if (sec) sec.hidden = true;
@@ -1168,4 +1187,9 @@ if (!window.__TEST__) {
   } else {
     init();
   }
+}
+
+// Expose for tests
+if (typeof window !== "undefined") {
+  window.__test = __test;
 }

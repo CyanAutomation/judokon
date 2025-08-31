@@ -6,6 +6,7 @@ import { setPointsToWin } from "../battleEngineFacade.js";
 import { initTooltips } from "../tooltip.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { wrap } from "../storage.js";
 import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battleDefaults.js";
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
@@ -120,7 +121,11 @@ export async function initRoundSelectModal(onStart) {
       modal.close();
       try {
         if (typeof onStart === "function") await onStart();
+        // Bridge the user action to both the UI event bus and the
+        // state machine. The UI may listen for the bus event, while
+        // the machine transition relies on a direct dispatch.
         emitBattleEvent("startClicked");
+        await dispatchBattleEvent("startClicked");
       } catch (err) {
         console.error("Failed to start battle:", err);
       } finally {

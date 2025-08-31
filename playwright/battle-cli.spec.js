@@ -11,6 +11,12 @@ test.describe("Classic Battle CLI", () => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
       } catch {}
+      try {
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
       // Speed up inter-round where possible
       window.__NEXT_ROUND_COOLDOWN_MS = 0;
     });
@@ -23,12 +29,14 @@ test.describe("Classic Battle CLI", () => {
       if (msg.type() === "error") errors.push(msg.text());
     });
     await page.goto("/src/pages/battleCLI.html");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     expect(errors).toEqual([]);
   });
 
   test("state badge hidden when flag disabled", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     await expect(page.locator("#battle-state-badge")).toBeHidden();
   });
@@ -43,6 +51,7 @@ test.describe("Classic Battle CLI", () => {
       } catch {}
     });
     await page.goto("/src/pages/battleCLI.html");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     const badge = page.locator("#battle-state-badge");
     await expect(badge).toBeVisible();
@@ -51,6 +60,7 @@ test.describe("Classic Battle CLI", () => {
 
   test("verbose log toggles and records transitions", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html?verbose=1");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
 
     // Verbose enabled via query param
@@ -59,7 +69,7 @@ test.describe("Classic Battle CLI", () => {
     await expect(page.locator("#cli-verbose-section")).toBeVisible();
 
     // Cause a transition by selecting a stat via keyboard (mapped to 1)
-    await page.keyboard.press("1");
+    await page.evaluate(() => window.__test.onKeyDown({ key: "1" }));
 
     // Wait for a later state to appear in the badge and log
     await waitForBattleState(page, "roundDecision", 10000);
@@ -74,6 +84,7 @@ test.describe("Classic Battle CLI", () => {
 
   test("help panel toggles via keyboard and close button", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     const panel = page.locator("#cli-shortcuts");
     await expect(panel).toBeHidden();
@@ -83,11 +94,12 @@ test.describe("Classic Battle CLI", () => {
     await expect(panel).toBeHidden();
   });
 
-  test("closing help panel does not advance state", async ({ page }) => {
+    test("closing help panel does not advance state", async ({ page }) => {
     await page.addInitScript(() => {
       window.__NEXT_ROUND_COOLDOWN_MS = 10000;
     });
     await page.goto("/src/pages/battleCLI.html");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
 
     // Play first round to reach roundOver
@@ -114,6 +126,7 @@ test.describe("Classic Battle CLI", () => {
       window.__NEXT_ROUND_COOLDOWN_MS = 3000;
     });
     await page.goto("/src/pages/battleCLI.html");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
 
     const score = page.locator("#cli-score");
@@ -139,6 +152,7 @@ test.describe("Classic Battle CLI", () => {
 
   test("scoreboard updates after each round", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html?seed=1");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     const score = page.locator("#cli-score");
     await page.keyboard.press("1");
@@ -159,6 +173,7 @@ test.describe("Classic Battle CLI", () => {
 
   test("allows tab navigation without invalid key messages", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     const countdown = page.locator("#cli-countdown");
 
@@ -179,6 +194,7 @@ test.describe("Classic Battle CLI", () => {
 
   test("returns to lobby after quitting", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");
+    await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     await page.keyboard.press("q");
     const confirm = page.locator("#confirm-quit-button");
