@@ -52,7 +52,6 @@ describe("battleCLI onKeyDown", () => {
     expect(sec.hidden).toBe(true);
   });
 
-
   // Retro mode was removed; no longer handles 'R'.
 
   it("shows an invalid key message and clears on next valid key", () => {
