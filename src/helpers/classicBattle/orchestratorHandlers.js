@@ -13,6 +13,24 @@ import { guard, guardAsync, scheduleGuard } from "./guard.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
+ * Handle round-related errors in a consistent manner.
+ *
+ * @param {object} machine
+ * @param {string} reason
+ * @param {Error} err
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Show a generic round error message on the scoreboard.
+ * 2. Update the debug panel for visibility.
+ * 3. Dispatch an interrupt with the reason and `err.message`.
+ */
+export async function handleRoundError(machine, reason, err) {
+  guard(() => emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…"));
+  guard(() => emitBattleEvent("debugPanelUpdate"));
+  await guardAsync(() => machine.dispatch("interrupt", { reason, error: err?.message }));
+}
+
+/**
  * Determine whether the machine transitioned from `from` to `to`.
  *
  * @pseudocode
@@ -326,40 +344,28 @@ function invokeRoundStart(ctx) {
  * @pseudocode
  * 1. Install a short fallback in test mode to advance if UI stalls.
  * 2. Invoke the round start routine from the machine context.
- * 3. On error: show message, update debug panel, and dispatch `interrupt`.
- * 4. After successful start, dispatch `cardsRevealed` if still in `roundStart`.
+ * 3. On failure → clear fallback and handleRoundError(`roundStartError`).
+ * 4. If start succeeds and state still `roundStart` → dispatch `cardsRevealed`.
  *
  * @param {object} machine
  */
 export async function roundStartEnter(machine) {
   const fallback = installRoundStartFallback(machine);
-
-  async function handleStartError() {
+  try {
+    await Promise.resolve(invokeRoundStart(machine.context));
     guard(() => {
       if (fallback) clearTimeout(fallback);
     });
-    guard(() => emitBattleEvent("scoreboardShowMessage", "Round start error. Recovering…"));
-    guard(() => emitBattleEvent("debugPanelUpdate"));
-    await guardAsync(() => machine.dispatch("interrupt", { reason: "roundStartError" }));
+    await guardAsync(async () => {
+      const state = machine.getState ? machine.getState() : null;
+      if (state === "roundStart") await machine.dispatch("cardsRevealed");
+    });
+  } catch (err) {
+    guard(() => {
+      if (fallback) clearTimeout(fallback);
+    });
+    await handleRoundError(machine, "roundStartError", err);
   }
-
-  let startPromise;
-  try {
-    startPromise = invokeRoundStart(machine.context);
-  } catch {
-    await handleStartError();
-    return;
-  }
-
-  Promise.resolve(startPromise).catch(handleStartError);
-
-  guard(() => {
-    if (fallback) clearTimeout(fallback);
-  });
-  await guardAsync(async () => {
-    const state = machine.getState ? machine.getState() : null;
-    if (state === "roundStart") await machine.dispatch("cardsRevealed");
-  });
 }
 
 /**
@@ -697,97 +703,53 @@ export function waitForPlayerChoice(store, timeoutMs) {
  * ```
  * record round decision entry
  * schedule guard to compute outcome
- * if resolveSelectionIfPresent(store) → schedule watchdog and return
- * wait up to 1.5s for player choice
- * if still none → show message and interrupt
- * else resolveSelectionIfPresent(store); on error → show message and interrupt
- * schedule watchdog after resolve
+ * attempt immediate resolution; if none, wait for player choice then resolve
+ * clear guard and schedule watchdog
+ * on timeout → interrupt with `noSelection`
+ * on other error → handleRoundError(`roundResolutionError`)
  * ```
  */
 export async function roundDecisionEnter(machine) {
   const { store } = machine.context;
   recordRoundDecisionEntry();
   const cancelGuard = scheduleGuard(1200, () => computeAndDispatchOutcome(store, machine));
-  try {
-    if (typeof window !== "undefined") window.__roundDecisionGuard = cancelGuard;
-  } catch {}
-
+  if (typeof window !== "undefined") window.__roundDecisionGuard = cancelGuard;
   try {
     const resolved = await resolveSelectionIfPresent(store);
-    if (resolved) {
-      try {
-        if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
-          window.__roundDecisionGuard();
-          window.__roundDecisionGuard = null;
-        }
-      } catch {}
-      try {
-        setTimeout(async () => {
-          try {
-            const still = machine.getState ? machine.getState() : null;
-            if (still === "roundDecision") {
-              await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
-            }
-          } catch {}
-        }, 600);
-      } catch {}
-      return;
+    if (!resolved) {
+      await waitForPlayerChoice(store, 1500);
+      await resolveSelectionIfPresent(store);
     }
-  } catch {
-    try {
+    guard(() => {
       if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
         window.__roundDecisionGuard();
         window.__roundDecisionGuard = null;
       }
-    } catch {}
-    try {
-      emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
-      emitBattleEvent("debugPanelUpdate");
-      await machine.dispatch("interrupt", { reason: "roundResolutionError" });
-    } catch {}
-    return;
-  }
-
-  try {
-    await waitForPlayerChoice(store, 1500);
-  } catch {
-    try {
-      emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.");
-    } catch {}
-    emitBattleEvent("debugPanelUpdate");
-    await machine.dispatch("interrupt", { reason: "noSelection" });
-    return;
-  }
-  try {
-    await resolveSelectionIfPresent(store);
-    try {
+    });
+    setTimeout(() => {
+      guardAsync(async () => {
+        const still = machine.getState ? machine.getState() : null;
+        if (still === "roundDecision") {
+          await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
+        }
+      });
+    }, 600);
+  } catch (err) {
+    guard(() => {
       if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
         window.__roundDecisionGuard();
         window.__roundDecisionGuard = null;
       }
-    } catch {}
-    try {
-      setTimeout(async () => {
-        try {
-          const still = machine.getState ? machine.getState() : null;
-          if (still === "roundDecision") {
-            await machine.dispatch("interrupt", { reason: "postResolveWatchdog" });
-          }
-        } catch {}
-      }, 600);
-    } catch {}
-  } catch {
-    try {
-      if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
-        window.__roundDecisionGuard();
-        window.__roundDecisionGuard = null;
-      }
-    } catch {}
-    try {
-      emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…");
-      emitBattleEvent("debugPanelUpdate");
-      await machine.dispatch("interrupt", { reason: "roundResolutionError" });
-    } catch {}
+    });
+    if (err?.message === "timeout") {
+      guard(() =>
+        emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.")
+      );
+      guard(() => emitBattleEvent("debugPanelUpdate"));
+      await guardAsync(() => machine.dispatch("interrupt", { reason: "noSelection" }));
+    } else {
+      await handleRoundError(machine, "roundResolutionError", err);
+    }
   }
 }
 export async function roundDecisionExit() {
