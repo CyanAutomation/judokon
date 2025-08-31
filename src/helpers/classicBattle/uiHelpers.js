@@ -21,6 +21,7 @@ import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
+import { getStateSnapshot } from "./battleDebug.js";
 import {
   resetStatButtonsReadyPromise,
   setStatButtonsEnabled,
@@ -318,15 +319,15 @@ export function disableNextRoundButton() {
 export function getMachineDebugState(win) {
   const state = {};
   try {
-    if (!win || !win.__classicBattleState) return state;
-    state.machineState = win.__classicBattleState;
-    if (win.__classicBattlePrevState) state.machinePrevState = win.__classicBattlePrevState;
-    if (win.__classicBattleLastEvent) state.machineLastEvent = win.__classicBattleLastEvent;
-    if (Array.isArray(win.__classicBattleStateLog))
-      state.machineLog = win.__classicBattleStateLog.slice();
-    if (win.__roundDecisionEnter) state.roundDecisionEnter = win.__roundDecisionEnter;
-    if (win.__guardFiredAt) state.guardFiredAt = win.__guardFiredAt;
-    if (win.__guardOutcomeEvent) state.guardOutcomeEvent = win.__guardOutcomeEvent;
+    const snap = getStateSnapshot();
+    if (!snap.state) return state;
+    state.machineState = snap.state;
+    if (snap.prev) state.machinePrevState = snap.prev;
+    if (snap.event) state.machineLastEvent = snap.event;
+    if (Array.isArray(snap.log)) state.machineLog = snap.log.slice();
+    if (win?.__roundDecisionEnter) state.roundDecisionEnter = win.__roundDecisionEnter;
+    if (win?.__guardFiredAt) state.guardFiredAt = win.__guardFiredAt;
+    if (win?.__guardOutcomeEvent) state.guardOutcomeEvent = win.__guardOutcomeEvent;
     addMachineDiagnostics(win, state);
   } catch {}
   return state;
@@ -1301,7 +1302,7 @@ export function setBattleStateBadgeEnabled(enable) {
     if (headerRight) headerRight.appendChild(badge);
     else document.querySelector("header")?.appendChild(badge);
   }
-  updateBattleStateBadge(typeof window !== "undefined" ? window.__classicBattleState : null);
+  updateBattleStateBadge(getStateSnapshot().state);
 }
 
 /**

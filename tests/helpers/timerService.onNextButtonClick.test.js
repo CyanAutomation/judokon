@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { __setStateSnapshot } from "../../src/helpers/classicBattle/battleDebug.js";
 
 vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn(() => Promise.resolve())
@@ -20,7 +21,7 @@ describe("onNextButtonClick", () => {
   it("advances when button is marked ready", async () => {
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
-    window.__classicBattleState = "cooldown";
+    __setStateSnapshot({ state: "cooldown" });
     const resolveReady = vi.fn();
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady });
     const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
@@ -33,7 +34,7 @@ describe("onNextButtonClick", () => {
   it("stops timer when not ready", async () => {
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     const stop = vi.fn();
-    window.__classicBattleState = "roundDecision";
+    __setStateSnapshot({ state: "roundDecision" });
     await onNextButtonClick(new MouseEvent("click"), { timer: { stop }, resolveReady: null });
     const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     expect(stop).toHaveBeenCalledTimes(1);
@@ -42,7 +43,7 @@ describe("onNextButtonClick", () => {
 
   it("advances immediately when no timer and in cooldown", async () => {
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
-    window.__classicBattleState = "cooldown";
+    __setStateSnapshot({ state: "cooldown" });
     const resolveReady = vi.fn();
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady });
     const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");

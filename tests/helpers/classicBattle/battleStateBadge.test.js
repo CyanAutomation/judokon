@@ -13,6 +13,7 @@ import {
   mockRoundSelectModal
 } from "./mocks.js";
 import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateTable.js";
+import { waitForState } from "../../../src/helpers/classicBattle/battleDebug.js";
 
 // Apply all the necessary mocks
 mockScheduler();
@@ -91,14 +92,11 @@ describe("battleStateBadge displays state transitions", () => {
     });
     badgeObserver.observe(badge, { childList: true });
 
-    const { onStateTransition } = await import(
-      "../../../src/helpers/classicBattle/orchestrator.js"
-    );
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
     await dispatchBattleEvent("startClicked");
-    await onStateTransition("waitingForPlayerAction");
+    await waitForState("waitingForPlayerAction");
 
     badgeObserver.disconnect();
 

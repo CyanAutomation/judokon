@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
+import { waitForState } from "../../../src/helpers/classicBattle/battleDebug.js";
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -114,7 +115,7 @@ describe("classicBattle scheduleNextRound", () => {
     await vi.runAllTimersAsync();
     await controls.ready;
     // Wait for the orchestrator to reach the expected state to avoid races
-    await orchestrator.onStateTransition("waitingForPlayerAction");
+    await waitForState("waitingForPlayerAction");
 
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
@@ -157,7 +158,7 @@ describe("classicBattle scheduleNextRound", () => {
     document.getElementById("next-button").click();
     await controls.ready;
     // Ensure state progressed before assertions
-    await orchestrator.onStateTransition("waitingForPlayerAction");
+    await waitForState("waitingForPlayerAction");
     await vi.runAllTimersAsync();
 
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);

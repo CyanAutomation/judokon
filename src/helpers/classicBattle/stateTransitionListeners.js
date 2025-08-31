@@ -4,6 +4,7 @@
  * @module stateTransitionListeners
  */
 import { emitBattleEvent } from "./battleEvents.js";
+import { logStateTransition, resolveStateWaiters } from "./battleDebug.js";
 
 /**
  * Mirror the current battle state to the DOM and dispatch the legacy
@@ -45,8 +46,7 @@ export function domStateListener(e) {
  * @pseudocode
  * 1. Return a function handling the `battleStateChange` event.
  * 2. Inside the handler:
- *    a. Update `window.__classicBattleState`, `__classicBattlePrevState`,
- *       `__classicBattleLastEvent`, and append to `__classicBattleStateLog`.
+ *    a. Record the transition via `logStateTransition`.
  *    b. Read timer state from the machine and mirror it on
  *       `window.__classicBattleTimerState`.
  *    c. Emit `debugPanelUpdate` for UI consumers.
@@ -54,19 +54,7 @@ export function domStateListener(e) {
 export function createDebugLogListener(machine) {
   return function debugLogListener(e) {
     const { from, to, event } = e.detail || {};
-    if (typeof window !== "undefined") {
-      try {
-        window.__classicBattleState = to;
-        if (from) window.__classicBattlePrevState = from;
-        if (event) window.__classicBattleLastEvent = event;
-        const log = Array.isArray(window.__classicBattleStateLog)
-          ? window.__classicBattleStateLog
-          : [];
-        log.push({ from, to, event, ts: Date.now() });
-        while (log.length > 20) log.shift();
-        window.__classicBattleStateLog = log;
-      } catch {}
-    }
+    logStateTransition(from, to, event);
     try {
       if (machine) {
         const timerState = machine.context?.engine?.getTimerState?.();
@@ -89,35 +77,11 @@ export function createDebugLogListener(machine) {
  * @summary Resolve promises waiting on a state.
  * @pseudocode
  * 1. Read the `to` state from `e.detail`.
- * 2. Resolve and clear any global waiters stored on `window.__stateWaiters[to]`.
- * 3. Resolve and clear waiters stored in the provided `stateWaiters` map.
+ * 2. Resolve any waiters tracked via `resolveStateWaiters`.
  */
-export function createWaiterResolver(stateWaiters) {
+export function createWaiterResolver() {
   return function waiterResolver(e) {
     const { to } = e.detail || {};
-    if (typeof window !== "undefined") {
-      try {
-        const winWaiters = (window.__stateWaiters && window.__stateWaiters[to]) || [];
-        if (Array.isArray(winWaiters) && winWaiters.length) {
-          window.__stateWaiters[to] = [];
-          for (const w of winWaiters) {
-            try {
-              if (w.timer) clearTimeout(w.timer);
-              w.resolve(true);
-            } catch {}
-          }
-        }
-      } catch {}
-    }
-    const waiters = stateWaiters.get(to);
-    if (waiters) {
-      stateWaiters.delete(to);
-      for (const w of waiters) {
-        try {
-          if (w.timer) clearTimeout(w.timer);
-          w.resolve(true);
-        } catch {}
-      }
-    }
+    resolveStateWaiters(to);
   };
 }

@@ -10,6 +10,7 @@ import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEv
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar } from "../showSnackbar.js";
+import { getStateSnapshot } from "./battleDebug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -180,7 +181,7 @@ export function bindRoundUIEventHandlers() {
               : "outcome=draw";
         setTimeout(async () => {
           try {
-            const state = typeof window !== "undefined" ? window.__classicBattleState : null;
+            const { state } = getStateSnapshot();
             if (state === "roundDecision") {
               const mod = await import("./eventDispatcher.js");
               await mod.dispatchBattleEvent(outcomeEvent);
@@ -317,7 +318,7 @@ export function bindRoundUIEventHandlersDynamic() {
               : "outcome=draw";
         setTimeout(async () => {
           try {
-            const state = typeof window !== "undefined" ? window.__classicBattleState : null;
+            const { state } = getStateSnapshot();
             if (state === "roundDecision") {
               const mod = await import("./eventDispatcher.js");
               await mod.dispatchBattleEvent(outcomeEvent);

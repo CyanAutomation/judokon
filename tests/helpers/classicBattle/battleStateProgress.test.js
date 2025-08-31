@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { waitForState } from "../../../src/helpers/classicBattle/battleDebug.js";
 import {
   mockScheduler,
   mockFeatureFlags,
@@ -112,15 +113,12 @@ describe("battle-state-progress stays in sync across transitions", () => {
     const { setupClassicBattlePage } = await import("../../../src/helpers/classicBattlePage.js");
     await setupClassicBattlePage();
 
-    const { onStateTransition } = await import(
-      "../../../src/helpers/classicBattle/orchestrator.js"
-    );
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
 
     await dispatchBattleEvent("startClicked");
-    await onStateTransition("waitingForPlayerAction", 4000);
+    await waitForState("waitingForPlayerAction", 4000);
     const list = document.getElementById("battle-state-progress");
     let active = list.querySelector("li.active");
     expect(active?.dataset.state).toBe("waitingForPlayerAction");

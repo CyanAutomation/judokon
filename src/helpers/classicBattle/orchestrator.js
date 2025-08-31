@@ -22,84 +22,9 @@ import {
   createDebugLogListener,
   createWaiterResolver
 } from "./stateTransitionListeners.js";
+import { getStateSnapshot } from "./battleDebug.js";
 
 let machine = null;
-const stateWaiters = new Map();
-
-/**
- * Wait for the battle state machine to enter a specific state.
- *
- * @pseudocode
- * 1. Return a new Promise that resolves when the target state is entered or rejects on timeout/error.
- * 2. Inside the Promise constructor (resolve, reject):
- *    a. Wrap the logic in a `try...catch` block to handle synchronous errors during setup.
- *    b. Check if `machine` exists and its current state (`machine.getState()`) is already `targetState`. If so, immediately resolve the Promise with `true` and return.
- *    c. Create an `entry` object with the `resolve` function of the current Promise.
- *    d. If `timeoutMs` is not `Infinity`:
- *       i. Set a `setTimeout` for `timeoutMs`.
- *       ii. In the timeout callback, call `removeWaiter` to clean up the entry and reject the Promise with a "timeout" error.
- *       iii. Store the timer ID on the `entry` object.
- *    e. Retrieve the array of waiters for `targetState` from `stateWaiters` (or create an empty array if none exists).
- *    f. Push the `entry` object into this array.
- *    g. Store the updated array back in `stateWaiters` for `targetState`.
- *    h. If any synchronous error occurs during this setup, catch it and reject the Promise with an "error" message.
- *
- * @param {string} targetState - State name to await.
- * @param {number} [timeoutMs=10000] - Reject after this many ms.
- * @returns {Promise<boolean>} Resolves when the state is entered.
- */
-export function onStateTransition(targetState, timeoutMs = 10000) {
-  return new Promise((resolve, reject) => {
-    try {
-      if (machine?.getState?.() === targetState) {
-        resolve(true);
-        return;
-      }
-      const entry = { resolve };
-      // Debug bookkeeping for diagnostics (safe in browsers only)
-      try {
-        if (typeof window !== "undefined") {
-          entry.__id = Math.random().toString(36).slice(2, 9);
-          window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-          window.__stateWaiterEvents.push({
-            action: "add",
-            state: targetState,
-            id: entry.__id,
-            ts: Date.now()
-          });
-        }
-      } catch {}
-      if (timeoutMs !== Infinity) {
-        entry.timer = setTimeout(() => {
-          try {
-            // remove this entry from the waiter list on timeout
-            const list = stateWaiters.get(targetState) || [];
-            const idx = list.indexOf(entry);
-            if (idx !== -1) list.splice(idx, 1);
-            if (list.length === 0) stateWaiters.delete(targetState);
-            try {
-              if (typeof window !== "undefined") {
-                window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-                window.__stateWaiterEvents.push({
-                  action: "timeout",
-                  state: targetState,
-                  id: entry.__id || null,
-                  ts: Date.now()
-                });
-              }
-            } catch {}
-          } catch {}
-          reject(new Error(`onStateTransition timeout for ${targetState}`));
-        }, timeoutMs);
-      }
-      const arr = stateWaiters.get(targetState) || [];
-      arr.push(entry);
-      stateWaiters.set(targetState, arr);
-    } catch {
-      reject(new Error("onStateTransition setup error"));
-    }
-  });
-}
 
 /**
  * Expose timer state for debugging when an engine exists.
@@ -127,7 +52,7 @@ export function onStateTransition(targetState, timeoutMs = 10000) {
  * 6. Register state transition listeners for DOM updates, debug logging, and waiter resolution.
  * 7. Emit an initial `"battleStateChange"` event so listeners mirror the starting state.
  * 8. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
- * 9. Expose `onStateTransition` and `getBattleStateSnapshot` on `window` for debugging.
+ * 9. Expose `getBattleStateSnapshot` on `window` for debugging.
  * 10. Return the initialized machine.
  *
  * @param {object} store - Shared battle store.
@@ -172,7 +97,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   setMachine(machine);
 
   const debugLogListener = createDebugLogListener(machine);
-  const waiterResolver = createWaiterResolver(stateWaiters);
+  const waiterResolver = createWaiterResolver();
 
   onBattleEvent("battleStateChange", domStateListener);
   onBattleEvent("battleStateChange", debugLogListener);
@@ -229,90 +154,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 
   try {
     if (typeof window !== "undefined") {
-      window.onStateTransition = onStateTransition;
-      // Provide a robust in-page awaiter to avoid brittle DOM polling from tests
-      if (!window.awaitBattleState) {
-        window.awaitBattleState = (target, timeoutMs = 10000) =>
-          new Promise((resolve, reject) => {
-            try {
-              if (window.__classicBattleState === target) return resolve(true);
-              if (!window.__stateWaiters) window.__stateWaiters = {};
-              const entry = { resolve };
-              try {
-                entry.__id = Math.random().toString(36).slice(2, 9);
-                window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-                window.__stateWaiterEvents.push({
-                  action: "add",
-                  state: target,
-                  id: entry.__id,
-                  ts: Date.now()
-                });
-              } catch {}
-              if (timeoutMs !== Infinity) {
-                entry.timer = setTimeout(() => {
-                  try {
-                    window.__stateWaiterEvents = window.__stateWaiterEvents || [];
-                    window.__stateWaiterEvents.push({
-                      action: "timeout",
-                      state: target,
-                      id: entry.__id,
-                      ts: Date.now()
-                    });
-                    const arr = window.__stateWaiters[target] || [];
-                    const idx = arr.indexOf(entry);
-                    if (idx !== -1) arr.splice(idx, 1);
-                    if (arr.length === 0) delete window.__stateWaiters[target];
-                  } catch {}
-                  reject(new Error(`awaitBattleState timeout for ${target}`));
-                }, timeoutMs);
-              }
-              const arr = window.__stateWaiters[target] || [];
-              arr.push(entry);
-              window.__stateWaiters[target] = arr;
-            } catch {
-              reject(new Error("awaitBattleState setup error"));
-            }
-          });
-      }
-      try {
-        // expose a helper to dump current waiters for diagnostics
-        // NOTE: Do not return functions or timers (non-serializable). Map to safe descriptors.
-        window.dumpStateWaiters = () => {
-          try {
-            const raw = window.__stateWaiters || {};
-            const waiters = {};
-            for (const key of Object.keys(raw)) {
-              try {
-                const arr = Array.isArray(raw[key]) ? raw[key] : [];
-                waiters[key] = arr.map((e) => ({
-                  id: e && e.__id ? e.__id : null,
-                  hasTimer: !!(e && e.timer)
-                }));
-              } catch {
-                waiters[key] = [];
-              }
-            }
-            return {
-              waiters,
-              events: window.__stateWaiterEvents || [],
-              promiseEvents: window.__promiseEvents || []
-            };
-          } catch {
-            return null;
-          }
-        };
-      } catch {}
       // Expose a snapshot helper for tests/debuggers
       window.getBattleStateSnapshot = () => {
         try {
-          return {
-            state: window.__classicBattleState || null,
-            prev: window.__classicBattlePrevState || null,
-            event: window.__classicBattleLastEvent || null,
-            log: Array.isArray(window.__classicBattleStateLog)
-              ? window.__classicBattleStateLog.slice()
-              : []
-          };
+          return getStateSnapshot();
         } catch {
           return { state: null, prev: null, event: null, log: [] };
         }

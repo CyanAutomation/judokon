@@ -37,10 +37,9 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
       const s = args.stateName;
       const t = args.timeout;
       try {
-        if (typeof window.awaitBattleState === "function") {
-          await window.awaitBattleState(s, t);
-          return true;
-        }
+        const mod = await import("/src/helpers/classicBattle/battleDebug.js");
+        await mod.waitForState(s, t);
+        return true;
       } catch {}
       // Fallback: poll
       const start = Date.now();
@@ -49,9 +48,8 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
         const d = document.body?.dataset?.battleState || null;
         let w = null;
         try {
-          const raw = typeof window !== "undefined" ? window.__classicBattleState : null;
-          if (typeof raw === "string") w = raw;
-          else if (raw && typeof raw.state === "string") w = raw.state;
+          const mod = await import("/src/helpers/classicBattle/battleDebug.js");
+          w = mod.getStateSnapshot().state;
         } catch {}
         if (d === s || w === s) return true;
         await new Promise((r) => setTimeout(r, 25));
@@ -64,16 +62,18 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
   // Timed out: include page-side diagnostics
   let snapshot = "";
   try {
-    const info = await page.evaluate(() => {
+    const info = await page.evaluate(async () => {
       const d = document.body?.dataset?.battleState || null;
-      const w = typeof window !== "undefined" ? window.__classicBattleState || null : null;
+      let snap = { state: null, log: [] };
+      try {
+        const mod = await import("/src/helpers/classicBattle/battleDebug.js");
+        snap = mod.getStateSnapshot();
+      } catch {}
       const el = document.getElementById("machine-state");
       const t = el ? el.textContent : null;
       const prev = document.body?.dataset?.prevBattleState || null;
-      const log = Array.isArray(window.__classicBattleStateLog)
-        ? window.__classicBattleStateLog.slice(-5)
-        : [];
-      return { dataset: d, windowState: w, machineText: t, prev, log };
+      const log = Array.isArray(snap.log) ? snap.log.slice(-5) : [];
+      return { dataset: d, windowState: snap.state, machineText: t, prev, log };
     });
     const tail = Array.isArray(info.log)
       ? info.log.map((e) => `${e.from || "null"}->${e.to}(${e.event || "init"})`).join(",")
@@ -103,16 +103,13 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
     // Window-side JSON snapshot
     try {
       const win = await page
-        .evaluate(() => {
+        .evaluate(async () => {
           try {
+            const mod = await import("/src/helpers/classicBattle/battleDebug.js");
+            const snap = mod.getStateSnapshot();
             return {
-              classicState:
-                typeof window.__classicBattleState !== "undefined"
-                  ? window.__classicBattleState
-                  : null,
-              stateLog: Array.isArray(window.__classicBattleStateLog)
-                ? window.__classicBattleStateLog.slice(-20)
-                : null,
+              classicState: snap.state,
+              stateLog: Array.isArray(snap.log) ? snap.log.slice(-20) : null,
               dataset: document.body?.dataset?.battleState || null,
               prev: document.body?.dataset?.prevBattleState || null
             };

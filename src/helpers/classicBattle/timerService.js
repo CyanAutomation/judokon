@@ -14,6 +14,7 @@ import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { awaitCooldownState } from "./awaitCooldownState.js";
+import { getStateSnapshot } from "./battleDebug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -99,10 +100,7 @@ export async function advanceWhenReady(btn, resolveReady) {
   delete btn.dataset.nextReady;
   // Failsafe: if the machine isn't in cooldown, advance via a safe path.
   try {
-    const state =
-      typeof window !== "undefined" && window.__classicBattleState
-        ? window.__classicBattleState
-        : null;
+    const { state } = getStateSnapshot();
     if (state && state !== "cooldown") {
       // If we're still in roundDecision or waitingForPlayerAction due to a race,
       // interrupt the round to reach cooldown, then mark ready.
@@ -160,10 +158,7 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   }
   // No active timer controls: if we're in cooldown, advance immediately
   try {
-    const state =
-      typeof window !== "undefined" && window.__classicBattleState
-        ? window.__classicBattleState
-        : null;
+    const { state } = getStateSnapshot();
     if (state === "cooldown") {
       await dispatchBattleEvent("ready");
       if (typeof resolveReady === "function") resolveReady();
@@ -546,7 +541,7 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
 
 function logScheduleNextRound(result) {
   try {
-    const s = typeof window !== "undefined" ? window.__classicBattleState || null : null;
+    const { state: s } = getStateSnapshot();
     if (typeof window !== "undefined") {
       window.__scheduleNextRoundCount = (window.__scheduleNextRoundCount || 0) + 1;
       if (!IS_VITEST)
