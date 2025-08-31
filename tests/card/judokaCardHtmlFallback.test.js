@@ -5,7 +5,7 @@ import * as cardRender from "../../src/helpers/cardRender.js";
 import * as statsPanel from "../../src/components/StatsPanel.js";
 
 vi.mock("../../src/components/StatsPanel.js", () => ({
-  createStatsPanel: vi.fn(),
+  createStatsPanel: vi.fn()
 }));
 
 const judoka = {
