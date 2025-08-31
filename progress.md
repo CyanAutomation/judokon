@@ -240,3 +240,8 @@
 ## Milestone 12 — Stat Hotkeys Toggle
 
 - Surfaced `statHotkeys` in Advanced Settings with tooltip coverage and keyboard shortcut tests.
+
+## Milestone 13 — Round Decision Helper Extraction
+
+- Simplified `roundDecisionEnter` by composing `recordEntry`, `guardSelectionResolution`, `awaitPlayerChoice`, and `schedulePostResolveWatchdog`.
+- Added unit tests covering each helper in isolation.
