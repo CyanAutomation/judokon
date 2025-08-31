@@ -307,19 +307,17 @@ export function disableNextRoundButton() {
  */
 
 /**
- * Extract machine state and diagnostics from a window object.
+ * Extract machine state and diagnostics.
  *
  * @pseudocode
- * 1. Exit with `{}` if `win` lacks machine globals.
- * 2. Copy current, previous, last event, and state log values.
- * 3. Append round decision and guard diagnostics when present.
- * 4. Merge machine readiness and triggers via `addMachineDiagnostics`.
- * 5. Return accumulated machine info.
+ * 1. Copy current, previous, last event, and state log values.
+ * 2. Append round decision and guard diagnostics when present.
+ * 3. Merge machine readiness and triggers via `addMachineDiagnostics`.
+ * 4. Return accumulated machine info.
  *
- * @param {Window | null} win Source window.
  * @returns {object}
  */
-export function getMachineDebugState(win) {
+export function getMachineDebugState() {
   const state = {};
   try {
     const snap = getStateSnapshot();
@@ -333,7 +331,7 @@ export function getMachineDebugState(win) {
     if (gfa) state.guardFiredAt = gfa;
     const goe = readDebugState("guardOutcomeEvent");
     if (goe) state.guardOutcomeEvent = goe;
-    addMachineDiagnostics(win, state);
+    addMachineDiagnostics(state);
   } catch {}
   return state;
 }
@@ -429,15 +427,15 @@ export function collectDebugState() {
   const win = typeof window !== "undefined" ? window : null;
   return {
     ...base,
-    ...getMachineDebugState(win),
+    ...getMachineDebugState(),
     ...getStoreSnapshot(win),
     ...getBuildInfo(win)
   };
 }
 
-function addMachineDiagnostics(win, state) {
+function addMachineDiagnostics(state) {
   try {
-    const getMachine = win.__getClassicBattleMachine;
+    const getMachine = readDebugState("getClassicBattleMachine");
     const machine = typeof getMachine === "function" ? getMachine() : null;
     if (!machine || typeof machine.getState !== "function") return;
     state.machineReady = true;
