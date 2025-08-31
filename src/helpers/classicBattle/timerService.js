@@ -432,6 +432,11 @@ export async function handleNextRoundExpiration(controls, btn) {
   markNextReady(btn);
   await awaitCooldownState();
   try {
+    // Debug: surface when expiration handler dispatches ready in tests
+    try {
+      // eslint-disable-next-line no-console
+      console.log("DEBUG: handleNextRoundExpiration dispatching 'ready'");
+    } catch {}
     await dispatchBattleEvent("ready");
   } catch {}
   markNextReady(btn);

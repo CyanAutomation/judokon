@@ -60,8 +60,27 @@ export function waitForState(targetState, timeoutMs = 10000) {
         id: entry.__id,
         ts: Date.now()
       });
+      // Also listen to DOM-mirrored state events to avoid module-instance
+      // mismatches between this waiter and the resolver bound in
+      // stateTransitionListeners. This ensures cross-module reliability in tests.
+      const onDomState = (e) => {
+        try {
+          const to = e && e.detail ? e.detail.to : null;
+          if (to === targetState) {
+            document.removeEventListener("battle:state", onDomState);
+            if (entry.timer) clearTimeout(entry.timer);
+            resolve(true);
+          }
+        } catch {}
+      };
+      try {
+        document.addEventListener("battle:state", onDomState);
+      } catch {}
       if (timeoutMs !== Infinity) {
         entry.timer = setTimeout(() => {
+          try {
+            document.removeEventListener("battle:state", onDomState);
+          } catch {}
           const list = stateWaiters.get(targetState) || [];
           const idx = list.indexOf(entry);
           if (idx !== -1) list.splice(idx, 1);

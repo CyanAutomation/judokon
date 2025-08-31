@@ -30,14 +30,22 @@ export function setMachine(m) {
  * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export async function dispatchBattleEvent(eventName, payload) {
-  if (!machine) return;
+  if (!machine) {
+    try {
+      // eslint-disable-next-line no-console
+      console.log("DEBUG: eventDispatcher has no machine for", eventName);
+    } catch {}
+    return;
+  }
   try {
-    if (!IS_VITEST) console.log("DEBUG: eventDispatcher dispatch", { eventName, payload });
+    // eslint-disable-next-line no-console
+    console.log("DEBUG: eventDispatcher dispatch", { state: machine?.getState?.(), eventName, payload });
   } catch {}
   try {
     const res = await machine.dispatch(eventName, payload);
     try {
-      if (!IS_VITEST) console.log("DEBUG: eventDispatcher dispatched", { eventName });
+      // eslint-disable-next-line no-console
+      console.log("DEBUG: eventDispatcher dispatched", { newState: machine?.getState?.(), eventName });
     } catch {}
     return res;
   } catch {
