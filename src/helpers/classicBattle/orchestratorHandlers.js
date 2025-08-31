@@ -662,30 +662,52 @@ export async function resolveSelectionIfPresent(store) {
  *
  * @param {object} store - Battle store.
  * @param {number} timeoutMs - Maximum wait in milliseconds.
- * @returns {Promise<void>} Resolves on `statSelected`; rejects on timeout.
+ * @returns {Promise<void>} Resolves on selection or rejects on timeout.
  * @pseudocode
  * 1. If `store.playerChoice` exists → resolve immediately.
- * 2. Listen for `statSelected` and resolve when fired.
- * 3. Start a timeout that rejects after `timeoutMs`.
- * 4. Return `Promise.race` of event and timeout promises.
+ * 2. Listen for `statSelected` battle events.
+ * 3. Poll the store for a new `playerChoice`.
+ * 4. Start a timeout that rejects after `timeoutMs`.
+ * 5. Resolve when either the event fires or the store updates; otherwise reject on timeout.
  */
 export function waitForPlayerChoice(store, timeoutMs) {
   if (store.playerChoice) return Promise.resolve();
+
   let handler;
+  let pollId;
+  let timeoutId;
+
+  const cleanup = () => {
+    offBattleEvent("statSelected", handler);
+    if (pollId) clearInterval(pollId);
+    if (timeoutId) clearTimeout(timeoutId);
+  };
+
   const eventPromise = new Promise((resolve) => {
     handler = () => {
-      offBattleEvent("statSelected", handler);
+      cleanup();
       resolve();
     };
     onBattleEvent("statSelected", handler);
   });
+
+  const storePromise = new Promise((resolve) => {
+    pollId = setInterval(() => {
+      if (store.playerChoice) {
+        cleanup();
+        resolve();
+      }
+    }, 50);
+  });
+
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => {
-      offBattleEvent("statSelected", handler);
+    timeoutId = setTimeout(() => {
+      cleanup();
       reject(new Error("timeout"));
     }, timeoutMs);
   });
-  return Promise.race([eventPromise, timeoutPromise]);
+
+  return Promise.race([eventPromise, storePromise, timeoutPromise]);
 }
 
 /**
