@@ -122,33 +122,14 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 }
 
 /**
- * Stop timers and clear pending timeouts tied to stat selection.
+ * @summary Stop timers and clear pending timeouts tied to stat selection.
  *
  * @pseudocode
  * 1. Call `stopTimer()` to halt the countdown.
  * 2. Clear `store.statTimeoutId` and `store.autoSelectId`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {void}
  */
 export function cleanupTimers(store) {
   stopTimer();
@@ -194,39 +175,21 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal) {
 }
 
 /**
- * Handles the player's stat selection.
+ * @summary Handles the player's stat selection.
  *
  * @pseudocode
  * 1. Abort unless `validateSelectionState` allows the selection.
  * 2. Mark the selection and coerce stat values via `applySelectionToStore`.
  * 3. Halt timers with `cleanupTimers`.
  * 4. Emit the `statSelected` event via `emitSelectionEvent`.
- * 5. Resolve the round via `resolveRoundDirect`.
- * 6. Dispatch `roundResolved` to advance the battle state machine.
+ * 5. Dispatch `statSelected` to advance the battle state machine.
+ * 6. Resolve the round via `resolveRoundDirect`.
+ * 7. Dispatch `roundResolved` to finalize the round.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
  * @param {{playerVal: number, opponentVal: number}} values - Precomputed stat values.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {Promise<ReturnType<typeof resolveRound>>}
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
   if (!validateSelectionState(store)) {
@@ -236,6 +199,9 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal);
+  try {
+    await dispatchBattleEvent("statSelected");
+  } catch {}
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
   try {
     await dispatchBattleEvent("roundResolved");

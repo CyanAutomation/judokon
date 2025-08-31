@@ -166,11 +166,17 @@ describe("classicBattle stat selection", () => {
     document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
-    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
-    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
-    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "continue");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "statSelected");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "evaluate");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "outcome=winPlayer");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(4, "continue");
     const stateLog = eventDispatcher.__getStateLog();
-    expect(stateLog.slice(0, 3)).toEqual(["processingRound", "roundOver", "cooldown"]);
+    expect(stateLog.slice(0, 4)).toEqual([
+      "roundDecision",
+      "processingRound",
+      "roundOver",
+      "cooldown"
+    ]);
   });
 
   it("dispatches matchPointReached when match ends", async () => {
@@ -184,10 +190,12 @@ describe("classicBattle stat selection", () => {
       `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await selectStat("power");
     await selectStat("power");
-    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "evaluate");
-    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "outcome=winPlayer");
-    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "matchPointReached");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "statSelected");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "evaluate");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "outcome=winPlayer");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(4, "matchPointReached");
     expect(eventDispatcher.__getStateLog()).toEqual([
+      "roundDecision",
       "processingRound",
       "roundOver",
       "matchDecision"
