@@ -13,6 +13,7 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
   const stateLog = [];
   return {
     dispatchBattleEvent: vi.fn(async (event) => {
+      if (event === "roundResolved") return;
       if (event === "evaluate") state = "processingRound";
       else if (event.startsWith("outcome=")) state = "roundOver";
       else if (event === "continue") state = "cooldown";

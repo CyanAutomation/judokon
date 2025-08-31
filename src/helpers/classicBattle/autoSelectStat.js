@@ -58,8 +58,8 @@ export async function autoSelectStat(onSelect, feedbackDelayMs = AUTO_SELECT_FEE
     await new Promise((resolve) => setTimeout(resolve, feedbackDelayMs));
   }
   // Let the provided onSelect drive resolution via handleStatSelection.
-  // This sets store.playerChoice before the machine event is dispatched
-  // (resolveRoundViaMachine will dispatch "statSelected"), preventing a
-  // race where roundDecisionEnter sees no selection and interrupts.
+  // This sets store.playerChoice before the round is resolved and
+  // `roundResolved` is dispatched, preventing a race where
+  // roundDecisionEnter sees no selection and interrupts.
   await onSelect(randomStat, { delayOpponentMessage: true });
 }

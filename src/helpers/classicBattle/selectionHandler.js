@@ -1,6 +1,6 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat } from "../api/battleUI.js";
-import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
@@ -45,68 +45,6 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
     opponentVal = getCardStatValue(document.querySelector("#opponent-card"), stat);
   }
   return { playerVal: Number(playerVal), opponentVal: Number(opponentVal) };
-}
-
-/**
- * Resolve the round via the battle state machine, falling back to direct
- * deterministic zero‑delay resolution on error.
- *
- * @pseudocode
- * 1. Schedule a fallback call to `resolveRoundDirect` after 600ms so the
- *    round resolves with `delayMs: 0` and clears `playerChoice` when done.
- * 2. Await `dispatchBattleEvent("statSelected")`.
- * 3. If dispatch fails, call `resolveRound` immediately with deterministic
- *    options in Vitest environments.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {number} playerVal - Player's stat value.
- * @param {number} opponentVal - Opponent's stat value.
- * @param {object} [opts] - Resolver options.
- * @returns {Promise<ReturnType<typeof resolveRound>|undefined>}
- */
-export async function resolveRoundViaMachine(store, stat, playerVal, opponentVal, opts = {}) {
-  // Schedule a one-shot guard: if the state machine doesn't resolve the round
-  // within 600ms, fall back to a direct, deterministic resolution to keep the
-  // game responsive and tests deterministic.
-  let cancelled = false;
-  const cancelGuard = () => {
-    cancelled = true;
-    try {
-      clearTimeout(guardId);
-    } catch {}
-    try {
-      offBattleEvent("roundResolved", onResolved);
-    } catch {}
-  };
-  const onResolved = () => cancelGuard();
-  try {
-    onBattleEvent("roundResolved", onResolved);
-  } catch {}
-  const guardId = setTimeout(() => {
-    if (cancelled) return;
-    const deterministicOpts =
-      typeof process !== "undefined" && process.env && process.env.VITEST
-        ? { ...opts, delayMs: 0 }
-        : opts;
-    // Use the direct path to ensure store.playerChoice is cleared.
-    Promise.resolve(
-      resolveRoundDirect(store, stat, playerVal, opponentVal, deterministicOpts)
-    ).catch(() => {});
-  }, 600);
-
-  try {
-    await dispatchBattleEvent("statSelected");
-    return undefined;
-  } catch {
-    // Dispatch failed; perform a deterministic direct resolve and cancel guard.
-    cancelGuard();
-    const deterministicOpts =
-      typeof process !== "undefined" && process.env && process.env.VITEST
-        ? { ...opts, delayMs: 0 }
-        : opts;
-    return resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
-  }
 }
 
 /**
@@ -263,7 +201,8 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal) {
  * 2. Mark the selection and coerce stat values via `applySelectionToStore`.
  * 3. Halt timers with `cleanupTimers`.
  * 4. Emit the `statSelected` event via `emitSelectionEvent`.
- * 5. Resolve the round through the state machine or direct resolver.
+ * 5. Resolve the round via `resolveRoundDirect`.
+ * 6. Dispatch `roundResolved` to advance the battle state machine.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -297,7 +236,9 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal);
-  const hasMachine = typeof document !== "undefined" && !!document.body?.dataset.battleState;
-  const resolver = hasMachine ? resolveRoundViaMachine : resolveRoundDirect;
-  return resolver(store, stat, playerVal, opponentVal, opts);
+  const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
+  try {
+    await dispatchBattleEvent("roundResolved");
+  } catch {}
+  return result;
 }

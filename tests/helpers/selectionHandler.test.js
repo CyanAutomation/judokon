@@ -44,12 +44,14 @@ describe("handleStatSelection helpers", () => {
   let stopTimer;
   let emitBattleEvent;
   let showSnackbar;
+  let dispatchBattleEvent;
 
   beforeEach(async () => {
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
     ({ stopTimer } = await import("../../src/helpers/battleEngineFacade.js"));
     ({ emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js"));
     ({ showSnackbar } = await import("../../src/helpers/showSnackbar.js"));
+    ({ dispatchBattleEvent } = await import("../../src/helpers/classicBattle/eventDispatcher.js"));
   });
 
   it("ignores repeated selections", async () => {
@@ -58,6 +60,7 @@ describe("handleStatSelection helpers", () => {
 
     expect(stopTimer).toHaveBeenCalledTimes(1);
     expect(emitBattleEvent).toHaveBeenCalledTimes(1);
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("roundResolved");
     expect(store.selectionMade).toBe(true);
   });
 
