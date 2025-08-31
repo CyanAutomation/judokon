@@ -3,7 +3,6 @@ const PLACEHOLDER_ID = 0;
 const GENERIC_PLACEHOLDER_ID = 1;
 
 import { escapeHTML, decodeHTML } from "./utils.js";
-import { createStatsPanel } from "../components/StatsPanel.js";
 import { debugLog } from "./debug.js";
 
 /**
@@ -88,6 +87,9 @@ export async function generateCardStats(card, cardType = "common") {
     throw new Error("Stats object is required");
   }
 
+  // Defer loading StatsPanel to avoid pulling it into callers that only use
+  // signature/portrait helpers (improves test startup time). Not a hot path.
+  const { createStatsPanel } = await import("../components/StatsPanel.js");
   const panel = await createStatsPanel(card.stats, { type: cardType });
   return panel.outerHTML;
 }

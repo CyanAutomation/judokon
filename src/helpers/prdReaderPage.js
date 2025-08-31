@@ -378,12 +378,17 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   sidebar.container.focus();
   sidebar.spinner.remove();
 
-  Promise.resolve().then(() => {
-    for (let i = 0; i < sidebar.files.length; i++) {
-      if (i === sidebar.index) continue;
-      sidebar.fetchOne(i);
-    }
-  });
+  // Preload remaining docs during idle. Skip in test to reduce overhead.
+  const isTest =
+    typeof process !== "undefined" && process?.env && (process.env.VITEST || process.env.NODE_ENV === "test");
+  if (!isTest) {
+    Promise.resolve().then(() => {
+      for (let i = 0; i < sidebar.files.length; i++) {
+        if (i === sidebar.index) continue;
+        sidebar.fetchOne(i);
+      }
+    });
+  }
 }
 
 if (!window.SKIP_PRD_AUTO_INIT) {

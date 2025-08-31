@@ -154,6 +154,17 @@ export function initInterRoundCooldown(machine) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * onEnter handler for `waitingForMatchStart`.
+ *
+ * @pseudocode
+ * 1. No-op if the machine re-entered the same state.
+ * 2. Call `doResetGame` from machine.context when available.
+ * 3. Emit UI events to clear messages and update debug panels.
+ * 4. Import and call scoreboard/UI helpers to ensure they are initialized.
+ *
+ * @param {object} machine
+ */
 export async function waitingForMatchStartEnter(machine) {
   if (isStateTransition("waitingForMatchStart", "waitingForMatchStart")) return;
   const { doResetGame } = machine.context;
@@ -234,6 +245,16 @@ export async function matchStartEnter(machine) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * onEnter handler for `cooldown` state.
+ *
+ * @pseudocode
+ * 1. If `payload.initial` -> initialize start cooldown.
+ * 2. Otherwise initialize inter-round cooldown.
+ *
+ * @param {object} machine
+ * @param {object} [payload]
+ */
 export async function cooldownEnter(machine, payload) {
   if (payload?.initial) return initStartCooldown(machine);
   return initInterRoundCooldown(machine);
@@ -299,6 +320,17 @@ function invokeRoundStart(ctx) {
   return Promise.resolve();
 }
 
+/**
+ * onEnter handler for `roundStart` state.
+ *
+ * @pseudocode
+ * 1. Install a short fallback in test mode to advance if UI stalls.
+ * 2. Invoke the round start routine from the machine context.
+ * 3. On error: show message, update debug panel, and dispatch `interrupt`.
+ * 4. After successful start, dispatch `cardsRevealed` if still in `roundStart`.
+ *
+ * @param {object} machine
+ */
 export async function roundStartEnter(machine) {
   const fallback = installRoundStartFallback(machine);
 
@@ -729,26 +761,6 @@ export async function roundDecisionEnter(machine) {
     } catch {}
   }
 }
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export async function roundDecisionExit() {
   // Clear any scheduled decision guard to prevent late outcome dispatch.
   try {
@@ -775,9 +787,14 @@ export async function roundDecisionExit() {
  * 1. TODO: Add pseudocode
  */
 /**
- * @summary TODO: Add summary
+ * onEnter handler for `roundOver` state.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Clear any transient selection state from the store so the next round
+ *    starts with a clean slate.
+ * 2. Return immediately; UI updates are handled elsewhere.
+ *
+ * @param {object} machine
  */
 export async function roundOverEnter(machine) {
   const store = machine?.context?.store;
@@ -820,6 +837,19 @@ export async function matchOverEnter() {}
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * onEnter handler for `interruptRound`.
+ *
+ * @pseudocode
+ * 1. Clear scoreboard messages and update debug panel.
+ * 2. Clear any pending selection and scheduled guards.
+ * 3. Persist the last interrupt reason to `window` for diagnostics.
+ * 4. If `payload.adminTest` -> dispatch `roundModification` with payload,
+ *    otherwise dispatch `restartRound` to reach cooldown.
+ *
+ * @param {object} machine
+ * @param {object} [payload]
  */
 export async function interruptRoundEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");
@@ -874,6 +904,17 @@ export async function interruptRoundEnter(machine, payload) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * onEnter handler for `interruptMatch`.
+ *
+ * @pseudocode
+ * 1. Clear scoreboard messages and update debug panel.
+ * 2. Show an interrupt message when a reason is provided.
+ * 3. Trigger the state-table-defined `toLobby` transition with payload.
+ *
+ * @param {object} machine
+ * @param {object} [payload]
+ */
 export async function interruptMatchEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
@@ -903,6 +944,17 @@ export async function interruptMatchEnter(machine, payload) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * onEnter handler for `roundModification`.
+ *
+ * @pseudocode
+ * 1. Clear scoreboard messages and update debug panel.
+ * 2. If payload.modification -> show a message describing the modification.
+ * 3. If payload.resumeRound -> dispatch `roundStart`, else dispatch `cooldown`.
+ *
+ * @param {object} machine
+ * @param {object} [payload]
  */
 export async function roundModificationEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");

@@ -391,27 +391,12 @@ export async function dispatchBattleEvent(eventName, payload) {
 
 /**
  * Get the current battle state machine instance for tests and helpers.
- * @returns {import('./stateMachine.js').BattleStateMachine|null}
- */
-/**
- * @summary TODO: Add summary
+ *
+ * @returns {import('./stateMachine.js').BattleStateMachine|null} the
+ * module-scoped state machine instance, or null if not initialized.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Return the module-scoped `machine` reference.
  */
 export function getBattleStateMachine() {
   return machine;

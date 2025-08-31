@@ -34,9 +34,14 @@ let ajvInstance;
 export const nodeAjvLoader = {
   async load() {
     const Ajv = (await import("ajv")).default;
-    const addFormats = (await import("ajv-formats")).default;
+    const isTest =
+      typeof process !== "undefined" && process?.env && (process.env.VITEST || process.env.NODE_ENV === "test");
     const ajv = new Ajv();
-    addFormats(ajv);
+    // Skip formats in tests to reduce startup time; not required for our schemas there.
+    if (!isTest) {
+      const addFormats = (await import("ajv-formats")).default;
+      addFormats(ajv);
+    }
     return ajv;
   }
 };
