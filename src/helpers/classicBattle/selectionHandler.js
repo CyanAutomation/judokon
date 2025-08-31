@@ -183,8 +183,8 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal) {
  * 3. Halt timers with `cleanupTimers`.
  * 4. Emit the `statSelected` event via `emitSelectionEvent`.
  * 5. Dispatch `statSelected` to advance the battle state machine.
- * 6. Resolve the round via `resolveRoundDirect`.
- * 7. Dispatch `roundResolved` to finalize the round.
+ * 6. If the machine hasn't cleared `store.playerChoice`, resolve the round via
+ *    `resolveRoundDirect` and dispatch `roundResolved`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -199,9 +199,14 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal);
+  let resolvedByMachine = false;
   try {
     await dispatchBattleEvent("statSelected");
+    resolvedByMachine = store.playerChoice === null;
   } catch {}
+  if (resolvedByMachine) {
+    return;
+  }
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
   try {
     await dispatchBattleEvent("roundResolved");
