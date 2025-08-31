@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { BattleStateMachine } from "../../../src/helpers/classicBattle/stateMachine.js";
+import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 import {
   waitingForPlayerActionEnter,
   waitingForPlayerActionExit
@@ -68,33 +68,24 @@ describe("classicBattle stat button state", () => {
     const btn = document.querySelector("#stat-buttons button");
     expect(btn.disabled).toBe(true);
 
-    const states = new Map([
-      ["cooldown", { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] }],
-      [
-        "roundStart",
-        {
-          name: "roundStart",
-          triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }]
-        }
-      ],
-      [
-        "waitingForPlayerAction",
-        {
-          name: "waitingForPlayerAction",
-          triggers: [{ on: "statSelected", target: "roundDecision" }]
-        }
-      ],
-      ["roundDecision", { name: "roundDecision", triggers: [] }]
-    ]);
+    const states = [
+      { name: "cooldown", type: "initial", triggers: [{ on: "ready", target: "roundStart" }] },
+      { name: "roundStart", triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }] },
+      {
+        name: "waitingForPlayerAction",
+        triggers: [{ on: "statSelected", target: "roundDecision" }]
+      },
+      { name: "roundDecision", triggers: [] }
+    ];
 
-    const machine = new BattleStateMachine(
-      states,
-      "cooldown",
+    const machine = await createStateManager(
       {
         waitingForPlayerAction: waitingForPlayerActionEnter,
         roundDecision: waitingForPlayerActionExit
       },
-      {}
+      {},
+      undefined,
+      states
     );
 
     await machine.dispatch("ready");

@@ -172,7 +172,23 @@ AI agents are encouraged to parse, test, and modify the system using these archi
   - A string state name (legacy), or
   - An object `{ from: string|null, to: string, event?: string|null }` (current).
 - Consumers should read `detail.to` when `detail` is an object; otherwise use the string value.
-- The current state is also mirrored on `document.body.dataset.battleState`.
+  - The current state is also mirrored on `document.body.dataset.battleState`.
+
+### Classic Battle State Manager
+
+Classic Battle uses a slim state manager driven by `stateTable.js`. Core progression:
+
+- `waitingForMatchStart` → `matchStart` → `cooldown` → `roundStart` →
+  `waitingForPlayerAction` → `roundDecision` → `roundOver` →
+  `matchDecision` → `matchOver`.
+- Interrupt paths dispatch to `interruptRound` (round level) or `interruptMatch`
+  (match setup/errors). From `interruptRound` the flow may restart the round,
+  return to the lobby, or abort the match. An optional `roundModification`
+  branch allows admin adjustments before resuming.
+
+The manager exposes `getState()` and `dispatch(event)` and invokes
+`onEnter` handlers for each state. Transition hooks emit the
+`battleStateChange` event for listeners.
 
 ### Event Bus vs DOM Events
 

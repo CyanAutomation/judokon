@@ -38,7 +38,7 @@ export function domStateListener(e) {
  * Create a listener that logs state transitions on `window` and updates
  * timer diagnostics.
  *
- * @param {import("./stateMachine.js").BattleStateMachine|null} machine
+ * @param {import("./stateManager.js").ClassicBattleStateManager|null} machine
  *   Active battle machine.
  * @returns {(e: CustomEvent<{from:string|null,to:string,event:string|null}>) => void}
  *   Registered listener.

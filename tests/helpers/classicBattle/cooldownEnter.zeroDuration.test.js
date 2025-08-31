@@ -20,7 +20,7 @@ import {
   waitingForPlayerActionEnter
 } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
-import { BattleStateMachine } from "../../../src/helpers/classicBattle/stateMachine.js";
+import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 
 describe("cooldownEnter zero duration", () => {
   let timer;
@@ -35,18 +35,19 @@ describe("cooldownEnter zero duration", () => {
   });
 
   it("enables stat buttons after zero-second matchStart cooldown", async () => {
-    const states = new Map([
-      [
-        "cooldown",
-        { name: "cooldown", triggers: [{ on: "ready", target: "waitingForPlayerAction" }] }
-      ],
-      ["waitingForPlayerAction", { name: "waitingForPlayerAction", triggers: [] }]
-    ]);
-    const machine = new BattleStateMachine(
-      states,
-      "cooldown",
+    const states = [
+      {
+        name: "cooldown",
+        type: "initial",
+        triggers: [{ on: "ready", target: "waitingForPlayerAction" }]
+      },
+      { name: "waitingForPlayerAction", triggers: [] }
+    ];
+    const machine = await createStateManager(
       { waitingForPlayerAction: waitingForPlayerActionEnter },
-      { store: {} }
+      { store: {} },
+      undefined,
+      states
     );
 
     await cooldownEnter(machine, { initial: true });
