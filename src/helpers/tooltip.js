@@ -144,6 +144,14 @@ export async function initTooltips(root = globalThis.document) {
     notifyReady();
     return () => {};
   }
+  // Fast-path: if there are no tooltip targets, avoid loading settings,
+  // sanitizer, or tooltip data. This dramatically reduces overhead for
+  // pages without tooltips (common in unit tests and some views).
+  const elements = root?.querySelectorAll?.("[data-tooltip-id]") || [];
+  if (elements.length === 0) {
+    notifyReady();
+    return () => {};
+  }
   let overlay = false;
   try {
     const settings = await loadSettings();
@@ -159,15 +167,11 @@ export async function initTooltips(root = globalThis.document) {
   toggleTooltipOverlayDebug(overlay);
   const DOMPurify = await getSanitizer();
   const data = await loadTooltips();
-  const elements = root?.querySelectorAll?.("[data-tooltip-id]") || [];
-  if (elements.length === 0) {
-    notifyReady();
-    return () => {};
-  }
   const tip = ensureTooltipElement();
 
   function show(e) {
-    const id = e.currentTarget.dataset.tooltipId;
+    const target = e.currentTarget || e.target;
+    const id = target?.dataset?.tooltipId;
     let text = data[id];
     // Fallback for parent IDs like `settings.foo` by trying common leaf keys
     if (!text && id && typeof id === "string") {
@@ -187,7 +191,7 @@ export async function initTooltips(root = globalThis.document) {
       loggedUnbalanced.add(id);
     }
     tip.style.display = "block";
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = target?.getBoundingClientRect?.() || { top: 0, bottom: 0, left: 0, width: 0, height: 0 };
     let top = rect.bottom + window.scrollY;
     let left = rect.left + window.scrollX;
     if (!rect.width && !rect.height) {

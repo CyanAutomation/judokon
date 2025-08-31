@@ -23,26 +23,6 @@ const readyParts = new Set();
  */
 let resolveReady;
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Promise that resolves when the battle screen has fully initialized.
  *
  * @summary A promise consumers can await to know when the battle UI has finished
@@ -68,27 +48,6 @@ document.addEventListener(
 if (typeof window !== "undefined") {
   window.battleReadyPromise = battleReadyPromise;
 }
-
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 /**
  * Mark a named portion of the battle page as ready and dispatch `battle:init` when complete.
  *

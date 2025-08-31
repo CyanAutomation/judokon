@@ -51,9 +51,9 @@ export async function ensureBindings(opts = {}) {
     const ui = await import("./roundUI.js");
     if (typeof ui.bindRoundUIEventHandlersDynamic === "function")
       ui.bindRoundUIEventHandlersDynamic();
-    const helpers = await import("./uiHelpers.js");
-    if (typeof helpers.bindUIHelperEventHandlersDynamic === "function")
-      helpers.bindUIHelperEventHandlersDynamic();
+    const eventHandlers = await import("./uiEventHandlers.js");
+    if (typeof eventHandlers.bindUIHelperEventHandlersDynamic === "function")
+      eventHandlers.bindUIHelperEventHandlersDynamic();
   }
   // Ensure event promises exist; allow a forced refresh after mocks in tests.
   if (!__promisesBound || force) {

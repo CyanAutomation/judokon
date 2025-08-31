@@ -16,26 +16,6 @@ import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
  *
  * @param {HTMLElement} container - The carousel container element.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function setupKeyboardNavigation(container) {
   // Thin wrapper: if a controller exists, it already wires keyboard events.
   const wrapper = container.parentElement;
@@ -81,26 +61,6 @@ export function setupKeyboardNavigation(container) {
  *    a. If the `event.pointerType` is not "touch", calculate `swipeDistance` and call `scrollFromDelta`.
  *
  * @param {HTMLElement} container - The carousel container element.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function setupSwipeNavigation(container) {
   // Thin wrapper: if a controller exists, it already wires swipe/pointer events.
