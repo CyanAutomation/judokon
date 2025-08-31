@@ -1067,8 +1067,10 @@ async function init() {
   } catch {}
   try {
     const params = new URLSearchParams(location.search);
-    const skip = params.get("skipRoundCooldown") === "1";
-    setFlag("skipRoundCooldown", skip);
+    if (params.has("skipRoundCooldown")) {
+      const skip = params.get("skipRoundCooldown") === "1";
+      setFlag("skipRoundCooldown", skip);
+    }
   } catch {}
   updateVerbose();
   updateStateBadgeVisibility();
