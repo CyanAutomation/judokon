@@ -7,6 +7,7 @@ import { getStatValue } from "../battle/index.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { resolveRound } from "./roundResolver.js";
 import { guard, guardAsync, scheduleGuard } from "./guard.js";
+import { exposeDebugState, readDebugState } from "./debugHooks.js";
 // Removed unused import for enableNextRoundButton
 
 // Test-mode flag for muting noisy logs in Vitest
@@ -446,7 +447,7 @@ export async function waitingForPlayerActionExit() {
  *
  * @pseudocode
  * 1. Log debug entry if not in Vitest.
- * 2. Record `window.__roundDecisionEnter` timestamp.
+ * 2. Record `roundDecisionEnter` timestamp via `exposeDebugState`.
  * 3. Emit `debugPanelUpdate` event.
  */
 /**
@@ -469,7 +470,7 @@ export async function computeAndDispatchOutcome(store, machine) {
   try {
     console.log("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
     if (!isStateTransition(null, "roundDecision")) return;
-    const rd = window.__roundDebug;
+    const rd = readDebugState("roundDebug");
     const resolved = rd && typeof rd.resolvedAt === "number";
     if (resolved) return;
     if (!store?.playerChoice) {
@@ -479,8 +480,8 @@ export async function computeAndDispatchOutcome(store, machine) {
     const outcomeEvent = determineOutcomeEvent(store);
     console.log("DEBUG: computeAndDispatchOutcome outcomeEvent", { outcomeEvent });
     try {
-      window.__guardFiredAt = Date.now();
-      window.__guardOutcomeEvent = outcomeEvent || "none";
+      exposeDebugState("guardFiredAt", Date.now());
+      exposeDebugState("guardOutcomeEvent", outcomeEvent || "none");
     } catch {}
     await dispatchOutcome(outcomeEvent, machine);
     emitBattleEvent("debugPanelUpdate");
@@ -592,7 +593,7 @@ async function dispatchOutcome(outcomeEvent, machine) {
  * @summary Stamp round decision entry for diagnostics.
  * @pseudocode
  * 1. Log debug message when not under Vitest.
- * 2. Store `Date.now()` in `window.__roundDecisionEnter`.
+ * 2. Store `Date.now()` using `exposeDebugState('roundDecisionEnter')`.
  * 3. Emit `debugPanelUpdate` to refresh the panel.
  */
 export function recordEntry() {
@@ -601,7 +602,7 @@ export function recordEntry() {
   } catch {}
   try {
     if (typeof window !== "undefined") {
-      window.__roundDecisionEnter = Date.now();
+      exposeDebugState("roundDecisionEnter", Date.now());
     }
   } catch {}
   emitBattleEvent("debugPanelUpdate");
@@ -717,18 +718,17 @@ export async function awaitPlayerChoice(store) {
  * @returns {() => void} cleanup function
  * @pseudocode
  * 1. Schedule guard to run `computeAndDispatchOutcome` after 1200 ms.
- * 2. Save cancel function to `window.__roundDecisionGuard`.
+ * 2. Save cancel function via `exposeDebugState('roundDecisionGuard')`.
  * 3. Return a cleanup function that clears the guard and nulls the global.
  */
 export function guardSelectionResolution(store, machine) {
   const cancel = scheduleGuard(1200, () => computeAndDispatchOutcome(store, machine));
-  if (typeof window !== "undefined") window.__roundDecisionGuard = cancel;
+  exposeDebugState("roundDecisionGuard", cancel);
   return () => {
     guard(() => {
-      if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
-        window.__roundDecisionGuard();
-        window.__roundDecisionGuard = null;
-      }
+      const fn = readDebugState("roundDecisionGuard");
+      if (typeof fn === "function") fn();
+      exposeDebugState("roundDecisionGuard", null);
     });
   };
 }
@@ -790,10 +790,9 @@ export async function roundDecisionEnter(machine) {
 export async function roundDecisionExit() {
   // Clear any scheduled decision guard to prevent late outcome dispatch.
   try {
-    if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
-      window.__roundDecisionGuard();
-      window.__roundDecisionGuard = null;
-    }
+    const fn = readDebugState("roundDecisionGuard");
+    if (typeof fn === "function") fn();
+    exposeDebugState("roundDecisionGuard", null);
   } catch {}
 }
 
@@ -888,16 +887,13 @@ export async function interruptRoundEnter(machine, payload) {
       store.playerChoice = null;
       store.selectionMade = false;
     }
-    if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
-      window.__roundDecisionGuard();
-      window.__roundDecisionGuard = null;
-    }
+    const fn = readDebugState("roundDecisionGuard");
+    if (typeof fn === "function") fn();
+    exposeDebugState("roundDecisionGuard", null);
   } catch {}
   // Expose the last interrupt reason for diagnostics and tests
   try {
-    if (typeof window !== "undefined") {
-      window.__classicBattleLastInterruptReason = payload?.reason || "";
-    }
+    exposeDebugState("classicBattleLastInterruptReason", payload?.reason || "");
   } catch {}
   if (payload?.reason) {
     emitBattleEvent("scoreboardShowMessage", `Round interrupted: ${payload.reason}`);

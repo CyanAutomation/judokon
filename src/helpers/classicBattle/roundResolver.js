@@ -2,6 +2,7 @@ import { evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { resetStatButtons } from "../battle/battleUI.js";
+import { exposeDebugState, readDebugState } from "./debugHooks.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -162,7 +163,7 @@ export async function ensureRoundDecisionState() {
  * Wait for a delay then reveal the opponent's stat.
  *
  * @pseudocode
- * 1. Mark `window.__roundDebug.resolving`.
+ * 1. Mark `roundDebug.resolving` via `exposeDebugState`.
  * 2. Sleep for `delayMs` using the provided `sleep` function.
  * 3. Emit `"opponentReveal"`.
  *
@@ -176,7 +177,7 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
     if (!IS_VITEST) console.log("DEBUG: resolveRound sleep", { delayMs, stat });
   } catch {}
   try {
-    if (typeof window !== "undefined") window.__roundDebug = { resolving: true };
+    exposeDebugState("roundDebug", { resolving: true });
   } catch {}
   await sleep(delayMs);
   try {
@@ -190,8 +191,8 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
  *
  * @pseudocode
  * 1. Call `computeRoundResult`.
- * 2. Invoke guard cancel function on `window.__roundDecisionGuard` if present.
- * 3. Stamp `window.__roundDebug.resolvedAt`.
+ * 2. Invoke guard cancel function from `readDebugState('roundDecisionGuard')` when present.
+ * 3. Stamp `readDebugState('roundDebug').resolvedAt`.
  * 4. Return the computation result.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
@@ -203,15 +204,13 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
 export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
   const result = await computeRoundResult(store, stat, playerVal, opponentVal);
   try {
-    if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
-      window.__roundDecisionGuard();
-      window.__roundDecisionGuard = null;
-    }
+    const fn = readDebugState("roundDecisionGuard");
+    if (typeof fn === "function") fn();
+    exposeDebugState("roundDecisionGuard", null);
   } catch {}
   try {
-    if (typeof window !== "undefined" && window.__roundDebug) {
-      window.__roundDebug.resolvedAt = Date.now();
-    }
+    const rd = readDebugState("roundDebug");
+    if (rd) rd.resolvedAt = Date.now();
   } catch {}
   try {
     if (!IS_VITEST) console.log("DEBUG: resolveRound result", result);

@@ -4,6 +4,7 @@ import * as battleEngine from "../battleEngineFacade.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { readDebugState } from "./debugHooks.js";
 
 /**
  * Create a new battle state store.
@@ -27,10 +28,8 @@ export function createBattleStore() {
 }
 
 function getStartRound(store) {
-  if (typeof window !== "undefined") {
-    const api = window.__classicBattleDebugAPI;
-    if (api?.startRoundOverride) return api.startRoundOverride;
-  }
+  const api = readDebugState("classicBattleDebugAPI");
+  if (api?.startRoundOverride) return api.startRoundOverride;
   return () => startRound(store);
 }
 
@@ -153,7 +152,7 @@ export function _resetForTest(store) {
   battleEngine._resetForTest();
   stopScheduler();
   if (typeof window !== "undefined") {
-    const api = window.__classicBattleDebugAPI;
+    const api = readDebugState("classicBattleDebugAPI");
     if (api) delete api.startRoundOverride;
     else delete window.startRoundOverride;
   }

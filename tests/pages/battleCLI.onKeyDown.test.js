@@ -3,13 +3,19 @@ import {
   emitBattleEvent,
   __resetBattleEventTarget
 } from "../../src/helpers/classicBattle/battleEvents.js";
+import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 describe("battleCLI onKeyDown", () => {
-  let onKeyDown, __test;
+  let onKeyDown, __test, store;
 
   beforeEach(async () => {
     __resetBattleEventTarget();
     window.__TEST__ = true;
+    store = {};
+    vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+      store[k] = v;
+    });
+    vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
     vi.doMock("../../src/components/Button.js", () => ({
       createButton: (label, opts = {}) => {
         const btn = document.createElement("button");
@@ -37,7 +43,7 @@ describe("battleCLI onKeyDown", () => {
     document.body.innerHTML = "";
     document.body.className = "";
     delete document.body.dataset.battleState;
-    delete window.__getClassicBattleMachine;
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     delete window.__TEST__;
     vi.resetModules();
     vi.doUnmock("../../src/components/Button.js");
@@ -72,7 +78,7 @@ describe("battleCLI onKeyDown", () => {
 
   it("confirms quit via modal", () => {
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     const confirm = document.getElementById("confirm-quit-button");
     expect(confirm).toBeTruthy();
@@ -83,7 +89,7 @@ describe("battleCLI onKeyDown", () => {
 
   it("resumes timers when quit is canceled", () => {
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     document.body.dataset.battleState = "waitingForPlayerAction";
     const selT = setTimeout(() => {}, 1000);
     const selI = setInterval(() => {}, 1000);
@@ -97,7 +103,7 @@ describe("battleCLI onKeyDown", () => {
 
   it("resumes timers when quit modal dismissed with Escape", () => {
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     document.body.dataset.battleState = "waitingForPlayerAction";
     const selT = setTimeout(() => {}, 1000);
     const selI = setInterval(() => {}, 1000);
@@ -111,7 +117,7 @@ describe("battleCLI onKeyDown", () => {
 
   it("resumes timers when backdrop is clicked", () => {
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     document.body.dataset.battleState = "waitingForPlayerAction";
     const selT = setTimeout(() => {}, 1000);
     const selI = setInterval(() => {}, 1000);
@@ -125,7 +131,7 @@ describe("battleCLI onKeyDown", () => {
 
   it("clears timers when confirming quit", () => {
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     const cooldownT = setTimeout(() => {}, 1000);
     const cooldownI = setInterval(() => {}, 1000);
     const selT = setTimeout(() => {}, 1000);
@@ -153,7 +159,7 @@ describe("battleCLI onKeyDown", () => {
 
   it("dispatches statSelected in waitingForPlayerAction state", () => {
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     document.body.dataset.battleState = "waitingForPlayerAction";
     onKeyDown(new KeyboardEvent("keydown", { key: "1" }));
     expect(dispatch).toHaveBeenCalledWith("statSelected");
@@ -161,7 +167,7 @@ describe("battleCLI onKeyDown", () => {
 
   it("dispatches continue in roundOver state", () => {
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     document.body.dataset.battleState = "roundOver";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(dispatch).toHaveBeenCalledWith("continue");
@@ -169,7 +175,7 @@ describe("battleCLI onKeyDown", () => {
 
   it("dispatches ready in cooldown state", () => {
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     document.body.dataset.battleState = "cooldown";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(dispatch).toHaveBeenCalledWith("ready");
@@ -181,7 +187,7 @@ describe("battleCLI onKeyDown", () => {
       flag === "cliShortcuts" ? false : featureFlags.isEnabled(flag)
     );
     const dispatch = vi.fn();
-    window.__getClassicBattleMachine = () => ({ dispatch });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     expect(document.getElementById("confirm-quit-button")).toBeTruthy();
   });
