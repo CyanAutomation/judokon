@@ -176,7 +176,12 @@
             <option value="15">15</option>
           </select>
           <label for="verbose-toggle">Verbose:</label>
-          <input id="verbose-toggle" type="checkbox" aria-label="Toggle verbose logging" />
+          <input
+            id="verbose-toggle"
+            type="checkbox"
+            aria-label="Toggle verbose logging"
+            data-flag="cliVerbose"
+          />
           <label for="seed-input">Seed:</label>
           <input
             id="seed-input"
@@ -225,7 +230,13 @@
           </ul>
         </section>
 
-        <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" hidden>
+        <section
+          aria-label="Verbose Log"
+          id="cli-verbose-section"
+          class="cli-block"
+          data-flag="cliVerbose"
+          hidden
+        >
           <pre
             id="cli-verbose-log"
             aria-live="polite"

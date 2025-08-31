@@ -1064,6 +1064,7 @@ function handleBattleState(ev) {
     const mm = String(ts.getMinutes()).padStart(2, "0");
     const ss = String(ts.getSeconds()).padStart(2, "0");
     const line = `[${hh}:${mm}:${ss}] ${from || "(init)"} -> ${to}`;
+    console.info(line);
     const existing = pre.textContent ? pre.textContent.split("\n").filter(Boolean) : [];
     existing.push(line);
     while (existing.length > 50) existing.shift();
@@ -1116,6 +1117,10 @@ async function init() {
   } catch {}
   try {
     const params = new URLSearchParams(location.search);
+    if (params.has("verbose")) {
+      const v = params.get("verbose");
+      setFlag("cliVerbose", v === "1" || v === "true");
+    }
     if (params.has("skipRoundCooldown")) {
       const skip = params.get("skipRoundCooldown") === "1";
       setFlag("skipRoundCooldown", skip);

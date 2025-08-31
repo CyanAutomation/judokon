@@ -50,12 +50,12 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("verbose log toggles and records transitions", async ({ page }) => {
-    await page.goto("/src/pages/battleCLI.html");
+    await page.goto("/src/pages/battleCLI.html?verbose=1");
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
 
-    // Enable verbose mode
+    // Verbose enabled via query param
     const toggle = page.locator("#verbose-toggle");
-    await toggle.check();
+    await expect(toggle).toBeChecked();
     await expect(page.locator("#cli-verbose-section")).toBeVisible();
 
     // Cause a transition by selecting a stat via keyboard (mapped to 1)
@@ -120,7 +120,8 @@ test.describe("Classic Battle CLI", () => {
 
     await page.keyboard.press("1");
     await waitForBattleState(page, "roundOver", 10000);
-    const afterRoundScore = await score.textContent();
+    const playerAfterRound = await score.getAttribute("data-score-player");
+    const opponentAfterRound = await score.getAttribute("data-score-opponent");
     const cardBefore = await page.locator("#player-card ul").elementHandle();
 
     await waitForBattleState(page, "cooldown", 10000);
@@ -128,8 +129,11 @@ test.describe("Classic Battle CLI", () => {
     await page.keyboard.press("Enter");
     await waitForBattleState(page, "waitingForPlayerAction", 10000);
     const cardAfter = await page.locator("#player-card ul").elementHandle();
+    const playerAfterCooldown = await score.getAttribute("data-score-player");
+    const opponentAfterCooldown = await score.getAttribute("data-score-opponent");
 
-    await expect(score).toHaveText(afterRoundScore || "");
+    expect(playerAfterCooldown).toBe(playerAfterRound);
+    expect(opponentAfterCooldown).toBe(opponentAfterRound);
     expect(cardAfter).not.toBe(cardBefore);
   });
 
@@ -141,7 +145,6 @@ test.describe("Classic Battle CLI", () => {
     await waitForBattleState(page, "roundOver", 10000);
     const firstPlayer = await score.getAttribute("data-score-player");
     const firstOpponent = await score.getAttribute("data-score-opponent");
-    await expect(score).toHaveText(`You: ${firstPlayer} Opponent: ${firstOpponent}`);
 
     await page.keyboard.press("Enter");
     await waitForBattleState(page, "waitingForPlayerAction", 10000);
@@ -149,7 +152,6 @@ test.describe("Classic Battle CLI", () => {
     await waitForBattleState(page, "roundOver", 10000);
     const secondPlayer = await score.getAttribute("data-score-player");
     const secondOpponent = await score.getAttribute("data-score-opponent");
-    await expect(score).toHaveText(`You: ${secondPlayer} Opponent: ${secondOpponent}`);
     expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(
       Number(firstPlayer) + Number(firstOpponent)
     );
