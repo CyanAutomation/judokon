@@ -1,7 +1,6 @@
 import { getDefaultTimer } from "../timerUtils.js";
 import { startRound as engineStartRound } from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { updateDebugPanel } from "./uiHelpers.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { setSkipHandler } from "./skipHandler.js";
@@ -424,7 +423,10 @@ export async function handleNextRoundExpiration(controls, btn) {
     await dispatchBattleEvent("ready");
   } catch {}
   markNextReady(btn);
-  updateDebugPanel();
+  try {
+    const { updateDebugPanel } = await import("./uiHelpers.js");
+    updateDebugPanel();
+  } catch {}
   if (typeof controls.resolveReady === "function") {
     controls.resolveReady();
   }
