@@ -31,13 +31,26 @@ This directory contains unit tests for Classic Battle helpers.
 - `timerService.nextRound.test.js`: manages cooldown and Next button interaction.
 - `skipRoundCooldown.test.js`: skips the inter-round countdown when the feature flag is enabled.
 - `timerStateExposure.test.js`: exposes timer state to window and DOM.
+- `commonMocks.js`: scheduler and motion utility mocks shared across suites.
+- `setupTestEnv.js`: exposes `setupClassicBattleHooks()` to wire DOM and mocks.
 - `mockSetup.js`: shared mock helper to reduce duplication.
 - `utils.js` / `mocks.js`: shared DOM setup and legacy mocks for these suites.
 
 ## Guidelines
 
 - One behavior per test.
-- Prefer shared helpers in `domUtils.js`, `utils/testUtils.js`, and `mockSetup.js`.
+- Prefer shared helpers in `domUtils.js`, `utils/testUtils.js`, `commonMocks.js`, and `setupTestEnv.js`.
 - Do not commit `it.skip`; use `test.todo` or remove obsolete tests instead.
 - Timer drift, state exposure, and Next button behavior belong in `timerService` tests; `scheduleNextRound` tests cover cooldown scheduling and ready dispatch.
 - Avoid duplicating coverage across suites. Interrupt behavior triggered by browser events (such as `pagehide`, global `error`, or `unhandledrejection`) is covered exclusively in `interruptHandlers.test.js`.
+
+### Usage
+
+```js
+import "./commonMocks.js";
+import { setupClassicBattleHooks } from "./setupTestEnv.js";
+
+const getEnv = setupClassicBattleHooks();
+```
+
+New tests should rely on these helpers rather than duplicating mocks or manual DOM setup.
