@@ -22,13 +22,13 @@ import { showSnackbar } from "./showSnackbar.js";
 
 import { applyInitialControlValues } from "./settings/applyInitialValues.js";
 import { attachToggleListeners } from "./settings/listenerUtils.js";
-import { renderGameModeSwitches } from "./settings/gameModeSwitches.js";
-import { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
 import { makeHandleUpdate } from "./settings/makeHandleUpdate.js";
-import { addNavResetButton } from "./settings/addNavResetButton.js";
 import { createResetModal } from "./settings/createResetModal.js";
 import { attachResetListener } from "./settings/attachResetListener.js";
-import { syncFeatureFlags } from "./settings/syncFeatureFlags.js";
+import { syncDisplayMode } from "./settings/syncDisplayMode.js";
+import { renderGameModes } from "./settings/renderGameModes.js";
+import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
+import { renderNavCacheReset } from "./settings/renderNavCacheReset.js";
 
 /**
  * @summary TODO: Add summary
@@ -149,10 +149,6 @@ function makeErrorPopupHandler(errorPopup) {
   };
 }
 
-function clearToggles(container) {
-  container.querySelectorAll(".settings-item").forEach((el) => el.remove());
-}
-
 function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
   let cleanupTooltips;
   return function renderSwitches(gameModes, tooltipMap) {
@@ -160,41 +156,12 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
       cleanupTooltips();
       cleanupTooltips = undefined;
     }
-    // Apply current settings once toggles are available.
     const current = getCurrentSettings();
-    const radio = document.querySelector('input[name="display-mode"]:checked');
-    let next = current;
-    if (radio && radio.value !== current.displayMode) {
-      withViewTransition(() => applyDisplayMode(radio.value));
-      handleUpdate("displayMode", radio.value, () => {}).catch(() => {});
-      next = { ...current, displayMode: radio.value };
-    }
+    const next = syncDisplayMode(current, handleUpdate);
     applyInitialControlValues(controls, next, tooltipMap);
-    const modesContainerEl = document.getElementById("game-mode-toggle-container");
-    if (modesContainerEl && Array.isArray(gameModes)) {
-      clearToggles(modesContainerEl);
-      renderGameModeSwitches(modesContainerEl, gameModes, getCurrentSettings, handleUpdate);
-    }
-    const flagsContainerEl = document.getElementById("feature-flags-container");
-    if (flagsContainerEl) {
-      clearToggles(flagsContainerEl);
-      const flags = syncFeatureFlags(current);
-      renderFeatureFlagSwitches(
-        flagsContainerEl,
-        flags,
-        getCurrentSettings,
-        handleUpdate,
-        tooltipMap
-      );
-    }
-    queueMicrotask(addNavResetButton);
-    const navCacheToggle = document.getElementById("feature-nav-cache-reset-button");
-    if (navCacheToggle && !navCacheToggle.dataset.listenerBound) {
-      navCacheToggle.addEventListener("change", () => {
-        setTimeout(addNavResetButton);
-      });
-      navCacheToggle.dataset.listenerBound = "true";
-    }
+    renderGameModes(gameModes, getCurrentSettings, handleUpdate);
+    renderFeatureFlags(next, getCurrentSettings, handleUpdate, tooltipMap);
+    renderNavCacheReset();
     initTooltips().then((fn) => {
       cleanupTooltips = fn;
     });
