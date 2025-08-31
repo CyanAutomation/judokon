@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
+import { mockDocsMap, basicParser } from "./prdReaderPage.js";
 
 describe("prdReaderPage", () => {
   afterEach(() => {
@@ -14,6 +15,22 @@ describe("prdReaderPage", () => {
     });
     expect(files).toEqual(["a.md", "b.md"]);
     expect(baseNames).toEqual(["a", "b"]);
+  });
+  it("seeds history state from doc map", async () => {
+    history.replaceState(null, "", "/?doc=b");
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content" tabindex="-1"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    await setupPrdReaderPage(mockDocsMap, basicParser);
+    expect(history.state.index).toBe(1);
+    expect(new URL(window.location).search).toBe("?doc=b");
   });
   it("navigates documents with wrap-around", async () => {
     const docs = {
