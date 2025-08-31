@@ -16,6 +16,7 @@ import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { awaitCooldownState } from "./awaitCooldownState.js";
 import { getStateSnapshot } from "./battleDebug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
+import { exposeDebugState, readDebugState } from "./debugHooks.js";
 
 /**
  * Store controls for the pending next round. Updated by `scheduleNextRound`
@@ -549,13 +550,12 @@ export function scheduleNextRound(result, scheduler = realScheduler) {
 function logScheduleNextRound(result) {
   try {
     const { state: s } = getStateSnapshot();
-    if (typeof window !== "undefined") {
-      window.__scheduleNextRoundCount = (window.__scheduleNextRoundCount || 0) + 1;
-      if (!IS_VITEST)
-        console.warn(
-          `[test] scheduleNextRound call#${window.__scheduleNextRoundCount}: state=${s} matchEnded=${!!result?.matchEnded}`
-        );
-    }
+    const count = (readDebugState("scheduleNextRoundCount") || 0) + 1;
+    exposeDebugState("scheduleNextRoundCount", count);
+    if (!IS_VITEST)
+      console.warn(
+        `[test] scheduleNextRound call#${count}: state=${s} matchEnded=${!!result?.matchEnded}`
+      );
   } catch {}
 }
 

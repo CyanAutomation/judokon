@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+let debugHooks;
 
 // Minimal mocks for modules used by orchestrator
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
@@ -48,10 +49,17 @@ describe("classic battle timer state exposure", () => {
   let orchestrator;
   let machine;
 
+  let store;
   beforeEach(async () => {
     vi.resetModules();
+    debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
     document.body.innerHTML = "";
     timerState = { remaining: 30, paused: false };
+    store = {};
+    vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+      store[k] = v;
+    });
+    vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
     orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     await orchestrator.initClassicBattleOrchestrator({});
     machine = orchestrator.getBattleStateMachine();
@@ -59,11 +67,15 @@ describe("classic battle timer state exposure", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("mirrors timer state on window", async () => {
     await machine.dispatch("stateA");
-    expect(window.__classicBattleTimerState).toEqual({ remaining: 30, paused: false });
+    expect(debugHooks.readDebugState("classicBattleTimerState")).toEqual({
+      remaining: 30,
+      paused: false
+    });
     const el = document.getElementById("machine-timer");
     expect(el).toBeNull();
   });
@@ -74,13 +86,13 @@ describe("classic battle timer state exposure", () => {
     timerState.paused = true;
     timerState.remaining = 25;
     await machine.dispatch("paused");
-    expect(window.__classicBattleTimerState.paused).toBe(true);
-    expect(window.__classicBattleTimerState.remaining).toBe(25);
+    expect(debugHooks.readDebugState("classicBattleTimerState").paused).toBe(true);
+    expect(debugHooks.readDebugState("classicBattleTimerState").remaining).toBe(25);
 
     timerState.paused = false;
     timerState.remaining = 20;
     await machine.dispatch("resumed");
-    expect(window.__classicBattleTimerState.paused).toBe(false);
-    expect(window.__classicBattleTimerState.remaining).toBe(20);
+    expect(debugHooks.readDebugState("classicBattleTimerState").paused).toBe(false);
+    expect(debugHooks.readDebugState("classicBattleTimerState").remaining).toBe(20);
   });
 });

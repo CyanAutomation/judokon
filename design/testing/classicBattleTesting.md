@@ -54,3 +54,16 @@ This note explains how Classic Battle bindings and promises are set up for tests
   - `createDebugLogListener(machine)` – updates debug globals and emits `debugPanelUpdate`.
   - `createWaiterResolver(stateWaiters)` – settles promises awaiting specific states.
 - Register these listeners with `onBattleEvent('battleStateChange', ...)` after the state machine is created (see orchestrator init).
+
+## Debug Hooks
+
+Classic Battle exposes internal state for tests through `exposeDebugState(key, value)` and `readDebugState(key)`. Tests may monkey‑patch these helpers to inspect values without touching `window` globals.
+
+```js
+import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
+const store = {};
+vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+  store[k] = v;
+});
+vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+```

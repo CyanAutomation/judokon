@@ -1,9 +1,21 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+let debugHooks;
 
-beforeEach(() => {
+let store;
+beforeEach(async () => {
   vi.resetModules();
+  debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
   document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
+  store = {};
+  vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+    store[k] = v;
+  });
+  vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("roundDecisionEnter", () => {
@@ -24,10 +36,10 @@ describe("roundDecisionEnter", () => {
     };
 
     const p = mod.roundDecisionEnter(machine);
-    expect(typeof window.__roundDecisionGuard).toBe("function");
+    expect(typeof debugHooks.readDebugState("roundDecisionGuard")).toBe("function");
     await vi.runAllTimersAsync();
     await p;
-    expect(window.__roundDecisionGuard).toBeNull();
+    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
     vi.useRealTimers();
   });
 
@@ -86,7 +98,7 @@ describe("roundDecisionEnter", () => {
 
     await mod.roundDecisionEnter(machine);
     expect(resolveRound).toHaveBeenCalledOnce();
-    expect(window.__roundDecisionGuard).toBeNull();
+    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
     await vi.runAllTimersAsync();
     vi.useRealTimers();
   });
@@ -125,7 +137,7 @@ describe("roundDecisionEnter", () => {
       reason: "roundResolutionError",
       error: "boom"
     });
-    expect(window.__roundDecisionGuard).toBeNull();
+    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
     await vi.runAllTimersAsync();
     vi.useRealTimers();
   });

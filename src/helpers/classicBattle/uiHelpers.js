@@ -28,6 +28,7 @@ import {
   createStatHotkeyHandler
 } from "./statButtons.js";
 import { guard } from "./guard.js";
+import { readDebugState } from "./debugHooks.js";
 
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
@@ -324,9 +325,12 @@ export function getMachineDebugState(win) {
     if (snap.prev) state.machinePrevState = snap.prev;
     if (snap.event) state.machineLastEvent = snap.event;
     if (Array.isArray(snap.log)) state.machineLog = snap.log.slice();
-    if (win?.__roundDecisionEnter) state.roundDecisionEnter = win.__roundDecisionEnter;
-    if (win?.__guardFiredAt) state.guardFiredAt = win.__guardFiredAt;
-    if (win?.__guardOutcomeEvent) state.guardOutcomeEvent = win.__guardOutcomeEvent;
+    const rde = readDebugState("roundDecisionEnter");
+    if (rde) state.roundDecisionEnter = rde;
+    const gfa = readDebugState("guardFiredAt");
+    if (gfa) state.guardFiredAt = gfa;
+    const goe = readDebugState("guardOutcomeEvent");
+    if (goe) state.guardOutcomeEvent = goe;
     addMachineDiagnostics(win, state);
   } catch {}
   return state;
@@ -373,7 +377,8 @@ export function getBuildInfo(win) {
   const info = {};
   try {
     if (win?.__buildTag) info.buildTag = win.__buildTag;
-    if (win?.__roundDebug) info.round = win.__roundDebug;
+    const rd = readDebugState("roundDebug");
+    if (rd !== undefined) info.round = rd;
     if (Array.isArray(win?.__eventDebug)) info.eventDebug = win.__eventDebug.slice();
     const opp = win?.document?.getElementById("opponent-card");
     if (opp) {

@@ -1,9 +1,21 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+let debugHooks;
 
-beforeEach(() => {
+let store;
+beforeEach(async () => {
   vi.resetModules();
+  debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
   document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
+  store = {};
+  vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+    store[k] = v;
+  });
+  vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("recordEntry", () => {
@@ -15,9 +27,9 @@ describe("recordEntry", () => {
       offBattleEvent: vi.fn()
     }));
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
-    delete window.__roundDecisionEnter;
+    store.roundDecisionEnter = undefined;
     mod.recordEntry();
-    expect(typeof window.__roundDecisionEnter).toBe("number");
+    expect(typeof debugHooks.readDebugState("roundDecisionEnter")).toBe("number");
     expect(emitBattleEvent).toHaveBeenCalledWith("debugPanelUpdate");
   });
 });
@@ -28,11 +40,11 @@ describe("guardSelectionResolution", () => {
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
     const outcomeSpy = vi.spyOn(mod, "computeAndDispatchOutcome").mockResolvedValue(undefined);
     const cancel = mod.guardSelectionResolution({}, {});
-    expect(typeof window.__roundDecisionGuard).toBe("function");
+    expect(typeof debugHooks.readDebugState("roundDecisionGuard")).toBe("function");
     cancel();
     await vi.runAllTimersAsync();
     expect(outcomeSpy).not.toHaveBeenCalled();
-    expect(window.__roundDecisionGuard).toBeNull();
+    expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
     vi.useRealTimers();
   });
 });
