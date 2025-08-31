@@ -436,7 +436,6 @@ export async function handleNextRoundExpiration(controls, btn) {
     try {
       const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
       if (!IS_VITEST) {
-        // eslint-disable-next-line no-console
         console.log("DEBUG: handleNextRoundExpiration dispatching 'ready'");
       }
     } catch {}
