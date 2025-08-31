@@ -30,12 +30,28 @@ import { setTestMode } from "../helpers/testModeUtils.js";
 import { wrap } from "../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
-import { readDebugState } from "../helpers/classicBattle/debugHooks.js";
+import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 
 /**
  * Minimal DOM utils for the CLI page
  */
 const byId = (id) => document.getElementById(id);
+
+function getMachine() {
+  try {
+    // Prefer debugHooks channel used by tests
+    const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
+    const m = typeof getter === "function" ? getter() : getter;
+    if (m) return m;
+  } catch {}
+  try {
+    // Fallback: global accessor
+    const getter = typeof window !== "undefined" ? window.__getClassicBattleMachine : null;
+    const m = typeof getter === "function" ? getter() : getter;
+    if (m) return m;
+  } catch {}
+  return null;
+}
 
 // Track current round judoka so we can compute values without card DOM
 let currentPlayerJudoka = null;
@@ -151,7 +167,8 @@ function renderStartButton() {
   });
   btn.addEventListener("click", () => {
     try {
-      const machine = window.__getClassicBattleMachine?.();
+      const getter = debugHooks.readDebugState("getClassicBattleMachine");
+      const machine = typeof getter === "function" ? getter() : getter;
       if (machine) machine.dispatch("startClicked");
     } catch (err) {
       console.debug("Failed to dispatch startClicked", err);
@@ -382,8 +399,10 @@ function showQuitModal() {
       quitModal.close();
       clearBottomLine();
       try {
-        const machine = readDebugState("getClassicBattleMachine")?.();
-        if (machine) await machine.dispatch("interrupt", { reason: "quit" });
+        const machine = getMachine();
+        if (machine) {
+          await machine.dispatch("interrupt", { reason: "quit" });
+        }
       } catch {}
       try {
         // Use a relative path so deployments under a subpath (e.g. GitHub Pages)
@@ -435,7 +454,6 @@ function stopSelectionCountdown() {
  * dispatch "statSelected" on machine
  */
 function selectStat(stat) {
-  console.log('selectStat called with', stat);
   if (!stat) return;
   stopSelectionCountdown();
   const list = byId("cli-stats");
@@ -447,18 +465,14 @@ function selectStat(stat) {
     if (store) {
       store.playerChoice = stat;
       store.selectionMade = true;
-      console.log('store.playerChoice set to', store.playerChoice);
     }
   } catch {}
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
-<<<<<<< HEAD
-    const machine = window.__getClassicBattleMachine?.();
-    console.log('machine', machine);
-=======
-    const machine = readDebugState("getClassicBattleMachine")?.();
->>>>>>> 00f2d6693778baec7f8a06534f64d57ecd5dac70
-    if (machine) machine.dispatch("statSelected");
+    const machine = getMachine();
+    if (machine) {
+      machine.dispatch("statSelected");
+    }
   } catch {}
 }
 
@@ -525,7 +539,7 @@ export function autostartBattle() {
   try {
     const autostart = new URLSearchParams(location.search).get("autostart");
     if (autostart === "1") {
-      const machine = readDebugState("getClassicBattleMachine")?.();
+      const machine = getMachine();
       if (machine) machine.dispatch("startClicked");
     }
   } catch {}
@@ -751,7 +765,6 @@ export function handleGlobalKey(key) {
  * return false
  */
 export function handleWaitingForPlayerActionKey(key) {
-  console.log('handleWaitingForPlayerActionKey called with key', key);
   if (key >= "1" && key <= "9") {
     const stat = getStatByIndex(key);
     if (!stat) return false;
@@ -805,7 +818,7 @@ export function handleWaitingForPlayerActionKey(key) {
 export function handleRoundOverKey(key) {
   if (key === "enter" || key === " ") {
     try {
-      const machine = readDebugState("getClassicBattleMachine")?.();
+      const machine = getMachine();
       if (machine) machine.dispatch("continue");
     } catch {}
     return true;
@@ -870,7 +883,7 @@ export function handleCooldownKey(key) {
     cooldownInterval = null;
     clearBottomLine();
     try {
-      const machine = readDebugState("getClassicBattleMachine")?.();
+      const machine = getMachine();
       if (machine) machine.dispatch("ready");
     } catch {}
     return true;
@@ -901,7 +914,6 @@ export function handleCooldownKey(key) {
  *   clear countdown text
  */
 export function onKeyDown(e) {
-  console.log('onKeyDown called with key', e.key);
   const key = e.key.toLowerCase();
   if (!isEnabled("cliShortcuts") && key !== "q") return;
   const state = document.body?.dataset?.battleState || "";
@@ -948,13 +960,12 @@ function onClickAdvance(event) {
     path.push(el.tagName + (el.id ? '#' + el.id : ''));
     el = el.parentElement;
   }
-  console.log('onClickAdvance path', path.join(' > '));
   const state = document.body?.dataset?.battleState || "";
   if (event.target?.closest?.(".cli-stat")) return;
   if (event.target?.closest?.("#cli-shortcuts")) return;
   if (state === "roundOver") {
     try {
-      const machine = readDebugState("getClassicBattleMachine")?.();
+      const machine = getMachine();
       if (machine) machine.dispatch("continue");
     } catch {}
   } else if (state === "cooldown") {
@@ -968,7 +979,7 @@ function onClickAdvance(event) {
     cooldownInterval = null;
     clearBottomLine();
     try {
-      const machine = readDebugState("getClassicBattleMachine")?.();
+      const machine = getMachine();
       if (machine) machine.dispatch("ready");
     } catch {}
   }

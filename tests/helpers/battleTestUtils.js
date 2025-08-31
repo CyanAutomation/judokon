@@ -9,11 +9,10 @@
  *   1. Set the next round timer to a short value.
  *   2. Populate player and opponent cards with equal Power stats to force a tie.
  */
-import { readDebugState } from "../../src/helpers/classicBattle/debugHooks.js";
 export async function _resetForTest() {
   const mod = await import(new URL("/src/helpers/classicBattle.js", window.location.href));
-  const api = readDebugState("classicBattleDebugAPI");
-  const store = api ? api.battleStore : window.battleStore;
+  // Prefer the store exposed by the page's debug API; fall back to global.
+  const store = (window && window.battleStore) || null;
   mod._resetForTest(store);
 }
 

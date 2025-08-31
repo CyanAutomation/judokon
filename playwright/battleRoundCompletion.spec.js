@@ -31,5 +31,8 @@ test.describe("Classic battle round completion", () => {
 
     // 3. Wait for the stat buttons to be disabled (indicating the round is processing)
     await page.locator("#stat-buttons[data-buttons-ready='false']").waitFor();
+
+    // Pause header timers/animation to help teardown complete quickly in CI
+    await page.evaluate(() => window.freezeBattleHeader?.());
   });
 });

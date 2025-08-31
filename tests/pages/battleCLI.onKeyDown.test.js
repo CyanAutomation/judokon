@@ -79,6 +79,7 @@ describe("battleCLI onKeyDown", () => {
   it("confirms quit via modal", () => {
     const dispatch = vi.fn();
     debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
+    window.__getClassicBattleMachine = () => ({ dispatch });
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     const confirm = document.getElementById("confirm-quit-button");
     expect(confirm).toBeTruthy();
@@ -160,6 +161,7 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches statSelected in waitingForPlayerAction state", () => {
     const dispatch = vi.fn();
     debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
+    window.__getClassicBattleMachine = () => ({ dispatch });
     document.body.dataset.battleState = "waitingForPlayerAction";
     onKeyDown(new KeyboardEvent("keydown", { key: "1" }));
     expect(dispatch).toHaveBeenCalledWith("statSelected");
@@ -168,6 +170,7 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches continue in roundOver state", () => {
     const dispatch = vi.fn();
     debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
+    window.__getClassicBattleMachine = () => ({ dispatch });
     document.body.dataset.battleState = "roundOver";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(dispatch).toHaveBeenCalledWith("continue");
@@ -176,6 +179,7 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches ready in cooldown state", () => {
     const dispatch = vi.fn();
     debugHooks.exposeDebugState("getClassicBattleMachine", () => ({ dispatch }));
+    window.__getClassicBattleMachine = () => ({ dispatch });
     document.body.dataset.battleState = "cooldown";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(dispatch).toHaveBeenCalledWith("ready");

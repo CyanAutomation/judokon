@@ -47,7 +47,7 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
-export function applyRoundUI(store, roundNumber, stallTimeoutMs = 35000) {
+export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   try {
     if (!IS_VITEST) console.log("INFO: applyRoundUI called for round", roundNumber);
   } catch {}
