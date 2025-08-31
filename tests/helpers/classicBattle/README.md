@@ -4,7 +4,6 @@ This directory contains unit tests for Classic Battle helpers.
 
 ## Suite Overview
 
-- `autoSelect.test.js`: auto-selects a stat when the timer expires.
 - `battleStateBadge.test.js`: renders and updates the battle state progress badge.
 - `cardSelection.test.js`: loads cards and handles stat selection UI.
 - `classicBattlePage.import.test.js`: verifies `classicBattlePage.js` exports.
@@ -22,7 +21,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `roundResolverOnce.test.js`: clears `playerChoice` after fallback resolution.
 - `roundStartError.test.js`: surfaces round start failures.
 - `scheduleNextRound.test.js`: schedules and auto-dispatches the next round.
-- `selectionPrompt.test.js`: displays the selection prompt until a stat is chosen.
+- `statSelectionTiming.test.js`: handles stat auto-select and selection prompts based on timing.
 - `stallRecovery.test.js`: recovers when stat selection stalls.
 - `statButtons.state.test.js`: toggles stat buttons based on battle state.
 - `statSelection.test.js`: resolves round outcomes after stat selection.
