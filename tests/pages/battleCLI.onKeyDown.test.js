@@ -24,7 +24,7 @@ describe("battleCLI onKeyDown", () => {
       <div id="cli-root">
         <div id="cli-main"></div>
       </div>
-      <div id="cli-shortcuts" hidden></div>
+      <div id="cli-shortcuts" hidden><button id="cli-shortcuts-close"></button></div>
       <div id="cli-countdown" aria-live="polite"></div>
       <div id="snackbar-container"></div>
       <div id="modal-container"></div>
@@ -46,7 +46,10 @@ describe("battleCLI onKeyDown", () => {
 
   it("toggles shortcuts with H key", () => {
     onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
-    expect(document.getElementById("cli-shortcuts").hidden).toBe(false);
+    const sec = document.getElementById("cli-shortcuts");
+    expect(sec.hidden).toBe(false);
+    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    expect(sec.hidden).toBe(true);
   });
 
   // Retro mode was removed; no longer handles 'R'.
@@ -56,6 +59,14 @@ describe("battleCLI onKeyDown", () => {
     onKeyDown(new KeyboardEvent("keydown", { key: "x" }));
     expect(countdown.textContent).toBe("Invalid key, press H for help");
     onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    expect(countdown.textContent).toBe("");
+  });
+
+  it("ignores tab navigation", () => {
+    const countdown = document.getElementById("cli-countdown");
+    onKeyDown(new KeyboardEvent("keydown", { key: "Tab" }));
+    expect(countdown.textContent).toBe("");
+    onKeyDown(new KeyboardEvent("keydown", { key: "Tab", shiftKey: true }));
     expect(countdown.textContent).toBe("");
   });
 

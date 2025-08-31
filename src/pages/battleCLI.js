@@ -203,7 +203,14 @@ function updateStateBadgeVisibility() {
  */
 function updateCliShortcutsVisibility() {
   const section = byId("cli-shortcuts");
-  if (section) section.hidden = !isEnabled("cliShortcuts");
+  if (!section) return;
+  if (!isEnabled("cliShortcuts")) {
+    section.hidden = true;
+    section.style.display = "none";
+  } else {
+    section.style.display = "";
+    section.hidden = true;
+  }
 }
 
 function showBottomLine(text) {
@@ -868,6 +875,7 @@ export function handleCooldownKey(key) {
  * table = { waitingForPlayerAction: handleWaitingForPlayerActionKey,
  *           roundOver: handleRoundOverKey,
  *           cooldown: handleCooldownKey }
+ * if key == "tab": return
  * handler = table[state]
  * handled = handleGlobalKey(key) OR (handler ? handler(key) : false)
  * countdown = element '#cli-countdown'
@@ -878,6 +886,7 @@ export function handleCooldownKey(key) {
  */
 export function onKeyDown(e) {
   const key = e.key.toLowerCase();
+  if (key === "tab") return;
   if (!isEnabled("cliShortcuts") && key !== "q") return;
   const state = document.body?.dataset?.battleState || "";
   const table = {
@@ -1095,13 +1104,20 @@ async function init() {
   } catch {}
   try {
     const params = new URLSearchParams(location.search);
-    const skip = params.get("skipRoundCooldown") === "1";
-    setFlag("skipRoundCooldown", skip);
+    if (params.has("skipRoundCooldown")) {
+      const skip = params.get("skipRoundCooldown") === "1";
+      setFlag("skipRoundCooldown", skip);
+    }
   } catch {}
   updateVerbose();
   updateStateBadgeVisibility();
   updateBattleStateBadge(window.__classicBattleState || null);
   updateCliShortcutsVisibility();
+  const close = byId("cli-shortcuts-close");
+  close?.addEventListener("click", () => {
+    const sec = byId("cli-shortcuts");
+    if (sec) sec.hidden = true;
+  });
   checkbox?.addEventListener("change", () => {
     setFlag("cliVerbose", !!checkbox.checked);
   });

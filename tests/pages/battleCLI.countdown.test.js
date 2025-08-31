@@ -111,8 +111,8 @@ describe("battleCLI countdown", () => {
     expect(setFlag).toHaveBeenCalledWith("skipRoundCooldown", true);
   });
 
-  it("resets skipRoundCooldown flag when query param missing", async () => {
+  it("does not override skipRoundCooldown flag when query param missing", async () => {
     const { setFlag } = await loadBattleCLI(true, false);
-    expect(setFlag).toHaveBeenCalledWith("skipRoundCooldown", false);
+    expect(setFlag).not.toHaveBeenCalled();
   });
 });

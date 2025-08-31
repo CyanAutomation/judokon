@@ -68,7 +68,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 |---|---|---|
 | **P1** | Engine Integration | Use the same Classic Battle engine and state machine as battleJudoka; static import for core gameplay modules. |
 | **P1** | Textual Renderer | Render all state changes (countdown, prompts, outcomes, score) as text within a monospace pane; no images/animations. |
-| **P1** | Keyboard Controls | Shortcut keys for stat selection (1–9), Next/Continue (Enter/Space), Quit (Q), Help (H). Display a multi-line help list. |
+| **P1** | Keyboard Controls | Shortcut keys for stat selection (1–9), Next/Continue (Enter/Space), Quit (Q), Help (H). Help opens a floating panel with a close button and is hidden by default. |
 | **P1** | Pointer Controls | Stats and Next prompts are clickable/tappable for mouse and touch users. |
 | **P1** | Timer Display | Show a 1 Hz textual countdown for stat selection; on expiry, auto-select per `FF_AUTO_SELECT`. |
 | **P1** | Outcome/Score | After decision, print outcome (Win/Loss/Draw), selected stat/value pairs, and updated score. |
@@ -102,11 +102,12 @@ Notes:
 1. Engine Parity  
    - Given a match is running, when any state transition occurs, then the new state matches `src/helpers/classicBattle/stateTable.js` exactly.  
 
-2. Keyboard Controls  
-   - Given the player is in stat selection, when pressing keys 1–9 mapped to visible stats, then the corresponding stat is selected and input is debounced until the next state.  
-   - Given a round has completed, when pressing Enter/Space, then the flow advances to cooldown/next round.  
-   - Given an inter-round cooldown is running, when pressing Enter/Space, then the countdown is skipped and the next round begins immediately.  
+2. Keyboard Controls
+   - Given the player is in stat selection, when pressing keys 1–9 mapped to visible stats, then the corresponding stat is selected and input is debounced until the next state.
+   - Given a round has completed, when pressing Enter/Space, then the flow advances to cooldown/next round.
+   - Given an inter-round cooldown is running, when pressing Enter/Space, then the countdown is skipped and the next round begins immediately.
   - Given an active match, when pressing Q, then a quit confirmation modal appears; confirming ends or rolls back per engine rules, cancelling resumes any paused timers.
+  - Given the help panel is hidden, when pressing H, then the help panel appears and can be dismissed with H or its close button.
 
 3. Timer Behavior  
   - Given `waitingForPlayerAction`, when the timer ticks, then `#cli-countdown` updates once per second with remaining time and exposes the value via `data-remaining-time`.

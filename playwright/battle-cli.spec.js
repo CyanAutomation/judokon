@@ -72,6 +72,17 @@ test.describe("Classic Battle CLI", () => {
     await expect(page.locator("#cli-verbose-section")).toBeHidden();
   });
 
+  test("help panel toggles via keyboard and close button", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    const panel = page.locator("#cli-shortcuts");
+    await expect(panel).toBeHidden();
+    await page.keyboard.press("h");
+    await expect(panel).toBeVisible();
+    await page.locator("#cli-shortcuts-close").click();
+    await expect(panel).toBeHidden();
+  });
+
   test("plays a full round and skips cooldown", async ({ page }) => {
     await page.addInitScript(() => {
       window.__NEXT_ROUND_COOLDOWN_MS = 3000;
@@ -116,6 +127,26 @@ test.describe("Classic Battle CLI", () => {
     expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(
       Number(firstPlayer) + Number(firstOpponent)
     );
+  });
+
+  test("allows tab navigation without invalid key messages", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html");
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    const countdown = page.locator("#cli-countdown");
+
+    const steps = ["Tab", "Tab", "Tab", "Shift+Tab", "Tab", "Tab", "Tab", "Tab", "Tab"];
+    for (const step of steps) {
+      await page.keyboard.press(step);
+      await expect(countdown).not.toContainText("Invalid key");
+    }
+
+    await page.keyboard.press("q");
+    const confirm = page.locator("#confirm-quit-button");
+    await expect(confirm).toBeVisible();
+    await page.keyboard.press("Tab");
+    await expect(countdown).not.toContainText("Invalid key");
+    await page.keyboard.press("Shift+Tab");
+    await expect(countdown).not.toContainText("Invalid key");
   });
 
   test("returns to lobby after quitting", async ({ page }) => {

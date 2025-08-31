@@ -45,7 +45,7 @@ describe("battleCLI cliShortcuts flag", () => {
         <pre id="cli-verbose-log"></pre>
       </section>
       <input id="verbose-toggle" type="checkbox" />
-      <section id="cli-shortcuts"></section>
+      <section id="cli-shortcuts" hidden><button id="cli-shortcuts-close"></button></section>
     `;
   });
 
@@ -64,15 +64,21 @@ describe("battleCLI cliShortcuts flag", () => {
     vi.doUnmock("../../src/helpers/constants.js");
   });
 
-  it("hides shortcuts section when cliShortcuts is disabled", async () => {
+  it("does not toggle when cliShortcuts is disabled", async () => {
     const mod = await loadBattleCLI(false);
     await mod.__test.init();
-    expect(document.getElementById("cli-shortcuts").hidden).toBe(true);
+    const sec = document.getElementById("cli-shortcuts");
+    expect(sec.hidden).toBe(true);
+    mod.onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    expect(sec.hidden).toBe(true);
   });
 
-  it("shows shortcuts section when cliShortcuts is enabled", async () => {
+  it("toggles when cliShortcuts is enabled", async () => {
     const mod = await loadBattleCLI(true);
     await mod.__test.init();
-    expect(document.getElementById("cli-shortcuts").hidden).toBe(false);
+    const sec = document.getElementById("cli-shortcuts");
+    expect(sec.hidden).toBe(true);
+    mod.onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    expect(sec.hidden).toBe(false);
   });
 });
