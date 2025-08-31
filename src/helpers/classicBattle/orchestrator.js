@@ -1,5 +1,4 @@
 import { createStateManager } from "./stateManager.js";
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 import {
   waitingForMatchStartEnter,
   matchStartEnter,
@@ -116,13 +115,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).
   try {
-<<<<<<< HEAD
-    if (typeof window !== "undefined") {
-      window.__getClassicBattleMachine = machine;
-    }
-=======
     exposeDebugState("getClassicBattleMachine", () => machine);
->>>>>>> 00f2d6693778baec7f8a06534f64d57ecd5dac70
   } catch {}
 
   if (typeof document !== "undefined") {
@@ -169,7 +162,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       };
     }
   } catch {}
-  console.log('initClassicBattleOrchestrator completed');
+  console.log("initClassicBattleOrchestrator completed");
   return machine;
 }
 

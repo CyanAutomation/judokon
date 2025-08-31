@@ -148,7 +148,9 @@ export function showSelectionPrompt() {
     el.textContent = "";
   }
   showSnackbar(t("ui.selectMove"));
-  emitBattleEvent("roundPrompt");
+  try {
+    battleEvents.emitBattleEvent("roundPrompt");
+  } catch {}
   try {
     if (isTestModeEnabled()) console.warn("[test] roundPrompt emitted");
   } catch {}
