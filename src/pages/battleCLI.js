@@ -339,7 +339,9 @@ function showQuitModal() {
         if (machine) await machine.dispatch("interrupt", { reason: "quit" });
       } catch {}
       try {
-        window.location.href = "/index.html";
+        // Use a relative path so deployments under a subpath (e.g. GitHub Pages)
+        // navigate back to the lobby correctly.
+        window.location.href = "../../index.html";
       } catch {}
     });
     ensureModalContainer().appendChild(quitModal.element);
