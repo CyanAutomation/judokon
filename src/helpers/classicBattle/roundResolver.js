@@ -190,7 +190,7 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
  *
  * @pseudocode
  * 1. Call `computeRoundResult`.
- * 2. Clear any `window.__roundDecisionGuard` timeout.
+ * 2. Invoke guard cancel function on `window.__roundDecisionGuard` if present.
  * 3. Stamp `window.__roundDebug.resolvedAt`.
  * 4. Return the computation result.
  *
@@ -203,8 +203,8 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
 export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
   const result = await computeRoundResult(store, stat, playerVal, opponentVal);
   try {
-    if (typeof window !== "undefined" && window.__roundDecisionGuard) {
-      clearTimeout(window.__roundDecisionGuard);
+    if (typeof window !== "undefined" && typeof window.__roundDecisionGuard === "function") {
+      window.__roundDecisionGuard();
       window.__roundDecisionGuard = null;
     }
   } catch {}
