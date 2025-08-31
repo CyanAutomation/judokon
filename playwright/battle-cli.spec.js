@@ -116,6 +116,7 @@ test.describe("Classic Battle CLI", () => {
     expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(
       Number(firstPlayer) + Number(firstOpponent)
     );
+  });
 
   test("returns to lobby after quitting", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html");

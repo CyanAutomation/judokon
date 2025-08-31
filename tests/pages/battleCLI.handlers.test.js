@@ -20,7 +20,8 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   }));
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: vi.fn(() => ({})),
-    startRound: vi.fn()
+    startRound: vi.fn(),
+    resetGame: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
@@ -129,19 +130,17 @@ describe("battleCLI event handlers", () => {
   });
 
   it("clears verbose log when play again clicked", async () => {
-    const { handlers } = await loadHandlers();
+    const { handlers, emitBattleEvent } = await loadHandlers();
     document.body.innerHTML = '<main id="cli-main"></main><pre id="cli-verbose-log">old</pre>';
-    const reload = vi.fn();
-    const originalLocation = window.location;
-    // @ts-ignore
-    delete window.location;
-    // Provide minimal reload stub
-    window.location = { reload };
     handlers.handleMatchOver();
-    document.getElementById("play-again-button").click();
+    const btn = document.getElementById("play-again-button");
+    const { resetGame } = await import("../../src/helpers/classicBattle/roundManager.js");
+    btn.click();
+    await Promise.resolve();
+    await Promise.resolve();
     expect(document.getElementById("cli-verbose-log").textContent).toBe("");
-    expect(reload).toHaveBeenCalled();
-    window.location = originalLocation;
+    expect(resetGame).toHaveBeenCalled();
+    expect(emitBattleEvent).toHaveBeenCalledWith("startClicked");
   });
 
   it("handles battle state transitions", async () => {

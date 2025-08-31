@@ -3,7 +3,8 @@
 
 import {
   createBattleStore,
-  startRound as startRoundCore
+  startRound as startRoundCore,
+  resetGame
 } from "../helpers/classicBattle/roundManager.js";
 import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
@@ -120,6 +121,37 @@ function updateScoreLine() {
 function clearVerboseLog() {
   const el = byId("cli-verbose-log");
   if (el) el.textContent = "";
+}
+
+async function resetMatch() {
+  stopSelectionCountdown();
+  handleCountdownFinished();
+  clearVerboseLog();
+  try {
+    document.getElementById("play-again-button")?.remove();
+    document.getElementById("start-match-button")?.remove();
+  } catch {}
+  await resetGame(store);
+  updateRoundHeader(0, getPointsToWin());
+  updateScoreLine();
+  setRoundMessage("");
+}
+
+function renderStartButton() {
+  const main = byId("cli-main");
+  if (!main || byId("start-match-button")) return;
+  const section = document.createElement("section");
+  section.className = "cli-block";
+  const btn = createButton("Start match", {
+    id: "start-match-button",
+    className: "primary-button"
+  });
+  btn.addEventListener("click", () => {
+    emitBattleEvent("startClicked");
+    section.remove();
+  });
+  section.append(btn);
+  main.append(section);
 }
 
 function initSeed() {
@@ -534,7 +566,7 @@ export async function renderStatList() {
  * 3. On select change:
  *    a. Ignore invalid values.
  *    b. Show confirm that scores reset and match restarts.
- *    c. If confirmed: save, apply, and reload.
+ *    c. If confirmed: save, apply, and reset without starting.
  *    d. Otherwise revert to previous value.
  */
 /**
@@ -544,7 +576,7 @@ export async function renderStatList() {
  * @pseudocode
  * 1. Locate `#points-select` and read stored value using the provided storage wrapper.
  * 2. If a stored value is valid, apply it and update the select control.
- * 3. On user change: validate the chosen value, confirm reset, persist and reload when confirmed.
+ * 3. On user change: validate the chosen value, confirm reset, persist and reset when confirmed.
  *
  * @returns {void}
  */
@@ -565,9 +597,8 @@ export function restorePointsToWin() {
       if (window.confirm("Changing win target resets scores. Start a new match?")) {
         storage.set(val);
         setPointsToWin(val);
-        try {
-          location.reload();
-        } catch {}
+        resetMatch();
+        renderStartButton();
         current = val;
       } else {
         select.value = String(current);
@@ -978,13 +1009,10 @@ function handleMatchOver() {
     id: "play-again-button",
     className: "primary-button"
   });
-  btn.addEventListener("click", () => {
-    try {
-      clearVerboseLog();
-    } catch {}
-    try {
-      location.reload();
-    } catch {}
+  btn.addEventListener("click", async () => {
+    await resetMatch();
+    section.remove();
+    emitBattleEvent("startClicked");
   });
   section.append(btn);
   main.append(section);
@@ -1093,7 +1121,7 @@ async function init() {
   installEventBindings();
   // Initialize orchestrator using our startRound wrapper
   await initClassicBattleOrchestrator(store, startRoundWrapper);
-  autostartBattle();
+  renderStartButton();
   // Keyboard controls
   window.addEventListener("keydown", onKeyDown);
   document.addEventListener("click", onClickAdvance);

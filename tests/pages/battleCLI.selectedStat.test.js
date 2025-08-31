@@ -10,7 +10,8 @@ async function loadBattleCLI() {
   }));
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: vi.fn(),
-    startRound: vi.fn()
+    startRound: vi.fn(),
+    resetGame: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
@@ -22,7 +23,8 @@ async function loadBattleCLI() {
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed", "strength"] }));
   vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
     setPointsToWin: vi.fn(),
-    getPointsToWin: vi.fn()
+    getPointsToWin: vi.fn(),
+    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson: vi.fn().mockResolvedValue([]) }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
