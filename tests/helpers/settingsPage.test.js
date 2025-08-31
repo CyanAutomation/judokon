@@ -207,7 +207,10 @@ describe("renderSettingsControls", () => {
 
   it("restores defaults when confirmed", async () => {
     const resetSettings = vi.fn();
-    const initFeatureFlags = vi.fn().mockResolvedValue(baseSettings);
+    const initFeatureFlags = vi.fn().mockImplementation(async () => {
+      currentFlags = baseSettings.featureFlags;
+      return baseSettings;
+    });
     const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       updateSetting: vi.fn(),
@@ -215,7 +218,7 @@ describe("renderSettingsControls", () => {
       resetSettings
     }));
     vi.doMock("../../src/helpers/featureFlags.js", () => ({
-      isEnabled: vi.fn().mockReturnValue(false),
+      isEnabled: (flag) => currentFlags[flag]?.enabled ?? false,
       initFeatureFlags
     }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({
@@ -223,13 +226,23 @@ describe("renderSettingsControls", () => {
       updateSnackbar: vi.fn()
     }));
     const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
-    renderSettingsControls(baseSettings, [], tooltipMap);
+    const settingsWithFlag = {
+      ...baseSettings,
+      featureFlags: {
+        ...baseSettings.featureFlags,
+        battleDebugPanel: { enabled: true }
+      }
+    };
+    currentFlags = settingsWithFlag.featureFlags;
+    renderSettingsControls(settingsWithFlag, [], tooltipMap);
+    expect(document.getElementById("feature-battle-debug-panel").checked).toBe(true);
     document.getElementById("reset-settings-button").dispatchEvent(new Event("click"));
     document.getElementById("confirm-reset-button").dispatchEvent(new Event("click"));
     await Promise.resolve();
     expect(resetSettings).toHaveBeenCalled();
     expect(initFeatureFlags).toHaveBeenCalled();
     expect(showSnackbar).toHaveBeenCalledWith("Settings restored to defaults");
+    expect(document.getElementById("feature-battle-debug-panel").checked).toBe(false);
   });
 
   it("does not duplicate reset listener on reinit", async () => {
@@ -240,6 +253,18 @@ describe("renderSettingsControls", () => {
     renderSettingsControls(baseSettings, [], tooltipMap);
     expect(addSpy).not.toHaveBeenCalled();
     addSpy.mockRestore();
+  });
+
+  it("renders missing feature flags from defaults", async () => {
+    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
+    const withoutFlag = {
+      ...baseSettings,
+      featureFlags: { ...baseSettings.featureFlags }
+    };
+    delete withoutFlag.featureFlags.navCacheResetButton;
+    currentFlags = withoutFlag.featureFlags;
+    renderSettingsControls(withoutFlag, [], tooltipMap);
+    expect(document.getElementById("feature-nav-cache-reset-button")).toBeTruthy();
   });
 });
 
