@@ -6,7 +6,40 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 import { createSpinner } from "../components/Spinner.js";
 
-let sidebarState;
+export class SidebarState {
+  /**
+   * @param {object} opts
+   */
+  constructor(opts) {
+    Object.assign(this, opts);
+  }
+
+  /**
+   * Select a document by index and optionally update history and focus.
+   *
+   * @param {number} i
+   * @param {boolean} [updateHistory=true]
+   * @param {boolean} [skipList=false]
+   * @param {boolean} [focusContent=true]
+   */
+  selectDocSync(i, updateHistory = true, skipList = false, focusContent = true) {
+    this.index = ((i % this.files.length) + this.files.length) % this.files.length;
+    if (!skipList && this.listSelect) this.listSelect(this.index);
+    const hadDoc = this.ensureDocSync(this.index);
+    const renderAndFocus = () => {
+      renderDocument(this, this.index);
+      if (focusContent) this.container.focus();
+    };
+    if (hadDoc) renderAndFocus();
+    else this.fetchOne(this.index).then(renderAndFocus);
+    if (updateHistory) {
+      const url = new URL(window.location);
+      url.searchParams.set("doc", this.baseNames[this.index]);
+      history.pushState({ index: this.index }, "", url.pathname + url.search);
+    }
+  }
+}
+
 let cleanupTooltips = () => {};
 
 /**
@@ -87,26 +120,6 @@ export function createSidebarList(labels, placeholder, onSelect) {
  * @param {Function} opts.showPrev
  * @param {(i:number, updateHistory?:boolean) => void} opts.selectDoc
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function bindNavigation({
   container,
   nextButtons,
@@ -144,67 +157,6 @@ export function bindNavigation({
  * 2. Parse markdown with `parserFn`, sanitize the HTML; on failure, show warning with escaped text.
  * 3. Derive task stats and top-level title.
  * 4. Return arrays of HTML documents, task stats, and titles.
- *
- * @param {string[]} files
- * @param {Record<string, string>} [docsMap]
- * @param {Function} parserFn
- * @param {string} dir
- * @returns {Promise<{documents:string[], taskStats:object[], titles:string[]}>}
- */
-export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
-  const DOMPurify = await getSanitizer();
-  function escapeHtml(str) {
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  }
-  function parseWithWarning(md) {
-    try {
-      return DOMPurify.sanitize(parserFn(md));
-    } catch {
-      const escaped = escapeHtml(md);
-      return (
-        '<div class="markdown-warning" role="alert" aria-label="Content could not be fully rendered" title="Content could not be fully rendered">⚠️ Partial content</div>' +
-        `<pre>${escaped}</pre>`
-      );
-    }
-  }
-  const documents = Array(files.length);
-  const taskStats = Array(files.length);
-  const titles = Array(files.length);
-  if (docsMap) {
-    for (let i = 0; i < files.length; i++) {
-      const name = files[i];
-      if (docsMap[name]) {
-        const md = docsMap[name];
-        documents[i] = parseWithWarning(md);
-        taskStats[i] = getPrdTaskStats(md);
-        const m = md.match(/^#\s*(.+)/m);
-        titles[i] = m ? m[1].trim() : "";
-      }
-    }
-  } else {
-    for (let i = 0; i < files.length; i++) {
-      const name = files[i];
-      try {
-        const res = await fetch(`${dir}${name}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${name}`);
-        const text = await res.text();
-        documents[i] = parseWithWarning(text);
-        taskStats[i] = getPrdTaskStats(text);
-        const m = text.match(/^#\s*(.+)/m);
-        titles[i] = m ? m[1].trim() : "";
-      } catch (err) {
-        console.error(`Failed to load PRD ${name}`, err);
-        documents[i] =
-          '<div class="warning" role="alert" aria-live="polite">Content unavailable</div>';
-        taskStats[i] = { total: 0, completed: 0 };
-        titles[i] = "";
-      }
-    }
-  }
-  return { documents, taskStats, titles };
-}
-
-/**
  * Render the document at the provided index.
  *
  * @pseudocode
@@ -212,31 +164,11 @@ export async function fetchAndRenderDoc(files, docsMap, parserFn, dir) {
  * 2. Update title and task summary.
  * 3. Initialize tooltips and play fade-in animation.
  *
+ * @param {SidebarState} state
  * @param {number} index
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export function renderDocument(index) {
-  if (!sidebarState) return;
-  const { container, titles, taskStats, titleEl, summaryEl, documents, DOMPurify } = sidebarState;
+export function renderDocument(state, index) {
+  const { container, titles, taskStats, titleEl, summaryEl, documents, DOMPurify } = state;
   cleanupTooltips();
   container.innerHTML = DOMPurify.sanitize(documents[index] || "");
   container.classList.remove("fade-in");
@@ -254,30 +186,21 @@ export function renderDocument(index) {
 }
 
 /**
- * Initialize sidebar and document caches.
+ * Load documents and prepare parsing helpers.
  *
  * @pseudocode
- * 1. Load filenames and determine starting index.
- * 2. Build sidebar list and prepare document arrays.
- * 3. Return state with helpers for selection and fetching.
+ * 1. Gather filenames and metadata via `loadPrdFileList`.
+ * 2. Allocate caches for documents, task stats, titles, and pending fetches.
+ * 3. Define `fetchOne` and `ensureDocSync` helpers for markdown retrieval.
+ * 4. Return loaded metadata and helpers for UI setup.
  *
  * @param {Record<string,string>} [docsMap]
  * @param {Function} [parserFn]
- * @returns {Promise<object|null>}
+ * @returns {Promise<object>}
  */
-export async function initSidebar(docsMap, parserFn = markdownToHtml) {
-  const DOMPurify = await getSanitizer();
+export async function loadPrdDocs(docsMap, parserFn = markdownToHtml) {
   const { files, baseNames, labels, dir } = await loadPrdFileList(docsMap);
-  const docParam = new URLSearchParams(window.location.search).get("doc");
-  const startIndex = Math.max(0, docParam ? baseNames.indexOf(docParam.replace(/\.md$/, "")) : 0);
-
-  const container = document.getElementById("prd-content");
-  const listPlaceholder = document.getElementById("prd-list");
-  const titleEl = document.getElementById("prd-title");
-  const summaryEl = document.getElementById("task-summary");
-  if (!container || !listPlaceholder || !files.length) return null;
-  const spinner = createSpinner(container.parentElement);
-
+  const DOMPurify = await getSanitizer();
   const documents = Array(files.length);
   const taskStats = Array(files.length);
   const titles = Array(files.length);
@@ -342,57 +265,62 @@ export async function initSidebar(docsMap, parserFn = markdownToHtml) {
     return false;
   };
 
-  sidebarState = {
-    container,
-    titleEl,
-    summaryEl,
+  return {
+    files,
+    baseNames,
+    labels,
+    dir,
     documents,
     taskStats,
     titles,
-    DOMPurify,
-    files,
-    baseNames,
-    dir,
-    docsMap,
-    parserFn,
     pending,
-    listSelect: null,
-    selectDocSync: null,
     fetchOne,
     ensureDocSync,
-    spinner,
-    index: startIndex
+    DOMPurify,
+    docsMap,
+    parserFn
   };
+}
 
-  let listSelect;
-  function selectDocSync(i, updateHistory = true, skipList = false, focusContent = true) {
-    sidebarState.index = ((i % files.length) + files.length) % files.length;
-    if (!skipList && sidebarState.listSelect) sidebarState.listSelect(sidebarState.index);
-    const hadDoc = ensureDocSync(sidebarState.index);
-    if (hadDoc) {
-      renderDocument(sidebarState.index);
-      if (focusContent) container.focus();
-    } else {
-      fetchOne(sidebarState.index).then(() => {
-        renderDocument(sidebarState.index);
-        if (focusContent) container.focus();
-      });
-    }
-    if (updateHistory) {
-      const url = new URL(window.location);
-      url.searchParams.set("doc", baseNames[sidebarState.index]);
-      history.pushState({ index: sidebarState.index }, "", url.pathname + url.search);
-    }
-  }
+/**
+ * Setup sidebar UI and return sidebar state.
+ *
+ * @pseudocode
+ * 1. Resolve DOM elements and derive starting index from URL.
+ * 2. Instantiate `SidebarState` with provided document data.
+ * 3. Replace the placeholder list with sidebar component and bind selection.
+ * 4. Return the configured `SidebarState` instance.
+ *
+ * @param {object} docData
+ * @returns {SidebarState|null}
+ */
+export function setupSidebarUI(docData) {
+  const { files, baseNames, labels } = docData;
+  const container = document.getElementById("prd-content");
+  const listPlaceholder = document.getElementById("prd-list");
+  const titleEl = document.getElementById("prd-title");
+  const summaryEl = document.getElementById("task-summary");
+  if (!container || !listPlaceholder || !files.length) return null;
+  const spinner = createSpinner(container.parentElement);
+  const docParam = new URLSearchParams(window.location.search).get("doc");
+  const startIndex = Math.max(0, docParam ? baseNames.indexOf(docParam.replace(/\.md$/, "")) : 0);
 
-  ({ listSelect } = createSidebarList(labels, listPlaceholder, (i, _el, opts = {}) => {
-    selectDocSync(i, true, true, !opts.fromListNav);
-  }));
-  sidebarState.listSelect = listSelect;
-  sidebarState.selectDocSync = selectDocSync;
+  const state = new SidebarState({
+    ...docData,
+    container,
+    titleEl,
+    summaryEl,
+    spinner,
+    index: startIndex,
+    listSelect: null
+  });
+
+  const { listSelect } = createSidebarList(labels, listPlaceholder, (i, _el, opts = {}) => {
+    state.selectDocSync(i, true, true, !opts.fromListNav);
+  });
+  state.listSelect = listSelect;
   listSelect(startIndex);
-
-  return sidebarState;
+  return state;
 }
 
 /**
@@ -405,26 +333,6 @@ export async function initSidebar(docsMap, parserFn = markdownToHtml) {
  *
  * @param {object} sidebar
  * @param {string[]} files
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function initNavigationHandlers(sidebar, _files) {
   void _files;
@@ -446,35 +354,16 @@ export function initNavigationHandlers(sidebar, _files) {
  * Initialize the Product Requirements Document reader page.
  *
  * @pseudocode
- * 1. Initialize sidebar and navigation handlers.
- * 2. Seed history and render the starting document.
- * 3. Prefetch remaining documents in background.
+ * 1. Load document metadata with `loadPrdDocs`.
+ * 2. Build sidebar UI and bind navigation handlers.
+ * 3. Seed history, render the start document, then prefetch remaining docs.
  *
  * @param {Record<string, string>} [docsMap]
  * @param {Function} [parserFn=markdownToHtml]
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
-  const sidebar = await initSidebar(docsMap, parserFn);
+  const docData = await loadPrdDocs(docsMap, parserFn);
+  const sidebar = setupSidebarUI(docData);
   if (!sidebar) return;
   initNavigationHandlers(sidebar, sidebar.files);
   const url = new URL(window.location);
@@ -485,11 +374,11 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   if (!sidebar.ensureDocSync(sidebar.index)) {
     await sidebar.fetchOne(sidebar.index);
   }
-  renderDocument(sidebar.index);
+  renderDocument(sidebar, sidebar.index);
   sidebar.container.focus();
   sidebar.spinner.remove();
 
-  Promise.resolve().then(async () => {
+  Promise.resolve().then(() => {
     for (let i = 0; i < sidebar.files.length; i++) {
       if (i === sidebar.index) continue;
       sidebar.fetchOne(i);
