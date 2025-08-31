@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { waitForState, getStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   initRoundSelectModal: vi.fn(async (cb) => {
@@ -41,12 +42,12 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     // Trigger timeout: machine goes to roundDecision then interruptRound(noSelection)
     await machine.dispatch("timeout");
     // Wait until cooldown is reached
-    await window.awaitBattleState?.("cooldown", 5000);
+    await waitForState("cooldown", 5000);
 
     // CooldownEnter should emit countdownStart and then auto-dispatch ready via fallback timer.
     // With the 1s floor, computeNextRoundCooldown() = 1 → auto-advance after ~1s to roundStart.
     await new Promise((r) => setTimeout(r, 1250));
-    const snapshot = window.getBattleStateSnapshot?.();
+    const snapshot = getStateSnapshot();
     expect(["roundStart", "waitingForPlayerAction"]).toContain(snapshot?.state);
   });
 });

@@ -57,7 +57,6 @@ describe("updateDebugPanel", () => {
   });
 
   afterEach(() => {
-    delete window.__classicBattleState;
     delete window.__getClassicBattleMachine;
     vi.restoreAllMocks();
   });

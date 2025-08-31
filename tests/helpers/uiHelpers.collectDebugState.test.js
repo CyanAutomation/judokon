@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { __setStateSnapshot } from "../../src/helpers/classicBattle/battleDebug.js";
 
 vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
   getScores: () => ({ player: 1, opponent: 2 }),
@@ -18,11 +19,13 @@ import { collectDebugState } from "../../src/helpers/classicBattle/uiHelpers.js"
 describe("collectDebugState", () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="opponent-card"><div></div><div></div></div>';
+    __setStateSnapshot({
+      state: "idle",
+      prev: "prev",
+      event: "event",
+      log: ["a", "b"]
+    });
     Object.assign(window, {
-      __classicBattleState: "idle",
-      __classicBattlePrevState: "prev",
-      __classicBattleLastEvent: "event",
-      __classicBattleStateLog: ["a", "b"],
       __roundDecisionEnter: 123,
       __guardFiredAt: 456,
       __guardOutcomeEvent: "guard",
@@ -39,10 +42,7 @@ describe("collectDebugState", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
-    delete window.__classicBattleState;
-    delete window.__classicBattlePrevState;
-    delete window.__classicBattleLastEvent;
-    delete window.__classicBattleStateLog;
+    __setStateSnapshot({ state: null, prev: null, event: null, log: [] });
     delete window.__roundDecisionEnter;
     delete window.__guardFiredAt;
     delete window.__guardOutcomeEvent;

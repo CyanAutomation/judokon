@@ -24,6 +24,7 @@ import {
   skipRoundCooldownIfEnabled,
   updateBattleStateBadge
 } from "../helpers/classicBattle/uiHelpers.js";
+import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
 import { autoSelectStat } from "../helpers/classicBattle/autoSelectStat.js";
 import { setTestMode } from "../helpers/testModeUtils.js";
 import { wrap } from "../helpers/storage.js";
@@ -1123,7 +1124,7 @@ async function init() {
   } catch {}
   updateVerbose();
   updateStateBadgeVisibility();
-  updateBattleStateBadge(window.__classicBattleState || null);
+  updateBattleStateBadge(getStateSnapshot().state);
   updateCliShortcutsVisibility();
   const close = byId("cli-shortcuts-close");
   close?.addEventListener("click", (event) => {

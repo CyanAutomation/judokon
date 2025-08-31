@@ -8,6 +8,7 @@
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 import { TimerController } from "./TimerController.js";
 import { stop as stopScheduler } from "../utils/scheduler.js";
+import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
@@ -435,8 +436,9 @@ export class BattleEngine {
   getTimerStateSnapshot() {
     const timer = this.getTimerState();
     let transitions = [];
-    if (typeof window !== "undefined" && Array.isArray(window.__classicBattleStateLog)) {
-      transitions = window.__classicBattleStateLog.slice();
+    const snap = getStateSnapshot();
+    if (Array.isArray(snap.log)) {
+      transitions = snap.log.slice();
     }
     return { timer, transitions };
   }
