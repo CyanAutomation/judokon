@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers, resetDom } from "../../utils/testUtils.js";
 import { applyMockSetup, mocks } from "./mockSetup.js";
-vi.mock("../../../src/helpers/motionUtils.js", () => ({
-  shouldReduceMotionSync: () => true
-}));
 
 let fetchJsonMock;
 let generateRandomCardMock;

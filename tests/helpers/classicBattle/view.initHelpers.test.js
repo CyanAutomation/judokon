@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import "./commonMocks.js";
 import createClassicBattleDebugAPI from "../../../src/helpers/classicBattle/setupTestHelpers.js";
 import setupScheduler from "../../../src/helpers/classicBattle/setupScheduler.js";
 import setupUIBindings from "../../../src/helpers/classicBattle/setupUIBindings.js";
@@ -9,13 +10,6 @@ vi.mock("../../../src/helpers/battle/index.js", () => ({
 }));
 vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
   skipCurrentPhase: vi.fn()
-}));
-vi.mock("../../../src/utils/scheduler.js", () => ({
-  onFrame: vi.fn(),
-  onSecondTick: vi.fn(),
-  cancel: vi.fn(),
-  start: vi.fn(),
-  stop: vi.fn()
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   setupScoreboard: vi.fn()
