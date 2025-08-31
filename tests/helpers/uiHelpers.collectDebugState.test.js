@@ -36,11 +36,11 @@ describe("collectDebugState", () => {
     debugHooks.exposeDebugState("guardFiredAt", 456);
     debugHooks.exposeDebugState("guardOutcomeEvent", "guard");
     debugHooks.exposeDebugState("roundDebug", 7);
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({
+      getState: () => "idle",
+      statesByName: new Map([["idle", { triggers: [{ on: "start" }] }]])
+    }));
     Object.assign(window, {
-      __getClassicBattleMachine: () => ({
-        getState: () => "idle",
-        statesByName: new Map([["idle", { triggers: [{ on: "start" }] }]])
-      }),
       battleStore: { selectionMade: true, playerChoice: "power" },
       __buildTag: "v1",
       __eventDebug: ["x"]
@@ -51,7 +51,7 @@ describe("collectDebugState", () => {
     document.body.innerHTML = "";
     __setStateSnapshot({ state: null, prev: null, event: null, log: [] });
     vi.restoreAllMocks();
-    delete window.__getClassicBattleMachine;
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     delete window.battleStore;
     delete window.__buildTag;
     delete window.__eventDebug;

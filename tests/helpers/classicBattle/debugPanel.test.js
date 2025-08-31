@@ -47,6 +47,7 @@ vi.mock("../../../src/components/Button.js", () => ({ createButton: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({ syncScoreDisplay: vi.fn() }));
 
 import { updateDebugPanel } from "../../../src/helpers/classicBattle/uiHelpers.js";
+import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 
 describe("updateDebugPanel", () => {
   let pre;
@@ -56,7 +57,7 @@ describe("updateDebugPanel", () => {
   });
 
   afterEach(() => {
-    delete window.__getClassicBattleMachine;
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     vi.restoreAllMocks();
   });
 
@@ -83,10 +84,10 @@ describe("updateDebugPanel", () => {
     __resetBattleEventTarget();
     onBattleEvent("battleStateChange", createDebugLogListener(null));
     emitBattleEvent("battleStateChange", { from: null, to: "idle", event: null });
-    window.__getClassicBattleMachine = () => ({
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => ({
       getState: () => "idle",
       statesByName: new Map([["idle", { triggers: [{ on: "start" }, { on: "quit" }] }]])
-    });
+    }));
     updateDebugPanel();
     const output = JSON.parse(pre.textContent);
     expect(output.machineReady).toBe(true);
