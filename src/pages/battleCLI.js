@@ -954,6 +954,9 @@ function handleStatClick(event) {
  * @param {MouseEvent} event - Click event.
  */
 function onClickAdvance(event) {
+  // If help panel is open, ignore background clicks to avoid accidental advancement
+  const shortcutsPanel = byId("cli-shortcuts");
+  if (shortcutsPanel && !shortcutsPanel.hidden) return;
   let el = event.target;
   let path = [];
   while (el) {

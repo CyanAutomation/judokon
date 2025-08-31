@@ -409,6 +409,12 @@ export function handleStatSelectionTimeout(
       emitBattleEvent("statSelectionStalled");
     } catch {}
     if (isEnabled("autoSelect")) {
+      // Surface the upcoming countdown immediately so observers can see it
+      // before timer wiring updates the snackbar text.
+      try {
+        const secs = computeNextRoundCooldown();
+        showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
+      } catch {}
       try {
         setTimeout(() => {
           try {

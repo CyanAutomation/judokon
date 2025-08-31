@@ -9,7 +9,8 @@ import { handleReplay } from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
-import { showSnackbar } from "../showSnackbar.js";
+import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
+import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { getStateSnapshot } from "./battleDebug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
@@ -176,6 +177,12 @@ export function bindRoundUIEventHandlers() {
       // safe and ensures the snackbar countdown appears without waiting for a
       // separate state change event that may be mocked out in tests.
       scheduleNextRound(result);
+      // Proactively surface the countdown text in the snackbar so tests can
+      // observe it even if timer wiring races with other snackbar messages.
+      try {
+        const secs = computeNextRoundCooldown();
+        updateSnackbar(t("ui.nextRoundIn", { seconds: secs }));
+      } catch {}
       // Failsafe: if the machine is still stuck in roundDecision shortly after
       // roundResolved, force the outcome → continue transitions to prevent a
       // visible stall.
