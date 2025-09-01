@@ -186,6 +186,9 @@ Additional UI/UX improvements (terminal polish)
 - Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from the header; it must be accessible (contrast >= 4.5:1) and off by default.
 - Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from a dedicated header control `#retro-toggle` (feature flag `cliRetro`); it must be accessible (contrast >= 4.5:1) and off by default.
 - Render ASCII separators and an 80ch-width centered column to mimic legacy terminal dimensions (optional, feature-flag guarded).
+ - Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
+ - Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
+ - Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
 - Render skeleton stat rows at startup so `#cli-stats` has deterministic bounding boxes for visual tests and reduces layout shift.
 - Expose a small JS helper that atomically updates `#cli-countdown`'s `data-remaining-time` attribute together with the visible text to make Playwright/Vitest assertions robust.
 - Implement explicit focus management on state transitions (focus stat container on selection, focus the Next control after outcome).

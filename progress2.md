@@ -13,10 +13,15 @@
 - [x] Step 4: Playwright smoke test `playwright/cli.spec.js` added.
 - [x] Subtask: Dedicated header `#retro-toggle` added and wired to `cliRetro` feature flag.
 
+- [x] Responsive tuning: header wrapping, control spacing, and narrow-width rules added to `battleCLI.html`.
+ - [x] Move header controls into an in-main, less-prominent settings section (`cli-settings`) and make `.cli-main` span full viewport width.
+
 Next milestones:
 
 - Add Playwright keyboard/mouse/timer specs (stat selection, next/skip, quit modal, help toggle).
 - Add an integration test to simulate a single round end-to-end (engine may be mocked).
 - Add README snippet documenting `window.__battleCLIinit` helpers and test hooks.
+
+Next: implement the keyboard/mouse/timer Playwright specs (covered by the plan above) and add a small visual assertion test for header layout across viewports.
 
 Next: run the Playwright test and iterate if failures occur. After the test passes, consider adding more Playwright assertions for keyboard flows and full-round simulation.
