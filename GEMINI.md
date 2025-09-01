@@ -15,9 +15,31 @@ AI agents play a vital role in maintaining quality, clarity, and scalability acr
 
 A successful agent contribution is **concise**, **compliant with code standards**, and **adds lasting value** without introducing regressions or complexity.
 
+## 🧠 RAG Usage
+
+Use the vector database before inspecting files to collect relevant context and reduce unnecessary search work. It excels at:
+
+- Answering architectural questions
+- Surfacing design rationale
+- Illuminating cross-cutting concerns across modules
+
+Sample queries:
+
+- "Explain the data flow for user authentication"
+- "Summarize the classicBattle module"
+- "Outline how settings persistence works"
+
+- When a prompt starts with question patterns like "Explain X" or "How does Y work?",
+  call [`queryRag(question)`](src/helpers/queryRag.js) to gather context before scanning files.
+- For deeper guidance and code samples, see
+  [example vector queries](design/agentWorkflows/exampleVectorQueries.md#queryrag-helper).
+
 ---
 
 ## 🧪 Prompt Templates
+
+Before applying any template, look for question-style prompts such as
+"Explain X" or "How does Y work?" and run `queryRag` for context.
 
 Use these prompt formats when engaging with AI or testing tools:
 
@@ -78,6 +100,17 @@ Before submitting or completing a task, verify that your work:
 - Validate all modified JSON files with `npm run validate:data`
 - Use createButton, createCard, createModal factories when building UI
 
+## Classic Battle: Testing and Rebinding
+
+- Prefer `tests/helpers/initClassicBattleTest.js` to initialize bindings:
+  - Call `await initClassicBattleTest({ afterMock: true })` immediately after `vi.doMock(...)` inside a test to rebind event listeners and reset promises.
+- Prefer event promises over sleeps:
+  - `getRoundPromptPromise`, `getCountdownStartedPromise`, `getRoundResolvedPromise`, `getRoundTimeoutPromise`, `getStatSelectionStalledPromise`.
+- Assert against the correct surface:
+  - Outcome → `#round-message`; countdown/hints → snackbar.
+- Bindings are idempotent and per-worker via `__ensureClassicBattleBindings()`.
+- Global `afterEach` clears snackbar and `#round-message` to prevent bleed.
+
 ### ❌ DON’T
 
 - Don’t commit baseline screenshots (playwright/\*-snapshots)
@@ -118,6 +151,11 @@ Even if you’re not directly searching client_embeddings.json, tools like grep 
 - Use `requestAnimationFrame` for one-shot UI updates (for example, toggling a CSS class on the next frame).
 - Avoid `scheduler.onFrame()` for one-off work — it registers a persistent callback; repeated use during timers can leak callbacks and stall the UI.
 - Reserve `scheduler.onFrame()` for continuous per-frame tasks and always cancel with `scheduler.cancel(id)` when done.
+
+### ⏱️ Selection Timer Cleanup
+
+- Clear stat-selection timeouts and auto-select callbacks (`statTimeoutId`, `autoSelectId`) before emitting `statSelected`.
+- Stalled timers can dispatch late events and interrupt the next round, causing unintended restarts.
 
 ---
 
@@ -179,6 +217,7 @@ npm run check:contrast
 **Common fixes:**
 
 ```bash
+npm run check:jsdoc:fix
 npx prettier . --write
 npx eslint . --fix
 ```
