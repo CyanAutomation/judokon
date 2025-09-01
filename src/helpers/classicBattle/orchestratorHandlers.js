@@ -122,6 +122,9 @@ export function initInterRoundCooldown(machine) {
     try {
       duration = computeNextRoundCooldown();
     } catch {}
+    // Clamp to a sane minimum to avoid zero-duration emissions that can
+    // immediately advance the machine in headless/CI environments.
+    duration = Math.max(1, Number(duration) || 1);
     const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
     if (btn) {
       btn.disabled = false;

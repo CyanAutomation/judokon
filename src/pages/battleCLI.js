@@ -183,10 +183,12 @@ function renderStartButton() {
 
 function initSeed() {
   const input = byId("seed-input");
-  let seed = null;
+  let seedParam = null;
+  let storedSeed = null;
   try {
     const params = new URLSearchParams(window.location.search);
-    seed = params.get("seed") || input?.value || localStorage.getItem("battleCLI.seed");
+    seedParam = params.get("seed");
+    storedSeed = localStorage.getItem("battleCLI.seed");
   } catch {}
   const apply = (n) => {
     setTestMode({ enabled: true, seed: n });
@@ -194,12 +196,16 @@ function initSeed() {
       localStorage.setItem("battleCLI.seed", String(n));
     } catch {}
   };
-  if (seed !== null && seed !== "") {
-    const num = Number(seed);
+  // Only auto-enable test mode when an explicit seed query param is provided.
+  if (seedParam !== null && seedParam !== "") {
+    const num = Number(seedParam);
     if (!Number.isNaN(num)) {
       apply(num);
       if (input) input.value = String(num);
     }
+  } else if (storedSeed) {
+    // Populate the input from previous choice without enabling test mode implicitly.
+    if (input) input.value = String(storedSeed);
   }
   input?.addEventListener("change", () => {
     const val = Number(input.value);
@@ -991,9 +997,8 @@ function handleStatClick(event) {
 function onClickAdvance(event) {
   if (roundResolving) return;
   if (ignoreNextAdvanceClick) {
-    // Safety: reset the flag and log the occurrence
+    // Consume exactly one background click after closing help.
     ignoreNextAdvanceClick = false;
-    console.warn("ignoreNextAdvanceClick was true; reset and ignored advance click.");
     return;
   }
   // If help panel is open, ignore background clicks to avoid accidental advancement
@@ -1214,13 +1219,11 @@ async function init() {
   close?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
+    // Set a guard to ignore the next background click after closing help.
+    // Do not clear it on microtask; it is consumed in onClickAdvance.
     ignoreNextAdvanceClick = true;
     const sec = byId("cli-shortcuts");
     if (sec) sec.hidden = true;
-    // Clear the ignore flag on the microtask queue to avoid advancing from this click
-    queueMicrotask(() => {
-      ignoreNextAdvanceClick = false;
-    });
   });
   checkbox?.addEventListener("change", () => {
     setFlag("cliVerbose", !!checkbox.checked);

@@ -13,50 +13,157 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
-
 jobs:
   sync:
     runs-on: ubuntu-latest
+    name: Sync Agent Docs
     steps:
+      # 1) Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # full history is useful when creating PRs or checking diffs
           fetch-depth: 0
 
+      # 2) Node setup
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 3) Dependencies
       - name: Install dependencies
         run: npm ci
 
+      # 4) Run the sync script
       - name: Run agent docs sync
         id: sync
         run: npm run sync:agents
 
+      # 5) Date (for branch/title)
       - name: Get current date
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
+      # 6) Check for changes in working tree (multi-line changed_files output)
       - name: Check for changes
         id: changes
         run: |
-          # ensure git reflects workspace changes made by the script
           git_status=$(git status --porcelain)
           echo "git_status=$git_status"
           if [ -n "$git_status" ]; then
-            # Extract file paths from porcelain output (handles staged/unstaged/untracked)
-            changed_files=$(git status --porcelain | sed -E 's/^.. //' | tr '\n' ',' | sed 's/,$//')
+            # get clean file paths, unique
+            changed_files_list=$(git status --porcelain | sed -E 's/^.. //' | sort -u)
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "changed_files=$changed_files" >> $GITHUB_OUTPUT
+            echo "changed_files<<'EOF'" >> $GITHUB_OUTPUT
+            echo "$changed_files_list" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
             echo "changed_files=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create Pull Request (if changes)
+      # ——— Extras: run only when there are changes ———
+
+      - name: Collect Agent Docs Stats
+        id: docstats
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          FILE="AGENTS.md"
+          if [ ! -f "$FILE" ]; then
+            FILE=$(git ls-files | grep -E '^AGENTS\.md$' || true)
+          fi
+          if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
+            echo "AGENTS.md not found after sync; skipping stats."
+            echo "words=0" >> $GITHUB_OUTPUT
+            echo "lines=0" >> $GITHUB_OUTPUT
+            echo "headings=0" >> $GITHUB_OUTPUT
+            echo "sections=0" >> $GITHUB_OUTPUT
+            echo "codeblocks=0" >> $GITHUB_OUTPUT
+            echo "links=0" >> $GITHUB_OUTPUT
+            echo "tasks=0" >> $GITHUB_OUTPUT
+            echo "readmins=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          WORDS=$(wc -w < "$FILE" | tr -d ' ')
+          LINES=$(wc -l < "$FILE" | tr -d ' ')
+          HEADINGS=$(grep -E '^[[:space:]]*#{1,6}[[:space:]]' "$FILE" | wc -l | tr -d ' ' || echo 0)
+          H2_SECTIONS=$(grep -E '^[[:space:]]*##[[:space:]]' "$FILE" | wc -l | tr -d ' ' || echo 0)
+          CODEBLOCKS=$(grep -E '^[[:space:]]*```' "$FILE" | wc -l | tr -d ' ' || echo 0)
+          LINKS=$(grep -oE '\[[^]]+\]\([^)]+\)' "$FILE" | wc -l | tr -d ' ' || echo 0)
+          TASKS=$(grep -oE '^\s*-\s\[[ xX]\]' "$FILE" | wc -l | tr -d ' ' || echo 0)
+          READ_MINS=$(( (WORDS + 199) / 200 ))
+
+          echo "words=$WORDS" >> $GITHUB_OUTPUT
+          echo "lines=$LINES" >> $GITHUB_OUTPUT
+          echo "headings=$HEADINGS" >> $GITHUB_OUTPUT
+          echo "sections=$H2_SECTIONS" >> $GITHUB_OUTPUT
+          echo "codeblocks=$CODEBLOCKS" >> $GITHUB_OUTPUT
+          echo "links=$LINKS" >> $GITHUB_OUTPUT
+          echo "tasks=$TASKS" >> $GITHUB_OUTPUT
+          echo "readmins=$READ_MINS" >> $GITHUB_OUTPUT
+
+      - name: Summarise Changes (add/remove & mood)
+        id: summary
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          DIFF=$(git diff --unified=0 -- AGENTS.md || true)
+
+          ADDED=$(printf "%s" "$DIFF" | grep -E '^\+' | grep -vE '^\+\+\+' | wc -l | tr -d ' ' || echo 0)
+          REMOVED=$(printf "%s" "$DIFF" | grep -E '^\-' | grep -vE '^\-\-\-' | wc -l | tr -d ' ' || echo 0)
+          TOTAL=$((ADDED + REMOVED))
+
+          if   [ "$TOTAL" -lt 20 ];  then MOOD="Tiny tune-up 🎻"
+          elif [ "$TOTAL" -lt 100 ]; then MOOD="Solid sync 🔧"
+          else                         MOOD="Big mission 🚀"
+          fi
+
+          echo "added=$ADDED" >> $GITHUB_OUTPUT
+          echo "removed=$REMOVED" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "mood=$MOOD" >> $GITHUB_OUTPUT
+
+      - name: Sections Touched
+        id: touched
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          SECTIONS=$(git diff -U0 -- AGENTS.md \
+            | awk '
+              /^\+\+\+|^---/ {next}
+              /^@@/ {next}
+              /^\+#{2,6}[[:space:]]/ {
+                sub(/^\+/, "", $0);
+                print "- " $0
+              }' \
+            | sort -u | head -n 12)
+
+          if [ -z "$SECTIONS" ]; then
+            SECTIONS="(No new/changed section headings detected)"
+          fi
+
+          {
+            echo "list<<'EOF'"
+            echo "$SECTIONS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Grab Quote / Advice / Zen
+        id: fun
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          # lightweight, no-network random pick
+          QUOTES=(
+            "Be curious, not judgemental. — Walt Whitman"
+            "Small steps every day. — Unknown"
+            "Refactor early, refactor often. — Dev Wisdom"
+            "The best time to plant a tree was 20 years ago. The second best time is now."
+          )
+          SEED=$(( RANDOM % ${#QUOTES[@]} ))
+          CHOICE="${QUOTES[$SEED]}"
+          echo "quote=$CHOICE" >> $GITHUB_OUTPUT
+
+      # 7) Create PR if changes exist
+      - name: Create Pull Request
         if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
@@ -66,10 +173,25 @@ jobs:
           body: |
             This PR contains automated updates produced by `npm run sync:agents`.
 
-            The workflow only creates a PR when files actually change.
-
             Changed files:
             ${{ steps.changes.outputs.changed_files }}
+
+            Agent docs snapshot:
+            - Words: ${{ steps.docstats.outputs.words }}
+            - Lines: ${{ steps.docstats.outputs.lines }}
+            - Headings: ${{ steps.docstats.outputs.headings }}
+            - H2 sections: ${{ steps.docstats.outputs.sections }}
+            - Code blocks: ${{ steps.docstats.outputs.codeblocks }}
+            - Links: ${{ steps.docstats.outputs.links }}
+            - Tasks: ${{ steps.docstats.outputs.tasks }}
+            - Estimated read mins: ${{ steps.docstats.outputs.readmins }}
+
+            Changes summary: ${{ steps.summary.outputs.added }} additions, ${{ steps.summary.outputs.removed }} removals — ${{ steps.summary.outputs.mood }}
+
+            Sections touched:
+            ${{ steps.touched.outputs.list }}
+
+            Bonus: ${{ steps.fun.outputs.quote }}
           branch: "auto/sync-agent-docs-${{ steps.date.outputs.date }}"
           labels: |
             automated

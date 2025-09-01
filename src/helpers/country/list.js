@@ -21,24 +21,30 @@ const batchState = new WeakMap();
  */
 export async function fetchActiveCountries() {
   const judoka = await fetchJson(`${DATA_DIR}judoka.json`);
-  // Prefer codes to align with expectations used in tests and avoid any
-  // name-mismatch issues. Include all entries present in the data regardless
-  // of hidden status; the filter UI should reflect available codes.
-  const uniqueCodes = new Set(
+  // Collect unique country NAMES present in the judoka data.
+  const uniqueCountryNames = new Set(
     Array.isArray(judoka)
       ? judoka
-          .map((j) => (typeof j.countryCode === "string" ? j.countryCode.trim().toLowerCase() : ""))
-          .filter((code) => /^[a-z]{2}$/.test(code))
+          .map((j) => (typeof j.country === "string" ? j.country.trim() : ""))
+          .filter((name) => name.length > 0)
       : []
   );
 
+  // Load the canonical mapping of countries -> codes, then
+  // keep only active entries that exist in the judoka set.
   const mapping = await loadCountryMapping();
-  const activeEntries = Object.values(mapping).filter((e) => e.active && uniqueCodes.has(e.code));
-  // Sort by country name for stable order
-  activeEntries.sort((a, b) => a.country.localeCompare(b.country));
+  const entries = Object.values(mapping).filter(
+    (e) => e && e.active && uniqueCountryNames.has(e.country)
+  );
 
-  const nameToCode = new Map(activeEntries.map((e) => [e.country, e.code]));
-  const activeCountries = activeEntries.map((e) => e.country);
+  // Deduplicate by country name in case mapping contains duplicates.
+  const byName = new Map();
+  for (const e of entries) {
+    if (!byName.has(e.country)) byName.set(e.country, e.code);
+  }
+
+  const activeCountries = [...byName.keys()].sort((a, b) => a.localeCompare(b));
+  const nameToCode = new Map(activeCountries.map((name) => [name, byName.get(name)]));
 
   return { activeCountries, nameToCode };
 }
