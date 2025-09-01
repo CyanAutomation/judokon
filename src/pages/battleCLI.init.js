@@ -63,23 +63,26 @@ function applyRetroTheme(enabled) {
 }
 
 function initRetroToggle() {
-  const toggle = byId("verbose-toggle");
-  if (!toggle) return; // repurpose verbose-toggle area if no dedicated control
-  // Add a small retro toggle next to verbose (non-invasive)
-  const label = document.createElement("label");
-  label.style.marginLeft = "8px";
-  label.textContent = "Retro:";
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.id = "retro-toggle";
-  input.setAttribute("aria-label", "Toggle retro theme");
+  // Prefer an explicit retro-toggle control in the header (id=retro-toggle). If missing, add next to verbose-toggle.
+  let input = byId("retro-toggle");
+  if (!input) {
+    const toggle = byId("verbose-toggle");
+    if (!toggle) return;
+    const label = document.createElement("label");
+    label.style.marginLeft = "8px";
+    label.textContent = "Retro:";
+    input = document.createElement("input");
+    input.type = "checkbox";
+    input.id = "retro-toggle";
+    input.setAttribute("aria-label", "Toggle retro theme");
+    label.appendChild(input);
+    toggle.parentNode?.insertBefore(label, toggle.nextSibling);
+  }
   try {
     const saved = localStorage.getItem("battleCLI.retro");
     if (saved === "1") input.checked = true;
   } catch {}
   input.addEventListener("change", () => applyRetroTheme(input.checked));
-  label.appendChild(input);
-  toggle.parentNode?.insertBefore(label, toggle.nextSibling);
   // apply initial
   applyRetroTheme(input.checked);
 }

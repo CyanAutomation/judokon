@@ -184,6 +184,7 @@ Notes:
 
 Additional UI/UX improvements (terminal polish)
 - Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from the header; it must be accessible (contrast >= 4.5:1) and off by default.
+- Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from a dedicated header control `#retro-toggle` (feature flag `cliRetro`); it must be accessible (contrast >= 4.5:1) and off by default.
 - Render ASCII separators and an 80ch-width centered column to mimic legacy terminal dimensions (optional, feature-flag guarded).
 - Render skeleton stat rows at startup so `#cli-stats` has deterministic bounding boxes for visual tests and reduces layout shift.
 - Expose a small JS helper that atomically updates `#cli-countdown`'s `data-remaining-time` attribute together with the visible text to make Playwright/Vitest assertions robust.

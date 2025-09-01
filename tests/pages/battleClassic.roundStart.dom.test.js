@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { readFileSync } from "fs";
 
 // Hoisted mocks to ensure they apply before module import
-const mocks = vi.hoisted(() => ({
-  fetchJson: vi.fn(),
-}));
 
 // Mock the round select modal to immediately start the match
 vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
@@ -86,20 +83,24 @@ describe("battleClassic.html round start DOM", () => {
 
   it("populates player and opponent card containers on round start", async () => {
     // Import after mocks so bootstrap uses them
-    const { setupClassicBattlePage } = await import(
-      "../../src/helpers/classicBattle/bootstrap.js"
-    );
-    const { dispatchBattleEvent } = await import(
-      "../../src/helpers/classicBattle/orchestrator.js"
+    const { setupClassicBattlePage } = await import("../../src/helpers/classicBattle/bootstrap.js");
+    const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
+    const { onBattleEvent, offBattleEvent } = await import(
+      "../../src/helpers/classicBattle/battleEvents.js"
     );
 
     await setupClassicBattlePage();
 
     // Trigger the machine to leave the lobby and start the match
     await dispatchBattleEvent("startClicked");
-    // Allow pending microtasks and roundStart handlers to run
-    await Promise.resolve();
-    await Promise.resolve();
+    // Wait for the round to announce start (after drawCards completes)
+    await new Promise((resolve) => {
+      const handler = () => {
+        offBattleEvent("roundStarted", handler);
+        resolve();
+      };
+      onBattleEvent("roundStarted", handler);
+    });
 
     const player = document.getElementById("player-card");
     const opponent = document.getElementById("opponent-card");

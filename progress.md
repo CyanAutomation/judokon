@@ -222,14 +222,17 @@
 
 ## Milestone 10 — Round Flow: Card Drawing
 
-- **In Progress:** Implementing the initial card draw logic.
-- Plan:
-  - Read `src/helpers/classicBattle/bootstrap.js` and `src/helpers/randomCard.js`.
-  - Modify `bootstrap.js` to draw player and opponent cards at the start of a round.
-  - Render the player card immediately.
-  - Render the opponent card in an obscured state.
-- Update: The repository already implements the draw flow in `src/helpers/classicBattle/cardSelection.js` (`drawCards()` uses `generateRandomCard()` for the player and renders an obscured opponent placeholder). I added an auto-invoke in `bootstrap.js` to call `setupClassicBattlePage()` on DOM ready so the page initializes when loaded.
-- Status: Verified-by-inspection; runtime tests still pending. Next: run unit tests and a small DOM smoke test to assert `#player-card` and `#opponent-card` are populated on round start.
+- Completed: Verified draw flow and added a DOM smoke test for round start.
+- What was added:
+  - Test `tests/pages/battleClassic.roundStart.dom.test.js` that:
+    - Loads `src/pages/battleClassic.html` into JSDOM.
+    - Mocks `roundSelectModal` to start immediately and enables test mode to auto-advance cooldowns.
+    - Mocks `JudokaCard` to return a simple element and provides minimal valid judoka/gokyo data via `fetchJson` mock.
+    - Dispatches `startClicked` and waits for the `roundStarted` battle event.
+    - Asserts both `#player-card` and `#opponent-card` contain child elements after the first round starts.
+- Files touched:
+  - Added: `tests/pages/battleClassic.roundStart.dom.test.js`.
+- Status: Test passes locally via `vitest run tests/pages/battleClassic.roundStart.dom.test.js`.
 
 ## Milestone 11 — Modal Start Event Ordering Fix
 
