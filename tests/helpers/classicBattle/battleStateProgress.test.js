@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 import { waitForState } from "../../waitForState.js";
+import "./commonMocks.js";
 import {
-  mockScheduler,
   mockFeatureFlags,
   mockDataUtils,
   mockStats,
@@ -96,7 +96,6 @@ describe("battle-state-progress stays in sync across transitions", () => {
   });
 
   it("tracks waitingForPlayerAction \u2192 roundDecision", async () => {
-    mockScheduler();
     mockFeatureFlags({ battleStateProgress: { enabled: true } });
     mockDataUtils();
     mockStats();
