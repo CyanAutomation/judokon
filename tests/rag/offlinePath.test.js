@@ -17,9 +17,9 @@ describe("RAG offline path (binary index)", () => {
     // This ensures loader/getExtractor prefer Node logic.
     // Save and delete globals (will restore in afterAll).
     // Note: jsdom environment is still active, but these deletions affect our modules.
-    // eslint-disable-next-line no-undef
+
     delete global.window;
-    // eslint-disable-next-line no-undef
+
     delete global.document;
 
     // Build the offline assets from the current client_embeddings.json
@@ -46,7 +46,9 @@ describe("RAG offline path (binary index)", () => {
       };
     });
     fsMock = await import("node:fs/promises");
-    global.fetch = vi.fn(() => Promise.reject(new Error("fetch should not be called in offline mode")));
+    global.fetch = vi.fn(() =>
+      Promise.reject(new Error("fetch should not be called in offline mode"))
+    );
 
     // Mock Transformers to a stub feature-extraction pipeline that returns a zero vector
     vi.doMock("@xenova/transformers", () => {
@@ -100,7 +102,12 @@ describe("RAG offline path (binary index)", () => {
     expect(Array.isArray(context)).toBe(true);
 
     // Sanity-check scoring path: findMatches returns similar results when called directly
-    const direct = await vectorSearch.findMatches(new Array(vectorLength).fill(0), 5, [], "viewport simulation");
+    const direct = await vectorSearch.findMatches(
+      new Array(vectorLength).fill(0),
+      5,
+      [],
+      "viewport simulation"
+    );
     expect(Array.isArray(direct)).toBe(true);
     expect(direct.length).toBeGreaterThan(0);
   });

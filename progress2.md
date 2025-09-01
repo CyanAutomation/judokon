@@ -14,13 +14,13 @@
 - [x] Subtask: Dedicated header `#retro-toggle` added and wired to `cliRetro` feature flag.
 
 - [x] Responsive tuning: header wrapping, control spacing, and narrow-width rules added to `battleCLI.html`.
- - [x] Move header controls into an in-main, less-prominent settings section (`cli-settings`) and make `.cli-main` span full viewport width.
- - [x] Collapsible settings panel (`#cli-settings-toggle` / `#cli-settings-body`) implemented with persistence in localStorage.
+- [x] Move header controls into an in-main, less-prominent settings section (`cli-settings`) and make `.cli-main` span full viewport width.
+- [x] Collapsible settings panel (`#cli-settings-toggle` / `#cli-settings-body`) implemented with persistence in localStorage.
 
 - [x] Expose programmatic settings helper on `window.__battleCLIinit.setSettingsCollapsed`.
 - [x] Add Playwright countdown timing test (`playwright/countdown.spec.js`) which verifies `setCountdown` updates `data-remaining-time` atomically.
 - [x] Add `src/pages/battleCLI.README.md` documenting exposed test helpers.
-	- [x] Verified countdown test locally against dev server.
+  - [x] Verified countdown test locally against dev server.
 
 Next milestones:
 
