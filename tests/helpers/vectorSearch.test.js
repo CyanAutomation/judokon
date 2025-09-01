@@ -12,7 +12,7 @@ let fetchJsonMock;
 
 beforeEach(async () => {
   // Force loader to use JSON manifest path instead of offline binary during these tests
-  process.env.RAG_FORCE_JSON = '1';
+  process.env.RAG_FORCE_JSON = "1";
   fetchJsonMock = await setupMockDataset();
 });
 
