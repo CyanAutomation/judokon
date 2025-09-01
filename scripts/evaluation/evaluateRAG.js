@@ -1,8 +1,8 @@
 /* eslint-env node */
 import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { pipeline } from "@xenova/transformers";
+import path from "path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { pipeline, env } from "@xenova/transformers";
 import vectorSearch from "../../src/helpers/vectorSearch/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -163,11 +163,15 @@ function createSparseVector(text) {
 }
 
 async function loadModel() {
-  const modelPath =
-    typeof process !== "undefined" && process.versions?.node
-      ? path.join(rootDir, "models/minilm")
-      : "Xenova/all-MiniLM-L6-v2";
-  return pipeline("feature-extraction", modelPath, { quantized: true });
+  if (typeof process !== "undefined" && process.versions?.node) {
+    env.allowLocalModels = true;
+    const modelDir = path.join(rootDir, "models/minilm");
+    const modelUrl = pathToFileURL(modelDir).href;
+    return pipeline("feature-extraction", modelUrl, { quantized: true });
+  }
+  return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+    quantized: true
+  });
 }
 
 export async function evaluate() {

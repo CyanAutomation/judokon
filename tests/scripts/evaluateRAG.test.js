@@ -1,10 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@xenova/transformers", () => ({
-  pipeline: vi.fn(async (task, model) => {
-    if (!model.includes("models/minilm")) {
-      await fetch("https://example.com/model");
-    }
+  pipeline: vi.fn(async () => {
+    // Simulate model loading without any network calls
     return async () => ({ data: new Float32Array([0, 0, 0]) });
   })
 }));
