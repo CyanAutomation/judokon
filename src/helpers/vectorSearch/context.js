@@ -1,4 +1,5 @@
 import { CHUNK_SIZE, OVERLAP_RATIO } from "./chunkConfig.js";
+import { isNodeEnvironment } from "../env.js";
 
 function splitIntoSections(lines) {
   const heading = /^(#{1,6})\s+/;
@@ -97,7 +98,7 @@ export function chunkMarkdown(text) {
  * 1. Validate that `id` matches the `filename-chunk-N` pattern.
  *    - Return an empty array for invalid ids.
  * 2. Build a URL to the markdown file using the filename.
- * 3. When running in Node (`process?.versions?.node`), resolve the file path
+ * 3. When running in Node (`isNodeEnvironment()`), resolve the file path
  *    with `fileURLToPath` and load it using `fs.promises.readFile`.
  *    Otherwise, fetch the markdown text over HTTP.
  * 4. Split the markdown using `chunkMarkdown` and determine the slice of
@@ -114,10 +115,9 @@ export async function fetchContextById(id, radius = 1) {
   const [, filename, num] = match;
   const index = Number(num) - 1;
   try {
-    const isNode = typeof process !== "undefined" && process?.versions?.node;
     const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url);
     let text;
-    if (isNode) {
+    if (isNodeEnvironment()) {
       const { fileURLToPath } = await import("node:url");
       const fs = await import("node:fs/promises");
       const filePath = fileURLToPath(url);
