@@ -152,6 +152,11 @@ Even if you’re not directly searching client_embeddings.json, tools like grep 
 - Avoid `scheduler.onFrame()` for one-off work — it registers a persistent callback; repeated use during timers can leak callbacks and stall the UI.
 - Reserve `scheduler.onFrame()` for continuous per-frame tasks and always cancel with `scheduler.cancel(id)` when done.
 
+### ⏱️ Selection Timer Cleanup
+
+- Clear stat-selection timeouts and auto-select callbacks (`statTimeoutId`, `autoSelectId`) before emitting `statSelected`.
+- Stalled timers can dispatch late events and interrupt the next round, causing unintended restarts.
+
 ---
 
 ## 🔧 Module Loading Policy for Agents

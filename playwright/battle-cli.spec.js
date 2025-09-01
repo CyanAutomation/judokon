@@ -100,6 +100,7 @@ test.describe("Classic Battle CLI", () => {
 
     // Play first round to reach roundOver
     await page.keyboard.press("1");
+    await page.locator("body").click();
     await waitForBattleState(page, "roundOver", 10000);
 
     // Close shortcuts panel
@@ -151,6 +152,7 @@ test.describe("Classic Battle CLI", () => {
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     const score = page.locator("#cli-score");
     await page.keyboard.press("1");
+    await page.locator("body").click();
     await waitForBattleState(page, "roundOver", 10000);
     const firstPlayer = await score.getAttribute("data-score-player");
     const firstOpponent = await score.getAttribute("data-score-opponent");
@@ -158,6 +160,7 @@ test.describe("Classic Battle CLI", () => {
     await page.keyboard.press("Enter");
     await waitForBattleState(page, "waitingForPlayerAction", 10000);
     await page.keyboard.press("1");
+    await page.locator("body").click();
     await waitForBattleState(page, "roundOver", 10000);
     const secondPlayer = await score.getAttribute("data-score-player");
     const secondOpponent = await score.getAttribute("data-score-opponent");
