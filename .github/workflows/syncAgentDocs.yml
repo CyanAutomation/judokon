@@ -6,19 +6,72 @@ on:
       - AGENTS.md
   workflow_dispatch:
 
+concurrency:
+  group: "sync-agent-docs"
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # full history is useful when creating PRs or checking diffs
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm run sync:agents
-      - run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git commit -am "chore: sync agent docs"
-            git push
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run agent docs sync
+        id: sync
+        run: npm run sync:agents
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Check for changes
+        id: changes
+        run: |
+          # ensure git reflects workspace changes made by the script
+          git_status=$(git status --porcelain)
+          echo "git_status=$git_status"
+          if [ -n "$git_status" ]; then
+            # Extract file paths from porcelain output (handles staged/unstaged/untracked)
+            changed_files=$(git status --porcelain | sed -E 's/^.. //' | tr '\n' ',' | sed 's/,$//')
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed_files=$changed_files" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed_files=" >> $GITHUB_OUTPUT
           fi
+
+      - name: Create Pull Request (if changes)
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: sync agent docs"
+          title: "chore: sync agent docs - ${{ steps.date.outputs.date }}"
+          body: |
+            This PR contains automated updates produced by `npm run sync:agents`.
+
+            The workflow only creates a PR when files actually change.
+
+            Changed files:
+            ${{ steps.changes.outputs.changed_files }}
+          branch: "auto/sync-agent-docs-${{ steps.date.outputs.date }}"
+          labels: |
+            automated
+            docs
+          assignees: ${{ github.actor }}

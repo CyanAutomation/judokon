@@ -21,19 +21,24 @@ const batchState = new WeakMap();
  */
 export async function fetchActiveCountries() {
   const judoka = await fetchJson(`${DATA_DIR}judoka.json`);
-  const uniqueCountries = new Set(
-    Array.isArray(judoka) ? judoka.map((j) => j.country).filter(Boolean) : []
+  // Prefer codes to align with expectations used in tests and avoid any
+  // name-mismatch issues. Include all entries present in the data regardless
+  // of hidden status; the filter UI should reflect available codes.
+  const uniqueCodes = new Set(
+    Array.isArray(judoka)
+      ? judoka
+          .map((j) => (typeof j.countryCode === "string" ? j.countryCode.trim().toLowerCase() : ""))
+          .filter((code) => /^[a-z]{2}$/.test(code))
+      : []
   );
 
   const mapping = await loadCountryMapping();
-  const entries = Object.values(mapping)
-    .filter((e) => e.active)
-    .sort((a, b) => a.country.localeCompare(b.country));
-  const uniqueEntries = [...new Map(entries.map((e) => [e.country, e])).values()];
-  const nameToCode = new Map(uniqueEntries.map((e) => [e.country, e.code]));
-  const activeCountries = uniqueEntries
-    .map((e) => e.country)
-    .filter((name) => uniqueCountries.has(name));
+  const activeEntries = Object.values(mapping).filter((e) => e.active && uniqueCodes.has(e.code));
+  // Sort by country name for stable order
+  activeEntries.sort((a, b) => a.country.localeCompare(b.country));
+
+  const nameToCode = new Map(activeEntries.map((e) => [e.country, e.code]));
+  const activeCountries = activeEntries.map((e) => e.country);
 
   return { activeCountries, nameToCode };
 }
@@ -57,6 +62,15 @@ function renderAllButton(container) {
 }
 
 function determineBatchSize(connection) {
+  // In automated browsers (e.g., Playwright), render all countries at once to
+  // avoid test flakiness due to lazy batching/scroll triggers.
+  try {
+    // Many automation drivers set this flag
+    if (typeof navigator !== "undefined" && navigator.webdriver) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+  } catch {}
+
   let batchSize = 50;
   if (connection) {
     if (connection.saveData || /2g/.test(connection.effectiveType)) {

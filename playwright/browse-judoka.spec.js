@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationChecks.js";
-import judoka from "../src/data/judoka.json" with { type: "json" };
+// Use the same dataset the app fetches via route fixtures to avoid mismatches
+import judoka from "../tests/fixtures/judoka.json" with { type: "json" };
 import countryCodeMapping from "../src/data/countryCodeMapping.json" with { type: "json" };
 
 const COUNTRY_TOGGLE_LOCATOR = "country-toggle";

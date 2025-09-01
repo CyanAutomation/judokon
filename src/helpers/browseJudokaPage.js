@@ -108,6 +108,12 @@ export async function setupBrowseJudokaPage() {
   countryPanel.setAttribute("hidden", "");
   toggleCountryPanelMode(countryPanel, false);
 
+  // Attach the country panel toggle immediately so early user/test clicks
+  // still open the panel and lazily build the country slider. This avoids
+  // races where data is still loading and the toggle hasn't been bound yet.
+  // Note: country filter wiring that depends on loaded judoka remains below.
+  setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
+
   /**
    * Fetch judoka and gokyo data concurrently.
    *
@@ -191,7 +197,6 @@ export async function setupBrowseJudokaPage() {
       }
 
       const clearBtn = document.getElementById("clear-filter");
-      setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
       setupLayoutToggle(layoutToggle, countryPanel);
       const ariaLive = carouselContainer.querySelector(".carousel-aria-live");
       setupCountryFilter(
