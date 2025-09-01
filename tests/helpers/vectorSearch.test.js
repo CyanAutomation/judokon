@@ -11,11 +11,14 @@ vi.mock("../../src/helpers/dataUtils.js", () => ({
 let fetchJsonMock;
 
 beforeEach(async () => {
+  // Force loader to use JSON manifest path instead of offline binary during these tests
+  process.env.RAG_FORCE_JSON = '1';
   fetchJsonMock = await setupMockDataset();
 });
 
 afterEach(() => {
   fetchJsonMock.mockReset();
+  delete process.env.RAG_FORCE_JSON;
 });
 
 describe("vectorSearch scoring", () => {

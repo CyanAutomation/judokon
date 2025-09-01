@@ -36,8 +36,9 @@ export async function loadEmbeddings() {
   if (!embeddingsPromise) {
     embeddingsPromise = (async () => {
       try {
-        // Prefer the compact offline index in Node (binary vectors + JSON metadata).
-        if (isNodeEnvironment()) {
+        // Prefer the compact offline index in Node (binary vectors + JSON metadata),
+        // unless tests explicitly force JSON via RAG_FORCE_JSON env flag.
+        if (isNodeEnvironment() && !process?.env?.RAG_FORCE_JSON) {
           try {
             const metaUrl = new URL(`${DATA_DIR}offline_rag_metadata.json`);
             const vecUrl = new URL(`${DATA_DIR}offline_rag_vectors.bin`);

@@ -35,3 +35,8 @@ Next immediate: add Playwright visual assertions to confirm settings collapse be
 Next: add keyboard/mouse/timer specs (stat selection, next/skip, quit modal) and a simple end-to-end match simulation test using mocked orchestrator/debug hooks.
 
 Next: run the Playwright test and iterate if failures occur. After the test passes, consider adding more Playwright assertions for keyboard flows and full-round simulation.
+
+Update: Center `#cli-round` in the header
+
+- [x] Add CSS to center `#cli-round` in the header on wide viewports and fall back to normal flow on narrow viewports.
+
