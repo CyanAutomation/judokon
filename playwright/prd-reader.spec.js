@@ -11,6 +11,10 @@ test.describe("PRD Reader page", () => {
       route.fulfill({ path: "tests/fixtures/prdIndex.json" })
     );
     await page.route("**/docA.md", (route) => route.fulfill({ path: "tests/fixtures/docA.md" }));
+    await page.route("https://esm.sh/dompurify@3.2.6", (route) =>
+      route.fulfill({ path: "node_modules/dompurify/dist/purify.es.mjs" })
+    );
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/src/pages/prdViewer.html");
   });
 
@@ -24,7 +28,7 @@ test.describe("PRD Reader page", () => {
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
     expect(hasOverflow).toBe(false);
-    await expect(container).not.toHaveText("");
+    expect(await container.textContent()).not.toBe("");
     const original = await container.innerHTML();
 
     await page.keyboard.press("ArrowRight");
