@@ -32,29 +32,27 @@ export async function waitForSettingsReady(page) {
  * @param {number} [timeout=10000]
  */
 export async function waitForBattleState(page, stateName, timeout = 10000) {
-  const ok = await page.evaluate(
-    async (args) => {
-      const s = args.stateName;
-      const t = args.timeout;
-      // Poll until the DOM-mirrored state matches
-      const start = Date.now();
-      const deadline = start + (typeof t === "number" ? t : 10000);
-      while (Date.now() < deadline) {
+  // Prefer Playwright-side polling to avoid long-lived evaluate sessions
+  // that can be torn down when the test ends and produce noisy "Test ended" errors.
+  try {
+    await page.waitForFunction(
+      (s) => {
         const d = document.body?.dataset?.battleState || null;
         let w = null;
-        if (typeof window.getStateSnapshot === "function") {
-          try {
+        try {
+          if (typeof window.getStateSnapshot === "function") {
             w = window.getStateSnapshot().state;
-          } catch {}
-        }
-        if (d === s || w === s) return true;
-        await new Promise((r) => setTimeout(r, 25));
-      }
-      return false;
-    },
-    { stateName, timeout }
-  );
-  if (ok) return;
+          }
+        } catch {}
+        return d === s || w === s;
+      },
+      stateName,
+      { timeout }
+    );
+    return;
+  } catch (err) {
+    // Fall through to diagnostics below.
+  }
   // Timed out: include page-side diagnostics
   let snapshot = "";
   try {

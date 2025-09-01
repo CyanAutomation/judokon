@@ -154,10 +154,30 @@ export function startCooldown(_store, scheduler = realScheduler) {
   if (btn) {
     btn.disabled = false;
     delete btn.dataset.nextReady;
+    // Re-assert enabled state on the next tick to guard against any
+    // late listeners that might replace/disable the button during
+    // round resolution → cooldown transitions.
+    try {
+      setTimeout(() => {
+        const b = document.getElementById("next-button");
+        if (b) b.disabled = false;
+      }, 0);
+    } catch {}
   }
   const cooldownSeconds = computeNextRoundCooldown();
   wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
   currentNextRound = controls;
+  // Expose a minimal test hook to skip the cooldown in Playwright without
+  // depending on module identity. Kept off of public API and guarded.
+  try {
+    if (typeof window !== "undefined") {
+      window.__skipNextRoundCooldown = () => {
+        try {
+          currentNextRound?.timer?.stop();
+        } catch {}
+      };
+    }
+  } catch {}
   return controls;
 }
 

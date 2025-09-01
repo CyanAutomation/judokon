@@ -8,10 +8,8 @@ import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.j
 import { resolveRound } from "./roundResolver.js";
 import { guard, guardAsync, scheduleGuard } from "./guard.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
+import { debugLog } from "../debug.js";
 // Removed unused import for enableNextRoundButton
-
-// Test-mode flag for muting noisy logs in Vitest
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Handle round-related errors in a consistent manner.
@@ -502,7 +500,7 @@ export async function waitingForPlayerActionExit() {
  */
 export async function computeAndDispatchOutcome(store, machine) {
   try {
-    console.log("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
+    debugLog("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
     if (!isStateTransition(null, "roundDecision")) return;
     const rd = readDebugState("roundDebug");
     const resolved = rd && typeof rd.resolvedAt === "number";
@@ -512,7 +510,7 @@ export async function computeAndDispatchOutcome(store, machine) {
       return;
     }
     const outcomeEvent = determineOutcomeEvent(store);
-    console.log("DEBUG: computeAndDispatchOutcome outcomeEvent", { outcomeEvent });
+    debugLog("DEBUG: computeAndDispatchOutcome outcomeEvent", { outcomeEvent });
     try {
       exposeDebugState("guardFiredAt", Date.now());
       exposeDebugState("guardOutcomeEvent", outcomeEvent || "none");
@@ -540,7 +538,7 @@ function determineOutcomeEvent(store) {
     const pCard = document.getElementById("player-card");
     const oCard = document.getElementById("opponent-card");
     const playerVal = getStatValue(pCard, stat);
-    console.log("DEBUG: computeAndDispatchOutcome values", { stat, playerVal });
+    debugLog("DEBUG: computeAndDispatchOutcome values", { stat, playerVal });
     let opponentVal = 0;
     try {
       const opp = getOpponentJudoka();
@@ -632,7 +630,7 @@ async function dispatchOutcome(outcomeEvent, machine) {
  */
 export function recordEntry() {
   try {
-    if (!IS_VITEST) console.log("DEBUG: Entering roundDecisionEnter");
+    debugLog("DEBUG: Entering roundDecisionEnter");
   } catch {}
   try {
     if (typeof window !== "undefined") {
@@ -671,7 +669,7 @@ export async function resolveSelectionIfPresent(store) {
     opponentVal = getStatValue(oCard, stat);
   }
   try {
-    console.log("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
+    debugLog("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
   } catch {}
   await resolveRound(store, stat, playerVal, opponentVal);
   return true;

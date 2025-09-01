@@ -3,6 +3,7 @@ import { dispatchBattleEvent } from "./orchestrator.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
+import { debugLog } from "../debug.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -14,7 +15,6 @@ import { exposeDebugState, readDebugState } from "./debugHooks.js";
  * 4. `finalizeRoundResult` evaluates the round and clears any pending guards.
  */
 
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 // Guard to prevent concurrent resolution attempts. Module-scoped so multiple
 // callers share the same guard in test environments where modules are not
 // re-instantiated between tests.
@@ -88,15 +88,14 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   try {
-    if (!IS_VITEST)
-      console.log("DEBUG: computeRoundResult start", { stat, playerVal, opponentVal });
+    debugLog("DEBUG: computeRoundResult start", { stat, playerVal, opponentVal });
   } catch {}
   // Coerce values to finite numbers to avoid NaN blocking outcome computation.
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
   const result = evaluateRound(store, stat, pVal, oVal);
   try {
-    if (!IS_VITEST) console.log("DEBUG: evaluateRound result", result);
+    debugLog("DEBUG: evaluateRound result", result);
   } catch {}
   const outcomeEvent =
     result.outcome === "winPlayer"
@@ -108,7 +107,7 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   // within a state's onEnter handler. Schedule via microtask and macrotask so
   // transitions run after onEnter completes.
   try {
-    if (!IS_VITEST) console.log("DEBUG: Dispatching outcomeEvent:", outcomeEvent);
+    debugLog("DEBUG: Dispatching outcomeEvent:", outcomeEvent);
     await dispatchBattleEvent(outcomeEvent);
     if (result.matchEnded) {
       await dispatchBattleEvent("matchPointReached");
@@ -116,7 +115,7 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
       await dispatchBattleEvent("continue");
     }
   } catch (error) {
-    if (!IS_VITEST) console.error("DEBUG: Error dispatching outcome events:", error);
+    debugLog("DEBUG: Error dispatching outcome events:", error);
   }
   resetStatButtons();
   // Proactively update the scoreboard with the resolved scores so tests and
@@ -174,14 +173,14 @@ export async function ensureRoundDecisionState() {
  */
 export async function delayAndRevealOpponent(delayMs, sleep, stat) {
   try {
-    if (!IS_VITEST) console.log("DEBUG: resolveRound sleep", { delayMs, stat });
+    debugLog("DEBUG: resolveRound sleep", { delayMs, stat });
   } catch {}
   try {
     exposeDebugState("roundDebug", { resolving: true });
   } catch {}
   await sleep(delayMs);
   try {
-    if (!IS_VITEST) console.log("DEBUG: resolveRound before opponentReveal", { stat });
+    debugLog("DEBUG: resolveRound before opponentReveal", { stat });
   } catch {}
   emitBattleEvent("opponentReveal");
 }
@@ -213,7 +212,7 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
     if (rd) rd.resolvedAt = Date.now();
   } catch {}
   try {
-    if (!IS_VITEST) console.log("DEBUG: resolveRound result", result);
+    debugLog("DEBUG: resolveRound result", result);
   } catch {}
   return result;
 }

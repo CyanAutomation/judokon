@@ -1,4 +1,5 @@
 import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
+import { debugLog } from "../debug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -48,7 +49,7 @@ export async function createStateManager(
     context,
     getState: () => current,
     async dispatch(eventName, payload) {
-      console.log("dispatch called with", eventName, payload);
+      debugLog("dispatch called with", eventName, payload);
       const state = byName.get(current);
       const trigger = state?.triggers?.find((t) => t.on === eventName);
       let target = trigger?.target;
