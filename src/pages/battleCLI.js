@@ -63,7 +63,7 @@ let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
 let ignoreNextAdvanceClick = false;
 let roundResolving = false;
-const statDisplayNames = {};
+let statDisplayNames = {};
 
 // Test hooks to access internal timer state
 export const __test = {
@@ -606,7 +606,7 @@ export async function renderStatList() {
     const list = byId("cli-stats");
     if (list && Array.isArray(stats)) {
       list.innerHTML = "";
-      for (const key of Object.keys(statDisplayNames)) delete statDisplayNames[key];
+      statDisplayNames = {};
       stats
         .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
         .forEach((s) => {

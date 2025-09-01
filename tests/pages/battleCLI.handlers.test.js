@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -53,13 +53,25 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   }));
   window.__TEST__ = true;
   const { battleCLI } = await import("../../src/pages/index.js");
-  document.body.innerHTML = '<div id="cli-stats"></div><ul id="cli-help"></ul>';
-  await battleCLI.renderStatList();
-  document.body.innerHTML = "";
   return { handlers: battleCLI, emitBattleEvent, updateBattleStateBadge };
 }
 
+async function setupHandlers(options) {
+  const result = await loadHandlers(options);
+  await result.handlers.renderStatList();
+  return result;
+}
+
 describe("battleCLI event handlers", () => {
+  beforeEach(() => {
+    document.body.innerHTML =
+      '<div id="cli-stats"></div>' +
+      '<ul id="cli-help"></ul>' +
+      '<div id="round-message"></div>' +
+      '<div id="snackbar-container"></div>' +
+      '<main id="cli-main"></main>' +
+      '<pre id="cli-verbose-log"></pre>';
+  });
   afterEach(() => {
     document.body.innerHTML = "";
     delete window.__TEST__;
@@ -78,8 +90,7 @@ describe("battleCLI event handlers", () => {
   });
 
   it("updates round message on scoreboard event", async () => {
-    const { handlers } = await loadHandlers();
-    document.body.innerHTML = '<div id="round-message"></div>';
+    const { handlers } = await setupHandlers();
     handlers.handleScoreboardShowMessage({ detail: "Hello" });
     expect(document.getElementById("round-message").textContent).toBe("Hello");
     handlers.handleScoreboardClearMessage();
@@ -87,8 +98,7 @@ describe("battleCLI event handlers", () => {
   });
 
   it("shows stalled message when auto-select disabled", async () => {
-    const { handlers } = await loadHandlers({ autoSelect: false });
-    document.body.innerHTML = '<div id="snackbar-container"></div>';
+    const { handlers } = await setupHandlers({ autoSelect: false });
     handlers.handleStatSelectionStalled();
     expect(document.querySelector(".snackbar").textContent).toBe(
       "Stat selection stalled. Pick a stat."
@@ -97,8 +107,7 @@ describe("battleCLI event handlers", () => {
 
   it("runs countdown and emits finished", async () => {
     vi.useFakeTimers();
-    const { handlers, emitBattleEvent } = await loadHandlers();
-    document.body.innerHTML = '<div id="snackbar-container"></div>';
+    const { handlers, emitBattleEvent } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 2 } });
     expect(document.querySelector(".snackbar").textContent).toBe("Next round in: 2");
     vi.advanceTimersByTime(1000);
@@ -110,8 +119,7 @@ describe("battleCLI event handlers", () => {
 
   it("clears countdown on finish", async () => {
     vi.useFakeTimers();
-    const { handlers } = await loadHandlers();
-    document.body.innerHTML = '<div id="snackbar-container"></div>';
+    const { handlers } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 1 } });
     handlers.handleCountdownFinished();
     expect(document.querySelector(".snackbar").textContent).toBe("");
@@ -119,9 +127,8 @@ describe("battleCLI event handlers", () => {
   });
 
   it("updates message after round resolved", async () => {
-    const { handlers } = await loadHandlers();
+    const { handlers } = await setupHandlers();
     const speedName = statNamesData.find((s) => s.statIndex === 2).name;
-    document.body.innerHTML = '<div id="round-message"></div>';
     handlers.handleRoundResolved({
       detail: {
         result: { message: "Win", playerScore: 1, opponentScore: 0 },
@@ -136,9 +143,8 @@ describe("battleCLI event handlers", () => {
   });
 
   it("displays hyphenated stat names", async () => {
-    const { handlers } = await loadHandlers();
+    const { handlers } = await setupHandlers();
     const kumikataName = statNamesData.find((s) => s.statIndex === 4).name;
-    document.body.innerHTML = '<div id="round-message"></div>';
     handlers.handleRoundResolved({
       detail: {
         result: { message: "Win", playerScore: 1, opponentScore: 0 },
@@ -151,22 +157,21 @@ describe("battleCLI event handlers", () => {
   });
 
   it("adds play again button on match over", async () => {
-    const { handlers } = await loadHandlers();
-    document.body.innerHTML = '<main id="cli-main"></main>';
+    const { handlers } = await setupHandlers();
     handlers.handleMatchOver();
     expect(document.getElementById("play-again-button")).toBeTruthy();
   });
 
   it("clears verbose log on new match start", async () => {
-    const { handlers } = await loadHandlers();
-    document.body.innerHTML = '<pre id="cli-verbose-log">old</pre>';
+    const { handlers } = await setupHandlers();
+    document.getElementById("cli-verbose-log").textContent = "old";
     handlers.handleBattleState({ detail: { from: "roundOver", to: "matchStart" } });
     expect(document.getElementById("cli-verbose-log").textContent).toBe("");
   });
 
   it("clears verbose log when play again clicked", async () => {
-    const { handlers, emitBattleEvent } = await loadHandlers();
-    document.body.innerHTML = '<main id="cli-main"></main><pre id="cli-verbose-log">old</pre>';
+    const { handlers, emitBattleEvent } = await setupHandlers();
+    document.getElementById("cli-verbose-log").textContent = "old";
     handlers.handleMatchOver();
     const btn = document.getElementById("play-again-button");
     const { resetGame } = await import("../../src/helpers/classicBattle/roundManager.js");
@@ -179,8 +184,7 @@ describe("battleCLI event handlers", () => {
   });
 
   it("handles battle state transitions", async () => {
-    const { handlers, updateBattleStateBadge } = await loadHandlers();
-    document.body.innerHTML = '<div id="snackbar-container"></div>';
+    const { handlers, updateBattleStateBadge } = await setupHandlers();
     const { setAutoContinue } = await import(
       "../../src/helpers/classicBattle/orchestratorHandlers.js"
     );
