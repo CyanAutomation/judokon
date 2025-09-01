@@ -12,7 +12,7 @@ let fetchJsonMock;
 
 beforeEach(async () => {
   // Force JSON manifest path for loader in Node environment
-  process.env.RAG_FORCE_JSON = '1';
+  process.env.RAG_FORCE_JSON = "1";
   fetchJsonMock = await setupMockDataset();
 });
 
