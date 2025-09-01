@@ -40,8 +40,7 @@ export default defineConfig([
         ...globals.jest // Enable jest globals in test files
       }
     }
-  }
-  ,
+  },
   // YAML support (GitHub Actions, config files)
   // Use plugin-provided flat configs for sensible defaults
   ymlPlugin.configs["flat/standard"],
