@@ -47,5 +47,3 @@ Update: Make `#cli-shortcuts` an in-flow collapsible panel
 Update: Ensure `#cli-shortcuts` has `.cli-block` class in markup
 
 - [x] Verified `#cli-shortcuts` element already includes `class="cli-block"` in the HTML; no markup change required.
-
-

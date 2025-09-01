@@ -10,7 +10,7 @@ vi.mock("../../src/helpers/dataUtils.js", () => ({
 describe("queryRag", () => {
   it("expands synonyms and returns expected matches", async () => {
     // Ensure loader uses JSON manifest path for this test
-    process.env.RAG_FORCE_JSON = '1';
+    process.env.RAG_FORCE_JSON = "1";
     const dataset = [
       {
         id: "grip",
