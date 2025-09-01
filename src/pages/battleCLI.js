@@ -453,14 +453,18 @@ function stopSelectionCountdown() {
  * @param {string} timerProperty
  * @pseudocode
  * if store?[timerProperty]
- *   try clearTimeout(store[timerProperty])
+ *   try clearTimeout and clearInterval on store[timerProperty]
  *   catch log error
  * set store[timerProperty] = null
  */
 function clearStoreTimer(store, timerProperty) {
   if (!store) return;
   try {
-    if (store[timerProperty]) clearTimeout(store[timerProperty]);
+    const timerId = store[timerProperty];
+    if (timerId) {
+      clearTimeout(timerId);
+      clearInterval(timerId);
+    }
   } catch (err) {
     console.error(`Failed to clear ${timerProperty}`, err);
   }

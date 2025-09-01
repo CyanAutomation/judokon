@@ -28,7 +28,7 @@ This directory contains unit tests for Classic Battle helpers.
 ## Guidelines
 
 - One behavior per test.
-- Prefer shared helpers in `domUtils.js`, `utils/testUtils.js`, `commonMocks.js`, and `setupTestEnv.js`.
+- Prefer shared helpers in `domUtils.js`, `utils/testUtils.js`, `commonMocks.js`, and `setupTestEnv.js`; new tests should rely on these instead of duplicating mocks or manual DOM setup.
 - Do not commit `it.skip`; use `test.todo` or remove obsolete tests instead.
 - Timer drift, state exposure, and Next button behavior belong in `timerService` tests; cooldown tests cover scheduling and ready dispatch.
 - Avoid duplicating coverage across suites. Interrupt behavior triggered by browser events (such as `pagehide`, global `error`, or `unhandledrejection`) is covered exclusively in `interruptHandlers.test.js`.
@@ -42,4 +42,4 @@ import { setupClassicBattleHooks } from "./setupTestEnv.js";
 const getEnv = setupClassicBattleHooks();
 ```
 
-New tests should rely on these helpers rather than duplicating mocks or manual DOM setup.
+`commonMocks.js` and `setupTestEnv.js` provide shared mocks and DOM wiring—new tests should import them instead of duplicating setup.
