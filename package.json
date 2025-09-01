@@ -21,7 +21,8 @@
     "update:codes": "node updateCodes.mjs",
     "check:jsdoc": "node scripts/run-check-jsdoc.mjs",
     "sync:agents": "node scripts/syncAgentDocs.mjs",
-    "rag:query": "node scripts/queryRagCli.mjs"
+    "rag:query": "node scripts/queryRagCli.mjs",
+    "build:offline-rag": "node scripts/buildOfflineRag.mjs"
   },
   "keywords": [],
   "author": "",
