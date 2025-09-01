@@ -61,4 +61,3 @@ Update: Improve focus visibility and add contrast tests
 - [x] Enhanced global `:focus` styles in `src/pages/battleCLI.html` (thicker outline + contrast ring).
 - [x] Added high-contrast focus state for `.cli-stat` (focused background + outline/box-shadow).
 - [x] Added accessibility contrast tests for focus visuals: `tests/styles/battleCLI.focusContrast.test.js`.
-

@@ -20,4 +20,3 @@ describe("battleCLI focus contrast", () => {
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 });
-
