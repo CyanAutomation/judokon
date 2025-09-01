@@ -32,7 +32,10 @@ test.describe("Browse Judoka screen", () => {
 
   test("filter panel toggles", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
-    const panel = page.getByRole("region");
+    const panel = page.getByRole("region", {
+      name: /country filter panel/i,
+      hidden: true
+    });
 
     await expect(panel).toBeHidden();
     await toggle.click();
