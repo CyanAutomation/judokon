@@ -197,7 +197,7 @@ export function bindRoundUIEventHandlers() {
           try {
             const { state } = getStateSnapshot();
             if (state === "roundDecision") {
-              const mod = await import("./eventDispatcher.js");
+              const mod = await import("./orchestrator.js");
               await mod.dispatchBattleEvent(outcomeEvent);
               await mod.dispatchBattleEvent("continue");
             }
@@ -334,7 +334,7 @@ export function bindRoundUIEventHandlersDynamic() {
           try {
             const { state } = getStateSnapshot();
             if (state === "roundDecision") {
-              const mod = await import("./eventDispatcher.js");
+              const mod = await import("./orchestrator.js");
               await mod.dispatchBattleEvent(outcomeEvent);
               await mod.dispatchBattleEvent("continue");
             }

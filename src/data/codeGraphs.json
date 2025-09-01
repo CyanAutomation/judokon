@@ -6048,7 +6048,7 @@
         "../battleEngineFacade.js",
         "../api/battleUI.js",
         "./battleEvents.js",
-        "./eventDispatcher.js",
+        "./orchestrator.js",
         "./roundResolver.js",
         "./cardStatUtils.js"
       ],
@@ -6160,7 +6160,7 @@
     "src/helpers/classicBattle/roundResolver.js": {
       "imports": [
         "../api/battleUI.js",
-        "./eventDispatcher.js",
+        "./orchestrator.js",
         "./battleEvents.js",
         "../battle/battleUI.js"
       ],
@@ -6455,7 +6455,7 @@
         "./orchestratorHandlers.js",
         "./roundManager.js",
         "./battleEvents.js",
-        "./eventDispatcher.js"
+        "./orchestrator.js"
       ],
       "functions": {
         "onStateTransition": {
@@ -6498,7 +6498,6 @@
             "clearTimeout",
             "resolve",
             "create",
-            "setMachine",
             "addEventListener",
             "handleTabInactive",
             "handleTabActive",
@@ -6605,19 +6604,6 @@
             "querySelector",
             "open"
           ],
-          "patterns": []
-        }
-      }
-    },
-    "src/helpers/classicBattle/eventDispatcher.js": {
-      "imports": [],
-      "functions": {
-        "setMachine": {
-          "calls": [],
-          "patterns": []
-        },
-        "dispatchBattleEvent": {
-          "calls": ["dispatch"],
           "patterns": []
         }
       }
@@ -6817,7 +6803,7 @@
       }
     },
     "src/helpers/classicBattle/autoSelectStat.js": {
-      "imports": ["../testModeUtils.js", "../battleEngineFacade.js", "./eventDispatcher.js"],
+      "imports": ["../testModeUtils.js", "../battleEngineFacade.js", "./orchestrator.js"],
       "functions": {
         "autoSelectStat": {
           "calls": [

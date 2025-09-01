@@ -6,7 +6,7 @@ import { setPointsToWin } from "../battleEngineFacade.js";
 import { initTooltips } from "../tooltip.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent } from "./battleEvents.js";
-import { dispatchBattleEvent } from "./eventDispatcher.js";
+import { dispatchBattleEvent } from "./orchestrator.js";
 import { wrap } from "../storage.js";
 import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battleDefaults.js";
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";

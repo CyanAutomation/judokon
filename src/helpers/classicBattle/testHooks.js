@@ -127,7 +127,7 @@ export async function triggerRoundTimeoutNow(store) {
   const { getOpponentJudoka } = await import("./cardSelection.js");
   const { getCardStatValue } = await import("./cardStatUtils.js");
   const { handleStatSelection } = await import("./selectionHandler.js");
-  const { dispatchBattleEvent } = await import("./eventDispatcher.js");
+  const { dispatchBattleEvent } = await import("./orchestrator.js");
   const { autoSelectStat } = await import("./autoSelectStat.js");
 
   const onExpiredSelect = async (stat, opts) => {

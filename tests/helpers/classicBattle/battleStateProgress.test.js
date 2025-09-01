@@ -114,7 +114,7 @@ describe("battle-state-progress stays in sync across transitions", () => {
     await setupClassicBattlePage();
 
     const { dispatchBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/eventDispatcher.js"
+      "../../../src/helpers/classicBattle/orchestrator.js"
     );
 
     await dispatchBattleEvent("startClicked");

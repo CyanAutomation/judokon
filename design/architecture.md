@@ -190,6 +190,11 @@ The manager exposes `getState()` and `dispatch(event)` and invokes
 `onEnter` handlers for each state. Transition hooks emit the
 `battleStateChange` event for listeners.
 
+Modules outside the orchestrator interact with the machine only through
+`dispatchBattleEvent` exported by `orchestrator.js`. The machine instance
+itself remains private to the orchestrator, with a getter available for
+tests when needed.
+
 ### Event Bus vs DOM Events
 
 - JU-DO-KON! uses a lightweight internal event bus (`classicBattle/battleEvents.getTarget()`) and also mirrors key events to the DOM for UI and tests.

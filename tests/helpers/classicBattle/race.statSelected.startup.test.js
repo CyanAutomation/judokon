@@ -24,7 +24,7 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", async () => {
 });
 
 // Capture dispatched machine events and simulate no machine at click time
-vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
+vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => {
   const events = [];
   return {
     dispatchBattleEvent: vi.fn(async (eventName) => {
@@ -72,7 +72,7 @@ describe("race: early stat selection still resolves", () => {
     await vi.advanceTimersByTimeAsync(1000);
     await p;
 
-    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
     const events = eventDispatcher.__getEvents();
 
     // Round flow should have proceeded and cleared the choice

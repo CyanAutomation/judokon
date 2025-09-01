@@ -15,7 +15,6 @@ import {
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
 import { emitBattleEvent, onBattleEvent } from "./battleEvents.js";
-import { setMachine } from "./eventDispatcher.js";
 import {
   domStateListener,
   createDebugLogListener,
@@ -25,6 +24,59 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 
 let machine = null;
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
+
+/**
+ * Dispatch an event to the active battle machine.
+ *
+ * @pseudocode
+ * 1. Exit early when no machine is registered.
+ * 2. Attempt to dispatch `eventName` with optional `payload` on the machine.
+ * 3. If dispatch throws:
+ *    a. Swallow the error to prevent cascading failures.
+ *    b. Emit `debugPanelUpdate` so UI diagnostics can react.
+ *
+ * @param {string} eventName - Event to send to the machine.
+ * @param {any} [payload] - Optional event payload.
+ * @returns {Promise<any>|void} Result of the dispatch when available.
+ */
+export async function dispatchBattleEvent(eventName, payload) {
+  if (!machine) {
+    try {
+      if (!IS_VITEST) {
+        console.log("DEBUG: orchestrator has no machine for", eventName);
+      }
+    } catch {}
+    return;
+  }
+  try {
+    if (!IS_VITEST) {
+      console.log("DEBUG: orchestrator dispatch", {
+        state: machine?.getState?.(),
+        eventName,
+        payload
+      });
+    }
+  } catch {}
+  try {
+    const res = await machine.dispatch(eventName, payload);
+    try {
+      if (!IS_VITEST) {
+        console.log("DEBUG: orchestrator dispatched", {
+          newState: machine?.getState?.(),
+          eventName
+        });
+      }
+    } catch {}
+    return res;
+  } catch {
+    try {
+      emitBattleEvent("debugPanelUpdate");
+    } catch (innerError) {
+      if (!IS_VITEST) console.error("Failed to emit debugPanelUpdate event:", innerError);
+    }
+  }
+}
 
 /**
  * Expose timer state for debugging when an engine exists.
@@ -48,7 +100,7 @@ let machine = null;
  * 4. Define the `onTransition` function executed on every state change:
  *    a. Call `onStateChange({ from, to, event })` when provided.
  *    b. Emit a `"battleStateChange"` battle event with `{ from, to, event }`.
- * 5. Create the battle state manager via `createStateManager` and store it with `setMachine`.
+ * 5. Create the battle state manager via `createStateManager` and store it.
  * 6. Register state transition listeners for DOM updates, debug logging, and waiter resolution.
  * 7. Emit an initial `"battleStateChange"` event so listeners mirror the starting state.
  * 8. Expose a getter for the machine, wire visibility listeners, and handle timer drift and injected errors.
@@ -94,7 +146,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   machine = await createStateManager(onEnter, context, onTransition);
-  setMachine(machine);
 
   const debugLogListener = createDebugLogListener(machine);
   const waiterResolver = createWaiterResolver();
@@ -114,7 +165,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).
-  exposeDebugState("getClassicBattleMachine", machine);
+  exposeDebugState("getClassicBattleMachine", () => machine);
 
   if (typeof document !== "undefined") {
     document.addEventListener("visibilitychange", () => {

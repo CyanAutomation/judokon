@@ -23,7 +23,7 @@ vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
   resolveRound: vi.fn()
 }));
 
-vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
   dispatchBattleEvent: vi.fn()
 }));
 
@@ -51,7 +51,7 @@ describe("handleStatSelection helpers", () => {
     ({ stopTimer } = await import("../../src/helpers/battleEngineFacade.js"));
     ({ emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js"));
     ({ showSnackbar } = await import("../../src/helpers/showSnackbar.js"));
-    ({ dispatchBattleEvent } = await import("../../src/helpers/classicBattle/eventDispatcher.js"));
+    ({ dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js"));
   });
 
   it("ignores repeated selections", async () => {

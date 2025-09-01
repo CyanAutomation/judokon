@@ -28,7 +28,7 @@ vi.mock("../../src/helpers/timerUtils.js", () => ({
   getDefaultTimer: () => Promise.resolve(2)
 }));
 
-vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
   dispatchBattleEvent: () => Promise.resolve()
 }));
 

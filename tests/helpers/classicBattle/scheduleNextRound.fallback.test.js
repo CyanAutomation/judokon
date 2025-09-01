@@ -29,7 +29,7 @@ describe("scheduleNextRound fallback timer", () => {
     vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
       setSkipHandler: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
       dispatchBattleEvent: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
