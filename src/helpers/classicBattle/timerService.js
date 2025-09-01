@@ -5,7 +5,7 @@ import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
-import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent } from "./battleEvents.js";
 import { isEnabled } from "../featureFlags.js";
 
 import { realScheduler } from "../scheduler.js";
@@ -13,10 +13,8 @@ import { dispatchBattleEvent } from "./orchestrator.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { getStateSnapshot } from "./battleDebug.js";
-import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { getNextRoundControls } from "./roundManager.js";
 
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 export { getNextRoundControls } from "./roundManager.js";
 
 // Skip handler utilities moved to skipHandler.js
