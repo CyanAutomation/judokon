@@ -1,7 +1,12 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { verifyPageBasics, NAV_CLASSIC_BATTLE } from "./fixtures/navigationChecks.js";
+import judoka from "../src/data/judoka.json" with { type: "json" };
+import countryCodeMapping from "../src/data/countryCodeMapping.json" with { type: "json" };
 
 const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
+
+const EXPECTED_COUNTRY_SLIDE_COUNT =
+  new Set(judoka.map((j) => j.countryCode).filter((code) => countryCodeMapping[code])).size + 1; // include 'All' slide
 
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
@@ -86,17 +91,7 @@ test.describe("Browse Judoka screen", () => {
     const slideCount = await slides.count();
     expect(slideCount).toBeGreaterThanOrEqual(4);
 
-    const expectedCount = await page.evaluate(async () => {
-      const [judoka, mapping] = await Promise.all([
-        fetch("/src/data/judoka.json").then((res) => res.json()),
-        fetch("/src/data/countryCodeMapping.json").then((res) => res.json())
-      ]);
-
-      const codes = new Set(judoka.map((j) => j.countryCode).filter((code) => mapping[code]));
-      return codes.size + 1; // include 'All' slide
-    });
-
-    expect(slideCount).toBe(expectedCount);
+    expect(slideCount).toBe(EXPECTED_COUNTRY_SLIDE_COUNT);
     await expect(slides.first().locator("img")).toHaveAttribute("alt", /all countries/i);
   });
 
