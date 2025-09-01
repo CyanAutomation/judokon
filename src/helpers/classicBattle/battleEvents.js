@@ -84,14 +84,8 @@ export function offBattleEvent(type, handler) {
  * 3. Dispatch the event.
  */
 export function emitBattleEvent(type, detail) {
-  // Dispatch separate events to the internal bus and the DOM. A CustomEvent
-  // cannot be dispatched on two different targets, so create distinct
-  // instances to ensure both channels receive the notification.
   try {
     getTarget().dispatchEvent(new CustomEvent(type, { detail }));
-  } catch {}
-  try {
-    document.dispatchEvent(new CustomEvent(type, { detail }));
   } catch {}
 }
 

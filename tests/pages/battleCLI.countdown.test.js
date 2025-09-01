@@ -4,7 +4,14 @@ import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 async function loadBattleCLI(autoSelect = true, withSkip = false) {
   const emitter = new EventTarget();
   const autoSelectStat = vi.fn();
-  const emitBattleEvent = vi.fn();
+  const handlers = {};
+  const emitBattleEvent = vi.fn((type, detail) => {
+    (handlers[type] || []).forEach((h) => h({ detail }));
+  });
+  const onBattleEvent = vi.fn((type, handler) => {
+    handlers[type] = handlers[type] || [];
+    handlers[type].push(handler);
+  });
   const setFlag = vi.fn();
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags: vi.fn(),
@@ -21,7 +28,7 @@ async function loadBattleCLI(autoSelect = true, withSkip = false) {
     initClassicBattleOrchestrator: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-    onBattleEvent: vi.fn(),
+    onBattleEvent,
     emitBattleEvent
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
@@ -88,10 +95,8 @@ describe("battleCLI countdown", () => {
   });
 
   it("updates countdown and auto-selects on expiry", async () => {
-    const { autoSelectStat } = await loadBattleCLI(true);
-    document.dispatchEvent(
-      new CustomEvent("battle:state", { detail: { to: "waitingForPlayerAction" } })
-    );
+    const { autoSelectStat, emitBattleEvent } = await loadBattleCLI(true);
+    emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
     const cd = document.getElementById("cli-countdown");
     expect(cd.dataset.remainingTime).toBe("30");
     vi.advanceTimersByTime(1000);
@@ -102,9 +107,7 @@ describe("battleCLI countdown", () => {
 
   it("emits statSelectionStalled when auto-select disabled", async () => {
     const { autoSelectStat, emitBattleEvent } = await loadBattleCLI(false);
-    document.dispatchEvent(
-      new CustomEvent("battle:state", { detail: { to: "waitingForPlayerAction" } })
-    );
+    emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
     vi.advanceTimersByTime(30000);
     expect(autoSelectStat).not.toHaveBeenCalled();
     expect(emitBattleEvent).toHaveBeenCalledWith("statSelectionStalled");

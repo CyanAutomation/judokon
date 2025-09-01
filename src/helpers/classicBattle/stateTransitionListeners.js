@@ -4,12 +4,11 @@
  * @module stateTransitionListeners
  */
 import { emitBattleEvent } from "./battleEvents.js";
-import { logStateTransition, resolveStateWaiters } from "./battleDebug.js";
+import { logStateTransition } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 
 /**
- * Mirror the current battle state to the DOM and dispatch the legacy
- * `battle:state` event.
+ * Mirror the current battle state to the DOM.
  *
  * @param {CustomEvent<{from:string|null,to:string,event:string|null}>} e
  *   State transition detail.
@@ -19,10 +18,9 @@ import { exposeDebugState } from "./debugHooks.js";
  * 2. If `document` is available:
  *    a. Update `document.body.dataset.battleState` to `to`.
  *    b. Set `prevBattleState` when `from` exists, otherwise remove it.
- *    c. Dispatch a `battle:state` event with the same detail.
  */
 export function domStateListener(e) {
-  const { from, to, event } = e.detail || {};
+  const { from, to } = e.detail || {};
   if (typeof document === "undefined") return;
   try {
     const ds = document.body?.dataset;
@@ -31,7 +29,6 @@ export function domStateListener(e) {
       if (from) ds.prevBattleState = from;
       else delete ds.prevBattleState;
     }
-    document.dispatchEvent(new CustomEvent("battle:state", { detail: { from, to, event } }));
   } catch {}
 }
 
@@ -62,24 +59,5 @@ export function createDebugLogListener(machine) {
       }
     } catch {}
     emitBattleEvent("debugPanelUpdate");
-  };
-}
-
-/**
- * Create a listener that resolves state transition waiters.
- *
- * @param {Map<string, {resolve:Function,timer?:ReturnType<typeof setTimeout>,__id?:string}[]>} stateWaiters
- *   Waiters keyed by target state.
- * @returns {(e: CustomEvent<{to:string}>) => void}
- *   Registered listener.
- * @summary Resolve promises waiting on a state.
- * @pseudocode
- * 1. Read the `to` state from `e.detail`.
- * 2. Resolve any waiters tracked via `resolveStateWaiters`.
- */
-export function createWaiterResolver() {
-  return function waiterResolver(e) {
-    const { to } = e.detail || {};
-    resolveStateWaiters(to);
   };
 }

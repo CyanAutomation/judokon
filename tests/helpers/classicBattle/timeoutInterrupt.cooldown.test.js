@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { waitForState, getStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
+import { getStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
+import { onBattleEvent, offBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   initRoundSelectModal: vi.fn(async (cb) => {
@@ -51,3 +52,20 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     expect(["roundStart", "waitingForPlayerAction"]).toContain(snapshot?.state);
   });
 });
+
+function waitForState(target, timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    if (getStateSnapshot().state === target) return resolve();
+    const handler = (e) => {
+      if (e.detail?.to === target) {
+        offBattleEvent("battleStateChange", handler);
+        resolve();
+      }
+    };
+    onBattleEvent("battleStateChange", handler);
+    setTimeout(() => {
+      offBattleEvent("battleStateChange", handler);
+      reject(new Error(`timeout for ${target}`));
+    }, timeout);
+  });
+}

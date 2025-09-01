@@ -33,6 +33,7 @@ describe("scheduleNextRound fallback timer", () => {
       dispatchBattleEvent: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+      onBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
     vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({

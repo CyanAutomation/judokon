@@ -70,14 +70,4 @@ describe("onTransition helpers", () => {
     offBattleEvent("battleStateChange", stateSpy);
     offBattleEvent("debugPanelUpdate", debugSpy);
   });
-
-  it("dispatches legacy DOM event on transition", async () => {
-    const handler = vi.fn();
-    document.addEventListener("battle:state", handler);
-    await machine.dispatch("stateA");
-    expect(handler).toHaveBeenCalledTimes(1);
-    const evt = handler.mock.calls[0][0];
-    expect(evt.detail).toEqual({ from: "init", to: "stateA", event: "stateA" });
-    document.removeEventListener("battle:state", handler);
-  });
 });

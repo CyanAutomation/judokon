@@ -36,13 +36,7 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
     async (args) => {
       const s = args.stateName;
       const t = args.timeout;
-      if (typeof window.waitForState === "function") {
-        try {
-          await window.waitForState(s, t);
-          return true;
-        } catch {}
-      }
-      // Fallback: poll
+      // Poll until the DOM-mirrored state matches
       const start = Date.now();
       const deadline = start + (typeof t === "number" ? t : 10000);
       while (Date.now() < deadline) {
