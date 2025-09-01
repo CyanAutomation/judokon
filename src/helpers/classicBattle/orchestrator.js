@@ -14,12 +14,14 @@ import {
   roundModificationEnter
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
-import { emitBattleEvent, onBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 
 let machine = null;
+let debugLogListener = null;
+let visibilityHandler = null;
 
 /**
  * Dispatch an event to the active battle machine.
@@ -115,7 +117,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
 
   machine = await createStateManager(onEnter, context, onTransition);
 
-  const debugLogListener = createDebugLogListener(machine);
+  debugLogListener = createDebugLogListener(machine);
 
   onBattleEvent("battleStateChange", domStateListener);
   onBattleEvent("battleStateChange", debugLogListener);
@@ -133,7 +135,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   exposeDebugState("getClassicBattleMachine", () => machine);
 
   if (typeof document !== "undefined") {
-    document.addEventListener("visibilitychange", () => {
+    visibilityHandler = () => {
       if (machine?.context?.engine) {
         if (document.hidden) {
           machine.context.engine.handleTabInactive();
@@ -141,7 +143,8 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
           machine.context.engine.handleTabActive();
         }
       }
-    });
+    };
+    document.addEventListener("visibilitychange", visibilityHandler);
   }
 
   if (machine?.context?.engine) {
@@ -177,6 +180,27 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     }
   } catch {}
   return machine;
+}
+
+/**
+ * Dispose listeners and clear the classic battle orchestrator reference.
+ *
+ * @pseudocode
+ * 1. Remove `battleStateChange` listeners.
+ * 2. Detach `visibilitychange` handler.
+ * 3. Nullify stored references.
+ */
+export function disposeClassicBattleOrchestrator() {
+  offBattleEvent("battleStateChange", domStateListener);
+  if (debugLogListener) {
+    offBattleEvent("battleStateChange", debugLogListener);
+    debugLogListener = null;
+  }
+  if (typeof document !== "undefined" && visibilityHandler) {
+    document.removeEventListener("visibilitychange", visibilityHandler);
+    visibilityHandler = null;
+  }
+  machine = null;
 }
 
 /**

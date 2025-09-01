@@ -6,7 +6,7 @@ import {
   startRound as startRoundCore,
   resetGame
 } from "../helpers/classicBattle/roundManager.js";
-import { initClassicBattleOrchestrator } from "../helpers/classicBattle/orchestrator.js";
+import * as battleOrchestrator from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../helpers/BattleEngine.js";
 import { setPointsToWin, getPointsToWin, getScores } from "../helpers/battleEngineFacade.js";
@@ -31,8 +31,11 @@ import { wrap } from "../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
-import { dispatchBattleEvent } from "../helpers/classicBattle/orchestrator.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
+
+const { initClassicBattleOrchestrator, dispatchBattleEvent } = battleOrchestrator;
+const disposeClassicBattleOrchestrator =
+  battleOrchestrator.disposeClassicBattleOrchestrator ?? (() => {});
 
 /**
  * Minimal DOM utils for the CLI page
@@ -151,6 +154,7 @@ function clearVerboseLog() {
  * clearVerboseLog()
  * remove play-again/start buttons
  * resetPromise = async () => {
+ *   disposeClassicBattleOrchestrator()
  *   await resetGame(store)
  *   updateRoundHeader(0, getPointsToWin())
  *   updateScoreLine()
@@ -170,6 +174,7 @@ async function resetMatch() {
     document.getElementById("start-match-button")?.remove();
   } catch {}
   const next = (async () => {
+    disposeClassicBattleOrchestrator();
     await resetGame(store);
     updateRoundHeader(0, getPointsToWin());
     updateScoreLine();
