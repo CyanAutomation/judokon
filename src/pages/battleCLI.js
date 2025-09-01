@@ -949,7 +949,12 @@ function handleStatClick(event) {
  * @param {MouseEvent} event - Click event.
  */
 function onClickAdvance(event) {
-  if (ignoreNextAdvanceClick) return;
+  if (ignoreNextAdvanceClick) {
+    // Safety: reset the flag and log the occurrence
+    ignoreNextAdvanceClick = false;
+    console.warn("ignoreNextAdvanceClick was true; reset and ignored advance click.");
+    return;
+  }
   // If help panel is open, ignore background clicks to avoid accidental advancement
   const shortcutsPanel = byId("cli-shortcuts");
   if (shortcutsPanel && !shortcutsPanel.hidden) return;
@@ -1168,9 +1173,10 @@ async function init() {
     event.preventDefault();
     event.stopPropagation();
     ignoreNextAdvanceClick = true;
-    requestAnimationFrame(() => {
-      const sec = byId("cli-shortcuts");
-      if (sec) sec.hidden = true;
+    const sec = byId("cli-shortcuts");
+    if (sec) sec.hidden = true;
+    // Clear the ignore flag on the microtask queue to avoid advancing from this click
+    queueMicrotask(() => {
       ignoreNextAdvanceClick = false;
     });
   });

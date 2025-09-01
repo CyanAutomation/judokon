@@ -204,6 +204,8 @@ JU-DO-KON! favors **deterministic gameplay and snappy input handling**. Use **st
 
 The game includes a **Skip** button that bypasses the current round and cooldown timers. Use it to fast-forward through matches when debugging or running rapid gameplay tests.
 
+On the Browse Judoka page, the country filter panel starts with the `hidden` attribute. When revealed, it must include `aria-label="Country filter panel"` for accessibility and Playwright tests. The country slider loads asynchronously after the panel opens.
+
 Run all Playwright tests with:
 
 ```bash
