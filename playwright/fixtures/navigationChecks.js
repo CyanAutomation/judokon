@@ -3,6 +3,9 @@ import { expect } from "@playwright/test";
 export const NAV_RANDOM_JUDOKA = "nav-12";
 export const NAV_CLASSIC_BATTLE = "nav-1";
 export const NAV_UPDATE_JUDOKA = "nav-9";
+export const NAV_BROWSE_JUDOKA = "nav-7";
+export const NAV_MEDITATION = "nav-11";
+export const NAV_SETTINGS = "nav-13";
 
 /**
  * Verify common page elements like title, navigation bar and logo.
