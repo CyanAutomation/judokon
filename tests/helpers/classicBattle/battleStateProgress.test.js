@@ -1,27 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  emitBattleEvent,
-  onBattleEvent,
-  offBattleEvent
-} from "../../../src/helpers/classicBattle/battleEvents.js";
-import { getStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
-
-function waitForState(target, timeout = 4000) {
-  return new Promise((resolve, reject) => {
-    if (getStateSnapshot().state === target) return resolve();
-    const handler = (e) => {
-      if (e.detail?.to === target) {
-        offBattleEvent("battleStateChange", handler);
-        resolve();
-      }
-    };
-    onBattleEvent("battleStateChange", handler);
-    setTimeout(() => {
-      offBattleEvent("battleStateChange", handler);
-      reject(new Error(`timeout for ${target}`));
-    }, timeout);
-  });
-}
+import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
+import { waitForState } from "../../waitForState.js";
 import {
   mockScheduler,
   mockFeatureFlags,
