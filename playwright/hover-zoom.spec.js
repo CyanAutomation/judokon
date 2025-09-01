@@ -6,7 +6,7 @@ const pageContent = `<!DOCTYPE html>
     <div class="card" id="hover-card">Card</div>
     <script type="module">
       import { addHoverZoomMarkers } from 'http://localhost:5000/src/helpers/setupHoverZoom.js';
-      window.hoverZoomReady = Promise.resolve(addHoverZoomMarkers());
+      window.hoverZoomReady = (addHoverZoomMarkers(), Promise.resolve());
     </script>
   </body>
 </html>`;

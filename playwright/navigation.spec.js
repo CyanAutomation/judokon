@@ -20,7 +20,8 @@ const links = [
 test("navigation links navigate to expected pages", async ({ page }) => {
   for (const { id, url } of links) {
     await page.goto("/");
-    await page.locator(`[data-testid="${id}"]`).evaluate((el) => el.click());
-    await expect(page).toHaveURL(new RegExp(`${url.replace(/\./g, "\\.")}$`));
+    const { origin } = new URL(page.url());
+    await page.getByTestId(id).click({ force: true });
+    await expect(page).toHaveURL(`${origin}${url}`);
   }
 });
