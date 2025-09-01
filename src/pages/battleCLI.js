@@ -63,7 +63,7 @@ let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
 let ignoreNextAdvanceClick = false;
 let roundResolving = false;
-let statDisplayNames = {};
+const statDisplayNames = {};
 
 // Test hooks to access internal timer state
 export const __test = {
@@ -637,7 +637,7 @@ export function autostartBattle() {
  * @summary Fetch `statNames.json`, build stat buttons, store display name map, and wire click handlers.
  * @pseudocode
  * 1. Fetch `statNames.json` and locate `#cli-stats`.
- * 2. Reset `statDisplayNames` and map `STATS[idx-1] -> name`.
+ * 2. Clear `statDisplayNames` and map `STATS[idx-1] -> name`.
  * 3. Sort and render stat entries into clickable elements with `data-stat-index`.
  * 4. Attach `handleStatClick` to the list and populate help text when available.
  *
@@ -649,7 +649,10 @@ export async function renderStatList() {
     const list = byId("cli-stats");
     if (list && Array.isArray(stats)) {
       list.innerHTML = "";
-      statDisplayNames = {};
+      // Clear any previous stat display names
+      for (const key of Object.keys(statDisplayNames)) {
+        delete statDisplayNames[key];
+      }
       stats
         .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
         .forEach((s) => {
