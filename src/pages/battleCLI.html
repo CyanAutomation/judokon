@@ -97,6 +97,16 @@
         margin-top: auto;
         border-top: 1px solid #3a3a3a;
       }
+      #cli-controls-hint {
+        position: relative;
+        z-index: 2;
+        padding: 4px 12px;
+        font-size: 12px;
+        text-align: center;
+        background: #0b0c0c;
+        color: #e6e6e6;
+        opacity: 0.8;
+      }
       /* Terminal-style snackbar line at the bottom */
       #snackbar-container {
         padding: 8px 12px;
@@ -263,6 +273,9 @@
       </main>
 
       <footer class="cli-footer" role="contentinfo">
+        <div id="cli-controls-hint" aria-hidden="true">
+          [1–5] Stats · [Enter/Space] Next · [H] Help · [Q] Quit
+        </div>
         <!-- Terminal-style snackbar container anchored at the bottom -->
         <div id="snackbar-container">
           <!-- snackbar.js will populate .snackbar elements here; in CLI this renders as a single bottom line. -->
