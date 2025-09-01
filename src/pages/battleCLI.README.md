@@ -10,7 +10,9 @@ This page exposes a small test helper under `window.__battleCLIinit` with severa
 
 Examples (in Playwright):
 
-await page.evaluate(() => window.**battleCLIinit.setCountdown(3));
-await page.evaluate(() => window.**battleCLIinit.setSettingsCollapsed(true));
+```js
+await page.evaluate(() => window.__battleCLIinit.setCountdown(3));
+await page.evaluate(() => window.__battleCLIinit.setSettingsCollapsed(true));
+```
 
 These helpers are intentionally small and synchronous to keep tests deterministic.
