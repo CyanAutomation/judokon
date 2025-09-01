@@ -115,7 +115,7 @@ export async function fetchContextById(id, radius = 1) {
   const [, filename, num] = match;
   const index = Number(num) - 1;
   try {
-    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url);
+    const url = new URL(`../../../design/productRequirementsDocuments/${filename}`, import.meta.url);
     let text;
     if (isNodeEnvironment()) {
       const { fileURLToPath } = await import("node:url");

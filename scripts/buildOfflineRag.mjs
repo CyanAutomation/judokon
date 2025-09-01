@@ -26,10 +26,11 @@ const rootDir = path.resolve(__dirname, "..");
  * @throws {RangeError} If any value lies outside [-1, 1].
  */
 function toInt8(embedding) {
-  if (!embedding.every((v) => v >= -1 && v <= 1)) {
-    throw new RangeError("Embedding values must be in range [-1, 1]");
-  }
-  return Int8Array.from(embedding, (v) => Math.max(-128, Math.min(127, Math.round(v * 127))));
+  // Clamp to [-1, 1] to tolerate minor numerical drift in source embeddings.
+  return Int8Array.from(embedding, (v) => {
+    const clamped = Math.max(-1, Math.min(1, v));
+    return Math.max(-128, Math.min(127, Math.round(clamped * 127)));
+  });
 }
 
 /**

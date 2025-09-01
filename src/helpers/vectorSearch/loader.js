@@ -1,5 +1,6 @@
 import { fetchJson } from "../dataUtils.js";
 import { DATA_DIR } from "../constants.js";
+import { isNodeEnvironment } from "../env.js";
 
 let embeddingsPromise;
 let cachedEmbeddings;
@@ -35,6 +36,33 @@ export async function loadEmbeddings() {
   if (!embeddingsPromise) {
     embeddingsPromise = (async () => {
       try {
+        // Prefer the compact offline index in Node (binary vectors + JSON metadata).
+        if (isNodeEnvironment()) {
+          try {
+            const metaUrl = new URL(`${DATA_DIR}offline_rag_metadata.json`);
+            const vecUrl = new URL(`${DATA_DIR}offline_rag_vectors.bin`);
+            const { fileURLToPath } = await import("node:url");
+            const { readFile } = await import("node:fs/promises");
+            const metaPath = fileURLToPath(metaUrl);
+            const vecPath = fileURLToPath(vecUrl);
+
+            const metaRaw = await readFile(metaPath, "utf8");
+            const { vectorLength, count, items } = JSON.parse(metaRaw);
+            if (!vectorLength || !Array.isArray(items)) throw new Error("Invalid offline metadata");
+
+            const buffer = await readFile(vecPath);
+            const out = new Array(items.length);
+            for (let i = 0; i < items.length; i++) {
+              const offset = i * vectorLength;
+              // Create a signed view over the Buffer's underlying ArrayBuffer
+              const view = new Int8Array(buffer.buffer, buffer.byteOffset + offset, vectorLength);
+              out[i] = { ...items[i], embedding: Array.from(view) };
+            }
+            return out;
+          } catch (offlineError) {
+            // Fall back to JSON manifest path if offline assets are missing
+          }
+        }
         // In browser contexts, allow a lightweight single-file override used by tests
         if (typeof window !== "undefined") {
           try {

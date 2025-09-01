@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@xenova/transformers", () => ({
+  // Provide both exports used by the script under test
+  env: {},
   pipeline: vi.fn(async () => {
     // Simulate model loading without any network calls
     return async () => ({ data: new Float32Array([0, 0, 0]) });
