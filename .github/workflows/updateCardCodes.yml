@@ -1,7 +1,8 @@
 name: Update Card Codes
 
 on:
-  workflow_dispatch: # Manual trigger
+  # Manual trigger
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -44,10 +45,10 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update card codes for judoka"
+          commit-message: Update card codes for judoka
           title: "PR: Update Judoka Card Codes"
-          body: "This PR updates the card codes for all judoka based on the latest data."
-          branch: "auto/update-card-codes"
+          body: This PR updates the card codes for all judoka based on the latest data.
+          branch: auto/update-card-codes
           labels: |
             automated
             backend

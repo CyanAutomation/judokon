@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import globals from "globals";
 import prettierPlugin from "eslint-plugin-prettier";
+import ymlPlugin from "eslint-plugin-yml";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
@@ -40,4 +41,9 @@ export default defineConfig([
       }
     }
   }
+  ,
+  // YAML support (GitHub Actions, config files)
+  // Use plugin-provided flat configs for sensible defaults
+  ymlPlugin.configs["flat/standard"],
+  ymlPlugin.configs["flat/prettier"]
 ]);

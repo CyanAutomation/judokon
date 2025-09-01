@@ -152,8 +152,11 @@ export function initInterRoundCooldown(machine) {
     onBattleEvent("countdownFinished", onFinished);
     emitBattleEvent("countdownStart", { duration });
     // In test mode, avoid relying on timers which might be mocked.
+    // Exception: the CLI page manages its own countdown; do not auto-advance
+    // immediately there to preserve click/keyboard semantics under test.
     try {
-      if (isTestModeEnabled && isTestModeEnabled()) {
+      const isCli = typeof document !== "undefined" && !!document.getElementById("cli-root");
+      if (!isCli && isTestModeEnabled && isTestModeEnabled()) {
         if (typeof queueMicrotask === "function") queueMicrotask(onFinished);
         else setTimeout(onFinished, 0);
         return;

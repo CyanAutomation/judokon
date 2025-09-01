@@ -41,7 +41,8 @@ name: Auto-format & LINT fix
 on:
   schedule:
     - cron: "0 3 * * *" # Runs at 3:00 AM UTC every day
-  workflow_dispatch: # Allows manual triggering
+  # Allows manual triggering
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -128,7 +129,7 @@ jobs:
 
             🌤️ **Weather Report**
             ${{ steps.weather.outputs.weather }}.
-          branch: "auto/format-lint-fixes"
+          branch: auto/format-lint-fixes
           labels: |
             automated
             documentation

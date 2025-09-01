@@ -281,7 +281,8 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   });
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
   try {
-    const ms = Math.max(0, Number(cooldownSeconds) * 1000) + 10;
+    const secs = Number.isFinite(Number(cooldownSeconds)) ? Number(cooldownSeconds) : 1;
+    const ms = Math.max(0, secs * 1000) + 200;
     setupFallbackTimer(ms, onExpired);
   } catch {}
 }

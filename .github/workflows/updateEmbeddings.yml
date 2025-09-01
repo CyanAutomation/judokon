@@ -3,7 +3,7 @@ name: Update Vector Database
 on:
   schedule:
     - cron: "15 3 * * *" # Runs daily at 03:15 UTC
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -88,7 +88,7 @@ jobs:
             💬 **Coding Aphorism**
             _${{ steps.quote.outputs.quote }}_
 
-          branch: "auto/update-vector-db"
+          branch: auto/update-vector-db
           labels: |
             automated
             backend

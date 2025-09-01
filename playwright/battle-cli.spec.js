@@ -98,23 +98,22 @@ test.describe("Classic Battle CLI", () => {
     await page.locator("#start-match-button").click();
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
 
-    // Play first round to reach roundOver
+    // Play first round; machine auto-advances outcome to cooldown
     await page.keyboard.press("1");
-    await page.locator("body").click();
-    await waitForBattleState(page, "roundOver", 10000);
+    await waitForBattleState(page, "cooldown", 10000);
 
     // Close shortcuts panel
     await page.keyboard.press("h");
     await page.locator("#cli-shortcuts-close").click();
     await expect(page.locator("#cli-shortcuts")).toBeHidden();
 
-    // First click after closing is ignored
+    // First click after closing is ignored (should still be in cooldown)
     await page.locator("body").click();
-    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "roundOver");
+    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
 
-    // Second click advances to cooldown
+    // Second click advances to next round
     await page.locator("body").click();
-    await waitForBattleState(page, "cooldown", 10000);
+    await waitForBattleState(page, "waitingForPlayerAction", 10000);
   });
 
   test("plays a full round and skips cooldown", async ({ page }) => {
@@ -128,7 +127,7 @@ test.describe("Classic Battle CLI", () => {
     const score = page.locator("#cli-score");
 
     await page.keyboard.press("1");
-    await waitForBattleState(page, "roundOver", 10000);
+    await waitForBattleState(page, "cooldown", 10000);
     const playerAfterRound = await score.getAttribute("data-score-player");
     const opponentAfterRound = await score.getAttribute("data-score-opponent");
     const cardBefore = await page.locator("#player-card ul").elementHandle();
@@ -152,16 +151,14 @@ test.describe("Classic Battle CLI", () => {
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     const score = page.locator("#cli-score");
     await page.keyboard.press("1");
-    await page.locator("body").click();
-    await waitForBattleState(page, "roundOver", 10000);
+    await waitForBattleState(page, "cooldown", 10000);
     const firstPlayer = await score.getAttribute("data-score-player");
     const firstOpponent = await score.getAttribute("data-score-opponent");
 
     await page.keyboard.press("Enter");
     await waitForBattleState(page, "waitingForPlayerAction", 10000);
     await page.keyboard.press("1");
-    await page.locator("body").click();
-    await waitForBattleState(page, "roundOver", 10000);
+    await waitForBattleState(page, "cooldown", 10000);
     const secondPlayer = await score.getAttribute("data-score-player");
     const secondOpponent = await score.getAttribute("data-score-opponent");
     expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(

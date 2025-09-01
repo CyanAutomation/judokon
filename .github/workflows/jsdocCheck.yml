@@ -1,7 +1,8 @@
 name: Check JSDoc & Pseudocode
 
 on:
-  workflow_dispatch: # Allows manual triggering
+  # Allows manual triggering
+  workflow_dispatch: {}
 
 jobs:
   check-jsdoc:

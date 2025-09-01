@@ -2,21 +2,26 @@ name: Sync Agent Docs
 
 on:
   push:
+    branches:
+      - main
     paths:
       - AGENTS.md
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 concurrency:
-  group: "sync-agent-docs"
+  group: sync-agent-docs
   cancel-in-progress: true
 
-permissions:
-  contents: write
-  pull-requests: write
 jobs:
   sync:
     runs-on: ubuntu-latest
     name: Sync Agent Docs
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      CI: true
     steps:
       # 1) Checkout
       - name: Checkout repository
@@ -29,6 +34,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       # 3) Dependencies
       - name: Install dependencies

@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: "playwright-baseline"
+  group: playwright-baseline
   cancel-in-progress: true
 
 permissions:
@@ -15,7 +15,7 @@ permissions:
 
 env:
   NODE_VERSION: 20
-  BRANCH_NAME: "auto/playwright-baselines"
+  BRANCH_NAME: auto/playwright-baselines
 
 jobs:
   regenerate_baselines:
@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
