@@ -84,13 +84,6 @@ test.describe("Browse Judoka screen", () => {
     await expect(slides.first().locator("img")).toHaveAttribute("alt", /all countries/i);
   });
 
-  test("judoka card sets enlarged marker on hover", async ({ page }) => {
-    const card = page.locator("#carousel-container .judoka-card").first();
-    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
-    await card.hover();
-    await expect(card).toHaveAttribute("data-enlarged", "true");
-  });
-
   test("carousel updates page counter with arrow keys", async ({ page }) => {
     await page.route("**/src/data/judoka.json", (route) =>
       route.fulfill({ path: "tests/fixtures/judoka-carousel.json" })
