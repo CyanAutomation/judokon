@@ -181,6 +181,30 @@ node scripts/evaluation/evaluateRAG.js
 ```
 
 It reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, and **Recall@5** for the expected sources.
+
+### Run queries offline
+
+1. **Download the model** (one-time):
+
+   ```bash
+   npm run generate:embeddings
+   ```
+
+   This fetches the quantized `Xenova/all-MiniLM-L6-v2` weights into `models/minilm`.
+2. **Build compact assets** for offline vector search:
+
+   ```bash
+   npm run build:offline-rag
+   ```
+
+   This writes `src/data/offline_rag_vectors.bin` and `src/data/offline_rag_metadata.json`.
+3. **Query without a network connection** using the regular CLI:
+
+   ```bash
+   npm run rag:query "How does the battle engine work?"
+   ```
+
+   The browser path continues to load embeddings via the manifest + shard loader, so no changes are required there.
 ## ⚡ Module Loading Policy: Static vs Dynamic Imports
 
 JU-DO-KON! favors **deterministic gameplay and snappy input handling**. Use **static imports** for core gameplay; reserve **dynamic imports** (`import('…')`) for optional screens and heavy tools.
