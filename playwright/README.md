@@ -5,6 +5,12 @@
 | `homepage.spec.js` | Verifies footer navigation link visibility, ordering, and other interactive elements. |
 | `homepage-layout.spec.js` | Focuses on responsive layout of the homepage grid and footer without testing navigation behavior. |
 
+# Battle tests
+
+| Spec file | Responsibilities |
+|-----------|------------------|
+| `skip-cooldown.spec.js` | Ensures the **Next** button can skip an active cooldown and re-enable stat buttons. |
+
 # Playwright Tests
 
 ## Settings tests

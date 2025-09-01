@@ -6,6 +6,8 @@ test.describe("Skip cooldown flow", () => {
     await page.addInitScript(() => {
       // Make cooldowns long so we can reliably test skipping them
       window.__NEXT_ROUND_COOLDOWN_MS = 15000;
+      // Ensure snackbars remain enabled regardless of prior runs
+      window.__disableSnackbars = false;
       localStorage.setItem(
         "settings",
         JSON.stringify({ featureFlags: { enableTestMode: { enabled: false } } })
@@ -27,7 +29,6 @@ test.describe("Skip cooldown flow", () => {
 
     // Check that the snackbar shows a long cooldown
     await page.waitForTimeout(1000);
-    await page.waitForSelector(".snackbar");
     const snackbar = page.locator(".snackbar");
     await expect(snackbar).toHaveText(/Next round in: 1\\d+s/);
 
