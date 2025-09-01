@@ -12,6 +12,21 @@ import { debugLog } from "../debug.js";
 // Removed unused import for enableNextRoundButton
 
 /**
+ * Whether the orchestrator should automatically dispatch "continue" after an
+ * outcome. Consumers like the CLI can toggle this for readability.
+ * @type {boolean}
+ */
+export let autoContinue = true;
+
+/**
+ * Update the `autoContinue` behavior.
+ * @param {boolean} val
+ */
+export function setAutoContinue(val) {
+  autoContinue = val !== false;
+}
+
+/**
  * Handle round-related errors in a consistent manner.
  *
  * @param {object} machine
@@ -576,7 +591,7 @@ async function dispatchOutcome(outcomeEvent, machine) {
       const run = async () => {
         try {
           await machine.dispatch(outcomeEvent);
-          await machine.dispatch("continue");
+          if (autoContinue) await machine.dispatch("continue");
         } catch {}
       };
       if (typeof queueMicrotask === "function") queueMicrotask(run);
@@ -584,7 +599,7 @@ async function dispatchOutcome(outcomeEvent, machine) {
     } catch {
       try {
         await machine.dispatch(outcomeEvent);
-        await machine.dispatch("continue");
+        if (autoContinue) await machine.dispatch("continue");
       } catch {}
     }
   } else {

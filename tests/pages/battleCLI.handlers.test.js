@@ -146,6 +146,10 @@ describe("battleCLI event handlers", () => {
   it("handles battle state transitions", async () => {
     const { handlers, updateBattleStateBadge } = await loadHandlers();
     document.body.innerHTML = '<div id="snackbar-container"></div>';
+    const { setAutoContinue } = await import(
+      "../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+    setAutoContinue(false);
     handlers.handleBattleState({ detail: { from: "a", to: "roundOver" } });
     expect(updateBattleStateBadge).toHaveBeenCalledWith("roundOver");
     expect(document.querySelector(".snackbar").textContent).toBe("Press Enter to continue");

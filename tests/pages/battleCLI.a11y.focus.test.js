@@ -101,6 +101,10 @@ describe("battleCLI accessibility", () => {
       const { emitBattleEvent } = await loadBattleCLI();
       emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
       expect(document.activeElement?.id).toBe("cli-stats");
+      const { setAutoContinue } = await import(
+        "../../src/helpers/classicBattle/orchestratorHandlers.js"
+      );
+      setAutoContinue(false);
       emitBattleEvent("battleStateChange", { to: "roundOver" });
       const bar = document.querySelector("#snackbar-container .snackbar");
       expect(bar?.textContent).toBe("Press Enter to continue");
