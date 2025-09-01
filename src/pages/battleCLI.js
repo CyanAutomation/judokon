@@ -1051,49 +1051,31 @@ function handleStatSelectionStalled() {
 
 function handleCountdownStart(e) {
   if (skipRoundCooldownIfEnabled()) return;
-  try {
-    const ds = document.body?.dataset;
-    if (ds) ds.battleState = "cooldown";
-  } catch {}
+  const ds = typeof document !== "undefined" ? document.body?.dataset : undefined;
+  if (ds) ds.battleState = "cooldown";
   const duration = Number(e.detail?.duration) || 0;
-  try {
-    if (cooldownTimer) clearTimeout(cooldownTimer);
-  } catch {}
-  try {
-    if (cooldownInterval) clearInterval(cooldownInterval);
-  } catch {}
+  if (cooldownTimer) clearTimeout(cooldownTimer);
+  if (cooldownInterval) clearInterval(cooldownInterval);
   cooldownTimer = null;
   cooldownInterval = null;
   if (duration > 0) {
     let remaining = duration;
     showBottomLine(`Next round in: ${remaining}`);
-    try {
-      cooldownInterval = setInterval(() => {
-        remaining -= 1;
-        if (remaining > 0) showBottomLine(`Next round in: ${remaining}`);
-      }, 1000);
-    } catch {}
-    try {
-      cooldownTimer = setTimeout(() => {
-        try {
-          emitBattleEvent("countdownFinished");
-        } catch {}
-      }, duration * 1000);
-    } catch {}
-  } else {
-    try {
+    cooldownInterval = setInterval(() => {
+      remaining -= 1;
+      if (remaining > 0) showBottomLine(`Next round in: ${remaining}`);
+    }, 1000);
+    cooldownTimer = setTimeout(() => {
       emitBattleEvent("countdownFinished");
-    } catch {}
+    }, duration * 1000);
+  } else {
+    emitBattleEvent("countdownFinished");
   }
 }
 
 function handleCountdownFinished() {
-  try {
-    if (cooldownTimer) clearTimeout(cooldownTimer);
-  } catch {}
-  try {
-    if (cooldownInterval) clearInterval(cooldownInterval);
-  } catch {}
+  if (cooldownTimer) clearTimeout(cooldownTimer);
+  if (cooldownInterval) clearInterval(cooldownInterval);
   cooldownTimer = null;
   cooldownInterval = null;
   clearBottomLine();
