@@ -77,9 +77,23 @@ test.describe("Browse Judoka screen", () => {
   test("displays country flags", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
     await toggle.click();
-    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
     const slides = page.locator("#country-list .slide");
-    await expect(slides).toHaveCount(4);
+    await slides.first().waitFor();
+
+    const slideCount = await slides.count();
+    expect(slideCount).toBeGreaterThanOrEqual(4);
+
+    const expectedCount = await page.evaluate(async () => {
+      const [judoka, mapping] = await Promise.all([
+        fetch("/src/data/judoka.json").then((res) => res.json()),
+        fetch("/src/data/countryCodeMapping.json").then((res) => res.json())
+      ]);
+
+      const codes = new Set(judoka.map((j) => j.countryCode).filter((code) => mapping[code]));
+      return codes.size + 1; // include 'All' slide
+    });
+
+    expect(slideCount).toBe(expectedCount);
     await expect(slides.first().locator("img")).toHaveAttribute("alt", /all countries/i);
   });
 
