@@ -11,6 +11,7 @@ import { isEnabled } from "../featureFlags.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
+import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { getStateSnapshot } from "./battleDebug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 import { getNextRoundControls } from "./roundManager.js";
