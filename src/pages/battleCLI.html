@@ -192,22 +192,26 @@
       #snackbar-container .snackbar {
         display: block;
       }
-      /* Floating help panel */
+      /* Shortcuts/help panel: make it a collapsible, in-flow block like `.cli-settings`.
+         Visibility is controlled via the `hidden` attribute so tests and scripts can toggle it.
+         Keep a modest max-width for readability and stack nicely on small screens. */
       #cli-shortcuts {
-        position: fixed;
-        top: 56px;
-        right: 12px;
-        background: #0b0c0c;
-        z-index: 1;
-        max-width: 260px;
+        position: static; /* participate in normal flow */
+        margin: 0; /* align with other .cli-block sections */
+        background: transparent; /* `.cli-block` provides visible background/border */
+        max-width: 760px;
+        width: 100%;
       }
       #cli-shortcuts-close {
-        float: right;
+        /* place the close control inline and visually aligned to the right */
+        float: none;
         background: none;
         border: 0;
         color: #f2f2f2;
         cursor: pointer;
         font-size: 16px;
+        display: inline-block;
+        margin-left: auto;
       }
       /* Ensure good contrast for links if any appear */
       a {

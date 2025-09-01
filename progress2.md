@@ -40,3 +40,12 @@ Update: Center `#cli-round` in the header
 
 - [x] Add CSS to center `#cli-round` in the header on wide viewports and fall back to normal flow on narrow viewports.
 
+Update: Make `#cli-shortcuts` an in-flow collapsible panel
+
+- [x] Convert `#cli-shortcuts` from a fixed floating panel to a collapsible block that uses the same `.cli-block` styling and `hidden` attribute for visibility.
+
+Update: Ensure `#cli-shortcuts` has `.cli-block` class in markup
+
+- [x] Verified `#cli-shortcuts` element already includes `class="cli-block"` in the HTML; no markup change required.
+
+

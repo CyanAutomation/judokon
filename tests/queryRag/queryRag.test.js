@@ -9,6 +9,8 @@ vi.mock("../../src/helpers/dataUtils.js", () => ({
 
 describe("queryRag", () => {
   it("expands synonyms and returns expected matches", async () => {
+    // Ensure loader uses JSON manifest path for this test
+    process.env.RAG_FORCE_JSON = '1';
     const dataset = [
       {
         id: "grip",
@@ -45,6 +47,7 @@ describe("queryRag", () => {
 
     const { queryRag } = await import("../../src/helpers/queryRag.js");
     const results = await queryRag("grip fighting");
+    delete process.env.RAG_FORCE_JSON;
 
     const vectorSearch = await import("../../src/helpers/vectorSearch/index.js");
     expect(vectorSearch.default.expandQueryWithSynonyms).toHaveBeenCalledWith("grip fighting");
