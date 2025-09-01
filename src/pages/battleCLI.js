@@ -60,6 +60,7 @@ let quitModal = null;
 let isQuitting = false;
 let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
+let ignoreNextAdvanceClick = false;
 
 // Test hooks to access internal timer state
 export const __test = {
@@ -939,6 +940,7 @@ function handleStatClick(event) {
  * Advance battle state when clicking outside interactive areas.
  *
  * @pseudocode
+ * if ignoreNextAdvanceClick -> return
  * state = body.dataset.battleState
  * if click inside .cli-stat or #cli-shortcuts -> return
  * if state == "roundOver" -> dispatch "continue"
@@ -947,6 +949,7 @@ function handleStatClick(event) {
  * @param {MouseEvent} event - Click event.
  */
 function onClickAdvance(event) {
+  if (ignoreNextAdvanceClick) return;
   // If help panel is open, ignore background clicks to avoid accidental advancement
   const shortcutsPanel = byId("cli-shortcuts");
   if (shortcutsPanel && !shortcutsPanel.hidden) return;
@@ -1164,8 +1167,12 @@ async function init() {
   close?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const sec = byId("cli-shortcuts");
-    if (sec) sec.hidden = true;
+    ignoreNextAdvanceClick = true;
+    requestAnimationFrame(() => {
+      const sec = byId("cli-shortcuts");
+      if (sec) sec.hidden = true;
+      ignoreNextAdvanceClick = false;
+    });
   });
   checkbox?.addEventListener("change", () => {
     setFlag("cliVerbose", !!checkbox.checked);

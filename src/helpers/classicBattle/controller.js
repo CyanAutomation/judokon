@@ -102,14 +102,18 @@ export class ClassicBattleController extends EventTarget {
     try {
       await this._performStartRound(this.store);
     } catch (error) {
-      try { console.log("[debug] startRound perform error", error); } catch {}
+      try {
+        console.log("[debug] startRound perform error", error);
+      } catch {}
       this.dispatchEvent(new CustomEvent("roundStartError", { detail: error }));
       throw error;
     }
     try {
       await this._awaitOpponentCard();
     } catch (error) {
-      try { console.log("[debug] startRound awaitOpponentCard error", error); } catch {}
+      try {
+        console.log("[debug] startRound awaitOpponentCard error", error);
+      } catch {}
       this.dispatchEvent(new CustomEvent("roundStartError", { detail: error }));
       throw error;
     }

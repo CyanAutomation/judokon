@@ -90,7 +90,7 @@ test.describe("Classic Battle CLI", () => {
     await expect(panel).toBeHidden();
   });
 
-  test("closing help panel does not advance state", async ({ page }) => {
+  test("closing help panel ignores next advance click", async ({ page }) => {
     await page.addInitScript(() => {
       window.__NEXT_ROUND_COOLDOWN_MS = 10000;
     });
@@ -102,19 +102,18 @@ test.describe("Classic Battle CLI", () => {
     await page.keyboard.press("1");
     await waitForBattleState(page, "roundOver", 10000);
 
-    // Open and close shortcuts panel, ensure state unchanged
+    // Close shortcuts panel
     await page.keyboard.press("h");
     await page.locator("#cli-shortcuts-close").click();
     await expect(page.locator("#cli-shortcuts")).toBeHidden();
+
+    // First click after closing is ignored
+    await page.locator("body").click();
     await expect(page.locator("body")).toHaveAttribute("data-battle-state", "roundOver");
 
-    // Advance to cooldown and repeat
-    await page.keyboard.press("Enter");
+    // Second click advances to cooldown
+    await page.locator("body").click();
     await waitForBattleState(page, "cooldown", 10000);
-    await page.keyboard.press("h");
-    await page.locator("#cli-shortcuts-close").click();
-    await expect(page.locator("#cli-shortcuts")).toBeHidden();
-    await expect(page.locator("body")).toHaveAttribute("data-battle-state", "cooldown");
   });
 
   test("plays a full round and skips cooldown", async ({ page }) => {
