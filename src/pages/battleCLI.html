@@ -30,6 +30,7 @@
         padding: 8px 12px;
         border-bottom: 1px solid #3a3a3a;
         display: flex;
+  align-items: center;
         justify-content: space-between;
         min-width: 18ch; /* reserve width for longest state (prevents wrap/jump) */
         box-sizing: border-box; /* include padding in fixed height */
@@ -81,7 +82,9 @@
       }
       .cli-block {
         padding: 8px 10px;
-        border: 1px solid #2a2a2a;
+        border: 1px solid #333;
+        background: #0f0f0f;
+        border-radius: 6px;
       }
       /* ASCII separators to mimic terminal panes */
       .ascii-sep {
@@ -112,9 +115,28 @@
         border-color: #9ad1ff;
         background: #1a1a1a;
       }
+      .cli-controls {
+        /* make controls lay out horizontally and center-aligned */
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
       .cli-status {
+        /* keep the status block aligned to the right and vertically centered in header */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-end;
         text-align: right;
         white-space: pre;
+        gap: 2px;
+      }
+      .cli-status > div {
+        line-height: 1;
+        font-size: 14px;
+        margin: 0;
+        padding: 0;
       }
       #cli-help {
         margin: 0;
