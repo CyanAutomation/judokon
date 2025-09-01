@@ -30,7 +30,7 @@
         padding: 8px 12px;
         border-bottom: 1px solid #3a3a3a;
         display: flex;
-  align-items: center;
+        align-items: center;
         justify-content: space-between;
         min-width: 18ch; /* reserve width for longest state (prevents wrap/jump) */
         box-sizing: border-box; /* include padding in fixed height */
@@ -117,14 +117,17 @@
         overflow-y: auto;
       }
       #cli-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 8px;
       }
       .cli-stat {
         padding: 4px 6px;
         background: #121212;
         border: 1px solid #3a3a3a;
+      }
+      .cli-stat:focus {
+        background: #272727;
       }
       .cli-stat.selected {
         border-color: #9ad1ff;
@@ -206,8 +209,9 @@
       input:focus,
       select:focus,
       [tabindex]:focus {
-        outline: 2px solid #9ad1ff;
+        outline: 3px solid #9ad1ff;
         outline-offset: 2px;
+        box-shadow: 0 0 0 3px #0b0c0c;
       }
       .skip-link {
         position: absolute;
@@ -233,8 +237,9 @@
       #start-match-button:hover,
       #start-match-button:focus {
         background: #1a1a1a;
-        outline: 2px solid #9ad1ff;
+        outline: 3px solid #9ad1ff;
         outline-offset: 2px;
+        box-shadow: 0 0 0 3px #0b0c0c;
       }
 
       /* Responsive tweaks: improve header wrapping and control spacing on narrow screens */
@@ -308,14 +313,14 @@
             >State: —</span
           >
         </div>
-  <!-- header title + status only; controls moved into main.settings for less prominence -->
+        <!-- header title + status only; controls moved into main.settings for less prominence -->
         <div class="cli-status" aria-live="polite" aria-atomic="true">
           <div id="cli-round">Round 0 of 0</div>
           <div id="cli-score" data-score-player="0" data-score-opponent="0" data-test="cli-score">
             You: 0 Opponent: 0
           </div>
         </div>
-  </header>
+      </header>
 
       <main id="cli-main" class="cli-main" role="main">
         <section aria-label="Round Status" class="cli-block">
@@ -327,7 +332,11 @@
         <section aria-label="Match Settings" class="cli-block cli-settings">
           <div class="cli-settings-row">
             <label for="points-select">Win target:</label>
-            <select id="points-select" aria-label="Points to win" data-tooltip-id="settings.pointsToWin">
+            <select
+              id="points-select"
+              aria-label="Points to win"
+              data-tooltip-id="settings.pointsToWin"
+            >
               <option value="5">5</option>
               <option value="10" selected>10</option>
               <option value="15">15</option>
@@ -335,13 +344,29 @@
           </div>
           <div class="cli-settings-row">
             <label for="verbose-toggle">Verbose:</label>
-            <input id="verbose-toggle" type="checkbox" aria-label="Toggle verbose logging" data-flag="cliVerbose" />
+            <input
+              id="verbose-toggle"
+              type="checkbox"
+              aria-label="Toggle verbose logging"
+              data-flag="cliVerbose"
+            />
             <label for="retro-toggle">Retro:</label>
-            <input id="retro-toggle" type="checkbox" aria-label="Toggle retro theme" data-flag="cliRetro" />
+            <input
+              id="retro-toggle"
+              type="checkbox"
+              aria-label="Toggle retro theme"
+              data-flag="cliRetro"
+            />
           </div>
           <div class="cli-settings-row">
             <label for="seed-input">Seed:</label>
-            <input id="seed-input" type="number" inputmode="numeric" aria-label="Deterministic seed (optional)" style="width: 6ch" />
+            <input
+              id="seed-input"
+              type="number"
+              inputmode="numeric"
+              aria-label="Deterministic seed (optional)"
+              style="width: 6ch"
+            />
           </div>
         </section>
 
