@@ -50,6 +50,9 @@ export function mockRoundManager() {
     createBattleStore: () => store,
     startRound: vi.fn(),
     resetGame: vi.fn(),
+    // Provide a simple fallback timer utility used by orchestrator handlers
+    // to advance state in headless/test environments.
+    setupFallbackTimer: (ms, cb) => setTimeout(cb, ms),
     // Legacy export kept for modules that import directly
     _resetForTest: vi.fn()
   }));

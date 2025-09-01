@@ -57,12 +57,14 @@ function createBattleDom() {
 
 describe("battleStateBadge displays state transitions", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     document.body.innerHTML = "";
     localStorage.clear();
     vi.resetModules();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
     vi.resetModules();
   });
