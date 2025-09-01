@@ -42,11 +42,18 @@
  */
 export function resolveDataDir(moduleUrl) {
   const normalizedUrl = typeof moduleUrl === "string" ? moduleUrl : moduleUrl.href;
-  const dataUrl = new URL("../data/", new URL(".", normalizedUrl));
-  if (!dataUrl.pathname.includes("/src/")) {
-    dataUrl.pathname = `/src${dataUrl.pathname}`;
+  // Anchor resolution at the repository's `src/` root, regardless of current subfolder depth.
+  // Example inputs → outputs:
+  // - file:///.../src/helpers/constants.js → file:///.../src/data/
+  // - file:///.../src/helpers/vectorSearch/loader.js → file:///.../src/data/
+  const srcMarker = "/src/";
+  const idx = normalizedUrl.indexOf(srcMarker);
+  if (idx !== -1) {
+    const srcRoot = normalizedUrl.slice(0, idx + srcMarker.length); // includes trailing slash
+    return new URL("data/", srcRoot).href;
   }
-  return dataUrl.href;
+  // Fallback: resolve relative to the calling module's directory
+  return new URL("../data/", new URL(".", normalizedUrl)).href;
 }
 
 /**
