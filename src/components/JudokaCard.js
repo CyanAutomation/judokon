@@ -44,7 +44,10 @@ export class JudokaCard extends Card {
 
     const { useObscuredStats = false, enableInspector = false } = options;
     const processedJudoka = useObscuredStats ? JudokaCard.#obscureJudoka(judoka) : judoka;
-    const cardType = processedJudoka.rarity?.toLowerCase() || "common";
+    // Detect Mystery card: prefer stable id=1
+    const isMystery = Number(judoka?.id) === 1;
+    // Force common type for simplified Mystery layout to match design decision
+    const cardType = isMystery ? "common" : processedJudoka.rarity?.toLowerCase() || "common";
 
     super("", { className: `judoka-card ${cardType}` });
 
@@ -52,10 +55,15 @@ export class JudokaCard extends Card {
     this.gokyoLookup = gokyoLookup;
     this.enableInspector = enableInspector;
     this.cardType = cardType;
+    this.isMysteryCard = isMystery && useObscuredStats;
 
     this.element.setAttribute("role", "button");
     this.element.setAttribute("tabindex", "0");
-    this.element.setAttribute("aria-label", `${this.judoka.firstname} ${this.judoka.surname} card`);
+    // Accessible label: override for Mystery card
+    const ariaLabel = this.isMysteryCard
+      ? "Mystery Judoka: hidden card"
+      : `${this.judoka.firstname} ${this.judoka.surname} card`;
+    this.element.setAttribute("aria-label", ariaLabel);
     this.element.classList.add(this.judoka.gender === "female" ? "female-card" : "male-card");
   }
 
@@ -138,6 +146,29 @@ export class JudokaCard extends Card {
   }
 
   /**
+   * Build the simplified Mystery section with a large question mark SVG.
+   *
+   * @pseudocode
+   * 1. Create a container with class `mystery-section` and aria-label.
+   * 2. Insert provided SVG using the given path and a 960 viewBox.
+   * 3. Return the element.
+   *
+   * @returns {HTMLElement}
+   */
+  #buildMysterySection() {
+    const section = document.createElement("div");
+    section.className = "mystery-section";
+    section.setAttribute("role", "img");
+    section.setAttribute("aria-label", "Mystery card icon");
+    section.innerHTML = `
+      <svg viewBox="0 0 960 960" aria-hidden="true" focusable="false">
+        <path d="M424-320q0-81 14.5-116.5T500-514q41-36 62.5-62.5T584-637q0-41-27.5-68T480-732q-51 0-77.5 31T365-638l-103-44q21-64 77-111t141-47q105 0 161.5 58.5T698-641q0 50-21.5 85.5T609-475q-49 47-59.5 71.5T539-320H424Zm56 240q-33 0-56.5-23.5T400-160q0-33 23.5-56.5T480-240q33 0 56.5 23.5T560-160q0 33-23.5 56.5T480-80Z" />
+      </svg>
+    `;
+    return section;
+  }
+
+  /**
    * Render the card and return the container element.
    *
    * @returns {Promise<HTMLElement>} Resolves with the card container element.
@@ -159,11 +190,18 @@ export class JudokaCard extends Card {
 
     const card = this.element;
     const topBar = await this.#buildTopBar(flagUrl);
-    const portrait = this.#buildPortraitSection();
-    const stats = await this.#buildStatsSection();
-    const signature = this.#buildSignatureMoveSection();
+    card.append(topBar);
 
-    card.append(topBar, portrait, stats, signature);
+    if (this.isMysteryCard) {
+      // Simplified layout: large SVG only, spanning remaining rows
+      const mystery = this.#buildMysterySection();
+      card.append(mystery);
+    } else {
+      const portrait = this.#buildPortraitSection();
+      const stats = await this.#buildStatsSection();
+      const signature = this.#buildSignatureMoveSection();
+      card.append(portrait, stats, signature);
+    }
     enableCardFlip(card);
     container.appendChild(card);
 

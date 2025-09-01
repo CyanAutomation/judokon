@@ -195,6 +195,24 @@ svg {
 .judoka-card:focus:not(:focus-visible) {
   outline: none;
 }
+
+/* Mystery section (simplified placeholder layout) */
+.mystery-section {
+  grid-row: 2 / 5; /* occupy portrait + stats + signature rows */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card-bg-color);
+  padding: var(--space-lg);
+}
+
+.mystery-section svg {
+  width: 60%;
+  height: 60%;
+  max-width: 85%;
+  max-height: 85%;
+  fill: var(--color-text-inverted);
+}
 /* Common card variables */
 .judoka-card.common {
   --card-bg-color: #001749;
