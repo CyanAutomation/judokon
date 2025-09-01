@@ -1,9 +1,11 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { mockDocsMap, basicParser } from "./prdReaderPage.js";
 
 describe("prdReaderPage", () => {
   afterEach(() => {
     history.replaceState(null, "", "/");
+    vi.resetModules();
+    vi.restoreAllMocks();
   });
 
   it("loads and sorts file list", async () => {
@@ -376,5 +378,35 @@ describe("prdReaderPage", () => {
     expect(history.state.index).toBe(0);
     expect(container.innerHTML).toContain("First");
     expect(list.children[0].getAttribute("aria-current")).toBe("page");
+  });
+
+  it("skips prefetching when test mode flag is enabled", async () => {
+    vi.doMock("../../src/helpers/settingsCache.js", async () => {
+      const actual = await vi.importActual("../../src/helpers/settingsCache.js");
+      return { ...actual, getFeatureFlag: () => true };
+    });
+
+    const docs = { "a.md": undefined, "b.md": undefined };
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content" tabindex="-1"></div>
+      <button data-nav="prev">Prev</button>
+      <button data-nav="next">Next</button>
+    `;
+
+    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const { getSanitizer } = await import("../../src/helpers/sanitizeHtml.js");
+    await getSanitizer();
+    const fetchMock = vi.fn(() =>
+      Promise.resolve({ ok: true, text: () => Promise.resolve("# Doc") })
+    );
+    global.fetch = fetchMock;
+
+    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    await setupPrdReaderPage(docs, basicParser);
+    await Promise.resolve();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

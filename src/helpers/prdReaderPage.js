@@ -5,6 +5,7 @@ import { SidebarList } from "../components/SidebarList.js";
 import { getPrdTaskStats } from "./prdTaskStats.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 import { createSpinner } from "../components/Spinner.js";
+import { getFeatureFlag } from "../helpers/settingsCache.js";
 
 export class SidebarState {
   /**
@@ -356,7 +357,7 @@ export function initNavigationHandlers(sidebar, _files) {
  * @pseudocode
  * 1. Load document metadata with `loadPrdDocs`.
  * 2. Build sidebar UI and bind navigation handlers.
- * 3. Seed history, render the start document, then prefetch remaining docs.
+ * 3. Seed history, render the start document, then prefetch remaining docs unless test mode is enabled.
  *
  * @param {Record<string, string>} [docsMap]
  * @param {Function} [parserFn=markdownToHtml]
@@ -378,11 +379,8 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   sidebar.container.focus();
   sidebar.spinner.remove();
 
-  // Preload remaining docs during idle. Skip in test to reduce overhead.
-  const isTest =
-    typeof process !== "undefined" &&
-    process?.env &&
-    (process.env.VITEST || process.env.NODE_ENV === "test");
+  // Preload remaining docs during idle. Skip when test mode flag is enabled.
+  const isTest = getFeatureFlag("enableTestMode");
   if (!isTest) {
     Promise.resolve().then(() => {
       for (let i = 0; i < sidebar.files.length; i++) {
