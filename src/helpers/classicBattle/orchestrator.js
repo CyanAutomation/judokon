@@ -24,7 +24,6 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 
 let machine = null;
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
  * Dispatch an event to the active battle machine.
@@ -41,40 +40,13 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export async function dispatchBattleEvent(eventName, payload) {
-  if (!machine) {
-    try {
-      if (!IS_VITEST) {
-        console.log("DEBUG: orchestrator has no machine for", eventName);
-      }
-    } catch {}
-    return;
-  }
+  if (!machine) return;
   try {
-    if (!IS_VITEST) {
-      console.log("DEBUG: orchestrator dispatch", {
-        state: machine?.getState?.(),
-        eventName,
-        payload
-      });
-    }
-  } catch {}
-  try {
-    const res = await machine.dispatch(eventName, payload);
-    try {
-      if (!IS_VITEST) {
-        console.log("DEBUG: orchestrator dispatched", {
-          newState: machine?.getState?.(),
-          eventName
-        });
-      }
-    } catch {}
-    return res;
+    return await machine.dispatch(eventName, payload);
   } catch {
     try {
       emitBattleEvent("debugPanelUpdate");
-    } catch (innerError) {
-      if (!IS_VITEST) console.error("Failed to emit debugPanelUpdate event:", innerError);
-    }
+    } catch {}
   }
 }
 
@@ -211,7 +183,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       };
     }
   } catch {}
-  console.log("initClassicBattleOrchestrator completed");
   return machine;
 }
 

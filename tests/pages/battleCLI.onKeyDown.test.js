@@ -6,7 +6,7 @@ import {
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 describe("battleCLI onKeyDown", () => {
-  let onKeyDown, __test, store, dispatch;
+  let onKeyDown, __test, store, dispatchSpy;
 
   beforeEach(async () => {
     vi.resetModules();
@@ -17,9 +17,9 @@ describe("battleCLI onKeyDown", () => {
       store[k] = v;
     });
     vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
-    dispatch = vi.fn();
+    dispatchSpy = vi.fn();
     vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
-      dispatchBattleEvent: dispatch
+      dispatchBattleEvent: dispatchSpy
     }));
     vi.doMock("../../src/components/Button.js", () => ({
       createButton: (label, opts = {}) => {
@@ -85,9 +85,9 @@ describe("battleCLI onKeyDown", () => {
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     const confirm = document.getElementById("confirm-quit-button");
     expect(confirm).toBeTruthy();
-    expect(dispatch).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
     confirm.click();
-    expect(dispatch).toHaveBeenCalledWith("interrupt", { reason: "quit" });
+    expect(dispatchSpy).toHaveBeenCalledWith("interrupt", { reason: "quit" });
   });
 
   it("resumes timers when quit is canceled", () => {
@@ -155,19 +155,19 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches statSelected in waitingForPlayerAction state", () => {
     document.body.dataset.battleState = "waitingForPlayerAction";
     onKeyDown(new KeyboardEvent("keydown", { key: "1" }));
-    expect(dispatch).toHaveBeenCalledWith("statSelected");
+    expect(dispatchSpy).toHaveBeenCalledWith("statSelected");
   });
 
   it("dispatches continue in roundOver state", () => {
     document.body.dataset.battleState = "roundOver";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(dispatch).toHaveBeenCalledWith("continue");
+    expect(dispatchSpy).toHaveBeenCalledWith("continue");
   });
 
   it("dispatches ready in cooldown state", () => {
     document.body.dataset.battleState = "cooldown";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(dispatch).toHaveBeenCalledWith("ready");
+    expect(dispatchSpy).toHaveBeenCalledWith("ready");
   });
 
   it("allows quitting with Q when cliShortcuts flag is disabled", async () => {
@@ -175,7 +175,7 @@ describe("battleCLI onKeyDown", () => {
     vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) =>
       flag === "cliShortcuts" ? false : featureFlags.isEnabled(flag)
     );
-    dispatch.mockReset();
+    dispatchSpy.mockReset();
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     expect(document.getElementById("confirm-quit-button")).toBeTruthy();
   });
