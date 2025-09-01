@@ -35,10 +35,10 @@
  */
 import { readFile, writeFile, stat } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { glob } from "glob";
-import { pipeline } from "@xenova/transformers";
+import { pipeline, env } from "@xenova/transformers";
 import * as acorn from "acorn";
 import { walk } from "estree-walker";
 import { CHUNK_SIZE, OVERLAP_RATIO } from "../src/helpers/vectorSearch/chunkConfig.js";
@@ -606,11 +606,15 @@ async function getFiles() {
  */
 async function loadModel() {
   // Reduce memory footprint by loading the quantized model
-  const modelPath =
-    typeof process !== "undefined" && process.versions?.node
-      ? path.join(rootDir, "models/minilm")
-      : "Xenova/all-MiniLM-L6-v2";
-  return pipeline("feature-extraction", modelPath, { quantized: true });
+  if (typeof process !== "undefined" && process.versions?.node) {
+    env.allowLocalModels = true;
+    const modelDir = path.join(rootDir, "models/minilm");
+    const modelUrl = pathToFileURL(modelDir).href;
+    return pipeline("feature-extraction", modelUrl, { quantized: true });
+  }
+  return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+    quantized: true
+  });
 }
 
 function determineTags(relativePath, ext, isTest) {
