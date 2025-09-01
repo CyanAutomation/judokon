@@ -61,6 +61,7 @@ let isQuitting = false;
 let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
 let ignoreNextAdvanceClick = false;
+let roundResolving = false;
 
 // Test hooks to access internal timer state
 export const __test = {
@@ -141,6 +142,7 @@ function clearVerboseLog() {
 async function resetMatch() {
   stopSelectionCountdown();
   handleCountdownFinished();
+  roundResolving = false;
   clearVerboseLog();
   try {
     document.getElementById("play-again-button")?.remove();
@@ -445,14 +447,26 @@ function stopSelectionCountdown() {
  *
  * @pseudocode
  * stopSelectionCountdown()
+ * clear pending selection timers and auto-select callbacks
  * highlight chosen stat
  * update store with selection
  * show bottom line with picked stat
+ * set `roundResolving`
  * dispatch "statSelected" on machine
  */
 function selectStat(stat) {
   if (!stat) return;
   stopSelectionCountdown();
+  try {
+    if (store?.statTimeoutId) clearTimeout(store.statTimeoutId);
+  } catch {}
+  try {
+    if (store?.autoSelectId) clearTimeout(store.autoSelectId);
+  } catch {}
+  if (store) {
+    store.statTimeoutId = null;
+    store.autoSelectId = null;
+  }
   const list = byId("cli-stats");
   list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
   const idx = STATS.indexOf(stat) + 1;
@@ -466,6 +480,7 @@ function selectStat(stat) {
   } catch {}
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
+    roundResolving = true;
     dispatchBattleEvent("statSelected");
   } catch {}
 }
@@ -940,7 +955,7 @@ function handleStatClick(event) {
  * Advance battle state when clicking outside interactive areas.
  *
  * @pseudocode
- * if ignoreNextAdvanceClick -> return
+ * if roundResolving or ignoreNextAdvanceClick -> return
  * state = body.dataset.battleState
  * if click inside .cli-stat or #cli-shortcuts -> return
  * if state == "roundOver" -> dispatch "continue"
@@ -949,6 +964,7 @@ function handleStatClick(event) {
  * @param {MouseEvent} event - Click event.
  */
 function onClickAdvance(event) {
+  if (roundResolving) return;
   if (ignoreNextAdvanceClick) {
     // Safety: reset the flag and log the occurrence
     ignoreNextAdvanceClick = false;
@@ -1050,6 +1066,7 @@ function handleCountdownFinished() {
 }
 
 function handleRoundResolved(e) {
+  roundResolving = false;
   const { result, stat, playerVal, opponentVal } = e.detail || {};
   if (result) {
     setRoundMessage(
