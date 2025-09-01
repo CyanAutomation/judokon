@@ -17,6 +17,11 @@
  - [x] Move header controls into an in-main, less-prominent settings section (`cli-settings`) and make `.cli-main` span full viewport width.
  - [x] Collapsible settings panel (`#cli-settings-toggle` / `#cli-settings-body`) implemented with persistence in localStorage.
 
+- [x] Expose programmatic settings helper on `window.__battleCLIinit.setSettingsCollapsed`.
+- [x] Add Playwright countdown timing test (`playwright/countdown.spec.js`) which verifies `setCountdown` updates `data-remaining-time` atomically.
+- [x] Add `src/pages/battleCLI.README.md` documenting exposed test helpers.
+	- [x] Verified countdown test locally against dev server.
+
 Next milestones:
 
 - Add Playwright keyboard/mouse/timer specs (stat selection, next/skip, quit modal, help toggle).
@@ -26,5 +31,7 @@ Next milestones:
 Next: implement the keyboard/mouse/timer Playwright specs (covered by the plan above) and add a small visual assertion test for header layout across viewports.
 
 Next immediate: add Playwright visual assertions to confirm settings collapse behavior and the presence of `#cli-settings-body` and `#cli-settings-toggle` attributes across viewports.
+
+Next: add keyboard/mouse/timer specs (stat selection, next/skip, quit modal) and a simple end-to-end match simulation test using mocked orchestrator/debug hooks.
 
 Next: run the Playwright test and iterate if failures occur. After the test passes, consider adding more Playwright assertions for keyboard flows and full-round simulation.

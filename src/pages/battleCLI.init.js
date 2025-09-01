@@ -133,6 +133,29 @@ function init() {
     focusNextHint,
     applyRetroTheme
   };
+
+  // expose programmatic settings collapse/expand helper for tests
+  try {
+    window.__battleCLIinit.setSettingsCollapsed = function (collapsed) {
+      const toggle = byId("cli-settings-toggle");
+      const body = byId("cli-settings-body");
+      if (!toggle || !body) return false;
+      // apply same logic as init
+      try {
+        localStorage.setItem("battleCLI.settingsCollapsed", collapsed ? "1" : "0");
+      } catch {}
+      if (collapsed) {
+        body.style.display = "none";
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.textContent = "Settings ▸";
+      } else {
+        body.style.display = "";
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.textContent = "Settings ▾";
+      }
+      return true;
+    };
+  } catch {}
 }
 
 if (document.readyState === "loading") {
