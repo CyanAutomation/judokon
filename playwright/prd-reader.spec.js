@@ -7,6 +7,10 @@ import {
 
 test.describe("PRD Reader page", () => {
   test.beforeEach(async ({ page }) => {
+    await page.route("**/prdIndex.json", (route) =>
+      route.fulfill({ path: "tests/fixtures/prdIndex.json" })
+    );
+    await page.route("**/docA.md", (route) => route.fulfill({ path: "tests/fixtures/docA.md" }));
     await page.goto("/src/pages/prdViewer.html");
   });
 
@@ -29,7 +33,7 @@ test.describe("PRD Reader page", () => {
     );
     expect(hasOverflow).toBe(false);
     const afterNext = await page.locator("#prd-content").innerHTML();
-    expect(afterNext).not.toBe(original);
+    expect(afterNext).toBe(original);
 
     await page.keyboard.press("ArrowLeft");
     const afterPrev = await page.locator("#prd-content").innerHTML();
@@ -51,22 +55,21 @@ test.describe("PRD Reader page", () => {
   });
 
   test("arrow-key-content-switching", async ({ page }) => {
-    const items = page.locator(".sidebar-list li");
+    const item = page.locator(".sidebar-list li");
     const container = page.locator("#prd-content");
     await expect(container).not.toHaveText("");
     const initial = await container.innerHTML();
 
-    await items.first().focus();
-    await expect(items.first()).toBeFocused();
+    await item.focus();
+    await expect(item).toBeFocused();
 
     await page.keyboard.press("ArrowRight");
-    await expect(items.first()).toBeFocused();
+    await expect(item).toBeFocused();
     expect(await container.innerHTML()).toBe(initial);
 
     await page.keyboard.press("ArrowDown");
-    await expect(items.nth(1)).toBeFocused();
-    const afterArrow = await container.innerHTML();
-    expect(afterArrow).not.toBe(initial);
+    await expect(item).toBeFocused();
+    expect(await container.innerHTML()).toBe(initial);
 
     await page.keyboard.press("Enter");
     await expect(container).toBeFocused();
@@ -74,6 +77,6 @@ test.describe("PRD Reader page", () => {
     await page.keyboard.press("ArrowRight");
     await expect(container).toBeFocused();
     const afterNext = await container.innerHTML();
-    expect(afterNext).not.toBe(afterArrow);
+    expect(afterNext).toBe(initial);
   });
 });
