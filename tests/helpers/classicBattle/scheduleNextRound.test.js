@@ -5,11 +5,15 @@ import { createTimerNodes } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 import { waitForState } from "../../waitForState.js";
-import { _resetForTest } from "../../../src/helpers/classicBattle/roundManager.js";
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn()
 }));
+
+async function resetRoundManager(store) {
+  const { _resetForTest } = await import("../../../src/helpers/classicBattle/roundManager.js");
+  _resetForTest(store);
+}
 
 let timerSpy;
 let fetchJsonMock;
@@ -82,7 +86,7 @@ describe("classicBattle startCooldown", () => {
     const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
-    _resetForTest(store);
+    await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
       await battleMod.startRound(store);
     });
@@ -125,7 +129,7 @@ describe("classicBattle startCooldown", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     const store = battleMod.createBattleStore();
-    _resetForTest(store);
+    await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
       await battleMod.startRound(store);
     });
@@ -190,7 +194,7 @@ describe("classicBattle startCooldown", () => {
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(true);
     const store = battleMod.createBattleStore();
-    _resetForTest(store);
+    await resetRoundManager(store);
     const controls = battleMod.startCooldown(store);
     emitBattleEvent("battleStateChange", { to: "cooldown" });
     expect(nextButton.dataset.nextReady).toBeUndefined();

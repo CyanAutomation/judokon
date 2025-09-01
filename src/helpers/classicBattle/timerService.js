@@ -14,8 +14,9 @@ import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 import { getNextRoundControls } from "./roundManager.js";
+
+const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 export { getNextRoundControls } from "./roundManager.js";
 
 // Skip handler utilities moved to skipHandler.js
