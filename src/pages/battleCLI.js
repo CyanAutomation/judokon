@@ -1051,6 +1051,10 @@ function handleStatSelectionStalled() {
 
 function handleCountdownStart(e) {
   if (skipRoundCooldownIfEnabled()) return;
+  try {
+    const ds = document.body?.dataset;
+    if (ds) ds.battleState = "cooldown";
+  } catch {}
   const duration = Number(e.detail?.duration) || 0;
   try {
     if (cooldownTimer) clearTimeout(cooldownTimer);

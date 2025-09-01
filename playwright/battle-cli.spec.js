@@ -145,6 +145,20 @@ test.describe("Classic Battle CLI", () => {
     expect(cardAfter).not.toBe(cardBefore);
   });
 
+  test("skips cooldown with Space key", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__NEXT_ROUND_COOLDOWN_MS = 3000;
+    });
+    await page.reload();
+    await page.locator("#start-match-button").click();
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+
+    await page.keyboard.press("1");
+    await waitForBattleState(page, "cooldown", 10000);
+    await page.keyboard.press("Space");
+    await waitForBattleState(page, "waitingForPlayerAction", 10000);
+  });
+
   test("scoreboard updates after each round", async ({ page }) => {
     await page.goto("/src/pages/battleCLI.html?seed=1");
     await page.locator("#start-match-button").click();

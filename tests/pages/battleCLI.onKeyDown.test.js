@@ -164,10 +164,13 @@ describe("battleCLI onKeyDown", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("continue");
   });
 
-  it("dispatches ready in cooldown state", () => {
+  it("dispatches ready in cooldown state for Enter and Space", () => {
     document.body.dataset.battleState = "cooldown";
-    onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    for (const key of ["Enter", " "]) {
+      dispatchSpy.mockClear();
+      onKeyDown(new KeyboardEvent("keydown", { key }));
+      expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    }
   });
 
   it("allows quitting with Q when cliShortcuts flag is disabled", async () => {
