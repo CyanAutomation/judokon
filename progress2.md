@@ -1,4 +1,3 @@
-
 ## Plan
 
 1. Add ASCII separators and retro theme styles to `battleCLI.html`.
@@ -15,6 +14,7 @@
 - [x] Subtask: Dedicated header `#retro-toggle` added and wired to `cliRetro` feature flag.
 
 Next milestones:
+
 - Add Playwright keyboard/mouse/timer specs (stat selection, next/skip, quit modal, help toggle).
 - Add an integration test to simulate a single round end-to-end (engine may be mocked).
 - Add README snippet documenting `window.__battleCLIinit` helpers and test hooks.
