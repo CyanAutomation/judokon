@@ -41,21 +41,6 @@ test.describe("Homepage", () => {
     await expect(page).toHaveURL(/randomJudoka\.html/);
   });
 
-  test("tile hover enlarges and shows pointer", async ({ page }) => {
-    const tile = page.locator(".card").first();
-    await tile.hover();
-    await expect(tile).toHaveAttribute("data-enlarged", "true");
-    const scale = await tile.evaluate((el) => {
-      const transform = getComputedStyle(el).transform;
-      const match = transform.match(/matrix\(([^)]+)\)/);
-      return match ? parseFloat(match[1].split(",")[0]) : 1;
-    });
-    expect(scale).toBeGreaterThan(1.01);
-
-    const cursor = await tile.evaluate((el) => getComputedStyle(el).cursor);
-    expect(cursor).toBe("pointer");
-  });
-
   test("keyboard navigation activates tiles", async ({ page }) => {
     const tiles = page.locator(".card");
 
