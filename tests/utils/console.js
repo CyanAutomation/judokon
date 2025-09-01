@@ -3,7 +3,8 @@ const ORIGINAL = {
   log: console.log,
   info: console.info,
   warn: console.warn,
-  error: console.error
+  error: console.error,
+  debug: console.debug
 };
 
 function noop() {}

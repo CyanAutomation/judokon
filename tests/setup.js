@@ -61,14 +61,14 @@ afterEach(() => {
     if (msg) msg.textContent = "";
   } catch {}
   // Restore console to originals after each test
-  restoreConsole(["warn", "error"]);
+  restoreConsole(["warn", "error", "debug", "log"]);
 });
 
 // Prevent JSDOM navigation errors when tests assign to window.location.href.
 // Simulate URL changes by updating history without performing a real navigation.
 beforeEach(async () => {
   // Mute noisy console methods by default; tests can opt-in to logging
-  muteConsole(["warn", "error"]);
+  muteConsole(["warn", "error", "debug", "log"]);
   try {
     // Ensure snackbars are enabled for tests by default
     if (typeof window !== "undefined" && window.__disableSnackbars) {
