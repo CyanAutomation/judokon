@@ -157,10 +157,10 @@ When contributing code, especially in gameplay or input-related areas, follow th
 
 ## 🔄 Migration Notes: Classic Battle Dispatch
 
-- All Classic Battle events now dispatch through a single pathway: `eventDispatcher.dispatchBattleEvent`.
-- Modules should import from `eventDispatcher.js` instead of `orchestrator.js` or the removed `battleDispatcher.js`.
-- The orchestrator registers the machine via `eventDispatcher.setMachine`; call this once during initialization.
-- Tests can mock `eventDispatcher.dispatchBattleEvent` to observe transitions.
+- All Classic Battle events now dispatch through a single pathway: `orchestrator.dispatchBattleEvent`.
+- Modules should import `dispatchBattleEvent` from `orchestrator.js`.
+- The orchestrator internally creates and stores the machine; consumers do not call `setMachine`.
+- Tests can mock `orchestrator.dispatchBattleEvent` to observe transitions.
 
 ---
 

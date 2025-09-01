@@ -31,6 +31,7 @@ import { wrap } from "../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
+import { dispatchBattleEvent } from "../helpers/classicBattle/orchestrator.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -41,12 +42,6 @@ function getMachine() {
   try {
     // Prefer debugHooks channel used by tests
     const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
-    const m = typeof getter === "function" ? getter() : getter;
-    if (m) return m;
-  } catch {}
-  try {
-    // Fallback: global accessor
-    const getter = typeof window !== "undefined" ? window.__getClassicBattleMachine : null;
     const m = typeof getter === "function" ? getter() : getter;
     if (m) return m;
   } catch {}
@@ -403,10 +398,7 @@ function showQuitModal() {
       quitModal.close();
       clearBottomLine();
       try {
-        const machine = getMachine();
-        if (machine) {
-          await machine.dispatch("interrupt", { reason: "quit" });
-        }
+        await dispatchBattleEvent("interrupt", { reason: "quit" });
       } catch {}
       try {
         // Use a relative path so deployments under a subpath (e.g. GitHub Pages)
@@ -473,10 +465,7 @@ function selectStat(stat) {
   } catch {}
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
-    const machine = getMachine();
-    if (machine) {
-      machine.dispatch("statSelected");
-    }
+    dispatchBattleEvent("statSelected");
   } catch {}
 }
 
@@ -543,8 +532,9 @@ export function autostartBattle() {
   try {
     const autostart = new URLSearchParams(location.search).get("autostart");
     if (autostart === "1") {
-      const machine = getMachine();
-      if (machine) machine.dispatch("startClicked");
+      try {
+        dispatchBattleEvent("startClicked");
+      } catch {}
     }
   } catch {}
 }
@@ -822,8 +812,7 @@ export function handleWaitingForPlayerActionKey(key) {
 export function handleRoundOverKey(key) {
   if (key === "enter" || key === " ") {
     try {
-      const machine = getMachine();
-      if (machine) machine.dispatch("continue");
+      dispatchBattleEvent("continue");
     } catch {}
     return true;
   }
@@ -887,8 +876,7 @@ export function handleCooldownKey(key) {
     cooldownInterval = null;
     clearBottomLine();
     try {
-      const machine = getMachine();
-      if (machine) machine.dispatch("ready");
+      dispatchBattleEvent("ready");
     } catch {}
     return true;
   }

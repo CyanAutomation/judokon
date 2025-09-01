@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
   dispatchBattleEvent: vi.fn()
 }));
 
@@ -16,7 +16,7 @@ describe("resolveRound", () => {
 
   beforeEach(async () => {
     vi.useFakeTimers();
-    dispatchMock = (await import("../../src/helpers/classicBattle/eventDispatcher.js"))
+    dispatchMock = (await import("../../src/helpers/classicBattle/orchestrator.js"))
       .dispatchBattleEvent;
     emitMock = (await import("../../src/helpers/classicBattle/battleEvents.js")).emitBattleEvent;
     dispatchMock.mockResolvedValue();

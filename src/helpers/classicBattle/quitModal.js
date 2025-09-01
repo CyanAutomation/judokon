@@ -3,7 +3,7 @@ import { createButton } from "../../components/Button.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { showResult } from "../battle/index.js";
 import { navigateToHome } from "../navUtils.js";
-import { dispatchBattleEvent } from "./eventDispatcher.js";
+import { dispatchBattleEvent } from "./orchestrator.js";
 import { getBattleState } from "./eventBus.js";
 import { t } from "../i18n.js";
 

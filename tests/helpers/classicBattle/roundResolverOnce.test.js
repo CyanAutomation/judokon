@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
   dispatchBattleEvent: vi.fn().mockResolvedValue()
 }));
 vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({

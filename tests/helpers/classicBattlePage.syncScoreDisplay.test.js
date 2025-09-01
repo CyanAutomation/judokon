@@ -7,9 +7,7 @@ beforeEach(() => {
   vi.resetModules();
   vi.doUnmock("../../src/helpers/settingsStorage.js");
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
-    initClassicBattleOrchestrator: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+    initClassicBattleOrchestrator: vi.fn(),
     dispatchBattleEvent: vi.fn().mockResolvedValue()
   }));
 });
