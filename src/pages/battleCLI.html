@@ -79,6 +79,12 @@
         padding: 8px 10px;
         border: 1px solid #2a2a2a;
       }
+      /* ASCII separators to mimic terminal panes */
+      .ascii-sep {
+        font-family: inherit;
+        color: inherit;
+        padding: 4px 0;
+      }
       /* Reserve space for round message to prevent layout jump */
       #round-message {
         min-height: 1.4em; /* ~1 line of monospace text */
@@ -253,7 +259,12 @@
             tabindex="0"
             aria-label="Select a stat with number keys 1–5"
           >
-            <!-- Populated from statNames.json at runtime as [n] Label -->
+            <!-- Skeleton placeholders to stabilize layout and tests -->
+            <div class="cli-stat skeleton">(1) —: —</div>
+            <div class="cli-stat skeleton">(2) —: —</div>
+            <div class="cli-stat skeleton">(3) —: —</div>
+            <div class="cli-stat skeleton">(4) —: —</div>
+            <div class="cli-stat skeleton">(5) —: —</div>
           </div>
         </section>
 

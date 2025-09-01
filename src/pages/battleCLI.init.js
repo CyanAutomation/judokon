@@ -89,6 +89,7 @@ function init() {
   initRetroToggle();
   // expose helpers for the main controller
   window.__battleCLIinit = {
+    renderSkeletonStats,
     clearSkeletonStats,
     setCountdown,
     focusStats,
