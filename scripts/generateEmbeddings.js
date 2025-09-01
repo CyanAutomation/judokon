@@ -606,7 +606,11 @@ async function getFiles() {
  */
 async function loadModel() {
   // Reduce memory footprint by loading the quantized model
-  return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
+  const modelPath =
+    typeof process !== "undefined" && process.versions?.node
+      ? path.join(rootDir, "models/minilm")
+      : "Xenova/all-MiniLM-L6-v2";
+  return pipeline("feature-extraction", modelPath, { quantized: true });
 }
 
 function determineTags(relativePath, ext, isTest) {
