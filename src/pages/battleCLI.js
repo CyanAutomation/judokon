@@ -33,9 +33,37 @@ import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
 
-const { initClassicBattleOrchestrator, dispatchBattleEvent } = battleOrchestrator;
-const disposeClassicBattleOrchestrator =
-  battleOrchestrator.disposeClassicBattleOrchestrator ?? (() => {});
+function disposeClassicBattleOrchestrator() {
+  try {
+    battleOrchestrator?.disposeClassicBattleOrchestrator?.();
+  } catch {}
+}
+
+/**
+ * Safely dispatch an event to the classic battle machine.
+ *
+ * @pseudocode
+ * 1. Try debugHooks channel first to get the live machine and call `dispatch`.
+ * 2. Fallback to orchestrator's `dispatchBattleEvent` if available (when not mocked).
+ * 3. Swallow any errors to keep CLI responsive during tests.
+ */
+async function safeDispatch(eventName, payload) {
+  try {
+    const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
+    const m = typeof getter === "function" ? getter() : getter;
+    if (m?.dispatch) {
+      return payload === undefined
+        ? await m.dispatch(eventName)
+        : await m.dispatch(eventName, payload);
+    }
+  } catch {}
+  try {
+    const fn = battleOrchestrator?.dispatchBattleEvent;
+    if (typeof fn === "function") {
+      return payload === undefined ? await fn(eventName) : await fn(eventName, payload);
+    }
+  } catch {}
+}
 
 /**
  * Minimal DOM utils for the CLI page
@@ -179,7 +207,7 @@ async function resetMatch() {
     updateRoundHeader(0, getPointsToWin());
     updateScoreLine();
     setRoundMessage("");
-    await initClassicBattleOrchestrator(store, startRoundWrapper);
+    await battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
   })();
   resetPromise = next;
   await next;
@@ -449,7 +477,7 @@ function showQuitModal() {
       quitModal.close();
       clearBottomLine();
       try {
-        await dispatchBattleEvent("interrupt", { reason: "quit" });
+        await safeDispatch("interrupt", { reason: "quit" });
       } catch {}
       try {
         // Use a relative path so deployments under a subpath (e.g. GitHub Pages)
@@ -552,7 +580,7 @@ function selectStat(stat) {
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     roundResolving = true;
-    dispatchBattleEvent("statSelected");
+    safeDispatch("statSelected");
   } catch (err) {
     console.error("Error dispatching statSelected", err);
   }
@@ -630,7 +658,7 @@ export function autostartBattle() {
     const autostart = new URLSearchParams(location.search).get("autostart");
     if (autostart === "1") {
       try {
-        dispatchBattleEvent("startClicked");
+        safeDispatch("startClicked");
       } catch {}
     }
   } catch {}
@@ -920,7 +948,7 @@ export function handleWaitingForPlayerActionKey(key) {
 export function handleRoundOverKey(key) {
   if (key === "enter" || key === " ") {
     try {
-      dispatchBattleEvent("continue");
+      safeDispatch("continue");
     } catch {}
     return true;
   }
@@ -984,7 +1012,7 @@ export function handleCooldownKey(key) {
     cooldownInterval = null;
     clearBottomLine();
     try {
-      dispatchBattleEvent("ready");
+      safeDispatch("ready");
     } catch {}
     return true;
   }
@@ -1295,7 +1323,7 @@ async function init() {
   // Install CLI event bridges
   installEventBindings();
   // Initialize orchestrator using our startRound wrapper
-  await initClassicBattleOrchestrator(store, startRoundWrapper);
+  await battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
   await renderStartButton();
   // Keyboard controls
   window.addEventListener("keydown", onKeyDown);

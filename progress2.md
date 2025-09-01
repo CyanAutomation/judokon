@@ -15,6 +15,7 @@
 
 - [x] Responsive tuning: header wrapping, control spacing, and narrow-width rules added to `battleCLI.html`.
  - [x] Move header controls into an in-main, less-prominent settings section (`cli-settings`) and make `.cli-main` span full viewport width.
+ - [x] Collapsible settings panel (`#cli-settings-toggle` / `#cli-settings-body`) implemented with persistence in localStorage.
 
 Next milestones:
 
@@ -23,5 +24,7 @@ Next milestones:
 - Add README snippet documenting `window.__battleCLIinit` helpers and test hooks.
 
 Next: implement the keyboard/mouse/timer Playwright specs (covered by the plan above) and add a small visual assertion test for header layout across viewports.
+
+Next immediate: add Playwright visual assertions to confirm settings collapse behavior and the presence of `#cli-settings-body` and `#cli-settings-toggle` attributes across viewports.
 
 Next: run the Playwright test and iterate if failures occur. After the test passes, consider adding more Playwright assertions for keyboard flows and full-round simulation.

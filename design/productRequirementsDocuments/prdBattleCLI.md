@@ -189,6 +189,8 @@ Additional UI/UX improvements (terminal polish)
  - Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
  - Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
  - Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
+ - Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
+ - Collapsible settings panel (`#cli-settings-toggle` / `#cli-settings-body`) implemented with localStorage persistence to keep the settings panel state between visits.
 - Render skeleton stat rows at startup so `#cli-stats` has deterministic bounding boxes for visual tests and reduces layout shift.
 - Expose a small JS helper that atomically updates `#cli-countdown`'s `data-remaining-time` attribute together with the visible text to make Playwright/Vitest assertions robust.
 - Implement explicit focus management on state transitions (focus stat container on selection, focus the Next control after outcome).
@@ -233,6 +235,7 @@ Small additions to the interaction model
   - [ ] 1.3 Add fallback layout for narrow/mobile screens
    - [ ] 1.4 Add optional "retro" theme toggle and persist preference
    - [ ] 1.5 Render skeleton stat rows on initial render to stabilize visual tests
+   - [x] 1.6 Add collapsible settings panel with persistence (`#cli-settings-toggle`)
 - [ ] 2.0 Integrate engine
   - [ ] 2.1 Import engine/orchestrator/state table statically
   - [ ] 2.2 Bind engine events to renderer (countdown, outcomes, score)

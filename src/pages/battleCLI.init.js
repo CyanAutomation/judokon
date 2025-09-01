@@ -87,9 +87,43 @@ function initRetroToggle() {
   applyRetroTheme(input.checked);
 }
 
+function initSettingsCollapse() {
+  const toggle = byId("cli-settings-toggle");
+  const body = byId("cli-settings-body");
+  if (!toggle || !body) return;
+  // read saved collapsed state (0 = expanded, 1 = collapsed)
+  let collapsed = false;
+  try {
+    const v = localStorage.getItem("battleCLI.settingsCollapsed");
+    collapsed = v === "1";
+  } catch {}
+  const apply = (c) => {
+    if (c) {
+      body.style.display = "none";
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.textContent = "Settings ▸";
+    } else {
+      body.style.display = "";
+      toggle.setAttribute("aria-expanded", "true");
+      toggle.textContent = "Settings ▾";
+    }
+  };
+  apply(collapsed);
+  toggle.addEventListener("click", () => {
+    collapsed = !collapsed;
+    try {
+      localStorage.setItem("battleCLI.settingsCollapsed", collapsed ? "1" : "0");
+    } catch {}
+    apply(collapsed);
+    // brief focus management: ensure settings toggle remains focusable
+    toggle.focus();
+  });
+}
+
 function init() {
   renderSkeletonStats(5);
   initRetroToggle();
+  initSettingsCollapse();
   // expose helpers for the main controller
   window.__battleCLIinit = {
     renderSkeletonStats,

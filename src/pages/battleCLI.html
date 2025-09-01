@@ -325,23 +325,31 @@
 
         <!-- Less-prominent settings section moved into main to reduce header prominence -->
         <section aria-label="Match Settings" class="cli-block cli-settings">
-          <div class="cli-settings-row">
-            <label for="points-select">Win target:</label>
-            <select id="points-select" aria-label="Points to win" data-tooltip-id="settings.pointsToWin">
-              <option value="5">5</option>
-              <option value="10" selected>10</option>
-              <option value="15">15</option>
-            </select>
+          <div class="cli-settings-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-weight:600">Match Settings</div>
+            <div>
+              <button id="cli-settings-toggle" aria-expanded="true" aria-controls="cli-settings-body" style="background:transparent;border:0;color:inherit;cursor:pointer;font-family:inherit">Settings ▾</button>
+            </div>
           </div>
-          <div class="cli-settings-row">
-            <label for="verbose-toggle">Verbose:</label>
-            <input id="verbose-toggle" type="checkbox" aria-label="Toggle verbose logging" data-flag="cliVerbose" />
-            <label for="retro-toggle">Retro:</label>
-            <input id="retro-toggle" type="checkbox" aria-label="Toggle retro theme" data-flag="cliRetro" />
-          </div>
-          <div class="cli-settings-row">
-            <label for="seed-input">Seed:</label>
-            <input id="seed-input" type="number" inputmode="numeric" aria-label="Deterministic seed (optional)" style="width: 6ch" />
+          <div id="cli-settings-body">
+            <div class="cli-settings-row">
+              <label for="points-select">Win target:</label>
+              <select id="points-select" aria-label="Points to win" data-tooltip-id="settings.pointsToWin">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+              </select>
+            </div>
+            <div class="cli-settings-row">
+              <label for="verbose-toggle">Verbose:</label>
+              <input id="verbose-toggle" type="checkbox" aria-label="Toggle verbose logging" data-flag="cliVerbose" />
+              <label for="retro-toggle">Retro:</label>
+              <input id="retro-toggle" type="checkbox" aria-label="Toggle retro theme" data-flag="cliRetro" />
+            </div>
+            <div class="cli-settings-row">
+              <label for="seed-input">Seed:</label>
+              <input id="seed-input" type="number" inputmode="numeric" aria-label="Deterministic seed (optional)" style="width: 6ch" />
+            </div>
           </div>
         </section>
 
