@@ -429,10 +429,14 @@ function clearBottomLine() {
 function stopSelectionCountdown() {
   try {
     if (selectionTimer) clearTimeout(selectionTimer);
-  } catch {}
+  } catch (err) {
+    console.error("Failed to clear selectionTimer", err);
+  }
   try {
     if (selectionInterval) clearInterval(selectionInterval);
-  } catch {}
+  } catch (err) {
+    console.error("Failed to clear selectionInterval", err);
+  }
   selectionTimer = null;
   selectionInterval = null;
   const el = byId("cli-countdown");
@@ -440,6 +444,27 @@ function stopSelectionCountdown() {
     el.textContent = "";
     delete el.dataset.remainingTime;
   }
+}
+
+/**
+ * Clear a timer stored on the given object.
+ *
+ * @param {object} store
+ * @param {string} timerProperty
+ * @pseudocode
+ * if store?[timerProperty]
+ *   try clearTimeout(store[timerProperty])
+ *   catch log error
+ * set store[timerProperty] = null
+ */
+function clearStoreTimer(store, timerProperty) {
+  if (!store) return;
+  try {
+    if (store[timerProperty]) clearTimeout(store[timerProperty]);
+  } catch (err) {
+    console.error(`Failed to clear ${timerProperty}`, err);
+  }
+  store[timerProperty] = null;
 }
 
 /**
@@ -457,16 +482,8 @@ function stopSelectionCountdown() {
 function selectStat(stat) {
   if (!stat) return;
   stopSelectionCountdown();
-  try {
-    if (store?.statTimeoutId) clearTimeout(store.statTimeoutId);
-  } catch {}
-  try {
-    if (store?.autoSelectId) clearTimeout(store.autoSelectId);
-  } catch {}
-  if (store) {
-    store.statTimeoutId = null;
-    store.autoSelectId = null;
-  }
+  clearStoreTimer(store, "statTimeoutId");
+  clearStoreTimer(store, "autoSelectId");
   const list = byId("cli-stats");
   list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
   const idx = STATS.indexOf(stat) + 1;
@@ -477,12 +494,16 @@ function selectStat(stat) {
       store.playerChoice = stat;
       store.selectionMade = true;
     }
-  } catch {}
+  } catch (err) {
+    console.error("Failed to update player choice", err);
+  }
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     roundResolving = true;
     dispatchBattleEvent("statSelected");
-  } catch {}
+  } catch (err) {
+    console.error("Error dispatching statSelected", err);
+  }
 }
 
 /**
