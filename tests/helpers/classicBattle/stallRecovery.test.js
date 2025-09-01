@@ -7,10 +7,13 @@ vi.mock("../../../src/helpers/classicBattle/timerService.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/timerService.js");
   return {
     ...actual,
-    startTimer: vi.fn().mockResolvedValue(undefined),
-    scheduleNextRound: vi.fn()
+    startTimer: vi.fn().mockResolvedValue(undefined)
   };
 });
+vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
+  startCooldown: vi.fn(),
+  createBattleStore: () => ({})
+}));
 
 let fetchJsonMock;
 let generateRandomCardMock;

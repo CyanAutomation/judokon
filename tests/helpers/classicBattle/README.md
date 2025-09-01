@@ -30,7 +30,7 @@ This directory contains unit tests for Classic Battle helpers.
 - One behavior per test.
 - Prefer shared helpers in `domUtils.js`, `utils/testUtils.js`, `commonMocks.js`, and `setupTestEnv.js`.
 - Do not commit `it.skip`; use `test.todo` or remove obsolete tests instead.
-- Timer drift, state exposure, and Next button behavior belong in `timerService` tests; `scheduleNextRound` tests cover cooldown scheduling and ready dispatch.
+- Timer drift, state exposure, and Next button behavior belong in `timerService` tests; cooldown tests cover scheduling and ready dispatch.
 - Avoid duplicating coverage across suites. Interrupt behavior triggered by browser events (such as `pagehide`, global `error`, or `unhandledrejection`) is covered exclusively in `interruptHandlers.test.js`.
 
 ### Usage

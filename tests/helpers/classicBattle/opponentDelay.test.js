@@ -6,7 +6,7 @@ let showMessage;
 let clearMessage;
 let clearTimer;
 let showSnackbar;
-let scheduleNextRound;
+let startCooldown;
 let renderOpponentCard;
 let resetStatButtons;
 let updateDebugPanel;
@@ -17,7 +17,7 @@ beforeEach(() => {
   showMessage = vi.fn();
   clearMessage = vi.fn();
   clearTimer = vi.fn();
-  scheduleNextRound = vi.fn();
+  startCooldown = vi.fn();
   renderOpponentCard = vi.fn();
   resetStatButtons = vi.fn();
   updateDebugPanel = vi.fn();
@@ -51,10 +51,13 @@ beforeEach(() => {
     getOpponentCardData: vi.fn().mockResolvedValue(null)
   }));
 
+  vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
+    startCooldown,
+    setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms)),
+    createBattleStore: () => ({})
+  }));
   vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
-    scheduleNextRound,
-    startTimer: vi.fn(),
-    setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
+    startTimer: vi.fn()
   }));
 
   vi.mock("../../../src/helpers/battle/index.js", () => ({

@@ -59,7 +59,7 @@ describe("classicBattle draw next round", () => {
     battleMod._resetForTest(store);
 
     const result = await playRound(battleMod, store, 5, 5);
-    battleMod.scheduleNextRound(result);
+    battleMod.startCooldown(store);
     await vi.runAllTimersAsync();
     const nextBtn = document.getElementById("next-button");
     expect(nextBtn.disabled).toBe(false);

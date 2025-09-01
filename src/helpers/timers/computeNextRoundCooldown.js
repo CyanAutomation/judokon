@@ -30,11 +30,11 @@ export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
   if (!IS_VITEST) {
     if (isTestModeEnabled()) {
       try {
-        console.warn(`[test] scheduleNextRound: testMode=true cooldown=${cooldownSeconds}`);
+        console.warn(`[test] startCooldown: testMode=true cooldown=${cooldownSeconds}`);
       } catch {}
     } else {
       try {
-        console.warn(`[test] scheduleNextRound: testMode=false cooldown=${cooldownSeconds}`);
+        console.warn(`[test] startCooldown: testMode=false cooldown=${cooldownSeconds}`);
       } catch {}
     }
   }

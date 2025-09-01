@@ -16,11 +16,14 @@ vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   handleReplay: vi.fn()
 }));
+vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
+  handleReplay: vi.fn(),
+  startCooldown: vi.fn(),
+  setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
+}));
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
   startTimer: vi.fn(),
-  handleStatSelectionTimeout: vi.fn(),
-  scheduleNextRound: vi.fn(),
-  setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
+  handleStatSelectionTimeout: vi.fn()
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   clearRoundCounter: vi.fn(),

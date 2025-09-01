@@ -66,10 +66,15 @@ describe("startRoundWrapper failures", () => {
       STATS: [],
       setPointsToWin: vi.fn()
     }));
-    vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
-      onNextButtonClick: vi.fn(),
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       getNextRoundControls: vi.fn(),
-      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
+      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms)),
+      startCooldown: vi.fn(),
+      handleReplay: vi.fn(),
+      createBattleStore: () => ({})
+    }));
+    vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
+      onNextButtonClick: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
       skipCurrentPhase: vi.fn()
@@ -168,10 +173,15 @@ describe("startRoundWrapper failures", () => {
       STATS: [],
       setPointsToWin: vi.fn()
     }));
-    vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
-      onNextButtonClick: vi.fn(),
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       getNextRoundControls: vi.fn(),
-      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
+      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms)),
+      startCooldown: vi.fn(),
+      handleReplay: vi.fn(),
+      createBattleStore: () => ({})
+    }));
+    vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
+      onNextButtonClick: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
       skipCurrentPhase: vi.fn()
@@ -272,10 +282,15 @@ describe("startRoundWrapper success", () => {
       STATS: [],
       setPointsToWin: vi.fn()
     }));
-    vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
-      onNextButtonClick: vi.fn(),
+    vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
       getNextRoundControls: vi.fn(),
-      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
+      setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms)),
+      startCooldown: vi.fn(),
+      handleReplay: vi.fn(),
+      createBattleStore: () => ({})
+    }));
+    vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
+      onNextButtonClick: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/skipHandler.js", () => ({
       skipCurrentPhase: vi.fn()

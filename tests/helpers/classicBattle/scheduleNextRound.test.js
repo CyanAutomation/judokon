@@ -61,7 +61,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("classicBattle scheduleNextRound", () => {
+describe("classicBattle startCooldown", () => {
   function mockBattleData() {
     // Provide a minimal machine table directly via the test-only override so
     // the embedded state table uses this deterministic set.
@@ -115,7 +115,7 @@ describe("classicBattle scheduleNextRound", () => {
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
-    const controls = battleMod.scheduleNextRound({ matchEnded: false });
+    const controls = battleMod.startCooldown(store);
 
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
@@ -159,7 +159,7 @@ describe("classicBattle scheduleNextRound", () => {
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
-    const controls = battleMod.scheduleNextRound({ matchEnded: false });
+    const controls = battleMod.startCooldown(store);
     document.getElementById("next-button").click();
     await controls.ready;
     // Ensure state progressed before assertions
@@ -209,8 +209,9 @@ describe("classicBattle scheduleNextRound", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(true);
-
-    const controls = battleMod.scheduleNextRound({ matchEnded: false });
+    const store = battleMod.createBattleStore();
+    battleMod._resetForTest(store);
+    const controls = battleMod.startCooldown(store);
     emitBattleEvent("battleStateChange", { to: "cooldown" });
     expect(nextButton.dataset.nextReady).toBeUndefined();
     timerSpy.advanceTimersByTime(1000);

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 
-describe("scheduleNextRound fallback timer", () => {
+describe("startCooldown fallback timer", () => {
   let scheduler;
   beforeEach(() => {
     vi.useFakeTimers();
@@ -57,12 +57,10 @@ describe("scheduleNextRound fallback timer", () => {
   });
 
   it("resolves ready after fallback timer and enables button", async () => {
-    const { scheduleNextRound } = await import(
-      "../../../src/helpers/classicBattle/timerService.js"
-    );
+    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
     const btn = document.getElementById("next-button");
     btn.disabled = true;
-    const controls = scheduleNextRound({ matchEnded: false }, scheduler);
+    const controls = startCooldown({}, scheduler);
     let resolved = false;
     controls.ready.then(() => {
       resolved = true;

@@ -10,7 +10,7 @@ vi.mock("../../../src/helpers/timerUtils.js", () => ({
   getDefaultTimer: vi.fn(async () => 0)
 }));
 
-vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   getNextRoundControls: vi.fn(() => ({ timer: true })),
   setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
 }));

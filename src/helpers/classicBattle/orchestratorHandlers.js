@@ -1,5 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
-import { getNextRoundControls, setupFallbackTimer } from "./timerService.js";
+import { getNextRoundControls, setupFallbackTimer } from "./roundManager.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
@@ -402,11 +402,11 @@ export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
   // Do NOT mark the Next button as ready here. The Next button is reserved
   // for advancing after cooldown between rounds. Enabling it during stat
-  // selection can cause `scheduleNextRound` to short-circuit, skipping the
-  // cooldown timer and preventing the state machine from progressing — seen
-  // as a "hang" on the classic battle page. The CLI page never enables Next
-  // during selection and does not suffer this issue. Keep Next controlled by
-  // `scheduleNextRound` only.
+  // selection can cause the cooldown scheduler to short-circuit, skipping the
+  // timer and preventing the state machine from progressing — seen as a "hang"
+  // on the classic battle page. The CLI page never enables Next during
+  // selection and does not suffer this issue. Keep Next controlled by the
+  // cooldown scheduler only.
   const store = machine?.context?.store;
   if (store?.playerChoice) {
     await machine.dispatch("statSelected");
