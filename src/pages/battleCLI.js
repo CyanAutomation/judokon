@@ -535,14 +535,22 @@ function startSelectionCountdown(seconds = 30) {
   if (!el) return;
   stopSelectionCountdown();
   let remaining = seconds;
-  el.dataset.remainingTime = String(remaining);
-  el.textContent = `Time remaining: ${remaining}`;
+  // Use init helper if available to atomically update attribute+text for tests
+  if (window.__battleCLIinit?.setCountdown) {
+    window.__battleCLIinit.setCountdown(remaining);
+  } else {
+    el.dataset.remainingTime = String(remaining);
+    el.textContent = `Time remaining: ${remaining}`;
+  }
   try {
     selectionInterval = setInterval(() => {
       remaining -= 1;
       if (remaining > 0) {
-        el.dataset.remainingTime = String(remaining);
-        el.textContent = `Time remaining: ${remaining}`;
+        if (window.__battleCLIinit?.setCountdown) window.__battleCLIinit.setCountdown(remaining);
+        else {
+          el.dataset.remainingTime = String(remaining);
+          el.textContent = `Time remaining: ${remaining}`;
+        }
       }
     }, 1000);
   } catch {}
@@ -623,6 +631,10 @@ export async function renderStatList() {
           list.appendChild(div);
         });
       list.addEventListener("click", handleStatClick);
+      // Clear skeleton placeholders if the init helper inserted them
+      try {
+        window.__battleCLIinit?.clearSkeletonStats?.();
+      } catch {}
       try {
         const help = byId("cli-help");
         if (help) {

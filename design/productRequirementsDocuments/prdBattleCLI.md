@@ -182,6 +182,17 @@ Notes:
 - Focus: Initial focus on the stat list container during selection; after outcome, focus moves to Next instruction hint.
 - Styling: Minimal CSS for spacing and contrast; focus on a single, consistent high-contrast look.
 
+Additional UI/UX improvements (terminal polish)
+- Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from the header; it must be accessible (contrast >= 4.5:1) and off by default.
+- Render ASCII separators and an 80ch-width centered column to mimic legacy terminal dimensions (optional, feature-flag guarded).
+- Render skeleton stat rows at startup so `#cli-stats` has deterministic bounding boxes for visual tests and reduces layout shift.
+- Expose a small JS helper that atomically updates `#cli-countdown`'s `data-remaining-time` attribute together with the visible text to make Playwright/Vitest assertions robust.
+- Implement explicit focus management on state transitions (focus stat container on selection, focus the Next control after outcome).
+
+Small additions to the interaction model
+- Add a toggle to switch the retro theme; remember the preference in localStorage.
+- Provide a minimal visual tweak to the header: a tighter height and an ASCII-style single-line header to increase terminal feel.
+
 ---
 
 ## Technical Considerations
@@ -216,6 +227,8 @@ Notes:
   - [ ] 1.1 Create `battleCLI.html` with required DOM hooks (`#cli-root`, `#cli-header`, etc.)
   - [ ] 1.2 Add minimal CSS for monospace, spacing, and high contrast
   - [ ] 1.3 Add fallback layout for narrow/mobile screens
+   - [ ] 1.4 Add optional "retro" theme toggle and persist preference
+   - [ ] 1.5 Render skeleton stat rows on initial render to stabilize visual tests
 - [ ] 2.0 Integrate engine
   - [ ] 2.1 Import engine/orchestrator/state table statically
   - [ ] 2.2 Bind engine events to renderer (countdown, outcomes, score)
@@ -225,11 +238,14 @@ Notes:
   - [ ] 3.2 Implement mouse/touch stat selection
   - [ ] 3.3 Render 1 Hz countdown; handle auto-select on expiry
   - [ ] 3.4 Add input validation for invalid keys and multi-key conflict handling
+   - [ ] 3.5 Provide an atomic DOM helper that updates `#cli-countdown[data-remaining-time]` and inner text in a single call to support deterministic tests
+   - [ ] 3.6 Add startup skeleton stat items to avoid zero-height `#cli-stats`
 - [ ] 4.0 Accessibility & observability
   - [ ] 4.1 Add `aria-live` and role attributes
   - [ ] 4.2 Ensure ≥4.5:1 contrast and zoom to 200% without breaking layout
   - [ ] 4.3 Add stable IDs (`#round-message`, `#cli-score`, etc.) and `data-flag` hooks
   - [ ] 4.4 Verify focus order and accessibility fallbacks
+   - [ ] 4.5 Verify that retro theme retains contrast and keyboard focus visibility
 - [ ] 5.0 Testing
   - [ ] 5.1 Add Playwright specs for keyboard/mouse/timer
   - [ ] 5.2 Verify selectors remain stable
