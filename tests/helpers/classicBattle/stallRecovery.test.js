@@ -10,10 +10,16 @@ vi.mock("../../../src/helpers/classicBattle/timerService.js", async () => {
     startTimer: vi.fn().mockResolvedValue(undefined)
   };
 });
-vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
-  startCooldown: vi.fn(),
-  createBattleStore: () => ({})
-}));
+vi.mock("../../../src/helpers/classicBattle/roundManager.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/classicBattle/roundManager.js");
+  return {
+    ...actual,
+    startCooldown: vi.fn(),
+    createBattleStore: () => ({}),
+    // Provide a no-op reset for test harness expectations
+    _resetForTest: vi.fn()
+  };
+});
 
 let fetchJsonMock;
 let generateRandomCardMock;

@@ -71,7 +71,9 @@ describe("startRoundWrapper failures", () => {
       setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms)),
       startCooldown: vi.fn(),
       handleReplay: vi.fn(),
-      createBattleStore: () => ({})
+      createBattleStore: () => ({}),
+      // Preserve startRound from this test's mock to ensure failure path
+      startRound
     }));
     vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
       onNextButtonClick: vi.fn()
@@ -178,7 +180,8 @@ describe("startRoundWrapper failures", () => {
       setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms)),
       startCooldown: vi.fn(),
       handleReplay: vi.fn(),
-      createBattleStore: () => ({})
+      createBattleStore: () => ({}),
+      startRound
     }));
     vi.doMock("../../src/helpers/classicBattle/timerService.js", () => ({
       onNextButtonClick: vi.fn()

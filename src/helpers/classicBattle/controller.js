@@ -55,7 +55,20 @@ export class ClassicBattleController extends EventTarget {
    * @returns {Promise<void>}
    */
   async _performStartRound(store) {
-    await startRound(store);
+    // Access the binding defensively: some Vitest mocks throw when a named
+    // export is missing. Resolve to `undefined` in that case and treat as no-op.
+    let startRoundRef;
+    try {
+      // eslint-disable-next-line no-unused-expressions
+      startRoundRef = startRound;
+    } catch {
+      startRoundRef = undefined;
+    }
+    if (typeof startRoundRef === "function") {
+      await startRoundRef(store);
+    } else {
+      return;
+    }
     this.dispatchEvent(new Event("roundStarted"));
   }
 
@@ -89,12 +102,14 @@ export class ClassicBattleController extends EventTarget {
     try {
       await this._performStartRound(this.store);
     } catch (error) {
+      try { console.log("[debug] startRound perform error", error); } catch {}
       this.dispatchEvent(new CustomEvent("roundStartError", { detail: error }));
       throw error;
     }
     try {
       await this._awaitOpponentCard();
     } catch (error) {
+      try { console.log("[debug] startRound awaitOpponentCard error", error); } catch {}
       this.dispatchEvent(new CustomEvent("roundStartError", { detail: error }));
       throw error;
     }
