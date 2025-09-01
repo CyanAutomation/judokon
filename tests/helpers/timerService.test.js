@@ -99,8 +99,8 @@ describe("timerService", () => {
     const skip = await import("../../src/helpers/classicBattle/skipHandler.js");
     skip.skipCurrentPhase();
 
-    const { scheduleNextRound } = await import("../../src/helpers/classicBattle/timerService.js");
-    const controls = scheduleNextRound({ matchEnded: false }, scheduler);
+    const { startCooldown } = await import("../../src/helpers/classicBattle/roundManager.js");
+    const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
     await controls.ready;
 

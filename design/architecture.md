@@ -189,6 +189,17 @@ The manager exposes `getState()` and `dispatch(event)` and invokes
 `onEnter` handlers for each state. Transition hooks emit the
 `battleStateChange` event for listeners.
 
+#### Round lifecycle
+
+- `roundManager.startRound(store)` draws cards and initializes round UI.
+- After a round resolves, `roundManager.startCooldown(store)` computes the
+  cooldown and schedules the Next button enablement.
+- When the cooldown expires or the player clicks Next, the orchestrator
+  dispatches `ready` to begin the following round.
+
+`roundManager` owns all cooldown logic, exposing `startCooldown` and
+`getNextRoundControls` for helpers like the Next button handler.
+
 Modules outside the orchestrator interact with the machine only through
 `dispatchBattleEvent` exported by `orchestrator.js`. The machine instance
 itself remains private to the orchestrator, with a getter available for

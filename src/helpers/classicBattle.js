@@ -70,7 +70,7 @@ export { getCardStatValue } from "./classicBattle/cardStatUtils.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
-export { scheduleNextRound } from "./classicBattle/timerService.js";
+export { startCooldown } from "./classicBattle/roundManager.js";
 /**
  * @summary TODO: Add summary
  * @pseudocode

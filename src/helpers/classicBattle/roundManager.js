@@ -2,9 +2,17 @@ import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { _resetForTest as resetEngineForTest } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
-import { resetSkipState } from "./skipHandler.js";
-import { emitBattleEvent } from "./battleEvents.js";
-import { readDebugState } from "./debugHooks.js";
+import { resetSkipState, setSkipHandler } from "./skipHandler.js";
+import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { readDebugState, exposeDebugState } from "./debugHooks.js";
+import { showSnackbar } from "../showSnackbar.js";
+import * as scoreboard from "../setupScoreboard.js";
+import { realScheduler } from "../scheduler.js";
+import { dispatchBattleEvent } from "./orchestrator.js";
+import { createRoundTimer } from "../timers/createRoundTimer.js";
+import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { attachCooldownRenderer } from "../CooldownRenderer.js";
+import { getStateSnapshot } from "./battleDebug.js";
 
 /**
  * Create a new battle state store.
@@ -117,6 +125,165 @@ export async function startRound(store, onRoundStart) {
   }
   emitBattleEvent("roundStarted", { store, roundNumber });
   return { ...cards, roundNumber };
+}
+
+/**
+ * Store controls for the pending cooldown to the next round.
+ * @type {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
+ */
+let currentNextRound = null;
+
+/**
+ * Schedule the cooldown before the next round and expose controls
+ * for the Next button.
+ *
+ * @pseudocode
+ * 1. Log the call for debug visibility.
+ * 2. Reset Next button state and determine cooldown duration.
+ * 3. Attach `CooldownRenderer` and start the timer with a fallback.
+ * 4. Resolve the ready promise when the cooldown expires.
+ *
+ * @param {ReturnType<typeof createBattleStore>} _store - Battle state store.
+ * @param {typeof realScheduler} [scheduler=realScheduler] - Scheduler for timers.
+ * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
+ */
+export function startCooldown(_store, scheduler = realScheduler) {
+  logStartCooldown();
+  const controls = createNextRoundControls();
+  const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
+  if (btn) {
+    btn.disabled = false;
+    delete btn.dataset.nextReady;
+  }
+  const cooldownSeconds = computeNextRoundCooldown();
+  wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
+  currentNextRound = controls;
+  return controls;
+}
+
+/**
+ * Expose current cooldown controls for Next button helpers.
+ *
+ * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
+ */
+export function getNextRoundControls() {
+  return currentNextRound;
+}
+
+/**
+ * Schedule a fallback timeout and return its id.
+ *
+ * @pseudocode
+ * 1. Attempt to call `setTimeout(cb, ms)`.
+ * 2. Return the timer id or `null` on failure.
+ *
+ * @param {number} ms
+ * @param {Function} cb
+ * @returns {ReturnType<typeof setTimeout>|null}
+ */
+export function setupFallbackTimer(ms, cb) {
+  try {
+    return setTimeout(cb, ms);
+  } catch {
+    return null;
+  }
+}
+
+function logStartCooldown() {
+  try {
+    const { state: s } = getStateSnapshot();
+    const count = (readDebugState("startCooldownCount") || 0) + 1;
+    exposeDebugState("startCooldownCount", count);
+    if (!(typeof process !== "undefined" && process.env?.VITEST)) {
+      console.warn(`[test] startCooldown call#${count}: state=${s}`);
+    }
+  } catch {}
+}
+
+function createNextRoundControls() {
+  const controls = { timer: null, resolveReady: null, ready: null };
+  controls.ready = new Promise((resolve) => {
+    controls.resolveReady = () => {
+      emitBattleEvent("nextRoundTimerReady");
+      resolve();
+      controls.resolveReady = null;
+    };
+  });
+  return controls;
+}
+
+function markNextReady(btn) {
+  if (btn) {
+    btn.dataset.nextReady = "true";
+    btn.disabled = false;
+  }
+}
+
+async function handleNextRoundExpiration(controls, btn) {
+  setSkipHandler(null);
+  scoreboard.clearTimer();
+  markNextReady(btn);
+  await new Promise((resolve) => {
+    try {
+      const state = getStateSnapshot().state;
+      if (!state || state === "cooldown") {
+        resolve();
+        return;
+      }
+    } catch {}
+    const handler = (e) => {
+      try {
+        if (e.detail?.to === "cooldown") {
+          offBattleEvent("battleStateChange", handler);
+          resolve();
+        }
+      } catch {}
+    };
+    onBattleEvent("battleStateChange", handler);
+  });
+  try {
+    await dispatchBattleEvent("ready");
+  } catch {}
+  markNextReady(btn);
+  try {
+    const { updateDebugPanel } = await import("./uiHelpers.js");
+    updateDebugPanel();
+  } catch {}
+  if (typeof controls.resolveReady === "function") {
+    controls.resolveReady();
+  }
+}
+
+function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
+  const timer = createRoundTimer();
+  attachCooldownRenderer(timer, cooldownSeconds);
+  let expired = false;
+  const onExpired = () => {
+    if (expired) return;
+    expired = true;
+    return handleNextRoundExpiration(controls, btn);
+  };
+  timer.on("expired", onExpired);
+  timer.on("drift", () => {
+    const msgEl = typeof document !== "undefined" ? document.getElementById("round-message") : null;
+    if (msgEl && msgEl.textContent) {
+      showSnackbar("Waiting…");
+    } else {
+      scoreboard.showMessage("Waiting…");
+    }
+  });
+  controls.timer = timer;
+  setSkipHandler(() => {
+    try {
+      console.warn("[test] skip: stop nextRoundTimer");
+    } catch {}
+    controls.timer?.stop();
+  });
+  scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
+  try {
+    const ms = Math.max(0, Number(cooldownSeconds) * 1000) + 10;
+    setupFallbackTimer(ms, onExpired);
+  } catch {}
 }
 
 /**

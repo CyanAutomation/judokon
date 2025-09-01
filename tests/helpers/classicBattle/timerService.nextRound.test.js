@@ -44,10 +44,11 @@ describe("timerService next round handling", () => {
   });
 
   it("clicking Next during cooldown skips current phase", async () => {
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
     const { nextButton } = createTimerNodes();
-    const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
-    nextButton.addEventListener("click", (e) => mod.onNextButtonClick(e, controls));
+    const controls = roundMod.startCooldown({}, scheduler);
+    nextButton.addEventListener("click", (e) => timerMod.onNextButtonClick(e, controls));
     scheduler.tick(100);
     nextButton.click();
     await controls.ready;
@@ -61,9 +62,10 @@ describe("timerService next round handling", () => {
     startCoolDown.mockImplementation((_t, onExpired) => {
       onExpired();
     });
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
     createTimerNodes();
-    const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    const controls = roundMod.startCooldown({}, scheduler);
     scheduler.tick(1100);
     await controls.ready;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
@@ -71,12 +73,13 @@ describe("timerService next round handling", () => {
   });
 
   it("clears stale nextReady before starting a new cooldown", async () => {
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
     const { nextButton } = createTimerNodes();
     nextButton.dataset.nextReady = "true";
     nextButton.disabled = false;
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
-    const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    const controls = roundMod.startCooldown({}, scheduler);
     expect(nextButton.dataset.nextReady).toBeUndefined();
     expect(nextButton.disabled).toBe(false);
     scheduler.tick(1100);
@@ -116,12 +119,13 @@ describe("timerService next round handling", () => {
   });
 
   it("resolves ready after minimum cooldown in test mode", async () => {
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
     const { nextButton } = createTimerNodes();
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(true);
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    const controls = mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    const controls = roundMod.startCooldown({}, scheduler);
     scheduler.tick(1100);
     await controls.ready;
     expect(nextButton.dataset.nextReady).toBe("true");

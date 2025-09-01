@@ -1,7 +1,8 @@
 import { showSelectionPrompt, updateDebugPanel } from "./uiHelpers.js";
 import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { startTimer, handleStatSelectionTimeout, scheduleNextRound } from "./timerService.js";
+import { startTimer, handleStatSelectionTimeout } from "./timerService.js";
+import { startCooldown } from "./roundManager.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { showMatchSummaryModal } from "./uiService.js";
@@ -176,7 +177,7 @@ export function bindRoundUIEventHandlers() {
       // validates live state before dispatching 'ready', so scheduling here is
       // safe and ensures the snackbar countdown appears without waiting for a
       // separate state change event that may be mocked out in tests.
-      scheduleNextRound(result);
+      startCooldown(store);
       // Proactively surface the countdown text in the snackbar so tests can
       // observe it even if timer wiring races with other snackbar messages.
       try {
@@ -319,9 +320,9 @@ export function bindRoundUIEventHandlersDynamic() {
         emitBattleEvent("matchOver");
       } catch {}
     } else {
-      const { scheduleNextRound } = await import("./timerService.js");
+      const { startCooldown } = await import("./roundManager.js");
       // Schedule immediately to surface the countdown in tests and runtime.
-      scheduleNextRound(result);
+      startCooldown(store);
       // Failsafe for dynamic path as well
       try {
         const outcomeEvent =

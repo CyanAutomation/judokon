@@ -63,7 +63,7 @@ describe("classicBattle stat double-click", () => {
     expect(result1.playerScore).toBe(1);
     expect(result1.matchEnded).toBe(false);
 
-    battleMod.scheduleNextRound(result1);
+    battleMod.startCooldown(store);
     await vi.runAllTimersAsync();
     const { onNextButtonClick } = await import(
       "../../../src/helpers/classicBattle/timerService.js"

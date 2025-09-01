@@ -34,7 +34,7 @@ describe("timerService drift handling", () => {
     expect(startRound).toHaveBeenCalledTimes(2);
   });
 
-  it("scheduleNextRound shows fallback on drift", async () => {
+  it("startCooldown shows fallback on drift", async () => {
     vi.resetModules();
     vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
       dispatchBattleEvent: vi.fn()
@@ -58,10 +58,10 @@ describe("timerService drift handling", () => {
       const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
       return { ...actual, startCoolDown };
     });
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const mod = await import("../../../src/helpers/classicBattle/roundManager.js");
     const scheduler = createMockScheduler();
     createTimerNodes();
-    mod.scheduleNextRound({ matchEnded: false }, scheduler);
+    mod.startCooldown({}, scheduler);
     scheduler.tick(0);
     cool.triggerDrift(1);
     // Cooldown drift displays a non-intrusive fallback; may use snackbar

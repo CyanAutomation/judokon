@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   getNextRoundControls: vi.fn(() => null),
   setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
 }));
