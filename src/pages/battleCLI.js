@@ -36,7 +36,9 @@ import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestr
 function disposeClassicBattleOrchestrator() {
   try {
     battleOrchestrator?.disposeClassicBattleOrchestrator?.();
-  } catch {}
+  } catch {
+    /* ignore: orchestrator may not be initialized */
+  }
 }
 
 /**
@@ -646,7 +648,7 @@ function startSelectionCountdown(seconds = 30) {
  * @returns {void}
  */
 export function autostartBattle() {
-  // Ensure autostart so the modal is skipped in CLI and dispatch start
+  // Persist `autostart=1` so the CLI skips the modal
   try {
     const url = new URL(window.location.href);
     if (url.searchParams.get("autostart") !== "1") {
@@ -654,6 +656,7 @@ export function autostartBattle() {
       history.replaceState({}, "", url);
     }
   } catch {}
+  // Dispatch start automatically when autostart is enabled
   try {
     const autostart = new URLSearchParams(location.search).get("autostart");
     if (autostart === "1") {
