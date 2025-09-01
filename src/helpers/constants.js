@@ -52,6 +52,11 @@ export function resolveDataDir(moduleUrl) {
     const srcRoot = normalizedUrl.slice(0, idx + srcMarker.length); // includes trailing slash
     return new URL("data/", srcRoot).href;
   }
+  // When the module URL is an http(s) URL outside `/src/`, prefer the origin + `/src/data/`.
+  if (/^https?:\/\//.test(normalizedUrl)) {
+    const u = new URL(normalizedUrl);
+    return `${u.origin}/src/data/`;
+  }
   // Fallback: resolve relative to the calling module's directory
   return new URL("../data/", new URL(".", normalizedUrl)).href;
 }
