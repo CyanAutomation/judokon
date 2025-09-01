@@ -1,7 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@xenova/transformers", () => ({
-  pipeline: vi.fn(async () => async () => ({ data: new Float32Array([0, 0, 0]) }))
+  pipeline: vi.fn(async (task, model) => {
+    if (!model.includes("models/minilm")) {
+      await fetch("https://example.com/model");
+    }
+    return async () => ({ data: new Float32Array([0, 0, 0]) });
+  })
 }));
 
 const findMatches = vi.hoisted(() => vi.fn(async () => [{ source: "design/doc.md" }]));
@@ -15,5 +20,15 @@ describe("evaluateRAG", () => {
   it("runs without throwing", async () => {
     await evaluate();
     expect(findMatches).toHaveBeenCalled();
+  });
+
+  it("does not fetch when network is blocked", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(() => {
+      throw new Error("network blocked");
+    });
+
+    await evaluate();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
   });
 });
