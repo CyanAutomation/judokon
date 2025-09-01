@@ -71,7 +71,8 @@ export async function getExtractor() {
   if (!extractor) {
     try {
       if (isNodeEnvironment()) {
-        const { pipeline } = await import("@xenova/transformers");
+        const { pipeline, env } = await import("@xenova/transformers");
+        env.allowLocalModels = true;
         const { resolve } = await import("path");
         const { pathToFileURL } = await import("url");
         const modelPath = pathToFileURL(resolve("models/minilm")).href;
