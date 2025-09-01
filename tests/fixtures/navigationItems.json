@@ -68,7 +68,7 @@
     "url": "updateJudoka.html",
     "category": "mainMenu",
     "order": 30,
-    "isHidden": true,
+    "isHidden": false,
     "gameModeId": 9
   },
   {
