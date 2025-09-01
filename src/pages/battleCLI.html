@@ -31,29 +31,39 @@
         border-bottom: 1px solid #3a3a3a;
         display: flex;
         justify-content: space-between;
-        align-items: center; /* prevent height changes from baseline shifts */
+          min-width: 18ch; /* reserve width for longest state (prevents wrap/jump) */
         box-sizing: border-box; /* include padding in fixed height */
         height: 56px; /* hard cap header height for consistency */
       }
       .cli-title {
         font-weight: 700;
       }
+        /* Reserve visible space for countdown even when empty */
+        #cli-countdown {
+          min-height: 1.2em;
+        }
       .state-badge {
         font-size: 12px;
         opacity: 0.8;
         margin-left: 8px;
-        display: inline-block;
-        min-width: 30ch; /* reserve width for longest state (prevents wrap/jump) */
-        white-space: nowrap;
-      }
-      .cli-controls {
+          /* Reserve vertical space for stat rows to avoid layout shift when populated */
+          min-height: 8rem;
+        }
+        .cli-stat {
+          padding: 4px 6px;
+          background: #121212;
+          border: 1px solid #3a3a3a;
+          min-height: 2.4em;
         display: flex;
+        align-items: center;
         gap: 8px;
         align-items: center;
       }
       .cli-main {
         flex: 1;
         display: flex;
+          max-width: 980px;
+          margin: 0 auto;
         flex-direction: column;
         padding: 12px;
         gap: 12px;
