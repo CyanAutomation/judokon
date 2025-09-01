@@ -32,6 +32,7 @@ import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 import { dispatchBattleEvent } from "../helpers/classicBattle/orchestrator.js";
+import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
 
 /**
  * Minimal DOM utils for the CLI page
@@ -1122,7 +1123,7 @@ function handleBattleState(ev) {
   } else {
     stopSelectionCountdown();
   }
-  if (to === "roundOver") {
+  if (to === "roundOver" && !autoContinue) {
     showBottomLine("Press Enter to continue");
     byId("snackbar-container")?.querySelector(".snackbar")?.focus();
   }
@@ -1186,6 +1187,7 @@ async function init() {
   try {
     await initFeatureFlags();
   } catch {}
+  setAutoContinue(true);
   try {
     const params = new URLSearchParams(location.search);
     if (params.has("verbose")) {
@@ -1195,6 +1197,10 @@ async function init() {
     if (params.has("skipRoundCooldown")) {
       const skip = params.get("skipRoundCooldown") === "1";
       setFlag("skipRoundCooldown", skip);
+    }
+    if (params.has("autoContinue")) {
+      const v = params.get("autoContinue");
+      setAutoContinue(!(v === "0" || v === "false"));
     }
   } catch {}
   updateVerbose();
