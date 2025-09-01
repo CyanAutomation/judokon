@@ -1192,7 +1192,7 @@ async function init() {
     const params = new URLSearchParams(location.search);
     if (params.has("verbose")) {
       const v = params.get("verbose");
-      setFlag("cliVerbose", v === "1" || v === "true");
+      await setFlag("cliVerbose", v === "1" || v === "true");
     }
     if (params.has("skipRoundCooldown")) {
       const skip = params.get("skipRoundCooldown") === "1";
@@ -1217,8 +1217,9 @@ async function init() {
     const sec = byId("cli-shortcuts");
     if (sec) sec.hidden = true;
   });
-  checkbox?.addEventListener("change", () => {
-    setFlag("cliVerbose", !!checkbox.checked);
+  checkbox?.addEventListener("change", async () => {
+    await setFlag("cliVerbose", !!checkbox.checked);
+    updateVerbose();
   });
   featureFlagsEmitter.addEventListener("change", (e) => {
     const flag = e.detail?.flag;
