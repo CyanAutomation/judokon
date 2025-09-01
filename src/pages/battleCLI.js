@@ -63,6 +63,7 @@ let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
 let ignoreNextAdvanceClick = false;
 let roundResolving = false;
+const statDisplayNames = {};
 
 // Test hooks to access internal timer state
 export const __test = {
@@ -590,11 +591,12 @@ export function autostartBattle() {
 /**
  * Load stat names and render them into the CLI stat selection list.
  *
- * @summary Fetch `statNames.json`, build stat buttons, and wire click handlers.
+ * @summary Fetch `statNames.json`, build stat buttons, store display name map, and wire click handlers.
  * @pseudocode
  * 1. Fetch `statNames.json` and locate `#cli-stats`.
- * 2. Sort and render stat entries into clickable elements with `data-stat-index`.
- * 3. Attach `handleStatClick` to the list and populate help text when available.
+ * 2. Reset `statDisplayNames` and map `STATS[idx-1] -> name`.
+ * 3. Sort and render stat entries into clickable elements with `data-stat-index`.
+ * 4. Attach `handleStatClick` to the list and populate help text when available.
  *
  * @returns {Promise<void>} Resolves when the stat list has been rendered.
  */
@@ -604,11 +606,14 @@ export async function renderStatList() {
     const list = byId("cli-stats");
     if (list && Array.isArray(stats)) {
       list.innerHTML = "";
+      for (const key of Object.keys(statDisplayNames)) delete statDisplayNames[key];
       stats
         .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
         .forEach((s) => {
           const idx = Number(s.statIndex) || 0;
           if (!idx) return;
+          const key = STATS[idx - 1];
+          if (key) statDisplayNames[key] = s.name;
           const div = document.createElement("div");
           div.className = "cli-stat";
           div.setAttribute("role", "button");
@@ -1086,9 +1091,8 @@ function handleRoundResolved(e) {
   roundResolving = false;
   const { result, stat, playerVal, opponentVal } = e.detail || {};
   if (result) {
-    setRoundMessage(
-      `${result.message} (${String(stat || "").toUpperCase()} – You: ${playerVal} Opponent: ${opponentVal})`
-    );
+    const display = statDisplayNames[stat] || String(stat || "").toUpperCase();
+    setRoundMessage(`${result.message} (${display} – You: ${playerVal} Opponent: ${opponentVal})`);
     updateScoreLine();
   }
 }
