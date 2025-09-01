@@ -52,4 +52,8 @@ Update: Align shortcuts panel layout with settings panel
 
 - [x] Reworked `#cli-shortcuts` markup so it uses `class="cli-block cli-settings"` and a `cli-settings-header` + `#cli-shortcuts-body` structure matching `#cli-settings`.
 
+Update: Wire shortcuts close button and persist state
+
+- [x] Wired `#cli-shortcuts-close` to toggle `#cli-shortcuts-body`, persisted state in `localStorage` as `battleCLI.shortcutsCollapsed`, and exposed `window.__battleCLIinit.setShortcutsCollapsed` for tests.
+
 
