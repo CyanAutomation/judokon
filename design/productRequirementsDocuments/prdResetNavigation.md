@@ -1,6 +1,7 @@
 # PRD: Reset Navigation Cache
 
 ## TL;DR
+
 The Reset Navigation Cache feature adds a button to the Settings page (when enabled by feature flag) that lets users manually clear cached navigation data and immediately refresh the navigation bar. This helps testers and advanced users resolve issues where navigation items are outdated or incorrect, without needing to clear all browser storage or wait for cache expiration.
 
 ## Overview
@@ -35,11 +36,11 @@ Users and testers may encounter issues where the navigation bar does not reflect
 ## Acceptance Criteria
 
 - The "Reset Navigation Cache" button appears in the Settings page only when the navCacheResetButton feature flag is enabled.
- - Clicking the button invokes `navigationCache.reset()`, which removes the navigationItems entry using the storage utility.
- - After clicking, the navigation bar is immediately refreshed with up-to-date navigation items.
- - A snackbar or toast message appears confirming the cache was cleared.
- - The button is not visible when the feature flag is disabled.
- - No errors are shown if navigationItems is already missing from storage.
+- Clicking the button invokes `navigationCache.reset()`, which removes the navigationItems entry using the storage utility.
+- After clicking, the navigation bar is immediately refreshed with up-to-date navigation items.
+- A snackbar or toast message appears confirming the cache was cleared.
+- The button is not visible when the feature flag is disabled.
+- No errors are shown if navigationItems is already missing from storage.
 
 ## Non-Functional Requirements / Design Considerations
 

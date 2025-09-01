@@ -228,31 +228,26 @@ Header and action layout are inconsistent, cluttered, and violate basic navigati
 ## Tasks
 
 - [ ] 1.0 Implement Judoka Edit Interface
-
   - [ ] 1.1 Load judoka data into editable fields with loading spinner
   - [ ] 1.2 Design form UI for stats (Strength, Speed, Technique, Endurance) and appearance (Gi color, Belt, Hairstyle)
   - [ ] 1.3 Add real-time validation with inline error messages and fade-in animation
 
 - [ ] 2.0 Save and Persistence
-
   - [ ] 2.1 Save edits to shared storage reliably within 1 second
   - [ ] 2.2 Show confirmation message with slide-up and fade-out animation on successful save
   - [ ] 2.3 Load saved edits correctly on reload
 
 - [ ] 3.0 Error Handling
-
   - [ ] 3.1 Display retry prompt modal when judoka data fails to load
   - [ ] 3.2 Show errors and retry option modal on save failures
   - [ ] 3.3 Handle simultaneous edits with clear conflict resolution messaging and data refresh
 
 - [ ] 4.0 Accessibility and UX Enhancements
-
   - [ ] 4.1 Support keyboard navigation and screen readers with ARIA labels
   - [ ] 4.2 Provide clear visual feedback on validation and save status including animations
   - [ ] 4.3 Implement disabled state and dismissible overlay message for edit locking
 
 - [ ] 5.0 Edit Locking Policy (pending decision)
-
   - [ ] 5.1 Lock editing when judoka enters ranked play
   - [ ] 5.2 Notify player with explanatory dismissible overlay
 

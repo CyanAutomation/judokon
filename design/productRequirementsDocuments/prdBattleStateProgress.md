@@ -30,6 +30,7 @@ This PRD documents the expected behavior so implementers and QA can validate the
 6. **Accessibility**: Each item must present both a numeric ID and a human-readable label; active item uses `aria-current="step"`. Support reduced motion.
 
 **Success Metrics (examples):**
+
 - Rendering completes (or is intentionally skipped) in < 250ms on a typical dev machine for the standard state table.
 - All updates complete in <16ms during test simulations.
 - No `console.error` during normal initialization or state updates in tests.
@@ -44,43 +45,55 @@ This PRD documents the expected behavior so implementers and QA can validate the
 
 ## Functional Requirements (Prioritized)
 
-P1 – Render Core State List  
-- Feature: Render a trimmed list of core states into `#battle-state-progress`.  
+P1 – Render Core State List
+
+- Feature: Render a trimmed list of core states into `#battle-state-progress`.
 - Description: The module must generate one DOM element per core state (`id < 90`), ordered by ascending ID, with each element carrying a `data-state` attribute, visible numeric ID, and human-readable label.
 
-P1 – Expose Ready Promise  
+P1 – Expose Ready Promise
+
 - Feature: Provide `battleStateProgressReadyPromise` that resolves when rendering completes or is skipped.
 
-P1 – Active State Updates  
+P1 – Active State Updates
+
 - Feature: Listen for `battle:state` events and update the active item by toggling an `active` class and `aria-current="step"`.
 
-P1 – Support legacy/new event payloads  
+P1 – Support legacy/new event payloads
+
 - Feature: Accept `e.detail` as a plain string (legacy) or as an object `{ from, to }` (new), and always use the destination state.
 
-P1 – Map non-core states to visible core states  
+P1 – Map non-core states to visible core states
+
 - Feature: For interrupts/admin paths, map `interruptRound` → `cooldown`, `interruptMatch` → `matchOver`, and `roundModification` → `roundDecision` so the progress list indicates a reasonable visual step.
 
-P2 – Idempotent rendering  
+P2 – Idempotent rendering
+
 - Feature: Skip rendering if the existing DOM items already match the expected list (names and IDs in order).
 
-P2 – Fallback rendering when empty  
+P2 – Fallback rendering when empty
+
 - Feature: If `CLASSIC_BATTLE_STATES` is missing or contains no core states, display a single fallback list item.
 
-P2 – Accessibility & Keyboard Support  
+P2 – Accessibility & Keyboard Support
+
 - Feature: Provide `ul/li` semantics, `aria-current="step"` on the active item, container label “Battle progress,” focusable items, and keyboard navigation (Up/Down).
 
-P2 – Reduced Motion Handling  
+P2 – Reduced Motion Handling
+
 - Feature: Use a 100–150ms CSS transition for active state changes; respect `prefers-reduced-motion`.
 
-P3 – Cleanup API  
+P3 – Cleanup API
+
 - Feature: Return a cleanup function that removes the `battle:state` listener.
 
-P3 – Localization-ready Labels  
+P3 – Localization-ready Labels
+
 - Feature: Support future i18n of state labels (default EN).
 
 ## Acceptance Criteria
 
 ### Rendering
+
 - **Given** `#battle-state-progress` exists and `CLASSIC_BATTLE_STATES` has core states,  
   **When** initialization runs,  
   **Then** one item is created per core state (id < 90) in ascending order,  
@@ -98,6 +111,7 @@ P3 – Localization-ready Labels
   **And** the promise resolves.
 
 ### State Updates
+
 - **Given** the list is rendered,  
   **When** a `battle:state` event fires with `detail: "cooldown"`,  
   **Then** the cooldown item has class `active` and `aria-current="step"`,  
@@ -112,77 +126,81 @@ P3 – Localization-ready Labels
   **Then** the `matchOver` item becomes active and badge updates to `"matchOver"`.
 
 ### Initialization State
+
 - **Given** `document.body.dataset.battleState` contains `"roundDecision"`,  
   **When** initialization runs,  
   **Then** the `roundDecision` item is active immediately,  
-  **And** `markBattlePartReady('state')` is called exactly once.  
+  **And** `markBattlePartReady('state')` is called exactly once.
 
 ### Robustness
+
 - **Given** no DOM exists (SSR),  
   **When** the module initializes,  
-  **Then** it returns immediately and the ready promise resolves.  
+  **Then** it returns immediately and the ready promise resolves.
 
 ### Performance
-- All updates complete in <16ms.  
-- Rendering completes or skips in <250ms.  
+
+- All updates complete in <16ms.
+- Rendering completes or skips in <250ms.
 
 ## Non-Functional Requirements / Design Considerations
 
-- **Performance**: Avoid unnecessary DOM writes (idempotency checks).  
-- **Robustness**: SSR safe; resolve promise even with no document.  
-- **Testability**: Expose promise on `window`.  
-- **Accessibility**: Provide labels, ARIA roles, keyboard navigation, `aria-current`. Respect reduced motion.  
-- **UX**: Simple vertical list with one highlighted active item. Active item uses bold text + colored left bar.  
-- **Visuals**: Item height ≥ 44px, touch target ≥ 44×44, 12–16px spacing, 14–16px font. High-contrast colors.  
-- **Localization**: Default EN labels, structure ready for future i18n.  
+- **Performance**: Avoid unnecessary DOM writes (idempotency checks).
+- **Robustness**: SSR safe; resolve promise even with no document.
+- **Testability**: Expose promise on `window`.
+- **Accessibility**: Provide labels, ARIA roles, keyboard navigation, `aria-current`. Respect reduced motion.
+- **UX**: Simple vertical list with one highlighted active item. Active item uses bold text + colored left bar.
+- **Visuals**: Item height ≥ 44px, touch target ≥ 44×44, 12–16px spacing, 14–16px font. High-contrast colors.
+- **Localization**: Default EN labels, structure ready for future i18n.
 - **Mockup**: Vertical list with state numbers + names, one highlighted.
 
 ## Dependencies and Open Questions
 
-- Depends on `src/helpers/classicBattle/stateTable.js` (export `CLASSIC_BATTLE_STATES`).  
-- Calls `updateBattleStateBadge(state)` from `src/helpers/classicBattle/uiHelpers.js`.  
+- Depends on `src/helpers/classicBattle/stateTable.js` (export `CLASSIC_BATTLE_STATES`).
+- Calls `updateBattleStateBadge(state)` from `src/helpers/classicBattle/uiHelpers.js`.
 - Calls `markBattlePartReady('state')` from `src/helpers/battleInit.js`.
 
-Open questions:  
-- Are the non-core→core mapping rules exhaustive?  
-- Should icons be included for clarity for children (recommended: P2)?  
-- Should keyboard focus cycle through all items or stay locked to the active one?  
+Open questions:
+
+- Are the non-core→core mapping rules exhaustive?
+- Should icons be included for clarity for children (recommended: P2)?
+- Should keyboard focus cycle through all items or stay locked to the active one?
 
 ## Contract (Inputs / Outputs / Errors)
 
-- **Inputs**: Reads `CLASSIC_BATTLE_STATES`, queries `#battle-state-progress`, `document.body.dataset.battleState`.  
-- **Outputs**: Returns cleanup function (removes listener). Mutates DOM, calls helper functions, resolves promise.  
-- **Errors**: Should not throw for missing DOM or malformed state table. SSR returns resolved promise.  
+- **Inputs**: Reads `CLASSIC_BATTLE_STATES`, queries `#battle-state-progress`, `document.body.dataset.battleState`.
+- **Outputs**: Returns cleanup function (removes listener). Mutates DOM, calls helper functions, resolves promise.
+- **Errors**: Should not throw for missing DOM or malformed state table. SSR returns resolved promise.
 
 ## Pseudocode / Implementation Notes
 
-1. If `document` undefined, return early and resolve promise.  
-2. Get `#battle-state-progress`; if missing, resolve promise and return.  
-3. Read and filter `CLASSIC_BATTLE_STATES` (`id < 90`), sort ascending.  
-4. If empty, render `<li>No states found</li>` and resolve.  
-5. Compare existing DOM to expected; if mismatched, re-render.  
-6. Resolve ready promise.  
-7. Register `battle:state` listener. Normalize payloads.  
-8. Map non-core to nearest core; set `active` + `aria-current="step"`. Call badge update.  
-9. If initial state exists in `body.dataset`, apply immediately and call readiness once.  
-10. Return cleanup function.  
+1. If `document` undefined, return early and resolve promise.
+2. Get `#battle-state-progress`; if missing, resolve promise and return.
+3. Read and filter `CLASSIC_BATTLE_STATES` (`id < 90`), sort ascending.
+4. If empty, render `<li>No states found</li>` and resolve.
+5. Compare existing DOM to expected; if mismatched, re-render.
+6. Resolve ready promise.
+7. Register `battle:state` listener. Normalize payloads.
+8. Map non-core to nearest core; set `active` + `aria-current="step"`. Call badge update.
+9. If initial state exists in `body.dataset`, apply immediately and call readiness once.
+10. Return cleanup function.
 
 ## Edge cases and Test Ideas
 
-- SSR (no DOM): Promise resolves, no error.  
-- Idempotent rendering: pre-populated DOM unchanged.  
-- Fallback rendering when empty.  
-- Mapping correctness for interrupts/admin.  
-- `markBattlePartReady('state')` fires exactly once.  
-- Malformed events handled gracefully.  
-- Accessibility: Screen reader announces active; keyboard navigation works; reduced motion respected.  
+- SSR (no DOM): Promise resolves, no error.
+- Idempotent rendering: pre-populated DOM unchanged.
+- Fallback rendering when empty.
+- Mapping correctness for interrupts/admin.
+- `markBattlePartReady('state')` fires exactly once.
+- Malformed events handled gracefully.
+- Accessibility: Screen reader announces active; keyboard navigation works; reduced motion respected.
 
 ## Notes / Next Steps
 
-- Add unit/integration tests with stubbed `CLASSIC_BATTLE_STATES`.  
-- Provide wireframe mockup with accessibility notes.  
-- Decide whether to include icons for clarity.  
-- Plan localization (labels/i18n).  
+- Add unit/integration tests with stubbed `CLASSIC_BATTLE_STATES`.
+- Provide wireframe mockup with accessibility notes.
+- Decide whether to include icons for clarity.
+- Plan localization (labels/i18n).
 
 ---
 

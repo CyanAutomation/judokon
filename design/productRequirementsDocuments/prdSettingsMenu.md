@@ -38,29 +38,29 @@ Players need to easily adjust game settings to personalize their experience, imp
 
 ## Functional Requirements
 
-| Priority | Feature                             | Description                                                                                            |
-| -------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| P1       | Sound Toggle                        | Binary toggle updating `settings.json` live on change.                                                 |
-| P1       | Full Navigation Map Toggle          | Enable or disable the full navigation map via general setting; updates `settings.json` live on change. |
-| P3       | Test Mode Feature Flag              | Enables deterministic battles for automated testing.                                                   |
-| P3       | Battle Debug Panel Feature Flag     | Adds a collapsible debug `<pre>` beside the opponent's card showing match state.                       |
-| P3       | Battle State Badge Feature Flag     | Displays the current battle state in a header badge on battle pages.                                   |
-| P3       | Card Inspector Feature Flag         | Reveals a panel on each card with its raw JSON for debugging.                                          |
-| P3       | Viewport Simulation Feature Flag    | Choose preset sizes to simulate different devices.                                                     |
-| P3       | Tooltip Overlay Debug Feature Flag  | Outline tooltip targets to debug placement.                                                            |
-| P3       | Layout Debug Outlines Feature Flag  | Show element outlines to inspect page layout.                                                          |
-| P3       | Navigation Cache Reset Feature Flag | Add a button to clear cached navigation data.                                                          |
-| P1       | Motion Effects Toggle               | Binary toggle updating `settings.json` live on change.                                                 |
-| P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).                 |
-| P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                                |
-| P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI.                                                 |
+| Priority | Feature                             | Description                                                                                                                            |
+| -------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| P1       | Sound Toggle                        | Binary toggle updating `settings.json` live on change.                                                                                 |
+| P1       | Full Navigation Map Toggle          | Enable or disable the full navigation map via general setting; updates `settings.json` live on change.                                 |
+| P3       | Test Mode Feature Flag              | Enables deterministic battles for automated testing.                                                                                   |
+| P3       | Battle Debug Panel Feature Flag     | Adds a collapsible debug `<pre>` beside the opponent's card showing match state.                                                       |
+| P3       | Battle State Badge Feature Flag     | Displays the current battle state in a header badge on battle pages.                                                                   |
+| P3       | Card Inspector Feature Flag         | Reveals a panel on each card with its raw JSON for debugging.                                                                          |
+| P3       | Viewport Simulation Feature Flag    | Choose preset sizes to simulate different devices.                                                                                     |
+| P3       | Tooltip Overlay Debug Feature Flag  | Outline tooltip targets to debug placement.                                                                                            |
+| P3       | Layout Debug Outlines Feature Flag  | Show element outlines to inspect page layout.                                                                                          |
+| P3       | Navigation Cache Reset Feature Flag | Add a button to clear cached navigation data.                                                                                          |
+| P1       | Motion Effects Toggle               | Binary toggle updating `settings.json` live on change.                                                                                 |
+| P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).                                                 |
+| P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                                                                |
+| P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI.                                                                                 |
 | P2       | Game Modes Toggles                  | Binary toggles controlling pre-seeded links via `navigationItems.json`; if the file cannot be loaded, a bundled fallback list is used. |
-| P3       | Settings Menu Integration           | Ensure settings appear as a game mode in `navigationItems.json`.                                       |
-| P3       | View Change Log Link                | Link to `changeLog.html` for viewing recent judoka updates.                                            |
-| P3       | View PRD Documents Link             | Link to `prdViewer.html` for browsing product requirement documents.                                   |
-| P3       | View Design Mockups Link            | Link to `mockupViewer.html` to browse design mockups.                                                  |
-| P3       | View Tooltip Descriptions Link      | Link to `tooltipViewer.html` for exploring tooltip text.                                               |
-| P3       | Vector Search for RAG Link          | Link to `vectorSearch.html` for vector database queries.                                               |
+| P3       | Settings Menu Integration           | Ensure settings appear as a game mode in `navigationItems.json`.                                                                       |
+| P3       | View Change Log Link                | Link to `changeLog.html` for viewing recent judoka updates.                                                                            |
+| P3       | View PRD Documents Link             | Link to `prdViewer.html` for browsing product requirement documents.                                                                   |
+| P3       | View Design Mockups Link            | Link to `mockupViewer.html` to browse design mockups.                                                                                  |
+| P3       | View Tooltip Descriptions Link      | Link to `tooltipViewer.html` for exploring tooltip text.                                                                               |
+| P3       | Vector Search for RAG Link          | Link to `vectorSearch.html` for vector database queries.                                                                               |
 
 ---
 
@@ -265,7 +265,6 @@ On load, the Settings page must pre-populate each control with values from
   - Screen reader support: Each toggle/selector must have appropriate ARIA labels describing function and current state.
   - Color contrast: Minimum 4.5:1 contrast ratio in all display modes per WCAG 2.1.
 - **Interaction flow:**
-
   - Tab order should proceed top-to-bottom: **display mode → sound → motion → game mode toggles**.
   - Users can navigate and activate each control without needing a mouse.
   - **Section layout:** The page begins with an `h1` heading followed by two `fieldset` sections—**General Settings** and **Game Modes**—each using the `.game-mode-toggle-container` grid. The second fieldset keeps `id="game-mode-toggle-container"` so scripts can find it.
@@ -330,25 +329,21 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 ## Tasks
 
 - [ ] 1.0 Finalize UX & Accessibility
-
   - [ ] 1.1 Implement tab order and keyboard focus indicators.
   - [ ] 1.2 Add ARIA labels for all interactive elements.
   - [ ] 1.3 Confirm WCAG 2.1 compliance for color contrast.
 
 - [ ] 2.0 Implement Responsive Layout
-
   - [ ] 2.1 Design and code mobile-first stacking of controls.
   - [ ] 2.2 Ensure smooth reflow for orientation changes.
 
 - [ ] 3.0 Data Persistence & Error Handling
-
   - [ ] 3.1 Implement immediate data updates on setting change.
   - [ ] 3.2 Display CSS popup on read/write errors.
   - [ ] 3.3 Revert toggles/selectors on failed updates.
 
 - [ ] 4.0 List Game Modes
-
-    - [x] 4.1 Ensure game mode toggles map to pre-seeded links defined in `navigationItems.json`.
+  - [x] 4.1 Ensure game mode toggles map to pre-seeded links defined in `navigationItems.json`.
   - [x] 4.2 On fetch failure, load bundled fallback navigation items and display an error message.
 
 - [ ] 6.0 Add Change Log Link

@@ -59,7 +59,7 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ## Gameplay Basics
 
- - On first visit to `battleJudoka.html`, a modal prompts the player to select a win target of **5, 10, or 15 points** (default 10). After a choice is made, the modal closes and the match begins.
+- On first visit to `battleJudoka.html`, a modal prompts the player to select a win target of **5, 10, or 15 points** (default 10). After a choice is made, the modal closes and the match begins.
 - The standard deck contains **99 unique cards**.
 - Each match begins with both sides receiving **25 random cards**.
 - At the start of each round, both players draw their top card.
@@ -89,25 +89,24 @@ This feedback highlights why Classic Battle is needed now: new players currently
 - If `battleRounds.json` fails to load, the game falls back to default round settings and surfaces an error message in `#round-message`.
 - **QA:** Temporarily block `battleRounds.json` to confirm default rounds appear and the error message is displayed.
 
-
 ---
 
 ## Prioritized Functional Requirements Table
 
-| Priority | Feature                 | Description                                                                                                                                                                      |
-| -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **P1**   | Random Card Draw        | Draw one random card per player each round; the opponent card must differ from the player's.                                                                                     |
+| Priority | Feature                 | Description                                                                                                                                                                                                                                    |
+| -------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1**   | Random Card Draw        | Draw one random card per player each round; the opponent card must differ from the player's.                                                                                                                                                   |
 | **P1**   | Stat Selection Timer    | Player selects stat within 30 seconds; otherwise, random stat is chosen. Auto-select is controlled by Random Stat Mode (`FF_AUTO_SELECT`), enabled by default. Timer is displayed in `#next-round-timer` and pauses/resumes on tab inactivity. |
-| **P1**   | Scoring                 | Increase score by one for each round win.                                                                                                                                        |
-| **P1**   | Match End Condition     | End match when either player reaches a user-selected win target of 5, 10, or 15 points (default 10) or after 25 rounds.                                                                                                                                       |
-| **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                       |
-| **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                                                                                            |
-| **P3**   | AI Stat Selection Logic | AI stat choice follows difficulty setting (`easy` random, `medium` picks stats ≥ average, `hard` selects highest stat). Difficulty can be set via Settings or `?difficulty=` URL param; defaults to `easy`. |
-| **P3**   | Next Button             | Single control that starts the next round and, when pressed during stat selection or cooldown, skips the remaining timer so gameplay can move forward immediately. |
+| **P1**   | Scoring                 | Increase score by one for each round win.                                                                                                                                                                                                      |
+| **P1**   | Match End Condition     | End match when either player reaches a user-selected win target of 5, 10, or 15 points (default 10) or after 25 rounds.                                                                                                                        |
+| **P2**   | Tie Handling            | Show tie message; round ends without score change; continue to next round.                                                                                                                                                                     |
+| **P2**   | Player Quit Flow        | Allow player to exit match early with confirmation; counts as a loss.                                                                                                                                                                          |
+| **P3**   | AI Stat Selection Logic | AI stat choice follows difficulty setting (`easy` random, `medium` picks stats ≥ average, `hard` selects highest stat). Difficulty can be set via Settings or `?difficulty=` URL param; defaults to `easy`.                                    |
+| **P3**   | Next Button             | Single control that starts the next round and, when pressed during stat selection or cooldown, skips the remaining timer so gameplay can move forward immediately.                                                                             |
 
 **Additional Behavioral Requirements:**
 
- - Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round via the **Next** button.
+- Behavior on tie rounds: round ends with a message explaining the tie and an option to start the next round via the **Next** button.
 - Match start conditions: both players begin with a score of zero; player goes first by drawing their card.
   - Players have 30 seconds to select a stat; if no selection is made, the system randomly selects a stat from the drawn card. **The timer is displayed in `#next-round-timer` and the prompt appears in a snackbar.**
 - The opponent's card must always differ from the player's card for each round.
@@ -119,11 +118,11 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 - Cards are revealed in the correct sequence each round.
 - The opponent card displays a placeholder ("Mystery Judoka") until the player selects a stat ([prdMysteryCard.md](prdMysteryCard.md)).
- - Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer is surfaced in `#next-round-timer`, and the "Select your move" prompt appears in a snackbar.**
+- Player can select a stat within 30 seconds; if not, the system auto-selects a random stat automatically. **Timer is surfaced in `#next-round-timer`, and the "Select your move" prompt appears in a snackbar.**
 - Stat-selection timer stops the moment a stat is chosen.
 - "Time's up! Auto-selecting <stat>" appears only if no stat was chosen before the timer expires.
 - After selection, the correct comparison is made, and the score updates based on round outcome.
- - After the player selects a stat, the Scoreboard shows "Opponent is choosing..." in `#round-message` until the opponent's stat is revealed.
+- After the player selects a stat, the Scoreboard shows "Opponent is choosing..." in `#round-message` until the opponent's stat is revealed.
 - If the selected stats are equal, a tie message displays and the round ends.
 - After round results, `computeNextRoundCooldown` and `createNextRoundSnackbarRenderer` run a 3s countdown via snackbar (`Next round in: Xs`). `computeNextRoundCooldown` enforces a minimum 1 s countdown even in test mode. The **Next** button activates only after `handleNextRoundExpiration` completes the countdown. Reference [timerService.js](../../src/helpers/classicBattle/timerService.js) for exact durations to keep design and code aligned.
 - After the match ends, a modal appears showing the final result and score with **Quit Match** and **Next Match** buttons; **Quit Match** exits to the main menu and **Next Match** starts a new match.
@@ -172,14 +171,14 @@ This feedback highlights why Classic Battle is needed now: new players currently
     attribute and auto-opens on first visit using the storage helper to remember the
     dismissal.
   - Tooltips on stat names, country flags, weight indicators, and navigation icons provide accessible explanations.
-   - The Scoreboard includes a round counter (`#round-counter`) and a field showing the player's selected stat for the current round.
-   - Optional keyboard shortcuts: When `statHotkeys` feature flag is enabled, allow number keys 1–5 to select the corresponding stat button (left→right order) for power users and tests. Disabled by default. The toggle resides under **Advanced Settings** on the Settings page.
+  - The Scoreboard includes a round counter (`#round-counter`) and a field showing the player's selected stat for the current round.
+  - Optional keyboard shortcuts: When `statHotkeys` feature flag is enabled, allow number keys 1–5 to select the corresponding stat button (left→right order) for power users and tests. Disabled by default. The toggle resides under **Advanced Settings** on the Settings page.
   - **Accessibility:**
   - Minimum text contrast ratio: ≥4.5:1 (per WCAG).
   - Minimum touch target size: ≥44px. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for the full rule.
   - Support keyboard navigation for stat selection, the **Next** button (for round progression and timer skipping), and quit confirmation.
   - Provide alt text for cards and labels readable by screen readers.
-   - **All Scoreboard content (`#round-message`, `#next-round-timer`, `#score-display`, `#round-counter`) must be accessible and responsive as described in prdBattleScoreboard.md.**
+  - **All Scoreboard content (`#round-message`, `#next-round-timer`, `#score-display`, `#round-counter`) must be accessible and responsive as described in prdBattleScoreboard.md.**
 
 ---
 
@@ -222,7 +221,6 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
   ## Feature flags & defaults
 
   List of feature flags and their intended defaults for Classic Battle. Implementations should read these from the global feature-flag service or `src/config/battleDefaults.js` when available.
-
   - `autoSelect` — boolean, default: `true`. When enabled, the system auto-selects a random stat on timer expiry.
     When disabled, the timer expires without choosing a stat and the player must pick manually.
   - `battleStateProgress` — boolean, default: `false`. When enabled, display a state progress list beneath the battle area.
@@ -235,7 +233,6 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
   ### Constants & Timers
 
   Define canonical constants so design and tests align with implementation:
-
   - `ROUND_SELECTION_MS = 30_000` (30s)
   - `DRIFT_THRESHOLD_MS = 2_000` (2s)
   - `MAX_ROUNDS = 25`
@@ -248,7 +245,6 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
   ### i18n keys
 
   All user-facing strings must be keyed and obtained via a `t(key, params)` adapter. Minimum required keys for Classic Battle:
-
   - `round.chooseStat`
   - `snackbar.youPicked` (params: { stat })
   - `snackbar.autoSelected` (params: { stat })
@@ -264,7 +260,6 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
   ### Test hooks & observability
 
   Exported promises and hooks (implementations under `src/helpers/classicBattle/*`) that tests will use:
-
   - `roundPromptPromise`
   - `countdownStartedPromise`
   - `roundResolvedPromise`
@@ -275,7 +270,7 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
   Include a short example for Playwright tests:
 
   ```js
-  import { roundPromptPromise } from 'src/helpers/classicBattle.js';
+  import { roundPromptPromise } from "src/helpers/classicBattle.js";
   await roundPromptPromise; // waits until UI prompts for stat selection
   ```
 
@@ -284,7 +279,6 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
   ## Acceptance Criteria & Test Mapping
 
   This section provides concise acceptance criteria mapped to testable scenarios (Playwright / Vitest). Use these as the canonical checklist for QA and automation.
-
   - Happy path: Start match → player picks stat within 30s → opponent reveal → score updates → cooldown → Next → repeat until win target reached. (Test: `playwright/classic-battle/happy-path.spec.js`)
   - Auto-select on timeout: With `FF_AUTO_SELECT=true`, allow timer expiry to auto-pick a stat, show `Time's up! Auto-selecting <stat>`, proceed to resolve. (Test: `playwright/classic-battle/auto-select.spec.js`)
   - Race: Simultaneous user click and auto-select fire; ensure only one selection is processed, UI shows a single `You Picked` or `Auto-selecting` message, and score resolves once. (Test: `vitest/classic-battle/race.spec.js`)
@@ -294,12 +288,11 @@ This section lists small, implementer-facing contracts to reduce ambiguity betwe
 
   Each test should use the `testAPI` (when available) to inject deterministic RNG and fast-forward timers where appropriate. Tests must assert ARIA attributes and accessible regions for messages and timer updates.
 
-
 ## Tasks
 
 - [x] 1.0 Implement Classic Battle Match Flow
 - [x] 1.1 Create round loop: random card draw, stat selection, comparison
-   - [x] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in `#next-round-timer`)
+  - [x] 1.2 Implement 30-second stat selection timer with auto-selection fallback (displayed in `#next-round-timer`)
   - [x] 1.3 Handle scoring updates on win, loss, and tie
   - [x] 1.4 Add "Next" (round advance/timer skip) and "Quit Match" buttons to controls
   - [x] 1.5 End match after the user-selected win target (5, 10, or 15 points; default 10) or 25 rounds

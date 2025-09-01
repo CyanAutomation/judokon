@@ -75,13 +75,13 @@ New and returning players often feel confused or overwhelmed when first launchin
 
 ### Map Interface (if present)
 
-| Priority | Feature                     | Description                                                                                                             |
-| -------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| P1       | Map Overview                | Displays a visual map or overview of available game modes and features.                                                 |
-| P2       | Interactive Map Elements    | Map elements (e.g., locations, icons) are clickable and navigate to corresponding pages.                                |
-| P2       | Responsive Design           | Map interface adapts to different screen sizes and orientations.                                                        |
-| P3       | Accessibility Compliance    | All map elements are keyboard navigable and have descriptive labels for screen readers.                                 |
-| P3       | Fallback Behavior           | If map fails to load, default to the standard navigation menu.                                                          |
+| Priority | Feature                  | Description                                                                              |
+| -------- | ------------------------ | ---------------------------------------------------------------------------------------- |
+| P1       | Map Overview             | Displays a visual map or overview of available game modes and features.                  |
+| P2       | Interactive Map Elements | Map elements (e.g., locations, icons) are clickable and navigate to corresponding pages. |
+| P2       | Responsive Design        | Map interface adapts to different screen sizes and orientations.                         |
+| P3       | Accessibility Compliance | All map elements are keyboard navigable and have descriptive labels for screen readers.  |
+| P3       | Fallback Behavior        | If map fails to load, default to the standard navigation menu.                           |
 
 ---
 
@@ -242,7 +242,6 @@ Each tile contains:
 ### Battle Mode Section
 
 - **Contents**:
-
   - Header: “Battle Mode” with clear divider or label.
   - Tile 1: “Classic Battle” — icon left, label centered vertically.
   - Tile 2: “Team Battle” — same size and visual weight as Classic.
@@ -255,7 +254,6 @@ Each tile contains:
 ### Responsive Tile Stack Module
 
 - **Contents**:
-
   - Implement column-stacking at <768px with equal vertical spacing.
   - Ensure each tile remains fully visible without scroll.
   - Tile container should use Flex/Grid with breakpoint control.
@@ -271,7 +269,6 @@ Each tile contains:
 ### Judoka Management Module
 
 - **Contents**:
-
   - One large tile labeled “Manage Judoka”
   - On click, expands or opens modal with:
     - Create Judoka

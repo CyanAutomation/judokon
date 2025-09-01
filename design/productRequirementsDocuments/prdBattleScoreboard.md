@@ -70,14 +70,14 @@ The round message (`#round-message`), timer (`#next-round-timer`), round counter
 
 ## Functional Requirements
 
-| Priority | Feature                | Description |
-| -------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **P1**   | Match Score Display    | Real-time, fast update of player vs opponent score per round via `#score-display` |
-| **P1**   | Round Status Messaging | Show clear win/loss messages post-round in `#round-message` |
-| **P1**   | Stat Selection Timer   | Display 30s countdown for stat selection in `#next-round-timer`; auto-select if expired; timer pauses/resumes on tab inactivity (see [Classic Battle PRD](prdBattleClassic.md)) |
-| **P3**   | Responsive Layout      | Adapt layout for small screens and collapse content as needed |
+| Priority | Feature                | Description                                                                                                                                                                                                                                                                                                 |
+| -------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1**   | Match Score Display    | Real-time, fast update of player vs opponent score per round via `#score-display`                                                                                                                                                                                                                           |
+| **P1**   | Round Status Messaging | Show clear win/loss messages post-round in `#round-message`                                                                                                                                                                                                                                                 |
+| **P1**   | Stat Selection Timer   | Display 30s countdown for stat selection in `#next-round-timer`; auto-select if expired; timer pauses/resumes on tab inactivity (see [Classic Battle PRD](prdBattleClassic.md))                                                                                                                             |
+| **P3**   | Responsive Layout      | Adapt layout for small screens and collapse content as needed                                                                                                                                                                                                                                               |
 | **P3**   | Accessibility Features | Ensure text contrast, screen reader compatibility (`role="status"` on `#round-message` and `#next-round-timer`), minimum touch target size, and keyboard navigation for stat, Next, and Quit controls. The **Next** button advances rounds and skips timers (see [Classic Battle PRD](prdBattleClassic.md)) |
-| **P2**   | Edge Case Handling     | Fallback messages for backend sync failure and display issues |
+| **P2**   | Edge Case Handling     | Fallback messages for backend sync failure and display issues                                                                                                                                                                                                                                               |
 
 Snackbars handle selection prompts and next-round countdowns.
 
@@ -85,15 +85,15 @@ Snackbars handle selection prompts and next-round countdowns.
 
 ## Acceptance Criteria
 
- - The Scoreboard always displays the current match score (player vs opponent) on the right side of the top bar in `#score-display`, updated within 800ms after round ends.
- - The Scoreboard displays round-specific messages (win/loss/result) on the left side of the top bar in `#round-message`, visible for at least 1s after round end.
- - Snackbars display selection prompts and next-round countdowns.
- - During stat selection, the Scoreboard shows a 30s countdown timer in `#next-round-timer`; if the timer expires, a random stat is auto-selected and a snackbar announces it.
- - The timer in `#next-round-timer` pauses if the tab is inactive or device sleeps, and resumes on focus.
- - After stat selection, the Scoreboard shows "Opponent is choosing..." in `#round-message` until the opponent's choice is revealed.
- - Fallback messages (e.g., "Waiting…") are displayed within 500ms in `#round-message` if backend sync fails or the timer mismatches server start.
- - The Scoreboard adapts responsively to screen size and orientation, stacking or truncating content as needed.
- - All Scoreboard messages and controls (`#round-message`, `#next-round-timer`, `#score-display`, `#round-counter`) meet accessibility standards: minimum contrast ratio 4.5:1, screen reader compatibility (`aria-live`, `role="status"`), minimum 44px touch targets, and keyboard navigation.
+- The Scoreboard always displays the current match score (player vs opponent) on the right side of the top bar in `#score-display`, updated within 800ms after round ends.
+- The Scoreboard displays round-specific messages (win/loss/result) on the left side of the top bar in `#round-message`, visible for at least 1s after round end.
+- Snackbars display selection prompts and next-round countdowns.
+- During stat selection, the Scoreboard shows a 30s countdown timer in `#next-round-timer`; if the timer expires, a random stat is auto-selected and a snackbar announces it.
+- The timer in `#next-round-timer` pauses if the tab is inactive or device sleeps, and resumes on focus.
+- After stat selection, the Scoreboard shows "Opponent is choosing..." in `#round-message` until the opponent's choice is revealed.
+- Fallback messages (e.g., "Waiting…") are displayed within 500ms in `#round-message` if backend sync fails or the timer mismatches server start.
+- The Scoreboard adapts responsively to screen size and orientation, stacking or truncating content as needed.
+- All Scoreboard messages and controls (`#round-message`, `#next-round-timer`, `#score-display`, `#round-counter`) meet accessibility standards: minimum contrast ratio 4.5:1, screen reader compatibility (`aria-live`, `role="status"`), minimum 44px touch targets, and keyboard navigation.
 - The progress bar beneath the battle area displays the current state ID in ascending order for accessible progress tracking.
 
 ---
@@ -130,13 +130,11 @@ Snackbars handle selection prompts and next-round countdowns.
 ## Tasks
 
 - [x] 1.0 Implement Score Display
-
   - [x] 1.1 Fetch match score from backend or engine state
   - [x] 1.2 Render score on right side of top bar
   - [x] 1.3 Update score within 800ms after round ends
 
 - [x] 2.0 Implement Round Info Messages
-
   - [x] 2.1 Display win/loss messages briefly
   - [x] 2.2 Start countdown timer after message disappears
   - [x] 2.3 Display selection prompt via snackbar when input is needed
@@ -144,7 +142,6 @@ Snackbars handle selection prompts and next-round countdowns.
   - [x] 2.5 Pause/resume stat selection timer on tab inactivity (see battleEngine.js)
 
 - [ ] 3.0 Handle Responsive Layout
-
   - [x] 3.1 Detect screen width <375px and switch to stacked layout (CSS @media implemented)
   - [ ] 3.2 Truncate or stack content if resolution causes display issues (edge cases, pending)
   - [x] 3.3 Adaptive font sizing for all states (partially via clamp(), may need review) <!-- Implemented: font-size clamp() in battle.css -->
@@ -152,7 +149,6 @@ Snackbars handle selection prompts and next-round countdowns.
   - [x] 3.5 Validate Scoreboard on ultra-narrow screens (<320px) <!-- Implemented: narrow viewport test in playwright/battleJudoka.spec.js -->
 
 - [ ] 4.0 Implement Accessibility Features
-
   - [ ] 4.1 Ensure text contrast meets 4.5:1 ratio. Verify with `npm run check:contrast`.
   - [x] 4.2 Add screen reader labels for dynamic messages (`aria-live="polite"` and `role="status"`)
   - [x] 4.3 Ensure all interactive elements have minimum 44px touch targets (CSS min-width/min-height present)
@@ -161,11 +157,10 @@ Snackbars handle selection prompts and next-round countdowns.
   - [x] 4.6 Provide high-contrast theme for Scoreboard elements <!-- Implemented: `[data-theme="high-contrast"]` in base.css -->
 
 - [ ] 5.0 Edge Case Handling and Fallbacks
-
   - [x] 5.1 Show “Waiting…” if backend score sync fails
   - [x] 5.2 Show “Waiting…” if countdown timer mismatches server start
   - [x] 5.3 Define recovery logic for delayed player input (show message and auto-select after stall)
-   - [x] 5.4 Handle all timer/counter desyncs via `watchForDrift` with “Waiting…” safeguards
+  - [x] 5.4 Handle all timer/counter desyncs via `watchForDrift` with “Waiting…” safeguards
 
 - [ ] 6.0 Testing and Validation
 

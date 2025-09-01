@@ -28,14 +28,16 @@ Developers and testers need a way to observe internal game state (e.g., scores, 
 - **Test Mode Seed**: A value used to initialize the game state for reproducible test scenarios.
 
 ## Prioritized Functional Requirements
-| Priority | Feature                    | Description |
-| -------- | -------------------------- | ----------- |
-| P1       | Debug Panel Toggle         | Toggle in Settings to enable/disable the battle debug panel |
-| P1       | Real-Time State Display    | Show scores, timer, match end status, and seed (if test mode) |
-| P1       | Persistent Panel Placement | Panel sits above the cards and stays visible when enabled |
-| P1       | Copy Button                | Button copies panel text to clipboard |
-| P2       | Accessibility Compliance   | Use <pre> and aria-live for screen readers |
-| P3       | Hide in Production by Default | Hidden unless explicitly enabled (or DEBUG_LOGGING=true) |
+
+| Priority | Feature                       | Description                                                   |
+| -------- | ----------------------------- | ------------------------------------------------------------- |
+| P1       | Debug Panel Toggle            | Toggle in Settings to enable/disable the battle debug panel   |
+| P1       | Real-Time State Display       | Show scores, timer, match end status, and seed (if test mode) |
+| P1       | Persistent Panel Placement    | Panel sits above the cards and stays visible when enabled     |
+| P1       | Copy Button                   | Button copies panel text to clipboard                         |
+| P2       | Accessibility Compliance      | Use <pre> and aria-live for screen readers                    |
+| P3       | Hide in Production by Default | Hidden unless explicitly enabled (or DEBUG_LOGGING=true)      |
+
 ## Acceptance Criteria
 
 - Debug panel is hidden by default for all users

@@ -85,24 +85,20 @@ Currently, the JU-DO-KON! landing screen lacks dynamic content, making repeat vi
 ## Tasks
 
 - [ ] 1.0 Settings Toggle Integration
-
   - [ ] 1.1 Add `showCardOfTheDay` toggle to General Settings in `settings.html`
   - [ ] 1.2 Ensure UI re-renders on toggle without page reload
 
 - [ ] 2.0 Card Rendering Implementation
-
   - [ ] 2.1 Integrate card renderer into landing screen layout
   - [ ] 2.2 Display card from rotation or override logic
   - [ ] 2.3 Add animation/border highlight
 
 - [ ] 3.0 Rotation and Override Logic
-
   - [ ] 3.1 Implement 24-hour deterministic rotation using seeded logic
   - [ ] 3.2 Add config option to override with `featuredCardId`
   - [ ] 3.3 Exclude invalid or placeholder cards
 
 - [ ] 4.0 Clickthrough Functionality
-
   - [ ] 4.1 Enable click to navigate to full profile or modal
   - [ ] 4.2 Validate correct card loads on click
 

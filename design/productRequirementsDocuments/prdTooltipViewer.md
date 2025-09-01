@@ -1,9 +1,11 @@
 # PRD: Tooltip Viewer
 
 ## TL;DR
+
 The Tooltip Viewer is a standalone UI tool for JU-DO-KON! contributors to browse, preview, and validate all tooltip entries from `tooltips.json` in one screen. It is separate from the Tooltip System (which renders tooltips in-game) and is designed for editorial, QA, and development workflows, not for players.
 
 ## Problem Statement
+
 JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but there is no way to preview or validate all tooltips outside live gameplay. The Tooltip Viewer solves this by providing a dedicated UI for contributors to inspect, search, and review every tooltip entry, ensuring copy quality and reducing QA errors. This tool is distinct from the Tooltip System, which handles runtime rendering of tooltips in the game UI.
 
 ## Goals / Success Metrics
@@ -101,6 +103,7 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
 - Distinct warning or error message shown if `tooltips.json` is missing or invalid.
 
 ## Non-Functional Requirements
+
 - Viewer loads and parses `tooltips.json` asynchronously without blocking UI.
 - All fonts and colors meet WCAG AA contrast standards.
 - Sidebar and preview panel scroll independently and remain usable on all screen sizes.
@@ -126,14 +129,12 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
 ## Tasks
 
 - [x] 1.0 Load and Parse Tooltip Data
-
   - [x] 1.1 Load `tooltips.json` from `src/data/tooltips.json`
   - [x] 1.2 Handle loading failures with user-friendly error display
   - [x] 1.3 Parse JSON and extract key-value pairs
   - [x] 1.4 Display line and column numbers on JSON parse errors
 
 - [x] 2.0 Implement Sidebar Key List
-
   - [x] 2.1 Render scrollable list of tooltip keys
   - [x] 2.2 Enable click interaction to select a tooltip
   - [x] 2.3 Add real-time search/filter functionality
@@ -143,7 +144,6 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
   - [x] 2.6 Sidebar scrolls independently from preview
 
 - [x] 3.0 Build Preview Panel
-
   - [x] 3.1 Render raw tooltip text
   - [x] 3.2 Parse and render markdown-styled preview
   - [x] 3.3 Animate panel on update (fade-in)
@@ -156,7 +156,6 @@ JU-DO-KON! relies on a centralized tooltip system for in-game guidance, but ther
   - [x] 3.8 Copy-to-clipboard buttons provide feedback (e.g., tooltip/animation)
 
 - [x] 4.0 URL Fragment Support
-
   - [x] 4.1 Read and parse URL hash on page load
   - [x] 4.2 Scroll to and pre-select corresponding tooltip key
 

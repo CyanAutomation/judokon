@@ -3,6 +3,7 @@
 ---
 
 ## TL;DR
+
 This PRD describes the Judoka Card UI component for JU-DO-KON! It defines the structure, layout, and interactive features of a judoka card item, including how stats, portraits, rarity, and accessibility are presented. The scope covers the card's visual design, user interaction, and technical requirements for consistent gameplay and collection experiences.
 
 Judoka cards are interactive virtual cards representing elite fighters in JU-DO-KON! They deepen player immersion through ownership, mastery, and strategic gameplay, with responsive animations, rarity systems, and accessible design — ensuring all players can engage with and feel connected to their judoka roster.

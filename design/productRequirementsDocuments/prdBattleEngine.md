@@ -17,10 +17,11 @@ This PRD details the state machine, round logic, and technical requirements for 
 ## Problem Statement
 
 Classic Battle requires a **robust, deterministic engine** to manage match flow, scoring, and state transitions.  
-In recent internal tests, **12–18% of matches** experienced timing inconsistencies or incorrect state transitions due to incomplete timer drift handling and unclear interrupt recovery logic.  
+In recent internal tests, **12–18% of matches** experienced timing inconsistencies or incorrect state transitions due to incomplete timer drift handling and unclear interrupt recovery logic.
 
-**From a player’s perspective:**  
-> “The timer froze for me and then skipped my turn. I didn’t even get to pick my stat — that felt unfair.”  
+**From a player’s perspective:**
+
+> “The timer froze for me and then skipped my turn. I didn’t even get to pick my stat — that felt unfair.”
 
 Without a clear state machine and timer system, matches risk becoming **unpredictable**, **less accessible**, and **hard to test at scale**.  
 A well-defined engine will enable consistent gameplay, predictable UI updates that display promptly, and full edge case handling for all device and connection scenarios.
@@ -30,9 +31,9 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 ## Goals
 
 1. **Predictable Match Flow** — Ensure 100% of Classic Battle matches follow the defined state sequence from `src/helpers/classicBattle/stateTable.js` with no skipped or duplicate states.
-2. **UI Feedback Speed** — Surface round results, timers, and scores to the UI within target response budgets.  
-3. **Accessibility Compliance** — Meet WCAG 2.1 AA contrast, focus, and readability guidelines for all state and timer displays.  
-4. **Test Coverage** — Achieve **≥95% automated test pass rate** for match state and timer scenarios in Playwright and unit tests.  
+2. **UI Feedback Speed** — Surface round results, timers, and scores to the UI within target response budgets.
+3. **Accessibility Compliance** — Meet WCAG 2.1 AA contrast, focus, and readability guidelines for all state and timer displays.
+4. **Test Coverage** — Achieve **≥95% automated test pass rate** for match state and timer scenarios in Playwright and unit tests.
 5. **Interrupt Recovery** — Handle 100% of quit, navigation, and error interrupts without corrupting match state or causing UI desync.
 
 ---
@@ -49,50 +50,50 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 
 ## User Stories
 
-- As a developer, I want a state machine that exposes the current match state so I can drive UI updates and tests.  
-- As a player, I want the game to progress smoothly through rounds, with clear feedback at each step.  
-- As a tester, I want to simulate and verify all match states and transitions, including edge cases and interruptions.  
+- As a developer, I want a state machine that exposes the current match state so I can drive UI updates and tests.
+- As a player, I want the game to progress smoothly through rounds, with clear feedback at each step.
+- As a tester, I want to simulate and verify all match states and transitions, including edge cases and interruptions.
 - As a player with accessibility needs, I want timers and messages to be surfaced in a way that is readable and responsive.
 
 ---
 
 ## Functional Requirements (Prioritized)
 
-| Priority | Feature                      | Description                                                                                                                        |
-|----------|------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| **P1**   | State Machine                | Implements all match states and transitions as defined in `src/helpers/classicBattle/stateTable.js`. Exposes current state to UI and tests.       |
-| **P1**   | Round Logic                  | Handles round start, stat selection, comparison, scoring, and round end.                                                          |
-| **P1**   | Stat Selection Timer         | 30s timer for stat selection, with pause/resume and auto-select fallback (Random Stat Mode, `autoSelect`, enabled by default). |
-| **P1**   | Scoring                      | Updates player and opponent scores after each round.                                                                               |
-| **P1**   | Match End Condition          | Ends match when user-selected win target is reached; exposes final result and score.                                               |
-| **P2**   | Interrupt Handling           | Supports early quit, navigation, or error interrupts. Navigation away pauses play and rolls back to the last completed round. Unexpected errors revert to the last stable state, surface an error message, and return to the lobby. |
-| **P2**   | Accessibility Hooks          | Ensures all state and timer feedback meets WCAG AA guidelines.                                                                    |
-| **P3**   | Debug/Test Hooks             | Exposes state, transitions, and logs for automated tests and debugging.                                                           |
+| Priority | Feature              | Description                                                                                                                                                                                                                         |
+| -------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1**   | State Machine        | Implements all match states and transitions as defined in `src/helpers/classicBattle/stateTable.js`. Exposes current state to UI and tests.                                                                                         |
+| **P1**   | Round Logic          | Handles round start, stat selection, comparison, scoring, and round end.                                                                                                                                                            |
+| **P1**   | Stat Selection Timer | 30s timer for stat selection, with pause/resume and auto-select fallback (Random Stat Mode, `autoSelect`, enabled by default).                                                                                                      |
+| **P1**   | Scoring              | Updates player and opponent scores after each round.                                                                                                                                                                                |
+| **P1**   | Match End Condition  | Ends match when user-selected win target is reached; exposes final result and score.                                                                                                                                                |
+| **P2**   | Interrupt Handling   | Supports early quit, navigation, or error interrupts. Navigation away pauses play and rolls back to the last completed round. Unexpected errors revert to the last stable state, surface an error message, and return to the lobby. |
+| **P2**   | Accessibility Hooks  | Ensures all state and timer feedback meets WCAG AA guidelines.                                                                                                                                                                      |
+| **P3**   | Debug/Test Hooks     | Exposes state, transitions, and logs for automated tests and debugging.                                                                                                                                                             |
 
 ---
 
 ## Acceptance Criteria (Given/When/Then Format)
 
-1. **State Machine Accuracy**  
-   - **Given** a match is running  
-   - **When** a state transition occurs  
+1. **State Machine Accuracy**
+   - **Given** a match is running
+   - **When** a state transition occurs
    - **Then** the new state must match the definition in `src/helpers/classicBattle/stateTable.js` exactly.
 
-2. **Timer Behavior**  
-   - **Given** the player is in `waitingForPlayerAction`  
-   - **When** the timer reaches zero  
-   - **Then**  
-    - If `autoSelect` (Random Stat Mode) is enabled → system auto-selects the highest stat allowed by rules, and match proceeds to `roundDecision`.
-    - If `autoSelect` is disabled → match proceeds to `interruptRound` or a defined grace extension.
+2. **Timer Behavior**
+   - **Given** the player is in `waitingForPlayerAction`
+   - **When** the timer reaches zero
+   - **Then**
+   - If `autoSelect` (Random Stat Mode) is enabled → system auto-selects the highest stat allowed by rules, and match proceeds to `roundDecision`.
+   - If `autoSelect` is disabled → match proceeds to `interruptRound` or a defined grace extension.
 
-3. **Timer Drift Handling**  
-   - **Given** the tab is inactive or device clock drifts by >200ms  
-   - **When** the player returns or drift is detected  
+3. **Timer Drift Handling**
+   - **Given** the tab is inactive or device clock drifts by >200ms
+   - **When** the player returns or drift is detected
    - **Then** the timer adjusts to the correct remaining time without skipping or repeating.
 
-4. **Score Update Speed**  
-   - **Given** a round outcome is determined  
-   - **When** the result is revealed  
+4. **Score Update Speed**
+   - **Given** a round outcome is determined
+   - **When** the result is revealed
    - **Then** the scoreboard updates both player and opponent scores promptly (p50 ≤250ms, p95 ≤500ms on reference hardware).
 
 5. **Interrupt Stability**
@@ -117,7 +118,7 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 ## Edge Cases / Failure States
 
 - **Timeout Auto-Select:** If enabled via `autoSelect` (Random Stat Mode), the engine auto-selects highest stat by ruleset; otherwise follow fallback path.
-- **Tab Inactivity / App Backgrounding:** Timers pause; state resumes accurately on return.  
+- **Tab Inactivity / App Backgrounding:** Timers pause; state resumes accurately on return.
 - **Error Injection (Testing):** Engine must recover from simulated logic or UI hook errors without corrupting match state.
 
 ## Interrupt Workflow
@@ -134,8 +135,8 @@ When a player quits in the middle of a match, the engine follows a defined seque
 ## Dependencies
 
 - `stateTable.js` defines all match states and transitions.
-- `BattleEngine.js` implements round logic, scoring, timer, and match end conditions.  
-- `orchestrator.js` manages state machine, transitions, and exposes hooks for UI and tests.  
+- `BattleEngine.js` implements round logic, scoring, timer, and match end conditions.
+- `orchestrator.js` manages state machine, transitions, and exposes hooks for UI and tests.
 - `battleStateProgress.js` renders state progress bar and syncs active state; gated by the `battleStateProgress` feature flag.
 - Scoreboard UI and accessibility requirements as described in `prdBattleScoreboard.md`.
 
@@ -152,16 +153,18 @@ The Battle Engine PRD focuses on technical implementation details for state mana
 ---
 
 ### 1. `waitingForMatchStart`
+
 The game is idle before a match begins. The UI displays a “Start Match” button and allows the user to select the win target (5, 10, or 15 wins).
 
-- **Triggers:**  
-  - `startClicked` → **`matchStart`**  
-  - `navigateHome` or `interrupt` → **`waitingForMatchStart`** (no match context yet, stays in lobby)  
+- **Triggers:**
+  - `startClicked` → **`matchStart`**
+  - `navigateHome` or `interrupt` → **`waitingForMatchStart`** (no match context yet, stays in lobby)
 - **Notes:** No round data is active yet.
 
 ---
 
 ### 2. `matchStart`
+
 The match setup phase — win target is stored, scores reset, and the user is set as the first player.
 
 - **Triggers:**
@@ -173,6 +176,7 @@ The match setup phase — win target is stored, scores reset, and the user is se
 ---
 
 ### 3. `cooldown`
+
 A short pacing pause between match start or rounds.
 
 - **Triggers:**
@@ -184,16 +188,18 @@ A short pacing pause between match start or rounds.
 ---
 
 ### 4. `roundStart`
+
 A new round begins — both the user and opponent are assigned random judoka via the random draw function.
 
-- **Triggers:**  
-  - `cardsRevealed` → **`waitingForPlayerAction`**  
-  - `interrupt` → **`interruptRound`**  
+- **Triggers:**
+  - `cardsRevealed` → **`waitingForPlayerAction`**
+  - `interrupt` → **`interruptRound`**
 - **Notes:** Cards are revealed immediately after draw for the current round.
 
 ---
 
 ### 5. `waitingForPlayerAction`
+
 The game waits for a stat selection.
 
 - **Triggers:**
@@ -206,105 +212,112 @@ The game waits for a stat selection.
 ---
 
 ### 6. `roundDecision`
+
 Compares selected stat values and determines the round winner.
 
-- **Triggers:**  
-  - `outcome=winP1 / outcome=winP2 / outcome=draw` → **`roundOver`**  
-  - `interrupt` → **`interruptRound`**  
+- **Triggers:**
+  - `outcome=winP1 / outcome=winP2 / outcome=draw` → **`roundOver`**
+  - `interrupt` → **`interruptRound`**
 - **Notes:** Scoreboard shows result and reveals chosen stats.
 
 ---
 
 ### 7. `roundOver`
+
 Updates scores.
 
-- **Triggers:**  
-  - `matchPointReached` (guard: `scoreP1 >= winTarget` OR `scoreP2 >= winTarget`) → **`matchDecision`**  
-  - `continue` → **`cooldown`**  
+- **Triggers:**
+  - `matchPointReached` (guard: `scoreP1 >= winTarget` OR `scoreP2 >= winTarget`) → **`matchDecision`**
+  - `continue` → **`cooldown`**
   - `interrupt` → **`interruptRound`**
 
 ---
 
 ### 8. `matchDecision`
+
 Determines the overall match winner.
 
-- **Triggers:**  
-  - `finalize` → **`matchOver`**  
+- **Triggers:**
+  - `finalize` → **`matchOver`**
   - `interrupt` → **`interruptMatch`**
 
 ---
 
 ### 9. `matchOver`
+
 Match complete; final scoreboard displayed.
 
-- **Triggers:**  
-  - `rematch` → **`waitingForMatchStart`**  
+- **Triggers:**
+  - `rematch` → **`waitingForMatchStart`**
   - `home` → **`waitingForMatchStart`**
 
 ---
 
 ### 10. `interruptRound`
+
 Round interrupted (quit, navigation, error).
 
-- **Triggers:**  
-  - `restartRound` → **`cooldown`**  
-  - `resumeLobby` → **`waitingForMatchStart`**  
-  - `abortMatch` → **`matchOver`**  
+- **Triggers:**
+  - `restartRound` → **`cooldown`**
+  - `resumeLobby` → **`waitingForMatchStart`**
+  - `abortMatch` → **`matchOver`**
   - `roundModifyFlag` (if `FF_ROUND_MODIFY` enabled) → **`roundModification`**
 
 ---
 
 ### 11. `roundModification` (admin/test only)
+
 Applies manual changes for testing or admin purposes.
 
-- **Triggers:**  
-  - `modifyRoundDecision` → **`roundDecision`**  
+- **Triggers:**
+  - `modifyRoundDecision` → **`roundDecision`**
   - `cancelModification` → **`interruptRound`**
 
 ---
 
 ### 12. `interruptMatch`
+
 Match interrupted from setup or critical error.
 
-- **Triggers:**  
-  - `restartMatch` → **`matchStart`**  
+- **Triggers:**
+  - `restartMatch` → **`matchStart`**
   - `toLobby` → **`waitingForMatchStart`**
 
 ---
 
 ## Transition Table
 
-| State | Trigger | Guard (if any) | Next State | Notes |
-|---|---|---|---|---|
-| **waitingForMatchStart** | startClicked | – | matchStart | User selects win target, match begins. |
-| waitingForMatchStart | navigateHome / interrupt | – | waitingForMatchStart | No match to abort; remain in lobby. |
-| **matchStart** | ready | – | cooldown | Init complete, enter pacing pause. |
-| matchStart | interrupt / error | – | interruptMatch | Critical abort path. |
-| **cooldown** | ready | – | roundStart | Enter new round. |
-| cooldown | interrupt | – | interruptRound | Round-level abort rail. |
-| **roundStart** | cardsRevealed | – | waitingForPlayerAction | Random draw and reveal of judoka. |
-| roundStart | interrupt | – | interruptRound | Round-level abort rail. |
-| **waitingForPlayerAction** | statSelected | – | roundDecision | User made a choice. |
-| waitingForPlayerAction | timeout | autoSelectEnabled | roundDecision | Auto-pick stat. |
-| waitingForPlayerAction | timeout | !autoSelectEnabled | interruptRound | No auto-pick; treat as interrupt or grace. |
-| waitingForPlayerAction | interrupt | – | interruptRound | Round-level abort rail. |
-| **roundDecision** | outcome=winP1 / winP2 / draw | – | roundOver | Deterministic outcome. |
-| roundDecision | interrupt | – | interruptRound | Round-level abort rail. |
-| **roundOver** | matchPointReached | scoreP1 >= winTarget OR scoreP2 >= winTarget | matchDecision | Win target met. |
-| roundOver | continue | – | cooldown | Next round pacing. |
-| roundOver | interrupt | – | interruptRound | Round-level abort rail. |
-| **matchDecision** | finalize | – | matchOver | Declare winner. |
-| matchDecision | interrupt | – | interruptMatch | Match-level abort rail. |
-| **matchOver** | rematch | – | waitingForMatchStart | Return to lobby. |
-| matchOver | home | – | waitingForMatchStart | Return to main screen. |
-| **interruptRound** | restartRound | – | cooldown | Resume round loop. |
-| interruptRound | resumeLobby | – | waitingForMatchStart | Exit to lobby. |
-| interruptRound | abortMatch | – | matchOver | Cancel match. |
-| interruptRound | roundModifyFlag | FF_ROUND_MODIFY | roundModification | Admin/test branch. |
-| **roundModification** | modifyRoundDecision | – | roundDecision | Apply and re-evaluate. |
-| roundModification | cancelModification | – | interruptRound | Discard changes. |
-| **interruptMatch** | restartMatch | – | matchStart | Restart match. |
-| interruptMatch | toLobby | – | waitingForMatchStart | Exit to lobby. |
+| State                      | Trigger                      | Guard (if any)                               | Next State             | Notes                                      |
+| -------------------------- | ---------------------------- | -------------------------------------------- | ---------------------- | ------------------------------------------ |
+| **waitingForMatchStart**   | startClicked                 | –                                            | matchStart             | User selects win target, match begins.     |
+| waitingForMatchStart       | navigateHome / interrupt     | –                                            | waitingForMatchStart   | No match to abort; remain in lobby.        |
+| **matchStart**             | ready                        | –                                            | cooldown               | Init complete, enter pacing pause.         |
+| matchStart                 | interrupt / error            | –                                            | interruptMatch         | Critical abort path.                       |
+| **cooldown**               | ready                        | –                                            | roundStart             | Enter new round.                           |
+| cooldown                   | interrupt                    | –                                            | interruptRound         | Round-level abort rail.                    |
+| **roundStart**             | cardsRevealed                | –                                            | waitingForPlayerAction | Random draw and reveal of judoka.          |
+| roundStart                 | interrupt                    | –                                            | interruptRound         | Round-level abort rail.                    |
+| **waitingForPlayerAction** | statSelected                 | –                                            | roundDecision          | User made a choice.                        |
+| waitingForPlayerAction     | timeout                      | autoSelectEnabled                            | roundDecision          | Auto-pick stat.                            |
+| waitingForPlayerAction     | timeout                      | !autoSelectEnabled                           | interruptRound         | No auto-pick; treat as interrupt or grace. |
+| waitingForPlayerAction     | interrupt                    | –                                            | interruptRound         | Round-level abort rail.                    |
+| **roundDecision**          | outcome=winP1 / winP2 / draw | –                                            | roundOver              | Deterministic outcome.                     |
+| roundDecision              | interrupt                    | –                                            | interruptRound         | Round-level abort rail.                    |
+| **roundOver**              | matchPointReached            | scoreP1 >= winTarget OR scoreP2 >= winTarget | matchDecision          | Win target met.                            |
+| roundOver                  | continue                     | –                                            | cooldown               | Next round pacing.                         |
+| roundOver                  | interrupt                    | –                                            | interruptRound         | Round-level abort rail.                    |
+| **matchDecision**          | finalize                     | –                                            | matchOver              | Declare winner.                            |
+| matchDecision              | interrupt                    | –                                            | interruptMatch         | Match-level abort rail.                    |
+| **matchOver**              | rematch                      | –                                            | waitingForMatchStart   | Return to lobby.                           |
+| matchOver                  | home                         | –                                            | waitingForMatchStart   | Return to main screen.                     |
+| **interruptRound**         | restartRound                 | –                                            | cooldown               | Resume round loop.                         |
+| interruptRound             | resumeLobby                  | –                                            | waitingForMatchStart   | Exit to lobby.                             |
+| interruptRound             | abortMatch                   | –                                            | matchOver              | Cancel match.                              |
+| interruptRound             | roundModifyFlag              | FF_ROUND_MODIFY                              | roundModification      | Admin/test branch.                         |
+| **roundModification**      | modifyRoundDecision          | –                                            | roundDecision          | Apply and re-evaluate.                     |
+| roundModification          | cancelModification           | –                                            | interruptRound         | Discard changes.                           |
+| **interruptMatch**         | restartMatch                 | –                                            | matchStart             | Restart match.                             |
+| interruptMatch             | toLobby                      | –                                            | waitingForMatchStart   | Exit to lobby.                             |
 
 ---
 
@@ -368,6 +381,7 @@ flowchart TD
 ---
 
 **See also:**
+
 - [Classic Battle PRD](prdBattleClassic.md)
 - [Battle Scoreboard PRD](prdBattleScoreboard.md)
 - [stateTable.js](../../src/helpers/classicBattle/stateTable.js)
