@@ -1,4 +1,12 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const statNamesData = JSON.parse(
+  readFileSync(join(__dirname, "../../src/data/statNames.json"), "utf8")
+);
 
 async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   const emitter = new EventTarget();
@@ -26,19 +34,28 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
   }));
-  vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
+  vi.doMock("../../src/helpers/BattleEngine.js", () => ({
+    STATS: ["power", "speed", "technique", "kumikata", "newaza"]
+  }));
   vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
     setPointsToWin: vi.fn(),
     getPointsToWin: vi.fn(),
     getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
-  vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson: vi.fn().mockResolvedValue([]) }));
+  vi.doMock("../../src/helpers/dataUtils.js", () => ({
+    fetchJson: vi.fn().mockImplementation(async (path) => {
+      return path.includes("statNames.json") ? statNamesData : [];
+    })
+  }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
   vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
     autoSelectStat: vi.fn()
   }));
   window.__TEST__ = true;
   const { battleCLI } = await import("../../src/pages/index.js");
+  document.body.innerHTML = '<div id="cli-stats"></div><ul id="cli-help"></ul>';
+  await battleCLI.renderStatList();
+  document.body.innerHTML = "";
   return { handlers: battleCLI, emitBattleEvent, updateBattleStateBadge };
 }
 
@@ -103,6 +120,7 @@ describe("battleCLI event handlers", () => {
 
   it("updates message after round resolved", async () => {
     const { handlers } = await loadHandlers();
+    const speedName = statNamesData.find((s) => s.statIndex === 2).name;
     document.body.innerHTML = '<div id="round-message"></div>';
     handlers.handleRoundResolved({
       detail: {
@@ -112,7 +130,24 @@ describe("battleCLI event handlers", () => {
         opponentVal: 3
       }
     });
-    expect(document.getElementById("round-message").textContent).toContain("Win");
+    const msg = document.getElementById("round-message").textContent;
+    expect(msg).toContain("Win");
+    expect(msg).toContain(speedName);
+  });
+
+  it("displays hyphenated stat names", async () => {
+    const { handlers } = await loadHandlers();
+    const kumikataName = statNamesData.find((s) => s.statIndex === 4).name;
+    document.body.innerHTML = '<div id="round-message"></div>';
+    handlers.handleRoundResolved({
+      detail: {
+        result: { message: "Win", playerScore: 1, opponentScore: 0 },
+        stat: "kumikata",
+        playerVal: 5,
+        opponentVal: 3
+      }
+    });
+    expect(document.getElementById("round-message").textContent).toContain(kumikataName);
   });
 
   it("adds play again button on match over", async () => {
