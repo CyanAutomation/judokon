@@ -3,7 +3,29 @@ import "./commonMocks.js";
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
-import { waitForState } from "../../../src/helpers/classicBattle/battleDebug.js";
+import {
+  onBattleEvent,
+  offBattleEvent,
+  emitBattleEvent
+} from "../../../src/helpers/classicBattle/battleEvents.js";
+import { getStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
+
+function waitForState(target, timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    if (getStateSnapshot().state === target) return resolve();
+    const handler = (e) => {
+      if (e.detail?.to === target) {
+        offBattleEvent("battleStateChange", handler);
+        resolve();
+      }
+    };
+    onBattleEvent("battleStateChange", handler);
+    setTimeout(() => {
+      offBattleEvent("battleStateChange", handler);
+      reject(new Error(`timeout for ${target}`));
+    }, timeout);
+  });
+}
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn()
@@ -189,7 +211,7 @@ describe("classicBattle scheduleNextRound", () => {
     setTestMode(true);
 
     const controls = battleMod.scheduleNextRound({ matchEnded: false });
-    document.dispatchEvent(new CustomEvent("battle:state", { detail: { to: "cooldown" } }));
+    emitBattleEvent("battleStateChange", { to: "cooldown" });
     expect(nextButton.dataset.nextReady).toBeUndefined();
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();

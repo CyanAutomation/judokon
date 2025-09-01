@@ -1,5 +1,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { waitForState } from "../../../src/helpers/classicBattle/battleDebug.js";
+import {
+  emitBattleEvent,
+  onBattleEvent,
+  offBattleEvent
+} from "../../../src/helpers/classicBattle/battleEvents.js";
+import { getStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
+
+function waitForState(target, timeout = 4000) {
+  return new Promise((resolve, reject) => {
+    if (getStateSnapshot().state === target) return resolve();
+    const handler = (e) => {
+      if (e.detail?.to === target) {
+        offBattleEvent("battleStateChange", handler);
+        resolve();
+      }
+    };
+    onBattleEvent("battleStateChange", handler);
+    setTimeout(() => {
+      offBattleEvent("battleStateChange", handler);
+      reject(new Error(`timeout for ${target}`));
+    }, timeout);
+  });
+}
 import {
   mockScheduler,
   mockFeatureFlags,
@@ -38,7 +60,7 @@ function createBattleDom() {
   document.body.append(header, battleArea, stats, progressEl, machineState, badge);
 }
 
-describe("battleStateProgress updates on object-shaped battle:state", () => {
+describe("battleStateProgress updates on object-shaped battleStateChange", () => {
   beforeEach(() => {
     vi.doMock("../../../src/helpers/featureFlags.js", () => ({
       isEnabled: () => true
@@ -58,9 +80,7 @@ describe("battleStateProgress updates on object-shaped battle:state", () => {
     expect(list.children.length).toBeGreaterThan(0);
 
     // Dispatch an object-shaped event and verify the active item toggles.
-    document.dispatchEvent(
-      new CustomEvent("battle:state", { detail: { from: "x", to: "cooldown" } })
-    );
+    emitBattleEvent("battleStateChange", { from: "x", to: "cooldown" });
     const active = list.querySelector("li.active");
     expect(active?.dataset.state).toBe("cooldown");
 
@@ -123,11 +143,10 @@ describe("battle-state-progress stays in sync across transitions", () => {
     let active = list.querySelector("li.active");
     expect(active?.dataset.state).toBe("waitingForPlayerAction");
 
-    document.dispatchEvent(
-      new CustomEvent("battle:state", {
-        detail: { from: "waitingForPlayerAction", to: "roundDecision" }
-      })
-    );
+    emitBattleEvent("battleStateChange", {
+      from: "waitingForPlayerAction",
+      to: "roundDecision"
+    });
     active = list.querySelector("li.active");
     expect(active?.dataset.state).toBe("roundDecision");
   });

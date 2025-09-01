@@ -167,12 +167,11 @@ AI agents are encouraged to parse, test, and modify the system using these archi
 ## 🔔 Battle State Events
 
 - The Classic Battle orchestrator mirrors state transitions through a DOM event:
-  - `document.dispatchEvent(new CustomEvent('battle:state', { detail }))`
-- `detail` may be:
-  - A string state name (legacy), or
-  - An object `{ from: string|null, to: string, event?: string|null }` (current).
-- Consumers should read `detail.to` when `detail` is an object; otherwise use the string value.
-  - The current state is also mirrored on `document.body.dataset.battleState`.
+- The Classic Battle orchestrator emits state transitions on a shared event bus via
+  `emitBattleEvent('battleStateChange', detail)`.
+- `detail` is an object `{ from: string|null, to: string, event?: string|null }`.
+- Consumers listen with `onBattleEvent('battleStateChange', handler)` and read `detail.to`.
+- The current state is also mirrored on `document.body.dataset.battleState` for debug UIs.
 
 ### Classic Battle State Manager
 
@@ -195,15 +194,12 @@ Modules outside the orchestrator interact with the machine only through
 itself remains private to the orchestrator, with a getter available for
 tests when needed.
 
-### Event Bus vs DOM Events
+### Classic Battle Event Bus
 
-- JU-DO-KON! uses a lightweight internal event bus (`classicBattle/battleEvents.getTarget()`) and also mirrors key events to the DOM for UI and tests.
-- Do not attempt to dispatch the same `CustomEvent` instance to multiple targets. Browsers allow an event to be dispatched on only one target. Reuse will silently fail for the second dispatch.
-- When emitting an event to both channels, create two separate events:
-  - `getTarget().dispatchEvent(new CustomEvent(type, { detail }))`
-  - `document.dispatchEvent(new CustomEvent(type, { detail }))`
-- Consumers that need to interoperate across modules (or in tests that reset modules) should also listen to the DOM event (e.g., `document.addEventListener('battle:state', ...)`) or read `document.body.dataset.battleState` for a consistent view of state.
-- Rationale: keeping DOM and bus emissions distinct avoids cross-module and test-environment mismatches and ensures observers (including MutationObserver-based UIs) see updates reliably.
+- JU-DO-KON! uses a lightweight internal event bus (`classicBattle/battleEvents.js`).
+- The bus is the single source for battle events; DOM events are no longer dispatched.
+- Publish events with `emitBattleEvent(type, detail)` and subscribe with `onBattleEvent(type, handler)`.
+- `document.body.dataset.battleState` remains available for compatibility and debugging.
 
 ---
 

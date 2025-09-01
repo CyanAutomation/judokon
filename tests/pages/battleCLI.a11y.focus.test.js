@@ -4,6 +4,14 @@ import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 async function loadBattleCLI() {
   const emitter = new EventTarget();
+  const handlers = {};
+  const emitBattleEvent = vi.fn((type, detail) => {
+    (handlers[type] || []).forEach((h) => h({ detail }));
+  });
+  const onBattleEvent = vi.fn((type, handler) => {
+    handlers[type] = handlers[type] || [];
+    handlers[type].push(handler);
+  });
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags: vi.fn(),
     isEnabled: vi.fn(() => false),
@@ -19,8 +27,8 @@ async function loadBattleCLI() {
     initClassicBattleOrchestrator: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-    onBattleEvent: vi.fn(),
-    emitBattleEvent: vi.fn()
+    onBattleEvent,
+    emitBattleEvent
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
   vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
@@ -34,7 +42,7 @@ async function loadBattleCLI() {
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
   const mod = await import("../../src/pages/battleCLI.js");
   await mod.__test.init();
-  return mod.__test;
+  return { __test: mod.__test, emitBattleEvent };
 }
 
 describe("battleCLI accessibility", () => {
@@ -90,12 +98,10 @@ describe("battleCLI accessibility", () => {
     });
 
     it("shifts focus between stat list and next prompt", async () => {
-      await loadBattleCLI();
-      document.dispatchEvent(
-        new CustomEvent("battle:state", { detail: { to: "waitingForPlayerAction" } })
-      );
+      const { emitBattleEvent } = await loadBattleCLI();
+      emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
       expect(document.activeElement?.id).toBe("cli-stats");
-      document.dispatchEvent(new CustomEvent("battle:state", { detail: { to: "roundOver" } }));
+      emitBattleEvent("battleStateChange", { to: "roundOver" });
       const bar = document.querySelector("#snackbar-container .snackbar");
       expect(bar?.textContent).toBe("Press Enter to continue");
       expect(document.activeElement).toBe(bar);

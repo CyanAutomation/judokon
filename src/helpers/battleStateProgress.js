@@ -9,7 +9,7 @@
  * 5. Otherwise, clear the list and render each state as an `<li>` with `data-state` and its numeric ID.
  * 6. Resolve `battleStateProgressReadyPromise` after rendering.
  * 7. Define `updateActive(state)` to query list items and toggle the `active` class on the match.
- * 8. Listen for `battle:state` events on `document` and call `updateActive` with the event detail.
+ * 8. Listen for `battleStateChange` events via `onBattleEvent` and call `updateActive` with the event detail.
  * 9. Apply the initial state from `document.body.dataset.battleState`.
  * 10. After the initial state is applied, call `markBattlePartReady('state')`.
  * 11. Return a cleanup function that removes the event listener.
@@ -20,6 +20,7 @@ import { CLASSIC_BATTLE_STATES } from "./classicBattle/stateTable.js";
 import { updateBattleStateBadge } from "./classicBattle/uiHelpers.js";
 import { markBattlePartReady } from "./battleInit.js";
 import { isEnabled } from "./featureFlags.js";
+import { onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
 
 /**
  * Internal resolver for `battleStateProgressReadyPromise`.
@@ -58,9 +59,11 @@ if (typeof window !== "undefined") {
 }
 
 if (!isEnabled("battleStateProgress")) {
-  if (typeof document !== "undefined") {
-    document.addEventListener("battle:state", () => markBattlePartReady("state"), { once: true });
-  }
+  const handler = () => {
+    markBattlePartReady("state");
+    offBattleEvent("battleStateChange", handler);
+  };
+  onBattleEvent("battleStateChange", handler);
   resolveBattleStateProgressReady?.();
 }
 
@@ -88,8 +91,8 @@ if (!isEnabled("battleStateProgress")) {
  * Initialize and render the battle state progress list and wire up runtime updates.
  *
  * @summary Render core battle states into `#battle-state-progress` and register a
- * `battle:state` listener to update the active item. Returns a cleanup function.
- * When disabled, `'state'` is still marked ready on the next `battle:state` event.
+ * `battleStateChange` listener to update the active item. Returns a cleanup function.
+ * When disabled, `'state'` is still marked ready on the next `battleStateChange` event.
  * @pseudocode
  * 1. If the feature flag is disabled, hide the element if the DOM exists, ensure `'state'` is marked ready, resolve the ready promise, and return.
  * 2. If `document` is unavailable resolve the ready promise and return.
@@ -186,14 +189,14 @@ export async function initBattleStateProgress() {
       markBattlePartReady("state");
     }
   };
-  document.addEventListener("battle:state", handler);
+  onBattleEvent("battleStateChange", handler);
   const initial = document.body?.dataset.battleState;
   if (initial) {
     updateActive(initial);
     ready = true;
     markBattlePartReady("state");
   }
-  return () => document.removeEventListener("battle:state", handler);
+  return () => offBattleEvent("battleStateChange", handler);
 }
 
 /**
@@ -203,7 +206,7 @@ export async function initBattleStateProgress() {
  * Responsibilities:
  * - Render a trimmed list of core states (id < 90) into the
  *   `#battle-state-progress` element when necessary.
- * - Provide visual active-state updates when `battle:state` events fire.
+ * - Provide visual active-state updates when `battleStateChange` events fire.
  * - Update the small status badge via `updateBattleStateBadge`.
  * - Resolve `battleStateProgressReadyPromise` once rendering or skip is done.
  * - Call `markBattlePartReady('state')` after the first active state is applied.
@@ -221,5 +224,5 @@ export async function initBattleStateProgress() {
  * - Idempotent rendering: skips DOM updates when existing list matches expected.
  *
  * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function
- *   that removes the `battle:state` listener, or `undefined` if not applicable.
+ *   that removes the `battleStateChange` listener, or `undefined` if not applicable.
  */

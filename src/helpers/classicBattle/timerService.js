@@ -5,7 +5,7 @@ import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
-import { emitBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { isEnabled } from "../featureFlags.js";
 
 import { realScheduler } from "../scheduler.js";
@@ -13,7 +13,6 @@ import { dispatchBattleEvent } from "./orchestrator.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
-import { awaitCooldownState } from "./awaitCooldownState.js";
 import { getStateSnapshot } from "./battleDebug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
@@ -459,7 +458,24 @@ export async function handleNextRoundExpiration(controls, btn) {
   setSkipHandler(null);
   scoreboard.clearTimer();
   markNextReady(btn);
-  await awaitCooldownState();
+  await new Promise((resolve) => {
+    try {
+      const state = getStateSnapshot().state;
+      if (!state || state === "cooldown") {
+        resolve();
+        return;
+      }
+    } catch {}
+    const handler = (e) => {
+      try {
+        if (e.detail?.to === "cooldown") {
+          offBattleEvent("battleStateChange", handler);
+          resolve();
+        }
+      } catch {}
+    };
+    onBattleEvent("battleStateChange", handler);
+  });
   try {
     try {
       const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;

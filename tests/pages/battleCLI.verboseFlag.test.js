@@ -2,6 +2,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 async function loadBattleCLI(flagEnabled) {
   const emitter = new EventTarget();
+  const handlers = {};
+  const emitBattleEvent = vi.fn((type, detail) => {
+    (handlers[type] || []).forEach((h) => h({ detail }));
+  });
+  const onBattleEvent = vi.fn((type, handler) => {
+    handlers[type] = handlers[type] || [];
+    handlers[type].push(handler);
+  });
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags: vi
       .fn()
@@ -19,8 +27,8 @@ async function loadBattleCLI(flagEnabled) {
     initClassicBattleOrchestrator: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-    onBattleEvent: vi.fn(),
-    emitBattleEvent: vi.fn()
+    onBattleEvent,
+    emitBattleEvent
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: [] }));
   vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
@@ -31,7 +39,7 @@ async function loadBattleCLI(flagEnabled) {
   vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson: vi.fn().mockResolvedValue([]) }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
   const mod = await import("../../src/pages/battleCLI.js");
-  return mod;
+  return { mod, emitBattleEvent };
 }
 
 describe("battleCLI verbose flag", () => {
@@ -61,18 +69,16 @@ describe("battleCLI verbose flag", () => {
   });
 
   it("does not log state changes when cliVerbose is disabled", async () => {
-    const mod = await loadBattleCLI(false);
+    const { mod, emitBattleEvent } = await loadBattleCLI(false);
     await mod.__test.init();
-    document.dispatchEvent(new CustomEvent("battle:state", { detail: { from: "a", to: "b" } }));
+    emitBattleEvent("battleStateChange", { from: "a", to: "b" });
     expect(document.getElementById("cli-verbose-log").textContent).toBe("");
   });
 
   it("logs state changes when cliVerbose is enabled", async () => {
-    const mod = await loadBattleCLI(true);
+    const { mod, emitBattleEvent } = await loadBattleCLI(true);
     await mod.__test.init();
-    document.dispatchEvent(
-      new CustomEvent("battle:state", { detail: { from: "start", to: "end" } })
-    );
+    emitBattleEvent("battleStateChange", { from: "start", to: "end" });
     expect(document.getElementById("cli-verbose-log").textContent).toMatch(/start -> end/);
   });
 });

@@ -15,11 +15,7 @@ import {
 } from "./orchestratorHandlers.js";
 import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
 import { emitBattleEvent, onBattleEvent } from "./battleEvents.js";
-import {
-  domStateListener,
-  createDebugLogListener,
-  createWaiterResolver
-} from "./stateTransitionListeners.js";
+import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 
@@ -120,11 +116,9 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   machine = await createStateManager(onEnter, context, onTransition);
 
   const debugLogListener = createDebugLogListener(machine);
-  const waiterResolver = createWaiterResolver();
 
   onBattleEvent("battleStateChange", domStateListener);
   onBattleEvent("battleStateChange", debugLogListener);
-  onBattleEvent("battleStateChange", waiterResolver);
 
   const initialDetail = {
     from: null,
@@ -133,7 +127,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
   domStateListener({ detail: initialDetail });
   debugLogListener({ detail: initialDetail });
-  waiterResolver({ detail: initialDetail });
 
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).

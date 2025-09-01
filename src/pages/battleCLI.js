@@ -1115,8 +1115,7 @@ const battleEventHandlers = {
 
 function installEventBindings() {
   Object.entries(battleEventHandlers).forEach(([event, handler]) => onBattleEvent(event, handler));
-  document.addEventListener("matchOver", handleMatchOver);
-  document.addEventListener("battle:state", handleBattleState);
+  onBattleEvent("battleStateChange", handleBattleState);
 }
 
 async function init() {
