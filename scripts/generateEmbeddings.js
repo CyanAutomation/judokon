@@ -887,7 +887,8 @@ export {
   BOILERPLATE_STRINGS,
   normalizeText,
   normalizeAndFilter,
-  extractAllowedValues
+  extractAllowedValues,
+  createSparseVector
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
