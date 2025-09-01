@@ -28,7 +28,7 @@ test.describe("PRD Reader page", () => {
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth
     );
     expect(hasOverflow).toBe(false);
-    expect(await container.textContent()).not.toBe("");
+    await expect(container).not.toHaveText("");
     const original = await container.innerHTML();
 
     await page.keyboard.press("ArrowRight");

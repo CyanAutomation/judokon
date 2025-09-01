@@ -1,5 +1,14 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 
+/**
+ * Mock battle helpers and import battleCLI for testing.
+ * @returns {Promise<{ mod: object, emitBattleEvent: Function }>} battle CLI module and event emitter
+ * @pseudocode
+ * create emitter, handlers map, and event helper functions
+ * stub feature flag and battle helpers
+ * dynamically import battleCLI module
+ * return { mod, emitBattleEvent }
+ */
 async function loadBattleCLI() {
   const emitter = new EventTarget();
   const handlers = {};

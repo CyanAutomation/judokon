@@ -23,8 +23,12 @@ const rootDir = path.resolve(__dirname, "..");
  *
  * @param {number[]} embedding - Float embedding values in the range [-1, 1].
  * @returns {Int8Array} Quantized vector.
+ * @throws {RangeError} If any value lies outside [-1, 1].
  */
 function toInt8(embedding) {
+  if (!embedding.every((v) => v >= -1 && v <= 1)) {
+    throw new RangeError("Embedding values must be in range [-1, 1]");
+  }
   return Int8Array.from(embedding, (v) => Math.max(-128, Math.min(127, Math.round(v * 127))));
 }
 
@@ -35,6 +39,15 @@ export async function buildOfflineRag() {
   const inputPath = path.join(rootDir, "src/data/client_embeddings.json");
   const raw = await readFile(inputPath, "utf8");
   const entries = JSON.parse(raw);
+
+  if (entries.length === 0) {
+    await writeFile(path.join(rootDir, "src/data/offline_rag_vectors.bin"), Buffer.alloc(0));
+    await writeFile(
+      path.join(rootDir, "src/data/offline_rag_metadata.json"),
+      JSON.stringify({ vectorLength: 0, count: 0, items: [] }, null, 2)
+    );
+    return;
+  }
 
   const vectors = [];
   const metaItems = [];
@@ -52,7 +65,7 @@ export async function buildOfflineRag() {
     });
   }
 
-  const vectorLength = vectors[0]?.length || 0;
+  const vectorLength = vectors[0].length;
   const buffer = Buffer.concat(vectors.map((v) => Buffer.from(v.buffer)));
 
   await writeFile(path.join(rootDir, "src/data/offline_rag_vectors.bin"), buffer);
