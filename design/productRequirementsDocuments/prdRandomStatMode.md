@@ -76,25 +76,21 @@ _(Visuals to be attached)_
 ## Tasks
 
 - [ ] 1.0 Implement Stat Selection Timer
-
   - [ ] 1.1 Add countdown timer to stat selection screen
   - [ ] 1.2 Configure default timer value (30 seconds)
   - [ ] 1.3 Integrate timer with `timerControl.js`
 
 - [ ] 2.0 Develop Auto-Select Random Stat Logic
-
   - [ ] 2.1 Trigger random stat selection on timer expiry
   - [ ] 2.2 Display auto-select message to player
   - [ ] 2.3 Ensure stat is logged and used in battle logic
 
 - [ ] 3.0 Create Settings Page Toggle
-
   - [ ] 3.1 Add toggle to Settings UI
   - [ ] 3.2 Link toggle state to game logic
   - [ ] 3.3 Persist toggle state across sessions
 
 - [ ] 4.0 Build Visual Timer Feedback
-
   - [ ] 4.1 Display visible countdown on stat selection screen
   - [ ] 4.2 Update style for clarity and accessibility
 

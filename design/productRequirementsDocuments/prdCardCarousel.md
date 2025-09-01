@@ -130,12 +130,12 @@ generated carousel so each card's real portrait loads once it becomes visible.
 
 ## Design and UX: Considerations
 
-| Feature                | Description                                                                                       |
-|-----------------------|---------------------------------------------------------------------------------------------------|
-| Visuals               | Carousel has a darker background; snap scrolling for smooth navigation; center card scales to 1.1. |
-| Responsiveness        | Adapts to mobile (1-2 cards visible) and desktop (3-5 cards); card size adjusts to screen size.    |
-| Interaction           | Touch gestures (swipe left/right), mouse hover (scale to 1.05), keyboard navigation (arrow keys).  |
-| Accessibility         | High contrast; 44px minimum touch targets; page marker changes announced via aria-live; 4.5:1 text contrast. |
+| Feature        | Description                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| Visuals        | Carousel has a darker background; snap scrolling for smooth navigation; center card scales to 1.1.           |
+| Responsiveness | Adapts to mobile (1-2 cards visible) and desktop (3-5 cards); card size adjusts to screen size.              |
+| Interaction    | Touch gestures (swipe left/right), mouse hover (scale to 1.05), keyboard navigation (arrow keys).            |
+| Accessibility  | High contrast; 44px minimum touch targets; page marker changes announced via aria-live; 4.5:1 text contrast. |
 
 ---
 

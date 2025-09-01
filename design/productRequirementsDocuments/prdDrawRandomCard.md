@@ -145,14 +145,14 @@ instantly without movement.
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature                        | Description                                                                  |
-| -------- | ------------------------------ | ---------------------------------------------------------------------------- |
-| P1       | Random Card Selection          | Select a random card from the active card set dynamically.                   |
-| P1       | Display Selected Card          | Visually reveal the selected card with animation and sound feedback.         |
-| P2       | Fallback on Failure            | Show fallback card if draw fails or active set is empty.                     |
-| P2       | Reusable Random Draw Module    | Make the random draw callable from multiple game states or screens.          |
-| P3       | Accessibility Support          | Honor Reduced Motion and sound settings from `settings.html` and maintain color contrast and readability. |
-| P3       | UX Enhancements                | Optimize for animation, sound effect, and large tap targets.                 |
+| Priority | Feature                     | Description                                                                                               |
+| -------- | --------------------------- | --------------------------------------------------------------------------------------------------------- |
+| P1       | Random Card Selection       | Select a random card from the active card set dynamically.                                                |
+| P1       | Display Selected Card       | Visually reveal the selected card with animation and sound feedback.                                      |
+| P2       | Fallback on Failure         | Show fallback card if draw fails or active set is empty.                                                  |
+| P2       | Reusable Random Draw Module | Make the random draw callable from multiple game states or screens.                                       |
+| P3       | Accessibility Support       | Honor Reduced Motion and sound settings from `settings.html` and maintain color contrast and readability. |
+| P3       | UX Enhancements             | Optimize for animation, sound effect, and large tap targets.                                              |
 
 ---
 

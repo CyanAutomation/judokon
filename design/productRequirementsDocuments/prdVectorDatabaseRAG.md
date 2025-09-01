@@ -7,6 +7,7 @@ This PRD defines the implementation of a lightweight vector database for semanti
 ---
 
 ## Glossary
+
 - **RAG (Retrieval-Augmented Generation):** An AI technique that retrieves relevant information from a database and augments generative model outputs with that context, improving accuracy and relevance.
 - **Vector Database:** A database that stores text or data as high-dimensional vectors (embeddings) for fast semantic similarity search.
 - **Embedding:** A numerical representation of text or data used for similarity comparison in AI workflows.
@@ -86,7 +87,6 @@ Chunking rules are shared across tooling via [`src/helpers/vectorSearch/chunkCon
 - **Goal:** ~350 tokens per chunk (≈1,400 characters).
 - **Overlap:** 15% of characters between sequential chunks.
 - **Splitting:** Sentence-aware to avoid mid-sentence breaks.
-
 
 ### JSON Field Allowlists and Boilerplate Filtering
 

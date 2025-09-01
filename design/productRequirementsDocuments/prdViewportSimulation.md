@@ -64,24 +64,20 @@ Viewport Simulation is a developer and tester tool designed to catch UI issues a
 ## Tasks
 
 - [ ] 1.0 Add Viewport Simulation Toggle
-
   - [ ] 1.1 Add toggle switch to Settings panel
   - [ ] 1.2 Ensure toggle is accessible via keyboard and screen reader
   - [ ] 1.3 Apply/remove `.simulate-viewport` class to `<body>` on toggle
 
 - [ ] 2.0 Apply Simulated Viewport Styling
-
   - [ ] 2.1 Add CSS rules to `.simulate-viewport` class for 375px width
   - [ ] 2.2 Center UI within the constrained width
   - [ ] 2.3 Test styles for responsiveness and visual alignment
 
 - [ ] 3.0 Ensure Toggle Safety on Load
-
   - [ ] 3.1 Prevent errors if toggle is used before DOM is fully ready
   - [ ] 3.2 Add load state checks before applying class
 
 - [ ] 4.0 Optional: Implement Persistent Toggle State
-
   - [ ] 4.1 Store toggle state using the storage utility
   - [ ] 4.2 On page load, read and re-apply state if stored
 

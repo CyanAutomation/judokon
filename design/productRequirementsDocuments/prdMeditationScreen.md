@@ -233,6 +233,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 ---
 
 **See also:**
+
 - [PRD: Pseudo-Japanese Text Conversion Function](prdPseudoJapanese.md)
 
 [Back to Game Modes Overview](prdGameModes.md)

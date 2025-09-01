@@ -1,4 +1,5 @@
 ## TL;DR
+
 Test Mode is an internal, developer-facing mode for JU-DO-KON! that enables safe, deterministic testing of game features. It is not intended for regular players and is accessible only via a feature flag in the Settings menu. When enabled, Test Mode bypasses normal progression restrictions and ensures all randomization is reproducible for debugging and automated tests.
 
 ## Test Mode PRD

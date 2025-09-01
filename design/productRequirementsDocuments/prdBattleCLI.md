@@ -2,7 +2,7 @@
 
 ---
 
-**Game Mode ID:** `1-cli` (URL: battleCLI.html)  
+**Game Mode ID:** `1-cli` (URL: battleCLI.html)
 
 **Supports / Shares Engine With:** [Classic Battle PRD](prdClassicBattle.md), [Classic Battle Engine PRD](prdClassicBattleEngine.md)
 
@@ -16,10 +16,10 @@ Classic Battle CLI is a terminal-style, text-first presentation of the Classic B
 
 ## Problem Statement
 
-While **battleJudoka.html** provides a rich, animated UI, some users prefer a lightweight, distraction-free experience or run on constrained devices where animations and assets add overhead. Developers and testers also benefit from a deterministic, text-only surface to observe state transitions and outcomes without UI noise.  
+While **battleJudoka.html** provides a rich, animated UI, some users prefer a lightweight, distraction-free experience or run on constrained devices where animations and assets add overhead. Developers and testers also benefit from a deterministic, text-only surface to observe state transitions and outcomes without UI noise.
 
-- **Performance Baseline:** Must run on devices with ≤2 GB RAM, render initial screen within ≤500 ms, and keep memory footprint <30 MB.  
-- **Observability:** Deterministic, text-only surface aids debugging and automated testing.  
+- **Performance Baseline:** Must run on devices with ≤2 GB RAM, render initial screen within ≤500 ms, and keep memory footprint <30 MB.
+- **Observability:** Deterministic, text-only surface aids debugging and automated testing.
 
 A terminal-style Classic Battle ensures **fast load, consistent behavior, and improved observability** while preserving gameplay logic.
 
@@ -30,58 +30,62 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 ## Goals
 
 ### Player-Facing Goals
-- Deliver a **fast, text-first Classic Battle** that reuses the engine verbatim.  
-- Provide **full keyboard control** with clear, discoverable shortcuts.  
-- Support **mouse and touch input** so stats can be selected and rounds advanced without the keyboard.  
-- Surface **state, timer, and outcomes instantly** via text and ARIA live regions.  
-- Maintain **parity with Classic Battle mechanics, timers, and end conditions.**  
+
+- Deliver a **fast, text-first Classic Battle** that reuses the engine verbatim.
+- Provide **full keyboard control** with clear, discoverable shortcuts.
+- Support **mouse and touch input** so stats can be selected and rounds advanced without the keyboard.
+- Surface **state, timer, and outcomes instantly** via text and ARIA live regions.
+- Maintain **parity with Classic Battle mechanics, timers, and end conditions.**
 
 ### Developer/Test Goals
-- Enable robust **Playwright/Vitest automation** by exposing stable DOM hooks.  
-- Keep **load footprint tiny**: no heavy assets, no CSS animations, minimal styles only.  
-- Provide **observability mode** with verbose logs for debugging.  
+
+- Enable robust **Playwright/Vitest automation** by exposing stable DOM hooks.
+- Keep **load footprint tiny**: no heavy assets, no CSS animations, minimal styles only.
+- Provide **observability mode** with verbose logs for debugging.
 
 ---
 
 ## Non-Goals
 
-- Rich card visuals, animations, or image-heavy layouts.  
-- Alternative game rules or deviations from the Classic Battle engine.  
-- New tooltip content; CLI favors inline text hints over hover tooltips.  
+- Rich card visuals, animations, or image-heavy layouts.
+- Alternative game rules or deviations from the Classic Battle engine.
+- New tooltip content; CLI favors inline text hints over hover tooltips.
 
 ---
 
 ## User Stories
 
-- As a player on a low-spec device, I want a lightweight mode that loads instantly and is easy to read.  
-- As a keyboard-only user, I want to select stats and advance rounds without the mouse.  
-- As a mouse or touch user, I want to click or tap to select stats and advance rounds.  
-- As a screen-reader user, I want the current round message and timer to be announced clearly.  
-- As a developer/tester, I want deterministic, textual feedback of state transitions for debugging.  
-- As a returning player, I want to quickly play a few rounds without UI overhead.  
+- As a player on a low-spec device, I want a lightweight mode that loads instantly and is easy to read.
+- As a keyboard-only user, I want to select stats and advance rounds without the mouse.
+- As a mouse or touch user, I want to click or tap to select stats and advance rounds.
+- As a screen-reader user, I want the current round message and timer to be announced clearly.
+- As a developer/tester, I want deterministic, textual feedback of state transitions for debugging.
+- As a returning player, I want to quickly play a few rounds without UI overhead.
 
 ---
 
 ## Functional Requirements (Prioritized)
 
-| Priority | Feature | Description |
-|---|---|---|
-| **P1** | Engine Integration | Use the same Classic Battle engine and state machine as battleJudoka; static import for core gameplay modules. |
-| **P1** | Textual Renderer | Render all state changes (countdown, prompts, outcomes, score) as text within a monospace pane; no images/animations. |
-| **P1** | Keyboard Controls | Shortcut keys for stat selection (1–9), Next/Continue (Enter/Space), Quit (Q), Help (H). Help opens a floating panel with a close button and is hidden by default. |
-| **P1** | Pointer Controls | Stats and Next prompts are clickable/tappable for mouse and touch users. |
-| **P1** | Timer Display | Show a 1 Hz textual countdown for stat selection; on expiry, auto-select per `FF_AUTO_SELECT`. |
-| **P1** | Outcome/Score | After decision, print outcome (Win/Loss/Draw), selected stat/value pairs, and updated score. |
-| **P1** | Accessibility Hooks | Provide `aria-live="polite"` for round messages and countdown; maintain focus order for keyboard use, including a skip link and programmatic focus on stat selection and Next prompts. |
-| **P1** | Test Hooks | Expose stable selectors/ids (e.g., `#round-message`, `#cli-score`, `#cli-countdown`, `data-flag`) and data attributes like `#cli-root[data-round]` and `#cli-countdown[data-remaining-time]` to support Playwright/Vitest. |
-| **P2** | Minimal Settings | Allow selecting win target (5/10/15). Changing the value prompts to reset scores and restart the match; the last choice persists via the shared settings helper. |
-| **P2** | Deterministic Seed | Optional numeric seed via header input or `?seed=` query parameter enables reproducible runs; last seed is stored locally. |
-| **P2** | Round Context | Header shows current round and win target ("Round X of Y"). |
-| **P2** | Observability Mode | Optional verbose logs (controlled by the `cliVerbose` feature flag) that echo internal state transitions. |
-| **P2** | Interrupt Handling | Show a quit confirmation modal that pauses timers; cancel resumes play, confirm rolls back per engine rules. |
+| Priority | Feature             | Description                                                                                                                                                                                                                |
+| -------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1**   | Engine Integration  | Use the same Classic Battle engine and state machine as battleJudoka; static import for core gameplay modules.                                                                                                             |
+| **P1**   | Textual Renderer    | Render all state changes (countdown, prompts, outcomes, score) as text within a monospace pane; no images/animations.                                                                                                      |
+| **P1**   | Keyboard Controls   | Shortcut keys for stat selection (1–9), Next/Continue (Enter/Space), Quit (Q), Help (H). Help opens a floating panel with a close button and is hidden by default.                                                         |
+| **P1**   | Pointer Controls    | Stats and Next prompts are clickable/tappable for mouse and touch users.                                                                                                                                                   |
+| **P1**   | Timer Display       | Show a 1 Hz textual countdown for stat selection; on expiry, auto-select per `FF_AUTO_SELECT`.                                                                                                                             |
+| **P1**   | Outcome/Score       | After decision, print outcome (Win/Loss/Draw), selected stat/value pairs, and updated score.                                                                                                                               |
+| **P1**   | Accessibility Hooks | Provide `aria-live="polite"` for round messages and countdown; maintain focus order for keyboard use, including a skip link and programmatic focus on stat selection and Next prompts.                                     |
+| **P1**   | Test Hooks          | Expose stable selectors/ids (e.g., `#round-message`, `#cli-score`, `#cli-countdown`, `data-flag`) and data attributes like `#cli-root[data-round]` and `#cli-countdown[data-remaining-time]` to support Playwright/Vitest. |
+| **P2**   | Minimal Settings    | Allow selecting win target (5/10/15). Changing the value prompts to reset scores and restart the match; the last choice persists via the shared settings helper.                                                           |
+| **P2**   | Deterministic Seed  | Optional numeric seed via header input or `?seed=` query parameter enables reproducible runs; last seed is stored locally.                                                                                                 |
+| **P2**   | Round Context       | Header shows current round and win target ("Round X of Y").                                                                                                                                                                |
+| **P2**   | Observability Mode  | Optional verbose logs (controlled by the `cliVerbose` feature flag) that echo internal state transitions.                                                                                                                  |
+| **P2**   | Interrupt Handling  | Show a quit confirmation modal that pauses timers; cancel resumes play, confirm rolls back per engine rules.                                                                                                               |
+
 <!-- Retro Mode removed in favor of a single, consistent high-contrast style. -->
 
 ### Feature Flags
+
 - `cliVerbose` – toggles the verbose log section on the CLI page; disabled by default.
 - `cliShortcuts` – enables single-key shortcuts (e.g., H for help) in the CLI; enabled by default.
 - `battleStateBadge` – shows a header badge reflecting the current match state; disabled by default.
@@ -92,43 +96,46 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 `skipRoundCooldown` may also be enabled via the `?skipRoundCooldown=1` query parameter, which sets the feature flag at startup.
 
 Notes:
-- Core gameplay and timers must not use dynamic imports in hot paths.  
-- Maintain the scoreboard/snackbar surface contract where feasible: `#round-message` for outcomes and a dedicated area for countdown/prompts to keep tests consistent.  
+
+- Core gameplay and timers must not use dynamic imports in hot paths.
+- Maintain the scoreboard/snackbar surface contract where feasible: `#round-message` for outcomes and a dedicated area for countdown/prompts to keep tests consistent.
 
 ---
 
 ## Acceptance Criteria
 
-1. Engine Parity  
-   - Given a match is running, when any state transition occurs, then the new state matches `src/helpers/classicBattle/stateTable.js` exactly.  
+1. Engine Parity
+   - Given a match is running, when any state transition occurs, then the new state matches `src/helpers/classicBattle/stateTable.js` exactly.
 
 2. Keyboard Controls
    - Given the player is in stat selection, when pressing keys 1–9 mapped to visible stats, then the corresponding stat is selected and input is debounced until the next state.
    - Given a round has completed, when pressing Enter/Space, then the flow advances to cooldown/next round.
    - Given an inter-round cooldown is running, when pressing Enter/Space, then the countdown is skipped and the next round begins immediately.
-  - Given an active match, when pressing Q, then a quit confirmation modal appears; confirming ends or rolls back per engine rules, cancelling resumes any paused timers.
-  - Given the help panel is hidden, when pressing H, then the help panel appears and can be dismissed with H or its close button.
 
-3. Timer Behavior  
-  - Given `waitingForPlayerAction`, when the timer ticks, then `#cli-countdown` updates once per second with remaining time and exposes the value via `data-remaining-time`.
+- Given an active match, when pressing Q, then a quit confirmation modal appears; confirming ends or rolls back per engine rules, cancelling resumes any paused timers.
+- Given the help panel is hidden, when pressing H, then the help panel appears and can be dismissed with H or its close button.
+
+3. Timer Behavior
+
+- Given `waitingForPlayerAction`, when the timer ticks, then `#cli-countdown` updates once per second with remaining time and exposes the value via `data-remaining-time`.
 - Given timer expiry and `FF_AUTO_SELECT` enabled, when the countdown reaches zero, then a random stat is selected and printed before decision.
-   - Given `cooldown`, when countdownStart fires, then a fallback timer runs and emits `countdownFinished` after the duration if not skipped.
-   - Given `skipRoundCooldown` enabled, when `countdownStart` fires, then the next round begins immediately without showing countdown text.
-   - Given the tab is hidden or device sleeps, when focus returns, then the timer resumes without double-firing and remains consistent with the engine PRD.  
+  - Given `cooldown`, when countdownStart fires, then a fallback timer runs and emits `countdownFinished` after the duration if not skipped.
+  - Given `skipRoundCooldown` enabled, when `countdownStart` fires, then the next round begins immediately without showing countdown text.
+  - Given the tab is hidden or device sleeps, when focus returns, then the timer resumes without double-firing and remains consistent with the engine PRD.
 
 4. Outcome and Score
-   - Given `roundDecision`, when the outcome resolves, then `#round-message` prints Win/Loss/Draw and both chosen stat values.  
+   - Given `roundDecision`, when the outcome resolves, then `#round-message` prints Win/Loss/Draw and both chosen stat values.
    - Given `roundOver`, when scores update, then `#cli-score` reflects the new totals immediately.
    - Given a match reaches the win target, when it ends, then a "Play again" control is offered or the page returns to the lobby.
 
-5. Accessibility  
-   - Given any message update, when content changes, then `aria-live` announces the new round message or countdown text.  
-   - Given keyboard-only navigation, when tabbing through controls, then focus order is logical and visible.  
-   - All text meets ≥4.5:1 contrast and supports zoom to 200% without loss of functionality.  
+5. Accessibility
+   - Given any message update, when content changes, then `aria-live` announces the new round message or countdown text.
+   - Given keyboard-only navigation, when tabbing through controls, then focus order is logical and visible.
+   - All text meets ≥4.5:1 contrast and supports zoom to 200% without loss of functionality.
 
-6. Performance & Footprint  
-   - Given a fresh load on average hardware, when opening `battleCLI.html`, then the page is interactive in ≤500 ms after network idle (no heavy assets).  
-   - No runtime use of `await import()` on stat selection, round decision, event dispatch, or render loops.  
+6. Performance & Footprint
+   - Given a fresh load on average hardware, when opening `battleCLI.html`, then the page is interactive in ≤500 ms after network idle (no heavy assets).
+   - No runtime use of `await import()` on stat selection, round decision, event dispatch, or render loops.
 
 7. Testability
    - Given the CLI page loads, when running Playwright/Vitest, then selectors `#round-message`, `#cli-countdown`, and `#cli-score` are present and update as the engine advances.
@@ -145,11 +152,11 @@ Notes:
 
 ## Edge Cases / Failure States
 
-- **Invalid Input:** When invalid keys (non 1–9, Q, H, Enter/Space) are pressed, ignore gracefully and display “Invalid key, press H for help.”  
-- **Rapid Multi-Input:** If multiple inputs are fired before debounce, only the first is accepted; ignore the rest.  
-- **Tab Hidden / Device Sleep:** Timers resume correctly on refocus, without double-firing.  
-- **Unexpected Error:** Roll back to last safe state with clear error message, consistent with engine PRD.  
-- **Accessibility Failure:** If ARIA announcements fail, ensure fallback with clear visible text updates.  
+- **Invalid Input:** When invalid keys (non 1–9, Q, H, Enter/Space) are pressed, ignore gracefully and display “Invalid key, press H for help.”
+- **Rapid Multi-Input:** If multiple inputs are fired before debounce, only the first is accepted; ignore the rest.
+- **Tab Hidden / Device Sleep:** Timers resume correctly on refocus, without double-firing.
+- **Unexpected Error:** Roll back to last safe state with clear error message, consistent with engine PRD.
+- **Accessibility Failure:** If ARIA announcements fail, ensure fallback with clear visible text updates.
 
 ---
 
@@ -157,22 +164,22 @@ Notes:
 
 ### ASCII Wireframe (Desktop)
 
-| Classic Battle CLI   Round 1 of 5   Target: 5 Wins |
+| Classic Battle CLI Round 1 of 5 Target: 5 Wins |
 
-| [Timer: 08]                                        |
-| Choose a stat:                                     |
-|   (1) Strength: 72                                 |
-|   (2) Agility: 63                                  |
-|   (3) Stamina: 81                                  |
+| [Timer: 08] |
+| Choose a stat: |
+| (1) Strength: 72 |
+| (2) Agility: 63 |
+| (3) Stamina: 81 |
 
-| Last Round: You WON! (72 vs 64)                    |
-| Score: Player 2 - Opponent 1                       |
+| Last Round: You WON! (72 vs 64) |
+| Score: Player 2 - Opponent 1 |
 
-| Shortcuts:                                        |
-|   [1-9] Select Stat                               |
-|   [Enter]/[Space] Next                            |
-|   [Q] Quit                                        |
-|   [H] Toggle Help                                 |
+| Shortcuts: |
+| [1-9] Select Stat |
+| [Enter]/[Space] Next |
+| [Q] Quit |
+| [H] Toggle Help |
 
 ## UI and Interaction Model
 
@@ -183,19 +190,21 @@ Notes:
 - Styling: Minimal CSS for spacing and contrast; focus on a single, consistent high-contrast look.
 
 Additional UI/UX improvements (terminal polish)
+
 - Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from the header; it must be accessible (contrast >= 4.5:1) and off by default.
 - Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from a dedicated header control `#retro-toggle` (feature flag `cliRetro`); it must be accessible (contrast >= 4.5:1) and off by default.
 - Render ASCII separators and an 80ch-width centered column to mimic legacy terminal dimensions (optional, feature-flag guarded).
- - Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
- - Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
- - Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
- - Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
- - Collapsible settings panel (`#cli-settings-toggle` / `#cli-settings-body`) implemented with localStorage persistence to keep the settings panel state between visits.
+- Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
+- Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
+- Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
+- Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
+- Collapsible settings panel (`#cli-settings-toggle` / `#cli-settings-body`) implemented with localStorage persistence to keep the settings panel state between visits.
 - Render skeleton stat rows at startup so `#cli-stats` has deterministic bounding boxes for visual tests and reduces layout shift.
 - Expose a small JS helper that atomically updates `#cli-countdown`'s `data-remaining-time` attribute together with the visible text to make Playwright/Vitest assertions robust.
 - Implement explicit focus management on state transitions (focus stat container on selection, focus the Next control after outcome).
 
 Small additions to the interaction model
+
 - Add a toggle to switch the retro theme; remember the preference in localStorage.
 - Provide a minimal visual tweak to the header: a tighter height and an ASCII-style single-line header to increase terminal feel.
 
@@ -203,20 +212,20 @@ Small additions to the interaction model
 
 ## Technical Considerations
 
-- Module Loading Policy: Static import for engine/orchestrator/state table; optional CLI-only features may be dynamically imported and preloaded during idle.  
-- Reuse hooks: Keep `#round-message` and a countdown/prompt surface matching Classic Battle test expectations to minimize new test code.  
-- Accessibility: Use `role="status"`/`aria-live="polite"` for prompts and outcomes; ensure semantic headings and landmarks.  
-- Data and settings: Use existing settings defaults for win target; persist locally via the shared helper.  
-- Logging: Route verbose/diagnostic output through a muted logger helper in tests to keep CI clean.  
+- Module Loading Policy: Static import for engine/orchestrator/state table; optional CLI-only features may be dynamically imported and preloaded during idle.
+- Reuse hooks: Keep `#round-message` and a countdown/prompt surface matching Classic Battle test expectations to minimize new test code.
+- Accessibility: Use `role="status"`/`aria-live="polite"` for prompts and outcomes; ensure semantic headings and landmarks.
+- Data and settings: Use existing settings defaults for win target; persist locally via the shared helper.
+- Logging: Route verbose/diagnostic output through a muted logger helper in tests to keep CI clean.
 
 ---
 
 ## Dependencies
 
-- Classic Battle Engine: `src/helpers/classicBattle/stateTable.js`, `src/helpers/BattleEngine.js`, `src/helpers/classicBattle/orchestrator.js`  
-- Settings defaults: `src/config/settingsDefaults.js`  
-- Snackbar helper (optional text surface alignment): `src/helpers/showSnackbar.js`  
-- Testing helpers: `tests/helpers/initClassicBattleTest.js` and event-promises (round prompt/countdown/resolution)  
+- Classic Battle Engine: `src/helpers/classicBattle/stateTable.js`, `src/helpers/BattleEngine.js`, `src/helpers/classicBattle/orchestrator.js`
+- Settings defaults: `src/config/settingsDefaults.js`
+- Snackbar helper (optional text surface alignment): `src/helpers/showSnackbar.js`
+- Testing helpers: `tests/helpers/initClassicBattleTest.js` and event-promises (round prompt/countdown/resolution)
 
 ---
 
@@ -233,9 +242,9 @@ Small additions to the interaction model
   - [ ] 1.1 Create `battleCLI.html` with required DOM hooks (`#cli-root`, `#cli-header`, etc.)
   - [ ] 1.2 Add minimal CSS for monospace, spacing, and high contrast
   - [ ] 1.3 Add fallback layout for narrow/mobile screens
-   - [ ] 1.4 Add optional "retro" theme toggle and persist preference
-   - [ ] 1.5 Render skeleton stat rows on initial render to stabilize visual tests
-   - [x] 1.6 Add collapsible settings panel with persistence (`#cli-settings-toggle`)
+  - [ ] 1.4 Add optional "retro" theme toggle and persist preference
+  - [ ] 1.5 Render skeleton stat rows on initial render to stabilize visual tests
+  - [x] 1.6 Add collapsible settings panel with persistence (`#cli-settings-toggle`)
 - [ ] 2.0 Integrate engine
   - [ ] 2.1 Import engine/orchestrator/state table statically
   - [ ] 2.2 Bind engine events to renderer (countdown, outcomes, score)
@@ -245,14 +254,14 @@ Small additions to the interaction model
   - [ ] 3.2 Implement mouse/touch stat selection
   - [ ] 3.3 Render 1 Hz countdown; handle auto-select on expiry
   - [ ] 3.4 Add input validation for invalid keys and multi-key conflict handling
-   - [ ] 3.5 Provide an atomic DOM helper that updates `#cli-countdown[data-remaining-time]` and inner text in a single call to support deterministic tests
-   - [ ] 3.6 Add startup skeleton stat items to avoid zero-height `#cli-stats`
+  - [ ] 3.5 Provide an atomic DOM helper that updates `#cli-countdown[data-remaining-time]` and inner text in a single call to support deterministic tests
+  - [ ] 3.6 Add startup skeleton stat items to avoid zero-height `#cli-stats`
 - [ ] 4.0 Accessibility & observability
   - [ ] 4.1 Add `aria-live` and role attributes
   - [ ] 4.2 Ensure ≥4.5:1 contrast and zoom to 200% without breaking layout
   - [ ] 4.3 Add stable IDs (`#round-message`, `#cli-score`, etc.) and `data-flag` hooks
   - [ ] 4.4 Verify focus order and accessibility fallbacks
-   - [ ] 4.5 Verify that retro theme retains contrast and keyboard focus visibility
+  - [ ] 4.5 Verify that retro theme retains contrast and keyboard focus visibility
 - [ ] 5.0 Testing
   - [ ] 5.1 Add Playwright specs for keyboard/mouse/timer
   - [ ] 5.2 Verify selectors remain stable
@@ -262,6 +271,7 @@ Small additions to the interaction model
 ---
 
 **See also:**
+
 - [Classic Battle PRD](prdClassicBattle.md)
 - [Classic Battle Engine PRD](prdClassicBattleEngine.md)
 - [Battle Scoreboard PRD](prdBattleScoreboard.md)

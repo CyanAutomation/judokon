@@ -104,14 +104,14 @@ The bottom navigation bar appears consistently across all game screens, populate
 
 ## Functional Requirements
 
-| Priority | Feature                | Description                                                                                                       |
-| :------: | :--------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| Priority | Feature                | Description                                                                                                                      |
+| :------: | :--------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
 |  **P1**  | Standard Nav Bar       | Fixed horizontal navigation pinned to the bottom of the viewport with scalable, equal-width links and a bottom-left corner logo. |
-|  **P2**  | Portrait Text Menu     | Text-based vertical menu expansion on button click for portrait and landscape (collapsed) orientation.              |
-|  **P2**  | Small Screens Support  | Row collapses to a hamburger menu and adjusts for screens as small as 320px — scale font and spacing.                                |
-|  **P2**  | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                |
-|  **P1**  | Hover & Active States  | Distinct hover feedback and a persistent active state indicate the current screen. |
-|  **P1**  | Fallback Data Handling | Hardcoded default order and visibility if `navigationItems.json` fails to load.                                |
+|  **P2**  | Portrait Text Menu     | Text-based vertical menu expansion on button click for portrait and landscape (collapsed) orientation.                           |
+|  **P2**  | Small Screens Support  | Row collapses to a hamburger menu and adjusts for screens as small as 320px — scale font and spacing.                            |
+|  **P2**  | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                                                 |
+|  **P1**  | Hover & Active States  | Distinct hover feedback and a persistent active state indicate the current screen.                                               |
+|  **P1**  | Fallback Data Handling | Hardcoded default order and visibility if `navigationItems.json` fails to load.                                                  |
 
 ---
 

@@ -1,6 +1,7 @@
 # PRD: Layout Debug Panel
 
 ## TL;DR
+
 This PRD describes the Layout Debug Panel, an internal developer tool for visually outlining all visible elements on the page. It is toggled via the Settings page and is only accessible in development mode or for authorized roles. The feature accelerates UI debugging and accessibility checks, and is not exposed to regular players.
 
 ## Overview
@@ -95,26 +96,22 @@ Developers and designers frequently face challenges when diagnosing layout misal
 ## Tasks
 
 - [ ] 1.0 Add Toggle to Settings Page
-
   - [ ] 1.1 Create "Layout Debug Panel" toggle in Developer Tools section
   - [ ] 1.2 Ensure toggle is visible only to dev users or in dev environment
   - [ ] 1.3 Set default toggle state to OFF on page load
 
 - [ ] 2.0 Implement Outline Rendering Logic
-
   - [ ] 2.1 Select all visible elements via default selector `body *`
   - [ ] 2.2 Apply 1px dashed red border outline to each
   - [ ] 2.3 Delay render until after `DOMContentLoaded` if necessary
 
 - [ ] 3.0 Add Custom Selector Input Handling
-
   - [ ] 3.1 Render input for custom CSS selector when debug panel is active
   - [ ] 3.2 Validate selector syntax on input change
   - [ ] 3.3 Display warning if selector is invalid
   - [ ] 3.4 Display message if valid selector matches no elements
 
 - [ ] 4.0 Clean Up on Disable
-
   - [ ] 4.1 Remove all outlines and injected styles
   - [ ] 4.2 Ensure no side-effects or memory leaks remain
   - [ ] 4.3 Prevent flicker during rapid toggle on/off

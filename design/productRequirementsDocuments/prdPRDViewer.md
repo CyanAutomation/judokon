@@ -137,50 +137,41 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 ## Tasks
 
 - [x] 1.0 Set Up Markdown File Loader
-
   - [x] 1.1 Create function to scan `design/productRequirementsDocuments` directory
   - [x] 1.2 Load markdown content of each file asynchronously
   - [x] 1.3 Implement error handling and fallback display for file load failures
 
 - [x] 2.0 Implement Markdown-to-HTML Renderer
-
   - [x] 2.1 Integrate `marked` library for parsing markdown
   - [x] 2.2 Apply consistent styles to headings, tables, lists, code blocks
   - [x] 2.3 Benchmark and optimize rendering to complete quickly on devices
 
 - [x] 3.0 Build Navigation System
-
   - [x] 3.1 Implement keyboard arrow key navigation and focus management
   - [x] 3.2 Add swipe gesture detection with minimum threshold to avoid accidental triggers
 
 - [x] 4.0 Ensure Accessibility and Responsiveness
-
   - [x] 4.1 Add ARIA labels and roles to interactive elements
   - [x] 4.2 Implement responsive CSS for desktop, tablet, and mobile layouts
 
   - [x] 4.3 Conduct accessibility testing with keyboard-only and screen reader tools
-
     - Focus order proceeds from header logo to sidebar items to footer links.
     - Sidebar and footer navigation are announced by screen readers.
     - Pa11y audit of `src/pages/prdViewer.html` reported no accessibility issues.
 
 - [x] 5.0 Add Home Link and Error Handling
-
   - [x] 5.1 Insert clickable JU-DO-KON! logo and/or dedicated Home link to main page
   - [x] 5.2 Log markdown loading errors to console, display per-file fallback messages, and continue rendering other documents
   - [x] 5.3 Hide internal file paths or URLs from the user interface
 
 - [x] 6.0 Display PRD Task Summary
-
   - [x] 6.1 Show total task count and completion percentage in the header next to the title
 
 - [x] 7.0 Sidebar Document List
-
   - [x] 7.1 Sidebar lists all PRDs alphabetically with zebra striping
   - [x] 7.2 Selecting a PRD from the sidebar loads that document
 
 - [x] 8.0 Loading Animation and Error States
-
   - [x] 8.1 Show fade-in animation when switching documents
   - [x] 8.2 Show loading spinner or status message while fetching files
   - [x] 8.3 Show warning badge for malformed markdown

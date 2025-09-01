@@ -137,7 +137,9 @@
         border-color: #9ad1ff;
         outline: 3px solid #9ad1ff;
         outline-offset: 2px;
-        box-shadow: 0 0 0 2px #0b0c0c, 0 0 0 4px #9ad1ff;
+        box-shadow:
+          0 0 0 2px #0b0c0c,
+          0 0 0 4px #9ad1ff;
       }
       .cli-controls {
         /* make controls lay out horizontally and center-aligned */
@@ -234,7 +236,9 @@
         outline: 3px solid #9ad1ff;
         outline-offset: 2px;
         /* Add a subtle ring to improve contrast separation on dark bg */
-        box-shadow: 0 0 0 2px #0b0c0c, 0 0 0 4px #9ad1ff;
+        box-shadow:
+          0 0 0 2px #0b0c0c,
+          0 0 0 4px #9ad1ff;
       }
       .skip-link {
         position: absolute;
@@ -448,15 +452,24 @@
           data-flag="cliShortcuts"
           hidden
         >
-          <div class="cli-settings-header" style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="font-weight:600">Shortcuts</div>
+          <div
+            class="cli-settings-header"
+            style="display: flex; align-items: center; justify-content: space-between"
+          >
+            <div style="font-weight: 600">Shortcuts</div>
             <div>
               <button
                 id="cli-shortcuts-close"
                 aria-label="Close help"
                 aria-controls="cli-shortcuts-body"
                 aria-expanded="false"
-                style="background:transparent;border:0;color:inherit;cursor:pointer;font-family:inherit"
+                style="
+                  background: transparent;
+                  border: 0;
+                  color: inherit;
+                  cursor: pointer;
+                  font-family: inherit;
+                "
               >
                 ×
               </button>
