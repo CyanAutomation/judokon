@@ -56,8 +56,9 @@ export function selectMatches(strongMatches, weakMatches) {
  * 2. If `extractor` is not initialized, begin a `try...catch` block to handle potential loading errors:
  *    a. Inside the `try` block:
  *       i. Import the `pipeline` function from Transformers.js (use CDN in browsers, local package in Node).
- *       ii. Instantiate a feature-extraction pipeline using the "Xenova/all-MiniLM-L6-v2" model, ensuring it's quantized.
- *       iii. Assign the created pipeline instance to `extractor`.
+ *       ii. In Node, resolve the local `models/minilm` directory with `pathToFileURL` and instantiate a quantized pipeline from that path.
+ *       iii. In browsers, instantiate a quantized pipeline using the "Xenova/all-MiniLM-L6-v2" CDN model name.
+ *       iv. Assign the created pipeline instance to `extractor`.
  *    b. In the `catch` block (if an error occurs during loading):
  *       i. Log an error message "Model failed to load" along with the `error` object to the console.
  *       ii. Reset `extractor` to `null` to ensure that the next call will re-attempt loading.
@@ -71,7 +72,10 @@ export async function getExtractor() {
     try {
       if (isNodeEnvironment()) {
         const { pipeline } = await import("@xenova/transformers");
-        extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+        const { resolve } = await import("path");
+        const { pathToFileURL } = await import("url");
+        const modelPath = pathToFileURL(resolve("models/minilm")).href;
+        extractor = await pipeline("feature-extraction", modelPath, {
           quantized: true
         });
       } else {
