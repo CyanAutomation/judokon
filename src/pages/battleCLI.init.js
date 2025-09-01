@@ -125,16 +125,17 @@ function init() {
   renderSkeletonStats(5);
   initRetroToggle();
   initSettingsCollapse();
-  initShortcutsCollapse();
-  // expose helpers for the main controller
-  window.__battleCLIinit = {
-    renderSkeletonStats,
-    clearSkeletonStats,
-    setCountdown,
-    focusStats,
-    focusNextHint,
-    applyRetroTheme
-  };
+  // helpers are also exposed at module top-level; keep here to ensure latest refs
+  try {
+    Object.assign(window.__battleCLIinit, {
+      renderSkeletonStats,
+      clearSkeletonStats,
+      setCountdown,
+      focusStats,
+      focusNextHint,
+      applyRetroTheme
+    });
+  } catch {}
 
   // expose programmatic settings collapse/expand helper for tests
   try {
@@ -142,7 +143,6 @@ function init() {
       const toggle = byId("cli-settings-toggle");
       const body = byId("cli-settings-body");
       if (!toggle || !body) return false;
-      // apply same logic as init
       try {
         localStorage.setItem("battleCLI.settingsCollapsed", collapsed ? "1" : "0");
       } catch {}
@@ -156,32 +156,44 @@ function init() {
         toggle.textContent = "Settings ▾";
       }
       return true;
-      // expose shortcuts collapse helper for tests
+    };
+  } catch {}
+
+  // expose shortcuts collapse/expand helper for tests
+  try {
+    window.__battleCLIinit.setShortcutsCollapsed = function (collapsed) {
+      const closeBtn = byId("cli-shortcuts-close");
+      const body = byId("cli-shortcuts-body");
+      const section = byId("cli-shortcuts");
+      if (!closeBtn || !body || !section) return false;
       try {
-        window.__battleCLIinit.setShortcutsCollapsed = function (collapsed) {
-          const closeBtn = byId("cli-shortcuts-close");
-          const body = byId("cli-shortcuts-body");
-          if (!closeBtn || !body) return false;
-          try {
-            localStorage.setItem("battleCLI.shortcutsCollapsed", collapsed ? "1" : "0");
-          } catch {}
-          if (collapsed) {
-            body.style.display = "none";
-            const section = byId("cli-shortcuts");
-            if (section) section.setAttribute("hidden", "");
-            closeBtn.setAttribute("aria-expanded", "false");
-          } else {
-            body.style.display = "";
-            const section = byId("cli-shortcuts");
-            if (section) section.removeAttribute("hidden");
-            closeBtn.setAttribute("aria-expanded", "true");
-          }
-          return true;
-        };
+        localStorage.setItem("battleCLI.shortcutsCollapsed", collapsed ? "1" : "0");
       } catch {}
+      if (collapsed) {
+        body.style.display = "none";
+        section.setAttribute("hidden", "");
+        closeBtn.setAttribute("aria-expanded", "false");
+      } else {
+        body.style.display = "";
+        section.removeAttribute("hidden");
+        closeBtn.setAttribute("aria-expanded", "true");
+      }
+      return true;
     };
   } catch {}
 }
+
+// Expose helpers as early as possible so tests can see them even if init hasn't run yet.
+try {
+  window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
+    renderSkeletonStats,
+    clearSkeletonStats,
+    setCountdown,
+    focusStats,
+    focusNextHint,
+    applyRetroTheme
+  });
+} catch {}
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);

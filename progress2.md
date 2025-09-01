@@ -56,4 +56,9 @@ Update: Wire shortcuts close button and persist state
 
 - [x] Wired `#cli-shortcuts-close` to toggle `#cli-shortcuts-body`, persisted state in `localStorage` as `battleCLI.shortcutsCollapsed`, and exposed `window.__battleCLIinit.setShortcutsCollapsed` for tests.
 
+Update: Improve focus visibility and add contrast tests
+
+- [x] Enhanced global `:focus` styles in `src/pages/battleCLI.html` (thicker outline + contrast ring).
+- [x] Added high-contrast focus state for `.cli-stat` (focused background + outline/box-shadow).
+- [x] Added accessibility contrast tests for focus visuals: `tests/styles/battleCLI.focusContrast.test.js`.
 
