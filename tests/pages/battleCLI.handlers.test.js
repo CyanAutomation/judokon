@@ -136,8 +136,7 @@ describe("battleCLI event handlers", () => {
     const btn = document.getElementById("play-again-button");
     const { resetGame } = await import("../../src/helpers/classicBattle/roundManager.js");
     btn.click();
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r));
     expect(document.getElementById("cli-verbose-log").textContent).toBe("");
     expect(resetGame).toHaveBeenCalled();
     expect(emitBattleEvent).toHaveBeenCalledWith("startClicked");

@@ -140,6 +140,25 @@ function clearVerboseLog() {
   if (el) el.textContent = "";
 }
 
+/**
+ * Reset the match and reinitialize the battle orchestrator.
+ *
+ * @pseudocode
+ * stopSelectionCountdown()
+ * handleCountdownFinished()
+ * roundResolving = false
+ * clearVerboseLog()
+ * remove play-again/start buttons
+ * resetPromise = async () => {
+ *   await resetGame(store)
+ *   updateRoundHeader(0, getPointsToWin())
+ *   updateScoreLine()
+ *   setRoundMessage("")
+ *   await initClassicBattleOrchestrator(store, startRoundWrapper)
+ * }
+ * await resetPromise
+ */
+let resetPromise = Promise.resolve();
 async function resetMatch() {
   stopSelectionCountdown();
   handleCountdownFinished();
@@ -149,13 +168,29 @@ async function resetMatch() {
     document.getElementById("play-again-button")?.remove();
     document.getElementById("start-match-button")?.remove();
   } catch {}
-  await resetGame(store);
-  updateRoundHeader(0, getPointsToWin());
-  updateScoreLine();
-  setRoundMessage("");
+  const next = (async () => {
+    await resetGame(store);
+    updateRoundHeader(0, getPointsToWin());
+    updateScoreLine();
+    setRoundMessage("");
+    await initClassicBattleOrchestrator(store, startRoundWrapper);
+  })();
+  resetPromise = next;
+  await next;
 }
 
-function renderStartButton() {
+/**
+ * Render the Start button after the orchestrator reset completes.
+ *
+ * @pseudocode
+ * await resetPromise
+ * if main missing or button exists → return
+ * create section + button
+ * on click → emit "startClicked" and dispatch to machine
+ * remove section
+ */
+async function renderStartButton() {
+  await resetPromise;
   const main = byId("cli-main");
   if (!main || byId("start-match-button")) return;
   const section = document.createElement("section");
@@ -1237,7 +1272,7 @@ async function init() {
   installEventBindings();
   // Initialize orchestrator using our startRound wrapper
   await initClassicBattleOrchestrator(store, startRoundWrapper);
-  renderStartButton();
+  await renderStartButton();
   // Keyboard controls
   window.addEventListener("keydown", onKeyDown);
   document.addEventListener("click", onClickAdvance);
