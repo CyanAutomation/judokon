@@ -14,9 +14,6 @@ vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({
   showMatchSummaryModal: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
-  handleReplay: vi.fn()
-}));
-vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   handleReplay: vi.fn(),
   startCooldown: vi.fn(),
   setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
