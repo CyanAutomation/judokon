@@ -13,6 +13,8 @@ describe("RAG offline path (binary index)", () => {
   let vectorLength;
 
   beforeAll(async () => {
+    // Ensure loader does not force JSON path in this suite
+    delete process.env.RAG_FORCE_JSON;
     // Force Node environment code paths by removing window/document during module import.
     // This ensures loader/getExtractor prefer Node logic.
     // Save and delete globals (will restore in afterAll).
