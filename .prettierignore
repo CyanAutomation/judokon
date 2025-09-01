@@ -11,4 +11,4 @@ src/data/client_embeddings.json
 src/data/client_embeddings.meta.json
 src/data/client_embeddings.shard.*.json
 src/data/client_embeddings.manifest.json
-design/productRequirementsDocuments/*.md
+src/data/offline_rag_metadata.json
