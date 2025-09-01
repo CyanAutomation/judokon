@@ -97,8 +97,11 @@ export function chunkMarkdown(text) {
  * 1. Validate that `id` matches the `filename-chunk-N` pattern.
  *    - Return an empty array for invalid ids.
  * 2. Build a URL to the markdown file using the filename.
- * 3. Fetch the markdown text with `fetch` and split it using `chunkMarkdown`.
- * 4. Determine the slice of chunks around the requested index based on `radius`.
+ * 3. When running in Node (`process?.versions?.node`), resolve the file path
+ *    with `fileURLToPath` and load it using `fs.promises.readFile`.
+ *    Otherwise, fetch the markdown text over HTTP.
+ * 4. Split the markdown using `chunkMarkdown` and determine the slice of
+ *    chunks around the requested index based on `radius`.
  * 5. Return the selected chunk texts.
  *
  * @param {string} id - Entry identifier like `foo.md-chunk-3`.
@@ -111,11 +114,19 @@ export async function fetchContextById(id, radius = 1) {
   const [, filename, num] = match;
   const index = Number(num) - 1;
   try {
-    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url)
-      .href;
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const text = await res.text();
+    const isNode = typeof process !== "undefined" && process?.versions?.node;
+    const url = new URL(`../../design/productRequirementsDocuments/${filename}`, import.meta.url);
+    let text;
+    if (isNode) {
+      const { fileURLToPath } = await import("node:url");
+      const fs = await import("node:fs/promises");
+      const filePath = fileURLToPath(url);
+      text = await fs.readFile(filePath, "utf8");
+    } else {
+      const res = await fetch(url.href);
+      if (!res.ok) return [];
+      text = await res.text();
+    }
     const chunks = chunkMarkdown(text);
     const start = Math.max(0, index - radius);
     const end = Math.min(chunks.length, index + radius + 1);

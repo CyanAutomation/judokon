@@ -6,18 +6,25 @@ const originalFetch = global.fetch;
 
 afterEach(() => {
   global.fetch = originalFetch;
+  vi.unstubAllGlobals();
+  vi.resetModules();
 });
 
 describe("vectorSearch context", () => {
-  it("fetches context around an id", async () => {
+  it("loads context around an id in Node without fetch", async () => {
     const sentence = "Lorem ipsum dolor sit amet. ";
     const md = Array(200).fill(sentence).join("");
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => md });
+    const readFile = vi.fn().mockResolvedValue(md);
+    const fileURLToPath = vi.fn(() => "/tmp/doc.md");
+    vi.doMock("node:fs/promises", () => ({ readFile }));
+    vi.doMock("node:url", () => ({ fileURLToPath }));
+    const fetchSpy = vi.spyOn(global, "fetch");
     const { fetchContextById, chunkMarkdown } = await import(
       "../../src/helpers/vectorSearch/context.js"
     );
     const result = await fetchContextById("doc.md-chunk-3", 1);
-    expect(global.fetch).toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(readFile).toHaveBeenCalled();
     const expected = chunkMarkdown(md).slice(1, 4);
     expect(result).toEqual(expected);
     for (const chunk of result) {
