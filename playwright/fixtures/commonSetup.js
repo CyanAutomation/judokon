@@ -54,6 +54,10 @@ export const test = base.extend({
 
     await page.addInitScript(() => {
       localStorage.clear();
+      // Reset snackbar override between tests so snackbar-based assertions remain deterministic
+      try {
+        delete window.__disableSnackbars;
+      } catch {}
       localStorage.setItem(
         "settings",
         JSON.stringify({ featureFlags: { enableTestMode: { enabled: true } } })
