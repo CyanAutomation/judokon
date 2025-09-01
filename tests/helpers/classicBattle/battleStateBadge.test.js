@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import "./commonMocks.js";
 import {
-  mockScheduler,
   mockFeatureFlags,
   mockDataUtils,
   mockStats,
@@ -16,7 +16,6 @@ import { CLASSIC_BATTLE_STATES } from "../../../src/helpers/classicBattle/stateT
 import { waitForState } from "../../waitForState.js";
 
 // Apply all the necessary mocks
-mockScheduler();
 mockFeatureFlags({ battleStateProgress: { enabled: true } });
 mockDataUtils();
 mockStats();
