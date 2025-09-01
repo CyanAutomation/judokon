@@ -48,4 +48,8 @@ Update: Ensure `#cli-shortcuts` has `.cli-block` class in markup
 
 - [x] Verified `#cli-shortcuts` element already includes `class="cli-block"` in the HTML; no markup change required.
 
+Update: Align shortcuts panel layout with settings panel
+
+- [x] Reworked `#cli-shortcuts` markup so it uses `class="cli-block cli-settings"` and a `cli-settings-header` + `#cli-shortcuts-body` structure matching `#cli-settings`.
+
 

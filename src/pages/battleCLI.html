@@ -433,17 +433,32 @@
         <section
           aria-label="Shortcuts"
           id="cli-shortcuts"
-          class="cli-block"
+          class="cli-block cli-settings"
           data-flag="cliShortcuts"
           hidden
         >
-          <button id="cli-shortcuts-close" aria-label="Close help">×</button>
-          <ul id="cli-help" style="clear: both">
-            <li>[1–5] Select Stat</li>
-            <li>[Enter]/[Space] Next</li>
-            <li>[Q] Quit</li>
-            <li>[H] Toggle Help</li>
-          </ul>
+          <div class="cli-settings-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-weight:600">Shortcuts</div>
+            <div>
+              <button
+                id="cli-shortcuts-close"
+                aria-label="Close help"
+                aria-controls="cli-shortcuts-body"
+                aria-expanded="false"
+                style="background:transparent;border:0;color:inherit;cursor:pointer;font-family:inherit"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+          <div id="cli-shortcuts-body">
+            <ul id="cli-help">
+              <li>[1–5] Select Stat</li>
+              <li>[Enter]/[Space] Next</li>
+              <li>[Q] Quit</li>
+              <li>[H] Toggle Help</li>
+            </ul>
+          </div>
         </section>
 
         <section
