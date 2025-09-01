@@ -59,7 +59,6 @@ export class ClassicBattleController extends EventTarget {
     // export is missing. Resolve to `undefined` in that case and treat as no-op.
     let startRoundRef;
     try {
-      // eslint-disable-next-line no-unused-expressions
       startRoundRef = startRound;
     } catch {
       startRoundRef = undefined;
