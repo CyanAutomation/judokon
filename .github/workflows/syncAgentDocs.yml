@@ -111,7 +111,8 @@ jobs:
           H2_SECTIONS=$(grep -E '^[[:space:]]*##[[:space:]]' "$FILE" | wc -l | tr -d ' ' || echo 0)
           CODEBLOCKS=$(grep -E '^[[:space:]]*```' "$FILE" | wc -l | tr -d ' ' || echo 0)
           LINKS=$(grep -oE '\[[^]]+\]\([^)]+\)' "$FILE" | wc -l | tr -d ' ' || echo 0)
-          TASKS=$(grep -oE '^\s*-\s\[[ xX]\]' "$FILE" | wc -l | tr -d ' ' || echo 0)
+          # Count GitHub task list checkboxes safely under pipefail
+          TASKS=$(awk '/^[[:space:]]*-[[:space:]]\[[ xX]\]/{c++} END{print c+0}' "$FILE")
           READ_MINS=$(( (WORDS + 199) / 200 ))
 
           echo "words=$WORDS" >> $GITHUB_OUTPUT
