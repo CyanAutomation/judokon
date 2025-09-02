@@ -630,7 +630,7 @@ async function loadModel() {
       );
       await stat(workerPath);
       const ortDir = path.dirname(workerPath);
-      env.backends.onnx.wasm.wasmPaths = path.join(ortDir, path.sep);
+      env.backends.onnx.wasm.wasmPaths = ortDir + path.sep;
       env.backends.onnx.wasm.worker = workerPath;
     } catch {
       // Worker script not found: ONNX backend will use its default worker and WASM paths.
