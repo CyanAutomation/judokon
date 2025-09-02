@@ -313,19 +313,11 @@ describe("initializeSettingsPage", () => {
       load: vi.fn().mockRejectedValue(new Error("cache error")),
       save: vi.fn()
     }));
-    vi.doMock("../../src/helpers/dataUtils.js", () => ({
-      fetchJson: vi.fn().mockResolvedValue(modes),
-      validateWithSchema: vi.fn(),
-      importJsonModule: vi.fn(async (path) => {
-        if (path.includes("navigationItems.json")) return navItems;
-        if (path.includes("gameModes.json")) return modes;
-        return defaultSettings;
-      })
-    }));
-    vi.doMock("../../src/helpers/storage.js", () => ({
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn()
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadNavigationItems: vi
+        .fn()
+        .mockResolvedValue(navItems.map((item) => ({ ...item, ...modes[0] }))),
+      updateNavigationItemHidden: vi.fn()
     }));
     vi.doMock("../../src/helpers/featureFlags.js", () => ({
       initFeatureFlags: vi.fn().mockResolvedValue(baseSettings),
@@ -350,10 +342,6 @@ describe("initializeSettingsPage", () => {
     vi.doMock("../../src/helpers/layoutDebugPanel.js", () => ({
       toggleLayoutDebugPanel: vi.fn()
     }));
-    vi.doMock(
-      "../../src/helpers/gameModeUtils.js",
-      async () => await vi.importActual("../../src/helpers/gameModeUtils.js")
-    );
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
     const onDomReady = vi.fn();
     vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady }));

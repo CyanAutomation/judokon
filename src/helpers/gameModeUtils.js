@@ -2,7 +2,7 @@ import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js"
 import { DATA_DIR } from "./constants.js";
 import { load as loadNavCache, save as saveNavCache } from "./navigationCache.js";
 import { getItem, setItem, removeItem } from "./storage.js";
-import navFallback from "../data/navigationItems.json" with { type: "json" };
+import navigationItems from "../data/navigationItems.js";
 
 /**
  * The game modes JSON schema is loaded on demand. This avoids fetching the
@@ -69,37 +69,21 @@ export async function loadGameModes() {
  *
  * @pseudocode
  * 1. Attempt to load navigation items from cache via `loadNavCache()`.
- * 2. On failure, dynamically import `navigationItems.json`; if that also fails, use statically imported `navFallback`.
- * 3. Load game modes with `loadGameModes()` and fall back to a dynamic import of `gameModes.json` on failure.
- * 4. If either data set cannot be recovered, throw an error so callers can surface a global failure.
- * 5. Merge navigation items with corresponding game mode data and return the result.
+ * 2. On failure, fall back to the bundled `navigationItems` module.
+ * 3. Load game modes with `loadGameModes()` and propagate any failure.
+ * 4. Merge navigation items with corresponding game mode data and return the result.
  *
  * @returns {Promise<Array>} Array of merged navigation and game mode objects.
  */
 export async function loadNavigationItems() {
-  let navItems, modes;
+  let navItems;
   try {
     navItems = await loadNavCache();
   } catch (err) {
-    console.error("Failed to load navigationItems from cache or JSON:", err);
-    try {
-      navItems = await importJsonModule("../data/navigationItems.json");
-    } catch (fallbackErr) {
-      console.error("Fallback navigationItems import failed:", fallbackErr);
-      navItems = navFallback;
-    }
+    console.error("Failed to load navigationItems from cache:", err);
+    navItems = navigationItems;
   }
-  try {
-    modes = await loadGameModes();
-  } catch (err) {
-    console.error("Failed to load gameModes from cache or JSON:", err);
-    try {
-      modes = await importJsonModule("../data/gameModes.json");
-    } catch (fallbackErr) {
-      console.error("Fallback gameModes import failed:", fallbackErr);
-      modes = null;
-    }
-  }
+  const modes = await loadGameModes();
   if (!Array.isArray(navItems) || !Array.isArray(modes)) {
     throw new Error("Navigation or game mode data is unavailable");
   }

@@ -96,6 +96,16 @@
  */
 
 /**
+ * @typedef {Object} NavigationItem
+ * @property {number} id - Unique identifier for the navigation entry
+ * @property {string} url - Destination URL for the navigation entry
+ * @property {string} category - Navigation category (e.g., "mainMenu")
+ * @property {number} order - Display order used for sorting
+ * @property {boolean} isHidden - Whether the entry is hidden
+ * @property {number} gameModeId - Identifier linking to a game mode
+ */
+
+/**
  * @typedef {Object} CountryCodeEntry
  * @property {string} country - Full country name (e.g., "Japan")
  * @property {string} code - 2-letter country code (e.g., "JP")

@@ -9,7 +9,7 @@ Run `npm run validate:data` to check all schema and data pairs at once. The comm
 Run the command for every pair of schema and data file (e.g. `gameModes`,
 `weightCategories`). The CLI reports any mismatches so they can be fixed before
 runtime. A new schema, `navigationItems.schema.json`, validates the structure of
-`navigationItems.json` which drives navigation order and visibility and is cached via the `navigationCache` helper. Another
+`navigationItems.js` which drives navigation order and visibility and is cached via the `navigationCache` helper. Another
 schema, `aesopsMeta.schema.json`, describes the quote metadata file used on the
 meditation screen. Stat names are now provided by the `statNames.js` module which
 lists all available stats and serves as the canonical source for stat labels—
