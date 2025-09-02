@@ -42,6 +42,10 @@ Whether you're a developer, designer, tester, writer—or an AI agent—we welco
 
 For full contribution guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+### Terminal Safety
+
+When running terminal searches like `grep` or `find`, exclude `client_embeddings.json` and `offline_rag_metadata.json` to prevent output overflow. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
+
 ---
 
 ## 🤖 AI Agent Compatibility

@@ -123,7 +123,7 @@ Before submitting or completing a task, verify that your work:
 
 ## 🧯 Runtime Safeguards
 
-### 🚫 Avoid Output Errors in Terminal
+### Terminal Safety
 
 To prevent session crashes in the terminal:
 
@@ -133,13 +133,13 @@ To prevent session crashes in the terminal:
 #### ✅ Use safe search patterns:
 
 ```bash
-grep "kumi-kata" . --exclude=client_embeddings.json
+grep "kumi-kata" . --exclude=client_embeddings.json --exclude=offline_rag_metadata.json
 ```
 
 Or recursively:
 
 ```bash
-grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.json
+grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.json --exclude=offline_rag_metadata.json
 ```
 
 🔍 Why it matters
