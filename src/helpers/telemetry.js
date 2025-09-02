@@ -1,30 +1,19 @@
 /**
- * Lightweight telemetry/event logging helper.
- * Dispatches a window event and logs to console for quick observability.
- * In production, this can be wired to analytics.
+ * Log a lightweight telemetry event.
  *
- * @param {string} name
- * @param {Record<string, any>} [payload]
- */
-/**
- * @summary TODO: Add summary
+ * This helper dispatches a `telemetry` window event with a timestamp and
+ * writes a terse console.info line for local observability. It's safe to call
+ * in environments without `window` or `console`.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Attempt to dispatch a `telemetry` CustomEvent on `window` with
+ *    `{ name, payload, ts }` in `detail`.
+ * 2. Regardless of event dispatch success, call `console.info` with a short
+ *    message and the payload to aid debugging and test inspection.
+ *
+ * @param {string} name - Event name to log.
+ * @param {Record<string, any>} [payload={}] - Optional event payload.
+ * @returns {void}
  */
 export function logEvent(name, payload = {}) {
   try {

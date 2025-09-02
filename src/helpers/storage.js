@@ -62,11 +62,15 @@ export function setItem(key, value) {
   try {
     const str = JSON.stringify(value);
     if (typeof localStorage !== "undefined") {
+      // Prefer persistent localStorage when available.
       localStorage.setItem(key, str);
       return;
     }
+    // Fallback to in-memory map for environments without localStorage.
     memoryStore.set(key, value);
   } catch (err) {
+    // On any failure (circular refs, quota exceeded, or localStorage errors)
+    // log and store in the in-memory fallback to avoid data loss.
     debugLog("storage.setItem failed", err);
     memoryStore.set(key, value);
   }
@@ -107,8 +111,10 @@ export function removeItem(key) {
       localStorage.removeItem(key);
     }
   } catch (err) {
+    // Keep failures quiet but observable in debug logs.
     debugLog("storage.removeItem failed", err);
   } finally {
+    // Always remove from the in-memory store to keep state consistent.
     memoryStore.delete(key);
   }
 }

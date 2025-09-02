@@ -101,31 +101,13 @@ export function showSnackbar(message) {
  * Update the current snackbar's text and restart its timers.
  *
  * @pseudocode
- * 1. If no snackbar exists, call `showSnackbar(message)`.
- * 2. Otherwise, set the element's text to `message` and add the `show` class.
- * 3. Clear and restart fade and removal timers.
+ * 1. If the global flag `window.__disableSnackbars` is set, do nothing.
+ * 2. Ensure a `#snackbar-container` element exists (create a no-op container in tests).
+ * 3. If no active snackbar element exists, call `showSnackbar(message)` to create one.
+ * 4. Otherwise update the existing snackbar's text, add the `show` class, and
+ *    restart the fade and removal timers by calling `resetTimers()`.
  *
  * @param {string} message - New text for the snackbar.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function updateSnackbar(message) {
   try {

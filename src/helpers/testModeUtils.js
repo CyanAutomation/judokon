@@ -24,6 +24,24 @@ let seed = 1;
  *   active = Boolean(enable)
  *   seed = initialSeed or 1
  */
+/**
+ * Enable or disable deterministic Test Mode.
+ *
+ * When enabled, `seededRandom()` becomes deterministic using an internal
+ * numeric seed. Callers may pass either a boolean or an options object.
+ *
+ * @pseudocode
+ * if input is object:
+ *   active = Boolean(input.enabled)
+ *   seed = Number(input.seed) or 1
+ * else:
+ *   active = Boolean(enable)
+ *   seed = initialSeed or 1
+ *
+ * @param {boolean|{enabled?: boolean, seed?: number}} enableOrOptions - Flag or options object.
+ * @param {number} [initialSeed=1] - Seed to use when a boolean flag is passed.
+ * @returns {void}
+ */
 export function setTestMode(enableOrOptions, initialSeed = 1) {
   if (typeof enableOrOptions === "object") {
     active = Boolean(enableOrOptions.enabled);

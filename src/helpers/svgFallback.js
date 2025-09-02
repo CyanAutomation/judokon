@@ -42,6 +42,7 @@ export function applySvgFallback(fallbackSrc = DEFAULT_FALLBACK) {
     img.addEventListener(
       "error",
       () => {
+        // Replace the failed SVG with the provided fallback and mark it.
         img.src = fallbackSrc;
         img.classList.add("svg-fallback");
       },

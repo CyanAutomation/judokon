@@ -703,7 +703,17 @@ export function autostartBattle() {
 export async function renderStatList(judoka) {
   try {
     if (!cachedStatDefs) {
-      cachedStatDefs = statNamesData;
+      // Prefer dynamic fetch in tests or when available so mocks can supply
+      // custom stat sets (e.g., Speed/Strength). Fallback to bundled module.
+      try {
+        const { fetchJson } = await import("../helpers/dataUtils.js");
+        const { DATA_DIR } = await import("../helpers/constants.js");
+        const defs = await fetchJson(`${DATA_DIR}/statNames.json`);
+        if (Array.isArray(defs) && defs.length) {
+          cachedStatDefs = defs;
+        }
+      } catch {}
+      if (!cachedStatDefs) cachedStatDefs = statNamesData;
     }
     const list = byId("cli-stats");
     const stats = Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
