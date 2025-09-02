@@ -18,8 +18,7 @@ test.describe("Battle state progress", () => {
       };
       localStorage.setItem("settings", JSON.stringify(current));
     });
-    await page.goto("/src/pages/battleJudoka.html");
-    await page.locator("#round-select-1").click();
+    await page.goto("/src/pages/battleJudoka.html?autostart=1");
     await waitForBattleReady(page);
     const expectedIds = classicBattleStates
       .filter((s) => s.id < 90)

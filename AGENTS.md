@@ -247,3 +247,88 @@ To keep CI and local runs readable, **no test should emit unsilenced `console.wa
 - `CONTRIBUTING.md` – Commit etiquette and agent rules
 
 ---
+
+## Task Contract (required for each assignment)
+
+Before acting, every agent must include a short task contract (2–4 bullets) at the top of the reply or PR description.
+
+- Inputs: files, data, and commands the agent will read (e.g., `src/components/*`, `playwright/*.spec.js`).
+- Outputs: exact artifacts to produce (files changed, tests added, docs updated).
+- Success criteria: what counts as done (tests green, linter/jsdoc checks pass, no unsuppressed console.warn/error in tests).
+- Error/stop mode: when the agent will pause and ask instead of proceeding (missing files, public API changes, ambiguous requirements).
+
+Example:
+
+- Inputs: `src/classicBattle.js`, `playwright/classicBattle.spec.js`.
+- Outputs: updated `classicBattle.js`, one unit test `tests/classicBattle.spec.js`, PR with test results.
+- Success: `npm run check:jsdoc` + `npx eslint .` + `npx vitest run` all pass; no new `console.error` in tests.
+- Error mode: stop and ask if changes would modify a public API surface.
+
+## Assumptions & Clarifying Questions
+
+When a task is ambiguous the agent must follow this pattern:
+
+- If the ambiguity blocks safe progress, ask up to 2 clarifying questions before making edits.
+- If the ambiguity is non-blocking, list up to 2 explicit assumptions at the top of the reply and proceed. Mark them clearly with `Assumption:` and continue.
+- Example assumption line: `Assumption: New feature is behind feature-flag 'foo' and does not require migration.`
+
+Agents must not silently make major design decisions such as changing public APIs, database schemas, or user-visible copy without explicit confirmation.
+
+## RAG provenance and citation (required when using `queryRag`)
+
+When using the RAG/vector DB (`queryRag`) to inform decisions or copy content, include a short provenance block for any external fact or quote used:
+
+- Source: `<doc-id or filename>` — Confidence: `high|medium|low` — Quote (if verbatim): "..."
+
+Example:
+
+- Source: `design/agentWorkflows/exampleVectorQueries.md` — Confidence: high — Quote: "Use `queryRag` for architectural questions."
+
+If a fact is uncertain or inferred from multiple sources, state that explicitly (e.g., `Derived from: fileA, fileB — confidence: medium`).
+
+## Verification / Green-before-done checklist
+
+For any code or behavior change, perform the following and include a short result summary in the PR body or reply:
+
+- Run targeted tests (prefer small, focused suites). Report `PASS` or `FAIL` and top-level failing tests.
+- Run linters and jsdoc checks: `npx eslint .`, `npm run check:jsdoc` (report PASS/FAIL).
+- Ensure no test emits unsuppressed `console.warn`/`console.error`. If logs are expected, mute or spy them locally in the test.
+- If you added or changed public behavior, include one minimal test (happy path + 1 edge case).
+
+Include the short test output lines for verification (for example: `vitest: 8 passed, 0 failed`).
+
+If any check fails, iterate until targeted checks pass or stop and document why further work is blocked.
+
+## Prompting templates (system / user / output)
+
+When assembling prompts or system messages for model-driven work, prefer a small, structured template to reduce ambiguity. Agents should follow this example where applicable:
+
+- System: You are a concise, safety-minded coding assistant. Prefer short, actionable replies and include a 2–4 bullet task contract at the top. Output files in a clear list and include test/lint results when present.
+- User: Implement X. Provide the inputs (files), desired outputs (files/tests), and any constraints (no public API changes, follow import policy).
+- Output (structured):
+  - filesChanged: ["path/to/file1", ...]
+  - testsAdded: ["path/to/test1", ...]
+  - verification: { lint: "PASS|FAIL", tests: "PASS|FAIL", notes: "short note" }
+
+Agents may adapt this to human-readable PR descriptions, but the information must be present.
+
+## Tool-batch preface example
+
+Before invoking tooling or making multiple tool calls (search, RAG, terminal commands), preface the batch with a single sentence in this style:
+
+"Why/what/outcome: calling `queryRag` to fetch design rationale for `classicBattle`; expected outcome: top-3 snippets and actionable guidance for changes."
+
+This makes tool usage auditable and easier to review.
+
+## PR guidance for agent-made changes
+
+When creating a branch/PR for code or doc changes, include a concise PR body that contains:
+
+- Task Contract (use the template above).
+- Files changed list and one-line purpose for each file.
+- Verification summary: lint/tests/jsdoc results (short lines, e.g., `eslint: PASS`, `vitest: 5 passed`).
+- Short note on risk and follow-ups (e.g., "No public API changes; follow-up: add integration tests").
+
+Small doc-only changes may be committed directly to the default branch if that matches repo policy, otherwise open a PR.
+
+---

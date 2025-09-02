@@ -46,6 +46,12 @@ export async function initRoundSelectModal(onStart) {
       if (params.get("autostart") === "1") {
         setPointsToWin(DEFAULT_POINTS_TO_WIN);
         if (typeof onStart === "function") await onStart();
+        try {
+          emitBattleEvent("startClicked");
+          await dispatchBattleEvent("startClicked");
+        } catch (err) {
+          console.error("Failed to start battle (autostart):", err);
+        }
         return;
       }
     }
@@ -54,6 +60,12 @@ export async function initRoundSelectModal(onStart) {
   if (isTestModeEnabled()) {
     setPointsToWin(DEFAULT_POINTS_TO_WIN);
     if (typeof onStart === "function") await onStart();
+    try {
+      emitBattleEvent("startClicked");
+      await dispatchBattleEvent("startClicked");
+    } catch (err) {
+      console.error("Failed to start battle (test mode):", err);
+    }
     return;
   }
 
@@ -67,6 +79,12 @@ export async function initRoundSelectModal(onStart) {
         logEvent("battle.start", { pointsToWin: Number(saved), source: "storage" });
       } catch {}
       if (typeof onStart === "function") await onStart();
+      try {
+        emitBattleEvent("startClicked");
+        await dispatchBattleEvent("startClicked");
+      } catch (err) {
+        console.error("Failed to start battle (persisted points):", err);
+      }
       return;
     }
   } catch {}

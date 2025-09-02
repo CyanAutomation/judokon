@@ -80,8 +80,7 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
   }
 
   test("@battleJudoka-narrow screenshot", async ({ page }) => {
-    await page.goto("/src/pages/battleJudoka.html");
-    await page.locator("#round-select-1").click();
+    await page.goto("/src/pages/battleJudoka.html?autostart=1");
     await waitForBattleReady(page);
     await page.setViewportSize({ width: 280, height: 800 });
     await expect(page).toHaveScreenshot("battleJudoka-narrow.png", {

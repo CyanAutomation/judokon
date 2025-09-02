@@ -64,9 +64,15 @@ export const test = base.extend({
       );
     });
     await page.addInitScript(() => {
+      // Remove only hidden/inactive modal backdrops once DOM is ready to
+      // prevent stray overlays from interfering, but keep active modals
+      // like the round-select dialog required by tests.
       document.addEventListener(
         "DOMContentLoaded",
-        () => document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove()),
+        () =>
+          document
+            .querySelectorAll('.modal-backdrop[hidden]')
+            .forEach((el) => el.remove()),
         { once: true }
       );
     });
