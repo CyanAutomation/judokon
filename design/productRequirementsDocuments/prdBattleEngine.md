@@ -140,6 +140,36 @@ When a player quits in the middle of a match, the engine follows a defined seque
 - `battleStateProgress.js` renders state progress bar and syncs active state; gated by the `battleStateProgress` feature flag.
 - Scoreboard UI and accessibility requirements as described in `prdBattleScoreboard.md`.
 
+## Implementation status (repository snapshot)
+
+The repository implements the Battle Engine, timers, orchestrator, and test hooks listed below. This section maps PRD requirements to the concrete files and notes small gaps between the PRD text and the current implementation.
+
+- State machine & orchestrator
+  - Implemented: `src/helpers/classicBattle/stateTable.js`, `src/helpers/classicBattle/stateManager.js`, `src/helpers/classicBattle/orchestrator.js`, `src/helpers/classicBattle/orchestratorHandlers.js`.
+  - Tests reference `CLASSIC_BATTLE_STATES` and use the orchestrator's test APIs.
+
+- Timer system
+  - Implemented: `src/helpers/classicBattle/timerService.js`, `src/helpers/TimerController.js`, `src/helpers/timers/createRoundTimer.js`.
+  - Drift handling present (drift threshold logic in `TimerController`). Auto-select path invoked on timeout when `autoSelect` is enabled.
+
+- Round logic & scoring
+  - Implemented: `src/helpers/BattleEngine.js`, `src/helpers/classicBattle/orchestratorHandlers.js`, `src/components/Scoreboard.js`, `src/helpers/setupScoreboard.js`.
+
+- Test & debug hooks
+  - Implemented: `src/helpers/classicBattle/promises.js` (self-resetting promises), `src/helpers/classicBattle/testHooks.js`, seeded PRNG usage in `src/helpers/classicBattle/autoSelectStat.js` and test seed support via config/storage keys.
+
+- Defaults/config
+  - Implemented: `src/config/battleDefaults.js` (points-to-win options, default points, feature flags) and wired into `src/helpers/classicBattle/roundSelectModal.js` and page bootstrap.
+
+Notable small mismatches / pending accessibility items (low-risk fixes):
+
+- Attribute naming: repository and tests use `data-stat` on stat buttons; the PRD occasionally references `data-stat-id`. Recommendation: update PRD to `data-stat` (matches code/tests) or change code/tests (higher risk).
+- Static markup accessibility: `src/pages/battleJudoka.html` does not include hidden stat description elements with `id`s referenced by `aria-describedby` on the stat buttons. Adding these or having the scoreboard/round UI set `aria-describedby` at runtime will close this gap.
+- `#next-round-timer` in the static markup lacks an explicit `aria-hidden="true"` default; scoreboard/timer code updates the element text but does not set an explicit initial `aria-hidden` attribute in markup. Toggle semantics should be implemented (JS or static) to align with PRD accessibility expectations.
+- `#score-display` uses inline spans but does not include per-span `aria-label` attributes; scoreboard updates rely on `aria-live` polite, but PRD recommends explicit per-score labeling for precise SR announcements.
+
+These mismatches are small, testable, and low-risk to fix; they do not affect core engine correctness.
+
 ---
 
 ## Match Flow
