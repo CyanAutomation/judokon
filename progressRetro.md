@@ -93,6 +93,7 @@
 - The project no longer uses “High Contrast” as a mode name in UI or code, except for transitional alias.
 - Retro visuals are consistent and accessible across pages, including CLI.
 - All checks pass: lint, format, unit, e2e, contrast.
+
 ---
 
 Milestone progress
@@ -105,7 +106,7 @@ Milestone progress
 
 - 2025-09-02 15:20 UTC — Completed: Normalized legacy persisted settings by mapping `displayMode: "high-contrast"` to `"retro"` in `loadSettings.js`. Linted updated files and re-ran targeted unit tests (displayMode + CLI retro): green.
 
-- 2025-09-02 15:28 UTC — Completed (Docs Sweep): Updated design docs to reflect Retro mode replacing High Contrast where it refers to the display mode option: 
+- 2025-09-02 15:28 UTC — Completed (Docs Sweep): Updated design docs to reflect Retro mode replacing High Contrast where it refers to the display mode option:
   - `design/codeStandards/settingsPageDesignGuidelines.md` (theme list)
   - `design/productRequirementsDocuments/prdSettingsMenu.md` (feature table, descriptions, wireframe)
   - `design/productRequirementsDocuments/prdBattleCLI.md` (note on Retro toggle removal/sitewide mode)
