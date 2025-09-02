@@ -1,12 +1,27 @@
 name: Check JSDoc & Pseudocode
 
 on:
-  # Allows manual triggering
+  pull_request:
+    paths:
+      - "**/*.js"
+      - "**/*.mjs"
+      - "scripts/**"
+      - "AGENTS.md"
   workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jsdoc-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check-jsdoc:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_VERSION: 22
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -14,10 +29,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run JSDoc/pseudocode checker
         run: npm run check:jsdoc
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### JSDoc Check" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Node: ${{ env.NODE_VERSION }}" >> "$GITHUB_STEP_SUMMARY"

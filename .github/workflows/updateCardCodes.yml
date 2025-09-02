@@ -8,9 +8,16 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: update-card-codes-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update_card_codes:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_VERSION: 22
 
     steps:
       - name: Checkout repository
@@ -19,7 +26,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -27,29 +35,43 @@ jobs:
       - name: Generate card codes
         run: node updateCodes.mjs
 
-      - name: Check for changes
+      - name: Stage changes
         id: changes
         run: |
-          git diff --quiet || echo "changed=true" >> $GITHUB_OUTPUT
-
-      - name: Commit updated card codes
-        if: steps.changes.outputs.changed == 'true'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add src/data/judoka.json
-          git commit -m "Update card codes for judoka"
+          set -euo pipefail
+          git add src/data/judoka.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "files_changed=$(git diff --cached --name-only | wc -l | tr -d ' ')" >> $GITHUB_OUTPUT
+            echo "changed_files<<'EOF'" >> $GITHUB_OUTPUT
+            git diff --cached --name-only >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create Pull Request
         if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Update card codes for judoka
-          title: "PR: Update Judoka Card Codes"
-          body: This PR updates the card codes for all judoka based on the latest data.
+          commit-message: "chore: update card codes for judoka"
+          title: "PR: Update Judoka Card Codes - ${{ github.run_id }}"
+          body: |
+            This PR updates the card codes for all judoka based on the latest data.
+
+            Files changed:
+            ${{ steps.changes.outputs.changed_files }}
           branch: auto/update-card-codes
+          branch-suffix: timestamp
           labels: |
             automated
             backend
           assignees: ${{ github.actor }}
+          delete-branch: true
+
+      - name: Summary
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          echo "### Card Code Update" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Files changed: ${{ steps.changes.outputs.files_changed }}" >> "$GITHUB_STEP_SUMMARY"

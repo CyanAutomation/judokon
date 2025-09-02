@@ -1,33 +1,44 @@
 name: Run ESLint
 
 on:
+  pull_request: {}
   push:
-    branches:
-      - main # Run on pushes to the main branch
+    branches: [ main ]
 
 permissions:
   contents: read
+
+concurrency:
+  group: eslint-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
     name: Lint Code with ESLint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_VERSION: 22
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18 # Use Node.js version 18
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      # Step 3: Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # Step 4: Run ESLint without auto-fixing
       - name: Run ESLint
-        run: npx eslint . # Lint all files without applying fixes
+        run: npx eslint . --format stylish
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### ESLint" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Node: ${{ env.NODE_VERSION }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Ref: $GITHUB_REF" >> "$GITHUB_STEP_SUMMARY"

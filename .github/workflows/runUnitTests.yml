@@ -33,15 +33,28 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_VERSION: 22
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Cache Vitest cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vitest
+          key: ${{ runner.os }}-vitest-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-vitest-
+
       - name: Run Vitest
         run: npm run test
       - name: Run contrast audit

@@ -345,6 +345,13 @@ function showBottomLine(text) {
     }
     bar.setAttribute("tabindex", "0");
     bar.textContent = text || "";
+    // Move focus to the prompt when showing actionable guidance so
+    // screen-reader and keyboard users are directed appropriately.
+    if (text) {
+      try {
+        bar.focus();
+      } catch {}
+    }
   } catch {}
 }
 

@@ -16,7 +16,12 @@ const NAV_ITEMS_KEY = "navigationItems";
 export async function load() {
   const cached = getItem(NAV_ITEMS_KEY);
   if (Array.isArray(cached)) {
-    return cached;
+    if (isValidNavigationList(cached)) return cached;
+    try {
+      console.warn("navigationCache: invalid cached data; clearing");
+    } catch {}
+    // Remove corrupt value and restore defaults
+    removeItem(NAV_ITEMS_KEY);
   }
   setItem(NAV_ITEMS_KEY, navigationItems);
   return navigationItems;
@@ -32,6 +37,9 @@ export async function load() {
  * @returns {Promise<void>} Promise that resolves when saving completes.
  */
 export async function save(items) {
+  if (!isValidNavigationList(items)) {
+    throw new Error("Invalid navigation items");
+  }
   setItem(NAV_ITEMS_KEY, items);
 }
 
@@ -43,4 +51,41 @@ export async function save(items) {
  */
 export function reset() {
   removeItem(NAV_ITEMS_KEY);
+}
+
+// --- Validation helpers ---
+
+/**
+ * Validate a single navigation item.
+ *
+ * @pseudocode
+ * 1. Ensure required keys exist with correct types: id, gameModeId, url, category, order, isHidden.
+ * 2. Return true when valid, false otherwise.
+ *
+ * @param {any} it
+ * @returns {it is import("./types.js").NavigationItem}
+ */
+function isValidNavigationItem(it) {
+  return !!(
+    it &&
+    typeof it.id === "number" &&
+    typeof it.gameModeId === "number" &&
+    typeof it.url === "string" && it.url.length > 0 &&
+    typeof it.category === "string" && it.category.length > 0 &&
+    typeof it.order === "number" &&
+    typeof it.isHidden === "boolean"
+  );
+}
+
+/**
+ * Validate a list of navigation items.
+ *
+ * @pseudocode
+ * 1. Return false unless `items` is an array and every entry passes `isValidNavigationItem`.
+ *
+ * @param {any} items
+ * @returns {items is import("./types.js").NavigationItem[]}
+ */
+function isValidNavigationList(items) {
+  return Array.isArray(items) && items.every(isValidNavigationItem);
 }
