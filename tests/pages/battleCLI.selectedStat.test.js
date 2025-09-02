@@ -45,6 +45,7 @@ describe("battleCLI stat interactions", () => {
       <div id="cli-stats"></div>
       <ul id="cli-help"></ul>
       <div id="snackbar-container"></div>
+      <div id="player-card"></div>
     `;
   });
 
@@ -83,6 +84,8 @@ describe("battleCLI stat interactions", () => {
     document.body.dataset.battleState = "waitingForPlayerAction";
     const statEl = document.querySelector('[data-stat-index="1"]');
     expect(statEl.textContent).toBe("[1] Speed: 5");
+    const hiddenVal = document.querySelector("#player-card li.stat span")?.textContent;
+    expect(hiddenVal).toBe("5");
     statEl.click();
     expect(statEl.classList.contains("selected")).toBe(true);
   });
