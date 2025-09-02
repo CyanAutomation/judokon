@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { readFile } from "fs/promises";
 import { getAjv } from "../../src/helpers/dataUtils.js";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import path from "path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -17,7 +17,7 @@ const pairs = [
   ["weightCategories.json", "weightCategories.schema.json"],
   ["aesopsFables.json", "aesopsFables.schema.json"],
   ["aesopsMeta.json", "aesopsMeta.schema.json"],
-  ["japaneseConverter.json", "japaneseConverter.schema.json"],
+  ["japaneseConverter.js", "japaneseConverter.schema.json"],
   ["locations.json", "locations.schema.json"],
   ["settings.json", "settings.schema.json"]
 ];
@@ -31,10 +31,12 @@ ajv.addSchema(commonDefs);
 
 const datasets = await Promise.all(
   pairs.map(async ([dataFile, schemaFile]) => {
-    const [data, schema] = await Promise.all([
-      readFile(path.join(dataDir, dataFile), "utf8").then(JSON.parse),
-      readFile(path.join(schemaDir, schemaFile), "utf8").then(JSON.parse)
-    ]);
+    const dataPath = path.join(dataDir, dataFile);
+    const dataPromise = dataFile.endsWith(".js")
+      ? import(pathToFileURL(dataPath)).then((m) => m.default)
+      : readFile(dataPath, "utf8").then(JSON.parse);
+    const schemaPromise = readFile(path.join(schemaDir, schemaFile), "utf8").then(JSON.parse);
+    const [data, schema] = await Promise.all([dataPromise, schemaPromise]);
     const validate = ajv.getSchema(schema.$id) || ajv.compile(schema);
     return { dataFile, schemaFile, data, schema, validate };
   })
