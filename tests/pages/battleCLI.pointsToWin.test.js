@@ -113,34 +113,27 @@ describe("battleCLI points select", () => {
     expect(select.value).toBe("15");
   });
 
-  it.each([5, 15])(
-    "selecting %i updates engine state and header",
-    async (target) => {
-      localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
-      const mod = await loadBattleCLI();
-      await mod.__test.init();
-      const { setPointsToWin, getPointsToWin } = await import(
-        "../../src/helpers/battleEngineFacade.js"
-      );
-      setPointsToWin.mockClear();
-      vi.spyOn(window, "confirm").mockReturnValue(true);
+  it.each([5, 15])("selecting %i updates engine state and header", async (target) => {
+    localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
+    const mod = await loadBattleCLI();
+    await mod.__test.init();
+    const { setPointsToWin, getPointsToWin } = await import(
+      "../../src/helpers/battleEngineFacade.js"
+    );
+    setPointsToWin.mockClear();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
 
-      const select = document.getElementById("points-select");
-      select.value = String(target);
-      select.dispatchEvent(new Event("change"));
+    const select = document.getElementById("points-select");
+    select.value = String(target);
+    select.dispatchEvent(new Event("change"));
 
-      await waitFor(() => getPointsToWin() === target);
-      await waitFor(
-        () =>
-          document.getElementById("cli-round").textContent ===
-          `Round 0 of ${target}`
-      );
+    await waitFor(() => getPointsToWin() === target);
+    await waitFor(
+      () => document.getElementById("cli-round").textContent === `Round 0 of ${target}`
+    );
 
-      expect(getPointsToWin()).toBe(target);
-      expect(setPointsToWin).toHaveBeenCalledWith(target);
-      expect(document.getElementById("cli-round").textContent).toBe(
-        `Round 0 of ${target}`
-      );
-    }
-  );
+    expect(getPointsToWin()).toBe(target);
+    expect(setPointsToWin).toHaveBeenCalledWith(target);
+    expect(document.getElementById("cli-round").textContent).toBe(`Round 0 of ${target}`);
+  });
 });

@@ -51,8 +51,8 @@ function focusNextHint() {
 }
 
 function applyRetroTheme(enabled) {
-  const body = document.body;
-  if (body) body.classList.toggle("cli-retro", Boolean(enabled));
+  // document.body is guaranteed to exist in browser environments with a loaded DOM
+  document.body.classList.toggle("cli-retro", Boolean(enabled));
   try {
     localStorage.setItem("battleCLI.retro", enabled ? "1" : "0");
   } catch {}
