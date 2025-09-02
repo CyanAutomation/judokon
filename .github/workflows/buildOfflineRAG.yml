@@ -187,4 +187,3 @@ jobs:
       - name: No changes
         if: steps.stage.outputs.changed != 'true'
         run: echo "No offline RAG changes detected."
-

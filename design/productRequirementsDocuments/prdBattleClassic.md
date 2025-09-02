@@ -86,8 +86,8 @@ This feedback highlights why Classic Battle is needed now: new players currently
 
 ### Round Data Fallback
 
-- If `battleRounds.json` fails to load, the game falls back to default round settings and surfaces an error message in `#round-message`.
-- **QA:** Temporarily block `battleRounds.json` to confirm default rounds appear and the error message is displayed.
+- Round options are sourced from `battleRounds.js` and bundled with the app.
+- **QA:** Validate that options from `battleRounds.js` render correctly.
 
 ---
 

@@ -206,7 +206,7 @@ let codeGraphs = { modules: {} };
 const MAX_OUTPUT_SIZE = 9.8 * 1024 * 1024;
 
 const JSON_FIELD_ALLOWLIST = {
-  "battleRounds.json": ["label", "description", "category"],
+  "battleRounds.js": ["label", "description", "category"],
   "codeGraphs.json": false,
   "countryCodeMapping.json": false,
   "offline_rag_metadata.json": false,

@@ -28,7 +28,7 @@ export function mockFeatureFlags(initialFlags = {}) {
 
 export function mockDataUtils(fetchImplementation) {
   const defaultFetch = async (path) => {
-    if (path.includes("battleRounds.json")) return [];
+    if (path.includes("battleRounds.js")) return [];
     return {};
   };
 
