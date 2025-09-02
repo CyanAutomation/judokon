@@ -5,7 +5,7 @@ let modalOpenMock;
 let modalElement;
 
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
-  battleEngine: { interruptMatch: vi.fn() }
+  interruptMatch: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
   dispatchBattleEvent: vi.fn()
@@ -76,7 +76,7 @@ describe("initInterruptHandlers", () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"
     );
-    const { battleEngine } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
@@ -96,7 +96,7 @@ describe("initInterruptHandlers", () => {
     expect(resetSkipState).toHaveBeenCalled();
     expect(clearTimer).toHaveBeenCalled();
     expect(stopScheduler).toHaveBeenCalled();
-    expect(battleEngine.interruptMatch).toHaveBeenCalledWith("navigation");
+    expect(interruptMatch).toHaveBeenCalledWith("navigation");
     expect(showMessage).toHaveBeenCalledWith("Match interrupted: navigation");
     expect(dispatchBattleEvent).toHaveBeenCalledWith("interrupt", {
       reason: "navigation"
@@ -108,7 +108,7 @@ describe("initInterruptHandlers", () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"
     );
-    const { battleEngine } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
@@ -119,7 +119,7 @@ describe("initInterruptHandlers", () => {
 
     window.dispatchEvent(new Event("beforeunload"));
 
-    expect(battleEngine.interruptMatch).toHaveBeenCalledWith("navigation");
+    expect(interruptMatch).toHaveBeenCalledWith("navigation");
     expect(showMessage).toHaveBeenCalledWith("Match interrupted: navigation");
     expect(dispatchBattleEvent).toHaveBeenCalledWith("interrupt", {
       reason: "navigation"
@@ -131,7 +131,7 @@ describe("initInterruptHandlers", () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"
     );
-    const { battleEngine } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
@@ -143,7 +143,7 @@ describe("initInterruptHandlers", () => {
     const errEv = new ErrorEvent("error", { message: "boom" });
     window.dispatchEvent(errEv);
 
-    expect(battleEngine.interruptMatch).toHaveBeenCalledWith("error");
+    expect(interruptMatch).toHaveBeenCalledWith("error");
     expect(showMessage).toHaveBeenCalledWith("Match interrupted: boom");
     expect(dispatchBattleEvent).toHaveBeenCalledWith("interrupt", {
       reason: "boom"
@@ -157,7 +157,7 @@ describe("initInterruptHandlers", () => {
     const { initInterruptHandlers } = await import(
       "../../../src/helpers/classicBattle/interruptHandlers.js"
     );
-    const { battleEngine } = await import("../../../src/helpers/battleEngineFacade.js");
+    const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
@@ -170,7 +170,7 @@ describe("initInterruptHandlers", () => {
     rejEv.reason = new Error("nope");
     window.dispatchEvent(rejEv);
 
-    expect(battleEngine.interruptMatch).toHaveBeenCalledWith("error");
+    expect(interruptMatch).toHaveBeenCalledWith("error");
     expect(showMessage).toHaveBeenCalledWith("Match interrupted: nope");
     expect(dispatchBattleEvent).toHaveBeenCalledWith("interrupt", {
       reason: "nope"
