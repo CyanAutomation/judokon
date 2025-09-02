@@ -1,6 +1,7 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
+import { bridgeEngineEvents } from "./roundResolver.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
@@ -78,8 +79,9 @@ function getStartRound(store) {
  * the UI to reset, and delegate to `startRound()` (which may be overridden in
  * test debug APIs).
  *
+ * @summary Reset match state and UI, then begin a new round.
  * @pseudocode
- * 1. Create a fresh engine instance via `createBattleEngine()` to clear score and internal state.
+ * 1. Create a fresh engine instance via `createBattleEngine()` and rebind engine events with `bridgeEngineEvents()`.
  * 2. Emit a `game:reset-ui` CustomEvent so UI components can teardown.
  * 3. Resolve the appropriate `startRound` function (possibly overridden) and call it.
  *
@@ -88,6 +90,7 @@ function getStartRound(store) {
  */
 export async function handleReplay(store) {
   createBattleEngine();
+  bridgeEngineEvents();
   window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
   const startRoundFn = getStartRound(store);
   return startRoundFn();
@@ -382,8 +385,9 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
  * startRoundOverride and emits a `game:reset-ui` event to allow the UI to
  * teardown and reinitialize.
  *
+ * @summary Reset match subsystems and UI for tests.
  * @pseudocode
- * 1. Reset skip and selection subsystems, and recreate the engine via `createBattleEngine()`.
+ * 1. Reset skip and selection subsystems, recreate the engine via `createBattleEngine()`, and rebind engine events with `bridgeEngineEvents()`.
  * 2. Stop any schedulers and clear debug overrides on `window`.
  * 3. If a `store` is provided, clear its timeouts and selection state and
  *    dispatch `game:reset-ui` with the store detail. Otherwise dispatch a
@@ -396,6 +400,7 @@ export function _resetForTest(store) {
   resetSkipState();
   resetSelection();
   createBattleEngine();
+  bridgeEngineEvents();
   stopScheduler();
   if (typeof window !== "undefined") {
     const api = readDebugState("classicBattleDebugAPI");
