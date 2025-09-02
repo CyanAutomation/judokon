@@ -213,7 +213,7 @@ const JSON_FIELD_ALLOWLIST = {
   "gameModes.json": ["name", "japaneseName", "description", "rules"],
   "gameTimers.js": ["description", "category"],
   "gokyo.json": ["name", "japanese", "description", "style", "category", "subCategory"],
-  "japaneseConverter.json": false,
+  "japaneseConverter.js": false,
   "judoka.json": [
     "firstname",
     "surname",
@@ -584,16 +584,11 @@ async function getFiles() {
       // Exclude generated embedding outputs and shards from ingestion
       if (base.startsWith("client_embeddings.")) return false;
       // Exclude large or auxiliary datasets
-      return ![
-        "aesopsFables.json",
-        "aesopsMeta.json",
-        "countryCodeMapping.json",
-        "japaneseConverter.json"
-      ].includes(base);
+      return !["aesopsFables.json", "aesopsMeta.json", "countryCodeMapping.json"].includes(base);
     });
   const jsFiles = await glob(["src/**/*.{js,ts}", "tests/**/*.{js,ts}"], {
     cwd: rootDir,
-    ignore: ["**/node_modules/**"]
+    ignore: ["**/node_modules/**", "src/data/japaneseConverter.js"]
   });
   return Array.from(
     new Set([...designDocs, ...readmes, ...overviewDocs, ...jsonFiles, ...jsFiles])
