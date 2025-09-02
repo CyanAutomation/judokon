@@ -44,7 +44,9 @@ class SimpleEmitter {
     for (const h of handlers) {
       try {
         h(detail);
-      } catch {}
+      } catch (err) {
+        console.error("Error in event handler for type '" + type + "':", err);
+      }
     }
   }
 }

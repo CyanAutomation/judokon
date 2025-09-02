@@ -63,10 +63,10 @@ The engine emits updates through a small event emitter. Listeners may
 subscribe with `on(event, handler)`:
 
 | Event          | Payload                                                      |
-| -------------- | ------------------------------------------------------------ | ------------- |
+| -------------- | ------------------------------------------------------------ |
 | `roundStarted` | `{ round: number }`                                          |
 | `roundEnded`   | `{ delta, outcome, matchEnded, playerScore, opponentScore }` |
-| `timerTick`    | `{ remaining: number, phase: 'round'                         | 'cooldown' }` |
+| `timerTick`    | `{ remaining: number, phase: 'round' \| 'cooldown' }`        |
 | `matchEnded`   | Same payload as `roundEnded`                                 |
 | `error`        | `{ message: string }`                                        |
 

@@ -10,6 +10,7 @@ import createClassicBattleDebugAPI from "./setupTestHelpers.js";
 import { onDomReady } from "../domReady.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
+import { bridgeEngineEvents } from "./roundResolver.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
@@ -26,6 +27,7 @@ import { createBattleEngine } from "../battleEngineFacade.js";
  */
 export async function setupClassicBattlePage() {
   createBattleEngine();
+  bridgeEngineEvents();
   let debugApi;
   let resolveStart;
   let rejectStart;
