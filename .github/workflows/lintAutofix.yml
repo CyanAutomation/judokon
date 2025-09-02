@@ -126,7 +126,7 @@ jobs:
             # Provide counts and list for summary
             COUNT=$(git diff --cached --name-only | wc -l | tr -d ' ')
             echo "files_changed=$COUNT" >> $GITHUB_OUTPUT
-            echo "changed_files<<'EOF'" >> $GITHUB_OUTPUT
+            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
             git diff --cached --name-only >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
