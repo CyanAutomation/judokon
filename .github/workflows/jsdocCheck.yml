@@ -6,7 +6,7 @@ on:
       - "**/*.js"
       - "**/*.mjs"
       - "scripts/**"
-      - "AGENTS.md"
+      - AGENTS.md
   workflow_dispatch: {}
 
 permissions:

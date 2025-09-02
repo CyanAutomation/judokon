@@ -90,5 +90,12 @@ export function evaluateRound(playerVal, opponentVal) {
   const playerScore = outcome === "winPlayer" ? 1 : 0;
   const opponentScore = outcome === "winOpponent" ? 1 : 0;
   const matchEnded = false;
-  return { delta, outcome, matchEnded, playerScore, opponentScore, message: getOutcomeMessage(outcome) };
+  return {
+    delta,
+    outcome,
+    matchEnded,
+    playerScore,
+    opponentScore,
+    message: getOutcomeMessage(outcome)
+  };
 }
