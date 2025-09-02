@@ -105,9 +105,9 @@ export async function registerCommonRoutes(page) {
         route.fulfill({ path: "src/assets/fonts/OpenSansRegular.woff2" });
       }
     }),
-    // Ensure stat names are always served promptly to avoid flaky fetches
-    page.route("**/src/data/statNames.json", (route) =>
-      route.fulfill({ path: "src/data/statNames.json" })
+    // Ensure stat names module is always available
+    page.route("**/src/data/statNames.js", (route) =>
+      route.fulfill({ path: "src/data/statNames.js" })
     )
   ]);
 }

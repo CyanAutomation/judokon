@@ -27,15 +27,16 @@ describe("JSON_FIELD_ALLOWLIST", () => {
 describe("extractAllowedValues", () => {
   it("returns only allowlisted fields", () => {
     const item = {
-      name: "Power",
-      description: "Raw strength",
-      category: "Judo",
+      name: "Classic Battle",
+      japaneseName: "試合",
+      description: "A mode",
+      rules: { rounds: 25 },
       extra: "ignored"
     };
-    const text = extractAllowedValues("statNames.json", item);
-    expect(text).toContain("Power");
-    expect(text).toContain("Raw strength");
-    expect(text).toContain("Judo");
+    const text = extractAllowedValues("gameModes.json", item);
+    expect(text).toContain("Classic Battle");
+    expect(text).toContain("試合");
+    expect(text).toContain("A mode");
     expect(text).not.toContain("ignored");
   });
 

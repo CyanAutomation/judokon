@@ -10,8 +10,7 @@ import * as battleOrchestrator from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../helpers/BattleEngine.js";
 import { setPointsToWin, getPointsToWin, getScores } from "../helpers/battleEngineFacade.js";
-import { fetchJson } from "../helpers/dataUtils.js";
-import { DATA_DIR } from "../helpers/constants.js";
+import statNamesData from "../data/statNames.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
 import {
@@ -671,9 +670,9 @@ export function autostartBattle() {
 /**
  * Load stat names and render them into the CLI stat selection list.
  *
- * @summary Fetch `statNames.json`, build stat buttons, store display name map, and wire click handlers.
+ * @summary Load stat names, build stat buttons, store display name map, and wire click handlers.
  * @pseudocode
- * 1. Fetch and cache `statNames.json` if not already loaded.
+ * 1. Initialize cached stat definitions from the stat names module if not already loaded.
  * 2. Locate `#cli-stats`; clear existing entries and display name map.
  * 3. Render each stat as a clickable element showing `[idx] name: value` when `judoka` provided.
  * 4. Populate `#cli-help` once with index-name mapping and clear any skeleton placeholders.
@@ -684,7 +683,7 @@ export function autostartBattle() {
 export async function renderStatList(judoka) {
   try {
     if (!cachedStatDefs) {
-      cachedStatDefs = await fetchJson(`${DATA_DIR}statNames.json`);
+      cachedStatDefs = statNamesData;
     }
     const list = byId("cli-stats");
     const stats = Array.isArray(cachedStatDefs) ? cachedStatDefs : [];

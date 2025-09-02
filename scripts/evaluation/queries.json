@@ -49,7 +49,7 @@
   },
   {
     "query": "what does the power stat represent",
-    "expected_source": "src/data/statNames.json"
+    "expected_source": "src/data/statNames.js"
   },
   {
     "query": "steps to update a judoka profile",

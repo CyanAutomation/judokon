@@ -227,7 +227,6 @@ const JSON_FIELD_ALLOWLIST = {
   "locations.json": ["name", "japaneseName", "description"],
   "navigationItems.json": ["url", "category"],
   "settings.json": ["displayMode", "aiDifficulty"],
-  "statNames.json": ["name", "japanese", "description", "category"],
   "svgCodes.json": ["name", "category"],
   "synonyms.json": true,
   "tooltips.json": true, // Allow all fields

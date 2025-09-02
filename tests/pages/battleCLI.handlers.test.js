@@ -1,12 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const statNamesData = JSON.parse(
-  readFileSync(join(__dirname, "../../src/data/statNames.json"), "utf8")
-);
+import statNamesData from "../../src/data/statNames.js";
 
 async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   const emitter = new EventTarget();
@@ -42,12 +35,6 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
     getPointsToWin: vi.fn(),
     getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
-  vi.doMock("../../src/helpers/dataUtils.js", () => ({
-    fetchJson: vi.fn().mockImplementation(async (path) => {
-      return path.includes("statNames.json") ? statNamesData : [];
-    })
-  }));
-  vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
   vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
     autoSelectStat: vi.fn()
   }));

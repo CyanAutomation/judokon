@@ -20,8 +20,7 @@ const pairs = [
   ["aesopsMeta.json", "aesopsMeta.schema.json"],
   ["japaneseConverter.json", "japaneseConverter.schema.json"],
   ["locations.json", "locations.schema.json"],
-  ["settings.json", "settings.schema.json"],
-  ["statNames.json", "statNames.schema.json"]
+  ["settings.json", "settings.schema.json"]
 ];
 
 // Load Ajv and all data/schema files up front
@@ -67,11 +66,12 @@ describe("data files conform to schemas", () => {
   });
 });
 
-describe("statNames.json integrity", () => {
+import statNames from "../../src/data/statNames.js";
+
+describe("statNames.js integrity", () => {
   it("is sorted by statIndex with indexes 1-5", () => {
-    const { data } = datasets.find(({ dataFile }) => dataFile === "statNames.json");
-    expect(data.length).toBe(5);
-    const indexes = data.map((e) => e.statIndex);
+    expect(statNames.length).toBe(5);
+    const indexes = statNames.map((e) => e.statIndex);
     const sorted = [...indexes].sort((a, b) => a - b);
     expect(indexes).toEqual(sorted);
     expect(indexes).toEqual([1, 2, 3, 4, 5]);
