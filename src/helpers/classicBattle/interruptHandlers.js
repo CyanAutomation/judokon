@@ -1,4 +1,4 @@
-import { battleEngine } from "../battleEngineFacade.js";
+import { interruptMatch } from "../battleEngineFacade.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { showMessage, clearTimer } from "../setupScoreboard.js";
 import { stop as stopScheduler, cancel as cancelFrame } from "../../utils/scheduler.js";
@@ -75,7 +75,7 @@ export function initInterruptHandlers(store) {
   function handleNavigation() {
     cleanup();
     try {
-      battleEngine.interruptMatch("navigation");
+      interruptMatch("navigation");
     } catch {}
     try {
       showMessage("Match interrupted: navigation");
@@ -101,7 +101,7 @@ export function initInterruptHandlers(store) {
     const msg = e?.reason?.message || e?.reason || e?.message || "Unknown error";
     cleanup();
     try {
-      battleEngine.interruptMatch("error");
+      interruptMatch("error");
     } catch {}
     showErrorDialog(msg);
     try {
