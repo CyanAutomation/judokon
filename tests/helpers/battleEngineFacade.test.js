@@ -26,12 +26,15 @@ describe("battleEngineFacade timer interactions", () => {
     }));
 
     const {
+      createBattleEngine,
       startRound: start,
       startCoolDown: cool,
       pauseTimer,
       resumeTimer,
       getTimerState
     } = await import("../../src/helpers/battleEngineFacade.js");
+
+    createBattleEngine();
 
     await start(vi.fn(), vi.fn(), 10);
     expect(startRound).toHaveBeenCalledWith(

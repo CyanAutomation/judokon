@@ -40,7 +40,7 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 - Increase average session duration per player by **15%**.
 - Ensure **44px minimum** touch target size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Achieve **≥60fps** animation performance on standard mid-tier devices.
-- Guarantee fallback application time of **<2 seconds** if `navigationItems.json` fails.
+- Guarantee fallback application time of **<2 seconds** if `navigationItems.js` fails.
 - Meet a text contrast ratio of at least **4.5:1** against the navigation bar background.
 - Allow players to confidently navigate between modes without frustration.
 - Ensure a consistent, easy-to-use navigation experience across devices.
@@ -56,7 +56,7 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 
 ## How It Works
 
-The bottom navigation bar appears consistently across all game screens, populated with pre-seeded links whose visibility and order are driven by `navigationItems.json` via CSS. Each item references an entry in `gameModes.json` via its `id` so mode names and descriptions remain consistent.
+The bottom navigation bar appears consistently across all game screens, populated with pre-seeded links whose visibility and order are driven by `navigationItems.js` via CSS. Each item references an entry in `gameModes.json` via its `id` so mode names and descriptions remain consistent.
 
 ### Standard Mode (Default View)
 
@@ -76,11 +76,11 @@ The bottom navigation bar appears consistently across all game screens, populate
 - After any activity, the persistent nav bar is visible.
 - On small screens or portrait orientation, only the hamburger button shows; tapping it expands the text list.
 - Player selects a mode and is taken to that screen.
-- If `navigationItems.json` fails, revert to a default order and auto-reload.
+- If `navigationItems.js` fails, revert to a default order and auto-reload.
 
 ### Technical Considerations
 
-- Use `navigationItems.json` to drive CSS classes that control which pre-seeded links are visible and in what order; fallback to defaults on failure.
+- Use `navigationItems.js` to drive CSS classes that control which pre-seeded links are visible and in what order; fallback to defaults on failure.
 - Cache loaded mode list to avoid redundant fetches across sessions.
 - Use hardware-accelerated CSS transforms for nav animations (e.g., `translate3d`).
 - Optimize for devices as small as 320px width (typical of older low-end Android devices).
@@ -89,7 +89,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 ### Dependencies / Integrations
 
 - `gameModes.json` defines the available modes.
-- `navigationItems.json` references those modes by `id` and controls navigation order and visibility.
+- `navigationItems.js` references those modes by `id` and controls navigation order and visibility.
 - CSS variables `--color-secondary` and `--button-text-color` for styling.
 - Existing footer layout modules.
 
@@ -111,7 +111,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 |  **P2**  | Small Screens Support  | Row collapses to a hamburger menu and adjusts for screens as small as 320px — scale font and spacing.                            |
 |  **P2**  | Visual Feedback        | Positive click/tap feedback animation for all links and buttons.                                                                 |
 |  **P1**  | Hover & Active States  | Distinct hover feedback and a persistent active state indicate the current screen.                                               |
-|  **P1**  | Fallback Data Handling | Hardcoded default order and visibility if `navigationItems.json` fails to load.                                                  |
+|  **P1**  | Fallback Data Handling | Hardcoded default order and visibility if `navigationItems.js` fails to load.                                                    |
 
 ---
 
@@ -119,7 +119,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 
 - Touch targets maintain **≥44px** size across all device resolutions (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
 - Navigation is visible on **100%** of game screens.
-- Standard nav bar shows pre-seeded links whose visibility and order are driven by `navigationItems.json` via CSS.
+- Standard nav bar shows pre-seeded links whose visibility and order are driven by `navigationItems.js` via CSS.
 - Each link in the horizontal layout spans equal width to keep the bar balanced.
 - Each navigation button shows a distinct hover state on pointer devices.
 - The navigation button for the current screen remains visibly active.
@@ -127,7 +127,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 - The function of tapping the icon in the bottom left corner works in landscape or portrait mode.
 - Clicking a link navigates successfully to the intended screen.
 - Tapping the bottom-left button toggles expansion/collapse.
-- If `navigationItems.json` fails, apply a hardcoded default order within **<2 seconds**.
+- If `navigationItems.js` fails, apply a hardcoded default order within **<2 seconds**.
 - Show notification and auto-reload if mid-session loading fails.
 - Smooth re-layout during device rotation mid-animation, with transition completion time **<500ms**.
 - Text contrast meets WCAG **4.5:1**.

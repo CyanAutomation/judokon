@@ -1,6 +1,6 @@
 import { glob } from "glob";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import Ajv from "ajv";
@@ -12,9 +12,6 @@ const rootDir = path.resolve(__dirname, "..");
 const schemaFiles = await glob("src/schemas/*.schema.json", { cwd: rootDir });
 if (!schemaFiles.includes("src/schemas/tooltips.schema.json")) {
   schemaFiles.push("src/schemas/tooltips.schema.json");
-}
-if (!schemaFiles.includes("src/schemas/statNames.schema.json")) {
-  schemaFiles.push("src/schemas/statNames.schema.json");
 }
 
 let hasErrors = false;
@@ -37,17 +34,27 @@ try {
 
 for (const schemaPath of schemaFiles) {
   const baseName = path.basename(schemaPath, ".schema.json");
-  const dataPath = path.join("src", "data", `${baseName}.json`);
+  const jsonDataPath = path.join("src", "data", `${baseName}.json`);
+  const jsDataPath = path.join("src", "data", `${baseName}.js`);
   const absSchemaPath = path.join(rootDir, schemaPath);
-  const absDataPath = path.join(rootDir, dataPath);
+  const absJsonPath = path.join(rootDir, jsonDataPath);
+  const absJsPath = path.join(rootDir, jsDataPath);
 
-  if (!existsSync(absDataPath)) {
+  let data;
+  let dataPath;
+  if (existsSync(absJsonPath)) {
+    dataPath = jsonDataPath;
+    data = JSON.parse(await readFile(absJsonPath, "utf8"));
+  } else if (existsSync(absJsPath)) {
+    dataPath = jsDataPath;
+    const mod = await import(pathToFileURL(absJsPath));
+    data = mod.default;
+  } else {
     continue;
   }
 
   try {
     const schema = JSON.parse(await readFile(absSchemaPath, "utf8"));
-    const data = JSON.parse(await readFile(absDataPath, "utf8"));
 
     // Ensure schemas with $id can be referenced consistently
     if (schema && schema.$id) {

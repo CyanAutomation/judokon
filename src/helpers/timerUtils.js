@@ -1,70 +1,35 @@
-import { fetchJson, importJsonModule } from "./dataUtils.js";
-import { DATA_DIR } from "./constants.js";
+import gameTimers from "../data/gameTimers.js";
 import {
   onSecondTick as scheduleSecond,
   cancel as cancelSchedule,
   stop as stopScheduler
 } from "../utils/scheduler.js";
 
-let timersPromise;
-let cachedTimers;
-
-async function loadTimers() {
-  if (cachedTimers) return cachedTimers;
-  if (!timersPromise) {
-    timersPromise = fetchJson(`${DATA_DIR}gameTimers.json`).catch(async (err) => {
-      console.warn("Failed to fetch gameTimers.json", err);
-      return importJsonModule("../data/gameTimers.json");
-    });
-  }
-  cachedTimers = await timersPromise;
-  return cachedTimers;
-}
-
 /**
  * Retrieve the default timer value for a category.
  *
- * @param {string} category - Timer category to search.
- * @returns {Promise<number|undefined>} Resolved default timer value.
- */
-/**
- * @summary TODO: Add summary
+ * @param {string} category Timer category to search.
+ * @returns {number|undefined} Resolved default timer value.
+ *
+ * @summary Find the default timer for a given category.
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Locate the timer entry whose category matches and is marked as default.
+ * 2. Return its value or `undefined` if none found.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export async function getDefaultTimer(category) {
-  const timers = await loadTimers();
-  const entry = timers.find((t) => t.category === category && t.default);
+export function getDefaultTimer(category) {
+  const entry = gameTimers.find((t) => t.category === category && t.default);
   return entry ? entry.value : undefined;
 }
 
 /**
- * Reset internal timer caches and stop the shared scheduler used by tests.
+ * Reset timer state and stop the shared scheduler used by tests.
  *
  * @pseudocode
- * 1. Clear `timersPromise` and `cachedTimers` so subsequent calls reload data.
- * 2. Stop the shared scheduler to avoid leaking background ticks in tests.
+ * 1. Stop the shared scheduler to avoid leaking background ticks in tests.
  *
  * @returns {void}
  */
 export function _resetForTest() {
-  timersPromise = undefined;
-  cachedTimers = undefined;
   stopScheduler();
 }
 

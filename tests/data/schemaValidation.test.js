@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { readFile } from "fs/promises";
 import { getAjv } from "../../src/helpers/dataUtils.js";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import path from "path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -12,16 +12,16 @@ const schemaDir = path.resolve(__dirname, "../../src/schemas");
 const pairs = [
   ["countryCodeMapping.json", "countryCodeMapping.schema.json"],
   ["gameModes.json", "gameModes.schema.json"],
-  ["navigationItems.json", "navigationItems.schema.json"],
   ["gokyo.json", "gokyo.schema.json"],
   ["judoka.json", "judoka.schema.json"],
   ["weightCategories.json", "weightCategories.schema.json"],
   ["aesopsFables.json", "aesopsFables.schema.json"],
   ["aesopsMeta.json", "aesopsMeta.schema.json"],
-  ["japaneseConverter.json", "japaneseConverter.schema.json"],
+  ["gameTimers.js", "gameTimers.schema.json"],
+  ["navigationItems.js", "navigationItems.schema.json"],
+  ["japaneseConverter.js", "japaneseConverter.schema.json"],
   ["locations.json", "locations.schema.json"],
-  ["settings.json", "settings.schema.json"],
-  ["statNames.json", "statNames.schema.json"]
+  ["settings.json", "settings.schema.json"]
 ];
 
 // Load Ajv and all data/schema files up front
@@ -33,10 +33,12 @@ ajv.addSchema(commonDefs);
 
 const datasets = await Promise.all(
   pairs.map(async ([dataFile, schemaFile]) => {
-    const [data, schema] = await Promise.all([
-      readFile(path.join(dataDir, dataFile), "utf8").then(JSON.parse),
-      readFile(path.join(schemaDir, schemaFile), "utf8").then(JSON.parse)
-    ]);
+    const dataPath = path.join(dataDir, dataFile);
+    const dataPromise = dataFile.endsWith(".js")
+      ? import(pathToFileURL(dataPath)).then((m) => m.default)
+      : readFile(dataPath, "utf8").then(JSON.parse);
+    const schemaPromise = readFile(path.join(schemaDir, schemaFile), "utf8").then(JSON.parse);
+    const [data, schema] = await Promise.all([dataPromise, schemaPromise]);
     const validate = ajv.getSchema(schema.$id) || ajv.compile(schema);
     return { dataFile, schemaFile, data, schema, validate };
   })
@@ -67,11 +69,12 @@ describe("data files conform to schemas", () => {
   });
 });
 
-describe("statNames.json integrity", () => {
+import statNames from "../../src/data/statNames.js";
+
+describe("statNames.js integrity", () => {
   it("is sorted by statIndex with indexes 1-5", () => {
-    const { data } = datasets.find(({ dataFile }) => dataFile === "statNames.json");
-    expect(data.length).toBe(5);
-    const indexes = data.map((e) => e.statIndex);
+    expect(statNames.length).toBe(5);
+    const indexes = statNames.map((e) => e.statIndex);
     const sorted = [...indexes].sort((a, b) => a - b);
     expect(indexes).toEqual(sorted);
     expect(indexes).toEqual([1, 2, 3, 4, 5]);

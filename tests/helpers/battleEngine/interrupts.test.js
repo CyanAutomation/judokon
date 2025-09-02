@@ -30,9 +30,8 @@ beforeEach(() => {
 
 describe("BattleEngine interrupts", () => {
   it("interruptRound stops timer and records reason", async () => {
-    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
-    engine._resetForTest();
     await engine.startRound(
       () => {},
       () => {},
@@ -48,16 +47,16 @@ describe("BattleEngine interrupts", () => {
     expect(engine.lastInterruptReason).toBe("referee");
     expect(engine.timer.hasActiveTimer()).toBe(false);
     expect(result).toEqual({
-      message: "Round interrupted: referee",
+      outcome: OUTCOME.INTERRUPT_ROUND,
+      matchEnded: false,
       playerScore: 1,
       opponentScore: 2
     });
   });
 
   it("interruptMatch stops timer and ends match", async () => {
-    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
-    engine._resetForTest();
     await engine.startRound(
       () => {},
       () => {},
@@ -73,16 +72,16 @@ describe("BattleEngine interrupts", () => {
     expect(engine.lastInterruptReason).toBe("injury");
     expect(engine.timer.hasActiveTimer()).toBe(false);
     expect(result).toEqual({
-      message: "Match interrupted: injury",
+      outcome: OUTCOME.INTERRUPT_MATCH,
+      matchEnded: true,
       playerScore: 3,
       opponentScore: 4
     });
   });
 
   it("roundModification applies overrides and resetRound", async () => {
-    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
-    engine._resetForTest();
     await engine.startRound(
       () => {},
       () => {},
@@ -105,7 +104,8 @@ describe("BattleEngine interrupts", () => {
     expect(engine.roundsPlayed).toBe(2);
     expect(engine.roundInterrupted).toBe(false);
     expect(result).toEqual({
-      message: `Round modified: ${JSON.stringify(modification)}`,
+      outcome: OUTCOME.ROUND_MODIFIED,
+      matchEnded: false,
       playerScore: 5,
       opponentScore: 1
     });
@@ -123,5 +123,33 @@ describe("BattleEngine interrupts", () => {
     expect(engine.roundInterrupted).toBe(false);
     expect(engine.lastInterruptReason).toBe("");
     expect(engine.lastError).toBe("");
+  });
+
+  it("interruptMatch emits matchEnded", async () => {
+    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const engine = new BattleEngine();
+    const end = vi.fn();
+    engine.on("matchEnded", end);
+    await engine.startRound(
+      () => {},
+      () => {},
+      5
+    );
+    engine.interruptMatch("injury");
+    expect(end).toHaveBeenCalled();
+  });
+
+  it("interruptRound does not emit matchEnded", async () => {
+    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const engine = new BattleEngine();
+    const end = vi.fn();
+    engine.on("matchEnded", end);
+    await engine.startRound(
+      () => {},
+      () => {},
+      5
+    );
+    engine.interruptRound("pause");
+    expect(end).not.toHaveBeenCalled();
   });
 });

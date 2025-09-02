@@ -67,13 +67,14 @@ beforeEach(() => {
   }));
 
   vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
-    handleStatSelection: vi.fn().mockReturnValue({ message: "", matchEnded: false }),
+    handleStatSelection: vi.fn().mockReturnValue({ outcome: "", matchEnded: false }),
     quitMatch: vi.fn(),
     pauseTimer: vi.fn(),
     stopTimer: vi.fn(),
     getScores: vi.fn().mockReturnValue({ playerScore: 0, opponentScore: 0 }),
     _resetForTest: vi.fn(),
-    STATS: ["power"]
+    STATS: ["power"],
+    OUTCOME: {}
   }));
 });
 

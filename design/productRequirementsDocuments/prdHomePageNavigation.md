@@ -20,7 +20,7 @@ The purpose of this menu is to allow players to access the core game modes quick
 
 A fast, accessible, and thematic navigation experience is crucial to ensure new players feel confident and engaged from their first visit.
 
-The tile links are pre-seeded. `navigationItems.json` references each mode by `id` and drives their visibility and order via CSS.
+The tile links are pre-seeded. `navigationItems.js` references each mode by `id` and drives their visibility and order via CSS.
 
 ---
 
@@ -217,7 +217,7 @@ Each tile contains:
 ## Dependencies / Integrations
 
 - `gameModes.json` lists all game modes.
-- `navigationItems.json` references those modes by `id` and drives tile order and visibility via CSS.
+- `navigationItems.js` references those modes by `id` and drives tile order and visibility via CSS.
 - Uses global CSS tokens (`--button-bg`, `--radius-md`, etc.) defined in `src/styles/base.css`.
 
 ---

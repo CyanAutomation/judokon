@@ -1,4 +1,6 @@
-import { BattleEngine } from "./BattleEngine.js";
+import { BattleEngine, STATS } from "./BattleEngine.js";
+import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
+import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 
 /**
  * Core battle engine and useful constants exported from the engine module.
@@ -7,17 +9,58 @@ import { BattleEngine } from "./BattleEngine.js";
  * @pseudocode
  * 1. Import engine implementation from `./BattleEngine.js` and re-export its public API.
  */
-export { BattleEngine, STATS } from "./BattleEngine.js";
+export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
 
 /**
- * Singleton engine instance used by application code and helpers.
- *
- * @summary A single shared `BattleEngine` instance used across the app.
- * @pseudocode
- * 1. Construct a new `BattleEngine` and export it so modules can delegate calls.
- * @type {BattleEngine}
+ * @typedef {object} IBattleEngine
+ * @property {(value:number) => void} setPointsToWin
+ * @property {() => number} getPointsToWin
+ * @property {() => void} stopTimer
+ * @property {(...args:any[]) => Promise<void>} startRound
+ * @property {(...args:any[]) => Promise<void>} startCoolDown
+ * @property {() => void} pauseTimer
+ * @property {() => void} resumeTimer
+ * @property {(...args:any[]) => {delta:number, outcome:keyof typeof OUTCOME, matchEnded:boolean, playerScore:number, opponentScore:number}} handleStatSelection
+ * @property {() => {outcome:keyof typeof OUTCOME, matchEnded:boolean, playerScore:number, opponentScore:number}} quitMatch
+ * @property {(reason?:string) => {outcome:keyof typeof OUTCOME, matchEnded:boolean, playerScore:number, opponentScore:number}} interruptMatch
+ * @property {() => object} getScores
+ * @property {() => number} getRoundsPlayed
+ * @property {() => boolean} isMatchEnded
+ * @property {() => object} getTimerState
  */
-export const battleEngine = new BattleEngine();
+
+/** @type {IBattleEngine|undefined} */
+let battleEngine;
+
+function requireEngine() {
+  if (!battleEngine) {
+    throw new Error("Battle engine not initialized. Call createBattleEngine() first.");
+  }
+  return battleEngine;
+}
+
+/**
+ * Create a new battle engine instance.
+ *
+ * @summary Factory returning a fresh `BattleEngine` instance.
+ * @pseudocode
+ * 1. Construct a new `BattleEngine` with default classic config merged with `config`.
+ * 2. Store the instance for use by exported wrapper helpers.
+ * 3. Return the new instance.
+ *
+ * @param {object} [config]
+ * @returns {IBattleEngine}
+ */
+export function createBattleEngine(config = {}) {
+  battleEngine = new BattleEngine({
+    pointsToWin: CLASSIC_BATTLE_POINTS_TO_WIN,
+    maxRounds: CLASSIC_BATTLE_MAX_ROUNDS,
+    stats: STATS,
+    debugHooks: { getStateSnapshot },
+    ...config
+  });
+  return battleEngine;
+}
 
 /**
  * Set the number of points required to win a match.
@@ -28,7 +71,7 @@ export const battleEngine = new BattleEngine();
  * @param {number} value
  * @returns {void}
  */
-export const setPointsToWin = (value) => battleEngine.setPointsToWin(value);
+export const setPointsToWin = (value) => requireEngine().setPointsToWin(value);
 
 /**
  * Get the current points required to win a match.
@@ -38,7 +81,7 @@ export const setPointsToWin = (value) => battleEngine.setPointsToWin(value);
  *
  * @returns {number}
  */
-export const getPointsToWin = () => battleEngine.getPointsToWin();
+export const getPointsToWin = () => requireEngine().getPointsToWin();
 
 /**
  * Stop any active battle timer.
@@ -48,7 +91,7 @@ export const getPointsToWin = () => battleEngine.getPointsToWin();
  *
  * @returns {void}
  */
-export const stopTimer = () => battleEngine.stopTimer();
+export const stopTimer = () => requireEngine().stopTimer();
 
 /**
  * Start a new round via the underlying battle engine.
@@ -59,7 +102,7 @@ export const stopTimer = () => battleEngine.stopTimer();
  * @param {...any} args
  * @returns {Promise<void>}
  */
-export const startRound = (...args) => battleEngine.startRound(...args);
+export const startRound = (...args) => requireEngine().startRound(...args);
 
 /**
  * Start the engine cooldown sequence.
@@ -70,7 +113,7 @@ export const startRound = (...args) => battleEngine.startRound(...args);
  * @param {...any} args
  * @returns {Promise<void>}
  */
-export const startCoolDown = (...args) => battleEngine.startCoolDown(...args);
+export const startCoolDown = (...args) => requireEngine().startCoolDown(...args);
 
 /**
  * Pause the current round timer.
@@ -80,7 +123,7 @@ export const startCoolDown = (...args) => battleEngine.startCoolDown(...args);
  *
  * @returns {void}
  */
-export const pauseTimer = () => battleEngine.pauseTimer();
+export const pauseTimer = () => requireEngine().pauseTimer();
 
 /**
  * Resume a previously paused round timer.
@@ -90,7 +133,7 @@ export const pauseTimer = () => battleEngine.pauseTimer();
  *
  * @returns {void}
  */
-export const resumeTimer = () => battleEngine.resumeTimer();
+export const resumeTimer = () => requireEngine().resumeTimer();
 
 /**
  * Forward stat selection to the engine which computes outcome and updates scores.
@@ -99,9 +142,9 @@ export const resumeTimer = () => battleEngine.resumeTimer();
  * 1. Call `battleEngine.handleStatSelection(...args)` and return its result.
  *
  * @param {...any} args
- * @returns {object}
+ * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
  */
-export const handleStatSelection = (...args) => battleEngine.handleStatSelection(...args);
+export const handleStatSelection = (...args) => requireEngine().handleStatSelection(...args);
 
 /**
  * Quit the current match via the engine.
@@ -109,9 +152,9 @@ export const handleStatSelection = (...args) => battleEngine.handleStatSelection
  * @pseudocode
  * 1. Delegate to `battleEngine.quitMatch()`.
  *
- * @returns {void}
+ * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
  */
-export const quitMatch = () => battleEngine.quitMatch();
+export const quitMatch = () => requireEngine().quitMatch();
 
 /**
  * Interrupt the entire match (admin/test/error/quit).
@@ -119,12 +162,12 @@ export const quitMatch = () => battleEngine.quitMatch();
  * @pseudocode
  * 1. Stop the timer and set matchEnded to true.
  * 2. Optionally log or store the reason.
- * 3. Return an interrupt message and current scores.
+ * 3. Return an interrupt outcome and current scores.
  *
  * @param {string} [reason] - Reason for interruption.
- * @returns {{message: string, playerScore: number, opponentScore: number}}
+ * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
  */
-export const interruptMatch = (reason) => battleEngine.interruptMatch(reason);
+export const interruptMatch = (reason) => requireEngine().interruptMatch(reason);
 
 /**
  * Retrieve the current scores from the engine.
@@ -134,7 +177,7 @@ export const interruptMatch = (reason) => battleEngine.interruptMatch(reason);
  *
  * @returns {object}
  */
-export const getScores = () => battleEngine.getScores();
+export const getScores = () => requireEngine().getScores();
 
 /**
  * Retrieve how many rounds have been played.
@@ -144,7 +187,7 @@ export const getScores = () => battleEngine.getScores();
  *
  * @returns {number}
  */
-export const getRoundsPlayed = () => battleEngine.getRoundsPlayed();
+export const getRoundsPlayed = () => requireEngine().getRoundsPlayed();
 
 /**
  * Query whether the match has ended.
@@ -154,7 +197,7 @@ export const getRoundsPlayed = () => battleEngine.getRoundsPlayed();
  *
  * @returns {boolean}
  */
-export const isMatchEnded = () => battleEngine.isMatchEnded();
+export const isMatchEnded = () => requireEngine().isMatchEnded();
 
 /**
  * Get timer state (remaining, running, paused) from the engine.
@@ -164,17 +207,33 @@ export const isMatchEnded = () => battleEngine.isMatchEnded();
  *
  * @returns {object}
  */
-export const getTimerState = () => battleEngine.getTimerState();
+export const getTimerState = () => requireEngine().getTimerState();
 
 /**
- * Internal test helper to reset engine state between tests.
+ * Subscribe to battle engine events.
  *
  * @pseudocode
- * 1. Call `battleEngine._resetForTest()` to clear internal state.
+ * 1. Delegate to `battleEngine.on(type, handler)`.
  *
+ * @param {string} type - Event name.
+ * @param {(payload: any) => void} handler - Callback for the event.
  * @returns {void}
  */
-export const _resetForTest = () => battleEngine._resetForTest();
+export const on = (type, handler) => battleEngine?.on?.(type, handler);
+
+/**
+ * Unsubscribe from battle engine events.
+ *
+ * @pseudocode
+ * 1. Delegate to `battleEngine.off(type, handler)`.
+ *
+ * @param {string} type - Event name.
+ * @param {(payload: any) => void} handler - Callback for the event.
+ * @returns {void}
+ */
+export const off = (type, handler) => battleEngine?.off?.(type, handler);
+
+// Internal test helper removed; tests should instantiate engines via `createBattleEngine()`.
 
 /**
  * Note: All thin wrappers above are intentionally documented with @pseudocode

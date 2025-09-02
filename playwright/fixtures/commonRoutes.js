@@ -40,8 +40,8 @@ export async function registerCommonRoutes(page) {
     page.route("**/src/data/tooltips.json", (route) =>
       route.fulfill({ path: "src/data/tooltips.json" })
     ),
-    page.route("**/src/data/navigationItems.json", (route) =>
-      route.fulfill({ path: "tests/fixtures/navigationItems.json" })
+    page.route("**/src/data/navigationItems.js", (route) =>
+      route.fulfill({ path: "tests/fixtures/navigationItems.js" })
     ),
     // Ensure country code mapping is always available and not aborted by navigation
     page.route("**/src/data/countryCodeMapping.json", (route) =>
@@ -61,6 +61,9 @@ export async function registerCommonRoutes(page) {
     ),
     page.route("https://esm.sh/ajv@6*", (route) =>
       route.fulfill({ path: "src/vendor/ajv6.min.js" })
+    ),
+    page.route("https://esm.sh/dompurify@3.2.6", (route) =>
+      route.fulfill({ path: "node_modules/dompurify/dist/purify.es.mjs" })
     ),
     page.route("**/marked.esm.js", (route) =>
       route.fulfill({
@@ -105,9 +108,9 @@ export async function registerCommonRoutes(page) {
         route.fulfill({ path: "src/assets/fonts/OpenSansRegular.woff2" });
       }
     }),
-    // Ensure stat names are always served promptly to avoid flaky fetches
-    page.route("**/src/data/statNames.json", (route) =>
-      route.fulfill({ path: "src/data/statNames.json" })
+    // Ensure stat names module is always available
+    page.route("**/src/data/statNames.js", (route) =>
+      route.fulfill({ path: "src/data/statNames.js" })
     )
   ]);
 }

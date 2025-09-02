@@ -9,6 +9,8 @@ import { ClassicBattleView } from "./view.js";
 import createClassicBattleDebugAPI from "./setupTestHelpers.js";
 import { onDomReady } from "../domReady.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
+import { createBattleEngine } from "../battleEngineFacade.js";
+import { bridgeEngineEvents } from "./roundResolver.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
@@ -24,6 +26,8 @@ import { initRoundSelectModal } from "./roundSelectModal.js";
  * 4. Return the debug API after the round is selected.
  */
 export async function setupClassicBattlePage() {
+  createBattleEngine();
+  bridgeEngineEvents();
   let debugApi;
   let resolveStart;
   let rejectStart;

@@ -2613,7 +2613,7 @@
         "./constants.js",
         "./navigationCache.js",
         "./storage.js",
-        "../data/navigationItems.json"
+        "../data/navigationItems.js"
       ],
       "functions": {
         "getSchema": {

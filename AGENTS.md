@@ -80,7 +80,7 @@ Before submitting or completing a task, verify that your work:
 | Purpose                       | File(s)                                                                 |
 | ----------------------------- | ----------------------------------------------------------------------- |
 | Tooltip content               | src/data/tooltips.json                                                  |
-| Game stats and player data    | src/data/judoka.json, src/data/statNames.json                           |
+| Game stats and player data    | src/data/judoka.json, src/data/statNames.js                             |
 | Feature flags & settings      | src/pages/settings.html, src/config/settingsDefaults.js                 |
 | Tooltip viewer                | src/pages/tooltipViewer.html                                            |
 | Debug + Observability targets | Components with data-_, like data-tooltip-id, data-flag, data-feature-_ |
@@ -123,28 +123,28 @@ Before submitting or completing a task, verify that your work:
 
 ## 🧯 Runtime Safeguards
 
-### 🚫 Avoid Output Errors in Terminal
+### Terminal Safety
 
 To prevent session crashes in the terminal:
 
-> **Always exclude `client_embeddings.json` from terminal searches.**  
+> **Always exclude `client_embeddings.json` and `offline_rag_metadata.json` from terminal searches.**  
 > It contains very long lines that can exceed the 4096-byte output limit and terminate the shell.
 
 #### ✅ Use safe search patterns:
 
 ```bash
-grep "kumi-kata" . --exclude=client_embeddings.json
+grep "kumi-kata" . --exclude=client_embeddings.json --exclude=offline_rag_metadata.json
 ```
 
 Or recursively:
 
 ```bash
-grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.json
+grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.json --exclude=offline_rag_metadata.json
 ```
 
 🔍 Why it matters
 
-Even if you’re not directly searching client_embeddings.json, tools like grep -r . may include it by default. This results in output overflow and abrupt session termination. Always exclude this file unless explicitly working with it.
+Even if you’re not directly searching client_embeddings.json or offline_rag_metadata.json, tools like grep -r . may include it by default. This results in output overflow and abrupt session termination. Always exclude this file unless explicitly working with it.
 
 ### 🎞️ Animation Scheduler
 
@@ -160,6 +160,9 @@ Even if you’re not directly searching client_embeddings.json, tools like grep 
 ---
 
 ## 🔧 Module Loading Policy for Agents
+
+> This section is the canonical source for JU-DO-KON!'s static vs dynamic import rules.
+> Update this section when import policy changes; other docs link here.
 
 > JU-DO-KON! runs unbundled on GitHub Pages, relying on native ES modules.
 

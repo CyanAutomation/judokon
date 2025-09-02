@@ -1,9 +1,20 @@
 import { evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { on as onEngine } from "../battleEngineFacade.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
+
+export function bridgeEngineEvents() {
+  if (typeof onEngine !== "function") return;
+  onEngine("roundEnded", (detail) => {
+    emitBattleEvent("roundResolved", detail);
+  });
+  onEngine("matchEnded", (detail) => {
+    emitBattleEvent("matchOver", detail);
+  });
+}
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -132,9 +143,9 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
     debugLog("DEBUG: evaluateRound result", result);
   } catch {}
   const outcomeEvent =
-    result.outcome === "winPlayer"
+    result.outcome === "winPlayer" || result.outcome === "matchWinPlayer"
       ? "outcome=winPlayer"
-      : result.outcome === "winOpponent"
+      : result.outcome === "winOpponent" || result.outcome === "matchWinOpponent"
         ? "outcome=winOpponent"
         : "outcome=draw";
   // Fire-and-forget dispatch to avoid re-entrancy deadlocks when called from

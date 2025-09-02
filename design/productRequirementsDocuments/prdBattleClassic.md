@@ -66,31 +66,37 @@ Currently, only ~45% of new players complete their first battle across all modes
 
 ---
 
-## Gameplay Flow
+## Gameplay Basics
 
-1. **Match Setup**
-   - On entry, prompt the player to choose a **points-to-win target**: 5, 10 (default), or 15.  
-   - Both players draw **25 random cards** each from the 99-card deck.  
+- On first visit to `battleJudoka.html`, a modal prompts the player to select a win target of **5, 10, or 15 points** (default 10). After a choice is made, the modal closes and the match begins.
+- The standard deck contains **99 unique cards**.
+- Each match begins with both sides receiving **25 random cards**.
+- At the start of each round, both players draw their top card.
+- The player selects one stat (Power, Speed, Technique, etc.).
+- Stat buttons stay disabled until the selection phase and turn off after a choice is made.
+- The higher value wins the round and scores **1 point**; used cards are discarded.
+- The match ends when a player reaches a **user-selected win target of 5, 10, or 15 points** (default 10) or after **25 rounds** (draw).
 
-2. **Round Loop**
-   - Both sides draw their top card.  
-   - Player chooses a stat within **30 s** (`ROUND_SELECTION_MS = 30_000`).  
-   - If no selection is made, a random stat is auto-selected (feature flag `autoSelect`, default **on**).  
-   - Opponent card remains hidden until player choice, then reveals with AI-controlled stat selection.  
+---
 
-3. **Resolution**
-   - Compare stats. Higher value scores 1 point.  
-   - Tie → no score change, round ends.  
-   - Show result in the **Scoreboard** (`#round-message`, `#score-display`, `#round-counter`, `#next-round-timer`).  
-   - Opponent’s choice is revealed with a short delay + message “Opponent is choosing…”.  
+## Technical Considerations
 
-4. **Cooldown**
-   - Show **3 s cooldown** between rounds in a snackbar or until the **Next** button is pressed.  
-   - If feature flag `skipRoundCooldown` is on, skip delay.  
+- Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
+- Round selection modal must use shared `Modal` and `Button` components for consistent accessibility.
+- Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
+- Stat selection timer (30s) must be displayed in `#next-round-timer`; if the timer expires, a random stat is auto-selected. This auto-select behavior is controlled by a feature flag `autoSelect` (enabled by default). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).
+- Stat selection timer halts immediately once the player picks a stat.
+- Detect timer drift by comparing engine state with real time; if drift exceeds 2s, display "Waiting…" and restart the countdown.
+- Opponent stat selection runs entirely on the client. After the player picks a stat (or the timer auto-chooses), the opponent's choice is revealed after a short artificial delay to mimic turn-taking.
+- During this delay, the Scoreboard displays "Opponent is choosing..." in `#round-message` to reinforce turn flow.
+- The cooldown timer between rounds begins only after round results are shown in the Scoreboard and is displayed using one persistent snackbar that updates its text each second.
+- The debug panel is available when the `enableTestMode` feature flag is enabled, appears above the player and opponent cards, and includes a copy button for exporting its text.
+- A battle state progress list can be enabled via the `battleStateProgress` feature flag to show the sequence of match states beneath the battle area; disabled by default.
 
-5. **Match End**
-   - First to win target points (5/10/15) **or** max 25 rounds.  
-   - End modal shows winner, score, and options: **Play Again** or **Quit**.  
+### Round Data Fallback
+
+- Round options are sourced from `battleRounds.js` and bundled with the app.
+- **QA:** Validate that options from `battleRounds.js` render correctly.
 
 ---
 

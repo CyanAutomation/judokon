@@ -21,12 +21,38 @@ JU-DO-KON! is a strategic digital card game inspired by Top Trumps, featuring ju
 
 ### Classic Battle Start
 
-When you open `src/pages/battleJudoka.html`, a modal prompts you to choose the match length (win target) before the first round. Options are sourced from `src/data/battleRounds.json` (fallbacks provided if loading fails). Selecting an option sets the engine’s points-to-win and starts the pre-round countdown.
+When you open `src/pages/battleJudoka.html`, a modal prompts you to choose the match length (win target) before the first round. Options are sourced from `src/data/battleRounds.js`. Selecting an option sets the engine’s points-to-win and starts the pre-round countdown.
 
 For debugging or automated tests, append `?autostart=1` to `battleJudoka.html` to skip the modal and begin a default-length match immediately.
 
 Note on Next button behavior:
 - The `Next` button advances only during the inter-round cooldown. It remains disabled while choosing a stat to avoid skipping the cooldown logic accidentally. The cooldown enables `Next` (or auto-advances in test mode); do not expect `Next` to be ready during stat selection.
+
+## 🔌 Engine API
+
+```js
+import BattleEngine from "./src/helpers/BattleEngine.js";
+import { renderMessage } from "./src/ui/renderMessage.js";
+
+const engine = new BattleEngine({ pointsToWin: 3 });
+
+const messages = {
+  roundStarted: ({ round }) => `Round ${round} begins`,
+  matchEnded: ({ outcome }) => `Match ${outcome}`,
+};
+
+engine.on("roundStarted", (data) => {
+  renderMessage("#status", messages.roundStarted(data));
+});
+
+engine.on("matchEnded", (data) => {
+  renderMessage("#status", messages.matchEnded(data));
+});
+
+engine.start();
+```
+
+`BattleEngine` contains only match logic. A mode subscribes to events and maps them to UI helpers like `renderMessage`, keeping presentation separate from engine code.
 
 ---
 
@@ -41,6 +67,10 @@ The game is currently in active development. New features are being rolled out b
 Whether you're a developer, designer, tester, writer—or an AI agent—we welcome contributions to JU-DO-KON!
 
 For full contribution guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+### Terminal Safety
+
+When running terminal searches like `grep` or `find`, exclude `client_embeddings.json` and `offline_rag_metadata.json` to prevent output overflow. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
 
 ---
 
@@ -71,6 +101,7 @@ AI agents should begin by reading:
 - `/src/config/settingsDefaults.js` – `DEFAULT_SETTINGS` source of truth for defaults
 - `/data/tooltips.json` – Tooltip content (auditable by agents)
 - `/data/judoka.json` – Card data for stat logic
+- Typed data modules in `/src/data`: `battleRounds.js`, `gameTimers.js`, `navigationItems.js`, `statNames.js`, `japaneseConverter.js` — export arrays with JSDoc type guarantees
 - `/components/` – Frontend logic with `data-*` hooks for observability
 
 ### 🧪 Common Tasks
@@ -79,10 +110,22 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
-Before committing code changes, run the project checks including the JSDoc/pseudocode scanner:
+Before committing code changes, run the full check suite to verify docs, formatting, lint, tests, and contrast.
+For the latest required sequence, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ```bash
 npm run check:jsdoc
+npx prettier . --check
+npx eslint .
+npx vitest run
+npx playwright test
+npm run check:contrast
+```
+
+Example one-liner:
+
+```bash
+npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
 ```
 
 ### Classic Battle CLI (text-first)
@@ -130,7 +173,18 @@ accessing `settings.featureFlags` directly.
 - Retro emulates a terminal-style green-on-black palette and replaces the former High Contrast mode.
 - The current mode is exposed via `document.body.dataset.theme` (e.g., `data-theme="retro"`).
 
-> `navigationItems.json` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
+> `navigationItems.js` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
+
+## Battle Engine Events API
+
+The battle engine exposes a lightweight event emitter. Subscribe via
+`on(event, handler)` from `src/helpers/battleEngineFacade.js`:
+
+- `roundStarted` → `{ round }`
+- `roundEnded` → `{ delta, outcome, matchEnded, playerScore, opponentScore }`
+- `timerTick` → `{ remaining, phase: 'round' | 'cooldown' }`
+- `matchEnded` → same payload as `roundEnded`
+- `error` → `{ message }`
 
 ## 🔎 Using the Vector RAG System
 
@@ -211,24 +265,9 @@ It reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, 
    ```
 
    The browser path continues to load embeddings via the manifest + shard loader, so no changes are required there.
-## ⚡ Module Loading Policy: Static vs Dynamic Imports
+## ⚡ Module Loading Policy
 
-JU-DO-KON! favors **deterministic gameplay and snappy input handling**. Use **static imports** for core gameplay; reserve **dynamic imports** (`import('…')`) for optional screens and heavy tools.
-
-**Use static imports when the code:**
-- Runs on a **hot path** (stat selection, round decision, event dispatch, per-frame animation).
-- Is **always required** in a typical play session.
-- Should **fail at build/startup** if broken (orchestrators, rules, event bus).
-
-**Use dynamic imports (with preload) when the code:**
-- Powers **optional** or **infrequent** screens (Settings, Tooltip Viewer, Credits, docs).
-- Is **heavy** or behind a **feature flag** (canvas/WebGL renderer, debug panels, markdown/HL libs).
-- Can be **preloaded** during idle/cooldown to hide latency.
-
-**Hot path (for this project) =**
-- Stat selection handlers → round outcome
-- Rules engine / orchestrators / event dispatchers
-- Animation tick or per-frame rendering used during battle
+Use static imports for hot paths and always-required modules; use dynamic imports with preload for optional or heavy features. See the canonical [Module Loading Policy for Agents](./AGENTS.md#module-loading-policy-for-agents) for the full policy.
 
 ## 🧪 Testing
 

@@ -64,6 +64,7 @@ describe("startRoundWrapper failures", () => {
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn(),
       STATS: [],
+      OUTCOME: {}, // mock enum to satisfy consumers expecting battleEngineFacade.OUTCOME
       setPointsToWin: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
@@ -173,6 +174,7 @@ describe("startRoundWrapper failures", () => {
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn(),
       STATS: [],
+      OUTCOME: {}, // mock enum to satisfy consumers expecting battleEngineFacade.OUTCOME
       setPointsToWin: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
@@ -283,6 +285,7 @@ describe("startRoundWrapper success", () => {
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn(),
       STATS: [],
+      OUTCOME: {}, // mock enum to satisfy consumers expecting battleEngineFacade.OUTCOME
       setPointsToWin: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
