@@ -28,6 +28,32 @@ For debugging or automated tests, append `?autostart=1` to `battleJudoka.html` t
 Note on Next button behavior:
 - The `Next` button advances only during the inter-round cooldown. It remains disabled while choosing a stat to avoid skipping the cooldown logic accidentally. The cooldown enables `Next` (or auto-advances in test mode); do not expect `Next` to be ready during stat selection.
 
+## 🔌 Engine API
+
+```js
+import BattleEngine from "./src/helpers/BattleEngine.js";
+import { renderMessage } from "./src/ui/renderMessage.js";
+
+const engine = new BattleEngine({ pointsToWin: 3 });
+
+const messages = {
+  roundStarted: ({ round }) => `Round ${round} begins`,
+  matchEnded: ({ outcome }) => `Match ${outcome}`,
+};
+
+engine.on("roundStarted", (data) => {
+  renderMessage("#status", messages.roundStarted(data));
+});
+
+engine.on("matchEnded", (data) => {
+  renderMessage("#status", messages.matchEnded(data));
+});
+
+engine.start();
+```
+
+`BattleEngine` contains only match logic. A mode subscribes to events and maps them to UI helpers like `renderMessage`, keeping presentation separate from engine code.
+
 ---
 
 ## 🚧 Development Status

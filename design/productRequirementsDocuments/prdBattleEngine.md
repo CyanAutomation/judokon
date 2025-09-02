@@ -70,6 +70,42 @@ subscribe with `on(event, handler)`:
 | `matchEnded`   | Same payload as `roundEnded`                                 |
 | `error`        | `{ message: string }`                                        |
 
+### Example Integration
+
+```js
+import BattleEngine from "../../src/helpers/BattleEngine.js";
+import { renderMessage } from "../../src/ui/renderMessage.js";
+
+const engine = new BattleEngine({ pointsToWin: 3 });
+
+// map engine events to UI messages
+const messages = {
+  roundStarted: ({ round }) => ({
+    surface: "#status",
+    text: `Round ${round} begins`
+  }),
+  matchEnded: ({ outcome }) => ({
+    surface: "#status",
+    text: `Match ${outcome}`
+  })
+};
+
+// subscribe without coupling engine to the DOM
+engine.on("roundStarted", (payload) => {
+  const { surface, text } = messages.roundStarted(payload);
+  renderMessage(surface, text);
+});
+
+engine.on("matchEnded", (payload) => {
+  const { surface, text } = messages.matchEnded(payload);
+  renderMessage(surface, text);
+});
+
+engine.start();
+```
+
+The engine runs purely on logic; UI helpers receive events and decide how to render them.
+
 ---
 
 ## User Stories
