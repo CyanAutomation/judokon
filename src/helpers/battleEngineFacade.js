@@ -1,4 +1,6 @@
-import { BattleEngine } from "./BattleEngine.js";
+import { BattleEngine, STATS } from "./BattleEngine.js";
+import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
+import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 
 /**
  * Core battle engine and useful constants exported from the engine module.
@@ -17,7 +19,12 @@ export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
  * 1. Construct a new `BattleEngine` and export it so modules can delegate calls.
  * @type {BattleEngine}
  */
-export const battleEngine = new BattleEngine();
+export const battleEngine = new BattleEngine({
+  pointsToWin: CLASSIC_BATTLE_POINTS_TO_WIN,
+  maxRounds: CLASSIC_BATTLE_MAX_ROUNDS,
+  stats: STATS,
+  debugHooks: { getStateSnapshot }
+});
 
 /**
  * Set the number of points required to win a match.

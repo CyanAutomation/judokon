@@ -46,6 +46,15 @@ A well-defined engine will enable consistent gameplay, predictable UI updates th
 
 > **Note:** Feature flags use camelCase keys.
 
+### Constructor Options
+
+The `BattleEngine` constructor accepts a config object allowing modes to override classic behavior:
+
+- `pointsToWin` – win threshold, defaults to classic value
+- `maxRounds` – round cap before declaring a draw
+- `stats` – list of stat keys used in comparisons
+- `debugHooks` – optional callbacks (e.g., `getStateSnapshot` for tests)
+
 ---
 
 ## User Stories
