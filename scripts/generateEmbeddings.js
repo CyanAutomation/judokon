@@ -37,6 +37,7 @@ import { readFile, writeFile, stat } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import path from "path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 import { glob } from "glob";
 import * as acorn from "acorn";
 import { walk } from "estree-walker";
@@ -44,6 +45,7 @@ import { CHUNK_SIZE, OVERLAP_RATIO } from "../src/helpers/vectorSearch/chunkConf
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
+const nodeRequire = createRequire(import.meta.url);
 
 const STOP_WORDS = new Set([
   "a",
@@ -610,11 +612,17 @@ async function loadModel() {
     const { pipeline, env } = await import("@xenova/transformers");
     env.allowLocalModels = true;
     env.localModelPath = rootDir;
-    env.backends.onnx.wasm.wasmPaths = path.join(rootDir, "node_modules/onnxruntime-web/dist/");
-    env.backends.onnx.wasm.worker = path.join(
-      rootDir,
-      "node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.worker.js"
-    );
+    try {
+      const workerPath = nodeRequire.resolve(
+        "onnxruntime-web/dist/ort-wasm-simd-threaded.worker.js"
+      );
+      await stat(workerPath);
+      const ortDir = path.dirname(workerPath);
+      env.backends.onnx.wasm.wasmPaths = ortDir;
+      env.backends.onnx.wasm.worker = workerPath;
+    } catch {
+      // Use defaults if the worker script is not present
+    }
     env.backends.onnx.wasm.proxy = false;
     const modelDir = path.join("models", "minilm");
     return pipeline("feature-extraction", modelDir, { quantized: true });
