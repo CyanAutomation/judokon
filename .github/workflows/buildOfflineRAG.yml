@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       force_rebuild:
-        description: "Ignore drift and rebuild anyway"
+        description: Ignore drift and rebuild anyway
         required: false
         default: "false"
 
@@ -26,12 +26,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run:
+          npm ci
 
-            # Optional: try a drift check; if checker is missing OR force_rebuild=true, mark stale
+          # Optional: try a drift check; if checker is missing OR force_rebuild=true, mark stale
       - name: (Optional) Check offline RAG drift
         id: drift
         shell: bash
@@ -58,7 +59,7 @@ jobs:
         env:
           TRANSFORMERS_OFFLINE: "1"
           HF_HUB_OFFLINE: "1"
-          NODE_OPTIONS: "--experimental-json-modules"
+          NODE_OPTIONS: --experimental-json-modules
         run: |
           # If your script supports flags, prefer explicit outputs:
           if node scripts/buildOfflineRag.mjs --help >/dev/null 2>&1; then
@@ -102,7 +103,6 @@ jobs:
           if [ -f src/rag-offline/offline.index.meta.json ]; then
             jq -r '.buildHash, "docs=\(.counts.docs) dim=\(.counts.dim) createdAt=\(.createdAt)"' src/rag-offline/offline.index.meta.json
           fi
-
 
       - name: Stage changes
         id: stage
