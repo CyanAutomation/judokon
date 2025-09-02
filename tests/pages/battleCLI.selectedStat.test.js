@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 async function loadBattleCLI() {
   const emitter = new EventTarget();
+  const startRound = vi.fn();
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags: vi.fn(),
     isEnabled: vi.fn().mockReturnValue(false),
@@ -10,7 +11,7 @@ async function loadBattleCLI() {
   }));
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: vi.fn(),
-    startRound: vi.fn(),
+    startRound,
     resetGame: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
@@ -26,20 +27,23 @@ async function loadBattleCLI() {
     getPointsToWin: vi.fn(),
     getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
-  vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson: vi.fn().mockResolvedValue([]) }));
+  vi.doMock("../../src/helpers/dataUtils.js", () => ({
+    fetchJson: vi.fn().mockResolvedValue([
+      { statIndex: 1, name: "Speed" },
+      { statIndex: 2, name: "Strength" }
+    ])
+  }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
   const mod = await import("../../src/pages/battleCLI.js");
-  return mod;
+  return { mod, startRound };
 }
 
-describe("battleCLI stat highlighting", () => {
+describe("battleCLI stat interactions", () => {
   beforeEach(() => {
     window.__TEST__ = true;
     document.body.innerHTML = `
-      <div id="cli-stats">
-        <div class="cli-stat" data-stat-index="1">[1] Speed</div>
-        <div class="cli-stat" data-stat-index="2">[2] Strength</div>
-      </div>
+      <div id="cli-stats"></div>
+      <ul id="cli-help"></ul>
       <div id="snackbar-container"></div>
     `;
   });
@@ -59,11 +63,27 @@ describe("battleCLI stat highlighting", () => {
     vi.doUnmock("../../src/helpers/constants.js");
   });
 
-  it("adds .selected to chosen stat", async () => {
-    const mod = await loadBattleCLI();
+  it("adds .selected to chosen stat via key", async () => {
+    const { mod } = await loadBattleCLI();
+    await mod.renderStatList();
     mod.handleWaitingForPlayerActionKey("1");
     expect(document.querySelector('[data-stat-index="1"]').classList.contains("selected")).toBe(
       true
     );
+  });
+
+  it("shows stat values and responds to clicks", async () => {
+    const { mod, startRound } = await loadBattleCLI();
+    await mod.renderStatList();
+    startRound.mockResolvedValue({
+      playerJudoka: { stats: { speed: 5, strength: 7 } },
+      roundNumber: 1
+    });
+    await mod.__test.startRoundWrapper();
+    document.body.dataset.battleState = "waitingForPlayerAction";
+    const statEl = document.querySelector('[data-stat-index="1"]');
+    expect(statEl.textContent).toBe("[1] Speed: 5");
+    statEl.click();
+    expect(statEl.classList.contains("selected")).toBe(true);
   });
 });

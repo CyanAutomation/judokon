@@ -97,6 +97,7 @@ let pausedCooldownRemaining = null;
 let ignoreNextAdvanceClick = false;
 let roundResolving = false;
 const statDisplayNames = {};
+let cachedStatDefs = null;
 
 // Test hooks to access internal timer state
 export const __test = {
@@ -672,24 +673,26 @@ export function autostartBattle() {
  *
  * @summary Fetch `statNames.json`, build stat buttons, store display name map, and wire click handlers.
  * @pseudocode
- * 1. Fetch `statNames.json` and locate `#cli-stats`.
- * 2. Clear `statDisplayNames` and map `STATS[idx-1] -> name`.
- * 3. Sort and render stat entries into clickable elements with `data-stat-index`.
- * 4. Attach `handleStatClick` to the list and populate help text when available.
+ * 1. Fetch and cache `statNames.json` if not already loaded.
+ * 2. Locate `#cli-stats`; clear existing entries and display name map.
+ * 3. Render each stat as a clickable element showing `[idx] name: value` when `judoka` provided.
+ * 4. Populate `#cli-help` once with index-name mapping and clear any skeleton placeholders.
  *
+ * @param {object} [judoka] - Optional judoka object providing current stat values.
  * @returns {Promise<void>} Resolves when the stat list has been rendered.
  */
-export async function renderStatList() {
+export async function renderStatList(judoka) {
   try {
-    const stats = await fetchJson(`${DATA_DIR}statNames.json`);
+    if (!cachedStatDefs) {
+      cachedStatDefs = await fetchJson(`${DATA_DIR}statNames.json`);
+    }
     const list = byId("cli-stats");
-    if (list && Array.isArray(stats)) {
+    const stats = Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
+    if (list && stats.length) {
       list.innerHTML = "";
-      // Clear any previous stat display names
-      for (const key of Object.keys(statDisplayNames)) {
-        delete statDisplayNames[key];
-      }
+      for (const key of Object.keys(statDisplayNames)) delete statDisplayNames[key];
       stats
+        .slice()
         .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
         .forEach((s) => {
           const idx = Number(s.statIndex) || 0;
@@ -701,17 +704,19 @@ export async function renderStatList() {
           div.setAttribute("role", "button");
           div.setAttribute("tabindex", "0");
           div.dataset.statIndex = String(idx);
-          div.textContent = `[${idx}] ${s.name}`;
+          const val = Number(judoka?.stats?.[key]);
+          div.textContent = Number.isFinite(val)
+            ? `[${idx}] ${s.name}: ${val}`
+            : `[${idx}] ${s.name}`;
+          div.addEventListener("click", handleStatClick);
           list.appendChild(div);
         });
-      list.addEventListener("click", handleStatClick);
-      // Clear skeleton placeholders if the init helper inserted them
       try {
         window.__battleCLIinit?.clearSkeletonStats?.();
       } catch {}
       try {
         const help = byId("cli-help");
-        if (help) {
+        if (help && help.childElementCount === 0) {
           const mapping = stats
             .slice()
             .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
@@ -776,46 +781,19 @@ export function restorePointsToWin() {
   } catch {}
 }
 
-function renderHiddenPlayerStats(judoka) {
-  // Provide a hidden #player-card with li.stat value spans so engine guards can read values.
-  let container = byId("player-card");
-  if (!container) {
-    container = document.createElement("div");
-    container.id = "player-card";
-    container.style.display = "none";
-    document.body.appendChild(container);
-  }
-  const ul = document.createElement("ul");
-  for (const stat of STATS) {
-    const li = document.createElement("li");
-    li.className = "stat";
-    const span = document.createElement("span");
-    const val = Number(judoka?.stats?.[stat]) || 0;
-    span.textContent = String(val);
-    li.appendChild(span);
-    ul.appendChild(li);
-  }
-  container.replaceChildren(ul);
-}
-
 /**
  * Start a new round and prepare the CLI UI.
  *
  * @pseudocode
- * call core startRound → { judoka, roundNumber }
- * renderHiddenPlayerStats(judoka)
- * remove any `.selected` stat classes
- * clear round message and show prompt
- * update round header with roundNumber and points target
+ * 1. Call core `startRound` → { judoka, roundNumber }.
+ * 2. Render the stat list with current values.
+ * 3. Clear the round message and show the prompt.
+ * 4. Update round header with roundNumber and points target.
  */
 async function startRoundWrapper() {
-  // Use the core startRound to select judoka; capture results and prepare hidden values.
   const { playerJudoka, roundNumber } = await startRoundCore(store);
   currentPlayerJudoka = playerJudoka || null;
-  if (currentPlayerJudoka) renderHiddenPlayerStats(currentPlayerJudoka);
-  // Reset selections and prompt user for input
-  const list = byId("cli-stats");
-  list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
+  await renderStatList(currentPlayerJudoka);
   setRoundMessage("");
   showBottomLine("Select your move");
   updateRoundHeader(roundNumber, getPointsToWin());
