@@ -1,10 +1,18 @@
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
-  quitMatch: vi.fn(() => ({ message: "Bye" }))
+  quitMatch: vi.fn(() => ({
+    outcome: "QUIT",
+    matchEnded: true,
+    playerScore: 0,
+    opponentScore: 0
+  }))
 }));
 vi.mock("../../../src/helpers/battle/index.js", () => ({
   showResult: vi.fn()
+}));
+vi.mock("../../../src/helpers/api/battleUI.js", () => ({
+  getOutcomeMessage: () => "Bye"
 }));
 vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {

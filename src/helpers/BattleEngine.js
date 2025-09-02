@@ -12,6 +12,20 @@ import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
+export const OUTCOME = {
+  WIN_PLAYER: "winPlayer",
+  WIN_OPPONENT: "winOpponent",
+  DRAW: "draw",
+  MATCH_WIN_PLAYER: "matchWinPlayer",
+  MATCH_WIN_OPPONENT: "matchWinOpponent",
+  MATCH_DRAW: "matchDraw",
+  QUIT: "quit",
+  INTERRUPT_ROUND: "interruptRound",
+  INTERRUPT_MATCH: "interruptMatch",
+  ROUND_MODIFIED: "roundModified",
+  ERROR: "error"
+};
+
 /**
  * Compare two stat values and report the winner.
  *
@@ -39,45 +53,39 @@ export function compareStats(playerVal, opponentVal) {
  *
  * @pseudocode
  * 1. Compute `delta = playerVal - opponentVal`.
- * 2. If `delta > 0` outcome is `"winPlayer"`.
- * 3. Else if `delta < 0` outcome is `"winOpponent"`.
- * 4. Otherwise outcome is `"draw"`.
+ * 2. If `delta > 0` outcome is `OUTCOME.WIN_PLAYER`.
+ * 3. Else if `delta < 0` outcome is `OUTCOME.WIN_OPPONENT`.
+ * 4. Otherwise outcome is `OUTCOME.DRAW`.
  * 5. Return `{ delta, outcome }`.
  *
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
- * @returns {{delta: number, outcome: "winPlayer"|"winOpponent"|"draw"}}
+ * @returns {{delta: number, outcome: keyof typeof OUTCOME}}
  */
 export function determineOutcome(playerVal, opponentVal) {
   const delta = playerVal - opponentVal;
-  let outcome = "draw";
-  if (delta > 0) outcome = "winPlayer";
-  else if (delta < 0) outcome = "winOpponent";
+  let outcome = OUTCOME.DRAW;
+  if (delta > 0) outcome = OUTCOME.WIN_PLAYER;
+  else if (delta < 0) outcome = OUTCOME.WIN_OPPONENT;
   return { delta, outcome };
 }
-
-const OUTCOME_MESSAGE = {
-  winPlayer: "You win the round!",
-  winOpponent: "Opponent wins the round!",
-  draw: "Tie – no score!"
-};
 
 /**
  * Apply a round outcome to the engine scores.
  *
  * @pseudocode
- * 1. If `outcome.outcome` is `"winPlayer"`, increment `playerScore`.
- * 2. Else if `outcome.outcome` is `"winOpponent"`, increment `opponentScore`.
+ * 1. If `outcome.outcome` is `OUTCOME.WIN_PLAYER`, increment `playerScore`.
+ * 2. Else if `outcome.outcome` is `OUTCOME.WIN_OPPONENT`, increment `opponentScore`.
  * 3. Otherwise, leave scores unchanged.
  *
  * @param {BattleEngine} engine - Battle engine instance.
- * @param {{outcome: "winPlayer"|"winOpponent"|"draw"}} outcome - Outcome object.
+ * @param {{outcome: keyof typeof OUTCOME}} outcome - Outcome object.
  * @returns {void}
  */
 export function applyOutcome(engine, outcome) {
-  if (outcome.outcome === "winPlayer") {
+  if (outcome.outcome === OUTCOME.WIN_PLAYER) {
     engine.playerScore += 1;
-  } else if (outcome.outcome === "winOpponent") {
+  } else if (outcome.outcome === OUTCOME.WIN_OPPONENT) {
     engine.opponentScore += 1;
   }
 }
@@ -155,14 +163,14 @@ export class BattleEngine {
     ) {
       this.matchEnded = true;
       if (this.playerScore > this.opponentScore) {
-        return "You win the match!";
+        return OUTCOME.MATCH_WIN_PLAYER;
       }
       if (this.playerScore < this.opponentScore) {
-        return "Opponent wins the match!";
+        return OUTCOME.MATCH_WIN_OPPONENT;
       }
-      return "Match ends in a tie!";
+      return OUTCOME.MATCH_DRAW;
     }
-    return "";
+    return null;
   }
 
   /**
@@ -244,19 +252,18 @@ export class BattleEngine {
    * 3. Use `compareStats` to obtain `delta` between values.
    * 4. Look up the outcome by `Math.sign(delta)` and apply its score update.
    * 5. Increment `roundsPlayed`.
-   * 6. Call `#endMatchIfNeeded()` and override the round message if it returns one.
-   * 7. Return the round message, `matchEnded`, and current scores.
+   * 6. Call `#endMatchIfNeeded()` and override the round outcome if it returns one.
+   * 7. Return the outcome code, `matchEnded`, and current scores.
    *
    * @param {number} playerVal - Value selected by the player.
    * @param {number} opponentVal - Value selected by the opponent.
-   * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number}}
+   * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   handleStatSelection(playerVal, opponentVal) {
     if (this.matchEnded) {
       const already = determineOutcome(playerVal, opponentVal);
       return {
         ...already,
-        message: "",
         matchEnded: this.matchEnded,
         playerScore: this.playerScore,
         opponentScore: this.opponentScore
@@ -266,10 +273,10 @@ export class BattleEngine {
     const outcome = determineOutcome(playerVal, opponentVal);
     applyOutcome(this, outcome);
     this.roundsPlayed += 1;
-    const endMsg = this.#endMatchIfNeeded();
+    const matchOutcome = this.#endMatchIfNeeded();
     return {
       ...outcome,
-      message: endMsg || OUTCOME_MESSAGE[outcome.outcome],
+      outcome: matchOutcome || outcome.outcome,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
@@ -277,19 +284,20 @@ export class BattleEngine {
   }
 
   /**
-   * End the current match and return the final message.
+   * End the current match and return a quit outcome.
    *
    * @pseudocode
    * 1. Set `matchEnded` to true and stop any running timer.
-   * 2. Return a quit message along with `playerScore` and `opponentScore`.
+   * 2. Return a quit outcome along with `playerScore` and `opponentScore`.
    *
-   * @returns {{message: string, playerScore: number, opponentScore: number}}
+   * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   quitMatch() {
     this.matchEnded = true;
     this.stopTimer();
     return {
-      message: "You quit the match. You lose!",
+      outcome: OUTCOME.QUIT,
+      matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
@@ -301,17 +309,18 @@ export class BattleEngine {
    * @pseudocode
    * 1. Stop the timer and set a round interrupted flag.
    * 2. Optionally log or store the reason.
-   * 3. Return an interrupt message and current scores.
+   * 3. Return an interrupt outcome and current scores.
    *
    * @param {string} [reason] - Reason for interruption.
-   * @returns {{message: string, playerScore: number, opponentScore: number}}
+   * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   interruptRound(reason) {
     this.stopTimer();
     this.roundInterrupted = true;
     this.lastInterruptReason = reason || "";
     return {
-      message: `Round interrupted${reason ? ": " + reason : ""}`,
+      outcome: OUTCOME.INTERRUPT_ROUND,
+      matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
@@ -323,17 +332,18 @@ export class BattleEngine {
    * @pseudocode
    * 1. Stop the timer and set matchEnded to true.
    * 2. Optionally log or store the reason.
-   * 3. Return an interrupt message and current scores.
+   * 3. Return an interrupt outcome and current scores.
    *
    * @param {string} [reason] - Reason for interruption.
-   * @returns {{message: string, playerScore: number, opponentScore: number}}
+   * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   interruptMatch(reason) {
     this.stopTimer();
     this.matchEnded = true;
     this.lastInterruptReason = reason || "";
     return {
-      message: `Match interrupted${reason ? ": " + reason : ""}`,
+      outcome: OUTCOME.INTERRUPT_MATCH,
+      matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
@@ -345,10 +355,10 @@ export class BattleEngine {
    * @pseudocode
    * 1. Accept a modification object and apply changes to round state.
    * 2. Optionally log the modification.
-   * 3. Return a modification message and current scores.
+   * 3. Return a modification outcome and current scores.
    *
    * @param {object} modification - Object describing the round modification.
-   * @returns {{message: string, playerScore: number, opponentScore: number}}
+   * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   roundModification(modification) {
     // Example: allow score override, round reset, etc.
@@ -361,7 +371,8 @@ export class BattleEngine {
     }
     this.lastModification = modification;
     return {
-      message: `Round modified${modification ? ": " + JSON.stringify(modification) : ""}`,
+      outcome: OUTCOME.ROUND_MODIFIED,
+      matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
@@ -372,16 +383,17 @@ export class BattleEngine {
    *
    * @pseudocode
    * 1. Stop timer, set error flag, and log error.
-   * 2. Return error message and scores.
+   * 2. Return an error outcome and scores.
    *
    * @param {string} errorMsg - Error message.
-   * @returns {{message: string, playerScore: number, opponentScore: number}}
+   * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   handleError(errorMsg) {
     this.stopTimer();
     this.lastError = errorMsg;
     return {
-      message: `Error: ${errorMsg}`,
+      outcome: OUTCOME.ERROR,
+      matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };

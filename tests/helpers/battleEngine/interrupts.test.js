@@ -30,7 +30,7 @@ beforeEach(() => {
 
 describe("BattleEngine interrupts", () => {
   it("interruptRound stops timer and records reason", async () => {
-    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
     engine._resetForTest();
     await engine.startRound(
@@ -48,14 +48,15 @@ describe("BattleEngine interrupts", () => {
     expect(engine.lastInterruptReason).toBe("referee");
     expect(engine.timer.hasActiveTimer()).toBe(false);
     expect(result).toEqual({
-      message: "Round interrupted: referee",
+      outcome: OUTCOME.INTERRUPT_ROUND,
+      matchEnded: false,
       playerScore: 1,
       opponentScore: 2
     });
   });
 
   it("interruptMatch stops timer and ends match", async () => {
-    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
     engine._resetForTest();
     await engine.startRound(
@@ -73,14 +74,15 @@ describe("BattleEngine interrupts", () => {
     expect(engine.lastInterruptReason).toBe("injury");
     expect(engine.timer.hasActiveTimer()).toBe(false);
     expect(result).toEqual({
-      message: "Match interrupted: injury",
+      outcome: OUTCOME.INTERRUPT_MATCH,
+      matchEnded: true,
       playerScore: 3,
       opponentScore: 4
     });
   });
 
   it("roundModification applies overrides and resetRound", async () => {
-    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
     engine._resetForTest();
     await engine.startRound(
@@ -105,7 +107,8 @@ describe("BattleEngine interrupts", () => {
     expect(engine.roundsPlayed).toBe(2);
     expect(engine.roundInterrupted).toBe(false);
     expect(result).toEqual({
-      message: `Round modified: ${JSON.stringify(modification)}`,
+      outcome: OUTCOME.ROUND_MODIFIED,
+      matchEnded: false,
       playerScore: 5,
       opponentScore: 1
     });
