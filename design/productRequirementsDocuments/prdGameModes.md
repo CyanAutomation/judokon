@@ -56,6 +56,42 @@ Improving session variety directly supports retention and encourages more person
 - Mode entry and exit flows should be clear to prevent disorientation.
 - Mode exit returns to the map with confirmation ("Are you sure?").
 
+### Engine Integration Example
+
+```js
+import BattleEngine from "../../src/helpers/BattleEngine.js";
+import { renderMessage } from "../../src/ui/renderMessage.js";
+
+export function startTrainingMode() {
+  const engine = new BattleEngine({ pointsToWin: 1 });
+
+  const messages = {
+    roundStarted: ({ round }) => ({
+      surface: "#status",
+      text: `Round ${round}`
+    }),
+    matchEnded: ({ outcome }) => ({
+      surface: "#status",
+      text: `Match ${outcome}`
+    })
+  };
+
+  engine.on("roundStarted", (payload) => {
+    const { surface, text } = messages.roundStarted(payload);
+    renderMessage(surface, text);
+  });
+
+  engine.on("matchEnded", (payload) => {
+    const { surface, text } = messages.matchEnded(payload);
+    renderMessage(surface, text);
+  });
+
+  engine.start();
+}
+```
+
+The engine contains no UI code. Game modes translate events into messages and decide how to present them.
+
 ---
 
 ## Prioritized Functional Requirements
