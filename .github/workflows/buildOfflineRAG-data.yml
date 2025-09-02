@@ -1,4 +1,4 @@
-name: Build Offline RAG (Manual)
+name: Build Offline RAG (Data)
 
 on:
   workflow_dispatch:
@@ -132,31 +132,28 @@ jobs:
         run: |
           OUT_DIR="${{ steps.prep.outputs.out_dir }}"
           size_kb() {
-            test -f "$1" && echo "$(( $(wc -c < "$1")/1024 ))KB" || echo "—"
+            test -f "$1" && echo "$(($(wc -c < "$1")/1024))KB" || echo "—"
           }
 
-          VEC_SZ=$(size_kb "$OUT_DIR/offline_rag_vectors.bin")
+          IDX_SZ=$(size_kb "$OUT_DIR/offline_rag_vectors.bin")
           META_SZ=$(size_kb "$OUT_DIR/offline_rag_metadata.json")
 
           if [ -f "$OUT_DIR/offline_rag_metadata.json" ]; then
-            read -r DIM DOCS <<<"$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(`${m.vectorLength||"?"} ${m.count||"?"}`);' "$OUT_DIR/offline_rag_metadata.json")"
+            DOCS=$(node -e 'const m=require(process.argv[1]);console.log(m.count || "?")' "$OUT_DIR/offline_rag_metadata.json")
           else
             DOCS="?"
-            DIM="?"
           fi
 
-          echo "vec=${VEC_SZ}"   >> $GITHUB_OUTPUT
+          echo "idx=${IDX_SZ}"  >> $GITHUB_OUTPUT
           echo "meta=${META_SZ}" >> $GITHUB_OUTPUT
           echo "docs=${DOCS}"    >> $GITHUB_OUTPUT
-          echo "dim=${DIM}"      >> $GITHUB_OUTPUT
 
           {
-            echo "### Offline RAG Build Summary"
+            echo "### Offline RAG Build Summary (data)"
             echo ""
-            echo "- **Vectors size:** ${VEC_SZ}"
+            echo "- **Index size:** ${IDX_SZ}"
             echo "- **Meta size:** ${META_SZ}"
             echo "- **Docs:** ${DOCS}"
-            echo "- **Dim:** ${DIM}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create Pull Request
@@ -164,21 +161,19 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore(rag-offline): refresh offline RAG assets"
-          title: "Offline RAG refresh (${{ env.DATE }})"
+          commit-message: "chore(rag-offline): refresh offline RAG data"
+          title: "Offline RAG data refresh (${{ env.DATE }})"
           body: |
-            This PR refreshes the offline RAG artifacts.
+            This PR refreshes the **offline RAG data** artifacts.
 
-            Summary
-            - Vectors size: ${{ steps.sizes.outputs.vec }}
-            - Meta size:    ${{ steps.sizes.outputs.meta }}
-            - Docs:         ${{ steps.sizes.outputs.docs }}
-            - Dim:          ${{ steps.sizes.outputs.dim }}
+            **Summary**
+            - Index size: ${{ steps.sizes.outputs.idx }}
+            - Meta size:  ${{ steps.sizes.outputs.meta }}
+            - Docs:       ${{ steps.sizes.outputs.docs }}
 
             Notes:
-            - Uses script: npm run build:offline-rag
-          branch: chore/offline-rag-refresh
-          branch-suffix: timestamp
+            - Uses script: `npm run build:offline-rag`
+          branch: chore/offline-rag-data-refresh
           labels: |
             automated
             offline
@@ -186,5 +181,4 @@ jobs:
 
       - name: No changes
         if: steps.stage.outputs.changed != 'true'
-        run: echo "No offline RAG changes detected."
-
+        run: echo "No offline RAG data changes detected."
