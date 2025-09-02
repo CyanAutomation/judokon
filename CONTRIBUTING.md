@@ -5,6 +5,10 @@ It consolidates the instructions from `AGENTS.md` and the design documents so co
 
 The project ships directly as static ES modules without a build step.
 
+### Terminal Safety
+
+When running terminal searches like `grep` or `find`, exclude `client_embeddings.json` and `offline_rag_metadata.json` to prevent output overflow. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
+
 ---
 
 ## ✅ Required Programmatic Checks
