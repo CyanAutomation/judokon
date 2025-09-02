@@ -24,7 +24,6 @@ describe("applyOutcome", () => {
   let engine;
   beforeEach(() => {
     engine = new BattleEngine();
-    engine._resetForTest();
   });
 
   it("increments player score on player win", () => {
@@ -50,7 +49,6 @@ describe("BattleEngine handleStatSelection", () => {
   let engine;
   beforeEach(() => {
     engine = new BattleEngine();
-    engine._resetForTest();
   });
 
   it("handles player win", () => {

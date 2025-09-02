@@ -1,5 +1,5 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
-import { _resetForTest as resetEngineForTest } from "../battleEngineFacade.js";
+import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState, setSkipHandler } from "./skipHandler.js";
@@ -79,7 +79,7 @@ function getStartRound(store) {
  * test debug APIs).
  *
  * @pseudocode
- * 1. Call engine `_resetForTest` to clear score and internal state.
+ * 1. Create a fresh engine instance via `createBattleEngine()` to clear score and internal state.
  * 2. Emit a `game:reset-ui` CustomEvent so UI components can teardown.
  * 3. Resolve the appropriate `startRound` function (possibly overridden) and call it.
  *
@@ -87,7 +87,7 @@ function getStartRound(store) {
  * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
  */
 export async function handleReplay(store) {
-  resetEngineForTest();
+  createBattleEngine();
   window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
   const startRoundFn = getStartRound(store);
   return startRoundFn();
@@ -383,7 +383,7 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
  * teardown and reinitialize.
  *
  * @pseudocode
- * 1. Reset skip and selection subsystems, and call engine's `_resetForTest`.
+ * 1. Reset skip and selection subsystems, and recreate the engine via `createBattleEngine()`.
  * 2. Stop any schedulers and clear debug overrides on `window`.
  * 3. If a `store` is provided, clear its timeouts and selection state and
  *    dispatch `game:reset-ui` with the store detail. Otherwise dispatch a
@@ -395,7 +395,7 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
 export function _resetForTest(store) {
   resetSkipState();
   resetSelection();
-  battleEngine._resetForTest();
+  createBattleEngine();
   stopScheduler();
   if (typeof window !== "undefined") {
     const api = readDebugState("classicBattleDebugAPI");

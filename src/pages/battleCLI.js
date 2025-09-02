@@ -9,7 +9,12 @@ import {
 import * as battleOrchestrator from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../helpers/BattleEngine.js";
-import { setPointsToWin, getPointsToWin, getScores } from "../helpers/battleEngineFacade.js";
+import {
+  createBattleEngine,
+  setPointsToWin,
+  getPointsToWin,
+  getScores
+} from "../helpers/battleEngineFacade.js";
 import statNamesData from "../data/statNames.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
@@ -31,6 +36,8 @@ import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
+
+createBattleEngine();
 
 function disposeClassicBattleOrchestrator() {
   try {

@@ -21,7 +21,6 @@ describe("BattleEngine robustness scenarios", () => {
   beforeEach(async () => {
     const { BattleEngine } = await import("../../src/helpers/BattleEngine.js");
     engine = new BattleEngine();
-    engine._resetForTest();
   });
 
   it("pauses and resumes timer on tab inactivity", () => {
@@ -56,7 +55,6 @@ describe("BattleEngine timer pause/resume and drift correction", () => {
   beforeEach(async () => {
     const { BattleEngine } = await import("../../src/helpers/BattleEngine.js");
     engine = new BattleEngine();
-    engine._resetForTest();
   });
 
   it("pauses and resumes the timer", () => {

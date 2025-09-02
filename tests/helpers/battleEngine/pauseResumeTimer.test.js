@@ -35,10 +35,10 @@ beforeEach(() => {
 
 describe("pauseTimer/resumeTimer", () => {
   it("resumes countdown from paused remaining time", async () => {
-    const { startRound, pauseTimer, resumeTimer, getTimerState, _resetForTest } = await import(
+    const { createBattleEngine, startRound, pauseTimer, resumeTimer, getTimerState } = await import(
       "../../../src/helpers/battleEngineFacade.js"
     );
-    _resetForTest();
+    createBattleEngine();
 
     await startRound(
       () => {},
