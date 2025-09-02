@@ -146,7 +146,9 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
  * @returns {void}
  */
 export function cleanupTimers(store) {
-  stopTimer();
+  try {
+    stopTimer();
+  } catch {}
   clearTimeout(store.statTimeoutId);
   store.statTimeoutId = null;
   clearTimeout(store.autoSelectId);

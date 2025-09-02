@@ -121,6 +121,10 @@ export function initSearchFilter(searchInput, updateList, debounceMs = 300) {
  * 4. Remove the `copied` class after `removeDelayMs` (600ms default).
  * 5. When copying fails, inform the user that copying isn't supported.
  *
+ * @param {HTMLElement} keyCopyBtn - Button element used to copy the tooltip key.
+ * @param {HTMLElement} bodyCopyBtn - Button element used to copy the tooltip body text.
+ * @param {number} [removeDelayMs=600] - Milliseconds before removing the visual `copied` feedback.
+ * @returns {void}
  */
 export function bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs = 600) {
   // Use dynamic import so tests can vi.doMock this module after initial import
@@ -239,6 +243,18 @@ export function bindCopyButtons(keyCopyBtn, bodyCopyBtn, removeDelayMs = 600) {
  *
  * @param {HTMLElement} listPlaceholder - List element containing tooltip items.
  * @param {(key: string) => void} select - Selection callback.
+ */
+/**
+ * Select and scroll to the list item referenced by `location.hash`.
+ *
+ * @pseudocode
+ * 1. Read the current URL hash and decode it to a key; return early on decode errors.
+ * 2. Attempt to find the DOM element with `data-key` matching the key.
+ * 3. If the element is found, call `select(key)` and scroll it into view.
+ *
+ * @param {HTMLElement} listPlaceholder - List element containing tooltip items.
+ * @param {(key: string) => void} select - Selection callback.
+ * @returns {void}
  */
 export function applyHashSelection(listPlaceholder, select) {
   if (location.hash) {

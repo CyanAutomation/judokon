@@ -12,6 +12,10 @@ import { getSetting } from "./settingsCache.js";
 /**
  * Determine whether the typewriter effect should run.
  *
+ * @pseudocode
+ * 1. Read the `typewriterEffect` preference from the settings cache using `getSetting`.
+ * 2. Coerce the returned value to a boolean and return it.
+ *
  * @returns {boolean} True when the effect is enabled.
  */
 export function shouldEnableTypewriter() {

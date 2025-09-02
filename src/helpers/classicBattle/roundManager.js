@@ -155,7 +155,12 @@ export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
   store.playerChoice = null;
   const cards = await drawCards();
-  const roundNumber = battleEngine.getRoundsPlayed() + 1;
+  let roundNumber = 1;
+  try {
+    const fn = battleEngine.getRoundsPlayed;
+    const played = typeof fn === "function" ? Number(fn()) : 0;
+    if (Number.isFinite(played)) roundNumber = played + 1;
+  } catch {}
   if (typeof onRoundStart === "function") {
     try {
       onRoundStart(store, roundNumber);

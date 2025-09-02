@@ -16,6 +16,20 @@ let tooltipEl;
 /**
  * Recursively flatten a tooltip object using dot notation.
  *
+ * This converts nested tooltip category objects into a single-level map
+ * where keys are joined by `.` (for example `settings.display.mode`).
+ *
+ * @pseudocode
+ * 1. If `obj` is null/undefined or not an object, return an empty map.
+ * 2. For each entry (key, value) in `obj`:
+ *    - Compute the full `id` by joining `prefix` and `key` with a dot when `prefix` is present.
+ *    - If `value` is a plain object (and not an Array), recurse into `flattenTooltips(value, id)` and merge results.
+ *    - Otherwise set `acc[id] = value` (this preserves leaf values like strings or arrays).
+ * 3. Return the accumulated flat map.
+ *
+ * Why: Flattening simplifies lookup of tooltip text by a single string key and
+ * avoids repeated nested traversal at runtime when resolving tooltip IDs.
+ *
  * @param {Record<string, any>} obj - Nested tooltip definitions.
  * @param {string} [prefix=""] - Current key prefix.
  * @returns {Record<string, string>} Flattened tooltip map.
@@ -69,6 +83,10 @@ async function loadTooltips() {
 
 /**
  * Retrieve the flattened tooltip map.
+ *
+ * @pseudocode
+ * 1. Return the promise produced by `loadTooltips()` which will load and cache
+ *    the flattened tooltip mapping.
  *
  * @returns {Promise<Record<string, string>>} Tooltip lookup object.
  */
