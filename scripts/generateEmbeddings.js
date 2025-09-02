@@ -649,8 +649,10 @@ async function loadModel() {
     const modelDir = path.join("models", "minilm");
     const configPath = path.join(rootDir, modelDir, "config.json");
     const onnxPath = path.join(rootDir, modelDir, "onnx", "model_quantized.onnx");
+    const tokenizerPath = path.join(rootDir, modelDir, "tokenizer.json");
+    const tokenizerConfigPath = path.join(rootDir, modelDir, "tokenizer_config.json");
     let useLocal = true;
-    for (const file of [configPath, onnxPath]) {
+    for (const file of [configPath, onnxPath, tokenizerPath, tokenizerConfigPath]) {
       try {
         const stats = await stat(file);
         if (stats.size === 0) throw new Error("empty");
