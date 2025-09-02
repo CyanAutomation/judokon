@@ -12,19 +12,48 @@ import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
 
 /**
- * Singleton engine instance used by application code and helpers.
- *
- * @summary A single shared `BattleEngine` instance used across the app.
- * @pseudocode
- * 1. Construct a new `BattleEngine` and export it so modules can delegate calls.
- * @type {BattleEngine}
+ * @typedef {object} IBattleEngine
+ * @property {(value:number) => void} setPointsToWin
+ * @property {() => number} getPointsToWin
+ * @property {() => void} stopTimer
+ * @property {(...args:any[]) => Promise<void>} startRound
+ * @property {(...args:any[]) => Promise<void>} startCoolDown
+ * @property {() => void} pauseTimer
+ * @property {() => void} resumeTimer
+ * @property {(...args:any[]) => {delta:number, outcome:keyof typeof OUTCOME, matchEnded:boolean, playerScore:number, opponentScore:number}} handleStatSelection
+ * @property {() => {outcome:keyof typeof OUTCOME, matchEnded:boolean, playerScore:number, opponentScore:number}} quitMatch
+ * @property {(reason?:string) => {outcome:keyof typeof OUTCOME, matchEnded:boolean, playerScore:number, opponentScore:number}} interruptMatch
+ * @property {() => object} getScores
+ * @property {() => number} getRoundsPlayed
+ * @property {() => boolean} isMatchEnded
+ * @property {() => object} getTimerState
  */
-export const battleEngine = new BattleEngine({
-  pointsToWin: CLASSIC_BATTLE_POINTS_TO_WIN,
-  maxRounds: CLASSIC_BATTLE_MAX_ROUNDS,
-  stats: STATS,
-  debugHooks: { getStateSnapshot }
-});
+
+/** @type {IBattleEngine|undefined} */
+let battleEngine;
+
+/**
+ * Create a new battle engine instance.
+ *
+ * @summary Factory returning a fresh `BattleEngine` instance.
+ * @pseudocode
+ * 1. Construct a new `BattleEngine` with default classic config merged with `config`.
+ * 2. Store the instance for use by exported wrapper helpers.
+ * 3. Return the new instance.
+ *
+ * @param {object} [config]
+ * @returns {IBattleEngine}
+ */
+export function createBattleEngine(config = {}) {
+  battleEngine = new BattleEngine({
+    pointsToWin: CLASSIC_BATTLE_POINTS_TO_WIN,
+    maxRounds: CLASSIC_BATTLE_MAX_ROUNDS,
+    stats: STATS,
+    debugHooks: { getStateSnapshot },
+    ...config
+  });
+  return battleEngine;
+}
 
 /**
  * Set the number of points required to win a match.
@@ -173,15 +202,7 @@ export const isMatchEnded = () => battleEngine.isMatchEnded();
  */
 export const getTimerState = () => battleEngine.getTimerState();
 
-/**
- * Internal test helper to reset engine state between tests.
- *
- * @pseudocode
- * 1. Call `battleEngine._resetForTest()` to clear internal state.
- *
- * @returns {void}
- */
-export const _resetForTest = () => battleEngine._resetForTest();
+// Internal test helper removed; tests should instantiate engines via `createBattleEngine()`.
 
 /**
  * Note: All thin wrappers above are intentionally documented with @pseudocode

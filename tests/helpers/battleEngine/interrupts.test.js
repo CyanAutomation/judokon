@@ -32,7 +32,6 @@ describe("BattleEngine interrupts", () => {
   it("interruptRound stops timer and records reason", async () => {
     const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
-    engine._resetForTest();
     await engine.startRound(
       () => {},
       () => {},
@@ -58,7 +57,6 @@ describe("BattleEngine interrupts", () => {
   it("interruptMatch stops timer and ends match", async () => {
     const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
-    engine._resetForTest();
     await engine.startRound(
       () => {},
       () => {},
@@ -84,7 +82,6 @@ describe("BattleEngine interrupts", () => {
   it("roundModification applies overrides and resetRound", async () => {
     const { BattleEngine, OUTCOME } = await import("../../../src/helpers/BattleEngine.js");
     const engine = new BattleEngine();
-    engine._resetForTest();
     await engine.startRound(
       () => {},
       () => {},

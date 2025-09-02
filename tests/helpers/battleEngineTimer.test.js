@@ -24,7 +24,6 @@ describe("timer defaults", () => {
     let startRound;
     let startCoolDown;
     let timerUtils;
-    let resetFacade;
 
     beforeEach(async () => {
       vi.doMock("../../src/helpers/timerUtils.js", async (importOriginal) => {
@@ -41,13 +40,11 @@ describe("timer defaults", () => {
         };
       });
 
-      ({
-        startRound,
-        startCoolDown,
-        _resetForTest: resetFacade
-      } = await import("../../src/helpers/battleEngineFacade.js"));
+      ({ createBattleEngine, startRound, startCoolDown } = await import(
+        "../../src/helpers/battleEngineFacade.js"
+      ));
       timerUtils = await import("../../src/helpers/timerUtils.js");
-      resetFacade();
+      createBattleEngine();
     });
 
     it("startRound uses default duration when none provided", async () => {
@@ -94,10 +91,10 @@ describe("pause and resume timer", () => {
       };
     });
 
-    const { startRound, pauseTimer, resumeTimer, getTimerState, _resetForTest } = await import(
+    const { createBattleEngine, startRound, pauseTimer, resumeTimer, getTimerState } = await import(
       "../../src/helpers/battleEngineFacade.js"
     );
-    _resetForTest();
+    createBattleEngine();
     await startRound(
       () => {},
       () => {},
