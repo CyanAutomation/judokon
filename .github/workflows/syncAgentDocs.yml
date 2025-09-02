@@ -131,8 +131,8 @@ jobs:
           set -euo pipefail
           DIFF=$(git diff --unified=0 -- AGENTS.md || true)
 
-          ADDED=$(printf "%s" "$DIFF" | grep -E '^\+' | grep -vE '^\+\+\+' | wc -l | tr -d ' ' || echo 0)
-          REMOVED=$(printf "%s" "$DIFF" | grep -E '^\-' | grep -vE '^\-\-\-' | wc -l | tr -d ' ' || echo 0)
+          ADDED=$(printf "%s" "$DIFF" | grep -cE '^\+[^+]')
+          REMOVED=$(printf "%s" "$DIFF" | grep -cE '^-[^-]')
           TOTAL=$((ADDED + REMOVED))
 
           if   [ "$TOTAL" -lt 20 ];  then MOOD="Tiny tune-up 🎻"
