@@ -11,14 +11,14 @@ export const STATIC_FALLBACK = "\u65e5\u672c\u8a9e\u98a8\u30c6\u30ad\u30b9\u30c8
  * 2. Use the imported converter mapping.
  *    - If the mapping is missing, return `STATIC_FALLBACK`.
  * 3. Clean the text by removing characters other than letters, numbers, and whitespace.
- * 4. Build a list of fallback characters from the mapping values.
- * 5. If the cleaned text contains only digits and whitespace, return an empty string.
- * 6. For each character in the cleaned text:
+ *    - Build a list of fallback characters from the mapping values.
+ * 4. If the cleaned text contains only digits and whitespace, return an empty string.
+ * 5. For each character in the cleaned text:
  *    - Preserve whitespace characters as-is.
  *    - Map letters (case-insensitive) when possible.
  *    - Replace digits and unmapped letters with a random fallback character.
  *      - Use `seededRandom()` for deterministic output in Test Mode.
- * 7. Join and return the converted string.
+ * 6. Join and return the converted string.
  *
  * @param {string} input - The text to convert.
  * @returns {string} The pseudo-Japanese representation.
