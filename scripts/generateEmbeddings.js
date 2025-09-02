@@ -211,7 +211,7 @@ const JSON_FIELD_ALLOWLIST = {
   "countryCodeMapping.json": false,
   "offline_rag_metadata.json": false,
   "gameModes.json": ["name", "japaneseName", "description", "rules"],
-  "gameTimers.json": ["description", "category"],
+  "gameTimers.js": ["description", "category"],
   "gokyo.json": ["name", "japanese", "description", "style", "category", "subCategory"],
   "japaneseConverter.json": false,
   "judoka.json": [
