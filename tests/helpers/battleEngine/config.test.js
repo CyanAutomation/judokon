@@ -32,4 +32,17 @@ describe("BattleEngine configuration", () => {
     const content = fs.readFileSync(file, "utf8");
     expect(content).not.toMatch(/classicBattle\/battleDebug/);
   });
+
+  it("supports per-instance overrides without cross-talk", () => {
+    const engineA = new BattleEngine({ pointsToWin: 1, stats: ["x"] });
+    const engineB = new BattleEngine({ pointsToWin: 2, stats: ["y", "z"] });
+
+    engineA.handleStatSelection(10, 5);
+    engineB.handleStatSelection(10, 5);
+
+    expect(engineA.matchEnded).toBe(true);
+    expect(engineB.matchEnded).toBe(false);
+    expect(engineA.stats).toEqual(["x"]);
+    expect(engineB.stats).toEqual(["y", "z"]);
+  });
 });
