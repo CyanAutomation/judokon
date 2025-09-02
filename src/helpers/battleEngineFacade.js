@@ -7,7 +7,7 @@ import { BattleEngine } from "./BattleEngine.js";
  * @pseudocode
  * 1. Import engine implementation from `./BattleEngine.js` and re-export its public API.
  */
-export { BattleEngine, STATS } from "./BattleEngine.js";
+export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
 
 /**
  * Singleton engine instance used by application code and helpers.
@@ -99,7 +99,7 @@ export const resumeTimer = () => battleEngine.resumeTimer();
  * 1. Call `battleEngine.handleStatSelection(...args)` and return its result.
  *
  * @param {...any} args
- * @returns {object}
+ * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
  */
 export const handleStatSelection = (...args) => battleEngine.handleStatSelection(...args);
 
@@ -109,7 +109,7 @@ export const handleStatSelection = (...args) => battleEngine.handleStatSelection
  * @pseudocode
  * 1. Delegate to `battleEngine.quitMatch()`.
  *
- * @returns {void}
+ * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
  */
 export const quitMatch = () => battleEngine.quitMatch();
 
@@ -119,10 +119,10 @@ export const quitMatch = () => battleEngine.quitMatch();
  * @pseudocode
  * 1. Stop the timer and set matchEnded to true.
  * 2. Optionally log or store the reason.
- * 3. Return an interrupt message and current scores.
+ * 3. Return an interrupt outcome and current scores.
  *
  * @param {string} [reason] - Reason for interruption.
- * @returns {{message: string, playerScore: number, opponentScore: number}}
+ * @returns {{outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
  */
 export const interruptMatch = (reason) => battleEngine.interruptMatch(reason);
 

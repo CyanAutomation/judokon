@@ -2,6 +2,7 @@ import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { showResult } from "../battle/index.js";
+import { getOutcomeMessage } from "../api/battleUI.js";
 import { navigateToHome } from "../navUtils.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { getBattleState } from "./eventBus.js";
@@ -84,7 +85,7 @@ export function quitMatch(store, trigger) {
   if (!store.quitModal) {
     store.quitModal = createQuitConfirmation(store, () => {
       const result = battleEngine.quitMatch();
-      showResult(result.message);
+      showResult(getOutcomeMessage(result.outcome));
     });
   }
   const fallback = document.getElementById("quit-match-button");

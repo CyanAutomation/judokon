@@ -1,4 +1,4 @@
-import { STATS, handleStatSelection } from "../battleEngineFacade.js";
+import { STATS, handleStatSelection, OUTCOME } from "../battleEngineFacade.js";
 
 /**
  * Choose an opponent stat based on difficulty and available values.
@@ -33,17 +33,46 @@ export function chooseOpponentStat(values, difficulty = "easy") {
   return STATS[Math.floor(Math.random() * STATS.length)];
 }
 
+const OUTCOME_MESSAGES = {
+  [OUTCOME.WIN_PLAYER]: "You win the round!",
+  [OUTCOME.WIN_OPPONENT]: "Opponent wins the round!",
+  [OUTCOME.DRAW]: "Tie – no score!",
+  [OUTCOME.MATCH_WIN_PLAYER]: "You win the match!",
+  [OUTCOME.MATCH_WIN_OPPONENT]: "Opponent wins the match!",
+  [OUTCOME.MATCH_DRAW]: "Match ends in a tie!",
+  [OUTCOME.QUIT]: "You quit the match. You lose!",
+  [OUTCOME.INTERRUPT_ROUND]: "Round interrupted",
+  [OUTCOME.INTERRUPT_MATCH]: "Match interrupted",
+  [OUTCOME.ROUND_MODIFIED]: "Round modified",
+  [OUTCOME.ERROR]: "Error"
+};
+
 /**
- * Evaluate a round using player and opponent stat values.
+ * Map an outcome code to a localized message.
+ *
+ * @pseudocode
+ * 1. Use a lookup table keyed by outcome codes.
+ * 2. Return the matching message or an empty string.
+ *
+ * @param {keyof typeof OUTCOME} outcome - Outcome code from the engine.
+ * @returns {string} Localized message.
+ */
+export function getOutcomeMessage(outcome) {
+  return OUTCOME_MESSAGES[outcome] || "";
+}
+
+/**
+ * @summary Evaluate a round and map the outcome to a message.
  *
  * @pseudocode
  * 1. Delegate to `handleStatSelection` on the battle engine with the provided values.
- * 2. Return its result.
+ * 2. Map the returned outcome code to a user-facing message.
  *
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
- * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number}}
+ * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number, message: string}}
  */
 export function evaluateRound(playerVal, opponentVal) {
-  return handleStatSelection(playerVal, opponentVal);
+  const result = handleStatSelection(playerVal, opponentVal);
+  return { ...result, message: getOutcomeMessage(result.outcome) };
 }
