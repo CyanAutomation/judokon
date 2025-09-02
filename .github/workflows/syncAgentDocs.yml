@@ -54,13 +54,7 @@ jobs:
           set -euo pipefail
           npm run sync:agents
 
-      # 5) Date (for branch/title)
-      - name: Get current date
-        id: date
-        if: steps.changes.outputs.changed == 'true'
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      # 6) Check for changes in working tree (multi-line changed_files output)
+      # 5) Check for changes in working tree (multi-line changed_files output)
       - name: Check for changes
         id: changes
         run: |
@@ -71,13 +65,21 @@ jobs:
             # get clean file paths, unique
             changed_files_list=$(git status --porcelain | sed -E 's/^.. //' | sort -u)
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "changed_files<<'EOF'" >> $GITHUB_OUTPUT
-            echo "$changed_files_list" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            {
+              echo "changed_files<<EOF"
+              echo "$changed_files_list"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
             echo "changed_files=" >> $GITHUB_OUTPUT
           fi
+
+      # 6) Date (for branch/title)
+      - name: Get current date
+        id: date
+        if: steps.changes.outputs.changed == 'true'
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       # ——— Extras: run only when there are changes ———
 
@@ -162,7 +164,7 @@ jobs:
           fi
 
           {
-            echo "list<<'EOF'"
+            echo "list<<EOF"
             echo "$SECTIONS"
             echo "EOF"
           } >> $GITHUB_OUTPUT

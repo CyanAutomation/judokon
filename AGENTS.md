@@ -1,6 +1,36 @@
 # 🤖 JU-DO-KON! Agent Guide
 
-This document exists to help AI agents (and human collaborators) make effective, accurate, and consistent contributions to the JU-DO-KON! codebase. Agents should treat this guide as both a checklist and a playbook.
+This guide helps AI agents (and human collaborators) make effective, accurate, and consistent contributions to the JU-DO-KON! codebase. Treat it as both a checklist and a playbook.
+
+## Table of Contents
+
+- [🎯 Mission Statement](#mission-statement)
+- [🧠 RAG Usage](#rag-usage)
+- [🧪 Prompt Templates](#prompt-templates)
+- [✅ Evaluation Criteria for Agent Contributions](#evaluation-criteria-for-agent-contributions)
+- [📚 Key Files for AI Agents](#key-files-for-ai-agents)
+- [✅ DOs and ❌ DON’Ts](#dos-and-donts)
+  - [Classic Battle: Testing and Rebinding](#classic-battle-testing-and-rebinding)
+- [🧯 Runtime Safeguards](#runtime-safeguards)
+  - [Terminal Safety](#terminal-safety)
+  - [🎞️ Animation Scheduler](#animation-scheduler)
+  - [⏱️ Selection Timer Cleanup](#selection-timer-cleanup)
+- [🔧 Module Loading Policy for Agents](#module-loading-policy-for-agents)
+  - [Decision Checklist](#decision-checklist)
+  - [Definition of Hot Path (JU-DO-KON!)](#definition-of-hot-path-ju-do-kon)
+  - [Agent Requirements](#agent-requirements)
+  - [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+  - [PR Deliverables for Import Changes](#pr-deliverables-for-import-changes)
+- [🛠 Programmatic Checks Before Commit](#programmatic-checks-before-commit)
+- [Testing Discipline: Keep Vitest Output Clean](#testing-discipline-keep-vitest-output-clean-consolewarn--consoleerror)
+- [🔗 Related Docs](#related-docs)
+- [Task Contract (required for each assignment)](#task-contract-required-for-each-assignment)
+- [Assumptions & Clarifying Questions](#assumptions--clarifying-questions)
+- [RAG provenance and citation](#rag-provenance-and-citation-required-when-using-queryrag)
+- [Verification / Green-before-done checklist](#verification--green-before-done-checklist)
+- [Prompting templates (system / user / output)](#prompting-templates-system--user--output)
+- [Tool-batch preface example](#tool-batch-preface-example)
+- [PR guidance for agent-made changes](#pr-guidance-for-agent-made-changes)
 
 ---
 
@@ -13,7 +43,7 @@ AI agents play a vital role in maintaining quality, clarity, and scalability acr
 - Efficient collaboration with human reviewers
 - A bias toward clarity, simplicity, and modularity
 
-A successful agent contribution is **concise**, **compliant with code standards**, and **adds lasting value** without introducing regressions or complexity.
+A successful agent contribution is concise, compliant with code standards, and adds lasting value without introducing regressions or complexity.
 
 ## 🧠 RAG Usage
 
@@ -29,17 +59,14 @@ Sample queries:
 - "Summarize the classicBattle module"
 - "Outline how settings persistence works"
 
-- When a prompt starts with question patterns like "Explain X" or "How does Y work?",
-  call [`queryRag(question)`](src/helpers/queryRag.js) to gather context before scanning files.
-- For deeper guidance and code samples, see
-  [example vector queries](design/agentWorkflows/exampleVectorQueries.md#queryrag-helper).
+- When a prompt starts with question patterns like "Explain X" or "How does Y work?", call [`queryRag(question)`](src/helpers/queryRag.js) to gather context before scanning files.
+- For deeper guidance and code samples, see [example vector queries](design/agentWorkflows/exampleVectorQueries.md#queryrag-helper).
 
 ---
 
 ## 🧪 Prompt Templates
 
-Before applying any template, look for question-style prompts such as
-"Explain X" or "How does Y work?" and run `queryRag` for context.
+Before applying any template, look for question-style prompts such as "Explain X" or "How does Y work?" and run `queryRag` for context.
 
 Use these prompt formats when engaging with AI or testing tools:
 
@@ -77,16 +104,16 @@ Before submitting or completing a task, verify that your work:
 
 ## 📚 Key Files for AI Agents
 
-| Purpose                       | File(s)                                                                 |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| Tooltip content               | src/data/tooltips.json                                                  |
-| Game stats and player data    | src/data/judoka.json, src/data/statNames.js                             |
-| Feature flags & settings      | src/pages/settings.html, src/config/settingsDefaults.js                 |
-| Tooltip viewer                | src/pages/tooltipViewer.html                                            |
-| Debug + Observability targets | Components with data-_, like data-tooltip-id, data-flag, data-feature-_ |
-| UI test entry points          | playwright/_.spec.js, tests/\*\*/_.test.js                              |
-| Component factories           | src/components/\*.js                                                    |
-| Battle logic and UI           | classicBattle.js, setupScoreboard.js, Scoreboard.js                     |
+| Purpose                       | File(s)                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| Tooltip content               | `src/data/tooltips.json`                                                        |
+| Game stats and player data    | `src/data/judoka.json`, `src/data/statNames.js`                                 |
+| Feature flags & settings      | `src/pages/settings.html`, `src/config/settingsDefaults.js`                     |
+| Tooltip viewer                | `src/pages/tooltipViewer.html`                                                  |
+| Debug + Observability targets | Components with `data-_`, like `data-tooltip-id`, `data-flag`, `data-feature-_` |
+| UI test entry points          | `playwright/_.spec.js`, `tests/**/_.test.js`                                    |
+| Component factories           | `src/components/*.js`                                                           |
+| Battle logic and UI           | `classicBattle.js`, `setupScoreboard.js`, `Scoreboard.js`                       |
 
 ---
 
@@ -94,13 +121,13 @@ Before submitting or completing a task, verify that your work:
 
 ### ✅ DO
 
-- Use data-flag, data-tooltip-id, and data-feature-\* for all toggles and testable features
+- Use `data-flag`, `data-tooltip-id`, and `data-feature-*` for all toggles and testable features
 - Refactor large functions into smaller helpers (~50 lines max)
 - Write and maintain clear @pseudocode for public functions
 - Validate all modified JSON files with `npm run validate:data`
 - Use createButton, createCard, createModal factories when building UI
 
-## Classic Battle: Testing and Rebinding
+### Classic Battle: Testing and Rebinding
 
 - Prefer `tests/helpers/initClassicBattleTest.js` to initialize bindings:
   - Call `await initClassicBattleTest({ afterMock: true })` immediately after `vi.doMock(...)` inside a test to rebind event listeners and reset promises.
@@ -130,7 +157,7 @@ To prevent session crashes in the terminal:
 > **Always exclude `client_embeddings.json` and `offline_rag_metadata.json` from terminal searches.**  
 > It contains very long lines that can exceed the 4096-byte output limit and terminate the shell.
 
-#### ✅ Use safe search patterns:
+#### ✅ Use safe search patterns
 
 ```bash
 grep "kumi-kata" . --exclude=client_embeddings.json --exclude=offline_rag_metadata.json
@@ -217,7 +244,7 @@ npx playwright test
 npm run check:contrast
 ```
 
-**Common fixes:**
+**Common fixes**
 
 ```bash
 npm run check:jsdoc:fix
