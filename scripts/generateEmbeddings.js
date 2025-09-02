@@ -604,6 +604,18 @@ async function getFiles() {
 /**
  * Load the MiniLM feature extractor in quantized form.
  *
+ * @pseudocode
+ * if running in Node:
+ *   import pipeline and env
+ *   enable local model loading
+ *   try to resolve ONNX worker and wasm directory
+ *     set wasm paths (with trailing separator) and worker script
+ *   catch resolution failure
+ *     use default worker and wasm paths
+ *   disable ONNX proxy and load quantized model from local disk
+ * else:
+ *   load quantized model from remote source
+ *
  * @returns {Promise<any>} Initialized pipeline instance.
  */
 async function loadModel() {
@@ -618,10 +630,11 @@ async function loadModel() {
       );
       await stat(workerPath);
       const ortDir = path.dirname(workerPath);
-      env.backends.onnx.wasm.wasmPaths = ortDir;
+      env.backends.onnx.wasm.wasmPaths = path.join(ortDir, path.sep);
       env.backends.onnx.wasm.worker = workerPath;
     } catch {
-      // Use defaults if the worker script is not present
+      // Worker script not found: ONNX backend will use its default worker and WASM paths.
+      // No custom worker or path is set; library defaults are used.
     }
     env.backends.onnx.wasm.proxy = false;
     const modelDir = path.join("models", "minilm");
