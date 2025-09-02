@@ -711,8 +711,11 @@ export async function renderStatList(judoka) {
           list.appendChild(div);
         });
       const onClick = handleStatListClick;
-      list.removeEventListener("click", onClick);
-      list.addEventListener("click", onClick);
+      const KEY = "__battleCLIStatListBound";
+      if (!list[KEY]) {
+        list.addEventListener("click", onClick);
+        list[KEY] = true;
+      }
       try {
         window.__battleCLIinit?.clearSkeletonStats?.();
       } catch {}
@@ -1072,12 +1075,13 @@ function handleStatListClick(event) {
   const list = byId("cli-stats");
   const statDiv = event.target?.closest?.(".cli-stat");
   if (statDiv && list?.contains(statDiv)) {
-    handleStatClick.call(statDiv, event);
+    handleStatClick(statDiv, event);
   }
 }
 
-function handleStatClick(event) {
-  const idx = this?.dataset?.statIndex;
+function handleStatClick(statDiv, event) {
+  event?.preventDefault?.();
+  const idx = statDiv?.dataset?.statIndex;
   if (!idx) return;
   const state = document.body?.dataset?.battleState || "";
   if (state !== "waitingForPlayerAction") return;
