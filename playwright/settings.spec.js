@@ -171,7 +171,7 @@ test.describe("Settings page", () => {
         "label[for='tooltips-toggle']",
         "label[for='display-mode-light']",
         "label[for='display-mode-dark']",
-        "label[for='display-mode-high-contrast']"
+        "label[for='display-mode-retro']"
       ].join(", "),
       (els) =>
         els.map((el) => {
@@ -199,7 +199,7 @@ test.describe("Settings page", () => {
       "#tooltips-toggle",
       "#display-mode-light",
       "#display-mode-dark",
-      "#display-mode-high-contrast"
+      "#display-mode-retro"
     ];
 
     for (const sel of selectors) {
@@ -209,9 +209,9 @@ test.describe("Settings page", () => {
     }
   });
 
-  test("toggles high-contrast display mode", async ({ page }) => {
-    await page.check("#display-mode-high-contrast");
-    await expect(page.locator("body")).toHaveAttribute("data-theme", "high-contrast");
+  test("toggles retro display mode", async ({ page }) => {
+    await page.check("#display-mode-retro");
+    await expect(page.locator("body")).toHaveAttribute("data-theme", "retro");
   });
 
   test("restore defaults resets settings", async ({ page }) => {

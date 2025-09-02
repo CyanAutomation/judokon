@@ -85,23 +85,24 @@
 }
 
 /* High contrast mode variable overrides */
-[data-theme="high-contrast"] {
+/* Retro mode variable overrides (green-on-black, terminal-like) */
+[data-theme="retro"] {
   --color-surface: #000000;
   --color-background: #000000;
   --color-tertiary: #000000;
-  --color-text: #ffffff;
+  --color-text: #8cff6b;
   --color-text-inverted: #000000;
-  --color-primary: #ffff00;
-  --color-secondary: #ffff00;
-  --link-color: #ffff00;
-  --button-bg: #ffff00;
-  --button-hover-bg: #e5e500;
-  --button-active-bg: #ffff00;
+  --color-primary: #8cff6b;
+  --color-secondary: #8cff6b;
+  --link-color: #8cff6b;
+  --button-bg: #8cff6b;
+  --button-hover-bg: #6edb55;
+  --button-active-bg: #8cff6b;
   --button-text-color: #000000;
-  --toggle-off-bg: #ffffff; /* Toggle off state background */
-  --toggle-on-bg: #ffff00; /* Toggle on state background */
-  --color-slider-dot: #ffffff;
-  --color-slider-active: #ffff00;
+  --toggle-off-bg: #2a2a2a; /* Toggle off state background */
+  --toggle-on-bg: #8cff6b; /* Toggle on state background */
+  --color-slider-dot: #8cff6b;
+  --color-slider-active: #8cff6b;
 }
 
 *,

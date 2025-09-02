@@ -58,31 +58,6 @@ function applyRetroTheme(enabled) {
   } catch {}
 }
 
-function initRetroToggle() {
-  // Prefer an explicit retro-toggle control in the header (id=retro-toggle). If missing, add next to verbose-toggle.
-  let input = byId("retro-toggle");
-  if (!input) {
-    const toggle = byId("verbose-toggle");
-    if (!toggle) return;
-    const label = document.createElement("label");
-    label.style.marginLeft = "8px";
-    label.textContent = "Retro:";
-    input = document.createElement("input");
-    input.type = "checkbox";
-    input.id = "retro-toggle";
-    input.setAttribute("aria-label", "Toggle retro theme");
-    label.appendChild(input);
-    toggle.parentNode?.insertBefore(label, toggle.nextSibling);
-  }
-  try {
-    const saved = localStorage.getItem("battleCLI.retro");
-    if (saved === "1") input.checked = true;
-  } catch {}
-  input.addEventListener("change", () => applyRetroTheme(input.checked));
-  // apply initial
-  applyRetroTheme(input.checked);
-}
-
 function initSettingsCollapse() {
   // Removed unused initShortcutsCollapse function
   const toggle = byId("cli-settings-toggle");
@@ -119,7 +94,6 @@ function initSettingsCollapse() {
 
 function init() {
   renderSkeletonStats(5);
-  initRetroToggle();
   initSettingsCollapse();
   // helpers are also exposed at module top-level; keep here to ensure latest refs
   try {

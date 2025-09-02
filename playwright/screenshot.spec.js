@@ -42,7 +42,7 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
   }
 
   // Capture settings page in multiple display modes.
-  const modes = ["light", "dark", "high-contrast"];
+  const modes = ["light", "dark", "retro"];
 
   for (const mode of modes) {
     test(`@settings-${mode} screenshot`, async ({ page }) => {

@@ -27,8 +27,8 @@
     },
     "displayMode": {
       "type": "string",
-      "enum": ["light", "dark", "high-contrast"],
-      "description": "Visual display mode."
+      "enum": ["light", "dark", "retro", "high-contrast"],
+      "description": "Visual display mode. \"high-contrast\" is accepted for backward compatibility and maps to \"retro\"."
     },
     "fullNavigationMap": {
       "type": "boolean",

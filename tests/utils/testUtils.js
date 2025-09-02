@@ -132,10 +132,10 @@ export function createSettingsDom() {
   displayDark.name = "display-mode";
   displayDark.value = "dark";
   const displayHighContrast = document.createElement("input");
-  displayHighContrast.id = "display-mode-high-contrast";
+  displayHighContrast.id = "display-mode-retro";
   displayHighContrast.type = "radio";
   displayHighContrast.name = "display-mode";
-  displayHighContrast.value = "high-contrast";
+  displayHighContrast.value = "retro";
   const gameModeToggleContainer = document.createElement("section");
   gameModeToggleContainer.id = "game-mode-toggle-container";
 
