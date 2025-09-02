@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       force_rebuild:
-        description: Ignore drift and rebuild anyway
+        description: "Ignore drift and rebuild anyway"
         required: false
         default: "false"
 
@@ -26,13 +26,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: 'npm'
 
       - name: Install dependencies
-        run:
-          npm ci
+        run: npm ci
 
-          # Optional: try a drift check; if checker is missing OR force_rebuild=true, mark stale
+      # Optional: try a drift check; if checker is missing OR force_rebuild=true, mark stale
       - name: (Optional) Check offline RAG drift
         id: drift
         shell: bash
@@ -59,25 +58,20 @@ jobs:
         env:
           TRANSFORMERS_OFFLINE: "1"
           HF_HUB_OFFLINE: "1"
-          NODE_OPTIONS: --experimental-json-modules
+          NODE_OPTIONS: "--experimental-json-modules"
+        shell: bash
         run: |
           set -euxo pipefail
           mkdir -p src/rag-offline
 
-          # Prefer explicit outputs if your script supports flags
-          if node scripts/buildOfflineRag.mjs --help >/dev/null 2>&1; then
-            node scripts/buildOfflineRag.mjs \
-              --out  src/rag-offline/offline.index.json \
-              --meta src/rag-offline/offline.index.meta.json
-          else
-            npm run build:offline-rag
-          fi
+          # Call your script. If it already writes to src/rag-offline/, great.
+          # Otherwise, update the script to accept --out/--meta and pass them here.
+          npm run build:offline-rag
 
           echo '--- after-build tree (src/rag-offline) ---'
           (cd src && find rag-offline -maxdepth 2 -type f -print 2>/dev/null || true)
           echo '--- recent files anywhere under src (matching "offline") ---'
           (cd src && find . -type f -iname '*offline*' -print 2>/dev/null || true)
-
 
       - name: Assert expected files exist (fail fast if missing)
         if: steps.drift.outputs.stale == 'true'
@@ -128,6 +122,11 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Get current date
+        if: steps.stage.outputs.changed == 'true'
+        id: d
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
       - name: Summarize sizes
         if: steps.stage.outputs.changed == 'true'
         id: sizes
@@ -168,7 +167,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore(rag-offline): refresh offline RAG index"
-          title: "Offline RAG refresh ($(date +'%Y-%m-%d'))"
+          title: "Offline RAG refresh (${{ env.DATE }})"
           body: |
             This PR refreshes the **offline RAG** artifacts.
 
