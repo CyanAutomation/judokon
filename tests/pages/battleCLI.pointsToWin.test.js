@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
+import { waitFor } from "../waitFor.js";
 
 async function loadBattleCLI() {
   const emitter = new EventTarget();
@@ -25,9 +26,12 @@ async function loadBattleCLI() {
     emitBattleEvent: vi.fn()
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: [] }));
+  let points = 10;
   vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-    setPointsToWin: vi.fn(),
-    getPointsToWin: vi.fn(() => 5),
+    setPointsToWin: vi.fn((v) => {
+      points = v;
+    }),
+    getPointsToWin: vi.fn(() => points),
     getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({
@@ -43,6 +47,8 @@ describe("battleCLI points select", () => {
     window.__TEST__ = true;
     document.body.innerHTML = `
       <main id="cli-main"></main>
+      <div id="cli-root"></div>
+      <div id="cli-round"></div>
       <div id="cli-stats"></div>
       <div id="cli-help"></div>
       <select id="points-select">
@@ -61,7 +67,6 @@ describe("battleCLI points select", () => {
       vi.fn(() => machine)
     );
     window.__TEST_MACHINE__ = machine;
-    localStorage.setItem(BATTLE_POINTS_TO_WIN, "5");
   });
 
   afterEach(() => {
@@ -83,6 +88,7 @@ describe("battleCLI points select", () => {
   });
 
   it("confirms and persists points to win", async () => {
+    localStorage.setItem(BATTLE_POINTS_TO_WIN, "5");
     const mod = await loadBattleCLI();
     await mod.__test.init();
     const { setPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
@@ -94,6 +100,7 @@ describe("battleCLI points select", () => {
     const select = document.getElementById("points-select");
     select.value = "15";
     select.dispatchEvent(new Event("change"));
+    await waitFor(() => setPointsToWin.mock.calls.length > 0);
 
     expect(confirmSpy).toHaveBeenCalled();
     expect(setPointsToWin).toHaveBeenCalledWith(15);
@@ -105,4 +112,35 @@ describe("battleCLI points select", () => {
     expect(setPointsToWin).toHaveBeenCalledWith(15);
     expect(select.value).toBe("15");
   });
+
+  it.each([5, 15])(
+    "selecting %i updates engine state and header",
+    async (target) => {
+      localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
+      const mod = await loadBattleCLI();
+      await mod.__test.init();
+      const { setPointsToWin, getPointsToWin } = await import(
+        "../../src/helpers/battleEngineFacade.js"
+      );
+      setPointsToWin.mockClear();
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+
+      const select = document.getElementById("points-select");
+      select.value = String(target);
+      select.dispatchEvent(new Event("change"));
+
+      await waitFor(() => getPointsToWin() === target);
+      await waitFor(
+        () =>
+          document.getElementById("cli-round").textContent ===
+          `Round 0 of ${target}`
+      );
+
+      expect(getPointsToWin()).toBe(target);
+      expect(setPointsToWin).toHaveBeenCalledWith(target);
+      expect(document.getElementById("cli-round").textContent).toBe(
+        `Round 0 of ${target}`
+      );
+    }
+  );
 });
