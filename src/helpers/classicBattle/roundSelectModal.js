@@ -1,5 +1,3 @@
-import { fetchJson } from "../dataUtils.js";
-import { DATA_DIR } from "../constants.js";
 import { createButton } from "../../components/Button.js";
 import { createModal } from "../../components/Modal.js";
 import { setPointsToWin } from "../battleEngineFacade.js";
@@ -12,6 +10,7 @@ import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battl
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 import { logEvent } from "../telemetry.js";
 import { t } from "../i18n.js";
+import rounds from "../../data/battleRounds.js";
 
 /**
  * Initialize round selection modal for Classic Battle.
@@ -23,13 +22,11 @@ import { t } from "../i18n.js";
  * 2. If test mode is enabled:
  *    a. Set `pointsToWin` to the default value.
  *    b. Invoke `onStart` and return early.
- * 3. Attempt to fetch `battleRounds.json` using `fetchJson`.
- *    a. On failure, log the error, fall back to default rounds, and note the load error.
- * 4. Create buttons for each option with `createButton` and assign tooltip ids.
- * 5. Assemble a modal via `createModal`, append an error note if needed, and attach to the document.
- * 6. Attempt to initialize tooltips for the modal; log errors but continue.
- * 7. Open the modal.
- * 8. When a button is clicked:
+ * 3. Create buttons for each option in `rounds` and assign tooltip ids.
+ * 4. Assemble a modal via `createModal` and attach to the document.
+ * 5. Attempt to initialize tooltips for the modal; log errors but continue.
+ * 6. Open the modal.
+ * 7. When a button is clicked:
  *    a. Call `setPointsToWin` with the round value and persist it.
  *    b. Close the modal.
  *    c. Invoke the provided start callback and await completion; log failures.
@@ -74,20 +71,6 @@ export async function initRoundSelectModal(onStart) {
     }
   } catch {}
 
-  let rounds;
-  let loadError = false;
-  try {
-    rounds = await fetchJson(`${DATA_DIR}battleRounds.json`);
-  } catch (err) {
-    console.error("Failed to load battle rounds:", err);
-    loadError = true;
-    rounds = [
-      { id: 1, label: "Quick", value: 5 },
-      { id: 2, label: "Medium", value: 10 },
-      { id: 3, label: "Long", value: 15 }
-    ];
-  }
-
   const title = document.createElement("h2");
   title.id = "round-select-title";
   title.textContent = t("modal.roundSelect.title");
@@ -96,12 +79,6 @@ export async function initRoundSelectModal(onStart) {
   btnWrap.className = "round-select-buttons";
 
   const frag = document.createDocumentFragment();
-  if (loadError) {
-    const note = document.createElement("p");
-    note.id = "round-select-error";
-    note.textContent = t("modal.roundSelect.error");
-    frag.append(note);
-  }
   frag.append(title, btnWrap);
 
   const modal = createModal(frag, { labelledBy: title });

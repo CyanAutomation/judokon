@@ -272,6 +272,7 @@ Small additions to the interaction model
 Summary: `src/pages/battleCLI.html` and `src/pages/battleCLI.js` implement the majority of P1 functionality. The following status notes reflect what is present in the codebase today and call out remaining gaps to close for full PRD parity.
 
 Done
+
 - Static engine integration (static imports of orchestrator, engine, round manager).
 - Textual renderer with monospace styling and minimal assets (`battleCLI.html`).
 - Countdown UI that updates once-per-second and sets `data-remaining-time` (atomic helper via `window.__battleCLIinit.setCountdown`).
@@ -284,23 +285,25 @@ Done
 - Test hooks and IDs: `#round-message`, `#cli-countdown`, `#cli-score`, `#cli-root[data-round]` present.
 
 Partial / Implemented but needs small fixes
+
 - Keyboard mapping (1–9, Enter/Space, Q, H) is implemented in `onKeyDown` and handlers, but:
-   - `onKeyDown` ignores single-key shortcuts when the `cliShortcuts` flag is disabled (except Q). Confirm expected behavior for Help (H) when shortcuts disabled.
-   - Local input debounce is not defensive enough: `selectStat()` does set `roundResolving` but `handleWaitingForPlayerActionKey` doesn't early-exit on `roundResolving` or `store.selectionMade`. Recommend adding a guard to `selectStat` or the key handler.
+  - `onKeyDown` ignores single-key shortcuts when the `cliShortcuts` flag is disabled (except Q). Confirm expected behavior for Help (H) when shortcuts disabled.
+  - Local input debounce is not defensive enough: `selectStat()` does set `roundResolving` but `handleWaitingForPlayerActionKey` doesn't early-exit on `roundResolving` or `store.selectionMade`. Recommend adding a guard to `selectStat` or the key handler.
 - Pointer controls: stat clicks are wired, and background clicks advance rounds (`onClickAdvance`), but there is no explicit, visible "Next" button rendered when a round completes; pointer users rely on Enter/Space or background clicks. Adding a focusable `#next-round-button` will improve discoverability.
 - Muting of verbose logs for CI: verbose output writes to `console.info`; consider routing via a muted logger helper to prevent noisy CI logs.
 
 Missing / Not yet implemented
+
 - Tab hidden / device sleep handling: there are `pauseTimers()` and `resumeTimers()` helpers (used by the quit modal) but no `visibilitychange`/`pageshow` listeners to call them on cross-tab sleep/resume. This can cause double-firing timers; add visibility handlers to pause/resume timers.
 
 Next steps (recommended order)
+
 1. Add `visibilitychange` / `pageshow` handlers to call `pauseTimers()` and `resumeTimers()` to meet the tab hidden/device sleep acceptance criterion.
 2. Add a small local debounce guard in `selectStat()` (and/or in the key handler) so only the first input is accepted per selection window.
 3. Render an explicit, accessible "Next" button when state is `roundOver` (id: `next-round-button`) and focus it. Wire it to dispatch `continue`.
 4. Route verbose logs through a muted logger helper so tests with `cliVerbose` enabled remain quiet in CI.
 
 If you'd like, I can implement steps 1–3 now and run quick smoke checks; approve and I'll apply the patches.
-
 
 **See also:**
 

@@ -21,7 +21,7 @@ JU-DO-KON! is a strategic digital card game inspired by Top Trumps, featuring ju
 
 ### Classic Battle Start
 
-When you open `src/pages/battleJudoka.html`, a modal prompts you to choose the match length (win target) before the first round. Options are sourced from `src/data/battleRounds.json` (fallbacks provided if loading fails). Selecting an option sets the engine’s points-to-win and starts the pre-round countdown.
+When you open `src/pages/battleJudoka.html`, a modal prompts you to choose the match length (win target) before the first round. Options are sourced from `src/data/battleRounds.js`. Selecting an option sets the engine’s points-to-win and starts the pre-round countdown.
 
 For debugging or automated tests, append `?autostart=1` to `battleJudoka.html` to skip the modal and begin a default-length match immediately.
 

@@ -1,12 +1,9 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForBattleReady, waitForSettingsReady, waitForBattleState } from "./fixtures/waits.js";
-import { readFileSync } from "fs";
-import { resolve } from "path";
 // battleTestUtils resets engine state and manipulates timer for scenarios
 import { _resetForTest, setTieRound } from "../tests/helpers/battleTestUtils.js";
 // selectors use header as the container for battle info
-
-const rounds = JSON.parse(readFileSync(resolve("src/data/battleRounds.json"), "utf8"));
+import rounds from "../src/data/battleRounds.js";
 
 test.describe("Classic battle flow", () => {
   test.beforeEach(async ({ page }) => {
