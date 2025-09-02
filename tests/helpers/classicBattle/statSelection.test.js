@@ -188,6 +188,28 @@ describe("classicBattle stat selection", () => {
     ]);
   });
 
+  it("dispatches opponent win outcome when opponent wins match", async () => {
+    const { setPointsToWin } = await import("../../../src/helpers/battleEngineFacade.js");
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    setPointsToWin(1);
+    eventDispatcher.__reset();
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
+    document.getElementById("opponent-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    await selectStat("power");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "statSelected");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "evaluate");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(3, "outcome=winOpponent");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(4, "matchPointReached");
+    expect(eventDispatcher.__getStateLog()).toEqual([
+      "roundDecision",
+      "processingRound",
+      "roundOver",
+      "matchDecision"
+    ]);
+  });
+
   it("simulateOpponentStat returns a valid stat", async () => {
     const { STATS } = await import("../../../src/helpers/battleEngineFacade.js");
     const stat = simulateOpponentStat({ power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 });
