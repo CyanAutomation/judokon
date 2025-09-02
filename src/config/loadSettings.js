@@ -105,6 +105,10 @@ export async function loadSettings() {
   } catch {
     // Ignore localStorage unavailability or JSON errors
   }
+  // Normalize legacy values: map "high-contrast" display mode to "retro".
+  if (settings && settings.displayMode === "high-contrast") {
+    settings = { ...settings, displayMode: "retro" };
+  }
 
   return settings;
 }

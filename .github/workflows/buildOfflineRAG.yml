@@ -31,38 +31,56 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Optional: try a drift check if you have one; don’t fail if missing
+            # Optional: try a drift check; if checker is missing OR force_rebuild=true, mark stale
       - name: (Optional) Check offline RAG drift
         id: drift
         shell: bash
         run: |
           set +e
+          STALE="true"  # default to stale if checker missing
           if npm run -s check:offline-rag >/dev/null 2>&1; then
             npm run -s check:offline-rag
             CODE=$?
-          else
-            echo "No check:offline-rag script found; skipping drift check."
-            CODE=1
+            if [ $CODE -eq 0 ]; then STALE="false"; fi
           fi
-          # If user forced rebuild, mark stale
           if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
-            CODE=1
+            STALE="true"
           fi
-          if [ $CODE -ne 0 ]; then
-            echo "stale=true" >> $GITHUB_OUTPUT
-          else
-            echo "stale=false" >> $GITHUB_OUTPUT
-          fi
-          exit 0
+          echo "stale=$STALE" >> $GITHUB_OUTPUT
+          echo "DRIFT stale? $STALE"
+
+      - name: Prepare output folder
+        if: steps.drift.outputs.stale == 'true'
+        run: mkdir -p src/rag-offline
 
       - name: Build offline index
         if: steps.drift.outputs.stale == 'true'
         env:
-          # Ensure *no* network is attempted by transformers / HF hub
           TRANSFORMERS_OFFLINE: "1"
           HF_HUB_OFFLINE: "1"
           NODE_OPTIONS: "--experimental-json-modules"
-        run: npm run build:offline-rag
+        run: |
+          # If your script supports flags, prefer explicit outputs:
+          if node scripts/buildOfflineRag.mjs --help >/dev/null 2>&1; then
+            node scripts/buildOfflineRag.mjs \
+              --out src/rag-offline/offline.index.json \
+              --meta src/rag-offline/offline.index.meta.json
+          else
+            # Fallback: call the npm script (must write to the same paths)
+            npm run build:offline-rag
+          fi
+
+      - name: Assert expected files exist (fail fast if missing)
+        if: steps.drift.outputs.stale == 'true'
+        shell: bash
+        run: |
+          err=0
+          test -f src/rag-offline/offline.index.json || { echo "❌ missing offline.index.json"; err=1; }
+          test -f src/rag-offline/offline.index.meta.json || { echo "❌ missing offline.index.meta.json"; err=1; }
+          if [ $err -ne 0 ]; then
+            echo "Hint: verify buildOfflineRag.mjs writes to src/rag-offline/ or add --out/--meta flags."
+            exit 1
+          fi
 
       # Quick check: show sizes, hashes, and meta so logs prove state
       - name: Quick check of offline artifacts
@@ -78,13 +96,13 @@ jobs:
               echo "MISSING: $f"
             fi
           done
-          echo "---"
+          echo "--- tree (rag-offline) ---"
+          (cd src && find rag-offline -maxdepth 2 -type f -print 2>/dev/null || true)
+          echo "--- meta ---"
           if [ -f src/rag-offline/offline.index.meta.json ]; then
-            echo "Meta buildHash:"
-            jq -r '.buildHash' src/rag-offline/offline.index.meta.json
-            echo "Docs/Dim:"
-            jq -r '"docs=\(.counts.docs) dim=\(.counts.dim)"' src/rag-offline/offline.index.meta.json
+            jq -r '.buildHash, "docs=\(.counts.docs) dim=\(.counts.dim) createdAt=\(.createdAt)"' src/rag-offline/offline.index.meta.json
           fi
+
 
       - name: Stage changes
         id: stage

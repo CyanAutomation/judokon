@@ -86,7 +86,7 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 
 ## Non-Functional Requirements / Design Considerations
 
-- The viewer must use the site’s base styles and support high-contrast mode for accessibility. **(Implemented)**
+- The viewer must use the site’s base styles and support the Retro display mode for accessibility. **(Implemented)**
 - All navigation controls must be operable via keyboard with clear focus states. **(Implemented; verified with keyboard navigation and screen reader audit)**
 - The viewer must not expose internal file paths or repository URLs to end users. **(Implemented)**
 - Smooth transitions and interaction feedback (hover and active states, swipe animations) should be implemented. **(Fade-in animation and sidebar hover/active feedback implemented)**

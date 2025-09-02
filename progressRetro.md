@@ -102,3 +102,14 @@ Milestone progress
 - Next: Update any remaining docs references if present; run format/lint/tests; address failures if any.
 
 - 2025-09-02 15:15 UTC — Completed: Removed CLI page “Retro” toggle control and its runtime wiring (`initRetroToggle`). CLI now follows the global `body[data-theme="retro"]` (and retains `applyRetroTheme` for test helper parity only).
+
+- 2025-09-02 15:20 UTC — Completed: Normalized legacy persisted settings by mapping `displayMode: "high-contrast"` to `"retro"` in `loadSettings.js`. Linted updated files and re-ran targeted unit tests (displayMode + CLI retro): green.
+
+- 2025-09-02 15:28 UTC — Completed (Docs Sweep): Updated design docs to reflect Retro mode replacing High Contrast where it refers to the display mode option: 
+  - `design/codeStandards/settingsPageDesignGuidelines.md` (theme list)
+  - `design/productRequirementsDocuments/prdSettingsMenu.md` (feature table, descriptions, wireframe)
+  - `design/productRequirementsDocuments/prdBattleCLI.md` (note on Retro toggle removal/sitewide mode)
+  - `design/productRequirementsDocuments/prdBattleScoreboard.md` (theme reference updated to `[data-theme="retro"]`)
+  - `design/productRequirementsDocuments/prdPRDViewer.md` (accessibility note)
+
+- 2025-09-02 15:34 UTC — Completed (General Docs): Updated `README.md` Settings API with a Display Modes section noting `Light`, `Dark`, and `Retro` (terminal-style) and the `data-theme` attribute, clarifying Retro replaces High Contrast.

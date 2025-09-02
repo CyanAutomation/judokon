@@ -124,6 +124,12 @@ Call `loadSettings()` during startup to populate the cache before using
 these helpers. Pages should rely on `featureFlags.isEnabled` rather than
 accessing `settings.featureFlags` directly.
 
+### Display Modes
+
+- Available modes: `Light`, `Dark`, and `Retro`.
+- Retro emulates a terminal-style green-on-black palette and replaces the former High Contrast mode.
+- The current mode is exposed via `document.body.dataset.theme` (e.g., `data-theme="retro"`).
+
 > `navigationItems.json` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
 
 ## 🔎 Using the Vector RAG System

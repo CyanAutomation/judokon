@@ -82,7 +82,7 @@ A terminal-style Classic Battle ensures **fast load, consistent behavior, and im
 | **P2**   | Observability Mode  | Optional verbose logs (controlled by the `cliVerbose` feature flag) that echo internal state transitions.                                                                                                                  |
 | **P2**   | Interrupt Handling  | Show a quit confirmation modal that pauses timers; cancel resumes play, confirm rolls back per engine rules.                                                                                                               |
 
-<!-- Retro Mode removed in favor of a single, consistent high-contrast style. -->
+<!-- Local Retro toggle removed in favor of a single, consistent Retro display mode applied sitewide. -->
 
 ### Feature Flags
 

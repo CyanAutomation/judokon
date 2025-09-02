@@ -154,7 +154,7 @@ Snackbars handle selection prompts and next-round countdowns.
   - [x] 4.3 Ensure all interactive elements have minimum 44px touch targets (CSS min-width/min-height present)
   - [x] 4.4 Ensure all interactive elements support keyboard navigation; tests cover stat, Next, and Quit controls
   - [x] 4.5 Announce score and timer updates via `aria-live` for screen readers (see [Classic Battle PRD](prdBattleClassic.md)) <!-- Implemented: aria-live regions in battleJudoka.html -->
-  - [x] 4.6 Provide high-contrast theme for Scoreboard elements <!-- Implemented: `[data-theme="high-contrast"]` in base.css -->
+  - [x] 4.6 Provide Retro theme for Scoreboard elements <!-- Implemented: `[data-theme="retro"]` in base.css -->
 
 - [ ] 5.0 Edge Case Handling and Fallbacks
   - [x] 5.1 Show “Waiting…” if backend score sync fails

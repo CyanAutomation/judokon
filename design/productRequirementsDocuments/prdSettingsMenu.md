@@ -53,7 +53,7 @@ Players need to easily adjust game settings to personalize their experience, imp
 | P1       | Motion Effects Toggle               | Binary toggle updating `settings.json` live on change.                                                                                 |
 | P1       | Typewriter Effect Toggle            | Enable or disable quote animation where supported (not used on the meditation screen).                                                 |
 | P1       | Tooltips Toggle                     | Globally enable or disable UI tooltips.                                                                                                |
-| P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI.                                                                                 |
+| P1       | Display Mode Switch                 | Three-option switch applying mode instantly across UI (Light, Dark, Retro).                                                            |
 | P2       | Game Modes Toggles                  | Binary toggles controlling pre-seeded links via `navigationItems.json`; if the file cannot be loaded, a bundled fallback list is used. |
 | P3       | Settings Menu Integration           | Ensure settings appear as a game mode in `navigationItems.json`.                                                                       |
 | P3       | View Change Log Link                | Link to `changeLog.html` for viewing recent judoka updates.                                                                            |
@@ -100,7 +100,7 @@ On load, the Settings page must pre-populate each control with values from
 - **Motion effects (binary):** ON/OFF (default: ON) – Disable animations for a calmer interface.
 - **Typewriter effect (binary):** ON/OFF (default: ON, not currently used on the meditation screen) – Toggle the quote typing animation.
 - **Tooltips (binary):** ON/OFF (default: ON) – Show or hide helpful tooltips.
-- **Display mode (three options):** Light, Dark, High Contrast (default: Light)
+- **Display mode (three options):** Light, Dark, Retro (default: Light)
 - **Game modes list:** Pre-seeded entries cross-referenced with `navigationItems.json` to determine order and visibility via CSS; each mode has a binary toggle. If `navigationItems.json` can't be fetched, a bundled default list ensures the toggles still render.
 - **View Change Log:** Link opens `changeLog.html` with the latest 20 judoka updates.
 - **View PRD Documents:** Link opens `prdViewer.html` for browsing product documents.
@@ -304,7 +304,7 @@ The page begins with an `h1` heading labeled "Settings". Two `fieldset` sections
 [ ON | OFF ] (default: ON)
 
 [ SELECTOR: DISPLAY MODE ]  
-[ Light | Dark | High Contrast ] (default: Light)
+[ Light | Dark | Retro ] (default: Light)
 
 ───────────────────────────────  
 | GAME MODES |  
