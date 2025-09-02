@@ -79,3 +79,12 @@
 - The project no longer uses “High Contrast” as a mode name in UI or code, except for transitional alias.
 - Retro visuals are consistent and accessible across pages, including CLI.
 - All checks pass: lint, format, unit, e2e, contrast.
+---
+
+Milestone progress
+
+- 2025-09-02 15:00 UTC — Completed: UI rename in `settings.html` (label, id, value). Updated `applyDisplayMode` to support `retro` and map legacy `high-contrast` to `retro`. Replaced CSS theme block in `base.css` to `[data-theme="retro"]` with retro palette. Extended CLI CSS so `body[data-theme="retro"]` also renders retro look. Updated `settings.schema.json` enum to accept `retro` (and legacy `high-contrast`). Adjusted unit tests (`displayMode.test.js`, `testUtils.js`) to use `retro`.
+
+- Next: Update any remaining docs references if present; run format/lint/tests; address failures if any.
+
+- 2025-09-02 15:15 UTC — Completed: Removed CLI page “Retro” toggle control and its runtime wiring (`initRetroToggle`). CLI now follows the global `body[data-theme="retro"]` (and retains `applyRetroTheme` for test helper parity only).
