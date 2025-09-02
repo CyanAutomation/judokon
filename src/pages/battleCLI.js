@@ -711,8 +711,8 @@ export async function renderStatList(judoka) {
           list.appendChild(div);
         });
       const onClick = handleStatListClick;
-      const KEY = "__battleCLIStatListBoundTargets";
-      const set = (globalThis[KEY] ||= new WeakSet());
+      const STAT_LIST_BOUND_TARGETS_KEY = "data-battle-cli-stat-list-bound-targets";
+      const set = (globalThis[STAT_LIST_BOUND_TARGETS_KEY] ||= new WeakSet());
       if (!set.has(list)) {
         list.addEventListener("click", onClick);
         set.add(list);
