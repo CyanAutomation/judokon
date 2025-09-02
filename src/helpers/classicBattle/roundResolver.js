@@ -6,11 +6,11 @@ import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
 
-if (typeof onEngine === "function") {
+export function bridgeEngineEvents() {
+  if (typeof onEngine !== "function") return;
   onEngine("roundEnded", (detail) => {
     emitBattleEvent("roundResolved", detail);
   });
-
   onEngine("matchEnded", (detail) => {
     emitBattleEvent("matchOver", detail);
   });
