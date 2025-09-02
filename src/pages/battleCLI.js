@@ -711,11 +711,10 @@ export async function renderStatList(judoka) {
           list.appendChild(div);
         });
       const onClick = handleStatListClick;
-      const STAT_LIST_BOUND_TARGETS_KEY = "data-battle-cli-stat-list-bound-targets";
-      const set = (globalThis[STAT_LIST_BOUND_TARGETS_KEY] ||= new WeakSet());
-      if (!set.has(list)) {
+      const boundTargets = (globalThis.__battleCLIStatListBoundTargets ||= new WeakSet());
+      if (!boundTargets.has(list)) {
         list.addEventListener("click", onClick);
-        set.add(list);
+        boundTargets.add(list);
       }
       try {
         window.__battleCLIinit?.clearSkeletonStats?.();
