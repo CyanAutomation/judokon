@@ -25,6 +25,30 @@ export const OUTCOME = {
   ERROR: "error"
 };
 
+class SimpleEmitter {
+  constructor() {
+    this.listeners = new Map();
+  }
+
+  on(type, handler) {
+    if (!this.listeners.has(type)) this.listeners.set(type, new Set());
+    this.listeners.get(type).add(handler);
+  }
+
+  off(type, handler) {
+    this.listeners.get(type)?.delete(handler);
+  }
+
+  emit(type, detail) {
+    const handlers = Array.from(this.listeners.get(type) || []);
+    for (const h of handlers) {
+      try {
+        h(detail);
+      } catch {}
+    }
+  }
+}
+
 /**
  * Compare two stat values and report the winner.
  *
@@ -110,7 +134,8 @@ export class BattleEngine {
       pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN,
       maxRounds = CLASSIC_BATTLE_MAX_ROUNDS,
       stats = STATS,
-      debugHooks = {}
+      debugHooks = {},
+      emitter = null
     } = config;
     this.pointsToWin = pointsToWin;
     this.maxRounds = maxRounds;
@@ -126,6 +151,10 @@ export class BattleEngine {
     this.lastError = "";
     this.lastModification = null;
     this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks };
+    this.emitter = emitter || new SimpleEmitter();
+    this.on = this.emitter.on.bind(this.emitter);
+    this.off = this.emitter.off.bind(this.emitter);
+    this.emit = this.emitter.emit.bind(this.emitter);
   }
 
   /**
@@ -196,10 +225,15 @@ export class BattleEngine {
    * @returns {Promise<void>} Resolves when the timer starts.
    */
   startRound(onTick, onExpired, duration, onDrift) {
+    const round = this.roundsPlayed + 1;
+    this.emit("roundStarted", { round });
     return this.timer.startRound(
-      onTick,
+      (r) => {
+        this.emit("timerTick", { remaining: r, phase: "round" });
+        if (typeof onTick === "function") onTick(r);
+      },
       async () => {
-        if (!this.matchEnded) await onExpired();
+        if (!this.matchEnded && typeof onExpired === "function") await onExpired();
       },
       duration,
       onDrift
@@ -221,9 +255,12 @@ export class BattleEngine {
    */
   startCoolDown(onTick, onExpired, duration, onDrift) {
     return this.timer.startCoolDown(
-      onTick,
+      (r) => {
+        this.emit("timerTick", { remaining: r, phase: "cooldown" });
+        if (typeof onTick === "function") onTick(r);
+      },
       async () => {
-        if (!this.matchEnded) await onExpired();
+        if (!this.matchEnded && typeof onExpired === "function") await onExpired();
       },
       duration,
       onDrift
@@ -283,13 +320,16 @@ export class BattleEngine {
     applyOutcome(this, outcome);
     this.roundsPlayed += 1;
     const matchOutcome = this.#endMatchIfNeeded();
-    return {
+    const result = {
       ...outcome,
       outcome: matchOutcome || outcome.outcome,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
+    this.emit("roundEnded", result);
+    if (this.matchEnded) this.emit("matchEnded", result);
+    return result;
   }
 
   /**
@@ -304,12 +344,14 @@ export class BattleEngine {
   quitMatch() {
     this.matchEnded = true;
     this.stopTimer();
-    return {
+    const result = {
       outcome: OUTCOME.QUIT,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
+    this.emit("matchEnded", result);
+    return result;
   }
 
   /**
@@ -350,12 +392,14 @@ export class BattleEngine {
     this.stopTimer();
     this.matchEnded = true;
     this.lastInterruptReason = reason || "";
-    return {
+    const result = {
       outcome: OUTCOME.INTERRUPT_MATCH,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
+    this.emit("matchEnded", result);
+    return result;
   }
 
   /**
@@ -400,12 +444,14 @@ export class BattleEngine {
   handleError(errorMsg) {
     this.stopTimer();
     this.lastError = errorMsg;
-    return {
+    const result = {
       outcome: OUTCOME.ERROR,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
+    this.emit("error", { message: errorMsg });
+    return result;
   }
 
   /**

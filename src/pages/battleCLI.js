@@ -13,7 +13,8 @@ import {
   createBattleEngine,
   setPointsToWin,
   getPointsToWin,
-  getScores
+  getScores,
+  on as onEngine
 } from "../helpers/battleEngineFacade.js";
 import statNamesData from "../data/statNames.js";
 import { createModal } from "../components/Modal.js";
@@ -38,6 +39,19 @@ import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
 
 createBattleEngine();
+
+if (typeof onEngine === "function") {
+  onEngine("timerTick", ({ remaining, phase }) => {
+    if (phase === "round") {
+      const el = byId("cli-timer");
+      if (el) el.textContent = String(remaining);
+    }
+  });
+
+  onEngine("matchEnded", ({ outcome }) => {
+    setRoundMessage(`Match over: ${outcome}`);
+  });
+}
 
 function disposeClassicBattleOrchestrator() {
   try {
