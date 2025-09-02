@@ -37,8 +37,7 @@ import rounds from "../../data/battleRounds.js";
  * @returns {Promise<void>} Resolves when modal is initialized.
  */
 export async function initRoundSelectModal(onStart) {
-  const IS_VITEST =
-    typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+  const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
   // Allow automated test harnesses or debugging to bypass the modal by
   // supplying `?autostart=1` in the page URL. This is a deliberate, low-risk
   // convenience that mirrors existing `isTestModeEnabled()` behaviour.
