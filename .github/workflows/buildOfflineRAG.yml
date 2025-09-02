@@ -53,22 +53,31 @@ jobs:
         if: steps.drift.outputs.stale == 'true'
         run: mkdir -p src/rag-offline
 
-      - name: Build offline index
+      - name: Build offline index (debug)
         if: steps.drift.outputs.stale == 'true'
         env:
           TRANSFORMERS_OFFLINE: "1"
           HF_HUB_OFFLINE: "1"
           NODE_OPTIONS: "--experimental-json-modules"
+        shell: bash
         run: |
-          # If your script supports flags, prefer explicit outputs:
+          set -euxo pipefail
+          mkdir -p src/rag-offline
+
+          # Prefer explicit outputs if your script supports flags
           if node scripts/buildOfflineRag.mjs --help >/dev/null 2>&1; then
             node scripts/buildOfflineRag.mjs \
-              --out src/rag-offline/offline.index.json \
+              --out  src/rag-offline/offline.index.json \
               --meta src/rag-offline/offline.index.meta.json
           else
-            # Fallback: call the npm script (must write to the same paths)
             npm run build:offline-rag
           fi
+
+          echo '--- after-build tree (src/rag-offline) ---'
+          (cd src && find rag-offline -maxdepth 2 -type f -print 2>/dev/null || true)
+          echo '--- recent files anywhere under src (matching "offline") ---'
+          (cd src && find . -type f -iname '*offline*' -print 2>/dev/null || true)
+
 
       - name: Assert expected files exist (fail fast if missing)
         if: steps.drift.outputs.stale == 'true'
