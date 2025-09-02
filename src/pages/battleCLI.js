@@ -711,10 +711,11 @@ export async function renderStatList(judoka) {
           list.appendChild(div);
         });
       const onClick = handleStatListClick;
-      const KEY = "__battleCLIStatListBound";
-      if (!list[KEY]) {
+      const KEY = "__battleCLIStatListBoundTargets";
+      const set = (globalThis[KEY] ||= new WeakSet());
+      if (!set.has(list)) {
         list.addEventListener("click", onClick);
-        list[KEY] = true;
+        set.add(list);
       }
       try {
         window.__battleCLIinit?.clearSkeletonStats?.();
@@ -1080,7 +1081,7 @@ function handleStatListClick(event) {
 }
 
 function handleStatClick(statDiv, event) {
-  event?.preventDefault?.();
+  event.preventDefault();
   const idx = statDiv?.dataset?.statIndex;
   if (!idx) return;
   const state = document.body?.dataset?.battleState || "";
