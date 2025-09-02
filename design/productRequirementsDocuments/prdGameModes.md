@@ -59,8 +59,8 @@ Improving session variety directly supports retention and encourages more person
 ### Engine Integration Example
 
 ```js
-import BattleEngine from "../../src/helpers/BattleEngine.js";
-import { renderMessage } from "../../src/ui/renderMessage.js";
+import BattleEngine from "../src/helpers/BattleEngine.js";
+import { renderMessage } from "../src/ui/renderMessage.js";
 
 export function startTrainingMode() {
   const engine = new BattleEngine({ pointsToWin: 1 });
@@ -91,6 +91,8 @@ export function startTrainingMode() {
 ```
 
 The engine contains no UI code. Game modes translate events into messages and decide how to present them.
+
+> Import paths above are relative to the project root; adjust as needed for your setup.
 
 ---
 
