@@ -94,9 +94,9 @@ export class BattleEngine {
    * Initializes a new instance of the BattleEngine.
    *
    * @pseudocode
-   * 1. Merge `config` with classic defaults (`pointsToWin`, `maxRounds`, `stats`).
+   * 1. Extract configuration values using destructuring with classic defaults as fallbacks (`pointsToWin`, `maxRounds`, `stats`).
    * 2. Initialize scores, timer, and status flags.
-   * 3. Store the merged config for test resets.
+   * 3. Store the extracted config values for test resets.
    *
    * @param {object} [config]
    * @param {number} [config.pointsToWin] - Points required to win the match.
@@ -457,7 +457,7 @@ export class BattleEngine {
   getTimerStateSnapshot() {
     const timer = this.getTimerState();
     let transitions = [];
-    const snap = this.debugHooks.getStateSnapshot?.();
+    const snap = this.debugHooks?.getStateSnapshot?.();
     if (Array.isArray(snap?.log)) {
       transitions = snap.log.slice();
     }
