@@ -8,12 +8,12 @@ afterEach(() => {
 });
 
 describe("resolveUrl and readData", () => {
-  it("resolves Node paths to file URLs and reads without fetch", async () => {
+  it("resolves Node paths to file URLs and imports without fetch", async () => {
     const fetchMock = vi.fn();
     global.fetch = fetchMock;
-    const { resolveUrl, readData } = await import("../../src/helpers/dataUtils.js");
-    const parsed = await resolveUrl("src/data/statNames.json");
-    const data = await readData(parsed, "src/data/statNames.json");
+    const { resolveUrl } = await import("../../src/helpers/dataUtils.js");
+    const parsed = await resolveUrl("src/data/statNames.js");
+    const data = (await import(parsed.href)).default;
     expect(parsed.protocol).toBe("file:");
     expect(Array.isArray(data)).toBe(true);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe("fetchJson", () => {
   });
 
   it("loads and caches data from file URLs without using fetch", async () => {
-    const fileUrl = new URL("../../src/data/statNames.json", import.meta.url).href;
+    const fileUrl = new URL("../../src/data/gameModes.json", import.meta.url).href;
     const fetchMock = vi.fn();
     global.fetch = fetchMock;
     const schema = { type: "array" };
@@ -99,7 +99,7 @@ describe("fetchJson", () => {
     const fetchMock = vi.fn();
     global.fetch = fetchMock;
     const { fetchJson } = await import("../../src/helpers/dataUtils.js");
-    const data = await fetchJson("src/data/statNames.json");
+    const data = await fetchJson("src/data/gameModes.json");
     expect(Array.isArray(data)).toBe(true);
     expect(fetchMock).not.toHaveBeenCalled();
   });

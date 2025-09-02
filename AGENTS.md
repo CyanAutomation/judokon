@@ -80,7 +80,7 @@ Before submitting or completing a task, verify that your work:
 | Purpose                       | File(s)                                                                 |
 | ----------------------------- | ----------------------------------------------------------------------- |
 | Tooltip content               | src/data/tooltips.json                                                  |
-| Game stats and player data    | src/data/judoka.json, src/data/statNames.json                           |
+| Game stats and player data    | src/data/judoka.json, src/data/statNames.js                             |
 | Feature flags & settings      | src/pages/settings.html, src/config/settingsDefaults.js                 |
 | Tooltip viewer                | src/pages/tooltipViewer.html                                            |
 | Debug + Observability targets | Components with data-_, like data-tooltip-id, data-flag, data-feature-_ |
