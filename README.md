@@ -75,6 +75,7 @@ AI agents should begin by reading:
 - `/src/config/settingsDefaults.js` – `DEFAULT_SETTINGS` source of truth for defaults
 - `/data/tooltips.json` – Tooltip content (auditable by agents)
 - `/data/judoka.json` – Card data for stat logic
+- Typed data modules in `/src/data`: `battleRounds.js`, `gameTimers.js`, `navigationItems.js`, `statNames.js`, `japaneseConverter.js` — export arrays with JSDoc type guarantees
 - `/components/` – Frontend logic with `data-*` hooks for observability
 
 ### 🧪 Common Tasks

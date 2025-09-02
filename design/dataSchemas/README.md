@@ -1,6 +1,6 @@
 # Data Schema Validation
 
-This project stores gameplay data in JSON files under `src/data`. Each file has a matching JSON Schema in `src/schemas` describing its structure. These schemas serve as a contract for helper functions and allow automatic validation.
+This project stores gameplay data in JSON files and typed `.js` modules under `src/data`. Each dataset has a matching JSON Schema in `src/schemas` describing its structure. These schemas serve as a contract for helper functions and allow automatic validation against both raw JSON and module exports.
 
 ## Running Validation
 
@@ -9,13 +9,13 @@ Run `npm run validate:data` to check all schema and data pairs at once. The comm
 Run the command for every pair of schema and data file (e.g. `gameModes`,
 `weightCategories`). The CLI reports any mismatches so they can be fixed before
 runtime. A new schema, `navigationItems.schema.json`, validates the structure of
-`navigationItems.js` which drives navigation order and visibility and is cached via the `navigationCache` helper. Another
+the `navigationItems.js` module, which drives navigation order and visibility and is cached via the `navigationCache` helper. Another
 schema, `aesopsMeta.schema.json`, describes the quote metadata file used on the
-meditation screen. Stat names are now provided by the `statNames.js` module which
+meditation screen. Stat names are now provided by the typed `statNames.js` module which
 lists all available stats and serves as the canonical source for stat labels—
 update it to change the names shown across the UI. Tests also verify that each ID in `aesopsMeta.json` exists in
 `aesopsFables.json`. A new file, `gameTimers.schema.json`, defines the structure
-of `gameTimers.js` which contains the default timer values used in battles.
+of the `gameTimers.js` module which contains the default timer values used in battles.
 
 ## Updating Schemas
 

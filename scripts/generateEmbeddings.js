@@ -36,7 +36,7 @@
 import { readFile, writeFile, stat } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import path from "path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 import { glob } from "glob";
 import * as acorn from "acorn";
@@ -205,7 +205,7 @@ let codeGraphs = { modules: {} };
 
 const MAX_OUTPUT_SIZE = 9.8 * 1024 * 1024;
 
-const JSON_FIELD_ALLOWLIST = {
+const DATA_FIELD_ALLOWLIST = {
   "battleRounds.js": ["label", "description", "category"],
   "codeGraphs.json": false,
   "countryCodeMapping.json": false,
@@ -226,6 +226,7 @@ const JSON_FIELD_ALLOWLIST = {
   ],
   "locations.json": ["name", "japaneseName", "description"],
   "navigationItems.js": ["url", "category"],
+  "statNames.js": ["name", "japanese", "description", "category"],
   "settings.json": ["displayMode", "aiDifficulty"],
   "svgCodes.json": ["name", "category"],
   "synonyms.json": true,
@@ -282,17 +283,17 @@ function normalizeAndFilter(text, seen) {
 }
 
 /**
- * Extract allowlisted values from a JSON item.
+ * Extract allowlisted values from a data item.
  *
- * @param {string} base - Filename base of the JSON source.
- * @param {any} item - JSON value to process.
+ * @param {string} base - Filename base of the data source.
+ * @param {any} item - Data value to process.
  * @returns {string|undefined} Space-joined values or undefined when none.
  */
 function extractAllowedValues(base, item) {
   const allowlist =
-    Object.hasOwn(JSON_FIELD_ALLOWLIST, base) && JSON_FIELD_ALLOWLIST[base] !== undefined
-      ? JSON_FIELD_ALLOWLIST[base]
-      : JSON_FIELD_ALLOWLIST.default;
+    Object.hasOwn(DATA_FIELD_ALLOWLIST, base) && DATA_FIELD_ALLOWLIST[base] !== undefined
+      ? DATA_FIELD_ALLOWLIST[base]
+      : DATA_FIELD_ALLOWLIST.default;
   if (allowlist === false) return undefined;
   if (Array.isArray(item)) {
     return item.join(" ");
@@ -577,21 +578,17 @@ async function getFiles() {
     ignore: ["**/node_modules/**"]
   });
   const overviewDocs = await glob("*.md", { cwd: rootDir });
-  const jsonFiles = (await glob("src/data/*.json", { cwd: rootDir }))
-    .filter((f) => path.extname(f) === ".json")
-    .filter((f) => {
-      const base = path.basename(f);
-      // Exclude generated embedding outputs and shards from ingestion
-      if (base.startsWith("client_embeddings.")) return false;
-      // Exclude large or auxiliary datasets
-      return !["aesopsFables.json", "aesopsMeta.json", "countryCodeMapping.json"].includes(base);
-    });
+  const dataFiles = (await glob("src/data/*.{json,js}", { cwd: rootDir })).filter((f) => {
+    const base = path.basename(f);
+    if (base.startsWith("client_embeddings.")) return false;
+    return !["aesopsFables.json", "aesopsMeta.json", "countryCodeMapping.json"].includes(base);
+  });
   const jsFiles = await glob(["src/**/*.{js,ts}", "tests/**/*.{js,ts}"], {
     cwd: rootDir,
-    ignore: ["**/node_modules/**", "src/data/japaneseConverter.js"]
+    ignore: ["**/node_modules/**", "src/data/**"]
   });
   return Array.from(
-    new Set([...designDocs, ...readmes, ...overviewDocs, ...jsonFiles, ...jsFiles])
+    new Set([...designDocs, ...readmes, ...overviewDocs, ...dataFiles, ...jsFiles])
   );
 }
 
@@ -672,7 +669,8 @@ async function loadModel() {
 }
 
 function determineTags(relativePath, ext, isTest) {
-  if (ext === ".json") {
+  const isDataJs = relativePath.startsWith("src/data/") && ext === ".js";
+  if (ext === ".json" || isDataJs) {
     const tags = ["data"];
     const file = path.basename(relativePath);
     if (file === "judoka.json") tags.push("judoka-data");
@@ -804,9 +802,10 @@ async function generate() {
     const text = await readFile(fullPath, "utf8");
     const base = path.basename(relativePath);
     const ext = path.extname(relativePath);
+    const isDataJs = relativePath.startsWith("src/data/") && ext === ".js";
     const isJson = ext === ".json";
     const isMarkdown = ext === ".md";
-    const isJs = ext === ".js" || ext === ".ts";
+    const isJs = (ext === ".js" || ext === ".ts") && !isDataJs;
     const isTest =
       isJs &&
       (/\.test\.[jt]s$/.test(base) ||
@@ -814,8 +813,8 @@ async function generate() {
         relativePath.includes("/tests/"));
     const baseTags = determineTags(relativePath, ext, isTest);
 
-    if (isJson) {
-      const json = JSON.parse(text);
+    if (isJson || isDataJs) {
+      const json = isJson ? JSON.parse(text) : (await import(pathToFileURL(fullPath))).default;
       const processItem = async (item, id) => {
         const textToEmbed = extractAllowedValues(base, item);
         const chunkText = textToEmbed
@@ -944,7 +943,7 @@ async function generate() {
 }
 
 export {
-  JSON_FIELD_ALLOWLIST,
+  DATA_FIELD_ALLOWLIST,
   flattenObject,
   BOILERPLATE_STRINGS,
   normalizeText,
