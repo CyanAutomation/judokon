@@ -29,14 +29,13 @@ import {
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { readDebugState } from "./debugHooks.js";
-
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
  *
  * @pseudocode
- * 1. Exit early if the `skipRoundCooldown` flag is disabled.
- * 2. Schedule a microtask that emits `countdownFinished`.
- * 3. Return `true` when the cooldown will be skipped.
+ * 1. If the `skipRoundCooldown` feature flag is disabled, return false.
+ * 2. Otherwise schedule a microtask (or setTimeout fallback) to emit `countdownFinished`.
+ * 3. Return true to indicate the cooldown will be skipped.
  *
  * @returns {boolean} `true` if the cooldown was skipped.
  */
@@ -207,6 +206,20 @@ export function showSelectionPrompt() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Render the opponent's Judoka card into the given container element.
+ *
+ * @pseudocode
+ * 1. Return early when `judoka` or `container` is missing.
+ * 2. Extract rendering options (`lookup`, `enableInspector`) and instantiate `JudokaCard`.
+ * 3. Call the card's `render()` method and obtain a DOM node; handle errors gracefully.
+ * 4. Preserve any existing `#debug-panel` inside `container` while replacing card content.
+ * 5. Append the rendered card node and initialize lazy portrait loading when available.
+ *
+ * @param {object} judoka - Data required by `JudokaCard` (may include `lookup`).
+ * @param {HTMLElement|null} container - DOM element to receive the rendered card.
+ * @returns {Promise<void>}
+ */
 export async function renderOpponentCard(judoka, container) {
   if (!judoka || !container) return;
   const { lookup, enableInspector, ...data } = judoka;
@@ -255,6 +268,15 @@ export async function renderOpponentCard(judoka, container) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Enable the Next-round button and mark it ready for interaction.
+ *
+ * @pseudocode
+ * 1. Locate the `#next-button` element in the DOM.
+ * 2. If found, set `disabled = false` and `data-next-ready = "true"` to indicate readiness.
+ *
+ * @returns {void}
+ */
 export function enableNextRoundButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
@@ -291,6 +313,15 @@ export function enableNextRoundButton() {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Disable the Next-round button and clear its ready state.
+ *
+ * @pseudocode
+ * 1. Locate `#next-button` in the DOM.
+ * 2. If present, set `disabled = true` and remove the `data-next-ready` flag.
+ *
+ * @returns {void}
  */
 export function disableNextRoundButton() {
   const btn = document.getElementById("next-button");
@@ -482,6 +513,18 @@ function addMachineDiagnostics(state) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Render the provided debug `state` into the supplied `<pre>` element.
+ *
+ * @pseudocode
+ * 1. If `pre` is not provided, return immediately.
+ * 2. Serialize `state` to a compact JSON string (no extra indentation).
+ * 3. Assign the string to `pre.textContent` so it can be copied or inspected.
+ *
+ * @param {HTMLElement | null} pre - Target `<pre>` element to update.
+ * @param {object} state - Debug state object to serialize.
+ * @returns {void}
+ */
 export function renderDebugState(pre, state) {
   if (!pre) return;
   // Use compact JSON to remove line breaks for AI-friendly copying.
@@ -517,6 +560,16 @@ export function renderDebugState(pre, state) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Update the debug panel DOM with the latest collected debug state.
+ *
+ * @pseudocode
+ * 1. Find the debug output element `#debug-output`; if missing, do nothing.
+ * 2. Collect the aggregated debug state via `collectDebugState()`.
+ * 3. Render the collected state into the debug output element using `renderDebugState()`.
+ *
+ * @returns {void}
  */
 export function updateDebugPanel() {
   const pre = getDebugOutputEl();
