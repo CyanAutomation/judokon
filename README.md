@@ -79,10 +79,22 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
-Before committing code changes, run the project checks including the JSDoc/pseudocode scanner:
+Before committing code changes, run the full check suite to verify docs, formatting, lint, tests, and contrast.
+For the latest required sequence, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ```bash
 npm run check:jsdoc
+npx prettier . --check
+npx eslint .
+npx vitest run
+npx playwright test
+npm run check:contrast
+```
+
+Example one-liner:
+
+```bash
+npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
 ```
 
 ### Classic Battle CLI (text-first)
