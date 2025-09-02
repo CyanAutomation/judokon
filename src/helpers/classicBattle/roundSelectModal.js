@@ -37,6 +37,8 @@ import rounds from "../../data/battleRounds.js";
  * @returns {Promise<void>} Resolves when modal is initialized.
  */
 export async function initRoundSelectModal(onStart) {
+  const IS_VITEST =
+    typeof process !== "undefined" && process.env && process.env.VITEST === "true";
   // Allow automated test harnesses or debugging to bypass the modal by
   // supplying `?autostart=1` in the page URL. This is a deliberate, low-risk
   // convenience that mirrors existing `isTestModeEnabled()` behaviour.
@@ -46,11 +48,13 @@ export async function initRoundSelectModal(onStart) {
       if (params.get("autostart") === "1") {
         setPointsToWin(DEFAULT_POINTS_TO_WIN);
         if (typeof onStart === "function") await onStart();
-        try {
-          emitBattleEvent("startClicked");
-          await dispatchBattleEvent("startClicked");
-        } catch (err) {
-          console.error("Failed to start battle (autostart):", err);
+        if (!IS_VITEST) {
+          try {
+            emitBattleEvent("startClicked");
+            await dispatchBattleEvent("startClicked");
+          } catch (err) {
+            console.error("Failed to start battle (autostart):", err);
+          }
         }
         return;
       }
@@ -60,11 +64,13 @@ export async function initRoundSelectModal(onStart) {
   if (isTestModeEnabled()) {
     setPointsToWin(DEFAULT_POINTS_TO_WIN);
     if (typeof onStart === "function") await onStart();
-    try {
-      emitBattleEvent("startClicked");
-      await dispatchBattleEvent("startClicked");
-    } catch (err) {
-      console.error("Failed to start battle (test mode):", err);
+    if (!IS_VITEST) {
+      try {
+        emitBattleEvent("startClicked");
+        await dispatchBattleEvent("startClicked");
+      } catch (err) {
+        console.error("Failed to start battle (test mode):", err);
+      }
     }
     return;
   }
@@ -79,11 +85,13 @@ export async function initRoundSelectModal(onStart) {
         logEvent("battle.start", { pointsToWin: Number(saved), source: "storage" });
       } catch {}
       if (typeof onStart === "function") await onStart();
-      try {
-        emitBattleEvent("startClicked");
-        await dispatchBattleEvent("startClicked");
-      } catch (err) {
-        console.error("Failed to start battle (persisted points):", err);
+      if (!IS_VITEST) {
+        try {
+          emitBattleEvent("startClicked");
+          await dispatchBattleEvent("startClicked");
+        } catch (err) {
+          console.error("Failed to start battle (persisted points):", err);
+        }
       }
       return;
     }

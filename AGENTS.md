@@ -249,11 +249,11 @@ Risk + follow-up note
 
 ### ✅ Verification Checklist
 
-prettier, eslint, jsdoc PASS
-vitest + playwright PASS
-No unsuppressed console logs
-Tests cover happy-path + edge case
-CI pipeline green
+- [ ] prettier, eslint, jsdoc PASS
+- [ ] vitest + playwright PASS
+- [ ] No unsuppressed console logs
+- [ ] Tests cover happy-path + edge case
+- [ ] CI pipeline green
 
 ## 🧭 Plan Discipline for Bots
 
