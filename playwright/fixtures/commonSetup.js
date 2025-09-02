@@ -69,10 +69,7 @@ export const test = base.extend({
       // like the round-select dialog required by tests.
       document.addEventListener(
         "DOMContentLoaded",
-        () =>
-          document
-            .querySelectorAll('.modal-backdrop[hidden]')
-            .forEach((el) => el.remove()),
+        () => document.querySelectorAll(".modal-backdrop[hidden]").forEach((el) => el.remove()),
         { once: true }
       );
     });
