@@ -618,6 +618,15 @@ async function getFiles() {
  *
  * @returns {Promise<any>} Initialized pipeline instance.
  */
+/**
+ * Load a quantized MiniLM model for feature extraction.
+ *
+ * @pseudocode
+ * 1. Configure Transformers.js for local model loading.
+ * 2. Ensure required files exist and are non-empty.
+ *    - If missing, warn and load remote model.
+ * 3. Return a feature-extraction pipeline.
+ */
 async function loadModel() {
   // Reduce memory footprint by loading the quantized model
   if (typeof process !== "undefined" && process.versions?.node) {
@@ -638,7 +647,27 @@ async function loadModel() {
     }
     env.backends.onnx.wasm.proxy = false;
     const modelDir = path.join("models", "minilm");
-    return pipeline("feature-extraction", modelDir, { quantized: true });
+    const configPath = path.join(rootDir, modelDir, "config.json");
+    const onnxPath = path.join(rootDir, modelDir, "onnx", "model_quantized.onnx");
+    let useLocal = true;
+    for (const file of [configPath, onnxPath]) {
+      try {
+        const stats = await stat(file);
+        if (stats.size === 0) throw new Error("empty");
+      } catch {
+        useLocal = false;
+        break;
+      }
+    }
+    if (useLocal) {
+      return pipeline("feature-extraction", modelDir, { quantized: true });
+    }
+    console.warn(
+      "Quantized MiniLM files missing or empty; falling back to Xenova/all-MiniLM-L6-v2"
+    );
+    return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+      quantized: true
+    });
   }
   const { pipeline } = await import("@xenova/transformers");
   return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
