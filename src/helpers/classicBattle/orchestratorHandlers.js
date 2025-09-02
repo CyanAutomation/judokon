@@ -884,11 +884,14 @@ export async function roundOverEnter(machine) {
 export async function matchDecisionEnter() {}
 
 /**
- * @summary TODO: Add summary
+ * onEnter handler for the `matchOver` state.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Emit a `matchOver` battle event so consumers can show restart controls.
  */
-export async function matchOverEnter() {}
+export async function matchOverEnter() {
+  emitBattleEvent("matchOver");
+}
 
 /**
  * @summary TODO: Add summary

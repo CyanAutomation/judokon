@@ -212,4 +212,15 @@ test.describe("Classic Battle CLI", () => {
     await page.waitForURL("**/index.html");
     await expect(page.locator(".home-screen")).toBeVisible();
   });
+
+  test("shows restart control after match completes", async ({ page }) => {
+    await page.goto("/src/pages/battleCLI.html?seed=1");
+    await page.locator("#start-match-button").click();
+    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.locator("#cli-stats .cli-stat").first().click();
+    await page.evaluate(() => {
+      globalThis.__classicBattleEventTarget?.dispatchEvent(new CustomEvent("matchOver"));
+    });
+    await expect(page.locator("#play-again-button")).toBeVisible();
+  });
 });
