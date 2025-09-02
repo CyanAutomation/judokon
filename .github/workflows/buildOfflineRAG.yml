@@ -1,0 +1,146 @@
+name: Build Offline RAG (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: "Ignore drift and rebuild anyway"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build_offline_rag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Optional: try a drift check if you have one; don’t fail if missing
+      - name: (Optional) Check offline RAG drift
+        id: drift
+        shell: bash
+        run: |
+          set +e
+          if npm run -s check:offline-rag >/dev/null 2>&1; then
+            npm run -s check:offline-rag
+            CODE=$?
+          else
+            echo "No check:offline-rag script found; skipping drift check."
+            CODE=1
+          fi
+          # If user forced rebuild, mark stale
+          if [ "${{ github.event.inputs.force_rebuild }}" = "true" ]; then
+            CODE=1
+          fi
+          if [ $CODE -ne 0 ]; then
+            echo "stale=true" >> $GITHUB_OUTPUT
+          else
+            echo "stale=false" >> $GITHUB_OUTPUT
+          fi
+          exit 0
+
+      - name: Build offline index
+        if: steps.drift.outputs.stale == 'true'
+        env:
+          # Ensure *no* network is attempted by transformers / HF hub
+          TRANSFORMERS_OFFLINE: "1"
+          HF_HUB_OFFLINE: "1"
+          NODE_OPTIONS: "--experimental-json-modules"
+        run: npm run build:offline-rag
+
+      - name: Stage changes
+        id: stage
+        shell: bash
+        run: |
+          # Add typical offline outputs; ignore if absent
+          git add src/rag-offline/offline.index.json 2>/dev/null || true
+          git add src/rag-offline/offline.index.meta.json 2>/dev/null || true
+          git add src/rag-offline/offline.bm25.json 2>/dev/null || true
+          git add src/rag-offline/offline.index.starter.json 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Summarize sizes
+        if: steps.stage.outputs.changed == 'true'
+        id: sizes
+        shell: bash
+        run: |
+          function size_kb() { test -f "$1" && echo "$(($(wc -c < "$1")/1024))KB" || echo "—"; }
+          IDX_SZ=$(size_kb src/rag-offline/offline.index.json)
+          BM25_SZ=$(size_kb src/rag-offline/offline.bm25.json)
+          META_SZ=$(size_kb src/rag-offline/offline.index.meta.json)
+
+          # Extract doc count/dim if meta exists
+          if [ -f src/rag-offline/offline.index.meta.json ]; then
+            DOCS=$(jq -r '.counts.docs // .count // "?"' src/rag-offline/offline.index.meta.json)
+            DIM=$(jq -r '.counts.dim // "?"' src/rag-offline/offline.index.meta.json)
+          else
+            DOCS="?"
+            DIM="?"
+          fi
+
+          echo "idx=${IDX_SZ}"  >> $GITHUB_OUTPUT
+          echo "bm25=${BM25_SZ}" >> $GITHUB_OUTPUT
+          echo "meta=${META_SZ}" >> $GITHUB_OUTPUT
+          echo "docs=${DOCS}"    >> $GITHUB_OUTPUT
+          echo "dim=${DIM}"      >> $GITHUB_OUTPUT
+
+          {
+            echo "### Offline RAG Build Summary"
+            echo ""
+            echo "- **Index size:** ${IDX_SZ}"
+            echo "- **BM25 size:** ${BM25_SZ}"
+            echo "- **Meta size:** ${META_SZ}"
+            echo "- **Docs:** ${DOCS}"
+            echo "- **Dim:** ${DIM}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create Pull Request
+        if: steps.stage.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(rag-offline): refresh offline RAG index"
+          title: "Offline RAG refresh ($(date +'%Y-%m-%d'))"
+          body: |
+            This PR refreshes the **offline RAG** artifacts.
+
+            **Summary**
+            - Index size: ${{ steps.sizes.outputs.idx }}
+            - BM25 size:  ${{ steps.sizes.outputs.bm25 }}
+            - Meta size:  ${{ steps.sizes.outputs.meta }}
+            - Docs:       ${{ steps.sizes.outputs.docs }}
+            - Dim:        ${{ steps.sizes.outputs.dim }}
+
+            Notes:
+            - Build forced offline: `TRANSFORMERS_OFFLINE=1`, `HF_HUB_OFFLINE=1`
+            - Uses script: `npm run build:offline-rag`
+          branch: chore/offline-rag-refresh
+          labels: |
+            automated
+            offline
+            vector
+
+      - name: No changes
+        if: steps.stage.outputs.changed != 'true'
+        run: echo "No offline RAG changes detected."
