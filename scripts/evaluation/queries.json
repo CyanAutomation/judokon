@@ -37,7 +37,7 @@
   },
   {
     "query": "default navigation items",
-    "expected_source": "src/data/navigationItems.json"
+    "expected_source": "src/data/navigationItems.js"
   },
   {
     "query": "weight category definitions",

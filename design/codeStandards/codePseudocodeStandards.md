@@ -36,7 +36,7 @@ Clear pseudocode descriptions are essential for explaining the underlying logic 
  *
  * @pseudocode
  * 1. Load mode definitions using `loadGameModes()` (reads `gameModes.json`).
- * 2. Fetch `navigationItems.json` for display order and visibility flags.
+ * 2. Fetch `navigationItems.js` for display order and visibility flags.
  *    - If either fetch fails, log an error and show a fallback message.
  * 3. Merge navigation items with mode data by matching the `id` field.
  * 4. Filter out items where `isHidden` is true and keep only main menu entries.

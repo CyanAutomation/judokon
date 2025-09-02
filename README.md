@@ -142,7 +142,7 @@ accessing `settings.featureFlags` directly.
 - Retro emulates a terminal-style green-on-black palette and replaces the former High Contrast mode.
 - The current mode is exposed via `document.body.dataset.theme` (e.g., `data-theme="retro"`).
 
-> `navigationItems.json` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
+> `navigationItems.js` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
 
 ## 🔎 Using the Vector RAG System
 

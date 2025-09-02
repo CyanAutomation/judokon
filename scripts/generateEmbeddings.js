@@ -225,7 +225,7 @@ const JSON_FIELD_ALLOWLIST = {
     "stats"
   ],
   "locations.json": ["name", "japaneseName", "description"],
-  "navigationItems.json": ["url", "category"],
+  "navigationItems.js": ["url", "category"],
   "settings.json": ["displayMode", "aiDifficulty"],
   "svgCodes.json": ["name", "category"],
   "synonyms.json": true,

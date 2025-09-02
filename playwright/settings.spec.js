@@ -9,7 +9,7 @@ import {
   NAV_RANDOM_JUDOKA
 } from "./fixtures/navigationChecks.js";
 
-const NAV_ITEMS = JSON.parse(fs.readFileSync("tests/fixtures/navigationItems.json", "utf8"));
+import NAV_ITEMS from "../tests/fixtures/navigationItems.js";
 const GAME_MODES = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
 const TOOLTIP_DATA = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
 
