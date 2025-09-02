@@ -132,9 +132,9 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
     debugLog("DEBUG: evaluateRound result", result);
   } catch {}
   const outcomeEvent =
-    result.outcome === "winPlayer"
+    result.outcome === "winPlayer" || result.outcome === "matchWinPlayer"
       ? "outcome=winPlayer"
-      : result.outcome === "winOpponent"
+      : result.outcome === "winOpponent" || result.outcome === "matchWinOpponent"
         ? "outcome=winOpponent"
         : "outcome=draw";
   // Fire-and-forget dispatch to avoid re-entrancy deadlocks when called from
