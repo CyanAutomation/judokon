@@ -124,4 +124,32 @@ describe("BattleEngine interrupts", () => {
     expect(engine.lastInterruptReason).toBe("");
     expect(engine.lastError).toBe("");
   });
+
+  it("interruptMatch emits matchEnded", async () => {
+    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const engine = new BattleEngine();
+    const end = vi.fn();
+    engine.on("matchEnded", end);
+    await engine.startRound(
+      () => {},
+      () => {},
+      5
+    );
+    engine.interruptMatch("injury");
+    expect(end).toHaveBeenCalled();
+  });
+
+  it("interruptRound does not emit matchEnded", async () => {
+    const { BattleEngine } = await import("../../../src/helpers/BattleEngine.js");
+    const engine = new BattleEngine();
+    const end = vi.fn();
+    engine.on("matchEnded", end);
+    await engine.startRound(
+      () => {},
+      () => {},
+      5
+    );
+    engine.interruptRound("pause");
+    expect(end).not.toHaveBeenCalled();
+  });
 });

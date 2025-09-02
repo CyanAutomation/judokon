@@ -35,4 +35,34 @@ describe("BattleEngine events", () => {
     engine.handleError("fail");
     expect(err).toHaveBeenCalledWith({ message: "fail" });
   });
+
+  it("emits events in order for normal play", async () => {
+    const engine = new BattleEngine({ pointsToWin: 1 });
+    engine.timer.startRound = vi.fn(async (onTick) => {
+      onTick(5);
+    });
+    const events = [];
+    engine.on("roundStarted", () => events.push("roundStarted"));
+    engine.on("timerTick", ({ phase }) => events.push(`timerTick-${phase}`));
+    engine.on("roundEnded", () => events.push("roundEnded"));
+    engine.on("matchEnded", () => events.push("matchEnded"));
+    await engine.startRound();
+    engine.handleStatSelection(10, 5);
+    expect(events).toEqual(["roundStarted", "timerTick-round", "roundEnded", "matchEnded"]);
+  });
+
+  it("emits matchEnded without roundEnded on interrupt", async () => {
+    const engine = new BattleEngine();
+    engine.timer.startRound = vi.fn(async (onTick) => {
+      onTick(4);
+    });
+    const events = [];
+    engine.on("roundStarted", () => events.push("roundStarted"));
+    engine.on("timerTick", ({ phase }) => events.push(`timerTick-${phase}`));
+    engine.on("roundEnded", () => events.push("roundEnded"));
+    engine.on("matchEnded", () => events.push("matchEnded"));
+    await engine.startRound();
+    engine.interruptMatch("injury");
+    expect(events).toEqual(["roundStarted", "timerTick-round", "matchEnded"]);
+  });
 });
