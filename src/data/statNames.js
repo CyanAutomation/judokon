@@ -44,7 +44,7 @@ const statNames = [
     category: "Judo",
     japanese: "組み方",
     description:
-      "Kumi-kata is grip fighting - this stat reflects how well a judoka can control grips and deny their opponents attacks."
+      "Kumi-kata is grip fighting - this stat reflects how well a judoka can control grips and deny their opponent's attacks."
   },
   {
     id: 15,
