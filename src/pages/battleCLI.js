@@ -793,14 +793,16 @@ export function restorePointsToWin() {
       setPointsToWin(saved);
       select.value = String(saved);
     }
+    updateRoundHeader(0, getPointsToWin());
     let current = Number(select.value);
-    select.addEventListener("change", () => {
+    select.addEventListener("change", async () => {
       const val = Number(select.value);
       if (!POINTS_TO_WIN_OPTIONS.includes(val)) return;
       if (window.confirm("Changing win target resets scores. Start a new match?")) {
         storage.set(val);
+        await resetMatch();
         setPointsToWin(val);
-        resetMatch();
+        updateRoundHeader(0, val);
         renderStartButton();
         current = val;
       } else {
