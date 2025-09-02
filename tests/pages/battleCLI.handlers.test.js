@@ -156,10 +156,15 @@ describe("battleCLI event handlers", () => {
     expect(document.getElementById("round-message").textContent).toContain(kumikataName);
   });
 
-  it("adds play again button on match over", async () => {
+  it("adds play again button and lobby link on match over", async () => {
     const { handlers } = await setupHandlers();
+    const home = document.createElement("a");
+    home.dataset.testid = "home-link";
+    home.href = "/index.html";
+    document.body.appendChild(home);
     handlers.handleMatchOver();
     expect(document.getElementById("play-again-button")).toBeTruthy();
+    expect(document.getElementById("return-to-lobby-link")).toBeTruthy();
   });
 
   it("clears verbose log on new match start", async () => {

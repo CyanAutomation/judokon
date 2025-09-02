@@ -1195,6 +1195,15 @@ function handleRoundResolved(e) {
   }
 }
 
+/**
+ * Show restart controls when a match concludes.
+ *
+ * @pseudocode
+ * 1. Locate `#cli-main`; abort if missing or already rendered.
+ * 2. Build a "Play again" button that resets the match and restarts on click.
+ * 3. If a home link exists, append a "Return to lobby" anchor using its href.
+ * 4. Append the controls section to the main container.
+ */
 function handleMatchOver() {
   const main = byId("cli-main");
   if (!main || byId("play-again-button")) return;
@@ -1210,6 +1219,16 @@ function handleMatchOver() {
     emitBattleEvent("startClicked");
   });
   section.append(btn);
+  try {
+    const homeHref = document.querySelector("[data-testid='home-link']")?.getAttribute("href");
+    if (homeHref) {
+      const link = document.createElement("a");
+      link.id = "return-to-lobby-link";
+      link.href = homeHref;
+      link.textContent = "Return to lobby";
+      section.append(" ", link);
+    }
+  } catch {}
   main.append(section);
 }
 
