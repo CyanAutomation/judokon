@@ -73,6 +73,25 @@ export function createScrollButton(direction, container) {
  * @param {HTMLButtonElement} leftBtn - Button that scrolls left.
  * @param {HTMLButtonElement} rightBtn - Button that scrolls right.
  */
+/**
+ * Update scroll button disabled states based on container position.
+ *
+ * Disables the left or right scroll buttons when the carousel is already at
+ * the respective start or end. Uses a small EPSILON to tolerate rounding.
+ *
+ * @pseudocode
+ * 1. Calculate the remaining distance using `scrollWidth`, `clientWidth`, and
+ *    `scrollLeft` of `container`.
+ * 2. Disable `leftBtn` when `scrollLeft` is within 1px of the carousel's
+ *    start to account for rounding differences.
+ * 3. Disable `rightBtn` when the remaining distance is within 1px of the
+ *    carousel's end.
+ *
+ * @param {HTMLElement} container - The scrolling container element.
+ * @param {HTMLButtonElement} leftBtn - Button that scrolls left.
+ * @param {HTMLButtonElement} rightBtn - Button that scrolls right.
+ * @returns {void}
+ */
 export function updateScrollButtonState(container, leftBtn, rightBtn) {
   const EPSILON = 1; // allow small rounding differences
   const remaining = container.scrollWidth - container.clientWidth - container.scrollLeft;

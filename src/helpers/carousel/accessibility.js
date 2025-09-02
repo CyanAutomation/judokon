@@ -7,12 +7,17 @@ const MIN_TOUCH_TARGET_SIZE = 48;
 /**
  * Ensure a carousel control meets minimum touch target dimensions.
  *
+ * A small control can be hard to tap on touch devices; this helper ensures
+ * controls meet the recommended minimum target size and applies minimal
+ * padding when necessary.
+ *
  * @pseudocode
  * 1. Read the computed width and height of `element`.
  * 2. If either dimension is below `MIN_TOUCH_TARGET_SIZE`, set `minWidth`,
  *    `minHeight`, and apply padding to enlarge the target.
  *
  * @param {HTMLElement} element - Button or element to adjust.
+ * @returns {void}
  */
 function ensureTouchTargetSize(element) {
   const style = window.getComputedStyle(element);
@@ -28,11 +33,15 @@ function ensureTouchTargetSize(element) {
 /**
  * Apply basic accessibility adjustments to a carousel wrapper.
  *
+ * This function performs lightweight, non-destructive adjustments intended
+ * to improve touch targets and text contrast for cards and controls.
+ *
  * @pseudocode
  * 1. Select all `.scroll-button` elements and call `ensureTouchTargetSize` on each.
  * 2. Update card text color to ensure contrast against backgrounds.
  *
  * @param {HTMLElement} wrapper - Carousel wrapper element.
+ * @returns {void}
  */
 export function applyAccessibilityImprovements(wrapper) {
   const buttons = wrapper.querySelectorAll(".scroll-button");
@@ -68,6 +77,9 @@ export { ensureTouchTargetSize };
 /**
  * Initialize carousel accessibility and interaction helpers.
  *
+ * Ensures a unified controller exists and wires up focus, accessibility and
+ * lazy-loading helpers for the provided carousel DOM elements.
+ *
  * @pseudocode
  * 1. Check if `wrapper` exists and if `wrapper._carouselController` is not already set.
  *    a. If these conditions are met, instantiate a new `CarouselController` with the `container`, `wrapper`, and an empty options object (using default threshold).
@@ -78,6 +90,7 @@ export { ensureTouchTargetSize };
  *
  * @param {HTMLElement} container - Carousel container element.
  * @param {HTMLElement} wrapper - Carousel wrapper element.
+ * @returns {void}
  */
 export function initAccessibility(container, wrapper) {
   // Ensure a unified controller exists for consistent navigation behavior.

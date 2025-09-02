@@ -30,6 +30,39 @@
  *
  * @param {HTMLElement} container - Carousel container element.
  */
+/**
+ * Initialize focus, keyboard and hover handlers for carousel cards.
+ *
+ * This wires accessible keyboard movement between cards and visual focus
+ * highlights the card nearest the carousel center on focus/hover changes.
+ *
+ * @pseudocode
+ * 1. Define an internal `updateCardFocusStyles` function:
+ *    a. Get all `.judoka-card` elements within the `container`.
+ *    b. For each card, remove the "focused-card" class and clear any `transform` style.
+ *    c. Get the bounding rectangle of the `container`.
+ *    d. Initialize `minDist` to `Infinity` and `centerCard` to `null`.
+ *    e. Iterate through each `card`:
+ *       i. Get the bounding rectangle of the `card`.
+ *       ii. Calculate the `cardCenter` (horizontal midpoint of the card).
+ *       iii. Calculate the `dist` (absolute distance from `cardCenter` to the `container`'s horizontal midpoint).
+ *       iv. If `dist` is less than `minDist`, update `minDist` and set `centerCard` to the current `card`.
+ *    f. If a `centerCard` is found, add the "focused-card" class to it and apply a `scale(1.1)` transform.
+ * 2. Add a "keydown" event listener to the `container`:
+ *    a. If `document.activeElement` is the `container` itself, exit (meaning focus is on the carousel container, not a card).
+ *    b. If the pressed key (`e.key`) is "ArrowRight" or "ArrowLeft":
+ *       i. Get all `.judoka-card` elements.
+ *       ii. Get the `current` active element.
+ *       iii. Find the `idx` of the `current` card in the `cards` array. If not found, default to 0.
+ *       iv. If "ArrowRight" is pressed and `idx` is not the last card, focus the next card (`cards[idx + 1]`).
+ *       v. Else if "ArrowLeft" is pressed and `idx` is not the first card, focus the previous card (`cards[idx - 1]`).
+ *       vi. Use `setTimeout(updateCardFocusStyles, 0)` to update styles after focus has shifted.
+ * 3. Add "focusin" and "focusout" event listeners to the `container` that call `updateCardFocusStyles`.
+ * 4. Add "mouseover" and "mouseout" listeners to call `updateCardFocusStyles` when a card is hovered.
+ *
+ * @param {HTMLElement} container - Carousel container element.
+ * @returns {void}
+ */
 export function setupFocusHandlers(container) {
   function updateCardFocusStyles() {
     const cards = Array.from(container.querySelectorAll(".judoka-card"));

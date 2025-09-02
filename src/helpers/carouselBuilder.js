@@ -45,6 +45,27 @@ import { createSpinner } from "../components/Spinner.js";
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
  */
+/**
+ * Adds scroll markers to indicate the user's position in the carousel.
+ *
+ * @pseudocode
+ * 1. Validate inputs: If `container` or `wrapper` is missing, exit early.
+ * 2. Check for existing markers: If a `.scroll-markers` element already exists within `wrapper` (meaning a controller has already set them up), exit to avoid duplication.
+ * 3. Create the `markers` container: Create a `<div>` element, assign it the class `scroll-markers`.
+ * 4. Get card dimensions and calculate page metrics:
+ *    a. Query all `.judoka-card` elements within `container`.
+ *    b. Get the `firstCard` and its `cardWidth`.
+ *    c. Get the `gap` between columns from the computed style of `container`.
+ *    d. Calculate `cardsPerPage`: Determine how many cards fit within the `container.clientWidth`, accounting for `gap`, ensuring at least 1 card per page.
+ *    e. Calculate `pageCount`: Determine the total number of pages based on `cards.length` and `cardsPerPage`.
+ * 5. Create and append page markers and a page counter element.
+ * 6. Append the `markers` container to the `wrapper`.
+ * 7. Add a "scroll" event listener to update active marker and counter when scrolling.
+ *
+ * @param {HTMLElement} [container] - The carousel container element.
+ * @param {HTMLElement} [wrapper] - The carousel wrapper element.
+ * @returns {void}
+ */
 function addScrollMarkers(container, wrapper) {
   if (!container || !wrapper) return;
   // If a controller already created markers, leave them in place.
@@ -106,6 +127,16 @@ function addScrollMarkers(container, wrapper) {
  *
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
+ */
+/**
+ * Initialize scroll markers after the carousel is attached to the document.
+ *
+ * Schedules `addScrollMarkers` in `requestAnimationFrame` so that layout
+ * measurements (offsetWidth, clientWidth) are stable.
+ *
+ * @param {HTMLElement} [container] - The carousel container element.
+ * @param {HTMLElement} [wrapper] - The carousel wrapper element.
+ * @returns {void}
  */
 export function initScrollMarkers(container, wrapper) {
   if (!container || !wrapper) return;
@@ -245,6 +276,13 @@ export { addScrollMarkers };
  *
  * @pseudocode
  * 1. Set a global flag so `buildCardCarousel` shows the spinner without delay.
+ */
+/**
+ * Force the carousel spinner to appear immediately for testing.
+ *
+ * Sets a global flag so `buildCardCarousel` will show the spinner without a delay.
+ *
+ * @returns {void}
  */
 export function showSpinnerImmediately() {
   globalThis.__showSpinnerImmediately__ = true;

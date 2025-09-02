@@ -17,6 +17,7 @@ describe("timer defaults", () => {
   });
 
   describe("battleEngine uses default duration", () => {
+    let createBattleEngine;
     let startRound;
     let startCoolDown;
     let timerUtils;

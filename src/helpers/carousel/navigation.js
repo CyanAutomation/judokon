@@ -16,6 +16,27 @@ import { CAROUSEL_SWIPE_THRESHOLD } from "../constants.js";
  *
  * @param {HTMLElement} container - The carousel container element.
  */
+/**
+ * Sets up keyboard navigation for the carousel container.
+ *
+ * Adds left/right arrow handling on the container when a CarouselController
+ * isn't present. Scrolls by one page (container width + gap) per key press.
+ *
+ * @pseudocode
+ * 1. Check if a `_carouselController` already exists on the `wrapper` (parent element of `container`). If so, exit early as keyboard events are already handled by the controller.
+ * 2. Set the `scrollBehavior` style of the `container` to "auto" to ensure instant scrolling.
+ * 3. Set the `tabIndex` of the `container` to 0 to make it focusable via keyboard.
+ * 4. Add a "keydown" event listener to the `container`:
+ *    a. Inside the event listener, check if the `event.target` is not the `container` itself, or if the pressed key (`event.key`) is neither "ArrowLeft" nor "ArrowRight". If any of these conditions are true, exit the handler.
+ *    b. Prevent the default browser action for the keydown event (`event.preventDefault()`).
+ *    c. Get the `gap` between columns from the computed style of the `container`.
+ *    d. Calculate `scrollAmount` as the `container.clientWidth` plus the `gap`. This represents one page width.
+ *    e. Determine `delta`: If the key is "ArrowLeft", `delta` is `-scrollAmount`; otherwise (for "ArrowRight"), `delta` is `scrollAmount`.
+ *    f. Update the `container.scrollLeft` by adding `delta` to it, effectively scrolling the carousel.
+ *
+ * @param {HTMLElement} container - The carousel container element.
+ * @returns {void}
+ */
 export function setupKeyboardNavigation(container) {
   // Thin wrapper: if a controller exists, it already wires keyboard events.
   const wrapper = container.parentElement;
@@ -61,6 +82,39 @@ export function setupKeyboardNavigation(container) {
  *    a. If the `event.pointerType` is not "touch", calculate `swipeDistance` and call `scrollFromDelta`.
  *
  * @param {HTMLElement} container - The carousel container element.
+ */
+/**
+ * Sets up swipe navigation for the carousel container, supporting touch and pointer events.
+ *
+ * This allows page-sized swipes to navigate the carousel when a
+ * CarouselController does not already provide this behavior.
+ *
+ * @pseudocode
+ * 1. Check if a `_carouselController` already exists on the `wrapper` (parent element of `container`). If so, exit early as swipe events are already handled by the controller.
+ * 2. Initialize `touchStartX` and `pointerStartX` to 0 to store the starting X-coordinates for touch and pointer events, respectively.
+ * 3. Define a `scrollFromDelta` helper function that takes `delta` (the swipe distance):
+ *    a. Get the `gap` between columns from the computed style of the `container`.
+ *    b. Calculate `step` as the `container.clientWidth` plus the `gap`, representing one page width.
+ *    c. Initialize `left` with the current `container.scrollLeft`.
+ *    d. If `delta` is greater than `CAROUSEL_SWIPE_THRESHOLD`, decrement `left` by `step` (swipe right, go left).
+ *    e. Else if `delta` is less than negative `CAROUSEL_SWIPE_THRESHOLD`, increment `left` by `step` (swipe left, go right).
+ *    f. Else (swipe distance is within threshold), exit the helper function.
+ *    g. Calculate `maxScroll` as the maximum scrollable width of the `container`.
+ *    h. Clamp `left` to ensure it stays within the valid scrollable range (between 0 and `maxScroll`).
+ *    i. Scroll the `container` to the calculated `left` position with smooth behavior.
+ * 4. Add a "touchstart" event listener to the `container`:
+ *    a. Store the `clientX` of the first touch in `touchStartX`.
+ * 5. Add a "touchend" event listener to the `container`:
+ *    a. Get the `clientX` of the first changed touch.
+ *    b. Calculate `swipeDistance` as the difference between `touchEndX` and `touchStartX`.
+ *    c. Call `scrollFromDelta` with `swipeDistance`.
+ * 6. Add a "pointerdown" event listener to the `container`:
+ *    a. If the `event.pointerType` is not "touch", store the `clientX` in `pointerStartX`.
+ * 7. Add a "pointerup" event listener to the `container`:
+ *    a. If the `event.pointerType` is not "touch", calculate `swipeDistance` and call `scrollFromDelta`.
+ *
+ * @param {HTMLElement} container - The carousel container element.
+ * @returns {void}
  */
 export function setupSwipeNavigation(container) {
   // Thin wrapper: if a controller exists, it already wires swipe/pointer events.
