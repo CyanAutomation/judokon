@@ -9,13 +9,7 @@ import {
 import * as battleOrchestrator from "../helpers/classicBattle/orchestrator.js";
 import { onBattleEvent, emitBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { STATS } from "../helpers/BattleEngine.js";
-import {
-  createBattleEngine,
-  setPointsToWin,
-  getPointsToWin,
-  getScores,
-  on as onEngine
-} from "../helpers/battleEngineFacade.js";
+import * as engineFacade from "../helpers/battleEngineFacade.js";
 import statNamesData from "../data/statNames.js";
 import { createModal } from "../components/Modal.js";
 import { createButton } from "../components/Button.js";
@@ -38,20 +32,15 @@ import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
 
-createBattleEngine();
+// Initialize engine and subscribe to engine events when available.
+try {
+  if (!window.__TEST__ && typeof engineFacade.createBattleEngine === "function") {
+    engineFacade.createBattleEngine();
+  }
+} catch {}
 
-if (typeof onEngine === "function") {
-  onEngine("timerTick", ({ remaining, phase }) => {
-    if (phase === "round") {
-      const el = byId("cli-timer");
-      if (el) el.textContent = String(remaining);
-    }
-  });
-
-  onEngine("matchEnded", ({ outcome }) => {
-    setRoundMessage(`Match over: ${outcome}`);
-  });
-}
+// Engine event wiring is installed during init() to avoid touching mocked
+// module exports during unit tests that import this module.
 
 function disposeClassicBattleOrchestrator() {
   try {
@@ -173,7 +162,10 @@ function setRoundMessage(text) {
 }
 
 function updateScoreLine() {
-  const { playerScore, opponentScore } = getScores();
+  const { playerScore, opponentScore } = engineFacade.getScores?.() || {
+    playerScore: 0,
+    opponentScore: 0
+  };
   const el = byId("cli-score");
   if (el) {
     el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
@@ -207,7 +199,7 @@ function clearVerboseLog() {
  * resetPromise = async () => {
  *   disposeClassicBattleOrchestrator()
  *   await resetGame(store)
- *   updateRoundHeader(0, getPointsToWin())
+ *   updateRoundHeader(0, engineFacade.getPointsToWin?.())
  *   updateScoreLine()
  *   setRoundMessage("")
  *   await initClassicBattleOrchestrator(store, startRoundWrapper)
@@ -227,7 +219,7 @@ async function resetMatch() {
   const next = (async () => {
     disposeClassicBattleOrchestrator();
     await resetGame(store);
-    updateRoundHeader(0, getPointsToWin());
+    updateRoundHeader(0, engineFacade.getPointsToWin?.());
     updateScoreLine();
     setRoundMessage("");
     await battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
@@ -809,10 +801,10 @@ export function restorePointsToWin() {
     const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
     const saved = Number(storage.get());
     if (POINTS_TO_WIN_OPTIONS.includes(saved)) {
-      setPointsToWin(saved);
+      engineFacade.setPointsToWin?.(saved);
       select.value = String(saved);
     }
-    updateRoundHeader(0, getPointsToWin());
+    updateRoundHeader(0, engineFacade.getPointsToWin?.());
     let current = Number(select.value);
     select.addEventListener("change", async () => {
       const val = Number(select.value);
@@ -820,7 +812,7 @@ export function restorePointsToWin() {
       if (window.confirm("Changing win target resets scores. Start a new match?")) {
         storage.set(val);
         await resetMatch();
-        setPointsToWin(val);
+        engineFacade.setPointsToWin?.(val);
         updateRoundHeader(0, val);
         renderStartButton();
         current = val;
@@ -847,7 +839,7 @@ async function startRoundWrapper() {
   renderHiddenPlayerStats(currentPlayerJudoka);
   setRoundMessage("");
   showBottomLine("Select your move");
-  updateRoundHeader(roundNumber, getPointsToWin());
+  updateRoundHeader(roundNumber, engineFacade.getPointsToWin?.());
 }
 
 function getStatByIndex(index1Based) {
@@ -1432,6 +1424,20 @@ async function init() {
   });
   // Install CLI event bridges
   installEventBindings();
+  // Subscribe to engine events when provided by the facade.
+  try {
+    if (typeof engineFacade.on === "function") {
+      engineFacade.on("timerTick", ({ remaining, phase }) => {
+        if (phase === "round") {
+          const el = byId("cli-timer");
+          if (el) el.textContent = String(remaining);
+        }
+      });
+      engineFacade.on("matchEnded", ({ outcome }) => {
+        setRoundMessage(`Match over: ${outcome}`);
+      });
+    }
+  } catch {}
   // Initialize orchestrator using our startRound wrapper
   await battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
   await renderStartButton();

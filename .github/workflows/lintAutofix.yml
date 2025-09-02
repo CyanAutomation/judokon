@@ -46,10 +46,18 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
+
+concurrency:
+  group: autofix-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   format_and_lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_VERSION: 22
 
     steps:
       - name: Checkout repository
@@ -58,7 +66,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -71,17 +80,80 @@ jobs:
       - name: Run Prettier
         run: npx prettier . --write
 
+      - name: Cache ESLint cache
+        uses: actions/cache@v4
+        with:
+          path: .eslintcache
+          key: ${{ runner.os }}-eslintcache-${{ hashFiles('**/package-lock.json', 'package.json', '.eslintrc.*', 'eslint.config.*') }}
+          restore-keys: ${{ runner.os }}-eslintcache-
+
+      - name: Compute ESLint fix stats (dry-run)
+        id: lint-stats
+        run: |
+          set -euo pipefail
+          npx eslint . --fix-dry-run -f json > eslint-dry.json || true
+          node -e '
+            const fs = require("fs");
+            if (!fs.existsSync("eslint-dry.json")) { process.exit(0); }
+            let fixableErrors=0, fixableWarnings=0, files=0;
+            const data = JSON.parse(fs.readFileSync("eslint-dry.json","utf8"));
+            for (const f of data) {
+              files++;
+              fixableErrors += f.fixableErrorCount || 0;
+              fixableWarnings += f.fixableWarningCount || 0;
+            }
+            const fixes = fixableErrors + fixableWarnings;
+            const out = process.env.GITHUB_OUTPUT;
+            if (out) {
+              fs.appendFileSync(out, `fixes=${fixes}\nfixableErrors=${fixableErrors}\nfixableWarnings=${fixableWarnings}\nfiles=${files}\n`);
+            } else {
+              console.log(`fixes=${fixes}\nfixableErrors=${fixableErrors}\nfixableWarnings=${fixableWarnings}\nfiles=${files}`);
+            }
+          '
+
       - name: Run ESLint with auto-fix
-        run: npx eslint . --fix
+        run: npx eslint . --fix --cache
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          set -euo pipefail
+          git add -A
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            # Provide counts and list for summary
+            COUNT=$(git diff --cached --name-only | wc -l | tr -d ' ')
+            echo "files_changed=$COUNT" >> $GITHUB_OUTPUT
+            echo "changed_files<<'EOF'" >> $GITHUB_OUTPUT
+            git diff --cached --name-only >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Write Actions summary
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          {
+            echo "### Auto-format & Lint Summary"
+            echo ""
+            echo "- Files changed: ${{ steps.git-check.outputs.files_changed }}"
+            echo "- ESLint fixes (potential): ${{ steps.lint-stats.outputs.fixes }} (errors: ${{ steps.lint-stats.outputs.fixableErrors }}, warnings: ${{ steps.lint-stats.outputs.fixableWarnings }})"
+            echo ""
+            echo "Changed files:"
+            echo "${{ steps.git-check.outputs.changed_files }}" | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Get current date
         id: date
+        if: steps.git-check.outputs.changed == 'true'
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Fetch Today in History
         id: today
+        if: steps.git-check.outputs.changed == 'true'
         run: |
-          RESPONSE=$(curl -fsL https://history.muffinlabs.com/date)
+          RESPONSE=$(curl -fsL --max-time 10 https://history.muffinlabs.com/date || true)
           if [ $? -ne 0 ]; then
             echo "Warning: Failed to fetch data from https://history.muffinlabs.com/date" >&2
           fi
@@ -102,10 +174,11 @@ jobs:
 
       - name: Fetch Weather Mood
         id: weather
+        if: steps.git-check.outputs.changed == 'true'
         run: |
           CITY="Wokingham"
           # '&m' forces temperature in Celsius
-          WEATHER=$(curl -s "wttr.in/$CITY?format=%t+%c&m" || echo "")
+          WEATHER=$(curl -s --max-time 8 "wttr.in/$CITY?format=%t+%c&m" || echo "")
           if [ -n "$WEATHER" ]; then
             echo "weather=$WEATHER in $CITY" >> $GITHUB_OUTPUT
           else
@@ -113,6 +186,7 @@ jobs:
           fi
 
       - name: Create Pull Request
+        if: steps.git-check.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.AUTOFIX_TOKEN }}
@@ -130,8 +204,10 @@ jobs:
             🌤️ **Weather Report**
             ${{ steps.weather.outputs.weather }}.
           branch: auto/format-lint-fixes
+          branch-suffix: timestamp
           labels: |
             automated
-            documentation
-            auto format
+            lint
+            formatting
           assignees: ${{ github.actor }}
+          delete-branch: true

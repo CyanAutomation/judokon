@@ -14,13 +14,14 @@ permissions:
   pull-requests: write
 
 env:
-  NODE_VERSION: 20
+  NODE_VERSION: 22
   BRANCH_NAME: auto/playwright-baselines
 
 jobs:
   regenerate_baselines:
     name: Regenerate Playwright Baselines
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -29,14 +30,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
@@ -48,16 +49,38 @@ jobs:
       - name: Update Playwright snapshots
         run: npx playwright test --update-snapshots
 
+      - name: Check for changes
+        id: git-check
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Get current date
+        if: steps.git-check.outputs.changed == 'true'
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       # 🧮 Collect Test Suite Stats and Roll Dice
       - name: Collect Test Suite Stats
+        if: steps.git-check.outputs.changed == 'true'
         id: stats
         run: node scripts/collectTestStats.mjs
 
+      - name: Upload snapshot artifacts
+        if: steps.git-check.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-snapshots-${{ github.run_id }}
+          path: |
+            test-results/**/*.png
+            playwright/**/*-snapshots/**/*
+
       - name: Create Pull Request
+        if: steps.git-check.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -82,3 +105,4 @@ jobs:
             playwright
             testing
           assignees: ${{ github.actor }}
+          delete-branch: true

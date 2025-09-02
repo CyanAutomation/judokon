@@ -113,7 +113,7 @@ Before submitting or completing a task, verify that your work:
 
 ### ❌ DON’T
 
-- Don’t commit baseline screenshots (playwright/\*-snapshots)
+- Don’t commit baseline screenshots manually. Playwright baselines (`playwright/*-snapshots`) are updated and committed by the nightly GitHub Action only.
 - Don’t introduce placeholder text in tooltips or stats
 - Don’t skip pseudocode updates when changing logic
 - Don’t duplicate stat labels or tooltip keys

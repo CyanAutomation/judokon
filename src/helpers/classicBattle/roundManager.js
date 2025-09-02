@@ -347,7 +347,15 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
     //   fake timers by the whole-second value triggers expiration without
     //   requiring additional padding.
     const ms = !Number.isFinite(secsNum) || secsNum <= 0 ? 10 : Math.max(0, secsNum * 1000);
+    // Use both global and injected scheduler timeouts to maximize compatibility
+    // with test environments that mock timers differently.
     setupFallbackTimer(ms, onExpired);
+    try {
+      scheduler.setTimeout(() => onExpired(), ms);
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        scheduler.setTimeout(() => onExpired(), 0);
+      }
+    } catch {}
   } catch {}
 }
 

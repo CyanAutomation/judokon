@@ -28,10 +28,48 @@ jobs:
       - name: Run embedding generator
         run: npm run generate:embeddings
 
+      - name: Check if embeddings changed
+        id: embeds-check
+        shell: bash
+        run: |
+          # Stage only embedding files to detect drift from this step
+          git add src/data/client_embeddings.json src/data/client_embeddings.meta.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Embeddings unchanged. Skipping offline build."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Embeddings changed. Will rebuild offline assets."
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build offline RAG assets
+        if: steps.embeds-check.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Build offline assets from freshly generated embeddings
+          npm run build:offline-rag
+          echo '--- offline artifacts present ---'
+          (cd src && find data -maxdepth 1 -type f -name 'offline_rag_*' -print 2>/dev/null || true)
+
+      - name: Assert offline files exist
+        if: steps.embeds-check.outputs.changed == 'true'
+        shell: bash
+        run: |
+          err=0
+          test -f "src/data/offline_rag_vectors.bin" || { echo "❌ missing offline_rag_vectors.bin"; err=1; }
+          test -f "src/data/offline_rag_metadata.json" || { echo "❌ missing offline_rag_metadata.json"; err=1; }
+          if [ $err -ne 0 ]; then
+            echo "Hint: verify scripts/buildOfflineRag.mjs writes to src/data/."
+            exit 1
+          fi
+
       - name: Check for changes
         id: git-check
         run: |
-          git add src/data/client_embeddings.json src/data/client_embeddings.meta.json
+          # Stage both embeddings and offline assets so a single PR includes everything
+          git add src/data/client_embeddings.json src/data/client_embeddings.meta.json 2>/dev/null || true
+          git add src/data/offline_rag_vectors.bin src/data/offline_rag_metadata.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
             echo "changed=false" >> $GITHUB_OUTPUT
@@ -71,19 +109,46 @@ jobs:
             echo "summary=Embedding stats unavailable. ❌" >> $GITHUB_OUTPUT
           fi
 
+      - name: Load Offline RAG Summary
+        if: steps.git-check.outputs.changed == 'true'
+        id: offline
+        shell: bash
+        run: |
+          OUT_DIR="src/data"
+          size_kb() {
+            test -f "$1" && echo "$(( $(wc -c < "$1")/1024 ))KB" || echo "—"
+          }
+          VEC_SZ=$(size_kb "$OUT_DIR/offline_rag_vectors.bin")
+          META_SZ=$(size_kb "$OUT_DIR/offline_rag_metadata.json")
+          if [ -f "$OUT_DIR/offline_rag_metadata.json" ]; then
+            read -r DIM DOCS <<<"$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(`${m.vectorLength||"?"} ${m.count||"?"}`);' "$OUT_DIR/offline_rag_metadata.json")"
+          else
+            DOCS="?"; DIM="?"
+          fi
+          echo "vec=${VEC_SZ}"   >> $GITHUB_OUTPUT
+          echo "meta=${META_SZ}" >> $GITHUB_OUTPUT
+          echo "docs=${DOCS}"    >> $GITHUB_OUTPUT
+          echo "dim=${DIM}"      >> $GITHUB_OUTPUT
+
       - name: Create Pull Request
         if: steps.git-check.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "PR: Update vector database embeddings"
-          title: "PR: Updated Vector Database - ${{ env.date }}"
+          title: "PR: Updated Vector + Offline RAG - ${{ env.date }}"
           body: |
-            ✅ **Embeddings Updated**
-            This PR contains an updated version of `client_embeddings.json` using the nightly embedding pipeline.
+            ✅ **Embeddings + Offline RAG Updated**
+            This PR updates `client_embeddings.json` via the nightly pipeline and refreshes offline RAG artifacts.
 
             📐 **Embedding Stats**
             ${{ steps.stats.outputs.summary }}
+
+            📦 **Offline RAG Summary**
+            - Vectors size: ${{ steps.offline.outputs.vec }}
+            - Meta size:    ${{ steps.offline.outputs.meta }}
+            - Docs:         ${{ steps.offline.outputs.docs }}
+            - Dim:          ${{ steps.offline.outputs.dim }}
 
             💬 **Coding Aphorism**
             _${{ steps.quote.outputs.quote }}_
@@ -93,4 +158,5 @@ jobs:
             automated
             backend
             vector
+            offline
           assignees: ${{ github.actor }}

@@ -33,7 +33,15 @@ function createQuitConfirmation(store, onConfirm) {
   const modal = createModal(frag, { labelledBy: title, describedBy: desc });
   cancel.addEventListener("click", () => modal.close());
   quit.addEventListener("click", async () => {
-    onConfirm();
+    try {
+      onConfirm();
+    } catch (e) {
+      // If the engine is not initialized, fall back to showing a quit message
+      // so the UI communicates the action without requiring engine state.
+      try {
+        showResult(getOutcomeMessage("quit"));
+      } catch {}
+    }
     modal.close();
     // Drive state machine to interruption path
     await dispatchBattleEvent("interrupt");

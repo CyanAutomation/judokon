@@ -6,6 +6,11 @@ on:
       - main
     paths:
       - AGENTS.md
+  pull_request:
+    paths:
+      - AGENTS.md
+      - GEMINI.md
+      - .github/copilot-instructions.md
   workflow_dispatch: {}
 
 concurrency:
@@ -22,6 +27,7 @@ jobs:
       pull-requests: write
     env:
       CI: true
+      NODE_VERSION: 22
     steps:
       # 1) Checkout
       - name: Checkout repository
@@ -33,7 +39,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: package-lock.json
 
@@ -44,17 +50,21 @@ jobs:
       # 4) Run the sync script
       - name: Run agent docs sync
         id: sync
-        run: npm run sync:agents
+        run: |
+          set -euo pipefail
+          npm run sync:agents
 
       # 5) Date (for branch/title)
       - name: Get current date
         id: date
+        if: steps.changes.outputs.changed == 'true'
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       # 6) Check for changes in working tree (multi-line changed_files output)
       - name: Check for changes
         id: changes
         run: |
+          set -euo pipefail
           git_status=$(git status --porcelain)
           echo "git_status=$git_status"
           if [ -n "$git_status" ]; then
@@ -75,6 +85,7 @@ jobs:
         id: docstats
         if: steps.changes.outputs.changed == 'true'
         run: |
+          set -euo pipefail
           FILE="AGENTS.md"
           if [ ! -f "$FILE" ]; then
             FILE=$(git ls-files | grep -E '^AGENTS\.md$' || true)
@@ -114,6 +125,7 @@ jobs:
         id: summary
         if: steps.changes.outputs.changed == 'true'
         run: |
+          set -euo pipefail
           DIFF=$(git diff --unified=0 -- AGENTS.md || true)
 
           ADDED=$(printf "%s" "$DIFF" | grep -E '^\+' | grep -vE '^\+\+\+' | wc -l | tr -d ' ' || echo 0)
@@ -134,6 +146,7 @@ jobs:
         id: touched
         if: steps.changes.outputs.changed == 'true'
         run: |
+          set -euo pipefail
           SECTIONS=$(git diff -U0 -- AGENTS.md \
             | awk '
               /^\+\+\+|^---/ {next}
@@ -158,6 +171,7 @@ jobs:
         id: fun
         if: steps.changes.outputs.changed == 'true'
         run: |
+          set -euo pipefail
           # lightweight, no-network random pick
           QUOTES=(
             "Be curious, not judgemental. — Walt Whitman"
@@ -168,6 +182,27 @@ jobs:
           SEED=$(( RANDOM % ${#QUOTES[@]} ))
           CHOICE="${QUOTES[$SEED]}"
           echo "quote=$CHOICE" >> $GITHUB_OUTPUT
+
+      - name: Write summary
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          {
+            echo "### Agent Docs Sync"
+            echo ""
+            echo "Changed files:"
+            echo "${{ steps.changes.outputs.changed_files }}" | sed 's/^/- /'
+            echo ""
+            echo "- Words: ${{ steps.docstats.outputs.words }}"
+            echo "- Lines: ${{ steps.docstats.outputs.lines }}"
+            echo "- Headings: ${{ steps.docstats.outputs.headings }}"
+            echo "- Sections (H2): ${{ steps.docstats.outputs.sections }}"
+            echo "- Code blocks: ${{ steps.docstats.outputs.codeblocks }}"
+            echo "- Links: ${{ steps.docstats.outputs.links }}"
+            echo "- Tasks: ${{ steps.docstats.outputs.tasks }}"
+            echo "- Read mins: ${{ steps.docstats.outputs.readmins }}"
+            echo ""
+            echo "Changes: ${{ steps.summary.outputs.added }} added, ${{ steps.summary.outputs.removed }} removed — ${{ steps.summary.outputs.mood }}"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # 7) Create PR if changes exist
       - name: Create Pull Request
@@ -199,8 +234,33 @@ jobs:
             ${{ steps.touched.outputs.list }}
 
             Bonus: ${{ steps.fun.outputs.quote }}
-          branch: "auto/sync-agent-docs-${{ steps.date.outputs.date }}"
+          branch: auto/sync-agent-docs
+          branch-suffix: timestamp
           labels: |
             automated
             docs
+            agents
           assignees: ${{ github.actor }}
+          delete-branch: true
+
+  verify_sync:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    name: Verify Agent Docs Sync
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify targets match AGENTS.md
+        run: |
+          set -euo pipefail
+          diff -u AGENTS.md GEMINI.md || { echo "GEMINI.md is out of sync with AGENTS.md"; exit 1; }
+          diff -u AGENTS.md .github/copilot-instructions.md || { echo ".github/copilot-instructions.md is out of sync with AGENTS.md"; exit 1; }
+      - name: Write verification summary
+        if: success()
+        run: |
+          echo "### Agent Docs Verification" >> "$GITHUB_STEP_SUMMARY"
+          echo "Targets are in sync with AGENTS.md ✅" >> "$GITHUB_STEP_SUMMARY"

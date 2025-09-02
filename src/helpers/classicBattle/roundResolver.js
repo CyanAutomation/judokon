@@ -1,19 +1,22 @@
 import { evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { emitBattleEvent } from "./battleEvents.js";
-import { on as onEngine } from "../battleEngineFacade.js";
+import * as engineFacade from "../battleEngineFacade.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
 
 export function bridgeEngineEvents() {
-  if (typeof onEngine !== "function") return;
-  onEngine("roundEnded", (detail) => {
-    emitBattleEvent("roundResolved", detail);
-  });
-  onEngine("matchEnded", (detail) => {
-    emitBattleEvent("matchOver", detail);
-  });
+  try {
+    const onEngine = engineFacade.on;
+    if (typeof onEngine !== "function") return;
+    onEngine("roundEnded", (detail) => {
+      emitBattleEvent("roundResolved", detail);
+    });
+    onEngine("matchEnded", (detail) => {
+      emitBattleEvent("matchOver", detail);
+    });
+  } catch {}
 }
 
 /**

@@ -753,8 +753,10 @@ export function waitForPlayerChoice(store, timeoutMs) {
  * 2. Resolve selection via `resolveSelectionIfPresent`.
  */
 export async function awaitPlayerChoice(store) {
+  // Only wait for the choice here; actual resolution is handled by
+  // resolveSelectionIfPresent() before this call or by the scheduled
+  // guard via guardSelectionResolution().
   await waitForPlayerChoice(store, 1500);
-  await resolveSelectionIfPresent(store);
 }
 
 /**

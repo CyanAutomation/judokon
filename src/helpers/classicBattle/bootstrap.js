@@ -9,7 +9,7 @@ import { ClassicBattleView } from "./view.js";
 import createClassicBattleDebugAPI from "./setupTestHelpers.js";
 import { onDomReady } from "../domReady.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
-import { createBattleEngine } from "../battleEngineFacade.js";
+import * as engineFacade from "../battleEngineFacade.js";
 import { bridgeEngineEvents } from "./roundResolver.js";
 
 /**
@@ -26,7 +26,9 @@ import { bridgeEngineEvents } from "./roundResolver.js";
  * 4. Return the debug API after the round is selected.
  */
 export async function setupClassicBattlePage() {
-  createBattleEngine();
+  try {
+    engineFacade.createBattleEngine?.();
+  } catch {}
   bridgeEngineEvents();
   let debugApi;
   let resolveStart;

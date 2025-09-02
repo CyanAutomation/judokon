@@ -1,4 +1,4 @@
-import { STATS, handleStatSelection, OUTCOME } from "../battleEngineFacade.js";
+import { STATS, handleStatSelection } from "../battleEngineFacade.js";
 
 /**
  * Choose an opponent stat based on difficulty and available values.
@@ -33,18 +33,21 @@ export function chooseOpponentStat(values, difficulty = "easy") {
   return STATS[Math.floor(Math.random() * STATS.length)];
 }
 
+// Map outcome codes (string values produced by the engine) to messages.
+// Using literal keys avoids importing engine constants during module evaluation,
+// which simplifies testing when the facade is mocked.
 const OUTCOME_MESSAGES = {
-  [OUTCOME.WIN_PLAYER]: "You win the round!",
-  [OUTCOME.WIN_OPPONENT]: "Opponent wins the round!",
-  [OUTCOME.DRAW]: "Tie – no score!",
-  [OUTCOME.MATCH_WIN_PLAYER]: "You win the match!",
-  [OUTCOME.MATCH_WIN_OPPONENT]: "Opponent wins the match!",
-  [OUTCOME.MATCH_DRAW]: "Match ends in a tie!",
-  [OUTCOME.QUIT]: "You quit the match. You lose!",
-  [OUTCOME.INTERRUPT_ROUND]: "Round interrupted",
-  [OUTCOME.INTERRUPT_MATCH]: "Match interrupted",
-  [OUTCOME.ROUND_MODIFIED]: "Round modified",
-  [OUTCOME.ERROR]: "Error"
+  winPlayer: "You win the round!",
+  winOpponent: "Opponent wins the round!",
+  draw: "Tie – no score!",
+  matchWinPlayer: "You win the match!",
+  matchWinOpponent: "Opponent wins the match!",
+  matchDraw: "Match ends in a tie!",
+  quit: "You quit the match. You lose!",
+  interruptRound: "Round interrupted",
+  interruptMatch: "Match interrupted",
+  roundModified: "Round modified",
+  error: "Error"
 };
 
 /**
@@ -54,7 +57,7 @@ const OUTCOME_MESSAGES = {
  * 1. Use a lookup table keyed by outcome codes.
  * 2. Return the matching message or an empty string.
  *
- * @param {keyof typeof OUTCOME} outcome - Outcome code from the engine.
+ * @param {string} outcome - Outcome code from the engine.
  * @returns {string} Localized message.
  */
 export function getOutcomeMessage(outcome) {
@@ -70,7 +73,7 @@ export function getOutcomeMessage(outcome) {
  *
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.
- * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number, message: string}}
+ * @returns {{delta: number, outcome: string, matchEnded: boolean, playerScore: number, opponentScore: number, message: string}}
  */
 export function evaluateRound(playerVal, opponentVal) {
   const result = handleStatSelection(playerVal, opponentVal);
