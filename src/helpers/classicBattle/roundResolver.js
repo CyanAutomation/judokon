@@ -67,6 +67,22 @@ export function evaluateRoundData(playerVal, opponentVal) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Evaluate a selected stat and return the outcome data.
+ *
+ * This function is intentionally pure with no side-effects; callers such as
+ * `computeRoundResult` are responsible for emitting events and updating UI.
+ *
+ * @pseudocode
+ * 1. Convert the input values to a stable result shape by delegating to `evaluateRoundData`.
+ * 2. Return the evaluation result so callers can act accordingly.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store (unused by pure evaluation).
+ * @param {string} stat - Selected stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
+ */
 export function evaluateRound(store, stat, playerVal, opponentVal) {
   return evaluateRoundData(playerVal, opponentVal);
 }
@@ -79,6 +95,24 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  * 2. Dispatch an outcome event based on the result.
  * 3. Dispatch `matchPointReached` or `continue` depending on `matchEnded`.
  * 4. Emit `roundResolved` with round data and clear `store.playerChoice`.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ */
+/**
+ * Compute the round result, dispatch outcome and continuation events, and
+ * emit a `roundResolved` event with the enriched result.
+ *
+ * @pseudocode
+ * 1. Normalize numeric inputs to finite numbers.
+ * 2. Call `evaluateRound` to obtain the round outcome.
+ * 3. Dispatch an outcome event (win/draw) and `matchPointReached` when match ends,
+ *    otherwise dispatch `continue`.
+ * 4. Update scoreboard values and emit `roundResolved` with the result.
+ * 5. Clear `store.playerChoice` and return the result.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.

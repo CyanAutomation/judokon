@@ -50,20 +50,30 @@ function createQuitConfirmation(store, onConfirm) {
   document.body.appendChild(modal.element);
   return modal;
 }
-export let quitConfirmButtonPromise = Promise.resolve();
-
 /**
- * Trigger the Classic Battle quit confirmation modal.
+ * Promise that resolves with the confirm-quit button element when the quit
+ * confirmation modal is presented. Tests can await `window.quitConfirmButtonPromise`
+ * to interact with the modal's confirm button.
+ *
+ * @type {Promise<HTMLButtonElement>}
+ */
+export let quitConfirmButtonPromise = Promise.resolve();
+/**
+ * Trigger the Classic Battle quit confirmation modal and return the confirm button.
+ *
+ * Presents a modal asking the player to confirm quitting the match. A Promise
+ * is exposed on `window.quitConfirmButtonPromise` so tests can await or act on
+ * the confirm button DOM being available.
  *
  * @pseudocode
- * 1. Create the modal if needed.
- * 2. Determine the element that opened the modal.
- * 3. Open the modal focusing the triggering element when available.
- * 4. Resolve a promise with the confirm button once inserted.
+ * 1. Create a new promise and store it in `quitConfirmButtonPromise` and on window.
+ * 2. Create the modal if `store.quitModal` is not already present.
+ * 3. Open the modal, focusing the supplied `trigger` element when available.
+ * 4. Poll for the confirm button element and resolve the promise once found.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {HTMLElement} [trigger] - Element that initiated the quit action.
- * @returns {Promise<HTMLButtonElement>} Resolves with the confirm button.
+ * @returns {Promise<HTMLButtonElement>} Resolves with the confirm button element.
  */
 export function quitMatch(store, trigger) {
   let resolveBtn;

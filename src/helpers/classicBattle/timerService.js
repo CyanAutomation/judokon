@@ -20,37 +20,21 @@ export { getNextRoundControls } from "./roundManager.js";
 // Skip handler utilities moved to skipHandler.js
 
 /**
- * Disable the Next button and dispatch "ready" if it was already marked ready.
+ * Advance to the next round when the Next button is marked ready.
+ *
+ * This helper disables the Next button, ensures the battle state machine
+ * reaches the `cooldown` state if necessary, dispatches the `ready` event,
+ * and resolves the ready promise used by tests.
  *
  * @pseudocode
- * 1. Disable the button and clear `data-next-ready`.
- * 2. If state isn't cooldown, interrupt to reach cooldown.
- * 3. Dispatch "ready", resolve the promise, and clear skip handler.
+ * 1. Disable the Next button and clear the `data-next-ready` attribute.
+ * 2. If the machine is not in `cooldown`, dispatch an `interrupt` to reach it.
+ * 3. Dispatch `ready` to advance to the next round and call `resolveReady`.
+ * 4. Clear any skip handler to prevent late skips affecting the new round.
  *
  * @param {HTMLButtonElement} btn - Next button element.
  * @param {(() => void)|null} resolveReady - Resolver for the ready promise.
- * @example
- * await advanceWhenReady(btn, resolve);
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {Promise<void>}
  */
 export async function advanceWhenReady(btn, resolveReady) {
   btn.disabled = true;
@@ -76,37 +60,17 @@ export async function advanceWhenReady(btn, resolveReady) {
 }
 
 /**
- * Cancel an active timer or immediately advance when already in cooldown.
+ * Cancel an active cooldown timer or advance immediately when already in cooldown.
  *
  * @pseudocode
- * 1. If timer exists, stop it and return.
- * 2. Otherwise, dispatch "ready" when state is cooldown.
+ * 1. If a `timer` object is provided, call `timer.stop()` and return.
+ * 2. Otherwise, if the state machine is in `cooldown` (or unknown in tests),
+ *    dispatch `ready`, call `resolveReady`, and clear the skip handler.
  *
- * @param {HTMLButtonElement} _btn - Next button element.
- * @param {{stop: () => void}|null} timer - Active cooldown timer.
+ * @param {HTMLButtonElement} _btn - Next button element (unused but provided by callers).
+ * @param {{stop: () => void}|null} timer - Active cooldown timer controls.
  * @param {(() => void)|null} resolveReady - Resolver for the ready promise.
- * @example
- * await cancelTimerOrAdvance(btn, timer, resolve);
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {Promise<void>}
  */
 export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   if (timer) {
@@ -126,34 +90,20 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
 }
 
 /**
- * Handle clicks on the Next button by delegating to helper functions.
+ * Click handler for the Next button.
+ *
+ * Delegates to `advanceWhenReady` when the button is marked ready or to
+ * `cancelTimerOrAdvance` to stop an active timer / advance when in cooldown.
+ *
+ * @pseudocode
+ * 1. Read `controls` (timer and resolveReady) from `getNextRoundControls()` when not supplied.
+ * 2. If the Next button element has `data-next-ready="true"`, call `advanceWhenReady`.
+ * 3. Otherwise call `cancelTimerOrAdvance` to either stop an active timer or dispatch `ready`.
  *
  * @param {MouseEvent} _evt - Click event.
  * @param {{timer: {stop: () => void} | null, resolveReady: (() => void) | null}} [controls=getNextRoundControls()]
  * - Timer controls returned from `startCooldown`.
- * @example
- * const controls = { timer, resolveReady };
- * await onNextButtonClick(new MouseEvent("click"), controls);
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {Promise<void>}
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls()) {
   const { timer = null, resolveReady = null } = controls || {};
@@ -166,7 +116,8 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
   await cancelTimerOrAdvance(btn, timer, resolveReady);
 }
 
-// `getNextRoundControls` re-exported from roundManager.js
+// `getNextRoundControls` is re-exported from `roundManager.js` and returns
+// the active controls for the Next-round cooldown (timer, resolveReady, ready).
 
 /**
  * Helper to force auto-select and dispatch outcome on timer error or drift.
@@ -320,6 +271,23 @@ export async function startTimer(onExpiredSelect, store = null) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Handle stalled stat selection by prompting the player and scheduling auto-select.
+ *
+ * Presents a stalled message, optionally uses the scoreboard when auto-select
+ * is disabled, and schedules `autoSelectStat(onSelect)` after `timeoutMs`.
+ *
+ * @pseudocode
+ * 1. Schedule a timeout to show the stalled snackbar and emit `statSelectionStalled`.
+ * 2. If `autoSelect` is enabled, schedule the countdown toast and call `autoSelectStat(onSelect)`.
+ * 3. Store the scheduled timeout id on `store.autoSelectId` for later cancellation.
+ *
+ * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store - Battle state store.
+ * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect - Callback to handle stat selection.
+ * @param {number} [timeoutMs=5000] - Delay before auto-selecting.
+ * @param {{setTimeout: Function}} [scheduler=realScheduler] - Scheduler used to schedule timers (testable).
+ * @returns {void}
  */
 export function handleStatSelectionTimeout(
   store,

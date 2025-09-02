@@ -49,6 +49,24 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Apply UI updates for a newly started round.
+ *
+ * Resets visible state for stat buttons, updates the round counter and score
+ * display, starts the round timer and registers the stall timeout that may
+ * auto-select a stat when the player does not act.
+ *
+ * @pseudocode
+ * 1. Reset stat buttons and clear any round result text.
+ * 2. Sync the scoreboard and update the round counter.
+ * 3. Show the stat selection prompt and start the timer which calls
+ *    `handleStatSelection` when a stat button is pressed.
+ * 4. Kick off stall timeout logic via `handleStatSelectionTimeout` and update debug panel.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
+ * @param {number} roundNumber - Current round number to display.
+ * @param {number} [stallTimeoutMs=35000] - Delay before auto-select kicks in.
+ */
 export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   try {
     if (!IS_VITEST) console.log("INFO: applyRoundUI called for round", roundNumber);
@@ -117,6 +135,22 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Bind static event handlers for round UI updates.
+ *
+ * These handlers listen for `roundStarted`, `statSelected` and `roundResolved`
+ * events emitted during the battle and update the DOM, scoreboard and timers
+ * accordingly. This binding is done once per worker/module load in
+ * production to avoid duplicate listeners.
+ *
+ * @pseudocode
+ * 1. Listen for `roundStarted` and call `applyRoundUI`.
+ * 2. Listen for `statSelected`, mark the selected button and disable stat buttons.
+ * 3. Listen for `roundResolved`, show the result message and either show the
+ *    match summary modal (on match end) or start the cooldown for next round.
+ *
+ * @returns {void}
  */
 export function bindRoundUIEventHandlers() {
   onBattleEvent("roundStarted", (e) => {
@@ -255,6 +289,20 @@ try {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Bind dynamic event handlers that import dependencies at call time.
+ *
+ * This test-friendly variant dynamically imports modules inside handlers so
+ * that test-time mocks (via vi.mock) are honored. It guards against rebinding
+ * to the same EventTarget.
+ *
+ * @pseudocode
+ * 1. Prevent rebinding by tracking the target in a WeakSet on globalThis.
+ * 2. Bind `roundStarted`, `statSelected`, and `roundResolved` with handlers
+ *    that import and call the same UI helpers used by the static bindings.
+ *
+ * @returns {void}
  */
 export function bindRoundUIEventHandlersDynamic() {
   // Guard against rebinding on the same EventTarget instance

@@ -71,6 +71,21 @@ function getStartRound(store) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Restart the current match by resetting engine state and UI then starting a round.
+ *
+ * This helper is used by the UI's 'replay' flow to clear engine state, notify
+ * the UI to reset, and delegate to `startRound()` (which may be overridden in
+ * test debug APIs).
+ *
+ * @pseudocode
+ * 1. Call engine `_resetForTest` to clear score and internal state.
+ * 2. Emit a `game:reset-ui` CustomEvent so UI components can teardown.
+ * 3. Resolve the appropriate `startRound` function (possibly overridden) and call it.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
+ */
 export async function handleReplay(store) {
   resetEngineForTest();
   window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
@@ -112,6 +127,26 @@ export async function handleReplay(store) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Draw new cards and start a round.
+ *
+ * Resets per-round store flags, draws player/opponent cards from the engine,
+ * computes the next round number and emits a `roundStarted` event. An
+ * optional `onRoundStart` callback may be invoked synchronously to update UI
+ * state immediately.
+ *
+ * @pseudocode
+ * 1. Clear `store.selectionMade` and `store.playerChoice`.
+ * 2. Await `drawCards()` to get player and opponent cards.
+ * 3. Compute `roundNumber` from the engine's rounds played count.
+ * 4. If supplied, call `onRoundStart(store, roundNumber)`.
+ * 5. Emit `roundStarted` with the store and round number.
+ * 6. Return `{...cards, roundNumber}` to callers.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart]
+ * @returns {Promise<{playerCard: any, opponentCard: any, roundNumber: number}>}
  */
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
@@ -340,6 +375,23 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Reset internal timers, flags and debug overrides for tests and runtime.
+ *
+ * Clears selection timers, resets scheduler state, clears any debug
+ * startRoundOverride and emits a `game:reset-ui` event to allow the UI to
+ * teardown and reinitialize.
+ *
+ * @pseudocode
+ * 1. Reset skip and selection subsystems, and call engine's `_resetForTest`.
+ * 2. Stop any schedulers and clear debug overrides on `window`.
+ * 3. If a `store` is provided, clear its timeouts and selection state and
+ *    dispatch `game:reset-ui` with the store detail. Otherwise dispatch a
+ *    generic `game:reset-ui` with `store: null`.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @returns {void}
+ */
 export function _resetForTest(store) {
   resetSkipState();
   resetSelection();
@@ -402,5 +454,11 @@ export function _resetForTest(store) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Production alias for `_resetForTest` used by orchestrator and other callers.
+ *
+ * @pseudocode
+ * 1. Invoke `_resetForTest(store)` when asked to reset the active match.
  */
 export const resetGame = _resetForTest;

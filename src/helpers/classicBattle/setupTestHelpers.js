@@ -34,6 +34,23 @@ import { start as startScheduler, stop as stopScheduler } from "../../utils/sche
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Create a debug API for Classic Battle used in tests and developer tooling.
+ *
+ * Exposes helpers that allow tests to skip phases, override round start, and
+ * pause/resume header timers. The created API is attached to `window` when
+ * available to make it easy to access from test runner contexts.
+ *
+ * @pseudocode
+ * 1. Read the battle store from `view.controller.battleStore`.
+ * 2. Provide `skipBattlePhase` that calls `skipCurrentPhase()` and resets stat buttons.
+ * 3. Provide `startRoundOverride` that delegates to `view.startRound()`.
+ * 4. Provide `freezeBattleHeader` and `resumeBattleHeader` to pause/resume timers.
+ * 5. Attach the API and store to `window` when running in a browser environment.
+ *
+ * @param {import("./view.js").ClassicBattleView} view - The Classic Battle view instance.
+ * @returns {{battleStore: ReturnType<import("./roundManager.js").createBattleStore>, skipBattlePhase: Function, startRoundOverride: Function, freezeBattleHeader: Function, resumeBattleHeader: Function}}
+ */
 export function createClassicBattleDebugAPI(view) {
   const store = view.controller.battleStore;
   const skipBattlePhase = () => {

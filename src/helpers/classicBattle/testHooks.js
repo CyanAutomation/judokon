@@ -6,36 +6,20 @@ let __uiBound = false;
 let __promisesBound = false;
 
 /**
- * Ensure round UI event listeners and promises are registered.
- * Importing this module has side effects that bind onBattleEvent handlers.
- */
-/**
- * Ensure Classic Battle listeners and test promises are ready.
+ * Ensure Classic Battle UI listeners and test promises are registered.
+ *
+ * Binds the round UI event handlers and creates module-level awaitable
+ * Promises used by tests. When `force` is true the function will attempt to
+ * rebind dynamic handlers so test-time mocks are honored.
  *
  * @pseudocode
- * 1. Import roundUI once to bind event listeners (idempotent per worker).
- * 2. Import promises; if `force`, cache-bust to create fresh awaitables post-mock.
- * 3. Track bound state to avoid duplicate UI bindings.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. If UI bindings are not present, import `./roundUI.js` to register static handlers.
+ * 2. When `force` is set, reset the internal EventTarget and call the
+ *    dynamic binding entrypoints so vi.mocks are respected.
+ * 3. Ensure promises from `./promises.js` are created and reset when forced.
+ *
+ * @param {{force?: boolean}} [opts] - Optional flags. `force` rebinds dynamic handlers.
+ * @returns {Promise<void>} Resolves when bindings and promises are available.
  */
 export async function ensureBindings(opts = {}) {
   const force = !!opts.force;
@@ -63,65 +47,24 @@ export async function ensureBindings(opts = {}) {
   }
 }
 
-// Allow tests to clear the internal "promises bound" state so a subsequent
-// ensureBindings({ force: true }) can recreate the awaitables after vi.doMock.
-/**
- * Reset internal promise-bound flag so tests can rebind after vi.doMock().
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function resetBindings() {
   __promisesBound = false;
 }
 
 /**
- * Trigger the round timeout path immediately without waiting for the timer.
- * Mirrors the onExpired logic in startTimer.
+ * Trigger the round timeout flow immediately for tests.
+ *
+ * This helper mirrors the expiry behavior in `startTimer()` but runs
+ * synchronously so tests don't need to advance real or fake timers.
  *
  * @pseudocode
- * 1. Import stat-selection helpers and dispatch utils.
- * 2. Stop any active timer to prevent overlap.
- * 3. Emit `roundTimeout`, auto-select a stat, and dispatch `timeout`.
+ * 1. Import helpers that compute stat values and perform selection.
+ * 2. Stop any running engine timer to avoid overlapping expirations.
+ * 3. Emit `roundTimeout` to inform listeners and start auto-selection.
+ * 4. Dispatch the `timeout` state transition and await the auto-select task.
  *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle store instance.
+ * @returns {Promise<void>} Resolves after the timeout flow completes.
  */
 export async function triggerRoundTimeoutNow(store) {
   const { getOpponentJudoka } = await import("./cardSelection.js");
@@ -159,29 +102,19 @@ export async function triggerRoundTimeoutNow(store) {
 }
 
 /**
- * Trigger the stalled-selection prompt immediately and auto-select a stat.
+ * Trigger the stalled-selection prompt immediately and schedule auto-select.
  *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
- */
-/**
- * @summary TODO: Add summary
+ * Used by tests to surface the stall UI and cause an immediate auto-selection
+ * without waiting for timeouts. This mirrors `handleStatSelectionTimeout`'s
+ * behavior but runs synchronously.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Import helpers for computing stat values and performing selection.
+ * 2. Call `handleStatSelectionTimeout(store, onSelect, 0)` to schedule immediate action.
+ * 3. Show a stall message and emit `statSelectionStalled` so tests can observe it.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle store instance.
+ * @returns {Promise<void>} Resolves after stall prompt setup completes.
  */
 export async function triggerStallPromptNow(store) {
   const { getOpponentJudoka } = await import("./cardSelection.js");

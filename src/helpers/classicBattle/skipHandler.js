@@ -5,32 +5,21 @@ let skipHandler = null;
 let pendingSkip = false;
 
 /**
- * Set the current skip handler and notify listeners of its presence.
- * If a skip was requested before a handler existed, invoking this with
- * a function will immediately trigger it and clear the pending state.
+ * Register or clear the global skip handler used by timer and cooldown logic.
+ *
+ * The skip handler is a short callback that advances or cancels the current
+ * phase (for example stopping a timer). Tests can request a skip before a
+ * handler exists; in that case the skip is recorded as `pendingSkip` and will
+ * be invoked immediately when a handler is registered.
+ *
+ * @pseudocode
+ * 1. Accept a function `fn` and set the module-scoped `skipHandler` to `fn` or `null`.
+ * 2. Dispatch a `skip-handler-change` CustomEvent with `detail.active` to notify listeners.
+ * 3. If a skip was previously requested (`pendingSkip`) and a handler is now set,
+ *    clear `pendingSkip` and synchronously invoke the handler so tests observe it.
  *
  * @param {null|function(): void|Promise<void>} fn - Handler to invoke when skipping.
  * @returns {void}
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function setSkipHandler(fn) {
   skipHandler = typeof fn === "function" ? fn : null;
@@ -52,32 +41,6 @@ export function setSkipHandler(fn) {
   }
 }
 
-/**
- * Skip the current timer phase if a handler is set. When no handler is
- * available, mark the skip as pending so it runs once a handler is provided.
- *
- * @returns {void}
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function skipCurrentPhase() {
   if (skipHandler) {
     const fn = skipHandler;

@@ -74,6 +74,24 @@ export let roundResolvedPromise;
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Initialize and reset the suite of test-friendly battle promises.
+ *
+ * These promises are created with `setupPromise()` which attaches a window-
+ * scoped reference and automatically re-creates a fresh Promise each time the
+ * corresponding battle event fires. Tests (and runtime helpers) can await the
+ * returned getters to synchronize with UI and state transitions.
+ *
+ * @pseudocode
+ * 1. For each well-known battle lifecycle event, call `setupPromise(key, event)`
+ *    to create a self-resetting Promise and assign it to the exported symbol.
+ * 2. Ensure the created Promise is the active one by invoking the returned
+ *    function (which returns the current Promise instance).
+ * 3. Caller code and tests should use the provided getters (e.g. `getRoundPromptPromise`) to
+ *    obtain the latest Promise instance, avoiding races with module-level resolved Promises.
+ *
+ * @returns {void}
+ */
 export function resetBattlePromises() {
   roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
   roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
@@ -130,6 +148,19 @@ function latest(key, fallback) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Return a Promise that resolves when the next `roundPrompt` battle event fires.
+ *
+ * This returns the window-scoped promise instance created by `resetBattlePromises()`
+ * or resolves immediately if the event has already been observed.
+ *
+ * @pseudocode
+ * 1. If `window.__resolved_roundPromptPromise` is true, return an already-resolved Promise.
+ * 2. If `window.roundPromptPromise` is a Promise, return it.
+ * 3. Otherwise return the module-level `roundPromptPromise` fallback.
+ *
+ * @returns {Promise<void>} Promise resolved on next `roundPrompt` event.
+ */
 export const getRoundPromptPromise = () => latest("roundPromptPromise", roundPromptPromise);
 /**
  * @summary TODO: Add summary
@@ -150,6 +181,17 @@ export const getRoundPromptPromise = () => latest("roundPromptPromise", roundPro
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Return a Promise that resolves when the next `nextRoundCountdownStarted` event fires.
+ *
+ * See `getRoundPromptPromise` for the getter semantics and race avoidance.
+ *
+ * @pseudocode
+ * 1. Check `window.__resolved_countdownStartedPromise` for an immediate resolve.
+ * 2. Return `window.countdownStartedPromise` when available, otherwise use module fallback.
+ *
+ * @returns {Promise<void>} Promise resolved when countdown starts.
  */
 export const getCountdownStartedPromise = () =>
   latest("countdownStartedPromise", countdownStartedPromise);
@@ -173,6 +215,16 @@ export const getCountdownStartedPromise = () =>
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Return a Promise that resolves on the next `roundResolved` event.
+ *
+ * @pseudocode
+ * 1. If the resolved marker is set on window, return Promise.resolve().
+ * 2. If a window-scoped promise exists, return it.
+ * 3. Otherwise return the module-level fallback promise.
+ *
+ * @returns {Promise<void>} Promise resolved when a round has been resolved.
+ */
 export const getRoundResolvedPromise = () => latest("roundResolvedPromise", roundResolvedPromise);
 /**
  * @summary TODO: Add summary
@@ -194,6 +246,15 @@ export const getRoundResolvedPromise = () => latest("roundResolvedPromise", roun
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Return a Promise that resolves when a `roundTimeout` event occurs.
+ *
+ * @pseudocode
+ * 1. If `window.__resolved_roundTimeoutPromise` is set, return a resolved Promise.
+ * 2. Otherwise return the window-scoped promise or module fallback.
+ *
+ * @returns {Promise<void>} Promise resolved when the round times out.
+ */
 export const getRoundTimeoutPromise = () => latest("roundTimeoutPromise", roundTimeoutPromise);
 /**
  * @summary TODO: Add summary
@@ -214,6 +275,17 @@ export const getRoundTimeoutPromise = () => latest("roundTimeoutPromise", roundT
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Return a Promise that resolves when the `statSelectionStalled` event is emitted.
+ *
+ * Useful for tests that want to await the UI stall prompt or auto-selection.
+ *
+ * @pseudocode
+ * 1. Check for the window-scoped resolved marker and return resolved Promise if present.
+ * 2. Return `window.statSelectionStalledPromise` when available, otherwise fallback to module value.
+ *
+ * @returns {Promise<void>} Promise resolved when stat selection is considered stalled.
  */
 export const getStatSelectionStalledPromise = () =>
   latest("statSelectionStalledPromise", statSelectionStalledPromise);

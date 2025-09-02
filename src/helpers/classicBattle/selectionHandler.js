@@ -131,6 +131,20 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {void}
  */
+/**
+ * Stop countdown timers and clear pending selection timeouts on the store.
+ *
+ * This halts the engine countdown and removes any scheduled auto-select or
+ * stall timeouts so they cannot fire after the player has made a selection.
+ *
+ * @pseudocode
+ * 1. Call engine `stopTimer()` to pause/stop the round countdown.
+ * 2. Clear `store.statTimeoutId` and `store.autoSelectId` via `clearTimeout`.
+ * 3. Null out the stored ids so subsequent cleanup calls are safe.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @returns {void}
+ */
 export function cleanupTimers(store) {
   stopTimer();
   clearTimeout(store.statTimeoutId);
@@ -190,6 +204,27 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * @param {string} stat - Chosen stat key.
  * @param {{playerVal: number, opponentVal: number}} values - Precomputed stat values.
  * @returns {Promise<ReturnType<typeof resolveRound>>}
+ */
+/**
+ * Handle the player's stat selection, emit selection events and resolve the round.
+ *
+ * This function coordinates validation, applying selection to the store,
+ * stopping timers, emitting the `statSelected` event, and ensuring the round
+ * is resolved either by the state machine or directly by calling the resolver.
+ *
+ * @pseudocode
+ * 1. Validate that a selection is currently allowed via `validateSelectionState`.
+ * 2. Apply selection to `store` and coerce stat values with `applySelectionToStore`.
+ * 3. Call `cleanupTimers` to halt timers and clear pending timeouts.
+ * 4. Emit `statSelected` with selection details and any testing options.
+ * 5. Dispatch the battle machine `statSelected` event; if the machine clears
+ *    `store.playerChoice` then let it resolve the round.
+ * 6. Otherwise call `resolveRoundDirect` to compute the result and dispatch `roundResolved`.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {{playerVal?: number, opponentVal?: number}} values - Optional precomputed values.
+ * @returns {Promise<ReturnType<typeof resolveRound>|void>} The resolved round result when handled locally.
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
   if (!validateSelectionState(store)) {

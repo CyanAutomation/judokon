@@ -32,6 +32,26 @@ export function resetStatButtonsReadyPromise(win = window) {
  * @param {() => void} resolveReady
  * @param {() => void} resetReady
  */
+/**
+ * Enable or disable the set of stat buttons and update readiness signals.
+ *
+ * When enabling the buttons this clears any visual selection and resolves
+ * the test-ready promise (via `resolveReady`). When disabling, it invokes
+ * `resetReady` so tests can observe the change.
+ *
+ * @pseudocode
+ * 1. For each button: set `disabled`, `tabIndex`, and `disabled` CSS class.
+ * 2. If enabling, remove `selected` class and restore visual state.
+ * 3. Update `statContainer.dataset.buttonsReady` to reflect the enabled state.
+ * 4. Call `resolveReady` when enabling, or `resetReady` when disabling.
+ * 5. Emit test-mode console warnings when `isTestModeEnabled()`.
+ *
+ * @param {NodeListOf<HTMLButtonElement>} statButtons - Buttons to toggle.
+ * @param {HTMLElement|null} statContainer - Optional container to store ready flag.
+ * @param {boolean} enable - True to enable buttons, false to disable.
+ * @param {() => void} resolveReady - Called when buttons become ready.
+ * @param {() => void} resetReady - Called when buttons are no longer ready.
+ */
 export function setStatButtonsEnabled(
   statButtons,
   statContainer,
@@ -78,6 +98,21 @@ export function setStatButtonsEnabled(
  *
  * @param {NodeListOf<HTMLButtonElement>} statButtons
  * @returns {(e: KeyboardEvent) => void}
+ */
+/**
+ * Create a keyboard handler that maps numeric keys 1-5 to stat button clicks.
+ *
+ * The returned handler guards against modifier keys, and ignores input
+ * elements to avoid interfering with text entry. Hotkeys are gated behind
+ * the `statHotkeys` feature flag.
+ *
+ * @pseudocode
+ * 1. If `statHotkeys` is disabled, no-op.
+ * 2. Ignore events with modifier keys or when focus is in input controls.
+ * 3. Map keys "1"-"5" to indices and click the corresponding enabled button.
+ *
+ * @param {NodeListOf<HTMLButtonElement>} statButtons - Buttons to map to hotkeys.
+ * @returns {(e: KeyboardEvent) => void} Keydown event handler.
  */
 export function createStatHotkeyHandler(statButtons) {
   return (e) => {
