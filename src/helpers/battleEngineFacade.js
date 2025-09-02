@@ -209,6 +209,30 @@ export const isMatchEnded = () => requireEngine().isMatchEnded();
  */
 export const getTimerState = () => requireEngine().getTimerState();
 
+/**
+ * Subscribe to battle engine events.
+ *
+ * @pseudocode
+ * 1. Delegate to `battleEngine.on(type, handler)`.
+ *
+ * @param {string} type - Event name.
+ * @param {(payload: any) => void} handler - Callback for the event.
+ * @returns {void}
+ */
+export const on = (type, handler) => battleEngine?.on?.(type, handler);
+
+/**
+ * Unsubscribe from battle engine events.
+ *
+ * @pseudocode
+ * 1. Delegate to `battleEngine.off(type, handler)`.
+ *
+ * @param {string} type - Event name.
+ * @param {(payload: any) => void} handler - Callback for the event.
+ * @returns {void}
+ */
+export const off = (type, handler) => battleEngine?.off?.(type, handler);
+
 // Internal test helper removed; tests should instantiate engines via `createBattleEngine()`.
 
 /**

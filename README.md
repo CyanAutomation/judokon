@@ -148,6 +148,17 @@ accessing `settings.featureFlags` directly.
 
 > `navigationItems.js` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
 
+## Battle Engine Events API
+
+The battle engine exposes a lightweight event emitter. Subscribe via
+`on(event, handler)` from `src/helpers/battleEngineFacade.js`:
+
+- `roundStarted` → `{ round }`
+- `roundEnded` → `{ delta, outcome, matchEnded, playerScore, opponentScore }`
+- `timerTick` → `{ remaining, phase: 'round' | 'cooldown' }`
+- `matchEnded` → same payload as `roundEnded`
+- `error` → `{ message }`
+
 ## 🔎 Using the Vector RAG System
 
 Before scanning the repo for answers, call [`queryRag`](./src/helpers/queryRag.js)

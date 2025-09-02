@@ -1,9 +1,20 @@
 import { evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { on as onEngine } from "../battleEngineFacade.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
+
+if (typeof onEngine === "function") {
+  onEngine("roundEnded", (detail) => {
+    emitBattleEvent("roundResolved", detail);
+  });
+
+  onEngine("matchEnded", (detail) => {
+    emitBattleEvent("matchOver", detail);
+  });
+}
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.

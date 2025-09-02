@@ -55,6 +55,21 @@ The `BattleEngine` constructor accepts a config object allowing modes to overrid
 - `stats` – list of stat keys used in comparisons
 - `debugHooks` – optional callbacks (e.g., `getStateSnapshot` for tests)
 
+- `emitter` – optional `{ on, off, emit }` object to override the internal event emitter
+
+### Events
+
+The engine emits updates through a small event emitter. Listeners may
+subscribe with `on(event, handler)`:
+
+| Event          | Payload                                                      |
+| -------------- | ------------------------------------------------------------ | ------------- |
+| `roundStarted` | `{ round: number }`                                          |
+| `roundEnded`   | `{ delta, outcome, matchEnded, playerScore, opponentScore }` |
+| `timerTick`    | `{ remaining: number, phase: 'round'                         | 'cooldown' }` |
+| `matchEnded`   | Same payload as `roundEnded`                                 |
+| `error`        | `{ message: string }`                                        |
+
 ---
 
 ## User Stories
