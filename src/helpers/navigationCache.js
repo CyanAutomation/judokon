@@ -70,8 +70,10 @@ function isValidNavigationItem(it) {
     it &&
     typeof it.id === "number" &&
     typeof it.gameModeId === "number" &&
-    typeof it.url === "string" && it.url.length > 0 &&
-    typeof it.category === "string" && it.category.length > 0 &&
+    typeof it.url === "string" &&
+    it.url.length > 0 &&
+    typeof it.category === "string" &&
+    it.category.length > 0 &&
     typeof it.order === "number" &&
     typeof it.isHidden === "boolean"
   );
