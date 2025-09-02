@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       force_rebuild:
-        description: "Ignore drift and rebuild anyway"
+        description: Ignore drift and rebuild anyway
         required: false
         default: "false"
 
@@ -26,7 +26,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -61,7 +61,7 @@ jobs:
           # Ensure *no* network is attempted by transformers / HF hub
           TRANSFORMERS_OFFLINE: "1"
           HF_HUB_OFFLINE: "1"
-          NODE_OPTIONS: "--experimental-json-modules"
+          NODE_OPTIONS: --experimental-json-modules
         run: npm run build:offline-rag
 
       - name: Stage changes
