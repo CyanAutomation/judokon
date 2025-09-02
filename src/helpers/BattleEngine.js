@@ -8,7 +8,6 @@
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 import { TimerController } from "./TimerController.js";
 import { stop as stopScheduler } from "../utils/scheduler.js";
-import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
@@ -92,22 +91,31 @@ export function applyOutcome(engine, outcome) {
 
 export class BattleEngine {
   /**
-   * Initializes a new instance of the BattleEngine, setting up the initial state
-   * for a battle, including scores, timer, and various flags.
+   * Initializes a new instance of the BattleEngine.
    *
    * @pseudocode
-   * 1. Initialize `pointsToWin` to `CLASSIC_BATTLE_POINTS_TO_WIN`.
-   * 2. Initialize `playerScore` and `opponentScore` to 0.
-   * 3. Create a new `TimerController` instance and assign it to `timer`.
-   * 4. Set `matchEnded` to `false`.
-   * 5. Set `roundsPlayed` to 0.
-   * 6. Set `roundInterrupted` to `false`.
-   * 7. Initialize `lastInterruptReason` to an empty string.
-   * 8. Initialize `lastError` to an empty string.
-   * 9. Initialize `lastModification` to `null`.
+   * 1. Merge `config` with classic defaults (`pointsToWin`, `maxRounds`, `stats`).
+   * 2. Initialize scores, timer, and status flags.
+   * 3. Store the merged config for test resets.
+   *
+   * @param {object} [config]
+   * @param {number} [config.pointsToWin] - Points required to win the match.
+   * @param {number} [config.maxRounds] - Maximum number of rounds.
+   * @param {string[]} [config.stats] - List of stat keys used in battles.
+   * @param {object} [config.debugHooks] - Optional debug callbacks.
+   * @param {function():{log:Array}} [config.debugHooks.getStateSnapshot] - Timer snapshot hook.
    */
-  constructor() {
-    this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
+  constructor(config = {}) {
+    const {
+      pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN,
+      maxRounds = CLASSIC_BATTLE_MAX_ROUNDS,
+      stats = STATS,
+      debugHooks = {}
+    } = config;
+    this.pointsToWin = pointsToWin;
+    this.maxRounds = maxRounds;
+    this.stats = stats;
+    this.debugHooks = debugHooks;
     this.playerScore = 0;
     this.opponentScore = 0;
     this.timer = new TimerController();
@@ -117,6 +125,7 @@ export class BattleEngine {
     this.lastInterruptReason = "";
     this.lastError = "";
     this.lastModification = null;
+    this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks };
   }
 
   /**
@@ -159,7 +168,7 @@ export class BattleEngine {
     if (
       this.playerScore >= this.pointsToWin ||
       this.opponentScore >= this.pointsToWin ||
-      this.roundsPlayed >= CLASSIC_BATTLE_MAX_ROUNDS
+      this.roundsPlayed >= this.maxRounds
     ) {
       this.matchEnded = true;
       if (this.playerScore > this.opponentScore) {
@@ -448,8 +457,8 @@ export class BattleEngine {
   getTimerStateSnapshot() {
     const timer = this.getTimerState();
     let transitions = [];
-    const snap = getStateSnapshot();
-    if (Array.isArray(snap.log)) {
+    const snap = this.debugHooks.getStateSnapshot?.();
+    if (Array.isArray(snap?.log)) {
       transitions = snap.log.slice();
     }
     return { timer, transitions };
@@ -514,7 +523,11 @@ export class BattleEngine {
 
   _resetForTest() {
     stopScheduler();
-    this.pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN;
+    const { pointsToWin, maxRounds, stats, debugHooks } = this._initialConfig;
+    this.pointsToWin = pointsToWin;
+    this.maxRounds = maxRounds;
+    this.stats = stats;
+    this.debugHooks = debugHooks;
     this.playerScore = 0;
     this.opponentScore = 0;
     this.matchEnded = false;
