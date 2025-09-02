@@ -50,7 +50,7 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
       { timeout }
     );
     return;
-  } catch (err) {
+  } catch {
     // Fall through to diagnostics below.
   }
   // Timed out: include page-side diagnostics

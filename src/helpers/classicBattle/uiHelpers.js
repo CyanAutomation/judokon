@@ -19,7 +19,7 @@ import { toggleInspectorPanels } from "../cardUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
+import { onBattleEvent } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import {

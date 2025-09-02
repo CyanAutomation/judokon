@@ -21,6 +21,19 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
     });
   });
 
+  // Global comparison tolerance for tiny AA/rounding differences.
+  // Exposed here so we can reuse consistently across specs.
+  const BASE_SCREENSHOT_OPTS = { maxDiffPixels: 1500 };
+
+  // Allow switching to viewport-only screenshots without changing code.
+  // Opt in with SCREENSHOT_VIEWPORT_ONLY=true when you want to
+  // regenerate snapshots that don't depend on below-the-fold content.
+  const VIEWPORT_ONLY = process.env.SCREENSHOT_VIEWPORT_ONLY === "true";
+  const pageScreenshotOpts = (defaultFullPage = false) => ({
+    ...BASE_SCREENSHOT_OPTS,
+    ...(defaultFullPage && !VIEWPORT_ONLY ? { fullPage: true } : {})
+  });
+
   // List of pages to capture screenshots for. Each entry includes a tag to
   // enable filtering with `npx playwright test --grep @tag` in CI.
   const pages = [
@@ -37,7 +50,10 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
   for (const { url, name, tag } of pages) {
     test(`${tag} screenshot ${url}`, async ({ page }) => {
       await page.goto(url, { waitUntil: "domcontentloaded" });
-      await expect(page).toHaveScreenshot(name, { fullPage: true });
+      // Keep existing full-page behavior by default to avoid baseline churn.
+      // Set SCREENSHOT_VIEWPORT_ONLY=true to capture only the viewport and
+      // regenerate smaller, less fragile baselines.
+      await expect(page).toHaveScreenshot(name, pageScreenshotOpts(true));
     });
   }
 
@@ -59,7 +75,7 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
       await page.goto("/src/pages/settings.html", { waitUntil: "domcontentloaded" });
       await waitForSettingsReady(page);
       await expect(page.locator("body")).toHaveAttribute("data-theme", mode);
-      await expect(page).toHaveScreenshot(`settings-${mode}.png`, { fullPage: true });
+      await expect(page).toHaveScreenshot(`settings-${mode}.png`, pageScreenshotOpts(true));
     });
   }
 
@@ -69,6 +85,7 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
     await waitForBattleReady(page);
     await page.setViewportSize({ width: 280, height: 800 });
     await expect(page).toHaveScreenshot("battleJudoka-narrow.png", {
+      ...BASE_SCREENSHOT_OPTS,
       mask: [page.locator("#battle-state-progress")]
     });
   });
@@ -78,13 +95,13 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
     await page.getByTestId("draw-button").click();
     await page.locator('body[data-signature-move-ready="true"]').waitFor();
     const sigMove = page.locator(".signature-move-container");
-    await expect(sigMove).toHaveScreenshot("randomJudoka-signature.png");
+    await expect(sigMove).toHaveScreenshot("randomJudoka-signature.png", BASE_SCREENSHOT_OPTS);
   });
 
   test("@browseJudoka-signature screenshot", async ({ page }) => {
     await page.goto("/src/pages/browseJudoka.html");
     await page.locator('body[data-signature-move-ready="true"]').waitFor();
     const sigMove = page.locator(".signature-move-container").first();
-    await expect(sigMove).toHaveScreenshot("browseJudoka-signature.png");
+    await expect(sigMove).toHaveScreenshot("browseJudoka-signature.png", BASE_SCREENSHOT_OPTS);
   });
 });

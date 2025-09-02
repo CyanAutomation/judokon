@@ -191,13 +191,11 @@ Notes:
 
 Additional UI/UX improvements (terminal polish)
 
-- Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from the header; it must be accessible (contrast >= 4.5:1) and off by default.
-- Provide an optional "retro" theme (green-on-black or amber-on-black) toggled from a dedicated header control `#retro-toggle` (feature flag `cliRetro`); it must be accessible (contrast >= 4.5:1) and off by default.
 - Render ASCII separators and an 80ch-width centered column to mimic legacy terminal dimensions (optional, feature-flag guarded).
 - Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
 - Responsive behavior: Header controls gracefully wrap on narrow screens; `#cli-status` collapses from a vertical to a horizontal compact layout at small widths. Labels may be hidden at very narrow widths to save space while inputs remain accessible.
-- Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
-- Settings moved to a less-prominent in-main section: Win target, Verbose, Retro, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
+- Settings moved to a less-prominent in-main section: Win target, Verbose, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
+- Settings moved to a less-prominent in-main section: Win target, Verbose, and Seed controls are now rendered in a dedicated `cli-settings` pane inside the main column so the header remains minimal and focused on context (title/round/score).
 - Collapsible settings panel (`#cli-settings-toggle` / `#cli-settings-body`) implemented with localStorage persistence to keep the settings panel state between visits.
 - Render skeleton stat rows at startup so `#cli-stats` has deterministic bounding boxes for visual tests and reduces layout shift.
 - Expose a small JS helper that atomically updates `#cli-countdown`'s `data-remaining-time` attribute together with the visible text to make Playwright/Vitest assertions robust.
@@ -205,7 +203,7 @@ Additional UI/UX improvements (terminal polish)
 
 Small additions to the interaction model
 
-- Add a toggle to switch the retro theme; remember the preference in localStorage.
+- Add a toggle to switch the retro theme in src/pages/settings.html; remember the preference in localStorage.
 - Provide a minimal visual tweak to the header: a tighter height and an ASCII-style single-line header to increase terminal feel.
 
 ---
@@ -232,7 +230,6 @@ Small additions to the interaction model
 ## Open Questions
 
 - Should the CLI mirror snackbar semantics exactly or consolidate to a single `#cli-countdown` area? If consolidated, update tests accordingly.
-<!-- Retro Mode removed; no longer applicable. -->
 
 ---
 
@@ -261,7 +258,7 @@ Small additions to the interaction model
   - [ ] 4.2 Ensure ≥4.5:1 contrast and zoom to 200% without breaking layout
   - [ ] 4.3 Add stable IDs (`#round-message`, `#cli-score`, etc.) and `data-flag` hooks
   - [ ] 4.4 Verify focus order and accessibility fallbacks
-  - [ ] 4.5 Verify that retro theme retains contrast and keyboard focus visibility
+  - [ ] 4.5 Verify that retro theme (enabled via src/pages/settings.html) retains contrast and keyboard focus visibility
 - [ ] 5.0 Testing
   - [ ] 5.1 Add Playwright specs for keyboard/mouse/timer
   - [ ] 5.2 Verify selectors remain stable
@@ -269,6 +266,41 @@ Small additions to the interaction model
   - [ ] 5.4 Ensure logs are muted in CI with verbose mode enabled
 
 ---
+
+## Implementation status (current branch)
+
+Summary: `src/pages/battleCLI.html` and `src/pages/battleCLI.js` implement the majority of P1 functionality. The following status notes reflect what is present in the codebase today and call out remaining gaps to close for full PRD parity.
+
+Done
+- Static engine integration (static imports of orchestrator, engine, round manager).
+- Textual renderer with monospace styling and minimal assets (`battleCLI.html`).
+- Countdown UI that updates once-per-second and sets `data-remaining-time` (atomic helper via `window.__battleCLIinit.setCountdown`).
+- Outcome and score outputs via `#round-message` and `#cli-score` with ARIA role/status hooks.
+- Seed input and `?seed=` handling (stored to `localStorage` and wired to `setTestMode`).
+- Points-to-win selector with persistence and reset flow (`restorePointsToWin`).
+- Verbose section and `cliVerbose` flag wiring (shows `#cli-verbose-section`).
+- Help/shortcuts panel with close button (collapsible `#cli-shortcuts`).
+- Skeleton stat rows to stabilize initial layout.
+- Test hooks and IDs: `#round-message`, `#cli-countdown`, `#cli-score`, `#cli-root[data-round]` present.
+
+Partial / Implemented but needs small fixes
+- Keyboard mapping (1–9, Enter/Space, Q, H) is implemented in `onKeyDown` and handlers, but:
+   - `onKeyDown` ignores single-key shortcuts when the `cliShortcuts` flag is disabled (except Q). Confirm expected behavior for Help (H) when shortcuts disabled.
+   - Local input debounce is not defensive enough: `selectStat()` does set `roundResolving` but `handleWaitingForPlayerActionKey` doesn't early-exit on `roundResolving` or `store.selectionMade`. Recommend adding a guard to `selectStat` or the key handler.
+- Pointer controls: stat clicks are wired, and background clicks advance rounds (`onClickAdvance`), but there is no explicit, visible "Next" button rendered when a round completes; pointer users rely on Enter/Space or background clicks. Adding a focusable `#next-round-button` will improve discoverability.
+- Muting of verbose logs for CI: verbose output writes to `console.info`; consider routing via a muted logger helper to prevent noisy CI logs.
+
+Missing / Not yet implemented
+- Tab hidden / device sleep handling: there are `pauseTimers()` and `resumeTimers()` helpers (used by the quit modal) but no `visibilitychange`/`pageshow` listeners to call them on cross-tab sleep/resume. This can cause double-firing timers; add visibility handlers to pause/resume timers.
+
+Next steps (recommended order)
+1. Add `visibilitychange` / `pageshow` handlers to call `pauseTimers()` and `resumeTimers()` to meet the tab hidden/device sleep acceptance criterion.
+2. Add a small local debounce guard in `selectStat()` (and/or in the key handler) so only the first input is accepted per selection window.
+3. Render an explicit, accessible "Next" button when state is `roundOver` (id: `next-round-button`) and focus it. Wire it to dispatch `continue`.
+4. Route verbose logs through a muted logger helper so tests with `cliVerbose` enabled remain quiet in CI.
+
+If you'd like, I can implement steps 1–3 now and run quick smoke checks; approve and I'll apply the patches.
+
 
 **See also:**
 

@@ -48,7 +48,7 @@ export async function loadEmbeddings() {
             const vecPath = fileURLToPath(vecUrl);
 
             const metaRaw = await readFile(metaPath, "utf8");
-            const { vectorLength, count, items } = JSON.parse(metaRaw);
+            const { vectorLength, items } = JSON.parse(metaRaw);
             if (!vectorLength || !Array.isArray(items)) throw new Error("Invalid offline metadata");
 
             const buffer = await readFile(vecPath);
@@ -60,7 +60,7 @@ export async function loadEmbeddings() {
               out[i] = { ...items[i], embedding: Array.from(view) };
             }
             return out;
-          } catch (offlineError) {
+          } catch {
             // Fall back to JSON manifest path if offline assets are missing
           }
         }

@@ -58,7 +58,7 @@ describe("classicBattle draw next round", () => {
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
 
-    const result = await playRound(battleMod, store, 5, 5);
+    await playRound(battleMod, store, 5, 5);
     battleMod.startCooldown(store);
     await vi.runAllTimersAsync();
     const nextBtn = document.getElementById("next-button");

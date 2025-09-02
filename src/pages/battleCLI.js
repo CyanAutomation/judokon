@@ -1241,6 +1241,11 @@ function handleMatchOver() {
 function handleBattleState(ev) {
   const { from, to } = ev.detail || {};
   updateBattleStateBadge(to);
+  // Clean up any transient Next button when state changes
+  try {
+    const existing = document.getElementById("next-round-button");
+    if (existing) existing.remove();
+  } catch {}
   if (to === "matchStart") {
     clearVerboseLog();
   }
@@ -1252,7 +1257,44 @@ function handleBattleState(ev) {
   }
   if (to === "roundOver" && !autoContinue) {
     showBottomLine("Press Enter to continue");
-    byId("snackbar-container")?.querySelector(".snackbar")?.focus();
+    // Add an explicit, focusable Next button for pointer users
+    try {
+      const main = byId("cli-main");
+      if (main && !document.getElementById("next-round-button")) {
+        const section = document.createElement("section");
+        section.className = "cli-block";
+        const btn = document.createElement("button");
+        btn.id = "next-round-button";
+        btn.className = "primary-button";
+        btn.textContent = "Next";
+        btn.setAttribute("aria-label", "Continue to next round");
+        btn.addEventListener("click", () => {
+          try {
+            // clear timers and UI hints similar to cooldown skip
+            try {
+              if (cooldownTimer) clearTimeout(cooldownTimer);
+            } catch {}
+            try {
+              if (cooldownInterval) clearInterval(cooldownInterval);
+            } catch {}
+            cooldownTimer = null;
+            cooldownInterval = null;
+            clearBottomLine();
+          } catch {}
+          try {
+            safeDispatch("continue");
+          } catch {}
+        });
+        section.appendChild(btn);
+        main.appendChild(section);
+        // Focus the button so keyboard users land on it after round resolution
+        try {
+          btn.focus();
+        } catch {}
+      }
+    } catch (err) {
+      console.error("Failed to render next-round-button", err);
+    }
   }
   if (!verboseEnabled) return;
   try {
@@ -1376,6 +1418,26 @@ async function init() {
   // Keyboard controls
   window.addEventListener("keydown", onKeyDown);
   document.addEventListener("click", onClickAdvance);
+  // Pause/resume timers when the page visibility or lifecycle changes to avoid
+  // double-firing timers when the tab is hidden / device sleeps.
+  try {
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) pauseTimers();
+      else resumeTimers();
+    });
+    // pageshow/pagehide help with bfcache and mobile sleep/resume semantics
+    window.addEventListener("pageshow", (ev) => {
+      // If the page was restored from the BFCache, ensure timers are resumed
+      try {
+        if (ev && ev.persisted) resumeTimers();
+      } catch {}
+    });
+    window.addEventListener("pagehide", () => {
+      try {
+        pauseTimers();
+      } catch {}
+    });
+  } catch {}
 }
 
 if (!window.__TEST__) {
