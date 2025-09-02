@@ -1304,8 +1304,16 @@ async function init() {
     // Set a guard to ignore the next background click after closing help.
     // Do not clear it on microtask; it is consumed in onClickAdvance.
     ignoreNextAdvanceClick = true;
-    const sec = byId("cli-shortcuts");
-    if (sec) sec.hidden = true;
+    if (!window.__battleCLIinit?.setShortcutsCollapsed?.(true)) {
+      const body = byId("cli-shortcuts-body");
+      const sec = byId("cli-shortcuts");
+      try {
+        localStorage.setItem("battleCLI.shortcutsCollapsed", "1");
+      } catch {}
+      if (body) body.style.display = "none";
+      if (sec) sec.setAttribute("hidden", "");
+      close.setAttribute("aria-expanded", "false");
+    }
   });
   checkbox?.addEventListener("change", async () => {
     await setFlag("cliVerbose", !!checkbox.checked);
