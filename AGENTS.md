@@ -161,6 +161,9 @@ Even if you’re not directly searching client_embeddings.json or offline_rag_me
 
 ## 🔧 Module Loading Policy for Agents
 
+> This section is the canonical source for JU-DO-KON!'s static vs dynamic import rules.
+> Update this section when import policy changes; other docs link here.
+
 > JU-DO-KON! runs unbundled on GitHub Pages, relying on native ES modules.
 
 When reviewing or modifying imports, agents must apply the JU-DO-KON! static vs dynamic policy to ensure gameplay remains smooth and errors surface early.

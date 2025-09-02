@@ -238,24 +238,9 @@ It reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, 
    ```
 
    The browser path continues to load embeddings via the manifest + shard loader, so no changes are required there.
-## ⚡ Module Loading Policy: Static vs Dynamic Imports
+## ⚡ Module Loading Policy
 
-JU-DO-KON! favors **deterministic gameplay and snappy input handling**. Use **static imports** for core gameplay; reserve **dynamic imports** (`import('…')`) for optional screens and heavy tools.
-
-**Use static imports when the code:**
-- Runs on a **hot path** (stat selection, round decision, event dispatch, per-frame animation).
-- Is **always required** in a typical play session.
-- Should **fail at build/startup** if broken (orchestrators, rules, event bus).
-
-**Use dynamic imports (with preload) when the code:**
-- Powers **optional** or **infrequent** screens (Settings, Tooltip Viewer, Credits, docs).
-- Is **heavy** or behind a **feature flag** (canvas/WebGL renderer, debug panels, markdown/HL libs).
-- Can be **preloaded** during idle/cooldown to hide latency.
-
-**Hot path (for this project) =**
-- Stat selection handlers → round outcome
-- Rules engine / orchestrators / event dispatchers
-- Animation tick or per-frame rendering used during battle
+Use static imports for hot paths and always-required modules; use dynamic imports with preload for optional or heavy features. See the canonical [Module Loading Policy for Agents](./AGENTS.md#module-loading-policy-for-agents) for the full policy.
 
 ## 🧪 Testing
 
