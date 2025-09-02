@@ -36,7 +36,7 @@
 import { readFile, writeFile, stat } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import path from "path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { glob } from "glob";
 import * as acorn from "acorn";
 import { walk } from "estree-walker";
@@ -609,9 +609,15 @@ async function loadModel() {
   if (typeof process !== "undefined" && process.versions?.node) {
     const { pipeline, env } = await import("@xenova/transformers");
     env.allowLocalModels = true;
-    const modelDir = path.join(rootDir, "models/minilm");
-    const modelUrl = pathToFileURL(modelDir).href;
-    return pipeline("feature-extraction", modelUrl, { quantized: true });
+    env.localModelPath = rootDir;
+    env.backends.onnx.wasm.wasmPaths = path.join(rootDir, "node_modules/onnxruntime-web/dist/");
+    env.backends.onnx.wasm.worker = path.join(
+      rootDir,
+      "node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.worker.js"
+    );
+    env.backends.onnx.wasm.proxy = false;
+    const modelDir = path.join("models", "minilm");
+    return pipeline("feature-extraction", modelDir, { quantized: true });
   }
   const { pipeline } = await import("@xenova/transformers");
   return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {

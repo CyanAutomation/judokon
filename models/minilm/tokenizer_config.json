@@ -1,0 +1,17 @@
+{
+  "do_lower_case": true,
+  "tokenizer_class": "BertTokenizer",
+  "model_max_length": 512,
+  "special_tokens_map_file": null,
+  "padding_side": "right",
+  "truncation_side": "right",
+  "clean_text": true,
+  "handle_chinese_chars": true,
+  "strip_accents": null,
+  "unk_token": "[UNK]",
+  "sep_token": "[SEP]",
+  "pad_token": "[PAD]",
+  "cls_token": "[CLS]",
+  "mask_token": "[MASK]",
+  "tokenizer_file": null
+}
