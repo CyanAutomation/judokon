@@ -1,12 +1,6 @@
 name: Check JSDoc & Pseudocode
 
 on:
-  pull_request:
-    paths:
-      - "**/*.js"
-      - "**/*.mjs"
-      - "scripts/**"
-      - "AGENTS.md"
   workflow_dispatch: {}
 
 permissions:

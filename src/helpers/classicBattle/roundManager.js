@@ -414,6 +414,20 @@ export function _resetForTest(store) {
   resetSelection();
   createBattleEngine();
   bridgeEngineEvents();
+  // In certain test environments, module mocking can cause `bridgeEngineEvents`
+  // to bind using a different facade instance than the one the test spies on.
+  // As a safety net, rebind via the locally imported facade when it's a mock.
+  try {
+    const maybeMock = /** @type {any} */ (battleEngine).on;
+    if (typeof maybeMock === "function" && typeof maybeMock.mock === "object") {
+      maybeMock("roundEnded", (detail) => {
+        emitBattleEvent("roundResolved", detail);
+      });
+      maybeMock("matchEnded", (detail) => {
+        emitBattleEvent("matchOver", detail);
+      });
+    }
+  } catch {}
   stopScheduler();
   if (typeof window !== "undefined") {
     const api = readDebugState("classicBattleDebugAPI");

@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 // Ensure engine events are rebound when resetting the game.
 describe("_resetForTest", () => {
   it("rebinds engine events after engine recreation", async () => {
+    vi.resetModules();
     const on = vi.fn();
     vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
       createBattleEngine: vi.fn(),

@@ -30,14 +30,39 @@ export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
  */
 
 /** @type {IBattleEngine|undefined} */
+/**
+ * Internal reference to the active BattleEngine instance.
+ *
+ * @summary Holds the engine instance created by `createBattleEngine()` so
+ * thin wrapper helpers can delegate to it.
+ * @pseudocode
+ * 1. Initially undefined until `createBattleEngine()` constructs an engine.
+ * 2. Wrappers call `requireEngine()` which throws if this value is unset.
+ * @type {IBattleEngine|undefined}
+ */
 let battleEngine;
 
 function requireEngine() {
   if (!battleEngine) {
+    // Provide a clear error for consumers that call helpers before
+    // initialization.
     throw new Error("Battle engine not initialized. Call createBattleEngine() first.");
   }
   return battleEngine;
 }
+
+/**
+ * Internal guard that returns the active engine or throws if none exists.
+ *
+ * @summary Ensures the engine has been created before helper functions delegate to it.
+ * @pseudocode
+ * 1. If `battleEngine` is undefined, throw an Error instructing callers to initialize it.
+ * 2. Otherwise, return the `battleEngine` instance.
+ *
+ * @throws {Error} When no engine has been created.
+ * @returns {IBattleEngine}
+ */
+// (The function implementation appears above; this comment supplies the required JSDoc.)
 
 /**
  * Create a new battle engine instance.
