@@ -65,7 +65,7 @@ describe("classicBattle startCooldown", () => {
     globalThis.__CLASSIC_BATTLE_STATES__ = minimal;
 
     fetchJsonMock.mockImplementation(async (url) => {
-      if (String(url).includes("gameTimers.json")) {
+      if (String(url).includes("gameTimers.js")) {
         return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
       }
       if (String(url).includes("judoka.json")) return [{ id: 1 }, { id: 2 }];

@@ -32,7 +32,7 @@ describe("classicBattle timer pause", () => {
     logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     fetchJsonMock = vi.fn(async (url) => {
-      if (String(url).includes("gameTimers.json")) {
+      if (String(url).includes("gameTimers.js")) {
         return [{ id: 1, value: 1, default: true, category: "roundTimer" }];
       }
       return [];

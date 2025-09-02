@@ -45,7 +45,7 @@
   },
   {
     "query": "game timer phases",
-    "expected_source": "src/data/gameTimers.json"
+    "expected_source": "src/data/gameTimers.js"
   },
   {
     "query": "what does the power stat represent",

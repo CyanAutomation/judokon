@@ -15,7 +15,7 @@ meditation screen. Stat names are now provided by the `statNames.js` module whic
 lists all available stats and serves as the canonical source for stat labels—
 update it to change the names shown across the UI. Tests also verify that each ID in `aesopsMeta.json` exists in
 `aesopsFables.json`. A new file, `gameTimers.schema.json`, defines the structure
-of `gameTimers.json` which contains the default timer values used in battles.
+of `gameTimers.js` which contains the default timer values used in battles.
 
 ## Updating Schemas
 
