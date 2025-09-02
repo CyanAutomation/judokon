@@ -9,14 +9,14 @@ import {
  * Retrieve the default timer value for a category.
  *
  * @param {string} category Timer category to search.
- * @returns {Promise<number|undefined>} Resolved default timer value.
+ * @returns {number|undefined} Resolved default timer value.
  *
  * @summary Find the default timer for a given category.
  * @pseudocode
  * 1. Locate the timer entry whose category matches and is marked as default.
  * 2. Return its value or `undefined` if none found.
  */
-export async function getDefaultTimer(category) {
+export function getDefaultTimer(category) {
   const entry = gameTimers.find((t) => t.category === category && t.default);
   return entry ? entry.value : undefined;
 }
