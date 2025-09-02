@@ -127,7 +127,7 @@ Before submitting or completing a task, verify that your work:
 
 To prevent session crashes in the terminal:
 
-> **Always exclude `client_embeddings.json` from terminal searches.**  
+> **Always exclude `client_embeddings.json` and `offline_rag_metadata.json` from terminal searches.**  
 > It contains very long lines that can exceed the 4096-byte output limit and terminate the shell.
 
 #### ✅ Use safe search patterns:
@@ -144,7 +144,7 @@ grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.jso
 
 🔍 Why it matters
 
-Even if you’re not directly searching client_embeddings.json, tools like grep -r . may include it by default. This results in output overflow and abrupt session termination. Always exclude this file unless explicitly working with it.
+Even if you’re not directly searching client_embeddings.json or offline_rag_metadata.json, tools like grep -r . may include it by default. This results in output overflow and abrupt session termination. Always exclude this file unless explicitly working with it.
 
 ### 🎞️ Animation Scheduler
 
