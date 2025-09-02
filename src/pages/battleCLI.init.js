@@ -51,12 +51,8 @@ function focusNextHint() {
 }
 
 function applyRetroTheme(enabled) {
-  const root = document.documentElement;
-  if (enabled) {
-    root.classList.add("cli-retro");
-  } else {
-    root.classList.remove("cli-retro");
-  }
+  const body = document.body;
+  if (body) body.classList.toggle("cli-retro", Boolean(enabled));
   try {
     localStorage.setItem("battleCLI.retro", enabled ? "1" : "0");
   } catch {}

@@ -72,14 +72,21 @@
         gap: 12px;
       }
       /* Retro theme: green-on-black optional class */
-      .cli-retro {
+      body.cli-retro {
         background: #000 !important;
         color: #8cff6b !important;
       }
-      .cli-retro a {
+      body.cli-retro a {
         color: #8cff6b;
       }
-      .cli-retro .cli-stat.selected {
+      body.cli-retro .cli-stat,
+      body.cli-retro .cli-block {
+        background: #000;
+        color: #8cff6b;
+        border-color: #8cff6b;
+      }
+      body.cli-retro .cli-stat.selected {
+        background: #001900;
         border-color: #8cff6b;
       }
       .cli-block {
