@@ -3,34 +3,15 @@ import { quitMatch } from "./classicBattle/quitModal.js";
 import { markBattlePartReady } from "./battleInit.js";
 
 /**
- * Attach quit confirmation to the header logo in Classic Battle.
+ * Attach a quit confirmation handler to the Classic Battle home link.
  *
  * @pseudocode
- * 1. When the DOM is ready, select the `[data-testid="home-link"]` element.
- * 2. If found, attach a click listener that:
- *    a. Prevents navigation.
- *    b. Calls `quitMatch()` with the shared store and link as trigger.
- * 3. Wait for `window.battleStore` to exist, then call `markBattlePartReady('home')`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. When DOM is ready, query `[data-testid="home-link"]`.
+ * 2. If the element exists, attach a click listener that prevents default
+ *    navigation and calls `quitMatch(window.battleStore, link)`.
+ * 3. Poll for `window.battleStore`; once available, call `markBattlePartReady('home')`.
+ *
+ * @returns {void}
  */
 export function setupClassicBattleHomeLink() {
   const homeLink = document.querySelector('[data-testid="home-link"]');

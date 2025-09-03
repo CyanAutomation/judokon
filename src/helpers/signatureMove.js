@@ -23,40 +23,12 @@ export const signatureMoveReadyPromise = new Promise((resolve) => {
 });
 
 /**
- * Resolve the ready promise when signature moves render.
- *
- * @pseudocode
- * 1. Set `data-signature-move-ready="true"` on `<body>`.
- * 2. Dispatch a `signature-move-ready` event on `document`.
- * 3. If a resolver exists, invoke it.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Mark signature moves as ready.
  *
  * @pseudocode
- * 1. Set `data-signature-move-ready="true"` on the `<body>` element when available.
+ * 1. Add `data-signature-move-ready="true"` attribute to `<body>` when available.
  * 2. Dispatch a bubbling `signature-move-ready` CustomEvent on `document`.
- * 3. If a resolver was captured, call it to resolve `signatureMoveReadyPromise`.
+ * 3. If a resolver was captured, invoke it to resolve the readiness promise.
  *
  * @returns {void}
  */

@@ -16,24 +16,17 @@
 export const DEFAULT_FALLBACK = "./src/assets/images/judokonLogoSmall.png";
 
 /**
- * @summary TODO: Add summary
+ * Attach error handlers to SVG <img> elements so a raster fallback is used
+ * when the SVG fails to load.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Select `img` elements where `src` ends with ".svg".
+ * 2. For each image, attach a one-time `error` listener.
+ * 3. When the listener fires, replace `img.src` with `fallbackSrc` and
+ *    add the `svg-fallback` CSS class.
+ *
+ * @param {string} [fallbackSrc=DEFAULT_FALLBACK] - Path to the PNG fallback image.
+ * @returns {void}
  */
 export function applySvgFallback(fallbackSrc = DEFAULT_FALLBACK) {
   const svgImages = document.querySelectorAll('img[src$=".svg"]');

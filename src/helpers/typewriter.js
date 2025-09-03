@@ -29,13 +29,12 @@ export function shouldEnableTypewriter() {
  * @param {string} finalHtml - Final HTML to restore once typing finishes.
  * @param {number} [speed=200] - Delay in milliseconds between characters.
  * @returns {void}
- */
-/**
+ *
  * @pseudocode
  * 1. If `element` is falsy, return immediately.
  * 2. Save the element's plain text and clear its content.
- * 3. Use requestAnimationFrame to append one character every `speed` ms.
- * 4. When finished, set `element.innerHTML` to `finalHtml` to restore markup.
+ * 3. Use requestAnimationFrame to append characters over time according to `speed`.
+ * 4. Once complete, set `element.innerHTML` to `finalHtml` to restore markup.
  */
 export function runTypewriterEffect(element, finalHtml, speed = 200) {
   if (!element) return;

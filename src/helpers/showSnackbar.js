@@ -47,24 +47,17 @@ function resetTimers() {
 }
 
 /**
- * @summary TODO: Add summary
+ * Show a transient snackbar message at the bottom of the page.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Respect `window.__disableSnackbars` if present and return early.
+ * 2. Ensure a `#snackbar-container` exists (create a test no-op container when needed).
+ * 3. Clear existing timers and create a `.snackbar` element with `message` text.
+ * 4. Insert it into the container, requestAnimationFrame to add `show` class, and
+ *    schedule fade and removal timers.
+ *
+ * @param {string} message - Text content to display in the snackbar.
+ * @returns {void}
  */
 export function showSnackbar(message) {
   try {
@@ -98,16 +91,16 @@ export function showSnackbar(message) {
 }
 
 /**
- * Update the current snackbar's text and restart its timers.
+ * Update the current snackbar text and restart its timers.
  *
  * @pseudocode
- * 1. If the global flag `window.__disableSnackbars` is set, do nothing.
- * 2. Ensure a `#snackbar-container` element exists (create a no-op container in tests).
- * 3. If no active snackbar element exists, call `showSnackbar(message)` to create one.
- * 4. Otherwise update the existing snackbar's text, add the `show` class, and
- *    restart the fade and removal timers by calling `resetTimers()`.
+ * 1. If snackbars are globally disabled, return.
+ * 2. Ensure `#snackbar-container` exists (create during tests).
+ * 3. If there's no active snackbar, call `showSnackbar(message)` to create one.
+ * 4. Otherwise replace the `.snackbar` text, ensure `show` class, and reset timers.
  *
  * @param {string} message - New text for the snackbar.
+ * @returns {void}
  */
 export function updateSnackbar(message) {
   try {

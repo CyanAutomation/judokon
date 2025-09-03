@@ -29,34 +29,20 @@ export function getItem(key) {
 /**
  * Persist a value to storage.
  *
+ * @summary
+ * Write a JSON-serializable value to persistent storage when available,
+ * falling back to an in-memory store on error or in constrained environments.
+ *
  * @pseudocode
- * 1. Serialize `value` using `JSON.stringify`.
- * 2. When `localStorage` is available, write the stringified value.
- *    - On failure, fall back to the in-memory Map.
- * 3. If `localStorage` is unavailable, store the parsed value in memory.
+ * 1. Attempt to JSON.stringify the provided `value`.
+ * 2. If `localStorage` is available, write the serialized string to it.
+ *    - If writing to `localStorage` fails (quota, security), log the error and
+ *      store the original value in the in-memory fallback.
+ * 3. If `localStorage` is not available, store the value in `memoryStore`.
  *
  * @param {string} key - Storage key to write.
- * @param {*} value - Value to store; must be JSON-serializable.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {*} value - Value to store; should be JSON-serializable.
+ * @returns {void}
  */
 export function setItem(key, value) {
   try {
@@ -79,31 +65,17 @@ export function setItem(key, value) {
 /**
  * Remove a value from storage.
  *
+ * @summary
+ * Safely remove an entry from persistent storage and the in-memory fallback.
+ *
  * @pseudocode
- * 1. If `localStorage` is available, attempt to remove the entry.
- * 2. Always remove the key from the in-memory Map as a fallback.
+ * 1. If `localStorage` is available, attempt `localStorage.removeItem(key)`
+ *    inside a try/catch to avoid throwing in restricted environments.
+ * 2. Always delete the key from the in-memory `memoryStore` in a finally-style
+ *    manner to keep the fallback consistent.
  *
  * @param {string} key - Storage key to delete.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {void}
  */
 export function removeItem(key) {
   try {
