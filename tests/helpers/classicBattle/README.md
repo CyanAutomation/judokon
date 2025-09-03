@@ -29,6 +29,7 @@ This directory contains unit tests for Classic Battle helpers.
 ## Guidelines
 
 - One behavior per test.
+- Use parameterized tests (e.g., `it.each`) to cover related behaviors with different inputs, such as cancel actions for the quit modal.
 - Prefer shared helpers in `domUtils.js`, `utils/testUtils.js`, `commonMocks.js`, and `setupTestEnv.js`; new tests should rely on these instead of duplicating mocks or manual DOM setup.
 - Do not commit `it.skip`; use `test.todo` or remove obsolete tests instead.
 - Timer drift, state exposure, and Next button behavior belong in `timerService` tests; cooldown tests cover scheduling and ready dispatch.
