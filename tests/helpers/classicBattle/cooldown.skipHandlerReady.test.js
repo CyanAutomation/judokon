@@ -4,6 +4,10 @@ import { createMockScheduler } from "../mockScheduler.js";
 
 describe("skip handler clears fallback timer", () => {
   let scheduler;
+  /** @type {ReturnType<typeof vi.spyOn>} */
+  let errorSpy;
+  /** @type {ReturnType<typeof vi.spyOn>} */
+  let warnSpy;
   beforeEach(() => {
     vi.useFakeTimers();
     scheduler = createMockScheduler();
@@ -11,8 +15,8 @@ describe("skip handler clears fallback timer", () => {
     createTimerNodes();
     document.body.dataset.battleState = "cooldown";
     vi.resetModules();
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       clearTimer: vi.fn(),
       showMessage: () => {},
@@ -58,6 +62,9 @@ describe("skip handler clears fallback timer", () => {
   });
 
   afterEach(async () => {
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith("[test] skip: stop nextRoundTimer");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
     vi.restoreAllMocks();
     const { resetSkipState } = await import("../../../src/helpers/classicBattle/skipHandler.js");
@@ -73,7 +80,8 @@ describe("skip handler clears fallback timer", () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(orchestrator.dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(orchestrator.dispatchBattleEvent).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(20);
+    const FALLBACK_DELAY_MS = 20; // advance past fallback timeout (10ms) to ensure it would fire if uncleared
+    await vi.advanceTimersByTimeAsync(FALLBACK_DELAY_MS);
     expect(orchestrator.dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 });
