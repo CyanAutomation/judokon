@@ -18,6 +18,9 @@ import { guard } from "./guard.js";
 
 export { getNextRoundControls } from "./roundManager.js";
 
+// Track timeout for cooldown warning to avoid duplicates.
+let cooldownWarningTimeoutId = null;
+
 // Skip handler utilities moved to skipHandler.js
 
 /**
@@ -123,13 +126,18 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
   } else {
     await cancelTimerOrAdvance(btn, timer, resolveReady);
   }
-  realScheduler.setTimeout(() => {
+  if (cooldownWarningTimeoutId !== null) {
+    realScheduler.clearTimeout(cooldownWarningTimeoutId);
+  }
+  cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
     try {
       const { state } = getStateSnapshot();
       if (state === "cooldown") {
         guard(() => console.warn("[next] stuck in cooldown"));
       }
-    } catch {}
+    } catch (err) {
+      guard(() => console.error("Error in next-button cooldown check:", err));
+    }
   }, 1000);
 }
 

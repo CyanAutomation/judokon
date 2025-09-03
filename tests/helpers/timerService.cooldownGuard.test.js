@@ -53,4 +53,17 @@ describe("onNextButtonClick cooldown guard", () => {
     expect(warnSpy).toHaveBeenCalledWith("[next] stuck in cooldown");
     warnSpy.mockRestore();
   });
+
+  it("clears previous warning timer on rapid clicks", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    __setStateSnapshot({ state: "cooldown" });
+    const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
+    btn.dataset.nextReady = "true";
+    await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
+    btn.dataset.nextReady = "true";
+    await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
+    await vi.runAllTimersAsync();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    warnSpy.mockRestore();
+  });
 });
