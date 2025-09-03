@@ -65,8 +65,10 @@ describe("battleCLI round header", () => {
   it("updates round header each round", async () => {
     const mod = await loadBattleCLI();
     await mod.__test.startRoundWrapper();
-    expect(document.getElementById("cli-round").textContent).toBe("Round 2 of 10");
-    expect(document.getElementById("cli-root").dataset.round).toBe("2");
+    expect(document.getElementById("cli-round").textContent).toBe("Round 2 Target: 10 🏆");
+    const root = document.getElementById("cli-root");
+    expect(root.dataset.round).toBe("2");
+    expect(root.dataset.target).toBe("10");
   });
 
   it("battleCLI.html exposes required selectors", () => {
@@ -75,7 +77,9 @@ describe("battleCLI round header", () => {
     expect(doc.querySelector("#cli-countdown")).toBeTruthy();
     expect(doc.querySelector("#round-message")).toBeTruthy();
     expect(doc.querySelector("#cli-score")).toBeTruthy();
-    expect(doc.querySelector("#cli-root")?.getAttribute("data-round")).not.toBeNull();
+    const root = doc.querySelector("#cli-root");
+    expect(root?.getAttribute("data-round")).not.toBeNull();
+    expect(root?.getAttribute("data-target")).not.toBeNull();
     expect(doc.querySelector("#cli-countdown")?.getAttribute("data-remaining-time")).not.toBeNull();
   });
 });
