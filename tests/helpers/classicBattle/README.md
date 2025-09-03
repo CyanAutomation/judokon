@@ -25,7 +25,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `setupTestEnv.js`: exposes `setupClassicBattleHooks()` to wire DOM and mocks.
 - `mockSetup.js`: shared mock helper to reduce duplication.
 - `utils.js` / `mocks.js`: shared DOM setup and legacy mocks for these suites.
-- `playRounds.js`: loops identical power selections for multi-round tests.
+- `playRounds.js`: loops identical stat selections for multi-round tests.
 
 ## Guidelines
 
