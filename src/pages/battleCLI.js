@@ -716,6 +716,36 @@ export function autostartBattle() {
   } catch {}
 }
 
+function setActiveStatRow(row, { focus = true } = {}) {
+  const list = byId("cli-stats");
+  if (!list || !row) return;
+  const rows = Array.from(list.querySelectorAll(".cli-stat"));
+  rows.forEach((el) => {
+    el.tabIndex = el === row ? 0 : -1;
+  });
+  if (!row.id) {
+    row.id = `cli-stat-${row.dataset.statIndex || rows.indexOf(row) + 1}`;
+  }
+  list.setAttribute("aria-activedescendant", row.id);
+  if (focus) row.focus();
+}
+
+function handleStatListArrowKey(key) {
+  const list = byId("cli-stats");
+  const rows = list ? Array.from(list.querySelectorAll(".cli-stat")) : [];
+  if (!list || rows.length === 0) return false;
+  const current = document.activeElement?.closest?.(".cli-stat");
+  let idx = rows.indexOf(current);
+  if (idx === -1) {
+    idx = key === "ArrowUp" || key === "ArrowLeft" ? rows.length - 1 : 0;
+  } else {
+    const delta = key === "ArrowDown" || key === "ArrowRight" ? 1 : -1;
+    idx = (idx + delta + rows.length) % rows.length;
+  }
+  setActiveStatRow(rows[idx]);
+  return true;
+}
+
 /**
  * Load stat names and render them into the CLI stat selection list.
  *
@@ -749,6 +779,7 @@ export async function renderStatList(judoka) {
     if (list && stats.length) {
       list.innerHTML = "";
       for (const key of Object.keys(statDisplayNames)) delete statDisplayNames[key];
+      const rows = [];
       stats
         .slice()
         .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
@@ -759,15 +790,18 @@ export async function renderStatList(judoka) {
           if (key) statDisplayNames[key] = s.name;
           const div = document.createElement("div");
           div.className = "cli-stat";
+          div.id = `cli-stat-${idx}`;
           div.setAttribute("role", "button");
-          div.setAttribute("tabindex", "0");
+          div.setAttribute("tabindex", "-1");
           div.dataset.statIndex = String(idx);
           const val = Number(judoka?.stats?.[key]);
           div.textContent = Number.isFinite(val)
             ? `[${idx}] ${s.name}: ${val}`
             : `[${idx}] ${s.name}`;
           list.appendChild(div);
+          rows.push(div);
         });
+      if (rows.length) setActiveStatRow(rows[0], { focus: false });
       const onClick = handleStatListClick;
       const boundTargets = (globalThis.__battleCLIStatListBoundTargets ||= new WeakSet());
       if (!boundTargets.has(list)) {
@@ -1135,8 +1169,19 @@ export function handleCooldownKey(key) {
  *   clear countdown text
  */
 export function onKeyDown(e) {
-  const key = e.key.toLowerCase();
-  if (!isEnabled("cliShortcuts") && key !== "q") return;
+  const key = e.key;
+  const list = byId("cli-stats");
+  if (
+    list &&
+    ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(key) &&
+    (list === document.activeElement || list.contains(document.activeElement))
+  ) {
+    e.preventDefault();
+    handleStatListArrowKey(key);
+    return;
+  }
+  const lower = key.toLowerCase();
+  if (!isEnabled("cliShortcuts") && lower !== "q") return;
   const state = document.body?.dataset?.battleState || "";
   const table = {
     waitingForPlayerAction: handleWaitingForPlayerActionKey,
@@ -1144,9 +1189,9 @@ export function onKeyDown(e) {
     cooldown: handleCooldownKey
   };
   const handler = table[state];
-  const handled = handleGlobalKey(key) || (handler ? handler(key) : false);
+  const handled = handleGlobalKey(lower) || (handler ? handler(lower) : false);
   const countdown = byId("cli-countdown");
-  if (!handled && key !== "tab") {
+  if (!handled && lower !== "tab") {
     // Added key !== "tab"
     if (countdown) countdown.textContent = "Invalid key, press H for help";
   } else if (countdown && countdown.textContent) {
@@ -1158,6 +1203,7 @@ function handleStatListClick(event) {
   const list = byId("cli-stats");
   const statDiv = event.target?.closest?.(".cli-stat");
   if (statDiv && list?.contains(statDiv)) {
+    setActiveStatRow(statDiv);
     handleStatClick(statDiv, event);
   }
 }

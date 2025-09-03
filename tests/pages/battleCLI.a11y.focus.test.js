@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { readFileSync } from "fs";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
-async function loadBattleCLI() {
+async function loadBattleCLI(statKeys = ["speed"]) {
   const emitter = new EventTarget();
   const handlers = {};
   const emitBattleEvent = vi.fn((type, detail) => {
@@ -30,14 +30,19 @@ async function loadBattleCLI() {
     onBattleEvent,
     emitBattleEvent
   }));
-  vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
+  vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: statKeys }));
   vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
     setPointsToWin: vi.fn(),
     getPointsToWin: vi.fn(() => 10),
     getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({
-    fetchJson: vi.fn().mockResolvedValue([{ statIndex: 1, name: "Speed" }])
+    fetchJson: vi.fn().mockResolvedValue(
+      statKeys.map((key, i) => ({
+        statIndex: i + 1,
+        name: key.charAt(0).toUpperCase() + key.slice(1)
+      }))
+    )
   }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
   const mod = await import("../../src/pages/battleCLI.js");
@@ -109,6 +114,29 @@ describe("battleCLI accessibility", () => {
       const bar = document.querySelector("#snackbar-container .snackbar");
       expect(bar?.textContent).toBe("Press Enter to continue");
       expect(document.activeElement).toBe(bar);
+    });
+
+    it("navigates stat rows with arrow keys and wraps", async () => {
+      const { __test } = await loadBattleCLI(["speed", "power", "technique"]);
+      await __test.renderStatList({
+        stats: { speed: 1, power: 2, technique: 3 }
+      });
+      const list = document.getElementById("cli-stats");
+      const rows = Array.from(list.querySelectorAll(".cli-stat"));
+      expect(rows[0].tabIndex).toBe(0);
+      expect(rows[1].tabIndex).toBe(-1);
+      list.focus();
+      __test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      expect(document.activeElement).toBe(rows[0]);
+      __test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      expect(document.activeElement).toBe(rows[1]);
+      __test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+      expect(document.activeElement).toBe(rows[0]);
+      __test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+      expect(document.activeElement).toBe(rows[2]);
+      __test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      expect(document.activeElement).toBe(rows[0]);
+      expect(list.getAttribute("aria-activedescendant")).toBe(rows[0].id);
     });
   });
 });
