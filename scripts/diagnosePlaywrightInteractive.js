@@ -51,7 +51,7 @@ async function run() {
     console.log("round-result:", (snap.roundResult || "").trim());
 
     // click Next if available
-    const next = await page.$("#next-button");
+    const next = await page.$('[data-role="next-round"]');
     if (next) {
       const isDisabled = await next.getAttribute("disabled");
       if (isDisabled === null) {

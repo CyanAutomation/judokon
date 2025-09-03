@@ -30,7 +30,7 @@ test.describe("Next button cooldown skip", () => {
     const counter = page.locator("#round-counter");
     await expect(counter).toHaveText(/Round 1/);
 
-    const nextBtn = page.locator("#next-button");
+    const nextBtn = page.locator('[data-role="next-round"]');
     await expect(nextBtn).toBeEnabled();
     await nextBtn.click();
 

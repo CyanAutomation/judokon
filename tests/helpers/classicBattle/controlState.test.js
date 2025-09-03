@@ -82,7 +82,7 @@ describe("classicBattle battle control state", () => {
     const { disableNextRoundButton, enableNextRoundButton } = await import(
       "../../../src/helpers/classicBattle.js"
     );
-    const btn = document.querySelector('[data-testid="next-button"]');
+    const btn = document.querySelector('[data-role="next-round"]');
     disableNextRoundButton();
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
@@ -94,10 +94,10 @@ describe("classicBattle battle control state", () => {
   it("resetBattleUI replaces Next button and reattaches click handler", async () => {
     const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
     const { resetBattleUI } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
-    const btn = document.querySelector('[data-testid="next-button"]');
+    const btn = document.querySelector('[data-role="next-round"]');
     btn.dataset.nextReady = "true";
     resetBattleUI();
-    const cloned = document.querySelector('[data-testid="next-button"]');
+    const cloned = document.querySelector('[data-role="next-round"]');
     expect(cloned).not.toBe(btn);
     expect(cloned.disabled).toBe(true);
     expect(cloned.dataset.nextReady).toBeUndefined();

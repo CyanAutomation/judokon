@@ -4,6 +4,7 @@ beforeEach(() => {
   document.body.innerHTML = "";
   const next = document.createElement("button");
   next.id = "next-button";
+  next.setAttribute("data-role", "next-round");
   document.body.appendChild(next);
   localStorage.clear();
   vi.resetModules();

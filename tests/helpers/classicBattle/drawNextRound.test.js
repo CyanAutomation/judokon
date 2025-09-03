@@ -29,7 +29,7 @@ describe("classicBattle draw next round", () => {
     });
     const nextBtn = document.createElement("button");
     nextBtn.id = "next-button";
-    nextBtn.setAttribute("data-testid", "next-button");
+    nextBtn.setAttribute("data-role", "next-round");
     document.body.appendChild(nextBtn);
     window.__NEXT_ROUND_COOLDOWN_MS = 0;
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -62,7 +62,7 @@ describe("classicBattle draw next round", () => {
     await playRound(battleMod, store, 5, 5);
     battleMod.startCooldown(store);
     await vi.runAllTimersAsync();
-    const nextBtn = document.querySelector('[data-testid="next-button"]');
+    const nextBtn = document.querySelector('[data-role="next-round"]');
     expect(nextBtn.disabled).toBe(false);
     expect(nextBtn.dataset.nextReady).toBe("true");
 

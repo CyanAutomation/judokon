@@ -29,7 +29,7 @@ describe("classicBattle stat double-click", () => {
     });
     const nextBtn = document.createElement("button");
     nextBtn.id = "next-button";
-    nextBtn.setAttribute("data-testid", "next-button");
+    nextBtn.setAttribute("data-role", "next-round");
     document.body.appendChild(nextBtn);
     window.__NEXT_ROUND_COOLDOWN_MS = 0;
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});

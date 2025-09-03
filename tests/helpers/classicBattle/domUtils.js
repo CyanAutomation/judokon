@@ -51,7 +51,7 @@ export function createRoundMessage(id = "round-message") {
  * @pseudocode
  * 1. Create a `button` element named `nextButton`.
  * 2. Set its `id` to "next-button".
- * 3. Then set its `data-testid` to "next-button".
+ * 3. Set its `data-role` to "next-round".
  * 4. Create a `p` element named `nextRoundTimer`.
  * 5. Set its `id` to "next-round-timer".
  * 6. Set the `aria-live` attribute of `nextRoundTimer` to "polite".
@@ -66,7 +66,7 @@ export function createRoundMessage(id = "round-message") {
 export function createTimerNodes() {
   const nextButton = document.createElement("button");
   nextButton.id = "next-button";
-  nextButton.setAttribute("data-testid", "next-button");
+  nextButton.setAttribute("data-role", "next-round");
   const nextRoundTimer = document.createElement("p");
   nextRoundTimer.id = "next-round-timer";
   nextRoundTimer.setAttribute("aria-live", "polite");
