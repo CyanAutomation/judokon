@@ -130,6 +130,16 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
   const { timer = null, resolveReady = null } = controls || {};
   const btn = document.getElementById("next-button");
   if (!btn) return;
+  // Defensive: if a stale readiness flag is present outside of `cooldown`,
+  // clear it so we don't advance via an early-ready path.
+  try {
+    const { state } = getStateSnapshot();
+    if (btn.dataset.nextReady === "true" && state && state !== "cooldown") {
+      delete btn.dataset.nextReady;
+      btn.disabled = false;
+      guard(() => console.warn("[next] cleared early readiness outside cooldown"));
+    }
+  } catch {}
   // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
   // feature flag. The flag only affects automatic progression, never user
   // intent signaled via the Next button.

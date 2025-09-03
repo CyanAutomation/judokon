@@ -56,8 +56,8 @@ Why CLI isn’t affected
 ## Milestones & Status
 - [x] Guard readiness in `roundManager.markNextReady`
 - [x] Guard or remove early toggles (`enableNextRoundButton`, `initInterRoundCooldown`)
-- [ ] Optional defensive clear in `timerService.onNextButtonClick`
-- [ ] Add Playwright spec for Next readiness timing (follow‑up)
+- [x] Optional defensive clear in `timerService.onNextButtonClick`
+- [x] Add Playwright spec for Next readiness timing
 
 ## Notes on Evidence (confirmed)
 - Guard comment present: `orchestratorHandlers.waitingForPlayerActionEnter` L448–456.
@@ -73,6 +73,8 @@ Why CLI isn’t affected
   - scheduleNextRound, cooldownEnter.autoAdvance, timeoutInterrupt.cooldown: PASS (7 tests, 1 skipped)
   - uiHelpers.missingElements, statSelection: PASS (13 tests)
   Decision: `initInterRoundCooldown` has no call sites; leaving as-is for now to minimize churn. Guarded ownership elsewhere prevents early readiness.
+ - 2025‑09‑03: Added defensive clear in `timerService.onNextButtonClick` for stale readiness outside `cooldown`. Targeted Vitest: timerService.nextRound + nextButton.*: PASS (12 tests)
+ - 2025‑09‑03: Added Playwright spec `playwright/battle-next-readiness.spec.js` to assert readiness only in `cooldown`.
 
 ## Acceptance Criteria
 - On battleJudoka:
