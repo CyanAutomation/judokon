@@ -435,13 +435,16 @@
             </div>
             <div class="cli-settings-row">
               <label for="seed-input">Seed:</label>
-              <input
-                id="seed-input"
-                type="number"
-                inputmode="numeric"
-                aria-label="Deterministic seed (optional)"
-                style="width: 6ch"
-              />
+              <div style="display: flex; flex-direction: column">
+                <input
+                  id="seed-input"
+                  type="number"
+                  inputmode="numeric"
+                  aria-label="Deterministic seed (optional)"
+                  style="width: 6ch"
+                />
+                <div id="seed-error" style="color: #f88; font-size: 12px"></div>
+              </div>
             </div>
           </div>
         </section>

@@ -315,8 +315,24 @@ async function renderStartButton() {
   main.append(section);
 }
 
+/**
+ * Initialize deterministic seed input and validation.
+ *
+ * @pseudocode
+ * read seed query param and localStorage
+ * define apply(n): enable test mode and persist n
+ * if query param numeric: apply and set input
+ * else if stored seed numeric: populate input
+ * lastValid <- numeric seed used or stored
+ * on input change:
+ *   if value is NaN:
+ *     revert to lastValid and show error
+ *   else:
+ *     clear error, apply value, update lastValid
+ */
 function initSeed() {
   const input = byId("seed-input");
+  const errorEl = byId("seed-error");
   let seedParam = null;
   let storedSeed = null;
   try {
@@ -330,22 +346,37 @@ function initSeed() {
       localStorage.setItem("battleCLI.seed", String(n));
     } catch {}
   };
+  let lastValid = null;
   // Only auto-enable test mode when an explicit seed query param is provided.
   if (seedParam !== null && seedParam !== "") {
     const num = Number(seedParam);
     if (!Number.isNaN(num)) {
       apply(num);
       if (input) input.value = String(num);
+      lastValid = num;
     }
   } else if (storedSeed) {
-    // Populate the input from previous choice without enabling test mode implicitly.
-    if (input) input.value = String(storedSeed);
+    const num = Number(storedSeed);
+    if (!Number.isNaN(num)) {
+      // Populate the input from previous choice without enabling test mode implicitly.
+      if (input) input.value = String(storedSeed);
+      lastValid = num;
+    }
   }
   input?.addEventListener("change", () => {
     const val = Number(input.value);
-    if (!Number.isNaN(val)) {
-      apply(val);
+    if (input.value.trim() === "" || Number.isNaN(val)) {
+      if (lastValid !== null) {
+        input.value = String(lastValid);
+      } else {
+        input.value = "";
+      }
+      if (errorEl) errorEl.textContent = "Seed must be numeric.";
+      return;
     }
+    if (errorEl) errorEl.textContent = "";
+    apply(val);
+    lastValid = val;
   });
 }
 
