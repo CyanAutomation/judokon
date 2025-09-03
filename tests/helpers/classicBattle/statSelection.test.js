@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
+import { playRounds as playRoundsHelper } from "./playRounds.js";
 
 let fetchJsonMock;
 let generateRandomCardMock;
@@ -99,6 +100,10 @@ describe("classicBattle stat selection", () => {
       await p;
     };
   });
+
+  async function playRounds(times) {
+    await playRoundsHelper(selectStat, times);
+  }
 
   afterEach(() => {
     timerSpy.clearAllTimers();
@@ -209,9 +214,7 @@ describe("classicBattle stat selection", () => {
       document.getElementById("opponent-card").innerHTML =
         `<ul><li class="stat"><strong>Power</strong> <span>${opponentStat}</span></li></ul>`;
 
-      for (let i = 0; i < rounds; i++) {
-        await selectStat("power");
-      }
+      await playRounds(rounds);
 
       expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(1, "statSelected");
       expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "evaluate");
