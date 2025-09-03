@@ -121,6 +121,9 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
   const { timer = null, resolveReady = null } = controls || {};
   const btn = document.getElementById("next-button");
   if (!btn) return;
+  // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
+  // feature flag. The flag only affects automatic progression, never user
+  // intent signaled via the Next button.
   if (btn.dataset.nextReady === "true") {
     await advanceWhenReady(btn, resolveReady);
   } else {
