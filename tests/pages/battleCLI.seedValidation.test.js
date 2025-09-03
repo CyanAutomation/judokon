@@ -108,7 +108,9 @@ describe("battleCLI seed validation", () => {
     input.value = "abc";
     input.dispatchEvent(new Event("change"));
     expect(input.value).toBe("3");
-    expect(document.getElementById("seed-error").textContent).toBe("Seed must be numeric.");
+    expect(document.getElementById("seed-error").textContent).toBe(
+      "Seed must be numeric and non-empty."
+    );
     expect(localStorage.getItem("battleCLI.seed")).toBe("3");
   });
 
