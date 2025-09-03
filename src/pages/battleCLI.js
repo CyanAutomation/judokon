@@ -1564,8 +1564,26 @@ async function init() {
         if (pre) pre.scrollTop = pre.scrollHeight;
       } catch {}
     }
+  };
+
+  /**
+   * Toggle verbose flag while preserving win target.
+   *
+   * @pseudocode
+   * 1. Read current points-to-win.
+   * 2. Update verbose flag.
+   * 3. Reapply points-to-win and refresh header.
+   *
+   * @param {boolean} enable
+   * @returns {Promise<void>}
+   */
+  const toggleVerbose = async (enable) => {
+    const target = engineFacade.getPointsToWin?.();
+    await setFlag("cliVerbose", enable);
+    engineFacade.setPointsToWin?.(target);
     const round = Number(byId("cli-root")?.dataset.round || 0);
-    updateRoundHeader(round, engineFacade.getPointsToWin?.());
+    updateRoundHeader(round, target);
+    updateVerbose();
   };
   try {
     await initFeatureFlags();
@@ -1575,7 +1593,7 @@ async function init() {
     const params = new URLSearchParams(location.search);
     if (params.has("verbose")) {
       const v = params.get("verbose");
-      await setFlag("cliVerbose", v === "1" || v === "true");
+      await toggleVerbose(v === "1" || v === "true");
     }
     if (params.has("skipRoundCooldown")) {
       const skip = params.get("skipRoundCooldown") === "1";
@@ -1600,12 +1618,13 @@ async function init() {
     hideCliShortcuts();
   });
   checkbox?.addEventListener("change", async () => {
-    await setFlag("cliVerbose", !!checkbox.checked);
-    updateVerbose();
+    await toggleVerbose(!!checkbox.checked);
   });
   featureFlagsEmitter.addEventListener("change", (e) => {
     const flag = e.detail?.flag;
     if (!flag || flag === "cliVerbose") {
+      const round = Number(byId("cli-root")?.dataset.round || 0);
+      updateRoundHeader(round, engineFacade.getPointsToWin?.());
       updateVerbose();
     }
     if (!flag || flag === "battleStateBadge") {
