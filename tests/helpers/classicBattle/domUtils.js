@@ -51,14 +51,15 @@ export function createRoundMessage(id = "round-message") {
  * @pseudocode
  * 1. Create a `button` element named `nextButton`.
  * 2. Set its `id` to "next-button".
- * 3. Set its `data-testid` to "next-button".
- * 4. Create a `p` element named `nextRoundTimer`.
- * 5. Set its `id` to "next-round-timer".
- * 6. Set the `aria-live` attribute of `nextRoundTimer` to "polite".
- * 7. Set the `aria-atomic` attribute of `nextRoundTimer` to "true".
- * 8. Set the `role` attribute of `nextRoundTimer` to "status".
- * 9. Append `nextButton` and `nextRoundTimer` to `document.body`.
- * 10. Return an object containing both nodes.
+ * 3. Set its `data-role` to "next-round".
+ * 4. Set its `data-testid` to "next-button".
+ * 5. Create a `p` element named `nextRoundTimer`.
+ * 6. Set its `id` to "next-round-timer".
+ * 7. Set the `aria-live` attribute of `nextRoundTimer` to "polite".
+ * 8. Set the `aria-atomic` attribute of `nextRoundTimer` to "true".
+ * 9. Set the `role` attribute of `nextRoundTimer` to "status".
+ * 10. Append `nextButton` and `nextRoundTimer` to `document.body`.
+ * 11. Return an object containing both nodes.
  *
  * @returns {{nextButton: HTMLButtonElement, nextRoundTimer: HTMLParagraphElement}}
  *   Nodes for controlling the next round timer.
@@ -66,6 +67,7 @@ export function createRoundMessage(id = "round-message") {
 export function createTimerNodes() {
   const nextButton = document.createElement("button");
   nextButton.id = "next-button";
+  nextButton.setAttribute("data-role", "next-round");
   nextButton.setAttribute("data-testid", "next-button");
   const nextRoundTimer = document.createElement("p");
   nextRoundTimer.id = "next-round-timer";

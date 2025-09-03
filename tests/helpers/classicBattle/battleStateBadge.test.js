@@ -53,6 +53,7 @@ function createBattleDom() {
   machineState.id = "machine-state";
   const next = document.createElement("button");
   next.id = "next-button";
+  next.setAttribute("data-role", "next-round");
   document.body.append(header, battleArea, stats, progressEl, machineState, next);
 }
 

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 describe("Next button cooldown fallback", () => {
   beforeEach(async () => {
-    document.body.innerHTML = `<button id="next-button" data-testid="next-button">Next</button>`;
+    document.body.innerHTML = `<button id="next-button" data-role="next-round" data-testid="next-button">Next</button>`;
     const { onBattleEvent, emitBattleEvent, __resetBattleEventTarget } = await import(
       "../../../src/helpers/classicBattle/battleEvents.js"
     );

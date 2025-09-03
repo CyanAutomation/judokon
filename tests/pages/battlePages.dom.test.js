@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 const PAGES = ["battleJudoka", "battleClassic"];
 
 const REQUIRED = [
-  { id: "next-button", testId: "next-button" },
+  { id: "next-button", testId: "next-button", role: "next-round" },
   { id: "stat-help", testId: "stat-help" },
   { id: "quit-match-button", testId: "quit-match" }
 ];
@@ -15,6 +15,17 @@ function getMissingIds(root, ids) {
 
 function getMissingTestIds(root, testIds) {
   return testIds.filter((t) => !root.querySelector(`[data-testid="${t}"]`));
+}
+
+/**
+ * @pseudocode
+ * 1. Filter `roles` lacking a matching `data-role` in `root`.
+ * @param {ParentNode} root
+ * @param {string[]} roles
+ * @returns {string[]} Missing role values.
+ */
+function getMissingRoles(root, roles) {
+  return roles.filter((r) => !root.querySelector(`[data-role="${r}"]`));
 }
 
 describe.each(PAGES)("%s.html required hooks", (page) => {
@@ -36,6 +47,12 @@ describe.each(PAGES)("%s.html required hooks", (page) => {
     expect(missing).toEqual([]);
     const statButtons = document.querySelectorAll("#stat-buttons button");
     statButtons.forEach((btn) => expect(btn.getAttribute("data-testid")).toBe("stat-button"));
+  });
+
+  it("includes all required data-role attributes", () => {
+    const roles = REQUIRED.map((r) => r.role).filter(Boolean);
+    const missing = getMissingRoles(document, roles);
+    expect(missing).toEqual([]);
   });
 
   it("detects when a data-testid is missing", () => {

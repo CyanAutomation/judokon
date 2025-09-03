@@ -35,6 +35,7 @@ describe("resetBattleUI helpers", () => {
   it("resetNextButton clones and disables next button", async () => {
     const btn = document.createElement("button");
     btn.id = "next-button";
+    btn.setAttribute("data-role", "next-round");
     btn.setAttribute("data-testid", "next-button");
     btn.dataset.nextReady = "true";
     document.body.append(btn);
@@ -43,7 +44,7 @@ describe("resetBattleUI helpers", () => {
 
     const timerSvc = await import("../../src/helpers/classicBattle/timerService.js");
 
-    const newBtn = document.querySelector('[data-testid="next-button"]');
+    const newBtn = document.querySelector('[data-role="next-round"]');
     expect(newBtn).not.toBe(btn);
     expect(newBtn.disabled).toBe(true);
     expect(newBtn.dataset.nextReady).toBeUndefined();

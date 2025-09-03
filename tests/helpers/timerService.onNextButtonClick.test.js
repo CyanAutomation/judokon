@@ -13,8 +13,9 @@ describe("onNextButtonClick", () => {
   let btn;
 
   beforeEach(() => {
-    document.body.innerHTML = '<button id="next-button" data-testid="next-button"></button>';
-    btn = document.querySelector('[data-testid="next-button"]');
+    document.body.innerHTML =
+      '<button id="next-button" data-role="next-round" data-testid="next-button"></button>';
+    btn = document.querySelector('[data-role="next-round"]');
     vi.clearAllMocks();
   });
 

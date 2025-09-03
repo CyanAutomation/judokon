@@ -4,24 +4,24 @@ Classic battle pages rely on specific element IDs so helper scripts can attach l
 
 ## Required IDs
 
-| ID                      | Purpose                                         |
-| ----------------------- | ----------------------------------------------- |
-| `round-message`         | Announces prompts and round outcomes.           |
-| `next-round-timer`      | Displays the inter-round countdown.             |
-| `round-counter`         | Shows current round number.                     |
-| `score-display`         | Lists player and opponent scores.               |
-| `test-mode-banner`      | Indicates when test mode is active.             |
-| `debug-panel`           | Collapsible container for debugging info.       |
-| `debug-output`          | `<pre>` element inside the debug panel.         |
-| `battle-area`           | Wrapper containing player and opponent cards.   |
-| `player-card`           | Container for the player's card.                |
-| `opponent-card`         | Container for the opponent's card.              |
-| `stat-buttons`          | Group of stat selection buttons.                |
-| `round-result`          | Displays the result of the round.               |
-| `next-button`           | Advances to the next round when ready.          |
-| `stat-help`             | Opens stat selection help.                      |
-| `quit-match-button`     | Triggers the quit match flow.                   |
-| `battle-state-progress` | Optional list tracking match state transitions. |
+| ID                                       | Purpose                                         |
+| ---------------------------------------- | ----------------------------------------------- |
+| `round-message`                          | Announces prompts and round outcomes.           |
+| `next-round-timer`                       | Displays the inter-round countdown.             |
+| `round-counter`                          | Shows current round number.                     |
+| `score-display`                          | Lists player and opponent scores.               |
+| `test-mode-banner`                       | Indicates when test mode is active.             |
+| `debug-panel`                            | Collapsible container for debugging info.       |
+| `debug-output`                           | `<pre>` element inside the debug panel.         |
+| `battle-area`                            | Wrapper containing player and opponent cards.   |
+| `player-card`                            | Container for the player's card.                |
+| `opponent-card`                          | Container for the opponent's card.              |
+| `stat-buttons`                           | Group of stat selection buttons.                |
+| `round-result`                           | Displays the result of the round.               |
+| `next-button` (`data-role="next-round"`) | Advances to the next round when ready.          |
+| `stat-help`                              | Opens stat selection help.                      |
+| `quit-match-button`                      | Triggers the quit match flow.                   |
+| `battle-state-progress`                  | Optional list tracking match state transitions. |
 
 ## Example Markup
 
@@ -32,7 +32,9 @@ Classic battle pages rely on specific element IDs so helper scripts can attach l
 </div>
 
 <div class="action-buttons">
-  <button id="next-button" class="battle-control-button" disabled>Next</button>
+  <button id="next-button" class="battle-control-button" disabled data-role="next-round">
+    Next
+  </button>
   <button id="stat-help" class="battle-control-button" aria-label="Stat selection help">?</button>
   <button id="quit-match-button" class="battle-control-button">Quit Match</button>
 </div>
