@@ -27,6 +27,9 @@ describe("timerService next round handling", () => {
       disableNextRoundButton: vi.fn(),
       updateDebugPanel: vi.fn()
     }));
+    vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
+      setSkipHandler: vi.fn()
+    }));
     startCoolDown = vi.fn();
     vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
       startCoolDown,
@@ -52,10 +55,21 @@ describe("timerService next round handling", () => {
     scheduler.tick(100);
     nextButton.click();
     await controls.ready;
-    // Current flow guarantees at least one dispatch; a second may occur
-    // via attribute observation. Accept one or more invocations.
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    expect(dispatchBattleEvent.mock.calls.length).toBeGreaterThanOrEqual(1);
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
+  });
+
+  it("stopping timer dispatches ready immediately", async () => {
+    const { cancelTimerOrAdvance } = await import(
+      "../../../src/helpers/classicBattle/timerService.js"
+    );
+    const timer = { stop: vi.fn() };
+    const resolveReady = vi.fn();
+    await cancelTimerOrAdvance(null, timer, resolveReady);
+    expect(timer.stop).toHaveBeenCalledTimes(1);
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(resolveReady).toHaveBeenCalledTimes(1);
   });
 
   it("auto-dispatches ready after 1s cooldown", async () => {

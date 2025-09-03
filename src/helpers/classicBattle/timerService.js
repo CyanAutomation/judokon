@@ -63,7 +63,10 @@ export async function advanceWhenReady(btn, resolveReady) {
  * Cancel an active cooldown timer or advance immediately when already in cooldown.
  *
  * @pseudocode
- * 1. If a `timer` object is provided, call `timer.stop()` and return.
+ * 1. If a `timer` object is provided:
+ *    a. Call `timer.stop()` to cancel the countdown.
+ *    b. Dispatch `ready`, call `resolveReady`, and clear the skip handler.
+ *    c. Return early.
  * 2. Otherwise, if the state machine is in `cooldown` (or unknown in tests),
  *    dispatch `ready`, call `resolveReady`, and clear the skip handler.
  *
@@ -75,6 +78,13 @@ export async function advanceWhenReady(btn, resolveReady) {
 export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   if (timer) {
     timer.stop();
+    try {
+      const { state } = getStateSnapshot();
+      void state;
+    } catch {}
+    await dispatchBattleEvent("ready");
+    if (typeof resolveReady === "function") resolveReady();
+    setSkipHandler(null);
     return;
   }
   // No active timer controls: if we're in cooldown (or state is unknown in
