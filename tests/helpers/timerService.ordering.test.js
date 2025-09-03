@@ -17,7 +17,8 @@ describe("timerService timeout ordering", () => {
       updateTimer: () => {}
     }));
     vi.doMock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
-      updateDebugPanel: () => {}
+      updateDebugPanel: () => {},
+      skipRoundCooldownIfEnabled: () => false
     }));
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({
       showSnackbar: () => {},

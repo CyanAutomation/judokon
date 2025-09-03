@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForBattleReady, waitForBattleState } from "./fixtures/waits.js";
+import { waitForBattleReady } from "./fixtures/waits.js";
 
 /**
  * Verify that clicking Next during cooldown skips the delay.
@@ -14,6 +14,12 @@ test.describe("Next button cooldown skip", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+      const settings = JSON.parse(localStorage.getItem("settings") || "{}");
+      settings.featureFlags = {
+        ...(settings.featureFlags || {}),
+        skipRoundCooldown: { enabled: false }
+      };
+      localStorage.setItem("settings", JSON.stringify(settings));
     });
   });
 
@@ -25,7 +31,6 @@ test.describe("Next button cooldown skip", () => {
     await page.locator("#stat-buttons button").first().click();
     await page.locator("#stat-buttons[data-buttons-ready='false']").waitFor();
     await page.evaluate(() => window.getRoundResolvedPromise?.());
-    await waitForBattleState(page, "cooldown");
 
     const counter = page.locator("#round-counter");
     await expect(counter).toHaveText(/Round 1/);
