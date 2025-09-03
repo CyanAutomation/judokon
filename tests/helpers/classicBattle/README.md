@@ -14,7 +14,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `opponentDelay.test.js`: shows snackbar feedback during opponent delays.
 - `scheduleNextRound.test.js`: schedules and auto-dispatches the next round.
 - `statButtons.state.test.js`: toggles stat buttons based on battle state.
-- `statSelection.test.js`: resolves round outcomes after stat selection.
+- `statSelection.test.js`: resolves round outcomes and covers outcome display and match-end logic via parameterized tests.
 - `statSelectionTiming.test.js`: stat selection timing behaviors (auto-select, countdown resets, stall recovery, pause/resume).
 - `stateTransitions.test.js`: validates `src/helpers/classicBattle/stateTable.js` transitions.
 - `timerService.drift.test.js`: falls back to messaging when timers drift.

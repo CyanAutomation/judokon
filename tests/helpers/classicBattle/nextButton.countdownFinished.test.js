@@ -14,6 +14,7 @@ vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
 }));
 
 import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
+import { onNextButtonClick } from "../../../src/helpers/classicBattle/timerService.js";
 
 describe("Next button countdownFinished", () => {
   let warnSpy;
@@ -34,15 +35,13 @@ describe("Next button countdownFinished", () => {
 
   it("emits countdownFinished when button exists", async () => {
     document.body.innerHTML = '<button id="next-button" data-role="next-round"></button>';
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    await mod.onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
+    await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     expect(emitBattleEvent).toHaveBeenCalledTimes(1);
     expect(emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
   });
 
   it("emits countdownFinished when button missing", async () => {
-    const mod = await import("../../../src/helpers/classicBattle/timerService.js");
-    await mod.onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
+    await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     expect(emitBattleEvent).toHaveBeenCalledTimes(1);
     expect(emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
   });
