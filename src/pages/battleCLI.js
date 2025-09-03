@@ -456,14 +456,30 @@ function showBottomLine(text) {
 }
 
 /**
+ * Sanitize snackbar hint text to avoid DOM injection.
+ *
+ * @param {unknown} text
+ * @returns {string}
+ * @pseudocode
+ * if text not string: return ""
+ * return text stripped of non-printable characters and trimmed to 200 chars
+ */
+function sanitizeHintText(text) {
+  if (typeof text !== "string") return "";
+  return text.replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, "").slice(0, 200);
+}
+
+/**
  * Display a short-lived snackbar hint without clearing the countdown.
  *
  * @pseudocode
  * container = document.getElementById("snackbar-container")
  * if container missing: return
- * create div.snackbar.show with message
+ * create div.snackbar.show with sanitized message
  * append to container
- * after SNACKBAR_REMOVE_MS milliseconds remove div
+ * timeoutId = setTimeout(remove bar, SNACKBAR_REMOVE_MS)
+ * store timeoutId on bar
+ * bar on DOMNodeRemoved: clear timeoutId
  *
  * @param {string} text - Hint text to display.
  */
@@ -472,9 +488,21 @@ function showHint(text) {
   if (!container) return;
   const bar = document.createElement("div");
   bar.className = "snackbar show";
-  bar.textContent = text;
+  bar.textContent = sanitizeHintText(text);
   container.appendChild(bar);
-  setTimeout(() => bar.remove(), SNACKBAR_REMOVE_MS);
+  const timeoutId = setTimeout(() => {
+    if (bar && bar.parentNode) {
+      bar.remove();
+    }
+  }, SNACKBAR_REMOVE_MS);
+  // Store timeout on element to clean up if removed early
+  bar._removeTimeoutId = timeoutId;
+  bar.addEventListener("DOMNodeRemoved", function handler(e) {
+    if (e.target === bar) {
+      clearTimeout(bar._removeTimeoutId);
+      bar.removeEventListener("DOMNodeRemoved", handler);
+    }
+  });
 }
 
 /**
@@ -1131,13 +1159,13 @@ export function handleGlobalKey(key) {
  *
  * @summary Convert numeric key presses into stat selections when appropriate.
  * @param {string} key - Normalized single-character key value (e.g., '1').
- * @returns {boolean} True when the key was handled and resulted in a selection.
+ * @returns {boolean} True when the key was handled.
  * @pseudocode
  * if key is a digit:
  *   stat = getStatByIndex(key)
  *   if stat missing:
  *     showHint("Use 1-5, press H for help")
- *     return false
+ *     return true
  *   selectStat(stat)
  *   return true
  * return false
@@ -1147,7 +1175,7 @@ export function handleWaitingForPlayerActionKey(key) {
     const stat = getStatByIndex(key);
     if (!stat) {
       showHint("Use 1-5, press H for help");
-      return false;
+      return true;
     }
     selectStat(stat);
     return true;
