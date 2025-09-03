@@ -184,4 +184,22 @@ describe("battleCLI event handlers", () => {
     expect(updateBattleStateBadge).toHaveBeenCalledWith("roundOver");
     expect(document.querySelector(".snackbar").textContent).toBe("Press Enter to continue");
   });
+
+  it("renders next-round-button only during roundOver", async () => {
+    const { handlers } = await setupHandlers();
+    const { setAutoContinue } = await import(
+      "../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+    setAutoContinue(false);
+    handlers.handleBattleState({ detail: { from: "waiting", to: "roundOver" } });
+    const firstBtn = document.getElementById("next-round-button");
+    expect(firstBtn).toBeTruthy();
+    handlers.handleBattleState({ detail: { from: "roundOver", to: "waitingForPlayerAction" } });
+    expect(document.getElementById("next-round-button")).toBeFalsy();
+    handlers.handleBattleState({ detail: { from: "waitingForPlayerAction", to: "roundOver" } });
+    const secondBtn = document.getElementById("next-round-button");
+    expect(secondBtn).toBeTruthy();
+    expect(secondBtn.id).toBe("next-round-button");
+    expect(secondBtn).not.toBe(firstBtn);
+  });
 });

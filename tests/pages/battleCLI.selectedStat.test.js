@@ -73,6 +73,13 @@ describe("battleCLI stat interactions", () => {
     );
   });
 
+  it("sets data-selected-index on cli-stats", async () => {
+    const { mod } = await loadBattleCLI();
+    await mod.renderStatList();
+    mod.handleWaitingForPlayerActionKey("2");
+    expect(document.getElementById("cli-stats").dataset.selectedIndex).toBe("2");
+  });
+
   it("shows stat values and responds to clicks", async () => {
     const { mod, startRound } = await loadBattleCLI();
     await mod.renderStatList();
