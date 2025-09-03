@@ -6,6 +6,7 @@ describe("waitingForPlayerActionEnter", () => {
     document.body.innerHTML = "";
     const next = document.createElement("button");
     next.id = "next-button";
+    next.setAttribute("data-testid", "next-button");
     next.disabled = true;
     document.body.appendChild(next);
   });
@@ -15,7 +16,7 @@ describe("waitingForPlayerActionEnter", () => {
     const store = {};
     const machine = { context: { store } };
     await mod.waitingForPlayerActionEnter(machine);
-    const btn = document.getElementById("next-button");
+    const btn = document.querySelector('[data-testid="next-button"]');
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
   });

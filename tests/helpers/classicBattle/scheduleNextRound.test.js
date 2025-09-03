@@ -110,7 +110,7 @@ describe("classicBattle startCooldown", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
-    const btn = document.getElementById("next-button");
+    const btn = document.querySelector('[data-testid="next-button"]');
     expect(btn?.dataset.nextReady).toBe("true");
     expect(btn?.disabled).toBe(false);
     delete window.__NEXT_ROUND_COOLDOWN_MS;
@@ -144,7 +144,7 @@ describe("classicBattle startCooldown", () => {
     expect(machine.getState()).toBe("cooldown");
 
     const controls = battleMod.startCooldown(store);
-    document.getElementById("next-button").click();
+    document.querySelector('[data-testid="next-button"]').click();
     await controls.ready;
     // Ensure state progressed before assertions
     await waitForState("waitingForPlayerAction");

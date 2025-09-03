@@ -35,6 +35,7 @@ describe("resetBattleUI helpers", () => {
   it("resetNextButton clones and disables next button", async () => {
     const btn = document.createElement("button");
     btn.id = "next-button";
+    btn.setAttribute("data-testid", "next-button");
     btn.dataset.nextReady = "true";
     document.body.append(btn);
 
@@ -42,7 +43,7 @@ describe("resetBattleUI helpers", () => {
 
     const timerSvc = await import("../../src/helpers/classicBattle/timerService.js");
 
-    const newBtn = document.getElementById("next-button");
+    const newBtn = document.querySelector('[data-testid="next-button"]');
     expect(newBtn).not.toBe(btn);
     expect(newBtn.disabled).toBe(true);
     expect(newBtn.dataset.nextReady).toBeUndefined();
@@ -53,13 +54,14 @@ describe("resetBattleUI helpers", () => {
   it("resetQuitButton replaces quit button", () => {
     const btn = document.createElement("button");
     btn.id = "quit-match-button";
+    btn.setAttribute("data-testid", "quit-match");
     const listener = vi.fn();
     btn.addEventListener("click", listener);
     document.body.append(btn);
 
     helpers.resetQuitButton();
 
-    const newBtn = document.getElementById("quit-match-button");
+    const newBtn = document.querySelector('[data-testid="quit-match"]');
     expect(newBtn).not.toBe(btn);
     newBtn.dispatchEvent(new MouseEvent("click"));
     expect(listener).not.toHaveBeenCalled();
