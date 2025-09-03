@@ -130,7 +130,9 @@ export async function initStartCooldown(machine) {
 export function initInterRoundCooldown(machine) {
   try {
     const controls = getNextRoundControls?.();
-    if (controls && (controls.timer || controls.ready)) return;
+    // Do not early-return when controls exist; proceed to emit the countdown
+    // and mark readiness on completion to keep UI/state in sync even when the
+    // roundManager has already scheduled its own cooldown.
     let duration = 0;
     try {
       duration = computeNextRoundCooldown();
@@ -154,6 +156,9 @@ export function initInterRoundCooldown(machine) {
       if (btn) {
         btn.dataset.nextReady = "true";
         btn.disabled = false;
+        try {
+          console.warn("[test] orchestrator: marked Next ready");
+        } catch {}
       }
       try {
         emitBattleEvent("nextRoundTimerReady");

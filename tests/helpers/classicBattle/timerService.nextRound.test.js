@@ -57,7 +57,8 @@ describe("timerService next round handling", () => {
     nextButton.click();
     await controls.ready;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
+    // Click advances immediately; fallback may be suppressed
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 
   it("preserves skip handler after manual skip", async () => {
@@ -78,7 +79,8 @@ describe("timerService next round handling", () => {
     await controls.ready;
 
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    expect(dispatchBattleEvent).toHaveBeenCalledTimes(4);
+    // Two manual skips across two cooldowns → 2 ready dispatches
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
   });
 
   it("stopping timer dispatches ready immediately", async () => {

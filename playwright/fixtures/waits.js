@@ -159,6 +159,11 @@ export async function waitForNextRoundReadyEvent(page, timeout = 4000) {
       const KEY = "__classicBattleEventTarget";
       const t = globalThis[KEY];
       if (!t) return false;
+      // If the Next button is already marked ready, consider it satisfied.
+      try {
+        const btn = document.getElementById("next-button");
+        if (btn && btn.dataset.nextReady === "true") return true;
+      } catch {}
       if (!window.__nextReadySeen && !window.__nextReadyInit) {
         window.__nextReadyInit = true;
         t.addEventListener("nextRoundTimerReady", () => {

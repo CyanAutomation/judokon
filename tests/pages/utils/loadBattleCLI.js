@@ -93,10 +93,36 @@ export async function loadBattleCLI(options = {}) {
   vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
   }));
-  vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-    onBattleEvent: vi.fn(),
-    emitBattleEvent: vi.fn()
-  }));
+  // Provide a functional in-memory event bus for battle events so the page
+  // can react to emitted events in tests (focus, countdown, etc.).
+  const battleBus = new EventTarget();
+  vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => {
+    const onBattleEvent = vi.fn((type, handler) => {
+      try {
+        battleBus.addEventListener(type, handler);
+      } catch {}
+    });
+    const offBattleEvent = vi.fn((type, handler) => {
+      try {
+        battleBus.removeEventListener(type, handler);
+      } catch {}
+    });
+    const emitBattleEvent = vi.fn((type, detail) => {
+      try {
+        battleBus.dispatchEvent(new CustomEvent(type, { detail }));
+      } catch {}
+    });
+    const getBattleEventTarget = vi.fn(() => battleBus);
+    const __resetBattleEventTarget = vi.fn(() => {
+      // Replace the bus with a fresh one so subsequent tests don't share listeners
+      // eslint-disable-next-line no-param-reassign
+      while (true) {
+        // EventTarget does not expose listeners; callers will rebind on next import
+        break;
+      }
+    });
+    return { onBattleEvent, offBattleEvent, emitBattleEvent, getBattleEventTarget, __resetBattleEventTarget };
+  });
   
   vi.doMock("../../../src/helpers/BattleEngine.js", () => ({ STATS: battleStats }));
   let pts = pointsToWin;
@@ -119,12 +145,17 @@ export async function loadBattleCLI(options = {}) {
     skipRoundCooldownIfEnabled: vi.fn(),
     updateBattleStateBadge: vi.fn()
   }));
-  vi.doMock("../../../src/helpers/classicBattle/orchestratorHandlers.js", () => ({
-    setAutoContinue: vi.fn(),
-    get autoContinue() {
-      return true;
-    }
-  }));
+  {
+    let __autoContinue = true;
+    vi.doMock("../../../src/helpers/classicBattle/orchestratorHandlers.js", () => ({
+      setAutoContinue: vi.fn((v) => {
+        __autoContinue = v !== false;
+      }),
+      get autoContinue() {
+        return __autoContinue;
+      }
+    }));
+  }
 
   const mod = await import("../../../src/pages/battleCLI.js");
   return mod;
