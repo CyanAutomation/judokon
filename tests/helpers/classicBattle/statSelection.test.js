@@ -114,15 +114,45 @@ describe("classicBattle stat selection", () => {
     expect(btn.style.backgroundColor).toBe("");
   });
 
-  it("shows tie message when values are equal", async () => {
-    document.getElementById("player-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    document.getElementById("opponent-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    await selectStat("power");
-    expect(document.querySelector("header #round-message").textContent).toMatch(/Tie/);
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
-  });
+  describe.each([
+    {
+      playerValue: 3,
+      opponentValue: 3,
+      expectedMessage: /Tie/,
+      expectedScore: "You: 0\nOpponent: 0"
+    },
+    {
+      playerValue: 5,
+      opponentValue: 3,
+      expectedMessage: /You win the round/,
+      expectedScore: "You: 1\nOpponent: 0"
+    },
+    {
+      playerValue: 3,
+      opponentValue: 5,
+      expectedMessage: /Opponent wins the round/,
+      expectedScore: "You: 0\nOpponent: 1"
+    }
+  ])(
+    "handles outcome when player=$playerValue and opponent=$opponentValue",
+    ({ playerValue, opponentValue, expectedMessage, expectedScore }) => {
+      beforeEach(() => {
+        _resetForTest(store);
+        document.getElementById("player-card").innerHTML =
+          `<ul><li class="stat"><strong>Power</strong> <span>${playerValue}</span></li></ul>`;
+        document.getElementById("opponent-card").innerHTML =
+          `<ul><li class="stat"><strong>Power</strong> <span>${opponentValue}</span></li></ul>`;
+      });
+
+      it("updates message and score", async () => {
+        await selectStat("power");
+        expect(document.querySelector("header #round-message").textContent).toMatch(
+          expectedMessage
+        );
+        expect(document.querySelector("header #score-display").textContent).toBe(expectedScore);
+      });
+    }
+  );
 
   it("shows stat comparison after selection", async () => {
     document.getElementById("player-card").innerHTML =
