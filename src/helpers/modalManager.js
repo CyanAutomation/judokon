@@ -6,8 +6,8 @@
  * 2. Listen for `keydown` events on `document`.
  * 3. On `Escape` key:
  *    a. Pop the top overlay from `stack`.
- *    b. If an overlay exists, call its `close()` method.
- *    c. Notify registered callbacks that Escape was handled.
+ *    b. Notify registered callbacks, passing the popped overlay.
+ *    c. If an overlay exists, call its `close()` method.
  * 4. Expose functions to register/unregister overlays and to subscribe/unsubscribe to Escape events.
  */
 const stack = [];
@@ -15,9 +15,15 @@ const escCallbacks = new Set();
 
 function handleKeydown(e) {
   if (e.key !== "Escape") return;
-  const top = stack[stack.length - 1];
-  if (top) top.close();
-  escCallbacks.forEach((cb) => cb());
+  const top = stack.pop();
+  escCallbacks.forEach((cb) => cb(top));
+  if (top) {
+    try {
+      top.close();
+    } catch {
+      // swallow error: ESC handling should proceed
+    }
+  }
 }
 
 if (typeof document?.addEventListener === "function") {
