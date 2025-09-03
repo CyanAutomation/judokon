@@ -31,14 +31,14 @@ describe("onNextButtonClick", () => {
     expect(resolveReady).toHaveBeenCalledTimes(1);
   });
 
-  it("stops timer when not ready", async () => {
+  it("stops timer and dispatches ready when not marked ready", async () => {
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     const stop = vi.fn();
     __setStateSnapshot({ state: "roundDecision" });
     await onNextButtonClick(new MouseEvent("click"), { timer: { stop }, resolveReady: null });
     const dispatcher = await import("../../src/helpers/classicBattle/orchestrator.js");
     expect(stop).toHaveBeenCalledTimes(1);
-    expect(dispatcher.dispatchBattleEvent).not.toHaveBeenCalled();
+    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
   });
 
   it("advances immediately when no timer and in cooldown", async () => {
