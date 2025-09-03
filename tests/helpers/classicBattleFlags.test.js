@@ -11,6 +11,9 @@ vi.mock("../../src/utils/scheduler.js", () => ({
 describe("classicBattlePage feature flag updates", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    const next = document.createElement("button");
+    next.id = "next-button";
+    document.body.appendChild(next);
     vi.resetModules();
   });
 
@@ -106,8 +109,13 @@ describe("classicBattlePage feature flag updates", () => {
   it("copies debug output text to the clipboard", async () => {
     const battleArea = document.createElement("div");
     battleArea.id = "battle-area";
+    const stats = document.createElement("div");
+    stats.id = "stat-buttons";
+    const btn = document.createElement("button");
+    btn.dataset.stat = "power";
+    stats.appendChild(btn);
     const container = document.createElement("div");
-    container.append(battleArea);
+    container.append(battleArea, stats);
     document.body.append(container);
 
     const currentFlags = {

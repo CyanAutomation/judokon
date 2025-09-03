@@ -51,7 +51,9 @@ function createBattleDom() {
   progressEl.id = "battle-state-progress";
   const machineState = document.createElement("div");
   machineState.id = "machine-state";
-  document.body.append(header, battleArea, stats, progressEl, machineState);
+  const next = document.createElement("button");
+  next.id = "next-button";
+  document.body.append(header, battleArea, stats, progressEl, machineState, next);
 }
 
 describe("battleStateBadge displays state transitions", () => {
