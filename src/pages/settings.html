@@ -221,6 +221,23 @@
           </fieldset>
           <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
             <legend>Advanced Settings</legend>
+            <div class="settings-item">
+              <label for="feature-cli-immersive" class="switch">
+                <input
+                  type="checkbox"
+                  id="feature-cli-immersive"
+                  data-flag="cliImmersive"
+                  aria-label="CLI Immersive Mode"
+                  aria-describedby="feature-cli-immersive-desc"
+                  data-tooltip-id="settings.cliImmersive"
+                />
+                <div class="slider round"></div>
+                <span>CLI Immersive Mode</span>
+              </label>
+              <p id="feature-cli-immersive-desc" class="settings-description">
+                Enable a more immersive, terminal-like experience in the CLI battle mode.
+              </p>
+            </div>
             <!-- Flag toggles are inserted here dynamically -->
             <div class="settings-item">
               <label for="feature-cli-verbose" class="switch">

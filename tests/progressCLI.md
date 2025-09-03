@@ -1,5 +1,16 @@
 ## CLI Progress & Improvement Plan
 
+## CLI Progress & Improvement Plan
+
+**Progress**
+- [x] Step 0: Safety & prep
+- [x] Step 1: Toggle & defaults for retro/immersive mode
+- [x] Step 2: Remove/Hide site chrome in immersive mode
+- [x] Step 3: Update `.cli-block` and `.cli-stat` styles for terminal lines
+- [ ] Step 4: Add prompt + blinking cursor
+- [ ] Step 5: Add optional scanline / glow overlay (opt-in)
+- [ ] Step 6: Polish: terminal title bar, font tweak, and tests
+
 Purpose
 -------
 This document captures the results of a Playwright-based evaluation of `/workspaces/judokon/src/pages/battleCLI.html` and provides a prioritized, actionable plan an AI agent can follow to make the page more convincingly resemble a legacy terminal/CLI.

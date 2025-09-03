@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="JU-DO-KON! Classic Battle – CLI mode" />
     <title>JU-DO-KON! – Classic Battle CLI</title>
+    <link rel="stylesheet" href="../styles/cli-immersive.css">
     <style>
       :root {
         color-scheme: light dark;
@@ -355,8 +356,13 @@
         }
       }
     </style>
+    <script>
+      if (localStorage.getItem('userFlags') && JSON.parse(localStorage.getItem('userFlags')).cliImmersive) {
+        document.body.classList.add('cli-immersive');
+      }
+    </script>
   </head>
-  <body>
+  <body class="cli-retro cli-immersive">
     <a href="#cli-main" class="skip-link">Skip to main content</a>
     <div id="cli-root" class="cli-root" data-round="0" data-target="0" data-test="cli-root">
       <header id="cli-header" class="cli-header" role="banner">
@@ -386,6 +392,7 @@
           <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
           <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
         </section>
+        <div class="ascii-sep">---</div>
 
         <!-- Less-prominent settings section moved into main to reduce header prominence -->
         <section aria-label="Match Settings" class="cli-block cli-settings">
@@ -448,6 +455,7 @@
             </div>
           </div>
         </section>
+        <div class="ascii-sep">---</div>
 
         <section aria-label="Stat Selection" class="cli-block">
           <div
@@ -464,6 +472,7 @@
             <div class="cli-stat skeleton">(5) —: —</div>
           </div>
         </section>
+        <div class="ascii-sep">---</div>
 
         <section
           aria-label="Shortcuts"
@@ -504,6 +513,7 @@
             </ul>
           </div>
         </section>
+        <div class="ascii-sep">---</div>
 
         <section
           aria-label="Verbose Log"
@@ -519,6 +529,7 @@
             style="margin: 0; white-space: pre-wrap"
           ></pre>
         </section>
+        <div id="cli-prompt" role="textbox" aria-label="Command prompt">&gt; <span id="cli-cursor" aria-hidden="true">▌</span></div>
       </main>
 
       <footer class="cli-footer" role="contentinfo">

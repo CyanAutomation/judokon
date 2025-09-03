@@ -1,0 +1,52 @@
+/* In a new CSS file at /workspaces/judokon/src/styles/cli-immersive.css */
+.cli-immersive body {
+  background: #000;
+  color: #8cff6b;
+}
+
+.cli-immersive .cli-block {
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 6px 0;
+}
+
+.cli-immersive .cli-stat {
+  background: transparent;
+  border: none;
+  padding: 2px 0;
+  display: block;
+}
+
+.cli-immersive #cli-header a[data-testid="home-link"] {
+  opacity: 0.06;
+  font-size: 0.8em;
+  position: absolute;
+  clip-path: inset(50%);
+  clip: rect(0 0 0 0);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.cli-immersive .ascii-sep {
+  color: #8cff6b;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+#cli-cursor {
+  animation: blink 1s steps(2, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cli-cursor {
+    animation: none;
+  }
+}
