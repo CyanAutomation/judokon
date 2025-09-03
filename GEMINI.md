@@ -1,246 +1,358 @@
+---
+doc_id: agents_guide
+version: 1.1.0
+updated: 2025-09-02
+tags: [checks, imports, testing, rag, prompts]
+---
+
 # 🤖 JU-DO-KON! Agent Guide
 
-This document exists to help AI agents (and human collaborators) make effective, accurate, and consistent contributions to the JU-DO-KON! codebase. Agents should treat this guide as both a checklist and a playbook.
+**Purpose**: Define deterministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.  
+**Audience**: AI Agents only. Human readability is not the priority.
 
 ---
 
-## 🎯 Mission Statement
+## 🗂️ Workflow Order
 
-AI agents play a vital role in maintaining quality, clarity, and scalability across JU-DO-KON!. This guide ensures:
-
-- Consistent logic and style across contributions
-- Awareness of available tooling and data
-- Efficient collaboration with human reviewers
-- A bias toward clarity, simplicity, and modularity
-
-A successful agent contribution is **concise**, **compliant with code standards**, and **adds lasting value** without introducing regressions or complexity.
-
-## 🧠 RAG Usage
-
-Use the vector database before inspecting files to collect relevant context and reduce unnecessary search work. It excels at:
-
-- Answering architectural questions
-- Surfacing design rationale
-- Illuminating cross-cutting concerns across modules
-
-Sample queries:
-
-- "Explain the data flow for user authentication"
-- "Summarize the classicBattle module"
-- "Outline how settings persistence works"
-
-- When a prompt starts with question patterns like "Explain X" or "How does Y work?",
-  call [`queryRag(question)`](src/helpers/queryRag.js) to gather context before scanning files.
-- For deeper guidance and code samples, see
-  [example vector queries](design/agentWorkflows/exampleVectorQueries.md#queryrag-helper).
+1. Context acquisition (queryRag, key file references)
+2. Task contract definition (inputs/outputs/success/error)
+3. Implementation (import policy, coding rules)
+4. Validation (lint, format, tests, contrast, logs)
+5. Delivery (PR body with verification summary)
 
 ---
 
-## 🧪 Prompt Templates
+## 🎯 Core Principles
 
-Before applying any template, look for question-style prompts such as
-"Explain X" or "How does Y work?" and run `queryRag` for context.
+- Maintain clarity, modularity, determinism.
+- Do not silently modify public APIs, schemas, or user-facing text.
+- Ensure all outputs are verifiable (tests, linters, CI must pass).
 
-Use these prompt formats when engaging with AI or testing tools:
+## Policy Manifest
 
-### 📝 Evaluate a PRD
-
-```markdown
-You are a PRD reviewer for the JU-DO-KON! game project. Evaluate the following Product Requirements Document for clarity, completeness, and testability. Identify any gaps or ambiguities and suggest improvements.
+```json
+{
+  "must": ["no_dynamic_imports_in_hot_paths", "no_unsilenced_console_warn_error_in_tests"],
+  "should": ["preload_optional_modules", "add_pseudocode_for_public_functions"],
+  "must_not": ["placeholder_text_tooltips", "duplicate_stat_labels"]
+}
 ```
 
-### 🧮 Audit a JSON File for Duplication
+---
 
-Scan `src/data/<filename>.json` for duplicate stat names, redundant fields, or overlapping values. Recommend deduplication or structural improvements. Include reasoning.
+## 🧠 Context Rules (RAG)
 
-### 🧷 Check Tooltip Coverage
+- Use [`queryRag(question)`](src/helpers/queryRag.js) for prompts containing `Explain` or `How does`.
+- RAG provides context; confirm against source files.
+- Include provenance for RAG-derived facts:
+  - `Source: <doc>` — `Confidence: high|medium|low` — `Quote: "..."`.
 
-Review `src/data/tooltips.json` and match entries against UI elements using `data-tooltip-id`. Identify missing tooltips or unused keys. Suggest where to add or remove entries.
+RAG Provenance JSON schema:
 
-### 🔘 Validate Feature Flag Functionality
-
-Inspect `src/pages/settings.html` and corresponding helpers. Confirm that all feature flags expose `data-flag` and `data-tooltip-id`. Check toggle persistence and observability.
+```json
+{
+  "source": "design/agentWorkflows/exampleVectorQueries.md",
+  "confidence": "high",
+  "quote": "Use queryRag for architectural questions."
+}
+```
 
 ---
 
-## ✅ Evaluation Criteria for Agent Contributions
+## 📚 Key Repository Targets
 
-Before submitting or completing a task, verify that your work:
+| Domain         | Files / Paths                                               |
+| -------------- | ----------------------------------------------------------- |
+| Tooltips       | `src/data/tooltips.json`                                    |
+| Stats          | `src/data/judoka.json`, `src/data/statNames.js`             |
+| Flags/Settings | `src/pages/settings.html`, `src/config/settingsDefaults.js` |
+| Tooltip Viewer | `src/pages/tooltipViewer.html`                              |
+| Factories      | `src/components/*.js`                                       |
+| Battle Logic   | `classicBattle.js`, `setupScoreboard.js`, `Scoreboard.js`   |
+| Entry Points   | `src/pages/*.html`                                          |
+| Tests          | `tests/**/*.test.js`, `playwright/*.spec.js`                |
 
-- Maintains modular, single-purpose logic
-- Includes or updates appropriate @pseudocode in JSDoc
-- Passes all programmatic checks (format, lint, test, contrast)
-- Improves clarity, reusability, or structure
-- Avoids duplication or placeholder text
+⚠️ Exclude from searches:
 
----
-
-## 📚 Key Files for AI Agents
-
-| Purpose                       | File(s)                                                                 |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| Tooltip content               | src/data/tooltips.json                                                  |
-| Game stats and player data    | src/data/judoka.json, src/data/statNames.js                             |
-| Feature flags & settings      | src/pages/settings.html, src/config/settingsDefaults.js                 |
-| Tooltip viewer                | src/pages/tooltipViewer.html                                            |
-| Debug + Observability targets | Components with data-_, like data-tooltip-id, data-flag, data-feature-_ |
-| UI test entry points          | playwright/_.spec.js, tests/\*\*/_.test.js                              |
-| Component factories           | src/components/\*.js                                                    |
-| Battle logic and UI           | classicBattle.js, setupScoreboard.js, Scoreboard.js                     |
+- `client_embeddings.json`
+- `offline_rag_metadata.json`
 
 ---
 
-## ✅ DOs and ❌ DON’Ts
+## 🧪 Task Contract
 
-### ✅ DO
+Declare before execution:
 
-- Use data-flag, data-tooltip-id, and data-feature-\* for all toggles and testable features
-- Refactor large functions into smaller helpers (~50 lines max)
-- Write and maintain clear @pseudocode for public functions
-- Validate all modified JSON files with `npm run validate:data`
-- Use createButton, createCard, createModal factories when building UI
+- **Inputs**: explicit files/data/commands
+- **Outputs**: changed files/tests/docs
+- **Success**: all validation passes, no unsuppressed console logs
+- **Error mode**: explicit stop conditions
 
-## Classic Battle: Testing and Rebinding
+Task Contract JSON template:
 
-- Prefer `tests/helpers/initClassicBattleTest.js` to initialize bindings:
-  - Call `await initClassicBattleTest({ afterMock: true })` immediately after `vi.doMock(...)` inside a test to rebind event listeners and reset promises.
-- Prefer event promises over sleeps:
-  - `getRoundPromptPromise`, `getCountdownStartedPromise`, `getRoundResolvedPromise`, `getRoundTimeoutPromise`, `getStatSelectionStalledPromise`.
-- Assert against the correct surface:
-  - Outcome → `#round-message`; countdown/hints → snackbar.
-- Bindings are idempotent and per-worker via `__ensureClassicBattleBindings()`.
-- Global `afterEach` clears snackbar and `#round-message` to prevent bleed.
+```json
+{
+  "inputs": ["src/classicBattle.js", "playwright/classicBattle.spec.js"],
+  "outputs": ["src/classicBattle.js", "tests/classicBattle.spec.js"],
+  "success": ["eslint: PASS", "vitest: PASS", "jsdoc: PASS", "no_unsilenced_console"],
+  "errorMode": "ask_on_public_api_change"
+}
+```
 
-### ❌ DON’T
+---
 
-- Don’t commit baseline screenshots (playwright/\*-snapshots)
-- Don’t introduce placeholder text in tooltips or stats
-- Don’t skip pseudocode updates when changing logic
-- Don’t duplicate stat labels or tooltip keys
-- Don’t forget to run the full test suite before committing
+## ✅ Evaluation Criteria
+
+- Functions ≤50 lines, modular, single-purpose
+- JSDoc `@pseudocode` for public + complex functions
+- JSON validated (`npm run validate:data`)
+- Repo state “net better” (clarity, naming, structure)
+- ≥1 happy-path + 1 edge-case test for new logic
+
+---
+
+## ⚔️ Classic Battle Testing
+
+- Initialize: `initClassicBattleTest({ afterMock: true })` after mocks
+- Use event promises:
+  - `getRoundPromptPromise`
+  - `getCountdownStartedPromise`
+  - `getRoundResolvedPromise`
+  - `getRoundTimeoutPromise`
+  - `getStatSelectionStalledPromise`
+- Assert:
+  - Round → `#round-message`
+  - Countdown/hints → snackbar
+- Cleanup: clear snackbar + `#round-message` after each test
 
 ---
 
 ## 🧯 Runtime Safeguards
 
-### 🚫 Avoid Output Errors in Terminal
+- Exclude embeddings files in grep/search
+- Animation:
+  - One-shot → `requestAnimationFrame`
+  - Continuous → `scheduler.onFrame()` + cancel with `scheduler.cancel(id)`
+- Selection timers: clear `statTimeoutId` + `autoSelectId` before `statSelected`
 
-To prevent session crashes in the terminal:
-
-> **Always exclude `client_embeddings.json` from terminal searches.**  
-> It contains very long lines that can exceed the 4096-byte output limit and terminate the shell.
-
-#### ✅ Use safe search patterns:
-
-```bash
-grep "kumi-kata" . --exclude=client_embeddings.json
-```
-
-Or recursively:
+Safe search aliases:
 
 ```bash
-grep -r "kumi-kata" . --exclude-dir=node_modules --exclude=client_embeddings.json
+# Prefer ripgrep if available
+alias rgs='rg -n --hidden --glob "!node_modules" --glob "!client_embeddings.json" --glob "!offline_rag_metadata.json"'
+# grep fallback
+alias greps='grep -RIn --exclude-dir=node_modules --exclude=client_embeddings.json --exclude=offline_rag_metadata.json'
 ```
-
-🔍 Why it matters
-
-Even if you’re not directly searching client_embeddings.json, tools like grep -r . may include it by default. This results in output overflow and abrupt session termination. Always exclude this file unless explicitly working with it.
-
-### 🎞️ Animation Scheduler
-
-- Use `requestAnimationFrame` for one-shot UI updates (for example, toggling a CSS class on the next frame).
-- Avoid `scheduler.onFrame()` for one-off work — it registers a persistent callback; repeated use during timers can leak callbacks and stall the UI.
-- Reserve `scheduler.onFrame()` for continuous per-frame tasks and always cancel with `scheduler.cancel(id)` when done.
-
-### ⏱️ Selection Timer Cleanup
-
-- Clear stat-selection timeouts and auto-select callbacks (`statTimeoutId`, `autoSelectId`) before emitting `statSelected`.
-- Stalled timers can dispatch late events and interrupt the next round, causing unintended restarts.
 
 ---
 
-## 🔧 Module Loading Policy for Agents
+## 🔧 Import Policy
 
-> JU-DO-KON! runs unbundled on GitHub Pages, relying on native ES modules.
+- Hot path → static import
+- Optional/heavy/flagged → dynamic import + preload during idle
+- No `await import()` in stat selection, round decision, event dispatch, or render loops
+- Preserve feature flag guards
+- Deliverables: file list + rationale, tests for static/preload behavior
 
-When reviewing or modifying imports, agents must apply the JU-DO-KON! static vs dynamic policy to ensure gameplay remains smooth and errors surface early.
+Hot path files (non-exhaustive):
 
-### Decision Checklist
+- `src/helpers/classicBattle.js`
+- `src/helpers/battleEngineFacade.js`
+- `src/helpers/BattleEngine.js`
+- `src/helpers/showSnackbar.js` (if used during round flow)
 
-- **Hot path or always-used?** → **Static import**
-- **Optional, heavy, or feature-flagged?** → **Dynamic import with preload**
-- **Failure should surface at build/start?** → **Static import**
-- **Risk of input-time hitch?** → **Static import**
+Autotest snippets (optional):
 
-### Definition of Hot Path (JU-DO-KON!)
+```bash
+# Detect dynamic imports in hot paths
+grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null \
+  && echo "Found dynamic import in hot path" && exit 1 || true
 
-- Stat selection handlers
-- Round decision logic
-- Event dispatchers / orchestrators
-- Per-frame animation or rendering in battle
-
-### Agent Requirements
-
-- No `await import()` inside stat selection, round decision, event dispatch, or render loops.
-- Keep optional modules dynamic, but **preload** them during idle/cooldown to avoid UI stalls.
-- Preserve existing feature flag logic when changing imports.
-- Update or add tests to verify static imports for core gameplay and preload behavior for optional modules.
-
-### Anti-Patterns to Avoid
-
-- ❌ Dynamic import inside click handlers for core gameplay
-- ❌ Variable dynamic import paths that obscure module resolution
-- ❌ Removing feature flag guards during refactor
-- ❌ Eagerly importing heavy optional modules on page load without justification
-
-### PR Deliverables for Import Changes
-
-1. Summary of files changed and reason for static/dynamic decision.
-2. Test updates reflecting the new loading behavior.
-3. Notes on any preloading strategy implemented for optional modules.
+# Hint: check preload usage for optional modules
+rg -n "preload\(|link rel=preload" src || echo "Consider preloading optional modules during idle"
+```
 
 ---
 
-## 🛠 Programmatic Checks Before Commit
+## 🛠 Validation Commands
 
-Run these from the repo root:
+Run before commit:
 
 ```bash
-npm run check:jsdoc
 npx prettier . --check
 npx eslint .
+npm run check:jsdoc
 npx vitest run
 npx playwright test
 npm run check:contrast
 ```
 
-**Common fixes:**
+Fix:
 
 ```bash
-npm run check:jsdoc:fix
 npx prettier . --write
 npx eslint . --fix
+npm run check:jsdoc:fix
+```
+
+Quick autochecks (bundle as `npm run check:agents` if desired):
+
+```bash
+# Fail if dynamic import appears in hot paths
+grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null \
+  && echo "Found dynamic import in hot path" && exit 1 || true
+
+# Fail if unsilenced console.warn/error found in tests (ignore utility wrapper)
+grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
+  && echo "Unsilenced console found" && exit 1 || true
+
+# JSON validation
+npm run validate:data
 ```
 
 ---
 
-## Testing Discipline: Keep Vitest Output Clean (console.warn / console.error)
+## 🧪 Log Discipline
 
-To keep CI and local runs readable, **no test should emit unsilenced `console.warn` or `console.error`**. Expected logs must be **stubbed, spied, or muted**.
+No unsuppressed console.warn/error in code/tests
+Wrap with withMutedConsole(fn) or spy via vi.spyOn(console, 'error')
 
-### Agent / Developer Checklist
+Helper and examples (`tests/utils/console.js`):
 
-- Wrap code paths that intentionally log with **`withMutedConsole(fn)`** (see helper below), or
-- Use `vi.spyOn(console, 'error').mockImplementation(() => {})` (same for `warn`) for the narrowest scope possible.
-- If a test _must_ allow logs, wrap the specific execution in `withAllowedConsole(fn)`.
-- Never leave raw `console.warn/error` in production code. Prefer domain-specific loggers or error channels.
+```js
+import { withMutedConsole, withAllowedConsole } from "../utils/console.js";
+
+await withMutedConsole(async () => {
+  // code that would warn or error during tests
+});
+
+await withAllowedConsole(async () => {
+  // code where specific warnings/errors are expected
+});
+```
 
 ---
 
-## 🔗 Related Docs
+## 📦 PR Delivery Rules
 
-- `README.md` – Project overview and setup
-- `architecture.md` – System layout and entry points
-- `CONTRIBUTING.md` – Commit etiquette and agent rules
+PR body must contain:
+Task Contract (inputs/outputs/success/error mode)
+Files changed list with purpose per file
+Verification summary:
+eslint: PASS|FAIL
+vitest: X passed, Y failed
+playwright: PASS|FAIL
+jsdoc: PASS|FAIL
+Risk + follow-up note
 
 ---
+
+### ✅ Verification Checklist
+
+prettier, eslint, jsdoc PASS
+vitest + playwright PASS
+No unsuppressed console logs
+Tests cover happy-path + edge case
+CI pipeline green
+
+## 🧭 Plan Discipline for Bots
+
+- Exactly one `in_progress` step at a time.
+- Mark a step `completed` before starting the next.
+- Keep steps concise (≤ 7 words) and 4–7 steps total is typical.
+- Update the plan when scope changes; include a short rationale.
+
+## 📊 Machine-Readable Ruleset
+
+```json
+{
+  "workflowOrder": ["context", "taskContract", "implementation", "validation", "delivery"],
+  "corePrinciples": [
+    "clarity",
+    "modularity",
+    "determinism",
+    "no_public_api_changes",
+    "verification_required"
+  ],
+  "contextRules": {
+    "queryRag": true,
+    "provenanceRequired": true,
+    "confirmationAgainstSource": true
+  },
+  "keyFiles": {
+    "tooltips": "src/data/tooltips.json",
+    "stats": ["src/data/judoka.json", "src/data/statNames.js"],
+    "flags": ["src/pages/settings.html", "src/config/settingsDefaults.js"],
+    "tooltipViewer": "src/pages/tooltipViewer.html",
+    "factories": "src/components/*.js",
+    "battleLogic": ["classicBattle.js", "setupScoreboard.js", "Scoreboard.js"],
+    "entryPoints": "src/pages/*.html",
+    "tests": ["tests/**/*.test.js", "playwright/*.spec.js"],
+    "excludeFromSearch": ["client_embeddings.json", "offline_rag_metadata.json"]
+  },
+  "taskContract": ["inputs", "outputs", "success", "errorMode"],
+  "evaluationCriteria": {
+    "functionLengthMax": 50,
+    "requirePseudocode": true,
+    "validateJson": true,
+    "netBetter": true,
+    "testsRequired": ["happyPath", "edgeCase"]
+  },
+  "classicBattleTesting": {
+    "initHelper": "initClassicBattleTest({ afterMock: true })",
+    "eventPromises": [
+      "getRoundPromptPromise",
+      "getCountdownStartedPromise",
+      "getRoundResolvedPromise",
+      "getRoundTimeoutPromise",
+      "getStatSelectionStalledPromise"
+    ],
+    "assertions": {
+      "outcome": "#round-message",
+      "countdown": "snackbar"
+    },
+    "cleanup": ["clearSnackbar", "clearRoundMessage"]
+  },
+  "runtimeSafeguards": {
+    "excludeEmbeddingsFromSearch": true,
+    "animation": {
+      "oneShot": "requestAnimationFrame",
+      "continuous": "scheduler.onFrame()",
+      "cancel": "scheduler.cancel(id)"
+    },
+    "timers": ["statTimeoutId", "autoSelectId"]
+  },
+  "importPolicy": {
+    "hotPath": "static",
+    "optional": "dynamicPreload",
+    "forbiddenContexts": ["statSelection", "roundDecision", "eventDispatch", "renderLoop"],
+    "preserveFeatureFlags": true
+  },
+  "validationCommands": [
+    "npx prettier . --check",
+    "npx eslint .",
+    "npm run check:jsdoc",
+    "npx vitest run",
+    "npx playwright test",
+    "npm run check:contrast"
+  ],
+  "logDiscipline": {
+    "forbidUnsuppressed": true,
+    "muteHelper": "withMutedConsole",
+    "spyHelper": "vi.spyOn"
+  },
+  "prRules": {
+    "requireTaskContract": true,
+    "requireFilesChangedList": true,
+    "requireVerificationSummary": true,
+    "requireRiskNote": true
+  },
+  "verificationChecklist": [
+    "prettier/eslint/jsdoc PASS",
+    "vitest + playwright PASS",
+    "no unsuppressed logs",
+    "tests: happy + edge",
+    "CI green"
+  ]
+}
+```
