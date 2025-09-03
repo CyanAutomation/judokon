@@ -61,7 +61,7 @@ describe("battleCLI Escape key", () => {
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(false);
     const handled = mod.getEscapeHandledPromise();
-    mod.onKeyDown(new KeyboardEvent("keydown", { key: "Escape" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     await handled;
     expect(sec.hidden).toBe(true);
     expect(document.activeElement).toBe(focusBtn);
@@ -72,7 +72,7 @@ describe("battleCLI Escape key", () => {
     const confirm = document.getElementById("confirm-quit-button");
     expect(confirm).toBeTruthy();
     const handled = mod.getEscapeHandledPromise();
-    mod.onKeyDown(new KeyboardEvent("keydown", { key: "Escape" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     await handled;
     const backdrop = confirm.closest(".modal-backdrop");
     expect(backdrop?.hasAttribute("hidden")).toBe(true);
