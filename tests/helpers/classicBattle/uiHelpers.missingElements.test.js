@@ -10,9 +10,31 @@ describe("uiHelpers element assertions", () => {
     vi.restoreAllMocks();
   });
 
-  it("throws when next button is missing", async () => {
+  it("warns and returns when next round button is missing", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
-    expect(() => mod.setupNextButton()).toThrow("setupNextButton: #next-button missing");
+    mod.setupNextButton();
+    expect(warnSpy).toHaveBeenNthCalledWith(
+      1,
+      '[uiHelpers] #next-button missing, falling back to [data-role="next-round"]'
+    );
+    expect(warnSpy).toHaveBeenNthCalledWith(2, "[uiHelpers] next round button missing");
+  });
+
+  it("falls back to data-role when #next-button is missing", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
+    const onClick = vi.spyOn(timerSvc, "onNextButtonClick").mockImplementation(() => {});
+    const btn = document.createElement("button");
+    btn.setAttribute("data-role", "next-round");
+    document.body.appendChild(btn);
+    const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+    mod.setupNextButton();
+    btn.click();
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[uiHelpers] #next-button missing, falling back to [data-role="next-round"]'
+    );
   });
 
   it("throws when stat buttons container is missing", async () => {
