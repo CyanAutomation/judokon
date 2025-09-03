@@ -359,7 +359,7 @@ function initSeed() {
     const num = Number(storedSeed);
     if (!Number.isNaN(num)) {
       // Populate the input from previous choice without enabling test mode implicitly.
-      if (input) input.value = String(storedSeed);
+      if (input) input.value = String(num);
       lastValid = num;
     }
   }
@@ -371,7 +371,7 @@ function initSeed() {
       } else {
         input.value = "";
       }
-      if (errorEl) errorEl.textContent = "Seed must be numeric.";
+      if (errorEl) errorEl.textContent = "Seed must be numeric and non-empty.";
       return;
     }
     if (errorEl) errorEl.textContent = "";

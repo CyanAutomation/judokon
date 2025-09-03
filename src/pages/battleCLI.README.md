@@ -20,9 +20,9 @@ These helpers are intentionally small and synchronous to keep tests deterministi
 ## Seed validation
 
 The CLI settings panel includes a numeric seed input used for deterministic randomness.
-Only numeric values are accepted. If a non-numeric value is entered, the input reverts to
-the last valid seed and an inline red error message (`Seed must be numeric.`) appears
-under the field. Entering a valid number clears the error.
+Only numeric values are accepted. If a non-numeric or empty value is entered, the input
+reverts to the last valid seed and an inline red error message (`Seed must be numeric and
+non-empty.`) appears under the field. Entering a valid number clears the error.
 
 ## Round header
 
