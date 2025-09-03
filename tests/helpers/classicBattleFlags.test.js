@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { _resetForTest } from "../../src/helpers/classicBattle/roundManager.js";
 
 vi.mock("../../src/utils/scheduler.js", () => ({
   start: vi.fn(),
@@ -12,6 +13,14 @@ describe("classicBattlePage feature flag updates", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.resetModules();
+  });
+
+  afterEach(() => {
+    _resetForTest();
+    try {
+      vi.runOnlyPendingTimers();
+      vi.clearAllTimers();
+    } catch {}
   });
 
   it("reacts to viewportSimulation and enableTestMode changes", async () => {
