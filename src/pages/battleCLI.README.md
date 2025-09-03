@@ -17,6 +17,11 @@ await page.evaluate(() => window.__battleCLIinit.setSettingsCollapsed(true));
 
 These helpers are intentionally small and synchronous to keep tests deterministic.
 
+## Round header
+
+The header displays the current round and win target as `Round X Target: Y 🏆`.
+The `#cli-root` element mirrors these values via `data-round` and `data-target`.
+
 ## Stat list interaction
 
 When a round begins, each stat row in `#cli-stats` shows the current player's value in the format `(index) Name: value`. Clicking a row triggers the same selection logic as using the numeric keyboard shortcut.

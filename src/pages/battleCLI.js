@@ -147,14 +147,18 @@ export const __test = {
  *
  * @pseudocode
  * if round element exists:
- *   set text to `Round ${round} of ${target}`
- * set `data-round` on root element
+ *   set text to `Round ${round} Target: ${target} 🏆`
+ * if root exists:
+ *   set `data-round` and `data-target`
  */
 function updateRoundHeader(round, target) {
   const el = byId("cli-round");
-  if (el) el.textContent = `Round ${round} of ${target}`;
+  if (el) el.textContent = `Round ${round} Target: ${target} 🏆`;
   const root = byId("cli-root");
-  if (root) root.dataset.round = String(round);
+  if (root) {
+    root.dataset.round = String(round);
+    root.dataset.target = String(target);
+  }
 }
 
 function setRoundMessage(text) {
@@ -884,7 +888,8 @@ export function restorePointsToWin() {
       engineFacade.setPointsToWin?.(saved);
       select.value = String(saved);
     }
-    updateRoundHeader(0, engineFacade.getPointsToWin?.());
+    const round = Number(byId("cli-root")?.dataset.round || 0);
+    updateRoundHeader(round, engineFacade.getPointsToWin?.());
     let current = Number(select.value);
     select.addEventListener("change", async () => {
       const val = Number(select.value);
@@ -1479,6 +1484,8 @@ async function init() {
         if (pre) pre.scrollTop = pre.scrollHeight;
       } catch {}
     }
+    const round = Number(byId("cli-root")?.dataset.round || 0);
+    updateRoundHeader(round, engineFacade.getPointsToWin?.());
   };
   try {
     await initFeatureFlags();
