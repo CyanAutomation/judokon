@@ -3,6 +3,9 @@ import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 import { waitFor } from "../waitFor.js";
 
+let points;
+let battleEngineFacadeMock;
+
 async function loadBattleCLI() {
   const emitter = new EventTarget();
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
@@ -26,14 +29,16 @@ async function loadBattleCLI() {
     emitBattleEvent: vi.fn()
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: [] }));
-  let points = 10;
-  vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-    setPointsToWin: vi.fn((v) => {
-      points = v;
-    }),
-    getPointsToWin: vi.fn(() => points),
-    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
-  }));
+  vi.doMock("../../src/helpers/battleEngineFacade.js", () => {
+    battleEngineFacadeMock = {
+      setPointsToWin: vi.fn((v) => {
+        points = v;
+      }),
+      getPointsToWin: vi.fn(() => points),
+      getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
+    };
+    return battleEngineFacadeMock;
+  });
   vi.doMock("../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue([{ statIndex: 1, name: "Speed" }])
   }));
@@ -44,6 +49,8 @@ async function loadBattleCLI() {
 
 describe("battleCLI verbose win target", () => {
   beforeEach(() => {
+    points = 10;
+    battleEngineFacadeMock = undefined;
     window.__TEST__ = true;
     document.body.innerHTML = `
       <main id="cli-main"></main>
@@ -84,6 +91,8 @@ describe("battleCLI verbose win target", () => {
     vi.doUnmock("../../src/helpers/battleEngineFacade.js");
     vi.doUnmock("../../src/helpers/dataUtils.js");
     vi.doUnmock("../../src/helpers/constants.js");
+    points = undefined;
+    battleEngineFacadeMock = undefined;
   });
 
   it("keeps win target when verbose toggled", async () => {
@@ -97,20 +106,19 @@ describe("battleCLI verbose win target", () => {
     await waitFor(
       () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
     );
-    const { getPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
-    expect(getPointsToWin()).toBe(15);
+    expect(battleEngineFacadeMock.getPointsToWin()).toBe(15);
     const checkbox = document.getElementById("verbose-toggle");
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event("change"));
     await waitFor(
       () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
     );
-    expect(getPointsToWin()).toBe(15);
+    expect(battleEngineFacadeMock.getPointsToWin()).toBe(15);
     checkbox.checked = false;
     checkbox.dispatchEvent(new Event("change"));
     await waitFor(
       () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
     );
-    expect(getPointsToWin()).toBe(15);
+    expect(battleEngineFacadeMock.getPointsToWin()).toBe(15);
   });
 });
