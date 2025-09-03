@@ -149,8 +149,8 @@ Shortcuts: [1–5] Select [Enter]/[Space] Next [H] Help [Q] Quit [Esc] Back
 **DOM & Test Hooks**
 
 - Containers: `#cli-root`, `#cli-header`, `#cli-countdown`, `#cli-stats`, `#round-message`, `#cli-score`, `#cli-shortcuts`, `#cli-settings`.
-- Data: `#cli-root[data-round="N"]`, `#cli-countdown[data-remaining-time="S"]`.
-- Primary action: `#next-round-button` (render only when available).
+- Data: `#cli-root[data-round="N"]`, `#cli-countdown[data-remaining-time="S"]`, `#cli-stats[data-selected-index="I"]`.
+- Primary action: `#next-round-button` (stable id each round; removed on state change).
 
 Additional test-contract details and page-level helpers
 
@@ -246,8 +246,6 @@ Additional test-contract details and page-level helpers
 - Classic Battle engine and state table (single source of truth).
 - Settings storage helper (for points-to-win, flags, seed).
 - Logger utility capable of CI silencing.
-
- 
 
 ---
 
