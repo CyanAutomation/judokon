@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { readFileSync } from "fs";
 
+// IDs referenced by battleJudoka scripts for event handlers and DOM queries
+// Removing any of these would break associated user interactions
 const REQUIRED_IDS = ["next-button", "stat-help", "quit-match-button", "stat-buttons"];
 
 function getMissingIds(root, ids) {
