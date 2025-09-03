@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { _resetForTest } from "../../src/helpers/classicBattle/roundManager.js";
 
 vi.mock("../../src/utils/scheduler.js", () => ({
   start: vi.fn(),
@@ -15,7 +14,10 @@ describe("classicBattlePage feature flag updates", () => {
     vi.resetModules();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    const { _resetForTest } = await vi.importActual(
+      "../../src/helpers/classicBattle/roundManager.js"
+    );
     _resetForTest();
     try {
       vi.runOnlyPendingTimers();
