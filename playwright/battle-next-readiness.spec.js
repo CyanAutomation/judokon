@@ -2,8 +2,7 @@ import { test, expect } from "./fixtures/commonSetup.js";
 import {
   waitForBattleReady,
   waitForBattleState,
-  waitForNextRoundCountdown,
-  waitForNextRoundReadyEvent
+  waitForNextRoundCountdown
 } from "./fixtures/waits.js";
 
 test.describe("Next readiness only in cooldown", () => {
@@ -27,10 +26,8 @@ test.describe("Next readiness only in cooldown", () => {
     // Start a round
     await page.locator("#round-select-1").click();
     await waitForBattleReady(page);
-    // Initial flow includes a match-start cooldown; wait through it to
-    // reach the actual selection state.
-    await waitForBattleState(page, "cooldown", 5000);
-    await waitForBattleState(page, "waitingForPlayerAction", 6000);
+    // Ensure we are at selection and Next is not marked ready
+    await waitForBattleState(page, "waitingForPlayerAction", 2000);
     await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(0);
 
     // Click a stat to move to decision and resolve the round
@@ -41,12 +38,11 @@ test.describe("Next readiness only in cooldown", () => {
     await waitForBattleState(page, "roundDecision", 2000).catch(() => {});
     await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(0);
 
-    // After resolution, ensure the countdown UI appears (snackbar text), as a
-    // robust signal not tied solely to state mirroring.
-    await waitForNextRoundCountdown(page, 4000);
-    // And validate the internal event fired by the cooldown controls which
-    // marks Next as ready at the end of the cooldown.
-    await waitForNextRoundReadyEvent(page, 5000);
+    // After resolution and entering cooldown, Next becomes ready
+    await waitForBattleState(page, "cooldown", 3000);
+    // Also ensure the countdown UI appears (snackbar text), as a robust
+    // signal not tied solely to state mirroring.
+    await waitForNextRoundCountdown(page, 3000);
     // Use direct DOM readiness as the source of truth to avoid environment
     // variance in state mirroring.
     await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(1, {
