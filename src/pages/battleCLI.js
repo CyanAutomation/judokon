@@ -32,6 +32,7 @@ import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
 import { SNACKBAR_REMOVE_MS } from "../helpers/constants.js";
+import { registerModal, unregisterModal, onEsc } from "../helpers/modalManager.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -107,6 +108,7 @@ let pausedCooldownRemaining = null;
 let ignoreNextAdvanceClick = false;
 let roundResolving = false;
 let shortcutsReturnFocus = null;
+let shortcutsOverlay = null;
 let escapeHandledResolve;
 let escapeHandledPromise = new Promise((r) => {
   escapeHandledResolve = r;
@@ -142,6 +144,8 @@ function resolveEscapeHandled() {
     escapeHandledResolve = r;
   });
 }
+
+onEsc(resolveEscapeHandled);
 
 try {
   window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
@@ -431,6 +435,8 @@ function showCliShortcuts() {
     if (body) body.style.display = "";
     sec?.removeAttribute("hidden");
     close?.setAttribute("aria-expanded", "true");
+    shortcutsOverlay = { close: hideCliShortcuts };
+    registerModal(shortcutsOverlay);
   }
 }
 
@@ -460,6 +466,10 @@ function hideCliShortcuts() {
     shortcutsReturnFocus?.focus();
   } catch {}
   shortcutsReturnFocus = null;
+  if (shortcutsOverlay) {
+    unregisterModal(shortcutsOverlay);
+    shortcutsOverlay = null;
+  }
 }
 
 function showBottomLine(text) {
@@ -1114,9 +1124,6 @@ function getStatByIndex(index1Based) {
  * if key is 'h':
  *   toggle shortcuts panel
  *   return true
- * if key is 'escape':
- *   close quit modal if open else hide shortcuts
- *   return true
  * if key is 'q':
  *   show quit confirmation modal
  *   return true
@@ -1135,16 +1142,6 @@ export function handleGlobalKey(key) {
         hideCliShortcuts();
       }
     }
-    return true;
-  }
-  if (key === "escape") {
-    if (quitModal && !quitModal.element.hasAttribute("hidden")) {
-      quitModal.close();
-    } else {
-      const sec = byId("cli-shortcuts");
-      if (sec && !sec.hidden) hideCliShortcuts();
-    }
-    resolveEscapeHandled();
     return true;
   }
   if (key === "q") {
@@ -1364,6 +1361,7 @@ export function onKeyDown(e) {
     return;
   }
   const lower = key.toLowerCase();
+  if (lower === "escape") return;
   if (!isEnabled("cliShortcuts") && lower !== "q") return;
   const state = document.body?.dataset?.battleState || "";
   const table = {
