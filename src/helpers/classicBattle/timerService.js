@@ -14,6 +14,7 @@ import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { getNextRoundControls } from "./roundManager.js";
+import { guard } from "./guard.js";
 
 export { getNextRoundControls } from "./roundManager.js";
 
@@ -119,9 +120,17 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
   if (!btn) return;
   if (btn.dataset.nextReady === "true") {
     await advanceWhenReady(btn, resolveReady);
-    return;
+  } else {
+    await cancelTimerOrAdvance(btn, timer, resolveReady);
   }
-  await cancelTimerOrAdvance(btn, timer, resolveReady);
+  realScheduler.setTimeout(() => {
+    try {
+      const { state } = getStateSnapshot();
+      if (state === "cooldown") {
+        guard(() => console.warn("[next] stuck in cooldown"));
+      }
+    } catch {}
+  }, 1000);
 }
 
 // `getNextRoundControls` is re-exported from `roundManager.js` and returns
