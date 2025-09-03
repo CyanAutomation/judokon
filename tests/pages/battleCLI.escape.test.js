@@ -54,22 +54,26 @@ describe("battleCLI Escape key", () => {
     vi.restoreAllMocks();
   });
 
-  it("closes shortcuts with Escape and restores focus", () => {
+  it("closes shortcuts with Escape and restores focus", async () => {
     const focusBtn = document.getElementById("focus-me");
     focusBtn.focus();
     mod.onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(false);
+    const handled = mod.getEscapeHandledPromise();
     mod.onKeyDown(new KeyboardEvent("keydown", { key: "Escape" }));
+    await handled;
     expect(sec.hidden).toBe(true);
     expect(document.activeElement).toBe(focusBtn);
   });
 
-  it("closes quit modal with Escape", () => {
+  it("closes quit modal with Escape", async () => {
     mod.onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     const confirm = document.getElementById("confirm-quit-button");
     expect(confirm).toBeTruthy();
+    const handled = mod.getEscapeHandledPromise();
     mod.onKeyDown(new KeyboardEvent("keydown", { key: "Escape" }));
+    await handled;
     const backdrop = confirm.closest(".modal-backdrop");
     expect(backdrop?.hasAttribute("hidden")).toBe(true);
   });
