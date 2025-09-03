@@ -104,47 +104,32 @@ describe("battleCLI onKeyDown", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("interrupt", { reason: "quit" });
   });
 
-  it("resumes timers when quit is canceled", () => {
-    document.body.dataset.battleState = "waitingForPlayerAction";
-    const selT = setTimeout(() => {}, 1000);
-    const selI = setInterval(() => {}, 1000);
-    __test.setSelectionTimers(selT, selI);
-    const countdown = document.getElementById("cli-countdown");
-    countdown.dataset.remainingTime = "3";
-    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
-    document.getElementById("cancel-quit-button").click();
-    expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
-  });
-
-  it("resumes timers when quit modal dismissed with Escape", async () => {
-    document.body.dataset.battleState = "waitingForPlayerAction";
-    const selT = setTimeout(() => {}, 1000);
-    const selI = setInterval(() => {}, 1000);
-    __test.setSelectionTimers(selT, selI);
-    const countdown = document.getElementById("cli-countdown");
-    countdown.dataset.remainingTime = "3";
-    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
-    const confirm = document.getElementById("confirm-quit-button");
-    expect(confirm).toBeTruthy();
-    const handled = getEscapeHandledPromise();
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    await handled;
-    expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
-    const backdrop = confirm.closest(".modal-backdrop");
-    expect(backdrop?.hasAttribute("hidden")).toBe(true);
-  });
-
-  it("resumes timers when backdrop is clicked", () => {
-    document.body.dataset.battleState = "waitingForPlayerAction";
-    const selT = setTimeout(() => {}, 1000);
-    const selI = setInterval(() => {}, 1000);
-    __test.setSelectionTimers(selT, selI);
-    const countdown = document.getElementById("cli-countdown");
-    countdown.dataset.remainingTime = "3";
-    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
-    document.querySelector(".modal-backdrop").click();
-    expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
-  });
+  const cancelActions = ["cancel", "escape", "backdrop"];
+  it.each(cancelActions)(
+    "resumes timers and closes modal when quit is canceled via %s",
+    async (action) => {
+      document.body.dataset.battleState = "waitingForPlayerAction";
+      const selT = setTimeout(() => {}, 1000);
+      const selI = setInterval(() => {}, 1000);
+      __test.setSelectionTimers(selT, selI);
+      const countdown = document.getElementById("cli-countdown");
+      countdown.dataset.remainingTime = "3";
+      onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+      if (action === "cancel") {
+        document.getElementById("cancel-quit-button").click();
+      } else if (action === "escape") {
+        const handled = getEscapeHandledPromise();
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+        await handled;
+      } else {
+        document.querySelector(".modal-backdrop").click();
+      }
+      expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
+      const confirm = document.getElementById("confirm-quit-button");
+      const backdrop = confirm?.closest(".modal-backdrop");
+      expect(backdrop?.hasAttribute("hidden")).toBe(true);
+    }
+  );
 
   it("clears timers when confirming quit", () => {
     const cooldownT = setTimeout(() => {}, 1000);
