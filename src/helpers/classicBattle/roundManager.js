@@ -292,7 +292,6 @@ function markNextReady(btn) {
 async function handleNextRoundExpiration(controls, btn) {
   setSkipHandler(null);
   scoreboard.clearTimer();
-  markNextReady(btn);
   await new Promise((resolve) => {
     try {
       const state = getStateSnapshot().state;
@@ -311,10 +310,11 @@ async function handleNextRoundExpiration(controls, btn) {
     };
     onBattleEvent("battleStateChange", handler);
   });
+  // Now that we confirmed `cooldown`, mark Next as ready while still in that state.
+  markNextReady(btn);
   try {
     await dispatchBattleEvent("ready");
   } catch {}
-  markNextReady(btn);
   try {
     const { updateDebugPanel } = await import("./uiHelpers.js");
     updateDebugPanel();

@@ -74,7 +74,9 @@ Why CLI isn’t affected
   - uiHelpers.missingElements, statSelection: PASS (13 tests)
   Decision: `initInterRoundCooldown` has no call sites; leaving as-is for now to minimize churn. Guarded ownership elsewhere prevents early readiness.
  - 2025‑09‑03: Added defensive clear in `timerService.onNextButtonClick` for stale readiness outside `cooldown`. Targeted Vitest: timerService.nextRound + nextButton.*: PASS (12 tests)
- - 2025‑09‑03: Added Playwright spec `playwright/battle-next-readiness.spec.js` to assert readiness only in `cooldown`.
+- 2025‑09‑03: Added Playwright spec `playwright/battle-next-readiness.spec.js` to assert readiness only in `cooldown`.
+- 2025‑09‑03: Adjusted Playwright readiness assertion to rely on Next-button DOM readiness rather than explicit state mirroring to avoid CI variance.
+ - 2025‑09‑03: Fixed readiness timing in `roundManager.handleNextRoundExpiration` to set `data-next-ready` after confirming `cooldown` and before dispatching `ready`; re-ran targeted Vitest next/cooldown tests: PASS.
 
 ## Acceptance Criteria
 - On battleJudoka:

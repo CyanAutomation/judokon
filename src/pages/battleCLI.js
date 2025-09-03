@@ -195,13 +195,13 @@ export const __test = {
  *
  * @pseudocode
  * if round element exists:
- *   set text to `Round ${round} Target: ${target} 🏆`
+ *   set text to `Round ${round} Target: ${target}`
  * if root exists:
  *   set `data-round` and `data-target`
  */
 function updateRoundHeader(round, target) {
   const el = byId("cli-round");
-  if (el) el.textContent = `Round ${round} Target: ${target} 🏆`;
+  if (el) el.textContent = `Round ${round} Target: ${target}`;
   const root = byId("cli-root");
   if (root) {
     root.dataset.round = String(round);
