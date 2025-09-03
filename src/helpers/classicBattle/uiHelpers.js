@@ -867,21 +867,26 @@ export function registerRoundStartErrorHandler(retryFn) {
 /**
  * @summary Attach the Next button click handler and warn when absent.
  *
- * Logs a warning when the button is missing or when a fallback is used.
+ * Optionally logs a test-mode warning when the button is missing or when a fallback is used.
  *
  * @pseudocode
  * 1. Query `#next-button` and store in `btn`.
- * 2. If `btn` is `null`, warn and query `[data-role="next-round"]`.
- * 3. If `btn` is still `null`, warn and return.
+ * 2. If `btn` is `null`, optionally warn and query `[data-role="next-round"]`.
+ * 3. If `btn` is still `null`, optionally warn and return.
  * 4. Bind `onNextButtonClick` to the `click` event of `btn`.
  */
 export function setupNextButton() {
   let btn = document.getElementById("next-button");
   if (!btn) {
-    console.warn('[uiHelpers] #next-button missing, falling back to [data-role="next-round"]');
+    guard(() => {
+      if (isTestModeEnabled())
+        console.warn('[test] #next-button missing, falling back to [data-role="next-round"]');
+    });
     btn = document.querySelector('[data-role="next-round"]');
     if (!btn) {
-      console.warn("[uiHelpers] next round button missing");
+      guard(() => {
+        if (isTestModeEnabled()) console.warn("[test] next round button missing");
+      });
       return;
     }
   }
