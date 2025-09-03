@@ -3,6 +3,7 @@ import "./commonMocks.js";
 import { setupClassicBattleDom } from "./utils.js";
 import { CLASSIC_BATTLE_POINTS_TO_WIN } from "../../../src/helpers/constants.js";
 import { applyMockSetup } from "./mockSetup.js";
+import { playRounds } from "./playRounds.js";
 
 vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {
@@ -65,15 +66,13 @@ async function playRound(battleMod, store, playerValue, opponentValue) {
 }
 
 async function playerWinsRounds(battleMod, store, count) {
-  for (let i = 0; i < count; i++) {
-    await playRound(battleMod, store, 5, 3);
-  }
+  const select = () => playRound(battleMod, store, 5, 3);
+  await playRounds(select, count);
 }
 
 async function opponentWinsRounds(battleMod, store, count) {
-  for (let i = 0; i < count; i++) {
-    await playRound(battleMod, store, 3, 5);
-  }
+  const select = () => playRound(battleMod, store, 3, 5);
+  await playRounds(select, count);
 }
 
 describe("classicBattle match end", () => {
