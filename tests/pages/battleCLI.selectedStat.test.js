@@ -71,6 +71,7 @@ describe("battleCLI stat interactions", () => {
     expect(document.querySelector('[data-stat-index="1"]').classList.contains("selected")).toBe(
       true
     );
+    expect(document.getElementById("cli-stats").dataset.selectedIndex).toBe("1");
   });
 
   it("shows stat values and responds to clicks", async () => {
@@ -88,5 +89,6 @@ describe("battleCLI stat interactions", () => {
     expect(hiddenVal).toBe("5");
     statEl.click();
     expect(statEl.classList.contains("selected")).toBe(true);
+    expect(document.getElementById("cli-stats").dataset.selectedIndex).toBe("1");
   });
 });

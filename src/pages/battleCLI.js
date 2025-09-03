@@ -770,6 +770,7 @@ function selectStat(stat) {
   const list = byId("cli-stats");
   list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
   const idx = STATS.indexOf(stat) + 1;
+  if (list) list.dataset.selectedIndex = String(idx);
   const choiceEl = list?.querySelector(`[data-stat-index="${idx}"]`);
   choiceEl?.classList.add("selected");
   try {
@@ -1554,7 +1555,7 @@ function handleBattleState(ev) {
   // Clean up any transient Next button when state changes
   try {
     const existing = document.getElementById("next-round-button");
-    if (existing) existing.remove();
+    existing?.parentElement?.remove();
   } catch {}
   if (to === "matchStart") {
     clearVerboseLog();

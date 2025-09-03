@@ -183,5 +183,8 @@ describe("battleCLI event handlers", () => {
     handlers.handleBattleState({ detail: { from: "a", to: "roundOver" } });
     expect(updateBattleStateBadge).toHaveBeenCalledWith("roundOver");
     expect(document.querySelector(".snackbar").textContent).toBe("Press Enter to continue");
+    expect(document.getElementById("next-round-button")).toBeTruthy();
+    handlers.handleBattleState({ detail: { from: "roundOver", to: "waitingForPlayerAction" } });
+    expect(document.getElementById("next-round-button")).toBeNull();
   });
 });

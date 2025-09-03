@@ -33,4 +33,10 @@ The `#cli-root` element mirrors these values via `data-round` and `data-target`.
 
 When a round begins, each stat row in `#cli-stats` shows the current player's value in the format `(index) Name: value`. Clicking a row triggers the same selection logic as using the numeric keyboard shortcut.
 
+The list element exposes `data-selected-index` reflecting the numeric index of the last chosen stat.
+
 You can also navigate the stat rows with the arrow keys. When `#cli-stats` has focus, pressing Arrow Up/Down/Left/Right moves the active row, wrapping from the end back to the start. The listbox keeps track of the current item via `aria-activedescendant` and applies a visible focus ring.
+
+## Round end controls
+
+During `roundOver`, a focusable `#next-round-button` is appended to `#cli-main` to continue the match. It is removed automatically on the next state transition.
