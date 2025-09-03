@@ -112,6 +112,19 @@ function ensureDebugCopyButton(panel) {
 }
 
 /**
+ * Resolve the global stat buttons ready promise if present.
+ */
+function resolveStatButtonsReady() {
+  if (typeof window === "undefined") return;
+  if (typeof window.__resolveStatButtonsReady !== "function") {
+    const { resolve } = resetStatButtonsReadyPromise();
+    resolve();
+  } else {
+    window.__resolveStatButtonsReady();
+  }
+}
+
+/**
  * Display a snackbar prompting the player to choose a stat.
  *
  * @pseudocode
@@ -1134,27 +1147,12 @@ export function clearScoreboardAndMessages() {
 export function initStatButtons(store) {
   const statContainer = document.getElementById("stat-buttons");
   if (!statContainer) {
-    if (typeof window !== "undefined") {
-      if (typeof window.__resolveStatButtonsReady !== "function") {
-        const { resolve } = resetStatButtonsReadyPromise();
-        resolve();
-      } else {
-        window.__resolveStatButtonsReady();
-      }
-    }
     throw new Error("initStatButtons: #stat-buttons missing");
   }
 
   const statButtons = statContainer.querySelectorAll("button");
   if (!statButtons.length) {
-    if (typeof window !== "undefined") {
-      if (typeof window.__resolveStatButtonsReady !== "function") {
-        const { resolve } = resetStatButtonsReadyPromise();
-        resolve();
-      } else {
-        window.__resolveStatButtonsReady();
-      }
-    }
+    resolveStatButtonsReady();
     guard(() => console.warn("[uiHelpers] #stat-buttons has no buttons"));
     return { enable: () => {}, disable: () => {} };
   }
