@@ -21,13 +21,12 @@ Goals
 
 Prioritized opportunities (with complexity score)
 ------------------------------------------------
-1) Make an immersive terminal canvas option and/or default on this page — Complexity: 3/5
-	- Hide or minimize site chrome (Home link/top header chrome) in immersive mode.
+1) Make an immersive terminal — Complexity: 3/5
 	- Make CLI area full-bleed, remove outer rounded containers.
 	- Why: immediate high-impact immersion improvement.
 
 2) Promote/enable retro green-on-black theme by default or add a prominent toggle — Complexity: 1/5
-	- Set `body.cli-retro` by default for this route or add a UI toggle that persists via localStorage.
+	- Set `body.cli-retro` by default for this route or add a UI toggle that persists via localStorage. There is a Display Settings option of "retro" - there should be a toggle option on src/pages/battleCLI.html to enable retro mode, and this should apply the global setting, rather that just a setting on this page.
 	- Why: low effort, high character return.
 
 3) Replace card-like stat rows with plain terminal lines (square edges, less padding) — Complexity: 2/5
@@ -37,10 +36,10 @@ Prioritized opportunities (with complexity score)
 	- Add a prompt element with an accessible role and a CSS blink animation (respecting prefers-reduced-motion).
 
 5) Add optional scanline or phosphor glow overlay (visual effect, opt-in) — Complexity: 3/5
-	- Implement as an opt-in CSS overlay or small canvas layer; provide toggle to disable for accessibility.
+	- Implement as an opt-in CSS overlay or small canvas layer; provide toggle in settings.html to disable for accessibility.
 
 6) Swap site chrome for a minimal terminal title bar / window chrome (optional) — Complexity: 3/5
-	- Add a small title bar (textual or iconographic) that reads like "bash — JU-DO-KON" or keep it hidden in immersive mode.
+	- Add a small title bar (textual or iconographic) that reads like "bash — JU-DO-KON"
 
 7) Improve typography to match terminal aesthetics (font, line-height) — Complexity: 2/5
 	- Consider a specialized mono webfont and tighter line-height; keep fallbacks.
@@ -52,14 +51,11 @@ Step 0 — Safety & prep
 - Add tests/visual checkpoints: ensure `scripts/evaluateBattleCLI.mjs` exists and runs (already present).
 
 Step 1 — Toggle & defaults for retro/immersive mode (small, non-destructive)
-- Add a CSS class `cli-immersive` (or reuse `cli-retro`) that:
+- Reuse `cli-retro` for:
   - sets `body` background to `#000`, color to the retro green, and forces `.cli-block` backgrounds to transparent/black.
   - removes border-radius and reduces paddings.
 - Modify `battleCLI.html` to include `class="cli-retro cli-immersive"` on `body` OR insert a small inline script that reads localStorage `cliMode` and applies classes.
-- Add a small toggle button inside `#cli-controls-hint` or settings; write/read localStorage to persist.
-
-Step 2 — Remove/Hide site chrome in immersive mode (non-destructive)
-- In `.cli-immersive`, hide or visually minimize elements: `#cli-header a[data-testid="home-link"]` (but keep it in DOM for screen readers), and style it with `opacity: 0.06; font-size: 0.8em;` or `clip-path`/`position: absolute` while preserving accessibility (e.g., `aria-hidden` false, visually exposed via a small setting).
+- This is linked to the "retro" toggle in settings.html.
 
 Step 3 — Update `.cli-block` and `.cli-stat` styles for terminal lines
 - In `.cli-immersive` or global retro rules:
@@ -74,11 +70,10 @@ Step 4 — Add prompt + blinking cursor
 - Ensure the prompt is keyboard focusable and screen-reader-friendly (manage `aria-live` if needed).
 
 Step 5 — Add optional scanline / glow overlay (opt-in)
-- Add a toggle in settings to enable scanlines; implement an absolutely-positioned pseudo-element or canvas overlay with pointer-events: none and low-opacity stripes.
+- Add a toggle in settings.html to enable scanlines; implement an absolutely-positioned pseudo-element or canvas overlay with pointer-events: none and low-opacity stripes.
 
 Step 6 — Polish: terminal title bar, font tweak, and tests
 - Add a thin textual title bar (optional) and experiment with terminal webfonts.
-- Update `scripts/evaluateBattleCLI.mjs` to take before/after screenshots for visual regression.
 
 Testing & validation
 --------------------
@@ -89,7 +84,7 @@ Testing & validation
 Notes about edge cases & accessibility
 -------------------------------------
 - Blinking cursor and scanlines must respect `prefers-reduced-motion`.
-- When hiding the Home link or other site chrome, keep them reachable to screen readers and via settings to avoid losing navigation.
+- Keep the Home link reachable at all times to avoid losing navigation.
 - Color choices should keep contrast > 4.5:1 for main text; current colors are already strong.
 
 Agent instructions / acceptance criteria
@@ -100,16 +95,9 @@ For each task the AI agent performs:
 - Run `node scripts/evaluateBattleCLI.mjs` to produce style and accessibility snapshots and attach them to the commit or PR.
 - Ensure vitest/playwright tests still pass (or add a small Playwright spec under `playwright/` that validates keyboard hints and prompt presence).
 
-Estimated effort and priorities
-------------------------------
-- Immediate wins (apply in one small PR): enable retro mode by default + make `.cli-block` flat + add blinking cursor — Estimated 1–2 hours — Priority: High
-- Medium (optional polish): scanline overlay + terminal titlebar + webfont tuning — Estimated 2–4 hours — Priority: Medium
-- Low (experimental): add full terminal emulator-like behaviors (typed input history, ANSI color parsing) — Estimated +1 day — Priority: Low
-
 Appendix: artifacts created during initial evaluation
 ----------------------------------------------------
 - `scripts/evaluateBattleCLI.mjs` — Playwright script used to capture screenshots and snapshots.
 - `scripts/eval-results/` — contains `battleCLI-full.png`, `battleCLI-header.png`, `battleCLI-main.png`, `accessibility.json`, `style-summary.json`, `dom-snapshot.json`.
 
-If you'd like, I can now implement the top three changes (retro default, flat blocks, blinking cursor) and run the evaluation again. Choose: implement now, or generate a PR patch for review.
 
