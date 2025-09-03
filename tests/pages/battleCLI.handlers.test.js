@@ -5,6 +5,7 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   const emitter = new EventTarget();
   const emitBattleEvent = vi.fn();
   const updateBattleStateBadge = vi.fn();
+  const resetGame = vi.fn();
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags: vi.fn(),
     isEnabled: vi.fn((flag) => (flag === "autoSelect" ? autoSelect : false)),
@@ -22,7 +23,7 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
     createBattleStore: vi.fn(() => ({})),
     startRound: vi.fn(),
-    resetGame: vi.fn()
+    resetGame
   }));
   vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
@@ -40,7 +41,16 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   }));
   window.__TEST__ = true;
   const { battleCLI } = await import("../../src/pages/index.js");
-  return { handlers: battleCLI, emitBattleEvent, updateBattleStateBadge };
+  const { setAutoContinue } = await import(
+    "../../src/helpers/classicBattle/orchestratorHandlers.js"
+  );
+  return {
+    handlers: battleCLI,
+    emitBattleEvent,
+    updateBattleStateBadge,
+    resetGame,
+    setAutoContinue
+  };
 }
 
 async function setupHandlers(options) {
@@ -162,11 +172,10 @@ describe("battleCLI event handlers", () => {
   });
 
   it("clears verbose log when play again clicked", async () => {
-    const { handlers, emitBattleEvent } = await setupHandlers();
+    const { handlers, emitBattleEvent, resetGame } = await setupHandlers();
     document.getElementById("cli-verbose-log").textContent = "old";
     handlers.handleMatchOver();
     const btn = document.getElementById("play-again-button");
-    const { resetGame } = await import("../../src/helpers/classicBattle/roundManager.js");
     btn.click();
     await new Promise((r) => setTimeout(r));
     expect(document.getElementById("cli-verbose-log").textContent).toBe("");
@@ -175,10 +184,7 @@ describe("battleCLI event handlers", () => {
   });
 
   it("handles battle state transitions", async () => {
-    const { handlers, updateBattleStateBadge } = await setupHandlers();
-    const { setAutoContinue } = await import(
-      "../../src/helpers/classicBattle/orchestratorHandlers.js"
-    );
+    const { handlers, updateBattleStateBadge, setAutoContinue } = await setupHandlers();
     setAutoContinue(false);
     handlers.handleBattleState({ detail: { from: "a", to: "roundOver" } });
     expect(updateBattleStateBadge).toHaveBeenCalledWith("roundOver");
@@ -186,17 +192,18 @@ describe("battleCLI event handlers", () => {
   });
 
   it("renders next-round-button only during roundOver", async () => {
-    const { handlers } = await setupHandlers();
-    const { setAutoContinue } = await import(
-      "../../src/helpers/classicBattle/orchestratorHandlers.js"
-    );
+    const { handlers, setAutoContinue } = await setupHandlers();
     setAutoContinue(false);
     handlers.handleBattleState({ detail: { from: "waiting", to: "roundOver" } });
     const firstBtn = document.getElementById("next-round-button");
     expect(firstBtn).toBeTruthy();
-    handlers.handleBattleState({ detail: { from: "roundOver", to: "waitingForPlayerAction" } });
+    handlers.handleBattleState({
+      detail: { from: "roundOver", to: "waitingForPlayerAction" }
+    });
     expect(document.getElementById("next-round-button")).toBeFalsy();
-    handlers.handleBattleState({ detail: { from: "waitingForPlayerAction", to: "roundOver" } });
+    handlers.handleBattleState({
+      detail: { from: "waitingForPlayerAction", to: "roundOver" }
+    });
     const secondBtn = document.getElementById("next-round-button");
     expect(secondBtn).toBeTruthy();
     expect(secondBtn.id).toBe("next-round-button");
