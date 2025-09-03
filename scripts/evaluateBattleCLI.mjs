@@ -17,17 +17,19 @@ const htmlUrl = new URL("../src/pages/battleCLI.html", import.meta.url).href;
   // short pause to allow fonts/styles to settle
   await page.waitForTimeout(250);
 
-  // Full page screenshot
-  const fullPath = path.join(outDir, "battleCLI-full.png");
-  await page.screenshot({ path: fullPath, fullPage: true });
+  // Before screenshot
+  const beforePath = path.join(outDir, "battleCLI-before.png");
+  await page.screenshot({ path: beforePath, fullPage: true });
 
-  // Header and main screenshots
-  const headerEl = await page.$("#cli-header");
-  const mainEl = await page.$("#cli-main");
-  const headerPath = path.join(outDir, "battleCLI-header.png");
-  const mainPath = path.join(outDir, "battleCLI-main.png");
-  if (headerEl) await headerEl.screenshot({ path: headerPath });
-  if (mainEl) await mainEl.screenshot({ path: mainPath });
+  // Apply immersive styles
+  await page.evaluate(() => {
+    document.body.classList.add("cli-immersive", "scanlines");
+  });
+  await page.waitForTimeout(250);
+
+  // After screenshot
+  const afterPath = path.join(outDir, "battleCLI-after.png");
+  await page.screenshot({ path: afterPath, fullPage: true });
 
   // Accessibility snapshot
   const ax = await page.accessibility.snapshot();
@@ -131,9 +133,8 @@ const htmlUrl = new URL("../src/pages/battleCLI.html", import.meta.url).href;
   // Print concise JSON summary to stdout for the caller
   const summary = {
     screenshots: {
-      full: fullPath,
-      header: fs.existsSync(headerPath) ? headerPath : null,
-      main: fs.existsSync(mainPath) ? mainPath : null
+      before: beforePath,
+      after: afterPath
     },
     accessibilityFile: path.join(outDir, "accessibility.json"),
     styleSummaryFile: path.join(outDir, "style-summary.json"),

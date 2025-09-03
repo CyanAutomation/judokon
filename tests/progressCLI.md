@@ -7,9 +7,9 @@
 - [x] Step 1: Toggle & defaults for retro/immersive mode
 - [x] Step 2: Remove/Hide site chrome in immersive mode
 - [x] Step 3: Update `.cli-block` and `.cli-stat` styles for terminal lines
-- [ ] Step 4: Add prompt + blinking cursor
-- [ ] Step 5: Add optional scanline / glow overlay (opt-in)
-- [ ] Step 6: Polish: terminal title bar, font tweak, and tests
+- [x] Step 4: Add prompt + blinking cursor
+- [x] Step 5: Add optional scanline / glow overlay (opt-in)
+- [x] Step 6: Polish: terminal title bar, font tweak, and tests
 
 Purpose
 -------

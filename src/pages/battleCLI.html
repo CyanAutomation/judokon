@@ -360,9 +360,13 @@
       if (localStorage.getItem('userFlags') && JSON.parse(localStorage.getItem('userFlags')).cliImmersive) {
         document.body.classList.add('cli-immersive');
       }
+      if (localStorage.getItem('userFlags') && JSON.parse(localStorage.getItem('userFlags')).scanlines) {
+        document.body.classList.add('scanlines');
+      }
     </script>
   </head>
   <body class="cli-retro cli-immersive">
+    <div class="terminal-title-bar">bash — JU-DO-KON</div>
     <a href="#cli-main" class="skip-link">Skip to main content</a>
     <div id="cli-root" class="cli-root" data-round="0" data-target="0" data-test="cli-root">
       <header id="cli-header" class="cli-header" role="banner">

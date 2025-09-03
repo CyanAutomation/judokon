@@ -3,6 +3,10 @@
   "name": "JU-DO-KON! – Classic Battle CLI",
   "children": [
     {
+      "role": "text",
+      "name": "bash — JU-DO-KON"
+    },
+    {
       "role": "link",
       "name": "Skip to main content"
     },
@@ -12,7 +16,7 @@
     },
     {
       "role": "text",
-      "name": "  |  Classic Battle (CLI)"
+      "name": " |  Classic Battle (CLI)"
     },
     {
       "role": "text",
@@ -21,6 +25,10 @@
     {
       "role": "text",
       "name": "\n            You: 0 Opponent: 0\n          "
+    },
+    {
+      "role": "text",
+      "name": "---"
     },
     {
       "role": "text",
@@ -77,9 +85,26 @@
       "valuemax": 0
     },
     {
+      "role": "text",
+      "name": "---"
+    },
+    {
       "role": "listbox",
       "name": "Select a stat with number keys 1–5",
       "orientation": "vertical"
+    },
+    {
+      "role": "text",
+      "name": "---"
+    },
+    {
+      "role": "text",
+      "name": "---"
+    },
+    {
+      "role": "textbox",
+      "name": "Command prompt",
+      "value": "> ▌"
     }
   ]
 }

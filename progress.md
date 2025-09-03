@@ -29,28 +29,43 @@ Why CLI isn’t affected
 - `battleCLI` does not expose or wire a DOM Next button; it drives state progression directly via dispatch/hotkeys, so it cannot accidentally enable Next during selection.
   - `src/pages/battleCLI.js:1` (no Next button wiring; uses programmatic dispatch)
 
-## Plan to Fix
-1) Assert Next ownership: add a centralized guard so only cooldown flow can set `data-next-ready`.
-   - Add a small helper (e.g., `setNextReady(enabled)`) inside `roundManager.js` that checks current state (via `getStateSnapshot`) and only allows `enabled=true` when state is `cooldown`.
-   - Replace direct `btn.dataset.nextReady` writes in `roundManager.js` with this helper.
+## Plan to Fix (refined)
+1) Centralize and guard Next ownership (roundManager)
+   - Add a guard inside `roundManager.markNextReady(btn)` to only set `data-next-ready` when `getStateSnapshot().state === 'cooldown'`.
+   - Keep writes to `#next-button` centralized in `roundManager` where possible.
 
-2) Audit and remove early-Next toggles:
-   - Search for `enableNextRoundButton` and any direct `dataset.nextReady` writes outside `roundManager.js` and delete/migrate them to the cooldown flow.
-   - Verify `waitingForPlayerActionEnter` continues to avoid touching Next (already guarded).
+2) Remove/neutralize early-Next toggles
+   - `uiHelpers.enableNextRoundButton`: add a guard to no‑op unless state is `cooldown`, or remove if unused. Preference: guard and leave in place to avoid broad refactors; add comments that cooldown owns readiness.
+   - `orchestratorHandlers.initInterRoundCooldown`: no call sites found; either delete or refactor to delegate to `roundManager.startCooldown` without directly setting readiness. Preference: delete if unused to avoid duplicate ownership logic.
+   - Verify `waitingForPlayerActionEnter` continues to avoid touching Next (already guarded with explanatory comment).
 
-3) Strengthen runtime protection:
-   - In `timerService.onNextButtonClick`, if clicked while state != `cooldown` and `data-next-ready` is present, clear the flag and either stop an active timer or dispatch a safe `interrupt → cooldown` before `ready`. This converts a potential stall into a recoverable path.
+3) Runtime protection (click path)
+   - `timerService.onNextButtonClick`: optional defensive clear—if clicked while state != `cooldown` but `data-next-ready` is present, clear the flag and rely on existing `advanceWhenReady`/`cancelTimerOrAdvance` logic. Note: current `advanceWhenReady` already interrupts non‑cooldown states safely; this step is opportunistic, not mandatory.
 
-4) Tests (Playwright):
-   - Add a spec that:
-     - Autostarts classic battle (`/src/pages/battleJudoka.html?autostart=1`).
-     - Waits for stat buttons enabled, clicks one.
-     - Asserts `#next-button[data-next-ready="true"]` does NOT appear until after `roundResolved` and state transitions to `cooldown`.
-     - Asserts state progresses: waitingForPlayerAction → roundDecision → roundOver (→ cooldown) within a short window.
+4) Tests
+   - Playwright (follow‑up):
+     - Load `/src/pages/battleJudoka.html?autostart=1`.
+     - Click a stat; assert `#next-button[data-next-ready="true"]` only appears after `roundResolved` and `cooldown`.
+     - Assert FSM transitions without stalling.
+   - Vitest: run targeted classic battle unit tests after each milestone to ensure no regression.
 
-5) Sanity checks:
-   - Keep the existing defensive comment and warning in `waitingForPlayerActionEnter`.
-   - Optionally log a debug panel note when an early-Next attempt is blocked (behind test flag).
+5) Sanity and policy
+   - Keep the defensive warning in `waitingForPlayerActionEnter`.
+   - No dynamic imports in hot paths; changes remain local and static.
+
+## Milestones & Status
+- [ ] Guard readiness in `roundManager.markNextReady` (in progress)
+- [ ] Guard or remove early toggles (`enableNextRoundButton`, `initInterRoundCooldown`)
+- [ ] Optional defensive clear in `timerService.onNextButtonClick`
+- [ ] Add Playwright spec for Next readiness timing (follow‑up)
+
+## Notes on Evidence (confirmed)
+- Guard comment present: `orchestratorHandlers.waitingForPlayerActionEnter` L448–456.
+- Cooldown owner: `roundManager.startCooldown` clears/marks Next; readiness set by `markNextReady`.
+- Click path already resilient: `advanceWhenReady` interrupts non‑cooldown before dispatching `ready`.
+
+## Progress Log
+- 2025‑09‑03: Updated plan to centralize guard in `roundManager`, neutralize early toggles, and stage tests. Beginning implementation of guarded readiness.
 
 ## Acceptance Criteria
 - On battleJudoka:

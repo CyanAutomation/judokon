@@ -1,18 +1,18 @@
 {
   "body": {
-    "background": "rgb(11, 12, 12)",
-    "color": "rgb(242, 242, 242)",
-    "contrastTextOnBg": 17.496491067187225
+    "background": "rgb(0, 0, 0)",
+    "color": "rgb(140, 255, 107)",
+    "contrastTextOnBg": 16.631397168638795
   },
   "header": {
     "background": "rgba(0, 0, 0, 0)",
-    "color": "rgb(242, 242, 242)"
+    "color": "rgb(140, 255, 107)"
   },
   "sampleStat": {
     "text": "(1) —: —",
-    "background": "rgb(18, 18, 18)",
-    "color": "rgb(242, 242, 242)",
-    "contrastTextOnBg": 16.734034721106067
+    "background": "rgb(0, 0, 0)",
+    "color": "rgb(140, 255, 107)",
+    "contrastTextOnBg": 16.631397168638795
   },
   "viewport": {
     "width": 1280,
