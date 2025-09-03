@@ -50,7 +50,7 @@ async function loadBattleCLI() {
 describe("battleCLI verbose win target", () => {
   beforeEach(() => {
     points = 10;
-    battleEngineFacadeMock = undefined;
+    battleEngineFacadeMock = null;
     window.__TEST__ = true;
     document.body.innerHTML = `
       <main id="cli-main"></main>
@@ -91,8 +91,8 @@ describe("battleCLI verbose win target", () => {
     vi.doUnmock("../../src/helpers/battleEngineFacade.js");
     vi.doUnmock("../../src/helpers/dataUtils.js");
     vi.doUnmock("../../src/helpers/constants.js");
-    points = undefined;
-    battleEngineFacadeMock = undefined;
+    points = null;
+    battleEngineFacadeMock = null;
   });
 
   it("keeps win target when verbose toggled", async () => {

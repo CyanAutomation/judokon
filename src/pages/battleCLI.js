@@ -535,6 +535,7 @@ function showHint(text) {
         if (removedNode === bar) {
           clearTimeout(bar._removeTimeoutId);
           observer.disconnect();
+          return;
         }
       }
     }
