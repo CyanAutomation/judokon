@@ -12,3 +12,4 @@ src/data/client_embeddings.meta.json
 src/data/client_embeddings.shard.*.json
 src/data/client_embeddings.manifest.json
 src/data/offline_rag_metadata.json
+eslint-dry.json

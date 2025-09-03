@@ -94,7 +94,10 @@ export function createScoreboard(container = document.createElement("div")) {
  * @returns {void}
  */
 export function initScoreboard(container, controls = {}) {
-  if (container) {
+  const doc = typeof document !== "undefined" ? document : null;
+  const win = typeof window !== "undefined" ? window : null;
+
+  if (container && doc) {
     messageEl = container.querySelector("#round-message");
     timerEl = container.querySelector("#next-round-timer");
     roundCounterEl = container.querySelector("#round-counter");
@@ -110,31 +113,34 @@ export function initScoreboard(container, controls = {}) {
   void startCoolDown;
   void scheduler;
 
-  if (visibilityHandler) {
-    document.removeEventListener("visibilitychange", visibilityHandler);
+  if (doc && visibilityHandler) {
+    doc.removeEventListener("visibilitychange", visibilityHandler);
   }
-  if (focusHandler) {
-    window.removeEventListener("focus", focusHandler);
+  if (win && focusHandler) {
+    win.removeEventListener("focus", focusHandler);
   }
 
+  if (!doc || !win) return;
+
   visibilityHandler = () => {
-    if (document.hidden && typeof pauseTimer === "function") {
+    if (doc.hidden && typeof pauseTimer === "function") {
       pauseTimer();
     }
   };
 
   focusHandler = () => {
-    if (!document.hidden && typeof resumeTimer === "function") {
+    if (!doc.hidden && typeof resumeTimer === "function") {
       resumeTimer();
     }
   };
 
-  document.addEventListener("visibilitychange", visibilityHandler);
-  window.addEventListener("focus", focusHandler);
+  doc.addEventListener("visibilitychange", visibilityHandler);
+  win.addEventListener("focus", focusHandler);
 }
 
 // Best-effort lazy lookup for header elements in case initialization runs late
 function ensureRefs() {
+  if (typeof document === "undefined") return;
   if (!messageEl || !messageEl.isConnected) {
     messageEl = document.getElementById("round-message") || messageEl;
   }
@@ -154,8 +160,10 @@ function setScoreText(player, opponent) {
   let playerSpan = scoreEl.firstElementChild;
   let opponentSpan = scoreEl.lastElementChild;
   if (!playerSpan || !opponentSpan) {
-    playerSpan = document.createElement("span");
-    opponentSpan = document.createElement("span");
+    const doc = typeof document !== "undefined" ? document : null;
+    if (!doc) return;
+    playerSpan = doc.createElement("span");
+    opponentSpan = doc.createElement("span");
     scoreEl.append(playerSpan, opponentSpan);
   }
   playerSpan.textContent = `You: ${player}`;
@@ -193,9 +201,11 @@ function animateScore(startPlayer, startOpponent, playerTarget, opponentTarget) 
  * @returns {void}
  */
 export function showMessage(text, opts = {}) {
+  const doc = typeof document !== "undefined" ? document : null;
+  if (!doc) return;
   const { outcome = false } = opts;
   // Prefer a fresh lookup to avoid stale references in dynamic tests
-  const el = document.getElementById("round-message") || messageEl;
+  const el = doc.getElementById("round-message") || messageEl;
   if (el) {
     try {
       const isTransient = String(text) === "Waiting…";
@@ -223,7 +233,9 @@ export function showMessage(text, opts = {}) {
  * @returns {void}
  */
 export function clearMessage() {
-  const el = document.getElementById("round-message") || messageEl;
+  const doc = typeof document !== "undefined" ? document : null;
+  if (!doc) return;
+  const el = doc.getElementById("round-message") || messageEl;
   if (el) {
     el.textContent = "";
     delete el.dataset.outcome;
