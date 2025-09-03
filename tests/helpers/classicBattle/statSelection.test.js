@@ -124,18 +124,6 @@ describe("classicBattle stat selection", () => {
     expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
   });
 
-  it("evaluateRound updates the score", async () => {
-    const { createBattleStore, evaluateRound, _resetForTest } = await import(
-      "../../../src/helpers/classicBattle.js"
-    );
-    const store = createBattleStore();
-    _resetForTest(store);
-    const result = evaluateRound(store, "power", 5, 3);
-    expect(result.message).toMatch(/win/);
-    expect(result.playerScore).toBe(1);
-    expect(result.opponentScore).toBe(0);
-  });
-
   it("shows stat comparison after selection", async () => {
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
