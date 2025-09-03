@@ -64,6 +64,7 @@ describe("classicBattle battle control state", () => {
     nextButton.disabled = true;
     const quitBtn = document.createElement("button");
     quitBtn.id = "quit-match-button";
+    quitBtn.setAttribute("data-testid", "quit-match");
     const header = document.createElement("header");
     const statButtons = document.createElement("div");
     statButtons.id = "stat-buttons";
@@ -81,7 +82,7 @@ describe("classicBattle battle control state", () => {
     const { disableNextRoundButton, enableNextRoundButton } = await import(
       "../../../src/helpers/classicBattle.js"
     );
-    const btn = document.getElementById("next-button");
+    const btn = document.querySelector('[data-testid="next-button"]');
     disableNextRoundButton();
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
@@ -93,10 +94,10 @@ describe("classicBattle battle control state", () => {
   it("resetBattleUI replaces Next button and reattaches click handler", async () => {
     const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
     const { resetBattleUI } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
-    const btn = document.getElementById("next-button");
+    const btn = document.querySelector('[data-testid="next-button"]');
     btn.dataset.nextReady = "true";
     resetBattleUI();
-    const cloned = document.getElementById("next-button");
+    const cloned = document.querySelector('[data-testid="next-button"]');
     expect(cloned).not.toBe(btn);
     expect(cloned.disabled).toBe(true);
     expect(cloned.dataset.nextReady).toBeUndefined();
@@ -111,7 +112,7 @@ describe("classicBattle battle control state", () => {
     const { initQuitButton } = await import("../../../src/helpers/classicBattle/quitButton.js");
     window.battleStore = createBattleStore();
     initQuitButton(window.battleStore, { quitMatch: mockQuitMatch });
-    document.getElementById("quit-match-button").click();
+    document.querySelector('[data-testid="quit-match"]').click();
     expect(document.getElementById("round-message").textContent).toBe("quit");
     expect(window.location.href).toBe("http://localhost/index.html");
   });

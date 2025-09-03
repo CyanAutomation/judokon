@@ -16,7 +16,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       <div id="opponent-card"></div>
       <p id="round-message"></p>
       <p id="next-round-timer"></p>
-      <button id="next-button" disabled>Next</button>
+      <button id="next-button" data-testid="next-button" disabled>Next</button>
       <div id="snackbar-container"></div>
     `;
     // Use minimal 1s cooldown for auto-advance

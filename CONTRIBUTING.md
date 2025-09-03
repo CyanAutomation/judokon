@@ -9,6 +9,11 @@ The project ships directly as static ES modules without a build step.
 
 When running terminal searches like `grep` or `find`, exclude `client_embeddings.json` and `offline_rag_metadata.json` to prevent output overflow. See [AGENTS.md](./AGENTS.md#terminal-safety) for details.
 
+### Data Test IDs
+
+- Include a `data-testid` on interactive elements needed for automation.
+- Keep existing `id` attributes for runtime hooks but query via `data-testid` in tests.
+
 ---
 
 ## ✅ Required Programmatic Checks

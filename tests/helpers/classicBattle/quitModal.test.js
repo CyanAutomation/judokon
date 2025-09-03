@@ -38,7 +38,7 @@ import { showResult } from "../../../src/helpers/battle/index.js";
 
 describe("quitModal", () => {
   it("calls battleEngine.quitMatch when confirmed", () => {
-    document.body.innerHTML = '<button id="quit-match-button"></button>';
+    document.body.innerHTML = '<button id="quit-match-button" data-testid="quit-match"></button>';
     const store = createBattleStore();
     quitMatch(store);
     const confirm = document.getElementById("confirm-quit-button");
