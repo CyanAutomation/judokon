@@ -78,13 +78,11 @@ export async function advanceWhenReady(btn, resolveReady) {
 export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   if (timer) {
     timer.stop();
-    try {
-      const { state } = getStateSnapshot();
-      void state;
-    } catch {}
+    // Clear existing handler before advancing so the next round's handler
+    // installed during `ready` remains intact.
+    setSkipHandler(null);
     await dispatchBattleEvent("ready");
     if (typeof resolveReady === "function") resolveReady();
-    setSkipHandler(null);
     return;
   }
   // No active timer controls: if we're in cooldown (or state is unknown in
@@ -92,9 +90,9 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   try {
     const { state } = getStateSnapshot();
     if (state === "cooldown" || !state) {
+      setSkipHandler(null);
       await dispatchBattleEvent("ready");
       if (typeof resolveReady === "function") resolveReady();
-      setSkipHandler(null);
     }
   } catch {}
 }

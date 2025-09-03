@@ -59,6 +59,27 @@ describe("timerService next round handling", () => {
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
   });
 
+  it("preserves skip handler after manual skip", async () => {
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const { nextButton } = createTimerNodes();
+
+    let controls = roundMod.startCooldown({}, scheduler);
+    nextButton.onclick = (e) => timerMod.onNextButtonClick(e, controls);
+    scheduler.tick(100);
+    nextButton.click();
+    await controls.ready;
+
+    controls = roundMod.startCooldown({}, scheduler);
+    nextButton.onclick = (e) => timerMod.onNextButtonClick(e, controls);
+    scheduler.tick(100);
+    nextButton.click();
+    await controls.ready;
+
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(4);
+  });
+
   it("stopping timer dispatches ready immediately", async () => {
     const { cancelTimerOrAdvance } = await import(
       "../../../src/helpers/classicBattle/timerService.js"
