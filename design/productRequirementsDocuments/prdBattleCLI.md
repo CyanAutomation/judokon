@@ -83,7 +83,7 @@ The animated Classic Battle UI can be heavy for low-spec devices and noisy for p
 | ------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **P1** | **Engine Parity**       | Reuse the Classic Battle engine/state table verbatim; no logic forks.                                                                                             |
 | **P1** | **Text Renderer**       | Render prompts, countdown, stat list (with numeric hotkeys), outcome, and score in a monospace pane. No images/animations.                                        |
-| **P1** | **Keyboard Controls**   | `1–9` select stat; `Enter`/`Space` advance; `H` help; `Q` quit/confirm; keys are debounced per state. Stat selection can be overwritten before timeout.           |
+| **P1** | **Keyboard Controls**   | `1–5` select stat; `Enter`/`Space` advance; `H` help; `Q` quit/confirm; keys are debounced per state. Stat selection can be overwritten before timeout.           |
 | **P1** | **Pointer/Touch**       | Click/tap on stat rows to select (≥44px tall targets); a visible **Next** control appears post-round.                                                             |
 | **P1** | **Timer Display**       | 1 Hz textual countdown for selection window; expiry behavior mirrors engine (see Feature Flags).                                                                  |
 | **P1** | **Outcome & Score**     | Print Win/Loss/Draw and show both compared values; update score immediately.                                                                                      |
@@ -110,7 +110,7 @@ The animated Classic Battle UI can be heavy for low-spec devices and noisy for p
 ### Layout (single column, desktop & mobile)
 
 +––––––––––––––––––––––––––+
-| Classic Battle — CLI Round 2 Target: 5 🏆 |
+| Classic Battle — CLI Round 2 Target: 5   |
 | [State: waitingForPlayerAction] [Score: 1–1] |
 +––––––––––––––––––––––––––+
 
@@ -123,9 +123,9 @@ Choose a stat:
 (5) Ne-waza …….. 7
 
 Last round: You WON (Technique 9 vs 7)  
-[Next ▸] (Enter / Space)
+Match Outcome: You WON (9 vs 7)
 
-Shortcuts: [1–9] Select [Enter]/[Space] Next [H] Help [Q] Quit
+Shortcuts: [1–5] Select [Enter]/[Space] Next [H] Help [Q] Quit
 
 **Sections**
 
@@ -133,38 +133,18 @@ Shortcuts: [1–9] Select [Enter]/[Space] Next [H] Help [Q] Quit
 - **Prompt Area:** timer + instruction.
 - **Stat List:** numbered rows; whole row is focusable/clickable; shows value; each row ≥44px tall for tap targets.
 - **Round Message:** outcome and compared values.
-- **Primary Action:** visible “Next” control after outcome.
 - **Shortcuts/Help:** inline hints; help panel toggled with `H`.
 - **Settings (collapsible):** win target, seed, verbose toggle (remembered).
 
 **Focus & Navigation**
 
-- On stat selection phase: focus moves to the **stat list container**; arrow keys cycle rows; `1–9` selects. Previous selections can be overwritten before timeout.
-- After outcome: focus moves to **Next**.
+- On stat selection phase: focus moves to the **stat list container**; arrow keys cycle rows; `1–9` selects. 
 - Opening Help/Settings moves focus inside; closing restores prior focus.
 
 **Styling**
 
 - Monospace font; ≥4.5:1 contrast; visible focus ring; minimal CSS only.
 - Optional “retro” look is acceptable if contrast/accessibility are preserved.
-
-**Wireframe (sample)**
-
-┌──────────────────────────────┐
-│ Classic Battle CLI Round 2 │
-│ [State: waiting] Score 1-1 │
-└──────────────────────────────┘
-[Timer: 05]
-Choose a stat:
-(1) Power: 8
-(2) Speed: 7
-(3) Technique: 9
-(4) Kumi-kata: 6
-(5) Ne-waza: 7
-
-Outcome: You WON (9 vs 7)
-[Next ▸]
-Shortcuts: 1-9 | Enter/Space | H Help | Q Quit
 
 **DOM & Test Hooks**
 
@@ -185,15 +165,6 @@ Shortcuts: 1-9 | Enter/Space | H Help | Q Quit
 
 ---
 
-## Performance & Footprint
-
-- **Cold interactive:** ≤ **500 ms** after network idle on average laptop/desktop.
-- **Memory:** steady-state **< 30 MB** in typical play.
-- **No hot-path dynamic imports** inside selection, decision, or render loops.
-- Minimal CSS/JS; no images, fonts beyond monospace stack, or large bundles.
-
----
-
 ## Observability & Telemetry
 
 - Optional verbose pane (flagged) listing **timestamped** state transitions, inputs, and timer ticks.
@@ -206,7 +177,6 @@ Shortcuts: 1-9 | Enter/Space | H Help | Q Quit
 
 - **Invalid Keys:** ignore, optionally show small hint: “Press H for help.”
 - **Rapid Multi-Input:** first input per state wins; subsequent inputs ignored until next state.
-- **Stat Re-selection:** if player presses another key before timeout, the new selection overwrites the previous one.
 - **Tab Hidden / Sleep:** timers pause on `visibilitychange`/`pagehide` and resume on return; no double-fires.
 - **Unexpected Error:** show readable message and roll back to last safe state per engine contract.
 - **Quit During Countdown:** quit confirmation pauses timer; cancel resumes countdown; confirm exits per rules.
@@ -222,8 +192,7 @@ Shortcuts: 1-9 | Enter/Space | H Help | Q Quit
 
 ### Keyboard
 
-- **Given** stat selection, **when** the user presses `1–9` for a visible stat, **then** that stat is selected once and input is debounced until next state.
-- **Given** stat selection, **when** the user presses another valid stat before timeout, **then** the selection updates to the new stat.
+- **Given** stat selection, **when** the user presses `1–5` for a visible stat, **then** that stat is selected once and input is debounced until next state.
 - **Given** round resolved, **when** `Enter` or `Space` is pressed, **then** next phase begins (or next round if in cooldown).
 - **Given** active match, **when** `Q` is pressed, **then** a quit confirmation appears; **confirm** ends/rolls back per rules; **cancel** resumes timers.
 - **Given** help is hidden, **when** `H` is pressed, **then** help opens and is closable via `H` or Close.
@@ -297,10 +266,9 @@ Shortcuts: 1-9 | Enter/Space | H Help | Q Quit
 
 - [ ] 3.0 Input & Controls
   - [ ] 3.1 Implement keyboard controls: digits for stats, Enter/Space for next, H for help, Q for quit
-  - [ ] 3.2 Add pointer/touch support for stat rows and Next button
+  - [ ] 3.2 Add pointer/touch support for stat rows
   - [ ] 3.3 Implement debounce logic to prevent rapid multi-input
-  - [ ] 3.4 Allow overwriting stat selection before timeout
-  - [ ] 3.5 Implement quit confirmation cancel/resume flow
+  - [ ] 3.4 Implement quit confirmation cancel/resume flow
 
 - [ ] 4.0 Accessibility & Hooks
   - [ ] 4.1 Add aria-live and role=status announcements
