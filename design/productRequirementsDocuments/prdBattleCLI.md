@@ -247,8 +247,6 @@ Additional test-contract details and page-level helpers
 - Settings storage helper (for points-to-win, flags, seed).
 - Logger utility capable of CI silencing.
 
- 
-
 ---
 
 ## Open Questions

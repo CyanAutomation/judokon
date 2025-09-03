@@ -28,6 +28,8 @@ For debugging or automated tests, append `?autostart=1` to `battleJudoka.html` t
 Note on Next button behavior:
 - The `Next` button advances only during the inter-round cooldown. It remains disabled while choosing a stat to avoid skipping the cooldown logic accidentally. The cooldown enables `Next` (or auto-advances in test mode); do not expect `Next` to be ready during stat selection.
 
+See [design/battleMarkup.md](design/battleMarkup.md) for the canonical DOM ids used by classic battle scripts.
+
 ## 🔌 Engine API
 
 ```js
