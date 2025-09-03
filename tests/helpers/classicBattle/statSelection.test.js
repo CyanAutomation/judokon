@@ -177,12 +177,12 @@ describe("classicBattle stat selection", () => {
       const eventDispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
       setPointsToWin(pointsToWin);
       eventDispatcher.__reset();
+      document.getElementById("player-card").innerHTML =
+        `<ul><li class="stat"><strong>Power</strong> <span>${playerStat}</span></li></ul>`;
+      document.getElementById("opponent-card").innerHTML =
+        `<ul><li class="stat"><strong>Power</strong> <span>${opponentStat}</span></li></ul>`;
 
       for (let i = 0; i < rounds; i++) {
-        document.getElementById("player-card").innerHTML =
-          `<ul><li class="stat"><strong>Power</strong> <span>${playerStat}</span></li></ul>`;
-        document.getElementById("opponent-card").innerHTML =
-          `<ul><li class="stat"><strong>Power</strong> <span>${opponentStat}</span></li></ul>`;
         await selectStat("power");
       }
 
