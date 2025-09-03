@@ -293,6 +293,11 @@ export async function renderOpponentCard(judoka, container) {
 export function enableNextRoundButton() {
   const btn = document.getElementById("next-button");
   if (!btn) return;
+  // Guard: cooldown exclusively owns Next readiness
+  try {
+    const { state } = getStateSnapshot();
+    if (state !== "cooldown") return;
+  } catch {}
   btn.disabled = false;
   btn.dataset.nextReady = "true";
 }

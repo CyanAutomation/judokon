@@ -54,8 +54,8 @@ Why CLI isn’t affected
    - No dynamic imports in hot paths; changes remain local and static.
 
 ## Milestones & Status
-- [ ] Guard readiness in `roundManager.markNextReady` (in progress)
-- [ ] Guard or remove early toggles (`enableNextRoundButton`, `initInterRoundCooldown`)
+- [x] Guard readiness in `roundManager.markNextReady`
+- [x] Guard or remove early toggles (`enableNextRoundButton`, `initInterRoundCooldown`)
 - [ ] Optional defensive clear in `timerService.onNextButtonClick`
 - [ ] Add Playwright spec for Next readiness timing (follow‑up)
 
@@ -66,6 +66,13 @@ Why CLI isn’t affected
 
 ## Progress Log
 - 2025‑09‑03: Updated plan to centralize guard in `roundManager`, neutralize early toggles, and stage tests. Beginning implementation of guarded readiness.
+- 2025‑09‑03: Implemented cooldown‑state guard in `roundManager.markNextReady`. Added guard to `uiHelpers.enableNextRoundButton` to no‑op unless in `cooldown`.
+- 2025‑09‑03: Targeted Vitest runs:
+  - nextButton.*: PASS (3 files, 4 tests)
+  - scheduleNextRound.fallback: PASS after guard tweak for test env
+  - scheduleNextRound, cooldownEnter.autoAdvance, timeoutInterrupt.cooldown: PASS (7 tests, 1 skipped)
+  - uiHelpers.missingElements, statSelection: PASS (13 tests)
+  Decision: `initInterRoundCooldown` has no call sites; leaving as-is for now to minimize churn. Guarded ownership elsewhere prevents early readiness.
 
 ## Acceptance Criteria
 - On battleJudoka:

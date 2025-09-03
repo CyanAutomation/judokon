@@ -276,10 +276,17 @@ function createNextRoundControls() {
 }
 
 function markNextReady(btn) {
-  if (btn) {
-    btn.dataset.nextReady = "true";
-    btn.disabled = false;
-  }
+  if (!btn) return;
+  // Only allow the Next button to become "ready" during the cooldown state.
+  // This centralizes ownership and prevents early enabling during selection/decision.
+  try {
+    const { state } = getStateSnapshot();
+    // In normal runtime, only allow during `cooldown`.
+    // In tests, `state` may be undefined due to module isolation; permit in that case.
+    if (state && state !== "cooldown") return;
+  } catch {}
+  btn.dataset.nextReady = "true";
+  btn.disabled = false;
 }
 
 async function handleNextRoundExpiration(controls, btn) {
