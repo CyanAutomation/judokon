@@ -882,7 +882,7 @@ export function setupNextButton() {
     btn = document.querySelector('[data-role="next-round"]');
     if (!btn) {
       console.warn("[uiHelpers] next round button missing");
-      return;
+      throw new Error("setupNextButton: next round button missing");
     }
   }
   btn.addEventListener("click", onNextButtonClick);

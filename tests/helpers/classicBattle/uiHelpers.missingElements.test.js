@@ -8,17 +8,30 @@ describe("uiHelpers element assertions", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    document.body.innerHTML = "";
   });
 
-  it("warns and returns when next round button is missing", async () => {
+  it("throws when next round button selectors are missing", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
-    mod.setupNextButton();
+    expect(() => mod.setupNextButton()).toThrow("setupNextButton: next round button missing");
     expect(warnSpy).toHaveBeenNthCalledWith(
       1,
       '[uiHelpers] #next-button missing, falling back to [data-role="next-round"]'
     );
     expect(warnSpy).toHaveBeenNthCalledWith(2, "[uiHelpers] next round button missing");
+  });
+
+  it('warns but continues when only [data-role="next-round"] exists', async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const btn = document.createElement("button");
+    btn.setAttribute("data-role", "next-round");
+    document.body.appendChild(btn);
+    const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+    expect(() => mod.setupNextButton()).not.toThrow();
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[uiHelpers] #next-button missing, falling back to [data-role="next-round"]'
+    );
   });
 
   it("falls back to data-role when #next-button is missing", async () => {
