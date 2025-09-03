@@ -24,4 +24,15 @@ describe("uiHelpers missing element warnings", () => {
     expect(warnSpy).toHaveBeenCalledWith("[uiHelpers] #stat-buttons container not found");
     await expect(window.statButtonsReadyPromise).resolves.toBeUndefined();
   });
+
+  it("resets and resolves stat buttons promise when resolver missing", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+    window.statButtonsReadyPromise = new Promise(() => {});
+    // simulate missing resolver
+    delete window.__resolveStatButtonsReady;
+    mod.initStatButtons({});
+    expect(warnSpy).toHaveBeenCalledWith("[uiHelpers] #stat-buttons container not found");
+    await expect(window.statButtonsReadyPromise).resolves.toBeUndefined();
+  });
 });

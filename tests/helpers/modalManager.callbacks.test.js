@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { registerModal, onEsc, offEsc } from "../../src/helpers/modalManager.js";
+import { withMutedConsole } from "../utils/console.js";
 
 describe("modal manager callbacks", () => {
   it("notifies callbacks with overlay before closing", () => {
@@ -13,14 +14,16 @@ describe("modal manager callbacks", () => {
     offEsc(cb);
   });
 
-  it("removes overlay even if close throws", () => {
+  it("removes overlay even if close throws", async () => {
     const overlay = {
       close: vi.fn(() => {
         throw new Error("boom");
       })
     };
     registerModal(overlay);
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await withMutedConsole(() => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    });
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(overlay.close).toHaveBeenCalledTimes(1);
   });

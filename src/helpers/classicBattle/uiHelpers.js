@@ -1140,7 +1140,14 @@ export function initStatButtons(store) {
   if (!statContainer) {
     guard(() => {
       console.warn("[uiHelpers] #stat-buttons container not found");
-      if (typeof window !== "undefined") window.__resolveStatButtonsReady?.();
+      if (typeof window !== "undefined") {
+        if (typeof window.__resolveStatButtonsReady !== "function") {
+          const { resolve } = resetStatButtonsReadyPromise();
+          resolve();
+        } else {
+          window.__resolveStatButtonsReady();
+        }
+      }
     });
     return { enable: () => {}, disable: () => {} };
   }
