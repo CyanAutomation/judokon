@@ -858,15 +858,12 @@ export function registerRoundStartErrorHandler(retryFn) {
  *
  * @pseudocode
  * 1. Query `#next-button`.
- * 2. If not found, warn and exit.
+ * 2. If not found, throw an error.
  * 3. Bind `onNextButtonClick` to `click`.
  */
 export function setupNextButton() {
   const btn = document.getElementById("next-button");
-  if (!btn) {
-    guard(() => console.warn("[uiHelpers] #next-button not found"));
-    return;
-  }
+  if (!btn) throw new Error("setupNextButton: #next-button missing");
   btn.addEventListener("click", onNextButtonClick);
 }
 
@@ -1120,14 +1117,13 @@ export function clearScoreboardAndMessages() {
  * 1. TODO: Add pseudocode
  */
 /**
- * @summary Initialize stat selection buttons; warn when container missing.
+ * @summary Initialize stat selection buttons; assert DOM nodes.
  *
- * Logs a warning and resolves the readiness promise when the container is
- * absent.
+ * Throws when the container is missing and warns when no buttons are found.
  *
  * @pseudocode
- * 1. Locate `#stat-buttons`; warn and return noop controls if absent.
- * 2. Gather buttons and helpers to toggle enabled state.
+ * 1. Locate `#stat-buttons`; throw if absent.
+ * 2. Gather buttons; warn and return noop controls when empty.
  * 3. Disable buttons initially.
  * 4. Wire click and keyboard handlers for stat selection.
  * 5. Return an API `{ enable, disable }`.
@@ -1138,21 +1134,31 @@ export function clearScoreboardAndMessages() {
 export function initStatButtons(store) {
   const statContainer = document.getElementById("stat-buttons");
   if (!statContainer) {
-    guard(() => {
-      console.warn("[uiHelpers] #stat-buttons container not found");
-      if (typeof window !== "undefined") {
-        if (typeof window.__resolveStatButtonsReady !== "function") {
-          const { resolve } = resetStatButtonsReadyPromise();
-          resolve();
-        } else {
-          window.__resolveStatButtonsReady();
-        }
+    if (typeof window !== "undefined") {
+      if (typeof window.__resolveStatButtonsReady !== "function") {
+        const { resolve } = resetStatButtonsReadyPromise();
+        resolve();
+      } else {
+        window.__resolveStatButtonsReady();
       }
-    });
-    return { enable: () => {}, disable: () => {} };
+    }
+    throw new Error("initStatButtons: #stat-buttons missing");
   }
 
   const statButtons = statContainer.querySelectorAll("button");
+  if (!statButtons.length) {
+    if (typeof window !== "undefined") {
+      if (typeof window.__resolveStatButtonsReady !== "function") {
+        const { resolve } = resetStatButtonsReadyPromise();
+        resolve();
+      } else {
+        window.__resolveStatButtonsReady();
+      }
+    }
+    guard(() => console.warn("[uiHelpers] #stat-buttons has no buttons"));
+    return { enable: () => {}, disable: () => {} };
+  }
+
   let resolveReady = typeof window !== "undefined" ? window.__resolveStatButtonsReady : undefined;
   const resetReadyPromise = () => {
     ({ resolve: resolveReady } = resetStatButtonsReadyPromise());

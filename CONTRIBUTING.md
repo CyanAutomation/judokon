@@ -136,6 +136,12 @@ To keep CI and local runs readable, **no test should emit unsilenced `console.wa
 
 ---
 
+### Classic Battle DOM Guardrails
+
+Battle helpers such as `setupNextButton` and `initStatButtons` throw when key elements (e.g. `#next-button`, `#stat-buttons`) are missing. Tests must either provide these nodes or assert the thrown errors to avoid unintended failures.
+
+---
+
 ## 🧭 Module Loading Policy
 
 Use static imports for hot paths and always-required modules; use dynamic imports with preload for optional or heavy features. See the canonical [Module Loading Policy for Agents](./AGENTS.md#module-loading-policy-for-agents) for the full policy.

@@ -36,7 +36,9 @@ function createBattleDom() {
   machineState.id = "machine-state";
   const badge = document.createElement("span");
   badge.id = "battle-state-badge";
-  document.body.append(header, battleArea, stats, progressEl, machineState, badge);
+  const next = document.createElement("button");
+  next.id = "next-button";
+  document.body.append(header, battleArea, stats, progressEl, machineState, badge, next);
 }
 
 describe("battleStateProgress updates on object-shaped battleStateChange", () => {

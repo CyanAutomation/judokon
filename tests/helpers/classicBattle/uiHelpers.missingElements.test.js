@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-describe("uiHelpers missing element warnings", () => {
+describe("uiHelpers element assertions", () => {
   beforeEach(() => {
     vi.resetModules();
     document.body.innerHTML = "";
@@ -10,29 +10,32 @@ describe("uiHelpers missing element warnings", () => {
     vi.restoreAllMocks();
   });
 
-  it("warns when next button is missing", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("throws when next button is missing", async () => {
     const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
-    mod.setupNextButton();
-    expect(warnSpy).toHaveBeenCalledWith("[uiHelpers] #next-button not found");
+    expect(() => mod.setupNextButton()).toThrow("setupNextButton: #next-button missing");
   });
 
-  it("warns when stat buttons container is missing", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("throws when stat buttons container is missing", async () => {
     const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
-    mod.initStatButtons({});
-    expect(warnSpy).toHaveBeenCalledWith("[uiHelpers] #stat-buttons container not found");
+    expect(() => mod.initStatButtons({})).toThrow("initStatButtons: #stat-buttons missing");
     await expect(window.statButtonsReadyPromise).resolves.toBeUndefined();
   });
 
-  it("resets and resolves stat buttons promise when resolver missing", async () => {
+  it("warns when no stat buttons are found", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const container = document.createElement("div");
+    container.id = "stat-buttons";
+    document.body.appendChild(container);
     const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
-    window.statButtonsReadyPromise = new Promise(() => {});
-    // simulate missing resolver
-    delete window.__resolveStatButtonsReady;
     mod.initStatButtons({});
-    expect(warnSpy).toHaveBeenCalledWith("[uiHelpers] #stat-buttons container not found");
+    expect(warnSpy).toHaveBeenCalledWith("[uiHelpers] #stat-buttons has no buttons");
+  });
+
+  it("resolves stat button promise when resolver missing", async () => {
+    window.statButtonsReadyPromise = new Promise(() => {});
+    delete window.__resolveStatButtonsReady;
+    const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+    expect(() => mod.initStatButtons({})).toThrow("initStatButtons: #stat-buttons missing");
     await expect(window.statButtonsReadyPromise).resolves.toBeUndefined();
   });
 });

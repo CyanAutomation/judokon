@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 beforeEach(() => {
   document.body.innerHTML = "";
+  const next = document.createElement("button");
+  next.id = "next-button";
+  document.body.appendChild(next);
   localStorage.clear();
   vi.resetModules();
   vi.doUnmock("../../src/helpers/settingsStorage.js");
