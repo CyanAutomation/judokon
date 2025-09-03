@@ -6,7 +6,7 @@ import {
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 describe("battleCLI onKeyDown", () => {
-  let onKeyDown, __test, store, dispatchSpy;
+  let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy;
 
   beforeEach(async () => {
     vi.resetModules();
@@ -30,7 +30,7 @@ describe("battleCLI onKeyDown", () => {
         return btn;
       }
     }));
-    ({ onKeyDown, __test } = await import("../../src/pages/battleCLI.js"));
+    ({ onKeyDown, __test, getEscapeHandledPromise } = await import("../../src/pages/battleCLI.js"));
     document.body.innerHTML = `
       <div id="cli-root">
         <div id="cli-main"></div>
@@ -61,6 +61,20 @@ describe("battleCLI onKeyDown", () => {
     expect(sec.hidden).toBe(false);
     onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
     expect(sec.hidden).toBe(true);
+  });
+
+  it("closes shortcuts with Escape and restores focus", async () => {
+    const focusBtn = document.createElement("button");
+    document.getElementById("cli-main").appendChild(focusBtn);
+    focusBtn.focus();
+    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    const sec = document.getElementById("cli-shortcuts");
+    expect(sec.hidden).toBe(false);
+    const handled = getEscapeHandledPromise();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await handled;
+    expect(sec.hidden).toBe(true);
+    expect(document.activeElement).toBe(focusBtn);
   });
 
   // Retro mode was removed; no longer handles 'R'.
@@ -102,7 +116,7 @@ describe("battleCLI onKeyDown", () => {
     expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
   });
 
-  it("resumes timers when quit modal dismissed with Escape", () => {
+  it("resumes timers when quit modal dismissed with Escape", async () => {
     document.body.dataset.battleState = "waitingForPlayerAction";
     const selT = setTimeout(() => {}, 1000);
     const selI = setInterval(() => {}, 1000);
@@ -110,8 +124,14 @@ describe("battleCLI onKeyDown", () => {
     const countdown = document.getElementById("cli-countdown");
     countdown.dataset.remainingTime = "3";
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    const confirm = document.getElementById("confirm-quit-button");
+    expect(confirm).toBeTruthy();
+    const handled = getEscapeHandledPromise();
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await handled;
     expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
+    const backdrop = confirm.closest(".modal-backdrop");
+    expect(backdrop?.hasAttribute("hidden")).toBe(true);
   });
 
   it("resumes timers when backdrop is clicked", () => {
