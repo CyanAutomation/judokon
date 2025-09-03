@@ -3,14 +3,12 @@ import { readFileSync } from "fs";
 
 const PAGES = ["battleJudoka", "battleClassic"];
 
-const REQUIRED = [
-  { id: "next-button", testId: "next-button" },
-  { id: "stat-help", testId: "stat-help" },
-  { id: "quit-match-button", testId: "quit-match" }
-];
+const REQUIRED_SELECTORS = ['[data-role="next-round"]', "#stat-help", "#quit-match-button"];
 
-function getMissingIds(root, ids) {
-  return ids.filter((id) => !root.querySelector(`#${id}`));
+const REQUIRED_TEST_IDS = ["next-button", "stat-help", "quit-match"];
+
+function getMissingSelectors(root, selectors) {
+  return selectors.filter((s) => !root.querySelector(s));
 }
 
 function getMissingTestIds(root, testIds) {
@@ -24,15 +22,12 @@ describe.each(PAGES)("%s.html required hooks", (page) => {
   });
 
   it("includes all required IDs", () => {
-    const missing = getMissingIds(document, [...REQUIRED.map((r) => r.id), "stat-buttons"]);
+    const missing = getMissingSelectors(document, [...REQUIRED_SELECTORS, "#stat-buttons"]);
     expect(missing).toEqual([]);
   });
 
   it("includes all required data-testid attributes", () => {
-    const missing = getMissingTestIds(
-      document,
-      REQUIRED.map((r) => r.testId)
-    );
+    const missing = getMissingTestIds(document, REQUIRED_TEST_IDS);
     expect(missing).toEqual([]);
     const statButtons = document.querySelectorAll("#stat-buttons button");
     statButtons.forEach((btn) => expect(btn.getAttribute("data-testid")).toBe("stat-button"));
@@ -41,10 +36,12 @@ describe.each(PAGES)("%s.html required hooks", (page) => {
   it("detects when a data-testid is missing", () => {
     const el = document.querySelector('[data-testid="stat-help"]');
     el?.removeAttribute("data-testid");
-    const missing = getMissingTestIds(
-      document,
-      REQUIRED.map((r) => r.testId)
-    );
+    const missing = getMissingTestIds(document, REQUIRED_TEST_IDS);
     expect(missing).toEqual(["stat-help"]);
+  });
+
+  it("next button has id next-button", () => {
+    const next = document.querySelector('[data-role="next-round"]');
+    expect(next?.id).toBe("next-button");
   });
 });

@@ -90,7 +90,7 @@ describe("timerService", () => {
   it("enables next round when skipped before cooldown starts", async () => {
     const btn = document.createElement("button");
     btn.id = "next-button";
-    btn.setAttribute("data-testid", "next-button");
+    btn.setAttribute("data-role", "next-round");
     btn.classList.add("disabled");
     document.body.appendChild(btn);
     const timerEl = document.createElement("div");

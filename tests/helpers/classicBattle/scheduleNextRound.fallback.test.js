@@ -58,7 +58,7 @@ describe("startCooldown fallback timer", () => {
 
   it("resolves ready after fallback timer and enables button", async () => {
     const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
-    const btn = document.querySelector('[data-testid="next-button"]');
+    const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;
     const controls = startCooldown({}, scheduler);
     let resolved = false;

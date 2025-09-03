@@ -38,6 +38,7 @@ function createBattleDom() {
   badge.id = "battle-state-badge";
   const next = document.createElement("button");
   next.id = "next-button";
+  next.setAttribute("data-role", "next-round");
   document.body.append(header, battleArea, stats, progressEl, machineState, badge, next);
 }
 
