@@ -123,10 +123,21 @@ export function getEscapeHandledPromise() {
   return escapeHandledPromise;
 }
 
+/**
+ * Resolve any pending Escape promise and create a new one.
+ *
+ * @pseudocode
+ * IF `escapeHandledResolve` exists
+ *   call `escapeHandledResolve`
+ * ENDIF
+ * create new promise assigning resolver to `escapeHandledResolve`
+ */
 function resolveEscapeHandled() {
   try {
     escapeHandledResolve?.();
-  } catch {}
+  } catch {
+    // Ignore if previous promise already settled
+  }
   escapeHandledPromise = new Promise((r) => {
     escapeHandledResolve = r;
   });
@@ -136,7 +147,9 @@ try {
   window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
     getEscapeHandledPromise
   });
-} catch {}
+} catch {
+  // Ignore in non-browser environments where `window` is undefined
+}
 const statDisplayNames = {};
 let cachedStatDefs = null;
 
@@ -796,6 +809,20 @@ export function autostartBattle() {
   } catch {}
 }
 
+/**
+ * Activate a stat row and update roving focus.
+ *
+ * @pseudocode
+ * 1. Retrieve `#cli-stats`; abort if list or row missing.
+ * 2. Set `tabIndex` 0 on the row and -1 on others.
+ * 3. Ensure the row has an `id` and mirror it to `aria-activedescendant`.
+ * 4. Focus the row when `focus` is true.
+ *
+ * @param {HTMLElement} row - The stat row to activate.
+ * @param {object} [options] - Options for activation.
+ * @param {boolean} [options.focus=true] - Whether to move focus to the row.
+ * @returns {void}
+ */
 function setActiveStatRow(row, { focus = true } = {}) {
   const list = byId("cli-stats");
   if (!list || !row) return;
@@ -810,6 +837,18 @@ function setActiveStatRow(row, { focus = true } = {}) {
   if (focus) row.focus();
 }
 
+/**
+ * Handle arrow-key navigation within the stat list.
+ *
+ * @pseudocode
+ * 1. Collect all stat rows; bail if none exist.
+ * 2. Determine the current row; default based on key if none.
+ * 3. Adjust index by direction, wrapping with modulo.
+ * 4. Activate the new row and report handled.
+ *
+ * @param {"ArrowUp"|"ArrowDown"|"ArrowLeft"|"ArrowRight"} key - Pressed arrow key.
+ * @returns {boolean} Whether the key was handled.
+ */
 function handleStatListArrowKey(key) {
   const list = byId("cli-stats");
   const rows = list ? Array.from(list.querySelectorAll(".cli-stat")) : [];
