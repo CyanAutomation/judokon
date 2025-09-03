@@ -1,0 +1,58 @@
+{
+  "cli-root": {
+    "id": "cli-root",
+    "role": null,
+    "ariaLive": null,
+    "hidden": false,
+    "text": "Home\n           |  Classic Battle (CLI)\n          State: —\n        \n        \n        \n          Round 0 of 0\n          \n            You: 0 Opponent: 0\n          \n        \n      \n\n      \n        \n     "
+  },
+  "cli-header": {
+    "id": "cli-header",
+    "role": "banner",
+    "ariaLive": null,
+    "hidden": false,
+    "text": "Home\n           |  Classic Battle (CLI)\n          State: —\n        \n        \n        \n          Round 0 of 0\n          \n            You: 0 Opponent: 0"
+  },
+  "cli-round": {
+    "id": "cli-round",
+    "role": null,
+    "ariaLive": null,
+    "hidden": false,
+    "text": "Round 0 of 0"
+  },
+  "cli-score": {
+    "id": "cli-score",
+    "role": null,
+    "ariaLive": null,
+    "hidden": false,
+    "text": "You: 0 Opponent: 0"
+  },
+  "round-message": {
+    "id": "round-message",
+    "role": "status",
+    "ariaLive": "polite",
+    "hidden": false,
+    "text": ""
+  },
+  "cli-stats": {
+    "id": "cli-stats",
+    "role": "listbox",
+    "ariaLive": null,
+    "hidden": false,
+    "text": "(1) —: —\n            (2) —: —\n            (3) —: —\n            (4) —: —\n            (5) —: —"
+  },
+  "cli-controls-hint": {
+    "id": "cli-controls-hint",
+    "role": null,
+    "ariaLive": null,
+    "hidden": false,
+    "text": "[1–5] Stats · [Enter/Space] Next · [H] Help · [Q] Quit"
+  },
+  "snackbar-container": {
+    "id": "snackbar-container",
+    "role": null,
+    "ariaLive": null,
+    "hidden": false,
+    "text": ""
+  }
+}

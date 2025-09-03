@@ -1,0 +1,85 @@
+{
+  "role": "WebArea",
+  "name": "JU-DO-KON! – Classic Battle CLI",
+  "children": [
+    {
+      "role": "link",
+      "name": "Skip to main content"
+    },
+    {
+      "role": "link",
+      "name": "Return to home"
+    },
+    {
+      "role": "text",
+      "name": "  |  Classic Battle (CLI)"
+    },
+    {
+      "role": "text",
+      "name": "Round 0 of 0"
+    },
+    {
+      "role": "text",
+      "name": "\n            You: 0 Opponent: 0\n          "
+    },
+    {
+      "role": "text",
+      "name": "Match Settings"
+    },
+    {
+      "role": "button",
+      "name": "Settings ▾",
+      "expanded": true
+    },
+    {
+      "role": "text",
+      "name": "Win target:"
+    },
+    {
+      "role": "combobox",
+      "name": "Points to win",
+      "haspopup": "menu",
+      "children": [
+        {
+          "role": "option",
+          "name": "5"
+        },
+        {
+          "role": "option",
+          "name": "10",
+          "selected": true
+        },
+        {
+          "role": "option",
+          "name": "15"
+        }
+      ],
+      "value": "10"
+    },
+    {
+      "role": "text",
+      "name": "Verbose:"
+    },
+    {
+      "role": "checkbox",
+      "name": "Toggle verbose logging",
+      "checked": false
+    },
+    {
+      "role": "text",
+      "name": "Seed:"
+    },
+    {
+      "role": "spinbutton",
+      "name": "Deterministic seed (optional)",
+      "valuetext": "",
+      "valuemin": 0,
+      "valuemax": 0
+    },
+    {
+      "role": "listbox",
+      "name": "Select a stat with number keys 1–5",
+      "orientation": "vertical"
+    }
+  ]
+}

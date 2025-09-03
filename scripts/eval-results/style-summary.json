@@ -1,0 +1,21 @@
+{
+  "body": {
+    "background": "rgb(11, 12, 12)",
+    "color": "rgb(242, 242, 242)",
+    "contrastTextOnBg": 17.496491067187225
+  },
+  "header": {
+    "background": "rgba(0, 0, 0, 0)",
+    "color": "rgb(242, 242, 242)"
+  },
+  "sampleStat": {
+    "text": "(1) —: —",
+    "background": "rgb(18, 18, 18)",
+    "color": "rgb(242, 242, 242)",
+    "contrastTextOnBg": 16.734034721106067
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  }
+}
