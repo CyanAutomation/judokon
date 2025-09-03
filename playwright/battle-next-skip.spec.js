@@ -11,11 +11,11 @@ import { waitForBattleReady, waitForBattleState } from "./fixtures/waits.js";
  * 4. Expect the round counter to show round 2 within 1s.
  */
 test.describe("Next button cooldown skip", () => {
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
-    window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+    });
   });
-});
 
   test("advances immediately when clicked", async ({ page }) => {
     await page.goto("/src/pages/battleJudoka.html?autostart=1");
