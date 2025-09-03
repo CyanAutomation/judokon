@@ -107,6 +107,36 @@ let pausedCooldownRemaining = null;
 let ignoreNextAdvanceClick = false;
 let roundResolving = false;
 let shortcutsReturnFocus = null;
+let escapeHandledResolve;
+let escapeHandledPromise = new Promise((r) => {
+  escapeHandledResolve = r;
+});
+
+/**
+ * Return a promise that resolves after the Escape key is handled.
+ *
+ * @pseudocode
+ * return current `escapeHandledPromise`
+ * @returns {Promise<void>} promise resolving when Escape logic finishes
+ */
+export function getEscapeHandledPromise() {
+  return escapeHandledPromise;
+}
+
+function resolveEscapeHandled() {
+  try {
+    escapeHandledResolve?.();
+  } catch {}
+  escapeHandledPromise = new Promise((r) => {
+    escapeHandledResolve = r;
+  });
+}
+
+try {
+  window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
+    getEscapeHandledPromise
+  });
+} catch {}
 const statDisplayNames = {};
 let cachedStatDefs = null;
 
@@ -334,6 +364,29 @@ function updateCliShortcutsVisibility() {
   } else {
     section.style.display = "";
     section.hidden = true;
+  }
+}
+
+/**
+ * Expand the CLI shortcuts panel.
+ *
+ * @pseudocode
+ * if test hook `setShortcutsCollapsed(false)` returns false:
+ *   show shortcuts section and body
+ *   persist expanded state to localStorage
+ *   set close button `aria-expanded` to true
+ */
+function showCliShortcuts() {
+  if (!window.__battleCLIinit?.setShortcutsCollapsed?.(false)) {
+    const body = byId("cli-shortcuts-body");
+    const sec = byId("cli-shortcuts");
+    const close = byId("cli-shortcuts-close");
+    try {
+      localStorage.setItem("battleCLI.shortcutsCollapsed", "0");
+    } catch {}
+    if (body) body.style.display = "";
+    sec?.removeAttribute("hidden");
+    close?.setAttribute("aria-expanded", "true");
   }
 }
 
@@ -976,12 +1029,10 @@ export function handleGlobalKey(key) {
     const sec = byId("cli-shortcuts");
     if (sec) {
       if (sec.hidden) {
-        shortcutsReturnFocus = /** @type {HTMLElement|null} */ (document.activeElement);
-        sec.hidden = false;
+        shortcutsReturnFocus =
+          document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        showCliShortcuts();
         byId("cli-shortcuts-close")?.focus();
-        try {
-          localStorage.setItem("battleCLI.shortcutsCollapsed", "0");
-        } catch {}
       } else {
         hideCliShortcuts();
       }
@@ -995,6 +1046,7 @@ export function handleGlobalKey(key) {
       const sec = byId("cli-shortcuts");
       if (sec && !sec.hidden) hideCliShortcuts();
     }
+    resolveEscapeHandled();
     return true;
   }
   if (key === "q") {
