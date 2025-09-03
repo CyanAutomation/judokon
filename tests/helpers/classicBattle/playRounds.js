@@ -6,7 +6,7 @@
  * @returns {Promise<void>}
  * @pseudocode
  * for i from 0 to times
- *   await selectStat(stat) // stat is the configured stat to select
+ *   await selectStat() // selectStat handles choosing the configured stat
  */
 export async function playRounds(selectStat, times) {
   for (let i = 0; i < times; i++) {
