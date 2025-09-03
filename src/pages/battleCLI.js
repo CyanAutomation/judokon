@@ -31,6 +31,7 @@ import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
+import { SNACKBAR_REMOVE_MS } from "../helpers/constants.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -382,6 +383,28 @@ function showBottomLine(text) {
       } catch {}
     }
   } catch {}
+}
+
+/**
+ * Display a short-lived snackbar hint without clearing the countdown.
+ *
+ * @pseudocode
+ * container = document.getElementById("snackbar-container")
+ * if container missing: return
+ * create div.snackbar.show with message
+ * append to container
+ * after SNACKBAR_REMOVE_MS milliseconds remove div
+ *
+ * @param {string} text - Hint text to display.
+ */
+function showHint(text) {
+  const container = byId("snackbar-container");
+  if (!container) return;
+  const bar = document.createElement("div");
+  bar.className = "snackbar show";
+  bar.textContent = text;
+  container.appendChild(bar);
+  setTimeout(() => bar.remove(), SNACKBAR_REMOVE_MS);
 }
 
 /**
@@ -1014,17 +1037,22 @@ export function handleGlobalKey(key) {
  * @param {string} key - Normalized single-character key value (e.g., '1').
  * @returns {boolean} True when the key was handled and resulted in a selection.
  * @pseudocode
- * if key is between '1' and '9':
- *   lookup stat by index
- *   if stat missing: return false
+ * if key is a digit:
+ *   stat = getStatByIndex(key)
+ *   if stat missing:
+ *     showHint("Use 1-5, press H for help")
+ *     return false
  *   selectStat(stat)
  *   return true
  * return false
  */
 export function handleWaitingForPlayerActionKey(key) {
-  if (key >= "1" && key <= "9") {
+  if (key >= "0" && key <= "9") {
     const stat = getStatByIndex(key);
-    if (!stat) return false;
+    if (!stat) {
+      showHint("Use 1-5, press H for help");
+      return false;
+    }
     selectStat(stat);
     return true;
   }

@@ -300,6 +300,7 @@ When the `enableTestMode` feature flag is active, a debug panel appears above th
 ### Stat Hotkeys
 
 Enable the `statHotkeys` feature flag to map number keys 1–5 to stat buttons for quicker selection. Disabled by default.
+Invalid numeric keys now trigger a hint: "Use 1-5, press H for help".
 
 
 Screenshot suites store their baseline images in `playwright/*-snapshots/`. To skip running these comparison tests locally, set the `SKIP_SCREENSHOTS` environment variable:
