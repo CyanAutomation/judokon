@@ -130,6 +130,8 @@ Example one-liner:
 npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
 ```
 
+This suite includes a DOM regression test (`tests/pages/battleJudoka.dom.test.js`) that loads `battleJudoka.html` and fails if required IDs (`next-button`, `stat-help`, `quit-match-button`, `stat-buttons`) are missing.
+
 ### Classic Battle CLI (text-first)
 
 - Page: `src/pages/battleCLI.html` – terminal-style UI that reuses the Classic Battle engine/state machine.
