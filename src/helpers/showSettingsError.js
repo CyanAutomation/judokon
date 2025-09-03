@@ -13,24 +13,28 @@ import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "./constants.js";
 import { onFrame as scheduleFrame, cancel as cancelFrame } from "../utils/scheduler.js";
 
 /**
- * @summary TODO: Add summary
+ * Show a transient settings error popup to the user.
+ *
+ * This function creates an accessible alert element, appends it to the
+ * document body, and schedules fade and removal timers so the popup
+ * visibly appears then disappears after the configured durations.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Remove any existing element with class `.settings-error-popup` to avoid duplicates.
+ * 2. Create a `div` with that class and set accessibility attributes
+ *    (`role="alert"`, `aria-live="assertive"`) and message text.
+ * 3. Append the element to `document.body`.
+ * 4. Use a one-shot frame scheduler to add the `show` class so CSS animations run.
+ * 5. Schedule a timeout after `SETTINGS_FADE_MS` to remove the `show` class (start fade).
+ * 6. Schedule a final timeout after `SETTINGS_REMOVE_MS` to remove the element from DOM.
+ * 7. Ensure frame tokens are canceled/cleaned up if re-run.
+ *
+ * Contract:
+ * - Input: none.
+ * - Output: DOM side-effects and scheduled timers.
+ * - Errors: run silently in non-DOM environments (no-ops).
+ *
+ * @returns {void}
  */
 export function showSettingsError() {
   const existing = document.querySelector(".settings-error-popup");
