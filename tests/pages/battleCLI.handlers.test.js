@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import statNamesData from "../../src/data/statNames.js";
 
-let setAutoContinue;
+let cleanupSetAutoContinue;
 
 async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   const emitter = new EventTarget();
@@ -39,7 +39,7 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
     getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
   let autoContinue = true;
-  setAutoContinue = (val) => {
+  const setAutoContinue = (val) => {
     autoContinue = val !== false;
   };
   vi.doMock("../../src/helpers/classicBattle/orchestratorHandlers.js", () => ({
@@ -64,6 +64,7 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
 
 async function setupHandlers(options) {
   const result = await loadHandlers(options);
+  cleanupSetAutoContinue = result.setAutoContinue;
   await result.handlers.renderStatList();
   return result;
 }
@@ -94,7 +95,10 @@ describe("battleCLI event handlers", () => {
     vi.doUnmock("../../src/helpers/constants.js");
     vi.doUnmock("../../src/helpers/classicBattle/autoSelectStat.js");
     vi.doUnmock("../../src/helpers/classicBattle/orchestratorHandlers.js");
-    setAutoContinue?.(true);
+    if (typeof cleanupSetAutoContinue === "function") {
+      cleanupSetAutoContinue(true);
+      cleanupSetAutoContinue = undefined;
+    }
   });
 
   it("updates round message on scoreboard event", async () => {
