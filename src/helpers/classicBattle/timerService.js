@@ -138,6 +138,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
     } catch (err) {
       guard(() => console.error("Error in next-button cooldown check:", err));
     }
+    cooldownWarningTimeoutId = null;
   }, 1000);
 }
 
