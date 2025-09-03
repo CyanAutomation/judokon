@@ -878,15 +878,11 @@ export function registerRoundStartErrorHandler(retryFn) {
 export function setupNextButton() {
   let btn = document.getElementById("next-button");
   if (!btn) {
-    guard(() => {
-      if (isTestModeEnabled())
-        console.warn('[test] #next-button missing, falling back to [data-role="next-round"]');
-    });
+    if (isTestModeEnabled())
+      console.warn('[test] #next-button missing, falling back to [data-role="next-round"]');
     btn = document.querySelector('[data-role="next-round"]');
     if (!btn) {
-      guard(() => {
-        if (isTestModeEnabled()) console.warn("[test] next round button missing");
-      });
+      if (isTestModeEnabled()) console.warn("[test] next round button missing");
       return;
     }
   }
