@@ -12,13 +12,15 @@ describe("uiHelpers element assertions", () => {
 
   it("warns and returns when next round button is missing", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+    setTestMode(true);
     const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     mod.setupNextButton();
     expect(warnSpy).toHaveBeenNthCalledWith(
       1,
-      '[uiHelpers] #next-button missing, falling back to [data-role="next-round"]'
+      '[test] #next-button missing, falling back to [data-role="next-round"]'
     );
-    expect(warnSpy).toHaveBeenNthCalledWith(2, "[uiHelpers] next round button missing");
+    expect(warnSpy).toHaveBeenNthCalledWith(2, "[test] next round button missing");
   });
 
   it("falls back to data-role when #next-button is missing", async () => {
@@ -28,12 +30,14 @@ describe("uiHelpers element assertions", () => {
     const btn = document.createElement("button");
     btn.setAttribute("data-role", "next-round");
     document.body.appendChild(btn);
+    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+    setTestMode(true);
     const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     mod.setupNextButton();
     btn.click();
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(warnSpy).toHaveBeenCalledWith(
-      '[uiHelpers] #next-button missing, falling back to [data-role="next-round"]'
+      '[test] #next-button missing, falling back to [data-role="next-round"]'
     );
   });
 
