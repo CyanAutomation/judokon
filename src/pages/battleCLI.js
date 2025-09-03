@@ -510,7 +510,7 @@ function sanitizeHintText(text) {
  * append to container
  * timeoutId = setTimeout(remove bar, SNACKBAR_REMOVE_MS)
  * store timeoutId on bar
- * bar on DOMNodeRemoved: clear timeoutId
+ * observe container for bar removal and clear timeout
  *
  * @param {string} text - Hint text to display.
  */
@@ -528,12 +528,18 @@ function showHint(text) {
   }, SNACKBAR_REMOVE_MS);
   // Store timeout on element to clean up if removed early
   bar._removeTimeoutId = timeoutId;
-  bar.addEventListener("DOMNodeRemoved", function handler(e) {
-    if (e.target === bar) {
-      clearTimeout(bar._removeTimeoutId);
-      bar.removeEventListener("DOMNodeRemoved", handler);
+  // Use MutationObserver to detect removal of the snackbar bar
+  const observer = new MutationObserver((mutationsList) => {
+    for (const mutation of mutationsList) {
+      for (const removedNode of mutation.removedNodes) {
+        if (removedNode === bar) {
+          clearTimeout(bar._removeTimeoutId);
+          observer.disconnect();
+        }
+      }
     }
   });
+  observer.observe(container, { childList: true });
 }
 
 /**
