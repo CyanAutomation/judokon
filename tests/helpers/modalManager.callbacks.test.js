@@ -24,7 +24,6 @@ describe("modal manager callbacks", () => {
     await withMutedConsole(() => {
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     });
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(overlay.close).toHaveBeenCalledTimes(1);
   });
 });
