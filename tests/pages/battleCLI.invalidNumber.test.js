@@ -72,7 +72,8 @@ describe("battleCLI invalid number hint", () => {
     const keys = ["0", "6"];
     for (const key of keys) {
       document.getElementById("snackbar-container").innerHTML = "";
-      mod.handleWaitingForPlayerActionKey(key);
+      const handled = mod.handleWaitingForPlayerActionKey(key);
+      expect(handled).toBe(true);
       expect(document.querySelector("#snackbar-container .snackbar")?.textContent).toBe(
         "Use 1-5, press H for help"
       );
