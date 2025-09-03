@@ -12,9 +12,14 @@ if (typeof global.requestAnimationFrame === "undefined") {
 if (typeof global.cancelAnimationFrame === "undefined") {
   global.cancelAnimationFrame = (id) => clearTimeout(id);
 }
-import { expect, afterEach, beforeEach } from "vitest";
+import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
+
+// vi.importMz: utility for dynamic imports while preserving mocks
+if (!vi.importMz) {
+  vi.importMz = vi.importActual;
+}
 
 const originalMatchMedia = global.matchMedia;
 let originalPushState;

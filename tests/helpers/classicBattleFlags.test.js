@@ -15,9 +15,7 @@ describe("classicBattlePage feature flag updates", () => {
   });
 
   afterEach(async () => {
-    const { _resetForTest } = await vi.importActual(
-      "../../src/helpers/classicBattle/roundManager.js"
-    );
+    const { _resetForTest } = await vi.importMz("../../src/helpers/classicBattle/roundManager.js");
     _resetForTest();
     try {
       vi.runOnlyPendingTimers();
