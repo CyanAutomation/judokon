@@ -16,12 +16,18 @@ const escCallbacks = new Set();
 function handleKeydown(e) {
   if (e.key !== "Escape") return;
   const top = stack.pop();
-  escCallbacks.forEach((cb) => cb(top));
+  escCallbacks.forEach((cb) => {
+    try {
+      cb(top);
+    } catch (err) {
+      console.warn("Error in ESC callback:", err);
+    }
+  });
   if (top) {
     try {
       top.close();
-    } catch {
-      // swallow error: ESC handling should proceed
+    } catch (err) {
+      console.warn("Error closing overlay in ESC handler:", err);
     }
   }
 }
