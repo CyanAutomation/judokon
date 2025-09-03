@@ -1,3 +1,4 @@
+import * as battleEvents from "../../src/helpers/classicBattle/battleEvents.js";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
@@ -26,14 +27,18 @@ describe("battleCLI countdown", () => {
   });
 
   it("emits statSelectionStalled when auto-select disabled", async () => {
+    const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
     const mod = await loadBattleCLI({ autoSelect: false });
     await mod.__test.init();
-    const { autoSelectStat } = await import("../../src/helpers/classicBattle/autoSelectStat.js");
-    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-    emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
-    vi.advanceTimersByTime(30000);
+    const { autoSelectStat } = await import(
+      "../../src/helpers/classicBattle/autoSelectStat.js"
+    );
+    battleEvents.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(29000);
     expect(autoSelectStat).not.toHaveBeenCalled();
-    expect(emitBattleEvent).toHaveBeenCalledWith("statSelectionStalled");
+    expect(emitSpy).toHaveBeenCalledWith("statSelectionStalled");
+    emitSpy.mockRestore();
   });
 
   it("parses skipRoundCooldown query param", async () => {

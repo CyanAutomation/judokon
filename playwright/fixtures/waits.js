@@ -125,3 +125,48 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
 
   throw new Error(`Timed out waiting for battle state "${stateName}"${snapshot}`);
 }
+
+/**
+ * Wait until the UI surfaces the next-round countdown text in the snackbar.
+ * Uses text matching on `#snackbar-container` to avoid tight coupling to
+ * internal timers or event buses in CI.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [timeout=3000]
+ */
+export async function waitForNextRoundCountdown(page, timeout = 3000) {
+  await page.waitForFunction(
+    () => {
+      const el = document.getElementById("snackbar-container");
+      const txt = (el && (el.textContent || "").toLowerCase()) || "";
+      return txt.includes("next round in") || txt.includes("next round");
+    },
+    { timeout }
+  );
+}
+
+/**
+ * Wait for the battle event `nextRoundTimerReady` fired by the cooldown
+ * controls in roundManager. Hooks into the page's global EventTarget used by
+ * the battle event bus without importing any code into the test context.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [timeout=4000]
+ */
+export async function waitForNextRoundReadyEvent(page, timeout = 4000) {
+  await page.waitForFunction(
+    () => {
+      const KEY = "__classicBattleEventTarget";
+      const t = globalThis[KEY];
+      if (!t) return false;
+      if (!window.__nextReadySeen && !window.__nextReadyInit) {
+        window.__nextReadyInit = true;
+        t.addEventListener("nextRoundTimerReady", () => {
+          window.__nextReadySeen = true;
+        });
+      }
+      return !!window.__nextReadySeen;
+    },
+    { timeout }
+  );
+}

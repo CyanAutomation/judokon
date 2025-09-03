@@ -24,7 +24,7 @@ import {
   updateBattleStateBadge
 } from "../helpers/classicBattle/uiHelpers.js";
 import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
-import { autoSelectStat } from "../helpers/classicBattle/autoSelectStat.js";
+// Removed unused import for 'autoSelectStat'
 import { setTestMode } from "../helpers/testModeUtils.js";
 import { wrap } from "../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
@@ -846,12 +846,8 @@ function startSelectionCountdown(seconds = 30) {
   try {
     selectionTimer = setTimeout(() => {
       stopSelectionCountdown();
-      if (isEnabled("autoSelect")) {
-        autoSelectStat(selectStat);
-      } else {
-        try {
-          emitBattleEvent("statSelectionStalled");
-        } catch {}
+      if (onExpiry) {
+        onExpiry();
       }
     }, seconds * 1000);
   } catch {}

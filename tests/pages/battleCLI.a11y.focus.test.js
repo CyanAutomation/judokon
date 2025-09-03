@@ -37,7 +37,8 @@ describe("battleCLI accessibility", () => {
       emitBattleEvent("battleStateChange", { to: "roundOver" });
       const bar = document.querySelector("#snackbar-container .snackbar");
       expect(bar?.textContent).toBe("Press Enter to continue");
-      expect(document.activeElement).toBe(bar);
+      const nextButton = document.getElementById("next-round-button");
+      expect(document.activeElement).toBe(nextButton);
     });
 
     it("navigates stat rows with arrow keys and wraps", async () => {

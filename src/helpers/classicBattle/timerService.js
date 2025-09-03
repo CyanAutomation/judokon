@@ -124,9 +124,17 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls()) {
   if (skipRoundCooldownIfEnabled()) return;
+  // Only finish the countdown when in cooldown (or when state is unknown in
+  // tests). Emitting this in other states could confuse the state machine.
   try {
+    const { state } = getStateSnapshot();
+    if (!state || state === "cooldown") {
+      emitBattleEvent("countdownFinished");
+    }
+  } catch {
+    // If snapshot fails, default to emitting to preserve UX.
     emitBattleEvent("countdownFinished");
-  } catch {}
+  }
   const { timer = null, resolveReady = null } = controls || {};
   const btn = document.getElementById("next-button");
   if (!btn) return;

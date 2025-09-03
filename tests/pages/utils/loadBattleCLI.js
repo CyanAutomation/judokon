@@ -97,6 +97,7 @@ export async function loadBattleCLI(options = {}) {
     onBattleEvent: vi.fn(),
     emitBattleEvent: vi.fn()
   }));
+  
   vi.doMock("../../../src/helpers/BattleEngine.js", () => ({ STATS: battleStats }));
   let pts = pointsToWin;
   vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
@@ -150,6 +151,7 @@ export async function cleanupBattleCLI() {
     "../../../src/helpers/classicBattle/roundManager.js",
     "../../../src/helpers/classicBattle/orchestrator.js",
     "../../../src/helpers/classicBattle/battleEvents.js",
+    
     "../../../src/helpers/BattleEngine.js",
     "../../../src/helpers/battleEngineFacade.js",
     "../../../src/helpers/dataUtils.js",

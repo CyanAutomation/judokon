@@ -310,11 +310,9 @@ async function handleNextRoundExpiration(controls, btn) {
     };
     onBattleEvent("battleStateChange", handler);
   });
-  // Now that we confirmed `cooldown`, mark Next as ready while still in that state.
-  markNextReady(btn);
-  try {
-    await dispatchBattleEvent("ready");
-  } catch {}
+  // Do not mark Next as ready here; ownership is centralized in the
+  // state-driven countdown flow (`countdownFinished` handler). This avoids
+  // double-marking readiness from parallel timer paths.
   try {
     const { updateDebugPanel } = await import("./uiHelpers.js");
     updateDebugPanel();
