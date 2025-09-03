@@ -105,6 +105,7 @@ let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
 let ignoreNextAdvanceClick = false;
 let roundResolving = false;
+let shortcutsReturnFocus = null;
 const statDisplayNames = {};
 let cachedStatDefs = null;
 
@@ -329,6 +330,34 @@ function updateCliShortcutsVisibility() {
     section.style.display = "";
     section.hidden = true;
   }
+}
+
+/**
+ * Collapse the CLI shortcuts panel and restore focus.
+ *
+ * @pseudocode
+ * if test hook `setShortcutsCollapsed(true)` returns false:
+ *   hide shortcuts section and body
+ *   persist collapsed state to localStorage
+ *   set close button `aria-expanded` to false
+ * if stored focus exists: focus it and clear reference
+ */
+function hideCliShortcuts() {
+  if (!window.__battleCLIinit?.setShortcutsCollapsed?.(true)) {
+    const body = byId("cli-shortcuts-body");
+    const sec = byId("cli-shortcuts");
+    const close = byId("cli-shortcuts-close");
+    try {
+      localStorage.setItem("battleCLI.shortcutsCollapsed", "1");
+    } catch {}
+    if (body) body.style.display = "none";
+    if (sec) sec.setAttribute("hidden", "");
+    close?.setAttribute("aria-expanded", "false");
+  }
+  try {
+    shortcutsReturnFocus?.focus();
+  } catch {}
+  shortcutsReturnFocus = null;
 }
 
 function showBottomLine(text) {
@@ -870,7 +899,10 @@ function getStatByIndex(index1Based) {
  * @returns {boolean} true if the key was handled
  * @pseudocode
  * if key is 'h':
- *   toggle shortcuts visibility
+ *   toggle shortcuts panel
+ *   return true
+ * if key is 'escape':
+ *   close quit modal if open else hide shortcuts
  *   return true
  * if key is 'q':
  *   show quit confirmation modal
@@ -880,7 +912,27 @@ function getStatByIndex(index1Based) {
 export function handleGlobalKey(key) {
   if (key === "h") {
     const sec = byId("cli-shortcuts");
-    if (sec) sec.hidden = !sec.hidden;
+    if (sec) {
+      if (sec.hidden) {
+        shortcutsReturnFocus = /** @type {HTMLElement|null} */ (document.activeElement);
+        sec.hidden = false;
+        byId("cli-shortcuts-close")?.focus();
+        try {
+          localStorage.setItem("battleCLI.shortcutsCollapsed", "0");
+        } catch {}
+      } else {
+        hideCliShortcuts();
+      }
+    }
+    return true;
+  }
+  if (key === "escape") {
+    if (quitModal && !quitModal.element.hasAttribute("hidden")) {
+      quitModal.close();
+    } else {
+      const sec = byId("cli-shortcuts");
+      if (sec && !sec.hidden) hideCliShortcuts();
+    }
     return true;
   }
   if (key === "q") {
@@ -1412,16 +1464,7 @@ async function init() {
     // Set a guard to ignore the next background click after closing help.
     // Do not clear it on microtask; it is consumed in onClickAdvance.
     ignoreNextAdvanceClick = true;
-    if (!window.__battleCLIinit?.setShortcutsCollapsed?.(true)) {
-      const body = byId("cli-shortcuts-body");
-      const sec = byId("cli-shortcuts");
-      try {
-        localStorage.setItem("battleCLI.shortcutsCollapsed", "1");
-      } catch {}
-      if (body) body.style.display = "none";
-      if (sec) sec.setAttribute("hidden", "");
-      close.setAttribute("aria-expanded", "false");
-    }
+    hideCliShortcuts();
   });
   checkbox?.addEventListener("change", async () => {
     await setFlag("cliVerbose", !!checkbox.checked);

@@ -79,21 +79,21 @@ The animated Classic Battle UI can be heavy for low-spec devices and noisy for p
 
 ## Functional Requirements (Prioritized)
 
-| Prio   | Feature                 | Requirement                                                                                                                                                       |
-| ------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **P1** | **Engine Parity**       | Reuse the Classic Battle engine/state table verbatim; no logic forks.                                                                                             |
-| **P1** | **Text Renderer**       | Render prompts, countdown, stat list (with numeric hotkeys), outcome, and score in a monospace pane. No images/animations.                                        |
-| **P1** | **Keyboard Controls**   | `1–5` select stat; `Enter`/`Space` advance; `H` help; `Q` quit/confirm; keys are debounced per state. Stat selection can be overwritten before timeout.           |
-| **P1** | **Pointer/Touch**       | Click/tap on stat rows to select (≥44px tall targets); a visible **Next** control appears post-round.                                                             |
-| **P1** | **Timer Display**       | 1 Hz textual countdown for selection window; expiry behavior mirrors engine (see Feature Flags).                                                                  |
-| **P1** | **Outcome & Score**     | Print Win/Loss/Draw and show both compared values; update score immediately.                                                                                      |
-| **P1** | **Accessibility Hooks** | Announce prompts/timers/outcomes via `aria-live="polite"` / `role="status"`, logical focus order, visible focus ring.                                             |
-| **P1** | **Test Hooks**          | Provide stable selectors: `#cli-root`, `#cli-header`, `#cli-countdown`, `#cli-stats`, `#round-message`, `#cli-score`; expose `data-round`, `data-remaining-time`. |
-| **P2** | **Settings (Minimal)**  | Win target selector (5/10/15). Changing value offers to reset match; persist choice locally via `localStorage`. Invalid values reset to defaults.                 |
-| **P2** | **Deterministic Seed**  | Input and `?seed=` param; store last seed; seed drives PRNG used by engine/selection tie-breakers. Invalid seeds revert to default.                               |
-| **P2** | **Round Context**       | Header shows “Round X” and win target; optional state badge mirrors engine state.                                                                                 |
-| **P2** | **Observability Mode**  | Feature-flagged verbose log view echoing state transitions and key events.                                                                                        |
-| **P2** | **Interrupt Handling**  | Quit confirmation pauses timers; cancel resumes; confirm ends/rolls back per engine rules.                                                                        |
+| Prio   | Feature                 | Requirement                                                                                                                                                                  |
+| ------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1** | **Engine Parity**       | Reuse the Classic Battle engine/state table verbatim; no logic forks.                                                                                                        |
+| **P1** | **Text Renderer**       | Render prompts, countdown, stat list (with numeric hotkeys), outcome, and score in a monospace pane. No images/animations.                                                   |
+| **P1** | **Keyboard Controls**   | `1–5` select stat; `Enter`/`Space` advance; `H` help; `Q` quit/confirm; `Esc` close dialogs; keys are debounced per state. Stat selection can be overwritten before timeout. |
+| **P1** | **Pointer/Touch**       | Click/tap on stat rows to select (≥44px tall targets); a visible **Next** control appears post-round.                                                                        |
+| **P1** | **Timer Display**       | 1 Hz textual countdown for selection window; expiry behavior mirrors engine (see Feature Flags).                                                                             |
+| **P1** | **Outcome & Score**     | Print Win/Loss/Draw and show both compared values; update score immediately.                                                                                                 |
+| **P1** | **Accessibility Hooks** | Announce prompts/timers/outcomes via `aria-live="polite"` / `role="status"`, logical focus order, visible focus ring.                                                        |
+| **P1** | **Test Hooks**          | Provide stable selectors: `#cli-root`, `#cli-header`, `#cli-countdown`, `#cli-stats`, `#round-message`, `#cli-score`; expose `data-round`, `data-remaining-time`.            |
+| **P2** | **Settings (Minimal)**  | Win target selector (5/10/15). Changing value offers to reset match; persist choice locally via `localStorage`. Invalid values reset to defaults.                            |
+| **P2** | **Deterministic Seed**  | Input and `?seed=` param; store last seed; seed drives PRNG used by engine/selection tie-breakers. Invalid seeds revert to default.                                          |
+| **P2** | **Round Context**       | Header shows “Round X” and win target; optional state badge mirrors engine state.                                                                                            |
+| **P2** | **Observability Mode**  | Feature-flagged verbose log view echoing state transitions and key events.                                                                                                   |
+| **P2** | **Interrupt Handling**  | Quit confirmation pauses timers; cancel resumes; confirm ends/rolls back per engine rules.                                                                                   |
 
 ### Feature Flags (Configurable)
 
@@ -110,7 +110,7 @@ The animated Classic Battle UI can be heavy for low-spec devices and noisy for p
 ### Layout (single column, desktop & mobile)
 
 +––––––––––––––––––––––––––+
-| Classic Battle — CLI Round 2 Target: 5   |
+| Classic Battle — CLI Round 2 Target: 5 |
 | [State: waitingForPlayerAction] [Score: 1–1] |
 +––––––––––––––––––––––––––+
 
@@ -125,7 +125,7 @@ Choose a stat:
 Last round: You WON (Technique 9 vs 7)  
 Match Outcome: You WON (9 vs 7)
 
-Shortcuts: [1–5] Select [Enter]/[Space] Next [H] Help [Q] Quit
+Shortcuts: [1–5] Select [Enter]/[Space] Next [H] Help [Q] Quit [Esc] Back
 
 **Sections**
 
@@ -133,12 +133,12 @@ Shortcuts: [1–5] Select [Enter]/[Space] Next [H] Help [Q] Quit
 - **Prompt Area:** timer + instruction.
 - **Stat List:** numbered rows; whole row is focusable/clickable; shows value; each row ≥44px tall for tap targets.
 - **Round Message:** outcome and compared values.
-- **Shortcuts/Help:** inline hints; help panel toggled with `H`.
+- **Shortcuts/Help:** inline hints; help panel toggled with `H` and closed with `Esc`.
 - **Settings (collapsible):** win target, seed, verbose toggle (remembered).
 
 **Focus & Navigation**
 
-- On stat selection phase: focus moves to the **stat list container**; arrow keys cycle rows; `1–9` selects. 
+- On stat selection phase: focus moves to the **stat list container**; arrow keys cycle rows; `1–9` selects.
 - Opening Help/Settings moves focus inside; closing restores prior focus.
 
 **Styling**
@@ -194,8 +194,8 @@ Shortcuts: [1–5] Select [Enter]/[Space] Next [H] Help [Q] Quit
 
 - **Given** stat selection, **when** the user presses `1–5` for a visible stat, **then** that stat is selected once and input is debounced until next state.
 - **Given** round resolved, **when** `Enter` or `Space` is pressed, **then** next phase begins (or next round if in cooldown).
-- **Given** active match, **when** `Q` is pressed, **then** a quit confirmation appears; **confirm** ends/rolls back per rules; **cancel** resumes timers.
-- **Given** help is hidden, **when** `H` is pressed, **then** help opens and is closable via `H` or Close.
+- **Given** active match, **when** `Q` is pressed, **then** a quit confirmation appears; **confirm** ends/rolls back per rules; **cancel** or `Esc` resumes timers.
+- **Given** help is hidden, **when** `H` is pressed, **then** help opens and is closable via `H`, `Esc`, or Close.
 
 ### Timer
 
