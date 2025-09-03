@@ -136,15 +136,12 @@ describe("classicBattle stat selection", () => {
   ])(
     "handles outcome when player=$playerValue and opponent=$opponentValue",
     ({ playerValue, opponentValue, expectedMessage, expectedScore }) => {
-      beforeEach(() => {
+      it("updates message and score", async () => {
         _resetForTest(store);
         document.getElementById("player-card").innerHTML =
           `<ul><li class="stat"><strong>Power</strong> <span>${playerValue}</span></li></ul>`;
         document.getElementById("opponent-card").innerHTML =
           `<ul><li class="stat"><strong>Power</strong> <span>${opponentValue}</span></li></ul>`;
-      });
-
-      it("updates message and score", async () => {
         await selectStat("power");
         expect(document.querySelector("header #round-message").textContent).toMatch(
           expectedMessage

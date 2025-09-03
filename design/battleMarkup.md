@@ -23,6 +23,10 @@ Classic battle pages rely on specific element IDs so helper scripts can attach l
 | `quit-match-button`     | Triggers the quit match flow.                                                                                                                                |
 | `battle-state-progress` | Optional list tracking match state transitions.                                                                                                              |
 
+### Data attributes and test hooks
+
+The `id="next-button"` control must also specify `data-role="next-round"` and `data-testid="next-button"` so scripts and tests can reliably target it. Other battle controls follow the same `data-testid` pattern: `id="stat-help"` pairs with `data-testid="stat-help"` and `id="quit-match-button"` with `data-testid="quit-match"`. These requirements are enforced in the DOM tests at [`tests/pages/battlePages.dom.test.js`](../tests/pages/battlePages.dom.test.js).
+
 ## Example Markup
 
 ```html
