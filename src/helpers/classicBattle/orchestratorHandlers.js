@@ -1,6 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
 import { getNextRoundControls, setupFallbackTimer } from "./roundManager.js";
-import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";
@@ -127,73 +126,7 @@ export async function initStartCooldown(machine) {
  * 3. Listen for `countdownFinished` to mark ready and dispatch `ready`.
  * 4. Schedule fallback timer that invokes the same completion logic.
  */
-export function initInterRoundCooldown(machine) {
-  try {
-    const controls = getNextRoundControls?.();
-    // Do not early-return when controls exist; proceed to emit the countdown
-    // and mark readiness on completion to keep UI/state in sync even when the
-    // roundManager has already scheduled its own cooldown.
-    let duration = 0;
-    try {
-      duration = computeNextRoundCooldown();
-    } catch {}
-    // Clamp to a sane minimum to avoid zero-duration emissions that can
-    // immediately advance the machine in headless/CI environments.
-    duration = Math.max(1, Number(duration) || 1);
-    const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
-    if (btn) {
-      btn.disabled = false;
-      delete btn.dataset.nextReady;
-    }
-    let fallback = null;
-    const onFinished = () => {
-      try {
-        offBattleEvent("countdownFinished", onFinished);
-      } catch {}
-      try {
-        if (fallback) clearTimeout(fallback);
-      } catch {}
-      if (btn) {
-        btn.dataset.nextReady = "true";
-        btn.disabled = false;
-        try {
-          console.warn("[test] orchestrator: marked Next ready");
-        } catch {}
-      }
-      try {
-        emitBattleEvent("nextRoundTimerReady");
-      } catch {}
-      try {
-        machine.dispatch("ready");
-      } catch {}
-    };
-    onBattleEvent("countdownFinished", onFinished);
-    emitBattleEvent("countdownStart", { duration });
-    // In test mode, avoid relying on timers which might be mocked.
-    // Exception: the CLI page manages its own countdown; do not auto-advance
-    // immediately there to preserve click/keyboard semantics under test.
-    try {
-      const isCli = typeof document !== "undefined" && !!document.getElementById("cli-root");
-      if (!isCli && isTestModeEnabled && isTestModeEnabled()) {
-        if (typeof queueMicrotask === "function") queueMicrotask(onFinished);
-        else setTimeout(onFinished, 0);
-        return;
-      }
-    } catch {}
-    const ms = Math.max(0, Number(duration) * 1000) + 200;
-    try {
-      const schedule = typeof setupFallbackTimer === "function" ? setupFallbackTimer : setTimeout;
-      fallback = schedule(ms, () => {
-        try {
-          offBattleEvent("countdownFinished", onFinished);
-        } catch {}
-        onFinished();
-      });
-    } catch {
-      onFinished();
-    }
-  } catch {}
-}
+// initInterRoundCooldown removed: inter-round cooldown is owned by roundManager.
 
 /**
  * onEnter handler for `waitingForMatchStart` state.
@@ -290,7 +223,7 @@ export async function matchStartEnter(machine) {
  *
  * @pseudocode
  * 1. If `payload.initial`, delegate to `initStartCooldown`.
- * 2. Otherwise, invoke `initInterRoundCooldown`.
+ * 2. Otherwise, ensure an inter-round cooldown is scheduled via roundManager when none exists.
  *
  * @param {object} machine
  * @param {object} [payload]
@@ -299,7 +232,7 @@ export async function matchStartEnter(machine) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. If initial cooldown requested → `initStartCooldown`.
- * 2. Else → `initInterRoundCooldown`.
+ * 2. Else → schedule `roundManager.startCooldown` if not already scheduled.
  */
 /**
  * @summary TODO: Add summary
@@ -321,14 +254,39 @@ export async function matchStartEnter(machine) {
  *
  * @pseudocode
  * 1. If `payload.initial` -> initialize start cooldown.
- * 2. Otherwise initialize inter-round cooldown.
+ * 2. Otherwise ensure inter-round cooldown is scheduled when absent.
  *
  * @param {object} machine
  * @param {object} [payload]
  */
 export async function cooldownEnter(machine, payload) {
   if (payload?.initial) return initStartCooldown(machine);
-  return initInterRoundCooldown(machine);
+  // Ensure a cooldown is scheduled if none exists (e.g., after interrupt paths).
+  try {
+    const controls = getNextRoundControls?.();
+    if (controls && (controls.timer || controls.ready)) return;
+  } catch {}
+  try {
+    const { startCooldown } = await import("./roundManager.js");
+    startCooldown(machine?.context?.store);
+    return;
+  } catch {}
+  // Fallback path for test/mocked environments: schedule a minimal timer
+  // and dispatch `ready` when it elapses.
+  try {
+    const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
+    let duration = 1;
+    try {
+      duration = computeNextRoundCooldown();
+    } catch {}
+    const ms = Math.max(0, Number(duration) * 1000) + 200;
+    const schedule = typeof setupFallbackTimer === "function" ? setupFallbackTimer : setTimeout;
+    schedule(ms, () => {
+      try {
+        machine.dispatch("ready");
+      } catch {}
+    });
+  } catch {}
 }
 
 /**

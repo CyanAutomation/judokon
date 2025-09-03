@@ -25,6 +25,7 @@ import {
 } from "../helpers/classicBattle/uiHelpers.js";
 import { getStateSnapshot } from "../helpers/classicBattle/battleDebug.js";
 import { autoSelectStat } from "../helpers/classicBattle/autoSelectStat.js";
+import { createRoundTimer } from "../helpers/timers/createRoundTimer.js";
 import { setTestMode } from "../helpers/testModeUtils.js";
 import { wrap } from "../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
@@ -838,7 +839,7 @@ function selectStat(stat) {
  *   if autoSelect enabled: autoSelectStat(selectStat)
  *   else emit "statSelectionStalled"
  */
-async function startSelectionCountdown(seconds = 30) {
+function startSelectionCountdown(seconds = 30) {
   const el = byId("cli-countdown");
   if (!el) return;
   stopSelectionCountdown();
@@ -864,7 +865,6 @@ async function startSelectionCountdown(seconds = 30) {
   }
   // Create and wire a round timer so tests behave consistently
   try {
-    const { createRoundTimer } = await import("../helpers/timers/createRoundTimer.js");
     const timer = createRoundTimer();
     selectionCancelled = false;
     // We don't rely on timer tick for UI; maintain a local interval for deterministic updates
@@ -1422,82 +1422,6 @@ export function onKeyDown(e) {
     if (countdown) countdown.textContent = "Invalid key, press H for help";
   } else if (countdown && countdown.textContent) {
     countdown.textContent = "";
-  }
-}
-
-// Timer lifecycle helpers (no-ops for selection countdown when using roundTimer).
-function pauseTimers() {
-  // Intentionally minimal: tests stub timers via __test.setSelectionTimers; do not mutate.
-}
-function resumeTimers() {
-  // Intentionally minimal: selection timers remain as set by tests or countdown.
-}
-
-function showQuitModal() {
-  // Reuse existing overlay if present
-  let backdrop = document.querySelector(".modal-backdrop");
-  if (!backdrop) {
-    backdrop = document.createElement("div");
-    backdrop.className = "modal-backdrop";
-    const panel = document.createElement("div");
-    panel.className = "modal";
-    const msg = document.createElement("p");
-    msg.textContent = "Quit the current match?";
-    const actions = document.createElement("div");
-    const confirm = createButton("Quit", { id: "confirm-quit-button", className: "primary-button" });
-    const cancel = createButton("Cancel", { id: "cancel-quit-button", className: "secondary-button" });
-    actions.append(confirm, cancel);
-    panel.append(msg, actions);
-    backdrop.append(panel);
-    const container = document.getElementById("modal-container") || document.body;
-    container.append(backdrop);
-    // Wire actions
-    confirm.addEventListener("click", () => {
-      try {
-        // Clear cooldown timers
-        if (cooldownTimer) clearTimeout(cooldownTimer);
-      } catch {}
-      try {
-        if (cooldownInterval) clearInterval(cooldownInterval);
-      } catch {}
-      cooldownTimer = null;
-      cooldownInterval = null;
-      // Clear selection timers (tests set numeric ids via __test)
-      try {
-        if (typeof selectionTimer === "number") clearTimeout(selectionTimer);
-      } catch {}
-      try {
-        if (selectionInterval) clearInterval(selectionInterval);
-      } catch {}
-      selectionTimer = null;
-      selectionInterval = null;
-      // Hide overlay and notify
-      backdrop.setAttribute("hidden", "");
-      try {
-        safeDispatch("interrupt", { reason: "quit" });
-      } catch {}
-    });
-    cancel.addEventListener("click", () => {
-      backdrop.setAttribute("hidden", "");
-      resumeTimers();
-    });
-    backdrop.addEventListener("click", (e) => {
-      if (e.target === backdrop) {
-        backdrop.setAttribute("hidden", "");
-        resumeTimers();
-      }
-    });
-    quitModal = {
-      close() {
-        try {
-          backdrop.setAttribute("hidden", "");
-        } catch {}
-        resumeTimers();
-      }
-    };
-    registerModal(quitModal);
-  } else {
-    backdrop.removeAttribute("hidden");
   }
 }
 
