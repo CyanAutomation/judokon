@@ -16,6 +16,12 @@ vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
 vi.mock("../../src/helpers/classicBattle/skipHandler.js", () => ({
   setSkipHandler: vi.fn()
 }));
+vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+  emitBattleEvent: vi.fn()
+}));
+vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
+  skipRoundCooldownIfEnabled: vi.fn(() => false)
+}));
 
 describe("onNextButtonClick cooldown guard", () => {
   let btn;

@@ -7,6 +7,7 @@ import { setSkipHandler } from "./skipHandler.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { isEnabled } from "../featureFlags.js";
+import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
@@ -104,13 +105,17 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
 /**
  * Click handler for the Next button.
  *
- * Delegates to `advanceWhenReady` when the button is marked ready or to
- * `cancelTimerOrAdvance` to stop an active timer / advance when in cooldown.
+ * Unconditionally skips the inter-round cooldown by emitting
+ * `countdownFinished`, then delegates to `advanceWhenReady` when the button is
+ * marked ready or to `cancelTimerOrAdvance` to stop an active timer / advance
+ * when in cooldown.
  *
  * @pseudocode
- * 1. Read `controls` (timer and resolveReady) from `getNextRoundControls()` when not supplied.
- * 2. If the Next button element has `data-next-ready="true"`, call `advanceWhenReady`.
- * 3. Otherwise call `cancelTimerOrAdvance` to either stop an active timer or dispatch `ready`.
+ * 1. Call `skipRoundCooldownIfEnabled`; return early if it skips.
+ * 2. Emit `countdownFinished` via the battle event bus.
+ * 3. Read `controls` (timer and resolveReady) from `getNextRoundControls()` when not supplied.
+ * 4. If the Next button element has `data-next-ready="true"`, call `advanceWhenReady`.
+ * 5. Otherwise call `cancelTimerOrAdvance` to either stop an active timer or dispatch `ready`.
  *
  * @param {MouseEvent} _evt - Click event.
  * @param {{timer: {stop: () => void} | null, resolveReady: (() => void) | null}} [controls=getNextRoundControls()]
@@ -118,6 +123,10 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  * @returns {Promise<void>}
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls()) {
+  if (skipRoundCooldownIfEnabled()) return;
+  try {
+    emitBattleEvent("countdownFinished");
+  } catch {}
   const { timer = null, resolveReady = null } = controls || {};
   const btn = document.getElementById("next-button");
   if (!btn) return;
