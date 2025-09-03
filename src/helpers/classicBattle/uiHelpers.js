@@ -852,24 +852,21 @@ export function registerRoundStartErrorHandler(retryFn) {
  * 1. TODO: Add pseudocode
  */
 /**
- * Wire the Next button's click handler to `onNextButtonClick`.
+ * @summary Attach the Next button click handler and warn when absent.
+ *
+ * Logs a warning when the button is missing.
  *
  * @pseudocode
- * 1. Find `#next-button` and attach event listener for `click`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Query `#next-button`.
+ * 2. If not found, warn and exit.
+ * 3. Bind `onNextButtonClick` to `click`.
  */
 export function setupNextButton() {
   const btn = document.getElementById("next-button");
-  if (!btn) return;
+  if (!btn) {
+    guard(() => console.warn("[uiHelpers] #next-button not found"));
+    return;
+  }
   btn.addEventListener("click", onNextButtonClick);
 }
 
@@ -1123,28 +1120,32 @@ export function clearScoreboardAndMessages() {
  * 1. TODO: Add pseudocode
  */
 /**
- * Initialize stat selection buttons with click/keyboard handlers and expose controls.
+ * @summary Initialize stat selection buttons; warn when container missing.
+ *
+ * Logs a warning and resolves the readiness promise when the container is
+ * absent.
  *
  * @pseudocode
- * 1. Locate `#stat-buttons` and wire click/keydown handlers for each button.
- * 2. Implement `setEnabled` to toggle button enabled state and resolve a global readiness promise.
- * 3. Return an API `{ enable, disable }`.
+ * 1. Locate `#stat-buttons`; warn and return noop controls if absent.
+ * 2. Gather buttons and helpers to toggle enabled state.
+ * 3. Disable buttons initially.
+ * 4. Wire click and keyboard handlers for stat selection.
+ * 5. Return an API `{ enable, disable }`.
  *
- * @param {object} store
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {object} store Battle store for selection handling.
+ * @returns {{ enable: () => void, disable: () => void }} Control API.
  */
 export function initStatButtons(store) {
-  const statButtons = document.querySelectorAll("#stat-buttons button");
   const statContainer = document.getElementById("stat-buttons");
+  if (!statContainer) {
+    guard(() => {
+      console.warn("[uiHelpers] #stat-buttons container not found");
+      if (typeof window !== "undefined") window.__resolveStatButtonsReady?.();
+    });
+    return { enable: () => {}, disable: () => {} };
+  }
+
+  const statButtons = statContainer.querySelectorAll("button");
   let resolveReady = typeof window !== "undefined" ? window.__resolveStatButtonsReady : undefined;
   const resetReadyPromise = () => {
     ({ resolve: resolveReady } = resetStatButtonsReadyPromise());
