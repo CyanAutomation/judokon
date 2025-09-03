@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { __setStateSnapshot } from "../../src/helpers/classicBattle/battleDebug.js";
 
 vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
@@ -11,11 +11,20 @@ vi.mock("../../src/helpers/classicBattle/skipHandler.js", () => ({
 
 describe("onNextButtonClick", () => {
   let btn;
+  let warnSpy;
 
   beforeEach(() => {
+    vi.useFakeTimers();
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     document.body.innerHTML = '<button id="next-button" data-testid="next-button"></button>';
     btn = document.querySelector('[data-testid="next-button"]');
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
+    warnSpy.mockRestore();
+    vi.useRealTimers();
   });
 
   it("advances when button is marked ready", async () => {
