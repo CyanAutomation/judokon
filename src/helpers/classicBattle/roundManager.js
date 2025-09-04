@@ -11,6 +11,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
+import { startCoolDown as engineStartCoolDown } from "../battleEngineFacade.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
@@ -373,7 +374,7 @@ async function handleNextRoundExpiration(controls, btn) {
 }
 
 function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
-  const timer = createRoundTimer();
+  const timer = createRoundTimer({ starter: engineStartCoolDown });
   attachCooldownRenderer(timer, cooldownSeconds);
   let expired = false;
   /** @type {ReturnType<typeof setTimeout>|null|undefined} */
