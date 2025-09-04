@@ -118,6 +118,18 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   const onTransition = ({ from, to, event }) => {
     onStateChange?.({ from, to, event });
     emitBattleEvent("battleStateChange", { from, to, event });
+    // PRD diagnostics: emit debug.transition and snapshot
+    try {
+      emitBattleEvent("debug.transition", { from, to, trigger: event });
+      const snap = getStateSnapshot();
+      emitBattleEvent("debug.state.snapshot", { state: snap?.state || to, context: snap || {} });
+    } catch {}
+    // PRD control: surface readiness requirement when entering matchStart
+    if (to === "matchStart") {
+      try {
+        emitBattleEvent("control.readiness.required", { for: "match" });
+      } catch {}
+    }
   };
 
   machine = await createStateManager(onEnter, context, onTransition);
@@ -134,6 +146,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
   domStateListener({ detail: initialDetail });
   debugLogListener({ detail: initialDetail });
+  try {
+    const snap = getStateSnapshot();
+    emitBattleEvent("debug.state.snapshot", { state: snap?.state || machine.getState(), context: snap || {} });
+  } catch {}
 
   // Expose a safe getter for the running machine to avoid import cycles
   // in hot-path modules (e.g., selection handling).

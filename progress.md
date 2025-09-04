@@ -207,3 +207,12 @@ Phase 5 — Timers & Preload Policy
 - Tests run (Vitest):
   - tests/helpers/classicBattle/{nextButton.*,scheduleNextRound*,cooldownEnter.*,countdownReset}.test.js → PASS (8 files, 12 passed, 1 skipped)
 - Next: Pending your review, final cleanups or further PRD items (e.g., additional control/diagnostic events) can be planned.
+
+Phase 6 — Diagnostics & Final Validation
+
+- Changes implemented:
+  - Orchestrator diagnostics: emit `debug.transition({ from, to, trigger })` and `debug.state.snapshot({ state, context })` on init and every transition.
+  - Control readiness: emit `control.readiness.required({ for: "match" })` entering `matchStart` (pairs with existing `confirmReadiness()`).
+- Tests run (Vitest):
+  - tests/helpers/classicBattle/{stateTransitions,battleStateProgress,waitingForPlayerAction,debugPanel,roundReset}.test.js → PASS (5 files, 41 tests)
+- Notes: Emissions are additive and do not alter state behavior; tests remain green.
