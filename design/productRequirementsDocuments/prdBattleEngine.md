@@ -7,133 +7,165 @@
 
 ---
 
-## 1. TL;DR
+## 1. Tl;dr
+
+Players aged **8–12** sometimes experience **confusion and frustration** in
+battles:
+
+- Timers feel inconsistent across devices.
+- Rounds sometimes resolve differently when replayed.
+- Kids are unsure what to do when they run out of time or press the wrong
+  button.
+
+We need a **deterministic, fair, and predictable battle engine** that always
+gives the same result for the same actions. It must provide **clear
+countdowns and readiness prompts**, and offer **friendly recovery options** when
+something goes wrong.
 
 The **Battle Engine** is split into two cooperating components:
 
-* **Engine**: handles round timer, stat evaluation, scoring, and domain event emission.
-* **Orchestrator**: owns the state machine, cooldowns, readiness handshakes, interrupts, and UI adapter events.
+- **Engine**: handles round timer, stat evaluation, scoring, and domain event
+  emission.
+- **Orchestrator**: owns the state machine, cooldowns, readiness handshakes,
+  interrupts, and UI adapter events.
 
-**Design Goals:**
+**Design goals:**
 
-* Enforce **strict separation of concerns** between game logic and orchestration.
-* Guarantee **deterministic outcomes** using seeded randomness (100% match determinism under identical inputs).
-* Ensure **testability** through snapshot state inspection and injected timers.
-* Maintain a **clear, structured event taxonomy** with at least 90% event conformance coverage in integration tests.
+- Enforce **strict separation of concerns** between game logic and
+  orchestration.
+- Guarantee **deterministic outcomes** using seeded randomness (100% match
+  determinism under identical inputs).
+- Ensure **testability** through snapshot state inspection and injected
+  timers.
+- Maintain a **clear, structured event taxonomy** with at least 90% event
+  conformance coverage in integration tests.
 
 ---
 
-## 2. Responsibilities & Boundaries
+## 2. Responsibilities & boundaries
 
 ### Engine
 
-* Owns the **round timer** (start, pause, resume, stop).
-* Compares stat values and computes outcomes.
-* Tracks scores and end conditions.
-* Emits **domain events** and **round timer events** only.
+- Owns the **round timer** (start, pause, resume, stop).
+- Compares stat values and computes outcomes.
+- Tracks scores and end conditions.
+- Emits **domain events** and **round timer events** only.
 
 ### Orchestrator
 
-* Drives the authoritative state machine.
-* Owns **all cooldowns** between rounds.
-* Emits **control events** for readiness and cooldown.
-* Handles interrupts and validation events.
-* Provides test seams (`getState`, `injectFakeTimers`) and optional diagnostics (`debug:*`).
+- Drives the authoritative state machine.
+- Owns **all cooldowns** between rounds.
+- Emits **control events** for readiness and cooldown.
+- Handles interrupts and validation events.
+- Provides test seams (`getState`, `injectFakeTimers`) and optional
+  diagnostics (`debug:*`).
+
+### Design goals
+
+- **Fairness**: Same actions + same inputs = same outcomes every time.
+- **Clarity**: Countdown timers, readiness prompts, and cooldowns are always
+  visible and easy to understand.
+- **Recovery**: Players always know what happens if they do nothing, make a
+  mistake, or lose connection.
+- **Testability**: Developers can simulate rounds with seeded randomness and
+  fake timers.
+- **Separation of concerns**: Game logic (Engine) and flow control
+  (Orchestrator) stay decoupled.
 
 ---
 
 ## 3. Public API
 
-### 3.1 Engine Constructor
+### 3.1 Engine constructor
 
 `createBattleEngine(config) => BattleEngine`
 
 Config fields:
 
-* `pointsToWin`
-* `maxRounds`
-* `autoSelect`
-* `seed`
+- `pointsToWin`
+- `maxRounds`
+- `autoSelect`
+- `seed`
 
-### 3.2 Engine Controls
+### 3.2 Engine controls
 
-* `startRoundTimer(durationMs, onDrift?)`
-* `pauseRoundTimer()`
-* `resumeRoundTimer()`
-* `stopRoundTimer()`
-* `evaluateSelection({ statKey, playerVal, opponentVal }) => { outcome, scores }`
+- `startRoundTimer(durationMs, onDrift?)`
+- `pauseRoundTimer()`
+- `resumeRoundTimer()`
+- `stopRoundTimer()`
+- `evaluateSelection({ statKey, playerVal, opponentVal }) => { outcome, scores }`
 
-### 3.3 Engine Queries
+### 3.3 Engine queries
 
-* `getScores()`
-* `getRoundsPlayed()`
-* `isMatchPoint()`
-* `getSeed()` – returns seed in use (for replay/debug).
+- `getScores()`
+- `getRoundsPlayed()`
+- `isMatchPoint()`
+- `getSeed()` – returns seed in use (for replay/debug).
 
-### 3.4 Engine Events
+### 3.4 Engine events
 
-* `on(eventType, handler)`
-* `off(eventType, handler)`
+- `on(eventType, handler)`
+- `off(eventType, handler)`
 
-### 3.5 Orchestrator Interface
+### 3.5 Orchestrator interface
 
-* `startMatch(config)`
-* `confirmReadiness()` – replaces DOM readiness flags
-* `requestInterrupt(scope: "round"|"match", reason: string)`
-* `getState() => { node, context }`
+- `startMatch(config)`
+- `confirmReadiness()` – replaces DOM readiness flags
+- `requestInterrupt(scope: "round"|"match", reason: string)`
+- `getState() => { node, context }`
 
-  * `context` must include at least:
+  - `context` must include at least:
 
-    * `roundIndex`
-    * `scores`
-    * `seed`
-    * `timerState`
-* `injectFakeTimers(fakeTimersApi)`
-
----
-
-## 4. Event Taxonomy
-
-### 4.1 Domain Events
-
-* `round.started({ roundIndex, availableStats })`
-* `round.selection.locked({ statKey, source })`
-* `round.evaluated({ statKey, playerVal, opponentVal, outcome, scores })`
-* `match.checkpoint({ reason })`
-* `match.concluded({ winner, scores, reason })`
-
-### 4.2 Timer Events
-
-* `round.timer.tick({ remainingMs })`
-* `round.timer.expired()`
-* `cooldown.timer.tick({ remainingMs })`
-* `cooldown.timer.expired()`
-
-### 4.3 Control / UI Adapter Events
-
-* `control.countdown.started({ durationMs })`
-* `control.countdown.completed()`
-* `control.readiness.required({ for })`
-* `control.readiness.confirmed({ for })`
-
-### 4.4 Interrupt & Validation
-
-* `interrupt.requested({ scope: "round"|"match", reason })`
-* `interrupt.resolved({ outcome: "restartRound"|"resumeLobby"|"abortMatch" })`
-* `input.invalid({ kind, detail })`
-* `input.ignored({ kind:"duplicateSelection" })`
-* `error.recoverable({ message, scope })`
-* `error.fatal({ message, scope })`
-
-### 4.5 Diagnostics (Optional)
-
-* `debug.transition({ from, to, trigger })`
-* `debug.state.snapshot({ state, context })`
-* `debug.watchdog({ where, elapsedMs })`
+    - `roundIndex`
+    - `scores`
+    - `seed`
+    - `timerState`
+- `injectFakeTimers(fakeTimersApi)`
 
 ---
 
-## 5. State Machine Overview
+## 4. Event taxonomy
+
+### 4.1 Domain events
+
+- `round.started({ roundIndex, availableStats })`
+- `round.selection.locked({ statKey, source })`
+- `round.evaluated({ statKey, playerVal, opponentVal, outcome, scores })`
+- `match.checkpoint({ reason })`
+- `match.concluded({ winner, scores, reason })`
+
+### 4.2 Timer events
+
+- `round.timer.tick({ remainingMs })`
+- `round.timer.expired()`
+- `cooldown.timer.tick({ remainingMs })`
+- `cooldown.timer.expired()`
+
+### 4.3 Control / UI adapter events
+
+- `control.countdown.started({ durationMs })`
+- `control.countdown.completed()`
+- `control.readiness.required({ for })`
+- `control.readiness.confirmed({ for })`
+
+### 4.4 Interrupt & validation
+
+- `interrupt.requested({ scope: "round"|"match", reason })`
+- `interrupt.resolved({ outcome: "restartRound"|"resumeLobby"|"abortMatch" })`
+- `input.invalid({ kind, detail })`
+- `input.ignored({ kind:"duplicateSelection" })`
+- `error.recoverable({ message, scope })`
+- `error.fatal({ message, scope })`
+
+### 4.5 Diagnostics (optional)
+
+- `debug.transition({ from, to, trigger })`
+- `debug.state.snapshot({ state, context })`
+- `debug.watchdog({ where, elapsedMs })`
+
+---
+
+## 5. State machine overview
 
 ```
 [Diagram Recommended Here: state graph from idle → matchFinished with overlay]
@@ -141,98 +173,172 @@ Config fields:
 
 ### 5.1 States
 
-* `idle`
-* `matchInit`
-* `cooldown`
-* `selection`
-* `roundEvaluation`
-* `betweenRounds`
-* `matchEvaluation`
-* `matchFinished`
-* Overlay: `adminOverlay` (debug/test only)
+- `idle`
+- `matchInit`
+- `cooldown`
+- `selection`
+- `roundEvaluation`
+- `betweenRounds`
+- `matchEvaluation`
+- `matchFinished`
+- Overlay: `adminOverlay` (debug/test only)
 
 ### 5.2 Transitions
 
-* `idle --startMatch--> matchInit`
-* `matchInit --ready--> cooldown`
-* `cooldown --cooldown.timer.expired|control.countdown.completed--> selection`
-* `selection --player.statSelected(first)--> roundEvaluation`
-* `selection --round.timer.expired & autoSelect=true--> roundEvaluation`
-* `selection --round.timer.expired & autoSelect=false--> interrupt.requested({reason:"selectionTimeout"})`
-* `roundEvaluation --evaluate--> betweenRounds`
-* `betweenRounds --check & (match point|maxRounds)--> matchEvaluation`
-* `betweenRounds --check & else--> cooldown`
-* `matchEvaluation --finalize--> matchFinished`
-* `interrupt.* --resolve--> interrupt.resolved({outcome})`
+- `idle --startMatch--> matchInit`
+- `matchInit --ready--> cooldown`
+- `cooldown --cooldown.timer.expired|control.countdown.completed--> selection`
+- `selection --player.statSelected(first)--> roundEvaluation`
+- `selection --round.timer.expired & autoSelect=true--> roundEvaluation`
+- `selection --round.timer.expired & autoSelect=false--> interrupt.requested({reason:"selectionTimeout"})`
+- `roundEvaluation --evaluate--> betweenRounds`
+- `betweenRounds --check & (match point|maxRounds)--> matchEvaluation`
+- `betweenRounds --check & else--> cooldown`
+- `matchEvaluation --finalize--> matchFinished`
+- `interrupt.* --resolve--> interrupt.resolved({outcome})`
 
 ---
 
-## 6. Timer & Readiness Contract
+## 6. Timer & readiness contract
 
-* Engine emits only `round.timer.*` events.
-* Orchestrator emits `cooldown.timer.*` and `control.*` events.
-* UI adapter listens to control events and calls `confirmReadiness()`.
+- Engine emits only `round.timer.*` events.
+- Orchestrator emits `cooldown.timer.*` and `control.*` events.
+- UI adapter listens to control events and calls `confirmReadiness()`.
 
 No DOM selectors are part of the contract.
 
 ---
 
-## 7. Interrupts & Validation
+## 7. Interrupts & validation
 
-* Emit `interrupt.requested({reason})` on abnormal flows.
-* Emit `interrupt.resolved({outcome})` once handled.
-* Emit `input.invalid()` or `input.ignored()` as required.
-* Admin overlay may override or replay rounds.
-
----
-
-## 8. Determinism & Seeding
-
-* All randomness must be seeded.
-* Orchestrator injects the seed.
-* Engine exposes `getSeed()`.
-* Same seed + inputs = identical outcomes (100% determinism goal).
+- Emit `interrupt.requested({reason})` on abnormal flows.
+- Emit `interrupt.resolved({outcome})` once handled.
+- Emit `input.invalid()` or `input.ignored()` as required.
+- Admin overlay may override or replay rounds.
 
 ---
 
-## 9. Edge Case Handling
+## 8. Determinism & seeding
 
-### Normative Rules
-
-* Invalid input → `input.invalid`
-* Duplicate input → `input.ignored`
-* Timeout without autoSelect → `interrupt.requested({reason})`
-* Interrupts must resolve with `interrupt.resolved`
-
-### Deprecated Behaviors
-
-* Silent invalid ties (NaN=0)
-* UI imperative events (`scoreboardShowMessage`)
+- All randomness must be seeded.
+- Orchestrator injects the seed.
+- Engine exposes `getSeed()`.
+- Same seed + inputs = identical outcomes (100% determinism goal).
 
 ---
 
-## 10. Acceptance Criteria (Checklist)
+## 9. Edge case handling
 
-* [ ] Emits all required domain and timer events.
-* [ ] Uses control events for readiness and cooldown.
-* [ ] Emits validation and interrupt events per §4.4.
-* [ ] Exposes `getState()` with all required context.
-* [ ] Supports `injectFakeTimers()`.
-* [ ] Produces deterministic results with same seed/inputs.
-* [ ] `debug:*` events are optional and excluded from tests.
+### Normative rules
 
----
+- Invalid input → `input.invalid`
+- Duplicate input → `input.ignored`
+- Timeout without autoSelect → `interrupt.requested({reason})`
+- Interrupts must resolve with `interrupt.resolved`
 
-## 11. Testing & Observability
+### Deprecated behaviors
 
-* `getState()` snapshot for FSM + context.
-* `injectFakeTimers()` for full test determinism.
-* Fixed seed → repeatable outcomes.
-* Optional `debug:*` events for diagnostics.
+- Silent invalid ties (NaN=0)
+- UI imperative events (`scoreboardShowMessage`)
 
 ---
 
-## 12. Migration Support
+## 10. Acceptance criteria (Gherkin)
+
+```gherkin
+Feature: Battle Engine acceptance criteria
+  In order to verify the Battle Engine and Orchestrator meet the PRD
+  As a product/test author
+  I want executable-style Gherkin scenarios that describe the expected behaviour
+
+  Background:
+    Given a Battle Engine and Orchestrator are available
+
+  Scenario: Engine emits required domain and timer events
+    Given a match is started
+    When a round begins
+    Then the engine emits "round.started"
+    And the engine emits "round.timer.tick" events while the timer runs
+    And the engine emits "round.timer.expired" when the round timer reaches zero
+    And the engine emits "round.evaluated" after a stat selection is evaluated
+
+  Scenario: Orchestrator uses control events for readiness and cooldown
+    Given the orchestrator begins the match initialization
+    When the countdown for readiness starts
+    Then the orchestrator emits "control.countdown.started"
+    And when the countdown completes it emits "control.countdown.completed"
+    And cooldown timers are published as "cooldown.timer.tick" and "cooldown.timer.expired"
+
+  Scenario: Validation and interrupt events are emitted (per §4.4)
+    Given an invalid input is received
+    Then the system emits "input.invalid" with details
+    Given a duplicate selection is received
+    Then the system emits "input.ignored" with kind "duplicateSelection"
+    Given a selection timeout occurs and autoSelect is false
+    Then the system emits "interrupt.requested" with reason "selectionTimeout"
+
+  Scenario: Public APIs expose state and test seams
+    Given a match is started with a known seed
+    When the API client calls getState()
+    Then the returned state includes at least "roundIndex", "scores", "seed", and "timerState"
+    And the engine exposes getSeed()
+    And injectFakeTimers() can be called to control timer progression in tests
+
+  Scenario: Deterministic outcomes with fixed seed
+    Given two engine instances are created with the same seed
+    And both receive the same sequence of inputs and selections
+    When both matches are executed
+    Then both instances produce identical outcomes and scores
+
+  Scenario: Debug events are optional and excluded from acceptance tests
+    Given debug mode is disabled for acceptance tests
+    When a match runs in acceptance mode
+    Then no "debug.*" events are emitted as part of the verified behaviour
+
+  Scenario: Readiness confirmation after countdown
+    Given a player starts a match
+    When the readiness countdown finishes
+    Then the player is shown a readiness confirmation screen
+    And the orchestrator emits "control.readiness.confirmed"
+
+  Scenario: Auto-select when round timer expires and autoSelect=true
+    Given a round begins with autoSelect set to true
+    When the round timer expires
+    Then the system automatically selects a stat on behalf of the player
+    And the round proceeds to evaluation
+
+  Scenario: Timeout screen when round timer expires and autoSelect=false
+    Given a round begins with autoSelect set to false
+    When the round timer expires
+    Then the system emits "round.timer.expired"
+    And the player is shown a timeout screen with recovery options
+    And the orchestrator emits "interrupt.requested" with a selection timeout reason
+
+  Scenario: Animated comparison and scoreboard update after evaluation
+    Given a stat has been chosen for the round
+    When evaluation occurs
+    Then the UI shows an animated comparison of values
+    And the scoreboard is updated with the new scores
+
+  Scenario: Victory or defeat screen on match conclusion
+    Given a match concludes and a winner is determined
+    When the match finalization occurs
+    Then the player sees a clear victory or defeat screen
+    And the final scores are displayed
+```
+
+---
+
+## 11. Testing & observability
+
+- `getState()` snapshot for FSM + context.
+- `injectFakeTimers()` for full test determinism.
+- Fixed seed → repeatable outcomes.
+- Optional `debug:*` events for diagnostics.
+
+---
+
+## 12. Migration support
 
 During transition:
 
@@ -251,16 +357,20 @@ Remove legacy glue code post-migration.
 
 ## 13. Glossary
 
-* **Engine**: Timer, scoring, stat evaluation, emits core game events.
-* **Orchestrator**: Controls state machine and UI readiness/cooldowns.
-* **Readiness**: Programmatic confirmation, not DOM-based.
-* **Interrupts**: Explicit recovery paths with `interrupt.resolved`.
-* **Admin Overlay**: Dev/test-only state layer, not in production FSM.
+- **Engine**: Timer, scoring, stat evaluation, emits core game events.
+- **Orchestrator**: Controls state machine and UI readiness/cooldowns.
+- **Readiness**: Programmatic confirmation, not DOM-based.
+- **Interrupts**: Explicit recovery paths with `interrupt.resolved`.
+- **Admin Overlay**: Dev/test-only state layer, not in production FSM.
 
 
 ---
 
-## 14. Mermaid State Diagram — Battle Engine
+## 14. Mermaid state diagram — Battle Engine
+
+_Figure: Mermaid state diagram — shows the battle engine state machine from
+idle to matchFinished. Suggested alt text: "State machine with orchestrator
+cooldown, selection, evaluation, interrupts, and match conclusion."_
 
 ```mermaid
 stateDiagram

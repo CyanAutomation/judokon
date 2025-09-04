@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# repo-local search helper: prefer ripgrep (rg) if available, otherwise fallback to grep
+# Usage: ./scripts/rgs <pattern> [path...]
+set -euo pipefail
+if command -v rg >/dev/null 2>&1; then
+  # Use ripgrep with sensible defaults matching the agent guide
+  rg --hidden --line-number --no-ignore --follow --glob '!node_modules' "$@"
+else
+  # Fallback to grep: recursive, show line numbers, ignore node_modules
+  # Respect --hidden by searching the directory tree; grep doesn't have --hidden so we include dotfiles via --exclude-dir
+  if [ $# -lt 1 ]; then
+    echo "Usage: $0 <pattern> [path...]" >&2
+    exit 2
+  fi
+  pattern="$1"
+  shift || true
+  if [ $# -eq 0 ]; then
+    paths=(.)
+  else
+    paths=("$@")
+  fi
+  # Use GNU grep options; if not available, fall back to basic recursive search
+  if grep --version >/dev/null 2>&1; then
+    grep -RIn --exclude-dir=node_modules --exclude-dir=.git --binary-files=without-match -- "$pattern" "${paths[@]}"
+  else
+    # Basic fallback
+    find "${paths[@]}" -type f -not -path '*/node_modules/*' -not -path '*/.git/*' -print0 | xargs -0 grep -nH -- "$pattern" || true
+  fi
+fi

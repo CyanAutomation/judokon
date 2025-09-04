@@ -1,4 +1,4 @@
-import { startCoolDown, stopTimer } from "../battleEngineFacade.js";
+import { stopTimer } from "../battleEngineFacade.js";
 
 /**
  * Create a round timer that emits tick, drift, and expiration events.
@@ -26,7 +26,7 @@ import { startCoolDown, stopTimer } from "../battleEngineFacade.js";
  *   off: (event: "tick" | "expired" | "drift", handler: Function) => void
  * }}
  */
-export function createRoundTimer({ starter = startCoolDown, onDriftFail } = {}) {
+export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   const MAX_DRIFT_RETRIES = 3;
   const listeners = {
     tick: new Set(),
@@ -53,28 +53,39 @@ export function createRoundTimer({ starter = startCoolDown, onDriftFail } = {}) 
   }
 
   function start(dur) {
-    try {
-      return starter(emitTick, emitExpired, dur, handleDrift);
-    } catch (e) {
-      // Fallback when the engine is not initialized: run a simple JS timer
-      // that emits tick events every second and expires after `dur` seconds.
-      // This keeps UI behavior and tests working without requiring engine setup.
-      const total = Number(dur) || 0;
-      if (total <= 0) {
-        return emitExpired();
+    const total = Number(dur) || 0;
+    const useEngine = typeof starter === "function";
+    if (useEngine) {
+      try {
+        return starter(emitTick, emitExpired, total, handleDrift);
+      } catch {
+        // fall through to JS timer
       }
-      let remaining = Math.ceil(total);
-      emitTick(remaining);
-      const intervalId = setInterval(() => {
-        remaining -= 1;
-        if (remaining > 0) {
-          emitTick(remaining);
-        } else {
-          clearInterval(intervalId);
-          emitExpired();
-        }
-      }, 1000);
     }
+    // Pure JS timer fallback (also default when no starter provided)
+    if (total <= 0) {
+      return emitExpired();
+    }
+    let remaining = Math.ceil(total);
+    emitTick(remaining);
+    const startedAt = Date.now();
+    const intervalId = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+      const expected = Math.max(0, total - elapsed);
+      // Basic drift detection: if internal remaining lags expected by >2s, signal drift
+      if (remaining - expected > 2) {
+        handleDrift(remaining).catch(() => {});
+        clearInterval(intervalId);
+        return;
+      }
+      remaining -= 1;
+      if (remaining > 0) {
+        emitTick(remaining);
+      } else {
+        clearInterval(intervalId);
+        emitExpired();
+      }
+    }, 1000);
   }
 
   function emitTick(remaining) {

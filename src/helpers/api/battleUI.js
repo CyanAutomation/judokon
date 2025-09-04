@@ -1,4 +1,5 @@
 import { STATS, handleStatSelection } from "../battleEngineFacade.js";
+import { seededRandom } from "../testModeUtils.js";
 
 /**
  * Choose an opponent stat based on difficulty and available values.
@@ -21,16 +22,16 @@ export function chooseOpponentStat(values, difficulty = "easy") {
   if (difficulty === "hard" && values.length) {
     const max = Math.max(...values.map((v) => v.value));
     const best = values.filter((v) => v.value === max);
-    return best[Math.floor(Math.random() * best.length)].stat;
+    return best[Math.floor(seededRandom() * best.length)].stat;
   }
   if (difficulty === "medium" && values.length) {
     const avg = values.reduce((sum, v) => sum + v.value, 0) / values.length;
     const eligible = values.filter((v) => v.value >= avg);
     if (eligible.length > 0) {
-      return eligible[Math.floor(Math.random() * eligible.length)].stat;
+      return eligible[Math.floor(seededRandom() * eligible.length)].stat;
     }
   }
-  return STATS[Math.floor(Math.random() * STATS.length)];
+  return STATS[Math.floor(seededRandom() * STATS.length)];
 }
 
 // Map outcome codes (string values produced by the engine) to messages.

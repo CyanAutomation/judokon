@@ -1,4 +1,5 @@
 import { BattleEngine, STATS } from "./BattleEngine.js";
+import { setTestMode } from "./testModeUtils.js";
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 
@@ -84,6 +85,11 @@ export function createBattleEngine(config = {}) {
     debugHooks: { getStateSnapshot },
     ...config
   });
+  try {
+    if (typeof config?.seed === "number") {
+      setTestMode({ enabled: true, seed: Number(config.seed) });
+    }
+  } catch {}
   return battleEngine;
 }
 
@@ -257,6 +263,66 @@ export const on = (type, handler) => battleEngine?.on?.(type, handler);
  * @returns {void}
  */
 export const off = (type, handler) => battleEngine?.off?.(type, handler);
+
+/**
+ * startRoundTimer: PRD alias for starting the round timer.
+ *
+ * @pseudocode
+ * 1. Delegate to `startRound` with the same arguments.
+ */
+export const startRoundTimer = (...args) => requireEngine().startRound(...args);
+
+/**
+ * pauseRoundTimer: PRD alias for pausing the round timer.
+ *
+ * @pseudocode
+ * 1. Delegate to `pauseTimer`.
+ */
+export const pauseRoundTimer = () => requireEngine().pauseTimer();
+
+/**
+ * resumeRoundTimer: PRD alias for resuming the round timer.
+ *
+ * @pseudocode
+ * 1. Delegate to `resumeTimer`.
+ */
+export const resumeRoundTimer = () => requireEngine().resumeTimer();
+
+/**
+ * stopRoundTimer: PRD alias for stopping the round timer.
+ *
+ * @pseudocode
+ * 1. Delegate to `stopTimer`.
+ */
+export const stopRoundTimer = () => requireEngine().stopTimer();
+
+/**
+ * evaluateSelection: PRD-shaped wrapper for stat evaluation.
+ *
+ * @pseudocode
+ * 1. Call `handleStatSelection(playerVal, opponentVal)`.
+ * 2. Return result extended with `statKey` when provided.
+ */
+export function evaluateSelection({ statKey, playerVal, opponentVal }) {
+  const result = requireEngine().handleStatSelection(playerVal, opponentVal);
+  return statKey ? { ...result, statKey } : result;
+}
+
+/**
+ * isMatchPoint: PRD query alias.
+ *
+ * @pseudocode
+ * 1. Delegate to engine `isMatchPoint()` if available; else false.
+ */
+export const isMatchPoint = () => requireEngine().isMatchPoint?.() ?? false;
+
+/**
+ * getSeed: PRD query to expose deterministic seed.
+ *
+ * @pseudocode
+ * 1. Delegate to engine `getSeed()` if available.
+ */
+export const getSeed = () => requireEngine().getSeed?.();
 
 // Internal test helper removed; tests should instantiate engines via `createBattleEngine()`.
 

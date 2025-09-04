@@ -137,12 +137,14 @@ export class BattleEngine {
       maxRounds = CLASSIC_BATTLE_MAX_ROUNDS,
       stats = STATS,
       debugHooks = {},
-      emitter = null
+      emitter = null,
+      seed = undefined
     } = config;
     this.pointsToWin = pointsToWin;
     this.maxRounds = maxRounds;
     this.stats = stats;
     this.debugHooks = debugHooks;
+    this.seed = typeof seed === "number" ? seed : undefined;
     this.playerScore = 0;
     this.opponentScore = 0;
     this.timer = new TimerController();
@@ -152,7 +154,7 @@ export class BattleEngine {
     this.lastInterruptReason = "";
     this.lastError = "";
     this.lastModification = null;
-    this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks };
+    this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks, seed: this.seed };
     this.emitter = emitter || new SimpleEmitter();
     this.on = this.emitter.on.bind(this.emitter);
     this.off = this.emitter.off.bind(this.emitter);
@@ -489,6 +491,20 @@ export class BattleEngine {
     return this.matchEnded;
   }
 
+  /**
+   * Return true if either side is at match point.
+   *
+   * @pseudocode
+   * 1. Compute `needed = pointsToWin - 1`.
+   * 2. Return true when `playerScore === needed || opponentScore === needed`.
+   *
+   * @returns {boolean}
+   */
+  isMatchPoint() {
+    const needed = Math.max(0, Number(this.pointsToWin) - 1);
+    return this.playerScore === needed || this.opponentScore === needed;
+  }
+
   getTimerState() {
     return this.timer.getState();
   }
@@ -510,6 +526,18 @@ export class BattleEngine {
       transitions = snap.log.slice();
     }
     return { timer, transitions };
+  }
+
+  /**
+   * Get the deterministic seed associated with this engine instance, if any.
+   *
+   * @pseudocode
+   * 1. Return the stored numeric `seed` or `undefined` when not configured.
+   *
+   * @returns {number|undefined}
+   */
+  getSeed() {
+    return this.seed;
   }
 
   /**
@@ -571,11 +599,12 @@ export class BattleEngine {
 
   _resetForTest() {
     stopScheduler();
-    const { pointsToWin, maxRounds, stats, debugHooks } = this._initialConfig;
+    const { pointsToWin, maxRounds, stats, debugHooks, seed } = this._initialConfig;
     this.pointsToWin = pointsToWin;
     this.maxRounds = maxRounds;
     this.stats = stats;
     this.debugHooks = debugHooks;
+    this.seed = seed;
     this.playerScore = 0;
     this.opponentScore = 0;
     this.matchEnded = false;

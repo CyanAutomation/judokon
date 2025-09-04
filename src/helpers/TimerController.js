@@ -2,6 +2,21 @@
 // the module with vi.doMock inside an individual test still take effect.
 import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
 
+let cachedTimerUtils = null;
+
+/**
+ * Preload timer utilities to avoid dynamic import during hot paths.
+ *
+ * @pseudocode
+ * 1. Attempt to import `./timerUtils.js` and cache the module locally.
+ * 2. Swallow errors to avoid breaking initialization in tests/bundlers.
+ */
+export async function preloadTimerUtils() {
+  try {
+    cachedTimerUtils = await import("./timerUtils.js");
+  } catch {}
+}
+
 const FALLBACKS = {
   roundTimer: 30,
   coolDownTimer: 3
@@ -37,7 +52,15 @@ export class TimerController {
   }
 
   async #start(category, onTick, onExpired, duration, pauseOnHidden, onDrift) {
-    const timerUtils = await import("./timerUtils.js");
+    let timerUtils = cachedTimerUtils;
+    if (!timerUtils) {
+      try {
+        timerUtils = await import("./timerUtils.js");
+        cachedTimerUtils = timerUtils;
+      } catch {
+        // Fallbacks below will handle missing module cases
+      }
+    }
     if (duration === undefined) {
       try {
         duration = await timerUtils.getDefaultTimer(category);

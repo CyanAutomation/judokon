@@ -28,7 +28,7 @@
     "sync:agents": "node scripts/syncAgentDocs.mjs",
     "rag:query": "node scripts/queryRagCli.mjs",
   "build:offline-rag": "node scripts/buildOfflineRag.mjs",
-  "rgs": "npx rg -n --hidden --glob '!node_modules' --glob '!client_embeddings.json' --glob '!offline_rag_metadata.json'"
+  "rgs": "bash ./scripts/rgs"
   },
   "keywords": [],
   "author": "",

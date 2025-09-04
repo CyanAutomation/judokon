@@ -18,6 +18,7 @@ import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.j
 import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
+import { preloadTimerUtils } from "../TimerController.js";
 
 let machine = null;
 let debugLogListener = null;
@@ -87,6 +88,10 @@ export async function dispatchBattleEvent(eventName, payload) {
  * @returns {Promise<void>} Resolves when setup completes.
  */
 export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
+  // Preload timer utils early to avoid dynamic import on hot-path timer starts
+  try {
+    await preloadTimerUtils();
+  } catch {}
   // Ensure UI service listeners are bound before emitting any init events
   try {
     await import("./uiService.js");

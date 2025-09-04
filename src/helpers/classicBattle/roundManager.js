@@ -224,6 +224,10 @@ export function startCooldown(_store, scheduler = realScheduler) {
     } catch {}
   }
   const cooldownSeconds = computeNextRoundCooldown();
+  // PRD taxonomy: announce countdown start
+  try {
+    emitBattleEvent("control.countdown.started", { durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000 });
+  } catch {}
   wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
   currentNextRound = controls;
   // Expose a minimal test hook to skip the cooldown in Playwright without
@@ -377,9 +381,20 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   const onExpired = () => {
     if (expired) return;
     expired = true;
+    // PRD taxonomy: cooldown timer expired + countdown completed
+    try {
+      emitBattleEvent("cooldown.timer.expired");
+      emitBattleEvent("control.countdown.completed");
+    } catch {}
     return handleNextRoundExpiration(controls, btn);
   };
   timer.on("expired", onExpired);
+  // PRD taxonomy: cooldown timer ticks
+  timer.on("tick", (remaining) => {
+    try {
+      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, Number(remaining) || 0) * 1000 });
+    } catch {}
+  });
   timer.on("drift", () => {
     const msgEl = typeof document !== "undefined" ? document.getElementById("round-message") : null;
     if (msgEl && msgEl.textContent) {

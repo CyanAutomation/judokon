@@ -2,6 +2,7 @@ import { evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import * as engineFacade from "../battleEngineFacade.js";
+import { STATS } from "../battleEngineFacade.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
@@ -10,11 +11,39 @@ export function bridgeEngineEvents() {
   try {
     const onEngine = engineFacade.on;
     if (typeof onEngine !== "function") return;
+    // Legacy bridge → classic events
     onEngine("roundEnded", (detail) => {
       emitBattleEvent("roundResolved", detail);
     });
     onEngine("matchEnded", (detail) => {
       emitBattleEvent("matchOver", detail);
+    });
+    // PRD taxonomy bridge → dot-namespaced events
+    onEngine("roundStarted", (detail) => {
+      // Emit `round.started({ roundIndex, availableStats })`
+      emitBattleEvent("round.started", {
+        roundIndex: Number(detail?.round) || 0,
+        availableStats: Array.isArray(STATS) ? STATS.slice() : []
+      });
+    });
+    onEngine("timerTick", (detail) => {
+      const remaining = Number(detail?.remaining) || 0;
+      if (detail?.phase === "round") {
+        emitBattleEvent("round.timer.tick", { remainingMs: Math.max(0, remaining) * 1000 });
+      } else if (detail?.phase === "cooldown") {
+        // Prefer orchestrator emission for cooldown ticks, but mirror here when available
+        emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, remaining) * 1000 });
+      }
+    });
+    onEngine("matchEnded", (detail) => {
+      // Also emit PRD match.concluded with winner + scores
+      const outcome = detail?.outcome;
+      const winner = outcome === "matchWinPlayer" ? "player" : outcome === "matchWinOpponent" ? "opponent" : "none";
+      emitBattleEvent("match.concluded", {
+        winner,
+        scores: { player: Number(detail?.playerScore) || 0, opponent: Number(detail?.opponentScore) || 0 },
+        reason: outcome || "unknown"
+      });
     });
   } catch {}
 }
@@ -182,6 +211,16 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
     opponentVal,
     result
   });
+  // Emit PRD taxonomy event with normalized fields
+  try {
+    emitBattleEvent("round.evaluated", {
+      statKey: stat,
+      playerVal,
+      opponentVal,
+      outcome: result?.outcome,
+      scores: { player: Number(result?.playerScore) || 0, opponent: Number(result?.opponentScore) || 0 }
+    });
+  } catch {}
   store.playerChoice = null;
   return result;
 }

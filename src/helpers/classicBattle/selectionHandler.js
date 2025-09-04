@@ -170,6 +170,10 @@ export function cleanupTimers(store) {
  */
 async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts });
+  // PRD taxonomy: mirror selection lock event
+  try {
+    emitBattleEvent("round.selection.locked", { statKey: stat, source: "player" });
+  } catch {}
 
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {

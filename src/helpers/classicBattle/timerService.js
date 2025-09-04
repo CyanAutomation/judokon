@@ -231,6 +231,10 @@ export async function startTimer(onExpiredSelect, store = null) {
   const onExpired = async () => {
     setSkipHandler(null);
     scoreboard.clearTimer();
+    // PRD taxonomy: round timer expired
+    try {
+      emitBattleEvent("round.timer.expired");
+    } catch {}
     // If a selection was already made, do not auto-select again.
     const alreadyPicked = !!(store && store.selectionMade);
     try {
@@ -277,6 +281,12 @@ export async function startTimer(onExpiredSelect, store = null) {
     onDriftFail: () => forceAutoSelectAndDispatch(onExpiredSelect)
   });
   timer.on("tick", onTick);
+  // PRD taxonomy: round timer tick
+  timer.on("tick", (remaining) => {
+    try {
+      emitBattleEvent("round.timer.tick", { remainingMs: Math.max(0, Number(remaining) || 0) * 1000 });
+    } catch {}
+  });
   timer.on("expired", onExpired);
   timer.on("drift", () => {
     const msgEl = document.getElementById("round-message");
