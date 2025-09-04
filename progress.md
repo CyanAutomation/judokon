@@ -1,32 +1,31 @@
 Update — Next Readiness Test Failures (Playwright)
+
 - Symptom: playwright/battle-next-readiness.spec.js times out waiting for `#next-button[data-next-ready='true']` after a round resolves. Debug logs confirm cooldown starts, but the ready attribute never appears.
 - Current behavior: Two parallel cooldown paths exist and can race/skew ownership of readiness:
   - Orchestrator/UI path (preferred): `orchestratorHandlers.initInterRoundCooldown()` emits `countdownStart`, UI service renders snackbar and emits `countdownFinished`, then orchestrator sets `data-next-ready` and dispatches `ready`. File: `src/helpers/classicBattle/orchestratorHandlers.js`.
   - RoundManager path (fallback): `roundManager.startCooldown()` attaches its own timer and tries to mark readiness + dispatch `ready` when it expires. File: `src/helpers/classicBattle/roundManager.js`.
 - Root cause for test flakes/failures: split ownership of Next readiness between orchestrator and roundManager leads to inconsistent readiness marking in the live DOM. In CI, the orchestrator early-return/branching and roundManager fallback don’t consistently surface `data-next-ready` on `#next-button` in time, so the test never observes it. The CLI is unaffected because it doesn’t wire a Next button or UI countdown.
-Recommended Next Steps (deterministic plan)
-1) Single Source of Truth for Next readiness
+  Recommended Next Steps (deterministic plan)
+
+1. Single Source of Truth for Next readiness
    - Make the orchestrator/UI path the only owner that sets `#next-button.dataset.nextReady = "true"` and emits `nextRoundTimerReady`.
    - The roundManager should only prepare controls (timer handle, resolveReady promise) and never mark readiness or dispatch `ready` when the orchestrator is active.
-2) Wire detection and delegation
+2. Wire detection and delegation
    - In `roundManager.startCooldown()`: detect that the orchestrator path is present (e.g., `document.body.dataset.battleState` available AND `initInterRoundCooldown`/UI service are bound) and skip starting its own timer; only expose `currentNextRound` controls and leave countdown to the orchestrator.
    - Keep a pure fallback inside roundManager for non-orchestrated environments (unit tests or JSDOM): when no orchestrator/UI handlers are bound, start its internal timer and mark readiness at expiration.
-3) Orchestrator cooldown path: always active
+3. Orchestrator cooldown path: always active
    - Remove early returns that bail when `getNextRoundControls()` exists. Always emit `countdownStart` and listen for `countdownFinished`. On finished: set `data-next-ready`, emit `nextRoundTimerReady`, then dispatch `ready`. File: `src/helpers/classicBattle/orchestratorHandlers.js`.
    - UI service (`src/helpers/classicBattle/uiService.js`) continues to render snackbar countdown and emit `countdownFinished`.
-4) Next button click guarantees
+4. Next button click guarantees
    - In `src/helpers/classicBattle/timerService.js:onNextButtonClick`: keep the guard to only emit `countdownFinished` when state is actually `cooldown`. If a stale `data-next-ready` is found outside cooldown, clear it and disable the button.
-5) Tests and waits
+5. Tests and waits
    - Spec: wait through the initial match-start cooldown (matchStart → cooldown) before asserting `waitingForPlayerAction`.
    - After selection, assert not-ready during selection/decision, then assert ready after cooldown via DOM attribute. Optionally, also listen for `nextRoundTimerReady` using a page-side listener (more robust than state-only).
    - Helper: keep `waitForBattleState` and the event/snackbar-based helpers for redundancy; prefer event then attribute check.
-6) Acceptance (deterministic)
-   - After `roundResolved`, within ~1.5s total (1s countdown + 200ms padding):
-     - Orchestrator emits `countdownStart` once and later `countdownFinished`.
-     - UI renders “Next round in …” and updates the snackbar.
-     - Orchestrator sets `#next-button[data-next-ready="true"]` and emits `nextRoundTimerReady`.
-     - No readiness is surfaced during `waitingForPlayerAction` or `roundDecision`.
-Implementation checklist
+6. Acceptance (deterministic)
+   - After `roundResolved`, within ~1.5s total (1s countdown + 200ms padding): - Orchestrator emits `countdownStart` once and later `countdownFinished`. - UI renders “Next round in …” and updates the snackbar. - Orchestrator sets `#next-button[data-next-ready="true"]` and emits `nextRoundTimerReady`. - No readiness is surfaced during `waitingForPlayerAction` or `roundDecision`.
+     Implementation checklist
+
 - Refactor `src/helpers/classicBattle/roundManager.js`:
   - Add `isOrchestrated()` helper; when true, do not call `createRoundTimer().start`; just set up `currentNextRound` controls.
   - Remove direct `dispatchBattleEvent('ready')` and direct readiness marking from the orchestrated path.
@@ -37,10 +36,9 @@ Implementation checklist
 - Update `playwright/battle-next-readiness.spec.js` to:
   - Wait initial `cooldown` → `waitingForPlayerAction` after modal choice.
   - After clicking a stat, rely on `nextRoundTimerReady` event (or fallback attribute) for readiness, with 2–6s timeout depending on configured cooldown.
-Notes
+    Notes
 - This centralization restores a deterministic single path governing readiness, removing races between roundManager and orchestrator.
 - The CLI remains unaffected.
-
 
 Why the spec still fails
 

@@ -115,15 +115,21 @@ export async function loadBattleCLI(options = {}) {
     const getBattleEventTarget = vi.fn(() => battleBus);
     const __resetBattleEventTarget = vi.fn(() => {
       // Replace the bus with a fresh one so subsequent tests don't share listeners
-      // eslint-disable-next-line no-param-reassign
+
       while (true) {
         // EventTarget does not expose listeners; callers will rebind on next import
         break;
       }
     });
-    return { onBattleEvent, offBattleEvent, emitBattleEvent, getBattleEventTarget, __resetBattleEventTarget };
+    return {
+      onBattleEvent,
+      offBattleEvent,
+      emitBattleEvent,
+      getBattleEventTarget,
+      __resetBattleEventTarget
+    };
   });
-  
+
   vi.doMock("../../../src/helpers/BattleEngine.js", () => ({ STATS: battleStats }));
   let pts = pointsToWin;
   vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
@@ -182,7 +188,7 @@ export async function cleanupBattleCLI() {
     "../../../src/helpers/classicBattle/roundManager.js",
     "../../../src/helpers/classicBattle/orchestrator.js",
     "../../../src/helpers/classicBattle/battleEvents.js",
-    
+
     "../../../src/helpers/BattleEngine.js",
     "../../../src/helpers/battleEngineFacade.js",
     "../../../src/helpers/dataUtils.js",

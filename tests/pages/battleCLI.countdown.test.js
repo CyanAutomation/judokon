@@ -25,7 +25,9 @@ describe("battleCLI countdown", () => {
     await mod.__test.forceSelectionExpiry();
     // Either the auto-select helper is invoked, or the UI shows a selection result
     const bar = document.querySelector("#snackbar-container .snackbar");
-    expect(autoSelectStat.mock.calls.length > 0 || /You Picked:/i.test(bar?.textContent || "")).toBe(true);
+    expect(
+      autoSelectStat.mock.calls.length > 0 || /You Picked:/i.test(bar?.textContent || "")
+    ).toBe(true);
   });
 
   it("emits statSelectionStalled when auto-select disabled", async () => {
@@ -33,9 +35,7 @@ describe("battleCLI countdown", () => {
     await mod.__test.init();
     const battleEventsMod = await import("../../src/helpers/classicBattle/battleEvents.js");
     const emitSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
-    const { autoSelectStat } = await import(
-      "../../src/helpers/classicBattle/autoSelectStat.js"
-    );
+    const { autoSelectStat } = await import("../../src/helpers/classicBattle/autoSelectStat.js");
     battleEvents.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
     vi.advanceTimersByTime(30000);
     await mod.__test.forceSelectionExpiry();
