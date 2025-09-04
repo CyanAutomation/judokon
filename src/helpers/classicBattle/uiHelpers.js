@@ -260,6 +260,48 @@ export async function renderOpponentCard(judoka, container) {
 }
 
 /**
+ * Disable the Next button and clear its ready marker.
+ *
+ * @pseudocode
+ * btn ← document.querySelector('[data-role="next-round"]')
+ * if btn: set disabled = true and delete data-next-ready
+ */
+export function disableNextRoundButton() {
+  try {
+    const btn = typeof document !== "undefined"
+      ? document.querySelector('[data-role="next-round"]')
+      : null;
+    if (btn) {
+      btn.disabled = true;
+      try {
+        delete btn.dataset.nextReady;
+      } catch {
+        // dataset may be read-only in some environments; ignore
+      }
+    }
+  } catch {}
+}
+
+/**
+ * Enable the Next button and mark it as ready.
+ *
+ * @pseudocode
+ * btn ← document.querySelector('[data-role="next-round"]')
+ * if btn: set data-next-ready = "true" and disabled = false
+ */
+export function enableNextRoundButton() {
+  try {
+    const btn = typeof document !== "undefined"
+      ? document.querySelector('[data-role="next-round"]')
+      : null;
+    if (btn) {
+      btn.dataset.nextReady = "true";
+      btn.disabled = false;
+    }
+  } catch {}
+}
+
+/**
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode

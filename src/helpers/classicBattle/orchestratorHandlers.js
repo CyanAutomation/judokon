@@ -129,6 +129,46 @@ export async function initStartCooldown(machine) {
 // initInterRoundCooldown removed: inter-round cooldown is owned by roundManager.
 
 /**
+ * Initialize the inter-round cooldown timer.
+ *
+ * This function is now the sole owner of the inter-round cooldown logic when
+ * the orchestrator is active. It starts a countdown, and when it finishes,
+ * it marks the "Next" button as ready.
+ *
+ * @param {object} machine The state machine instance.
+ * @pseudocode
+ * 1. Get the cooldown duration from `computeNextRoundCooldown`.
+ * 2. Define an `onFinished` callback that:
+ *    - Removes the `countdownFinished` listener.
+ *    - Marks the `#next-button` with `data-next-ready="true"`.
+ *    - Emits the `nextRoundTimerReady` event.
+ *    - Dispatches "ready" to the state machine.
+ * 3. Register the `onFinished` callback on the `countdownFinished` event.
+ * 4. Emit the `countdownStart` event with the calculated duration.
+ */
+export async function initInterRoundCooldown(machine) {
+  const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
+  const duration = computeNextRoundCooldown();
+
+  const onFinished = () => {
+    offBattleEvent("countdownFinished", onFinished);
+    try {
+      const nextButton = document.getElementById("next-button");
+      if (nextButton) {
+        nextButton.dataset.nextReady = "true";
+      }
+      emitBattleEvent("nextRoundTimerReady");
+      machine.dispatch("ready");
+    } catch (err) {
+      console.error("Error in initInterRoundCooldown.onFinished:", err);
+    }
+  };
+
+  onBattleEvent("countdownFinished", onFinished);
+  emitBattleEvent("countdownStart", { duration });
+}
+
+/**
  * onEnter handler for `waitingForMatchStart` state.
  *
  * @pseudocode
@@ -261,32 +301,8 @@ export async function matchStartEnter(machine) {
  */
 export async function cooldownEnter(machine, payload) {
   if (payload?.initial) return initStartCooldown(machine);
-  // Ensure a cooldown is scheduled if none exists (e.g., after interrupt paths).
-  try {
-    const controls = getNextRoundControls?.();
-    if (controls && (controls.timer || controls.ready)) return;
-  } catch {}
-  try {
-    const { startCooldown } = await import("./roundManager.js");
-    startCooldown(machine?.context?.store);
-    return;
-  } catch {}
-  // Fallback path for test/mocked environments: schedule a minimal timer
-  // and dispatch `ready` when it elapses.
-  try {
-    const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
-    let duration = 1;
-    try {
-      duration = computeNextRoundCooldown();
-    } catch {}
-    const ms = Math.max(0, Number(duration) * 1000) + 200;
-    const schedule = typeof setupFallbackTimer === "function" ? setupFallbackTimer : setTimeout;
-    schedule(ms, () => {
-      try {
-        machine.dispatch("ready");
-      } catch {}
-    });
-  } catch {}
+  // The orchestrator now owns the inter-round cooldown.
+  return initInterRoundCooldown(machine);
 }
 
 /**

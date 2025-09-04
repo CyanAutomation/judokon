@@ -13,6 +13,12 @@ import { setSkipHandler } from "./skipHandler.js";
 /** @type {{ timer: ReturnType<typeof createRoundTimer>, onExpired: Function }|null} */
 let activeCountdown = null;
 
+function handleCountdownExpired() {
+  setSkipHandler(null);
+  activeCountdown = null;
+  battleEvents.emitBattleEvent("countdownFinished");
+}
+
 /**
  * Update the scoreboard with current scores.
  *
@@ -153,7 +159,10 @@ function bindUIServiceEventHandlers() {
 
   onBattleEvent("countdownStart", (e) => {
     // If the skip flag is enabled, immediately finish the countdown
-    if (uiHelpers.skipRoundCooldownIfEnabled?.()) return;
+    if (uiHelpers.skipRoundCooldownIfEnabled?.()) {
+      handleCountdownExpired();
+      return;
+    }
     const { duration } = e.detail || {};
     if (typeof duration !== "number") return;
     try {
@@ -169,9 +178,7 @@ function bindUIServiceEventHandlers() {
 
       const timer = createRoundTimer();
       const onExpired = () => {
-        setSkipHandler(null);
-        activeCountdown = null;
-        battleEvents.emitBattleEvent("countdownFinished");
+        handleCountdownExpired();
       };
 
       activeCountdown = { timer, onExpired };
@@ -184,7 +191,7 @@ function bindUIServiceEventHandlers() {
         try {
           timer.stop();
         } catch {}
-        activeCountdown = null;
+        handleCountdownExpired();
       });
       if (!activeCountdown) {
         // A pending skip consumed the countdown before it began

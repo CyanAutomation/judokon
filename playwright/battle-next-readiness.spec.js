@@ -35,15 +35,17 @@ test.describe("Next readiness only in cooldown", () => {
     await waitForBattleState(page, "roundDecision", 2000).catch(() => {});
     await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(0);
 
-    // Debug: dump Next button HTML before readiness assertion
+    // The orchestrator now emits `nextRoundTimerReady` when the cooldown is finished.
+    // We can wait for this event as the primary signal.
+    await page.evaluate(() => {
+      return new Promise((resolve) => {
+        window.addEventListener("nextRoundTimerReady", resolve, { once: true });
+      });
+    });
 
-    console.log(
-      await page.evaluate(() => document.getElementById("next-button")?.outerHTML || "<no next>")
-    );
-    // Use direct DOM readiness as the source of truth to avoid environment
-    // variance in state mirroring.
+    // As a fallback and final assertion, check for the data attribute.
     await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(1, {
-      timeout: 6000
+      timeout: 2000
     });
   });
 });

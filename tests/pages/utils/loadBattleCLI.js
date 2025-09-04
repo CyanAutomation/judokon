@@ -24,7 +24,7 @@ export async function loadBattleCLI(options = {}) {
   const {
     verbose = false,
     cliShortcuts = true,
-    pointsToWin = 5,
+    pointsToWin = 10,
     autoSelect = true,
     html = "",
     url,
@@ -143,7 +143,12 @@ export async function loadBattleCLI(options = {}) {
   vi.doMock("../../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue(stats)
   }));
-  vi.doMock("../../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
+  vi.doMock("../../../src/helpers/constants.js", () => ({
+    DATA_DIR: "",
+    // Provide defaults used by the CLI UI
+    SNACKBAR_REMOVE_MS: 3000,
+    SNACKBAR_FADE_MS: 2500
+  }));
   vi.doMock("../../../src/helpers/classicBattle/autoSelectStat.js", () => ({
     autoSelectStat: vi.fn()
   }));
