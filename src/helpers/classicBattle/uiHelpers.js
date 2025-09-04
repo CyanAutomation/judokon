@@ -266,21 +266,7 @@ export async function renderOpponentCard(judoka, container) {
  * btn ← document.querySelector('[data-role="next-round"]')
  * if btn: set disabled = true and delete data-next-ready
  */
-export function disableNextRoundButton() {
-  try {
-    const btn = typeof document !== "undefined"
-      ? document.querySelector('[data-role="next-round"]')
-      : null;
-    if (btn) {
-      btn.disabled = true;
-      try {
-        delete btn.dataset.nextReady;
-      } catch {
-        // dataset may be read-only in some environments; ignore
-      }
-    }
-  } catch {}
-}
+// (Removed duplicate disableNextRoundButton; canonical version is below)
 
 /**
  * Enable the Next button and mark it as ready.
@@ -289,17 +275,7 @@ export function disableNextRoundButton() {
  * btn ← document.querySelector('[data-role="next-round"]')
  * if btn: set data-next-ready = "true" and disabled = false
  */
-export function enableNextRoundButton() {
-  try {
-    const btn = typeof document !== "undefined"
-      ? document.querySelector('[data-role="next-round"]')
-      : null;
-    if (btn) {
-      btn.dataset.nextReady = "true";
-      btn.disabled = false;
-    }
-  } catch {}
-}
+// (Removed duplicate enableNextRoundButton; canonical version is below)
 
 /**
  * @summary TODO: Add summary
@@ -333,15 +309,11 @@ export function enableNextRoundButton() {
  * @returns {void}
  */
 export function enableNextRoundButton() {
-  const btn = document.getElementById("next-button");
+  const btn = document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
   if (!btn) return;
-  // Guard: cooldown exclusively owns Next readiness
-  try {
-    const { state } = getStateSnapshot();
-    if (state !== "cooldown") return;
-  } catch {}
-  btn.disabled = false;
+  // Be permissive here for helpers: explicitly enable and mark ready
   btn.dataset.nextReady = "true";
+  btn.disabled = false;
 }
 
 /**
@@ -384,7 +356,7 @@ export function enableNextRoundButton() {
  * @returns {void}
  */
 export function disableNextRoundButton() {
-  const btn = document.getElementById("next-button");
+  const btn = document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
   if (!btn) return;
   btn.disabled = true;
   delete btn.dataset.nextReady;
