@@ -365,9 +365,7 @@ export function bindRoundUIEventHandlersDynamic() {
         emitBattleEvent("matchOver");
       } catch {}
     } else {
-      const { startCooldown } = await import("./roundManager.js");
       // Schedule immediately to surface the countdown in tests and runtime.
-      startCooldown(store);
       // Failsafe for dynamic path as well
       try {
         const outcomeEvent =

@@ -90,3 +90,17 @@ These logs should appear in Playwright output to confirm the emission path and t
 ## Open Questions
 
 - Do we want a DOM-level mirror event for accessibility toolchains? If yes, standardize and document it; otherwise keep tests aligned with the event bus.
+
+## Investigation Log
+
+### 2025-09-04
+
+- **Action**: Ran `npx playwright test playwright/battle-next-readiness.spec.js`.
+- **Result**: Test failed with a timeout, as described in the bug report. The `waitForNextRoundReadyEvent` function timed out.
+- **Analysis**: The timeout indicates that the `nextRoundTimerReady` event is not being fired on the custom event bus as expected.
+
+- **Action**: Investigated the code to trace the cooldown logic.
+- **Analysis**: A race condition was identified. The `roundResolved` event handler in `src/helpers/classicBattle/roundUI.js` was calling `startCooldown()` from `roundManager.js`, while the state machine's `cooldownEnter` handler was calling `initInterRoundCooldown()` from `orchestratorHandlers.js`. The `startCooldown` path does not emit the `nextRoundTimerReady` event, which is necessary for the test to pass. This race condition meant that the incorrect cooldown path was being taken.
+
+- **Action**: Removed the calls to `startCooldown()` from the `roundResolved` event handlers in `src/helpers/classicBattle/roundUI.js` (in both `bindRoundUIEventHandlers` and `bindRoundUIEventHandlersDynamic`).
+- **Analysis**: This change is intended to make the orchestrator's cooldown path the single source of truth, ensuring the `nextRoundTimerReady` event is always emitted.
