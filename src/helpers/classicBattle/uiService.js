@@ -163,7 +163,7 @@ function bindUIServiceEventHandlers() {
       handleCountdownExpired();
       return;
     }
-    const { duration } = e.detail || {};
+    const { duration, onFinished } = e.detail || {};
     if (typeof duration !== "number") return;
     try {
       if (activeCountdown) {
@@ -179,6 +179,9 @@ function bindUIServiceEventHandlers() {
       const timer = createRoundTimer();
       const onExpired = () => {
         handleCountdownExpired();
+        if (typeof onFinished === "function") {
+          onFinished();
+        }
       };
 
       activeCountdown = { timer, onExpired };

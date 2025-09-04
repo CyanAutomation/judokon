@@ -343,12 +343,12 @@ async function handleNextRoundExpiration(controls, btn) {
 
   // Dispatch `ready` before resolving the controls to satisfy tests that
   // await `controls.ready` and then assert the dispatch occurred.
-  try {
-    await dispatchBattleEvent("ready");
-  } catch {}
-  // Fallback: dispatch directly on the live machine via debug hook if available
-  // to ensure progression in non-orchestrated test environments.
+  // Only dispatch if not orchestrated.
   if (!isOrchestrated()) {
+    try {
+      await dispatchBattleEvent("ready");
+    } catch {}
+    // Fallback: dispatch directly on the live machine via debug hook if available.
     try {
       const getter = readDebugState("getClassicBattleMachine");
       const machine = typeof getter === "function" ? getter() : getter;
@@ -451,7 +451,8 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
  *
  * @summary Reset match subsystems and UI for tests.
  * @pseudocode
- * 1. Reset skip and selection subsystems, recreate the engine via `createBattleEngine()`, and rebind engine events with `bridgeEngineEvents()`.
+ * 1. Reset skip and selection subsystems, recreate the engine via `createBattleEngine()`,
+ *    and rebind engine events with `bridgeEngineEvents()`.
  * 2. Stop any schedulers and clear debug overrides on `window`.
  * 3. If a `store` is provided, clear its timeouts and selection state and
  *    dispatch `game:reset-ui` with the store detail. Otherwise dispatch a

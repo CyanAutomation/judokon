@@ -118,17 +118,6 @@ export async function initStartCooldown(machine) {
 }
 
 /**
- * Initialize cooldown when no next-round timer is scheduled.
- *
- * @pseudocode
- * 1. If controls already have a timer/ready flag, abort.
- * 2. Compute minimal duration and enable Next button.
- * 3. Listen for `countdownFinished` to mark ready and dispatch `ready`.
- * 4. Schedule fallback timer that invokes the same completion logic.
- */
-// initInterRoundCooldown removed: inter-round cooldown is owned by roundManager.
-
-/**
  * Initialize the inter-round cooldown timer.
  *
  * This function is now the sole owner of the inter-round cooldown logic when
@@ -300,7 +289,9 @@ export async function matchStartEnter(machine) {
  * @param {object} [payload]
  */
 export async function cooldownEnter(machine, payload) {
-  if (payload?.initial) return initStartCooldown(machine);
+  if (payload?.initial) {
+    return initStartCooldown(machine);
+  }
   // The orchestrator now owns the inter-round cooldown.
   return initInterRoundCooldown(machine);
 }
