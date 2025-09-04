@@ -242,4 +242,5 @@ Hotfix — Orchestrator Next-Readiness Event (Playwright)
 - Context: `playwright/battle-next-readiness.spec.js` waits for the `nextRoundTimerReady` event from the orchestrator. Countdown was emitted, but no internal timer fired the ready event on the classic battle page.
 - Change: In `classicBattle/orchestratorHandlers.initInterRoundCooldown`, start an orchestrator-owned cooldown timer via `createRoundTimer({ starter: startCoolDown })`, emit `cooldown.timer.tick/expired`, `countdownStart/Finished`, and `nextRoundTimerReady`, then dispatch `ready`.
 - Additional fallback: Schedule a `setupFallbackTimer(duration+200ms)` that sets `data-next-ready`, emits `nextRoundTimerReady` and `countdownFinished`, and dispatches `ready` to ensure readiness even when engine timers are mocked.
-- Result: The readiness event fires reliably in battleJudoka without relying on page-specific handlers.
+- Also emit `nextRoundTimerReady` and set `data-next-ready` immediately on entering `cooldown` so Next is clickable throughout the countdown.
+- Result: The readiness event fires reliably in battleJudoka and the Next button is enabled during cooldown.

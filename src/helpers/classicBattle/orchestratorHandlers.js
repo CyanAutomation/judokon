@@ -141,11 +141,16 @@ export async function initInterRoundCooldown(machine) {
 
   // Notify UI layers that a countdown is starting.
   emitBattleEvent("countdownStart", { duration });
-  // Enable the Next button during cooldown so users can skip immediately.
+  // Enable the Next button during cooldown so users can skip immediately
+  // and mark readiness now.
   try {
     const nextButton =
       document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
-    if (nextButton) nextButton.disabled = false;
+    if (nextButton) {
+      nextButton.disabled = false;
+      nextButton.dataset.nextReady = "true";
+    }
+    emitBattleEvent("nextRoundTimerReady");
   } catch {}
 
   // Orchestrator-owned cooldown timer; on expiry, mark Next ready and advance.
