@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="JU-DO-KON! Classic Battle – CLI mode" />
     <title>JU-DO-KON! – Classic Battle CLI</title>
-    <link rel="stylesheet" href="../styles/cli-immersive.css">
+    <link rel="stylesheet" href="../styles/cli-immersive.css" />
     <style>
       :root {
         color-scheme: light dark;
@@ -357,11 +357,17 @@
       }
     </style>
     <script>
-      if (localStorage.getItem('userFlags') && JSON.parse(localStorage.getItem('userFlags')).cliImmersive) {
-        document.body.classList.add('cli-immersive');
+      if (
+        localStorage.getItem("userFlags") &&
+        JSON.parse(localStorage.getItem("userFlags")).cliImmersive
+      ) {
+        document.body.classList.add("cli-immersive");
       }
-      if (localStorage.getItem('userFlags') && JSON.parse(localStorage.getItem('userFlags')).scanlines) {
-        document.body.classList.add('scanlines');
+      if (
+        localStorage.getItem("userFlags") &&
+        JSON.parse(localStorage.getItem("userFlags")).scanlines
+      ) {
+        document.body.classList.add("scanlines");
       }
     </script>
   </head>
@@ -533,7 +539,9 @@
             style="margin: 0; white-space: pre-wrap"
           ></pre>
         </section>
-        <div id="cli-prompt" role="textbox" aria-label="Command prompt">&gt; <span id="cli-cursor" aria-hidden="true">▌</span></div>
+        <div id="cli-prompt" role="textbox" aria-label="Command prompt">
+          &gt; <span id="cli-cursor" aria-hidden="true">▌</span>
+        </div>
       </main>
 
       <footer class="cli-footer" role="contentinfo">

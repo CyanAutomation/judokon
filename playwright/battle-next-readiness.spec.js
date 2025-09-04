@@ -36,7 +36,7 @@ test.describe("Next readiness only in cooldown", () => {
     await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(0);
 
     // Debug: dump Next button HTML before readiness assertion
-    // eslint-disable-next-line no-console
+
     console.log(
       await page.evaluate(() => document.getElementById("next-button")?.outerHTML || "<no next>")
     );
