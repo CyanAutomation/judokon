@@ -1,469 +1,351 @@
-# PRD: Battle Engine
+# PRD: Battle Engine (Enhanced)
 
 **Supports:**
 
-- [Classic Battle PRD](prdBattleClassic.md)
-- [Classic Battle CLI PRD](prdBattleCLI.md)
+* [Classic Battle PRD](prdBattleClassic.md)
+* [Classic Battle CLI PRD](prdBattleCLI.md)
 
 ---
 
-## TL;DR
+## 1. TL;DR
 
-The **Battle Engine** powers JU-DO-KON!’s turn-based match flow.  
-It is a **deterministic, UI-agnostic state machine** that handles:
+The **Battle Engine** is split into two cooperating components:
 
-- match setup,
-- round progression,
-- stat selection with timers,
-- scoring and win conditions,
-- interrupts and recovery.
+* **Engine**: handles round timer, stat evaluation, scoring, and domain event emission.
+* **Orchestrator**: owns the state machine, cooldowns, readiness handshakes, interrupts, and UI adapter events.
 
-This engine ensures every mode (Classic, CLI, future variants) runs on the **same consistent rules**, with outputs exposed via events for any UI to render.
+**Design Goals:**
 
----
-
-## Problem Statement
-
-Classic Battle modes rely on consistent, predictable flow. Without a robust engine:
-
-- timers drift,
-- states desync from UI,
-- edge cases (timeouts, quits, errors) behave inconsistently,
-- QA automation becomes brittle.
-
-A clear **battle engine contract** prevents divergence between game modes and guarantees a **fair, testable, and accessible** experience.
-
-From the **player’s perspective**, these failures break immersion and fairness:
-
-- A timer drifting can feel like a “stolen turn.”
-- Desynced UI may show incorrect scores, reducing trust.
-- Inconsistent error handling can cause perceived unfair defeats.
-
-One playtester described this as:
-
-> “I picked a stat, but the game skipped me — it felt like I didn’t get my turn at all.”
-
-Framing the engine around **trust, fairness, and clarity** ensures both developers and players benefit.
+* Enforce **strict separation of concerns** between game logic and orchestration.
+* Guarantee **deterministic outcomes** using seeded randomness (100% match determinism under identical inputs).
+* Ensure **testability** through snapshot state inspection and injected timers.
+* Maintain a **clear, structured event taxonomy** with at least 90% event conformance coverage in integration tests.
 
 ---
 
-## Goals
+## 2. Responsibilities & Boundaries
 
-1. **Determinism** — Same seed + same inputs → same outcomes.
-2. **UI Independence** — Engine emits events; rendering is external.
-3. **Robust Timing** — Single authoritative timer with drift correction.
-4. **Accessibility Support** — Expose semantics so UIs can meet WCAG.
-5. **Testability** — Provide hooks, seeds, and debug events for automation.
-6. **Recovery** — Handle interrupts gracefully (quit, navigation, error).
+### Engine
 
----
+* Owns the **round timer** (start, pause, resume, stop).
+* Compares stat values and computes outcomes.
+* Tracks scores and end conditions.
+* Emits **domain events** and **round timer events** only.
 
-## Non-Goals
+### Orchestrator
 
-- Rendering of UI (DOM, ARIA attributes, animations).
-- Multiplayer networking or remote persistence.
-- Advanced rulesets (ranked, handicaps, modifiers).
-
----
-
-## User Stories
-
-- **Developer:** I can integrate the engine into any surface without rewriting logic.
-- **Tester:** I can simulate seeded matches and assert outcomes deterministically.
-- **Player (indirect):** The game never skips turns and timers feel fair.
-- **Accessibility Reviewer:** UIs receive structured events (timers, states, outcomes) to announce correctly.
+* Drives the authoritative state machine.
+* Owns **all cooldowns** between rounds.
+* Emits **control events** for readiness and cooldown.
+* Handles interrupts and validation events.
+* Provides test seams (`getState`, `injectFakeTimers`) and optional diagnostics (`debug:*`).
 
 ---
 
-## Player Flow
+## 3. Public API
 
-From a player’s perspective, a typical match follows this flow:
+### 3.1 Engine Constructor
 
-1. **Start Match** — Player presses "Start," engine enters matchStart.
-2. **Round Start** — Player sees available stats, timer begins.
-3. **Player Choice**
-   - If the player chooses a stat: engine validates, compares, scores.
-   - If timer expires:
-     - With `autoSelect = true`, engine picks a stat automatically.
-     - With `autoSelect = false`, match flow interrupts.
-4. **Cooldown** — A short pause (default 3s) before next round.
-5. **Interrupts** — If player quits, navigates away, or an error occurs, engine ends or rolls back cleanly.
-6. **Match End** — Game ends on win target or max rounds.
+`createBattleEngine(config) => BattleEngine`
 
-**Cancellation/Backout:** If a player navigates away mid-selection, the engine transitions to an interrupt state and ends the round safely.
+Config fields:
 
-**Feedback Timing:**
+* `pointsToWin`
+* `maxRounds`
+* `autoSelect`
+* `seed`
 
-- Choice confirmation → feedback emitted within 250ms.
-- Timer resumption after pause → countdown correction displayed within 500ms.
-- Match end → clear terminal state, no lingering timers.
+### 3.2 Engine Controls
 
----
+* `startRoundTimer(durationMs, onDrift?)`
+* `pauseRoundTimer()`
+* `resumeRoundTimer()`
+* `stopRoundTimer()`
+* `evaluateSelection({ statKey, playerVal, opponentVal }) => { outcome, scores }`
 
-## Defaults (Configurable)
+### 3.3 Engine Queries
 
-- **Stat Selection Timer:** 30 s
-- **Cooldown Between Rounds:** 3 s
-- **Win Target:** 5 / 10 / 15 (default: 10)
-- **Max Rounds:** 25 (match ends in draw if exceeded)
-- **Random Stat Mode (`autoSelect`):** Enabled by default
+* `getScores()`
+* `getRoundsPlayed()`
+* `isMatchPoint()`
+* `getSeed()` – returns seed in use (for replay/debug).
 
-**Clarification:** These defaults are _developer-configurable_. Players do not directly adjust them in Classic or CLI modes, but future variants may expose them in settings.
+### 3.4 Engine Events
 
----
+* `on(eventType, handler)`
+* `off(eventType, handler)`
 
-## Acceptance Criteria
+### 3.5 Orchestrator Interface
 
-- **State Accuracy**
-  - Given a documented state transition, When the trigger is fired, Then the engine moves to the correct next state only.
+* `startMatch(config)`
+* `confirmReadiness()` – replaces DOM readiness flags
+* `requestInterrupt(scope: "round"|"match", reason: string)`
+* `getState() => { node, context }`
 
-- **Selection Window**
-  - Given a round prompt, When a player submits a valid stat, Then only the first valid input is accepted and extras are ignored.
-  - Given an invalid statKey, When chooseStat is called, Then the engine rejects it and emits an `error:event`.
+  * `context` must include at least:
 
-- **Timeout**
-  - Given autoSelect=true, When timer expires, Then the engine auto-selects a stat and continues.
-  - Given autoSelect=false, When timer expires, Then the engine transitions to interruptRound.
-
-- **Drift Handling**
-  - Given system sleep or clock drift >2s, When resumed, Then the engine corrects timers and emits a debug correction event.
-
-- **Scoring**
-  - Given a resolved round outcome, When values are compared, Then score:update is emitted within ≤250 ms.
-
-- **Match End**
-  - Given a player reaches win target OR max rounds is exceeded, When round completes, Then match:end is emitted with final scores.
-
-- **Interrupt Stability**
-  - Given an interrupt event, When applied, Then the engine ends in a clean terminal or rollback state with no ghost timers.
-
-- **Reproducibility**
-  - Given the same seed and flags, When a match is replayed, Then the transcript is identical across all supported platforms.
-
-- **Performance**
-  - Given reference hardware, When processing transitions, Then handling completes within ≤5 ms.
+    * `roundIndex`
+    * `scores`
+    * `seed`
+    * `timerState`
+* `injectFakeTimers(fakeTimersApi)`
 
 ---
 
-## Edge Cases
+## 4. Event Taxonomy
 
-- Dataset fails to load → engine emits error.
-- Player inactivity with autoSelect=false → safe interrupt path.
-- Clock jump/drift > 2 s → emit debug correction, adjust timers.
-- Duplicate input events → ignore after first valid choice.
-- Unexpected error → transition to interruptMatch.
+### 4.1 Domain Events
+
+* `round.started({ roundIndex, availableStats })`
+* `round.selection.locked({ statKey, source })`
+* `round.evaluated({ statKey, playerVal, opponentVal, outcome, scores })`
+* `match.checkpoint({ reason })`
+* `match.concluded({ winner, scores, reason })`
+
+### 4.2 Timer Events
+
+* `round.timer.tick({ remainingMs })`
+* `round.timer.expired()`
+* `cooldown.timer.tick({ remainingMs })`
+* `cooldown.timer.expired()`
+
+### 4.3 Control / UI Adapter Events
+
+* `control.countdown.started({ durationMs })`
+* `control.countdown.completed()`
+* `control.readiness.required({ for })`
+* `control.readiness.confirmed({ for })`
+
+### 4.4 Interrupt & Validation
+
+* `interrupt.requested({ scope: "round"|"match", reason })`
+* `interrupt.resolved({ outcome: "restartRound"|"resumeLobby"|"abortMatch" })`
+* `input.invalid({ kind, detail })`
+* `input.ignored({ kind:"duplicateSelection" })`
+* `error.recoverable({ message, scope })`
+* `error.fatal({ message, scope })`
+
+### 4.5 Diagnostics (Optional)
+
+* `debug.transition({ from, to, trigger })`
+* `debug.state.snapshot({ state, context })`
+* `debug.watchdog({ where, elapsedMs })`
 
 ---
 
-## Design and UX Considerations
+## 5. State Machine Overview
 
-Although the engine is UI-agnostic, UIs must render its events consistently to maintain fairness and clarity:
-
-- **Timeouts:** UI should visually show when autoSelect is applied or when an interrupt occurs.
-- **Interrupts:** Show clear modal or overlay messaging (e.g., “Match ended due to quit” or “Error occurred”).
-- **Recovery:** Resume flows should include player feedback (paused timers, resuming countdown).
-- **Accessibility:** Ensure all emitted events map to UI announcements (ARIA live regions, screen reader alerts).
-
-**Recommendation:** Provide lightweight wireframes or flows in linked UI PRDs showing how Classic UI and CLI consume these events. For accessibility review, document minimum semantics (e.g., all `state:change`, `round:timeout`, and `match:end` events must trigger live announcements).
-
----
-
-## Open Questions
-
-1. Should win target and timer length be configurable in future modes (e.g., “quick play”)?
-2. Should AI logic live in the engine or remain external (supplied by UI)?
-3. Should mid-match feature flag changes be allowed or locked at startMatch()?
-
----
-
-## API Surface
-
-### Constructor
-
-```js
-const engine = createBattleEngine({
-  pointsToWin?: 5 | 10 | 15,
-  maxRounds?: number,
-  seed?: number,
-  flags?: { autoSelect?: boolean; skipRoundCooldown?: boolean; enableTestMode?: boolean },
-  deck?: Judoka[],
-});
+```
+[Diagram Recommended Here: state graph from idle → matchFinished with overlay]
 ```
 
+### 5.1 States
+
+* `idle`
+* `matchInit`
+* `cooldown`
+* `selection`
+* `roundEvaluation`
+* `betweenRounds`
+* `matchEvaluation`
+* `matchFinished`
+* Overlay: `adminOverlay` (debug/test only)
+
+### 5.2 Transitions
+
+* `idle --startMatch--> matchInit`
+* `matchInit --ready--> cooldown`
+* `cooldown --cooldown.timer.expired|control.countdown.completed--> selection`
+* `selection --player.statSelected(first)--> roundEvaluation`
+* `selection --round.timer.expired & autoSelect=true--> roundEvaluation`
+* `selection --round.timer.expired & autoSelect=false--> interrupt.requested({reason:"selectionTimeout"})`
+* `roundEvaluation --evaluate--> betweenRounds`
+* `betweenRounds --check & (match point|maxRounds)--> matchEvaluation`
+* `betweenRounds --check & else--> cooldown`
+* `matchEvaluation --finalize--> matchFinished`
+* `interrupt.* --resolve--> interrupt.resolved({outcome})`
+
 ---
 
-## Controls
+## 6. Timer & Readiness Contract
 
-```js
-engine.startMatch();
-engine.chooseStat(statKey: string);
-engine.interrupt(kind: "quit" | "navigate" | "error");
-engine.resume();
-engine.pauseTimers();
-engine.resumeTimers();
+* Engine emits only `round.timer.*` events.
+* Orchestrator emits `cooldown.timer.*` and `control.*` events.
+* UI adapter listens to control events and calls `confirmReadiness()`.
+
+No DOM selectors are part of the contract.
+
+---
+
+## 7. Interrupts & Validation
+
+* Emit `interrupt.requested({reason})` on abnormal flows.
+* Emit `interrupt.resolved({outcome})` once handled.
+* Emit `input.invalid()` or `input.ignored()` as required.
+* Admin overlay may override or replay rounds.
+
+---
+
+## 8. Determinism & Seeding
+
+* All randomness must be seeded.
+* Orchestrator injects the seed.
+* Engine exposes `getSeed()`.
+* Same seed + inputs = identical outcomes (100% determinism goal).
+
+---
+
+## 9. Edge Case Handling
+
+### Normative Rules
+
+* Invalid input → `input.invalid`
+* Duplicate input → `input.ignored`
+* Timeout without autoSelect → `interrupt.requested({reason})`
+* Interrupts must resolve with `interrupt.resolved`
+
+### Deprecated Behaviors
+
+* Silent invalid ties (NaN=0)
+* UI imperative events (`scoreboardShowMessage`)
+
+---
+
+## 10. Acceptance Criteria (Checklist)
+
+* [ ] Emits all required domain and timer events.
+* [ ] Uses control events for readiness and cooldown.
+* [ ] Emits validation and interrupt events per §4.4.
+* [ ] Exposes `getState()` with all required context.
+* [ ] Supports `injectFakeTimers()`.
+* [ ] Produces deterministic results with same seed/inputs.
+* [ ] `debug:*` events are optional and excluded from tests.
+
+---
+
+## 11. Testing & Observability
+
+* `getState()` snapshot for FSM + context.
+* `injectFakeTimers()` for full test determinism.
+* Fixed seed → repeatable outcomes.
+* Optional `debug:*` events for diagnostics.
+
+---
+
+## 12. Migration Support
+
+During transition:
+
+| Legacy Event        | Replacement Event             |
+| ------------------- | ----------------------------- |
+| `roundResolved`     | `round.evaluated`             |
+| `roundStart`        | `round.started`               |
+| `matchOver`         | `match.concluded`             |
+| `roundTimeout`      | `round.timer.expired`         |
+| `countdownStart`    | `control.countdown.started`   |
+| `countdownFinished` | `control.countdown.completed` |
+
+Remove legacy glue code post-migration.
+
+---
+
+## 13. Glossary
+
+* **Engine**: Timer, scoring, stat evaluation, emits core game events.
+* **Orchestrator**: Controls state machine and UI readiness/cooldowns.
+* **Readiness**: Programmatic confirmation, not DOM-based.
+* **Interrupts**: Explicit recovery paths with `interrupt.resolved`.
+* **Admin Overlay**: Dev/test-only state layer, not in production FSM.
+
+
+---
+
+## 14. Mermaid State Diagram — Battle Engine
+
+```mermaid
+stateDiagram
+  direction LR
+
+  [*] --> idle
+
+  idle --> matchInit: startMatch(config/seed)
+  matchInit --> cooldown: ready
+
+  %% Cooldown is orchestrator-owned
+  state cooldown {
+    [*] --> waiting
+    waiting --> readyToSelect: cooldown.timer.expired / control.countdown.completed
+  }
+  cooldown --> selection: enter selection
+
+  %% Selection phase (engine round timer active)
+  state selection {
+    [*] --> awaitingInput
+    awaitingInput --> roundEvaluation: player.statSelected(first) / autoSelect
+    awaitingInput --> timeoutInterrupt: round.timer.expired && !autoSelect
+  }
+  selection --> roundEvaluation: player.statSelected(first) / (round.timer.expired & autoSelect)
+  selection --> interruptRound: interrupt.requested(reason="selectionTimeout")
+
+  %% Round evaluation (pure scoring + domain event)
+  roundEvaluation --> betweenRounds: round.evaluated
+
+  %% Between rounds: decide continue or finish
+  state betweenRounds {
+    [*] --> deciding
+    deciding --> matchEvaluation: match.checkpoint (pointsToWin|maxRounds)
+    deciding --> cooldown: continue
+  }
+
+  matchEvaluation --> matchFinished: match.concluded
+  matchFinished --> [*]
+
+  %% Interrupt handling (explicit resolution)
+  state "interruptRound" as interruptRound {
+    [*] --> pendingResolution
+    pendingResolution --> cooldown: interrupt.resolved(outcome="restartRound")
+    pendingResolution --> idle:    interrupt.resolved(outcome="resumeLobby")
+    pendingResolution --> matchFinished: interrupt.resolved(outcome="abortMatch")
+  }
+
+  %% Fatal/Match-scope interrupts route similarly
+  state "interruptMatch" as interruptMatch {
+    [*] --> pendingResolution2
+    pendingResolution2 --> idle:          interrupt.resolved(outcome="resumeLobby")
+    pendingResolution2 --> matchFinished: interrupt.resolved(outcome="abortMatch")
+  }
 ```
 
----
+Notes
+Engine emits: round.started, round.selection.locked, round.evaluated, round.timer.tick/expired.
+Orchestrator emits: cooldown.timer.*, control.countdown.*, control.readiness.*, match.checkpoint, match.concluded, interrupt.*.
+Admin overlay is out-of-band (not shown) and can re-enter at roundEvaluation via a controlled override.
 
-## Queries
+## 15. Tasks
 
-```js
-engine.getState(); // { stateId, round, scores, remainingMs, ... }
-engine.getSeed(); // number
-engine.getFlags(); // effective feature flags
-```
+- [ ] 1.0 Implement Battle Engine Core
+  - [ ] 1.1 Add constructor `createBattleEngine(config)`
+  - [ ] 1.2 Implement round timer controls: start, pause, resume, stop
+  - [ ] 1.3 Implement `evaluateSelection()` logic
+  - [ ] 1.4 Track scores and rounds
+  - [ ] 1.5 Emit domain and timer events
 
----
+- [ ] 2.0 Implement Orchestrator State Machine
+  - [ ] 2.1 Define all states and transitions per spec
+  - [ ] 2.2 Integrate readiness confirmation flow
+  - [ ] 2.3 Manage cooldown timers and transitions
+  - [ ] 2.4 Handle interrupts and validation events
 
-## Events
+- [ ] 3.0 Public API Surface
+  - [ ] 3.1 Implement `getState()` and `injectFakeTimers()`
+  - [ ] 3.2 Add `confirmReadiness()` and `requestInterrupt()`
+  - [ ] 3.3 Expose event binding methods (`on`, `off`)
 
-    •	state:change → { from, to, context }
-    •	round:start → { round }
-    •	round:prompt → { round, availableStats }
-    •	round:timeout → { round }
-    •	round:decision → { outcome, stat, values }
-    •	score:update → { player, opponent }
-    •	cooldown:start → { ms }
-    •	cooldown:end → { round }
-    •	match:end → { winner, scores, reason }
-    •	timer:tick → { id, remainingMs }
-    •	debug → detailed internal transitions (test mode only)
+- [ ] 4.0 Testing & Observability
+  - [ ] 4.1 Add snapshot state validation
+  - [ ] 4.2 Validate deterministic outputs under fixed seeds
+  - [ ] 4.3 Include optional `debug:*` event hooks
 
-⸻
-
-## State Machine (Canonical)
-
-States 1. waitingForMatchStart 2. matchStart 3. cooldown 4. roundStart 5. waitingForPlayerAction 6. roundDecision 7. roundOver 8. matchDecision 9. matchOver 10. interruptRound 11. interruptMatch
-
-From
-Trigger
-Guard
-To
-waitingForMatchStart
-startMatch
-valid config
-matchStart
-matchStart
-ready
-–
-cooldown
-cooldown
-ready
-–
-roundStart
-roundStart
-cardsReady
-–
-waitingForPlayerAction
-waitingForPlayerAction
-chooseStat
-valid
-roundDecision
-waitingForPlayerAction
-timeout
-autoSelect
-roundDecision
-waitingForPlayerAction
-timeout
-!autoSelect
-interruptRound
-roundDecision
-resolved
-–
-roundOver
-roundOver
-matchPointReached
-–
-matchDecision
-roundOver
-continue
-–
-cooldown
-matchDecision
-finalize
-–
-matchOver
-any
-interrupt
-kind
-interruptRound / interruptMatch
-
----
-
-## Functional Requirements (Prioritized)
-
-P
-Feature
-Requirement
-P1
-Deterministic State Machine
-No skipped/duplicate states; transitions only via documented triggers.
-P1
-Round Logic
-One valid stat choice per round; compares values; applies scoring.
-P1
-Timers
-30 s stat selection timer; pause/resume; drift correction (≥2 s).
-P1
-Scoring
-+1 point to winner; ties = 0.
-P1
-End Conditions
-End at win target or max rounds.
-P2
-Interrupts
-Quit/navigate/error handled via explicit interrupt states; rollback or match termination.
-P2
-Cooldown
-3 s delay between rounds unless skipRoundCooldown.
-P2
-Validation
-Reject invalid stat keys or actions in wrong states. Emit error:event with reason.
-P3
-Debug Mode
-Extra events, seed injection, fast timers for deterministic tests.
-
----
-
-## Mermaid Diagram
-
-sequenceDiagram
-autonumber
-actor Player
-participant UI as UI Layer (Classic/CLI)
-participant ENG as BattleEngine
-participant TMR as TimerController
-participant RNG as Seeded PRNG
-
-Note over UI,ENG: Boot & Config
-UI->>ENG: createBattleEngine({ pointsToWin, seed, flags, deck? })
-ENG-->>UI: on("state:change" | "timer:tick" | "score:update" | ...)
-
-Note over Player,ENG: Start Match
-Player->>UI: Click "Start"
-UI->>ENG: startMatch()
-ENG->>ENG: init scores, round=1
-ENG-->>UI: state:change(waitingForMatchStart→matchStart)
-ENG-->>UI: state:change(matchStart→cooldown)
-ENG->>TMR: start(COOLDOWN_MS)
-TMR-->>UI: timer:tick(remainingMs)
-TMR-->>ENG: done()
-ENG-->>UI: state:change(cooldown→roundStart)
-
-Note over ENG,RNG: Round Start
-ENG->>RNG: draw player/opponent cards
-ENG-->>UI: round:start({ round })
-ENG-->>UI: state:change(roundStart→waitingForPlayerAction)
-ENG-->>UI: round:prompt({ round, availableStats })
-ENG->>TMR: start(ROUND_SELECTION_MS)
-
-alt Player chooses in time
-Player->>UI: Pick stat
-UI->>ENG: chooseStat(statKey)
-ENG->>ENG: validate & compare
-ENG-->>UI: round:decision({ outcome, stat, values })
-ENG-->>UI: score:update({ player, opponent })
-else Timeout
-TMR-->>ENG: timeout()
-ENG-->>UI: round:timeout({ round })
-alt flags.autoSelect
-ENG->>RNG: auto-pick stat
-ENG-->>UI: round:decision(...)
-ENG-->>UI: score:update(...)
-else no autoSelect
-ENG-->>UI: state:change(waitingForPlayerAction→interruptRound)
-end
-end
-
-Note over ENG,TMR: Cooldown / Next Round
-ENG-->>UI: state:change(roundDecision→roundOver)
-ENG-->>UI: (if matchPoint) state:change(roundOver→matchDecision→matchOver)
-ENG->>TMR: start(COOLDOWN_MS) (unless skipRoundCooldown)
-TMR-->>ENG: done()
-ENG-->>UI: state:change(roundOver→cooldown→roundStart) (next round)
-
----
-
-## Minimal State Contract (reference)
-
-stateDiagram-v2
-[*] --> waitingForMatchStart
-waitingForMatchStart --> matchStart: startMatch
-matchStart --> cooldown: ready
-cooldown --> roundStart: ready
-roundStart --> waitingForPlayerAction: cardsReady
-waitingForPlayerAction --> roundDecision: chooseStat / timeout&autoSelect
-waitingForPlayerAction --> interruptRound: timeout & !autoSelect
-roundDecision --> roundOver: resolved
-roundOver --> matchDecision: matchPointReached
-roundOver --> cooldown: continue
-matchDecision --> matchOver: finalize
-state interruptRound {
-[*] --> interruptRound
-}
-state interruptMatch {
-[*] --> interruptMatch
-}
-roundStart --> interruptRound: interrupt
-waitingForPlayerAction --> interruptRound: interrupt
-roundDecision --> interruptRound: interrupt
-matchStart --> interruptMatch: interrupt/error
-matchDecision --> interruptMatch: interrupt
-matchOver --> waitingForMatchStart: rematch/home
-
----
-
-Event I/O Cheat Sheet
-
-Inputs (from UI):
-• startMatch()
-• chooseStat(statKey)
-• interrupt(kind: “quit” | “navigate” | “error”)
-• pauseTimers() / resumeTimers()
-
-Outputs (to UI):
-• state:change(from, to, ctx)
-• round:start({ round })
-• round:prompt({ round, availableStats })
-• timer:tick({ id, remainingMs })
-• round:timeout({ round })
-• round:decision({ outcome, stat, values })
-• score:update({ player, opponent })
-• cooldown:start({ ms }), cooldown:end({ round })
-• match:end({ winner, scores, reason })
-• debug(evt) (test mode)
-
----
-
-**See also:**
-
-- [Classic Battle PRD](prdBattleClassic.md)
-- [Battle Scoreboard PRD](prdBattleScoreboard.md)
-- [stateTable.js](../../src/helpers/classicBattle/stateTable.js)
-- [BattleEngine.js](../../src/helpers/BattleEngine.js)
-- [orchestrator.js](../../src/helpers/classicBattle/orchestrator.js)
-- [battleStateProgress.js](../../src/helpers/battleStateProgress.js)
-
----
-
-## Tasks
-
-- [ ] 1.0 Implement State Machine
-  - [ ] 1.1 Define states and transitions in `stateTable.js`
-  - [ ] 1.2 Implement orchestrator for state flow
-  - [ ] 1.3 Expose state via event emitters
-- [ ] 2.0 Build Round Logic
-  - [ ] 2.1 Implement stat selection and validation
-  - [ ] 2.2 Compare stats and compute round outcome
-  - [ ] 2.3 Update scores (+1, ties=0)
-- [ ] 3.0 Implement Timer System
-  - [ ] 3.1 Add 30s stat selection timer with pause/resume
-  - [ ] 3.2 Handle drift correction (>2s jumps)
-  - [ ] 3.3 Emit timer:tick for UI
-- [ ] 4.0 Handle Interrupts
-  - [ ] 4.1 Add quit, navigate, error interrupts
-  - [ ] 4.2 Define rollback/match termination logic
-- [ ] 5.0 Testing & Debugging
-  - [ ] 5.1 Add hooks for Playwright/automation
-  - [ ] 5.2 Log state transitions in debug mode
-  - [ ] 5.3 Unit test timers, scoring, and interrupts
+- [ ] 5.0 Migration Support
+  - [ ] 5.1 Dual-emit legacy and new events during transition period
+  - [ ] 5.2 Clean up legacy UI glue code after migration window
