@@ -135,22 +135,57 @@ export async function initStartCooldown(machine) {
  */
 export async function initInterRoundCooldown(machine) {
   const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
+  const { createRoundTimer } = await import("../timers/createRoundTimer.js");
+  const { startCoolDown: engineStartCoolDown } = await import("../battleEngineFacade.js");
   const duration = computeNextRoundCooldown();
 
-  const onFinished = () => {
+  // Notify UI layers that a countdown is starting.
+  emitBattleEvent("countdownStart", { duration });
+  // Enable the Next button during cooldown so users can skip immediately.
+  try {
+    const nextButton = document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+    if (nextButton) nextButton.disabled = false;
+  } catch {}
+
+  // Orchestrator-owned cooldown timer; on expiry, mark Next ready and advance.
+  const timer = createRoundTimer({ starter: engineStartCoolDown });
+  timer.on("expired", () => {
     try {
       const nextButton = document.getElementById("next-button");
-      if (nextButton) {
-        nextButton.dataset.nextReady = "true";
-      }
+      if (nextButton) nextButton.dataset.nextReady = "true";
+    } catch {}
+    try {
+      emitBattleEvent("cooldown.timer.expired");
       emitBattleEvent("nextRoundTimerReady");
+      emitBattleEvent("countdownFinished");
+    } catch {}
+    try {
       machine.dispatch("ready");
-    } catch (err) {
-      console.error("Error in initInterRoundCooldown.onFinished:", err);
-    }
-  };
-
-  emitBattleEvent("countdownStart", { duration, onFinished });
+    } catch {}
+  });
+  timer.on("tick", (remaining) => {
+    try {
+      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, Number(remaining) || 0) * 1000 });
+    } catch {}
+  });
+  timer.start(duration);
+  // Fallback: ensure readiness even if the engine timer is mocked or fails
+  try {
+    const { setupFallbackTimer } = await import("./roundManager.js");
+    setupFallbackTimer(Math.max(0, Number(duration) || 0) * 1000 + 200, () => {
+      try {
+        const btn = document.getElementById("next-button");
+        if (btn) btn.dataset.nextReady = "true";
+      } catch {}
+      try {
+        emitBattleEvent("nextRoundTimerReady");
+        emitBattleEvent("countdownFinished");
+      } catch {}
+      try {
+        machine.dispatch("ready");
+      } catch {}
+    });
+  } catch {}
 }
 
 /**

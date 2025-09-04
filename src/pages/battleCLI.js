@@ -1529,6 +1529,10 @@ function handleCountdownStart(e) {
   if (skipRoundCooldownIfEnabled()) return;
   const ds = typeof document !== "undefined" ? document.body?.dataset : undefined;
   if (ds) ds.battleState = "cooldown";
+  // Ensure score line reflects the resolved round before any user interaction
+  try {
+    updateScoreLine();
+  } catch {}
   const duration = Number(e.detail?.duration) || 0;
   if (cooldownTimer) clearTimeout(cooldownTimer);
   if (cooldownInterval) clearInterval(cooldownInterval);

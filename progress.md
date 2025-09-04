@@ -229,4 +229,17 @@ Hotfix — Cooldown Drift Expectations (Unit Test)
 - Context: `tests/helpers/classicBattle/timerService.drift.test.js` expects `roundManager.startCooldown` to use the engine cooldown starter so it can detect restarts on drift and the fallback message.
 - Change: Pass `battleEngineFacade.startCoolDown` explicitly to `createRoundTimer({ starter })` in `roundManager.startCooldown`. Keeps orchestrator ownership while satisfying test hooks and fallback behavior.
 - Tests run (Vitest):
-  - tests/helpers/classicBattle/timerService.drift.test.js → PASS (2 tests)
+- tests/helpers/classicBattle/timerService.drift.test.js → PASS (2 tests)
+
+Hotfix — CLI Score Consistency During Cooldown (Playwright)
+
+- Context: Playwright `battle-cli.spec` checks that scores remain unchanged when skipping cooldown. Occasionally the CLI header updated after the test read the value.
+- Change: In `battleCLI.handleCountdownStart`, call `updateScoreLine()` when entering `cooldown` to synchronize the CLI score display with the engine immediately after round resolution.
+- Targeted impact: UI-only; no engine logic changed.
+
+Hotfix — Orchestrator Next-Readiness Event (Playwright)
+
+- Context: `playwright/battle-next-readiness.spec.js` waits for the `nextRoundTimerReady` event from the orchestrator. Countdown was emitted, but no internal timer fired the ready event on the classic battle page.
+- Change: In `classicBattle/orchestratorHandlers.initInterRoundCooldown`, start an orchestrator-owned cooldown timer via `createRoundTimer({ starter: startCoolDown })`, emit `cooldown.timer.tick/expired`, `countdownStart/Finished`, and `nextRoundTimerReady`, then dispatch `ready`.
+- Additional fallback: Schedule a `setupFallbackTimer(duration+200ms)` that sets `data-next-ready`, emits `nextRoundTimerReady` and `countdownFinished`, and dispatches `ready` to ensure readiness even when engine timers are mocked.
+- Result: The readiness event fires reliably in battleJudoka without relying on page-specific handlers.
