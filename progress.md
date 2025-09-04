@@ -3,29 +3,29 @@ PRD vs Implementation: Battle Engine Alignment
 Task Contract
 
 {
-  "inputs": [
-    "design/productRequirementsDocuments/prdBattleEngine.md",
-    "src/helpers/BattleEngine.js",
-    "src/helpers/battleEngineFacade.js",
-    "src/helpers/TimerController.js",
-    "src/helpers/classicBattle/orchestrator.js",
-    "src/helpers/classicBattle/orchestratorHandlers.js",
-    "src/helpers/classicBattle/roundManager.js",
-    "src/helpers/classicBattle/autoSelectStat.js",
-    "src/helpers/testModeUtils.js",
-    "playwright/**/*.spec.js",
-    "tests/**/*.test.js"
-  ],
-  "outputs": [
-    "progress.md"
-  ],
-  "success": [
-    "eslint: PASS",
-    "vitest: PASS",
-    "jsdoc: PASS",
-    "no_unsilenced_console"
-  ],
-  "errorMode": "ask_on_public_api_change"
+"inputs": [
+"design/productRequirementsDocuments/prdBattleEngine.md",
+"src/helpers/BattleEngine.js",
+"src/helpers/battleEngineFacade.js",
+"src/helpers/TimerController.js",
+"src/helpers/classicBattle/orchestrator.js",
+"src/helpers/classicBattle/orchestratorHandlers.js",
+"src/helpers/classicBattle/roundManager.js",
+"src/helpers/classicBattle/autoSelectStat.js",
+"src/helpers/testModeUtils.js",
+"playwright/**/*.spec.js",
+"tests/**/*.test.js"
+],
+"outputs": [
+"progress.md"
+],
+"success": [
+"eslint: PASS",
+"vitest: PASS",
+"jsdoc: PASS",
+"no_unsilenced_console"
+],
+"errorMode": "ask_on_public_api_change"
 }
 
 Key Deltas (PRD vs. Code)
@@ -150,7 +150,7 @@ Phase 1 — Engine Facade + Seed APIs
   - `battleEngineFacade`: add PRD aliases `startRoundTimer`, `pauseRoundTimer`, `resumeRoundTimer`, `stopRoundTimer`, and `evaluateSelection({ statKey, playerVal, opponentVal })`; expose `isMatchPoint()` and `getSeed()`.
 - Notes: Backwards-compatible; no removal of existing methods. No behavior change for existing callers.
 - Tests run (Vitest):
-  - tests/helpers/battleEngine/*.test.js → PASS (6 files, 27 tests)
+  - tests/helpers/battleEngine/\*.test.js → PASS (6 files, 27 tests)
 - Next: Proceed to Phase 2 (Event Taxonomy Bridge) after your review.
 
 Phase 2 — Event Taxonomy Bridge
@@ -166,7 +166,7 @@ Phase 2 — Event Taxonomy Bridge
   - Round timer (`timerService.startTimer`): emit `round.timer.tick` and `round.timer.expired`.
 - Notes: All new PRD events are additive; legacy events remain for compatibility.
 - Tests run (Vitest):
-  - tests/helpers/classicBattle/timerService.*.test.js → PASS (2 files, 10 tests)
+  - tests/helpers/classicBattle/timerService.\*.test.js → PASS (2 files, 10 tests)
   - tests/helpers/classicBattle/roundResolverOnce.test.js → PASS (1 test)
   - tests/helpers/classicBattle/{orchestrator.events,rebindEngineEvents,statSelection,roundResolved.statButton,matchEnd,controlState}.test.js → PASS (6 files, 23 tests)
 - Next: Proceed to Phase 3 (Determinism Unification) after your review.
@@ -205,7 +205,7 @@ Phase 5 — Timers & Preload Policy
   - `createRoundTimer`: decoupled cooldown from engine by default; uses a pure JS countdown when no `starter` is provided (engine round timer still used in `timerService` via explicit `starter`).
 - Notes: This aligns with PRD timer ownership (orchestrator handles cooldown) and import policy for hot paths. Engine cooldown API remains but is no longer the default path.
 - Tests run (Vitest):
-  - tests/helpers/classicBattle/{nextButton.*,scheduleNextRound*,cooldownEnter.*,countdownReset}.test.js → PASS (8 files, 12 passed, 1 skipped)
+  - tests/helpers/classicBattle/{nextButton._,scheduleNextRound_,cooldownEnter.\*,countdownReset}.test.js → PASS (8 files, 12 passed, 1 skipped)
 - Next: Pending your review, final cleanups or further PRD items (e.g., additional control/diagnostic events) can be planned.
 
 Phase 6 — Diagnostics & Final Validation

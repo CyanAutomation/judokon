@@ -148,7 +148,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   debugLogListener({ detail: initialDetail });
   try {
     const snap = getStateSnapshot();
-    emitBattleEvent("debug.state.snapshot", { state: snap?.state || machine.getState(), context: snap || {} });
+    emitBattleEvent("debug.state.snapshot", {
+      state: snap?.state || machine.getState(),
+      context: snap || {}
+    });
   } catch {}
 
   // Expose a safe getter for the running machine to avoid import cycles

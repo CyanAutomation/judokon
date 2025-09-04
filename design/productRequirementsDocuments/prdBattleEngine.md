@@ -2,8 +2,8 @@
 
 **Supports:**
 
-* [Classic Battle PRD](prdBattleClassic.md)
-* [Classic Battle CLI PRD](prdBattleCLI.md)
+- [Classic Battle PRD](prdBattleClassic.md)
+- [Classic Battle CLI PRD](prdBattleCLI.md)
 
 ---
 
@@ -113,13 +113,12 @@ Config fields:
 - `confirmReadiness()` – replaces DOM readiness flags
 - `requestInterrupt(scope: "round"|"match", reason: string)`
 - `getState() => { node, context }`
-
   - `context` must include at least:
-
     - `roundIndex`
     - `scores`
     - `seed`
     - `timerState`
+
 - `injectFakeTimers(fakeTimersApi)`
 
 ---
@@ -363,7 +362,6 @@ Remove legacy glue code post-migration.
 - **Interrupts**: Explicit recovery paths with `interrupt.resolved`.
 - **Admin Overlay**: Dev/test-only state layer, not in production FSM.
 
-
 ---
 
 ## 14. Mermaid state diagram — Battle Engine
@@ -428,7 +426,7 @@ stateDiagram
 
 Notes
 Engine emits: round.started, round.selection.locked, round.evaluated, round.timer.tick/expired.
-Orchestrator emits: cooldown.timer.*, control.countdown.*, control.readiness.*, match.checkpoint, match.concluded, interrupt.*.
+Orchestrator emits: cooldown.timer._, control.countdown._, control.readiness._, match.checkpoint, match.concluded, interrupt._.
 Admin overlay is out-of-band (not shown) and can re-enter at roundEvaluation via a controlled override.
 
 ## 15. Tasks

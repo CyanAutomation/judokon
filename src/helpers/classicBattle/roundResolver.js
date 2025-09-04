@@ -38,10 +38,18 @@ export function bridgeEngineEvents() {
     onEngine("matchEnded", (detail) => {
       // Also emit PRD match.concluded with winner + scores
       const outcome = detail?.outcome;
-      const winner = outcome === "matchWinPlayer" ? "player" : outcome === "matchWinOpponent" ? "opponent" : "none";
+      const winner =
+        outcome === "matchWinPlayer"
+          ? "player"
+          : outcome === "matchWinOpponent"
+            ? "opponent"
+            : "none";
       emitBattleEvent("match.concluded", {
         winner,
-        scores: { player: Number(detail?.playerScore) || 0, opponent: Number(detail?.opponentScore) || 0 },
+        scores: {
+          player: Number(detail?.playerScore) || 0,
+          opponent: Number(detail?.opponentScore) || 0
+        },
         reason: outcome || "unknown"
       });
     });
@@ -218,7 +226,10 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
       playerVal,
       opponentVal,
       outcome: result?.outcome,
-      scores: { player: Number(result?.playerScore) || 0, opponent: Number(result?.opponentScore) || 0 }
+      scores: {
+        player: Number(result?.playerScore) || 0,
+        opponent: Number(result?.opponentScore) || 0
+      }
     });
   } catch {}
   store.playerChoice = null;
