@@ -15,37 +15,12 @@ import { isEnabled } from "../featureFlags.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
- * Query all stat buttons.
- *
- * @returns {NodeListOf<HTMLButtonElement>} Node list of stat buttons.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Return the stat button elements used in the Classic Battle UI.
  *
  * @summary Query and return all stat buttons inside `#stat-buttons`.
  * @pseudocode
- * 1. If document.querySelectorAll is unavailable return an empty array.
- * 2. Otherwise return `document.querySelectorAll("#stat-buttons button")`.
+ * 1. If `document.querySelectorAll` is unavailable → return an empty array.
+ * 2. Otherwise return `document.querySelectorAll('#stat-buttons button')`.
  *
  * @returns {NodeListOf<HTMLButtonElement>|Array} Node list of stat buttons or
  * an empty array when the DOM API is unavailable.
@@ -58,36 +33,11 @@ export function getStatButtons() {
 }
 
 /**
- * Get the element used for round messages.
- *
- * @returns {HTMLElement|null} The round message element or null.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Return the DOM element used for displaying round messages.
  *
  * @summary Return the element with id `round-message` or `null` if not found.
  * @pseudocode
- * 1. Call `document.getElementById("round-message")` and return the result.
+ * 1. Call `document.getElementById('round-message')` and return the result.
  *
  * @returns {HTMLElement|null} The round message element.
  */
@@ -96,46 +46,18 @@ export function getRoundMessageEl() {
 }
 
 /**
- * Remove highlight and focus from all stat buttons.
- *
- * @pseudocode
- * 1. Loop over buttons returned by `getStatButtons`.
- * 2. Remove the `selected` class and any inline background color.
- * 3. Disable the button to clear active/tap highlight.
- * 4. Force reflow so Safari clears the overlay.
- * 5. In the next frame via the shared scheduler re-enable, clear styles, and blur.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Clear visual selection and temporarily disable stat buttons to remove touch highlights.
  *
  * @summary Remove `selected` classes, clear inline background styles, and briefly
  * disable buttons to force browser reflow before restoring interactive state.
  * @pseudocode
- * 1. Iterate buttons returned by `getStatButtons`.
- * 2. Remove `selected` class and `background-color` style, disable the button.
- * 3. Force reflow and schedule a frame to re-enable the button and blur it.
+ * 1. For each button in `getStatButtons()`:
+ *    - Remove `selected` and inline `background-color`.
+ *    - Set `disabled = true` and force reflow (`offsetWidth`).
+ * 2. Use the scheduler to re-enable, clear styles, and blur on the next frame.
+ * 3. In test mode, skip the delay and immediately re-enable.
  *
- * @param {object} [scheduler] - Optional scheduler exposing `onFrame` and `cancel`.
+ * @param {object} [scheduler] - Optional scheduler with `onFrame` and `cancel`.
  * @returns {void}
  */
 export function resetStatButtons(
@@ -170,51 +92,18 @@ export function resetStatButtons(
 /**
  * Display the round result message and fade it out after 2s.
  *
+ * @summary Show `message` in `#round-message`, start opacity transition, then clear.
  * @pseudocode
- * 1. Get the round message element using `getRoundMessageEl`.
- * 2. Exit early if the element is missing.
- * 3. Cancel any in-progress fade and clear styles.
- * 4. Add `fade-transition`, set the text content, and ensure it's visible.
- * 5. If `message` is non-empty, reduce opacity to 0 over 2s using the shared scheduler.
- * 6. When complete, add the `fading` class and remove inline opacity.
- *
- * @param {string} message - Result text to show.
- */
-let cancelFade;
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Show a transient round result message and fade it out.
- *
- * @summary Display `message` in the round message element, then fade out after a delay.
- * @pseudocode
- * 1. Get the round message element using `getRoundMessageEl`.
- * 2. Exit early if the element is missing.
- * 3. Cancel any active fade, set classes and text, and schedule opacity transition.
- * 4. After the timeout, add `fading` and clear inline style.
+ * 1. Obtain `el = getRoundMessageEl()`; if missing, return.
+ * 2. Cancel any previous fade; set classes, set `textContent`, ensure visible.
+ * 3. If `message` is empty → return (no fade).
+ * 4. On next frame, set `opacity: 0` and schedule a timeout to add `fading` and clear inline styles.
  *
  * @param {string} message - Result text to show.
  * @param {object} [scheduler] - Optional scheduler with `onFrame`, `cancel`, `setTimeout`, `clearTimeout`.
  * @returns {void}
  */
+let cancelFade;
 export function showResult(
   message,
   scheduler = {
