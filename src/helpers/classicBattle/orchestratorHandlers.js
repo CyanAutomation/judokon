@@ -128,19 +128,16 @@ export async function initStartCooldown(machine) {
  * @pseudocode
  * 1. Get the cooldown duration from `computeNextRoundCooldown`.
  * 2. Define an `onFinished` callback that:
- *    - Removes the `countdownFinished` listener.
  *    - Marks the `#next-button` with `data-next-ready="true"`.
  *    - Emits the `nextRoundTimerReady` event.
  *    - Dispatches "ready" to the state machine.
- * 3. Register the `onFinished` callback on the `countdownFinished` event.
- * 4. Emit the `countdownStart` event with the calculated duration.
+ * 3. Emit the `countdownStart` event with the calculated duration and the `onFinished` callback.
  */
 export async function initInterRoundCooldown(machine) {
   const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
   const duration = computeNextRoundCooldown();
 
   const onFinished = () => {
-    offBattleEvent("countdownFinished", onFinished);
     try {
       const nextButton = document.getElementById("next-button");
       if (nextButton) {
@@ -153,8 +150,7 @@ export async function initInterRoundCooldown(machine) {
     }
   };
 
-  onBattleEvent("countdownFinished", onFinished);
-  emitBattleEvent("countdownStart", { duration });
+  emitBattleEvent("countdownStart", { duration, onFinished });
 }
 
 /**
