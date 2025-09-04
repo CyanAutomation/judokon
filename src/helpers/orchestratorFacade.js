@@ -1,6 +1,17 @@
-import { createBattleEngine, setPointsToWin, getScores, getRoundsPlayed, getSeed, getTimerState } from "./battleEngineFacade.js";
+import {
+  createBattleEngine,
+  setPointsToWin,
+  getScores,
+  getRoundsPlayed,
+  getSeed,
+  getTimerState
+} from "./battleEngineFacade.js";
 import { createBattleStore } from "./classicBattle/roundManager.js";
-import { initClassicBattleOrchestrator, dispatchBattleEvent, getBattleStateMachine } from "./classicBattle/orchestrator.js";
+import {
+  initClassicBattleOrchestrator,
+  dispatchBattleEvent,
+  getBattleStateMachine
+} from "./classicBattle/orchestrator.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 
 let store = null;
@@ -139,4 +150,3 @@ export default {
   getState,
   injectFakeTimers
 };
-

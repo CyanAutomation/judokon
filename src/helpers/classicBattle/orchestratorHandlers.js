@@ -143,7 +143,8 @@ export async function initInterRoundCooldown(machine) {
   emitBattleEvent("countdownStart", { duration });
   // Enable the Next button during cooldown so users can skip immediately.
   try {
-    const nextButton = document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+    const nextButton =
+      document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
     if (nextButton) nextButton.disabled = false;
   } catch {}
 
@@ -165,7 +166,9 @@ export async function initInterRoundCooldown(machine) {
   });
   timer.on("tick", (remaining) => {
     try {
-      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, Number(remaining) || 0) * 1000 });
+      emitBattleEvent("cooldown.timer.tick", {
+        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
+      });
     } catch {}
   });
   timer.start(duration);

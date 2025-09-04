@@ -227,7 +227,9 @@ export function startCooldown(_store, scheduler = realScheduler) {
   const cooldownSeconds = computeNextRoundCooldown();
   // PRD taxonomy: announce countdown start
   try {
-    emitBattleEvent("control.countdown.started", { durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000 });
+    emitBattleEvent("control.countdown.started", {
+      durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000
+    });
   } catch {}
   wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
   currentNextRound = controls;
@@ -393,7 +395,9 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   // PRD taxonomy: cooldown timer ticks
   timer.on("tick", (remaining) => {
     try {
-      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, Number(remaining) || 0) * 1000 });
+      emitBattleEvent("cooldown.timer.tick", {
+        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
+      });
     } catch {}
   });
   timer.on("drift", () => {

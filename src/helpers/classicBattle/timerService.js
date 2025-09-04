@@ -284,7 +284,9 @@ export async function startTimer(onExpiredSelect, store = null) {
   // PRD taxonomy: round timer tick
   timer.on("tick", (remaining) => {
     try {
-      emitBattleEvent("round.timer.tick", { remainingMs: Math.max(0, Number(remaining) || 0) * 1000 });
+      emitBattleEvent("round.timer.tick", {
+        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
+      });
     } catch {}
   });
   timer.on("expired", onExpired);
