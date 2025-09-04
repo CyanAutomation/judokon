@@ -104,3 +104,7 @@ These logs should appear in Playwright output to confirm the emission path and t
 
 - **Action**: Removed the calls to `startCooldown()` from the `roundResolved` event handlers in `src/helpers/classicBattle/roundUI.js` (in both `bindRoundUIEventHandlers` and `bindRoundUIEventHandlersDynamic`).
 - **Analysis**: This change is intended to make the orchestrator's cooldown path the single source of truth, ensuring the `nextRoundTimerReady` event is always emitted.
+
+- **Action**: Reverted previous changes to `src/helpers/classicBattle/roundUI.js` and `src/helpers/classicBattle/roundManager.js` to restore the codebase to its state before my attempted fixes for this bug.
+- **Result**: The Playwright test `playwright/battle-next-readiness.spec.js` still fails with the same timeout error, and the `[test] startCooldown call#1: state=cooldown` log message persists.
+- **Analysis**: This confirms that the previous attempts to fix the issue by removing `startCooldown` calls from `roundUI.js` were either incomplete or based on a misunderstanding of the true source of the `startCooldown` invocation in the orchestrated environment. The `startCooldown` function is still being called from an unidentified location, preventing the `nextRoundTimerReady` event from being emitted. Further investigation is required to pinpoint the exact call site of `startCooldown` in the Playwright test environment.

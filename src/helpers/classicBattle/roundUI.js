@@ -2,7 +2,7 @@ import { showSelectionPrompt, updateDebugPanel } from "./uiHelpers.js";
 import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { startTimer, handleStatSelectionTimeout } from "./timerService.js";
-import { startCooldown } from "./roundManager.js";
+
 import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
 import { showMatchSummaryModal } from "./uiService.js";
