@@ -207,12 +207,9 @@ export function bindRoundUIEventHandlers() {
       });
       emitBattleEvent("matchOver");
     } else {
-      // Start the next-round cooldown immediately. The scheduler internally
-      // validates live state before dispatching 'ready', so scheduling here is
-      // safe and ensures the snackbar countdown appears without waiting for a
-      // separate state change event that may be mocked out in tests.
-      startCooldown(store);
-      // Proactively surface the countdown text in the snackbar so tests can
+      // The orchestrator now handles cooldown initiation when the state machine
+      // enters the 'cooldown' state. This call is no longer needed.
+      // proactively surface the countdown text in the snackbar so tests can
       // observe it even if timer wiring races with other snackbar messages.
       try {
         const secs = computeNextRoundCooldown();
