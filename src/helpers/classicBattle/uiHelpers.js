@@ -309,7 +309,8 @@ export async function renderOpponentCard(judoka, container) {
  * @returns {void}
  */
 export function enableNextRoundButton() {
-  const btn = document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+  const btn =
+    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
   if (!btn) return;
   // Be permissive here for helpers: explicitly enable and mark ready
   btn.dataset.nextReady = "true";
@@ -356,7 +357,8 @@ export function enableNextRoundButton() {
  * @returns {void}
  */
 export function disableNextRoundButton() {
-  const btn = document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+  const btn =
+    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
   if (!btn) return;
   btn.disabled = true;
   delete btn.dataset.nextReady;
