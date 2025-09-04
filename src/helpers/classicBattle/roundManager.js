@@ -327,7 +327,8 @@ async function handleNextRoundExpiration(controls, btn) {
   // This path should only execute in non-orchestrated environments (e.g., unit tests).
   if (!isOrchestrated()) {
     try {
-      const liveBtn = typeof document !== "undefined" ? document.getElementById("next-button") : btn;
+      const liveBtn =
+        typeof document !== "undefined" ? document.getElementById("next-button") : btn;
       markNextReady(liveBtn || btn);
       try {
         console.warn("[test] roundManager: marked Next ready");
