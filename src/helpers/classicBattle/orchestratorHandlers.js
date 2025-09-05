@@ -139,9 +139,10 @@ export async function initStartCooldown(machine) {
  * 1. Get the cooldown duration from `computeNextRoundCooldown`.
  * 2. Emit the `countdownStart` event with the duration.
  * 3. Enable the "Next" button (`disabled = false`, `data-next-ready = "true"`).
- * 4. Emit the `nextRoundTimerReady` event.
- * 5. Start a timer; on expiry, mark the button ready, emit cooldown events, and dispatch "ready".
- * 6. Schedule a fallback timer to ensure readiness if the main timer fails.
+ * 4. Schedule a zero-delay task to re-query `#next-button` and reapply readiness.
+ * 5. Emit the `nextRoundTimerReady` event.
+ * 6. Start a timer; on expiry, mark the button ready, emit cooldown events, and dispatch "ready".
+ * 7. Schedule a fallback timer to ensure readiness if the main timer fails.
  */
 export async function initInterRoundCooldown(machine) {
   const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
@@ -170,6 +171,13 @@ export async function initInterRoundCooldown(machine) {
     if (nextButton) {
       nextButton.disabled = false;
       nextButton.dataset.nextReady = "true";
+      setTimeout(() => {
+        const btn = document.getElementById("next-button");
+        if (btn) {
+          btn.disabled = false;
+          btn.dataset.nextReady = "true";
+        }
+      }, 0);
     }
   } catch {}
 
