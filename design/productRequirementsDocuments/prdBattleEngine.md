@@ -7,37 +7,22 @@
 
 ---
 
-## 1. Tl;dr
 
 Players aged **8–12** sometimes experience **confusion and frustration** in
 battles:
 
 - Timers feel inconsistent across devices.
-- Rounds sometimes resolve differently when replayed.
 - Kids are unsure what to do when they run out of time or press the wrong
-  button.
-
-We need a **deterministic, fair, and predictable battle engine** that always
-gives the same result for the same actions. It must provide **clear
-countdowns and readiness prompts**, and offer **friendly recovery options** when
-something goes wrong.
 
 The **Battle Engine** is split into two cooperating components:
-
-- **Engine**: handles round timer, stat evaluation, scoring, and domain event
   emission.
 - **Orchestrator**: owns the state machine, cooldowns, readiness handshakes,
   interrupts, and UI adapter events.
-
-**Design goals:**
-
 - Enforce **strict separation of concerns** between game logic and
   orchestration.
 - Guarantee **deterministic outcomes** using seeded randomness (100% match
   determinism under identical inputs).
 - Ensure **testability** through snapshot state inspection and injected
-  timers.
-- Maintain a **clear, structured event taxonomy** with at least 90% event
   conformance coverage in integration tests.
 
 ---
@@ -60,72 +45,62 @@ The **Battle Engine** is split into two cooperating components:
 - Provides test seams (`getState`, `injectFakeTimers`) and optional
   diagnostics (`debug:*`).
 
-### Design goals
+  ### State Catalog Contract
 
-- **Fairness**: Same actions + same inputs = same outcomes every time.
-- **Clarity**: Countdown timers, readiness prompts, and cooldowns are always
-  visible and easy to understand.
-- **Recovery**: Players always know what happens if they do nothing, make a
-  mistake, or lose connection.
-- **Testability**: Developers can simulate rounds with seeded randomness and
-  fake timers.
-- **Separation of concerns**: Game logic (Engine) and flow control
-  (Orchestrator) stay decoupled.
+  Orchestrator publishes a State Catalog describing all available FSM nodes. This catalog is the authoritative table used by UI and tooling to render state indicators and to keep client mappings stable.
+
+  Structure:
+
+  ```
+  type StateCatalog = {
+    version: string;                 // e.g., "v1"
+    order: FSMStateName[];           // strict render order
+    ids: Record<FSMStateName, number>;  // stable ordinals (10,20,…)
+    labels?: Record<FSMStateName,string>; // optional human-readable
+    display: { include: FSMStateName[] }; // subset for passive UI
+  }
+  ```
+
+  Delivery mechanisms:
+
+  - On demand via `getState()` → includes `catalogVersion`
+  - Sticky broadcast: `control.state.catalog` event (optional)
+ 
 
 ---
-
-## 3. Public API
-
 ### 3.1 Engine constructor
 
 `createBattleEngine(config) => BattleEngine`
-
 Config fields:
 
 - `pointsToWin`
-- `maxRounds`
-- `autoSelect`
-- `seed`
-
 ### 3.2 Engine controls
-
 - `startRoundTimer(durationMs, onDrift?)`
 - `pauseRoundTimer()`
 - `resumeRoundTimer()`
-- `stopRoundTimer()`
-- `evaluateSelection({ statKey, playerVal, opponentVal }) => { outcome, scores }`
-
-### 3.3 Engine queries
-
 - `getScores()`
-- `getRoundsPlayed()`
 - `isMatchPoint()`
 - `getSeed()` – returns seed in use (for replay/debug).
 
-### 3.4 Engine events
 
 - `on(eventType, handler)`
 - `off(eventType, handler)`
 
 ### 3.5 Orchestrator interface
 
-- `startMatch(config)`
 - `confirmReadiness()` – replaces DOM readiness flags
 - `requestInterrupt(scope: "round"|"match", reason: string)`
 - `getState() => { node, context }`
   - `context` must include at least:
     - `roundIndex`
-    - `scores`
     - `seed`
     - `timerState`
 
 - `injectFakeTimers(fakeTimersApi)`
-
 ---
 
 ## 4. Event taxonomy
 
-### 4.1 Domain events
 
 - `round.started({ roundIndex, availableStats })`
 - `round.selection.locked({ statKey, source })`
@@ -146,6 +121,20 @@ Config fields:
 - `control.countdown.completed()`
 - `control.readiness.required({ for })`
 - `control.readiness.confirmed({ for })`
+-- `control.state.changed({ from, to, context, catalogVersion })`  
+  Emitted by the Orchestrator after every valid FSM transition.  
+  Payload includes:
+  - `from`: previous FSM state name (e.g., "matchInit")
+  - `to`: new FSM state name (e.g., "cooldown")
+  - `context`: minimal snapshot `{ roundIndex, scores, seed, timerState }`
+  - `catalogVersion`: version string of the current State Catalog
+  - Optional debug metadata (`{ transition: { trigger } }`)
+
+  Notes:
+  - This event is the authoritative adapter signal for UI consumers (Battle State Indicator, Scoreboard, CLI renderers).
+  - Always fired after state entry is confirmed.
+  - Guaranteed idempotent: the latest event fully reflects the current FSM node.
+  - UI consumers must treat this event as the single source of truth for rendering and testing assertions.
 
 ### 4.4 Interrupt & validation
 
@@ -205,6 +194,10 @@ Config fields:
 - UI adapter listens to control events and calls `confirmReadiness()`.
 
 No DOM selectors are part of the contract.
+
+Note:
+ - After each readiness or timer-triggered transition, the orchestrator must emit `control.state.changed`.
+ - UI modules must not infer transitions from domain/timer events directly; they consume only `control.state.changed` for authoritative rendering and logic.
 
 ---
 
@@ -335,6 +328,11 @@ Feature: Battle Engine acceptance criteria
 - Fixed seed → repeatable outcomes.
 - Optional `debug:*` events for diagnostics.
 
+Note:
+ - `control.state.changed` is the contract event for snapshotting FSM transitions during tests.
+ - Consumers (UI, tests) should assert against `to` and `context` values rather than raw engine timer or debug events.
+ - `debug.state.snapshot` remains available but is not normative.
+
 ---
 
 ## 12. Migration support
@@ -361,6 +359,10 @@ Remove legacy glue code post-migration.
 - **Readiness**: Programmatic confirmation, not DOM-based.
 - **Interrupts**: Explicit recovery paths with `interrupt.resolved`.
 - **Admin Overlay**: Dev/test-only state layer, not in production FSM.
+
+- **State Catalog**: authoritative table of FSM states, IDs, labels, and display rules.
+- **Catalog Version**: semantic version string ensuring client ↔ engine alignment.
+- **UI Adapter Event**: stable, engine-owned events (e.g., `control.state.changed`) consumed by presentation modules.
 
 ---
 
@@ -429,6 +431,8 @@ Engine emits: round.started, round.selection.locked, round.evaluated, round.time
 Orchestrator emits: cooldown.timer._, control.countdown._, control.readiness._, match.checkpoint, match.concluded, interrupt._.
 Admin overlay is out-of-band (not shown) and can re-enter at roundEvaluation via a controlled override.
 
+---
+
 ## 15. Tasks
 
 - [ ] 1.0 Implement Battle Engine Core
@@ -443,6 +447,10 @@ Admin overlay is out-of-band (not shown) and can re-enter at roundEvaluation via
   - [ ] 2.2 Integrate readiness confirmation flow
   - [ ] 2.3 Manage cooldown timers and transitions
   - [ ] 2.4 Handle interrupts and validation events
+  - [ ] 2.5 Emit `control.state.changed` after each FSM transition
+  - [ ] 2.6 Provide State Catalog (getState() + optional sticky event)
+  - [ ] 2.7 Ensure `catalogVersion` is included in all state change payloads
+  - [ ] 2.8 Update tests to assert on `control.state.changed`
 
 - [ ] 3.0 Public API Surface
   - [ ] 3.1 Implement `getState()` and `injectFakeTimers()`

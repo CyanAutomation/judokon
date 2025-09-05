@@ -155,3 +155,11 @@ export {
   triggerRoundTimeoutNow as __triggerRoundTimeoutNow,
   triggerStallPromptNow as __triggerStallPromptNow
 } from "./classicBattle/testHooks.js";
+
+// PRD Orchestrator API shims
+export {
+  confirmReadiness,
+  requestInterrupt,
+  getState as getOrchestratorState,
+  injectFakeTimers
+} from "./classicBattle/orchestratorApi.js";

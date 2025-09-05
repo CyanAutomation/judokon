@@ -86,6 +86,9 @@ export async function resolveRoundDirect(store, stat, playerVal, opponentVal, op
  */
 function validateSelectionState(store) {
   if (store.selectionMade) {
+    try {
+      emitBattleEvent("input.ignored", { kind: "duplicateSelection" });
+    } catch {}
     return false;
   }
 
@@ -94,6 +97,9 @@ function validateSelectionState(store) {
     if (current && current !== "waitingForPlayerAction" && current !== "roundDecision") {
       try {
         if (!IS_VITEST) console.warn(`Ignored stat selection while in state=${current}`);
+      } catch {}
+      try {
+        emitBattleEvent("input.ignored", { kind: "invalidState", state: current });
       } catch {}
       return false;
     }

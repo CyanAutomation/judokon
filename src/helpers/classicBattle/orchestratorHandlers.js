@@ -94,11 +94,19 @@ export async function initStartCooldown(machine) {
       if (fallback) clearTimeout(fallback);
     } catch {}
     try {
+      // PRD control event: countdown completed
+      emitBattleEvent("control.countdown.completed");
+    } catch {}
+    try {
       machine.dispatch("ready");
     } catch {}
   };
   onBattleEvent("countdownFinished", onFinished);
   emitBattleEvent("countdownStart", { duration });
+  // PRD control event: countdown started
+  try {
+    emitBattleEvent("control.countdown.started", { durationMs: Math.max(0, Number(duration) || 0) * 1000 });
+  } catch {}
   // In test mode, auto-advance without relying on timers which are often faked.
   try {
     if (isTestModeEnabled && isTestModeEnabled()) {
@@ -145,6 +153,10 @@ export async function initInterRoundCooldown(machine) {
   } catch (err) {
     debugLog("Failed to emit countdownStart event:", err);
   }
+  // PRD control event: countdown started
+  try {
+    emitBattleEvent("control.countdown.started", { durationMs: Math.max(0, Number(duration) || 0) * 1000 });
+  } catch {}
 
   // Enable the Next button during cooldown so users can skip immediately
   // and mark readiness now.
@@ -172,6 +184,8 @@ export async function initInterRoundCooldown(machine) {
       emitBattleEvent("cooldown.timer.expired");
       emitBattleEvent("nextRoundTimerReady");
       emitBattleEvent("countdownFinished");
+      // PRD control event: countdown completed
+      emitBattleEvent("control.countdown.completed");
     } catch {}
     try {
       machine.dispatch("ready");

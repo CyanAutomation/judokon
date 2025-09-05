@@ -19,6 +19,7 @@ import { domStateListener, createDebugLogListener } from "./stateTransitionListe
 import { getStateSnapshot } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 import { preloadTimerUtils } from "../TimerController.js";
+import stateCatalog from "./stateCatalog.js";
 
 let machine = null;
 let debugLogListener = null;
@@ -41,6 +42,13 @@ let visibilityHandler = null;
 export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) return;
   try {
+    // PRD taxonomy: emit interrupt.requested with payload context
+    if (eventName === "interrupt") {
+      try {
+        const scope = payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
+        emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
+      } catch {}
+    }
     return await machine.dispatch(eventName, payload);
   } catch {
     try {
@@ -130,6 +138,43 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
         emitBattleEvent("control.readiness.required", { for: "match" });
       } catch {}
     }
+    // PRD control: readiness confirmed on ready transitions
+    if (event === "ready") {
+      const forVal = from === "matchStart" ? "match" : "round";
+      try {
+        emitBattleEvent("control.readiness.confirmed", { for: forVal });
+      } catch {}
+    }
+
+    // PRD control: authoritative state change event with minimal context
+    try {
+      const engine = machine?.context?.engine;
+      const context = {
+        roundIndex: Number(engine?.getRoundsPlayed?.() || 0),
+        scores: engine?.getScores?.() || { playerScore: 0, opponentScore: 0 },
+        seed: engine?.getSeed?.(),
+        timerState: engine?.getTimerState?.() || null
+      };
+      emitBattleEvent("control.state.changed", {
+        from,
+        to,
+        context,
+        catalogVersion: stateCatalog?.version || "v1"
+      });
+    } catch {}
+
+    // PRD taxonomy: emit interrupt.resolved on resolution triggers
+    try {
+      const resolutionMap = {
+        restartRound: "restartRound",
+        resumeLobby: "resumeLobby",
+        abortMatch: "abortMatch",
+        restartMatch: "restartRound", // closest PRD outcome
+        toLobby: "resumeLobby"
+      };
+      const outcome = resolutionMap[event];
+      if (outcome) emitBattleEvent("interrupt.resolved", { outcome });
+    } catch {}
   };
 
   machine = await createStateManager(onEnter, context, onTransition);
@@ -152,6 +197,11 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
       state: snap?.state || machine.getState(),
       context: snap || {}
     });
+  } catch {}
+
+  // Broadcast State Catalog once for passive consumers
+  try {
+    emitBattleEvent("control.state.catalog", stateCatalog);
   } catch {}
 
   // Expose a safe getter for the running machine to avoid import cycles

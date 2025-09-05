@@ -1,4 +1,5 @@
 import { evaluateRound as evaluateRoundApi } from "../api/battleUI.js";
+import { seededRandom } from "../testModeUtils.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import * as engineFacade from "../battleEngineFacade.js";
@@ -338,7 +339,8 @@ export async function resolveRound(
   playerVal,
   opponentVal,
   {
-    delayMs = 300 + Math.floor(Math.random() * 401),
+    // Deterministic delay using seeded RNG when available
+    delayMs = 300 + Math.floor(seededRandom() * 401),
     sleep = (ms) => new Promise((r) => setTimeout(r, ms))
   } = {}
 ) {
