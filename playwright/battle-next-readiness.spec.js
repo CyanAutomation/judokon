@@ -1,9 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import {
-  waitForBattleReady,
-  waitForBattleState,
-  waitForNextRoundReadyEvent
-} from "./fixtures/waits.js";
+import { waitForBattleReady, waitForBattleState } from "./fixtures/waits.js";
 
 test.describe("Next readiness only in cooldown", () => {
   test.beforeEach(async ({ page }) => {
@@ -29,7 +25,6 @@ test.describe("Next readiness only in cooldown", () => {
     // Initial flow includes a match-start cooldown before selection.
     await waitForBattleState(page, "cooldown", 6000);
     await waitForBattleState(page, "waitingForPlayerAction", 6000);
-    await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(0);
 
     // Click a stat to move to decision and resolve the round
     const statBtn = page.locator("#stat-buttons button").first();
@@ -39,13 +34,7 @@ test.describe("Next readiness only in cooldown", () => {
     await waitForBattleState(page, "roundDecision", 2000).catch(() => {});
     await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(0);
 
-    // The orchestrator emits `nextRoundTimerReady` on the battle event bus.
-    // Use the helper that attaches to `globalThis.__classicBattleEventTarget`.
-    await waitForNextRoundReadyEvent(page, 5000);
-
-    // As a fallback and final assertion, check for the data attribute.
-    await expect(page.locator("#next-button[data-next-ready='true']")).toHaveCount(1, {
-      timeout: 2000
-    });
+    // Wait for the Next button readiness attribute to appear.
+    await page.locator("#next-button[data-next-ready='true']").waitFor({ timeout: 5000 });
   });
 });

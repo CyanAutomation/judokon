@@ -213,14 +213,20 @@ export function startCooldown(_store, scheduler = realScheduler) {
   const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
   if (btn) {
     btn.disabled = false;
-    delete btn.dataset.nextReady;
-    // Re-assert enabled state on the next tick to guard against any
-    // late listeners that might replace/disable the button during
-    // round resolution → cooldown transitions.
+    btn.dataset.nextReady = "true";
+    try {
+      emitBattleEvent("nextRoundTimerReady");
+    } catch {}
+    // Re-assert enabled state and readiness on the next tick to guard against
+    // any late listeners that might replace/disable the button during round
+    // resolution → cooldown transitions.
     try {
       setTimeout(() => {
         const b = document.getElementById("next-button");
-        if (b) b.disabled = false;
+        if (b) {
+          b.disabled = false;
+          b.dataset.nextReady = "true";
+        }
       }, 0);
     } catch {}
   }

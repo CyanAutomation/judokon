@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForBattleReady } from "./fixtures/waits.js";
+import { waitForBattleReady, waitForNextRoundReadyEvent } from "./fixtures/waits.js";
 
 /**
  * Verify that clicking Next during cooldown skips the delay.
@@ -35,8 +35,11 @@ test.describe("Next button cooldown skip", () => {
     const counter = page.locator("#round-counter");
     await expect(counter).toHaveText(/Round 1/);
 
+    await page.waitForFunction(() => {
+      const btn = document.getElementById("next-button");
+      return btn && btn.dataset.nextReady === "true" && !btn.disabled;
+    });
     const nextBtn = page.locator('[data-role="next-round"]');
-    await expect(nextBtn).toBeEnabled();
     await nextBtn.click();
 
     await expect(counter).toHaveText(/Round 2/, { timeout: 1000 });

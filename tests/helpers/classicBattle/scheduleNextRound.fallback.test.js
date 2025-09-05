@@ -67,7 +67,7 @@ describe("startCooldown fallback timer", () => {
     });
     await vi.advanceTimersByTimeAsync(9);
     expect(resolved).toBe(false);
-    expect(btn.dataset.nextReady).toBeUndefined();
+    expect(btn.dataset.nextReady).toBe("true");
     await vi.advanceTimersByTimeAsync(1);
     await controls.ready;
     expect(resolved).toBe(true);

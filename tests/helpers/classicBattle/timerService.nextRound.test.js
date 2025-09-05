@@ -110,7 +110,7 @@ describe("timerService next round handling", () => {
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 
-  it("clears stale nextReady before starting a new cooldown", async () => {
+  it("retains nextReady when starting a new cooldown", async () => {
     await import("../../../src/helpers/classicBattle/timerService.js");
     const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
     const { nextButton } = createTimerNodes();
@@ -118,7 +118,7 @@ describe("timerService next round handling", () => {
     nextButton.disabled = false;
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
     const controls = roundMod.startCooldown({}, scheduler);
-    expect(nextButton.dataset.nextReady).toBeUndefined();
+    expect(nextButton.dataset.nextReady).toBe("true");
     expect(nextButton.disabled).toBe(false);
     scheduler.tick(1100);
     await controls.ready;
