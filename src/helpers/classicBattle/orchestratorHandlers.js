@@ -140,6 +140,8 @@ export async function initInterRoundCooldown(machine) {
   const duration = computeNextRoundCooldown();
 
   // Notify UI layers that a countdown is starting.
+  try {
+    emitBattleEvent("countdownStart", { duration });
   } catch (err) {
     debugLog("Failed to emit countdownStart event:", err);
   }
