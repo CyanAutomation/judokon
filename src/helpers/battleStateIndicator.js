@@ -1,4 +1,3 @@
-
 /**
  * Creates a battle state indicator UI component that reflects the state of the battle engine's FSM.
  *
@@ -15,37 +14,37 @@ export async function createBattleStateIndicator({
   mount,
   announcer,
   events,
-  getCatalog,
+  getCatalog
 }) {
-  if (!featureFlag || typeof window === 'undefined' || typeof document === 'undefined') {
+  if (!featureFlag || typeof window === "undefined" || typeof document === "undefined") {
     return {
       cleanup: () => {},
       isReady: false,
-      getActiveState: () => null,
+      getActiveState: () => null
     };
   }
 
-  const mountEl = typeof mount === 'string' ? document.querySelector(mount) : mount;
-  const announcerEl = typeof announcer === 'string' ? document.querySelector(announcer) : announcer;
+  const mountEl = typeof mount === "string" ? document.querySelector(mount) : mount;
+  const announcerEl = typeof announcer === "string" ? document.querySelector(announcer) : announcer;
 
   if (!mountEl || !announcerEl) {
     return {
       cleanup: () => {},
       isReady: false,
-      getActiveState: () => null,
+      getActiveState: () => null
     };
   }
 
-  const rootEl = document.createElement('ul');
-  rootEl.id = 'battle-state-indicator';
-  rootEl.dataset.flag = 'battleStateIndicator';
-  rootEl.setAttribute('aria-label', 'Battle progress');
+  const rootEl = document.createElement("ul");
+  rootEl.id = "battle-state-indicator";
+  rootEl.dataset.flag = "battleStateIndicator";
+  rootEl.setAttribute("aria-label", "Battle progress");
 
-  const announcerP = document.createElement('p');
-  announcerP.id = 'battle-state-announcer';
-  announcerP.dataset.flag = 'battleStateAnnouncer';
-  announcerP.setAttribute('aria-live', 'polite');
-  announcerP.setAttribute('aria-atomic', 'true');
+  const announcerP = document.createElement("p");
+  announcerP.id = "battle-state-announcer";
+  announcerP.dataset.flag = "battleStateAnnouncer";
+  announcerP.setAttribute("aria-live", "polite");
+  announcerP.setAttribute("aria-atomic", "true");
 
   mountEl.appendChild(rootEl);
   announcerEl.appendChild(announcerP);
@@ -56,9 +55,9 @@ export async function createBattleStateIndicator({
   let currentCatalog = catalog;
 
   const renderList = () => {
-    rootEl.innerHTML = '';
-    currentCatalog.display.include.forEach(stateName => {
-      const li = document.createElement('li');
+    rootEl.innerHTML = "";
+    currentCatalog.display.include.forEach((stateName) => {
+      const li = document.createElement("li");
       li.dataset.stateRaw = stateName;
       li.dataset.stateId = currentCatalog.ids[stateName];
       if (currentCatalog.labels && currentCatalog.labels[stateName]) {
@@ -82,31 +81,31 @@ export async function createBattleStateIndicator({
 
     const stateExistsInCatalog = currentCatalog.display.include.includes(to);
     if (!stateExistsInCatalog) {
-      rootEl.dataset.unknown = 'true';
+      rootEl.dataset.unknown = "true";
     } else {
       delete rootEl.dataset.unknown;
     }
 
-    Array.from(rootEl.children).forEach(li => {
+    Array.from(rootEl.children).forEach((li) => {
       if (li.dataset.stateRaw === to) {
-        li.classList.add('active');
-        li.setAttribute('aria-current', 'step');
+        li.classList.add("active");
+        li.setAttribute("aria-current", "step");
       } else {
-        li.classList.remove('active');
-        li.removeAttribute('aria-current');
+        li.classList.remove("active");
+        li.removeAttribute("aria-current");
       }
     });
   };
 
-  events.on('control.state.changed', handleStateChange);
+  events.on("control.state.changed", handleStateChange);
 
   return {
     cleanup: () => {
-      events.off('control.state.changed', handleStateChange);
+      events.off("control.state.changed", handleStateChange);
       mountEl.removeChild(rootEl);
       announcerEl.removeChild(announcerP);
     },
     isReady: true,
-    getActiveState: () => activeState,
+    getActiveState: () => activeState
   };
 }
