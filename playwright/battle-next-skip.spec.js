@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForBattleReady, waitForNextRoundReadyEvent } from "./fixtures/waits.js";
+import { waitForBattleReady } from "./fixtures/waits.js";
 
 /**
  * Verify that clicking Next during cooldown skips the delay.
