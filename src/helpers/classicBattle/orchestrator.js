@@ -45,7 +45,8 @@ export async function dispatchBattleEvent(eventName, payload) {
     // PRD taxonomy: emit interrupt.requested with payload context
     if (eventName === "interrupt") {
       try {
-        const scope = payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
+        const scope =
+          payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
         emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
       } catch {}
     }

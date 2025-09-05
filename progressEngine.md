@@ -6,28 +6,28 @@ Battle Engine PRD vs Implementation — Gap Analysis
 Task Contract
 
 {
-  "inputs": [
-    "design/productRequirementsDocuments/prdBattleEngine.md",
-    "src/helpers/BattleEngine.js",
-    "src/helpers/battleEngineFacade.js",
-    "src/helpers/classicBattle/*.js",
-    "src/helpers/timers/*.js"
-  ],
-  "outputs": [
-    "progressEngine.md"
-  ],
-  "success": [
-    "Analysis written",
-    "Concrete file references",
-    "Actionable follow-ups"
-  ],
-  "errorMode": "ask_on_public_api_change"
+"inputs": [
+"design/productRequirementsDocuments/prdBattleEngine.md",
+"src/helpers/BattleEngine.js",
+"src/helpers/battleEngineFacade.js",
+"src/helpers/classicBattle/*.js",
+"src/helpers/timers/*.js"
+],
+"outputs": [
+"progressEngine.md"
+],
+"success": [
+"Analysis written",
+"Concrete file references",
+"Actionable follow-ups"
+],
+"errorMode": "ask_on_public_api_change"
 }
 
 What The PRD Requires (abridged)
 
 - Engine vs Orchestrator: Strict separation; engine owns round timer + scoring; orchestrator owns FSM, cooldowns, readiness, interrupts, and UI adapter events.
-- Event taxonomy: Namespaced events (round.*, cooldown.*, control.*, interrupt.*, debug.*). Orchestrator emits control.*; engine emits domain + round timer only.
+- Event taxonomy: Namespaced events (round._, cooldown._, control._, interrupt._, debug._). Orchestrator emits control._; engine emits domain + round timer only.
 - Orchestrator interface: confirmReadiness(), requestInterrupt(scope, reason), getState() → { node, context }, injectFakeTimers(fakeTimersApi).
 - State Catalog: Orchestrator publishes a versioned catalog and emits control.state.changed with context + catalogVersion after every transition.
 - Determinism: Seeded randomness for reproducible outcomes; test seams for timers and snapshots.
@@ -121,7 +121,6 @@ End State (target)
 - Lightweight shims provide the PRD orchestrator API without removing existing helpers.
 - Interrupt/validation events are available to improve observability and test coverage.
 
-
 Phased Implementation Plan
 
 Phase 0 — Scaffolding and Contracts
@@ -139,7 +138,6 @@ Phase 0 — Status
 - Implemented `src/helpers/classicBattle/stateCatalog.js` exporting `{ version: "v1", order, ids, labels, display }` aligned with current FSM.
 - No behavior changes; purely declarative module. No dynamic imports added.
 - Next: begin Phase 1 to normalize control events.
-
 
 Phase 1 — Normalize Control Events (Countdown/Readiness)
 

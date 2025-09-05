@@ -7,7 +7,6 @@
 
 ---
 
-
 Players aged **8–12** sometimes experience **confusion and frustration** in
 battles:
 
@@ -15,7 +14,8 @@ battles:
 - Kids are unsure what to do when they run out of time or press the wrong
 
 The **Battle Engine** is split into two cooperating components:
-  emission.
+emission.
+
 - **Orchestrator**: owns the state machine, cooldowns, readiness handshakes,
   interrupts, and UI adapter events.
 - Enforce **strict separation of concerns** between game logic and
@@ -62,26 +62,26 @@ The **Battle Engine** is split into two cooperating components:
   ```
 
   Delivery mechanisms:
-
   - On demand via `getState()` → includes `catalogVersion`
   - Sticky broadcast: `control.state.catalog` event (optional)
- 
 
 ---
+
 ### 3.1 Engine constructor
 
 `createBattleEngine(config) => BattleEngine`
 Config fields:
 
 - `pointsToWin`
+
 ### 3.2 Engine controls
+
 - `startRoundTimer(durationMs, onDrift?)`
 - `pauseRoundTimer()`
 - `resumeRoundTimer()`
 - `getScores()`
 - `isMatchPoint()`
 - `getSeed()` – returns seed in use (for replay/debug).
-
 
 - `on(eventType, handler)`
 - `off(eventType, handler)`
@@ -97,10 +97,10 @@ Config fields:
     - `timerState`
 
 - `injectFakeTimers(fakeTimersApi)`
+
 ---
 
 ## 4. Event taxonomy
-
 
 - `round.started({ roundIndex, availableStats })`
 - `round.selection.locked({ statKey, source })`
@@ -121,9 +121,9 @@ Config fields:
 - `control.countdown.completed()`
 - `control.readiness.required({ for })`
 - `control.readiness.confirmed({ for })`
--- `control.state.changed({ from, to, context, catalogVersion })`  
-  Emitted by the Orchestrator after every valid FSM transition.  
-  Payload includes:
+  -- `control.state.changed({ from, to, context, catalogVersion })`  
+   Emitted by the Orchestrator after every valid FSM transition.  
+   Payload includes:
   - `from`: previous FSM state name (e.g., "matchInit")
   - `to`: new FSM state name (e.g., "cooldown")
   - `context`: minimal snapshot `{ roundIndex, scores, seed, timerState }`
@@ -196,8 +196,9 @@ Config fields:
 No DOM selectors are part of the contract.
 
 Note:
- - After each readiness or timer-triggered transition, the orchestrator must emit `control.state.changed`.
- - UI modules must not infer transitions from domain/timer events directly; they consume only `control.state.changed` for authoritative rendering and logic.
+
+- After each readiness or timer-triggered transition, the orchestrator must emit `control.state.changed`.
+- UI modules must not infer transitions from domain/timer events directly; they consume only `control.state.changed` for authoritative rendering and logic.
 
 ---
 
@@ -329,9 +330,10 @@ Feature: Battle Engine acceptance criteria
 - Optional `debug:*` events for diagnostics.
 
 Note:
- - `control.state.changed` is the contract event for snapshotting FSM transitions during tests.
- - Consumers (UI, tests) should assert against `to` and `context` values rather than raw engine timer or debug events.
- - `debug.state.snapshot` remains available but is not normative.
+
+- `control.state.changed` is the contract event for snapshotting FSM transitions during tests.
+- Consumers (UI, tests) should assert against `to` and `context` values rather than raw engine timer or debug events.
+- `debug.state.snapshot` remains available but is not normative.
 
 ---
 

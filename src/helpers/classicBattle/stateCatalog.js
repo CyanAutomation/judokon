@@ -66,4 +66,3 @@ export const display = {
 export const stateCatalog = { version, order, ids, labels, display };
 
 export default stateCatalog;
-

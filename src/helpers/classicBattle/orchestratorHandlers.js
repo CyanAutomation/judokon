@@ -105,7 +105,9 @@ export async function initStartCooldown(machine) {
   emitBattleEvent("countdownStart", { duration });
   // PRD control event: countdown started
   try {
-    emitBattleEvent("control.countdown.started", { durationMs: Math.max(0, Number(duration) || 0) * 1000 });
+    emitBattleEvent("control.countdown.started", {
+      durationMs: Math.max(0, Number(duration) || 0) * 1000
+    });
   } catch {}
   // In test mode, auto-advance without relying on timers which are often faked.
   try {
@@ -155,7 +157,9 @@ export async function initInterRoundCooldown(machine) {
   }
   // PRD control event: countdown started
   try {
-    emitBattleEvent("control.countdown.started", { durationMs: Math.max(0, Number(duration) || 0) * 1000 });
+    emitBattleEvent("control.countdown.started", {
+      durationMs: Math.max(0, Number(duration) || 0) * 1000
+    });
   } catch {}
 
   // Enable the Next button during cooldown so users can skip immediately
