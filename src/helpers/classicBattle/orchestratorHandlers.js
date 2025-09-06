@@ -15,11 +15,23 @@ import { debugLog } from "../debug.js";
  * outcome. Consumers like the CLI can toggle this for readability.
  * @type {boolean}
  */
+/**
+ * Whether the orchestrator should automatically dispatch "continue" after an
+ * outcome. Consumers like the CLI can toggle this for readability.
+ *
+ * @type {boolean}
+ */
 export let autoContinue = true;
 
 /**
  * Update the `autoContinue` behavior.
  * @param {boolean} val
+ */
+/**
+ * Update the `autoContinue` behavior.
+ *
+ * @param {boolean} val - truthy to enable auto-continue, false to disable.
+ * @returns {void}
  */
 export function setAutoContinue(val) {
   autoContinue = val !== false;
@@ -77,6 +89,20 @@ export function isStateTransition(from, to) {
  * 1. Resolve match start duration with 3s default.
  * 2. Emit `countdownStart` and listen for `countdownFinished`.
  * 3. Schedule fallback timer to dispatch `ready` if no event fires.
+ */
+/**
+ * Initialize the match start countdown and ensure the machine receives
+ * a `ready` transition when the countdown completes or when a fallback
+ * path triggers (tests/headless).
+ *
+ * @param {object} machine - State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Read a default timer value (fallback 3s).
+ * 2. Emit `countdownStart` and `control.countdown.started` with duration.
+ * 3. Listen for `countdownFinished` to dispatch `ready` and cancel fallback.
+ * 4. In test mode, immediately queue the finished handler.
+ * 5. Otherwise schedule a fallback timer that calls the finished handler.
  */
 export async function initStartCooldown(machine) {
   let duration = 3;
@@ -143,6 +169,21 @@ export async function initStartCooldown(machine) {
  * 5. Emit the `nextRoundTimerReady` event.
  * 6. Start a timer; on expiry, mark the button ready, emit cooldown events, and dispatch "ready".
  * 7. Schedule a fallback timer to ensure readiness if the main timer fails.
+ */
+/**
+ * Initialize an inter-round cooldown that enables the Next button and
+ * advances the machine when the cooldown expires.
+ *
+ * The orchestrator is the authoritative owner of this timer while active.
+ *
+ * @param {object} machine - State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Compute cooldown duration and emit `countdownStart` and control event.
+ * 2. Enable the Next button and mark it ready.
+ * 3. Emit `nextRoundTimerReady` and start an engine-backed round timer.
+ * 4. On timer `expired`: mark Next ready, emit countdown finished events, and dispatch `ready`.
+ * 5. Start a fallback timeout to ensure readiness if the engine timer fails.
  */
 export async function initInterRoundCooldown(machine) {
   const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
@@ -277,6 +318,19 @@ export async function initInterRoundCooldown(machine) {
  *
  * @param {object} machine
  */
+/**
+ * onEnter handler for `waitingForMatchStart`.
+ *
+ * Prepare UI and reset game state before the match begins.
+ *
+ * @param {object} machine - State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. No-op if the machine re-entered the same state.
+ * 2. Call `doResetGame` from `machine.context` when available.
+ * 3. Emit UI events to clear messages and update debug panels.
+ * 4. Import and call scoreboard/UI helpers to ensure they are initialized.
+ */
 export async function waitingForMatchStartEnter(machine) {
   if (isStateTransition("waitingForMatchStart", "waitingForMatchStart")) return;
   const { doResetGame } = machine.context;
@@ -322,6 +376,17 @@ export async function waitingForMatchStartEnter(machine) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * onEnter handler for `matchStart` state.
+ *
+ * Immediately progress the state machine by dispatching `ready` so the
+ * match flow can begin without extra delay.
+ *
+ * @param {object} machine - State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Dispatch `ready` with `{ initial: true }` to progress the state.
+ */
 export async function matchStartEnter(machine) {
   await machine.dispatch("ready", { initial: true });
 }
@@ -366,6 +431,19 @@ export async function matchStartEnter(machine) {
  *
  * @param {object} machine
  * @param {object} [payload]
+ */
+/**
+ * onEnter handler for `cooldown` state.
+ *
+ * Choose between the initial match-start countdown or the regular
+ * inter-round cooldown based on `payload.initial`.
+ *
+ * @param {object} machine - State machine instance.
+ * @param {object} [payload] - Optional payload telling whether this is an initial cooldown.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. If `payload.initial` -> initialize start cooldown.
+ * 2. Otherwise ensure inter-round cooldown is scheduled when absent.
  */
 export async function cooldownEnter(machine, payload) {
   if (payload?.initial) {
@@ -446,6 +524,20 @@ function invokeRoundStart(ctx) {
  *
  * @param {object} machine
  */
+/**
+ * onEnter handler for `roundStart` state.
+ *
+ * Trigger the round start routine and install test-mode fallbacks to
+ * avoid UI stalls. On failure, attempt to recover via `handleRoundError`.
+ *
+ * @param {object} machine - State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Install a short fallback in test mode to advance if UI stalls.
+ * 2. Invoke the round start routine from the machine context.
+ * 3. On failure -> clear fallback and call `handleRoundError('roundStartError')`.
+ * 4. If start succeeds and state still `roundStart` -> dispatch `cardsRevealed`.
+ */
 export async function roundStartEnter(machine) {
   const fallback = installRoundStartFallback(machine);
   try {
@@ -494,6 +586,18 @@ export async function roundStartEnter(machine) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * onEnter handler for `waitingForPlayerAction` state.
+ *
+ * Enable stat buttons and, if a selection already exists on the store,
+ * advance immediately by dispatching `statSelected`.
+ *
+ * @param {object} machine - State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Emit `statButtons:enable` to allow player input.
+ * 2. If `store.playerChoice` exists -> dispatch `statSelected` immediately.
+ */
 export async function waitingForPlayerActionEnter(machine) {
   emitBattleEvent("statButtons:enable");
   // Do NOT mark the Next button as ready here. The Next button is reserved
@@ -533,6 +637,16 @@ export async function waitingForPlayerActionEnter(machine) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * onExit handler for `waitingForPlayerAction` state.
+ *
+ * Disable stat buttons to avoid accepting input when the orchestrator
+ * moves to a different state.
+ *
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Emit `statButtons:disable` to turn off inputs.
  */
 export async function waitingForPlayerActionExit() {
   emitBattleEvent("statButtons:disable");
@@ -691,6 +805,19 @@ async function dispatchOutcome(outcomeEvent, machine) {
  * 1. Log debug message when not under Vitest.
  * 2. Store `Date.now()` using `exposeDebugState('roundDecisionEnter')`.
  * 3. Emit `debugPanelUpdate` to refresh the panel.
+ */
+/**
+ * Record that the machine entered `roundDecision` for debug tracing.
+ *
+ * This stamps a timestamp in the debug state and triggers the debug panel
+ * update so operators and tests can observe timing of the decision phase.
+ *
+ * @pseudocode
+ * 1. Log debug entry if not in Vitest.
+ * 2. Record `roundDecisionEnter` timestamp via `exposeDebugState`.
+ * 3. Emit `debugPanelUpdate` event.
+ *
+ * @returns {void}
  */
 export function recordEntry() {
   try {

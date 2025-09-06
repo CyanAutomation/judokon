@@ -24,6 +24,8 @@ import { bridgeEngineEvents } from "./roundResolver.js";
  * 2. Await `initRoundSelectModal(startCallback)`.
  * 3. Await `startPromise`.
  * 4. Return the debug API after the round is selected.
+ *
+ * @returns {Promise<object|undefined>} Resolves to the debug API object when initialization completes (or `undefined` if not available).
  */
 export async function setupClassicBattlePage() {
   try {

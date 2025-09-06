@@ -39,6 +39,22 @@ let visibilityHandler = null;
  * @param {any} [payload] - Optional event payload.
  * @returns {Promise<any>|void} Result of the dispatch when available.
  */
+/**
+ * Dispatch an event to the active battle machine.
+ *
+ * Safe wrapper around `machine.dispatch` that early-returns when no
+ * machine is available and emits diagnostic events on failure.
+ *
+ * @pseudocode
+ * 1. Return early when no `machine` exists.
+ * 2. If `eventName` is `interrupt`, emit `interrupt.requested` with scope.
+ * 3. Attempt to `await machine.dispatch(eventName, payload)`.
+ * 4. On dispatch failure, emit a `debugPanelUpdate` event.
+ *
+ * @param {string} eventName - Event to send to the machine.
+ * @param {any} [payload] - Optional event payload.
+ * @returns {Promise<any>|void} Result of the dispatch when available.
+ */
 export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) return;
   try {
@@ -266,6 +282,16 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
  * 3. Nullify stored references.
  */
 export function disposeClassicBattleOrchestrator() {
+  /**
+   * Remove listeners and clear orchestrator references.
+   *
+   * @pseudocode
+   * 1. Remove `domStateListener` from `battleStateChange`.
+   * 2. If `debugLogListener` exists, remove it and null the reference.
+   * 3. Detach `visibilitychange` listener when present.
+   * 4. Null the `machine` reference so the orchestrator is disposable.
+   * @returns {void}
+   */
   offBattleEvent("battleStateChange", domStateListener);
   if (debugLogListener) {
     offBattleEvent("battleStateChange", debugLogListener);

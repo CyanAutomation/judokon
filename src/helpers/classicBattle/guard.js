@@ -1,7 +1,15 @@
 /**
  * Execute a function and suppress any thrown errors.
  *
+ * Prevent exceptions from bubbling to callers. Use for best-effort
+ * side-effects where failure must not interrupt the main flow.
+ *
+ * @pseudocode
+ * 1. Try to invoke the provided `fn`.
+ * 2. If `fn` throws, swallow the error and return.
+ *
  * @param {() => void} fn - Callback to execute.
+ * @returns {void}
  */
 export function guard(fn) {
   try {
@@ -11,6 +19,14 @@ export function guard(fn) {
 
 /**
  * Execute an async function and suppress any thrown errors or rejections.
+ *
+ * Await the provided callback and swallow any rejection or thrown error.
+ * This is useful for fire-and-forget async side-effects where errors
+ * should not affect the caller.
+ *
+ * @pseudocode
+ * 1. Await the result of `fn()`.
+ * 2. If it rejects, swallow the error and return.
  *
  * @param {() => Promise<any>|any} fn - Callback returning a promise or value.
  * @returns {Promise<void>}
