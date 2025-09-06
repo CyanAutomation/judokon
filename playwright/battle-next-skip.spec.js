@@ -17,7 +17,8 @@ test.describe("Next button cooldown skip", () => {
       const settings = JSON.parse(localStorage.getItem("settings") || "{}");
       settings.featureFlags = {
         ...(settings.featureFlags || {}),
-        skipRoundCooldown: { enabled: false }
+        skipRoundCooldown: { enabled: false },
+        enableTestMode: { enabled: false }
       };
       localStorage.setItem("settings", JSON.stringify(settings));
     });
