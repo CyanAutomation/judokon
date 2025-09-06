@@ -18,7 +18,7 @@ import { vi } from "vitest";
  * @param {string} [options.url] - URL to stub as `location`.
  * @param {Array} [options.stats=[]] - Stat metadata returned by `fetchJson`.
  * @param {Array} [options.battleStats=[]] - Values for `BattleEngine.STATS`.
- * @returns {Promise<import("../../../src/pages/battleCLI.js")>} Loaded module.
+ * @returns {Promise<import("../../../src/pages/index.js")["battleCLI"]>} Loaded module.
  */
 export async function loadBattleCLI(options = {}) {
   const {
@@ -174,8 +174,8 @@ export async function loadBattleCLI(options = {}) {
     }));
   }
 
-  const mod = await import("../../../src/pages/battleCLI.js");
-  return mod;
+  const mod = await import("../../../src/pages/index.js");
+  return mod.battleCLI;
 }
 
 /**

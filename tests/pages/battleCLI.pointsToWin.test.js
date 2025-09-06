@@ -23,7 +23,7 @@ describe("battleCLI points select", () => {
   it("confirms and persists points to win", async () => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "5");
     const mod = await loadBattleCLI();
-    await mod.__test.init();
+    await mod.init();
     const { setPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
     setPointsToWin.mockClear();
 
@@ -41,7 +41,7 @@ describe("battleCLI points select", () => {
     expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("15");
 
     setPointsToWin.mockClear();
-    await mod.__test.restorePointsToWin();
+    await mod.restorePointsToWin();
     expect(setPointsToWin).toHaveBeenCalledWith(15);
     expect(select.value).toBe("15");
   });
@@ -49,7 +49,7 @@ describe("battleCLI points select", () => {
   it.each([5, 15])("selecting %i updates engine state and header", async (target) => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
     const mod = await loadBattleCLI();
-    await mod.__test.init();
+    await mod.init();
     const { setPointsToWin, getPointsToWin } = await import(
       "../../src/helpers/battleEngineFacade.js"
     );
@@ -73,7 +73,7 @@ describe("battleCLI points select", () => {
   it("keeps target after toggling verbose", async () => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
     const mod = await loadBattleCLI();
-    await mod.__test.init();
+    await mod.init();
     const select = document.getElementById("points-select");
     vi.spyOn(window, "confirm").mockReturnValue(true);
 

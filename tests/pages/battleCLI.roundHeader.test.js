@@ -11,7 +11,7 @@ describe("battleCLI round header", () => {
     const mod = await loadBattleCLI();
     const roundManager = await import("../../src/helpers/classicBattle/roundManager.js");
     vi.spyOn(roundManager, "startRound").mockResolvedValue({ playerJudoka: null, roundNumber: 2 });
-    await mod.__test.startRoundWrapper();
+    await mod.startRoundWrapper();
     expect(document.getElementById("cli-round").textContent).toBe("Round 2 Target: 10 🏆");
     const root = document.getElementById("cli-root");
     expect(root.getAttribute("data-round")).toBe("2");

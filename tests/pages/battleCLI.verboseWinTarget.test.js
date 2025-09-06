@@ -23,7 +23,7 @@ describe("battleCLI verbose win target", () => {
   it("keeps win target when verbose toggled", async () => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
     const mod = await loadBattleCLI();
-    await mod.__test.init();
+    await mod.init();
     const select = document.getElementById("points-select");
     vi.spyOn(window, "confirm").mockReturnValue(true);
     select.value = "15";

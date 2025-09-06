@@ -8,7 +8,7 @@ describe("battleCLI cliShortcuts flag", () => {
 
   it("does not toggle when cliShortcuts is disabled", async () => {
     const mod = await loadBattleCLI({ cliShortcuts: false });
-    await mod.__test.init();
+    await mod.init();
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(true);
     mod.onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
@@ -17,7 +17,7 @@ describe("battleCLI cliShortcuts flag", () => {
 
   it("toggles when cliShortcuts is enabled", async () => {
     const mod = await loadBattleCLI({ cliShortcuts: true });
-    await mod.__test.init();
+    await mod.init();
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(true);
     mod.onKeyDown(new KeyboardEvent("keydown", { key: "h" }));

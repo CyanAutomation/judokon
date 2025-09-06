@@ -11,8 +11,8 @@ describe("battleCLI verbose flag", () => {
   it("enables verbose mode via query param without console noise", async () => {
     const mod = await loadBattleCLI({ url: "http://localhost/?verbose=1" });
     await withMutedConsole(async () => {
-      await mod.__test.init();
-      mod.__test.handleBattleState({ detail: { from: "init", to: "waiting" } });
+      await mod.init();
+      mod.handleBattleState({ detail: { from: "init", to: "waiting" } });
     }, ["info"]);
     const { setFlag } = await import("../../src/helpers/featureFlags.js");
     expect(setFlag).toHaveBeenCalledWith("cliVerbose", true);

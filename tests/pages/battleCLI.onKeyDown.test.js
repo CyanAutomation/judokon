@@ -30,7 +30,11 @@ describe("battleCLI onKeyDown", () => {
         return btn;
       }
     }));
-    ({ onKeyDown, __test, getEscapeHandledPromise } = await import("../../src/pages/battleCLI.js"));
+    ({
+      onKeyDown,
+      battleCLI: __test,
+      getEscapeHandledPromise
+    } = await import("../../src/pages/index.js"));
     document.body.innerHTML = `
       <div id="cli-root">
         <div id="cli-main"></div>

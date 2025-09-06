@@ -8,7 +8,7 @@ describe("battleCLI verbose toggle", () => {
 
   it("shows verbose section and logs after enabling mid-match", async () => {
     const mod = await loadBattleCLI();
-    await mod.__test.init();
+    await mod.init();
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     const section = document.getElementById("cli-verbose-section");
     const pre = document.getElementById("cli-verbose-log");
