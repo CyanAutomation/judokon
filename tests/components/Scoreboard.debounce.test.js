@@ -4,7 +4,12 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-import { createScoreboard, initScoreboard, showMessage, updateTimer } from "../../src/components/Scoreboard.js";
+import {
+  createScoreboard,
+  initScoreboard,
+  showMessage,
+  updateTimer
+} from "../../src/components/Scoreboard.js";
 
 describe("Scoreboard announcement debouncing (~200ms)", () => {
   beforeEach(() => {
@@ -34,4 +39,3 @@ describe("Scoreboard announcement debouncing (~200ms)", () => {
     expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 3s");
   });
 });
-

@@ -105,4 +105,3 @@ export function disposeScoreboardAdapter() {
 }
 
 export default initScoreboardAdapter;
-

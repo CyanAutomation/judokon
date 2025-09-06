@@ -196,8 +196,7 @@ function setScoreText(player, opponent) {
   }
   try {
     if (!playerSpan.getAttribute("data-side")) playerSpan.setAttribute("data-side", "player");
-    if (!opponentSpan.getAttribute("data-side"))
-      opponentSpan.setAttribute("data-side", "opponent");
+    if (!opponentSpan.getAttribute("data-side")) opponentSpan.setAttribute("data-side", "opponent");
   } catch {}
   playerSpan.textContent = `You: ${player}`;
   opponentSpan.textContent = `Opponent: ${opponent}`;
