@@ -59,7 +59,10 @@ describe("handleStatSelection helpers", () => {
     await handleStatSelection(store, "speed", { playerVal: 3, opponentVal: 4 });
 
     expect(stopTimer).toHaveBeenCalledTimes(1);
-    expect(emitBattleEvent).toHaveBeenCalledTimes(1);
+    expect(emitBattleEvent).toHaveBeenCalledTimes(2);
+    expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "input.ignored", {
+      kind: "duplicateSelection"
+    });
     expect(dispatchBattleEvent).toHaveBeenCalledWith("roundResolved");
     expect(store.selectionMade).toBe(true);
   });
