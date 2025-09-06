@@ -29,8 +29,8 @@ describe("syncDisplayMode", () => {
     const { syncDisplayMode, applyDisplayMode } = await setup();
     document.getElementById("display-mode-dark").checked = true;
     const handleUpdate = vi.fn().mockResolvedValue();
-    const updated = await withMutedConsole(
-      async () => await syncDisplayMode({ displayMode: "light" }, handleUpdate)
+    const updated = await withMutedConsole(() =>
+      syncDisplayMode({ displayMode: "light" }, handleUpdate)
     );
     expect(updated.displayMode).toBe("dark");
     expect(handleUpdate).toHaveBeenCalledWith("displayMode", "dark", expect.any(Function));
@@ -43,9 +43,7 @@ describe("syncDisplayMode", () => {
     const { syncDisplayMode, applyDisplayMode } = await setup();
     const handleUpdate = vi.fn();
     const current = { displayMode: "light" };
-    const updated = await withMutedConsole(
-      async () => await syncDisplayMode(current, handleUpdate)
-    );
+    const updated = await withMutedConsole(() => syncDisplayMode(current, handleUpdate));
     expect(updated).toEqual(current);
     expect(handleUpdate).not.toHaveBeenCalled();
     expect(applyDisplayMode).not.toHaveBeenCalled();
