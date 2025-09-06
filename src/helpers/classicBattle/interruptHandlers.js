@@ -29,6 +29,27 @@ let errorModal;
  * @param {{statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number}} store
  * - Battle state store used to clear pending timers.
  */
+/**
+ * Initialize global interrupt handlers used by the classic battle flow.
+ *
+ * This wire-up ensures navigation events, uncaught errors and promise
+ * rejections gracefully interrupt an active match, clear timers and
+ * surface a simple error dialog when appropriate.
+ *
+ * @pseudocode
+ * 1. Define a `cleanup` helper that cancels timers, resets skip state,
+ *    clears the scoreboard timer and stops the scheduler.
+ * 2. Add navigation handlers (`pagehide`, `beforeunload`) that call
+ *    `cleanup`, interrupt the match with reason `navigation`, show a
+ *    scoreboard message, and emit an interrupt battle event.
+ * 3. Add global error handlers (`error`, `unhandledrejection`) that derive
+ *    a readable message, call `cleanup`, interrupt the match with reason
+ *    `error`, show an error modal, and emit an interrupt battle event.
+ *
+ * @param {{statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number}} store
+ *  Shared store for scheduled timers used by the orchestrator.
+ * @returns {void}
+ */
 export function initInterruptHandlers(store) {
   /**
    * Cancel timers and scheduler callbacks to prevent UI drift.

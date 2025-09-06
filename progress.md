@@ -25,12 +25,12 @@ Repro Steps and Observations
    - Non-orchestrated Playwright spec exists (playwright/battle-next-skip.non-orchestrated.spec.js) that calls it directly, but NOT used by the failing test.
 
 3. Who calls computeNextRoundCooldown (logs seen twice)?
-   - Orchestrator-owned cooldown: orchestratorHandlers.initInterRoundCooldown() calls computeNextRoundCooldown() via dynamic import.
-   - UI surfacing: roundUI (src/helpers/classicBattle/roundUI.js) also calls computeNextRoundCooldown() in its roundResolved handler to render “Next round in: Xs” in snackbar.
+   - Orchestrator-owned cooldown: orchestratorHandlers.initInterRoundCooldown() calls computeNextRoundCooldown() (dynamic import inside the handler).
+   - UI surfacing: roundUI (src/helpers/classicBattle/roundUI.js) also calls computeNextRoundCooldown() in its roundResolved handler to render “Next round in: Xs” in the snackbar.
    - Conclusion: The duplicate “[test] startCooldown: testMode=false cooldown=1” warnings are expected and do NOT imply that roundManager.startCooldown was called; they come from two independent calls to computeNextRoundCooldown (orchestrator + roundUI text).
 
-4. Validated no orchestrated code calls roundManager.startCooldown
-   - Searched the repo; only tests import/call it directly.
+4. Validated orchestrated code does not call roundManager.startCooldown
+   - Searched the repo; the orchestrated path does not invoke it. It is re‑exported and used by non‑orchestrated tests and referenced by the scoreboard, but the machine path uses its own initializer.
    - orchestratorHandlers.cooldownEnter delegates to initInterRoundCooldown(machine) (not to roundManager.startCooldown).
 
 5. Why is Next readiness never set in the failing run?
@@ -41,14 +41,14 @@ Repro Steps and Observations
 
 6. Autostart path sanity
    - autostart=1 is handled in src/helpers/classicBattle/roundSelectModal.js by:
-     a) await onStart() (creates controller → orchestrator inside bootstrap)
-     b) emitBattleEvent("startClicked"); await dispatchBattleEvent("startClicked");
-   - This correctly defers the dispatch until after the controller/init has finished.
+     a) await onStart() (creates controller → orchestrator inside bootstrap).
+     b) emitBattleEvent("startClicked"); await dispatchBattleEvent("startClicked").
+   - This defers the dispatch until after initialization. Note: dynamic imports still exist in current repo; prior local refactors to static were not persisted here.
 
 7. Possible culprits and what I ruled out so far
    - handleStatSelection: user suspected; I reviewed its references and the roundUI/roundResolver flow. It does not call startCooldown.
    - Non-orchestrated cooldown: no code path in orchestrated runtime calls roundManager.startCooldown; duplicate cooldown logs are from computeNextRoundCooldown only.
-   - Button being re-disabled: resetBattleUI() listens to game:reset-ui and calls resetNextButton() (disables and clears data-next-ready), but this fires during initial machine setup (waitingForMatchStartEnter → doResetGame). After round 1 resolves, initInterRoundCooldown should still mark the button ready again.
+   - Button being re-disabled: resetBattleUI() listens to game:reset-ui and calls resetNextButton() (disables and clears data-next-ready). This runs during initial machine setup (waitingForMatchStartEnter → doResetGame) and replay flows; it should not fire after ordinary round resolution, and initInterRoundCooldown re‑marks readiness anyway.
    - onNextButtonClick clearing readiness: only runs on click; our failure occurs before clicking Next.
 
 8. Gaps/Hypotheses to verify next
@@ -75,25 +75,18 @@ Request for guidance
 
 ### Remediation Plan - Attempt 1 (Failed)
 
-The initial hypothesis was that dynamic imports in `initInterRoundCooldown` were causing a race condition. This was addressed by converting them to static imports.
-
-1.  **[Failed]** Refactor `orchestratorHandlers.js` to use static imports for `computeNextRoundCooldown.js` and `nextRoundTimer.js`.
-    - **Result:** The Playwright test `playwright/battle-next-skip.spec.js` continued to fail with the same timeout error. This indicates the dynamic imports were not the root cause of the issue.
+The initial hypothesis was that dynamic imports in `initInterRoundCooldown` might cause a race. A local experiment replaced dynamic imports with static ones, but the current repo still uses dynamic imports (no committed change). The failure persisted in that experiment, suggesting dynamic import timing alone is not the root cause.
 
 ---
 
 ### Remediation Plan - Attempt 2 (Failed)
 
-This attempt focused on adding diagnostics to the Playwright test and then attempting a fix based on the initial analysis of the logs.
+This attempt focused on adding diagnostics to the Playwright test and then hypothesizing that snackbar/failsafe logic might interfere.
 
-1.  **[Completed]** Modify `playwright/battle-next-skip.spec.js` to add logging that captures:
-    - The `data-battle-state` and `data-prev-battle-state` attributes of the `<body>` element at key points.
-    - The `disabled` and `data-next-ready` attributes of the `#next-button` element.
-    - **Result:** Logs showed that the `#next-button` _did_ become ready (`data-next-ready: 'true'`, `nextDisabled: false`) after the `waitForFunction` call, but the subsequent `click()` operation failed because the element was not visible/clickable. This indicated a race condition where the button's state changed immediately after becoming ready.
+1.  **[Partial]** Diagnostics added locally (uncommitted here) to log body state and `#next-button` attributes during the transition.
+    - Outcome indicated readiness appeared but a click raced. Treat as unverified in this repo until reproduced.
 
-2.  **[Completed]** Attempt to fix by removing "failsafe" `setTimeout` blocks in `src/helpers/classicBattle/roundUI.js`.
-    - **Rationale:** These `setTimeout` blocks were suspected of causing a race condition by dispatching state machine events, potentially interfering with the orchestrator's control over the "Next" button's state.
-    - **Result:** The `replace` operation failed due to multiple occurrences of the `old_string`. The file `src/helpers/classicBattle/roundUI.js` is currently in a partially reverted state. The Playwright test still fails.
+2.  **[Reverted]** Removing "failsafe" `setTimeout` blocks in `roundUI.js` is no longer applicable — the current file already notes that the failsafe was removed to avoid conflicts with the orchestrator. No changes are required on this front.
 
 ---
 
@@ -101,8 +94,11 @@ This attempt focused on adding diagnostics to the Playwright test and then attem
 
 Given the persistent failure and the new insights from logging, the focus shifts to understanding why the "Next" button is not in a clickable state even after it reports as ready. The "failsafe" `setTimeout` blocks in `roundUI.js` are still highly suspicious.
 
-1.  **[Completed]** Revert `src/helpers/classicBattle/roundUI.js` to its original state.
-2.  **[Completed]** Re-apply the fix to `src/helpers/classicBattle/roundUI.js` by removing the "failsafe" `setTimeout` blocks, ensuring both occurrences are handled correctly.
-3.  **[In Progress]** Run `playwright/battle-next-skip.spec.js` to confirm the fix.
-4.  **[Pending]** Run relevant unit tests for `orchestratorHandlers` and `roundManager` to ensure no regressions have been introduced.
-5.  **[Pending]** Final documentation and cleanup.
+1.  **[Planned]** Instrument the Playwright test to capture:
+    - Battles states (`document.body.dataset.battleState` and `prevBattleState`) around resolution.
+    - Emission of `nextRoundTimerReady` via the battle event bus.
+    - `#next-button` `disabled` and `data-next-ready` attributes when the test waits to click.
+2.  **[Planned]** Run `playwright/battle-next-skip.spec.js` and evaluate whether:
+    - The machine entered `cooldown` (state evidence), and
+    - `nextRoundTimerReady` fired (initializer executed), or
+    - Neither happened (import failure or transition issue).

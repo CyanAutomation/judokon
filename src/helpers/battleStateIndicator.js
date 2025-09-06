@@ -1,6 +1,17 @@
 /**
  * Creates a battle state indicator UI component that reflects the state of the battle engine's FSM.
  *
+ * @pseudocode
+ * 1. If the feature flag is disabled or DOM is unavailable, return a no-op API with isReady=false.
+ * 2. Resolve `mount` and `announcer` to DOM elements; if missing return a no-op API.
+ * 3. Create a root `<ul>` and an ARIA announcer `<p>`, append both to the provided mount points.
+ * 4. Fetch the state `catalog` via `getCatalog()` and render the list of known states.
+ * 5. Subscribe to `control.state.changed` events and on each change:
+ *    - Refresh catalog when a new version is indicated.
+ *    - Update `activeState`, mark the matching list item as active and set `aria-current`.
+ *    - Update the announcer text and manage an `unknown` flag when state is not in the catalog.
+ * 6. Return an API with `cleanup()`, `isReady: true`, and `getActiveState()`.
+ *
  * @param {object} config - The configuration object.
  * @param {boolean} [config.featureFlag=true] - A flag to enable or disable the component.
  * @param {HTMLElement|string} config.mount - The DOM element or selector string for the main component.

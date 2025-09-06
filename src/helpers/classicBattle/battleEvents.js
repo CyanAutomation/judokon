@@ -102,6 +102,13 @@ export function __resetBattleEventTarget() {
   globalThis[EVENT_TARGET_KEY] = t;
   __tuneMaxListenersIfNode(t);
 }
-
-export { getTarget as getBattleEventTarget };
+/**
+ * Get the global EventTarget used by classic battle.
+ *
+ * @returns {EventTarget}
+ */
+export function getBattleEventTarget() {
+  return getTarget();
+}
+export { getTarget };
 export default getTarget;

@@ -293,7 +293,10 @@ export const startRoundTimer = (...args) => requireEngine().startRound(...args);
  * pauseRoundTimer: PRD alias for pausing the round timer.
  *
  * @pseudocode
- * 1. Delegate to `pauseTimer`.
+ * 1. Delegate to `pauseTimer` on the active engine instance which saves remaining
+ *    time and cancels any running tick callbacks.
+ *
+ * @returns {void}
  */
 export const pauseRoundTimer = () => requireEngine().pauseTimer();
 
@@ -301,7 +304,10 @@ export const pauseRoundTimer = () => requireEngine().pauseTimer();
  * resumeRoundTimer: PRD alias for resuming the round timer.
  *
  * @pseudocode
- * 1. Delegate to `resumeTimer`.
+ * 1. Delegate to `resumeTimer` on the active engine instance which restores
+ *    remaining time and restarts tick callbacks.
+ *
+ * @returns {void}
  */
 export const resumeRoundTimer = () => requireEngine().resumeTimer();
 
@@ -309,16 +315,29 @@ export const resumeRoundTimer = () => requireEngine().resumeTimer();
  * stopRoundTimer: PRD alias for stopping the round timer.
  *
  * @pseudocode
- * 1. Delegate to `stopTimer`.
+ * 1. Delegate to `stopTimer` on the active engine instance which cancels the
+ *    timer and clears scheduled callbacks.
+ *
+ * @returns {void}
  */
 export const stopRoundTimer = () => requireEngine().stopTimer();
 
 /**
  * evaluateSelection: PRD-shaped wrapper for stat evaluation.
  *
+ * @summary Evaluate a stat selection pair and return the engine-computed outcome.
  * @pseudocode
- * 1. Call `handleStatSelection(playerVal, opponentVal)`.
- * 2. Return result extended with `statKey` when provided.
+ * 1. Validate inputs (statKey optional, playerVal and opponentVal required).
+ * 2. Call the engine `handleStatSelection(playerVal, opponentVal)` to compute
+ *    the delta, outcome and updated scores.
+ * 3. If `statKey` was provided, attach it to the returned result for caller
+ *    convenience.
+ *
+ * @param {object} opts
+ * @param {string} [opts.statKey] - Optional stat identifier selected by the player.
+ * @param {number} opts.playerVal - Numeric value chosen by the player.
+ * @param {number} opts.opponentVal - Numeric value chosen by the opponent.
+ * @returns {{delta:number, outcome:string, matchEnded:boolean, playerScore:number, opponentScore:number, statKey?:string}}
  */
 export function evaluateSelection({ statKey, playerVal, opponentVal }) {
   const result = requireEngine().handleStatSelection(playerVal, opponentVal);
@@ -329,7 +348,9 @@ export function evaluateSelection({ statKey, playerVal, opponentVal }) {
  * isMatchPoint: PRD query alias.
  *
  * @pseudocode
- * 1. Delegate to engine `isMatchPoint()` if available; else false.
+ * 1. Delegate to engine `isMatchPoint()` if available; otherwise return `false`.
+ *
+ * @returns {boolean} True when the current round could end the match for either player.
  */
 export const isMatchPoint = () => requireEngine().isMatchPoint?.() ?? false;
 
@@ -337,7 +358,10 @@ export const isMatchPoint = () => requireEngine().isMatchPoint?.() ?? false;
  * getSeed: PRD query to expose deterministic seed.
  *
  * @pseudocode
- * 1. Delegate to engine `getSeed()` if available.
+ * 1. Delegate to engine `getSeed()` if available and return the value used for
+ *    deterministic behavior in test mode.
+ *
+ * @returns {number|undefined} The numeric seed when test mode is enabled; otherwise undefined.
  */
 export const getSeed = () => requireEngine().getSeed?.();
 
