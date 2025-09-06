@@ -281,7 +281,11 @@ export function showMessage(text, opts = {}) {
     setLiveText(el, text);
     if (outcome) {
       el.dataset.outcome = "true";
-      outcomeLockUntil = Date.now() + 1000;
+      // Start the lock window from when the user would perceive the update.
+      // If announcements are debounced, include that delay to ensure
+      // persistence lasts >=1s after the visible/announced change.
+      const pad = Math.max(announceDelayMs || 0, 200);
+      outcomeLockUntil = Date.now() + 1000 + pad;
     } else {
       delete el.dataset.outcome;
     }
