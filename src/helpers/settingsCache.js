@@ -50,63 +50,25 @@ export async function loadDefaultSettings() {
 }
 
 /**
- * Replace the cached settings object.
+ * Replace the cached settings object used at runtime.
  *
  * @pseudocode
- * 1. Clone `settings` to prevent external mutations.
- * 2. Assign the clone to `cachedSettings`.
+ * 1. Clone the provided `settings` to avoid accidental external mutation.
+ * 2. Assign the cloned object to the in-memory `cachedSettings` reference.
+ * 3. Consumers can continue to read from `getCachedSettings()` to get the new values.
  *
  * @param {import("../config/settingsDefaults.js").Settings} settings - New settings object.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function setCachedSettings(settings) {
   cachedSettings = cloneSettings(settings);
 }
 
 /**
- * Reset the cache to the default settings.
+ * Reset the in-memory cache to the canonical default settings.
  *
  * @pseudocode
- * 1. Set `cachedSettings` to a cloned copy of `DEFAULT_SETTINGS`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Create a clone of `DEFAULT_SETTINGS` to avoid mutation.
+ * 2. Assign the clone to `cachedSettings` so runtime lookups see defaults.
  */
 export function resetCache() {
   cachedSettings = cloneSettings(DEFAULT_SETTINGS);
@@ -142,27 +104,11 @@ export function getFeatureFlag(flagName) {
 /**
  * Access the entire cached settings object.
  *
+ * @pseudocode
+ * 1. Return a reference to the in-memory `cachedSettings` used by runtime lookups.
+ * 2. Consumers should not mutate this object directly; clone if mutation is needed.
+ *
  * @returns {import("../config/settingsDefaults.js").Settings} Cached settings.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export function getCachedSettings() {
   return cachedSettings;

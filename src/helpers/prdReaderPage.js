@@ -377,6 +377,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     await sidebar.fetchOne(sidebar.index);
   }
   renderDocument(sidebar, sidebar.index);
+  sidebar.container.focus({ preventScroll: true });
   sidebar.spinner.remove();
 
   // Preload remaining docs during idle. Skip when test mode flag is enabled.
