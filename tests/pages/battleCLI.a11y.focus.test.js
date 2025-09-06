@@ -14,7 +14,8 @@ describe("battleCLI accessibility", () => {
 
     it("shifts focus between stat list and next prompt", async () => {
       const mod = await loadBattleCLI();
-      await mod.__test.init();
+      await mod.__test.renderStatList();
+      mod.__test.installEventBindings();
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
       emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
       expect(document.activeElement?.id).toBe("cli-stats");
