@@ -117,7 +117,7 @@ export function buildMenu(gameModes, { orientation }) {
  * 3. Define `update()` to insert the button and hide the list when the width is below the breakpoint; otherwise remove the button.
  * 4. Define `toggle()` to flip `aria-expanded` and the `.expanded` class on the list.
  * 5. Attach `click` and `resize` listeners and invoke `update()` once.
- * 6. Return a cleanup function that removes the `resize` listener.
+ * 6. Return a cleanup function that removes the `resize` listener and the button.
  *
  * @param {number} [breakpoint=480] - Maximum width to show the hamburger menu.
  * @returns {() => void} Cleanup function to remove the `resize` listener.
@@ -164,5 +164,7 @@ export function setupHamburger(breakpoint = 480) {
 
   return () => {
     window.removeEventListener("resize", update);
+    button.removeEventListener("click", toggle);
+    button.remove();
   };
 }
