@@ -13,7 +13,6 @@ import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-import { getStateSnapshot } from "./battleDebug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -297,18 +296,11 @@ export function bindRoundUIEventHandlersDynamic() {
       // Proactively surface the next-round countdown in the snackbar so tests
       // and users see it immediately after the outcome is shown.
       try {
-        const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
-        const { updateSnackbar } = await import("../showSnackbar.js");
         const secs = computeNextRoundCooldown();
         updateSnackbar(`Next round in: ${secs}s`);
       } catch {}
       // Fallback sequential updates when the orchestrator is not running
       try {
-        const { isOrchestrated } = await import("./roundManager.js");
-        const { computeNextRoundCooldown } = await import(
-          "./../timers/computeNextRoundCooldown.js"
-        );
-        const { updateSnackbar } = await import("../showSnackbar.js");
         const secs = computeNextRoundCooldown();
         const orchestrated = (() => {
           try {
