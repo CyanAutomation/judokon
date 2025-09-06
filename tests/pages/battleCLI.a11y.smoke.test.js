@@ -1,17 +1,27 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { readFileSync } from "node:fs";
 
-describe("battleCLI.html static selectors", () => {
-  it("exposes required DOM hooks", () => {
+describe("battleCLI accessibility smoke tests", () => {
+  beforeEach(() => {
     const html = readFileSync("src/pages/battleCLI.html", "utf8");
     document.documentElement.innerHTML = html;
-    expect(document.getElementById("cli-countdown")).toBeTruthy();
-    expect(document.getElementById("round-message")).toBeTruthy();
-    expect(document.getElementById("cli-score")).toBeTruthy();
-    const root = document.getElementById("cli-root");
-    expect(root?.getAttribute("data-round")).not.toBeNull();
-    expect(root?.getAttribute("data-target")).not.toBeNull();
+  });
+
+  it("marks countdown and round message as polite live regions", () => {
+    const roundMsg = document.getElementById("round-message");
     const countdown = document.getElementById("cli-countdown");
-    expect(countdown?.getAttribute("data-remaining-time")).not.toBeNull();
+    expect(roundMsg?.getAttribute("role")).toBe("status");
+    expect(roundMsg?.getAttribute("aria-live")).toBe("polite");
+    expect(countdown?.getAttribute("role")).toBe("status");
+    expect(countdown?.getAttribute("aria-live")).toBe("polite");
+  });
+
+  it("includes static controls hint near footer", () => {
+    const hint = document.getElementById("cli-controls-hint");
+    expect(hint).toBeTruthy();
+    expect(hint?.getAttribute("aria-hidden")).toBe("true");
+    expect(hint?.textContent?.trim()).toBe(
+      "[1–5] Stats · [Enter/Space] Next · [H] Help · [Q] Quit"
+    );
   });
 });

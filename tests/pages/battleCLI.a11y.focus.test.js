@@ -1,19 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { readFileSync } from "fs";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 describe("battleCLI accessibility", () => {
-  it("marks countdown and round message as polite live regions", () => {
-    const html = readFileSync("src/pages/battleCLI.html", "utf8");
-    document.documentElement.innerHTML = html;
-    const roundMsg = document.getElementById("round-message");
-    const countdown = document.getElementById("cli-countdown");
-    expect(roundMsg?.getAttribute("role")).toBe("status");
-    expect(roundMsg?.getAttribute("aria-live")).toBe("polite");
-    expect(countdown?.getAttribute("role")).toBe("status");
-    expect(countdown?.getAttribute("aria-live")).toBe("polite");
-  });
-
   describe("focus management", () => {
     beforeEach(() => {
       vi.useFakeTimers();
