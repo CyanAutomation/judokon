@@ -6,31 +6,31 @@ Battle Scoreboard PRD vs Implementation — Gap Analysis
 Task Contract
 
 {
-  "inputs": [
-    "design/productRequirementsDocuments/prdBattleScoreboard.md",
-    "src/components/Scoreboard.js",
-    "src/helpers/setupScoreboard.js",
-    "src/helpers/classicBattle/timerService.js",
-    "src/pages/battleJudoka.html",
-    "tests/components/Scoreboard.test.js",
-    "tests/helpers/scoreboard.integration.test.js"
-  ],
-  "outputs": [
-    "progressScore.md"
-  ],
-  "success": [
-    "Gaps identified with file references",
-    "Actionable, low-risk changes proposed",
-    "No public API changes without justification"
-  ],
-  "errorMode": "ask_on_public_api_change"
+"inputs": [
+"design/productRequirementsDocuments/prdBattleScoreboard.md",
+"src/components/Scoreboard.js",
+"src/helpers/setupScoreboard.js",
+"src/helpers/classicBattle/timerService.js",
+"src/pages/battleJudoka.html",
+"tests/components/Scoreboard.test.js",
+"tests/helpers/scoreboard.integration.test.js"
+],
+"outputs": [
+"progressScore.md"
+],
+"success": [
+"Gaps identified with file references",
+"Actionable, low-risk changes proposed",
+"No public API changes without justification"
+],
+"errorMode": "ask_on_public_api_change"
 }
 
 What The PRD Requires (abridged)
 
 - Render-only reflector: Scoreboard renders persistent battle info (round message with locking, timer ticks, round counter, match score). No game logic or control events.
 - Public API: createScoreboard, initScoreboard, showMessage/clearMessage/showTemporaryMessage, showAutoSelect, updateTimer/clearTimer, updateRoundCounter/clearRoundCounter, updateScore. Headless API suggested: render(patch), getState(), destroy().
-- Event consumption: Orchestrator emits display.* events; scoreboard applies idempotent, order-stable updates. Message precedence: outcome|critical > info > neutral; outcomes lock until next round.
+- Event consumption: Orchestrator emits display.\* events; scoreboard applies idempotent, order-stable updates. Message precedence: outcome|critical > info > neutral; outcomes lock until next round.
 - DOM contract: #round-message, #next-round-timer, #round-counter, #score-display with child spans [data-side="player"|"opponent"], and #next-ready-badge (passive).
 - Behavior: score animates ≤500ms (persist ≥1s for messages), timer visible within 200ms and pauses on tab hide/resumes on focus, fallback "Waiting…" within 500ms on sync drift, reduced-motion bypasses animations.
 - Accessibility: All are aria-live="polite" (atomic), #round-message role="status"; announcement debouncing within 250ms; contrast ≥4.5:1; non-color cues for outcomes.
@@ -53,7 +53,7 @@ What’s Implemented Today
 
 Key Deltas vs PRD
 
-- Missing event bridge: Scoreboard does not consume PRD display.* events. There is no adapter that maps orchestrator events (e.g., display.round.message/outcome, display.score.update) to Scoreboard API calls.
+- Missing event bridge: Scoreboard does not consume PRD display.\* events. There is no adapter that maps orchestrator events (e.g., display.round.message/outcome, display.score.update) to Scoreboard API calls.
 - Not initialized on page: Classic Battle bootstrap does not call setupScoreboard; visibility/focus pause/resume hooks are inert in production.
 - DOM contract gaps: No #next-ready-badge; #score-display spans lack data-side attributes; newline in text content for opponent score is odd for SRs and formatting.
 - Message persistence and debouncing: No ≥1s persistence rule for outcome messages and no 250ms announcement debouncing/coalescing across live regions.
@@ -67,7 +67,7 @@ Low-Risk Alignments To Close Gaps
   - Where: src/helpers/classicBattle/bootstrap.js (or view.js during init).
   - Action: import { setupScoreboard } from "../setupScoreboard.js" and pass controls { startCoolDown, pauseTimer, resumeTimer, scheduler } available from timer/orchestrator layers. This activates visibility/focus pause/resume.
 
-- Add a thin event adapter for display.* events:
+- Add a thin event adapter for display.\* events:
   - Where: src/helpers/classicBattle/scoreboardAdapter.js (new).
   - Map orchestrator emissions to Scoreboard APIs:
     - display.round.start → clearMessage(); updateRoundCounter(n)
@@ -107,7 +107,7 @@ Tests To Add/Adjust
 
 - Integration (Vitest/jsdom):
   - initScoreboard hooks pause/resume on visibility/focus; simulate document.hidden and focus events to verify pauseTimer/resumeTimer calls.
-  - Adapter maps display.* events to DOM updates idempotently.
+  - Adapter maps display.\* events to DOM updates idempotently.
 
 - E2E (Playwright):
   - Timer pauses when tab hidden and resumes when visible (simulate via Page.emulateMedia or visibility change if supported in our harness, else integration-level test).
@@ -133,6 +133,7 @@ Implementation Plan (Phased)
 - Goal: Align scoreboard implementation with PRD while minimizing risk. Each phase ends with targeted unit tests (only relevant files/patterns), not the whole suite.
 
 Phase 0 — Wire Up Scoreboard On Page (no behavior change)
+
 - Changes:
   - Call `setupScoreboard(controls)` during Classic Battle bootstrap to enable visibility/focus pause/resume and ensure DOM refs are resolved early.
 - Files:
@@ -141,7 +142,8 @@ Phase 0 — Wire Up Scoreboard On Page (no behavior change)
   - `npx vitest run tests/helpers/scoreboard.integration.test.js`
   - `npx vitest run tests/components/Scoreboard.test.js -t "creates DOM structure"`
 
-Phase 1 — Event Adapter (display.* → Scoreboard API)
+Phase 1 — Event Adapter (display.\* → Scoreboard API)
+
 - Changes:
   - Add `scoreboardAdapter` that subscribes to orchestrator’s `display.*` events and calls the corresponding Scoreboard methods.
   - Ensure idempotency (safe to replay) and no cross-talk with existing direct calls.
@@ -154,6 +156,7 @@ Phase 1 — Event Adapter (display.* → Scoreboard API)
     - `npx vitest run tests/helpers/scoreboard.adapter.test.js`
 
 Phase 2 — DOM Contract Tightening
+
 - Changes:
   - Add `#next-ready-badge` to header (passive visual only).
   - Update `setScoreText` to set `[data-side]` on spans and remove newline between spans.
@@ -166,6 +169,7 @@ Phase 2 — DOM Contract Tightening
     - `npx vitest run tests/components/Scoreboard.test.js -t "updates message and score"`
 
 Phase 3 — Message Persistence (≥1s) + Announcement Debounce (≤250ms)
+
 - Changes:
   - In `showMessage`, when `{ outcome: true }`, lock for ≥1000ms against downgrades/placeholder overwrites.
   - Add a micro debouncer around aria-live updates for `#round-message`, `#next-round-timer`, and `#score-display`.
@@ -179,6 +183,7 @@ Phase 3 — Message Persistence (≥1s) + Announcement Debounce (≤250ms)
     - `npx vitest run tests/components/Scoreboard.debounce.test.js`
 
 Phase 4 — Headless API Surface
+
 - Changes:
   - Add `render(patch)`, `getState()`, and `destroy()` to `Scoreboard.js` for deterministic tests and CLI use. Keep functions ≤50 LOC with `@pseudocode`.
 - Files:
@@ -189,6 +194,7 @@ Phase 4 — Headless API Surface
     - `npx vitest run tests/components/Scoreboard.headless.test.js`
 
 Phase 5 — Visibility Pause/Resume Verification
+
 - Changes:
   - Ensure `initScoreboard` listener wiring is active via bootstrap; no new logic.
 - Files:
@@ -199,6 +205,7 @@ Phase 5 — Visibility Pause/Resume Verification
     - `npx vitest run tests/components/Scoreboard.visibility.test.js`
 
 Phase 6 — A11y and Styling Confirmations
+
 - Changes:
   - Optionally remove `role="status"` from `#next-round-timer` (keep `aria-live="polite"`, `aria-atomic="true"`).
   - Ensure non-color cues for outcome states via CSS tokens (component to toggle `data-outcome`; CSS provides style).
@@ -209,6 +216,7 @@ Phase 6 — A11y and Styling Confirmations
   - `npx vitest run tests/components/Scoreboard.test.js -t "creates DOM structure"`
 
 Quality Gates Per Phase
+
 - Prettier/Eslint for touched files only (fast path):
   - `npx prettier src/components/Scoreboard.js src/helpers/classicBattle/*.js src/pages/battleJudoka.html --check`
   - `npx eslint src/components/Scoreboard.js src/helpers/classicBattle/*.js`
@@ -216,4 +224,5 @@ Quality Gates Per Phase
   - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null || true`
 
 Pause Point
+
 - After implementing the above plan outline (no code yet), awaiting your review before proceeding with changes.
