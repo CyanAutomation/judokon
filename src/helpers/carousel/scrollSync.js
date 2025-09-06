@@ -16,6 +16,12 @@ import { getPageMetrics } from "./metrics.js";
  * @returns {void}
  */
 export function wireScrollSync(ctrl) {
+  /**
+   * Updates `ctrl.currentPage` based on the container's scroll position.
+   * Recomputes page metrics when their values are stale.
+   *
+   * @returns {void}
+   */
   const syncPageFromScroll = () => {
     if (ctrl.metrics.pageWidth <= 0) {
       ctrl.metrics = getPageMetrics(ctrl.container);
