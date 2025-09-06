@@ -223,6 +223,17 @@ Quality Gates Per Phase
 - Import policy quick check:
   - `grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null || true`
 
-Pause Point
+Phase 0 — Execution Summary
 
-- After implementing the above plan outline (no code yet), awaiting your review before proceeding with changes.
+- Actions taken:
+  - Wired scoreboard during Classic Battle bootstrap to enable visibility/focus pause/resume and early DOM reference resolution.
+    - File: `src/helpers/classicBattle/bootstrap.js`
+    - Change: Imported `setupScoreboard` and invoked it after controller/view initialization using `controller.timerControls`.
+- Targeted tests run:
+  - `npx vitest run tests/helpers/scoreboard.integration.test.js` — PASS (2/2)
+  - `npx vitest run tests/components/Scoreboard.test.js -t "creates DOM structure"` — PASS (1/1)
+- Outcome:
+  - No regressions detected in scoreboard integration or DOM structure.
+  - Scoreboard hooks now activate in production boot, aligning with PRD visibility pause/resume requirement.
+
+Milestone reached — awaiting review before proceeding to Phase 1 (Event Adapter).
