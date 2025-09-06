@@ -15,7 +15,7 @@ It holds **no game logic** and does not emit events; it reacts to events from th
 **Contextual or transient prompts** (e.g. “Opponent is choosing…”, “Select a stat”) are explicitly **handled by the Snackbar** (see [prdSnackbar.md](prdSnackbar.md)).
 
 **Problem Statement:**
-Players were previously confused by transient prompts overlapping persistent status displays or misreading score changes due to animation delay. The scoreboard aims to improve clarity by visually separating persistent battle status and transient prompts while ensuring accessible, responsive updates.
+Players were previously confused by transient prompts overlapping persistent status displays or misreading score changes due to animation delay. In one playtest, a player said: “I thought I lost points because I saw the message change before the score updated.” The scoreboard aims to improve clarity by visually separating persistent battle status and transient prompts while ensuring accessible, responsive updates.
 
 ---
 

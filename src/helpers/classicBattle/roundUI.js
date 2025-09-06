@@ -178,27 +178,7 @@ export function bindRoundUIEventHandlers() {
           if (secs >= 3) setTimeout(() => updateSnackbar(`Next round in: ${secs - 2}s`), 3000);
         }
       } catch {}
-      // Failsafe: if the machine is still stuck in roundDecision shortly after
-      // roundResolved, force the outcome → continue transitions to prevent a
-      // visible stall.
-      try {
-        const outcomeEvent =
-          result?.outcome === "winPlayer"
-            ? "outcome=winPlayer"
-            : result?.outcome === "winOpponent"
-              ? "outcome=winOpponent"
-              : "outcome=draw";
-        setTimeout(async () => {
-          try {
-            const { state } = getStateSnapshot();
-            if (state === "roundDecision") {
-              const mod = await import("./orchestrator.js");
-              await mod.dispatchBattleEvent(outcomeEvent);
-              await mod.dispatchBattleEvent("continue");
-            }
-          } catch {}
-        }, 0);
-      } catch {}
+      // Failsafe removed as it conflicts with the orchestrator.
     }
     // Keep the selected stat highlighted for two frames to allow tests and
     // users to perceive the selection before it clears.
@@ -341,26 +321,7 @@ export function bindRoundUIEventHandlersDynamic() {
           if (secs >= 3) setTimeout(() => updateSnackbar(`Next round in: ${secs - 2}s`), 3000);
         }
       } catch {}
-      // Schedule immediately to surface the countdown in tests and runtime.
-      // Failsafe for dynamic path as well
-      try {
-        const outcomeEvent =
-          result?.outcome === "winPlayer"
-            ? "outcome=winPlayer"
-            : result?.outcome === "winOpponent"
-              ? "outcome=winOpponent"
-              : "outcome=draw";
-        setTimeout(async () => {
-          try {
-            const { state } = getStateSnapshot();
-            if (state === "roundDecision") {
-              const mod = await import("./orchestrator.js");
-              await mod.dispatchBattleEvent(outcomeEvent);
-              await mod.dispatchBattleEvent("continue");
-            }
-          } catch {}
-        }, 0);
-      } catch {}
+      // Failsafe removed as it conflicts with the orchestrator.
     }
     // Keep the selected stat highlighted for two frames to mirror the static path
     try {
