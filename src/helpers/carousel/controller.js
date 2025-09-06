@@ -1,4 +1,8 @@
 import { getPageMetrics } from "./metrics.js";
+import { wireKeyboard } from "./keyboard.js";
+import { wireSwipe } from "./swipe.js";
+import { wireScrollSync } from "./scrollSync.js";
+import { wireResize } from "./resize.js";
 
 /**
  * Central controller for carousel navigation and indicators.
@@ -24,14 +28,7 @@ export class CarouselController {
     this._rafId = null;
     this._resizeTimer = null;
     this._suppressScrollSync = false;
-    this._onKeydown = null;
-    this._onTouchStart = null;
-    this._onTouchEnd = null;
-    this._onTouchMove = null;
-    this._onTouchCancel = null;
-    this._onPointerDown = null;
-    this._onPointerUp = null;
-    this._onPointerCancel = null;
+    this._listeners = [];
 
     // Build UI and wire events
     const { left, right } = this._buildButtons();
@@ -42,10 +39,10 @@ export class CarouselController {
     // Structure: [left][container][right][markers]
     this.wrapper.append(this.leftBtn, this.container, this.rightBtn, this.markersRoot);
 
-    this._wireKeyboard();
-    this._wireSwipe();
-    this._wireScrollSync();
-    this._wireResize();
+    wireKeyboard(this);
+    wireSwipe(this);
+    wireScrollSync(this);
+    wireResize(this);
 
     // Initial sync
     this.update();
@@ -56,50 +53,24 @@ export class CarouselController {
   }
 
   /**
-   * Cleans up the carousel controller by removing all event listeners and DOM elements.
-   * This prevents memory leaks and ensures proper detachment from the document.
+   * Cleans up the carousel controller by removing event listeners and DOM nodes.
    *
    * @pseudocode
-   * 1. Remove the "scroll" event listener from `this.container`.
-   * 2. Remove the "keydown" event listener from `this.container`.
-   * 3. Remove the "touchstart" event listener from `this.container`.
-   * 4. Remove the "touchend" event listener from `this.container`.
-   * 5. Remove the "touchmove" event listener from `this.container`.
-   * 6. Remove the "touchcancel" event listener from `this.container`.
-   * 7. Remove the "pointerdown" event listener from `this.container`.
-   * 8. Remove the "pointerup" event listener from `this.container`.
-   * 9. Remove the "pointercancel" event listener from `this.container`.
-   * 10. Remove the "resize" event listener from `window`.
-   * 11. Remove the `leftBtn` DOM element from the document, if it exists.
-   * 12. Remove the `rightBtn` DOM element from the document, if it exists.
-   * 13. Remove the `markersRoot` DOM element from the document, if it exists.
-   * 14. Set internal event handler references (`_onKeydown`, `_onTouchStart`, etc.) to `null` to release memory.
-   *
-   * @returns {void}
+   * 1. Iterate through recorded listeners and remove each.
+   * 2. Cancel any pending animation frame and resize timer.
+   * 3. Remove navigation buttons and markers from the DOM.
+   * 4. Clear the listener registry.
    */
   destroy() {
-    this.container.removeEventListener("scroll", this._onScroll);
-    this.container.removeEventListener("keydown", this._onKeydown);
-    this.container.removeEventListener("touchstart", this._onTouchStart);
-    this.container.removeEventListener("touchend", this._onTouchEnd);
-    this.container.removeEventListener("touchmove", this._onTouchMove);
-    this.container.removeEventListener("touchcancel", this._onTouchCancel);
-    this.container.removeEventListener("pointerdown", this._onPointerDown);
-    this.container.removeEventListener("pointerup", this._onPointerUp);
-    this.container.removeEventListener("pointercancel", this._onPointerCancel);
-    window.removeEventListener("resize", this._onResize);
+    for (const { target, event, handler } of this._listeners) {
+      target.removeEventListener(event, handler);
+    }
+    this._listeners = [];
+    if (this._rafId) cancelAnimationFrame(this._rafId);
+    clearTimeout(this._resizeTimer);
     this.leftBtn?.remove();
     this.rightBtn?.remove();
     this.markersRoot?.remove();
-    this._onKeydown =
-      this._onTouchStart =
-      this._onTouchEnd =
-      this._onPointerDown =
-      this._onPointerUp =
-      this._onPointerCancel =
-      this._onTouchMove =
-      this._onTouchCancel =
-        null;
   }
 
   /**
@@ -222,256 +193,6 @@ export class CarouselController {
 
     // Update markers and counter
     this._syncMarkers();
-  }
-
-  /**
-   * Wires up keyboard navigation for the carousel container.
-   * Allows users to navigate pages using ArrowLeft and ArrowRight keys.
-   *
-   * @private
-   * @pseudocode
-   * 1. Set the `scrollBehavior` style of `this.container` to "auto" for instant scrolling.
-   * 2. Set the `tabIndex` of `this.container` to 0 to make it focusable.
-   * 3. Define `this._onKeydown` as an event handler function for keydown events:
-   *    a. If the event target is not `this.container`, exit the handler.
-   *    b. If the pressed key (`event.key`) is "ArrowLeft":
-   *       i. Prevent the default browser action for the keydown event.
-   *       ii. If `event.stopImmediatePropagation` is a function, call it to prevent other listeners on the same element from being called.
-   *       iii. Call `this.prev()` to navigate to the previous page.
-   *    c. Else if the pressed key (`event.key`) is "ArrowRight":
-   *       i. Prevent the default browser action for the keydown event.
-   *       ii. If `event.stopImmediatePropagation` is a function, call it.
-   *       iii. Call `this.next()` to navigate to the next page.
-   * 4. Add `this._onKeydown` as a "keydown" event listener to `this.container`.
-   *
-   * @returns {void}
-   */
-  _wireKeyboard() {
-    this.container.style.scrollBehavior = "auto";
-    this.container.tabIndex = 0;
-    this._onKeydown = (event) => {
-      if (event.target !== this.container) return;
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
-        this.prev();
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault();
-        if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
-        this.next();
-      }
-    };
-    this.container.addEventListener("keydown", this._onKeydown);
-  }
-
-  /**
-   * Wires up swipe (touch and pointer) navigation for the carousel container.
-   * Allows users to navigate pages by swiping left or right.
-   *
-   * @private
-   * @pseudocode
-   * 1. Initialize `startX` to 0 to store the starting X-coordinate of a touch/pointer event.
-   * 2. Track `gestureActive` and `activeKind` to know if a swipe is in progress and its type.
-   * 3. Define an `onEnd` helper function that takes `endX` (the ending X-coordinate):
-   *    a. If `gestureActive` is false, exit.
-   *    b. Reset `gestureActive`, `activeKind`, and `pointerDown`.
-   *    c. Calculate `delta` as the difference between `endX` and `startX`.
-   *    d. If `delta` is greater than `this.threshold`, call `this.prev()` to navigate to the previous page.
-   *    e. Else if `delta` is less than negative `this.threshold`, call `this.next()` to navigate to the next page.
-   * 4. Define a `reset` helper to clear `gestureActive`, `activeKind`, and `pointerDown` without navigating.
-   * 5. Define `this._onTouchStart` as an event handler for "touchstart" events:
-   *    a. If `gestureActive` is true, exit.
-   *    b. Set `gestureActive` to true and `activeKind` to "touch".
-   *    c. Store the `clientX` of the first touch in `startX`.
-   * 6. Define `this._onTouchEnd` as an event handler for "touchend" events:
-   *    a. Call `onEnd` with the `clientX` of the first changed touch.
-   * 7. Define `this._onTouchCancel` as an event handler for "touchcancel" events:
-   *    a. Call `reset` to abandon the gesture.
-   * 8. Initialize `pointerDown` to `false` for tracking pointer (mouse) interactions.
-   * 9. Define `this._onPointerDown` as an event handler for "pointerdown" events:
-   *    a. Ignore events where `e.pointerType` is "touch" or `gestureActive` is true.
-   *    b. Set `gestureActive` to true, `activeKind` to "pointer", and `pointerDown` to true.
-   *    c. Store the `clientX` of the pointer event in `startX`.
-   * 10. Define `this._onPointerUp` as an event handler for "pointerup" events:
-   *    a. If `pointerDown` is `false`, exit the handler.
-   *    b. Call `onEnd` with the `clientX` of the pointer event.
-   * 11. Define `this._onPointerCancel` as an event handler for "pointercancel" events:
-   *    a. Call `reset` to abandon the gesture.
-   * 12. Add event listeners for "touchstart", "touchend", "touchmove", and "touchcancel".
-   * 13. Add event listeners for "pointerdown", "pointerup", and "pointercancel".
-   *
-   * @returns {void}
-   */
-  _wireSwipe() {
-    let startX = 0;
-    let gestureActive = false;
-    let activeKind = null;
-    let pointerDown = false;
-
-    const reset = () => {
-      gestureActive = false;
-      if (activeKind === "pointer") pointerDown = false;
-      activeKind = null;
-    };
-
-    const onEnd = (endX) => {
-      if (!gestureActive) return;
-      const delta = endX - startX;
-      reset();
-      if (delta > this.threshold) {
-        this.prev();
-      } else if (delta < -this.threshold) {
-        this.next();
-      }
-    };
-
-    this._onTouchStart = (e) => {
-      if (gestureActive) return;
-      gestureActive = true;
-      activeKind = "touch";
-      startX = e.touches[0].clientX;
-      if (typeof e.preventDefault === "function") e.preventDefault();
-    };
-
-    this._onTouchEnd = (e) => {
-      onEnd(e.changedTouches[0].clientX);
-      if (typeof e.preventDefault === "function") e.preventDefault();
-    };
-
-    this._onTouchMove = (e) => {
-      if (typeof e.preventDefault === "function") e.preventDefault();
-    };
-
-    this._onTouchCancel = () => {
-      reset();
-    };
-
-    this._onPointerDown = (e) => {
-      if (e.pointerType === "touch" || gestureActive) return;
-      gestureActive = true;
-      activeKind = "pointer";
-      pointerDown = true;
-      startX = e.clientX;
-    };
-
-    this._onPointerUp = (e) => {
-      if (!pointerDown) return;
-      onEnd(e.clientX);
-    };
-
-    this._onPointerCancel = () => {
-      reset();
-    };
-
-    this.container.addEventListener("touchstart", this._onTouchStart, { passive: false });
-    this.container.addEventListener("touchend", this._onTouchEnd, { passive: false });
-    this.container.addEventListener("touchmove", this._onTouchMove, { passive: false });
-    this.container.addEventListener("touchcancel", this._onTouchCancel);
-    this.container.addEventListener("pointerdown", this._onPointerDown);
-    this.container.addEventListener("pointerup", this._onPointerUp);
-    this.container.addEventListener("pointercancel", this._onPointerCancel);
-  }
-  "";
-
-  /**
-   * Wires up scroll event synchronization for the carousel container.
-   * This method ensures that the `currentPage` and UI are updated when the user scrolls the carousel.
-   * It uses both immediate and `requestAnimationFrame`-based synchronization for responsiveness.
-   *
-   * @private
-   * @pseudocode
-   * 1. Define `this._onScroll` as an event handler function for "scroll" events:
-   *    a. If `this._suppressScrollSync` is true, exit the handler (programmatic scroll is in progress).
-   *    b. If `this.metrics.pageWidth` is less than or equal to 0, recalculate `this.metrics` using `getPageMetrics`.
-   *    c. Destructure `pageWidth` and `pageCount` from `this.metrics`.
-   *    d. If `pageWidth` is greater than 0:
-   *       i. Calculate `maxScroll` (maximum scrollable width).
-   *       ii. Calculate `remaining` scroll distance.
-   *       iii. Determine the `page` based on `scrollLeft` and `pageWidth`, handling the last page edge case.
-   *       iv. Update `this.currentPage` by clamping the calculated `page` within valid bounds.
-   *       v. Call `this.update()` to refresh the UI immediately.
-   *    e. If a previous `_rafId` exists, cancel the associated animation frame.
-   *    f. Request a new animation frame (`this._rafId`) to perform a follow-up synchronization:
-   *       i. In the animation frame callback, if `this._suppressScrollSync` is true, exit.
-   *       ii. If `this.metrics.pageWidth` is less than or equal to 0, recalculate `this.metrics`.
-   *       iii. Destructure `pageWidth` (`pw`) and `pageCount` (`pc`) from `this.metrics`.
-   *       iv. If `pw` is less than or equal to 0, exit.
-   *       v. Recalculate `maxScroll`, `remaining`, and `page` based on current scroll position and metrics.
-   *       vi. Update `this.currentPage` by clamping the calculated `page`.
-   *       vii. Call `this.update()` to refresh the UI.
-   * 2. Add `this._onScroll` as a "scroll" event listener to `this.container`.
-   *
-   * @returns {void}
-   */
-  _wireScrollSync() {
-    this._onScroll = () => {
-      if (this._suppressScrollSync) return;
-      if (this.metrics.pageWidth <= 0) {
-        this.metrics = getPageMetrics(this.container);
-      }
-      // Immediate sync for tests and snappy UI
-      const { pageWidth, pageCount } = this.metrics;
-      if (pageWidth > 0) {
-        const page = Math.round(this.container.scrollLeft / pageWidth);
-        // (no-op) immediate scroll sync
-        this.currentPage = Math.max(0, Math.min(page, pageCount - 1));
-        this.update();
-      }
-      // Follow-up rAF sync to catch any late layout
-      if (this._rafId) cancelAnimationFrame(this._rafId);
-      this._rafId = requestAnimationFrame(() => {
-        if (this._suppressScrollSync) return;
-        if (this.metrics.pageWidth <= 0) {
-          this.metrics = getPageMetrics(this.container);
-        }
-        const { pageWidth: pw, pageCount: pc } = this.metrics;
-        if (pw <= 0) return;
-        const page = Math.round(this.container.scrollLeft / pw);
-        // (no-op) rAF scroll sync
-        this.currentPage = Math.max(0, Math.min(page, pc - 1));
-        this.update();
-      });
-    };
-    this.container.addEventListener("scroll", this._onScroll);
-  }
-
-  /**
-   * Wires up a debounced resize event listener to the window.
-   * This ensures that carousel metrics and markers are re-evaluated and updated
-   * only after the user has finished resizing the window, preventing excessive recalculations.
-   *
-   * @private
-   * @pseudocode
-   * 1. Define `this._onResize` as an event handler function for "resize" events:
-   *    a. Clear any existing `this._resizeTimer` to debounce the resize event.
-   *    b. Set `this._resizeTimer` to a new `setTimeout` that will execute after 100 milliseconds:
-   *       i. Store the `oldCount` of pages from `this.metrics.pageCount`.
-   *       ii. Recalculate `this.metrics` by calling `getPageMetrics` on `this.container`.
-   *       iii. If the new `pageCount` is different from `oldCount`:
-   *           1. Remove the existing `markersRoot` from the DOM, if it exists.
-   *           2. Rebuild `markersRoot` by calling `this._buildMarkers()`.
-   *           3. Append the newly built `markersRoot` to `this.wrapper`.
-   *       iv. Set the current page by calling `this.setPage` with `this.currentPage`.
-   * 2. Add `this._onResize` as a "resize" event listener to the `window` object.
-   *
-   * @returns {void}
-   */
-  _wireResize() {
-    this._onResize = () => {
-      clearTimeout(this._resizeTimer);
-      this._resizeTimer = setTimeout(() => {
-        const oldCount = this.metrics.pageCount;
-        this.metrics = getPageMetrics(this.container);
-        // Rebuild markers if page count changed
-        if (this.metrics.pageCount !== oldCount) {
-          this.markersRoot?.remove();
-          this.markersRoot = this._buildMarkers();
-          this.wrapper.append(this.markersRoot);
-        }
-        this.setPage(this.currentPage);
-      }, 100);
-    };
-    window.addEventListener("resize", this._onResize);
   }
 
   /**

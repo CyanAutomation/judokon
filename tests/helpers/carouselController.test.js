@@ -26,6 +26,49 @@ vi.mock("../../src/helpers/carousel/metrics.js", () => ({
 import { CarouselController } from "../../src/helpers/carousel/controller.js";
 
 describe("CarouselController", () => {
+  it("navigates with ArrowLeft/ArrowRight keys", () => {
+    const container = document.createElement("div");
+    container.scrollTo = vi.fn();
+    const wrapper = document.createElement("div");
+    const controller = new CarouselController(container, wrapper);
+    const nextSpy = vi.spyOn(controller, "next");
+    const prevSpy = vi.spyOn(controller, "prev");
+
+    container.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+    container.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
+
+    // Events originating from children should not trigger navigation
+    const child = document.createElement("div");
+    container.appendChild(child);
+    child.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+
+    expect(nextSpy).toHaveBeenCalledTimes(1);
+    expect(prevSpy).toHaveBeenCalledTimes(1);
+    controller.destroy();
+  });
+
+  it("navigates via swipe gestures with threshold", () => {
+    const container = document.createElement("div");
+    container.scrollTo = vi.fn();
+    const wrapper = document.createElement("div");
+    const controller = new CarouselController(container, wrapper);
+    const nextSpy = vi.spyOn(controller, "next");
+    const prevSpy = vi.spyOn(controller, "prev");
+
+    // left swipe -> next
+    container.dispatchEvent(new TouchEvent("touchstart", { touches: [{ clientX: 0 }] }));
+    container.dispatchEvent(new TouchEvent("touchend", { changedTouches: [{ clientX: -100 }] }));
+    // right swipe -> prev
+    container.dispatchEvent(new TouchEvent("touchstart", { touches: [{ clientX: 0 }] }));
+    container.dispatchEvent(new TouchEvent("touchend", { changedTouches: [{ clientX: 100 }] }));
+    // small swipe should be ignored
+    container.dispatchEvent(new TouchEvent("touchstart", { touches: [{ clientX: 0 }] }));
+    container.dispatchEvent(new TouchEvent("touchend", { changedTouches: [{ clientX: 20 }] }));
+
+    expect(nextSpy).toHaveBeenCalledTimes(1);
+    expect(prevSpy).toHaveBeenCalledTimes(1);
+    controller.destroy();
+  });
   it("removes input listeners on destroy", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
