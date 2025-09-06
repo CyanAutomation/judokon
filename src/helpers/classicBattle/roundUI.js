@@ -302,7 +302,7 @@ export function bindRoundUIEventHandlersDynamic() {
         const ui = await uiServiceP;
         const roundManager = await roundManagerP;
         scoreboard.clearRoundCounter?.();
-        if (typeof ui.showMatchSummaryModal === "function") {
+        if (ui && typeof ui.showMatchSummaryModal === "function") {
           await ui.showMatchSummaryModal(result, async () => {
             if (typeof roundManager.handleReplay === "function") {
               await roundManager.handleReplay(store);
