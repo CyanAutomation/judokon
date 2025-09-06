@@ -24,6 +24,22 @@ vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   setupFallbackTimer: vi.fn()
 }));
 
+function createDisabledSpy(btn) {
+  let count = 0;
+  Object.defineProperty(btn, "disabled", {
+    configurable: true,
+    get() {
+      return this._disabled;
+    },
+    set(val) {
+      count++;
+      this._disabled = val;
+    }
+  });
+  btn._disabled = true;
+  return () => count;
+}
+
 describe("initInterRoundCooldown", () => {
   let machine;
   beforeEach(() => {
@@ -68,24 +84,13 @@ describe("initInterRoundCooldown", () => {
       "../../../src/helpers/classicBattle/orchestratorHandlers.js"
     );
     const btn = document.getElementById("next-button");
-    let disabledSetCount = 0;
-    Object.defineProperty(btn, "disabled", {
-      configurable: true,
-      get() {
-        return this._disabled;
-      },
-      set(val) {
-        disabledSetCount++;
-        this._disabled = val;
-      }
-    });
-    btn._disabled = true;
+    const getDisabledSetCount = createDisabledSpy(btn);
     await initInterRoundCooldown(machine);
-    expect(disabledSetCount).toBe(1);
+    expect(getDisabledSetCount()).toBe(1);
     btn.dataset.nextReady = "";
     await vi.runAllTimersAsync();
     expect(btn.dataset.nextReady).toBe("true");
-    expect(disabledSetCount).toBe(2);
+    expect(getDisabledSetCount()).toBe(2);
   });
 
   it("does not reapply readiness when already ready", async () => {
@@ -94,20 +99,9 @@ describe("initInterRoundCooldown", () => {
       "../../../src/helpers/classicBattle/orchestratorHandlers.js"
     );
     const btn = document.getElementById("next-button");
-    let disabledSetCount = 0;
-    Object.defineProperty(btn, "disabled", {
-      configurable: true,
-      get() {
-        return this._disabled;
-      },
-      set(val) {
-        disabledSetCount++;
-        this._disabled = val;
-      }
-    });
-    btn._disabled = true;
+    const getDisabledSetCount = createDisabledSpy(btn);
     await initInterRoundCooldown(machine);
     await vi.runAllTimersAsync();
-    expect(disabledSetCount).toBe(1);
+    expect(getDisabledSetCount()).toBe(1);
   });
 });
