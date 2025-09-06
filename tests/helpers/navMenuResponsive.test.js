@@ -39,14 +39,14 @@ describe("setupHamburger", () => {
   });
 
   it("cleanup removes the button and listeners", () => {
-    cleanup = setupHamburger();
     addSpy = vi.spyOn(window, "addEventListener");
     removeSpy = vi.spyOn(window, "removeEventListener");
+    cleanup = setupHamburger();
     const button = document.querySelector(".nav-toggle");
     expect(button).toBeTruthy();
+    expect(addSpy).toHaveBeenCalledWith("resize", expect.any(Function));
     cleanup();
     expect(removeSpy).toHaveBeenCalledWith("resize", expect.any(Function));
-    expect(addSpy).not.toHaveBeenCalled();
     expect(document.querySelector(".nav-toggle")).toBeNull();
   });
 
