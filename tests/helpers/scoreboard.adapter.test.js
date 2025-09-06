@@ -4,7 +4,10 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-import { __resetBattleEventTarget, emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
+import {
+  __resetBattleEventTarget,
+  emitBattleEvent
+} from "../../src/helpers/classicBattle/battleEvents.js";
 
 describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
   beforeEach(async () => {
@@ -47,9 +50,11 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     expect(document.getElementById("next-round-timer").textContent).toBe("");
 
     emitBattleEvent("display.score.update", { player: 2, opponent: 1 });
-    const scoreText = document.getElementById("score-display").textContent.replace(/\s+/g, " ").trim();
+    const scoreText = document
+      .getElementById("score-display")
+      .textContent.replace(/\s+/g, " ")
+      .trim();
     expect(scoreText).toContain("You: 2");
     expect(scoreText).toContain("Opponent: 1");
   });
 });
-

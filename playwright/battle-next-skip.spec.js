@@ -39,7 +39,7 @@ test.describe("Next button cooldown skip", () => {
     const counter = page.locator("#round-counter");
     await expect(counter).toHaveText(/Round 1/);
 
-    const nextBtn = page.locator('#next-button');
+    const nextBtn = page.locator("#next-button");
     try {
       // Assert readiness by attributes, not visibility.
       await page.waitForFunction(
@@ -52,9 +52,7 @@ test.describe("Next button cooldown skip", () => {
       );
       // Deterministic progression: dispatch 'ready' via the orchestrator.
       await page.evaluate(async () => {
-        const { dispatchBattleEvent } = await import(
-          "/src/helpers/classicBattle/orchestrator.js"
-        );
+        const { dispatchBattleEvent } = await import("/src/helpers/classicBattle/orchestrator.js");
         await dispatchBattleEvent("ready");
       });
     } catch (err) {

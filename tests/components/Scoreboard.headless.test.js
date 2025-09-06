@@ -45,4 +45,3 @@ describe("Scoreboard headless API", () => {
     await vi.advanceTimersByTimeAsync(220);
   });
 });
-
