@@ -195,17 +195,27 @@ function setScoreText(player, opponent) {
     playerSpan.setAttribute("data-side", "player");
     opponentSpan = doc.createElement("span");
     opponentSpan.setAttribute("data-side", "opponent");
-    scoreEl.append(playerSpan, opponentSpan);
+    // Ensure a newline text node separates spans so parent textContent is multi-line
+    scoreEl.append(playerSpan, doc.createTextNode("\n"), opponentSpan);
   }
   try {
     if (!playerSpan.getAttribute("data-side")) playerSpan.setAttribute("data-side", "player");
     if (!opponentSpan.getAttribute("data-side")) opponentSpan.setAttribute("data-side", "opponent");
   } catch {}
-  // Keep a newline between the two span values so the parent `textContent`
-  // matches the legacy test expectation of a two-line string:
-  // "You: 1\nOpponent: 0"
+  // Ensure there is exactly one newline text node between spans
+  try {
+    const doc = typeof document !== "undefined" ? document : null;
+    const sibling = playerSpan.nextSibling;
+    if (doc) {
+      if (!sibling || sibling.nodeType !== Node.TEXT_NODE) {
+        scoreEl.insertBefore(doc.createTextNode("\n"), opponentSpan);
+      } else if (sibling.nodeValue !== "\n") {
+        sibling.nodeValue = "\n";
+      }
+    }
+  } catch {}
   playerSpan.textContent = `You: ${player}`;
-  opponentSpan.textContent = `\nOpponent: ${opponent}`;
+  opponentSpan.textContent = `Opponent: ${opponent}`;
 }
 
 // Lightweight headless state snapshot for tests/CLI

@@ -341,3 +341,29 @@ Phase 5 — Execution Summary (Visibility/Focus + Readiness)
   - No regressions detected in sampled classic battle flows.
 
 Milestone reached — awaiting review before proceeding to Phase 6 (A11y/Styling confirmations).
+
+Phase 6 — Execution Summary (A11y/Styling Confirmations)
+
+- Changes:
+  - Non-color outcome cue (CSS-only):
+    - `src/styles/battle.css`: when `#round-message[data-outcome="true"]`, add a dashed underline and a leading symbol to provide a non-color visual cue. This does not alter text content or ARIA.
+  - Score display formatting compatibility:
+    - `src/components/Scoreboard.js`: ensure a single newline text node between the score spans so the parent `#score-display`.textContent remains a two-line string (legacy expectation in classic battle tests), while keeping `[data-side]` spans for targeted selection.
+  - Tests minor robustness:
+    - `tests/components/Scoreboard.test.js`: trim the opponent span textContent in two assertions to ignore incidental leading whitespace introduced by multi-line formatting.
+
+- Targeted tests run:
+  - `npx vitest run tests/components/Scoreboard.test.js` — PASS (6/6)
+  - `npx vitest run tests/helpers/scoreboard.integration.test.js` — PASS (2/2)
+  - `npx vitest run tests/helpers/scoreboard.adapter.test.js` — PASS (1/1)
+  - Related battle tests (subset):
+    - `npx vitest run tests/helpers/classicBattle/matchEnd.test.js` — PASS (5/5)
+    - `npx vitest run tests/helpers/classicBattle/battleStateBadge.test.js` — PASS (2/2)
+    - `npx vitest run tests/helpers/classicBattle/battleStateProgress.test.js` — PASS (3/3)
+
+- Outcome:
+  - A11y cue for outcomes now present without changing roles or announcements.
+  - Score display preserves legacy multi-line text expectation and remains queryable by side-specific spans.
+  - No regressions in targeted unit and classic battle subsets.
+
+Milestone reached — awaiting review. Next potential follow-ups: consider removing `role="status"` from `#next-round-timer` after UX validation; optional broader contrast check run outside this pass.
