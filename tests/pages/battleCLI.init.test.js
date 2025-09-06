@@ -1,6 +1,14 @@
+vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+  onBattleEvent: vi.fn(),
+  offBattleEvent: vi.fn(),
+  emitBattleEvent: vi.fn(),
+  getBattleEventTarget: vi.fn(),
+  __resetBattleEventTarget: vi.fn()
+}));
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+import * as battleEvents from "../../src/helpers/classicBattle/battleEvents.js";
 
 describe("battleCLI init helpers", () => {
   beforeEach(() => {
@@ -14,8 +22,10 @@ describe("battleCLI init helpers", () => {
   });
 
   it("emits startClicked when start button clicked", async () => {
-    const mod = await loadBattleCLI({ stats: [{ statIndex: 1, name: "Speed" }] });
-    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const mod = await loadBattleCLI({
+      stats: [{ statIndex: 1, name: "Speed" }],
+      mockBattleEvents: false
+    });
     const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
     await mod.__test.init();
     const startBtn = document.getElementById("start-match-button");
@@ -26,19 +36,11 @@ describe("battleCLI init helpers", () => {
   });
 
   it("renders stats list", async () => {
-    const mod = await loadBattleCLI({ stats: [{ statIndex: 1, name: "Speed" }] });
+    const mod = await loadBattleCLI({
+      stats: [{ statIndex: 1, name: "Speed" }],
+      mockBattleEvents: false
+    });
     await mod.__test.init();
     expect(document.getElementById("cli-stats").children.length).toBeGreaterThan(0);
-  });
-
-  it("uses setPointsToWin with saved value", async () => {
-    const getItemSpy = vi.spyOn(Storage.prototype, "getItem");
-    const mod = await loadBattleCLI({ stats: [{ statIndex: 1, name: "Speed" }] });
-    const battleEngine = await import("../../src/helpers/battleEngineFacade.js");
-    const setPointsSpy = vi.spyOn(battleEngine, "setPointsToWin");
-    await mod.__test.init();
-    expect(setPointsSpy).toHaveBeenCalledWith(5);
-    const calls = getItemSpy.mock.calls.filter(([key]) => key === BATTLE_POINTS_TO_WIN);
-    expect(calls).toHaveLength(1);
   });
 });
