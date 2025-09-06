@@ -14,4 +14,24 @@ describe("battleCLI.html static selectors", () => {
     const countdown = document.getElementById("cli-countdown");
     expect(countdown?.getAttribute("data-remaining-time")).not.toBeNull();
   });
+
+  it("includes skip link and landmark roles", () => {
+    const html = readFileSync("src/pages/battleCLI.html", "utf8");
+    document.documentElement.innerHTML = html;
+    const skip = document.querySelector("a.skip-link");
+    expect(skip).toBeTruthy();
+    expect(skip?.getAttribute("href")).toBe("#cli-main");
+    expect(document.querySelector("header[role='banner']")).toBeTruthy();
+    expect(document.querySelector("main[role='main']")).toBeTruthy();
+  });
+
+  it("places skip link first in focus order", () => {
+    const html = readFileSync("src/pages/battleCLI.html", "utf8");
+    document.documentElement.innerHTML = html;
+    const focusables = Array.from(document.querySelectorAll("a[href], button, [tabindex]")).filter(
+      (el) => !el.hasAttribute("disabled") && el.tabIndex >= 0
+    );
+    expect(focusables[0]?.classList.contains("skip-link")).toBe(true);
+    expect(focusables[1]?.getAttribute("data-testid")).toBe("home-link");
+  });
 });
