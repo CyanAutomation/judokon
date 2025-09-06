@@ -16,28 +16,24 @@ import { getPageMetrics } from "./metrics.js";
  * @returns {void}
  */
 export function wireScrollSync(ctrl) {
-  const onScroll = () => {
-    if (ctrl._suppressScrollSync) return;
+  const syncPageFromScroll = () => {
     if (ctrl.metrics.pageWidth <= 0) {
       ctrl.metrics = getPageMetrics(ctrl.container);
     }
     const { pageWidth, pageCount } = ctrl.metrics;
-    if (pageWidth > 0) {
-      const page = Math.round(ctrl.container.scrollLeft / pageWidth);
-      ctrl.currentPage = Math.max(0, Math.min(page, pageCount - 1));
-      ctrl.update();
-    }
+    if (pageWidth <= 0) return;
+    const page = Math.round(ctrl.container.scrollLeft / pageWidth);
+    ctrl.currentPage = Math.max(0, Math.min(page, pageCount - 1));
+    ctrl.update();
+  };
+
+  const onScroll = () => {
+    if (ctrl._suppressScrollSync) return;
+    syncPageFromScroll();
     if (ctrl._rafId) cancelAnimationFrame(ctrl._rafId);
     ctrl._rafId = requestAnimationFrame(() => {
       if (ctrl._suppressScrollSync) return;
-      if (ctrl.metrics.pageWidth <= 0) {
-        ctrl.metrics = getPageMetrics(ctrl.container);
-      }
-      const { pageWidth: pw, pageCount: pc } = ctrl.metrics;
-      if (pw <= 0) return;
-      const page = Math.round(ctrl.container.scrollLeft / pw);
-      ctrl.currentPage = Math.max(0, Math.min(page, pc - 1));
-      ctrl.update();
+      syncPageFromScroll();
     });
   };
   ctrl.container.addEventListener("scroll", onScroll);

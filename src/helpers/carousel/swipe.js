@@ -37,6 +37,7 @@ export function wireSwipe(ctrl) {
 
   const onTouchStart = (e) => {
     if (gestureActive) return;
+    if (!e.touches?.length) return;
     gestureActive = true;
     activeKind = "touch";
     startX = e.touches[0].clientX;
@@ -44,6 +45,7 @@ export function wireSwipe(ctrl) {
   };
 
   const onTouchEnd = (e) => {
+    if (!e.changedTouches?.length) return;
     onEnd(e.changedTouches[0].clientX);
     if (typeof e.preventDefault === "function") e.preventDefault();
   };
