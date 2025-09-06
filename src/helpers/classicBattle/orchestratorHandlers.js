@@ -965,6 +965,20 @@ export function guardSelectionResolution(store, machine) {
  * @pseudocode
  * 1. After 600 ms, if state is still `roundDecision`, dispatch interrupt with `postResolveWatchdog`.
  */
+/**
+ * Schedule watchdog to ensure state progression after resolution.
+ *
+ * Some environments or UI failures can prevent the state machine from
+ * advancing after a round has been resolved. This watchdog triggers an
+ * interrupt when the machine remains in `roundDecision` after a short delay.
+ *
+ * @param {object} machine - State machine instance.
+ * @returns {void}
+ * @pseudocode
+ * 1. Start a 600ms timer.
+ * 2. When timer fires, check the machine state.
+ * 3. If state is still `roundDecision`, dispatch an `interrupt` with reason `postResolveWatchdog`.
+ */
 export function schedulePostResolveWatchdog(machine) {
   setTimeout(() => {
     guardAsync(async () => {
@@ -1012,6 +1026,18 @@ export async function roundDecisionEnter(machine) {
     }
   }
 }
+/**
+ * onExit handler for `roundDecision`.
+ *
+ * Ensure any scheduled guards or cancellation hooks are cleared when
+ * leaving the decision state to prevent late outcome dispatches.
+ *
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Read `roundDecisionGuard` from debug state.
+ * 2. If a cancel function exists, invoke it.
+ * 3. Clear the debug state entry for the guard.
+ */
 export async function roundDecisionExit() {
   // Clear any scheduled decision guard to prevent late outcome dispatch.
   try {
@@ -1046,6 +1072,17 @@ export async function roundDecisionExit() {
  *
  * @param {object} machine
  */
+/**
+ * onEnter handler for `roundOver` state.
+ *
+ * Clear transient per-round state so the next round starts clean.
+ *
+ * @param {object} machine - State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Read `store` from `machine.context`.
+ * 2. If present, clear `playerChoice` and `selectionMade` flags.
+ */
 export async function roundOverEnter(machine) {
   const store = machine?.context?.store;
   if (store) {
@@ -1066,6 +1103,16 @@ export async function matchDecisionEnter() {}
  *
  * @pseudocode
  * 1. Emit a `matchOver` battle event so consumers can show restart controls.
+ */
+/**
+ * onEnter handler for the `matchOver` state.
+ *
+ * Notify consumers that the match has concluded so they can reveal
+ * restart or summary controls.
+ *
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Emit `matchOver` battle event so UI components can react.
  */
 export async function matchOverEnter() {
   emitBattleEvent("matchOver");
@@ -1103,6 +1150,23 @@ export async function matchOverEnter() {
  *
  * @param {object} machine
  * @param {object} [payload]
+ */
+/**
+ * onEnter handler for `interruptRound`.
+ *
+ * Handle an in-match interruption by clearing selection-related state,
+ * cancelling resolution guards and optionally dispatching corrective
+ * transitions depending on the payload.
+ *
+ * @param {object} machine - State machine instance.
+ * @param {object} [payload] - Optional payload describing the interrupt.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Clear scoreboard messages and update debug panel.
+ * 2. Clear any pending player selection and cancel decision guards.
+ * 3. Expose the last interrupt reason for diagnostics.
+ * 4. Show an interrupt message if a reason exists.
+ * 5. If `payload.adminTest` -> dispatch `roundModification` with payload, else dispatch `restartRound`.
  */
 export async function interruptRoundEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");

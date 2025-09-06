@@ -11,6 +11,7 @@ import { onDomReady } from "../domReady.js";
 import { initRoundSelectModal } from "./roundSelectModal.js";
 import * as engineFacade from "../battleEngineFacade.js";
 import { bridgeEngineEvents } from "./roundResolver.js";
+import { setupScoreboard } from "../setupScoreboard.js";
 
 /**
  * Bootstrap Classic Battle page by wiring controller and view.
@@ -49,6 +50,17 @@ export async function setupClassicBattlePage() {
       view.bindController(controller);
       await controller.init();
       await view.init();
+
+      // Wire the scoreboard with timer controls so visibility/focus
+      // pause/resume hooks activate and DOM refs are resolved early.
+      try {
+        if (controller && controller.timerControls) {
+          setupScoreboard(controller.timerControls);
+        } else {
+          setupScoreboard({});
+        }
+      } catch {}
+
       debugApi = createClassicBattleDebugAPI(view);
       if (typeof process !== "undefined" && process.env && process.env.VITEST === "true") {
         try {

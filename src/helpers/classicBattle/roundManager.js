@@ -33,6 +33,12 @@ export function isOrchestrated() {
 }
 
 /**
+ * @pseudocode
+ * 1. Attempt to read `document.body.dataset.battleState`.
+ * 2. Return true when present, otherwise false. Swallow errors.
+ */
+
+/**
  * Create a new battle state store.
  *
  * @pseudocode
@@ -261,6 +267,12 @@ export function startCooldown(_store, scheduler = realScheduler) {
 export function getNextRoundControls() {
   return currentNextRound;
 }
+
+/**
+ * @pseudocode
+ * 1. Return the `currentNextRound` controls object which contains timer and
+ *    readiness resolver. This is null when no cooldown is active.
+ */
 
 /**
  * Schedule a fallback timeout and return its id.
