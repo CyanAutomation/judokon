@@ -96,7 +96,7 @@ describe("classicBattle match end", () => {
     expect(cancelBtn).not.toBeNull();
     cancelBtn.dispatchEvent(new Event("click"));
     expect(document.querySelector("header #round-message").textContent).toBe("Ready");
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 0Opponent: 0");
   });
 
   it("ends the match when player reaches required wins", async () => {

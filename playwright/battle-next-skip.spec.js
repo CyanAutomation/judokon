@@ -118,10 +118,10 @@ test.describe("Next button cooldown skip", () => {
       );
       // Deterministic progression: dispatch 'ready' via the orchestrator.
       await page.evaluate(async () => {
-        const { dispatchBattleEvent } = await import(
-          "/src/helpers/classicBattle/orchestrator.js"
-        );
-        await dispatchBattleEvent("ready");
+        const hooks = await import("/src/helpers/classicBattle/debugHooks.js");
+        const getMachine = hooks.readDebugState?.("getClassicBattleMachine");
+        const machine = typeof getMachine === "function" ? getMachine() : null;
+        if (machine?.dispatch) await machine.dispatch("ready");
       });
     } catch (err) {
       // Capture instrumentation on failure to differentiate causes

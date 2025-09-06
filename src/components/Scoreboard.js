@@ -203,6 +203,14 @@ function setScoreText(player, opponent) {
   opponentSpan.textContent = `Opponent: ${opponent}`;
 }
 
+// Lightweight headless state snapshot for tests/CLI
+const __state = {
+  message: { text: "", outcome: false },
+  timer: { secondsRemaining: null },
+  round: { current: 0 },
+  score: { player: 0, opponent: 0 }
+};
+
 function animateScore(startPlayer, startOpponent, playerTarget, opponentTarget) {
   cancelAnimationFrame(scoreRafId);
   if (shouldReduceMotionSync()) return;
@@ -263,6 +271,7 @@ export function showMessage(text, opts = {}) {
       delete el.dataset.outcome;
     }
     messageEl = el;
+    __state.message = { text: String(text ?? ""), outcome: !!outcome };
   }
 }
 
@@ -284,6 +293,7 @@ export function clearMessage() {
     delete el.dataset.outcome;
     messageEl = el;
     outcomeLockUntil = 0;
+    __state.message = { text: "", outcome: false };
   }
 }
 
@@ -339,6 +349,7 @@ export function updateTimer(seconds) {
     return;
   }
   setLiveText(timerEl, `Time Left: ${seconds}s`);
+  __state.timer = { secondsRemaining: Number(seconds) };
 }
 
 /**
@@ -415,4 +426,82 @@ export function updateScore(playerScore, opponentScore) {
   currentPlayer = playerScore;
   currentOpponent = opponentScore;
   animateScore(startPlayer, startOpponent, playerScore, opponentScore);
+  __state.score = { player: Number(playerScore), opponent: Number(opponentScore) };
+}
+
+/**
+ * Render a partial state patch into the scoreboard.
+ *
+ * @pseudocode
+ * 1. If `patch.message` is provided, call `showMessage` with outcome.
+ * 2. If `patch.timerSeconds` is a number, update/clear timer accordingly.
+ * 3. If `patch.roundNumber` is a number, update round counter.
+ * 4. If `patch.score` is provided, call `updateScore` with player/opponent.
+ *
+ * @param {{
+ *   message?: string|{text:string,outcome?:boolean},
+ *   timerSeconds?: number|null,
+ *   roundNumber?: number,
+ *   score?: {player:number, opponent:number}
+ * }} patch
+ */
+export function render(patch = {}) {
+  if (!patch || typeof patch !== "object") return;
+  if (Object.prototype.hasOwnProperty.call(patch, "message")) {
+    const m = patch.message;
+    if (m && typeof m === "object") showMessage(m.text ?? "", { outcome: !!m.outcome });
+    else showMessage(String(m ?? ""));
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "timerSeconds")) {
+    const s = patch.timerSeconds;
+    if (typeof s === "number") updateTimer(s);
+    else clearTimer();
+  }
+  if (typeof patch.roundNumber === "number") {
+    updateRoundCounter(patch.roundNumber);
+    __state.round = { current: Number(patch.roundNumber) };
+  }
+  if (patch.score && typeof patch.score === "object") {
+    updateScore(Number(patch.score.player) || 0, Number(patch.score.opponent) || 0);
+  }
+}
+
+/**
+ * Get a readonly snapshot of the current scoreboard state.
+ *
+ * @returns {Readonly<{message:{text:string,outcome:boolean},timer:{secondsRemaining:number|null},round:{current:number},score:{player:number,opponent:number}}>} state
+ */
+export function getState() {
+  return JSON.parse(JSON.stringify(__state));
+}
+
+/**
+ * Destroy listeners and clear references for test/CLI disposals.
+ *
+ * @pseudocode
+ * 1. Remove visibility/focus listeners when attached.
+ * 2. Cancel score animation frames and clear pending debounced updates.
+ * 3. Null internal element references and reset lock.
+ */
+export function destroy() {
+  const doc = typeof document !== "undefined" ? document : null;
+  const win = typeof window !== "undefined" ? window : null;
+  try {
+    if (doc && visibilityHandler) doc.removeEventListener("visibilitychange", visibilityHandler);
+    if (win && focusHandler) win.removeEventListener("focus", focusHandler);
+  } catch {}
+  visibilityHandler = null;
+  focusHandler = null;
+  try {
+    cancelAnimationFrame(scoreRafId);
+  } catch {}
+  // Clear pending debounced updates for known elements
+  try {
+    for (const el of [messageEl, timerEl, roundCounterEl, scoreEl]) {
+      const id = el ? announceTimers.get(el) : null;
+      if (id) clearTimeout(id);
+    }
+  } catch {}
+  messageEl = timerEl = roundCounterEl = scoreEl = null;
+  outcomeLockUntil = 0;
 }
