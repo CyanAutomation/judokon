@@ -1,10 +1,3 @@
-vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-  onBattleEvent: vi.fn(),
-  offBattleEvent: vi.fn(),
-  emitBattleEvent: vi.fn(),
-  getBattleEventTarget: vi.fn(),
-  __resetBattleEventTarget: vi.fn()
-}));
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
