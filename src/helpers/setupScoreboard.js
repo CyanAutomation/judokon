@@ -44,7 +44,10 @@ function setupScoreboard(controls, scheduler = realScheduler) {
       };
       update();
       const mo = new MutationObserver(() => update());
-      mo.observe(nextButton, { attributes: true, attributeFilter: ["disabled", "data-next-ready", "aria-busy"] });
+      mo.observe(nextButton, {
+        attributes: true,
+        attributeFilter: ["disabled", "data-next-ready", "aria-busy"]
+      });
     }
   } catch {}
 }
