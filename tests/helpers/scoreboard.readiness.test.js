@@ -53,4 +53,3 @@ describe("scoreboard readiness badge reflection", () => {
     expect(badge.hidden).toBe(true);
   });
 });
-
