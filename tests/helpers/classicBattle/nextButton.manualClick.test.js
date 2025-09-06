@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, vi, afterEach } from "vitest";
 import { __setStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
 
 vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({

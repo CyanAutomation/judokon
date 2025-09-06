@@ -16,7 +16,7 @@ import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 
 let store = null;
 let initialized = false;
-let injectedTimers = null;
+let _injectedTimers = null;
 
 async function ensureOrchestrator(config = {}) {
   if (!initialized) {
@@ -137,10 +137,19 @@ export function getState() {
  * @returns {() => void}
  */
 export function injectFakeTimers(fakeTimersApi) {
-  injectedTimers = fakeTimersApi || null;
+  _injectedTimers = fakeTimersApi || null;
   return () => {
-    injectedTimers = null;
+    _injectedTimers = null;
   };
+}
+
+/**
+ * Test-only helper to inspect injected timers.
+ * Keeps module-scope `_injectedTimers` referenced so linters don't flag it.
+ * @returns {any}
+ */
+export function getInjectedTimersForTest() {
+  return _injectedTimers;
 }
 
 export default {

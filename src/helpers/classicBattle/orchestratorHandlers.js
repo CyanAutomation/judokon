@@ -1,5 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
-import { getNextRoundControls, setupFallbackTimer } from "./roundManager.js";
+import { setupFallbackTimer } from "./roundManager.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { getStatValue } from "../battle/index.js";

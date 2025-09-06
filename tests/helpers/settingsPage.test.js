@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createSettingsDom, resetDom } from "../utils/testUtils.js";
-import defaultSettings from "../../src/data/settings.json" with { type: "json" };
 
 const baseSettings = {
   sound: true,

@@ -35,7 +35,7 @@ function createQuitConfirmation(store, onConfirm) {
   quit.addEventListener("click", async () => {
     try {
       onConfirm();
-    } catch (e) {
+    } catch {
       // If the engine is not initialized, fall back to showing a quit message
       // so the UI communicates the action without requiring engine state.
       try {

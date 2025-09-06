@@ -178,6 +178,10 @@ export const __test = {
   getSelectionTimers() {
     return { selectionTimer, selectionInterval };
   },
+  // Expose internal finish handler for tests
+  getSelectionFinishFn() {
+    return selectionFinishFn;
+  },
   async forceSelectionExpiry() {
     try {
       // Directly simulate expiry to make tests deterministic
