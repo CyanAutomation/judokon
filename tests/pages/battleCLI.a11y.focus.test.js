@@ -14,8 +14,7 @@ describe("battleCLI accessibility", () => {
 
     it("shifts focus between stat list and next prompt", async () => {
       const mod = await loadBattleCLI();
-      await mod.renderStatList();
-      mod.installEventBindings();
+      await mod.init();
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
       emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
       expect(document.activeElement?.id).toBe("cli-stats");
@@ -39,9 +38,7 @@ describe("battleCLI accessibility", () => {
           { statIndex: 3, name: "Technique" }
         ]
       });
-      await mod.renderStatList({
-        stats: { speed: 1, power: 2, technique: 3 }
-      });
+      await mod.init();
       const list = document.getElementById("cli-stats");
       const rows = Array.from(list.querySelectorAll(".cli-stat"));
       expect(rows[0].tabIndex).toBe(0);
