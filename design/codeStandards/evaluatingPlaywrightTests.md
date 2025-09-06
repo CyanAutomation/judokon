@@ -29,7 +29,11 @@ Each Playwright spec file is scored on a 0–10 scale. The score determines its 
     "intentClarity": {
       "weight": 2,
       "description": "How clearly the test's user flow is described. High scores for descriptive titles (e.g., using 'given/when/then', 'user navigates') and links to requirements.",
-      "heuristics": ["/given|when|then|should|user|sees|navigates/i", "meta.specId", "meta.linkedReq"]
+      "heuristics": [
+        "/given|when|then|should|user|sees|navigates/i",
+        "meta.specId",
+        "meta.linkedReq"
+      ]
     },
     "behavioralRelevance": {
       "weight": 2,
@@ -39,7 +43,11 @@ Each Playwright spec file is scored on a 0–10 scale. The score determines its 
     "assertionQuality": {
       "weight": 2,
       "description": "The quality of locators and assertions. High scores for using user-facing locators (`getByRole`, `getByTestId`) and semantic assertions. Low scores for screenshot-only tests or heavy reliance on CSS/XPath.",
-      "heuristics": ["semanticExpects > 0", "roleOrTestIdLocatorsRatio >= 0.5", "screenshotExpects === 0"]
+      "heuristics": [
+        "semanticExpects > 0",
+        "roleOrTestIdLocatorsRatio >= 0.5",
+        "screenshotExpects === 0"
+      ]
     },
     "isolationAndRobustness": {
       "weight": 2,
@@ -67,10 +75,11 @@ Each Playwright spec file is scored on a 0–10 scale. The score determines its 
 The workflow is orchestrated by the `scripts/pw-value-evaluator.js` script.
 
 **Workflow Steps**:
+
 1.  **Run Tests & Detect Flakes**: The script consumes a `pw-report.json` file. To gather robust data, it's recommended to generate this report by running each test multiple times (e.g., `--repeat-each=3`). This helps calculate a `flakeRate`.
 2.  **Scan & Analyze**: The script iterates through all spec files and performs two analyses:
-    *   **Header Parsing**: It reads metadata from comments at the top of each test file (e.g., `Spec-ID`, `Linked-Req`).
-    *   **Playwright Assertion Scanning**: It statically analyzes the source code to identify locator strategies (role vs. CSS), assertion types (semantic vs. screenshot), and the use of problematic waits (`waitForTimeout`).
+    - **Header Parsing**: It reads metadata from comments at the top of each test file (e.g., `Spec-ID`, `Linked-Req`).
+    - **Playwright Assertion Scanning**: It statically analyzes the source code to identify locator strategies (role vs. CSS), assertion types (semantic vs. screenshot), and the use of problematic waits (`waitForTimeout`).
 3.  **Score Calculation**: It applies the E2E rubric heuristics to the aggregated data to score each spec file.
 4.  **Report Generation**: It outputs a `pw-test-value.json` file and a `pw-test-value.md` summary to the `reports/pw-test-value/` directory.
 
@@ -135,10 +144,10 @@ When asked to write E2E tests, you **MUST** aim for a score in the "KEEP" catego
 
 ## 6. Source Files
 
--   **Orchestrator**: `scripts/pw-value-evaluator.js`
--   **Utilities**: `scripts/utils/pwAssertionScanner.js`
--   **Configuration**:
-    -   `package.json` (see `scripts` starting with `e2e:`)
-    -   `playwright.config.js`
--   **CI Workflow**: `.github/workflows/pw-test-value.yml`
--   **Contributor Policy**: `docs/TestValuePolicy.md`
+- **Orchestrator**: `scripts/pw-value-evaluator.js`
+- **Utilities**: `scripts/utils/pwAssertionScanner.js`
+- **Configuration**:
+  - `package.json` (see `scripts` starting with `e2e:`)
+  - `playwright.config.js`
+- **CI Workflow**: `.github/workflows/pw-test-value.yml`
+- **Contributor Policy**: `docs/TestValuePolicy.md`

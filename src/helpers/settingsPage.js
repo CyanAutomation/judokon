@@ -50,6 +50,16 @@ import { renderNavCacheReset } from "./settings/renderNavCacheReset.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Promise that resolves when the Settings UI has finished rendering and
+ * dispatched the `settings:ready` event.
+ *
+ * @pseudocode
+ * 1. Create a new Promise and attach a one-time listener for `settings:ready`.
+ * 2. Resolve the promise when the event fires so tests and other code can await readiness.
+ *
+ * @type {Promise<void>}
+ */
 export const settingsReadyPromise = new Promise((resolve) => {
   document.addEventListener("settings:ready", resolve, { once: true });
 });
@@ -360,6 +370,13 @@ onDomReady(initializeSettingsPage);
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Re-export the game mode toggle handler used by the Settings UI.
+ *
+ * @pseudocode
+ * 1. Provide `handleGameModeChange` to callers so tests and other modules can reuse the same
+ *    handler implementation when wiring game-mode toggles.
+ */
 export { handleGameModeChange } from "./settings/gameModeSwitches.js";
 /**
  * @summary TODO: Add summary
@@ -380,5 +397,12 @@ export { handleGameModeChange } from "./settings/gameModeSwitches.js";
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Re-export the feature-flag toggle handler used by the Settings UI.
+ *
+ * @pseudocode
+ * 1. Expose `handleFeatureFlagChange` so the same logic is used when wiring feature flag switches
+ *    and in tests.
  */
 export { handleFeatureFlagChange } from "./settings/featureFlagSwitches.js";

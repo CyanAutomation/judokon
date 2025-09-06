@@ -32,10 +32,10 @@ Every test file is scored from 0–10 based on the following five criteria. Aim 
  * Linked-Req: PRD-4.2 (User Login)
  * Covers: src/helpers/auth.js
  */
-import { authenticate } from '../src/helpers/auth';
+import { authenticate } from "../src/helpers/auth";
 
-describe('authenticate', () => {
-  it('should return a user object on successful authentication', () => {
+describe("authenticate", () => {
+  it("should return a user object on successful authentication", () => {
     // ...
   });
 });
@@ -45,10 +45,10 @@ describe('authenticate', () => {
 
 ```javascript
 // No header
-import { authenticate } from '../src/helpers/auth';
+import { authenticate } from "../src/helpers/auth";
 
-describe('auth test', () => {
-  it('works', () => {
+describe("auth test", () => {
+  it("works", () => {
     // ...
   });
 });
@@ -61,18 +61,18 @@ describe('auth test', () => {
 **High Score (2/2)**: Uses semantic assertions.
 
 ```javascript
-it('should return the correct user payload', () => {
-  const user = { id: 1, name: 'Alice' };
-  expect(authenticate('valid', 'creds')).toEqual(user);
+it("should return the correct user payload", () => {
+  const user = { id: 1, name: "Alice" };
+  expect(authenticate("valid", "creds")).toEqual(user);
 });
 ```
 
 **Low Score (0/2)**: Relies only on snapshots.
 
 ```javascript
-it('should return the correct user payload', () => {
+it("should return the correct user payload", () => {
   // This is brittle and the intent is not clear.
-  expect(authenticate('valid', 'creds')).toMatchSnapshot();
+  expect(authenticate("valid", "creds")).toMatchSnapshot();
 });
 ```
 
@@ -83,7 +83,7 @@ it('should return the correct user payload', () => {
 **High Score (2/2)**: Uses fake timers.
 
 ```javascript
-it('should time out after 5000ms', () => {
+it("should time out after 5000ms", () => {
   vi.useFakeTimers();
   myFunctionThatTimesOut();
   vi.advanceTimersByTime(5000);
@@ -94,10 +94,10 @@ it('should time out after 5000ms', () => {
 **Low Score (0/2)**: Uses real timers.
 
 ```javascript
-it('should time out after 5s', async () => {
+it("should time out after 5s", async () => {
   // This test will take 5 seconds to run!
   myFunctionThatTimesOut();
-  await new Promise(r => setTimeout(r, 5000));
+  await new Promise((r) => setTimeout(r, 5000));
   expect(onTimeout).toHaveBeenCalled();
 });
 ```
@@ -117,7 +117,7 @@ it('should time out after 5s', async () => {
  * Spec-ID: CART-003
  * Linked-Req: PRD-7.1 (Add to Cart)
  */
-test('should allow user to add an item to the cart from the product page', async ({ page }) => {
+test("should allow user to add an item to the cart from the product page", async ({ page }) => {
   // ...
 });
 ```
@@ -125,7 +125,7 @@ test('should allow user to add an item to the cart from the product page', async
 **Low Score (0/2)**: Vague title.
 
 ```javascript
-test('cart test', async ({ page }) => {
+test("cart test", async ({ page }) => {
   // ...
 });
 ```
@@ -138,21 +138,21 @@ test('cart test', async ({ page }) => {
 
 ```javascript
 // GOOD: Robust, accessible locator
-const submitButton = page.getByRole('button', { name: /Sign In/i });
+const submitButton = page.getByRole("button", { name: /Sign In/i });
 await submitButton.click();
 
 // GOOD: Specific assertion
-await expect(page.getByText('Welcome, Alice!')).toBeVisible();
+await expect(page.getByText("Welcome, Alice!")).toBeVisible();
 ```
 
 **Low Score (0/2)**: Uses brittle CSS selectors and relies only on visual snapshots.
 
 ```javascript
 // BAD: Brittle selector
-await page.locator('div > div:nth-child(2) > button').click();
+await page.locator("div > div:nth-child(2) > button").click();
 
 // BAD: Relies only on a screenshot, which can be flaky and hides intent.
-await expect(page).toHaveScreenshot('login-success.png');
+await expect(page).toHaveScreenshot("login-success.png");
 ```
 
 ### 3. Robustness & Flake-Reduction (E2E)
@@ -163,7 +163,7 @@ await expect(page).toHaveScreenshot('login-success.png');
 
 ```javascript
 // GOOD: Playwright will auto-wait for the element to be visible.
-await expect(page.getByRole('heading', { name: 'Shopping Cart' })).toBeVisible({ timeout: 5000 });
+await expect(page.getByRole("heading", { name: "Shopping Cart" })).toBeVisible({ timeout: 5000 });
 ```
 
 **Low Score (0/2)**: Uses hard-coded waits, which lead to flaky tests that are either too short or too long.
@@ -172,7 +172,7 @@ await expect(page.getByRole('heading', { name: 'Shopping Cart' })).toBeVisible({
 // BAD: This is a primary source of flaky tests.
 await page.waitForTimeout(2000); // Don't do this!
 
-const header = await page.locator('h1'); // May or may not be ready
+const header = await page.locator("h1"); // May or may not be ready
 ```
 
 **CRITICAL**: A test that is flaky (sometimes passes, sometimes fails) has **negative value**. It erodes trust in the test suite. The `npm run e2e:flake-scan` command is designed specifically to detect and prevent this.

@@ -12,24 +12,16 @@ let clearTimer = (...args) => clearTimeout(...args);
  * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
  */
 /**
- * @summary TODO: Add summary
+ * Override timer functions used by the internal debounce.
+ *
+ * Useful for tests that need to control timing or to inject fake timers.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Accept an object with optional `setTimeout` and `clearTimeout`.
+ * 2. Replace the local `setTimer` and `clearTimer` implementations when present.
+ * 3. Subsequent debounced saves will use the injected timer functions.
+ *
+ * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
  */
 export function setSettingsStorageTimers(fns = {}) {
   if (fns.setTimeout) setTimer = fns.setTimeout;
@@ -55,26 +47,12 @@ const debouncedSave = debounce(
   { setTimeout: (...args) => setTimer(...args), clearTimeout: (...args) => clearTimer(...args) }
 );
 
-/** Flush pending debounced save immediately. */
 /**
- * @summary TODO: Add summary
+ * Flush pending debounced save immediately.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Call the debounced save's `flush` method so any queued write runs now.
+ * 2. This is primarily intended for tests to force synchronous persistence.
  */
 export const flushSettingsSave = () => debouncedSave.flush();
 

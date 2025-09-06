@@ -10,6 +10,7 @@ This document outlines the automated system for evaluating the quality and value
 ## 1. Philosophy & Goal
 
 We aim for a test suite that is:
+
 - **Behavior-focused**: Tests should verify the observable behavior of a unit, not its implementation details.
 - **High-signal**: Failures should clearly indicate a genuine problem.
 - **Low-cost**: Tests should be fast, reliable, and easy to maintain.
@@ -66,11 +67,12 @@ Each test file is scored on a 0–10 scale across five criteria. The final score
 The evaluation is orchestrated by a primary script that leverages data from multiple sources.
 
 **Workflow Steps**:
+
 1.  **Run Tests**: The script first ensures a `vitest-report.json` exists, running `npx vitest --run --reporter=json` if needed.
 2.  **Run Mutation Tests (Optional)**: If a Stryker mutation report (`reports/mutation/mutation.json`) is present, it will be used to assess coverage effectiveness.
 3.  **Scan & Analyze**: The script iterates through all test files, performing two main analyses:
-    *   **Header Parsing**: It reads metadata from comments at the top of each test file (e.g., `Spec-ID`, `Linked-Req`).
-    *   **Assertion Scanning**: It statically counts the number of total, snapshot, and semantic assertions.
+    - **Header Parsing**: It reads metadata from comments at the top of each test file (e.g., `Spec-ID`, `Linked-Req`).
+    - **Assertion Scanning**: It statically counts the number of total, snapshot, and semantic assertions.
 4.  **Score Calculation**: Using the data from steps 1-3, it applies the rubric heuristics to calculate a score for each test file.
 5.  **Report Generation**: The final output is a JSON file and a human-readable Markdown summary located in `reports/test-value/`.
 
@@ -85,6 +87,7 @@ This process can be run locally or in a CI environment.
 To run the evaluation on your local machine:
 
 1.  **Generate Reports**:
+
     ```bash
     # Run Vitest to generate the test report
     npm run test
@@ -92,6 +95,7 @@ To run the evaluation on your local machine:
     # (Optional but recommended) Run Stryker for mutation analysis
     npm run mutate
     ```
+
 2.  **Run the Evaluator**:
     ```bash
     # This will generate the report in reports/test-value/
@@ -148,12 +152,12 @@ When asked to improve or write tests, you **MUST** consider this scoring system.
 
 The implementation of this system is distributed across several files:
 
--   **Orchestrator**: `scripts/test-value-evaluator.js`
--   **Utilities**:
-    -   `scripts/utils/assertionScanner.js`
-    -   `scripts/utils/headerParser.js`
--   **Configuration**:
-    -   `stryker.conf.js`
-    -   `package.json` (see `scripts` and `devDependencies`)
--   **CI Workflow**: `.github/workflows/test-value.yml`
--   **Contributor Policy**: `docs/TestValuePolicy.md`
+- **Orchestrator**: `scripts/test-value-evaluator.js`
+- **Utilities**:
+  - `scripts/utils/assertionScanner.js`
+  - `scripts/utils/headerParser.js`
+- **Configuration**:
+  - `stryker.conf.js`
+  - `package.json` (see `scripts` and `devDependencies`)
+- **CI Workflow**: `.github/workflows/test-value.yml`
+- **Contributor Policy**: `docs/TestValuePolicy.md`
