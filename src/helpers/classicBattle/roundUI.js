@@ -238,6 +238,14 @@ export function bindRoundUIEventHandlersDynamic() {
     if (set.has(target)) return;
     set.add(target);
   } catch {}
+  // Preload modules so handlers avoid hot-path dynamic imports while still
+  // honoring test-time mocks. These promises resolve once and are reused.
+  const scoreboardP = import("../setupScoreboard.js");
+  const uiServiceP = import("./uiService.js");
+  const showSnackbarP = import("../showSnackbar.js");
+  const computeNextRoundCooldownP = import("../timers/computeNextRoundCooldown.js");
+  const roundManagerP = import("./roundManager.js");
+  const uiHelpersP = import("./uiHelpers.js");
   onBattleEvent("roundStarted", (e) => {
     const { store, roundNumber } = e.detail || {};
     if (store && typeof roundNumber === "number") {
@@ -255,8 +263,8 @@ export function bindRoundUIEventHandlersDynamic() {
       } catch {}
       btn.classList.add("selected");
       try {
-        const snackbar = await import("../showSnackbar.js");
-        snackbar.showSnackbar(`You Picked: ${btn.textContent}`);
+        const { showSnackbar } = await showSnackbarP;
+        showSnackbar(`You Picked: ${btn.textContent}`);
       } catch {}
     }
     emitBattleEvent("statButtons:disable");
@@ -268,7 +276,7 @@ export function bindRoundUIEventHandlersDynamic() {
       if (!IS_VITEST) console.warn("[test] roundResolved event received (dynamic)");
     } catch {}
     try {
-      const scoreboard = await import("../setupScoreboard.js");
+      const scoreboard = await scoreboardP;
       // Always surface the outcome message
       scoreboard.showMessage(result.message || "", { outcome: true });
       // Update the score display using the resolved values to avoid
@@ -277,41 +285,33 @@ export function bindRoundUIEventHandlersDynamic() {
         scoreboard.updateScore(result.playerScore, result.opponentScore);
       } else {
         try {
-          const ui = await import("./uiService.js");
+          const ui = await uiServiceP;
           ui.syncScoreDisplay?.();
         } catch {}
       }
     } catch {}
     if (result.matchEnded) {
       try {
-        const scoreboard = await import("../setupScoreboard.js");
-        const { showMatchSummaryModal } = await import("./uiService.js");
+        const scoreboard = await scoreboardP;
+        const ui = await uiServiceP;
+        const { handleReplay } = await roundManagerP;
         scoreboard.clearRoundCounter?.();
-        await showMatchSummaryModal(result, async () => {
+        await ui.showMatchSummaryModal(result, async () => {
           await handleReplay(store);
         });
         emitBattleEvent("matchOver");
       } catch {}
     } else {
       // Proactively surface the next-round countdown in the snackbar so tests
-      // and users see it immediately after the outcome is shown. Use dynamic
-      // imports so test mocks take effect.
+      // and users see it immediately after the outcome is shown.
       try {
-        const { computeNextRoundCooldown: cNRC } = await import(
-          "../timers/computeNextRoundCooldown.js"
-        );
-        const { updateSnackbar: uSb } = await import("../showSnackbar.js");
+        const [
+          { computeNextRoundCooldown: cNRC },
+          { updateSnackbar: uSb },
+          { isOrchestrated: iO }
+        ] = await Promise.all([computeNextRoundCooldownP, showSnackbarP, roundManagerP]);
         const secs = cNRC();
         uSb(`Next round in: ${secs}s`);
-      } catch {}
-      // Fallback sequential updates when the orchestrator is not running
-      try {
-        const { computeNextRoundCooldown: cNRC } = await import(
-          "../timers/computeNextRoundCooldown.js"
-        );
-        const { updateSnackbar: uSb } = await import("../showSnackbar.js");
-        const { isOrchestrated: iO } = await import("./roundManager.js");
-        const secs = cNRC();
         const orchestrated = (() => {
           try {
             return typeof iO === "function" && iO();
@@ -344,7 +344,7 @@ export function bindRoundUIEventHandlersDynamic() {
       }, 32);
     }
     try {
-      const { updateDebugPanel } = await import("./uiHelpers.js");
+      const { updateDebugPanel } = await uiHelpersP;
       updateDebugPanel();
     } catch {}
   });
