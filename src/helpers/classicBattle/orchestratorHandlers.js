@@ -168,14 +168,24 @@ export async function initInterRoundCooldown(machine) {
   try {
     const nextButton =
       document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+    /**
+     * Mark the Next button as ready for advancement.
+     * @param {HTMLElement} btn
+     */
+    const markReady = (btn) => {
+      btn.disabled = false;
+      btn.dataset.nextReady = "true";
+    };
     if (nextButton) {
-      nextButton.disabled = false;
-      nextButton.dataset.nextReady = "true";
+      markReady(nextButton);
       setTimeout(() => {
         const btn = document.getElementById("next-button");
-        if (btn) {
-          btn.disabled = false;
-          btn.dataset.nextReady = "true";
+        if (
+          btn &&
+          btn.dataset.nextReady === "true" &&
+          machine?.getState?.() === "cooldown"
+        ) {
+          markReady(btn);
         }
       }, 0);
     }
