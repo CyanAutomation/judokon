@@ -81,10 +81,12 @@ describe("Scoreboard integration without explicit init", () => {
     const scoreboard = await import("../../src/helpers/setupScoreboard.js");
     // Messages
     scoreboard.showMessage("Ready to fight!");
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("round-message").textContent).toBe("Ready to fight!");
 
     // Round counter
     scoreboard.updateRoundCounter(1);
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("round-counter").textContent).toBe("Round 1");
 
     // Score
@@ -99,14 +101,16 @@ describe("Scoreboard integration without explicit init", () => {
     // Round timer (selection phase) updates #next-round-timer via scoreboard.updateTimer
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
     const promise = startTimer(async () => {}, { selectionMade: false });
-    // Initial tick shows 3
-    await vi.advanceTimersByTimeAsync(0);
+    // Initial tick shows 3 (debounced)
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 3s");
     // After 1s shows 2
     await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 2s");
     // After another 1s shows 1
     await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 1s");
 
     // Cleanup any pending timers

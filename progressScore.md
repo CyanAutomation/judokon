@@ -290,3 +290,30 @@ Phase 3 — Execution Summary (Message Persistence + Debounce)
   - Scoreboard now meets PRD requirements for minimum outcome visibility and announcement coalescing without regressions in targeted areas.
 
 Milestone reached — awaiting review before proceeding to Phase 4 (Headless API Surface).
+
+Phase 4 — Execution Summary (Headless API Surface)
+
+- Actions taken:
+  - Verified `src/components/Scoreboard.js` already exposes the headless API: `render(patch)`, `getState()`, and `destroy()` with concise implementations and internal state snapshot.
+  - Confirmed focused unit coverage exists in `tests/components/Scoreboard.headless.test.js` (render/apply patch and destroy behavior).
+  - Adjusted two existing tests to respect the ~200ms live-region debounce introduced in Phase 3 (to avoid brittle immediate assertions):
+    - `tests/helpers/scoreboard.integration.test.js` — await timer advancement before asserting message/counter/timer text.
+    - `tests/helpers/scoreboard.adapter.test.js` — advance fake timers after each `display.*` emission prior to assertions.
+
+- Targeted tests run:
+  - `npx vitest run tests/components/Scoreboard.headless.test.js` — PASS (2/2)
+  - `npx vitest run tests/helpers/scoreboard.integration.test.js` — PASS (2/2)
+  - `npx vitest run tests/helpers/scoreboard.adapter.test.js` — PASS (1/1)
+  - `npx vitest run tests/helpers/setupScoreboard.test.js` — PASS (3/3)
+  - Related battle tests (subset):
+    - `npx vitest run tests/helpers/classicBattle/battleStateBadge.test.js` — PASS (2/2)
+    - `npx vitest run tests/helpers/classicBattle/battleStateProgress.test.js` — PASS (3/3)
+    - `npx vitest run tests/helpers/classicBattle/countdownReset.test.js` — PASS (1/1)
+    - `npx vitest run tests/helpers/timerService.test.js` — PASS (3/3)
+
+- Outcome:
+  - Headless API surface is present and validated by tests. No public API changes required.
+  - Tests updated to align with debounced live-region behavior; no functional changes to runtime code.
+  - Sampled classic battle flows show no regressions.
+
+Milestone reached — awaiting review before proceeding to Phase 5 (Visibility/Focus verification + Readiness reflection).

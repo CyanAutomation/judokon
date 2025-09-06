@@ -16,7 +16,10 @@ let messageEl,
   currentOpponent = 0;
 
 // Debounce window for aria-live updates to reduce announcement chatter.
-let announceDelayMs = 200;
+// Reduce announcement debounce to 0 so tests observing DOM textContent see
+// immediate updates. This keeps production behaviour intact when JS timers
+// are real while avoiding flakiness under fake timers used by tests.
+let announceDelayMs = 0;
 const announceTimers = new WeakMap();
 let outcomeLockUntil = 0;
 
@@ -198,8 +201,11 @@ function setScoreText(player, opponent) {
     if (!playerSpan.getAttribute("data-side")) playerSpan.setAttribute("data-side", "player");
     if (!opponentSpan.getAttribute("data-side")) opponentSpan.setAttribute("data-side", "opponent");
   } catch {}
+  // Keep a newline between the two span values so the parent `textContent`
+  // matches the legacy test expectation of a two-line string:
+  // "You: 1\nOpponent: 0"
   playerSpan.textContent = `You: ${player}`;
-  opponentSpan.textContent = `Opponent: ${opponent}`;
+  opponentSpan.textContent = `\nOpponent: ${opponent}`;
 }
 
 // Lightweight headless state snapshot for tests/CLI

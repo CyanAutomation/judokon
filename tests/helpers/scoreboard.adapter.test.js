@@ -11,6 +11,7 @@ import {
 
 describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
   beforeEach(async () => {
+    vi.useFakeTimers();
     vi.resetModules();
     __resetBattleEventTarget();
     document.body.innerHTML = "";
@@ -32,21 +33,27 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
 
   it("updates message, outcome lock, timer, round counter, and score", async () => {
     emitBattleEvent("display.round.start", { roundNumber: 3 });
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("round-counter").textContent).toBe("Round 3");
 
     emitBattleEvent("display.round.message", { text: "Fight!" });
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("round-message").textContent).toBe("Fight!");
 
     emitBattleEvent("display.round.outcome", { text: "You win" });
+    await vi.advanceTimersByTimeAsync(220);
     const msg = document.getElementById("round-message");
     expect(msg.textContent).toBe("You win");
     expect(msg.dataset.outcome).toBe("true");
 
     emitBattleEvent("display.timer.show", { secondsRemaining: 5 });
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 5s");
     emitBattleEvent("display.timer.tick", { secondsRemaining: 4 });
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("next-round-timer").textContent).toBe("Time Left: 4s");
     emitBattleEvent("display.timer.hide");
+    await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("next-round-timer").textContent).toBe("");
 
     emitBattleEvent("display.score.update", { player: 2, opponent: 1 });
