@@ -294,25 +294,35 @@ export function bindRoundUIEventHandlersDynamic() {
       } catch {}
     } else {
       // Proactively surface the next-round countdown in the snackbar so tests
-      // and users see it immediately after the outcome is shown.
+      // and users see it immediately after the outcome is shown. Use dynamic
+      // imports so test mocks take effect.
       try {
-        const secs = computeNextRoundCooldown();
-        updateSnackbar(`Next round in: ${secs}s`);
+        const { computeNextRoundCooldown: cNRC } = await import(
+          "../timers/computeNextRoundCooldown.js"
+        );
+        const { updateSnackbar: uSb } = await import("../showSnackbar.js");
+        const secs = cNRC();
+        uSb(`Next round in: ${secs}s`);
       } catch {}
       // Fallback sequential updates when the orchestrator is not running
       try {
-        const secs = computeNextRoundCooldown();
+        const { computeNextRoundCooldown: cNRC } = await import(
+          "../timers/computeNextRoundCooldown.js"
+        );
+        const { updateSnackbar: uSb } = await import("../showSnackbar.js");
+        const { isOrchestrated: iO } = await import("./roundManager.js");
+        const secs = cNRC();
         const orchestrated = (() => {
           try {
-            return typeof isOrchestrated === "function" && isOrchestrated();
+            return typeof iO === "function" && iO();
           } catch {
             return false;
           }
         })();
         if (!orchestrated) {
           // Delay updates by 2s/3s to align with test expectations
-          if (secs >= 2) setTimeout(() => updateSnackbar(`Next round in: ${secs - 1}s`), 2000);
-          if (secs >= 3) setTimeout(() => updateSnackbar(`Next round in: ${secs - 2}s`), 3000);
+          if (secs >= 2) setTimeout(() => uSb(`Next round in: ${secs - 1}s`), 2000);
+          if (secs >= 3) setTimeout(() => uSb(`Next round in: ${secs - 2}s`), 3000);
         }
       } catch {}
       // Failsafe removed as it conflicts with the orchestrator.
