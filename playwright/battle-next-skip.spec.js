@@ -30,7 +30,6 @@ test.describe("Next button cooldown skip", () => {
     // Finish round 1 quickly.
     await page.locator("#stat-buttons button").first().click();
     await page.locator("#stat-buttons[data-buttons-ready='false']").waitFor();
-    await page.evaluate(() => window.getRoundResolvedPromise?.());
 
     const counter = page.locator("#round-counter");
     await expect(counter).toHaveText(/Round 1/);

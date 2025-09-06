@@ -317,10 +317,11 @@ export function setupSidebarUI(docData) {
   });
 
   const { listSelect } = createSidebarList(labels, listPlaceholder, (i, _el, opts = {}) => {
-    state.selectDocSync(i, true, true, !opts.fromListNav);
+    const focusContent = !opts.fromListNav && !opts.fromInitial;
+    state.selectDocSync(i, true, true, focusContent);
   });
   state.listSelect = listSelect;
-  listSelect(startIndex);
+  listSelect(startIndex, { fromInitial: true });
   return state;
 }
 
@@ -376,7 +377,6 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
     await sidebar.fetchOne(sidebar.index);
   }
   renderDocument(sidebar, sidebar.index);
-  sidebar.container.focus();
   sidebar.spinner.remove();
 
   // Preload remaining docs during idle. Skip when test mode flag is enabled.
