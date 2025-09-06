@@ -31,7 +31,7 @@ describe("battleCLI stat interactions", () => {
     expect(document.getElementById("cli-stats").dataset.selectedIndex).toBe("2");
   });
 
-  it("shows stat values and responds to clicks", async () => {
+  it("shows stat values and responds to selection", async () => {
     const mod = await loadBattleCLI(baseOpts);
     await mod.renderStatList();
     const { startRound } = await import("../../src/helpers/classicBattle/roundManager.js");
@@ -39,13 +39,13 @@ describe("battleCLI stat interactions", () => {
       playerJudoka: { stats: { speed: 5, strength: 7 } },
       roundNumber: 1
     });
-    await mod.__test.startRoundWrapper();
+    await mod.startRoundWrapper();
     document.body.dataset.battleState = "waitingForPlayerAction";
     const statEl = document.querySelector('[data-stat-index="1"]');
     expect(statEl.textContent).toBe("[1] Speed: 5");
     const hiddenVal = document.querySelector("#player-card li.stat span")?.textContent;
     expect(hiddenVal).toBe("5");
-    statEl.click();
+    mod.handleWaitingForPlayerActionKey("1");
     expect(statEl.classList.contains("selected")).toBe(true);
   });
 });

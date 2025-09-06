@@ -18,7 +18,7 @@ describe("battleCLI deterministic seed", () => {
       url: "http://localhost/battleCLI.html?seed=5",
       html: seedInputHtml
     });
-    await mod.__test.init();
+    await mod.init();
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
     const { seededRandom } = await import("../../src/helpers/testModeUtils.js");
@@ -44,7 +44,7 @@ describe("battleCLI deterministic seed", () => {
       url: "http://localhost/battleCLI.html?seed=0",
       html: seedInputHtml
     });
-    await mod.__test.init();
+    await mod.init();
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent.mockClear();
     const input = document.getElementById("seed-input");

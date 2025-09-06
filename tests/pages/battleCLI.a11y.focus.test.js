@@ -39,7 +39,7 @@ describe("battleCLI accessibility", () => {
           { statIndex: 3, name: "Technique" }
         ]
       });
-      await mod.__test.renderStatList({
+      await mod.renderStatList({
         stats: { speed: 1, power: 2, technique: 3 }
       });
       const list = document.getElementById("cli-stats");
@@ -47,15 +47,15 @@ describe("battleCLI accessibility", () => {
       expect(rows[0].tabIndex).toBe(0);
       expect(rows[1].tabIndex).toBe(-1);
       list.focus();
-      mod.__test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
       expect(document.activeElement).toBe(rows[0]);
-      mod.__test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
       expect(document.activeElement).toBe(rows[1]);
-      mod.__test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
       expect(document.activeElement).toBe(rows[0]);
-      mod.__test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
       expect(document.activeElement).toBe(rows[2]);
-      mod.__test.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
       expect(document.activeElement).toBe(rows[0]);
       expect(list.getAttribute("aria-activedescendant")).toBe(rows[0].id);
     });

@@ -20,7 +20,7 @@ describe("battleCLI init helpers", () => {
       mockBattleEvents: false
     });
     const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
-    await mod.__test.init();
+    await mod.init();
     const startBtn = document.getElementById("start-match-button");
     expect(startBtn).toBeTruthy();
     expect(emitSpy).not.toHaveBeenCalledWith("startClicked");
@@ -33,7 +33,7 @@ describe("battleCLI init helpers", () => {
       stats: [{ statIndex: 1, name: "Speed" }],
       mockBattleEvents: false
     });
-    await mod.__test.init();
+    await mod.init();
     expect(document.getElementById("cli-stats").children.length).toBeGreaterThan(0);
   });
 });

@@ -34,6 +34,8 @@ import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
 import { SNACKBAR_REMOVE_MS } from "../helpers/constants.js";
 import { registerModal, unregisterModal, onEsc } from "../helpers/modalManager.js";
+import state, { resolveEscapeHandled, getEscapeHandledPromise } from "./battleCLI/state.js";
+import { onKeyDown } from "./battleCLI/events.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -110,45 +112,7 @@ let quitModal = null;
 let isQuitting = false;
 let pausedSelectionRemaining = null;
 let pausedCooldownRemaining = null;
-let ignoreNextAdvanceClick = false;
-let roundResolving = false;
-let shortcutsReturnFocus = null;
-let shortcutsOverlay = null;
-let escapeHandledResolve;
-let escapeHandledPromise = new Promise((r) => {
-  escapeHandledResolve = r;
-});
-
-/**
- * Return a promise that resolves after the Escape key is handled.
- *
- * @pseudocode
- * return current `escapeHandledPromise`
- * @returns {Promise<void>} promise resolving when Escape logic finishes
- */
-export function getEscapeHandledPromise() {
-  return escapeHandledPromise;
-}
-
-/**
- * Resolve any pending Escape promise and create a new one.
- *
- * @pseudocode
- * IF `escapeHandledResolve` exists
- *   call `escapeHandledResolve`
- * ENDIF
- * create new promise assigning resolver to `escapeHandledResolve`
- */
-function resolveEscapeHandled() {
-  try {
-    escapeHandledResolve?.();
-  } catch {
-    // Ignore if previous promise already settled
-  }
-  escapeHandledPromise = new Promise((r) => {
-    escapeHandledResolve = r;
-  });
-}
+// state managed in state.js
 
 onEsc(resolveEscapeHandled);
 
@@ -207,7 +171,8 @@ export const __test = {
   handleRoundResolved,
   handleMatchOver,
   handleBattleState,
-  onKeyDown
+  onKeyDown,
+  handleWaitingForPlayerActionKey
 };
 /**
  * Update the round counter line in the header.
@@ -282,7 +247,7 @@ let resetPromise = Promise.resolve();
 async function resetMatch() {
   stopSelectionCountdown();
   handleCountdownFinished();
-  roundResolving = false;
+  state.roundResolving = false;
   clearVerboseLog();
   try {
     document.getElementById("play-again-button")?.remove();
@@ -467,8 +432,8 @@ function showCliShortcuts() {
     if (body) body.style.display = "";
     sec?.removeAttribute("hidden");
     close?.setAttribute("aria-expanded", "true");
-    shortcutsOverlay = { close: hideCliShortcuts };
-    registerModal(shortcutsOverlay);
+    state.shortcutsOverlay = { close: hideCliShortcuts };
+    registerModal(state.shortcutsOverlay);
   }
 }
 
@@ -495,12 +460,12 @@ function hideCliShortcuts() {
     close?.setAttribute("aria-expanded", "false");
   }
   try {
-    shortcutsReturnFocus?.focus();
+    state.shortcutsReturnFocus?.focus();
   } catch {}
-  shortcutsReturnFocus = null;
-  if (shortcutsOverlay) {
-    unregisterModal(shortcutsOverlay);
-    shortcutsOverlay = null;
+  state.shortcutsReturnFocus = null;
+  if (state.shortcutsOverlay) {
+    unregisterModal(state.shortcutsOverlay);
+    state.shortcutsOverlay = null;
   }
 }
 
@@ -837,7 +802,7 @@ function selectStat(stat) {
   }
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
-    roundResolving = true;
+    state.roundResolving = true;
     safeDispatch("statSelected");
   } catch (err) {
     console.error("Error dispatching statSelected", err);
@@ -980,7 +945,7 @@ function setActiveStatRow(row, { focus = true } = {}) {
  * @param {"ArrowUp"|"ArrowDown"|"ArrowLeft"|"ArrowRight"} key - Pressed arrow key.
  * @returns {boolean} Whether the key was handled.
  */
-function handleStatListArrowKey(key) {
+export function handleStatListArrowKey(key) {
   const list = byId("cli-stats");
   const rows = list ? Array.from(list.querySelectorAll(".cli-stat")) : [];
   if (!list || rows.length === 0) return false;
@@ -1191,12 +1156,18 @@ function getStatByIndex(index1Based) {
  *   return true
  * return false
  */
-export function handleGlobalKey(key) {
-  if (key === "h") {
+/**
+ * Global key lookup for the CLI.
+ *
+ * @pseudocode
+ * map single-character keys to handler functions
+ */
+const globalKeyHandlers = {
+  h() {
     const sec = byId("cli-shortcuts");
     if (sec) {
       if (sec.hidden) {
-        shortcutsReturnFocus =
+        state.shortcutsReturnFocus =
           document.activeElement instanceof HTMLElement ? document.activeElement : null;
         showCliShortcuts();
         byId("cli-shortcuts-close")?.focus();
@@ -1204,10 +1175,28 @@ export function handleGlobalKey(key) {
         hideCliShortcuts();
       }
     }
-    return true;
-  }
-  if (key === "q") {
+  },
+  q() {
     showQuitModal();
+  }
+};
+
+/**
+ * Handle global CLI keys such as help and quit.
+ *
+ * @param {string} key - lowercased key value.
+ * @returns {boolean} true when handled.
+ * @pseudocode
+ * fn = globalKeyHandlers[key]
+ * if fn exists:
+ *   fn()
+ *   return true
+ * return false
+ */
+export function handleGlobalKey(key) {
+  const fn = globalKeyHandlers[key];
+  if (fn) {
+    fn();
     return true;
   }
   return false;
@@ -1397,51 +1386,6 @@ export function handleCooldownKey(key) {
  * @pseudocode
  * key = lowercased key from event
  * if cliShortcuts disabled AND key != 'q': return
- * state = document.body.dataset.battleState
- * table = { waitingForPlayerAction: handleWaitingForPlayerActionKey,
- *           roundOver: handleRoundOverKey,
- *           cooldown: handleCooldownKey }
- * if key == "tab": return
- * handler = table[state]
- * handled = handleGlobalKey(key) OR (handler ? handler(key) : false)
- * countdown = element '#cli-countdown'
- * if not handled:
- *   if countdown exists: set text to "Invalid key, press H for help"
- * else if countdown has text:
- *   clear countdown text
- */
-export function onKeyDown(e) {
-  const key = e.key;
-  const list = byId("cli-stats");
-  if (
-    list &&
-    ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(key) &&
-    (list === document.activeElement || list.contains(document.activeElement))
-  ) {
-    e.preventDefault();
-    handleStatListArrowKey(key);
-    return;
-  }
-  const lower = key.toLowerCase();
-  if (lower === "escape") return;
-  if (!isEnabled("cliShortcuts") && lower !== "q") return;
-  const state = document.body?.dataset?.battleState || "";
-  const table = {
-    waitingForPlayerAction: handleWaitingForPlayerActionKey,
-    roundOver: handleRoundOverKey,
-    cooldown: handleCooldownKey
-  };
-  const handler = table[state];
-  const handled = handleGlobalKey(lower) || (handler ? handler(lower) : false);
-  const countdown = byId("cli-countdown");
-  if (!handled && lower !== "tab") {
-    // Added key !== "tab"
-    if (countdown) countdown.textContent = "Invalid key, press H for help";
-  } else if (countdown && countdown.textContent) {
-    countdown.textContent = "";
-  }
-}
-
 function handleStatListClick(event) {
   const list = byId("cli-stats");
   const statDiv = event.target?.closest?.(".cli-stat");
@@ -1475,10 +1419,14 @@ function handleStatClick(statDiv, event) {
  * @param {MouseEvent} event - Click event.
  */
 function onClickAdvance(event) {
-  if (roundResolving) return;
-  if (ignoreNextAdvanceClick) {
-    // Consume exactly one background click after closing help.
-    ignoreNextAdvanceClick = false;
+  try {
+    if (state.roundResolving) return;
+    if (state.ignoreNextAdvanceClick) {
+      // Consume exactly one background click after closing help.
+      state.ignoreNextAdvanceClick = false;
+      return;
+    }
+  } catch {
     return;
   }
   // If help panel is open, ignore background clicks to avoid accidental advancement
@@ -1566,7 +1514,7 @@ function handleCountdownFinished() {
 }
 
 function handleRoundResolved(e) {
-  roundResolving = false;
+  state.roundResolving = false;
   const { result, stat, playerVal, opponentVal } = e.detail || {};
   if (result) {
     const display = statDisplayNames[stat] || String(stat || "").toUpperCase();
@@ -1782,7 +1730,7 @@ async function init() {
     event.stopPropagation();
     // Set a guard to ignore the next background click after closing help.
     // Do not clear it on microtask; it is consumed in onClickAdvance.
-    ignoreNextAdvanceClick = true;
+    state.ignoreNextAdvanceClick = true;
     hideCliShortcuts();
   });
   checkbox?.addEventListener("change", async () => {

@@ -44,7 +44,7 @@ describe("battleCLI points to win start", () => {
         }, 0);
       });
     });
-    await mod.__test.init();
+    await mod.init();
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const select = document.getElementById("points-select");
     select.value = "10";

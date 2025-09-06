@@ -26,7 +26,7 @@ describe("battleCLI seed validation", () => {
 
   it("accepts numeric seed", async () => {
     const mod = await loadBattleCLI({ html: seedHtml });
-    await mod.__test.init();
+    await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "9";
     input.dispatchEvent(new Event("change"));
@@ -39,7 +39,7 @@ describe("battleCLI seed validation", () => {
       url: "http://localhost/battleCLI.html?seed=3",
       html: seedHtml
     });
-    await mod.__test.init();
+    await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "abc";
     input.dispatchEvent(new Event("change"));
@@ -55,7 +55,7 @@ describe("battleCLI seed validation", () => {
       url: "http://localhost/battleCLI.html?seed=3",
       html: seedHtml
     });
-    await mod.__test.init();
+    await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "abc";
     input.dispatchEvent(new Event("change"));
