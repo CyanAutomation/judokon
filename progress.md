@@ -95,6 +95,7 @@ Actions Taken (Instrumentation + Test Adjustments)
    - With the instrumentation, we consistently see entering `cooldown` and `nextRoundTimerReady` firing, along with readiness flags toggling true.
    - The assertion is now state-based instead of DOM/text-based, removing sensitivity to visibility/animation.
    - Test cleaned up: removed temporary instrumentation logs to satisfy log discipline and keep assertions deterministic and minimal.
+   - Added an explicit wait for `cooldown` before checking Next readiness to align with orchestrator timing.
 
 ---
 

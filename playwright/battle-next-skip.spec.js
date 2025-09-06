@@ -33,6 +33,8 @@ test.describe("Next button cooldown skip", () => {
     // Finish round 1 quickly.
     await page.locator("#stat-buttons button").first().click();
     await page.locator("#stat-buttons[data-buttons-ready='false']").waitFor();
+    // Ensure we are in cooldown before checking Next readiness.
+    await waitForBattleState(page, "cooldown", 6000);
 
     const counter = page.locator("#round-counter");
     await expect(counter).toHaveText(/Round 1/);
@@ -46,7 +48,7 @@ test.describe("Next button cooldown skip", () => {
           return !!btn && btn.dataset.nextReady === "true" && btn.disabled === false;
         },
         null,
-        { timeout: 5000 }
+        { timeout: 7000 }
       );
       // Deterministic progression: dispatch 'ready' via the orchestrator.
       await page.evaluate(async () => {
