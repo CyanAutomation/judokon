@@ -240,16 +240,18 @@ export function bindRoundUIEventHandlersDynamic() {
   } catch {}
   // Preload modules so handlers avoid hot-path dynamic imports while still
   // honoring test-time mocks. These promises resolve once and are reused.
-  // Preload modules but silence early rejections so mocked imports in tests
-  // do not trigger unhandled rejection warnings before handlers await them.
-  const scoreboardP = import("../setupScoreboard.js").catch(() => ({}));
-  const uiServiceP = import("./uiService.js").catch(() => ({}));
-  const showSnackbarP = import("../showSnackbar.js").catch(() => ({}));
-  const computeNextRoundCooldownP = import("../timers/computeNextRoundCooldown.js").catch(
-    () => ({})
-  );
-  const roundManagerP = import("./roundManager.js").catch(() => ({}));
-  const uiHelpersP = import("./uiHelpers.js").catch(() => ({}));
+  // Silences early rejections to prevent unhandled warnings without
+  // converting the promises to resolved placeholders.
+  const silence = (p) => {
+    p.catch(() => {});
+    return p;
+  };
+  const scoreboardP = silence(import("../setupScoreboard.js"));
+  const uiServiceP = silence(import("./uiService.js"));
+  const showSnackbarP = silence(import("../showSnackbar.js"));
+  const computeNextRoundCooldownP = silence(import("../timers/computeNextRoundCooldown.js"));
+  const roundManagerP = silence(import("./roundManager.js"));
+  const uiHelpersP = silence(import("./uiHelpers.js"));
   onBattleEvent("roundStarted", (e) => {
     const { store, roundNumber } = e.detail || {};
     if (store && typeof roundNumber === "number") {
@@ -298,13 +300,15 @@ export function bindRoundUIEventHandlersDynamic() {
       try {
         const scoreboard = await scoreboardP;
         const ui = await uiServiceP;
-        const handleReplay = (await roundManagerP).handleReplay;
+        const roundManager = await roundManagerP;
         scoreboard.clearRoundCounter?.();
-        await ui.showMatchSummaryModal(result, async () => {
-          if (typeof handleReplay === "function") {
-            await handleReplay(store);
-          }
-        });
+        if (typeof ui.showMatchSummaryModal === "function") {
+          await ui.showMatchSummaryModal(result, async () => {
+            if (typeof roundManager.handleReplay === "function") {
+              await roundManager.handleReplay(store);
+            }
+          });
+        }
         emitBattleEvent("matchOver");
       } catch {}
     } else {
