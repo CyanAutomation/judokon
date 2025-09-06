@@ -180,11 +180,7 @@ export async function initInterRoundCooldown(machine) {
       markReady(nextButton);
       setTimeout(() => {
         const btn = document.getElementById("next-button");
-        if (
-          btn &&
-          btn.dataset.nextReady === "true" &&
-          machine?.getState?.() === "cooldown"
-        ) {
+        if (btn && btn.dataset.nextReady === "true" && machine?.getState?.() === "cooldown") {
           markReady(btn);
         }
       }, 0);
