@@ -3,7 +3,7 @@
  *
  * @pseudocode
  * 1. Attempt to serialize `judoka` to formatted JSON.
- *    - If serialization fails, return a paragraph with "Invalid card data".
+ *    - If serialization fails, log an error and return a paragraph with "Invalid card data".
  * 2. Create a `<details>` element with class `debug-panel` and accessible summary.
  * 3. Append a `<pre>` element containing the JSON string.
  * 4. On toggle, set `container.dataset.inspector` when open and remove it when closed.
@@ -17,7 +17,8 @@ export function createInspectorPanel(container, judoka) {
   let json;
   try {
     json = JSON.stringify(judoka, null, 2);
-  } catch {
+  } catch (error) {
+    console.error("Failed to serialize judoka:", error);
     const p = document.createElement("p");
     p.textContent = "Invalid card data";
     return p;
