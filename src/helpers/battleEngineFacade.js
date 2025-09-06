@@ -4,11 +4,20 @@ import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./const
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 
 /**
- * Core battle engine and useful constants exported from the engine module.
+ * Re-exports from the engine implementation.
  *
- * @summary Re-export the `BattleEngine` class and `STATS` constant from the engine module.
+ * @summary Provide thin re-exports so callers import from the facade instead of
+ * the implementation module directly. This keeps call sites stable if the
+ * implementation file is refactored.
+ *
  * @pseudocode
- * 1. Import engine implementation from `./BattleEngine.js` and re-export its public API.
+ * 1. Import `BattleEngine`, `STATS`, and `OUTCOME` from `./BattleEngine.js`.
+ * 2. Re-export these symbols so other modules consume a stable facade.
+ *
+ * @remarks
+ * - `BattleEngine` is the class implementing match flow and timer control.
+ * - `STATS` is the canonical stats enumeration used when creating engines.
+ * - `OUTCOME` enumerates possible round/match outcomes.
  */
 export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
 
@@ -267,8 +276,16 @@ export const off = (type, handler) => battleEngine?.off?.(type, handler);
 /**
  * startRoundTimer: PRD alias for starting the round timer.
  *
+ * @summary Alias kept for Product Requirements Document (PRD) compatibility.
+ * It forwards its arguments to the engine `startRound` implementation.
+ *
  * @pseudocode
- * 1. Delegate to `startRound` with the same arguments.
+ * 1. Ensure an engine instance exists via `requireEngine()`.
+ * 2. Call the engine's `startRound(...args)` passing through all arguments.
+ * 3. Return the engine promise so callers may await round start completion.
+ *
+ * @param {...any} args - All arguments are forwarded to `BattleEngine.startRound`.
+ * @returns {Promise<void>} Resolves when the engine has started the round.
  */
 export const startRoundTimer = (...args) => requireEngine().startRound(...args);
 

@@ -5,11 +5,20 @@ import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../uti
 let cachedTimerUtils = null;
 
 /**
- * Preload timer utilities to avoid dynamic import during hot paths.
+ * Preload timer utilities to reduce latency on first use.
+ *
+ * This attempts a best-effort import of the heavy `timerUtils` module and
+ * caches the result so hot-path code can access it synchronously where
+ * appropriate.
  *
  * @pseudocode
- * 1. Attempt to import `./timerUtils.js` and cache the module locally.
- * 2. Swallow errors to avoid breaking initialization in tests/bundlers.
+ * 1. Try to dynamically import `./timerUtils.js` during initialization so
+ *    later calls avoid an in-line dynamic import on hot paths.
+ * 2. Cache the imported module in `cachedTimerUtils` when successful.
+ * 3. Swallow any import errors (tests/bundlers may mock or block dynamic import)
+ *    to keep startup resilient and non-fatal.
+ *
+ * @returns {Promise<void>} Resolves when preload attempt completes.
  */
 export async function preloadTimerUtils() {
   try {
