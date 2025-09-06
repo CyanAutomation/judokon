@@ -7,9 +7,9 @@
 The **Battle Scoreboard** is a **UI-only reflector** that displays **persistent battle information** in the header:
 
 * round outcome/status messages,
-* stat selection timer,
+* stat selection or inter-round timer (ticks only),
 * round counter,
-* and current match score.
+* current match score,
 
 It holds **no game logic** and does not emit events; it reacts to events from the **Battle Engine/Orchestrator**.
 **Contextual or transient prompts** (e.g. “Opponent is choosing…”, “Select a stat”) are explicitly **handled by the Snackbar** (see [prdSnackbar.md](prdSnackbar.md)).
@@ -32,17 +32,33 @@ Players were previously confused by transient prompts overlapping persistent sta
 ## 3. Scope & Non-Goals
 
 **In scope**
-
-* Rendering of persistent scoreboard elements (round message, timer, round counter, score).
-* Outcome message persistence rules (guarded by `data-outcome`).
-* Accessibility of live regions and reduced-motion compliance.
-* Fallback “Waiting…” message for sync or drift.
+Rendering of persistent scoreboard elements:
+* round message (with precedence/locking),
+* timer (read-only ticks),
+* round counter,
+* score display,
+* Accessibility (live regions, reduced-motion compliance, color/contrast).
+* Deterministic rendering rules, idempotent updates.
 
 **Out of scope**
 
-* Transient prompts (“Opponent is choosing…”, “Choose a stat”, inter-round countdowns). These belong to Snackbar.
-* Business/game logic (auto-select, stat comparison, match state progression).
-* Styling of win/loss colors (decision pending; see §Open Decisions).
+* Transient prompts (“Opponent is choosing…”, “Choose a stat”, countdown snackbars) → handled by Snackbar.
+* Timer ownership, scheduling, or auto-select → owned by Orchestrator/Engine.
+* Business/game logic (win conditions, stat comparisons, cooldown FSM).
+
+---
+
+## Responsibilities & Boundaries
+### Scoreboard responsibilities
+* Maintain a minimal ScoreboardState object.
+* Render DOM nodes deterministically from state.
+* Apply animation/accessibility rules to updates.
+* Provide a headless API (render, getState, destroy) for tests/CLI.
+
+### Explicit non-responsibilities
+* Starting, pausing, or resuming timers.
+* Emitting readiness or next-round events.
+* Computing scores, outcomes, or end conditions.
 
 ---
 
@@ -94,48 +110,61 @@ Players were previously confused by transient prompts overlapping persistent sta
 
 ---
 
-## 5. Event Model
+## 5. Event Taxonomy
+All events are emitted by Orchestrator (see [prdBattleEngine.md]) and consumed by Scoreboard:
+* display.round.start({ roundNumber })
+* display.round.message({ text, kind, lock?: boolean })
+* display.round.outcome({ result: 'win'|'loss'|'draw', text }) (implies lock=true)
+* display.message.clear()
+* display.timer.show({ role: 'selection'|'cooldown', secondsRemaining })
+* display.timer.tick({ secondsRemaining })
+* display.timer.hide()
+* display.score.update({ player, opponent, animate?: boolean })
+* display.readiness.update({ nextReady: boolean })
 
-The Scoreboard reacts to these domain/control events:
+### Event guarantees
+* Idempotent (safe to replay).
+* Order-stable (Orchestrator ensures only one active timer role at a time).
 
-* `roundStarted` → clears outcome, updates counter, syncs scores.
-* `roundResolved` → shows outcome with `{outcome:true}`; updates score; clears round counter at match end.
-* `scoreboardShowMessage` / `scoreboardClearMessage` → imperative UI hooks.
-* `countdownStart` (stat selection) → scoreboard timer starts via `updateTimer`.
-* `countdownFinished` → timer cleared; orchestrator may emit auto-select → triggers `showAutoSelect`.
-* `nextRoundTimerReady` → orchestrator marks `#next-button[data-next-ready="true"]` (Scoreboard does not own this).
-* Visibility events → pause/resume timers.
+---
+
+## State Model
+ScoreboardState (immutable, reduced by events):
+{
+  message: { text: string; kind: 'neutral'|'info'|'critical'|'win'|'loss'|'draw'; locked: boolean },
+  timer: { visible: boolean; secondsRemaining: number|null; role: 'selection'|'cooldown'|null },
+  round: { current: number; total?: number|null },
+  score: { player: number; opponent: number; animate: boolean },
+  readiness: { nextReady: boolean }
+}
+
+### Message precedence
+outcome|critical > info > neutral > placeholder.
+Outcome lock persists until next display.round.start or display.message.clear.
+
+--- 
+
+## 6. DOM Contract
+
+#round-message — status text; data-outcome="true" when locked.
+#next-round-timer — shows Time left: Xs.
+#round-counter — text Round N.
+#score-display — two spans [data-side="player"], [data-side="opponent"].
+#next-ready-badge — passive visual toggle; never focus-steals.
 
 ---
 
-## 6. DOM & ARIA Contract
+## Accessibility & Motion
 
-The Scoreboard reserves these IDs:
+Live regions
+* #round-message: role="status", aria-live="polite", aria-atomic="true".
+* #next-round-timer & #score-display: aria-live="polite", aria-atomic="true".
 
-* `#round-message`
+Announcement debouncing: coalesce updates within 250ms to prevent chatter.
+Reduced motion: respect prefers-reduced-motion; bypass animations.
+Contrast: ≥4.5:1 text/background, plus non-color cue for outcome states.
 
-  * Writes: `textContent`, `data-outcome`.
-  * ARIA: `aria-live="polite"`, `aria-atomic="true"`, `role="status"`.
-
-* `#next-round-timer`
-
-  * Writes: countdown text.
-  * ARIA: `aria-live="polite"`, `aria-atomic="true"`, `role="status"`.
-
-* `#round-counter`
-
-  * Writes: “Round N” text.
-  * ARIA: `aria-live="polite"`.
-
-* `#score-display`
-
-  * Contains two `<span>` children for player/opponent.
-  * ARIA: `aria-live="polite"`, `aria-atomic="true"`.
-  * Updates animated (500ms).
-
-* `#next-button[data-next-ready="true"]` – orchestrator-owned; Scoreboard observes contract but does not set.
-
----
+--- 
 
 ## 7. Behavioral Spec
 
@@ -159,6 +188,13 @@ The Scoreboard reserves these IDs:
 ---
 
 ## 9. Acceptance Criteria
+
+Render-only contract: Scoreboard never starts/stops timers or emits control events.
+Message precedence: outcome messages lock until round.start or message.clear.
+Timer behavior: shows/hides only on explicit events; never drives logic.
+Score animation: ≤500ms unless reduced-motion.
+Readiness badge: reflects state, passive only.
+A11y compliance: Live regions polite/atomic, contrast ≥4.5:1, reduced-motion tested.
 
 Feature: Battle Scoreboard — Acceptance Criteria
   As a player or assistive technology
@@ -228,6 +264,23 @@ Feature: Battle Scoreboard — Acceptance Criteria
     Given the orchestrator sets #next-button[data-next-ready="true"]
     When the scoreboard observes this state
     Then the scoreboard should (TBD) render/announce the readiness
+
+---
+
+## API Surface
+Factory
+* createScoreboard(container?: HTMLElement): Scoreboard
+Methods
+* render(patch: Partial<ScoreboardState>): void
+* getState(): Readonly<ScoreboardState>
+* destroy(): void
+
+---
+
+## Dependencies
+* Relies on Orchestrator for event emission (see [prdBattleEngine.md]).
+* Styling variables from shared CSS design system.
+* Snackbar handles transient prompts.
 
 ---
 
