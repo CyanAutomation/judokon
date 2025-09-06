@@ -5,9 +5,12 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { prepareSearchUi, getSelectedTags } from "./vectorSearchPage/queryUi.js";
 import { renderResults } from "./vectorSearchPage/renderResults.js";
-import { getExtractor, SIMILARITY_THRESHOLD, preloadExtractor } from "./api/vectorSearchPage.js";
+import { preloadExtractor } from "./api/vectorSearchPage.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 import { createSpinner } from "../components/Spinner.js";
+import { buildQueryVector } from "./vectorSearchPage/buildQueryVector.js";
+import { selectTopMatches } from "./vectorSearchPage/selectTopMatches.js";
+import { applyResultsState } from "./vectorSearchPage/resultsState.js";
 
 let spinner;
 let resolveResultsPromise;
@@ -56,75 +59,6 @@ async function loadResultContext(el) {
 }
 
 /**
- * Expand the query and generate its vector representation.
- *
- * @pseudocode
- * 1. Split the original query into lowercase terms.
- * 2. Expand the query with domain-specific synonyms.
- * 3. Obtain the feature extractor and generate a mean-pooled embedding.
- *    - Ensure the result or its `data` property is iterable before conversion.
- * 4. Return the original terms along with the resulting vector.
- *
- * @param {string} query - Raw query string from the user.
- * @returns {Promise<{terms: string[], vector: number[]}>} Processed query data.
- */
-function isIterable(value) {
-  return value !== null && value !== undefined && typeof value[Symbol.iterator] === "function";
-}
-
-async function buildQueryVector(query) {
-  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const expanded = await vectorSearch.expandQueryWithSynonyms(query);
-  const model = await getExtractor();
-  const result = await model(expanded, { pooling: "mean" });
-  let source;
-  if (result && typeof result === "object" && "data" in result) {
-    if (!isIterable(result.data)) {
-      throw new TypeError("Extractor result.data is not iterable");
-    }
-    source = result.data;
-  } else {
-    if (!isIterable(result)) {
-      throw new TypeError("Extractor result is not iterable");
-    }
-    source = result;
-  }
-  const vector = Array.from(source);
-  return { terms, vector };
-}
-
-/**
- * Select the matches to display and expose strong matches for messaging.
- *
- * @pseudocode
- * 1. Divide matches into strong and weak groups by `SIMILARITY_THRESHOLD`.
- * 2. If multiple strong matches exist and the score gap between the top two
- *    exceeds `DROP_OFF_THRESHOLD`, keep only the top match.
- * 3. If no strong matches, return the top three weak ones.
- * 4. Return both the strong list and the final selection.
- *
- * @param {Array<{score:number}>} matches - All matches sorted by score.
- * @returns {{strongMatches: Array, toRender: Array}} Partitioned selections.
- */
-function selectTopMatches(matches) {
-  const DROP_OFF_THRESHOLD = 0.4;
-  const strongMatches = matches.filter((m) => m.score >= SIMILARITY_THRESHOLD);
-  const weakMatches = matches.filter((m) => m.score < SIMILARITY_THRESHOLD);
-  let toRender;
-  if (
-    strongMatches.length > 1 &&
-    strongMatches[0].score - strongMatches[1].score > DROP_OFF_THRESHOLD
-  ) {
-    toRender = [strongMatches[0]];
-  } else if (strongMatches.length > 0) {
-    toRender = strongMatches;
-  } else {
-    toRender = weakMatches.slice(0, 3);
-  }
-  return { strongMatches, toRender };
-}
-
-/**
  * Handle the vector search form submission.
  *
  * @pseudocode
@@ -138,26 +72,6 @@ function selectTopMatches(matches) {
  * 7. On error, log the issue, hide the spinner, and display a fallback message.
  *
  * @param {Event} event - The submit event from the form.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 /**
  * Handle the vector search form submission and orchestrate the UI flow.
@@ -181,25 +95,35 @@ export async function handleSearch(event) {
   });
   const { query, tbody, messageEl } = prepareSearchUi();
   if (!query) {
-    finalizeSearchUi(messageEl);
+    applyResultsState(spinner, messageEl, "results");
     resolveResultsPromise?.();
     return;
   }
   const selected = getSelectedTags();
-  showSearching(messageEl);
+  applyResultsState(spinner, messageEl, "loading");
   try {
     const { terms, vector } = await buildQueryVector(query);
     const matches = await vectorSearch.findMatches(vector, 5, selected, query);
-    finalizeSearchUi(messageEl);
-    if (handleNoMatches(matches, messageEl)) {
+    if (matches === null) {
+      applyResultsState(
+        spinner,
+        messageEl,
+        "error",
+        "Embeddings could not be loaded – please check console."
+      );
       resolveResultsPromise?.();
       return;
     }
+    if (matches.length === 0) {
+      applyResultsState(spinner, messageEl, "empty");
+      resolveResultsPromise?.();
+      return;
+    }
+    applyResultsState(spinner, messageEl, "results");
     renderSearchResults(tbody, messageEl, matches, terms);
   } catch (err) {
     console.error("Search failed", err);
-    spinner.hide();
-    if (messageEl) messageEl.textContent = "An error occurred while searching.";
+    applyResultsState(spinner, messageEl, "error");
     resolveResultsPromise?.();
   }
 }
@@ -228,39 +152,6 @@ function renderSearchResults(tbody, messageEl, matches, terms) {
   queueMicrotask(() => resolveResultsPromise?.());
 }
 
-function showSearching(messageEl) {
-  spinner.show();
-  if (messageEl) {
-    messageEl.textContent = "Searching...";
-    messageEl.classList.remove("search-result-empty");
-  }
-}
-
-function finalizeSearchUi(messageEl) {
-  if (messageEl) {
-    messageEl.textContent = "";
-    messageEl.classList.remove("search-result-empty");
-  }
-  spinner.hide();
-}
-
-function handleNoMatches(matches, messageEl) {
-  if (matches === null) {
-    if (messageEl) {
-      messageEl.textContent = "Embeddings could not be loaded – please check console.";
-    }
-    return true;
-  }
-  if (matches.length === 0) {
-    if (messageEl) {
-      messageEl.textContent = "No close matches found — refine your query.";
-      messageEl.classList.add("search-result-empty");
-    }
-    return true;
-  }
-  return false;
-}
-
 /**
  * Initialize event handlers for the Vector Search page.
  *
@@ -273,26 +164,6 @@ function handleNoMatches(matches, messageEl) {
  * 5. Populate the tag filter dropdown with unique tags.
  * 6. Display the embedding count in the header.
  * 7. Attach `handleSearch` to the form and intercept Enter key submissions.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 /**
  * Initialize the Vector Search page: preload models, load embeddings, and wire UI handlers.
