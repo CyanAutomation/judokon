@@ -305,7 +305,9 @@ export function bindRoundUIEventHandlersDynamic() {
       // Fallback sequential updates when the orchestrator is not running
       try {
         const { isOrchestrated } = await import("./roundManager.js");
-        const { computeNextRoundCooldown } = await import("./../timers/computeNextRoundCooldown.js");
+        const { computeNextRoundCooldown } = await import(
+          "./../timers/computeNextRoundCooldown.js"
+        );
         const { updateSnackbar } = await import("../showSnackbar.js");
         const secs = computeNextRoundCooldown();
         const orchestrated = (() => {
