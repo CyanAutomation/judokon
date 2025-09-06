@@ -36,6 +36,7 @@ import { SNACKBAR_REMOVE_MS } from "../helpers/constants.js";
 import { registerModal, unregisterModal, onEsc } from "../helpers/modalManager.js";
 import state, { resolveEscapeHandled, getEscapeHandledPromise } from "./battleCLI/state.js";
 import { onKeyDown } from "./battleCLI/events.js";
+import { registerBattleHandlers } from "./battleCLI/battleHandlers.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -171,7 +172,6 @@ export const __test = {
   handleRoundResolved,
   handleMatchOver,
   handleBattleState,
-  onKeyDown,
   handleWaitingForPlayerActionKey
 };
 /**
@@ -1376,6 +1376,14 @@ export function handleCooldownKey(key) {
   }
   return false;
 }
+
+registerBattleHandlers({
+  handleGlobalKey,
+  handleWaitingForPlayerActionKey,
+  handleRoundOverKey,
+  handleCooldownKey,
+  handleStatListArrowKey
+});
 
 /**
  * Global keyboard handler that routes input based on the current battle state.

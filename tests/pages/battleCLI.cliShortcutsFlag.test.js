@@ -11,7 +11,8 @@ describe("battleCLI cliShortcuts flag", () => {
     await mod.init();
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(true);
-    mod.onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    const { onKeyDown } = await import("../../src/pages/index.js");
+    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
     expect(sec.hidden).toBe(true);
   });
 
@@ -20,7 +21,8 @@ describe("battleCLI cliShortcuts flag", () => {
     await mod.init();
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(true);
-    mod.onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    const { onKeyDown } = await import("../../src/pages/index.js");
+    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
     expect(sec.hidden).toBe(false);
   });
 });

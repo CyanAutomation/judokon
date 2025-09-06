@@ -14,8 +14,8 @@ describe("battleCLI accessibility", () => {
 
     it("shifts focus between stat list and next prompt", async () => {
       const mod = await loadBattleCLI();
-      await mod.__test.renderStatList();
-      mod.__test.installEventBindings();
+      await mod.renderStatList();
+      mod.installEventBindings();
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
       emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
       expect(document.activeElement?.id).toBe("cli-stats");
@@ -47,15 +47,16 @@ describe("battleCLI accessibility", () => {
       expect(rows[0].tabIndex).toBe(0);
       expect(rows[1].tabIndex).toBe(-1);
       list.focus();
-      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      const { onKeyDown } = await import("../../src/pages/index.js");
+      onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
       expect(document.activeElement).toBe(rows[0]);
-      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
       expect(document.activeElement).toBe(rows[1]);
-      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+      onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
       expect(document.activeElement).toBe(rows[0]);
-      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
+      onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
       expect(document.activeElement).toBe(rows[2]);
-      mod.onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+      onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
       expect(document.activeElement).toBe(rows[0]);
       expect(list.getAttribute("aria-activedescendant")).toBe(rows[0].id);
     });
