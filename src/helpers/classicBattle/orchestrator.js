@@ -20,6 +20,7 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 import { preloadTimerUtils } from "../TimerController.js";
 import stateCatalog from "./stateCatalog.js";
+import { initScoreboardAdapter } from "./scoreboardAdapter.js";
 
 let machine = null;
 let debugLogListener = null;
@@ -120,6 +121,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   // Ensure UI service listeners are bound before emitting any init events
   try {
     await import("./uiService.js");
+  } catch {}
+  // Initialize Scoreboard adapter to listen for display.* events (no-op if none)
+  try {
+    initScoreboardAdapter();
   } catch {}
   const { resetGame: resetGameOpt, startRound: startRoundOpt, onStateChange } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;

@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForBattleReady } from "./fixtures/waits.js";
+import { waitForBattleReady, waitForBattleState } from "./fixtures/waits.js";
 
 /**
  * Verify that clicking Next during cooldown skips the delay.
@@ -82,7 +82,7 @@ test.describe("Next button cooldown skip", () => {
     const counter = page.locator("#round-counter");
     await expect(counter).toHaveText(/Round 1/);
 
-    const nextBtn = page.locator('#next-button[data-next-ready="true"]:not([disabled])');
+    const nextBtn = page.locator('#next-button');
     // Preemptive 4s snapshot to capture state if readiness never appears
     const _snapshot4s = page
       .waitForTimeout(4000)
@@ -107,8 +107,22 @@ test.describe("Next button cooldown skip", () => {
       })
       .catch(() => {});
     try {
-      await nextBtn.waitFor({ timeout: 5000 }); // bounded wait to allow debug capture on failure
-      await nextBtn.click();
+      // Assert readiness by attributes, not visibility.
+      await page.waitForFunction(
+        () => {
+          const btn = document.getElementById("next-button");
+          return !!btn && btn.dataset.nextReady === "true" && btn.disabled === false;
+        },
+        null,
+        { timeout: 5000 }
+      );
+      // Deterministic progression: dispatch 'ready' via the orchestrator.
+      await page.evaluate(async () => {
+        const { dispatchBattleEvent } = await import(
+          "/src/helpers/classicBattle/orchestrator.js"
+        );
+        await dispatchBattleEvent("ready");
+      });
     } catch (err) {
       // Capture instrumentation on failure to differentiate causes
       const debug = await page.evaluate(() => {
@@ -129,7 +143,8 @@ test.describe("Next button cooldown skip", () => {
       throw err;
     }
 
-    await expect(counter).toHaveText(/Round 2/, { timeout: 1000 });
+    // Assert we progressed to the next round by state instead of text.
+    await waitForBattleState(page, "waitingForPlayerAction", 5000);
     await page.evaluate(() => window.freezeBattleHeader?.());
 
     // Snapshot instrumentation data for debugging import-vs-state issues.

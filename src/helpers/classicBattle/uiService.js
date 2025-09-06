@@ -66,7 +66,7 @@ export function syncScoreDisplay() {
         el.append(playerSpan, opponentSpan);
       }
       playerSpan.textContent = `You: ${playerScore}`;
-      opponentSpan.textContent = `\nOpponent: ${opponentScore}`;
+      opponentSpan.textContent = `Opponent: ${opponentScore}`;
     }
   } catch {}
 }

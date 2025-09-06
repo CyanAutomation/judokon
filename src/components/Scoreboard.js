@@ -15,6 +15,32 @@ let messageEl,
   currentPlayer = 0,
   currentOpponent = 0;
 
+// Debounce window for aria-live updates to reduce announcement chatter.
+let announceDelayMs = 200;
+const announceTimers = new WeakMap();
+let outcomeLockUntil = 0;
+
+function setLiveText(el, text) {
+  if (!el) return;
+  try {
+    if (announceDelayMs <= 0) {
+      el.textContent = text;
+      return;
+    }
+    const prev = announceTimers.get(el);
+    if (prev) clearTimeout(prev);
+    const id = setTimeout(() => {
+      el.textContent = text;
+      announceTimers.delete(el);
+    }, announceDelayMs);
+    announceTimers.set(el, id);
+  } catch {
+    try {
+      el.textContent = text;
+    } catch {}
+  }
+}
+
 /**
  * Create a battle scoreboard showing round messages, stat-selection timer, round counter and score.
  *
@@ -163,11 +189,18 @@ function setScoreText(player, opponent) {
     const doc = typeof document !== "undefined" ? document : null;
     if (!doc) return;
     playerSpan = doc.createElement("span");
+    playerSpan.setAttribute("data-side", "player");
     opponentSpan = doc.createElement("span");
+    opponentSpan.setAttribute("data-side", "opponent");
     scoreEl.append(playerSpan, opponentSpan);
   }
+  try {
+    if (!playerSpan.getAttribute("data-side")) playerSpan.setAttribute("data-side", "player");
+    if (!opponentSpan.getAttribute("data-side"))
+      opponentSpan.setAttribute("data-side", "opponent");
+  } catch {}
   playerSpan.textContent = `You: ${player}`;
-  opponentSpan.textContent = `\nOpponent: ${opponent}`;
+  opponentSpan.textContent = `Opponent: ${opponent}`;
 }
 
 function animateScore(startPlayer, startOpponent, playerTarget, opponentTarget) {
@@ -209,13 +242,23 @@ export function showMessage(text, opts = {}) {
   if (el) {
     try {
       const isTransient = String(text) === "Waiting…";
+      // Block overwrites of an outcome message within the minimum persistence window
+      if (el.dataset.outcome === "true") {
+        if (Date.now() < outcomeLockUntil) {
+          return;
+        }
+        if (isTransient) {
+          return;
+        }
+      }
       if (isTransient && el.dataset.outcome === "true") {
         return;
       }
     } catch {}
-    el.textContent = text;
+    setLiveText(el, text);
     if (outcome) {
       el.dataset.outcome = "true";
+      outcomeLockUntil = Date.now() + 1000;
     } else {
       delete el.dataset.outcome;
     }
@@ -237,9 +280,10 @@ export function clearMessage() {
   if (!doc) return;
   const el = doc.getElementById("round-message") || messageEl;
   if (el) {
-    el.textContent = "";
+    setLiveText(el, "");
     delete el.dataset.outcome;
     messageEl = el;
+    outcomeLockUntil = 0;
   }
 }
 
@@ -258,7 +302,7 @@ export function showTemporaryMessage(text) {
   // Return a closure that only clears the message if it matches the one set by this call
   return function () {
     if (messageEl && messageEl.textContent === text) {
-      messageEl.textContent = "";
+      setLiveText(messageEl, "");
     }
   };
 }
@@ -291,10 +335,10 @@ export function updateTimer(seconds) {
   ensureRefs();
   if (!timerEl) return;
   if (seconds <= 0) {
-    timerEl.textContent = "";
+    setLiveText(timerEl, "");
     return;
   }
-  timerEl.textContent = `Time Left: ${seconds}s`;
+  setLiveText(timerEl, `Time Left: ${seconds}s`);
 }
 
 /**
@@ -308,7 +352,7 @@ export function updateTimer(seconds) {
 export function clearTimer() {
   ensureRefs();
   if (timerEl) {
-    timerEl.textContent = "";
+    setLiveText(timerEl, "");
   }
 }
 
@@ -325,7 +369,7 @@ export function clearTimer() {
 export function updateRoundCounter(current) {
   ensureRefs();
   if (roundCounterEl) {
-    roundCounterEl.textContent = `Round ${current}`;
+    setLiveText(roundCounterEl, `Round ${current}`);
   }
 }
 

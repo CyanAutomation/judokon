@@ -124,19 +124,19 @@ describe("classicBattle stat selection", () => {
       playerValue: 3,
       opponentValue: 3,
       expectedMessage: /Tie/,
-      expectedScore: "You: 0\nOpponent: 0"
+      expectedScore: "You: 0Opponent: 0"
     },
     {
       playerValue: 5,
       opponentValue: 3,
       expectedMessage: /You win the round/,
-      expectedScore: "You: 1\nOpponent: 0"
+      expectedScore: "You: 1Opponent: 0"
     },
     {
       playerValue: 3,
       opponentValue: 5,
       expectedMessage: /Opponent wins the round/,
-      expectedScore: "You: 0\nOpponent: 1"
+      expectedScore: "You: 0Opponent: 1"
     }
   ])(
     "handles outcome when player=$playerValue and opponent=$opponentValue",

@@ -237,3 +237,56 @@ Phase 0 — Execution Summary
   - Scoreboard hooks now activate in production boot, aligning with PRD visibility pause/resume requirement.
 
 Milestone reached — awaiting review before proceeding to Phase 1 (Event Adapter).
+
+Phase 1 — Execution Summary (Event Adapter)
+
+- Actions taken:
+  - Implemented `src/helpers/classicBattle/scoreboardAdapter.js` to listen for `display.*` events and map them to Scoreboard API calls (message, outcome, timer show/tick/hide, score, round start → counter).
+  - Initialized adapter in `src/helpers/classicBattle/orchestrator.js` (`initScoreboardAdapter()` during orchestrator init). Safe no-op until `display.*` events exist.
+  - Added focused unit test `tests/helpers/scoreboard.adapter.test.js` using the battle event bus to emit `display.*` events and assert DOM updates.
+- Targeted tests run:
+  - `npx vitest run tests/helpers/scoreboard.adapter.test.js` — PASS (1/1)
+- Outcome:
+  - Adapter correctly updates scoreboard elements in response to PRD `display.*` events.
+  - No regressions expected; adapter is additive and idempotent.
+
+Milestone reached — awaiting review before proceeding to Phase 2 (DOM Contract Tightening).
+
+Phase 2 — Execution Summary (DOM Contract Tightening)
+
+- Actions taken:
+  - Score spans now carry side metadata and no newline:
+    - `src/components/Scoreboard.js`: `setScoreText` sets `[data-side="player"|"opponent"]` and removes the newline between spans.
+  - Added passive readiness badge container:
+    - `src/pages/battleJudoka.html`: inserted `<span id="next-ready-badge" aria-hidden="true" hidden></span>` next to `#score-display`.
+  - Updated unit tests to assert new DOM contract (no newline, data-side present):
+    - `tests/components/Scoreboard.test.js` adjusted expectations to query spans by `[data-side]`.
+- Targeted tests run:
+  - `npx vitest run tests/components/Scoreboard.test.js` — PASS (6/6)
+  - `npx vitest run tests/helpers/scoreboard.adapter.test.js` — PASS (1/1)
+  - `npx vitest run tests/helpers/scoreboard.integration.test.js -t "renders messages, score, round counter, and round timer without init"` — PASS (1/1)
+- Outcome:
+  - DOM contract now matches PRD requirements for score spans and readiness badge placeholder without regressions in targeted areas.
+
+Milestone reached — awaiting review before proceeding to Phase 3 (Message Persistence + Debounce).
+
+Phase 3 — Execution Summary (Message Persistence + Debounce)
+
+- Actions taken:
+  - Outcome persistence (≥1s):
+    - `src/components/Scoreboard.js`: outcome messages now set an internal `outcomeLockUntil` and block overwrites (including placeholders) until the 1s window elapses or explicit clear/round start.
+  - Announcement debouncing (~200ms):
+    - `src/components/Scoreboard.js`: introduced `setLiveText` to coalesce rapid updates in `#round-message`, `#next-round-timer`, and `#round-counter`.
+    - Uses a 200ms window to reduce aria-live chatter; visual updates remain consistent.
+  - Tests added/updated:
+    - New: `tests/components/Scoreboard.persistence.test.js` — verifies 1s block for outcome messages.
+    - New: `tests/components/Scoreboard.debounce.test.js` — verifies coalescing for message and timer.
+    - Updated: `tests/components/Scoreboard.test.js` — adjusted to account for debounced updates and 1s outcome lock behavior.
+- Targeted tests run:
+  - `npx vitest run tests/components/Scoreboard.persistence.test.js` — PASS (1/1)
+  - `npx vitest run tests/components/Scoreboard.debounce.test.js` — PASS (2/2)
+  - `npx vitest run tests/components/Scoreboard.test.js` — PASS (6/6)
+- Outcome:
+  - Scoreboard now meets PRD requirements for minimum outcome visibility and announcement coalescing without regressions in targeted areas.
+
+Milestone reached — awaiting review before proceeding to Phase 4 (Headless API Surface).
