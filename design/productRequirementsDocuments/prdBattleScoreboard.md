@@ -6,10 +6,10 @@
 
 The **Battle Scoreboard** is a **UI-only reflector** that displays **persistent battle information** in the header:
 
-* round outcome/status messages,
-* stat selection or inter-round timer (ticks only),
-* round counter,
-* current match score,
+- round outcome/status messages,
+- stat selection or inter-round timer (ticks only),
+- round counter,
+- current match score,
 
 It holds **no game logic** and does not emit events; it reacts to events from the **Battle Engine/Orchestrator**.
 **Contextual or transient prompts** (e.g. “Opponent is choosing…”, “Select a stat”) are explicitly **handled by the Snackbar** (see [prdSnackbar.md](prdSnackbar.md)).
@@ -33,32 +33,36 @@ Players were previously confused by transient prompts overlapping persistent sta
 
 **In scope**
 Rendering of persistent scoreboard elements:
-* round message (with precedence/locking),
-* timer (read-only ticks),
-* round counter,
-* score display,
-* Accessibility (live regions, reduced-motion compliance, color/contrast).
-* Deterministic rendering rules, idempotent updates.
+
+- round message (with precedence/locking),
+- timer (read-only ticks),
+- round counter,
+- score display,
+- Accessibility (live regions, reduced-motion compliance, color/contrast).
+- Deterministic rendering rules, idempotent updates.
 
 **Out of scope**
 
-* Transient prompts (“Opponent is choosing…”, “Choose a stat”, countdown snackbars) → handled by Snackbar.
-* Timer ownership, scheduling, or auto-select → owned by Orchestrator/Engine.
-* Business/game logic (win conditions, stat comparisons, cooldown FSM).
+- Transient prompts (“Opponent is choosing…”, “Choose a stat”, countdown snackbars) → handled by Snackbar.
+- Timer ownership, scheduling, or auto-select → owned by Orchestrator/Engine.
+- Business/game logic (win conditions, stat comparisons, cooldown FSM).
 
 ---
 
 ## Responsibilities & Boundaries
+
 ### Scoreboard responsibilities
-* Maintain a minimal ScoreboardState object.
-* Render DOM nodes deterministically from state.
-* Apply animation/accessibility rules to updates.
-* Provide a headless API (render, getState, destroy) for tests/CLI.
+
+- Maintain a minimal ScoreboardState object.
+- Render DOM nodes deterministically from state.
+- Apply animation/accessibility rules to updates.
+- Provide a headless API (render, getState, destroy) for tests/CLI.
 
 ### Explicit non-responsibilities
-* Starting, pausing, or resuming timers.
-* Emitting readiness or next-round events.
-* Computing scores, outcomes, or end conditions.
+
+- Starting, pausing, or resuming timers.
+- Emitting readiness or next-round events.
+- Computing scores, outcomes, or end conditions.
 
 ---
 
@@ -66,83 +70,88 @@ Rendering of persistent scoreboard elements:
 
 **Priority: P1**
 
-* `createScoreboard(container?: HTMLElement) -> HTMLElement`
+- `createScoreboard(container?: HTMLElement) -> HTMLElement`
 
 **Priority: P1**
 
-* `initScoreboard(container: HTMLElement | null, controls: {startCoolDown, pauseTimer, resumeTimer, scheduler}) -> void`
+- `initScoreboard(container: HTMLElement | null, controls: {startCoolDown, pauseTimer, resumeTimer, scheduler}) -> void`
 
 **Priority: P1**
 
-* `showMessage(text: string, opts?: {outcome?: boolean})`
+- `showMessage(text: string, opts?: {outcome?: boolean})`
 
 **Priority: P1**
 
-* `clearMessage()`
+- `clearMessage()`
 
 **Priority: P1**
 
-* `showTemporaryMessage(text: string) -> Function`
+- `showTemporaryMessage(text: string) -> Function`
 
 **Priority: P1**
 
-* `showAutoSelect(stat: string)`
+- `showAutoSelect(stat: string)`
 
 **Priority: P1**
 
-* `updateTimer(seconds: number)`
+- `updateTimer(seconds: number)`
 
 **Priority: P1**
 
-* `clearTimer()`
+- `clearTimer()`
 
 **Priority: P2**
 
-* `updateRoundCounter(current: number)`
+- `updateRoundCounter(current: number)`
 
 **Priority: P2**
 
-* `clearRoundCounter()`
+- `clearRoundCounter()`
 
 **Priority: P2**
 
-* `updateScore(playerScore: number, opponentScore: number)`
+- `updateScore(playerScore: number, opponentScore: number)`
 
 ---
 
 ## 5. Event Taxonomy
+
 All events are emitted by Orchestrator (see [prdBattleEngine.md]) and consumed by Scoreboard:
-* display.round.start({ roundNumber })
-* display.round.message({ text, kind, lock?: boolean })
-* display.round.outcome({ result: 'win'|'loss'|'draw', text }) (implies lock=true)
-* display.message.clear()
-* display.timer.show({ role: 'selection'|'cooldown', secondsRemaining })
-* display.timer.tick({ secondsRemaining })
-* display.timer.hide()
-* display.score.update({ player, opponent, animate?: boolean })
-* display.readiness.update({ nextReady: boolean })
+
+- display.round.start({ roundNumber })
+- display.round.message({ text, kind, lock?: boolean })
+- display.round.outcome({ result: 'win'|'loss'|'draw', text }) (implies lock=true)
+- display.message.clear()
+- display.timer.show({ role: 'selection'|'cooldown', secondsRemaining })
+- display.timer.tick({ secondsRemaining })
+- display.timer.hide()
+- display.score.update({ player, opponent, animate?: boolean })
+- display.readiness.update({ nextReady: boolean })
 
 ### Event guarantees
-* Idempotent (safe to replay).
-* Order-stable (Orchestrator ensures only one active timer role at a time).
+
+- Idempotent (safe to replay).
+- Order-stable (Orchestrator ensures only one active timer role at a time).
 
 ---
 
 ## State Model
+
 ScoreboardState (immutable, reduced by events):
 {
-  message: { text: string; kind: 'neutral'|'info'|'critical'|'win'|'loss'|'draw'; locked: boolean },
-  timer: { visible: boolean; secondsRemaining: number|null; role: 'selection'|'cooldown'|null },
-  round: { current: number; total?: number|null },
-  score: { player: number; opponent: number; animate: boolean },
-  readiness: { nextReady: boolean }
+message: { text: string; kind: 'neutral'|'info'|'critical'|'win'|'loss'|'draw'; locked: boolean },
+timer: { visible: boolean; secondsRemaining: number|null; role: 'selection'|'cooldown'|null },
+round: { current: number; total?: number|null },
+score: { player: number; opponent: number; animate: boolean },
+readiness: { nextReady: boolean }
 }
 
 ### Message precedence
+
 outcome|critical > info > neutral > placeholder.
 Outcome lock persists until next display.round.start or display.message.clear.
 
---- 
+---
 
 ## 6. DOM Contract
 
@@ -157,33 +166,34 @@ Outcome lock persists until next display.round.start or display.message.clear.
 ## Accessibility & Motion
 
 Live regions
-* #round-message: role="status", aria-live="polite", aria-atomic="true".
-* #next-round-timer & #score-display: aria-live="polite", aria-atomic="true".
+
+- #round-message: role="status", aria-live="polite", aria-atomic="true".
+- #next-round-timer & #score-display: aria-live="polite", aria-atomic="true".
 
 Announcement debouncing: coalesce updates within 250ms to prevent chatter.
 Reduced motion: respect prefers-reduced-motion; bypass animations.
 Contrast: ≥4.5:1 text/background, plus non-color cue for outcome states.
 
---- 
+---
 
 ## 7. Behavioral Spec
 
-* Outcome messages: persist via `data-outcome="true"` and block placeholder overwrites.
-* Timer: "Time Left: Xs", visibility-based pause/resume, clears at 0, may trigger auto-select.
-* Score: animate within 500ms, skip if reduced-motion.
-* Fallbacks: show "Waiting..." within 500ms on sync drift, clear once resolved.
-* Next round: scoreboard does not announce `data-next-ready`; awaiting UX decision.
+- Outcome messages: persist via `data-outcome="true"` and block placeholder overwrites.
+- Timer: "Time Left: Xs", visibility-based pause/resume, clears at 0, may trigger auto-select.
+- Score: animate within 500ms, skip if reduced-motion.
+- Fallbacks: show "Waiting..." within 500ms on sync drift, clear once resolved.
+- Next round: scoreboard does not announce `data-next-ready`; awaiting UX decision.
 
 ---
 
 ## 8. Accessibility
 
-* All scoreboard text areas use `aria-live="polite"`.
-* Messages remain visible ≥1s.
-* Timer pauses/resumes on tab visibility.
-* Animations respect `prefers-reduced-motion`.
-* Contrast ratio ≥4.5:1.
-* Known gap: "Next ready" state not announced (open).
+- All scoreboard text areas use `aria-live="polite"`.
+- Messages remain visible ≥1s.
+- Timer pauses/resumes on tab visibility.
+- Animations respect `prefers-reduced-motion`.
+- Contrast ratio ≥4.5:1.
+- Known gap: "Next ready" state not announced (open).
 
 ---
 
@@ -197,105 +207,105 @@ Readiness badge: reflects state, passive only.
 A11y compliance: Live regions polite/atomic, contrast ≥4.5:1, reduced-motion tested.
 
 Feature: Battle Scoreboard — Acceptance Criteria
-  As a player or assistive technology
-  I want the scoreboard to behave accessibly and predictably
-  So that round messages, timers, and scores are clear and reliable
+As a player or assistive technology
+I want the scoreboard to behave accessibly and predictably
+So that round messages, timers, and scores are clear and reliable
 
-  Background:
-    Given a Scoreboard is created and initialized
+Background:
+Given a Scoreboard is created and initialized
 
-  @score @score-animation
-  Scenario: Score animates within 500ms when reduced-motion is not requested
-    Given the scoreboard shows player score "2" and opponent score "1"
-    And the user does not prefer reduced motion
-    When the orchestrator calls updateScore with playerScore "3" and opponentScore "1"
-    Then the visible score change animates
-    And the animation completes within 500 milliseconds
+@score @score-animation
+Scenario: Score animates within 500ms when reduced-motion is not requested
+Given the scoreboard shows player score "2" and opponent score "1"
+And the user does not prefer reduced motion
+When the orchestrator calls updateScore with playerScore "3" and opponentScore "1"
+Then the visible score change animates
+And the animation completes within 500 milliseconds
 
-  @score @reduced-motion
-  Scenario: Score updates instantly when prefers-reduced-motion is enabled
-    Given the scoreboard shows player score "2" and opponent score "1"
-    And the user prefers reduced motion
-    When the orchestrator calls updateScore with playerScore "3" and opponentScore "1"
-    Then the score updates instantly without animation
+@score @reduced-motion
+Scenario: Score updates instantly when prefers-reduced-motion is enabled
+Given the scoreboard shows player score "2" and opponent score "1"
+And the user prefers reduced motion
+When the orchestrator calls updateScore with playerScore "3" and opponentScore "1"
+Then the score updates instantly without animation
 
-  @timer @countdown
-  Scenario: Timer shows countdown text, updates per second and clears at zero
-    Given a countdown of 5 seconds is started via updateTimer
-    When 1 second passes
-    Then the next-round-timer shows "Time Left: 4s"
-    When 4 more seconds pass
-    Then the next-round-timer is cleared
+@timer @countdown
+Scenario: Timer shows countdown text, updates per second and clears at zero
+Given a countdown of 5 seconds is started via updateTimer
+When 1 second passes
+Then the next-round-timer shows "Time Left: 4s"
+When 4 more seconds pass
+Then the next-round-timer is cleared
 
-  @timer @visibility
-  Scenario: Timer pauses when tab is hidden and resumes when visible
-    Given a countdown of 10 seconds is started via updateTimer
-    When the document becomes hidden
-    Then the countdown pauses
-    When the document becomes visible again
-    Then the countdown resumes from where it paused
+@timer @visibility
+Scenario: Timer pauses when tab is hidden and resumes when visible
+Given a countdown of 10 seconds is started via updateTimer
+When the document becomes hidden
+Then the countdown pauses
+When the document becomes visible again
+Then the countdown resumes from where it paused
 
-  @outcome @persistence
-  Scenario: Outcome messages persist at least 1 second and block placeholders
-    Given the orchestrator calls showMessage "Player wins" with outcome=true
-    When a placeholder or transient message is emitted within 200ms
-    Then the #round-message retains "Player wins"
-    And #round-message has attribute data-outcome="true"
-    And the message remains visible for at least 1 second
+@outcome @persistence
+Scenario: Outcome messages persist at least 1 second and block placeholders
+Given the orchestrator calls showMessage "Player wins" with outcome=true
+When a placeholder or transient message is emitted within 200ms
+Then the #round-message retains "Player wins"
+And #round-message has attribute data-outcome="true"
+And the message remains visible for at least 1 second
 
-  @fallback @sync-drift
-  Scenario: "Waiting..." fallback appears within 500ms on sync drift
-    Given the scoreboard is awaiting sync confirmation
-    When sync drift is detected and unresolved
-    Then the scoreboard shows "Waiting..." within 500 milliseconds
-    And the "Waiting..." message is cleared when sync is resolved
+@fallback @sync-drift
+Scenario: "Waiting..." fallback appears within 500ms on sync drift
+Given the scoreboard is awaiting sync confirmation
+When sync drift is detected and unresolved
+Then the scoreboard shows "Waiting..." within 500 milliseconds
+And the "Waiting..." message is cleared when sync is resolved
 
-  @accessibility @wcag
-  Scenario: Scoreboard elements meet WCAG 2.1 AA requirements
-    Given the scoreboard is rendered
-    Then each live region has the proper ARIA attributes (aria-live="polite", aria-atomic="true" where required, role="status" for #round-message)
-    And text contrast ratios for visible text are >= 4.5:1
+@accessibility @wcag
+Scenario: Scoreboard elements meet WCAG 2.1 AA requirements
+Given the scoreboard is rendered
+Then each live region has the proper ARIA attributes (aria-live="polite", aria-atomic="true" where required, role="status" for #round-message)
+And text contrast ratios for visible text are >= 4.5:1
 
-  @next-ready @pending
-  Scenario: data-next-ready rendering and announcement (pending)
-    # This scenario is intentionally left pending until UX decision is made:
-    # - Who announces next-ready: Scoreboard or Snackbar
-    # - Exact announcement text and timing
-    Given the orchestrator sets #next-button[data-next-ready="true"]
-    When the scoreboard observes this state
-    Then the scoreboard should (TBD) render/announce the readiness
+@next-ready @pending
+Scenario: data-next-ready rendering and announcement (pending) # This scenario is intentionally left pending until UX decision is made: # - Who announces next-ready: Scoreboard or Snackbar # - Exact announcement text and timing
+Given the orchestrator sets #next-button[data-next-ready="true"]
+When the scoreboard observes this state
+Then the scoreboard should (TBD) render/announce the readiness
 
 ---
 
 ## API Surface
+
 Factory
-* createScoreboard(container?: HTMLElement): Scoreboard
-Methods
-* render(patch: Partial<ScoreboardState>): void
-* getState(): Readonly<ScoreboardState>
-* destroy(): void
+
+- createScoreboard(container?: HTMLElement): Scoreboard
+  Methods
+- render(patch: Partial<ScoreboardState>): void
+- getState(): Readonly<ScoreboardState>
+- destroy(): void
 
 ---
 
 ## Dependencies
-* Relies on Orchestrator for event emission (see [prdBattleEngine.md]).
-* Styling variables from shared CSS design system.
-* Snackbar handles transient prompts.
+
+- Relies on Orchestrator for event emission (see [prdBattleEngine.md]).
+- Styling variables from shared CSS design system.
+- Snackbar handles transient prompts.
 
 ---
 
 ## 10. Open Decisions
 
-* **Win/loss color coding**: Implement win=green, loss=red, neutral=grey **or** confirm neutral-only scheme.
-* **Next readiness announcement**: Decide if Scoreboard or Snackbar will announce it.
+- **Win/loss color coding**: Implement win=green, loss=red, neutral=grey **or** confirm neutral-only scheme.
+- **Next readiness announcement**: Decide if Scoreboard or Snackbar will announce it.
 
 ---
 
 ## 11. Cross-References
 
-* [Classic Battle PRD](prdBattleClassic.md)
-* [Snackbar PRD](prdSnackbar.md)
-* [Battle State Indicator PRD](prdBattleStateIndicator.md)
+- [Classic Battle PRD](prdBattleClassic.md)
+- [Snackbar PRD](prdSnackbar.md)
+- [Battle State Indicator PRD](prdBattleStateIndicator.md)
 
 ---
 
