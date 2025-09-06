@@ -1,16 +1,22 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setupHamburger } from "../../src/helpers/navigation/navigationUI.js";
 
 describe("setupHamburger", () => {
   let cleanup;
+  let addSpy;
+  let removeSpy;
 
   beforeEach(() => {
     document.body.innerHTML = '<nav class="bottom-navbar"><ul><li></li></ul></nav>';
     window.innerWidth = 320;
     cleanup = () => {};
+    addSpy = undefined;
+    removeSpy = undefined;
   });
 
   afterEach(() => {
+    addSpy?.mockRestore();
+    removeSpy?.mockRestore();
     cleanup();
   });
 
@@ -30,5 +36,26 @@ describe("setupHamburger", () => {
     window.innerWidth = 1024;
     window.dispatchEvent(new Event("resize"));
     expect(document.querySelector(".nav-toggle")).toBeNull();
+  });
+
+  it("cleanup removes the button and listeners", () => {
+    cleanup = setupHamburger();
+    addSpy = vi.spyOn(window, "addEventListener");
+    removeSpy = vi.spyOn(window, "removeEventListener");
+    const button = document.querySelector(".nav-toggle");
+    expect(button).toBeTruthy();
+    cleanup();
+    expect(removeSpy).toHaveBeenCalledWith("resize", expect.any(Function));
+    expect(addSpy).not.toHaveBeenCalled();
+    expect(document.querySelector(".nav-toggle")).toBeNull();
+  });
+
+  it("does not duplicate button on multiple resizes", () => {
+    cleanup = setupHamburger();
+    for (let i = 0; i < 3; i++) {
+      window.innerWidth = 320;
+      window.dispatchEvent(new Event("resize"));
+    }
+    expect(document.querySelectorAll(".nav-toggle").length).toBe(1);
   });
 });
