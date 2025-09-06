@@ -29,7 +29,9 @@ export async function loadBattleCLI(options = {}) {
     html = "",
     url,
     stats = [],
-    battleStats = []
+    battleStats = [],
+    mockBattleEvents = true,
+    mockBattleEngine = true
   } = options;
 
   const baseHtml = `
@@ -93,53 +95,57 @@ export async function loadBattleCLI(options = {}) {
   vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
     initClassicBattleOrchestrator: vi.fn()
   }));
-  // Provide a functional in-memory event bus for battle events so the page
-  // can react to emitted events in tests (focus, countdown, etc.).
-  const battleBus = new EventTarget();
-  vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => {
-    const onBattleEvent = vi.fn((type, handler) => {
-      try {
-        battleBus.addEventListener(type, handler);
-      } catch {}
-    });
-    const offBattleEvent = vi.fn((type, handler) => {
-      try {
-        battleBus.removeEventListener(type, handler);
-      } catch {}
-    });
-    const emitBattleEvent = vi.fn((type, detail) => {
-      try {
-        battleBus.dispatchEvent(new CustomEvent(type, { detail }));
-      } catch {}
-    });
-    const getBattleEventTarget = vi.fn(() => battleBus);
-    const __resetBattleEventTarget = vi.fn(() => {
-      // Replace the bus with a fresh one so subsequent tests don't share listeners
+  if (mockBattleEvents) {
+    // Provide a functional in-memory event bus for battle events so the page
+    // can react to emitted events in tests (focus, countdown, etc.).
+    const battleBus = new EventTarget();
+    vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => {
+      const onBattleEvent = vi.fn((type, handler) => {
+        try {
+          battleBus.addEventListener(type, handler);
+        } catch {}
+      });
+      const offBattleEvent = vi.fn((type, handler) => {
+        try {
+          battleBus.removeEventListener(type, handler);
+        } catch {}
+      });
+      const emitBattleEvent = vi.fn((type, detail) => {
+        try {
+          battleBus.dispatchEvent(new CustomEvent(type, { detail }));
+        } catch {}
+      });
+      const getBattleEventTarget = vi.fn(() => battleBus);
+      const __resetBattleEventTarget = vi.fn(() => {
+        // Replace the bus with a fresh one so subsequent tests don't share listeners
 
-      while (true) {
-        // EventTarget does not expose listeners; callers will rebind on next import
-        break;
-      }
+        while (true) {
+          // EventTarget does not expose listeners; callers will rebind on next import
+          break;
+        }
+      });
+      return {
+        onBattleEvent,
+        offBattleEvent,
+        emitBattleEvent,
+        getBattleEventTarget,
+        __resetBattleEventTarget
+      };
     });
-    return {
-      onBattleEvent,
-      offBattleEvent,
-      emitBattleEvent,
-      getBattleEventTarget,
-      __resetBattleEventTarget
-    };
-  });
+  }
 
   vi.doMock("../../../src/helpers/BattleEngine.js", () => ({ STATS: battleStats }));
   let pts = pointsToWin;
-  vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
-    setPointsToWin: vi.fn((v) => {
-      pts = v;
-    }),
-    getPointsToWin: vi.fn(() => pts),
-    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
-    stopTimer: vi.fn()
-  }));
+  if (mockBattleEngine) {
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
+      setPointsToWin: vi.fn((v) => {
+        pts = v;
+      }),
+      getPointsToWin: vi.fn(() => pts),
+      getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
+      stopTimer: vi.fn()
+    }));
+  }
   vi.doMock("../../../src/helpers/dataUtils.js", () => ({
     fetchJson: vi.fn().mockResolvedValue(stats)
   }));
