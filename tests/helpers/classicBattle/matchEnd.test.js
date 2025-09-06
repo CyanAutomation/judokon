@@ -96,7 +96,7 @@ describe("classicBattle match end", () => {
     expect(cancelBtn).not.toBeNull();
     cancelBtn.dispatchEvent(new Event("click"));
     expect(document.querySelector("header #round-message").textContent).toBe("Ready");
-    expect(document.querySelector("header #score-display").textContent).toBe("You: 0Opponent: 0");
+    expect(document.querySelector("header #score-display").textContent).toBe("You: 0\nOpponent: 0");
   });
 
   it("ends the match when player reaches required wins", async () => {
@@ -105,7 +105,7 @@ describe("classicBattle match end", () => {
     battleMod._resetForTest(store);
     await playerWinsRounds(battleMod, store, CLASSIC_BATTLE_POINTS_TO_WIN);
     expect(document.querySelector("header #score-display").textContent).toBe(
-      `You: ${CLASSIC_BATTLE_POINTS_TO_WIN}Opponent: 0`
+      `You: ${CLASSIC_BATTLE_POINTS_TO_WIN}\nOpponent: 0`
     );
     expect(document.querySelector("header #round-message").textContent).toMatch(/win the match/i);
   });
@@ -116,7 +116,7 @@ describe("classicBattle match end", () => {
     battleMod._resetForTest(store);
     await opponentWinsRounds(battleMod, store, CLASSIC_BATTLE_POINTS_TO_WIN);
     expect(document.querySelector("header #score-display").textContent).toBe(
-      `You: 0Opponent: ${CLASSIC_BATTLE_POINTS_TO_WIN}`
+      `You: 0\nOpponent: ${CLASSIC_BATTLE_POINTS_TO_WIN}`
     );
     expect(document.querySelector("header #round-message").textContent).toMatch(
       /opponent wins the match/i

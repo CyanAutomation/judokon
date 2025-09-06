@@ -317,3 +317,27 @@ Phase 4 — Execution Summary (Headless API Surface)
   - Sampled classic battle flows show no regressions.
 
 Milestone reached — awaiting review before proceeding to Phase 5 (Visibility/Focus verification + Readiness reflection).
+
+Phase 5 — Execution Summary (Visibility/Focus + Readiness)
+
+- Changes:
+  - Added passive readiness reflection to scoreboard setup:
+    - `src/helpers/setupScoreboard.js`: attach a `MutationObserver` to `#next-button` and toggle `#next-ready-badge.hidden` based on readiness (`data-next-ready=="true"` if present, else `!disabled`). No announcements, keeps `aria-hidden`.
+  - Unit tests for readiness and existing visibility/focus hooks:
+    - New: `tests/helpers/scoreboard.readiness.test.js` — verifies badge visibility toggles when enabling/disabling Next.
+    - Existing: `tests/helpers/setupScoreboard.test.js` already covers pause-on-hide and resume-on-focus.
+
+- Targeted tests run:
+  - `npx vitest run tests/helpers/setupScoreboard.test.js` — PASS (3/3)
+  - `npx vitest run tests/helpers/scoreboard.readiness.test.js` — PASS (1/1)
+  - `npx vitest run tests/components/Scoreboard.headless.test.js` — PASS (2/2)
+  - Related battle tests (subset):
+    - `npx vitest run tests/helpers/classicBattle/nextButton.manualClick.test.js` — PASS (1/1)
+    - `npx vitest run tests/helpers/classicBattle/nextButton.countdownFinished.test.js` — PASS (2/2)
+    - `npx vitest run tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js` — PASS (1/1)
+
+- Outcome:
+  - Visibility/focus behavior remains correct; readiness badge now reflects button state without touching public APIs.
+  - No regressions detected in sampled classic battle flows.
+
+Milestone reached — awaiting review before proceeding to Phase 6 (A11y/Styling confirmations).

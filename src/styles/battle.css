@@ -32,6 +32,15 @@
   color: var(--color-text);
 }
 
+/* Non-color outcome cue: emphasize and prepend symbol when outcome is set */
+.battle-header #round-message[data-outcome="true"] {
+  border-bottom: 2px dashed currentColor;
+  padding-bottom: 2px;
+}
+.battle-header #round-message[data-outcome="true"]::before {
+  content: "★ ";
+}
+
 /* Ensure countdown region has a non-zero box so tests can detect visibility
    even before text is populated. */
 .battle-header #next-round-timer {
@@ -45,7 +54,8 @@
 }
 
 .battle-header #score-display span {
-  display: block;
+  /* Keep inline to avoid introducing layout-dependent whitespace in some engines */
+  display: inline;
 }
 
 .battle-header[data-orientation="portrait"] {

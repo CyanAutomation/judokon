@@ -31,6 +31,22 @@ function setupScoreboard(controls, scheduler = realScheduler) {
     return;
   }
   initScoreboard(header, controls);
+  try {
+    // Passively reflect Next button readiness to the badge without announcements.
+    const nextButton = document.getElementById("next-button");
+    const badge = document.getElementById("next-ready-badge");
+    if (nextButton && badge) {
+      const update = () => {
+        const fromData = nextButton.getAttribute("data-next-ready");
+        const isReadyAttr = fromData === "true" || fromData === true;
+        const isReady = typeof fromData === "string" ? isReadyAttr : !nextButton.disabled;
+        badge.hidden = !isReady;
+      };
+      update();
+      const mo = new MutationObserver(() => update());
+      mo.observe(nextButton, { attributes: true, attributeFilter: ["disabled", "data-next-ready", "aria-busy"] });
+    }
+  } catch {}
 }
 export {
   setupScoreboard,

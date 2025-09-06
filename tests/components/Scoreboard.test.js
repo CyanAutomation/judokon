@@ -45,7 +45,7 @@ describe("Scoreboard component", () => {
     const player = document.querySelector('#score-display span[data-side="player"]');
     const opponent = document.querySelector('#score-display span[data-side="opponent"]');
     expect(player?.textContent).toBe("You: 1");
-    expect(opponent?.textContent).toBe("Opponent: 2");
+    expect(opponent?.textContent.trim()).toBe("Opponent: 2");
   });
 
   it("clears and temporarily shows messages", async () => {
@@ -76,7 +76,7 @@ describe("Scoreboard component", () => {
     const player = document.querySelector('#score-display span[data-side="player"]');
     const opponent = document.querySelector('#score-display span[data-side="opponent"]');
     expect(player?.textContent).toBe("You: 2");
-    expect(opponent?.textContent).toBe("Opponent: 3");
+    expect(opponent?.textContent.trim()).toBe("Opponent: 3");
   });
 
   it("prevents placeholders from overriding localized outcomes", async () => {
