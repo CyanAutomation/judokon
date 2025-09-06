@@ -66,3 +66,38 @@ Conclusion so far
 Request for guidance
 - Do you want me to proceed by adding minimal, targeted diagnostics (logs guarded to test-only) to orchestratorHandlers.initInterRoundCooldown and/or to the Playwright test to capture machine state and nextRoundTimerReady? If preferred, I can also attempt a fix assuming dynamic import ordering is the culprit (e.g., replacing dynamic imports in initInterRoundCooldown with static imports consistent with import policy for hot paths).
 
+---
+
+### Remediation Plan - Attempt 1 (Failed)
+
+The initial hypothesis was that dynamic imports in `initInterRoundCooldown` were causing a race condition. This was addressed by converting them to static imports.
+
+1.  **[Failed]** Refactor `orchestratorHandlers.js` to use static imports for `computeNextRoundCooldown.js` and `nextRoundTimer.js`.
+    *   **Result:** The Playwright test `playwright/battle-next-skip.spec.js` continued to fail with the same timeout error. This indicates the dynamic imports were not the root cause of the issue.
+
+---
+
+### Remediation Plan - Attempt 2 (Failed)
+
+This attempt focused on adding diagnostics to the Playwright test and then attempting a fix based on the initial analysis of the logs.
+
+1.  **[Completed]** Modify `playwright/battle-next-skip.spec.js` to add logging that captures:
+    *   The `data-battle-state` and `data-prev-battle-state` attributes of the `<body>` element at key points.
+    *   The `disabled` and `data-next-ready` attributes of the `#next-button` element.
+    *   **Result:** Logs showed that the `#next-button` *did* become ready (`data-next-ready: 'true'`, `nextDisabled: false`) after the `waitForFunction` call, but the subsequent `click()` operation failed because the element was not visible/clickable. This indicated a race condition where the button's state changed immediately after becoming ready.
+
+2.  **[Failed]** Attempt to fix by removing "failsafe" `setTimeout` blocks in `src/helpers/classicBattle/roundUI.js`.
+    *   **Rationale:** These `setTimeout` blocks were suspected of causing a race condition by dispatching state machine events, potentially interfering with the orchestrator's control over the "Next" button's state.
+    *   **Result:** The `replace` operation failed due to multiple occurrences of the `old_string`. The file `src/helpers/classicBattle/roundUI.js` is currently in a partially reverted state. The Playwright test still fails.
+
+---
+
+### New Remediation Plan
+
+Given the persistent failure and the new insights from logging, the focus shifts to understanding why the "Next" button is not in a clickable state even after it reports as ready. The "failsafe" `setTimeout` blocks in `roundUI.js` are still highly suspicious.
+
+1.  **[In Progress]** Revert `src/helpers/classicBattle/roundUI.js` to its original state.
+2.  **[Pending]** Re-apply the fix to `src/helpers/classicBattle/roundUI.js` by removing the "failsafe" `setTimeout` blocks, ensuring both occurrences are handled correctly.
+3.  **[Pending]** Run `playwright/battle-next-skip.spec.js` to confirm the fix.
+4.  **[Pending]** Run relevant unit tests for `orchestratorHandlers` and `roundManager` to ensure no regressions have been introduced.
+5.  **[Pending]** Final documentation and cleanup.

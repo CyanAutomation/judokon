@@ -35,11 +35,8 @@ test.describe("Next button cooldown skip", () => {
     const counter = page.locator("#round-counter");
     await expect(counter).toHaveText(/Round 1/);
 
-    await page.waitForFunction(() => {
-      const btn = document.getElementById("next-button");
-      return btn && btn.dataset.nextReady === "true" && !btn.disabled;
-    });
-    const nextBtn = page.locator('[data-role="next-round"]');
+    const nextBtn = page.locator('#next-button[data-next-ready="true"]:not([disabled])');
+    await nextBtn.waitFor(); // Wait for the button to be ready
     await nextBtn.click();
 
     await expect(counter).toHaveText(/Round 2/, { timeout: 1000 });
