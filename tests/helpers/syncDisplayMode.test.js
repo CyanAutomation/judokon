@@ -12,7 +12,8 @@ afterEach(() => {
 });
 
 describe("syncDisplayMode", () => {
-  it("applies selected mode without touching other sections", async () => {
+  async function setup() {
+    vi.resetModules();
     vi.mock("../../src/helpers/displayMode.js", () => ({
       applyDisplayMode: vi.fn()
     }));
@@ -20,33 +21,33 @@ describe("syncDisplayMode", () => {
       withViewTransition: vi.fn((fn) => fn())
     }));
     const { syncDisplayMode } = await import("../../src/helpers/settings/syncDisplayMode.js");
+    const { applyDisplayMode } = await import("../../src/helpers/displayMode.js");
+    return { syncDisplayMode, applyDisplayMode };
+  }
+
+  it("applies selected mode without touching other sections", async () => {
+    const { syncDisplayMode, applyDisplayMode } = await setup();
     document.getElementById("display-mode-dark").checked = true;
     const handleUpdate = vi.fn().mockResolvedValue();
-    const updated = await withMutedConsole(() =>
-      syncDisplayMode({ displayMode: "light" }, handleUpdate)
+    const updated = await withMutedConsole(
+      async () => await syncDisplayMode({ displayMode: "light" }, handleUpdate)
     );
     expect(updated.displayMode).toBe("dark");
     expect(handleUpdate).toHaveBeenCalledWith("displayMode", "dark", expect.any(Function));
-    const { applyDisplayMode } = await import("../../src/helpers/displayMode.js");
     expect(applyDisplayMode).toHaveBeenCalledWith("dark");
     expect(document.querySelectorAll("#game-mode-toggle-container .settings-item")).toHaveLength(0);
     expect(document.querySelectorAll("#feature-flags-container .settings-item")).toHaveLength(0);
   });
 
   it("returns current settings when no radio is checked", async () => {
-    vi.mock("../../src/helpers/displayMode.js", () => ({
-      applyDisplayMode: vi.fn()
-    }));
-    vi.mock("../../src/helpers/viewTransition.js", () => ({
-      withViewTransition: vi.fn((fn) => fn())
-    }));
-    const { syncDisplayMode } = await import("../../src/helpers/settings/syncDisplayMode.js");
+    const { syncDisplayMode, applyDisplayMode } = await setup();
     const handleUpdate = vi.fn();
     const current = { displayMode: "light" };
-    const updated = await withMutedConsole(() => syncDisplayMode(current, handleUpdate));
+    const updated = await withMutedConsole(
+      async () => await syncDisplayMode(current, handleUpdate)
+    );
     expect(updated).toEqual(current);
     expect(handleUpdate).not.toHaveBeenCalled();
-    const { applyDisplayMode } = await import("../../src/helpers/displayMode.js");
     expect(applyDisplayMode).not.toHaveBeenCalled();
   });
 });
