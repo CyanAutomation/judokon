@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const emitBattleEvent = vi.fn();
 
@@ -29,8 +29,12 @@ describe("initInterRoundCooldown", () => {
   beforeEach(() => {
     emitBattleEvent.mockReset();
     document.body.innerHTML = '<button id="next-button" disabled></button>';
-    machine = { dispatch: vi.fn() };
+    machine = { dispatch: vi.fn(), getState: () => "cooldown" };
     vi.resetModules();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("enables button and emits event", async () => {
@@ -56,5 +60,54 @@ describe("initInterRoundCooldown", () => {
     expect(btn.disabled).toBe(false);
     expect(btn.dataset.nextReady).toBe("true");
     expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundTimerReady");
+  });
+
+  it("reapplies readiness when reset before timeout", async () => {
+    vi.useFakeTimers();
+    const { initInterRoundCooldown } = await import(
+      "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+    const btn = document.getElementById("next-button");
+    let disabledSetCount = 0;
+    Object.defineProperty(btn, "disabled", {
+      configurable: true,
+      get() {
+        return this._disabled;
+      },
+      set(val) {
+        disabledSetCount++;
+        this._disabled = val;
+      }
+    });
+    btn._disabled = true;
+    await initInterRoundCooldown(machine);
+    expect(disabledSetCount).toBe(1);
+    btn.dataset.nextReady = "";
+    await vi.runAllTimersAsync();
+    expect(btn.dataset.nextReady).toBe("true");
+    expect(disabledSetCount).toBe(2);
+  });
+
+  it("does not reapply readiness when already ready", async () => {
+    vi.useFakeTimers();
+    const { initInterRoundCooldown } = await import(
+      "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+    );
+    const btn = document.getElementById("next-button");
+    let disabledSetCount = 0;
+    Object.defineProperty(btn, "disabled", {
+      configurable: true,
+      get() {
+        return this._disabled;
+      },
+      set(val) {
+        disabledSetCount++;
+        this._disabled = val;
+      }
+    });
+    btn._disabled = true;
+    await initInterRoundCooldown(machine);
+    await vi.runAllTimersAsync();
+    expect(disabledSetCount).toBe(1);
   });
 });
