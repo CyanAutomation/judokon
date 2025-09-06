@@ -4,7 +4,6 @@ vi.mock("../../src/utils/scheduler.js", () => ({
   cancel: () => {},
   stop: vi.fn()
 }));
-import * as scheduler from "../../src/utils/scheduler.js";
 import { withMutedConsole } from "../utils/console.js";
 import { showSettingsError } from "../../src/helpers/showSettingsError.js";
 import { SETTINGS_FADE_MS, SETTINGS_REMOVE_MS } from "../../src/helpers/constants.js";
@@ -16,7 +15,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.clearAllTimers();
   vi.useRealTimers();
-  scheduler.stop.mockClear();
 });
 
 describe("showSettingsError", () => {
@@ -41,10 +39,6 @@ describe("showSettingsError", () => {
 
     vi.advanceTimersByTime(SETTINGS_REMOVE_MS - SETTINGS_FADE_MS);
     expect(document.querySelector(".settings-error-popup")).toBeNull();
-
-    scheduler.stop();
-    expect(scheduler.stop).toHaveBeenCalledTimes(1);
-    vi.clearAllTimers();
     expect(vi.getTimerCount()).toBe(0);
   });
 
@@ -58,10 +52,6 @@ describe("showSettingsError", () => {
       errSpy.mockRestore();
     });
     expect(document.querySelectorAll(".settings-error-popup")).toHaveLength(1);
-    scheduler.stop();
-    expect(scheduler.stop).toHaveBeenCalledTimes(1);
-    vi.clearAllTimers();
-    expect(vi.getTimerCount()).toBe(0);
 
     await withMutedConsole(() => {
       const errSpy = vi.spyOn(console, "error");
@@ -70,9 +60,9 @@ describe("showSettingsError", () => {
       errSpy.mockRestore();
     });
     expect(document.querySelectorAll(".settings-error-popup")).toHaveLength(1);
-    scheduler.stop();
-    expect(scheduler.stop).toHaveBeenCalledTimes(2);
-    vi.clearAllTimers();
+
+    vi.advanceTimersByTime(SETTINGS_REMOVE_MS);
+    expect(document.querySelector(".settings-error-popup")).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
   });
 });
