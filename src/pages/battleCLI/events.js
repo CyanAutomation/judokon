@@ -5,7 +5,7 @@ import {
   handleRoundOverKey,
   handleCooldownKey,
   handleStatListArrowKey
-} from "../battleCLI.js";
+} from "./battleHandlers.js";
 
 const byId = (id) => document.getElementById(id);
 const arrowKeys = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);

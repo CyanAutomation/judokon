@@ -67,7 +67,7 @@ test.describe("Classic Battle CLI", () => {
     await expect(page.locator("#cli-verbose-section")).toBeVisible();
 
     // Cause a transition by selecting a stat via keyboard (mapped to 1)
-    await page.evaluate(() => window.__test.onKeyDown({ key: "1" }));
+    await page.keyboard.press("1");
 
     // Wait for a later state to appear in the badge and log
     await waitForBattleState(page, "roundDecision", 10000);
