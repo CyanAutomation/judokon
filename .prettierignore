@@ -1,3 +1,4 @@
+# Files and artifacts that should not be processed by Prettier
 node_modules/
 dist/
 build/

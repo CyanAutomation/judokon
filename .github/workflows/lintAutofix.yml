@@ -78,20 +78,24 @@ jobs:
           TOKEN: ${{ secrets.AUTOFIX_TOKEN }}
 
       - name: Run Prettier
-        run: npx prettier . --write
+        run: npx prettier . --write --ignore-path .prettierignore
 
       - name: Cache ESLint cache
         uses: actions/cache@v4
         with:
-          path: .eslintcache
+          # Cache directory for ESLint cache file. Using a named file in the root
+          # is fine but keep it safe by caching the working directory (small risk)
+          path: |
+            .eslintcache
           key: ${{ runner.os }}-eslintcache-${{ hashFiles('**/package-lock.json', 'package.json', '.eslintrc.*', 'eslint.config.*') }}
           restore-keys: ${{ runner.os }}-eslintcache-
-
       - name: Compute ESLint fix stats (dry-run)
         id: lint-stats
         run: |
           set -euo pipefail
-          npx eslint . --fix-dry-run -f json > eslint-dry.json || true
+          # Make sure ESLint uses the ignore file so the dry-run output doesn't
+          # include .eslintcache or eslint-dry.json itself.
+          npx eslint . --fix-dry-run -f json --ignore-path .eslintignore > eslint-dry.json || true
           node -e '
             const fs = require("fs");
             if (!fs.existsSync("eslint-dry.json")) { process.exit(0); }
@@ -112,7 +116,7 @@ jobs:
           '
 
       - name: Run ESLint with auto-fix
-        run: npx eslint . --fix --cache
+        run: npx eslint . --fix --cache --ignore-path .eslintignore
 
       - name: Check for changes
         id: git-check
