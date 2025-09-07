@@ -404,7 +404,7 @@ describe("prdReaderPage", () => {
     const fn = vi.fn();
     const unbind = bindHistory(fn);
     window.dispatchEvent(new PopStateEvent("popstate", { state: { index: 2 } }));
-    expect(fn).toHaveBeenCalledWith(2, false);
+    expect(fn).toHaveBeenCalledWith(2);
     unbind();
   });
 
