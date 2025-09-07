@@ -99,6 +99,36 @@ describe("battleCLI onKeyDown", () => {
     expect(countdown.textContent).toBe("");
   });
 
+  it("routes arrow keys to stat list navigation", async () => {
+    const list = document.createElement("ul");
+    list.id = "cli-stats";
+    const li = document.createElement("li");
+    list.appendChild(li);
+    document.getElementById("cli-main").appendChild(list);
+    li.focus();
+    const battleHandlers = await import("../../src/pages/battleCLI/battleHandlers.js");
+    const spy = vi.spyOn(battleHandlers, "handleStatListArrowKey");
+    onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    expect(spy).toHaveBeenCalledWith("ArrowDown");
+    const countdown = document.getElementById("cli-countdown");
+    expect(countdown.textContent).toBe("");
+    spy.mockRestore();
+  });
+
+  it("ignores non-quit shortcuts when flag disabled", async () => {
+    const featureFlags = await import("../../src/helpers/featureFlags.js");
+    vi
+      .spyOn(featureFlags, "isEnabled")
+      .mockImplementation((flag) =>
+        flag === "cliShortcuts" ? false : featureFlags.isEnabled(flag)
+      );
+    const shortcuts = document.getElementById("cli-shortcuts");
+    const countdown = document.getElementById("cli-countdown");
+    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    expect(shortcuts.hidden).toBe(true);
+    expect(countdown.textContent).toBe("");
+  });
+
   it("confirms quit via modal", () => {
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     const confirm = document.getElementById("confirm-quit-button");
