@@ -45,7 +45,7 @@ export function isOrchestrated() {
  * 1. Initialize battle state values.
  * 2. Return the store.
  *
- * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean, stallTimeoutMs: number, playerChoice: string|null}}
+ * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean, stallTimeoutMs: number, playerChoice: string|null, playerCardEl: HTMLElement|null, opponentCardEl: HTMLElement|null, statButtonEls: Record<string, HTMLButtonElement>|null}}
  */
 export function createBattleStore() {
   return {
@@ -55,7 +55,10 @@ export function createBattleStore() {
     compareRaf: 0,
     selectionMade: false,
     stallTimeoutMs: 35000,
-    playerChoice: null
+    playerChoice: null,
+    playerCardEl: null,
+    opponentCardEl: null,
+    statButtonEls: null
   };
 }
 

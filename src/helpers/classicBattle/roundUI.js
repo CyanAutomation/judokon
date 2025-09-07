@@ -48,9 +48,20 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   syncScoreDisplay();
   scoreboard.updateRoundCounter(roundNumber);
   showSelectionPrompt();
+  const playerCard =
+    store.playerCardEl || (store.playerCardEl = document.getElementById("player-card"));
+  const opponentCard =
+    store.opponentCardEl || (store.opponentCardEl = document.getElementById("opponent-card"));
+  if (!store.statButtonEls) {
+    store.statButtonEls = Array.from(
+      document.querySelectorAll("#stat-buttons button[data-stat]")
+    ).reduce((acc, btn) => {
+      const s = btn.dataset.stat;
+      if (s) acc[s] = btn;
+      return acc;
+    }, {});
+  }
   startTimer((stat, opts) => {
-    const playerCard = document.getElementById("player-card");
-    const opponentCard = document.getElementById("opponent-card");
     const playerVal = getCardStatValue(playerCard, stat);
     let opponentVal = getCardStatValue(opponentCard, stat);
     try {
@@ -67,8 +78,6 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   handleStatSelectionTimeout(
     store,
     (s, opts) => {
-      const playerCard = document.getElementById("player-card");
-      const opponentCard = document.getElementById("opponent-card");
       const playerVal = getCardStatValue(playerCard, s);
       let opponentVal = getCardStatValue(opponentCard, s);
       try {
@@ -86,57 +95,67 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
 // --- Event bindings ---
 
 /**
- * Bind static event handlers for round UI updates.
- *
- * These handlers listen for `roundStarted`, `statSelected`, and `roundResolved`
- * events to update the DOM, scoreboard, and timers. In production, binding
- * happens once per module load to avoid duplicate listeners.
+ * Bind handler for `roundStarted` events.
  *
  * @pseudocode
- * 1. On `roundStarted` → call `applyRoundUI(store, roundNumber)`.
- * 2. On `statSelected` → add `selected` class to the chosen button, optionally show “You Picked…”, then disable stat buttons.
- * 3. On `roundResolved` → show outcome and update score; if match ended show summary, else surface next-round countdown and schedule failsafe transitions; clear selection highlight and refresh debug panel.
- *
- * @returns {void}
+ * 1. Listen for `roundStarted`.
+ * 2. Extract store and round number.
+ * 3. Invoke `applyRoundUI`.
  */
-export function bindRoundUIEventHandlers() {
+export function bindRoundStarted() {
   onBattleEvent("roundStarted", (e) => {
     const { store, roundNumber } = e.detail || {};
     if (store && typeof roundNumber === "number") {
       applyRoundUI(store, roundNumber);
     }
   });
+}
 
+/**
+ * Bind handler for `statSelected` events.
+ *
+ * @pseudocode
+ * 1. Listen for `statSelected`.
+ * 2. Highlight the chosen button and optionally show feedback.
+ * 3. Disable further stat selections.
+ */
+export function bindStatSelected() {
   onBattleEvent("statSelected", (e) => {
     try {
       if (!IS_VITEST) console.log("INFO: statSelected event handler");
     } catch {}
-    const { stat, opts } = e.detail || {};
+    const { stat, store, opts } = e.detail || {};
     if (!stat) return;
-    const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
+    const btn = store?.statButtonEls?.[stat];
     if (btn) {
       try {
         if (!IS_VITEST)
           console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
       } catch {}
       btn.classList.add("selected");
-      // Suppress the immediate snackbar when the stat was auto-selected due to
-      // stall/timeout so the upcoming cooldown countdown can occupy the snackbar.
       if (!opts || !opts.delayOpponentMessage) {
         showSnackbar(`You Picked: ${btn.textContent}`);
       }
     }
     emitBattleEvent("statButtons:disable");
   });
+}
 
+/**
+ * Bind handler for `roundResolved` events.
+ *
+ * @pseudocode
+ * 1. Listen for `roundResolved`.
+ * 2. Surface outcome, update score, maybe show summary.
+ * 3. Clear selection highlight and refresh debug panel.
+ */
+export function bindRoundResolved() {
   onBattleEvent("roundResolved", (e) => {
     const { store, result } = e.detail || {};
     if (!result) return;
     try {
       if (!IS_VITEST) console.warn("[test] roundResolved event received");
     } catch {}
-    // Update the round message and score using the resolved values to avoid
-    // relying on engine singletons in test environments.
     try {
       scoreboard.showMessage(result.message || "", { outcome: true });
     } catch {}
@@ -154,18 +173,9 @@ export function bindRoundUIEventHandlers() {
       });
       emitBattleEvent("matchOver");
     } else {
-      // The orchestrator now handles cooldown initiation when the state machine
-      // enters the 'cooldown' state. This call is no longer needed.
-      // proactively surface the countdown text in the snackbar so tests can
-      // observe it even if timer wiring races with other snackbar messages.
       try {
         const secs = computeNextRoundCooldown();
-        // Use explicit text to avoid depending on i18n in tests
         updateSnackbar(`Next round in: ${secs}s`);
-        // Fallback sequential updates when the orchestrator is not running
-        if (!isOrchestrated && typeof isOrchestrated === "function") {
-          // no-op; typo guard
-        }
         const orchestrated = (() => {
           try {
             return typeof isOrchestrated === "function" && isOrchestrated();
@@ -174,15 +184,11 @@ export function bindRoundUIEventHandlers() {
           }
         })();
         if (!orchestrated) {
-          // Delay updates by 2s/3s to align with test expectations
           if (secs >= 2) setTimeout(() => updateSnackbar(`Next round in: ${secs - 1}s`), 2000);
           if (secs >= 3) setTimeout(() => updateSnackbar(`Next round in: ${secs - 2}s`), 3000);
         }
       } catch {}
-      // Failsafe removed as it conflicts with the orchestrator.
     }
-    // Keep the selected stat highlighted for two frames to allow tests and
-    // users to perceive the selection before it clears.
     try {
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
@@ -192,7 +198,6 @@ export function bindRoundUIEventHandlers() {
         })
       );
     } catch {
-      // Fallback for environments without rAF
       setTimeout(() => {
         try {
           if (typeof resetStatButtons === "function") resetStatButtons();
@@ -201,6 +206,20 @@ export function bindRoundUIEventHandlers() {
     }
     updateDebugPanel();
   });
+}
+
+/**
+ * Bind all round UI event handlers.
+ *
+ * @pseudocode
+ * 1. Bind `roundStarted` handler.
+ * 2. Bind `statSelected` handler.
+ * 3. Bind `roundResolved` handler.
+ */
+export function bindRoundUIEventHandlers() {
+  bindRoundStarted();
+  bindStatSelected();
+  bindRoundResolved();
 }
 
 // Bind once on module load for production/runtime usage. Guard against
@@ -261,19 +280,21 @@ export function bindRoundUIEventHandlersDynamic() {
     }
   });
   onBattleEvent("statSelected", async (e) => {
-    const { stat } = e.detail || {};
+    const { stat, store, opts } = e.detail || {};
     if (!stat) return;
-    const btn = document.querySelector(`#stat-buttons button[data-stat="${stat}"]`);
+    const btn = store?.statButtonEls?.[stat];
     if (btn) {
       try {
         if (!IS_VITEST)
           console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
       } catch {}
       btn.classList.add("selected");
-      try {
-        const { showSnackbar } = await showSnackbarP;
-        showSnackbar(`You Picked: ${btn.textContent}`);
-      } catch {}
+      if (!opts || !opts.delayOpponentMessage) {
+        try {
+          const { showSnackbar } = await showSnackbarP;
+          showSnackbar(`You Picked: ${btn.textContent}`);
+        } catch {}
+      }
     }
     emitBattleEvent("statButtons:disable");
   });
@@ -337,7 +358,6 @@ export function bindRoundUIEventHandlersDynamic() {
           if (secs >= 3) setTimeout(() => uSb(`Next round in: ${secs - 2}s`), 3000);
         }
       } catch {}
-      // Failsafe removed as it conflicts with the orchestrator.
     }
     // Keep the selected stat highlighted for two frames to mirror the static path
     try {
