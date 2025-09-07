@@ -16,6 +16,9 @@ vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
 vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
   getCardStatValue: vi.fn()
 }));
+vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
+  getBattleState: vi.fn()
+}));
 
 import { handleStatSelection } from "../../../src/helpers/classicBattle.js";
 
@@ -23,6 +26,7 @@ describe("handleStatSelection resolution", () => {
   let store;
   let dispatchMock;
   let resolveMock;
+  let getBattleState;
 
   beforeEach(async () => {
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
@@ -30,6 +34,9 @@ describe("handleStatSelection resolution", () => {
       .dispatchBattleEvent;
     resolveMock = (await import("../../../src/helpers/classicBattle/roundResolver.js"))
       .resolveRound;
+    getBattleState = (await import("../../../src/helpers/classicBattle/eventBus.js"))
+      .getBattleState;
+    getBattleState.mockReturnValue(null);
   });
 
   afterEach(() => {
@@ -67,6 +74,7 @@ describe("handleStatSelection resolution", () => {
         store.playerChoice = null;
       }
     });
+    getBattleState.mockReturnValue("roundDecision");
     const result = await handleStatSelection(store, "power", {
       playerVal: 1,
       opponentVal: 2
