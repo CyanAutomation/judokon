@@ -289,6 +289,8 @@ Classic Battle timer logic lives in `src/helpers/classicBattle/timerService.js` 
 - `timerUtils.js` — shared state snapshot and readiness helpers.
 - `autoSelectHandlers.js` — stat-selection fallbacks when timers drift or stall.
 
+The CLI's pause/resume flow uses `pauseTimers` to clear active selection and cooldown timers while recording their remaining time. `resumeTimers` restarts them with the captured values so modals or tab switches do not lose progress.
+
 On the Browse Judoka page, the country filter panel starts with the `hidden` attribute. When revealed, it must include `aria-label="Country filter panel"` for accessibility and Playwright tests. The country slider loads asynchronously after the panel opens.
 
 Run all Playwright tests with:

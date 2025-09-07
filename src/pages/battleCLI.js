@@ -143,6 +143,10 @@ export const __test = {
   getSelectionTimers() {
     return { selectionTimer, selectionInterval };
   },
+  pauseTimers,
+  getPausedTimes() {
+    return { selection: pausedSelectionRemaining, cooldown: pausedCooldownRemaining };
+  },
   // Expose internal finish handler for tests
   getSelectionFinishFn() {
     return selectionFinishFn;
@@ -572,41 +576,59 @@ function ensureModalContainer() {
 }
 
 /**
+ * Clear a timer pair and capture remaining time.
+ *
+ * @param {"selection"|"cooldown"} type Timer category to pause.
+ *
+ * @pseudocode
+ * if pausing selection:
+ *   clear selection timeout and interval
+ *   read remaining from countdown dataset
+ *   null selection timers
+ * else:
+ *   clear cooldown timeout and interval
+ *   parse remaining from snackbar text
+ *   null cooldown timers
+ * return remaining or null
+ */
+function pauseTimer(type) {
+  const isSelection = type === "selection";
+  const timer = isSelection ? selectionTimer : cooldownTimer;
+  const interval = isSelection ? selectionInterval : cooldownInterval;
+  if (!timer && !interval) return null;
+  try {
+    if (timer) clearTimeout(timer);
+  } catch {}
+  try {
+    if (interval) clearInterval(interval);
+  } catch {}
+  if (isSelection) {
+    const countdown = byId("cli-countdown");
+    const remaining = Number(countdown?.dataset?.remainingTime) || null;
+    selectionTimer = null;
+    selectionInterval = null;
+    return remaining;
+  }
+  const bar = byId("snackbar-container")?.querySelector(".snackbar");
+  const match = bar?.textContent?.match(/Next round in: (\d+)/);
+  cooldownTimer = null;
+  cooldownInterval = null;
+  return match ? Number(match[1]) : null;
+}
+
+/**
  * Pause active selection and cooldown timers, preserving remaining time.
  *
  * @pseudocode
  * countdownEl = #cli-countdown
  * if selection timers exist:
- *   clear them and store remaining time from countdown dataset
+ *   call pauseTimer("selection") and store remaining
  * if cooldown timers exist:
- *   clear them and parse remaining time from snackbar
+ *   call pauseTimer("cooldown") and store remaining
  */
 function pauseTimers() {
-  const countdown = byId("cli-countdown");
-  if (selectionTimer || selectionInterval) {
-    try {
-      if (selectionTimer) clearTimeout(selectionTimer);
-    } catch {}
-    try {
-      if (selectionInterval) clearInterval(selectionInterval);
-    } catch {}
-    pausedSelectionRemaining = Number(countdown?.dataset?.remainingTime) || null;
-    selectionTimer = null;
-    selectionInterval = null;
-  }
-  const bar = byId("snackbar-container")?.querySelector(".snackbar");
-  if (cooldownTimer || cooldownInterval) {
-    try {
-      if (cooldownTimer) clearTimeout(cooldownTimer);
-    } catch {}
-    try {
-      if (cooldownInterval) clearInterval(cooldownInterval);
-    } catch {}
-    const match = bar?.textContent?.match(/Next round in: (\d+)/);
-    pausedCooldownRemaining = match ? Number(match[1]) : null;
-    cooldownTimer = null;
-    cooldownInterval = null;
-  }
+  pausedSelectionRemaining = pauseTimer("selection");
+  pausedCooldownRemaining = pauseTimer("cooldown");
 }
 
 /**
