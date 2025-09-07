@@ -30,8 +30,7 @@ import { guard } from "./guard.js";
 import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 export { showSelectionPrompt, setOpponentDelay, getOpponentDelay } from "./snackbar.js";
-
-const UI_SERVICE_IDLE_TIMEOUT = 2000;
+import { runWhenIdle } from "./idleCallback.js";
 
 export const INITIAL_SCOREBOARD_TEXT = "You: 0\nOpponent: 0";
 
@@ -55,24 +54,7 @@ function preloadUiService() {
     })
     .catch(() => {});
 }
-function scheduleUiServicePreload() {
-  try {
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(preloadUiService);
-      window.setTimeout(() => {
-        try {
-          if ("cancelIdleCallback" in window) window.cancelIdleCallback(id);
-        } catch {}
-        preloadUiService();
-      }, UI_SERVICE_IDLE_TIMEOUT);
-    } else {
-      queueMicrotask(preloadUiService);
-    }
-  } catch {
-    preloadUiService();
-  }
-}
-scheduleUiServicePreload();
+runWhenIdle(preloadUiService);
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
  *
