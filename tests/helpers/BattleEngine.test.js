@@ -96,7 +96,7 @@ describe("engineTimer helpers", () => {
     const engine = new BattleEngine();
     engine.timer.startRound = vi.fn((tick, expired) => {
       tick(3);
-      return Promise.resolve(expired());
+      return expired();
     });
     const onTick = vi.fn();
     const onExpired = vi.fn();
