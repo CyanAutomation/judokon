@@ -138,6 +138,43 @@ describe("battleCLI event handlers", () => {
     vi.useRealTimers();
   });
 
+  it("captures remaining selection time when paused", async () => {
+    vi.useFakeTimers();
+    const { handlers } = await setupHandlers();
+    const countdown = document.createElement("div");
+    countdown.id = "cli-countdown";
+    countdown.dataset.remainingTime = "5";
+    document.body.appendChild(countdown);
+    handlers.setSelectionTimers(
+      setTimeout(() => {}, 5000),
+      setInterval(() => {}, 1000)
+    );
+    handlers.pauseTimers();
+    const { selection, cooldown } = handlers.getPausedTimes();
+    expect(selection).toBe(5);
+    expect(cooldown).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it("captures remaining cooldown time when paused", async () => {
+    vi.useFakeTimers();
+    const { handlers } = await setupHandlers();
+    const bar = document.getElementById("snackbar-container");
+    const snack = document.createElement("div");
+    snack.className = "snackbar";
+    snack.textContent = "Next round in: 7";
+    bar.appendChild(snack);
+    handlers.setCooldownTimers(
+      setTimeout(() => {}, 7000),
+      setInterval(() => {}, 1000)
+    );
+    handlers.pauseTimers();
+    const { cooldown, selection } = handlers.getPausedTimes();
+    expect(cooldown).toBe(7);
+    expect(selection).toBeNull();
+    vi.useRealTimers();
+  });
+
   it("updates message after round resolved", async () => {
     const { handlers } = await setupHandlers();
     const speedName = statNamesData.find((s) => s.statIndex === 2).name;
