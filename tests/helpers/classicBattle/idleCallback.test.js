@@ -13,7 +13,8 @@ describe("runWhenIdle", () => {
   });
 
   afterEach(() => {
-    window.requestIdleCallback = originalRic;
+    if (originalRic === undefined) delete window.requestIdleCallback;
+    else window.requestIdleCallback = originalRic;
     window.setTimeout = originalSt;
     globalThis.queueMicrotask = originalQm;
     vi.useRealTimers();
@@ -26,11 +27,12 @@ describe("runWhenIdle", () => {
       cb();
       return 1;
     });
-    const st = vi.fn();
+    const st = vi.fn((cb) => cb());
     window.requestIdleCallback = ric;
     window.setTimeout = st;
     runWhenIdle(fn);
-    expect(ric).toHaveBeenCalledWith(fn);
+    expect(ric).toHaveBeenCalledTimes(1);
+    expect(typeof ric.mock.calls[0][0]).toBe("function");
     expect(st).toHaveBeenCalledTimes(1);
     expect(st.mock.calls[0][1]).toBe(2000);
     expect(fn).toHaveBeenCalledTimes(1);
