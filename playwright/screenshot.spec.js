@@ -23,7 +23,7 @@ test.describe(runScreenshots ? "Screenshot suite" : "Screenshot suite (skipped)"
 
   // Global comparison tolerance for tiny AA/rounding differences.
   // Exposed here so we can reuse consistently across specs.
-  const BASE_SCREENSHOT_OPTS = { maxDiffPixels: 1500 };
+  const BASE_SCREENSHOT_OPTS = { maxDiffPixels: 100 };
 
   // Allow switching to viewport-only screenshots without changing code.
   // Opt in with SCREENSHOT_VIEWPORT_ONLY=true when you want to
