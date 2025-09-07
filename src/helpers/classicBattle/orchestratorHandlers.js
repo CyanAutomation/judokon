@@ -1,4 +1,3 @@
-import { getDefaultTimer } from "../timerUtils.js";
 import { setupFallbackTimer } from "./roundManager.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
@@ -8,6 +7,8 @@ import { resolveRound } from "./roundResolver.js";
 import { guard, guardAsync, scheduleGuard } from "./guard.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
+import { handleRoundError } from "./handleRoundError.js";
+import { initStartCooldown, initInterRoundCooldown } from "./cooldowns.js";
 // Removed unused import for enableNextRoundButton
 
 /**
@@ -49,12 +50,6 @@ export function setAutoContinue(val) {
  * 2. Update the debug panel for visibility.
  * 3. Dispatch an interrupt with the reason and `err.message`.
  */
-export async function handleRoundError(machine, reason, err) {
-  guard(() => emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…"));
-  guard(() => emitBattleEvent("debugPanelUpdate"));
-  await guardAsync(() => machine.dispatch("interrupt", { reason, error: err?.message }));
-}
-
 /**
  * Determine whether the machine transitioned from `from` to `to`.
  *
@@ -80,201 +75,6 @@ export function isStateTransition(from, to) {
   } catch {
     return false;
   }
-}
-
-/**
- * Initialize the match start cooldown timer.
- *
- * @pseudocode
- * 1. Resolve match start duration with 3s default.
- * 2. Emit `countdownStart` and listen for `countdownFinished`.
- * 3. Schedule fallback timer to dispatch `ready` if no event fires.
- */
-/**
- * Initialize the match start countdown and ensure the machine receives
- * a `ready` transition when the countdown completes or when a fallback
- * path triggers (tests/headless).
- *
- * @param {object} machine - State machine instance.
- * @returns {Promise<void>}
- * @pseudocode
- * 1. Read a default timer value (fallback 3s).
- * 2. Emit `countdownStart` and `control.countdown.started` with duration.
- * 3. Listen for `countdownFinished` to dispatch `ready` and cancel fallback.
- * 4. In test mode, immediately queue the finished handler.
- * 5. Otherwise schedule a fallback timer that calls the finished handler.
- */
-export async function initStartCooldown(machine) {
-  let duration = 3;
-  try {
-    const val = await getDefaultTimer("matchStartTimer");
-    if (typeof val === "number") duration = val;
-  } catch {}
-  duration = Math.max(1, Number(duration));
-  let fallback = null;
-  const onFinished = () => {
-    try {
-      offBattleEvent("countdownFinished", onFinished);
-    } catch {}
-    try {
-      if (fallback) clearTimeout(fallback);
-    } catch {}
-    try {
-      // PRD control event: countdown completed
-      emitBattleEvent("control.countdown.completed");
-    } catch {}
-    try {
-      machine.dispatch("ready");
-    } catch {}
-  };
-  onBattleEvent("countdownFinished", onFinished);
-  emitBattleEvent("countdownStart", { duration });
-  // PRD control event: countdown started
-  try {
-    emitBattleEvent("control.countdown.started", {
-      durationMs: Math.max(0, Number(duration) || 0) * 1000
-    });
-  } catch {}
-  // In test mode, auto-advance without relying on timers which are often faked.
-  try {
-    if (isTestModeEnabled && isTestModeEnabled()) {
-      if (typeof queueMicrotask === "function") queueMicrotask(onFinished);
-      else setTimeout(onFinished, 0);
-      return;
-    }
-  } catch {}
-  try {
-    // Prefer the roundManager helper when available; fall back to setTimeout.
-    const schedule = typeof setupFallbackTimer === "function" ? setupFallbackTimer : setTimeout;
-    fallback = schedule(duration * 1000 + 200, onFinished);
-  } catch {
-    // Last resort: attempt a direct transition
-    onFinished();
-  }
-}
-
-/**
- * Initialize the inter-round cooldown timer.
- *
- * This function is now the sole owner of the inter-round cooldown logic when
- * the orchestrator is active. It starts a countdown, and when it finishes,
- * it marks the "Next" button as ready.
- *
- * @param {object} machine The state machine instance.
- * @pseudocode
- * 1. Get the cooldown duration from `computeNextRoundCooldown`.
- * 2. Emit the `countdownStart` event with the duration.
- * 3. Enable the "Next" button (`disabled = false`, `data-next-ready = "true"`).
- * 4. Schedule a zero-delay task to re-query `#next-button` and reapply readiness.
- * 5. Emit the `nextRoundTimerReady` event.
- * 6. Start a timer; on expiry, mark the button ready, emit cooldown events, and dispatch "ready".
- * 7. Schedule a fallback timer to ensure readiness if the main timer fails.
- */
-/**
- * Initialize an inter-round cooldown that enables the Next button and
- * advances the machine when the cooldown expires.
- *
- * The orchestrator is the authoritative owner of this timer while active.
- *
- * @param {object} machine - State machine instance.
- * @returns {Promise<void>}
- * @pseudocode
- * 1. Compute cooldown duration and emit `countdownStart` and control event.
- * 2. Enable the Next button and mark it ready.
- * 3. Emit `nextRoundTimerReady` and start an engine-backed round timer.
- * 4. On timer `expired`: mark Next ready, emit countdown finished events, and dispatch `ready`.
- * 5. Start a fallback timeout to ensure readiness if the engine timer fails.
- */
-export async function initInterRoundCooldown(machine) {
-  const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
-  const { createRoundTimer } = await import("../timers/createRoundTimer.js");
-  const { startCoolDown: engineStartCoolDown } = await import("../battleEngineFacade.js");
-  const duration = computeNextRoundCooldown();
-
-  // Notify UI layers that a countdown is starting.
-  try {
-    emitBattleEvent("countdownStart", { duration });
-  } catch (err) {
-    debugLog("Failed to emit countdownStart event:", err);
-  }
-  // PRD control event: countdown started
-  try {
-    emitBattleEvent("control.countdown.started", {
-      durationMs: Math.max(0, Number(duration) || 0) * 1000
-    });
-  } catch {}
-
-  // Enable the Next button during cooldown so users can skip immediately
-  // and mark readiness now.
-  try {
-    const nextButton =
-      document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
-    /**
-     * Mark the Next button as ready for advancement.
-     * @param {HTMLElement} btn
-     */
-    const markReady = (btn) => {
-      btn.disabled = false;
-      btn.dataset.nextReady = "true";
-    };
-    if (nextButton) {
-      markReady(nextButton);
-      setTimeout(() => {
-        const btn = document.getElementById("next-button");
-        if (btn && btn.dataset.nextReady !== "true" && machine?.getState?.() === "cooldown") {
-          markReady(btn);
-        }
-      }, 0);
-    }
-  } catch {}
-
-  try {
-    emitBattleEvent("nextRoundTimerReady");
-  } catch {}
-
-  // Orchestrator-owned cooldown timer; on expiry, mark Next ready and advance.
-  const timer = createRoundTimer({ starter: engineStartCoolDown });
-  timer.on("expired", () => {
-    try {
-      const nextButton = document.getElementById("next-button");
-      if (nextButton) nextButton.dataset.nextReady = "true";
-    } catch {}
-    try {
-      emitBattleEvent("cooldown.timer.expired");
-      emitBattleEvent("nextRoundTimerReady");
-      emitBattleEvent("countdownFinished");
-      // PRD control event: countdown completed
-      emitBattleEvent("control.countdown.completed");
-    } catch {}
-    try {
-      machine.dispatch("ready");
-    } catch {}
-  });
-  timer.on("tick", (remaining) => {
-    try {
-      emitBattleEvent("cooldown.timer.tick", {
-        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
-      });
-    } catch {}
-  });
-  timer.start(duration);
-  // Fallback: ensure readiness even if the engine timer is mocked or fails
-  try {
-    const { setupFallbackTimer } = await import("./roundManager.js");
-    setupFallbackTimer(Math.max(0, Number(duration) || 0) * 1000 + 200, () => {
-      try {
-        const btn = document.getElementById("next-button");
-        if (btn) btn.dataset.nextReady = "true";
-      } catch {}
-      try {
-        emitBattleEvent("nextRoundTimerReady");
-        emitBattleEvent("countdownFinished");
-      } catch {}
-      try {
-        machine.dispatch("ready");
-      } catch {}
-    });
-  } catch {}
 }
 
 /**

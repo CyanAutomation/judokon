@@ -22,6 +22,11 @@ export { getNextRoundControls } from "./roundManager.js";
 // Track timeout for cooldown warning to avoid duplicates.
 let cooldownWarningTimeoutId = null;
 
+const ADVANCE_TRANSITIONS = {
+  roundDecision: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } },
+  waitingForPlayerAction: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } }
+};
+
 // Skip handler utilities moved to skipHandler.js
 
 /**
@@ -45,17 +50,14 @@ export async function advanceWhenReady(btn, resolveReady) {
   btn.disabled = true;
   delete btn.dataset.nextReady;
   const { state } = safeGetSnapshot();
-  if (state && state !== "cooldown") {
-    if (state === "roundDecision" || state === "waitingForPlayerAction") {
-      try {
-        await dispatchBattleEvent("interrupt", { reason: "advanceNextFromNonCooldown" });
-      } catch {}
-    }
+  const t = state && state !== "cooldown" ? ADVANCE_TRANSITIONS[state] : null;
+  if (t) {
+    try {
+      await dispatchBattleEvent(t.event, t.payload);
+    } catch {}
   }
   await dispatchBattleEvent("ready");
-  if (typeof resolveReady === "function") {
-    resolveReady();
-  }
+  if (typeof resolveReady === "function") resolveReady();
   setSkipHandler(null);
 }
 

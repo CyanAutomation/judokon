@@ -1,0 +1,109 @@
+import { getDefaultTimer } from "../timerUtils.js";
+import { setupFallbackTimer } from "./roundManager.js";
+import { isTestModeEnabled } from "../testModeUtils.js";
+import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { guard, guardAsync } from "./guard.js";
+
+/**
+ * Initialize the match start cooldown timer.
+ *
+ * @param {object} machine State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Resolve `matchStartTimer` with 3s default.
+ * 2. Emit countdown start events.
+ * 3. On `countdownFinished` → dispatch `ready`.
+ * 4. In tests → finish immediately.
+ * 5. Otherwise schedule fallback timer to dispatch `ready`.
+ */
+export async function initStartCooldown(machine) {
+  let duration = 3;
+  try {
+    const val = await getDefaultTimer("matchStartTimer");
+    if (typeof val === "number") duration = val;
+  } catch {}
+  duration = Math.max(1, Number(duration));
+  let fallback;
+  const finish = () => {
+    guard(() => offBattleEvent("countdownFinished", finish));
+    guard(() => clearTimeout(fallback));
+    guard(() => emitBattleEvent("control.countdown.completed"));
+    guardAsync(() => machine.dispatch("ready"));
+  };
+  onBattleEvent("countdownFinished", finish);
+  guard(() => emitBattleEvent("countdownStart", { duration }));
+  guard(() => emitBattleEvent("control.countdown.started", { durationMs: duration * 1000 }));
+  if (isTestModeEnabled && isTestModeEnabled()) {
+    if (typeof queueMicrotask === "function") queueMicrotask(finish);
+    else setTimeout(finish, 0);
+    return;
+  }
+  const schedule = typeof setupFallbackTimer === "function" ? setupFallbackTimer : setTimeout;
+  fallback = schedule(duration * 1000 + 200, finish);
+}
+
+/**
+ * Initialize the inter-round cooldown timer.
+ *
+ * @param {object} machine State machine instance.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Compute cooldown duration and emit countdown start events.
+ * 2. Enable the Next button and mark it ready.
+ * 3. Start engine-backed timer; on expire → mark ready, emit events, dispatch `ready`.
+ * 4. Schedule fallback timer with same completion path.
+ */
+export async function initInterRoundCooldown(machine) {
+  const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
+  const { createRoundTimer } = await import("../timers/createRoundTimer.js");
+  const { startCoolDown } = await import("../battleEngineFacade.js");
+  const duration = computeNextRoundCooldown();
+  const markReady = (btn) => {
+    btn.disabled = false;
+    btn.dataset.nextReady = "true";
+  };
+  guard(() => emitBattleEvent("countdownStart", { duration }));
+  guard(() => emitBattleEvent("control.countdown.started", { durationMs: duration * 1000 }));
+  const btn =
+    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+  if (btn) {
+    markReady(btn);
+    setTimeout(() => {
+      const b = document.getElementById("next-button");
+      if (b && b.dataset.nextReady !== "true" && machine?.getState?.() === "cooldown") markReady(b);
+    }, 0);
+  }
+  guard(() => emitBattleEvent("nextRoundTimerReady"));
+  const timer = createRoundTimer({ starter: startCoolDown });
+  timer.on("expired", () => {
+    guard(() => {
+      const b = document.getElementById("next-button");
+      if (b) b.dataset.nextReady = "true";
+    });
+    for (const evt of [
+      "cooldown.timer.expired",
+      "nextRoundTimerReady",
+      "countdownFinished",
+      "control.countdown.completed"
+    ]) {
+      guard(() => emitBattleEvent(evt));
+    }
+    guardAsync(() => machine.dispatch("ready"));
+  });
+  timer.on("tick", (r) =>
+    guard(() =>
+      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, Number(r) || 0) * 1000 })
+    )
+  );
+  timer.start(duration);
+  setupFallbackTimer(duration * 1000 + 200, () => {
+    guard(() => {
+      const b = document.getElementById("next-button");
+      if (b) b.dataset.nextReady = "true";
+    });
+    for (const evt of ["nextRoundTimerReady", "countdownFinished"]) {
+      guard(() => emitBattleEvent(evt));
+    }
+    guardAsync(() => machine.dispatch("ready"));
+  });
+}
