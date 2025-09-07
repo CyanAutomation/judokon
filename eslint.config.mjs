@@ -13,6 +13,7 @@ export default defineConfig([
       "*.log",
       "*.tmp",
       ".eslintcache",
+      "eslint-dry.json",
       ".git/**",
       "src/vendor/**"
     ], // 🔥 Updated ignores
