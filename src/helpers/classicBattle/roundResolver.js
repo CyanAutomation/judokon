@@ -155,7 +155,7 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
  */
 export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   try {
-    debugLog("DEBUG: computeRoundResult start", { stat, playerVal, opponentVal });
+    debugLog("DEBUG: evaluateOutcome start", { stat, playerVal, opponentVal });
   } catch {}
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
