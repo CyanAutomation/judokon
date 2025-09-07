@@ -6,6 +6,7 @@ import { getPrdTaskStats } from "./prdTaskStats.js";
 import { getSanitizer } from "./sanitizeHtml.js";
 import { createSpinner } from "../components/Spinner.js";
 import { getFeatureFlag } from "../helpers/settingsCache.js";
+import { pushHistory, replaceHistory, bindHistory } from "./prdReader/history.js";
 
 export class SidebarState {
   /**
@@ -16,7 +17,40 @@ export class SidebarState {
   }
 
   /**
-   * Select a document by index and optionally update history and focus.
+   * Update sidebar index and optionally render and focus.
+   *
+   * @param {number} i
+   * @param {boolean} [skipList=false]
+   * @param {boolean} [focusContent=true]
+   */
+  selectDoc(i, skipList = false, focusContent = true) {
+    this.index = ((i % this.files.length) + this.files.length) % this.files.length;
+    if (!skipList && this.listSelect) this.listSelect(this.index);
+    const hadDoc = this.ensureDocSync(this.index);
+    const done = () => this.renderAndFocus(focusContent);
+    if (hadDoc) done();
+    else this.fetchOne(this.index).then(done);
+  }
+
+  /**
+   * Push current document to history.
+   */
+  updateHistory() {
+    pushHistory(this.baseNames, this.index);
+  }
+
+  /**
+   * Render current document and optionally focus container.
+   *
+   * @param {boolean} [focusContent=true]
+   */
+  renderAndFocus(focusContent = true) {
+    renderDocument(this, this.index);
+    if (focusContent) this.container.focus();
+  }
+
+  /**
+   * Select a document by index and optionally update history.
    *
    * @param {number} i
    * @param {boolean} [updateHistory=true]
@@ -24,20 +58,8 @@ export class SidebarState {
    * @param {boolean} [focusContent=true]
    */
   selectDocSync(i, updateHistory = true, skipList = false, focusContent = true) {
-    this.index = ((i % this.files.length) + this.files.length) % this.files.length;
-    if (!skipList && this.listSelect) this.listSelect(this.index);
-    const hadDoc = this.ensureDocSync(this.index);
-    const renderAndFocus = () => {
-      renderDocument(this, this.index);
-      if (focusContent) this.container.focus();
-    };
-    if (hadDoc) renderAndFocus();
-    else this.fetchOne(this.index).then(renderAndFocus);
-    if (updateHistory) {
-      const url = new URL(window.location);
-      url.searchParams.set("doc", this.baseNames[this.index]);
-      history.pushState({ index: this.index }, "", url.pathname + url.search);
-    }
+    this.selectDoc(i, skipList, focusContent);
+    if (updateHistory) this.updateHistory();
   }
 }
 
@@ -110,7 +132,7 @@ export function createSidebarList(labels, placeholder, onSelect) {
  *
  * @pseudocode
  * 1. Attach click handlers for next/prev buttons.
- * 2. Handle popstate, keyboard arrows, and swipe gestures.
+ * 2. Map keyboard and touch events declaratively.
  * 3. Use provided callbacks to navigate between documents.
  *
  * @param {object} opts
@@ -119,35 +141,31 @@ export function createSidebarList(labels, placeholder, onSelect) {
  * @param {NodeListOf<HTMLElement>} opts.prevButtons
  * @param {Function} opts.showNext
  * @param {Function} opts.showPrev
- * @param {(i:number, updateHistory?:boolean) => void} opts.selectDoc
  */
-export function bindNavigation({
-  container,
-  nextButtons,
-  prevButtons,
-  showNext,
-  showPrev,
-  selectDoc
-}) {
+export function bindNavigation({ container, nextButtons, prevButtons, showNext, showPrev }) {
   nextButtons.forEach((btn) => btn.addEventListener("click", showNext));
   prevButtons.forEach((btn) => btn.addEventListener("click", showPrev));
-  window.addEventListener("popstate", (e) => {
-    const i = e.state && typeof e.state.index === "number" ? e.state.index : null;
-    if (i !== null) selectDoc(i, false);
-  });
-  document.addEventListener("keydown", (e) => {
-    if (document.activeElement !== container) return;
-    if (e.key === "ArrowRight") showNext();
-    if (e.key === "ArrowLeft") showPrev();
-  });
   let startX = 0;
-  container.addEventListener("touchstart", (e) => {
-    startX = e.touches[0].clientX;
-  });
-  container.addEventListener("touchend", (e) => {
-    const diff = e.changedTouches[0].clientX - startX;
-    if (Math.abs(diff) > 30) diff < 0 ? showNext() : showPrev();
-  });
+  const handlers = {
+    keydown: (e) => {
+      if (document.activeElement !== container) return;
+      if (e.key === "ArrowRight") showNext();
+      if (e.key === "ArrowLeft") showPrev();
+    },
+    touchstart: (e) => {
+      startX = e.touches[0].clientX;
+    },
+    touchend: (e) => {
+      const diff = e.changedTouches[0].clientX - startX;
+      if (Math.abs(diff) > 30) diff < 0 ? showNext() : showPrev();
+    }
+  };
+  const eventMap = [
+    { target: document, type: "keydown", handler: handlers.keydown },
+    { target: container, type: "touchstart", handler: handlers.touchstart },
+    { target: container, type: "touchend", handler: handlers.touchend }
+  ];
+  eventMap.forEach(({ target, type, handler }) => target.addEventListener(type, handler));
 }
 
 /**
@@ -347,9 +365,9 @@ export function initNavigationHandlers(sidebar, _files) {
     nextButtons,
     prevButtons,
     showNext,
-    showPrev,
-    selectDoc: (i, updateHistory) => sidebar.selectDocSync(i, updateHistory)
+    showPrev
   });
+  bindHistory((i) => sidebar.selectDocSync(i, false));
 }
 
 /**
@@ -368,9 +386,7 @@ export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const sidebar = setupSidebarUI(docData);
   if (!sidebar) return;
   initNavigationHandlers(sidebar, sidebar.files);
-  const url = new URL(window.location);
-  url.searchParams.set("doc", sidebar.baseNames[sidebar.index]);
-  history.replaceState({ index: sidebar.index }, "", url.toString());
+  replaceHistory(sidebar.baseNames, sidebar.index);
 
   sidebar.spinner.show();
   if (!sidebar.ensureDocSync(sidebar.index)) {
