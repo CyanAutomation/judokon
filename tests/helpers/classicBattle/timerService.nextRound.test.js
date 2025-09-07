@@ -166,6 +166,19 @@ describe("timerService next round handling", () => {
     expect(val).toBe(1);
   });
 
+  it("computeNextRoundCooldown is 0 in headless mode", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { computeNextRoundCooldown } = await import(
+      "../../../src/helpers/timers/computeNextRoundCooldown.js"
+    );
+    const { setHeadlessMode } = await import("../../../src/helpers/headlessMode.js");
+    setHeadlessMode(true);
+    expect(computeNextRoundCooldown()).toBe(0);
+    setHeadlessMode(false);
+    expect(computeNextRoundCooldown()).toBeGreaterThanOrEqual(1);
+    vi.restoreAllMocks();
+  });
+
   it("CooldownRenderer shows and updates", async () => {
     const timerMod = await import("../../../src/helpers/timers/createRoundTimer.js");
     const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");

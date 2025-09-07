@@ -26,6 +26,20 @@ import { battleCLI, onKeyDown } from "src/pages/index.js";
 - `getEscapeHandledPromise` resolves after Escape key processing, simplifying async tests.
 - Background clicks advance from **round over** or **cooldown** states; clicks on stat rows are ignored.
 
+## Headless simulations
+
+Bulk AI or Monte Carlo runs can remove waits by enabling headless mode:
+
+```js
+import { setHeadlessMode } from "../helpers/headlessMode.js";
+import { setTestMode } from "../helpers/testModeUtils.js";
+
+setHeadlessMode(true); // no cooldown delays
+setTestMode(true); // deterministic RNG
+```
+
+Headless mode skips inter-round cooldowns and opponent reveal sleeps. Combine it with test mode for reproducible, fast CLI matches.
+
 ## Battle state transitions
 
 `handleBattleState` orchestrates UI changes when the battle machine moves between states. It delegates to helpers:
