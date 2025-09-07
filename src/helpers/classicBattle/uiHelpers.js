@@ -29,6 +29,7 @@ import {
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
+import { getOpponentDelay } from "./snackbar.js";
 export { showSelectionPrompt, setOpponentDelay, getOpponentDelay } from "./snackbar.js";
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
