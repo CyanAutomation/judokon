@@ -125,12 +125,12 @@ export function bindStatSelected() {
       if (!IS_VITEST) console.log("INFO: statSelected event handler");
     } catch {}
     const { stat, store, opts } = e.detail || {};
-    if (!stat) return;
-    const btn = store?.statButtonEls?.[stat];
+    if (!stat || !store || !store.statButtonEls) return;
+    const btn = store.statButtonEls[stat];
     if (btn) {
       try {
         if (!IS_VITEST)
-          console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
+          console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
       } catch {}
       btn.classList.add("selected");
       if (!opts || !opts.delayOpponentMessage) {
@@ -281,12 +281,12 @@ export function bindRoundUIEventHandlersDynamic() {
   });
   onBattleEvent("statSelected", async (e) => {
     const { stat, store, opts } = e.detail || {};
-    if (!stat) return;
-    const btn = store?.statButtonEls?.[stat];
+    if (!stat || !store || !store.statButtonEls) return;
+    const btn = store.statButtonEls[stat];
     if (btn) {
       try {
         if (!IS_VITEST)
-          console.warn(`[test] addSelected: stat=${stat} label=${btn.textContent?.trim() || ""}`);
+          console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
       } catch {}
       btn.classList.add("selected");
       if (!opts || !opts.delayOpponentMessage) {
