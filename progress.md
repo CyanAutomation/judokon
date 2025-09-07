@@ -224,3 +224,23 @@ Phase 4 — Actions & Outcome
 - Focused runs: PASS
   - Unit: `npx vitest run tests/classicBattle/resolution.test.js`
 - Note: Server-based Playwright timer spec already covers countdown visibility. A Playwright resolution spec will be added once stat click/UI wiring is introduced, to observe scoreboard change without waiting for a 30s timeout.
+
+
+Phase 5 — Actions & Outcome
+- Added failing tests first:
+  - Unit: tests/classicBattle/cooldown.test.js — after deterministic round expiry, asserts `#next-button` becomes enabled with `data-next-ready="true"` and that clicking Next resolves the cooldown `ready` promise.
+  - Playwright: playwright/battle-classic/cooldown.spec.js — end-to-end confirms the same behavior in the browser.
+- Implemented wiring:
+  - src/pages/battleClassic.init.js
+    - Wires `#next-button` to `onNextButtonClick`.
+    - Starts inter-round cooldown via `startCooldown(store)` immediately after outcome in both Vitest and browser paths.
+  - src/helpers/timerUtils.js
+    - Adds guarded test hook `window.__OVERRIDE_TIMERS` so e2e can shorten the round timer without changing data files.
+  - playwright/battle-classic/cooldown.spec.js
+    - Uses `page.addInitScript` to set `window.__OVERRIDE_TIMERS = { roundTimer: 1 }` and `window.__NEXT_ROUND_COOLDOWN_MS = 1000` for a fast path.
+- Focused runs: PASS
+  - Unit: `npm run -s test -- tests/classicBattle/cooldown.test.js` → 1 passed
+  - Playwright: `npx playwright test playwright/battle-classic/cooldown.spec.js -c playwright.config.js --reporter=line` → 1 passed (~3.7s)
+- Notes:
+  - No dynamic imports added on hot paths; Next wiring uses existing helpers.
+  - All console outputs in the path remain guarded with `[test]` and are suppressed in Vitest.
