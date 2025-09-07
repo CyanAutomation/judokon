@@ -7,4 +7,3 @@ test.describe("Classic Battle quit flow", () => {
     await expect(page.locator("#confirm-quit-button")).toBeVisible();
   });
 });
-
