@@ -211,8 +211,8 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * 2. Mark the selection and coerce stat values via `applySelectionToStore`.
  * 3. Halt timers with `cleanupTimers`.
  * 4. Emit the `statSelected` event via `emitSelectionEvent`.
- * 5. Dispatch `statSelected` to advance the battle state machine.
- * 6. If the machine hasn't cleared `store.playerChoice`, resolve the round via
+ * 5. Dispatch `statSelected` and query `getBattleState`.
+ * 6. If a state is returned, exit early; otherwise resolve via
  *    `resolveRoundDirect` and dispatch `roundResolved`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
@@ -232,9 +232,9 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * 2. Apply selection to `store` and coerce stat values with `applySelectionToStore`.
  * 3. Call `cleanupTimers` to halt timers and clear pending timeouts.
  * 4. Emit `statSelected` with selection details and any testing options.
- * 5. Dispatch the battle machine `statSelected` event; if the machine clears
- *    `store.playerChoice` then let it resolve the round.
- * 6. Otherwise call `resolveRoundDirect` to compute the result and dispatch `roundResolved`.
+ * 5. Dispatch the battle machine `statSelected` event then read `getBattleState`.
+ * 6. If a state is returned, return early; otherwise call `resolveRoundDirect`
+ *    and dispatch `roundResolved`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -249,14 +249,14 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
-  let resolvedByMachine = false;
   try {
     await dispatchBattleEvent("statSelected");
-    resolvedByMachine = store.playerChoice === null;
   } catch {}
-  if (resolvedByMachine) {
-    return;
-  }
+  try {
+    if (getBattleState()) {
+      return;
+    }
+  } catch {}
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
   try {
     await dispatchBattleEvent("roundResolved");

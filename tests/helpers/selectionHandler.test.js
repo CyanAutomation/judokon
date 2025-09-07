@@ -12,7 +12,7 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
 }));
 
 vi.mock("../../src/helpers/classicBattle/eventBus.js", () => ({
-  getBattleState: vi.fn(() => "waitingForPlayerAction")
+  getBattleState: vi.fn()
 }));
 
 vi.mock("../../src/helpers/classicBattle/cardStatUtils.js", () => ({
@@ -45,6 +45,7 @@ describe("handleStatSelection helpers", () => {
   let emitBattleEvent;
   let showSnackbar;
   let dispatchBattleEvent;
+  let getBattleState;
 
   beforeEach(async () => {
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
@@ -52,6 +53,8 @@ describe("handleStatSelection helpers", () => {
     ({ emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js"));
     ({ showSnackbar } = await import("../../src/helpers/showSnackbar.js"));
     ({ dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js"));
+    ({ getBattleState } = await import("../../src/helpers/classicBattle/eventBus.js"));
+    getBattleState.mockReturnValue(null);
   });
 
   it("ignores repeated selections", async () => {
