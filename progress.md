@@ -230,6 +230,7 @@ Phase 5 — Actions & Outcome
 Phase 6 — Actions & Outcome (Stat buttons + selection)
 
 Phase 7 — Actions & Outcome (Opponent reveal message)
+
 - Added tests first:
   - Unit (handler-level): tests/classicBattle/opponent-message-handler.test.js — binds dynamic UI handlers and verifies `statSelected` leads to a delayed snackbar “Opponent is choosing…”.
   - Playwright: playwright/battle-classic/opponent-reveal.spec.js — after clicking a stat, shows “Opponent is choosing…” before outcome; then outcome and cooldown follow.

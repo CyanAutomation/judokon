@@ -28,4 +28,3 @@ describe("Classic Battle quit flow", () => {
     expect(confirmBtn).toBeTruthy();
   });
 });
-
