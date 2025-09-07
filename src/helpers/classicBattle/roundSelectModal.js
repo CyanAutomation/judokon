@@ -27,7 +27,12 @@ export function shouldAutostart() {
   return false;
 }
 
-function persistRoundSelection(value) {
+/**
+ * Persist round selection and log the event.
+ *
+ * @param {number} value - Points needed to win the round.
+ */
+function persistRoundAndLog(value) {
   try {
     wrap(BATTLE_POINTS_TO_WIN).set(value);
   } catch {}
@@ -50,7 +55,7 @@ async function startRound(value, onStart, emitEvents) {
 }
 
 async function handleRoundSelect({ value, modal, cleanupTooltips, onStart, emitEvents }) {
-  persistRoundSelection(value);
+  persistRoundAndLog(value);
   modal.close();
   try {
     cleanupTooltips();
@@ -112,7 +117,7 @@ export async function initRoundSelectModal(onStart) {
       handleRoundSelect({
         value: r.value,
         modal,
-        cleanupTooltips: () => cleanupTooltips(),
+        cleanupTooltips,
         onStart,
         emitEvents: true
       })
