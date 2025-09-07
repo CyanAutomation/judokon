@@ -2,13 +2,11 @@ import { updateDebugPanel } from "./debugPanel.js";
 import { showSelectionPrompt } from "./snackbar.js";
 // Use index re-exports so tests can vi.mock("../battle/index.js") and spy
 import { resetStatButtons } from "../battle/index.js";
-import { syncScoreDisplay } from "./uiService.js";
 import { startTimer } from "./timerService.js";
 import { handleStatSelectionTimeout } from "./autoSelectHandlers.js";
 
 import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
-import { showMatchSummaryModal } from "./uiService.js";
 import { handleReplay, isOrchestrated } from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getCardStatValue } from "./cardStatUtils.js";
@@ -16,6 +14,15 @@ import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
+
+let syncScoreDisplay = () => {};
+let showMatchSummaryModal = null;
+import("./uiService.js")
+  .then((m) => {
+    syncScoreDisplay = m.syncScoreDisplay || (() => {});
+    showMatchSummaryModal = m.showMatchSummaryModal;
+  })
+  .catch(() => {});
 
 /**
  * Apply UI updates for a newly started round.
@@ -45,7 +52,9 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   // ready after cooldown so tests and users can advance immediately.
   const roundResultEl = document.getElementById("round-result");
   if (roundResultEl) roundResultEl.textContent = "";
-  syncScoreDisplay();
+  try {
+    syncScoreDisplay();
+  } catch {}
   scoreboard.updateRoundCounter(roundNumber);
   showSelectionPrompt();
   const playerCard =
@@ -168,9 +177,11 @@ export function bindRoundResolved() {
     } catch {}
     if (result.matchEnded) {
       scoreboard.clearRoundCounter();
-      showMatchSummaryModal(result, async () => {
-        await handleReplay(store);
-      });
+      try {
+        showMatchSummaryModal?.(result, async () => {
+          await handleReplay(store);
+        });
+      } catch {}
       emitBattleEvent("matchOver");
     } else {
       try {
@@ -268,7 +279,6 @@ export function bindRoundUIEventHandlersDynamic() {
     return p;
   };
   const scoreboardP = silence(import("../setupScoreboard.js"));
-  const uiServiceP = silence(import("./uiService.js"));
   const showSnackbarP = silence(import("../showSnackbar.js"));
   const computeNextRoundCooldownP = silence(import("../timers/computeNextRoundCooldown.js"));
   const roundManagerP = silence(import("./roundManager.js"));
@@ -314,24 +324,22 @@ export function bindRoundUIEventHandlersDynamic() {
         scoreboard.updateScore(result.playerScore, result.opponentScore);
       } else {
         try {
-          const ui = await uiServiceP;
-          ui.syncScoreDisplay?.();
+          syncScoreDisplay();
         } catch {}
       }
     } catch {}
     if (result.matchEnded) {
       try {
         const scoreboard = await scoreboardP;
-        const ui = await uiServiceP;
         const roundManager = await roundManagerP;
         scoreboard.clearRoundCounter?.();
-        if (ui && typeof ui.showMatchSummaryModal === "function") {
-          await ui.showMatchSummaryModal(result, async () => {
+        try {
+          await showMatchSummaryModal?.(result, async () => {
             if (typeof roundManager.handleReplay === "function") {
               await roundManager.handleReplay(store);
             }
           });
-        }
+        } catch {}
         emitBattleEvent("matchOver");
       } catch {}
     } else {
