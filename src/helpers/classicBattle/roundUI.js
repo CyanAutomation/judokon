@@ -14,15 +14,30 @@ import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
-
-let syncScoreDisplay = () => {};
+let syncScoreDisplay = () => {
+  try {
+    const el = document.querySelector("header #score-display");
+    if (el && !el.textContent) el.textContent = "You: 0\nOpponent: 0";
+  } catch {}
+};
 let showMatchSummaryModal = null;
-import("./uiService.js")
-  .then((m) => {
-    syncScoreDisplay = m.syncScoreDisplay || (() => {});
-    showMatchSummaryModal = m.showMatchSummaryModal;
-  })
-  .catch(() => {});
+function preloadUiService() {
+  import("./uiService.js")
+    .then((m) => {
+      syncScoreDisplay = m.syncScoreDisplay || syncScoreDisplay;
+      showMatchSummaryModal = m.showMatchSummaryModal;
+    })
+    .catch(() => {});
+}
+try {
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+    window.requestIdleCallback(preloadUiService);
+  } else {
+    queueMicrotask(preloadUiService);
+  }
+} catch {
+  preloadUiService();
+}
 
 /**
  * Apply UI updates for a newly started round.

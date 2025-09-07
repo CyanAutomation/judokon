@@ -30,13 +30,28 @@ import { guard } from "./guard.js";
 import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 export { showSelectionPrompt, setOpponentDelay, getOpponentDelay } from "./snackbar.js";
-
-let syncScoreDisplay = () => {};
-import("./uiService.js")
-  .then((m) => {
-    syncScoreDisplay = m.syncScoreDisplay || (() => {});
-  })
-  .catch(() => {});
+let syncScoreDisplay = () => {
+  try {
+    const el = document.querySelector("header #score-display");
+    if (el && !el.textContent) el.textContent = "You: 0\nOpponent: 0";
+  } catch {}
+};
+function preloadUiService() {
+  import("./uiService.js")
+    .then((m) => {
+      syncScoreDisplay = m.syncScoreDisplay || syncScoreDisplay;
+    })
+    .catch(() => {});
+}
+try {
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+    window.requestIdleCallback(preloadUiService);
+  } else {
+    queueMicrotask(preloadUiService);
+  }
+} catch {
+  preloadUiService();
+}
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
  *
