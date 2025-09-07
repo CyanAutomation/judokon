@@ -1441,23 +1441,14 @@ export function handleRoundOverKey(key) {
  * @returns {boolean} True when the key was handled.
  * @pseudocode
  * if key is Enter or Space:
- *   clear timers
- *   clear bottom line
+ *   clearCooldownTimers()
  *   dispatch 'ready'
  *   return true
  * return false
  */
 export function handleCooldownKey(key) {
   if (key === "enter" || key === " ") {
-    try {
-      if (cooldownTimer) clearTimeout(cooldownTimer);
-    } catch {}
-    try {
-      if (cooldownInterval) clearInterval(cooldownInterval);
-    } catch {}
-    cooldownTimer = null;
-    cooldownInterval = null;
-    clearBottomLine();
+    clearCooldownTimers();
     try {
       safeDispatch("ready");
     } catch {}
@@ -1522,11 +1513,15 @@ function handleStatClick(statDiv, event) {
  * @pseudocode
  * if cooldownTimer -> clearTimeout
  * if cooldownInterval -> clearInterval
- * null timers and call clearBottomLine()
+ * null timers then clearBottomLine()
  */
-function clearAdvanceTimers() {
-  if (cooldownTimer) clearTimeout(cooldownTimer);
-  if (cooldownInterval) clearInterval(cooldownInterval);
+function clearCooldownTimers() {
+  try {
+    if (cooldownTimer) clearTimeout(cooldownTimer);
+  } catch {}
+  try {
+    if (cooldownInterval) clearInterval(cooldownInterval);
+  } catch {}
   cooldownTimer = null;
   cooldownInterval = null;
   clearBottomLine();
@@ -1568,12 +1563,12 @@ function advanceRoundOver() {
  * Clear timers then dispatch ready.
  *
  * @pseudocode
- * clearAdvanceTimers()
+ * clearCooldownTimers()
  * machine = getMachine()
  * machine.dispatch("ready") if available
  */
 function advanceCooldown() {
-  clearAdvanceTimers();
+  clearCooldownTimers();
   try {
     const machine = getMachine();
     if (machine) machine.dispatch("ready");
@@ -1759,15 +1754,7 @@ function ensureNextRoundButton() {
     btn.textContent = "Next";
     btn.setAttribute("aria-label", "Continue to next round");
     btn.addEventListener("click", () => {
-      try {
-        if (cooldownTimer) clearTimeout(cooldownTimer);
-      } catch {}
-      try {
-        if (cooldownInterval) clearInterval(cooldownInterval);
-      } catch {}
-      cooldownTimer = null;
-      cooldownInterval = null;
-      clearBottomLine();
+      clearCooldownTimers();
       try {
         safeDispatch("continue");
       } catch {}
