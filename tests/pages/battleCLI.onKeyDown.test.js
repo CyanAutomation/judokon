@@ -105,6 +105,7 @@ describe("battleCLI onKeyDown", () => {
     const li = document.createElement("li");
     list.appendChild(li);
     document.getElementById("cli-main").appendChild(list);
+    li.tabIndex = -1;
     li.focus();
     const battleHandlers = await import("../../src/pages/battleCLI/battleHandlers.js");
     const spy = vi.spyOn(battleHandlers, "handleStatListArrowKey");
