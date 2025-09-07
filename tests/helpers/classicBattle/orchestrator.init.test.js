@@ -38,9 +38,7 @@ describe("classic battle orchestrator init preloads", () => {
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
     const orchestrator = await import(`${testPath}/classicBattle/orchestrator.js`);
-    await expect(
-      orchestrator.initClassicBattleOrchestrator({})
-    ).resolves.toBeDefined();
+    await expect(orchestrator.initClassicBattleOrchestrator({})).resolves.toBeDefined();
     expect(preloadTimerUtils).toHaveBeenCalled();
     expect(initScoreboardAdapter).toHaveBeenCalled();
   });
