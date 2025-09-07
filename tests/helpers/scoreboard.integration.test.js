@@ -4,16 +4,15 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
 }));
 
-// We intentionally avoid calling setupScoreboard's DOM initializer here.
-// Timer controls are injected directly so functions work without explicit setup.
-
 let roundDrift;
+let scoreboard;
 
-describe("Scoreboard integration without explicit init", () => {
+describe("Scoreboard integration without setupScoreboard", () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     vi.resetModules();
     roundDrift = undefined;
+    scoreboard = undefined;
     document.body.innerHTML = "";
 
     // Header structure as in battleJudoka.html
@@ -73,12 +72,29 @@ describe("Scoreboard integration without explicit init", () => {
       updateSnackbar: vi.fn()
     }));
 
-    const { initScoreboard } = await import("../../src/components/Scoreboard.js");
-    initScoreboard(undefined);
+    const { Scoreboard } = await import("../../src/components/Scoreboard.js");
+    scoreboard = new Scoreboard({
+      messageEl: document.getElementById("round-message"),
+      timerEl: document.getElementById("next-round-timer"),
+      roundCounterEl: document.getElementById("round-counter"),
+      scoreEl: document.getElementById("score-display")
+    });
+
+    vi.mock("../../src/helpers/setupScoreboard.js", () => ({
+      setupScoreboard: vi.fn(),
+      showMessage: scoreboard.showMessage.bind(scoreboard),
+      updateScore: scoreboard.updateScore.bind(scoreboard),
+      clearMessage: scoreboard.clearMessage.bind(scoreboard),
+      showTemporaryMessage: scoreboard.showTemporaryMessage.bind(scoreboard),
+      clearTimer: scoreboard.clearTimer.bind(scoreboard),
+      updateTimer: scoreboard.updateTimer.bind(scoreboard),
+      showAutoSelect: scoreboard.showAutoSelect.bind(scoreboard),
+      updateRoundCounter: scoreboard.updateRoundCounter.bind(scoreboard),
+      clearRoundCounter: scoreboard.clearRoundCounter.bind(scoreboard)
+    }));
   });
 
-  it("renders messages, score, round counter, and round timer without init", async () => {
-    const scoreboard = await import("../../src/helpers/setupScoreboard.js");
+  it("renders messages, score, round counter, and round timer without setup", async () => {
     // Messages
     scoreboard.showMessage("Ready to fight!");
     await vi.advanceTimersByTimeAsync(220);
@@ -119,8 +135,8 @@ describe("Scoreboard integration without explicit init", () => {
   });
 
   it("shows fallback message on round timer drift", async () => {
-    const scoreboard = await import("../../src/helpers/setupScoreboard.js");
-    const showMessageSpy = vi.spyOn(scoreboard, "showMessage");
+    const api = await import("../../src/helpers/setupScoreboard.js");
+    const showMessageSpy = vi.spyOn(api, "showMessage");
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
     await startTimer(async () => {}, { selectionMade: false });
     roundDrift(2);

@@ -19,6 +19,7 @@ describe("Scoreboard component", () => {
     header = document.createElement("header");
     createScoreboard(header);
     document.body.appendChild(header);
+    initScoreboard(header);
   });
 
   it("creates DOM structure with proper aria attributes", () => {
