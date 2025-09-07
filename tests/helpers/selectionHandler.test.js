@@ -73,6 +73,9 @@ describe("handleStatSelection helpers", () => {
       <div id="round-message">hi</div>
     `;
 
+    const { initScoreboard } = await import("../../src/components/Scoreboard.js");
+    initScoreboard(document.body);
+
     await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
 
     expect(document.getElementById("next-round-timer").textContent).toBe("");

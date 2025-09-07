@@ -24,7 +24,7 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     `;
     document.body.appendChild(header);
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
-    initScoreboard(undefined);
+    initScoreboard(header);
     const { initScoreboardAdapter } = await import(
       "../../src/helpers/classicBattle/scoreboardAdapter.js"
     );

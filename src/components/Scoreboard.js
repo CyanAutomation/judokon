@@ -1,100 +1,39 @@
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
 import { t } from "../helpers/i18n.js";
 
-let messageEl,
-  timerEl,
-  roundCounterEl,
-  scoreEl,
-  startCoolDown,
-  pauseTimer,
-  resumeTimer,
-  scheduler,
-  visibilityHandler,
-  focusHandler,
-  scoreRafId,
-  currentPlayer = 0,
-  currentOpponent = 0;
-
-// Debounce window for aria-live updates to reduce announcement chatter.
-// Reduce announcement debounce to 0 so tests observing DOM textContent see
-// immediate updates. This keeps production behaviour intact when JS timers
-// are real while avoiding flakiness under fake timers used by tests.
-let announceDelayMs = 0;
-const announceTimers = new WeakMap();
-let outcomeLockUntil = 0;
-
-function setLiveText(el, text) {
-  if (!el) return;
-  try {
-    if (announceDelayMs <= 0) {
-      el.textContent = text;
-      return;
-    }
-    const prev = announceTimers.get(el);
-    if (prev) clearTimeout(prev);
-    const id = setTimeout(() => {
-      el.textContent = text;
-      announceTimers.delete(el);
-    }, announceDelayMs);
-    announceTimers.set(el, id);
-  } catch {
-    try {
-      el.textContent = text;
-    } catch {}
-  }
-}
-
 /**
- * Create a battle scoreboard showing round messages, stat-selection timer, round counter and score.
+ * Create a battle scoreboard showing round messages, stat-selection timer,
+ * round counter and score.
  *
  * @pseudocode
- * 1. Create four `<p>` elements:
- *    - `#round-message` with `aria-live="polite"`, `aria-atomic="true"`, and `role="status"` for result text.
- *    - `#next-round-timer` with `aria-live="polite"`, `aria-atomic="true"`, and `role="status"` for countdown updates.
- *    - `#round-counter` with `aria-live="polite"` and `aria-atomic="true"` for the round tracker.
- *    - `#score-display` with `aria-live="polite"` and `aria-atomic="true"` for the match score.
- * 2. Append them to the provided container (typically the page header).
- * 3. Store references to these elements for later updates.
- * 4. Return the container element.
+ * 1. Create four `<p>` elements for message, timer, round counter and score.
+ * 2. Append them to the provided container.
+ * 3. Return the container element.
  *
  * @param {HTMLDivElement} [container=document.createElement("div")] - Wrapper to populate.
  * @returns {HTMLDivElement} The scoreboard element.
  */
-/**
- * @summary Creates a battle scoreboard.
- * @description Creates and configures the DOM elements for the battle scoreboard, including the round message, timer, round counter, and score display.
- * @param {HTMLDivElement} [container=document.createElement("div")] - The container element to which the scoreboard will be appended.
- * @returns {HTMLDivElement} The container element with the scoreboard appended.
- * @pseudocode
- * 1. Create a `<p>` element for the round message with appropriate ARIA attributes.
- * 2. Create a `<p>` element for the timer with appropriate ARIA attributes.
- * 3. Create a `<p>` element for the round counter with appropriate ARIA attributes.
- * 4. Create a `<p>` element for the score display with appropriate ARIA attributes.
- * 5. Append all created elements to the container.
- * 6. Return the container.
- */
 export function createScoreboard(container = document.createElement("div")) {
-  messageEl = document.createElement("p");
+  const messageEl = document.createElement("p");
   messageEl.id = "round-message";
   messageEl.setAttribute("aria-live", "polite");
   messageEl.setAttribute("aria-atomic", "true");
   messageEl.setAttribute("role", "status");
 
-  timerEl = document.createElement("p");
+  const timerEl = document.createElement("p");
   timerEl.id = "next-round-timer";
   timerEl.setAttribute("aria-live", "polite");
   timerEl.setAttribute("aria-atomic", "true");
   timerEl.setAttribute("role", "status");
 
-  roundCounterEl = document.createElement("p");
+  const roundCounterEl = document.createElement("p");
   roundCounterEl.id = "round-counter";
   roundCounterEl.setAttribute("aria-live", "polite");
   roundCounterEl.setAttribute("aria-atomic", "true");
 
-  scoreEl = document.createElement("p");
+  const scoreEl = document.createElement("p");
   scoreEl.id = "score-display";
   scoreEl.setAttribute("aria-live", "polite");
-  // Score announcements use a polite live region; consider throttling if updates are frequent.
   scoreEl.setAttribute("aria-atomic", "true");
 
   container.append(messageEl, timerEl, roundCounterEl, scoreEl);
@@ -102,172 +41,170 @@ export function createScoreboard(container = document.createElement("div")) {
 }
 
 /**
- * Initialize internal references and store timer controls.
- *
- * @pseudocode
- * 1. Locate child elements within `container` by their IDs when provided.
- * 2. Store these nodes in module-scoped variables for later updates.
- * 3. Persist `startCoolDown`, `pauseTimer`, `resumeTimer`, and `scheduler` from
- *    `controls` for visibility-based countdown pausing.
- * 4. Attach `visibilitychange` and `focus` listeners that call the stored
- *    pause/resume callbacks.
- *
- * @param {HTMLElement|null} container - Header element containing the
- * scoreboard nodes.
- * @param {{
- *   startCoolDown?: Function,
- *   pauseTimer?: Function,
- *   resumeTimer?: Function,
- *   scheduler?: object
- * }} [controls={}] - Timer control callbacks.
- * @returns {void}
+ * Scoreboard controller handling DOM updates and state tracking.
  */
-export function initScoreboard(container, controls = {}) {
-  const doc = typeof document !== "undefined" ? document : null;
-  const win = typeof window !== "undefined" ? window : null;
+export class Scoreboard {
+  /**
+   * @param {object} [deps]
+   * @param {HTMLElement|null} deps.messageEl
+   * @param {HTMLElement|null} deps.timerEl
+   * @param {HTMLElement|null} deps.roundCounterEl
+   * @param {HTMLElement|null} deps.scoreEl
+   * @param {Function} [deps.startCoolDown]
+   * @param {Function} [deps.pauseTimer]
+   * @param {Function} [deps.resumeTimer]
+   * @param {object} [deps.scheduler]
+   * @pseudocode
+   * 1. Store provided DOM references and controls.
+   * 2. Initialize state trackers and debounce maps.
+   * 3. Attach visibility and focus listeners that pause/resume timers.
+   */
+  constructor({
+    messageEl = null,
+    timerEl = null,
+    roundCounterEl = null,
+    scoreEl = null,
+    startCoolDown,
+    pauseTimer,
+    resumeTimer,
+    scheduler
+  } = {}) {
+    this.messageEl = messageEl;
+    this.timerEl = timerEl;
+    this.roundCounterEl = roundCounterEl;
+    this.scoreEl = scoreEl;
+    this.startCoolDown = startCoolDown;
+    this.pauseTimer = pauseTimer;
+    this.resumeTimer = resumeTimer;
+    this.scheduler = scheduler;
 
-  if (container && doc) {
-    messageEl = container.querySelector("#round-message");
-    timerEl = container.querySelector("#next-round-timer");
-    roundCounterEl = container.querySelector("#round-counter");
-    scoreEl = container.querySelector("#score-display");
+    this.currentPlayer = 0;
+    this.currentOpponent = 0;
+    this.scoreRafId = null;
+    this.visibilityHandler = null;
+    this.focusHandler = null;
+    this.announceDelayMs = 0;
+    this.announceTimers = new WeakMap();
+    this.outcomeLockUntil = 0;
+
+    this.state = {
+      message: { text: "", outcome: false },
+      timer: { secondsRemaining: null },
+      round: { current: 0 },
+      score: { player: 0, opponent: 0 }
+    };
+
+    this._attachVisibilityHandlers();
   }
 
-  startCoolDown = controls.startCoolDown;
-  pauseTimer = controls.pauseTimer;
-  resumeTimer = controls.resumeTimer;
-  scheduler = controls.scheduler;
-
-  // Mark currently unused controls to satisfy lint while retaining references.
-  void startCoolDown;
-  void scheduler;
-
-  if (doc && visibilityHandler) {
-    doc.removeEventListener("visibilitychange", visibilityHandler);
-  }
-  if (win && focusHandler) {
-    win.removeEventListener("focus", focusHandler);
-  }
-
-  if (!doc || !win) return;
-
-  visibilityHandler = () => {
-    if (doc.hidden && typeof pauseTimer === "function") {
-      pauseTimer();
-    }
-  };
-
-  focusHandler = () => {
-    if (!doc.hidden && typeof resumeTimer === "function") {
-      resumeTimer();
-    }
-  };
-
-  doc.addEventListener("visibilitychange", visibilityHandler);
-  win.addEventListener("focus", focusHandler);
-}
-
-// Best-effort lazy lookup for header elements in case initialization runs late
-function ensureRefs() {
-  if (typeof document === "undefined") return;
-  if (!messageEl || !messageEl.isConnected) {
-    messageEl = document.getElementById("round-message") || messageEl;
-  }
-  if (!timerEl || !timerEl.isConnected) {
-    timerEl = document.getElementById("next-round-timer") || timerEl;
-  }
-  if (!roundCounterEl || !roundCounterEl.isConnected) {
-    roundCounterEl = document.getElementById("round-counter") || roundCounterEl;
-  }
-  if (!scoreEl || !scoreEl.isConnected) {
-    scoreEl = document.getElementById("score-display") || scoreEl;
-  }
-}
-
-function setScoreText(player, opponent) {
-  if (!scoreEl) return;
-  let playerSpan = scoreEl.firstElementChild;
-  let opponentSpan = scoreEl.lastElementChild;
-  if (!playerSpan || !opponentSpan) {
+  _attachVisibilityHandlers() {
     const doc = typeof document !== "undefined" ? document : null;
-    if (!doc) return;
-    playerSpan = doc.createElement("span");
-    playerSpan.setAttribute("data-side", "player");
-    opponentSpan = doc.createElement("span");
-    opponentSpan.setAttribute("data-side", "opponent");
-    // Ensure a newline text node separates spans so parent textContent is multi-line
-    scoreEl.append(playerSpan, doc.createTextNode("\n"), opponentSpan);
-  }
-  try {
-    if (!playerSpan.getAttribute("data-side")) playerSpan.setAttribute("data-side", "player");
-    if (!opponentSpan.getAttribute("data-side")) opponentSpan.setAttribute("data-side", "opponent");
-  } catch {}
-  // Ensure there is exactly one newline text node between spans
-  try {
-    const doc = typeof document !== "undefined" ? document : null;
-    const sibling = playerSpan.nextSibling;
-    if (doc) {
-      if (!sibling || sibling.nodeType !== Node.TEXT_NODE) {
-        scoreEl.insertBefore(doc.createTextNode("\n"), opponentSpan);
-      } else if (sibling.nodeValue !== "\n") {
-        sibling.nodeValue = "\n";
+    const win = typeof window !== "undefined" ? window : null;
+    if (!doc || !win) return;
+    this.visibilityHandler = () => {
+      if (doc.hidden && typeof this.pauseTimer === "function") {
+        this.pauseTimer();
       }
+    };
+    this.focusHandler = () => {
+      if (!doc.hidden && typeof this.resumeTimer === "function") {
+        this.resumeTimer();
+      }
+    };
+    doc.addEventListener("visibilitychange", this.visibilityHandler);
+    win.addEventListener("focus", this.focusHandler);
+  }
+
+  _setLiveText(el, text) {
+    if (!el) return;
+    try {
+      if (this.announceDelayMs <= 0) {
+        el.textContent = text;
+        return;
+      }
+      const prev = this.announceTimers.get(el);
+      if (prev) clearTimeout(prev);
+      const id = setTimeout(() => {
+        el.textContent = text;
+        this.announceTimers.delete(el);
+      }, this.announceDelayMs);
+      this.announceTimers.set(el, id);
+    } catch {
+      try {
+        el.textContent = text;
+      } catch {}
     }
-  } catch {}
-  playerSpan.textContent = `You: ${player}`;
-  opponentSpan.textContent = `Opponent: ${opponent}`;
-}
+  }
 
-// Lightweight headless state snapshot for tests/CLI
-const __state = {
-  message: { text: "", outcome: false },
-  timer: { secondsRemaining: null },
-  round: { current: 0 },
-  score: { player: 0, opponent: 0 }
-};
-
-function animateScore(startPlayer, startOpponent, playerTarget, opponentTarget) {
-  cancelAnimationFrame(scoreRafId);
-  if (shouldReduceMotionSync()) return;
-  const startTime = performance.now();
-  const duration = 500;
-  const step = (now) => {
-    const progress = Math.min((now - startTime) / duration, 1);
-    const playerVal = Math.round(startPlayer + (playerTarget - startPlayer) * progress);
-    const opponentVal = Math.round(startOpponent + (opponentTarget - startOpponent) * progress);
-    setScoreText(playerVal, opponentVal);
-    if (progress < 1) {
-      scoreRafId = requestAnimationFrame(step);
+  _setScoreText(player, opponent) {
+    if (!this.scoreEl) return;
+    let playerSpan = this.scoreEl.firstElementChild;
+    let opponentSpan = this.scoreEl.lastElementChild;
+    if (!playerSpan || !opponentSpan) {
+      const doc = typeof document !== "undefined" ? document : null;
+      if (!doc) return;
+      playerSpan = doc.createElement("span");
+      playerSpan.setAttribute("data-side", "player");
+      opponentSpan = doc.createElement("span");
+      opponentSpan.setAttribute("data-side", "opponent");
+      this.scoreEl.append(playerSpan, doc.createTextNode("\n"), opponentSpan);
     }
-  };
-  scoreRafId = requestAnimationFrame(step);
-}
+    try {
+      if (!playerSpan.getAttribute("data-side")) playerSpan.setAttribute("data-side", "player");
+      if (!opponentSpan.getAttribute("data-side"))
+        opponentSpan.setAttribute("data-side", "opponent");
+    } catch {}
+    try {
+      const doc = typeof document !== "undefined" ? document : null;
+      const sibling = playerSpan.nextSibling;
+      if (doc) {
+        if (!sibling || sibling.nodeType !== Node.TEXT_NODE) {
+          this.scoreEl.insertBefore(doc.createTextNode("\n"), opponentSpan);
+        } else if (sibling.nodeValue !== "\n") {
+          sibling.nodeValue = "\n";
+        }
+      }
+    } catch {}
+    playerSpan.textContent = `You: ${player}`;
+    opponentSpan.textContent = `Opponent: ${opponent}`;
+  }
 
-/**
- * Update the round message text.
- *
- * @pseudocode
- * 1. When a message element exists, skip overwriting round outcomes with
- *    transient placeholders.
- * 2. Update the element text content and toggle the `data-outcome` flag based
- *    on `isOutcome`.
- *
- * @param {string} text - Message to display.
- * @param {{ outcome?: boolean }} [opts] - Options controlling update behavior.
- * @returns {void}
- */
-export function showMessage(text, opts = {}) {
-  const doc = typeof document !== "undefined" ? document : null;
-  if (!doc) return;
-  const { outcome = false } = opts;
-  // Prefer a fresh lookup to avoid stale references in dynamic tests
-  const el = doc.getElementById("round-message") || messageEl;
-  if (el) {
+  _animateScore(startPlayer, startOpponent, playerTarget, opponentTarget) {
+    cancelAnimationFrame(this.scoreRafId);
+    if (shouldReduceMotionSync()) return;
+    const startTime = performance.now();
+    const duration = 500;
+    const step = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const playerVal = Math.round(startPlayer + (playerTarget - startPlayer) * progress);
+      const opponentVal = Math.round(startOpponent + (opponentTarget - startOpponent) * progress);
+      this._setScoreText(playerVal, opponentVal);
+      if (progress < 1) {
+        this.scoreRafId = requestAnimationFrame(step);
+      }
+    };
+    this.scoreRafId = requestAnimationFrame(step);
+  }
+
+  /**
+   * Update the round message text.
+   *
+   * @pseudocode
+   * 1. Ignore updates when element missing.
+   * 2. Block transient placeholders if an outcome is locked.
+   * 3. Update text and toggle `data-outcome` flag.
+   * @param {string} text
+   * @param {{ outcome?: boolean }} [opts]
+   * @returns {void}
+   */
+  showMessage(text, opts = {}) {
+    const el = this.messageEl;
+    if (!el) return;
+    const { outcome = false } = opts;
     try {
       const isTransient = String(text) === "Waiting…";
-      // Block overwrites of an outcome message within the minimum persistence window
       if (el.dataset.outcome === "true") {
-        if (Date.now() < outcomeLockUntil) {
+        if (Date.now() < this.outcomeLockUntil) {
           return;
         }
         if (isTransient) {
@@ -278,249 +215,276 @@ export function showMessage(text, opts = {}) {
         return;
       }
     } catch {}
-    setLiveText(el, text);
+    this._setLiveText(el, text);
     if (outcome) {
       el.dataset.outcome = "true";
-      // Start the lock window from when the user would perceive the update.
-      // If announcements are debounced, include that delay to ensure
-      // persistence lasts >=1s after the visible/announced change.
-      const pad = Math.max(announceDelayMs || 0, 200);
-      outcomeLockUntil = Date.now() + 1000 + pad;
+      const pad = Math.max(this.announceDelayMs || 0, 200);
+      this.outcomeLockUntil = Date.now() + 1000 + pad;
     } else {
       delete el.dataset.outcome;
     }
-    messageEl = el;
-    __state.message = { text: String(text ?? ""), outcome: !!outcome };
+    this.state.message = { text: String(text ?? ""), outcome: !!outcome };
   }
-}
 
-/**
- * Clear the round message.
- *
- * @pseudocode
- * 1. If the message element exists, set its text content to an empty string and
- *    remove the `data-outcome` flag.
- *
- * @returns {void}
- */
-export function clearMessage() {
-  const doc = typeof document !== "undefined" ? document : null;
-  if (!doc) return;
-  const el = doc.getElementById("round-message") || messageEl;
-  if (el) {
-    setLiveText(el, "");
+  /**
+   * Clear the round message.
+   *
+   * @pseudocode
+   * 1. If the message element exists, clear its text and outcome flag.
+   */
+  clearMessage() {
+    const el = this.messageEl;
+    if (!el) return;
+    this._setLiveText(el, "");
     delete el.dataset.outcome;
-    messageEl = el;
-    outcomeLockUntil = 0;
-    __state.message = { text: "", outcome: false };
+    this.outcomeLockUntil = 0;
+    this.state.message = { text: "", outcome: false };
+  }
+
+  /**
+   * Display a temporary message and return a function to clear it later.
+   *
+   * @pseudocode
+   * 1. Show the message text.
+   * 2. Return a closure that clears the message if unchanged.
+   * @param {string} text - Message to display temporarily.
+   * @returns {() => void} Function that clears the message.
+   */
+  showTemporaryMessage(text) {
+    this.showMessage(text);
+    return () => {
+      if (this.messageEl && this.messageEl.textContent === text) {
+        this._setLiveText(this.messageEl, "");
+      }
+    };
+  }
+
+  /**
+   * Display a message announcing an auto-selected stat.
+   *
+   * @param {string} stat
+   */
+  showAutoSelect(stat) {
+    this.showMessage(t("ui.autoSelect", { stat }));
+  }
+
+  /**
+   * Update the countdown display.
+   *
+   * @pseudocode
+   * 1. If `seconds` <= 0, clear the timer text.
+   * 2. Otherwise render "Time Left: <seconds>s".
+   * @param {number} seconds - Remaining seconds in the countdown.
+   */
+  updateTimer(seconds) {
+    const el = this.timerEl;
+    if (!el) return;
+    if (seconds <= 0) {
+      this._setLiveText(el, "");
+      return;
+    }
+    this._setLiveText(el, `Time Left: ${seconds}s`);
+    this.state.timer = { secondsRemaining: Number(seconds) };
+  }
+
+  /**
+   * Clear the timer display.
+   *
+   * @pseudocode
+   * 1. If the timer element exists, set its text content to an empty string.
+   */
+  clearTimer() {
+    const el = this.timerEl;
+    if (el) {
+      this._setLiveText(el, "");
+    }
+  }
+
+  /**
+   * Update the round counter display.
+   *
+   * @pseudocode
+   * 1. If the round counter element exists, render `Round <current>`.
+   * @param {number} current - Current round number.
+   */
+  updateRoundCounter(current) {
+    const el = this.roundCounterEl;
+    if (el) {
+      this._setLiveText(el, `Round ${current}`);
+    }
+  }
+
+  /**
+   * Clear the round counter display.
+   *
+   * @pseudocode
+   * 1. If the round counter element exists, clear its text content.
+   */
+  clearRoundCounter() {
+    const el = this.roundCounterEl;
+    if (el) {
+      el.textContent = "";
+    }
+  }
+
+  /**
+   * Display the current match score with an animated count.
+   *
+   * @pseudocode
+   * 1. Update the score text to the final values.
+   * 2. Track previous values and animate toward targets.
+   * @param {number} playerScore - Player's score.
+   * @param {number} opponentScore - Opponent's score.
+   */
+  updateScore(playerScore, opponentScore) {
+    if (!this.scoreEl) return;
+    this._setScoreText(playerScore, opponentScore);
+    const startPlayer = this.currentPlayer;
+    const startOpponent = this.currentOpponent;
+    this.currentPlayer = playerScore;
+    this.currentOpponent = opponentScore;
+    this._animateScore(startPlayer, startOpponent, playerScore, opponentScore);
+    this.state.score = { player: Number(playerScore), opponent: Number(opponentScore) };
+  }
+
+  /**
+   * Render a partial state patch into the scoreboard.
+   *
+   * @pseudocode
+   * 1. Update message if provided.
+   * 2. Update or clear timer accordingly.
+   * 3. Update round counter.
+   * 4. Update score.
+   * @param {object} patch
+   */
+  render(patch = {}) {
+    if (!patch || typeof patch !== "object") return;
+    if (Object.prototype.hasOwnProperty.call(patch, "message")) {
+      const m = patch.message;
+      if (m && typeof m === "object") this.showMessage(m.text ?? "", { outcome: !!m.outcome });
+      else this.showMessage(String(m ?? ""));
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "timerSeconds")) {
+      const s = patch.timerSeconds;
+      if (typeof s === "number") this.updateTimer(s);
+      else this.clearTimer();
+    }
+    if (typeof patch.roundNumber === "number") {
+      this.updateRoundCounter(patch.roundNumber);
+      this.state.round = { current: Number(patch.roundNumber) };
+    }
+    if (patch.score && typeof patch.score === "object") {
+      this.updateScore(Number(patch.score.player) || 0, Number(patch.score.opponent) || 0);
+    }
+  }
+
+  /**
+   * Get a readonly snapshot of the current scoreboard state.
+   *
+   * @returns {Readonly<{message:{text:string,outcome:boolean},timer:{secondsRemaining:number|null},round:{current:number},score:{player:number,opponent:number}}>} state
+   */
+  getState() {
+    return JSON.parse(JSON.stringify(this.state));
+  }
+
+  /**
+   * Destroy listeners and clear references.
+   *
+   * @pseudocode
+   * 1. Remove visibility/focus listeners when attached.
+   * 2. Cancel score animation frames and clear pending debounced updates.
+   * 3. Null internal element references and reset lock.
+   */
+  destroy() {
+    const doc = typeof document !== "undefined" ? document : null;
+    const win = typeof window !== "undefined" ? window : null;
+    try {
+      if (doc && this.visibilityHandler)
+        doc.removeEventListener("visibilitychange", this.visibilityHandler);
+      if (win && this.focusHandler) win.removeEventListener("focus", this.focusHandler);
+    } catch {}
+    this.visibilityHandler = null;
+    this.focusHandler = null;
+    try {
+      cancelAnimationFrame(this.scoreRafId);
+    } catch {}
+    try {
+      for (const el of [this.messageEl, this.timerEl, this.roundCounterEl, this.scoreEl]) {
+        const id = el ? this.announceTimers.get(el) : null;
+        if (id) clearTimeout(id);
+      }
+    } catch {}
+    this.messageEl = this.timerEl = this.roundCounterEl = this.scoreEl = null;
+    this.outcomeLockUntil = 0;
   }
 }
 
+let defaultScoreboard = null;
+
 /**
- * Display a temporary message and return a function to clear it later.
+ * Initialize a default Scoreboard instance for convenience wrappers.
  *
- * @pseudocode
- * 1. Call `showMessage(text)` to update the round message.
- * 2. Return `clearMessage` so callers can remove the message when finished.
- *
- * @param {string} text - Message to display temporarily.
- * @returns {() => void} Function that clears the message.
+ * @param {HTMLElement|null} container - Header element containing the scoreboard nodes.
+ * @param {object} [controls={}] - Timer control callbacks.
+ * @returns {void}
  */
-export function showTemporaryMessage(text) {
-  showMessage(text);
-  // Return a closure that only clears the message if it matches the one set by this call
-  return function () {
-    if (messageEl && messageEl.textContent === text) {
-      setLiveText(messageEl, "");
+export function initScoreboard(container, controls = {}) {
+  const header = container || null;
+  const messageEl = header ? header.querySelector("#round-message") : null;
+  const timerEl = header ? header.querySelector("#next-round-timer") : null;
+  const roundCounterEl = header ? header.querySelector("#round-counter") : null;
+  const scoreEl = header ? header.querySelector("#score-display") : null;
+  if (defaultScoreboard) defaultScoreboard.destroy();
+  defaultScoreboard = new Scoreboard({
+    messageEl,
+    timerEl,
+    roundCounterEl,
+    scoreEl,
+    startCoolDown: controls.startCoolDown,
+    pauseTimer: controls.pauseTimer,
+    resumeTimer: controls.resumeTimer,
+    scheduler: controls.scheduler
+  });
+}
+
+// Wrapper exports for existing consumers
+function ensureDefault() {
+  if (!defaultScoreboard) {
+    const doc = typeof document !== "undefined" ? document : null;
+    if (doc) {
+      const header = doc.querySelector("header");
+      const messageEl = doc.getElementById("round-message");
+      const timerEl = doc.getElementById("next-round-timer");
+      const roundCounterEl = doc.getElementById("round-counter");
+      const scoreEl = doc.getElementById("score-display");
+      if (messageEl || timerEl || roundCounterEl || scoreEl) {
+        defaultScoreboard = new Scoreboard({ messageEl, timerEl, roundCounterEl, scoreEl });
+      } else if (header) {
+        initScoreboard(header);
+      }
     }
+  }
+  return defaultScoreboard;
+}
+
+export const showMessage = (...args) => ensureDefault()?.showMessage(...args);
+export const clearMessage = (...args) => ensureDefault()?.clearMessage(...args);
+export const showTemporaryMessage = (...args) => ensureDefault()?.showTemporaryMessage(...args);
+export const showAutoSelect = (...args) => ensureDefault()?.showAutoSelect(...args);
+export const updateTimer = (...args) => ensureDefault()?.updateTimer(...args);
+export const clearTimer = (...args) => ensureDefault()?.clearTimer(...args);
+export const updateRoundCounter = (...args) => ensureDefault()?.updateRoundCounter(...args);
+export const clearRoundCounter = (...args) => ensureDefault()?.clearRoundCounter(...args);
+export const updateScore = (...args) => ensureDefault()?.updateScore(...args);
+export const render = (...args) => ensureDefault()?.render(...args);
+export const getState = () =>
+  ensureDefault()?.getState() ?? {
+    message: { text: "", outcome: false },
+    timer: { secondsRemaining: null },
+    round: { current: 0 },
+    score: { player: 0, opponent: 0 }
   };
-}
-
-/**
- * Display a message announcing an auto-selected stat.
- *
- * @pseudocode
- * 1. Call `showMessage` with `"Time's up! Auto-selecting <stat>"`.
- *
- * @param {string} stat - Label of the auto-selected stat.
- * @returns {void}
- */
-export function showAutoSelect(stat) {
-  showMessage(t("ui.autoSelect", { stat }));
-}
-
-/**
- * Update the countdown display.
- *
- * @pseudocode
- * 1. Ensure the timer element reference is available.
- * 2. If `seconds` is less than or equal to 0, clear the timer text.
- * 3. Otherwise, render `"Time Left: <seconds>s"` inside the timer element.
- *
- * @param {number} seconds - Remaining seconds in the countdown.
- * @returns {void}
- */
-export function updateTimer(seconds) {
-  ensureRefs();
-  if (!timerEl) return;
-  if (seconds <= 0) {
-    setLiveText(timerEl, "");
-    return;
-  }
-  setLiveText(timerEl, `Time Left: ${seconds}s`);
-  __state.timer = { secondsRemaining: Number(seconds) };
-}
-
-/**
- * @summary Clears the timer display.
- * @description Clears the text content of the timer element.
- * @returns {void}
- * @pseudocode
- * 1. Ensure a reference to the timer element exists.
- * 2. If the timer element exists, set its text content to an empty string.
- */
-export function clearTimer() {
-  ensureRefs();
-  if (timerEl) {
-    setLiveText(timerEl, "");
-  }
-}
-
-/**
- * Update the round counter display.
- *
- * @pseudocode
- * 1. When the round counter element exists, set its text content to
- *    `"Round <current>"`.
- *
- * @param {number} current - Current round number.
- * @returns {void}
- */
-export function updateRoundCounter(current) {
-  ensureRefs();
-  if (roundCounterEl) {
-    setLiveText(roundCounterEl, `Round ${current}`);
-  }
-}
-
-/**
- * Clear the round counter display.
- *
- * @pseudocode
- * 1. If the round counter element exists, set its text content to an empty
- *    string.
- *
- * @returns {void}
- */
-export function clearRoundCounter() {
-  ensureRefs();
-  if (roundCounterEl) {
-    roundCounterEl.textContent = "";
-  }
-}
-
-/**
-
-/**
- * Display the current match score with an animated count.
- *
- * @pseudocode
- * 1. Update the score text to the final values.
- * 2. Store the previous score values.
- * 3. Update internal trackers to the new scores so they remain correct if
- *    animation frames are skipped.
- * 4. When motion isn't reduced, animate from the previous values toward the
- *    targets using `requestAnimationFrame`.
- *
- * @param {number} playerScore - Player's score.
- * @param {number} opponentScore - Opponent's score.
- * @returns {void}
- */
-export function updateScore(playerScore, opponentScore) {
-  ensureRefs();
-  if (!scoreEl) return;
-  setScoreText(playerScore, opponentScore);
-  const startPlayer = currentPlayer;
-  const startOpponent = currentOpponent;
-  currentPlayer = playerScore;
-  currentOpponent = opponentScore;
-  animateScore(startPlayer, startOpponent, playerScore, opponentScore);
-  __state.score = { player: Number(playerScore), opponent: Number(opponentScore) };
-}
-
-/**
- * Render a partial state patch into the scoreboard.
- *
- * @pseudocode
- * 1. If `patch.message` is provided, call `showMessage` with outcome.
- * 2. If `patch.timerSeconds` is a number, update/clear timer accordingly.
- * 3. If `patch.roundNumber` is a number, update round counter.
- * 4. If `patch.score` is provided, call `updateScore` with player/opponent.
- *
- * @param {{
- *   message?: string|{text:string,outcome?:boolean},
- *   timerSeconds?: number|null,
- *   roundNumber?: number,
- *   score?: {player:number, opponent:number}
- * }} patch
- */
-export function render(patch = {}) {
-  if (!patch || typeof patch !== "object") return;
-  if (Object.prototype.hasOwnProperty.call(patch, "message")) {
-    const m = patch.message;
-    if (m && typeof m === "object") showMessage(m.text ?? "", { outcome: !!m.outcome });
-    else showMessage(String(m ?? ""));
-  }
-  if (Object.prototype.hasOwnProperty.call(patch, "timerSeconds")) {
-    const s = patch.timerSeconds;
-    if (typeof s === "number") updateTimer(s);
-    else clearTimer();
-  }
-  if (typeof patch.roundNumber === "number") {
-    updateRoundCounter(patch.roundNumber);
-    __state.round = { current: Number(patch.roundNumber) };
-  }
-  if (patch.score && typeof patch.score === "object") {
-    updateScore(Number(patch.score.player) || 0, Number(patch.score.opponent) || 0);
-  }
-}
-
-/**
- * Get a readonly snapshot of the current scoreboard state.
- *
- * @returns {Readonly<{message:{text:string,outcome:boolean},timer:{secondsRemaining:number|null},round:{current:number},score:{player:number,opponent:number}}>} state
- */
-export function getState() {
-  return JSON.parse(JSON.stringify(__state));
-}
-
-/**
- * Destroy listeners and clear references for test/CLI disposals.
- *
- * @pseudocode
- * 1. Remove visibility/focus listeners when attached.
- * 2. Cancel score animation frames and clear pending debounced updates.
- * 3. Null internal element references and reset lock.
- */
-export function destroy() {
-  const doc = typeof document !== "undefined" ? document : null;
-  const win = typeof window !== "undefined" ? window : null;
-  try {
-    if (doc && visibilityHandler) doc.removeEventListener("visibilitychange", visibilityHandler);
-    if (win && focusHandler) win.removeEventListener("focus", focusHandler);
-  } catch {}
-  visibilityHandler = null;
-  focusHandler = null;
-  try {
-    cancelAnimationFrame(scoreRafId);
-  } catch {}
-  // Clear pending debounced updates for known elements
-  try {
-    for (const el of [messageEl, timerEl, roundCounterEl, scoreEl]) {
-      const id = el ? announceTimers.get(el) : null;
-      if (id) clearTimeout(id);
-    }
-  } catch {}
-  messageEl = timerEl = roundCounterEl = scoreEl = null;
-  outcomeLockUntil = 0;
-}
+export const destroy = () => {
+  defaultScoreboard?.destroy();
+  defaultScoreboard = null;
+};
