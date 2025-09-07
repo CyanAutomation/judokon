@@ -291,8 +291,8 @@ Phase 8 — Actions & Outcome (Quit flow)
 - Notes:
   - Kept imports static and limited to page init; no hot-path dynamic imports introduced.
 
-
 Phase 9 — Actions & Outcome (Replay)
+
 - Added failing tests first:
   - Unit: tests/classicBattle/replay.test.js — after ending a 1‑point match, clicking `#replay-button` resets scoreboard to 0–0.
   - Playwright: playwright/battle-classic/replay.spec.js — verifies in-browser with short timers and pointsToWin=1.
