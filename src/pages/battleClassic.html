@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="JU-DO-KON! – Classic Battle" />
+    <title>JU-DO-KON! – Classic Battle</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+      header { padding: 12px 16px; border-bottom: 1px solid #ccc; display: grid; gap: 6px; }
+      main { padding: 12px 16px; display: grid; gap: 16px; }
+      .battle-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 720px) { .battle-layout { grid-template-columns: 1fr; } }
+      #stat-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+      #stat-buttons button { min-width: 44px; min-height: 44px; }
+      .controls { display: flex; gap: 8px; align-items: center; }
+      #snackbar-container { position: fixed; left: 0; right: 0; bottom: 0; padding: 8px 12px; }
+    </style>
+  </head>
+  <body>
+    <!-- Persistent snackbar container placed before scripts to prevent duplicate IDs during early messages. -->
+    <div id="snackbar-container" aria-live="polite" aria-atomic="true"></div>
+
+    <header role="banner">
+      <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
+      <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
+      <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
+      <p id="score-display" aria-live="polite" aria-atomic="true"></p>
+    </header>
+
+    <main role="main">
+      <section class="battle-layout" aria-label="Cards">
+        <div id="player-card" aria-label="Your card"></div>
+        <div id="opponent-card" aria-label="Opponent card"></div>
+      </section>
+
+      <section aria-label="Choose a stat">
+        <div id="stat-buttons" data-buttons-ready="false"></div>
+      </section>
+
+      <section class="controls" aria-label="Round controls">
+        <button id="next-button" data-role="next-round" disabled>Next</button>
+        <button id="quit-button" data-role="quit">Quit</button>
+      </section>
+    </main>
+  </body>
+  </html>

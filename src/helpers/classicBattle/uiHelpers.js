@@ -360,6 +360,16 @@ export function disableNextRoundButton() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Display a round outcome across scoreboard and result regions.
+ *
+ * @param {string} message - Outcome text to display (e.g. "You Win").
+ * @returns {void}
+ * @pseudocode
+ * 1. Render the message using `showResult(message)`.
+ * 2. Forward the message to `scoreboard.showMessage` marking it as an outcome.
+ * 3. Keep outcome messaging out of transient snackbars to avoid UI conflicts.
+ */
 export function showRoundOutcome(message) {
   showResult(message);
   scoreboard.showMessage(message, { outcome: true });
@@ -410,6 +420,19 @@ export function showRoundOutcome(message) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Animate or update the stat comparison area after a round resolves.
+ *
+ * @param {object} store - Battle state store (used to save RAF ids and flags).
+ * @param {string} stat - Stat key that was compared.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} compVal - Opponent's stat value.
+ * @returns {void}
+ * @pseudocode
+ * 1. Locate the `#round-result` element and cancel any previous animation.
+ * 2. If reduced motion is requested, write the final text immediately.
+ * 3. Otherwise animate numbers from current to target over ~500ms using RAF.
  */
 export function showStatComparison(store, stat, playerVal, compVal) {
   const el = document.getElementById("round-result");
@@ -479,6 +502,21 @@ export function showStatComparison(store, stat, playerVal, compVal) {
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Observe device orientation/resize and run `callback` to apply orientation.
+ *
+ * The provided `callback` should return a Promise<boolean> or a boolean to
+ * indicate whether orientation was successfully applied. The function exposes
+ * `window.applyBattleOrientation` for manual invocations and throttles
+ * resize/orientation events to avoid excessive layout work.
+ *
+ * @param {() => Promise<boolean>} callback - Called to apply orientation; should resolve `true` on success.
+ * @returns {void}
+ * @pseudocode
+ * 1. Expose `window.applyBattleOrientation` which invokes `callback`.
+ * 2. Invoke `callback()` immediately; if it fails, start RAF polling until it succeeds.
+ * 3. Attach `orientationchange` and `resize` listeners that throttle via RAF and re-run `callback`.
  */
 export function watchBattleOrientation(callback) {
   if (typeof callback !== "function") {

@@ -31,6 +31,13 @@ export const order = [
   "interruptMatch"
 ];
 
+/**
+ * Stable numeric ids derived from `order`.
+ *
+ * @pseudocode
+ * 1. Iterate `order` and assign stable ordinal ids (multiples of 10) so
+ *    external tooling can rely on numeric versions.
+ */
 export const ids = order.reduce((acc, name, idx) => {
   acc[name] = (idx + 1) * 10;
   return acc;

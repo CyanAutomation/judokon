@@ -20,6 +20,17 @@ import { exposeDebugState } from "./debugHooks.js";
  *    b. Set `prevBattleState` when `from` exists, otherwise remove it.
  */
 export function domStateListener(e) {
+  /**
+   * Sync battle state transitions to DOM attributes for UI and tests.
+   *
+   * @param {CustomEvent<{from:string|null,to:string,event:string|null}>} e
+   *   Event containing transition detail.
+   * @returns {void}
+   * @pseudocode
+   * 1. Read `from` and `to` from event detail.
+   * 2. If `document` exists, update `document.body.dataset.battleState` and
+   *    `prevBattleState` accordingly.
+   */
   const { from, to } = e.detail || {};
   if (typeof document === "undefined") return;
   try {

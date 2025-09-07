@@ -17,6 +17,19 @@ import { guard } from "./guard.js";
 import { safeGetSnapshot, isNextReady, resetReadiness } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
 
+/**
+ * Accessor for the active Next-round cooldown controls.
+ *
+ * This is a re-export of `getNextRoundControls` from `roundManager.js`.
+ * It returns the current `timer` control object and a `resolveReady` function
+ * used to advance the round when the cooldown completes or when manually
+ * advanced by the Next button.
+ *
+ * @pseudocode
+ * 1. Forward call to `roundManager.getNextRoundControls()` and return its value.
+ *
+ * @returns {{timer: {stop: () => void} | null, resolveReady: (() => void) | null}}
+ */
 export { getNextRoundControls } from "./roundManager.js";
 
 // Track timeout for cooldown warning to avoid duplicates.

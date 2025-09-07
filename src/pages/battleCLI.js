@@ -1097,6 +1097,26 @@ function renderHelpMapping(stats) {
  * @param {HTMLElement} list - Stats list element.
  * @returns {void}
  */
+function handleStatListClick(event) {
+  const list = byId("cli-stats");
+  const statDiv = event.target?.closest?.(".cli-stat");
+  if (statDiv && list?.contains(statDiv)) {
+    setActiveStatRow(statDiv);
+    handleStatClick(statDiv, event);
+  }
+}
+
+function handleStatClick(statDiv, event) {
+  event.preventDefault();
+  const idx = statDiv?.dataset?.statIndex;
+  if (!idx) return;
+  const state = document.body?.dataset?.battleState || "";
+  if (state !== "waitingForPlayerAction") return;
+  const stat = getStatByIndex(idx);
+  if (!stat) return;
+  selectStat(stat);
+}
+
 function ensureStatClickBinding(list) {
   const onClick = handleStatListClick;
   const boundTargets = (globalThis.__battleCLIStatListBoundTargets ||= new WeakSet());
@@ -1484,25 +1504,7 @@ registerBattleHandlers({
  * @pseudocode
  * key = lowercased key from event
  * if cliShortcuts disabled AND key != 'q': return
-function handleStatListClick(event) {
-  const list = byId("cli-stats");
-  const statDiv = event.target?.closest?.(".cli-stat");
-  if (statDiv && list?.contains(statDiv)) {
-    setActiveStatRow(statDiv);
-    handleStatClick(statDiv, event);
-  }
-}
 
-function handleStatClick(statDiv, event) {
-  event.preventDefault();
-  const idx = statDiv?.dataset?.statIndex;
-  if (!idx) return;
-  const state = document.body?.dataset?.battleState || "";
-  if (state !== "waitingForPlayerAction") return;
-  const stat = getStatByIndex(idx);
-  if (!stat) return;
-  selectStat(stat);
-}
 
 /**
  * Advance battle state when clicking outside interactive areas.

@@ -48,6 +48,22 @@ export async function ensureBindings(opts = {}) {
 }
 
 export function resetBindings() {
+  /**
+   * Reset dynamic binding flags used during tests.
+   *
+   * Calling this releases the module-level marker that indicates promises and
+   * dynamic handlers have been created so subsequent calls to
+   * `ensureBindings({force:true})` will rebind handlers and recreate test
+   * promises. This is intended for test harnesses that need to rewire
+   * handlers between test cases.
+   *
+   * @pseudocode
+   * 1. Clear the module-level `__promisesBound` flag so `ensureBindings` will
+   *    re-import promise providers on next call.
+   * 2. (No-op outside tests.)
+   *
+   * @returns {void}
+   */
   __promisesBound = false;
 }
 

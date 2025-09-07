@@ -581,4 +581,13 @@ export function _resetForTest(store) {
  * @pseudocode
  * 1. Invoke `_resetForTest(store)` when asked to reset the active match.
  */
+/**
+ * Reset the Classic Battle match state and UI.
+ *
+ * Alias of `_resetForTest` used by orchestrator and other callers.
+ *
+ * @pseudocode
+ * 1. Invoke `_resetForTest(store)` when asked to reset the active match.
+ * @returns {void}
+ */
 export const resetGame = _resetForTest;

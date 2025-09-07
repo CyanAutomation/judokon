@@ -364,21 +364,13 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
  * Dispose listeners and clear the classic battle orchestrator reference.
  *
  * @pseudocode
- * 1. Remove `battleStateChange` listeners.
- * 2. Detach `visibilitychange` handler.
- * 3. Nullify stored references.
+ * 1. Remove `battleStateChange` listeners (DOM & debug).
+ * 2. Detach `visibilitychange` handler when present.
+ * 3. Nullify internal references (`debugLogListener`, `visibilityHandler`, `machine`).
+ *
+ * @returns {void}
  */
 export function disposeClassicBattleOrchestrator() {
-  /**
-   * Remove listeners and clear orchestrator references.
-   *
-   * @pseudocode
-   * 1. Remove `domStateListener` from `battleStateChange`.
-   * 2. If `debugLogListener` exists, remove it and null the reference.
-   * 3. Detach `visibilitychange` listener when present.
-   * 4. Null the `machine` reference so the orchestrator is disposable.
-   * @returns {void}
-   */
   offBattleEvent("battleStateChange", domStateListener);
   if (debugLogListener) {
     offBattleEvent("battleStateChange", debugLogListener);

@@ -10,23 +10,30 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  */
 
 /**
- * Slim state manager for Classic Battle.
+ * Create a lightweight state manager for the Classic Battle finite-state machine.
  *
- * Core progression:
- * waitingForMatchStart → matchStart → cooldown → roundStart → waitingForPlayerAction →
- * roundDecision → roundOver → matchDecision → matchOver.
- * Interrupt paths:
- * matchStart/error/interrupt → interruptMatch
- * round phases interrupt → interruptRound → { restartRound: cooldown, resumeLobby: waitingForMatchStart, abortMatch: matchOver }
- * Optional admin branch: interruptRound --roundModifyFlag--> roundModification --modifyRoundDecision--> roundStart.
+ * This factory constructs a minimal machine with `getState()` and
+ * `dispatch(eventName, payload)` that consults a `stateTable` and invokes
+ * `onEnter` handlers when entering states. It is intentionally small to keep
+ * test harnesses fast and to allow the orchestrator to attach higher-level
+ * behavior.
  *
- * States and triggers are defined in `stateTable.js`.
+ * @pseudocode
+ * 1. Build a `byName` map from `stateTable` and determine the initial state.
+ * 2. Create `machine` with `context`, `getState()` and async `dispatch()`.
+ * 3. In `dispatch()`: locate a trigger for `eventName` and derive the target
+ *    state; if none found, and `eventName` matches a state name, use that.
+ * 4. Update `current` to the target and call `onTransition` with `{from,to,event}`.
+ * 5. Run `runOnEnter(target, payload)` which calls the corresponding handler
+ *    from `onEnterMap` if present and swallows errors in test mode.
+ * 6. Initialize the machine by invoking `onTransition({from:null,to:init,event:'init'})`
+ *    and run the initial state's `onEnter` handler.
  *
- * @param {Record<string, Function>} onEnterMap
- * @param {object} context
- * @param {(args:{from:string|null,to:string,event:string|null})=>Promise<void>|void} [onTransition]
- * @param {Array} [stateTable=CLASSIC_BATTLE_STATES]
- * @returns {Promise<ClassicBattleStateManager>}
+ * @param {Record<string, Function>} [onEnterMap={}] - Map of state name -> onEnter handler.
+ * @param {object} [context={}] - Initial machine context object.
+ * @param {(args:{from:string|null,to:string,event:string|null})=>Promise<void>|void} [onTransition] - Optional transition hook.
+ * @param {Array} [stateTable=CLASSIC_BATTLE_STATES] - Array of state definitions used by the machine.
+ * @returns {Promise<ClassicBattleStateManager>} Resolves with the constructed machine.
  */
 export async function createStateManager(
   onEnterMap = {},

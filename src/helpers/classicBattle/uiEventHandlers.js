@@ -10,6 +10,22 @@ import { getOpponentDelay } from "./snackbar.js";
 let opponentSnackbarId = 0;
 
 export function bindUIHelperEventHandlersDynamic() {
+  /**
+   * Bind dynamic UI helper event handlers on the shared battle EventTarget.
+   *
+   * This function idempotently attaches listeners for opponent reveals,
+   * stat selection, and round resolved events. Handlers are attached to the
+   * current `getBattleEventTarget()` instance and guarded so multiple calls
+   * against the same target are a no-op.
+   *
+   * @pseudocode
+   * 1. Compute a WeakSet attached to global to track bound EventTargets.
+   * 2. If the current target is already bound, return early.
+   * 3. Attach handlers for `opponentReveal`, `statSelected`, and `roundResolved`.
+   * 4. Each handler renders UI and updates debug panel or shows snackbars.
+   *
+   * @returns {void}
+   */
   // Ensure we only bind once per EventTarget instance
   try {
     const KEY = "__cbUIHelpersDynamicBoundTargets";

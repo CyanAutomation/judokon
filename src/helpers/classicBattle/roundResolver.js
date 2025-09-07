@@ -9,6 +9,18 @@ import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
 
+/**
+ * Bridge events emitted by the battle engine to classic-battle `emitBattleEvent` names.
+ *
+ * This adapter listens on the engine facade and mirrors key lifecycle and timer
+ * events onto the classic battle event bus so UI and orchestrator can observe them.
+ *
+ * @returns {void}
+ * @pseudocode
+ * 1. Obtain `engineFacade.on` and return early when not available.
+ * 2. Subscribe to engine events (`roundEnded`, `matchEnded`, `roundStarted`, `timerTick`).
+ * 3. For each engine event, emit corresponding `emitBattleEvent` with normalized detail.
+ */
 export function bridgeEngineEvents() {
   try {
     const onEngine = engineFacade.on;

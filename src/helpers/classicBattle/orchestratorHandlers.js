@@ -14,25 +14,23 @@ import { initStartCooldown, initInterRoundCooldown } from "./cooldowns.js";
 /**
  * Whether the orchestrator should automatically dispatch "continue" after an
  * outcome. Consumers like the CLI can toggle this for readability.
- * @type {boolean}
- */
-/**
- * Whether the orchestrator should automatically dispatch "continue" after an
- * outcome. Consumers like the CLI can toggle this for readability.
  *
  * @type {boolean}
+ * @pseudocode
+ * 1. Default to `true` so outcomes automatically advance the machine.
+ * 2. Tests or CLI can set this to `false` to inspect intermediate UI states.
  */
 export let autoContinue = true;
 
 /**
  * Update the `autoContinue` behavior.
- * @param {boolean} val
- */
-/**
- * Update the `autoContinue` behavior.
  *
  * @param {boolean} val - truthy to enable auto-continue, false to disable.
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Coerce `val` to boolean (treating undefined as `true`).
+ * 2. Store into module-scoped `autoContinue`.
  */
 export function setAutoContinue(val) {
   autoContinue = val !== false;
@@ -1037,6 +1035,9 @@ export async function interruptRoundEnter(machine, payload) {
  * @param {object} machine
  * @param {object} [payload]
  */
+/**
+ * @returns {Promise<void>}
+ */
 export async function interruptMatchEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
@@ -1077,6 +1078,9 @@ export async function interruptMatchEnter(machine, payload) {
  *
  * @param {object} machine
  * @param {object} [payload]
+ */
+/**
+ * @returns {Promise<void>}
  */
 export async function roundModificationEnter(machine, payload) {
   emitBattleEvent("scoreboardClearMessage");

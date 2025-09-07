@@ -6,6 +6,20 @@ import { safeCall } from "./safeCall.js";
 /**
  * Reset the global statButtons ready promise and expose its resolver.
  *
+ * When tests or early initialization need to await the presence of stat
+ * buttons, a globally available promise (window.statButtonsReadyPromise) is
+ * used. This helper replaces that promise and keeps a resolver on
+ * `window.__resolveStatButtonsReady` so callers can resolve it when wiring
+ * completes.
+ *
+ * @pseudocode
+ * 1. Create a new Promise and capture its resolver.
+ * 2. Store the resolver on `window.__resolveStatButtonsReady` (guarded).
+ * 3. Attach the promise to `window.statButtonsReadyPromise` and record an
+ *    instrumentation event in `window.__promiseEvents`.
+ * 4. Return an object exposing the `resolve` function for consumers.
+ *
+ * @param {Window} [win=window] - Window-like global to attach the promise to.
  * @returns {{resolve: () => void}} Resolver handle.
  */
 export function resetStatButtonsReadyPromise(win = window) {
@@ -24,6 +38,22 @@ export function resetStatButtonsReadyPromise(win = window) {
   return { resolve };
 }
 
+/**
+ * Resolve the current global `statButtonsReadyPromise`, creating a fresh
+ * promise if one is missing.
+ *
+ * This helper is safe to call from both production wiring and tests. If the
+ * global resolver is present it will be invoked; otherwise a new promise is
+ * created and immediately resolved so callers never block indefinitely.
+ *
+ * @pseudocode
+ * 1. If `window.__resolveStatButtonsReady` is a function, call it safely.
+ * 2. Otherwise, call `resetStatButtonsReadyPromise()` to create a new
+ *    promise and immediately resolve it.
+ *
+ * @param {Window} [win=window] - Window-like global where the resolver may live.
+ * @returns {void}
+ */
 export function resolveStatButtonsReady(win = window) {
   if (typeof win.__resolveStatButtonsReady === "function") {
     safeCall(() => win.__resolveStatButtonsReady());
