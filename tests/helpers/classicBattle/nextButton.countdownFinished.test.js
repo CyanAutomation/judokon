@@ -10,7 +10,8 @@ vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
-  skipRoundCooldownIfEnabled: vi.fn(() => false)
+  skipRoundCooldownIfEnabled: vi.fn(() => false),
+  syncScoreDisplay: vi.fn()
 }));
 
 import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";

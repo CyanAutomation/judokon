@@ -30,10 +30,22 @@ import { guard } from "./guard.js";
 import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 export { showSelectionPrompt, setOpponentDelay, getOpponentDelay } from "./snackbar.js";
-let syncScoreDisplay = () => {
+
+const UI_SERVICE_IDLE_TIMEOUT = 2000;
+
+export const INITIAL_SCOREBOARD_TEXT = "You: 0\nOpponent: 0";
+
+/**
+ * Ensure the scoreboard has initial text.
+ *
+ * @pseudocode
+ * 1. Select `header #score-display`.
+ * 2. If empty, set to `INITIAL_SCOREBOARD_TEXT`.
+ */
+export let syncScoreDisplay = () => {
   try {
     const el = document.querySelector("header #score-display");
-    if (el && !el.textContent) el.textContent = "You: 0\nOpponent: 0";
+    if (el && !el.textContent) el.textContent = INITIAL_SCOREBOARD_TEXT;
   } catch {}
 };
 function preloadUiService() {
@@ -43,15 +55,24 @@ function preloadUiService() {
     })
     .catch(() => {});
 }
-try {
-  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-    window.requestIdleCallback(preloadUiService);
-  } else {
-    queueMicrotask(preloadUiService);
+function scheduleUiServicePreload() {
+  try {
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(preloadUiService);
+      window.setTimeout(() => {
+        try {
+          if ("cancelIdleCallback" in window) window.cancelIdleCallback(id);
+        } catch {}
+        preloadUiService();
+      }, UI_SERVICE_IDLE_TIMEOUT);
+    } else {
+      queueMicrotask(preloadUiService);
+    }
+  } catch {
+    preloadUiService();
   }
-} catch {
-  preloadUiService();
 }
+scheduleUiServicePreload();
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
  *

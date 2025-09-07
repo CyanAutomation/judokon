@@ -29,7 +29,8 @@ vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   updateRoundCounter: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
-  disableNextRoundButton: vi.fn()
+  disableNextRoundButton: vi.fn(),
+  syncScoreDisplay: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/snackbar.js", () => ({
   showSelectionPrompt: vi.fn(),

@@ -13,31 +13,35 @@ import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { syncScoreDisplay } from "./uiHelpers.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
-let syncScoreDisplay = () => {
-  try {
-    const el = document.querySelector("header #score-display");
-    if (el && !el.textContent) el.textContent = "You: 0\nOpponent: 0";
-  } catch {}
-};
 let showMatchSummaryModal = null;
 function preloadUiService() {
   import("./uiService.js")
     .then((m) => {
-      syncScoreDisplay = m.syncScoreDisplay || syncScoreDisplay;
       showMatchSummaryModal = m.showMatchSummaryModal;
     })
     .catch(() => {});
 }
-try {
-  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-    window.requestIdleCallback(preloadUiService);
-  } else {
-    queueMicrotask(preloadUiService);
+const UI_SERVICE_IDLE_TIMEOUT = 2000;
+function scheduleUiServicePreload() {
+  try {
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(preloadUiService);
+      window.setTimeout(() => {
+        try {
+          if ("cancelIdleCallback" in window) window.cancelIdleCallback(id);
+        } catch {}
+        preloadUiService();
+      }, UI_SERVICE_IDLE_TIMEOUT);
+    } else {
+      queueMicrotask(preloadUiService);
+    }
+  } catch {
+    preloadUiService();
   }
-} catch {
-  preloadUiService();
 }
+scheduleUiServicePreload();
 
 /**
  * Apply UI updates for a newly started round.
