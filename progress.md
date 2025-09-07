@@ -225,10 +225,10 @@ Phase 4 — Actions & Outcome
   - Unit: `npx vitest run tests/classicBattle/resolution.test.js`
 - Note: Server-based Playwright timer spec already covers countdown visibility. A Playwright resolution spec will be added once stat click/UI wiring is introduced, to observe scoreboard change without waiting for a 30s timeout.
 
-
 Phase 5 — Actions & Outcome
 
 Phase 6 — Actions & Outcome (Stat buttons + selection)
+
 - Added failing tests first:
   - Unit: tests/classicBattle/stat-buttons.test.js — asserts stat buttons render and are enabled after match start; clicking a stat clears the timer, updates score deterministically, and starts cooldown (Next becomes ready).
   - Playwright: playwright/battle-classic/stat-selection.spec.js — verifies the same in-browser with short timers.
