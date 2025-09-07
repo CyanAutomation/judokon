@@ -1,6 +1,4 @@
 {
-    "github-actions.workflows.pinned.workflows": [
-        ".github/workflows/test.yml"
-    ],
-    "remote.restoreForwardedPorts": true
+  "github-actions.workflows.pinned.workflows": [".github/workflows/test.yml"],
+  "remote.restoreForwardedPorts": true
 }
