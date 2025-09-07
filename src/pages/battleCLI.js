@@ -1069,7 +1069,11 @@ function buildStatRows(stats, judoka) {
 function renderHelpMapping(stats) {
   try {
     const help = byId("cli-help");
-    if (!help || help.childElementCount !== 0) return;
+    if (!help) {
+      console.error("renderHelpMapping: #cli-help element missing");
+      return;
+    }
+    if (help.childElementCount !== 0) return;
     const mapping = stats
       .slice()
       .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
@@ -1078,7 +1082,9 @@ function renderHelpMapping(stats) {
     const li = document.createElement("li");
     li.textContent = mapping;
     help.appendChild(li);
-  } catch {}
+  } catch (err) {
+    console.error("renderHelpMapping failed", err);
+  }
 }
 
 /**
@@ -1126,10 +1132,14 @@ export async function renderStatList(judoka) {
       ensureStatClickBinding(list);
       try {
         window.__battleCLIinit?.clearSkeletonStats?.();
-      } catch {}
+      } catch (err) {
+        console.error("renderStatList: failed to clear skeleton stats", err);
+      }
       renderHelpMapping(stats);
     }
-  } catch {}
+  } catch (err) {
+    console.error("renderStatList failed", err);
+  }
 }
 
 function renderHiddenPlayerStats(judoka) {
