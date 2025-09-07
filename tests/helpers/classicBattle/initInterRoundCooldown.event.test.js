@@ -55,7 +55,7 @@ describe("initInterRoundCooldown", () => {
 
   it("enables button and emits event", async () => {
     const { initInterRoundCooldown } = await import(
-      "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+      "../../../src/helpers/classicBattle/cooldowns.js"
     );
     await initInterRoundCooldown(machine);
     const btn = document.getElementById("next-button");
@@ -69,7 +69,7 @@ describe("initInterRoundCooldown", () => {
       if (evt === "countdownStart") throw new Error("boom");
     });
     const { initInterRoundCooldown } = await import(
-      "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+      "../../../src/helpers/classicBattle/cooldowns.js"
     );
     await initInterRoundCooldown(machine);
     const btn = document.getElementById("next-button");
@@ -81,7 +81,7 @@ describe("initInterRoundCooldown", () => {
   it("reapplies readiness when reset before timeout", async () => {
     vi.useFakeTimers();
     const { initInterRoundCooldown } = await import(
-      "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+      "../../../src/helpers/classicBattle/cooldowns.js"
     );
     const btn = document.getElementById("next-button");
     const getDisabledSetCount = createDisabledSpy(btn);
@@ -96,7 +96,7 @@ describe("initInterRoundCooldown", () => {
   it("does not reapply readiness when already ready", async () => {
     vi.useFakeTimers();
     const { initInterRoundCooldown } = await import(
-      "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+      "../../../src/helpers/classicBattle/cooldowns.js"
     );
     const btn = document.getElementById("next-button");
     const getDisabledSetCount = createDisabledSpy(btn);
