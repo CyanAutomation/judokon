@@ -7,6 +7,19 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
 let roundDrift;
 let scoreboard;
 
+vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
+  setupScoreboard: vi.fn(),
+  showMessage: (...args) => scoreboard.showMessage(...args),
+  updateScore: (...args) => scoreboard.updateScore(...args),
+  clearMessage: (...args) => scoreboard.clearMessage(...args),
+  showTemporaryMessage: (...args) => scoreboard.showTemporaryMessage(...args),
+  clearTimer: (...args) => scoreboard.clearTimer(...args),
+  updateTimer: (...args) => scoreboard.updateTimer(...args),
+  showAutoSelect: (...args) => scoreboard.showAutoSelect(...args),
+  updateRoundCounter: (...args) => scoreboard.updateRoundCounter(...args),
+  clearRoundCounter: (...args) => scoreboard.clearRoundCounter(...args)
+}));
+
 describe("Scoreboard integration without setupScoreboard", () => {
   beforeEach(async () => {
     vi.useFakeTimers();
@@ -80,18 +93,8 @@ describe("Scoreboard integration without setupScoreboard", () => {
       scoreEl: document.getElementById("score-display")
     });
 
-    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
-      setupScoreboard: vi.fn(),
-      showMessage: scoreboard.showMessage.bind(scoreboard),
-      updateScore: scoreboard.updateScore.bind(scoreboard),
-      clearMessage: scoreboard.clearMessage.bind(scoreboard),
-      showTemporaryMessage: scoreboard.showTemporaryMessage.bind(scoreboard),
-      clearTimer: scoreboard.clearTimer.bind(scoreboard),
-      updateTimer: scoreboard.updateTimer.bind(scoreboard),
-      showAutoSelect: scoreboard.showAutoSelect.bind(scoreboard),
-      updateRoundCounter: scoreboard.updateRoundCounter.bind(scoreboard),
-      clearRoundCounter: scoreboard.clearRoundCounter.bind(scoreboard)
-    }));
+    const { initClassicBattleTest } = await import("./initClassicBattleTest.js");
+    await initClassicBattleTest({ afterMock: true });
   });
 
   it("renders messages, score, round counter, and round timer without setup", async () => {
