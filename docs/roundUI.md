@@ -17,3 +17,15 @@ the final result.
 
 Caching the player card, opponent card and stat buttons on the store avoids
 repeated DOM queries inside timers and event handlers.
+
+## Headless/fast-forward mode
+
+Bulk simulations or automated tests can bypass UI waits by enabling headless mode:
+
+```js
+import { setHeadlessMode } from "../helpers/headlessMode.js";
+
+setHeadlessMode(true); // skip cooldown and reveal delays
+```
+
+Headless mode removes inter-round cooldowns and opponent reveal sleeps. Matches run back-to-back, often completing dozens of rounds per second on modern hardware.
