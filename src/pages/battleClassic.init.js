@@ -7,10 +7,8 @@ import { createBattleStore, startCooldown } from "../helpers/classicBattle/round
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import { onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
-import {
-  setStatButtonsEnabled,
-  resolveStatButtonsReady
-} from "../helpers/classicBattle/statButtons.js";
+import { setStatButtonsEnabled, resolveStatButtonsReady } from "../helpers/classicBattle/statButtons.js";
+import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
@@ -27,6 +25,10 @@ function init() {
   try {
     createBattleEngine();
     const store = createBattleStore();
+    // Bind transient UI handlers (opponent choosing message, reveal, outcome)
+    try {
+      bindUIHelperEventHandlersDynamic();
+    } catch {}
     // Wire Next button click to cooldown/advance handler
     try {
       const nextBtn = document.getElementById("next-button");
@@ -46,10 +48,14 @@ function init() {
         btn.addEventListener("click", async () => {
           if (btn.disabled) return;
           try {
+            const delayOverride =
+              typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
+                ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
+                : 0;
             await handleStatSelection(store, String(stat), {
               playerVal: 5,
               opponentVal: 3,
-              delayMs: 0
+              delayMs: delayOverride
             });
             startCooldown(store);
           } catch {}
