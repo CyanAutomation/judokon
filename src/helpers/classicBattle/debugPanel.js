@@ -76,6 +76,19 @@ function getBuildInfo(win) {
   return info;
 }
 
+/**
+ * Collect a consolidated debug snapshot for the current battle.
+ *
+ * @returns {Object} A plain object containing scores, timer, machine state,
+ *   store snapshot and build/runtime diagnostics useful for tests and UI.
+ *
+ * @pseudocode
+ * 1. Read base values from the battle facade (scores, timer, matchEnded).
+ * 2. When test mode is enabled, attach the current random seed.
+ * 3. Gather machine-specific diagnostics via `getMachineDebugState()`.
+ * 4. Add a shallow snapshot of in-page store state and build info.
+ * 5. Merge and return the resulting object.
+ */
 export function collectDebugState() {
   const base = {
     ...getScores(),
@@ -105,11 +118,31 @@ function addMachineDiagnostics(state) {
   });
 }
 
+/**
+ * Render the debug state into a <pre> element.
+ *
+ * @param {HTMLElement} pre - Target <pre> element where JSON will be written.
+ * @param {Object} state - Debug state object produced by `collectDebugState`.
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. If `pre` is falsy, do nothing.
+ * 2. Serialize `state` to JSON and assign it to `pre.textContent`.
+ */
 export function renderDebugState(pre, state) {
   if (!pre) return;
   pre.textContent = JSON.stringify(state);
 }
 
+/**
+ * Refresh the on-page debug panel output with the latest collected state.
+ *
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. Locate the `<pre id="debug-output">` element.
+ * 2. If the element exists, call `collectDebugState()` and render it.
+ */
 export function updateDebugPanel() {
   const pre = getDebugOutputEl();
   if (!pre) return;
@@ -117,6 +150,19 @@ export function updateDebugPanel() {
   renderDebugState(pre, state);
 }
 
+/**
+ * Initialize or migrate the debug panel DOM used for battle debugging.
+ *
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. Find `#debug-panel` placeholder in the DOM; bail if missing.
+ * 2. When test mode is enabled and `#battle-area` exists:
+ *    - Ensure `#debug-panel` is a `<details>` with a `<summary>` and `<pre>`.
+ *    - Wire a copy button and persist the `open` state to localStorage.
+ *    - Insert the panel before the battle area and show it.
+ * 3. Otherwise remove the placeholder panel from the DOM.
+ */
 export function initDebugPanel() {
   const debugPanel = document.getElementById("debug-panel");
   if (!debugPanel) return;
@@ -151,6 +197,19 @@ export function initDebugPanel() {
   }
 }
 
+/**
+ * Enable or disable the debug panel UI.
+ *
+ * @param {boolean} enabled - When true, create/show the panel; otherwise hide/remove it.
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. If `enabled` is true:
+ *    - Create `#debug-panel` as a `<details>` with a `<summary>` and `<pre>` if missing.
+ *    - Ensure the copy button exists and restore `open` from localStorage.
+ *    - Move the panel before the battle area and make it visible.
+ * 2. If `enabled` is false and a panel exists, hide and remove it.
+ */
 export function setDebugPanelEnabled(enabled) {
   const battleArea = document.getElementById("battle-area");
   let panel = document.getElementById("debug-panel");

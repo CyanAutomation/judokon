@@ -284,6 +284,8 @@ export function getOpponentJudoka() {
 /**
  * Clear the stored opponent judoka selection.
  *
+ * @returns {void}
+ *
  * @pseudocode
  * 1. Set `opponentJudoka` to `null` to forget the previous selection.
  */

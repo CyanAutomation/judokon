@@ -9,9 +9,10 @@ let stateLog = [];
 /**
  * Record a transition for debugging.
  *
- * @param {string|null} from Previous state.
- * @param {string} to New state.
- * @param {string|null} event Triggering event.
+ * @param {string|null} from Previous state name, or null when unknown.
+ * @param {string} to New state name.
+ * @param {string|null} event Optional event that triggered the transition.
+ * @returns {void}
  *
  * @pseudocode
  * 1. Update module-scoped `currentState` with the new `to` value.
@@ -71,6 +72,18 @@ export function getStateSnapshot() {
  * Test helper to override the current snapshot.
  *
  * @param {{state?:string|null,prev?:string|null,event?:string|null,log?:Array}} next
+ *
+ * @pseudocode
+ * 1. Replace module-scoped `currentState`, `prevState`, and `lastEvent`
+ *    with values from `next` (falling back to `null` when missing).
+ * 2. If `next.log` is an array, shallow-copy it into `stateLog`, else
+ *    set `stateLog` to an empty array.
+ */
+/**
+ * Replace the in-memory state snapshot (test helper).
+ *
+ * @param {{state?:string|null,prev?:string|null,event?:string|null,log?:Array}} next
+ * @returns {void}
  *
  * @pseudocode
  * 1. Replace module-scoped `currentState`, `prevState`, and `lastEvent`

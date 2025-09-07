@@ -15,6 +15,7 @@ let stateGetter = () => null;
  * 2. `dispatchBattleEvent` will later invoke this stored dispatcher.
  *
  * @param {(eventName: string, payload?: any) => Promise<void>|void} fn
+ * @returns {void}
  */
 export function setBattleDispatcher(fn) {
   if (typeof fn === "function") dispatcher = fn;
@@ -28,6 +29,7 @@ export function setBattleDispatcher(fn) {
  * 2. `getBattleState` will later use this stored getter.
  *
  * @param {() => string|null} fn
+ * @returns {void}
  */
 export function setBattleStateGetter(fn) {
   if (typeof fn === "function") stateGetter = fn;
@@ -42,6 +44,7 @@ export function setBattleStateGetter(fn) {
  *
  * @param {string} eventName
  * @param {any} [payload]
+ * @returns {Promise<void>} Resolves when the dispatcher completes or is a no-op.
  */
 export async function dispatchBattleEvent(eventName, payload) {
   try {
