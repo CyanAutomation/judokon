@@ -26,9 +26,10 @@ let machine = null;
 let debugLogListener = null;
 let visibilityHandler = null;
 
-// Map resolution events to PRD outcomes
+// Map resolution events to PRD outcomes.
+// Identity mappings are listed explicitly so only recognized events emit taxonomy outcomes.
 const interruptResolutionMap = {
-  restartRound: "restartRound",
+  restartRound: "restartRound", // explicit for consistency
   resumeLobby: "resumeLobby",
   abortMatch: "abortMatch",
   restartMatch: "restartRound", // closest PRD outcome
