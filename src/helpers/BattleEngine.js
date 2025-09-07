@@ -8,6 +8,17 @@
 import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./constants.js";
 import { TimerController } from "./TimerController.js";
 import { stop as stopScheduler } from "../utils/scheduler.js";
+import { SimpleEmitter } from "./events/SimpleEmitter.js";
+import {
+  startRoundTimer,
+  startCoolDownTimer,
+  pauseTimer as enginePauseTimer,
+  resumeTimer as engineResumeTimer,
+  stopTimer as engineStopTimer,
+  handleTabInactive as engineHandleTabInactive,
+  handleTabActive as engineHandleTabActive,
+  handleTimerDrift as engineHandleTimerDrift
+} from "./battle/engineTimer.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
 
@@ -24,32 +35,6 @@ export const OUTCOME = {
   ROUND_MODIFIED: "roundModified",
   ERROR: "error"
 };
-
-class SimpleEmitter {
-  constructor() {
-    this.listeners = new Map();
-  }
-
-  on(type, handler) {
-    if (!this.listeners.has(type)) this.listeners.set(type, new Set());
-    this.listeners.get(type).add(handler);
-  }
-
-  off(type, handler) {
-    this.listeners.get(type)?.delete(handler);
-  }
-
-  emit(type, detail) {
-    const handlers = Array.from(this.listeners.get(type) || []);
-    for (const h of handlers) {
-      try {
-        h(detail);
-      } catch (err) {
-        console.error("Error in event handler for type '" + type + "':", err);
-      }
-    }
-  }
-}
 
 /**
  * Compare two stat values and report the winner.
@@ -120,18 +105,17 @@ export class BattleEngine {
    * Initializes a new instance of the BattleEngine.
    *
    * @pseudocode
-   * 1. Extract configuration values using destructuring with classic defaults as fallbacks (`pointsToWin`, `maxRounds`, `stats`).
-   * 2. Initialize scores, timer, and status flags.
-   * 3. Store the extracted config values for test resets.
+   * 1. Normalize configuration values.
+   * 2. Bind the event emitter.
    *
    * @param {object} [config]
-   * @param {number} [config.pointsToWin] - Points required to win the match.
-   * @param {number} [config.maxRounds] - Maximum number of rounds.
-   * @param {string[]} [config.stats] - List of stat keys used in battles.
-   * @param {object} [config.debugHooks] - Optional debug callbacks.
-   * @param {function():{log:Array}} [config.debugHooks.getStateSnapshot] - Timer snapshot hook.
    */
   constructor(config = {}) {
+    const emitter = this.#initFromConfig(config);
+    this.#bindEmitter(emitter || new SimpleEmitter());
+  }
+
+  #initFromConfig(config) {
     const {
       pointsToWin = CLASSIC_BATTLE_POINTS_TO_WIN,
       maxRounds = CLASSIC_BATTLE_MAX_ROUNDS,
@@ -155,7 +139,11 @@ export class BattleEngine {
     this.lastError = "";
     this.lastModification = null;
     this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks, seed: this.seed };
-    this.emitter = emitter || new SimpleEmitter();
+    return emitter;
+  }
+
+  #bindEmitter(emitter) {
+    this.emitter = emitter;
     this.on = this.emitter.on.bind(this.emitter);
     this.off = this.emitter.off.bind(this.emitter);
     this.emit = this.emitter.emit.bind(this.emitter);
@@ -194,7 +182,7 @@ export class BattleEngine {
    * 1. Call the `stop()` method on the `this.timer` instance.
    */
   stopTimer() {
-    this.timer.stop();
+    engineStopTimer(this);
   }
 
   #endMatchIfNeeded() {
@@ -229,19 +217,7 @@ export class BattleEngine {
    * @returns {Promise<void>} Resolves when the timer starts.
    */
   startRound(onTick, onExpired, duration, onDrift) {
-    const round = this.roundsPlayed + 1;
-    this.emit("roundStarted", { round });
-    return this.timer.startRound(
-      (r) => {
-        this.emit("timerTick", { remaining: r, phase: "round" });
-        if (typeof onTick === "function") onTick(r);
-      },
-      async () => {
-        if (!this.matchEnded && typeof onExpired === "function") await onExpired();
-      },
-      duration,
-      onDrift
-    );
+    return startRoundTimer(this, onTick, onExpired, duration, onDrift);
   }
 
   /**
@@ -258,17 +234,7 @@ export class BattleEngine {
    * @returns {Promise<void>} Resolves when the timer starts.
    */
   startCoolDown(onTick, onExpired, duration, onDrift) {
-    return this.timer.startCoolDown(
-      (r) => {
-        this.emit("timerTick", { remaining: r, phase: "cooldown" });
-        if (typeof onTick === "function") onTick(r);
-      },
-      async () => {
-        if (!this.matchEnded && typeof onExpired === "function") await onExpired();
-      },
-      duration,
-      onDrift
-    );
+    return startCoolDownTimer(this, onTick, onExpired, duration, onDrift);
   }
 
   /**
@@ -279,7 +245,7 @@ export class BattleEngine {
    * 2. If a timer is running, call `pause()` on it.
    */
   pauseTimer() {
-    this.timer.pause();
+    enginePauseTimer(this);
   }
 
   /**
@@ -290,7 +256,7 @@ export class BattleEngine {
    * 2. If a timer is running, call `resume()` on it.
    */
   resumeTimer() {
-    this.timer.resume();
+    engineResumeTimer(this);
   }
 
   /**
@@ -311,18 +277,26 @@ export class BattleEngine {
    */
   handleStatSelection(playerVal, opponentVal) {
     if (this.matchEnded) {
-      const already = determineOutcome(playerVal, opponentVal);
-      return {
-        ...already,
-        matchEnded: this.matchEnded,
-        playerScore: this.playerScore,
-        opponentScore: this.opponentScore
-      };
+      return this.#resultWhenMatchEnded(playerVal, opponentVal);
     }
     this.stopTimer();
     const outcome = determineOutcome(playerVal, opponentVal);
     applyOutcome(this, outcome);
     this.roundsPlayed += 1;
+    return this.#finalizeRound(outcome);
+  }
+
+  #resultWhenMatchEnded(playerVal, opponentVal) {
+    const already = determineOutcome(playerVal, opponentVal);
+    return {
+      ...already,
+      matchEnded: this.matchEnded,
+      playerScore: this.playerScore,
+      opponentScore: this.opponentScore
+    };
+  }
+
+  #finalizeRound(outcome) {
     const matchOutcome = this.#endMatchIfNeeded();
     const result = {
       ...outcome,
@@ -548,8 +522,7 @@ export class BattleEngine {
    * 2. Set a flag to indicate tab is inactive.
    */
   handleTabInactive() {
-    this.pauseTimer();
-    this.tabInactive = true;
+    engineHandleTabInactive(this);
   }
 
   /**
@@ -560,10 +533,7 @@ export class BattleEngine {
    * 2. Clear the tab inactive flag.
    */
   handleTabActive() {
-    if (this.tabInactive) {
-      this.resumeTimer();
-      this.tabInactive = false;
-    }
+    engineHandleTabActive(this);
   }
 
   /**
@@ -577,9 +547,7 @@ export class BattleEngine {
    * @param {number} driftAmount - Amount of drift detected in seconds.
    */
   handleTimerDrift(driftAmount) {
-    this.stopTimer();
-    this.lastTimerDrift = driftAmount;
-    // Optionally restart timer or notify UI
+    engineHandleTimerDrift(this, driftAmount);
   }
 
   /**
