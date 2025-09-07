@@ -13,4 +13,3 @@ test.describe("Classic Battle round select", () => {
     await expect(page.locator("body")).toHaveAttribute("data-target", "15");
   });
 });
-

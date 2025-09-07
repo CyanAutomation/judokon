@@ -34,4 +34,3 @@ describe("Classic Battle round select modal", () => {
     expect(document.body.dataset.target).toBe("15");
   });
 });
-
