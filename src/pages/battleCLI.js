@@ -1472,6 +1472,22 @@ function clearAdvanceTimers() {
 }
 
 /**
+ * Record state machine dispatch error without logging to console.
+ *
+ * @param {unknown} err Error to record.
+ * @pseudocode
+ * if window exists
+ *   window.__battleDispatchError = String(err)
+ */
+function recordDispatchError(err) {
+  try {
+    if (typeof window !== "undefined") {
+      window.__battleDispatchError = String(err);
+    }
+  } catch {}
+}
+
+/**
  * Dispatch continue on round over.
  *
  * @pseudocode
@@ -1483,7 +1499,7 @@ function advanceRoundOver() {
     const machine = getMachine();
     if (machine) machine.dispatch("continue");
   } catch (err) {
-    console.error(err);
+    recordDispatchError(err);
   }
 }
 
@@ -1501,7 +1517,7 @@ function advanceCooldown() {
     const machine = getMachine();
     if (machine) machine.dispatch("ready");
   } catch (err) {
-    console.error(err);
+    recordDispatchError(err);
   }
 }
 
