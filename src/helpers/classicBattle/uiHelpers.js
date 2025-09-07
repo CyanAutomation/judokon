@@ -1,7 +1,7 @@
 import { getOpponentCardData } from "./opponentController.js";
 import { isEnabled, featureFlagsEmitter } from "../featureFlags.js";
-import { getScores, getTimerState, isMatchEnded, STATS } from "../battleEngineFacade.js";
-import { isTestModeEnabled, getCurrentSeed, setTestMode } from "../testModeUtils.js";
+import { STATS } from "../battleEngineFacade.js";
+import { isTestModeEnabled, setTestMode } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
 import { showSnackbar } from "../showSnackbar.js";
@@ -21,14 +21,15 @@ import { createButton } from "../../components/Button.js";
 import { syncScoreDisplay } from "./uiService.js";
 import { onBattleEvent } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
-import { getStateSnapshot } from "./battleDebug.js";
 import {
   resetStatButtonsReadyPromise,
   setStatButtonsEnabled,
-  createStatHotkeyHandler
+  createStatHotkeyHandler,
+  resolveStatButtonsReady
 } from "./statButtons.js";
 import { guard } from "./guard.js";
-import { readDebugState } from "./debugHooks.js";
+import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
+export { showSelectionPrompt, setOpponentDelay, getOpponentDelay } from "./snackbar.js";
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
  *
@@ -75,10 +76,6 @@ if (typeof window !== "undefined") {
   } catch {}
 }
 
-function getDebugOutputEl() {
-  return document.getElementById("debug-output");
-}
-
 /**
  * Ensure the debug panel has a copy button that copies the panel text.
  *
@@ -91,38 +88,6 @@ function getDebugOutputEl() {
  *
  * @param {HTMLElement | null} panel Debug panel element.
  */
-function ensureDebugCopyButton(panel) {
-  if (!panel) return;
-  const summary = panel.querySelector("summary");
-  if (!summary) return;
-  let btn = summary.querySelector("#debug-copy");
-  if (!btn) {
-    btn = createButton("Copy", { id: "debug-copy" });
-    btn.dataset.tooltipId = "ui.copyDebug";
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const text = getDebugOutputEl()?.textContent ?? "";
-      try {
-        navigator?.clipboard?.writeText(text);
-      } catch {}
-    });
-    summary.appendChild(btn);
-  }
-}
-
-/**
- * Resolve the global stat buttons ready promise if present.
- */
-function resolveStatButtonsReady() {
-  if (typeof window === "undefined") return;
-  if (typeof window.__resolveStatButtonsReady !== "function") {
-    const { resolve } = resetStatButtonsReadyPromise();
-    resolve();
-  } else {
-    window.__resolveStatButtonsReady();
-  }
-}
 
 /**
  * Display a snackbar prompting the player to choose a stat.
@@ -144,42 +109,7 @@ function resolveStatButtonsReady() {
  * 2. Show a snackbar prompting the player to select a move.
  * 3. Emit a `roundPrompt` battle event for listeners.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export function showSelectionPrompt() {
-  const el = document.getElementById("round-message");
-  if (el) {
-    el.textContent = "";
-  }
-  showSnackbar(t("ui.selectMove"));
-  try {
-    battleEvents.emitBattleEvent("roundPrompt");
-  } catch {}
-  try {
-    if (isTestModeEnabled()) console.warn("[test] roundPrompt emitted");
-  } catch {}
-}
-
-/**
- * showRoundOutcome already has pseudocode above — placeholder stub for consistency.
- * @pseudocode
- * 1. Render the result across scoreboard and snackbar.
- */
-
-// ...generated JSDoc stubs inserted below for exported symbols that lacked them
-/**
- * @pseudocode
- * 1. Ensure the round message element is cleared and prompt is shown.
- */
-// (showSelectionPrompt already documented above)
+// showSelectionPrompt moved to ./snackbar.js
 
 /**
  * Render the opponent card inside a container element.
@@ -370,247 +300,6 @@ export function disableNextRoundButton() {
  * @pseudocode
  * 1. Read and return machine globals such as current state, prev state and log.
  */
-
-/**
- * Extract machine state and diagnostics.
- *
- * @pseudocode
- * 1. Copy current, previous, last event, and state log values.
- * 2. Append round decision and guard diagnostics when present.
- * 3. Merge machine readiness and triggers via `addMachineDiagnostics`.
- * 4. Return accumulated machine info.
- *
- * @returns {object}
- */
-export function getMachineDebugState() {
-  const state = {};
-  try {
-    const snap = getStateSnapshot();
-    if (snap.state) state.machineState = snap.state;
-    if (snap.prev) state.machinePrevState = snap.prev;
-    if (snap.event) state.machineLastEvent = snap.event;
-    if (Array.isArray(snap.log)) state.machineLog = snap.log.slice();
-    const rde = readDebugState("roundDecisionEnter");
-    if (rde) state.roundDecisionEnter = rde;
-    const gfa = readDebugState("guardFiredAt");
-    if (gfa) state.guardFiredAt = gfa;
-    const goe = readDebugState("guardOutcomeEvent");
-    if (goe) state.guardOutcomeEvent = goe;
-    addMachineDiagnostics(state);
-  } catch {}
-  return state;
-}
-
-/**
- * Create a minimal snapshot of the battle store.
- *
- * @pseudocode
- * 1. Exit with `{}` when `win.battleStore` is missing.
- * 2. Capture `selectionMade` and `playerChoice` values.
- * 3. Wrap results in a `store` object and return.
- *
- * @param {Window | null} win Source window.
- * @returns {object}
- */
-export function getStoreSnapshot(win) {
-  const out = {};
-  try {
-    const store = win?.battleStore;
-    if (store) {
-      out.store = {
-        selectionMade: !!store.selectionMade,
-        playerChoice: store.playerChoice || null
-      };
-    }
-  } catch {}
-  return out;
-}
-
-/**
- * Gather build metadata and DOM status from a window object.
- *
- * @pseudocode
- * 1. Exit with `{}` if `win` is missing.
- * 2. Copy build tag, round number, and clone event debug array.
- * 3. Record `#opponent-card` child count when the element exists.
- * 4. Return the assembled build info.
- *
- * @param {Window | null} win Source window.
- * @returns {object}
- */
-export function getBuildInfo(win) {
-  const info = {};
-  try {
-    if (win?.__buildTag) info.buildTag = win.__buildTag;
-    const rd = readDebugState("roundDebug");
-    if (rd !== undefined) info.round = rd;
-    if (Array.isArray(win?.__eventDebug)) info.eventDebug = win.__eventDebug.slice();
-    const opp = win?.document?.getElementById("opponent-card");
-    if (opp) {
-      info.dom = {
-        opponentChildren: opp.children ? opp.children.length : 0
-      };
-    }
-  } catch {}
-  return info;
-}
-
-/**
- * Gather scores, timer details, and machine diagnostics for the debug panel.
- *
- * @pseudocode
- * 1. Initialize state with scores, timer, and match end flag.
- * 2. Add test seed when test mode is active.
- * 3. Merge machine diagnostics via `getMachineDebugState`.
- * 4. Merge store snapshot via `getStoreSnapshot`.
- * 5. Merge build info via `getBuildInfo`.
- * 6. Return accumulated state.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Collect a snapshot of scores, timer and machine diagnostics for debug panel.
- *
- * @pseudocode
- * 1. Read scores, timer state and matchEnded flag from engine facades.
- * 2. Add test seed when in test mode.
- * 3. Merge machine diagnostics, store snapshot and build info.
- * 4. Return the aggregated debug state object.
- *
- * @returns {object}
- */
-export function collectDebugState() {
-  const base = {
-    ...getScores(),
-    timer: getTimerState(),
-    matchEnded: isMatchEnded()
-  };
-  if (isTestModeEnabled()) base.seed = getCurrentSeed();
-  const win = typeof window !== "undefined" ? window : null;
-  return {
-    ...base,
-    ...getMachineDebugState(),
-    ...getStoreSnapshot(win),
-    ...getBuildInfo(win)
-  };
-}
-
-function addMachineDiagnostics(state) {
-  try {
-    const getMachine = readDebugState("getClassicBattleMachine");
-    const machine = typeof getMachine === "function" ? getMachine() : null;
-    if (!machine || typeof machine.getState !== "function") return;
-    state.machineReady = true;
-    const current = machine.getState();
-    const def = machine.statesByName?.get ? machine.statesByName.get(current) : null;
-    if (!def || !Array.isArray(def.triggers)) return;
-    state.machineTriggers = def.triggers.map((t) => t.on);
-  } catch {}
-}
-
-/**
- * Stringify debug state and write it to a DOM element.
- *
- * @pseudocode
- * 1. Exit if `pre` is missing.
- * 2. Stringify `state` without indentation for compact output.
- * 3. Assign result to `pre.textContent`.
- *
- * @param {HTMLElement | null} pre Target element to update.
- * @param {object} state Debug state object to render.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Render the debug `state` JSON into a `<pre>` element.
- *
- * @pseudocode
- * 1. If `pre` is missing, return early.
- * 2. Stringify `state` compactly and assign to `pre.textContent`.
- *
- * @param {HTMLElement|null} pre
- * @param {object} state
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Render the provided debug `state` into the supplied `<pre>` element.
- *
- * @pseudocode
- * 1. If `pre` is not provided, return immediately.
- * 2. Serialize `state` to a compact JSON string (no extra indentation).
- * 3. Assign the string to `pre.textContent` so it can be copied or inspected.
- *
- * @param {HTMLElement | null} pre - Target `<pre>` element to update.
- * @param {object} state - Debug state object to serialize.
- * @returns {void}
- */
-export function renderDebugState(pre, state) {
-  if (!pre) return;
-  // Use compact JSON to remove line breaks for AI-friendly copying.
-  pre.textContent = JSON.stringify(state);
-}
-
-/**
- * Update the debug panel with current game metrics and diagnostics.
- *
- * @pseudocode
- * 1. Obtain `#debug-output` element; exit if absent.
- * 2. Collect state via `collectDebugState`.
- * 3. Render the state with `renderDebugState`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Update the debug panel output with current debug state.
- *
- * @pseudocode
- * 1. Locate `#debug-output` element and exit if missing.
- * 2. Collect debug state and render it into the element.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Update the debug panel DOM with the latest collected debug state.
- *
- * @pseudocode
- * 1. Find the debug output element `#debug-output`; if missing, do nothing.
- * 2. Collect the aggregated debug state via `collectDebugState()`.
- * 3. Render the collected state into the debug output element using `renderDebugState()`.
- *
- * @returns {void}
- */
-export function updateDebugPanel() {
-  const pre = getDebugOutputEl();
-  if (!pre) return;
-  const state = collectDebugState();
-  renderDebugState(pre, state);
-}
 
 /**
  * Show the round outcome across UI elements.
@@ -1465,153 +1154,6 @@ export function applyBattleFeatureFlags(battleArea, banner) {
 /**
  * Initialize the optional debug panel.
  *
- * @pseudocode
- * 1. Locate `#debug-panel`; exit if missing.
- * 2. If enabled and the battle area exists, ensure the panel is a `<details>` element.
- * 3. Insert a copy button into the summary.
- * 4. Restore open state from localStorage and insert before the battle area.
- * 5. Otherwise remove the panel.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Initialize the debug panel DOM and restore open state from localStorage.
- *
- * @pseudocode
- * 1. Locate `#debug-panel` and transform to `<details>` if necessary.
- * 2. Insert copy button and restore toggle state from localStorage.
- * 3. Insert panel before the battle area.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export function initDebugPanel() {
-  const debugPanel = document.getElementById("debug-panel");
-  if (!debugPanel) return;
-  const battleArea = document.getElementById("battle-area");
-  if (isEnabled("enableTestMode") && battleArea) {
-    if (debugPanel.tagName !== "DETAILS") {
-      const details = document.createElement("details");
-      details.id = "debug-panel";
-      details.className = debugPanel.className;
-      const summary = document.createElement("summary");
-      summary.textContent = "Battle Debug";
-      const pre = debugPanel.querySelector("#debug-output") || document.createElement("pre");
-      pre.id = "debug-output";
-      pre.setAttribute("role", "status");
-      pre.setAttribute("aria-live", "polite");
-      details.append(summary, pre);
-      debugPanel.replaceWith(details);
-    }
-    const panel = document.getElementById("debug-panel");
-    ensureDebugCopyButton(panel);
-    try {
-      const saved = localStorage.getItem("battleDebugOpen");
-      panel.open = saved ? saved === "true" : true;
-      panel.addEventListener("toggle", () => {
-        try {
-          localStorage.setItem("battleDebugOpen", String(panel.open));
-        } catch {}
-      });
-    } catch {}
-    battleArea.before(panel);
-    panel.classList.remove("hidden");
-  } else {
-    debugPanel.remove();
-  }
-}
-
-/**
- * Enable or disable the debug panel dynamically.
- *
- * @pseudocode
- * 1. If enabling, ensure a `<details>` panel exists and insert before the battle area.
- * 2. Attach a copy button to the panel summary.
- * 3. Persist open state to localStorage on toggle.
- * 4. If disabling, hide and remove the panel.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Enable or disable the debug panel dynamically.
- *
- * @pseudocode
- * 1. If enabling, create or convert the panel to `<details>` and insert it.
- * 2. If disabling, hide and remove the panel.
- *
- * @param {boolean} enabled
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export function setDebugPanelEnabled(enabled) {
-  const battleArea = document.getElementById("battle-area");
-  let panel = document.getElementById("debug-panel");
-  if (enabled) {
-    if (!panel) {
-      panel = document.createElement("details");
-      panel.id = "debug-panel";
-      panel.className = "debug-panel";
-      const summary = document.createElement("summary");
-      summary.textContent = "Battle Debug";
-      const pre = document.createElement("pre");
-      pre.id = "debug-output";
-      pre.setAttribute("role", "status");
-      pre.setAttribute("aria-live", "polite");
-      panel.append(summary, pre);
-    } else if (panel.tagName !== "DETAILS") {
-      const details = document.createElement("details");
-      details.id = panel.id;
-      details.className = panel.className;
-      const summary = document.createElement("summary");
-      summary.textContent = "Battle Debug";
-      const pre = panel.querySelector("#debug-output") || document.createElement("pre");
-      pre.id = "debug-output";
-      pre.setAttribute("role", "status");
-      pre.setAttribute("aria-live", "polite");
-      details.append(summary, pre);
-      panel.replaceWith(details);
-      panel = details;
-    }
-    ensureDebugCopyButton(panel);
-    try {
-      const saved = localStorage.getItem("battleDebugOpen");
-      panel.open = saved ? saved === "true" : true;
-      panel.addEventListener("toggle", () => {
-        try {
-          localStorage.setItem("battleDebugOpen", String(panel.open));
-        } catch {}
-      });
-    } catch {}
-    panel.classList.remove("hidden");
-    if (battleArea && panel.nextElementSibling !== battleArea) {
-      battleArea.before(panel);
-    }
-  } else if (panel) {
-    panel.classList.add("hidden");
-    panel.remove();
-  }
-}
 
 /**
  * Show a temporary hint for stat buttons.
@@ -1716,45 +1258,6 @@ if (typeof window !== "undefined") {
   });
 }
 
-let opponentDelayMs = 500;
-
-/**
- * Set the delay before the opponent snackbar appears.
- *
- * @pseudocode
- * 1. If `ms` is a finite number, update `opponentDelayMs`.
- *
- * @param {number} ms Delay in milliseconds.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Set delay before opponent snackbar appears.
- *
- * @pseudocode
- * 1. If `ms` is finite, update internal `opponentDelayMs`.
- *
- * @param {number} ms
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-export function setOpponentDelay(ms) {
-  if (Number.isFinite(ms)) {
-    opponentDelayMs = ms;
-  }
-}
-
 let opponentSnackbarId = 0;
 
 /**
@@ -1792,7 +1295,7 @@ export function bindUIHelperEventHandlers() {
     if (!opts.delayOpponentMessage) {
       opponentSnackbarId = setTimeout(
         () => showSnackbar(t("ui.opponentChoosing")),
-        opponentDelayMs
+        getOpponentDelay()
       );
     }
   });

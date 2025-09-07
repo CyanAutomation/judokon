@@ -29,10 +29,12 @@ vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
     initStatButtons: vi.fn(() => ({ enable: vi.fn(), disable: vi.fn() })),
     applyStatLabels: vi.fn(() => Promise.resolve()),
     maybeShowStatHint: vi.fn(),
-    initDebugPanel: vi.fn(),
     registerRoundStartErrorHandler: vi.fn()
   };
 });
+vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+  initDebugPanel: vi.fn()
+}));
 const eventHandlers = vi.hoisted(() => ({}));
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   onBattleEvent: vi.fn((name, cb) => {
@@ -51,6 +53,7 @@ const scheduler = await import("../../../src/utils/scheduler.js");
 const skipHandler = await import("../../../src/helpers/classicBattle/skipHandler.js");
 const battle = await import("../../../src/helpers/battle/index.js");
 const uiHelpers = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+const debugPanel = await import("../../../src/helpers/classicBattle/debugPanel.js");
 const events = await import("../../../src/helpers/classicBattle/battleEvents.js");
 
 function makeView() {
@@ -116,7 +119,7 @@ describe("setupDebugHooks", () => {
   it("initializes debug panel and error handler", () => {
     const view = makeView();
     setupDebugHooks(view);
-    expect(uiHelpers.initDebugPanel).toHaveBeenCalled();
+    expect(debugPanel.initDebugPanel).toHaveBeenCalled();
     const cb = uiHelpers.registerRoundStartErrorHandler.mock.calls[0][0];
     cb();
     expect(view.startRound).toHaveBeenCalled();

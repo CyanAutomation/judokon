@@ -23,7 +23,7 @@ describe("startCooldown fallback timer", () => {
       showSnackbar: vi.fn(),
       updateSnackbar: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
+    vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({

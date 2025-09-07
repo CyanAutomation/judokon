@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { setDebugPanelEnabled } from "../../../src/helpers/classicBattle/uiHelpers.js";
+import { setDebugPanelEnabled } from "../../../src/helpers/classicBattle/debugPanel.js";
 
 describe("debug copy button", () => {
   let writeText;

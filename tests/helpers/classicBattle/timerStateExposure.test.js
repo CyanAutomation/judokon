@@ -16,7 +16,7 @@ vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   clearTimer: vi.fn(),
   updateTimer: vi.fn()
 }));
-vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   updateDebugPanel: vi.fn()
 }));
 

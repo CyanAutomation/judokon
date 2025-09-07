@@ -5,9 +5,9 @@ export * from "./classicBattle/quitModal.js";
 export {
   renderOpponentCard,
   enableNextRoundButton,
-  disableNextRoundButton,
-  updateDebugPanel
+  disableNextRoundButton
 } from "./classicBattle/uiHelpers.js";
+export { updateDebugPanel } from "./classicBattle/debugPanel.js";
 /**
  * @summary TODO: Add summary
  * @pseudocode

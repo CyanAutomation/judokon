@@ -363,7 +363,7 @@ async function handleNextRoundExpiration(controls, btn) {
 
   // Update debug panel for visibility.
   try {
-    const { updateDebugPanel } = await import("./uiHelpers.js");
+    const { updateDebugPanel } = await import("./debugPanel.js");
     updateDebugPanel();
   } catch {}
 

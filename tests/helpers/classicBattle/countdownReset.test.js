@@ -9,10 +9,12 @@ vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
     ...actual,
     renderOpponentCard: vi.fn(),
     disableNextRoundButton: vi.fn(),
-    enableNextRoundButton: vi.fn(),
-    updateDebugPanel: vi.fn()
+    enableNextRoundButton: vi.fn()
   };
 });
+vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+  updateDebugPanel: vi.fn()
+}));
 
 vi.mock("../../../src/helpers/classicBattle/opponentController.js", () => ({
   getOpponentCardData: vi.fn().mockResolvedValue(null)

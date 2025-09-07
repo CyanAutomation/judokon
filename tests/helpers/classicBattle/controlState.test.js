@@ -40,10 +40,13 @@ vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
     applyStatLabels: vi.fn().mockResolvedValue(),
     setBattleStateBadgeEnabled: vi.fn(),
     applyBattleFeatureFlags: vi.fn(),
-    initDebugPanel: vi.fn(),
     maybeShowStatHint: vi.fn()
   };
 });
+vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+  initDebugPanel: vi.fn(),
+  updateDebugPanel: vi.fn()
+}));
 vi.mock("../../../src/helpers/battleStateProgress.js", () => ({
   initBattleStateProgress: vi.fn().mockResolvedValue(null)
 }));

@@ -1,4 +1,5 @@
-import { initDebugPanel, registerRoundStartErrorHandler } from "./uiHelpers.js";
+import { initDebugPanel } from "./debugPanel.js";
+import { registerRoundStartErrorHandler } from "./uiHelpers.js";
 
 /**
  * Attach debug panels and error hooks.
