@@ -5,6 +5,13 @@ import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.j
 import { guard, guardAsync } from "./guard.js";
 
 /**
+ * Additional buffer to ensure fallback timers fire after engine-backed timers.
+ *
+ * @type {number}
+ */
+const FALLBACK_TIMER_BUFFER_MS = 200;
+
+/**
  * Initialize the match start cooldown timer.
  *
  * @param {object} machine State machine instance.
@@ -39,7 +46,7 @@ export async function initStartCooldown(machine) {
     return;
   }
   const schedule = typeof setupFallbackTimer === "function" ? setupFallbackTimer : setTimeout;
-  fallback = schedule(duration * 1000 + 200, finish);
+  fallback = schedule(duration * 1000 + FALLBACK_TIMER_BUFFER_MS, finish);
 }
 
 /**
@@ -96,7 +103,7 @@ export async function initInterRoundCooldown(machine) {
     )
   );
   timer.start(duration);
-  setupFallbackTimer(duration * 1000 + 200, () => {
+  setupFallbackTimer(duration * 1000 + FALLBACK_TIMER_BUFFER_MS, () => {
     guard(() => {
       const b = document.getElementById("next-button");
       if (b) b.dataset.nextReady = "true";

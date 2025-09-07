@@ -22,6 +22,14 @@ export { getNextRoundControls } from "./roundManager.js";
 // Track timeout for cooldown warning to avoid duplicates.
 let cooldownWarningTimeoutId = null;
 
+/**
+ * Transition events required when advancing from states other than `cooldown`.
+ *
+ * `advanceWhenReady` consults this table to dispatch an interrupt that moves the
+ * state machine into `cooldown` before emitting `ready`.
+ *
+ * @type {Record<string, {event: string, payload: {reason: string}}>} state → transition mapping.
+ */
 const ADVANCE_TRANSITIONS = {
   roundDecision: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } },
   waitingForPlayerAction: { event: "interrupt", payload: { reason: "advanceNextFromNonCooldown" } }
