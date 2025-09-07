@@ -105,6 +105,17 @@ Phase 2 — Points‑to‑Win Modal (Rounds Options)
   - tests/classicBattle/round-select.test.js: simulate selection, assert battleEngineFacade.getPointsToWin() reflects choice.
   - playwright/battle-classic/round-select.spec.js: choose 15, see header target text or internal state (via exposed debug/test mode) update before first round.
 
+Phase 2 — Actions & Outcome
+- Added failing tests first:
+  - Unit: tests/classicBattle/round-select.test.js (clicks Long/15 and asserts engine `getPointsToWin()` = 15 and `body[data-target] = "15"`).
+  - E2E: playwright/battle-classic/round-select.spec.js (file://) and server variant playwright/battle-classic/round-select.server.spec.js (http://).
+- Implemented wiring:
+  - src/pages/battleClassic.init.js now calls `createBattleEngine()` then `initRoundSelectModal(onStart)`; onStart updates `document.body.dataset.target` to selected points.
+- Focused runs: PASS
+  - Unit: `npx vitest run tests/classicBattle/round-select.test.js`
+  - Playwright (server): `npx playwright test playwright/battle-classic/round-select.server.spec.js -g "Classic Battle round select"`
+  - Note: file:// spec remains in repo but is blocked by browser CORS for module scripts; the server-based spec verifies the same behavior over http.
+
 Phase 3 — Stat Selection + Timer (30s, pause/resume, auto‑select)
 
 - Goal: Enable stat buttons at selection phase; show countdown in #next-round-timer; auto‑select on expiry when autoSelect flag enabled; pause on tab hidden, resume on focus; drift handling → “Waiting…” and restart.
@@ -179,3 +190,9 @@ Notes on Reuse vs New Code
 
 - Reuse the existing classicBattle orchestrator, round/timer services, and scoreboard; only add page‑specific boot/init code and markup.
 - Before adding any new helper, search src/helpers/classicBattle/_ and src/helpers/_; prefer extending via composition or adding small adapters guarded by feature flags.
+ 
+Phase 1 — Outcome
+- Tests added first (failing), then code implemented to satisfy them.
+- Implemented: src/pages/battleClassic.init.js initializes scoreboard and seeds visible defaults; battleClassic.html links the init; header shows Round 0 and initial score.
+- Unit: PASS — `npx vitest run tests/classicBattle/bootstrap.test.js`
+- Playwright: PASS — `npx playwright test -c playwright/local.config.js battle-classic/bootstrap.spec.js -g "Classic Battle bootstrap"`
