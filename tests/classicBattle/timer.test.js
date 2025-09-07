@@ -45,4 +45,3 @@ describe("Classic Battle round timer", () => {
     }
   });
 });
-

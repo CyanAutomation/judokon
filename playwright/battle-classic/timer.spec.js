@@ -7,4 +7,3 @@ test.describe("Classic Battle timer", () => {
     await expect(page.locator("#next-round-timer")).toContainText(/Time Left:/);
   });
 });
-
