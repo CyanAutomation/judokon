@@ -243,7 +243,7 @@ jobs:
           branch-suffix: timestamp
           labels: |
             automated
-            docs
+            documentation
             agents
           assignees: ${{ github.actor }}
           delete-branch: true
