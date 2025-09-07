@@ -94,10 +94,6 @@
       "label": "Layout Debug Outlines",
       "description": "Show element outlines to inspect page layout."
     },
-    "navCacheResetButton": {
-      "label": "Navigation Cache Reset",
-      "description": "Add a button to clear cached navigation data."
-    },
     "battleStateBadge": {
       "label": "Battle State Badge",
       "description": "Show the current match state in the header for testing."

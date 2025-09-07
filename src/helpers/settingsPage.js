@@ -28,7 +28,6 @@ import { attachResetListener } from "./settings/attachResetListener.js";
 import { syncDisplayMode } from "./settings/syncDisplayMode.js";
 import { renderGameModes } from "./settings/renderGameModes.js";
 import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
-import { renderNavCacheReset } from "./settings/renderNavCacheReset.js";
 
 /**
  * @summary TODO: Add summary
@@ -171,7 +170,6 @@ function makeRenderSwitches(controls, getCurrentSettings, handleUpdate) {
     const next = syncDisplayMode(current, handleUpdate);
     renderGameModes(gameModes, getCurrentSettings, handleUpdate);
     renderFeatureFlags(next, getCurrentSettings, handleUpdate, tooltipMap);
-    renderNavCacheReset();
     initTooltips().then((fn) => {
       cleanupTooltips = fn;
     });

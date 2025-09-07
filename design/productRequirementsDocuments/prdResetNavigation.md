@@ -2,6 +2,8 @@
 
 ## TL;DR
 
+> **Note:** This feature was removed; this document remains for historical reference.
+
 The Reset Navigation Cache feature adds a button to the Settings page (when enabled by feature flag) that lets users manually clear cached navigation data and immediately refresh the navigation bar. This helps testers and advanced users resolve issues where navigation items are outdated or incorrect, without needing to clear all browser storage or wait for cache expiration.
 
 ## Overview
