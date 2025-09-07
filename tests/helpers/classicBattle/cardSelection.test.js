@@ -65,6 +65,7 @@ describe.sequential("classicBattle card selection", () => {
     battleMod._resetForTest(store);
     await battleMod.startRound(store);
     const { getOpponentJudoka } = battleMod;
+    expect(store.currentPlayerJudoka).toEqual(expect.objectContaining({ id: 1 }));
     expect(mocks.JudokaCardMock).toHaveBeenCalledWith(
       expect.objectContaining({ id: 1 }),
       expect.anything(),
@@ -105,7 +106,7 @@ describe.sequential("classicBattle card selection", () => {
       expect.anything(),
       false,
       expect.any(Function),
-      { enableInspector: false }
+      { enableInspector: false, skipRender: false }
     );
     expect(getRandomJudokaMock).toHaveBeenCalledWith([
       expect.objectContaining({ id: 2, isHidden: false })

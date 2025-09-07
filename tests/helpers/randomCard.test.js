@@ -68,6 +68,19 @@ describe("generateRandomCard", () => {
     expect(cb).toHaveBeenCalledWith(judokaData[0]);
   });
 
+  it("selects judoka when rendering is skipped", async () => {
+    const judokaData = getJudokaFixture().slice(0, 2);
+    const gokyoData = getGokyoFixture();
+    getRandomJudokaMock = vi.fn(() => judokaData[0]);
+    getFallbackJudokaMock = vi.fn(async () => ({ id: 0 }));
+    const { generateRandomCard } = await import("../../src/helpers/randomCard.js");
+    const cb = vi.fn();
+    renderMock.mockClear();
+    await generateRandomCard(judokaData, gokyoData, null, true, cb, { skipRender: true });
+    expect(cb).toHaveBeenCalledWith(judokaData[0]);
+    expect(JudokaCardMock).not.toHaveBeenCalled();
+  });
+
   it("falls back to id 0 when selection fails", async () => {
     await withMutedConsole(async () => {
       const container = document.createElement("div");

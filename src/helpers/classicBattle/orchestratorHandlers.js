@@ -639,7 +639,8 @@ export function recordEntry() {
  * @pseudocode
  * ```
  * if no player choice → return false
- * read stat values
+ * read player stat from store or DOM
+ * read opponent stat from store or DOM
  * log debug values
  * await resolveRound
  * return true
@@ -648,9 +649,15 @@ export function recordEntry() {
 export async function resolveSelectionIfPresent(store) {
   if (!store.playerChoice) return false;
   const stat = store.playerChoice;
-  const pCard = document.getElementById("player-card");
-  const oCard = document.getElementById("opponent-card");
-  const playerVal = getStatValue(pCard, stat);
+  const pCard = typeof document !== "undefined" ? document.getElementById("player-card") : null;
+  const oCard = typeof document !== "undefined" ? document.getElementById("opponent-card") : null;
+  let playerVal = 0;
+  if (store.currentPlayerJudoka?.stats) {
+    const raw = Number(store.currentPlayerJudoka.stats[stat]);
+    playerVal = Number.isFinite(raw) ? raw : 0;
+  } else {
+    playerVal = getStatValue(pCard, stat);
+  }
   let opponentVal = 0;
   try {
     const opp = getOpponentJudoka();

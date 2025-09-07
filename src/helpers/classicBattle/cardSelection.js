@@ -171,7 +171,8 @@ async function renderOpponentPlaceholder(container, placeholder, enableInspector
  *
  * @pseudocode
  * 1. Ensure judoka and gokyo datasets are loaded (fetch if missing).
- * 2. Filter out hidden judoka and generate a random player card.
+ * 2. Filter out hidden judoka and generate a random player card (skip
+ *    rendering when no container exists).
  * 3. Pick an opponent that doesn't match the player where possible.
  * 4. Render an opponent placeholder card with obscured stats.
  * 5. Return the selected player and opponent judoka objects.
@@ -196,6 +197,7 @@ export async function drawCards() {
   const enableInspector = isEnabled("enableCardInspector");
 
   let playerJudoka = null;
+  const skipRender = !playerContainer;
   await generateRandomCard(
     available,
     null,
@@ -204,7 +206,7 @@ export async function drawCards() {
     (j) => {
       playerJudoka = j;
     },
-    { enableInspector }
+    { enableInspector, skipRender }
   );
 
   // Pick an opponent safely; fall back to the built-in judoka when selection fails

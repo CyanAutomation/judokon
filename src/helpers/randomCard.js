@@ -70,15 +70,18 @@ async function createCardForJudoka(judoka, gokyoLookup, containerEl, prefersRedu
  *    - On failure, build a minimal lookup and notify the user.
  * 3. Select a random judoka using `getRandomJudoka` and invoke `onSelect`
  *    with the chosen judoka when provided.
- * 4. Generate and display the card with `createCardForJudoka`.
+ * 4. Unless `options.skipRender` is true, build and display the card using
+ *    `JudokaCard` and `displayCard`.
  * 5. On any error, log the issue and load the fallback judoka using
- *    `getFallbackJudoka()`, then display its card and log any display error.
+ *    `getFallbackJudoka()`, then optionally display its card and log any
+ *    display error.
  *
  * @param {Judoka[]} [activeCards] - Preloaded judoka data.
  * @param {GokyoEntry[]} [gokyoData] - Preloaded gokyo data.
  * @param {HTMLElement} containerEl - Element to contain the card.
  * @param {boolean} [prefersReducedMotion=false] - Motion preference flag.
  * @param {function} [onSelect] - Callback invoked with the chosen judoka.
+ * @param {{enableInspector?: boolean, skipRender?: boolean}} [options] - Feature flags.
  * @returns {Promise<void>} Resolves when the card is appended.
  */
 export async function generateRandomCard(
@@ -89,7 +92,8 @@ export async function generateRandomCard(
   onSelect,
   options = {}
 ) {
-  if (!containerEl) return;
+  const { enableInspector, skipRender = false } = options;
+  if (!containerEl && !skipRender) return;
 
   let gokyoLookup = {};
   try {
@@ -121,11 +125,13 @@ export async function generateRandomCard(
     if (typeof onSelect === "function") {
       onSelect(selectedJudoka);
     }
-    const card = await new JudokaCard(selectedJudoka, gokyoLookup, {
-      enableInspector: options.enableInspector
-    }).render();
-    if (card) {
-      displayCard(containerEl, card, prefersReducedMotion);
+    if (!skipRender && containerEl) {
+      const card = await new JudokaCard(selectedJudoka, gokyoLookup, {
+        enableInspector
+      }).render();
+      if (card) {
+        displayCard(containerEl, card, prefersReducedMotion);
+      }
     }
   } catch (error) {
     console.error("Error generating random card:", error);
@@ -134,10 +140,12 @@ export async function generateRandomCard(
     if (typeof onSelect === "function") {
       onSelect(fallbackJudoka);
     }
-    try {
-      await createCardForJudoka(fallbackJudoka, gokyoLookup, containerEl, prefersReducedMotion);
-    } catch (fallbackError) {
-      console.error("Error displaying fallback card:", fallbackError);
+    if (!skipRender && containerEl) {
+      try {
+        await createCardForJudoka(fallbackJudoka, gokyoLookup, containerEl, prefersReducedMotion);
+      } catch (fallbackError) {
+        console.error("Error displaying fallback card:", fallbackError);
+      }
     }
   }
 }
