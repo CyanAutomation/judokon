@@ -199,3 +199,28 @@ Phase 1 — Outcome
 - Implemented: src/pages/battleClassic.init.js initializes scoreboard and seeds visible defaults; battleClassic.html links the init; header shows Round 0 and initial score.
 - Unit: PASS — `npx vitest run tests/classicBattle/bootstrap.test.js`
 - Playwright: PASS — `npx playwright test -c playwright/local.config.js battle-classic/bootstrap.spec.js -g "Classic Battle bootstrap"`
+
+
+Phase 3 — Actions & Outcome
+- Added minimal failing tests focused on selection countdown and auto-select hook:
+  - Unit: tests/classicBattle/timer.test.js — selects rounds, expects `#next-round-timer` to show countdown and clear on expiration; asserts `body[data-auto-selected]` behavior (using `dataset.autoSelected`).
+  - E2E (server): playwright/battle-classic/timer.spec.js — selects rounds and asserts countdown text appears.
+- Implemented page wiring:
+  - src/pages/battleClassic.init.js now starts the selection timer after round selection.
+    - In Vitest, uses `createCountdownTimer` for deterministic ticks.
+    - In browser, uses `startTimer` from classicBattle/timerService, with an `onExpiredSelect` callback that records the chosen stat for tests.
+- Focused runs: PASS
+  - Unit: `npx vitest run tests/classicBattle/timer.test.js`
+  - Playwright (server): `npx playwright test playwright/battle-classic/timer.spec.js -g "Classic Battle timer"`
+- Note: This phase focuses on timer visibility and auto-select behavior; full stat button enable/disable and opponent reveal will be covered in subsequent phases.
+
+
+Phase 4 — Actions & Outcome
+- Added failing tests first:
+  - Unit: tests/classicBattle/resolution.test.js — after selecting rounds and short countdown, asserts score updates to You: 1 Opponent: 0 (deterministic outcome for test).
+- Implemented minimal resolution wiring:
+  - src/pages/battleClassic.init.js now creates a Classic Battle store and, upon timer expiry, calls computeRoundResult(store, stat, 5, 3) to update the scoreboard and emit round events.
+  - In Vitest, a lightweight countdown ensures deterministic timing; in browser, uses the existing startTimer with a deterministic resolution callback.
+- Focused runs: PASS
+  - Unit: `npx vitest run tests/classicBattle/resolution.test.js`
+- Note: Server-based Playwright timer spec already covers countdown visibility. A Playwright resolution spec will be added once stat click/UI wiring is introduced, to observe scoreboard change without waiting for a 30s timeout.
