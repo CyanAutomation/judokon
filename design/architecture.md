@@ -172,6 +172,7 @@ AI agents are encouraged to parse, test, and modify the system using these archi
 - `detail` is an object `{ from: string|null, to: string, event?: string|null }`.
 - Consumers listen with `onBattleEvent('battleStateChange', handler)` and read `detail.to`.
 - The current state is also mirrored on `document.body.dataset.battleState` for debug UIs.
+- Transition handling uses helpers (`emitDiagnostics`, `emitReadiness`, `emitStateChange`) and an `{event: outcome}` map for interrupt resolutions.
 
 ### Classic Battle State Manager
 

@@ -26,6 +26,104 @@ let machine = null;
 let debugLogListener = null;
 let visibilityHandler = null;
 
+// Map resolution events to PRD outcomes
+const interruptResolutionMap = {
+  restartRound: "restartRound",
+  resumeLobby: "resumeLobby",
+  abortMatch: "abortMatch",
+  restartMatch: "restartRound", // closest PRD outcome
+  toLobby: "resumeLobby"
+};
+
+/**
+ * Emit diagnostic events on transitions.
+ *
+ * @pseudocode
+ * 1. Emit `debug.transition` with `{ from, to, trigger:event }`.
+ * 2. Fetch a state snapshot and emit `debug.state.snapshot`.
+ * 3. Swallow errors to keep transitions deterministic.
+ *
+ * @param {string|null} from - Previous state.
+ * @param {string} to - New state.
+ * @param {string|null} event - Triggering event.
+ */
+function emitDiagnostics(from, to, event) {
+  try {
+    emitBattleEvent("debug.transition", { from, to, trigger: event });
+    const snap = getStateSnapshot();
+    emitBattleEvent("debug.state.snapshot", { state: snap?.state || to, context: snap || {} });
+  } catch {}
+}
+
+/**
+ * Emit readiness control events.
+ *
+ * @pseudocode
+ * 1. When entering `matchStart`, emit `control.readiness.required` for `match`.
+ * 2. On `ready` events, emit `control.readiness.confirmed` with scope `match|round`.
+ *
+ * @param {string|null} from - Previous state.
+ * @param {string} to - New state.
+ * @param {string|null} event - Triggering event.
+ */
+function emitReadiness(from, to, event) {
+  if (to === "matchStart") {
+    try {
+      emitBattleEvent("control.readiness.required", { for: "match" });
+    } catch {}
+  }
+  if (event === "ready") {
+    const scope = from === "matchStart" ? "match" : "round";
+    try {
+      emitBattleEvent("control.readiness.confirmed", { for: scope });
+    } catch {}
+  }
+}
+
+/**
+ * Emit authoritative state change events with context.
+ *
+ * @pseudocode
+ * 1. Read engine context (`roundIndex`, `scores`, `seed`, `timerState`).
+ * 2. Emit `control.state.changed` with `{ from, to, context, catalogVersion }`.
+ *
+ * @param {string|null} from - Previous state.
+ * @param {string} to - New state.
+ */
+function emitStateChange(from, to) {
+  try {
+    const engine = machine?.context?.engine;
+    const context = {
+      roundIndex: Number(engine?.getRoundsPlayed?.() || 0),
+      scores: engine?.getScores?.() || { playerScore: 0, opponentScore: 0 },
+      seed: engine?.getSeed?.(),
+      timerState: engine?.getTimerState?.() || null
+    };
+    emitBattleEvent("control.state.changed", {
+      from,
+      to,
+      context,
+      catalogVersion: stateCatalog?.version || "v1"
+    });
+  } catch {}
+}
+
+/**
+ * Emit interrupt resolution taxonomy events.
+ *
+ * @pseudocode
+ * 1. Look up `event` in `interruptResolutionMap`.
+ * 2. When a mapping exists, emit `interrupt.resolved` with `{ outcome }`.
+ *
+ * @param {string|null} event - Triggering event.
+ */
+function emitResolution(event) {
+  try {
+    const outcome = interruptResolutionMap[event];
+    if (outcome) emitBattleEvent("interrupt.resolved", { outcome });
+  } catch {}
+}
+
 /**
  * Dispatch an event to the active battle machine.
  *
@@ -148,55 +246,10 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   const onTransition = ({ from, to, event }) => {
     onStateChange?.({ from, to, event });
     emitBattleEvent("battleStateChange", { from, to, event });
-    // PRD diagnostics: emit debug.transition and snapshot
-    try {
-      emitBattleEvent("debug.transition", { from, to, trigger: event });
-      const snap = getStateSnapshot();
-      emitBattleEvent("debug.state.snapshot", { state: snap?.state || to, context: snap || {} });
-    } catch {}
-    // PRD control: surface readiness requirement when entering matchStart
-    if (to === "matchStart") {
-      try {
-        emitBattleEvent("control.readiness.required", { for: "match" });
-      } catch {}
-    }
-    // PRD control: readiness confirmed on ready transitions
-    if (event === "ready") {
-      const forVal = from === "matchStart" ? "match" : "round";
-      try {
-        emitBattleEvent("control.readiness.confirmed", { for: forVal });
-      } catch {}
-    }
-
-    // PRD control: authoritative state change event with minimal context
-    try {
-      const engine = machine?.context?.engine;
-      const context = {
-        roundIndex: Number(engine?.getRoundsPlayed?.() || 0),
-        scores: engine?.getScores?.() || { playerScore: 0, opponentScore: 0 },
-        seed: engine?.getSeed?.(),
-        timerState: engine?.getTimerState?.() || null
-      };
-      emitBattleEvent("control.state.changed", {
-        from,
-        to,
-        context,
-        catalogVersion: stateCatalog?.version || "v1"
-      });
-    } catch {}
-
-    // PRD taxonomy: emit interrupt.resolved on resolution triggers
-    try {
-      const resolutionMap = {
-        restartRound: "restartRound",
-        resumeLobby: "resumeLobby",
-        abortMatch: "abortMatch",
-        restartMatch: "restartRound", // closest PRD outcome
-        toLobby: "resumeLobby"
-      };
-      const outcome = resolutionMap[event];
-      if (outcome) emitBattleEvent("interrupt.resolved", { outcome });
-    } catch {}
+    emitDiagnostics(from, to, event);
+    emitReadiness(from, to, event);
+    emitStateChange(from, to);
+    emitResolution(event);
   };
 
   machine = await createStateManager(onEnter, context, onTransition);
