@@ -580,6 +580,7 @@ function ensureModalContainer() {
  * Clear a timer pair and capture remaining time.
  *
  * @param {"selection"|"cooldown"} type Timer category to pause.
+ * @returns {number|null} Remaining seconds, or null when no timers were active.
  *
  * @pseudocode
  * if pausing selection:
@@ -609,27 +610,31 @@ function pauseTimer(type) {
     selectionTimer = null;
     selectionInterval = null;
     return remaining;
+  } else {
+    const bar = byId("snackbar-container")?.querySelector(".snackbar");
+    const match = bar?.textContent?.match(/Next round in: (\d+)/);
+    cooldownTimer = null;
+    cooldownInterval = null;
+    return match ? Number(match[1]) : null;
   }
-  const bar = byId("snackbar-container")?.querySelector(".snackbar");
-  const match = bar?.textContent?.match(/Next round in: (\d+)/);
-  cooldownTimer = null;
-  cooldownInterval = null;
-  return match ? Number(match[1]) : null;
 }
 
 /**
  * Pause active selection and cooldown timers, preserving remaining time.
  *
  * @pseudocode
- * countdownEl = #cli-countdown
- * if selection timers exist:
- *   call pauseTimer("selection") and store remaining
- * if cooldown timers exist:
- *   call pauseTimer("cooldown") and store remaining
+ * newSelection = pauseTimer("selection")
+ * if newSelection is not null:
+ *   pausedSelectionRemaining = newSelection
+ * newCooldown = pauseTimer("cooldown")
+ * if newCooldown is not null:
+ *   pausedCooldownRemaining = newCooldown
  */
 function pauseTimers() {
-  pausedSelectionRemaining = pauseTimer("selection");
-  pausedCooldownRemaining = pauseTimer("cooldown");
+  const newSelection = pauseTimer("selection");
+  if (newSelection !== null) pausedSelectionRemaining = newSelection;
+  const newCooldown = pauseTimer("cooldown");
+  if (newCooldown !== null) pausedCooldownRemaining = newCooldown;
 }
 
 /**
