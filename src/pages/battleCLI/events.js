@@ -16,20 +16,19 @@ const stateHandlers = {
 };
 
 /**
- * Handle key input for the CLI page.
+ * Handle arrow navigation within the stat list.
  *
  * @param {KeyboardEvent} e - Key event.
+ * @returns {boolean} True when the key was handled.
  * @pseudocode
- * key = e.key
- * if stats list focused and key is arrow -> handleStatListArrowKey
- * lower = key.toLowerCase()
- * if lower is 'escape' -> return
- * if shortcuts disabled and key not q -> return
- * handler = stateHandlers[current state]
- * handled = handleGlobalKey(lower) or handler(lower)
- * show "Invalid key" when not handled
+ * list = byId('cli-stats')
+ * if list exists AND key is arrow AND list has focus:
+ *   e.preventDefault()
+ *   handleStatListArrowKey(key)
+ *   return true
+ * return false
  */
-export function onKeyDown(e) {
+function handleArrowNav(e) {
   const key = e.key;
   const list = byId("cli-stats");
   if (
@@ -39,14 +38,59 @@ export function onKeyDown(e) {
   ) {
     e.preventDefault();
     handleStatListArrowKey(key);
-    return;
+    return true;
   }
-  const lower = key.toLowerCase();
-  if (lower === "escape") return;
-  if (!isEnabled("cliShortcuts") && lower !== "q") return;
+  return false;
+}
+
+/**
+ * Determine if a key should be processed.
+ *
+ * @param {string} key - Lowercased key value.
+ * @returns {boolean} True when processing should continue.
+ * @pseudocode
+ * if key is 'escape': return false
+ * if cliShortcuts disabled AND key != 'q': return false
+ * return true
+ */
+function shouldProcessKey(key) {
+  if (key === "escape") return false;
+  if (!isEnabled("cliShortcuts") && key !== "q") return false;
+  return true;
+}
+
+/**
+ * Route a key based on the current battle state.
+ *
+ * @param {string} key - Lowercased key value.
+ * @returns {boolean} True when a handler consumed the key.
+ * @pseudocode
+ * state = document.body?.dataset?.battleState || ''
+ * handler = stateHandlers[state]
+ * return handleGlobalKey(key) OR handler(key)
+ */
+function routeKeyByState(key) {
   const state = document.body?.dataset?.battleState || "";
   const handler = stateHandlers[state];
-  const handled = handleGlobalKey(lower) || (handler ? handler(lower) : false);
+  return handleGlobalKey(key) || (handler ? handler(key) : false);
+}
+
+/**
+ * Handle key input for the CLI page.
+ *
+ * @param {KeyboardEvent} e - Key event.
+ * @pseudocode
+ * if handleArrowNav(e): return
+ * key = lowercased e.key
+ * if not shouldProcessKey(key): return
+ * handled = routeKeyByState(key)
+ * show "Invalid key" when not handled and key != 'tab'
+ */
+export function onKeyDown(e) {
+  if (handleArrowNav(e)) return;
+  const lower = e.key.toLowerCase();
+  if (!shouldProcessKey(lower)) return;
+  const handled = routeKeyByState(lower);
   const countdown = byId("cli-countdown");
   if (!handled && lower !== "tab") {
     if (countdown) countdown.textContent = "Invalid key, press H for help";

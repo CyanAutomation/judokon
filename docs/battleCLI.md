@@ -3,7 +3,10 @@
 The Battle CLI now separates internal concerns:
 
 - `src/pages/battleCLI/state.js` centralizes mutable flags and the Escape key promise.
-- `src/pages/battleCLI/events.js` wires keyboard events using a key→handler lookup table.
+- `src/pages/battleCLI/events.js` now delegates keyboard handling to small helpers:
+  - `handleArrowNav(e)` manages stat list navigation.
+  - `shouldProcessKey(key)` skips disabled or disallowed shortcuts.
+  - `routeKeyByState(key)` routes keys based on battle state.
 - Stat list generation now uses dedicated helpers:
   - `loadStatDefs()` caches stat definitions.
   - `buildStatRows(stats, judoka)` constructs the DOM rows.
