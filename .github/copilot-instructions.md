@@ -1,10 +1,3 @@
----
-doc_id: agents_guide
-version: 1.1.0
-updated: 2025-09-02
-tags: [checks, imports, testing, rag, prompts]
----
-
 # 🤖 JU-DO-KON! Agent Guide
 
 **Purpose**: Define deterministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.  
@@ -76,6 +69,7 @@ RAG Provenance JSON schema:
 
 - `client_embeddings.json`
 - `offline_rag_metadata.json`
+- `eslint-dry.json`
 
 ---
 
