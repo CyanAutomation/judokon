@@ -240,6 +240,25 @@ describe("prdReaderPage", () => {
     expect(list.children[1].getAttribute("aria-current")).toBe("page");
   });
 
+  it("skips history update when flag false", async () => {
+    const docs = { "b.md": "# B", "a.md": "# A" };
+    document.body.innerHTML = `
+      <div id="prd-title"></div>
+      <div id="task-summary"></div>
+      <ul id="prd-list"></ul>
+      <div id="prd-content" tabindex="-1"></div>
+    `;
+    const { loadPrdDocs, setupSidebarUI } = await import("../../src/helpers/prdReaderPage.js");
+    const { replaceHistory } = await import("../../src/helpers/prdReader/history.js");
+    const docData = await loadPrdDocs(docs, (md) => `<h1>${md}</h1>`);
+    const sidebar = setupSidebarUI(docData);
+    replaceHistory(sidebar.baseNames, sidebar.index);
+    sidebar.selectDocSync(1, false, true);
+    expect(window.location.search).toBe("?doc=a");
+    sidebar.selectDocSync(1, true, true);
+    expect(window.location.search).toBe("?doc=b");
+  });
+
   it("shows warning badge when markdown parsing fails", async () => {
     const docs = {
       "bad.md": "# Bad\\n[link](../missing.md)"
@@ -378,6 +397,15 @@ describe("prdReaderPage", () => {
     expect(history.state.index).toBe(0);
     expect(container.innerHTML).toContain("First");
     expect(list.children[0].getAttribute("aria-current")).toBe("page");
+  });
+
+  it("bindHistory invokes callback on popstate", async () => {
+    const { bindHistory } = await import("../../src/helpers/prdReader/history.js");
+    const fn = vi.fn();
+    const unbind = bindHistory(fn);
+    window.dispatchEvent(new PopStateEvent("popstate", { state: { index: 2 } }));
+    expect(fn).toHaveBeenCalledWith(2, false);
+    unbind();
   });
 
   it("skips prefetching when test mode flag is enabled", async () => {
