@@ -278,6 +278,10 @@ Use static imports for hot paths and always-required modules; use dynamic import
 
 The game includes a **Skip** button that bypasses the current round and cooldown timers. Use it to fast-forward through matches when debugging or running rapid gameplay tests.
 
+### CSS tooling
+
+Color contrast tests parse custom properties with PostCSS directly, relying on standard CSS tooling instead of a bespoke parser.
+
 ### Timer utilities
 
 Classic Battle timer logic lives in `src/helpers/classicBattle/timerService.js` and its helpers:

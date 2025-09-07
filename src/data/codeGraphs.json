@@ -2806,15 +2806,6 @@
         }
       }
     },
-    "src/helpers/cssVariableParser.js": {
-      "imports": ["postcss"],
-      "functions": {
-        "parseCssVariables": {
-          "calls": ["parse", "walkRules", "walkDecls", "startsWith", "trim", "debug"],
-          "patterns": []
-        }
-      }
-    },
     "src/helpers/countryUtils.js": {
       "imports": [],
       "functions": {}
@@ -4034,18 +4025,6 @@
       "imports": ["vitest"],
       "functions": {}
     },
-    "tests/helpers/randomJudokaPage.test.js": {
-      "imports": [
-        "vitest",
-        "../utils/testUtils.js",
-        "fs",
-        "path",
-        "../../src/helpers/cssVariableParser.js",
-        "wcag-contrast",
-        "../utils/console.js"
-      ],
-      "functions": {}
-    },
     "tests/helpers/randomCard.test.js": {
       "imports": ["vitest", "../utils/testUtils.js"],
       "functions": {}
@@ -4162,16 +4141,18 @@
       }
     },
     "tests/helpers/meditationContrast.test.js": {
-      "imports": [
-        "vitest",
-        "fs",
-        "path",
-        "wcag-contrast",
-        "../../src/helpers/cssVariableParser.js"
-      ],
+      "imports": ["vitest", "fs", "path", "wcag-contrast", "postcss"],
       "functions": {
         "getBaseVars": {
-          "calls": ["readFileSync", "resolve", "parseCssVariables"],
+          "calls": [
+            "readFileSync",
+            "resolve",
+            "parse",
+            "walkRules",
+            "walkDecls",
+            "startsWith",
+            "trim"
+          ],
           "patterns": []
         }
       }
@@ -4259,10 +4240,6 @@
       "imports": ["vitest"],
       "functions": {}
     },
-    "tests/helpers/cssVariableParser.test.js": {
-      "imports": ["vitest", "../../src/helpers/cssVariableParser.js"],
-      "functions": {}
-    },
     "tests/helpers/createInspectorPanel.test.js": {
       "imports": ["vitest", "./mountInspectorPanel.js"],
       "functions": {}
@@ -4285,13 +4262,7 @@
       "functions": {}
     },
     "tests/helpers/colorContrast.test.js": {
-      "imports": [
-        "vitest",
-        "fs",
-        "path",
-        "wcag-contrast",
-        "../../src/helpers/cssVariableParser.js"
-      ],
+      "imports": ["vitest", "fs", "path", "wcag-contrast", "postcss"],
       "functions": {
         "readCss": {
           "calls": ["readFileSync", "resolve"],
@@ -4307,6 +4278,10 @@
         },
         "getComponentColors": {
           "calls": ["readComponentsCss", "entries", "match", "resolveColor", "trim"],
+          "patterns": []
+        },
+        "parseVars": {
+          "calls": ["parse", "walkRules", "walkDecls", "startsWith", "trim"],
           "patterns": []
         }
       }
