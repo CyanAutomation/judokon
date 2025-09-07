@@ -176,7 +176,8 @@ export const __test = {
   handleRoundResolved,
   handleMatchOver,
   handleBattleState,
-  handleWaitingForPlayerActionKey
+  handleWaitingForPlayerActionKey,
+  onClickAdvance
 };
 /**
  * Update the round counter line in the header.
@@ -1443,11 +1444,67 @@ function handleStatClick(statDiv, event) {
  * if roundResolving or ignoreNextAdvanceClick -> return
  * state = body.dataset.battleState
  * if click inside .cli-stat or #cli-shortcuts -> return
- * if state == "roundOver" -> dispatch "continue"
- * else if state == "cooldown" -> clear timers, dispatch "ready"
+ * handler = stateAdvanceHandlers[state]
+ * if no handler -> return
+ * call handler()
  *
  * @param {MouseEvent} event - Click event.
  */
+/**
+ * Clear cooldown timers and reset bottom line.
+ *
+ * @pseudocode
+ * if cooldownTimer -> clearTimeout
+ * if cooldownInterval -> clearInterval
+ * null timers and call clearBottomLine()
+ */
+function clearAdvanceTimers() {
+  try {
+    if (cooldownTimer) clearTimeout(cooldownTimer);
+  } catch {}
+  try {
+    if (cooldownInterval) clearInterval(cooldownInterval);
+  } catch {}
+  cooldownTimer = null;
+  cooldownInterval = null;
+  clearBottomLine();
+}
+
+/**
+ * Dispatch continue on round over.
+ *
+ * @pseudocode
+ * machine = getMachine()
+ * machine.dispatch("continue") if available
+ */
+function advanceRoundOver() {
+  try {
+    const machine = getMachine();
+    if (machine) machine.dispatch("continue");
+  } catch {}
+}
+
+/**
+ * Clear timers then dispatch ready.
+ *
+ * @pseudocode
+ * clearAdvanceTimers()
+ * machine = getMachine()
+ * machine.dispatch("ready") if available
+ */
+function advanceCooldown() {
+  clearAdvanceTimers();
+  try {
+    const machine = getMachine();
+    if (machine) machine.dispatch("ready");
+  } catch {}
+}
+
+const stateAdvanceHandlers = {
+  roundOver: advanceRoundOver,
+  cooldown: advanceCooldown
+};
+
 function onClickAdvance(event) {
   try {
     if (state.roundResolving) return;
@@ -1459,38 +1516,14 @@ function onClickAdvance(event) {
   } catch {
     return;
   }
-  // If help panel is open, ignore background clicks to avoid accidental advancement
   const shortcutsPanel = byId("cli-shortcuts");
   if (shortcutsPanel && !shortcutsPanel.hidden) return;
-  let el = event.target;
-  let path = [];
-  while (el) {
-    path.push(el.tagName + (el.id ? "#" + el.id : ""));
-    el = el.parentElement;
-  }
-  const state = document.body?.dataset?.battleState || "";
   if (event.target?.closest?.(".cli-stat")) return;
   if (event.target?.closest?.("#cli-shortcuts")) return;
-  if (state === "roundOver") {
-    try {
-      const machine = getMachine();
-      if (machine) machine.dispatch("continue");
-    } catch {}
-  } else if (state === "cooldown") {
-    try {
-      if (cooldownTimer) clearTimeout(cooldownTimer);
-    } catch {}
-    try {
-      if (cooldownInterval) clearInterval(cooldownInterval);
-    } catch {}
-    cooldownTimer = null;
-    cooldownInterval = null;
-    clearBottomLine();
-    try {
-      const machine = getMachine();
-      if (machine) machine.dispatch("ready");
-    } catch {}
-  }
+  const stateName = document.body?.dataset?.battleState || "";
+  const handler = stateAdvanceHandlers[stateName];
+  if (!handler) return;
+  handler();
 }
 
 function handleScoreboardShowMessage(e) {

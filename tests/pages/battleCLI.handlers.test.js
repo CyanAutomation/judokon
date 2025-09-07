@@ -8,6 +8,7 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   const emitBattleEvent = vi.fn();
   const updateBattleStateBadge = vi.fn();
   const resetGame = vi.fn();
+  const mockDispatch = vi.fn();
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags: vi.fn(),
     isEnabled: vi.fn((flag) => (flag === "autoSelect" ? autoSelect : false)),
@@ -51,6 +52,9 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
     autoSelectStat: vi.fn()
   }));
+  vi.doMock("../../src/helpers/classicBattle/debugHooks.js", () => ({
+    readDebugState: vi.fn(() => () => ({ dispatch: mockDispatch }))
+  }));
   window.__TEST__ = true;
   const { battleCLI } = await import("../../src/pages/index.js");
   return {
@@ -58,7 +62,8 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
     emitBattleEvent,
     updateBattleStateBadge,
     resetGame,
-    setAutoContinue
+    setAutoContinue,
+    mockDispatch
   };
 }
 
@@ -95,6 +100,7 @@ describe("battleCLI event handlers", () => {
     vi.doUnmock("../../src/helpers/constants.js");
     vi.doUnmock("../../src/helpers/classicBattle/autoSelectStat.js");
     vi.doUnmock("../../src/helpers/classicBattle/orchestratorHandlers.js");
+    vi.doUnmock("../../src/helpers/classicBattle/debugHooks.js");
     if (typeof cleanupSetAutoContinue === "function") {
       cleanupSetAutoContinue(true);
       cleanupSetAutoContinue = undefined;
@@ -260,5 +266,42 @@ describe("battleCLI event handlers", () => {
     expect(secondBtn).toBeTruthy();
     expect(secondBtn.id).toBe("next-round-button");
     expect(secondBtn).not.toBe(firstBtn);
+  });
+
+  it("advances round over on background click", async () => {
+    const { handlers, mockDispatch } = await setupHandlers();
+    document.body.dataset.battleState = "roundOver";
+    handlers.onClickAdvance({ target: document.body });
+    expect(mockDispatch).toHaveBeenCalledWith("continue");
+  });
+
+  it("clears cooldown timers and dispatches ready", async () => {
+    const { handlers, mockDispatch } = await setupHandlers();
+    document.body.dataset.battleState = "cooldown";
+    handlers.setCooldownTimers(
+      setTimeout(() => {}, 0),
+      setInterval(() => {}, 100)
+    );
+    const bar = document.createElement("div");
+    bar.className = "snackbar";
+    bar.textContent = "Next round in: 3";
+    document.getElementById("snackbar-container").appendChild(bar);
+    handlers.onClickAdvance({ target: document.body });
+    expect(mockDispatch).toHaveBeenCalledWith("ready");
+    expect(handlers.getCooldownTimers()).toEqual({
+      cooldownTimer: null,
+      cooldownInterval: null
+    });
+    expect(document.querySelector(".snackbar").textContent).toBe("");
+  });
+
+  it("ignores clicks on stat elements", async () => {
+    const { handlers, mockDispatch } = await setupHandlers();
+    document.body.dataset.battleState = "roundOver";
+    const stat = document.createElement("div");
+    stat.className = "cli-stat";
+    document.getElementById("cli-stats").appendChild(stat);
+    handlers.onClickAdvance({ target: stat });
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 });
