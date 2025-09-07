@@ -25,7 +25,8 @@ function init() {
       } catch {}
       // Start the selection timer; in Vitest use a lightweight fallback to ensure deterministic ticks
       try {
-        const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+        const IS_VITEST =
+          typeof process !== "undefined" && process.env && process.env.VITEST === "true";
         if (IS_VITEST) {
           const dur = Number(getDefaultTimer("roundTimer")) || 2;
           const timer = createCountdownTimer(dur, {
