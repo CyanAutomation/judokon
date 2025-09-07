@@ -45,7 +45,7 @@ export function isOrchestrated() {
  * 1. Initialize battle state values.
  * 2. Return the store.
  *
- * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean, stallTimeoutMs: number, playerChoice: string|null, playerCardEl: HTMLElement|null, opponentCardEl: HTMLElement|null, statButtonEls: Record<string, HTMLButtonElement>|null}}
+ * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean, stallTimeoutMs: number, playerChoice: string|null, playerCardEl: HTMLElement|null, opponentCardEl: HTMLElement|null, statButtonEls: Record<string, HTMLButtonElement>|null, currentPlayerJudoka: object|null}}
  */
 export function createBattleStore() {
   return {
@@ -58,7 +58,8 @@ export function createBattleStore() {
     playerChoice: null,
     playerCardEl: null,
     opponentCardEl: null,
-    statButtonEls: null
+    statButtonEls: null,
+    currentPlayerJudoka: null
   };
 }
 
@@ -168,10 +169,11 @@ export async function handleReplay(store) {
  * @pseudocode
  * 1. Clear `store.selectionMade` and `store.playerChoice`.
  * 2. Await `drawCards()` to get player and opponent cards.
- * 3. Compute `roundNumber` from the engine's rounds played count.
- * 4. If supplied, call `onRoundStart(store, roundNumber)`.
- * 5. Emit `roundStarted` with the store and round number.
- * 6. Return `{...cards, roundNumber}` to callers.
+ * 3. Store the player's judoka on `store.currentPlayerJudoka`.
+ * 4. Compute `roundNumber` from the engine's rounds played count.
+ * 5. If supplied, call `onRoundStart(store, roundNumber)`.
+ * 6. Emit `roundStarted` with the store and round number.
+ * 7. Return `{...cards, roundNumber}` to callers.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart]
@@ -181,6 +183,7 @@ export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
   store.playerChoice = null;
   const cards = await drawCards();
+  store.currentPlayerJudoka = cards.playerJudoka || null;
   let roundNumber = 1;
   try {
     const fn = battleEngine.getRoundsPlayed;
