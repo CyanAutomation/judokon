@@ -199,6 +199,8 @@ Note:
 
 - After each readiness or timer-triggered transition, the orchestrator must emit `control.state.changed`.
 - UI modules must not infer transitions from domain/timer events directly; they consume only `control.state.changed` for authoritative rendering and logic.
+- Transition handling is composed through helpers (`emitDiagnostics`, `emitReadiness`, `emitStateChange`) to isolate diagnostics, control, and taxonomy concerns.
+- Interrupt resolutions use an explicit `{ event: outcome }` map (e.g., `restartMatch → restartRound`).
 
 ---
 
