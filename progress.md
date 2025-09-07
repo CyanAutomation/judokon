@@ -227,6 +227,22 @@ Phase 4 — Actions & Outcome
 
 
 Phase 5 — Actions & Outcome
+
+Phase 6 — Actions & Outcome (Stat buttons + selection)
+- Added failing tests first:
+  - Unit: tests/classicBattle/stat-buttons.test.js — asserts stat buttons render and are enabled after match start; clicking a stat clears the timer, updates score deterministically, and starts cooldown (Next becomes ready).
+  - Playwright: playwright/battle-classic/stat-selection.spec.js — verifies the same in-browser with short timers.
+- Implemented wiring:
+  - src/pages/battleClassic.init.js
+    - Renders stat buttons from `STATS` and marks container `data-buttons-ready="true"` via `setStatButtonsEnabled`.
+    - On click, calls `handleStatSelection(store, stat, { playerVal: 5, opponentVal: 3, delayMs: 0 })` for deterministic resolution, then starts cooldown with `startCooldown(store)`.
+  - Reused helpers: `statButtons.setStatButtonsEnabled`, `selectionHandler.handleStatSelection`, `roundManager.startCooldown`.
+- Focused runs: PASS
+  - Unit: `npm run -s test -- tests/classicBattle/stat-buttons.test.js` → 1 passed
+  - Playwright: `npx playwright test playwright/battle-classic/stat-selection.spec.js -c playwright.config.js --reporter=line` → 1 passed (~4.0s)
+- Notes:
+  - Kept imports static and reused existing helpers; no console errors introduced.
+  - Deterministic values used only in page wiring for tests; underlying engine/helpers remain unchanged.
 - Added failing tests first:
   - Unit: tests/classicBattle/cooldown.test.js — after deterministic round expiry, asserts `#next-button` becomes enabled with `data-next-ready="true"` and that clicking Next resolves the cooldown `ready` promise.
   - Playwright: playwright/battle-classic/cooldown.spec.js — end-to-end confirms the same behavior in the browser.

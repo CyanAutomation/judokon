@@ -1,11 +1,13 @@
 import { setupScoreboard, updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
-import { createBattleEngine, getPointsToWin } from "../helpers/battleEngineFacade.js";
+import { createBattleEngine, getPointsToWin, STATS } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer } from "../helpers/classicBattle/timerService.js";
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
 import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import { onNextButtonClick } from "../helpers/classicBattle/timerService.js";
+import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
+import { setStatButtonsEnabled, resolveStatButtonsReady } from "../helpers/classicBattle/statButtons.js";
 
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
@@ -27,11 +29,40 @@ function init() {
       const nextBtn = document.getElementById("next-button");
       nextBtn?.addEventListener("click", (evt) => onNextButtonClick(evt));
     } catch {}
+    // Render stat buttons and wiring
+    function renderStatButtons() {
+      const container = document.getElementById("stat-buttons");
+      if (!container) return;
+      container.innerHTML = "";
+      const created = [];
+      for (const stat of STATS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = String(stat);
+        btn.setAttribute("data-stat", String(stat));
+        btn.addEventListener("click", async () => {
+          if (btn.disabled) return;
+          try {
+            await handleStatSelection(store, String(stat), { playerVal: 5, opponentVal: 3, delayMs: 0 });
+            startCooldown(store);
+          } catch {}
+        });
+        created.push(btn);
+        container.appendChild(btn);
+      }
+      try {
+        const buttons = container.querySelectorAll("button[data-stat]");
+        setStatButtonsEnabled(buttons, container, true, () => resolveStatButtonsReady(), () => {});
+      } catch {}
+    }
+
     initRoundSelectModal(async () => {
       try {
         const pts = getPointsToWin();
         document.body.dataset.target = String(pts);
       } catch {}
+      // Ensure stat buttons are available before starting timers
+      try { renderStatButtons(); } catch {}
       // Start the selection timer; in Vitest use a lightweight fallback to ensure deterministic ticks
       try {
         const IS_VITEST =
