@@ -53,7 +53,9 @@ function emitDiagnostics(from, to, event) {
     emitBattleEvent("debug.transition", { from, to, trigger: event });
     const snap = getStateSnapshot();
     emitBattleEvent("debug.state.snapshot", { state: snap?.state || to, context: snap || {} });
-  } catch {}
+  } catch {
+    // ignore: debug events are best effort
+  }
 }
 
 /**
@@ -71,13 +73,17 @@ function emitReadiness(from, to, event) {
   if (to === "matchStart") {
     try {
       emitBattleEvent("control.readiness.required", { for: "match" });
-    } catch {}
+    } catch {
+      // ignore: readiness diagnostics are optional
+    }
   }
   if (event === "ready") {
     const scope = from === "matchStart" ? "match" : "round";
     try {
       emitBattleEvent("control.readiness.confirmed", { for: scope });
-    } catch {}
+    } catch {
+      // ignore: readiness diagnostics are optional
+    }
   }
 }
 
@@ -106,7 +112,9 @@ function emitStateChange(from, to) {
       context,
       catalogVersion: stateCatalog?.version || "v1"
     });
-  } catch {}
+  } catch {
+    // ignore: state change events should not block transitions
+  }
 }
 
 /**
@@ -122,7 +130,9 @@ function emitResolution(event) {
   try {
     const outcome = interruptResolutionMap[event];
     if (outcome) emitBattleEvent("interrupt.resolved", { outcome });
-  } catch {}
+  } catch {
+    // ignore: taxonomy events are non-critical
+  }
 }
 
 /**
@@ -139,13 +149,19 @@ function emitResolution(event) {
 async function preloadDependencies() {
   try {
     await preloadTimerUtils();
-  } catch {}
+  } catch {
+    // ignore: timer utilities are optional preloads
+  }
   try {
     await import("./uiService.js");
-  } catch {}
+  } catch {
+    // ignore: UI service preload is optional
+  }
   try {
     initScoreboardAdapter();
-  } catch {}
+  } catch {
+    // ignore: scoreboard adapter preload is optional
+  }
 }
 
 /**
@@ -194,9 +210,18 @@ function attachListeners(machineRef) {
   debugLogListener({ detail: initialDetail });
   try {
     const snap = getStateSnapshot();
-    emitBattleEvent("debug.state.snapshot", { state: snap?.state || machineRef.getState(), context: snap || {} });
-  } catch {}
-  try { emitBattleEvent("control.state.catalog", stateCatalog); } catch {}
+    emitBattleEvent("debug.state.snapshot", {
+      state: snap?.state || machineRef.getState(),
+      context: snap || {}
+    });
+  } catch {
+    // ignore: snapshot diagnostics are best effort
+  }
+  try {
+    emitBattleEvent("control.state.catalog", stateCatalog);
+  } catch {
+    // ignore: catalog event is informational
+  }
   exposeDebugState("getClassicBattleMachine", () => machineRef);
   if (typeof document !== "undefined") {
     visibilityHandler = () => {
@@ -223,8 +248,11 @@ function attachListeners(machineRef) {
   }
   if (typeof window !== "undefined") {
     window.getBattleStateSnapshot = () => {
-      try { return getStateSnapshot(); }
-      catch { return { state: null, prev: null, event: null, log: [] }; }
+      try {
+        return getStateSnapshot();
+      } catch {
+        return { state: null, prev: null, event: null, log: [] };
+      }
     };
   }
 }
@@ -268,13 +296,18 @@ export async function dispatchBattleEvent(eventName, payload) {
         const scope =
           payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
         emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
-      } catch {}
+      } catch {
+        // ignore: interrupt diagnostics are optional
+      }
     }
     return await machine.dispatch(eventName, payload);
   } catch {
+    // ignore: dispatch failures only trigger debug updates
     try {
       emitBattleEvent("debugPanelUpdate");
-    } catch {}
+    } catch {
+      // ignore: debug updates are best effort
+    }
   }
 }
 
