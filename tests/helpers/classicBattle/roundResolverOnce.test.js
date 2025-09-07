@@ -25,6 +25,9 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   getRoundsPlayed: vi.fn(() => 0),
   _resetForTest: vi.fn()
 }));
+vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
+  updateScore: vi.fn()
+}));
 
 describe.sequential("classicBattle round resolver once", () => {
   let timer;
@@ -33,6 +36,7 @@ describe.sequential("classicBattle round resolver once", () => {
   let createBattleStore;
   let _resetForTest;
   let getCardStatValue;
+  let computeRoundResult;
 
   beforeEach(async () => {
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -51,9 +55,14 @@ describe.sequential("classicBattle round resolver once", () => {
     __resetBattleEventTarget();
     onBattleEvent("battleStateChange", domStateListener);
     emitBattleEvent("battleStateChange", { from: null, to: "roundDecision", event: null });
-    ({ handleStatSelection, createBattleStore, _resetForTest, getCardStatValue } = await import(
-      "../../../src/helpers/classicBattle.js"
-    ));
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    ({
+      handleStatSelection,
+      createBattleStore,
+      _resetForTest,
+      getCardStatValue,
+      computeRoundResult
+    } = await initClassicBattleTest({ afterMock: true }));
   });
 
   afterEach(() => {
@@ -61,6 +70,7 @@ describe.sequential("classicBattle round resolver once", () => {
     warnSpy.mockRestore();
     document.body.innerHTML = "";
     delete document.body.dataset.battleState;
+    vi.clearAllMocks();
   });
 
   it("clears playerChoice after fallback resolve", async () => {
@@ -72,5 +82,39 @@ describe.sequential("classicBattle round resolver once", () => {
     expect(store.playerChoice).toBe("power");
     await vi.advanceTimersByTimeAsync(601);
     expect(store.playerChoice).toBeNull();
+  });
+
+  it("dispatches win path and updates scoreboard", async () => {
+    const store = createBattleStore();
+    _resetForTest(store);
+    const result = await computeRoundResult(store, "power", 5, 3);
+    const { updateScore } = await import("../../../src/helpers/setupScoreboard.js");
+    const { dispatchBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/orchestrator.js"
+    );
+    expect(result.outcome).toBe("winPlayer");
+    expect(updateScore).toHaveBeenCalledWith(1, 0);
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("outcome=winPlayer");
+  });
+
+  it("dispatches draw path and updates scoreboard", async () => {
+    const store = createBattleStore();
+    _resetForTest(store);
+    const { evaluateRound } = await import("../../../src/helpers/api/battleUI.js");
+    vi.mocked(evaluateRound).mockReturnValueOnce({
+      message: "",
+      matchEnded: false,
+      playerScore: 2,
+      opponentScore: 2,
+      outcome: "draw"
+    });
+    const result = await computeRoundResult(store, "power", 4, 4);
+    const { updateScore } = await import("../../../src/helpers/setupScoreboard.js");
+    const { dispatchBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/orchestrator.js"
+    );
+    expect(result.outcome).toBe("draw");
+    expect(updateScore).toHaveBeenLastCalledWith(2, 2);
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("outcome=draw");
   });
 });
