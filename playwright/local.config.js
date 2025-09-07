@@ -3,7 +3,8 @@ import { defineConfig } from "@playwright/test";
 
 // Local config for running file://-based specs without starting the dev server.
 export default defineConfig({
-  testDir: "./playwright",
+  // Resolve tests relative to this config's directory (./playwright)
+  testDir: ".",
   reporter: "list",
   use: {
     // No baseURL needed; specs use file:// URLs directly.

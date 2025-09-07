@@ -29,6 +29,8 @@
         display: grid;
         gap: 6px;
       }
+      /* Reserve visible space for scoreboard rows even when empty */
+      header p { min-height: 1.2em; margin: 0; }
       main {
         padding: 12px 16px;
         display: grid;
@@ -75,7 +77,8 @@
       <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
       <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
       <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
-      <p id="score-display" aria-live="polite" aria-atomic="true"></p>
+      <p id="score-display" aria-live="polite" aria-atomic="true">You: 0
+Opponent: 0</p>
     </header>
 
     <main role="main">
