@@ -1,4 +1,5 @@
 import { isTestModeEnabled } from "../testModeUtils.js";
+import { isHeadlessModeEnabled } from "../headlessMode.js";
 
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
@@ -15,6 +16,7 @@ const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
  * @returns {number} Cooldown in seconds.
  */
 export function computeNextRoundCooldown(utils = { isTestModeEnabled }) {
+  if (isHeadlessModeEnabled()) return 0;
   const overrideMs =
     typeof window !== "undefined" && typeof window.__NEXT_ROUND_COOLDOWN_MS === "number"
       ? window.__NEXT_ROUND_COOLDOWN_MS
