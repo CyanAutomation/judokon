@@ -14,6 +14,7 @@ import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
+import { runWhenIdle } from "./idleCallback.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 let showMatchSummaryModal = null;
 function preloadUiService() {
@@ -23,25 +24,7 @@ function preloadUiService() {
     })
     .catch(() => {});
 }
-const UI_SERVICE_IDLE_TIMEOUT = 2000;
-function scheduleUiServicePreload() {
-  try {
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(preloadUiService);
-      window.setTimeout(() => {
-        try {
-          if ("cancelIdleCallback" in window) window.cancelIdleCallback(id);
-        } catch {}
-        preloadUiService();
-      }, UI_SERVICE_IDLE_TIMEOUT);
-    } else {
-      queueMicrotask(preloadUiService);
-    }
-  } catch {
-    preloadUiService();
-  }
-}
-scheduleUiServicePreload();
+runWhenIdle(preloadUiService);
 
 /**
  * Apply UI updates for a newly started round.
