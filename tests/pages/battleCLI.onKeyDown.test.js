@@ -117,10 +117,11 @@ describe("battleCLI onKeyDown", () => {
 
   it("ignores non-quit shortcuts when flag disabled", async () => {
     const featureFlags = await import("../../src/helpers/featureFlags.js");
+    const originalIsEnabled = featureFlags.isEnabled;
     vi
       .spyOn(featureFlags, "isEnabled")
       .mockImplementation((flag) =>
-        flag === "cliShortcuts" ? false : featureFlags.isEnabled(flag)
+        flag === "cliShortcuts" ? false : originalIsEnabled(flag)
       );
     const shortcuts = document.getElementById("cli-shortcuts");
     const countdown = document.getElementById("cli-countdown");
@@ -214,9 +215,12 @@ describe("battleCLI onKeyDown", () => {
 
   it("allows quitting with Q when cliShortcuts flag is disabled", async () => {
     const featureFlags = await import("../../src/helpers/featureFlags.js");
-    vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) =>
-      flag === "cliShortcuts" ? false : featureFlags.isEnabled(flag)
-    );
+    const originalIsEnabled = featureFlags.isEnabled;
+    vi
+      .spyOn(featureFlags, "isEnabled")
+      .mockImplementation((flag) =>
+        flag === "cliShortcuts" ? false : originalIsEnabled(flag)
+      );
     dispatchSpy.mockReset();
     onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
     expect(document.getElementById("confirm-quit-button")).toBeTruthy();
