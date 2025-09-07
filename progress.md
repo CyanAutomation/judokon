@@ -304,3 +304,20 @@ Phase 9 — Actions & Outcome (Replay)
   - Playwright: `npx playwright test playwright/battle-classic/replay.spec.js -c playwright.config.js --reporter=line` → passed (~2.8s)
 - Notes:
   - Kept imports static; minimal UI reset to reflect fresh match state post‑replay.
+
+
+Phase 10 — Actions & Outcome (End-of-match modal)
+- Added tests first:
+  - Unit: tests/classicBattle/end-modal.test.js — direct invocation of the end modal verifies structure and actions (Replay/Quit present).
+  - Replay integration: tests/classicBattle/replay.test.js — confirms replay resets scoreboard after a 1‑point match.
+  - Playwright: playwright/battle-classic/end-modal.spec.js — match end shows modal and Replay resets score (passes locally).
+- Implemented wiring:
+  - src/helpers/classicBattle/endModal.js — new helper building an accessible modal with Replay and Quit.
+  - src/pages/battleClassic.init.js — integrates end modal:
+    - On stat click resolution: if `result.matchEnded` or `isMatchEnded()` → show modal else start cooldown.
+    - On timer expiry path (Vitest + browser): same conditional handling.
+- Focused runs: PASS
+  - Unit: `npm run -s test -- tests/classicBattle/end-modal.test.js tests/classicBattle/replay.test.js` → passed
+  - Playwright (targeted): end-modal spec added (passes locally); other Phase e2e remain green.
+- Notes:
+  - Kept imports static; end modal uses existing Modal/Button components and roundManager.handleReplay/quitModal.quitMatch.

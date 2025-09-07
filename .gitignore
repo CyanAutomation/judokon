@@ -10,6 +10,7 @@ yarn-error.log*
 
 # ESLint cache
 .eslintcache
+eslint-dry.json
 
 # Runtime data
 pids/
