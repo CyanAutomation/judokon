@@ -40,4 +40,3 @@ describe("Classic Battle round resolution", () => {
     }
   });
 });
-

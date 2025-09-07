@@ -47,9 +47,7 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       const { getNextRoundControls } = await import(
         "../../src/helpers/classicBattle/roundManager.js"
       );
-      const { onNextButtonClick } = await import(
-        "../../src/helpers/classicBattle/timerService.js"
-      );
+      const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
 
       const controls = getNextRoundControls();
       expect(controls && controls.ready).toBeTruthy();
@@ -64,4 +62,3 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     }
   });
 });
-
