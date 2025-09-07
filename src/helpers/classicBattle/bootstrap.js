@@ -3,7 +3,7 @@ import "./promises.js";
 // Ensure round UI event listeners are registered (roundStarted -> showSelectionPrompt)
 import "./roundUI.js";
 import "../domReady.js";
-import { waitForOpponentCard } from "../battleJudokaPage.js";
+
 import { ClassicBattleController } from "./controller.js";
 import { ClassicBattleView } from "./view.js";
 import createClassicBattleDebugAPI from "./setupTestHelpers.js";
@@ -43,10 +43,8 @@ export async function setupClassicBattlePage() {
 
   async function startCallback() {
     try {
-      const view = new ClassicBattleView({ waitForOpponentCard });
-      const controller = new ClassicBattleController({
-        waitForOpponentCard: view.waitForOpponentCard
-      });
+      const view = new ClassicBattleView();
+      const controller = new ClassicBattleController();
       view.bindController(controller);
       await controller.init();
       await view.init();

@@ -467,16 +467,124 @@ function ensureDefault() {
   return defaultScoreboard;
 }
 
+/**
+ * Show a round message using the default scoreboard instance.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists (create one if needed).
+ * 2. Forward all arguments to the scoreboard `showMessage` method.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.showMessage`.
+ * @returns {void|undefined}
+ */
 export const showMessage = (...args) => ensureDefault()?.showMessage(...args);
+
+/**
+ * Clear the round message on the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Call its `clearMessage` method to remove displayed text and flags.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.clearMessage` (if any).
+ * @returns {void|undefined}
+ */
 export const clearMessage = (...args) => ensureDefault()?.clearMessage(...args);
+
+/**
+ * Show a temporary message and return a clear function from the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Forward invocation to `showTemporaryMessage` and return whatever it returns.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.showTemporaryMessage`.
+ * @returns {Function|undefined} A function that clears the temporary message when called.
+ */
 export const showTemporaryMessage = (...args) => ensureDefault()?.showTemporaryMessage(...args);
+
+/**
+ * Announce an auto-selection message via the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Forward the provided stat string to `showAutoSelect`.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.showAutoSelect`.
+ * @returns {void|undefined}
+ */
 export const showAutoSelect = (...args) => ensureDefault()?.showAutoSelect(...args);
+
+/**
+ * Update the countdown timer on the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Forward the seconds argument to `updateTimer` to refresh display.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.updateTimer`.
+ * @returns {void|undefined}
+ */
 export const updateTimer = (...args) => ensureDefault()?.updateTimer(...args);
+
+/**
+ * Clear the countdown timer display on the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Call its `clearTimer` method.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.clearTimer` (if any).
+ * @returns {void|undefined}
+ */
 export const clearTimer = (...args) => ensureDefault()?.clearTimer(...args);
+
+/**
+ * Update the round counter on the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Forward the current round number to `updateRoundCounter`.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.updateRoundCounter`.
+ * @returns {void|undefined}
+ */
 export const updateRoundCounter = (...args) => ensureDefault()?.updateRoundCounter(...args);
+
+/**
+ * Clear the round counter display on the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Call its `clearRoundCounter` method.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.clearRoundCounter` (if any).
+ * @returns {void|undefined}
+ */
 export const clearRoundCounter = (...args) => ensureDefault()?.clearRoundCounter(...args);
+
+/**
+ * Update the displayed score via the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Forward player and opponent scores to `updateScore`.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.updateScore` (player, opponent).
+ * @returns {void|undefined}
+ */
 export const updateScore = (...args) => ensureDefault()?.updateScore(...args);
+
+/**
+ * Render a partial scoreboard state patch using the default scoreboard.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Forward the patch object to `render`.
+ * @param {...*} args - Arguments forwarded to `Scoreboard.render` (patch object).
+ * @returns {void|undefined}
+ */
 export const render = (...args) => ensureDefault()?.render(...args);
+
+/**
+ * Return a readonly snapshot of the default scoreboard's state.
+ *
+ * @pseudocode
+ * 1. Ensure a default scoreboard exists.
+ * 2. Return its `getState()` result or a default empty state if not present.
+ * @returns {{message:{text:string,outcome:boolean},timer:{secondsRemaining:number|null},round:{current:number},score:{player:number,opponent:number}}}
+ */
 export const getState = () =>
   ensureDefault()?.getState() ?? {
     message: { text: "", outcome: false },
@@ -484,6 +592,15 @@ export const getState = () =>
     round: { current: 0 },
     score: { player: 0, opponent: 0 }
   };
+
+/**
+ * Destroy the default scoreboard instance and free resources.
+ *
+ * @pseudocode
+ * 1. Call `destroy()` on the default scoreboard if it exists.
+ * 2. Set the module-level `defaultScoreboard` reference to `null`.
+ * @returns {void}
+ */
 export const destroy = () => {
   defaultScoreboard?.destroy();
   defaultScoreboard = null;
