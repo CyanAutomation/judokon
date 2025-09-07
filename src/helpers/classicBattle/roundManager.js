@@ -251,17 +251,6 @@ export function startCooldown(_store, scheduler = realScheduler) {
   } catch {}
   wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
   currentNextRound = controls;
-  // Expose a minimal test hook to skip the cooldown in Playwright without
-  // depending on module identity. Kept off of public API and guarded.
-  try {
-    if (typeof window !== "undefined") {
-      window.__skipNextRoundCooldown = () => {
-        try {
-          currentNextRound?.timer?.stop();
-        } catch {}
-      };
-    }
-  } catch {}
   return controls;
 }
 
