@@ -7,7 +7,10 @@ import { createBattleStore, startCooldown } from "../helpers/classicBattle/round
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import { onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
-import { setStatButtonsEnabled, resolveStatButtonsReady } from "../helpers/classicBattle/statButtons.js";
+import {
+  setStatButtonsEnabled,
+  resolveStatButtonsReady
+} from "../helpers/classicBattle/statButtons.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 
 function init() {
@@ -49,7 +52,8 @@ function init() {
           if (btn.disabled) return;
           try {
             const delayOverride =
-              typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
+              typeof window !== "undefined" &&
+              typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
                 ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
                 : 0;
             await handleStatSelection(store, String(stat), {

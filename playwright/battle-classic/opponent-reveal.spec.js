@@ -35,4 +35,3 @@ test.describe("Classic Battle opponent reveal", () => {
     await expect(next).toHaveAttribute("data-next-ready", "true");
   });
 });
-
