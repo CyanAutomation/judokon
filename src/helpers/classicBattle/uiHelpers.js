@@ -18,7 +18,6 @@ import { toggleViewportSimulation } from "../viewportDebug.js";
 import { toggleInspectorPanels } from "../cardUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
-import { syncScoreDisplay } from "./uiService.js";
 import { onBattleEvent } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
 import {
@@ -31,6 +30,13 @@ import { guard } from "./guard.js";
 import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 export { showSelectionPrompt, setOpponentDelay, getOpponentDelay } from "./snackbar.js";
+
+let syncScoreDisplay = () => {};
+import("./uiService.js")
+  .then((m) => {
+    syncScoreDisplay = m.syncScoreDisplay || (() => {});
+  })
+  .catch(() => {});
 /**
  * Skip the inter-round cooldown when the corresponding feature flag is enabled.
  *
