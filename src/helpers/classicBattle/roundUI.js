@@ -3,7 +3,8 @@ import { showSelectionPrompt } from "./snackbar.js";
 // Use index re-exports so tests can vi.mock("../battle/index.js") and spy
 import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";
-import { startTimer, handleStatSelectionTimeout } from "./timerService.js";
+import { startTimer } from "./timerService.js";
+import { handleStatSelectionTimeout } from "./autoSelectHandlers.js";
 
 import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
