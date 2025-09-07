@@ -11,6 +11,7 @@ import {
   setStatButtonsEnabled,
   resolveStatButtonsReady
 } from "../helpers/classicBattle/statButtons.js";
+import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 
 function init() {
@@ -36,6 +37,11 @@ function init() {
     try {
       const nextBtn = document.getElementById("next-button");
       nextBtn?.addEventListener("click", (evt) => onNextButtonClick(evt));
+    } catch {}
+    // Wire Quit button to open confirmation modal
+    try {
+      const quitBtn = document.getElementById("quit-button");
+      quitBtn?.addEventListener("click", () => quitMatch(store, quitBtn));
     } catch {}
     // Render stat buttons and wiring
     function renderStatButtons() {

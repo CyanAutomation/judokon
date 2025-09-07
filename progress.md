@@ -229,6 +229,21 @@ Phase 5 — Actions & Outcome
 
 Phase 6 — Actions & Outcome (Stat buttons + selection)
 
+Phase 7 — Actions & Outcome (Opponent reveal message)
+- Added tests first:
+  - Unit (handler-level): tests/classicBattle/opponent-message-handler.test.js — binds dynamic UI handlers and verifies `statSelected` leads to a delayed snackbar “Opponent is choosing…”.
+  - Playwright: playwright/battle-classic/opponent-reveal.spec.js — after clicking a stat, shows “Opponent is choosing…” before outcome; then outcome and cooldown follow.
+- Implementation:
+  - src/pages/battleClassic.init.js
+    - Binds `bindUIHelperEventHandlersDynamic()` so transient messages (opponent choosing, reveal, outcome) are handled.
+    - Adds test override `window.__OPPONENT_RESOLVE_DELAY_MS` to control resolve delay for e2e timing.
+  - Reused helpers: `uiEventHandlers.bindUIHelperEventHandlersDynamic`, `snackbar.setOpponentDelay`.
+- Focused runs: PASS
+  - Unit: `npm run -s test -- tests/classicBattle/opponent-message-handler.test.js`
+  - Playwright: `npx playwright test playwright/battle-classic/opponent-reveal.spec.js -c playwright.config.js --reporter=line` (~2.4s)
+- Notes:
+  - Unit-level race with cooldown is avoided by testing the handler directly; e2e covers the full flow.
+
 - Added failing tests first:
   - Unit: tests/classicBattle/stat-buttons.test.js — asserts stat buttons render and are enabled after match start; clicking a stat clears the timer, updates score deterministically, and starts cooldown (Next becomes ready).
   - Playwright: playwright/battle-classic/stat-selection.spec.js — verifies the same in-browser with short timers.
