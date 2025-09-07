@@ -17,6 +17,15 @@ import {
  * 2. Return its value or `undefined` if none found.
  */
 export function getDefaultTimer(category) {
+  // Test hook: allow Playwright or other harnesses to override timers globally.
+  try {
+    const w = typeof window !== "undefined" ? window : globalThis;
+    const overrides = w && w.__OVERRIDE_TIMERS;
+    if (overrides && Object.prototype.hasOwnProperty.call(overrides, category)) {
+      const v = overrides[category];
+      if (typeof v === "number") return v;
+    }
+  } catch {}
   const entry = gameTimers.find((t) => t.category === category && t.default);
   return entry ? entry.value : undefined;
 }

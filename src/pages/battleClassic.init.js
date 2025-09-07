@@ -3,8 +3,9 @@ import { createBattleEngine, getPointsToWin } from "../helpers/battleEngineFacad
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer } from "../helpers/classicBattle/timerService.js";
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
-import { createBattleStore } from "../helpers/classicBattle/roundManager.js";
+import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
+import { onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
@@ -21,6 +22,11 @@ function init() {
   try {
     createBattleEngine();
     const store = createBattleStore();
+    // Wire Next button click to cooldown/advance handler
+    try {
+      const nextBtn = document.getElementById("next-button");
+      nextBtn?.addEventListener("click", (evt) => onNextButtonClick(evt));
+    } catch {}
     initRoundSelectModal(async () => {
       try {
         const pts = getPointsToWin();
@@ -46,19 +52,23 @@ function init() {
               // Deterministic outcome for unit tests so score visibly changes
               try {
                 computeRoundResult(store, "speed", 5, 3);
+                // Begin inter-round cooldown and expose Next controls
+                startCooldown(store);
               } catch {}
             },
             pauseOnHidden: false
           });
           timer.start();
         } else {
-          await startTimer((stat) => {
+          await startTimer(async (stat) => {
             try {
               document.body.dataset.autoSelected = String(stat || "auto");
             } catch {}
             // Use a simple deterministic comparison so the scoreboard reflects a change
             try {
-              return computeRoundResult(store, String(stat || "speed"), 5, 3);
+              await computeRoundResult(store, String(stat || "speed"), 5, 3);
+              // After outcome, begin cooldown for Next
+              startCooldown(store);
             } catch {}
             return Promise.resolve();
           });

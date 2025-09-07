@@ -167,7 +167,7 @@ Phase 7 — Accessibility + Flags + Debug Panel
 
 Phase 8 — Polish + Telemetry (if applicable)
 
-- Goal: Hook optional audio cues (TBD), ensure deterministic hooks for testers; finalize docs.
+- Goal: ensure deterministic hooks for testers; finalize docs.
 - Tests: minimal unit checks for any added helpers; no regression in prior specs.
 
 Validation Plan
