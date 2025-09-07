@@ -209,6 +209,26 @@ describe("battleCLI event handlers", () => {
     vi.useRealTimers();
   });
 
+  it("buildStatRows returns empty array when stats missing", async () => {
+    const { handlers } = await setupHandlers();
+    const rows = handlers.buildStatRows([], {});
+    expect(rows).toHaveLength(0);
+  });
+
+  it("buildStatRows omits missing judoka values", async () => {
+    const { handlers } = await setupHandlers();
+    const stats = [{ statIndex: 1, name: "Power" }];
+    const rows = handlers.buildStatRows(stats, { stats: {} });
+    expect(rows[0].textContent).toBe("[1] Power");
+  });
+
+  it("buildStatRows includes judoka values when present", async () => {
+    const { handlers } = await setupHandlers();
+    const stats = [{ statIndex: 1, name: "Power" }];
+    const rows = handlers.buildStatRows(stats, { stats: { power: 7 } });
+    expect(rows[0].textContent).toBe("[1] Power: 7");
+  });
+
   it("updates message after round resolved", async () => {
     const { handlers } = await setupHandlers();
     const speedName = statNamesData.find((s) => s.statIndex === 2).name;

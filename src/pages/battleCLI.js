@@ -167,6 +167,10 @@ export const __test = {
   installEventBindings,
   autostartBattle,
   renderStatList,
+  loadStatDefs,
+  buildStatRows,
+  renderHelpMapping,
+  ensureStatClickBinding,
   restorePointsToWin,
   startRoundWrapper,
   // Expose init for tests to manually initialize without DOMContentLoaded
@@ -993,83 +997,137 @@ export function handleStatListArrowKey(key) {
 }
 
 /**
+ * Load stat definitions once and return them.
+ *
+ * @pseudocode
+ * 1. If the cache is empty, try dynamic fetch of `statNames.json`.
+ * 2. Fallback to bundled module data when fetch fails or returns empty.
+ * 3. Return the cached definitions array or an empty array.
+ *
+ * @returns {Promise<Array>} Cached stat definition objects.
+ */
+async function loadStatDefs() {
+  if (!cachedStatDefs) {
+    try {
+      const { fetchJson } = await import("../helpers/dataUtils.js");
+      const { DATA_DIR } = await import("../helpers/constants.js");
+      const defs = await fetchJson(`${DATA_DIR}/statNames.json`);
+      if (Array.isArray(defs) && defs.length) {
+        cachedStatDefs = defs;
+      }
+    } catch {}
+    if (!cachedStatDefs) cachedStatDefs = statNamesData;
+  }
+  return Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
+}
+
+/**
+ * Build DOM rows for stats and return them.
+ *
+ * @pseudocode
+ * 1. Sort stats by `statIndex` and iterate.
+ * 2. Map `STATS` entry to display name cache.
+ * 3. Create a row per stat, including value when provided.
+ *
+ * @param {Array} stats - Stat definition objects.
+ * @param {object} [judoka] - Optional judoka with current stat values.
+ * @returns {Array<HTMLElement>} Array of constructed row elements.
+ */
+function buildStatRows(stats, judoka) {
+  const rows = [];
+  stats
+    .slice()
+    .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
+    .forEach((s) => {
+      const idx = Number(s.statIndex) || 0;
+      if (!idx) return;
+      const key = STATS[idx - 1];
+      if (key) statDisplayNames[key] = s.name;
+      const div = document.createElement("div");
+      div.className = "cli-stat";
+      div.id = `cli-stat-${idx}`;
+      div.setAttribute("role", "button");
+      div.setAttribute("tabindex", "-1");
+      div.dataset.statIndex = String(idx);
+      const val = Number(judoka?.stats?.[key]);
+      div.textContent = Number.isFinite(val) ? `[${idx}] ${s.name}: ${val}` : `[${idx}] ${s.name}`;
+      rows.push(div);
+    });
+  return rows;
+}
+
+/**
+ * Populate the help mapping with stat index→name references.
+ *
+ * @pseudocode
+ * 1. Locate `#cli-help`; bail if missing or already populated.
+ * 2. Build mapping string from sorted stats and append as list item.
+ *
+ * @param {Array} stats - Stat definition objects.
+ * @returns {void}
+ */
+function renderHelpMapping(stats) {
+  try {
+    const help = byId("cli-help");
+    if (!help || help.childElementCount !== 0) return;
+    const mapping = stats
+      .slice()
+      .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
+      .map((s) => `[${s.statIndex}] ${s.name}`)
+      .join("  ·  ");
+    const li = document.createElement("li");
+    li.textContent = mapping;
+    help.appendChild(li);
+  } catch {}
+}
+
+/**
+ * Ensure stat list has a click handler bound once.
+ *
+ * @pseudocode
+ * 1. Track bound list elements in a WeakSet.
+ * 2. Bind the click handler only when the list isn't already bound.
+ *
+ * @param {HTMLElement} list - Stats list element.
+ * @returns {void}
+ */
+function ensureStatClickBinding(list) {
+  const onClick = handleStatListClick;
+  const boundTargets = (globalThis.__battleCLIStatListBoundTargets ||= new WeakSet());
+  if (!boundTargets.has(list)) {
+    list.addEventListener("click", onClick);
+    boundTargets.add(list);
+  }
+}
+
+/**
  * Load stat names and render them into the CLI stat selection list.
  *
  * @summary Load stat names, build stat buttons, store display name map, and wire click handlers.
  * @pseudocode
- * 1. Initialize cached stat definitions from the stat names module if not already loaded.
+ * 1. Load stat definitions via `loadStatDefs()`.
  * 2. Locate `#cli-stats`; clear existing entries and display name map.
- * 3. Render each stat as a clickable element showing `[idx] name: value` when `judoka` provided.
- * 4. Populate `#cli-help` once with index-name mapping and clear any skeleton placeholders.
+ * 3. Build stat rows and append them, focusing the first.
+ * 4. Bind click handler, render help mapping, and clear placeholders.
  *
  * @param {object} [judoka] - Optional judoka object providing current stat values.
  * @returns {Promise<void>} Resolves when the stat list has been rendered.
  */
 export async function renderStatList(judoka) {
   try {
-    if (!cachedStatDefs) {
-      // Prefer dynamic fetch in tests or when available so mocks can supply
-      // custom stat sets (e.g., Speed/Strength). Fallback to bundled module.
-      try {
-        const { fetchJson } = await import("../helpers/dataUtils.js");
-        const { DATA_DIR } = await import("../helpers/constants.js");
-        const defs = await fetchJson(`${DATA_DIR}/statNames.json`);
-        if (Array.isArray(defs) && defs.length) {
-          cachedStatDefs = defs;
-        }
-      } catch {}
-      if (!cachedStatDefs) cachedStatDefs = statNamesData;
-    }
     const list = byId("cli-stats");
-    const stats = Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
+    const stats = await loadStatDefs();
     if (list && stats.length) {
       list.innerHTML = "";
       for (const key of Object.keys(statDisplayNames)) delete statDisplayNames[key];
-      const rows = [];
-      stats
-        .slice()
-        .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
-        .forEach((s) => {
-          const idx = Number(s.statIndex) || 0;
-          if (!idx) return;
-          const key = STATS[idx - 1];
-          if (key) statDisplayNames[key] = s.name;
-          const div = document.createElement("div");
-          div.className = "cli-stat";
-          div.id = `cli-stat-${idx}`;
-          div.setAttribute("role", "button");
-          div.setAttribute("tabindex", "-1");
-          div.dataset.statIndex = String(idx);
-          const val = Number(judoka?.stats?.[key]);
-          div.textContent = Number.isFinite(val)
-            ? `[${idx}] ${s.name}: ${val}`
-            : `[${idx}] ${s.name}`;
-          list.appendChild(div);
-          rows.push(div);
-        });
+      const rows = buildStatRows(stats, judoka);
+      rows.forEach((row) => list.appendChild(row));
       if (rows.length) setActiveStatRow(rows[0], { focus: false });
-      const onClick = handleStatListClick;
-      const boundTargets = (globalThis.__battleCLIStatListBoundTargets ||= new WeakSet());
-      if (!boundTargets.has(list)) {
-        list.addEventListener("click", onClick);
-        boundTargets.add(list);
-      }
+      ensureStatClickBinding(list);
       try {
         window.__battleCLIinit?.clearSkeletonStats?.();
       } catch {}
-      try {
-        const help = byId("cli-help");
-        if (help && help.childElementCount === 0) {
-          const mapping = stats
-            .slice()
-            .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
-            .map((s) => `[${s.statIndex}] ${s.name}`)
-            .join("  ·  ");
-          const li = document.createElement("li");
-          li.textContent = mapping;
-          help.appendChild(li);
-        }
-      } catch {}
+      renderHelpMapping(stats);
     }
   } catch {}
 }
