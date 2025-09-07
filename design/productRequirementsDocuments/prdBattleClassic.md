@@ -87,6 +87,7 @@ Currently, only ~45% of new players complete their first battle across all modes
 ## Technical Considerations
 
 - Classic Battle logic must reuse shared random card draw module (`generateRandomCard`).
+- Orchestrator initialization preloads timer utilities and UI services, builds the state handler map, then attaches listeners before exposing the machine.
 - Round selection modal must use shared `Modal` and `Button` components for consistent accessibility.
 - Card reveal and result animations should use hardware-accelerated CSS for smooth performance on low-end devices.
 - Stat selection timer (30s) must be displayed in `#next-round-timer`; if the timer expires, a random stat is auto-selected. This auto-select behavior is controlled by a feature flag `autoSelect` (enabled by default). The timer must pause if the game tab is inactive or device goes to sleep, and resume on focus (see prdBattleScoreboard.md).

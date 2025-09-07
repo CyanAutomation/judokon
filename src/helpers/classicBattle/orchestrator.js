@@ -125,6 +125,110 @@ function emitResolution(event) {
 }
 
 /**
+ * Preload non-critical dependencies required before machine start.
+ *
+ * @pseudocode
+ * 1. Await `preloadTimerUtils`.
+ * 2. Dynamically import `./uiService.js`.
+ * 3. Initialize `initScoreboardAdapter`.
+ * 4. Swallow errors from each step.
+ *
+ * @returns {Promise<void>} resolves when best-effort preloads finish.
+ */
+async function preloadDependencies() {
+  try {
+    await preloadTimerUtils();
+  } catch {}
+  try {
+    await import("./uiService.js");
+  } catch {}
+  try {
+    initScoreboardAdapter();
+  } catch {}
+}
+
+/**
+ * Map battle states to their `onEnter` handlers.
+ *
+ * @pseudocode
+ * 1. Return an object mapping state names to handlers.
+ * 2. Handlers are imported from `orchestratorHandlers.js`.
+ *
+ * @returns {Record<string, Function>} state-to-handler map.
+ */
+function createOnEnterMap() {
+  return {
+    waitingForMatchStart: waitingForMatchStartEnter,
+    matchStart: matchStartEnter,
+    cooldown: cooldownEnter,
+    roundStart: roundStartEnter,
+    waitingForPlayerAction: waitingForPlayerActionEnter,
+    roundDecision: roundDecisionEnter,
+    roundOver: roundOverEnter,
+    matchDecision: matchDecisionEnter,
+    matchOver: matchOverEnter,
+    interruptRound: interruptRoundEnter,
+    interruptMatch: interruptMatchEnter,
+    roundModification: roundModificationEnter
+  };
+}
+
+/**
+ * Attach listeners and expose debug helpers for a battle machine.
+ *
+ * @pseudocode
+ * 1. Register DOM and debug listeners for `battleStateChange`.
+ * 2. Emit initial state, snapshot, and catalog events.
+ * 3. Expose debug getters and handle visibility, timer drift, and injected errors.
+ * 4. Swallow non-critical errors to keep setup resilient.
+ *
+ * @param {import("./stateManager.js").ClassicBattleStateManager} machineRef
+ */
+function attachListeners(machineRef) {
+  debugLogListener = createDebugLogListener(machineRef);
+  onBattleEvent("battleStateChange", domStateListener);
+  onBattleEvent("battleStateChange", debugLogListener);
+  const initialDetail = { from: null, to: machineRef.getState(), event: "init" };
+  domStateListener({ detail: initialDetail });
+  debugLogListener({ detail: initialDetail });
+  try {
+    const snap = getStateSnapshot();
+    emitBattleEvent("debug.state.snapshot", { state: snap?.state || machineRef.getState(), context: snap || {} });
+  } catch {}
+  try { emitBattleEvent("control.state.catalog", stateCatalog); } catch {}
+  exposeDebugState("getClassicBattleMachine", () => machineRef);
+  if (typeof document !== "undefined") {
+    visibilityHandler = () => {
+      const engine = machineRef.context?.engine;
+      if (engine) document.hidden ? engine.handleTabInactive() : engine.handleTabActive();
+    };
+    document.addEventListener("visibilitychange", visibilityHandler);
+  }
+  const engine = machineRef.context?.engine;
+  if (engine) {
+    engine.onTimerDrift = (drift) => {
+      emitBattleEvent("scoreboardShowMessage", `Timer drift detected: ${drift}s. Timer reset.`);
+      emitBattleEvent("debugPanelUpdate");
+      engine.handleTimerDrift(drift);
+    };
+    if (typeof window !== "undefined") {
+      window.injectClassicBattleError = (msg) => {
+        engine.injectError(msg);
+        emitBattleEvent("scoreboardShowMessage", `Injected error: ${msg}`);
+        emitBattleEvent("debugPanelUpdate");
+        machineRef.dispatch("interruptMatch", { reason: msg });
+      };
+    }
+  }
+  if (typeof window !== "undefined") {
+    window.getBattleStateSnapshot = () => {
+      try { return getStateSnapshot(); }
+      catch { return { state: null, prev: null, event: null, log: [] }; }
+    };
+  }
+}
+
+/**
  * Dispatch an event to the active battle machine.
  *
  * @pseudocode
@@ -174,17 +278,6 @@ export async function dispatchBattleEvent(eventName, payload) {
 }
 
 /**
- * Expose timer state for debugging when an engine exists.
- *
- * @pseudocode
- * 1. Return early when not in a browser or when no engine is present.
- * 2. Read timer state from the machine's engine.
- * 3. Mirror the timer state via `exposeDebugState('classicBattleTimerState')`.
- *
- * @param {import("./stateManager.js").ClassicBattleStateManager|null} machineRef - Current battle machine.
- * @returns {void}
- */
-/**
  * Initialize the classic battle orchestrator. This function sets up the battle state machine,
  * defines its transition behavior, and exposes debugging utilities.
  *
@@ -212,36 +305,12 @@ export async function dispatchBattleEvent(eventName, payload) {
  * @returns {Promise<void>} Resolves when setup completes.
  */
 export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
-  // Preload timer utils early to avoid dynamic import on hot-path timer starts
-  try {
-    await preloadTimerUtils();
-  } catch {}
-  // Ensure UI service listeners are bound before emitting any init events
-  try {
-    await import("./uiService.js");
-  } catch {}
-  // Initialize Scoreboard adapter to listen for display.* events (no-op if none)
-  try {
-    initScoreboardAdapter();
-  } catch {}
+  await preloadDependencies();
   const { resetGame: resetGameOpt, startRound: startRoundOpt, onStateChange } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;
   const context = { store, doResetGame, doStartRound, startRoundWrapper };
-  const onEnter = {
-    waitingForMatchStart: waitingForMatchStartEnter,
-    matchStart: matchStartEnter,
-    cooldown: cooldownEnter,
-    roundStart: roundStartEnter,
-    waitingForPlayerAction: waitingForPlayerActionEnter,
-    roundDecision: roundDecisionEnter,
-    roundOver: roundOverEnter,
-    matchDecision: matchDecisionEnter,
-    matchOver: matchOverEnter,
-    interruptRound: interruptRoundEnter,
-    interruptMatch: interruptMatchEnter,
-    roundModification: roundModificationEnter
-  };
+  const onEnter = createOnEnterMap();
 
   const onTransition = ({ from, to, event }) => {
     onStateChange?.({ from, to, event });
@@ -253,81 +322,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   machine = await createStateManager(onEnter, context, onTransition);
-
-  debugLogListener = createDebugLogListener(machine);
-
-  onBattleEvent("battleStateChange", domStateListener);
-  onBattleEvent("battleStateChange", debugLogListener);
-
-  const initialDetail = {
-    from: null,
-    to: machine.getState(),
-    event: "init"
-  };
-  domStateListener({ detail: initialDetail });
-  debugLogListener({ detail: initialDetail });
-  try {
-    const snap = getStateSnapshot();
-    emitBattleEvent("debug.state.snapshot", {
-      state: snap?.state || machine.getState(),
-      context: snap || {}
-    });
-  } catch {}
-
-  // Broadcast State Catalog once for passive consumers
-  try {
-    emitBattleEvent("control.state.catalog", stateCatalog);
-  } catch {}
-
-  // Expose a safe getter for the running machine to avoid import cycles
-  // in hot-path modules (e.g., selection handling).
-  exposeDebugState("getClassicBattleMachine", () => machine);
-
-  if (typeof document !== "undefined") {
-    visibilityHandler = () => {
-      if (machine?.context?.engine) {
-        if (document.hidden) {
-          machine.context.engine.handleTabInactive();
-        } else {
-          machine.context.engine.handleTabActive();
-        }
-      }
-    };
-    document.addEventListener("visibilitychange", visibilityHandler);
-  }
-
-  if (machine?.context?.engine) {
-    machine.context.engine.onTimerDrift = (driftAmount) => {
-      emitBattleEvent(
-        "scoreboardShowMessage",
-        `Timer drift detected: ${driftAmount}s. Timer reset.`
-      );
-      emitBattleEvent("debugPanelUpdate");
-      machine.context.engine.handleTimerDrift(driftAmount);
-    };
-  }
-
-  if (typeof window !== "undefined" && machine?.context?.engine) {
-    window.injectClassicBattleError = (errorMsg) => {
-      machine.context.engine.injectError(errorMsg);
-      emitBattleEvent("scoreboardShowMessage", `Injected error: ${errorMsg}`);
-      emitBattleEvent("debugPanelUpdate");
-      machine.dispatch("interruptMatch", { reason: errorMsg });
-    };
-  }
-
-  try {
-    if (typeof window !== "undefined") {
-      // Expose a snapshot helper for tests/debuggers
-      window.getBattleStateSnapshot = () => {
-        try {
-          return getStateSnapshot();
-        } catch {
-          return { state: null, prev: null, event: null, log: [] };
-        }
-      };
-    }
-  } catch {}
+  attachListeners(machine);
   return machine;
 }
 
