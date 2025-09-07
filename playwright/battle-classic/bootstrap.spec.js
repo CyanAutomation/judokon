@@ -11,4 +11,3 @@ test.describe("Classic Battle bootstrap", () => {
     await expect(page.locator("#round-counter")).toHaveText(/Round\s*0/);
   });
 });
-

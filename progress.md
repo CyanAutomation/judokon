@@ -80,6 +80,7 @@ Phase 0 — Outcome
 Phase 1 — Scoreboard + Engine Bootstrap
 
 Phase 0 — Clarification
+
 - The Playwright smoke test did not exist previously; it has now been created at `playwright/battle-classic/smoke.spec.js` to fulfill TDD for the scaffold.
 - Adjusted playwright/local.config.js to resolve tests (testDir=".").
 - Fixed scaffold visibility for header regions: added CSS `header p { min-height: 1.2em }` and initial score text so Playwright's `toBeVisible` passes.
@@ -106,6 +107,7 @@ Phase 2 — Points‑to‑Win Modal (Rounds Options)
   - playwright/battle-classic/round-select.spec.js: choose 15, see header target text or internal state (via exposed debug/test mode) update before first round.
 
 Phase 2 — Actions & Outcome
+
 - Added failing tests first:
   - Unit: tests/classicBattle/round-select.test.js (clicks Long/15 and asserts engine `getPointsToWin()` = 15 and `body[data-target] = "15"`).
   - E2E: playwright/battle-classic/round-select.spec.js (file://) and server variant playwright/battle-classic/round-select.server.spec.js (http://).
@@ -190,8 +192,9 @@ Notes on Reuse vs New Code
 
 - Reuse the existing classicBattle orchestrator, round/timer services, and scoreboard; only add page‑specific boot/init code and markup.
 - Before adding any new helper, search src/helpers/classicBattle/_ and src/helpers/_; prefer extending via composition or adding small adapters guarded by feature flags.
- 
+
 Phase 1 — Outcome
+
 - Tests added first (failing), then code implemented to satisfy them.
 - Implemented: src/pages/battleClassic.init.js initializes scoreboard and seeds visible defaults; battleClassic.html links the init; header shows Round 0 and initial score.
 - Unit: PASS — `npx vitest run tests/classicBattle/bootstrap.test.js`

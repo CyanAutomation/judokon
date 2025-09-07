@@ -18,4 +18,3 @@ test.describe("Classic Battle page scaffold", () => {
     expect(errors, `Console errors detected: ${errors.join("\n")}`).toHaveLength(0);
   });
 });
-

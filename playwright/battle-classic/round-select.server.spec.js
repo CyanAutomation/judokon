@@ -7,4 +7,3 @@ test.describe("Classic Battle round select (server)", () => {
     await expect(page.locator("body")).toHaveAttribute("data-target", "15");
   });
 });
-
