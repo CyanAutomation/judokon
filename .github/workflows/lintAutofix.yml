@@ -93,9 +93,8 @@ jobs:
         id: lint-stats
         run: |
           set -euo pipefail
-          # Make sure ESLint uses the ignore file so the dry-run output doesn't
-          # include .eslintcache or eslint-dry.json itself.
-          npx eslint . --fix-dry-run -f json --ignore-path .eslintignore > eslint-dry.json || true
+          # ESLint config already ignores cache and report files.
+          npx eslint . --fix-dry-run -f json > eslint-dry.json || true
           node -e '
             const fs = require("fs");
             if (!fs.existsSync("eslint-dry.json")) { process.exit(0); }
@@ -116,7 +115,7 @@ jobs:
           '
 
       - name: Run ESLint with auto-fix
-        run: npx eslint . --fix --cache --ignore-path .eslintignore
+        run: npx eslint . --fix --cache
 
       - name: Check for changes
         id: git-check
