@@ -8,7 +8,8 @@ const mocks = vi.hoisted(() => ({
   setPointsToWin: vi.fn(),
   initTooltips: vi.fn(),
   modal: { open: vi.fn(), close: vi.fn(), destroy: vi.fn() },
-  emit: vi.fn()
+  emit: vi.fn(),
+  logEvent: vi.fn()
 }));
 vi.mock("../../../src/components/Button.js", () => ({
   createButton: (label, { id } = {}) => {
@@ -37,6 +38,7 @@ vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: mocks.initTool
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: mocks.emit
 }));
+vi.mock("../../../src/helpers/telemetry.js", () => ({ logEvent: mocks.logEvent }));
 
 import { initRoundSelectModal } from "../../../src/helpers/classicBattle/roundSelectModal.js";
 
@@ -58,15 +60,20 @@ describe("initRoundSelectModal", () => {
     expect(mocks.emit).toHaveBeenCalledWith("roundOptionsReady");
   });
 
-  it("selecting an option sets points and starts the match", async () => {
+  it("selecting an option persists, cleans up, and starts the match", async () => {
     const onStart = vi.fn();
     await initRoundSelectModal(onStart);
     const first = document.querySelector(".round-select-buttons button");
     first.click();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 0));
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[0].value);
+    expect(wrap(BATTLE_POINTS_TO_WIN).get()).toBe(rounds[0].value);
     expect(onStart).toHaveBeenCalled();
     expect(mocks.cleanup).toHaveBeenCalled();
+    expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
+      pointsToWin: rounds[0].value,
+      source: "modal"
+    });
     expect(mocks.emit).toHaveBeenNthCalledWith(1, "roundOptionsReady");
     expect(mocks.emit).toHaveBeenNthCalledWith(2, "startClicked");
     const startOrder = onStart.mock.invocationCallOrder[0];
@@ -96,5 +103,24 @@ describe("initRoundSelectModal", () => {
     expect(onStart).toHaveBeenCalled();
     expect(document.querySelector(".round-select-buttons")).toBeNull();
     expect(mocks.emit).not.toHaveBeenCalled();
+    expect(mocks.initTooltips).not.toHaveBeenCalled();
+    expect(mocks.cleanup).not.toHaveBeenCalled();
+    expect(mocks.logEvent).not.toHaveBeenCalled();
+    expect(wrap(BATTLE_POINTS_TO_WIN).get()).toBeNull();
+  });
+
+  it("uses persisted selection when available and skips modal", async () => {
+    const onStart = vi.fn();
+    wrap(BATTLE_POINTS_TO_WIN).set(rounds[1].value);
+    await initRoundSelectModal(onStart);
+    expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
+      pointsToWin: rounds[1].value,
+      source: "storage"
+    });
+    expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[1].value);
+    expect(onStart).toHaveBeenCalled();
+    expect(document.querySelector(".round-select-buttons")).toBeNull();
+    expect(mocks.initTooltips).not.toHaveBeenCalled();
+    expect(mocks.cleanup).not.toHaveBeenCalled();
   });
 });

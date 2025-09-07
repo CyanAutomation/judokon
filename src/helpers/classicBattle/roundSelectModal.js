@@ -13,85 +13,82 @@ import { t } from "../i18n.js";
 import rounds from "../../data/battleRounds.js";
 
 /**
+ * Check if the URL requests an automatic start.
+ *
+ * @returns {boolean} True when `?autostart=1` is present.
+ */
+export function shouldAutostart() {
+  try {
+    if (typeof location !== "undefined") {
+      const params = new URLSearchParams(location.search);
+      return params.get("autostart") === "1";
+    }
+  } catch {}
+  return false;
+}
+
+function persistRoundSelection(value) {
+  try {
+    wrap(BATTLE_POINTS_TO_WIN).set(value);
+  } catch {}
+  try {
+    logEvent("battle.start", { pointsToWin: value, source: "modal" });
+  } catch {}
+}
+
+async function startRound(value, onStart, emitEvents) {
+  setPointsToWin(value);
+  try {
+    if (typeof onStart === "function") await onStart();
+    if (emitEvents) {
+      emitBattleEvent("startClicked");
+      await dispatchBattleEvent("startClicked");
+    }
+  } catch (err) {
+    console.error("Failed to start battle:", err);
+  }
+}
+
+async function handleRoundSelect({ value, modal, cleanupTooltips, onStart, emitEvents }) {
+  persistRoundSelection(value);
+  modal.close();
+  try {
+    cleanupTooltips();
+  } catch {}
+  try {
+    modal.destroy();
+  } catch {}
+  await startRound(value, onStart, emitEvents);
+}
+
+/**
  * Initialize round selection modal for Classic Battle.
  *
  * @pseudocode
- * 1. If the page URL includes `autostart=1`:
- *    a. Set `pointsToWin` to the default value.
- *    b. Invoke `onStart` and return early.
- * 2. If test mode is enabled:
- *    a. Set `pointsToWin` to the default value.
- *    b. Invoke `onStart` and return early.
- * 3. Create buttons for each option in `rounds` and assign tooltip ids.
- * 4. Assemble a modal via `createModal` and attach to the document.
- * 5. Attempt to initialize tooltips for the modal; log errors but continue.
- * 6. Open the modal.
- * 7. When a button is clicked:
- *    a. Call `setPointsToWin` with the round value and persist it.
- *    b. Close the modal.
- *    c. Invoke the provided start callback and await completion; log failures.
- *    d. If initialization succeeds, emit `startClicked`.
- *    e. Clean up tooltips and destroy the modal.
+ * 1. Autostart or test mode → start default round.
+ * 2. If a persisted round exists → start and skip modal.
+ * 3. Build modal with buttons for each round in `rounds`.
+ * 4. Initialize tooltips, open modal, emit readiness event.
  *
  * @param {Function} onStart - Callback to invoke after selecting rounds.
  * @returns {Promise<void>} Resolves when modal is initialized.
  */
 export async function initRoundSelectModal(onStart) {
   const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
-  // Allow automated test harnesses or debugging to bypass the modal by
-  // supplying `?autostart=1` in the page URL. This is a deliberate, low-risk
-  // convenience that mirrors existing `isTestModeEnabled()` behaviour.
-  try {
-    if (typeof location !== "undefined") {
-      const params = new URLSearchParams(location.search);
-      if (params.get("autostart") === "1") {
-        setPointsToWin(DEFAULT_POINTS_TO_WIN);
-        if (typeof onStart === "function") await onStart();
-        if (!IS_VITEST) {
-          try {
-            emitBattleEvent("startClicked");
-            await dispatchBattleEvent("startClicked");
-          } catch (err) {
-            console.error("Failed to start battle (autostart):", err);
-          }
-        }
-        return;
-      }
-    }
-  } catch {}
 
-  if (isTestModeEnabled()) {
-    setPointsToWin(DEFAULT_POINTS_TO_WIN);
-    if (typeof onStart === "function") await onStart();
-    if (!IS_VITEST) {
-      try {
-        emitBattleEvent("startClicked");
-        await dispatchBattleEvent("startClicked");
-      } catch (err) {
-        console.error("Failed to start battle (test mode):", err);
-      }
-    }
+  if (shouldAutostart() || isTestModeEnabled()) {
+    await startRound(DEFAULT_POINTS_TO_WIN, onStart, !IS_VITEST);
     return;
   }
 
-  // Persisted preference: if a prior selection exists, use it and skip modal
   try {
     const storage = wrap(BATTLE_POINTS_TO_WIN);
     const saved = storage.get();
     if (POINTS_TO_WIN_OPTIONS.includes(Number(saved))) {
-      setPointsToWin(Number(saved));
       try {
         logEvent("battle.start", { pointsToWin: Number(saved), source: "storage" });
       } catch {}
-      if (typeof onStart === "function") await onStart();
-      if (!IS_VITEST) {
-        try {
-          emitBattleEvent("startClicked");
-          await dispatchBattleEvent("startClicked");
-        } catch (err) {
-          console.error("Failed to start battle (persisted points):", err);
-        }
-      }
+      await startRound(Number(saved), onStart, !IS_VITEST);
       return;
     }
   } catch {}
@@ -111,34 +108,15 @@ export async function initRoundSelectModal(onStart) {
   rounds.forEach((r) => {
     const btn = createButton(r.label, { id: `round-select-${r.id}` });
     btn.dataset.tooltipId = `ui.round${r.label}`;
-    btn.addEventListener("click", async () => {
-      setPointsToWin(r.value);
-      try {
-        const storage = wrap(BATTLE_POINTS_TO_WIN);
-        storage.set(r.value);
-      } catch {}
-      try {
-        logEvent("battle.start", { pointsToWin: r.value, source: "modal" });
-      } catch {}
-      modal.close();
-      // Proactively clean up UI affordances before starting heavy work
-      try {
-        cleanupTooltips();
-      } catch {}
-      try {
-        modal.destroy();
-      } catch {}
-      try {
-        if (typeof onStart === "function") await onStart();
-        // Bridge the user action to both the UI event bus and the
-        // state machine. The UI may listen for the bus event, while
-        // the machine transition relies on a direct dispatch.
-        emitBattleEvent("startClicked");
-        await dispatchBattleEvent("startClicked");
-      } catch (err) {
-        console.error("Failed to start battle:", err);
-      }
-    });
+    btn.addEventListener("click", () =>
+      handleRoundSelect({
+        value: r.value,
+        modal,
+        cleanupTooltips: () => cleanupTooltips(),
+        onStart,
+        emitEvents: true
+      })
+    );
     btnWrap.appendChild(btn);
   });
 
