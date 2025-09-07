@@ -91,6 +91,7 @@ function init() {
               }
             } catch {
               startCooldown(store);
+            }
           } catch {}
         });
         created.push(btn);
@@ -136,13 +137,9 @@ function init() {
               } catch {}
               // Deterministic outcome for unit tests so score visibly changes
               try {
-                const res = computeRoundResult(store, "speed", 5, 3);
-                const ended = res && res.matchEnded;
-                if (ended) {
-                  showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
-                } else {
-                  startCooldown(store);
-                }
+                computeRoundResult(store, "speed", 5, 3);
+                // Begin inter-round cooldown and expose Next controls
+                startCooldown(store);
               } catch {}
             },
             pauseOnHidden: false
@@ -155,17 +152,9 @@ function init() {
             } catch {}
             // Use a simple deterministic comparison so the scoreboard reflects a change
             try {
-              const res = await computeRoundResult(store, String(stat || "speed"), 5, 3);
-              try {
-                const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
-                if (isMatchEnded() || (res && res.matchEnded)) {
-                  showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
-                } else {
-                  startCooldown(store);
-                }
-              } catch {
-                startCooldown(store);
-              }
+              await computeRoundResult(store, String(stat || "speed"), 5, 3);
+              // After outcome, begin cooldown for Next
+              startCooldown(store);
             } catch {}
             return Promise.resolve();
           });
