@@ -50,7 +50,7 @@ vi.mock("../../../src/components/Modal.js", () => ({ createModal: vi.fn() }));
 vi.mock("../../../src/components/Button.js", () => ({ createButton: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({ syncScoreDisplay: vi.fn() }));
 
-import { updateDebugPanel } from "../../../src/helpers/classicBattle/uiHelpers.js";
+import { updateDebugPanel } from "../../../src/helpers/classicBattle/debugPanel.js";
 import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 
 describe("updateDebugPanel", () => {

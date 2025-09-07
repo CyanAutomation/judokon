@@ -27,8 +27,14 @@ vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   updateRoundCounter: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
-  disableNextRoundButton: vi.fn(),
+  disableNextRoundButton: vi.fn()
+}));
+vi.mock("../../../src/helpers/classicBattle/snackbar.js", () => ({
   showSelectionPrompt: vi.fn(),
+  setOpponentDelay: vi.fn(),
+  getOpponentDelay: () => 0
+}));
+vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   updateDebugPanel: vi.fn()
 }));
 vi.mock("../../../src/helpers/showSnackbar.js", () => ({

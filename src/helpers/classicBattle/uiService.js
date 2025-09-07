@@ -4,6 +4,7 @@ import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { navigateToHome } from "../navUtils.js";
 import * as uiHelpers from "./uiHelpers.js";
+import { updateDebugPanel } from "./debugPanel.js";
 import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
@@ -151,7 +152,7 @@ function bindUIServiceEventHandlers() {
 
   onBattleEvent("debugPanelUpdate", () => {
     try {
-      uiHelpers.updateDebugPanel?.();
+      updateDebugPanel();
     } catch (err) {
       console.error("Error updating debug panel:", err);
     }

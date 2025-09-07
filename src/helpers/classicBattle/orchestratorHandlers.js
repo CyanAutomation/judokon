@@ -343,7 +343,7 @@ export async function waitingForMatchStartEnter(machine) {
     scoreboard.clearMessage?.();
   } catch {}
   try {
-    const helpers = await import("./uiHelpers.js");
+    const helpers = await import("./debugPanel.js");
     helpers.updateDebugPanel?.();
   } catch {}
 }

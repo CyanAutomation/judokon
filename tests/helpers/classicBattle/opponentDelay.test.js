@@ -41,11 +41,17 @@ beforeEach(() => {
     return {
       ...actual,
       renderOpponentCard,
-      updateDebugPanel,
-      showSelectionPrompt: vi.fn(),
       disableNextRoundButton: vi.fn()
     };
   });
+  vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+    updateDebugPanel
+  }));
+  vi.mock("../../../src/helpers/classicBattle/snackbar.js", () => ({
+    showSelectionPrompt: vi.fn(),
+    setOpponentDelay: vi.fn(),
+    getOpponentDelay: () => 0
+  }));
 
   vi.mock("../../../src/helpers/classicBattle/opponentController.js", () => ({
     getOpponentCardData: vi.fn().mockResolvedValue(null)
@@ -84,7 +90,7 @@ describe("classicBattle opponent delay", () => {
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
     const mod = await import("../../../src/helpers/classicBattle.js");
-    const { setOpponentDelay } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+    const { setOpponentDelay } = await import("../../../src/helpers/classicBattle/snackbar.js");
     setOpponentDelay(0);
     vi.spyOn(mod, "simulateOpponentStat").mockReturnValue("power");
     vi.spyOn(mod, "evaluateRound").mockReturnValue({ matchEnded: false });

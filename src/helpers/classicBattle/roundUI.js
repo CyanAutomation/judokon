@@ -1,4 +1,5 @@
-import { showSelectionPrompt, updateDebugPanel } from "./uiHelpers.js";
+import { updateDebugPanel } from "./debugPanel.js";
+import { showSelectionPrompt } from "./snackbar.js";
 // Use index re-exports so tests can vi.mock("../battle/index.js") and spy
 import { resetStatButtons } from "../battle/index.js";
 import { syncScoreDisplay } from "./uiService.js";

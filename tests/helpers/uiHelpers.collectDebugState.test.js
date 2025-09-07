@@ -15,7 +15,7 @@ vi.mock("../../src/helpers/testModeUtils.js", () => ({
   setTestMode: vi.fn()
 }));
 
-import { collectDebugState } from "../../src/helpers/classicBattle/uiHelpers.js";
+import { collectDebugState } from "../../src/helpers/classicBattle/debugPanel.js";
 
 describe("collectDebugState", () => {
   let store;

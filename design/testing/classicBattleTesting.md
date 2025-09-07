@@ -20,7 +20,7 @@ This note explains how Classic Battle bindings and promises are set up for tests
 
 ## When to call `initClassicBattleTest({ afterMock: true })`
 
-- Immediately after using `vi.doMock(...)` inside a test body that affects any Classic Battle module or UI dependency (e.g., `uiHelpers`, `timerService`, `orchestrator.dispatchBattleEvent`).
+- Immediately after using `vi.doMock(...)` inside a test body that affects any Classic Battle module or UI dependency (e.g., `uiHelpers`, `debugPanel`, `snackbar`, `timerService`, `orchestrator.dispatchBattleEvent`).
 - Top-level `vi.mock(...)` usually doesn’t need a rebind.
 
 ## Preferred Synchronization Signals

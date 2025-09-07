@@ -1,6 +1,7 @@
 import { isEnabled } from "../featureFlags.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { guard } from "./guard.js";
+import { safeCall } from "./safeCall.js";
 
 /**
  * Reset the global statButtons ready promise and expose its resolver.
@@ -21,6 +22,15 @@ export function resetStatButtonsReadyPromise(win = window) {
     win.__promiseEvents.push({ type: "statButtonsReady-reset", ts: Date.now() });
   });
   return { resolve };
+}
+
+export function resolveStatButtonsReady(win = window) {
+  if (typeof win.__resolveStatButtonsReady === "function") {
+    safeCall(() => win.__resolveStatButtonsReady());
+  } else {
+    const { resolve } = resetStatButtonsReadyPromise(win);
+    resolve();
+  }
 }
 
 /**
