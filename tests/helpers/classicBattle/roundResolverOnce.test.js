@@ -87,11 +87,11 @@ describe.sequential("classicBattle round resolver once", () => {
   it("dispatches win path and updates scoreboard", async () => {
     const store = createBattleStore();
     _resetForTest(store);
-    const result = await computeRoundResult(store, "power", 5, 3);
     const { updateScore } = await import("../../../src/helpers/setupScoreboard.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
+    const result = await computeRoundResult(store, "power", 5, 3);
     expect(result.outcome).toBe("winPlayer");
     expect(updateScore).toHaveBeenCalledWith(1, 0);
     expect(dispatchBattleEvent).toHaveBeenCalledWith("outcome=winPlayer");
@@ -108,11 +108,11 @@ describe.sequential("classicBattle round resolver once", () => {
       opponentScore: 2,
       outcome: "draw"
     });
-    const result = await computeRoundResult(store, "power", 4, 4);
     const { updateScore } = await import("../../../src/helpers/setupScoreboard.js");
     const { dispatchBattleEvent } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
+    const result = await computeRoundResult(store, "power", 4, 4);
     expect(result.outcome).toBe("draw");
     expect(updateScore).toHaveBeenLastCalledWith(2, 2);
     expect(dispatchBattleEvent).toHaveBeenCalledWith("outcome=draw");
