@@ -74,6 +74,13 @@ export async function initFeatureFlags() {
  * @returns {boolean} True when the flag is enabled.
  */
 export function isEnabled(flag) {
+  try {
+    const w = typeof window !== "undefined" ? window : null;
+    const o = w && w.__FF_OVERRIDES;
+    if (o && Object.prototype.hasOwnProperty.call(o, flag)) {
+      return !!o[flag];
+    }
+  } catch {}
   return cachedFlags[flag]?.enabled ?? false;
 }
 

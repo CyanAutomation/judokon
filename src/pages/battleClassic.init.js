@@ -15,6 +15,9 @@ import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 import { handleReplay } from "../helpers/classicBattle/roundManager.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
+import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
+import { isEnabled } from "../helpers/featureFlags.js";
+import { showEndModal } from "../helpers/classicBattle/endModal.js";
 
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
@@ -31,9 +34,21 @@ function init() {
   try {
     createBattleEngine();
     const store = createBattleStore();
+    try { window.battleStore = store; } catch {}
+    // Bind transient UI handlers (opponent choosing message, reveal, outcome)
     // Bind transient UI handlers (opponent choosing message, reveal, outcome)
     try {
       bindUIHelperEventHandlersDynamic();
+    } catch {}
+    // Initialize debug panel when enabled
+    try { initDebugPanel(); } catch {}
+    // Setup battle state badge when enabled
+    try {
+      const badge = document.getElementById("battle-state-badge");
+      if (badge && (isEnabled("battleStateBadge") || isEnabled("battleStateProgress"))) {
+        badge.hidden = false;
+        badge.textContent = "Lobby";
+      }
     } catch {}
     // Wire Next button click to cooldown/advance handler
     try {
@@ -113,6 +128,11 @@ function init() {
       try {
         const pts = getPointsToWin();
         document.body.dataset.target = String(pts);
+      } catch {}
+      // Reflect state change in badge
+      try {
+        const badge = document.getElementById("battle-state-badge");
+        if (badge && !badge.hidden) badge.textContent = "Round";
       } catch {}
       // Ensure stat buttons are available before starting timers
       try {

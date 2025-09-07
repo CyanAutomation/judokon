@@ -81,9 +81,13 @@
       <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
       <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
       <p id="score-display" aria-live="polite" aria-atomic="true">You: 0 Opponent: 0</p>
+      <span id="battle-state-badge" hidden></span>
     </header>
 
-    <main role="main">
+    <!-- Debug panel placeholder (replaced when enabled) -->
+    <div id="debug-panel" class="hidden"></div>
+
+    <main role="main" id="battle-area">
       <section class="battle-layout" aria-label="Cards">
         <div id="player-card" aria-label="Your card"></div>
         <div id="opponent-card" aria-label="Opponent card"></div>

@@ -321,3 +321,18 @@ Phase 10 — Actions & Outcome (End-of-match modal)
   - Playwright (targeted): end-modal spec added (passes locally); other Phase e2e remain green.
 - Notes:
   - Kept imports static; end modal uses existing Modal/Button components and roundManager.handleReplay/quitModal.quitMatch.
+
+
+Phase 11 — Actions & Outcome (Debug panel + State badge)
+- Added tests first:
+  - Unit: tests/classicBattle/debug-gating.test.js — enables flags via overrides and asserts debug panel renders and battle state badge is visible.
+  - Playwright: playwright/battle-classic/badge-debug.spec.js — flags enabled via addInitScript; asserts badge visible and debug panel open.
+- Implemented wiring:
+  - src/helpers/featureFlags.js — added `window.__FF_OVERRIDES` escape hatch for tests/e2e.
+  - src/pages/battleClassic.html — added `#battle-state-badge` placeholder and `#debug-panel` placeholder; wrapped main in `#battle-area` for panel placement.
+  - src/pages/battleClassic.init.js — calls `initDebugPanel()` and shows/updates a simple state badge when the corresponding flags are enabled.
+- Focused runs: PASS
+  - Unit: `npm run -s test -- tests/classicBattle/debug-gating.test.js` → passed
+  - Playwright: `playwright/battle-classic/badge-debug.spec.js` added (validated locally with server).
+- Notes:
+  - All additions keep imports static; overrides follow the prior test override pattern used for timers.
