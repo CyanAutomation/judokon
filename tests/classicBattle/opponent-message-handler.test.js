@@ -4,8 +4,7 @@ import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js
 
 describe("UI handlers: opponent message", () => {
   test("shows snackbar 'Opponent is choosing…' after statSelected", async () => {
-    document.body.innerHTML =
-      '<div id="snackbar-container"></div><div id="round-message"></div>';
+    document.body.innerHTML = '<div id="snackbar-container"></div><div id="round-message"></div>';
     setOpponentDelay(10);
     bindUIHelperEventHandlersDynamic();
     emitBattleEvent("statSelected", { opts: {} });
@@ -15,4 +14,3 @@ describe("UI handlers: opponent message", () => {
     expect(snack.textContent || "").toMatch(/Opponent is choosing/i);
   });
 });
-
