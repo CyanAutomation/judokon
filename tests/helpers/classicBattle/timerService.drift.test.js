@@ -49,7 +49,8 @@ describe("timerService drift handling", () => {
     }));
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
       enableNextRoundButton: vi.fn(),
-      disableNextRoundButton: vi.fn()
+      disableNextRoundButton: vi.fn(),
+      syncScoreDisplay: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()

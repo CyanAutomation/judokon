@@ -25,7 +25,8 @@ describe("timerService next round handling", () => {
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
       enableNextRoundButton: vi.fn(),
       disableNextRoundButton: vi.fn(),
-      skipRoundCooldownIfEnabled: vi.fn(() => false)
+      skipRoundCooldownIfEnabled: vi.fn(() => false),
+      syncScoreDisplay: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
