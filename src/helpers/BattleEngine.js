@@ -112,7 +112,7 @@ export class BattleEngine {
    */
   constructor(config = {}) {
     const emitter = this.#initFromConfig(config);
-    this.#bindEmitter(emitter || new SimpleEmitter());
+    this.#bindEmitter(emitter);
   }
 
   #initFromConfig(config) {
@@ -139,7 +139,7 @@ export class BattleEngine {
     this.lastError = "";
     this.lastModification = null;
     this._initialConfig = { pointsToWin, maxRounds, stats, debugHooks, seed: this.seed };
-    return emitter;
+    return emitter || new SimpleEmitter();
   }
 
   #bindEmitter(emitter) {
