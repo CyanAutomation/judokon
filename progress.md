@@ -200,8 +200,8 @@ Phase 1 — Outcome
 - Unit: PASS — `npx vitest run tests/classicBattle/bootstrap.test.js`
 - Playwright: PASS — `npx playwright test -c playwright/local.config.js battle-classic/bootstrap.spec.js -g "Classic Battle bootstrap"`
 
-
 Phase 3 — Actions & Outcome
+
 - Added minimal failing tests focused on selection countdown and auto-select hook:
   - Unit: tests/classicBattle/timer.test.js — selects rounds, expects `#next-round-timer` to show countdown and clear on expiration; asserts `body[data-auto-selected]` behavior (using `dataset.autoSelected`).
   - E2E (server): playwright/battle-classic/timer.spec.js — selects rounds and asserts countdown text appears.
@@ -214,8 +214,8 @@ Phase 3 — Actions & Outcome
   - Playwright (server): `npx playwright test playwright/battle-classic/timer.spec.js -g "Classic Battle timer"`
 - Note: This phase focuses on timer visibility and auto-select behavior; full stat button enable/disable and opponent reveal will be covered in subsequent phases.
 
-
 Phase 4 — Actions & Outcome
+
 - Added failing tests first:
   - Unit: tests/classicBattle/resolution.test.js — after selecting rounds and short countdown, asserts score updates to You: 1 Opponent: 0 (deterministic outcome for test).
 - Implemented minimal resolution wiring:
