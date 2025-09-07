@@ -37,10 +37,6 @@
       "enabled": false,
       "tooltipId": "settings.layoutDebugPanel"
     },
-    "navCacheResetButton": {
-      "enabled": false,
-      "tooltipId": "settings.navCacheResetButton"
-    },
     "battleStateBadge": {
       "enabled": false,
       "tooltipId": "settings.battleStateBadge"

@@ -15,8 +15,7 @@ const baseSettings = {
     enableCardInspector: { enabled: false },
     viewportSimulation: { enabled: false },
     tooltipOverlayDebug: { enabled: false },
-    layoutDebugPanel: { enabled: false, tooltipId: "settings.layoutDebugPanel" },
-    navCacheResetButton: { enabled: false }
+    layoutDebugPanel: { enabled: false, tooltipId: "settings.layoutDebugPanel" }
   }
 };
 
@@ -37,10 +36,7 @@ const tooltipMap = {
   "settings.tooltipOverlayDebug.description": "Shows bounding boxes for tooltip targets",
   "settings.layoutDebugPanel.label": "Layout Debug Panel",
   "settings.layoutDebugPanel.description":
-    "Displays CSS grid and flex outlines for debugging layout issues",
-  "settings.navCacheResetButton.label": "Navigation Cache Reset",
-  "settings.navCacheResetButton.description":
-    "Adds a button to clear cached navigation data for troubleshooting"
+    "Displays CSS grid and flex outlines for debugging layout issues"
 };
 
 let currentFlags = baseSettings.featureFlags;
@@ -171,36 +167,6 @@ describe("renderSettingsControls", () => {
     );
   });
 
-  it("adds navigation cache reset button when flag enabled", async () => {
-    const settingsWithButton = {
-      ...baseSettings,
-      featureFlags: {
-        ...baseSettings.featureFlags,
-        navCacheResetButton: { ...baseSettings.featureFlags.navCacheResetButton, enabled: true }
-      }
-    };
-    const populateNavbar = vi.fn();
-    const showSnackbar = vi.fn();
-    const resetNavigationCache = vi.fn();
-    vi.doMock("../../src/helpers/navigationBar.js", () => ({ populateNavbar }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar,
-      updateSnackbar: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/navigationCache.js", () => ({ reset: resetNavigationCache }));
-    currentFlags = settingsWithButton.featureFlags;
-    const { renderSettingsControls } = await import("../../src/helpers/settingsPage.js");
-    renderSettingsControls(settingsWithButton, [], tooltipMap);
-    await Promise.resolve();
-    await Promise.resolve();
-    const btn = document.getElementById("nav-cache-reset-button");
-    expect(btn).toBeTruthy();
-    btn.dispatchEvent(new Event("click"));
-    expect(resetNavigationCache).toHaveBeenCalled();
-    expect(populateNavbar).toHaveBeenCalled();
-    expect(showSnackbar).toHaveBeenCalledWith("Navigation cache cleared");
-  });
-
   it("restores defaults when confirmed", async () => {
     const resetSettings = vi.fn();
     const initFeatureFlags = vi.fn().mockImplementation(async () => {
@@ -257,10 +223,10 @@ describe("renderSettingsControls", () => {
       ...baseSettings,
       featureFlags: { ...baseSettings.featureFlags }
     };
-    delete withoutFlag.featureFlags.navCacheResetButton;
+    delete withoutFlag.featureFlags.layoutDebugPanel;
     currentFlags = withoutFlag.featureFlags;
     renderSettingsControls(withoutFlag, [], tooltipMap);
-    expect(document.getElementById("feature-nav-cache-reset-button")).toBeTruthy();
+    expect(document.getElementById("feature-layout-debug-panel")).toBeTruthy();
   });
 });
 
