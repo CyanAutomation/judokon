@@ -140,58 +140,51 @@ export function evaluateRound(store, stat, playerVal, opponentVal) {
 }
 
 /**
- * Compute the round result and emit outcome events.
+ * Normalize inputs and evaluate the round.
  *
  * @pseudocode
- * 1. Call `evaluateRound` to obtain the round outcome.
- * 2. Dispatch an outcome event based on the result.
- * 3. Dispatch `matchPointReached` or `continue` depending on `matchEnded`.
- * 4. Emit `roundResolved` with round data and clear `store.playerChoice`.
+ * 1. Coerce `playerVal` and `opponentVal` to finite numbers.
+ * 2. Call `evaluateRound` with normalized values.
+ * 3. Return the evaluation result.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
- * @param {number} playerVal - Player's stat value.
- * @param {number} opponentVal - Opponent's stat value.
- * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ * @param {number} playerVal - Player stat value.
+ * @param {number} opponentVal - Opponent stat value.
+ * @returns {ReturnType<typeof evaluateRound>}
  */
-/**
- * Compute the round result, dispatch outcome and continuation events, and
- * emit a `roundResolved` event with the enriched result.
- *
- * @pseudocode
- * 1. Normalize numeric inputs to finite numbers.
- * 2. Call `evaluateRound` to obtain the round outcome.
- * 3. Dispatch an outcome event (win/draw) and `matchPointReached` when match ends,
- *    otherwise dispatch `continue`.
- * 4. Update scoreboard values and emit `roundResolved` with the result.
- * 5. Clear `store.playerChoice` and return the result.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {number} playerVal - Player's stat value.
- * @param {number} opponentVal - Opponent's stat value.
- * @returns {Promise<ReturnType<typeof evaluateRound>>}
- */
-export async function computeRoundResult(store, stat, playerVal, opponentVal) {
+export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   try {
     debugLog("DEBUG: computeRoundResult start", { stat, playerVal, opponentVal });
   } catch {}
-  // Coerce values to finite numbers to avoid NaN blocking outcome computation.
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
   const result = evaluateRound(store, stat, pVal, oVal);
   try {
-    debugLog("DEBUG: evaluateRound result", result);
+    debugLog("DEBUG: evaluateOutcome result", result);
   } catch {}
+  return result;
+}
+
+/**
+ * Dispatch battle events reflecting the round outcome.
+ *
+ * @pseudocode
+ * 1. Map `result.outcome` to an outcome event string.
+ * 2. Dispatch the outcome event.
+ * 3. Dispatch `matchPointReached` when the match ends; otherwise `continue`.
+ * 4. Return the original result.
+ *
+ * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ */
+export async function dispatchOutcomeEvents(result) {
   const outcomeEvent =
     result.outcome === "winPlayer" || result.outcome === "matchWinPlayer"
       ? "outcome=winPlayer"
       : result.outcome === "winOpponent" || result.outcome === "matchWinOpponent"
         ? "outcome=winOpponent"
         : "outcome=draw";
-  // Fire-and-forget dispatch to avoid re-entrancy deadlocks when called from
-  // within a state's onEnter handler. Schedule via microtask and macrotask so
-  // transitions run after onEnter completes.
   try {
     debugLog("DEBUG: Dispatching outcomeEvent:", outcomeEvent);
     await dispatchBattleEvent(outcomeEvent);
@@ -201,26 +194,52 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
       await dispatchBattleEvent("continue");
     }
   } catch (error) {
-    debugLog("DEBUG: Error dispatching outcome events:", error);
+    try {
+      debugLog("DEBUG: Error dispatching outcome events:", error);
+    } catch {}
   }
+  return result;
+}
+
+/**
+ * Reset stat buttons and update scoreboard scores.
+ *
+ * @pseudocode
+ * 1. Reset stat buttons to default state.
+ * 2. Dynamically import `setupScoreboard` and call `updateScore`.
+ * 3. Return the original result.
+ *
+ * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ */
+export async function updateScoreboard(result) {
   resetStatButtons();
-  // Proactively update the scoreboard with the resolved scores so tests and
-  // runtime reflect the new totals immediately, even if downstream handlers
-  // are mocked or not yet bound.
   try {
     const sb = await import("../setupScoreboard.js");
     if (typeof sb.updateScore === "function") {
       sb.updateScore(result.playerScore, result.opponentScore);
     }
   } catch {}
-  emitBattleEvent("roundResolved", {
-    store,
-    stat,
-    playerVal,
-    opponentVal,
-    result
-  });
-  // Emit PRD taxonomy event with normalized fields
+  return result;
+}
+
+/**
+ * Emit round resolution events and clear player choice.
+ *
+ * @pseudocode
+ * 1. Emit `roundResolved` with round details.
+ * 2. Emit PRD `round.evaluated` with normalized fields.
+ * 3. Clear `store.playerChoice` and return the result.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player stat value.
+ * @param {number} opponentVal - Opponent stat value.
+ * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result.
+ * @returns {ReturnType<typeof evaluateRound>}
+ */
+export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
+  emitBattleEvent("roundResolved", { store, stat, playerVal, opponentVal, result });
   try {
     emitBattleEvent("round.evaluated", {
       statKey: stat,
@@ -235,6 +254,28 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   } catch {}
   store.playerChoice = null;
   return result;
+}
+
+/**
+ * Compute and finalize the round result.
+ *
+ * @pseudocode
+ * 1. Call `evaluateOutcome`.
+ * 2. Await `dispatchOutcomeEvents`.
+ * 3. Await `updateScoreboard`.
+ * 4. Emit resolution events and return the result.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player stat value.
+ * @param {number} opponentVal - Opponent stat value.
+ * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ */
+export async function computeRoundResult(store, stat, playerVal, opponentVal) {
+  const evaluated = evaluateOutcome(store, stat, playerVal, opponentVal);
+  const dispatched = await dispatchOutcomeEvents(evaluated);
+  const scored = await updateScoreboard(dispatched);
+  return emitRoundResolved(store, stat, playerVal, opponentVal, scored);
 }
 
 /**

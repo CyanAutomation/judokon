@@ -10,5 +10,10 @@ battle store that caches commonly used DOM elements.
 3. **`roundResolved`** – displays the outcome, updates the score, schedules the
    next-round countdown and clears any stat highlight.
 
+Round resolution uses a chain of helpers for clarity and testability:
+`evaluateOutcome` evaluates numbers, `dispatchOutcomeEvents` sends state
+transitions, `updateScoreboard` syncs scores and `emitRoundResolved` broadcasts
+the final result.
+
 Caching the player card, opponent card and stat buttons on the store avoids
 repeated DOM queries inside timers and event handlers.
