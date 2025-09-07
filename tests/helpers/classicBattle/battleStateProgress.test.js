@@ -73,16 +73,62 @@ describe("battleStateProgress updates on object-shaped battleStateChange", () =>
 });
 
 describe("battleStateProgress disabled", () => {
-  it("resolves without rendering", async () => {
+  it("marks state ready after change", async () => {
+    const mark = vi.fn();
+    vi.resetModules();
     vi.doMock("../../../src/helpers/featureFlags.js", () => ({
       isEnabled: () => false
+    }));
+    vi.doMock("../../../src/helpers/battleInit.js", () => ({
+      markBattlePartReady: mark
     }));
     document.body.innerHTML = '<ul id="battle-state-progress"></ul>';
     const mod = await import("../../../src/helpers/battleStateProgress.js");
     await mod.initBattleStateProgress();
     const list = document.getElementById("battle-state-progress");
     expect(list.children.length).toBe(0);
+    emitBattleEvent("battleStateChange", "waitingForMatchStart");
+    expect(mark).toHaveBeenCalledWith("state");
     await mod.battleStateProgressReadyPromise;
+  });
+});
+
+describe("battleStateProgress initialization", () => {
+  it("prepopulates from initial body state", async () => {
+    const mark = vi.fn();
+    vi.resetModules();
+    vi.doMock("../../../src/helpers/featureFlags.js", () => ({
+      isEnabled: () => true
+    }));
+    vi.doMock("../../../src/helpers/battleInit.js", () => ({
+      markBattlePartReady: mark
+    }));
+    document.body.innerHTML = `
+      <ul id="battle-state-progress"></ul>
+      <div id="battle-state-badge"></div>
+    `;
+    document.body.dataset.battleState = "cooldown";
+    const mod = await import("../../../src/helpers/battleStateProgress.js");
+    await mod.initBattleStateProgress();
+    const active = document.querySelector("#battle-state-progress li.active");
+    expect(active?.dataset.state).toBe("cooldown");
+    expect(mark).toHaveBeenCalledWith("state");
+  });
+
+  it("remaps interrupts to core states", async () => {
+    vi.resetModules();
+    vi.doMock("../../../src/helpers/featureFlags.js", () => ({
+      isEnabled: () => true
+    }));
+    document.body.innerHTML = `
+      <ul id="battle-state-progress"></ul>
+      <div id="battle-state-badge"></div>
+    `;
+    const mod = await import("../../../src/helpers/battleStateProgress.js");
+    await mod.initBattleStateProgress();
+    emitBattleEvent("battleStateChange", { from: "x", to: "interruptRound" });
+    const active = document.querySelector("#battle-state-progress li.active");
+    expect(active?.dataset.state).toBe("cooldown");
   });
 });
 

@@ -21,7 +21,7 @@ Classic battle pages rely on specific element IDs so helper scripts can attach l
 | `next-button`           | Advances to the next round when ready; also uses `data-role="next-round"`. Pressing it always skips the cooldown regardless of the `skipRoundCooldown` flag. |
 | `stat-help`             | Opens stat selection help.                                                                                                                                   |
 | `quit-match-button`     | Triggers the quit match flow.                                                                                                                                |
-| `battle-state-progress` | Optional list tracking match state transitions.                                                                                                              |
+| `battle-state-progress` | Optional list tracking match state transitions; pre-populates from the current state and remaps interrupts to core states.                                   |
 
 ### Data attributes and test hooks
 

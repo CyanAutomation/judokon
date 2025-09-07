@@ -68,25 +68,101 @@ if (!isEnabled("battleStateProgress")) {
 }
 
 /**
- * @summary TODO: Add summary
+ * Render the core battle states into `#battle-state-progress` when necessary.
+ *
+ * @param {{ id: number, name: string }[]} coreStates
+ * @returns {HTMLUListElement | undefined} The list element if it exists.
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Query `#battle-state-progress`; return if missing.
+ * 2. Show the list and handle empty `coreStates` with a fallback item.
+ * 3. Compare existing items to `coreStates`; render new `<li>` elements when mismatched.
+ * 4. Return the list element for further processing.
  */
+export function renderStateList(coreStates) {
+  const list = document.getElementById("battle-state-progress");
+  if (!list) return undefined;
+  list.style.display = "";
+  if (!coreStates.length) {
+    list.innerHTML = "<li>No states found</li>";
+    return list;
+  }
+  const items = Array.from(list.querySelectorAll("li"));
+  const needsRender =
+    items.length !== coreStates.length ||
+    items.some(
+      (li, i) =>
+        li.dataset.state !== coreStates[i].name ||
+        Number(li.textContent.trim()) !== coreStates[i].id
+    );
+  if (needsRender) {
+    list.textContent = "";
+    const frag = document.createDocumentFragment();
+    for (const s of coreStates) {
+      const li = document.createElement("li");
+      li.dataset.state = s.name;
+      li.textContent = String(s.id);
+      frag.appendChild(li);
+    }
+    list.appendChild(frag);
+  }
+  return list;
+}
+
 /**
- * @summary TODO: Add summary
+ * Toggle the active state in the progress list, remapping interrupts.
+ *
+ * @param {HTMLUListElement} list
+ * @param {string} state
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Remap non-core states to their nearest core counterparts.
+ * 2. Loop over list items and toggle `active` based on the mapped state.
+ * 3. Update the battle state badge with the original state.
  */
+export function updateActiveState(list, state) {
+  let target = state;
+  if (!list.querySelector(`li[data-state="${target}"]`)) {
+    if (target === "interruptRound") target = "cooldown";
+    else if (target === "interruptMatch") target = "matchOver";
+    else if (target === "roundModification") target = "roundDecision";
+  }
+  for (const li of list.querySelectorAll("li")) {
+    li.classList.toggle("active", li.dataset.state === target);
+  }
+  updateBattleStateBadge(state);
+}
+
 /**
- * @summary TODO: Add summary
+ * Listen for `battleStateChange` events and update the list.
+ *
+ * @param {HTMLUListElement} list
+ * @param {boolean} [initialApplied=false]
+ * @returns {() => void} Cleanup function removing the listener.
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Track readiness based on whether an initial state was applied.
+ * 2. On each `battleStateChange`, extract the state and call `updateActiveState`.
+ * 3. After the first update, mark the battle state part ready.
+ * 4. Return a closure that unregisters the event listener.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+export function initProgressListener(list, initialApplied = false) {
+  let ready = initialApplied;
+  const handler = (e) => {
+    const detail = e && e.detail;
+    const state =
+      typeof detail === "string"
+        ? detail
+        : detail && typeof detail.to === "string"
+          ? detail.to
+          : document.body?.dataset?.battleState || "";
+    if (!state) return;
+    updateActiveState(list, state);
+    if (!ready) {
+      ready = true;
+      markBattlePartReady("state");
+    }
+  };
+  onBattleEvent("battleStateChange", handler);
+  return () => offBattleEvent("battleStateChange", handler);
+}
 /**
  * Initialize and render the battle state progress list and wire up runtime updates.
  *
@@ -117,86 +193,23 @@ export async function initBattleStateProgress() {
     return;
   }
 
-  const list = document.getElementById("battle-state-progress");
-  if (!list) {
-    resolveBattleStateProgressReady?.();
-    return;
-  }
-  list.style.display = "";
-
   const states = Array.isArray(CLASSIC_BATTLE_STATES) ? CLASSIC_BATTLE_STATES : [];
-
   const core = Array.isArray(states)
     ? states.filter((s) => s.id < 90).sort((a, b) => a.id - b.id)
     : [];
 
-  if (core.length === 0) {
-    list.innerHTML = "<li>No states found</li>";
-    resolveBattleStateProgressReady?.();
-    return;
-  }
-
-  const items = Array.from(list.querySelectorAll("li"));
-  const needsRender =
-    items.length !== core.length ||
-    items.some(
-      (li, i) => li.dataset.state !== core[i].name || Number(li.textContent.trim()) !== core[i].id
-    );
-
-  if (needsRender) {
-    list.textContent = "";
-    const frag = document.createDocumentFragment();
-    core.forEach((s) => {
-      const li = document.createElement("li");
-      li.dataset.state = s.name;
-      li.textContent = String(s.id);
-      frag.appendChild(li);
-    });
-    list.appendChild(frag);
-  }
-
+  const list = renderStateList(core);
   resolveBattleStateProgressReady?.();
+  if (!list || core.length === 0) return;
 
-  const updateActive = (state) => {
-    let target = state;
-    // Map non-core states to nearest visible core state so the list
-    // continues to reflect progress during interrupts or admin paths.
-    if (!list.querySelector(`li[data-state="${target}"]`)) {
-      if (target === "interruptRound") target = "cooldown";
-      else if (target === "interruptMatch") target = "matchOver";
-      else if (target === "roundModification") target = "roundDecision";
-    }
-    list.querySelectorAll("li").forEach((li) => {
-      li.classList.toggle("active", li.dataset.state === target);
-    });
-    updateBattleStateBadge(state);
-  };
-
-  let ready = false;
-  const handler = (e) => {
-    // Accept both legacy string detail and new object shape { from, to }
-    const detail = e && e.detail;
-    const state =
-      typeof detail === "string"
-        ? detail
-        : detail && typeof detail.to === "string"
-          ? detail.to
-          : document.body?.dataset?.battleState || "";
-    if (!state) return;
-    updateActive(state);
-    if (!ready) {
-      ready = true;
-      markBattlePartReady("state");
-    }
-  };
-  onBattleEvent("battleStateChange", handler);
+  let initialApplied = false;
   const initial = document.body?.dataset.battleState;
   if (initial) {
-    updateActive(initial);
-    ready = true;
+    updateActiveState(list, initial);
     markBattlePartReady("state");
+    initialApplied = true;
   }
-  return () => offBattleEvent("battleStateChange", handler);
+  return initProgressListener(list, initialApplied);
 }
 
 /**
