@@ -29,6 +29,8 @@ Note on Next button behavior:
 - The `Next` button advances only during the inter-round cooldown. Clicking it cancels any remaining cooldown and immediately starts the next round, regardless of the `skipRoundCooldown` setting.
 - It remains disabled while choosing a stat to avoid skipping the cooldown logic accidentally. The cooldown enables `Next` (or auto-advances in test mode); do not expect `Next` to be ready during stat selection.
 
+Stat selections now dispatch events and rely on the state machine for round resolution. `handleStatSelection` performs direct resolution only when the orchestrator is absent (e.g., certain tests or CLI utilities).
+
 See [design/battleMarkup.md](design/battleMarkup.md) for the canonical DOM ids used by classic battle scripts.
 
 ## 🔌 Engine API
