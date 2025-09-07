@@ -164,20 +164,28 @@ export function initProgressListener(list, initialApplied = false) {
   return () => offBattleEvent("battleStateChange", handler);
 }
 /**
- * Initialize and render the battle state progress list and wire up runtime updates.
+ * Initialize and render the battle state progress list and wire up runtime
+ * updates.
  *
- * @summary Render core battle states into `#battle-state-progress` and register a
- * `battleStateChange` listener to update the active item. Returns a cleanup function.
- * When disabled, `'state'` is still marked ready on the next `battleStateChange` event.
+ * Responsibilities:
+ * - Render a trimmed list of core states (id < 90) into the
+ *   `#battle-state-progress` element when necessary.
+ * - Provide visual active-state updates when `battleStateChange` events fire.
+ * - Update the small status badge via `updateBattleStateBadge`.
+ * - Resolve `battleStateProgressReadyPromise` once rendering or skip is done.
+ * - Call `markBattlePartReady('state')` after the first active state is applied.
+ *
  * @pseudocode
- * 1. If the feature flag is disabled, hide the element if the DOM exists, ensure `'state'` is marked ready, resolve the ready promise, and return.
+ * 1. If the feature flag is disabled, hide the element if the DOM exists, ensure `'state'` is
+ *    marked ready, resolve the ready promise, and return.
  * 2. If `document` is unavailable resolve the ready promise and return.
  * 3. Locate `#battle-state-progress` and either render or skip depending on `CLASSIC_BATTLE_STATES`.
  * 4. Resolve the ready promise and register an event listener to toggle `active` on list items.
  * 5. If an initial state exists on the body, apply it and mark the state part ready.
  * 6. Return a cleanup function that removes the event listener.
  *
- * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function or undefined.
+ * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function
+ *   or undefined.
  */
 export async function initBattleStateProgress() {
   if (!isEnabled("battleStateProgress")) {
@@ -211,31 +219,3 @@ export async function initBattleStateProgress() {
   }
   return initProgressListener(list, initialApplied);
 }
-
-/**
- * Initialize and render the battle state progress list and wire up
- * runtime updates.
- *
- * Responsibilities:
- * - Render a trimmed list of core states (id < 90) into the
- *   `#battle-state-progress` element when necessary.
- * - Provide visual active-state updates when `battleStateChange` events fire.
- * - Update the small status badge via `updateBattleStateBadge`.
- * - Resolve `battleStateProgressReadyPromise` once rendering or skip is done.
- * - Call `markBattlePartReady('state')` after the first active state is applied.
- *
- * Contract:
- * - Inputs: none (reads DOM and imported `CLASSIC_BATTLE_STATES`).
- * - Output: returns a cleanup function which removes the internal event listener,
- *   or `undefined` if the function returned early (no DOM available).
- * - Errors: DOM access issues are not thrown; function will simply return early
- *   and resolve the ready promise if appropriate.
- *
- * Edge cases handled:
- * - Missing `#battle-state-progress` element (resolves promise and exits).
- * - Empty or non-array `CLASSIC_BATTLE_STATES` (renders a fallback message).
- * - Idempotent rendering: skips DOM updates when existing list matches expected.
- *
- * @returns {Promise<(() => void) | undefined>} Resolves with a cleanup function
- *   that removes the `battleStateChange` listener, or `undefined` if not applicable.
- */
