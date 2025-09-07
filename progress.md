@@ -275,3 +275,17 @@ Phase 7 — Actions & Outcome (Opponent reveal message)
 - Notes:
   - No dynamic imports added on hot paths; Next wiring uses existing helpers.
   - All console outputs in the path remain guarded with `[test]` and are suppressed in Vitest.
+
+
+Phase 8 — Actions & Outcome (Quit flow)
+- Added failing tests first:
+  - Unit: tests/classicBattle/quit-flow.test.js — clicking `#quit-button` opens the confirmation modal and exposes `#confirm-quit-button`.
+  - Playwright: playwright/battle-classic/quit-flow.spec.js — verifies the same in-browser.
+- Implemented wiring:
+  - src/pages/battleClassic.init.js — binds `#quit-button` to `quitModal.quitMatch(store, button)`.
+  - Reused existing `classicBattle/quitModal.js` for modal creation and flow.
+- Focused runs: PASS
+  - Unit: `npm run -s test -- tests/classicBattle/quit-flow.test.js` → passed
+  - Playwright: `npx playwright test playwright/battle-classic/quit-flow.spec.js -c playwright.config.js --reporter=line` → passed (~1.9s)
+- Notes:
+  - Kept imports static and limited to page init; no hot-path dynamic imports introduced.
