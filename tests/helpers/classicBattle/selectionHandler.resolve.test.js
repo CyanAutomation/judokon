@@ -84,4 +84,21 @@ describe("handleStatSelection resolution", () => {
     expect(result).toBeUndefined();
     expect(store.playerChoice).toBeNull();
   });
+
+  it("skips direct resolution when machine clears playerChoice but state unknown", async () => {
+    dispatchMock.mockImplementation(async (event) => {
+      if (event === "statSelected") {
+        store.playerChoice = null;
+      }
+    });
+    getBattleState.mockReturnValue(null);
+    const result = await handleStatSelection(store, "power", {
+      playerVal: 1,
+      opponentVal: 2
+    });
+    expect(resolveMock).not.toHaveBeenCalled();
+    expect(dispatchMock).not.toHaveBeenCalledWith("roundResolved");
+    expect(result).toBeUndefined();
+    expect(store.playerChoice).toBeNull();
+  });
 });
