@@ -3,23 +3,10 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { hex } from "wcag-contrast";
-import postcss from "postcss";
+import { parseCssVars } from "./parseCssVars.js";
 
 function readCss(file) {
   return readFileSync(resolve(file), "utf8");
-}
-
-function parseVars(cssContent) {
-  const vars = {};
-  const root = postcss.parse(cssContent);
-  root.walkRules(":root", (rule) => {
-    rule.walkDecls((decl) => {
-      if (decl.prop.startsWith("--")) {
-        vars[decl.prop] = decl.value.trim();
-      }
-    });
-  });
-  return vars;
 }
 
 function resolveColor(value, vars) {
@@ -61,7 +48,7 @@ function getComponentColors(vars) {
 }
 
 describe("css color contrast", () => {
-  const vars = parseVars(readCss("src/styles/base.css"));
+  const vars = parseCssVars("src/styles/base.css");
   const componentColors = getComponentColors(vars);
 
   const basePairs = [
