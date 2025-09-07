@@ -13,6 +13,7 @@ import {
 } from "../helpers/classicBattle/statButtons.js";
 import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
+import { handleReplay } from "../helpers/classicBattle/roundManager.js";
 
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
@@ -37,6 +38,19 @@ function init() {
     try {
       const nextBtn = document.getElementById("next-button");
       nextBtn?.addEventListener("click", (evt) => onNextButtonClick(evt));
+    } catch {}
+    // Wire Replay button to restart match
+    try {
+      const replayBtn = document.getElementById("replay-button");
+      replayBtn?.addEventListener("click", async () => {
+        try {
+          await handleReplay(store);
+        } catch {}
+        try {
+          updateScore(0, 0);
+          updateRoundCounter(1);
+        } catch {}
+      });
     } catch {}
     // Wire Quit button to open confirmation modal
     try {
