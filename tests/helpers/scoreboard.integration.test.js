@@ -5,7 +5,18 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
 }));
 
 let roundDrift;
-let scoreboard;
+const scoreboardStub = {
+  showMessage: () => {},
+  updateScore: () => {},
+  clearMessage: () => {},
+  showTemporaryMessage: () => {},
+  clearTimer: () => {},
+  updateTimer: () => {},
+  showAutoSelect: () => {},
+  updateRoundCounter: () => {},
+  clearRoundCounter: () => {}
+};
+let scoreboard = scoreboardStub;
 
 vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
   setupScoreboard: vi.fn(),
@@ -25,7 +36,7 @@ describe("Scoreboard integration without setupScoreboard", () => {
     vi.useFakeTimers();
     vi.resetModules();
     roundDrift = undefined;
-    scoreboard = undefined;
+    scoreboard = scoreboardStub;
     document.body.innerHTML = "";
 
     // Header structure as in battleJudoka.html
