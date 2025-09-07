@@ -97,7 +97,7 @@ Currently, only ~45% of new players complete their first battle across all modes
 - During this delay, the Scoreboard displays "Opponent is choosing..." in `#round-message` to reinforce turn flow.
 - The cooldown timer between rounds begins only after round results are shown in the Scoreboard and is displayed using one persistent snackbar that updates its text each second.
 - The debug panel is available when the `enableTestMode` feature flag is enabled, appears above the player and opponent cards, and includes a copy button for exporting its text.
-- A battle state progress list can be enabled via the `battleStateProgress` feature flag to show the sequence of match states beneath the battle area; disabled by default.
+- A battle state progress list can be enabled via the `battleStateProgress` feature flag to show the sequence of match states beneath the battle area. The list pre-populates from `data-battle-state` and remaps interrupt states to their nearest core state. Disabled by default.
 
 ### Round Data Fallback
 
