@@ -80,7 +80,7 @@ describe("Scoreboard integration without setupScoreboard", () => {
       scoreEl: document.getElementById("score-display")
     });
 
-    vi.mock("../../src/helpers/setupScoreboard.js", () => ({
+    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
       setupScoreboard: vi.fn(),
       showMessage: scoreboard.showMessage.bind(scoreboard),
       updateScore: scoreboard.updateScore.bind(scoreboard),
