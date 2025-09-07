@@ -232,9 +232,10 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * 2. Apply selection to `store` and coerce stat values with `applySelectionToStore`.
  * 3. Call `cleanupTimers` to halt timers and clear pending timeouts.
  * 4. Emit `statSelected` with selection details and any testing options.
- * 5. Dispatch `statSelected` then query `getBattleState`.
- * 6. If `getBattleState` returns a state or the machine cleared
- *    `store.playerChoice`, return early.
+ * 5. Store `playerChoice`, dispatch `statSelected`, and detect whether the
+ *    machine cleared it.
+ * 6. If the machine cleared `playerChoice` or `getBattleState` returns a
+ *    state, return early.
  * 7. Otherwise call `resolveRoundDirect` and dispatch `roundResolved`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
@@ -250,10 +251,11 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
+  const initialChoice = store.playerChoice;
   let resolvedByMachine = false;
   try {
     await dispatchBattleEvent("statSelected");
-    resolvedByMachine = store.playerChoice === null;
+    resolvedByMachine = initialChoice !== null && store.playerChoice === null;
   } catch {}
   try {
     if (!resolvedByMachine && getBattleState()) {
