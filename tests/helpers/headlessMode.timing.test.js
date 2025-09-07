@@ -1,9 +1,24 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+const MULTIPLIER = 10000;
+const BASE_DELAY = 300;
+const DELAY_RANGE = 401;
+
+/**
+ * Computes deterministic reveal delay when test mode is seeded.
+ *
+ * @pseudocode
+ * 1. Multiply Math.sin(1) by MULTIPLIER to create a value with a stable fractional part.
+ * 2. Extract the fractional component from the result.
+ * 3. Scale the fraction by DELAY_RANGE and floor it to get an offset.
+ * 4. Add BASE_DELAY to obtain the expected delay in milliseconds.
+ *
+ * @returns {number} expected delay in milliseconds
+ */
 const computeExpectedDelay = () => {
-  const x = Math.sin(1) * 10000;
+  const x = Math.sin(1) * MULTIPLIER;
   const frac = x - Math.floor(x);
-  return 300 + Math.floor(frac * 401);
+  return BASE_DELAY + Math.floor(frac * DELAY_RANGE);
 };
 
 describe("headless mode timing", () => {
