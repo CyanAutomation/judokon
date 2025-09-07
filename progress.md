@@ -80,6 +80,7 @@ Phase 0 — Outcome
 Phase 1 — Scoreboard + Engine Bootstrap
 
 Phase 0 — Clarification
+
 - The Playwright smoke test did not exist previously; it has now been created at `playwright/battle-classic/smoke.spec.js` to fulfill TDD for the scaffold.
 - Adjusted playwright/local.config.js to resolve tests (testDir=".").
 - Fixed scaffold visibility for header regions: added CSS `header p { min-height: 1.2em }` and initial score text so Playwright's `toBeVisible` passes.
