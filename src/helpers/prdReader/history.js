@@ -44,7 +44,7 @@ export function replaceHistory(baseNames, index) {
 export function bindHistory(selectDoc) {
   const handler = (e) => {
     const i = e.state && typeof e.state.index === "number" ? e.state.index : null;
-    if (i !== null) selectDoc(i, false);
+    if (i !== null) selectDoc(i);
   };
   window.addEventListener("popstate", handler);
   return () => window.removeEventListener("popstate", handler);
