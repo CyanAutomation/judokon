@@ -1459,12 +1459,8 @@ function handleStatClick(statDiv, event) {
  * null timers and call clearBottomLine()
  */
 function clearAdvanceTimers() {
-  try {
-    if (cooldownTimer) clearTimeout(cooldownTimer);
-  } catch {}
-  try {
-    if (cooldownInterval) clearInterval(cooldownInterval);
-  } catch {}
+  if (cooldownTimer) clearTimeout(cooldownTimer);
+  if (cooldownInterval) clearInterval(cooldownInterval);
   cooldownTimer = null;
   cooldownInterval = null;
   clearBottomLine();
@@ -1481,7 +1477,9 @@ function advanceRoundOver() {
   try {
     const machine = getMachine();
     if (machine) machine.dispatch("continue");
-  } catch {}
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /**
@@ -1497,7 +1495,9 @@ function advanceCooldown() {
   try {
     const machine = getMachine();
     if (machine) machine.dispatch("ready");
-  } catch {}
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 const stateAdvanceHandlers = {
