@@ -7,7 +7,10 @@ import { createBattleStore, startCooldown } from "../helpers/classicBattle/round
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import { onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
-import { setStatButtonsEnabled, resolveStatButtonsReady } from "../helpers/classicBattle/statButtons.js";
+import {
+  setStatButtonsEnabled,
+  resolveStatButtonsReady
+} from "../helpers/classicBattle/statButtons.js";
 
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
@@ -43,7 +46,11 @@ function init() {
         btn.addEventListener("click", async () => {
           if (btn.disabled) return;
           try {
-            await handleStatSelection(store, String(stat), { playerVal: 5, opponentVal: 3, delayMs: 0 });
+            await handleStatSelection(store, String(stat), {
+              playerVal: 5,
+              opponentVal: 3,
+              delayMs: 0
+            });
             startCooldown(store);
           } catch {}
         });
@@ -52,7 +59,13 @@ function init() {
       }
       try {
         const buttons = container.querySelectorAll("button[data-stat]");
-        setStatButtonsEnabled(buttons, container, true, () => resolveStatButtonsReady(), () => {});
+        setStatButtonsEnabled(
+          buttons,
+          container,
+          true,
+          () => resolveStatButtonsReady(),
+          () => {}
+        );
       } catch {}
     }
 
@@ -62,7 +75,9 @@ function init() {
         document.body.dataset.target = String(pts);
       } catch {}
       // Ensure stat buttons are available before starting timers
-      try { renderStatButtons(); } catch {}
+      try {
+        renderStatButtons();
+      } catch {}
       // Start the selection timer; in Vitest use a lightweight fallback to ensure deterministic ticks
       try {
         const IS_VITEST =

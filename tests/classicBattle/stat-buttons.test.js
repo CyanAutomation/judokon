@@ -61,4 +61,3 @@ describe("Classic Battle stat buttons", () => {
     }
   });
 });
-
