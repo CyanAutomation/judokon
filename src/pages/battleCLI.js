@@ -147,6 +147,9 @@ export const __test = {
   getPausedTimes() {
     return { selection: pausedSelectionRemaining, cooldown: pausedCooldownRemaining };
   },
+  setVerboseEnabled(enable) {
+    verboseEnabled = !!enable;
+  },
   // Expose internal finish handler for tests
   getSelectionFinishFn() {
     return selectionFinishFn;
@@ -1644,65 +1647,96 @@ function handleMatchOver() {
   main.append(section);
 }
 
-function handleBattleState(ev) {
-  const { from, to } = ev.detail || {};
-  updateBattleStateBadge(to);
-  // Clean up any transient Next button when state changes
+/**
+ * Update UI elements based on the current battle state.
+ *
+ * @pseudocode
+ * 1. Update state badge and remove transient Next button.
+ * 2. Clear verbose log when match starts.
+ * 3. Start or stop selection countdown depending on state.
+ * 4. Show bottom line hint when waiting to continue.
+ *
+ * @param {string} state - New battle state.
+ * @returns {void}
+ */
+function updateUiForState(state) {
+  updateBattleStateBadge(state);
   try {
-    const existing = document.getElementById("next-round-button");
-    if (existing) existing.remove();
+    document.getElementById("next-round-button")?.remove();
   } catch {}
-  if (to === "matchStart") {
+  if (state === "matchStart") {
     clearVerboseLog();
   }
-  if (to === "waitingForPlayerAction") {
+  if (state === "waitingForPlayerAction") {
     startSelectionCountdown(30);
     byId("cli-stats")?.focus();
   } else {
     stopSelectionCountdown();
   }
-  if (to === "roundOver" && !autoContinue) {
+  if (state === "roundOver" && !autoContinue) {
     showBottomLine("Press Enter to continue");
-    // Add an explicit, focusable Next button for pointer users
-    try {
-      const main = byId("cli-main");
-      if (main && !document.getElementById("next-round-button")) {
-        const section = document.createElement("section");
-        section.className = "cli-block";
-        const btn = document.createElement("button");
-        btn.id = "next-round-button";
-        btn.className = "primary-button";
-        btn.textContent = "Next";
-        btn.setAttribute("aria-label", "Continue to next round");
-        btn.addEventListener("click", () => {
-          try {
-            // clear timers and UI hints similar to cooldown skip
-            try {
-              if (cooldownTimer) clearTimeout(cooldownTimer);
-            } catch {}
-            try {
-              if (cooldownInterval) clearInterval(cooldownInterval);
-            } catch {}
-            cooldownTimer = null;
-            cooldownInterval = null;
-            clearBottomLine();
-          } catch {}
-          try {
-            safeDispatch("continue");
-          } catch {}
-        });
-        section.appendChild(btn);
-        main.appendChild(section);
-        // Focus the button so keyboard users land on it after round resolution
-        try {
-          btn.focus();
-        } catch {}
-      }
-    } catch (err) {
-      console.error("Failed to render next-round-button", err);
-    }
   }
-  if (!verboseEnabled) return;
+}
+
+/**
+ * Ensure a Next button exists for advancing rounds.
+ *
+ * @pseudocode
+ * 1. Abort if button already exists or `#cli-main` missing.
+ * 2. Create button and section wrapper.
+ * 3. On click, clear cooldown timers, bottom line, and dispatch `continue`.
+ * 4. Focus the button for accessibility.
+ *
+ * @returns {void}
+ */
+function ensureNextRoundButton() {
+  try {
+    const main = byId("cli-main");
+    if (!main || document.getElementById("next-round-button")) return;
+    const section = document.createElement("section");
+    section.className = "cli-block";
+    const btn = document.createElement("button");
+    btn.id = "next-round-button";
+    btn.className = "primary-button";
+    btn.textContent = "Next";
+    btn.setAttribute("aria-label", "Continue to next round");
+    btn.addEventListener("click", () => {
+      try {
+        if (cooldownTimer) clearTimeout(cooldownTimer);
+      } catch {}
+      try {
+        if (cooldownInterval) clearInterval(cooldownInterval);
+      } catch {}
+      cooldownTimer = null;
+      cooldownInterval = null;
+      clearBottomLine();
+      try {
+        safeDispatch("continue");
+      } catch {}
+    });
+    section.appendChild(btn);
+    main.appendChild(section);
+    try {
+      btn.focus();
+    } catch {}
+  } catch (err) {
+    console.error("Failed to render next-round-button", err);
+  }
+}
+
+/**
+ * Log a state change line to the verbose log.
+ *
+ * @pseudocode
+ * 1. Locate verbose log `<pre>`; abort if missing.
+ * 2. Compose timestamped `from -> to` line and emit via `console.info`.
+ * 3. Append to log, keeping at most 50 lines and scroll to bottom.
+ *
+ * @param {string|null} from - Previous state.
+ * @param {string} to - New state.
+ * @returns {void}
+ */
+function logStateChange(from, to) {
   try {
     const pre = byId("cli-verbose-log");
     if (!pre) return;
@@ -1718,6 +1752,13 @@ function handleBattleState(ev) {
     pre.textContent = existing.join("\n");
     pre.scrollTop = pre.scrollHeight;
   } catch {}
+}
+
+function handleBattleState(ev) {
+  const { from, to } = ev.detail || {};
+  updateUiForState(to);
+  if (to === "roundOver" && !autoContinue) ensureNextRoundButton();
+  if (verboseEnabled) logStateChange(from, to);
 }
 
 const battleEventHandlers = {

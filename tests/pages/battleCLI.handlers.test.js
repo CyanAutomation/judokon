@@ -296,6 +296,29 @@ describe("battleCLI event handlers", () => {
     expect(secondBtn).not.toBe(firstBtn);
   });
 
+  it("creates next-round button when round over", async () => {
+    const { handlers, setAutoContinue } = await setupHandlers();
+    setAutoContinue(false);
+    handlers.handleBattleState({ detail: { from: "x", to: "roundOver" } });
+    expect(document.getElementById("next-round-button")).toBeTruthy();
+  });
+
+  it("logs state changes based on verbose flag", async () => {
+    const { handlers } = await setupHandlers();
+    const pre = document.getElementById("cli-verbose-log");
+    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+    handlers.setVerboseEnabled(false);
+    handlers.handleBattleState({ detail: { from: "a", to: "b" } });
+    expect(pre.textContent).toBe("");
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockClear();
+    handlers.setVerboseEnabled(true);
+    handlers.handleBattleState({ detail: { from: "b", to: "c" } });
+    expect(pre.textContent).toMatch(/b -> c/);
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
   it("advances round over on background click", async () => {
     const { handlers, mockDispatch } = await setupHandlers();
     document.body.dataset.battleState = "roundOver";
