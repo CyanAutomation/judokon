@@ -1,29 +1,15 @@
 /**
- * Minimal i18n helper with an English default map.
+ * Minimal i18n helper that interpolates values into string templates.
  *
- * @param {string} key
- * @param {Record<string, any>} [params]
- * @returns {string}
- */
-/**
- * @summary TODO: Add summary
+ * @summary Return a localized string for `key` with `{placeholders}` replaced.
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Look up `template = EN[key]` and fall back to `key` when missing.
+ * 2. Replace all `{name}` tokens in `template` using entries from `params`.
+ * 3. Return the resulting string.
+ *
+ * @param {string} key - Translation key (e.g., "ui.waiting").
+ * @param {Record<string, any>} [params] - Values for `{placeholders}` in the template.
+ * @returns {string} Interpolated string.
  */
 export function t(key, params = {}) {
   const template = EN[key] || key;

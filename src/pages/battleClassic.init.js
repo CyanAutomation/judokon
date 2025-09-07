@@ -14,7 +14,7 @@ import {
 import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 import { handleReplay } from "../helpers/classicBattle/roundManager.js";
-import { showEndModal } from "../helpers/classicBattle/endModal.js";
+// Duplicate import removed
 import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
 import { isEnabled } from "../helpers/featureFlags.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
@@ -34,14 +34,18 @@ function init() {
   try {
     createBattleEngine();
     const store = createBattleStore();
-    try { window.battleStore = store; } catch {}
+    try {
+      window.battleStore = store;
+    } catch {}
     // Bind transient UI handlers (opponent choosing message, reveal, outcome)
     // Bind transient UI handlers (opponent choosing message, reveal, outcome)
     try {
       bindUIHelperEventHandlersDynamic();
     } catch {}
     // Initialize debug panel when enabled
-    try { initDebugPanel(); } catch {}
+    try {
+      initDebugPanel();
+    } catch {}
     // Setup battle state badge when enabled
     try {
       const badge = document.getElementById("battle-state-badge");

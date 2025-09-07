@@ -300,26 +300,6 @@ export async function startTimer(onExpiredSelect, store = null) {
  * @param {number} [timeoutMs=5000] - Delay before auto-selecting.
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Handle stalled stat selection by prompting the player and scheduling auto-select.
  *
  * Presents a stalled message, optionally uses the scoreboard when auto-select

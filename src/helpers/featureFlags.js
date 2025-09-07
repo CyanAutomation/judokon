@@ -6,27 +6,13 @@ import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 /**
  * Event emitter broadcasting feature flag changes.
  *
+ * @summary Lightweight emitter to observe feature flag updates.
+ * @pseudocode
+ * 1. Create a shared `EventTarget` instance.
+ * 2. Export as `featureFlagsEmitter` so listeners can subscribe to `change`.
+ * 3. Dispatch `change` after `initFeatureFlags()` and on each `setFlag()` call.
+ *
  * @type {EventTarget}
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 export const featureFlagsEmitter = new EventTarget();
 
@@ -68,7 +54,8 @@ export async function initFeatureFlags() {
  * Check whether a feature flag is enabled.
  *
  * @pseudocode
- * 1. Return `cachedFlags[flag]?.enabled ?? false`.
+ * 1. If `window.__FF_OVERRIDES` defines `flag`, return its boolean value.
+ * 2. Otherwise return `cachedFlags[flag]?.enabled ?? false`.
  *
  * @param {string} flag - Feature flag name.
  * @returns {boolean} True when the flag is enabled.
