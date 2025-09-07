@@ -12,10 +12,10 @@ import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
-import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-import { getStateSnapshot } from "./battleDebug.js";
 import { getNextRoundControls } from "./roundManager.js";
 import { guard } from "./guard.js";
+import { safeGetSnapshot, isNextReady, resetReadiness } from "./timerUtils.js";
+import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
 
 export { getNextRoundControls } from "./roundManager.js";
 
@@ -44,19 +44,14 @@ let cooldownWarningTimeoutId = null;
 export async function advanceWhenReady(btn, resolveReady) {
   btn.disabled = true;
   delete btn.dataset.nextReady;
-  // Failsafe: if the machine isn't in cooldown, advance via a safe path.
-  try {
-    const { state } = getStateSnapshot();
-    if (state && state !== "cooldown") {
-      // If we're still in roundDecision or waitingForPlayerAction due to a race,
-      // interrupt the round to reach cooldown, then mark ready.
-      if (state === "roundDecision" || state === "waitingForPlayerAction") {
-        try {
-          await dispatchBattleEvent("interrupt", { reason: "advanceNextFromNonCooldown" });
-        } catch {}
-      }
+  const { state } = safeGetSnapshot();
+  if (state && state !== "cooldown") {
+    if (state === "roundDecision" || state === "waitingForPlayerAction") {
+      try {
+        await dispatchBattleEvent("interrupt", { reason: "advanceNextFromNonCooldown" });
+      } catch {}
     }
-  } catch {}
+  }
   await dispatchBattleEvent("ready");
   if (typeof resolveReady === "function") {
     resolveReady();
@@ -92,14 +87,12 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   }
   // No active timer controls: if we're in cooldown (or state is unknown in
   // this module instance during tests), advance immediately.
-  try {
-    const { state } = getStateSnapshot();
-    if (state === "cooldown" || !state) {
-      setSkipHandler(null);
-      await dispatchBattleEvent("ready");
-      if (typeof resolveReady === "function") resolveReady();
-    }
-  } catch {}
+  const { state } = safeGetSnapshot();
+  if (state === "cooldown" || !state) {
+    setSkipHandler(null);
+    await dispatchBattleEvent("ready");
+    if (typeof resolveReady === "function") resolveReady();
+  }
 }
 
 /**
@@ -126,13 +119,8 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
   if (skipRoundCooldownIfEnabled()) return;
   // Only finish the countdown when in cooldown (or when state is unknown in
   // tests). Emitting this in other states could confuse the state machine.
-  try {
-    const { state } = getStateSnapshot();
-    if (!state || state === "cooldown") {
-      emitBattleEvent("countdownFinished");
-    }
-  } catch {
-    // If snapshot fails, default to emitting to preserve UX.
+  const { state: snapState } = safeGetSnapshot();
+  if (!snapState || snapState === "cooldown") {
     emitBattleEvent("countdownFinished");
   }
   const { timer = null, resolveReady = null } = controls || {};
@@ -140,33 +128,27 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
   if (!btn) return;
   // Defensive: if a stale readiness flag is present outside of `cooldown`,
   // clear it so we don't advance via an early-ready path.
-  try {
-    const { state } = getStateSnapshot();
-    if (btn.dataset.nextReady === "true" && state && state !== "cooldown") {
-      delete btn.dataset.nextReady;
-      btn.disabled = false;
-      guard(() => console.warn("[next] cleared early readiness outside cooldown"));
-    }
-  } catch {}
+  const { state } = safeGetSnapshot();
+  if (isNextReady(btn) && state && state !== "cooldown") {
+    resetReadiness(btn);
+    guard(() => console.warn("[next] cleared early readiness outside cooldown"));
+  }
   // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
   // feature flag. The flag only affects automatic progression, never user
   // intent signaled via the Next button.
-  if (btn.dataset.nextReady === "true") {
-    await advanceWhenReady(btn, resolveReady);
-  } else {
-    await cancelTimerOrAdvance(btn, timer, resolveReady);
-  }
+  const strategies = {
+    advance: () => advanceWhenReady(btn, resolveReady),
+    cancel: () => cancelTimerOrAdvance(btn, timer, resolveReady)
+  };
+  const action = isNextReady(btn) ? "advance" : "cancel";
+  await strategies[action]();
   if (cooldownWarningTimeoutId !== null) {
     realScheduler.clearTimeout(cooldownWarningTimeoutId);
   }
   cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
-    try {
-      const { state } = getStateSnapshot();
-      if (state === "cooldown") {
-        guard(() => console.warn("[next] stuck in cooldown"));
-      }
-    } catch (err) {
-      guard(() => console.error("Error in next-button cooldown check:", err));
+    const { state } = safeGetSnapshot();
+    if (state === "cooldown") {
+      guard(() => console.warn("[next] stuck in cooldown"));
     }
     cooldownWarningTimeoutId = null;
   }, 1000);
@@ -174,32 +156,6 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
 
 // `getNextRoundControls` is re-exported from `roundManager.js` and returns
 // the active controls for the Next-round cooldown (timer, resolveReady, ready).
-
-/**
- * Helper to force auto-select and dispatch outcome on timer error or drift.
- *
- * @pseudocode
- * 1. Show error message via scoreboard.
- * 2. Call autoSelectStat with the provided callback.
- * 3. Ensure the outcome event is dispatched so the state machine progresses.
- *
- * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
- * - Callback to handle stat auto-selection.
- * @returns {Promise<void>}
- */
-async function forceAutoSelectAndDispatch(onExpiredSelect) {
-  scoreboard.showMessage(t("ui.timerErrorAutoSelect"));
-  try {
-    if (isEnabled("autoSelect")) {
-      await autoSelectStat(onExpiredSelect);
-    } else {
-      await dispatchBattleEvent("interrupt");
-    }
-  } catch {
-    // If auto-select fails, dispatch interrupt to avoid stalling
-    await dispatchBattleEvent("interrupt");
-  }
-}
 
 /**
  * Start the round timer and auto-select a random stat on expiration.
@@ -357,52 +313,3 @@ export async function startTimer(onExpiredSelect, store = null) {
  * @param {{setTimeout: Function}} [scheduler=realScheduler] - Scheduler used to schedule timers (testable).
  * @returns {void}
  */
-export function handleStatSelectionTimeout(
-  store,
-  onSelect,
-  timeoutMs = 5000,
-  scheduler = realScheduler
-) {
-  store.autoSelectId = scheduler.setTimeout(() => {
-    // If a selection was made in the meantime, do nothing.
-    if (store && store.selectionMade) return;
-    const stalledMsg = t("ui.statSelectionStalled");
-    // Nudge the stalled prompt slightly after the stall timeout so
-    // callers advancing exactly `timeoutMs` won't observe a new snackbar
-    // replacing the initial "Select your move" prompt immediately.
-    scheduler.setTimeout(() => {
-      try {
-        showSnackbar(stalledMsg);
-      } catch {}
-      if (!isEnabled("autoSelect")) {
-        try {
-          scoreboard.showMessage(stalledMsg);
-        } catch {}
-      }
-      try {
-        emitBattleEvent("statSelectionStalled");
-      } catch {}
-    }, 100);
-    if (isEnabled("autoSelect")) {
-      // Surface the upcoming countdown shortly after the stall prompt so
-      // observers can first see the stalled message, then the countdown.
-      try {
-        const secs = computeNextRoundCooldown();
-        scheduler.setTimeout(() => {
-          try {
-            showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
-          } catch {}
-        }, 800);
-      } catch {}
-      try {
-        scheduler.setTimeout(() => {
-          try {
-            autoSelectStat(onSelect);
-          } catch {}
-        }, 250);
-      } catch {
-        autoSelectStat(onSelect);
-      }
-    }
-  }, timeoutMs);
-}

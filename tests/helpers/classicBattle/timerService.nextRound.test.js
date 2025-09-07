@@ -49,6 +49,37 @@ describe("timerService next round handling", () => {
     vi.restoreAllMocks();
   });
 
+  it("chooses advance strategy when ready", async () => {
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const stop = vi.fn();
+    document.body.innerHTML = '<button id="next-button"></button>';
+    const btn = document.getElementById("next-button");
+    btn.dataset.nextReady = "true";
+    await timerMod.onNextButtonClick(new MouseEvent("click"), {
+      btn,
+      timer: { stop },
+      resolveReady: null
+    });
+    const dispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    expect(stop).not.toHaveBeenCalled();
+    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
+  });
+
+  it("chooses cancel strategy when not ready", async () => {
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const stop = vi.fn();
+    document.body.innerHTML = '<button id="next-button"></button>';
+    const btn = document.getElementById("next-button");
+    await timerMod.onNextButtonClick(new MouseEvent("click"), {
+      btn,
+      timer: { stop },
+      resolveReady: null
+    });
+    const dispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    expect(stop).toHaveBeenCalled();
+    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
+  });
+
   it("clicking Next during cooldown skips current phase", async () => {
     const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
     const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");

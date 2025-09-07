@@ -19,7 +19,9 @@ vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms))
 }));
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
-  startTimer: vi.fn(),
+  startTimer: vi.fn()
+}));
+vi.mock("../../../src/helpers/classicBattle/autoSelectHandlers.js", () => ({
   handleStatSelectionTimeout: vi.fn()
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({

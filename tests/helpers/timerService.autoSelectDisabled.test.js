@@ -59,9 +59,12 @@ describe("timerService without auto-select", () => {
     }));
 
     const mod = await import("../../src/helpers/classicBattle/timerService.js");
+    const { handleStatSelectionTimeout } = await import(
+      "../../src/helpers/classicBattle/autoSelectHandlers.js"
+    );
     const store = { selectionMade: false, autoSelectId: null };
     await mod.startTimer(async () => {}, store);
-    mod.handleStatSelectionTimeout(store, () => {}, 0);
+    handleStatSelectionTimeout(store, () => {}, 0);
     await vi.runAllTimersAsync();
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);

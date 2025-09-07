@@ -120,7 +120,7 @@ export async function triggerStallPromptNow(store) {
   const { getOpponentJudoka } = await import("./cardSelection.js");
   const { getCardStatValue } = await import("./cardStatUtils.js");
   const { handleStatSelection } = await import("./selectionHandler.js");
-  const { handleStatSelectionTimeout } = await import("./timerService.js");
+  const { handleStatSelectionTimeout } = await import("./autoSelectHandlers.js");
 
   const onSelect = (stat, opts) => {
     const playerCard = document.getElementById("player-card");
