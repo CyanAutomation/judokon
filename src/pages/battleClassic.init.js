@@ -14,6 +14,7 @@ import {
 import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 import { handleReplay } from "../helpers/classicBattle/roundManager.js";
+import { showEndModal } from "../helpers/classicBattle/endModal.js";
 
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
