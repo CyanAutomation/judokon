@@ -290,3 +290,17 @@ Phase 8 — Actions & Outcome (Quit flow)
   - Playwright: `npx playwright test playwright/battle-classic/quit-flow.spec.js -c playwright.config.js --reporter=line` → passed (~1.9s)
 - Notes:
   - Kept imports static and limited to page init; no hot-path dynamic imports introduced.
+
+
+Phase 9 — Actions & Outcome (Replay)
+- Added failing tests first:
+  - Unit: tests/classicBattle/replay.test.js — after ending a 1‑point match, clicking `#replay-button` resets scoreboard to 0–0.
+  - Playwright: playwright/battle-classic/replay.spec.js — verifies in-browser with short timers and pointsToWin=1.
+- Implemented wiring:
+  - src/pages/battleClassic.html — added `#replay-button` to controls.
+  - src/pages/battleClassic.init.js — binds Replay to `handleReplay(store)` and resets scoreboard (`updateScore(0,0)` and `updateRoundCounter(1)`).
+- Focused runs: PASS
+  - Unit: `npm run -s test -- tests/classicBattle/replay.test.js` → passed
+  - Playwright: `npx playwright test playwright/battle-classic/replay.spec.js -c playwright.config.js --reporter=line` → passed (~2.8s)
+- Notes:
+  - Kept imports static; minimal UI reset to reflect fresh match state post‑replay.
