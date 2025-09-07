@@ -649,8 +649,9 @@ export function recordEntry() {
 export async function resolveSelectionIfPresent(store) {
   if (!store.playerChoice) return false;
   const stat = store.playerChoice;
-  const pCard = typeof document !== "undefined" ? document.getElementById("player-card") : null;
-  const oCard = typeof document !== "undefined" ? document.getElementById("opponent-card") : null;
+  const hasDocument = typeof document !== "undefined";
+  const pCard = hasDocument ? document.getElementById("player-card") : null;
+  const oCard = hasDocument ? document.getElementById("opponent-card") : null;
   let playerVal = 0;
   if (store.currentPlayerJudoka?.stats) {
     const raw = Number(store.currentPlayerJudoka.stats[stat]);

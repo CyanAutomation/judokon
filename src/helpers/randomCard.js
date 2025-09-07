@@ -93,7 +93,7 @@ export async function generateRandomCard(
   options = {}
 ) {
   const { enableInspector, skipRender = false } = options;
-  if (!containerEl && !skipRender) return;
+  if (!skipRender && !containerEl) return;
 
   let gokyoLookup = {};
   try {
