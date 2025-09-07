@@ -77,12 +77,20 @@ function init() {
               typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
                 ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
                 : 0;
-            await handleStatSelection(store, String(stat), {
+            const result = await handleStatSelection(store, String(stat), {
               playerVal: 5,
               opponentVal: 3,
               delayMs: delayOverride
             });
-            startCooldown(store);
+            try {
+              const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
+              if (isMatchEnded() || (result && result.matchEnded)) {
+                showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
+              } else {
+                startCooldown(store);
+              }
+            } catch {
+              startCooldown(store);
           } catch {}
         });
         created.push(btn);
