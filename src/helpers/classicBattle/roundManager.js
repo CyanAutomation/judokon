@@ -125,7 +125,7 @@ export async function handleReplay(store) {
     if (typeof battleEngine.getScores === "function") {
       try {
         battleEngine.getScores();
-      } catch (err) {
+      } catch {
         // Engine missing -> create one
         createBattleEngine();
       }
