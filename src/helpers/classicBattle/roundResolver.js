@@ -1,4 +1,4 @@
-import { evaluateRound as evaluateRoundApi } from "../helpers/api/battleUI.js";
+import { evaluateRound as evaluateRoundApi } from "/src/helpers/api/battleUI.js";
 import { seededRandom } from "../testModeUtils.js";
 import { isHeadlessModeEnabled } from "../headlessMode.js";
 import { dispatchBattleEvent } from "./orchestrator.js";

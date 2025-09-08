@@ -244,7 +244,17 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * @returns {Promise<ReturnType<typeof resolveRound>|void>} The resolved round result when handled locally.
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      console.log("[test] handleStatSelection called", { stat, playerVal, opponentVal, selectionMade: store.selectionMade });
+    }
+  } catch {}
   if (!validateSelectionState(store)) {
+    try {
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        console.log("[test] handleStatSelection: validateSelectionState returned false");
+      }
+    } catch {}
     return;
   }
 
@@ -261,6 +271,11 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   try {
     // If the orchestrator explicitly handled the event, do not resolve locally.
     if (handledByOrchestrator === true) {
+      try {
+        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+          console.log("[test] handleStatSelection: handledByOrchestrator true");
+        }
+      } catch {}
       return;
     }
     // If the machine cleared the player's choice, it took over resolution.
@@ -271,6 +286,11 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
     // Defer to the machine in non-decision states; resolve locally when already
     // in `roundDecision` and the machine hasn't handled it.
     if (current && current !== "roundDecision") {
+      try {
+        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+          console.log("[test] handleStatSelection: machine in non-decision state", current);
+        }
+      } catch {}
       return;
     }
   } catch {}
