@@ -251,13 +251,18 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
+  let handledByOrchestrator = undefined;
   try {
-    await dispatchBattleEvent("statSelected");
+    handledByOrchestrator = await dispatchBattleEvent("statSelected");
   } catch {}
 
   // Some test/machine setups may not return an explicit boolean from dispatch.
   // Prefer deferring to the machine when it is not yet in `roundDecision`.
   try {
+    // If the orchestrator explicitly handled the event, do not resolve locally.
+    if (handledByOrchestrator === true) {
+      return;
+    }
     // If the machine cleared the player's choice, it took over resolution.
     if (store.playerChoice == null) {
       return;

@@ -1,4 +1,3 @@
-import { createStateManager } from "./stateManager.js";
 import {
   waitingForMatchStartEnter,
   matchStartEnter,
@@ -426,6 +425,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     emitResolution(event);
   };
 
+  const { createStateManager } = await import("./stateManager.js");
   machine = await createStateManager(onEnter, context, onTransition);
   attachListeners(machine);
   // Prime timer state exposure for tests/diagnostics
