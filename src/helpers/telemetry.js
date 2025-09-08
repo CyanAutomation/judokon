@@ -21,7 +21,11 @@ export function logEvent(name, payload = {}) {
     window.dispatchEvent(evt);
   } catch {}
   try {
-    // Keep logs terse to avoid test noise
-    console.info(`[telemetry] ${name}`, payload || {});
+    // Keep logs terse to avoid test noise. When running under Vitest we skip
+    // console output so test reporters don't show repetitive telemetry lines.
+    const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST;
+    if (!isVitest) {
+      console.info(`[telemetry] ${name}`, payload || {});
+    }
   } catch {}
 }

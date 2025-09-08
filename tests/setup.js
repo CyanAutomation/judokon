@@ -25,7 +25,7 @@ vi.mock("../src/helpers/classicBattle/orchestrator.js", async (importOriginal) =
         return Promise.resolve(true);
       }
       return mod.dispatchBattleEvent(eventName);
-    }),
+    })
   };
 });
 
@@ -37,6 +37,9 @@ if (!vi.importMz) {
 const originalMatchMedia = global.matchMedia;
 let originalPushState;
 let originalReplaceState;
+// Keep original process std writes so we can restore them after each test
+let __originalStdoutWrite;
+let __originalStderrWrite;
 
 expect.extend({
   toHaveAttribute(element, attribute, expected) {
@@ -80,13 +83,26 @@ afterEach(() => {
   } catch {}
   // Restore console to originals after each test
   restoreConsole(["warn", "error", "debug", "log"]);
+  // Restore stdout/stderr writes
+  try {
+    if (__originalStdoutWrite) process.stdout.write = __originalStdoutWrite;
+    if (__originalStderrWrite) process.stderr.write = __originalStderrWrite;
+  } catch {}
 });
 
 // Prevent JSDOM navigation errors when tests assign to window.location.href.
 // Simulate URL changes by updating history without performing a real navigation.
 beforeEach(async () => {
   // Mute noisy console methods by default; tests can opt-in to logging
-// muteConsole(["warn", "error", "debug", "log"]);
+  // Mute noisy console methods by default; tests can opt-in to logging
+  muteConsole(["warn", "error", "debug", "log"]);
+  // Also mute direct stdout/stderr writes which some telemetry utilities use
+  try {
+    __originalStdoutWrite = process.stdout.write;
+    __originalStderrWrite = process.stderr.write;
+    process.stdout.write = () => {};
+    process.stderr.write = () => {};
+  } catch {}
   try {
     // Ensure snackbars are enabled for tests by default
     if (typeof window !== "undefined" && window.__disableSnackbars) {
