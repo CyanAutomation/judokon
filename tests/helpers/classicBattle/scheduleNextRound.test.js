@@ -183,7 +183,7 @@ describe("classicBattle startCooldown", () => {
     }
   });
 
-  it.skip("schedules a 1s minimum cooldown in test mode", async () => {
+  it("schedules a 1s minimum cooldown in test mode", async () => {
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -191,19 +191,34 @@ describe("classicBattle startCooldown", () => {
     mockBattleData();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(true);
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
+
+    // Set up orchestrator like other tests
+    const startRoundWrapper = vi.fn(async () => {
+      await battleMod.startRound(store);
+    });
+    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
+    const machine = orchestrator.getBattleStateMachine();
+
+    await battleMod.startRound(store);
+    await machine.dispatch("roundOver");
+    await orchestrator.dispatchBattleEvent("continue");
+    expect(machine.getState()).toBe("cooldown");
+
     const controls = battleMod.startCooldown(store);
-    emitBattleEvent("battleStateChange", { to: "cooldown" });
     expect(nextButton.dataset.nextReady).toBeUndefined();
+
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
     await controls.ready;
 
-    expect(nextButton.dataset.nextReady).toBe("true");
-    expect(nextButton.disabled).toBe(false);
+    const btn = document.querySelector('[data-role="next-round"]');
+    expect(btn?.dataset.nextReady).toBe("true");
+    expect(btn?.disabled).toBe(false);
 
     setTestMode(false);
   }, 10000);

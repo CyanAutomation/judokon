@@ -64,6 +64,7 @@ describe("classicBattle stalled stat selection recovery", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     await battleMod.__ensureClassicBattleBindings();
     const store = battleMod.createBattleStore();
+    store.forceDirectResolution = true;
     battleMod._resetForTest(store);
     await battleMod.startRound(store, battleMod.applyRoundUI);
     await battleMod.__triggerStallPromptNow(store);

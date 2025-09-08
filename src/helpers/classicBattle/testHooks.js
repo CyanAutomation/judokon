@@ -99,7 +99,12 @@ export async function triggerRoundTimeoutNow(store) {
       const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
       opponentVal = Number.isFinite(raw) ? raw : opponentVal;
     } catch {}
-    return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
+    return handleStatSelection(store, stat, {
+      playerVal,
+      opponentVal,
+      forceDirectResolution: true,
+      ...opts
+    });
   };
   stopTimer();
   try {

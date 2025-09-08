@@ -10,11 +10,16 @@
 let resolveReady;
 
 /**
- * Promise that resolves when the signature move animations/rendering are ready.
+ * Promise that resolves when signature moves are ready.
+ *
+ * @description
+ * Consumers can await this promise to defer behavior until the signature
+ * move UI has finished initial rendering/animations. The resolver is stored
+ * internally and triggered by `markSignatureMoveReady`.
  *
  * @pseudocode
- * 1. Create a new Promise and capture its resolve function in `resolveReady`.
- * 2. Consumers can `await signatureMoveReadyPromise` to run code after readiness.
+ * 1. Construct a Promise and capture its resolve function in `resolveReady`.
+ * 2. Export the promise so external code may await readiness.
  *
  * @type {Promise<void>}
  */

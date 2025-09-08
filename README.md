@@ -286,6 +286,7 @@ It reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, 
    ```
 
    The browser path continues to load embeddings via the manifest + shard loader, so no changes are required there.
+   
 ## ⚡ Module Loading Policy
 
 Use static imports for hot paths and always-required modules; use dynamic imports with preload for optional or heavy features. See the canonical [Module Loading Policy for Agents](./AGENTS.md#module-loading-policy-for-agents) for the full policy.

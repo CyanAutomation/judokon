@@ -158,24 +158,31 @@ export async function loadSettings() {
 let updateQueue = Promise.resolve();
 
 /**
- * @summary TODO: Add summary
+ * Update a single setting and persist the result safely.
+ *
+ * @description
+ * Performs a queued update to prevent concurrent writes, validates the
+ * resulting settings against the JSON schema, persists to storage when
+ * available, and updates the in-memory cache.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Append a `task` to the `updateQueue` to serialise updates.
+ * 2. Ensure the settings schema is loaded via `getSettingsSchema()`.
+ * 3. Read the current settings (from `localStorage` when available, or the cache).
+ * 4. Merge the provided `key`/`value` into a shallow copy of the current settings.
+ * 5. Validate the merged settings against the schema; throw on validation errors.
+ * 6. If `localStorage` is available, write the JSON string of the updated settings.
+ * 7. Update the in-memory cache via `setCachedSettings(updated)`.
+ * 8. Return the updated settings object to the caller.
+ *
+ * Edge cases handled:
+ * - Concurrent callers are serialised using `updateQueue` so only one write runs at a time.
+ * - If `localStorage` is unavailable, the cache is still updated and returned.
+ * - Validation errors propagate to the returned promise so callers can handle them.
+ *
+ * @param {string} key - Name of the setting to update.
+ * @param {*} value - Value to assign to the setting.
+ * @returns {Promise<import("../config/settingsDefaults.js").Settings>} Updated settings object.
  */
 export function updateSetting(key, value) {
   const task = async () => {

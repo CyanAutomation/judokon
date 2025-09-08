@@ -48,14 +48,18 @@ export function bindUIHelperEventHandlersDynamic() {
     } catch {}
     try {
       const opts = (e && e.detail && e.detail.opts) || {};
-      if (!opts.delayOpponentMessage) {
+      // If the caller requests a delayed opponent message, schedule it
+      // after the configured opponent delay. Otherwise show it immediately.
+      if (opts.delayOpponentMessage) {
+        opponentSnackbarId = setTimeout(() => {
+          try {
+            showSnackbar(t("ui.opponentChoosing"));
+          } catch {}
+        }, getOpponentDelay());
+      } else {
         try {
           showSnackbar(t("ui.opponentChoosing"));
         } catch {}
-        opponentSnackbarId = setTimeout(
-          () => showSnackbar(t("ui.opponentChoosing")),
-          getOpponentDelay()
-        );
       }
     } catch {}
   });

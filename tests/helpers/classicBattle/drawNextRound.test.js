@@ -49,7 +49,9 @@ describe("classicBattle draw next round", () => {
     document.getElementById("opponent-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>${opponentValue}</span></li></ul>`;
     store.selectionMade = false;
-    const p = battleMod.handleStatSelection(store, "power");
+    const p = battleMod.handleStatSelection(store, "power", {
+      forceDirectResolution: true
+    });
     await vi.runAllTimersAsync();
     return p;
   }

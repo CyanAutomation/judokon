@@ -4,6 +4,7 @@ import { setupClassicBattleDom } from "./utils.js";
 import { CLASSIC_BATTLE_POINTS_TO_WIN } from "../../../src/helpers/constants.js";
 import { applyMockSetup } from "./mockSetup.js";
 import { playRounds } from "./playRounds.js";
+import { resetFallbackScores } from "../../../src/helpers/api/battleUI.js";
 
 vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (content) => {
@@ -27,6 +28,9 @@ let renderMock;
 let currentFlags;
 
 beforeEach(() => {
+  // Reset fallback scores for clean test state
+  resetFallbackScores();
+
   ({
     timerSpy,
     fetchJsonMock,
@@ -59,7 +63,8 @@ async function playRound(battleMod, store, playerValue, opponentValue) {
   const opponentVal = battleMod.getCardStatValue(document.getElementById("opponent-card"), "power");
   const p = battleMod.handleStatSelection(store, "power", {
     playerVal,
-    opponentVal
+    opponentVal,
+    forceDirectResolution: true
   });
   await vi.runAllTimersAsync();
   await p;

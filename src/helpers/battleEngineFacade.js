@@ -87,6 +87,17 @@ function requireEngine() {
  * @returns {IBattleEngine}
  */
 export function createBattleEngine(config = {}) {
+  console.log("battleEngineFacade: createBattleEngine called");
+  // If an engine already exists and the caller didn't explicitly request a
+  // fresh one, return the existing instance. Tests that repeatedly call
+  // createBattleEngine() during simulated rounds previously recreated the
+  // engine each time, resetting cumulative scores. Allow callers to force
+  // recreation by passing { forceCreate: true }.
+  if (battleEngine && !config.forceCreate) {
+    console.log("battleEngineFacade: returning existing engine instance");
+    return battleEngine;
+  }
+
   battleEngine = new BattleEngine({
     pointsToWin: CLASSIC_BATTLE_POINTS_TO_WIN,
     maxRounds: CLASSIC_BATTLE_MAX_ROUNDS,
@@ -94,6 +105,7 @@ export function createBattleEngine(config = {}) {
     debugHooks: { getStateSnapshot },
     ...config
   });
+  console.log("battleEngineFacade: battleEngine set to", battleEngine);
   try {
     if (typeof config?.seed === "number") {
       setTestMode({ enabled: true, seed: Number(config.seed) });

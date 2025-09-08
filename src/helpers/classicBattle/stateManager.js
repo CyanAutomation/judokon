@@ -1,5 +1,4 @@
 import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
-import { debugLog } from "../debug.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -56,19 +55,32 @@ export async function createStateManager(
     context,
     getState: () => current,
     async dispatch(eventName, payload) {
-      debugLog("dispatch called with", eventName, payload);
-      const state = byName.get(current);
-      const trigger = state?.triggers?.find((t) => t.on === eventName);
-      let target = trigger?.target;
-      if (!target && byName.has(eventName)) target = eventName;
-      if (!target || !byName.has(target)) return false;
-      const from = current;
-      current = target;
+      console.log("stateManager: dispatch called with", eventName, payload);
       try {
-        await onTransition?.({ from, to: target, event: eventName });
-      } catch {}
-      await runOnEnter(target, payload);
-      return true;
+        const state = byName.get(current);
+        const trigger = state?.triggers?.find((t) => t.on === eventName);
+        let target = trigger?.target;
+        if (!target && byName.has(eventName)) target = eventName;
+        if (!target || !byName.has(target)) {
+          console.error(
+            "stateManager: dispatch returning false. target:",
+            target,
+            "byName.has(target):",
+            byName.has(target)
+          );
+          return false;
+        }
+        const from = current;
+        current = target;
+        try {
+          await onTransition?.({ from, to: target, event: eventName });
+        } catch {}
+        await runOnEnter(target, payload);
+        return true;
+      } catch (error) {
+        console.error("stateManager: Error in dispatch:", error);
+        throw error; // Re-throw to see the error in orchestrator
+      }
     }
   };
 

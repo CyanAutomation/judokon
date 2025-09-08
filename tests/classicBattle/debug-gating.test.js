@@ -7,7 +7,7 @@ describe("Debug panel and state badge gating", () => {
     const html = readFileSync(file, "utf-8");
     document.documentElement.innerHTML = html;
     // Force feature flags
-    const ff = await import("../../src/helpers/featureFlags.js");
+    await import("../../src/helpers/featureFlags.js");
     // Use overrides to enable test mode and badge
     window.__FF_OVERRIDES = { enableTestMode: true, battleStateBadge: true };
 

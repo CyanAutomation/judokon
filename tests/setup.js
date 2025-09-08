@@ -16,6 +16,29 @@ import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
 
+// Early module-level mute: some modules emit test-oriented logs during import
+// time which run before `beforeEach` executes. When running under Vitest we
+// apply a global mute immediately to avoid captured worker stdout lines.
+// For debugging local test runs set SHOW_TEST_LOGS=1 in the environment to
+// bypass muting and allow console/stdout to appear in the test run.
+try {
+  const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
+  const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
+  if (IS_VITEST && !SHOW_LOGS) {
+    // mute console methods immediately
+    muteConsole(["warn", "error", "debug", "log"]);
+    try {
+      if (process && process.stdout && process.stderr) {
+        // save originals at module scope so afterEach can restore them
+        __originalStdoutWrite = process.stdout.write;
+        __originalStderrWrite = process.stderr.write;
+        process.stdout.write = () => {};
+        process.stderr.write = () => {};
+      }
+    } catch {}
+  }
+} catch {}
+
 vi.mock("../src/helpers/classicBattle/orchestrator.js", async (importOriginal) => {
   const mod = await importOriginal();
   return {
@@ -37,6 +60,9 @@ if (!vi.importMz) {
 const originalMatchMedia = global.matchMedia;
 let originalPushState;
 let originalReplaceState;
+// Keep original process std writes so we can restore them after each test
+let __originalStdoutWrite;
+let __originalStderrWrite;
 
 expect.extend({
   toHaveAttribute(element, attribute, expected) {
@@ -80,13 +106,29 @@ afterEach(() => {
   } catch {}
   // Restore console to originals after each test
   restoreConsole(["warn", "error", "debug", "log"]);
+  // Restore stdout/stderr writes
+  try {
+    if (__originalStdoutWrite) process.stdout.write = __originalStdoutWrite;
+    if (__originalStderrWrite) process.stderr.write = __originalStderrWrite;
+  } catch {}
 });
 
 // Prevent JSDOM navigation errors when tests assign to window.location.href.
 // Simulate URL changes by updating history without performing a real navigation.
 beforeEach(async () => {
   // Mute noisy console methods by default; tests can opt-in to logging
-  // muteConsole(["warn", "error", "debug", "log"]);
+  // Mute noisy console methods by default; tests can opt-in to logging
+  const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
+  if (!SHOW_LOGS) {
+    muteConsole(["warn", "error", "debug", "log"]);
+    // Also mute direct stdout/stderr writes which some telemetry utilities use
+    try {
+      __originalStdoutWrite = process.stdout.write;
+      __originalStderrWrite = process.stderr.write;
+      process.stdout.write = () => {};
+      process.stderr.write = () => {};
+    } catch {}
+  }
   try {
     // Ensure snackbars are enabled for tests by default
     if (typeof window !== "undefined" && window.__disableSnackbars) {

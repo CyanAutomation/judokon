@@ -86,6 +86,18 @@ function routeKeyByState(key) {
  * handled = routeKeyByState(key)
  * show "Invalid key" when not handled and key != 'tab'
  */
+/**
+ * Global keydown handler for the Battle CLI page.
+ *
+ * @param {KeyboardEvent} e - The key event from the page.
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. Handle arrow navigation first via `handleArrowNav`.
+ * 2. Lowercase the key and check `shouldProcessKey` to filter out ignored keys.
+ * 3. Route the key based on current battle state and global handler.
+ * 4. Update the countdown element with an error message when the key is not handled.
+ */
 export function onKeyDown(e) {
   if (handleArrowNav(e)) return;
   const lower = e.key.toLowerCase();

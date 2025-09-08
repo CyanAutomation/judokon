@@ -24,8 +24,13 @@ export default state;
 /**
  * Retrieve a promise that resolves after the Escape key is handled.
  *
+ * @description
+ * Callers awaiting Escape handling may use this promise to know when the
+ * UI has processed an Escape press. The promise is re-created each time
+ * `resolveEscapeHandled` is called so multiple cycles can be awaited.
+ *
  * @pseudocode
- * return state.escapeHandledPromise
+ * 1. Return the current `state.escapeHandledPromise`.
  *
  * @returns {Promise<void>} promise resolved when Escape handled
  */
@@ -34,11 +39,15 @@ export function getEscapeHandledPromise() {
 }
 
 /**
- * Resolve any pending Escape promise and create a new one.
+ * Resolve the pending Escape-handled promise and create a fresh one.
+ *
+ * @description
+ * When Escape is processed, call this to resolve any waiter and reset the
+ * internal promise so future Escape events can be awaited independently.
  *
  * @pseudocode
- * call current resolver if present
- * replace escapeHandledPromise with new Promise and store resolver
+ * 1. If a resolver exists, call it to resolve the current promise.
+ * 2. Create a new Promise and store its resolver on `state` for the next cycle.
  */
 export function resolveEscapeHandled() {
   try {

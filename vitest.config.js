@@ -15,7 +15,8 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.js"],
-    log: true,
+    // Reduce runtime verbosity from Vitest itself
+    log: false,
     /**
      * IMPORTANT: Force Node worker threads and disable the browser runner.
      * This prevents crashes where Vitest's runtime calls `process.listeners(...)`
@@ -38,8 +39,8 @@ export default defineConfig({
       "scripts/**/*.spec.*",
       "tests/styles/**"
     ],
-    // Use default reporter w/o summary (replaces deprecated 'basic')
-    reporters: [["default", { summary: false }]],
+    // Use compact dot reporter to reduce captured stdout noise
+    reporters: ["dot"],
     coverage: {
       reporter: ["text", "json", "html"]
     }

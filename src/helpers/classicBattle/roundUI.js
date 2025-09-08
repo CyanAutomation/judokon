@@ -11,12 +11,15 @@ import { handleReplay, isOrchestrated } from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
-import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
+import { showSnackbar, updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { runWhenIdle } from "./idleCallback.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 let showMatchSummaryModal = null;
+// Reference to avoid unused-import lint complaint when the function is re-exported
+// or only used in other environments.
+void _updateSnackbar;
 function preloadUiService() {
   import("./uiService.js")
     .then((m) => {
@@ -187,8 +190,6 @@ export function bindRoundResolved() {
       emitBattleEvent("matchOver");
     } else {
       try {
-        const secs = computeNextRoundCooldown();
-        updateSnackbar(`Next round in: ${secs}s`);
         const orchestrated = (() => {
           try {
             return typeof isOrchestrated === "function" && isOrchestrated();
@@ -197,8 +198,16 @@ export function bindRoundResolved() {
           }
         })();
         if (!orchestrated) {
-          if (secs >= 2) setTimeout(() => updateSnackbar(`Next round in: ${secs - 1}s`), 1000);
-          if (secs >= 3) setTimeout(() => updateSnackbar(`Next round in: ${secs - 2}s`), 2000);
+          // Drive a JS-based countdown in non-orchestrated environments so the
+          // snackbar updates are anchored relative to this point in time.
+          const secs = Math.max(3, computeNextRoundCooldown());
+          Promise.all([import("../timers/createRoundTimer.js"), import("../CooldownRenderer.js")])
+            .then(([{ createRoundTimer }, { attachCooldownRenderer }]) => {
+              const timer = createRoundTimer();
+              attachCooldownRenderer(timer, secs);
+              timer.start(secs);
+            })
+            .catch(() => {});
         }
       } catch {}
     }
@@ -345,16 +354,22 @@ export function bindRoundUIEventHandlersDynamic() {
         emitBattleEvent("matchOver");
       } catch {}
     } else {
-      // Proactively surface the next-round countdown in the snackbar so tests
-      // and users see it immediately after the outcome is shown.
+      // Proactively run a JS-based countdown in non-orchestrated environments.
       try {
         const [
           { computeNextRoundCooldown: cNRC },
-          { updateSnackbar: uSb },
+          { attachCooldownRenderer: aCR },
+          { createRoundTimer: cRT },
           { isOrchestrated: iO }
-        ] = await Promise.all([computeNextRoundCooldownP, showSnackbarP, roundManagerP]);
-        const secs = cNRC();
-        uSb(`Next round in: ${secs}s`);
+        ] = await Promise.all([
+          computeNextRoundCooldownP,
+          import("../CooldownRenderer.js"),
+          import("../timers/createRoundTimer.js"),
+          roundManagerP
+        ]);
+        const secs = Math.max(3, cNRC());
+        const timer = cRT();
+        aCR(timer, secs);
         const orchestrated = (() => {
           try {
             return typeof iO === "function" && iO();
@@ -362,11 +377,7 @@ export function bindRoundUIEventHandlersDynamic() {
             return false;
           }
         })();
-        if (!orchestrated) {
-          // Delay updates by 1s/2s to align with test expectations
-          if (secs >= 2) setTimeout(() => uSb(`Next round in: ${secs - 1}s`), 1000);
-          if (secs >= 3) setTimeout(() => uSb(`Next round in: ${secs - 2}s`), 2000);
-        }
+        if (!orchestrated) timer.start(secs);
       } catch {}
     }
     // Keep the selected stat highlighted for two frames to mirror the static path

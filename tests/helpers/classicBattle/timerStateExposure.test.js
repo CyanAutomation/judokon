@@ -22,6 +22,7 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
 
 // These will be defined per test run
 let timerState;
+let store;
 const engineMock = {
   getTimerState: () => ({ ...timerState })
 };
@@ -49,17 +50,12 @@ describe("classic battle timer state exposure", () => {
   let orchestrator;
   let machine;
 
-  let store;
   beforeEach(async () => {
     vi.resetModules();
     debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
     document.body.innerHTML = "";
     timerState = { remaining: 30, paused: false };
     store = {};
-    vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
-      store[k] = v;
-    });
-    vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
     orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     await orchestrator.initClassicBattleOrchestrator({});
     machine = orchestrator.getBattleStateMachine();

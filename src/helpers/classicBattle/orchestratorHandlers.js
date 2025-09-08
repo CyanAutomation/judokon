@@ -396,7 +396,7 @@ export async function roundStartEnter(machine) {
  * 1. Emit `statButtons:enable` to allow player input.
  * 2. If `store.playerChoice` exists -> dispatch `statSelected` immediately.
  */
-export async function waitingForPlayerActionEnter(machine) {
+export async function waitingForPlayerActionEnter() {
   emitBattleEvent("statButtons:enable");
   // Do NOT mark the Next button as ready here. The Next button is reserved
   // for advancing after cooldown between rounds. Enabling it during stat

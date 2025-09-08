@@ -138,35 +138,24 @@ export class Scoreboard {
 
   _setScoreText(player, opponent) {
     if (!this.scoreEl) return;
-    let playerSpan = this.scoreEl.firstElementChild;
-    let opponentSpan = this.scoreEl.lastElementChild;
-    if (!playerSpan || !opponentSpan) {
-      const doc = typeof document !== "undefined" ? document : null;
-      if (!doc) return;
-      playerSpan = doc.createElement("span");
-      playerSpan.setAttribute("data-side", "player");
-      opponentSpan = doc.createElement("span");
-      opponentSpan.setAttribute("data-side", "opponent");
-      this.scoreEl.append(playerSpan, doc.createTextNode("\n"), opponentSpan);
-    }
+    // Always render a clean structure for the score display to avoid
+    // preserving any stray text nodes present in the static HTML scaffold
+    // (for example: "You: 0 Opponent: 0"). Recreate canonical children so
+    // the resulting content is predictable for tests and assistive tech.
+    const doc = typeof document !== "undefined" ? document : null;
+    if (!doc) return;
+    // Clear any existing content and recreate the expected children
+    this.scoreEl.textContent = "";
+    const playerSpan = doc.createElement("span");
+    playerSpan.setAttribute("data-side", "player");
+    const separator = doc.createTextNode("\n");
+    const opponentSpan = doc.createElement("span");
+    opponentSpan.setAttribute("data-side", "opponent");
+    this.scoreEl.append(playerSpan, separator, opponentSpan);
     try {
-      if (!playerSpan.getAttribute("data-side")) playerSpan.setAttribute("data-side", "player");
-      if (!opponentSpan.getAttribute("data-side"))
-        opponentSpan.setAttribute("data-side", "opponent");
+      playerSpan.textContent = `You: ${player}`;
+      opponentSpan.textContent = `Opponent: ${opponent}`;
     } catch {}
-    try {
-      const doc = typeof document !== "undefined" ? document : null;
-      const sibling = playerSpan.nextSibling;
-      if (doc) {
-        if (!sibling || sibling.nodeType !== Node.TEXT_NODE) {
-          this.scoreEl.insertBefore(doc.createTextNode("\n"), opponentSpan);
-        } else if (sibling.nodeValue !== "\n") {
-          sibling.nodeValue = "\n";
-        }
-      }
-    } catch {}
-    playerSpan.textContent = `You: ${player}`;
-    opponentSpan.textContent = `Opponent: ${opponent}`;
   }
 
   _animateScore(startPlayer, startOpponent, playerTarget, opponentTarget) {
