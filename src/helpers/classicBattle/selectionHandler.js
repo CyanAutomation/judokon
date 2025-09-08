@@ -175,7 +175,6 @@ export function cleanupTimers(store) {
  * @param {number} opponentVal - Opponent's stat value.
  */
 async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
-  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts });
   // PRD taxonomy: mirror selection lock event (suppress in Vitest to keep
   // existing unit tests' call counts stable)
   if (!(typeof process !== "undefined" && process.env && process.env.VITEST)) {
@@ -251,13 +250,15 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
-  const resolvedByMachine = await dispatchBattleEvent("statSelected");
+  let resolvedByMachine = false;
+  try {
+    resolvedByMachine = await dispatchBattleEvent("statSelected");
+  } catch {}
 
   if (resolvedByMachine) {
     return;
   }
 
-  // Fallback for when the orchestrator doesn't handle the event
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
   try {
     await dispatchBattleEvent("roundResolved");

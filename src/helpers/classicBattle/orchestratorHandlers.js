@@ -405,10 +405,6 @@ export async function waitingForPlayerActionEnter(machine) {
   // on the classic battle page. The CLI page never enables Next during
   // selection and does not suffer this issue. Keep Next controlled by the
   // cooldown scheduler only.
-  const store = machine?.context?.store;
-  if (store?.playerChoice) {
-    await machine.dispatch("statSelected");
-  }
 }
 /**
  * onExit handler for `waitingForPlayerAction` state.

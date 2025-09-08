@@ -39,7 +39,9 @@ describe("classicBattle stat selection timing", () => {
     await battleMod.startRound(store, battleMod.applyRoundUI);
     expect(document.querySelector(".snackbar").textContent).toBe("Select your move");
     timerSpy.advanceTimersByTime(5000);
-    expect(document.querySelector(".snackbar")).toBeNull();
+    expect(document.querySelector(".snackbar").textContent).toBe(
+      "Stat selection stalled. Pick a stat or wait for auto-pick."
+    );
     expect(document.querySelector("header #round-message").textContent).toBe("");
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
