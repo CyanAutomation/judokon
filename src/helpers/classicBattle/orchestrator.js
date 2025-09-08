@@ -18,9 +18,7 @@ import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.j
 import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import * as debugHooks from "./debugHooks.js";
-import { preloadTimerUtils } from "../TimerController.js";
 import stateCatalog from "./stateCatalog.js";
-import { initScoreboardAdapter } from "./scoreboardAdapter.js";
 
 let machine = null;
 let debugLogListener = null;
@@ -197,7 +195,8 @@ function emitResolution(event) {
  */
 async function preloadDependencies() {
   try {
-    await preloadTimerUtils();
+    const mod = await import("../TimerController.js");
+    await mod.preloadTimerUtils();
   } catch {
     // ignore: timer utilities are optional preloads
   }
@@ -207,6 +206,7 @@ async function preloadDependencies() {
     // ignore: UI service preload is optional
   }
   try {
+    const { initScoreboardAdapter } = await import("./scoreboardAdapter.js");
     initScoreboardAdapter();
   } catch {
     // ignore: scoreboard adapter preload is optional
@@ -414,6 +414,9 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   const onEnter = createOnEnterMap();
 
   const onTransition = ({ from, to, event }) => {
+    // Ignore the machine's synthetic init transition; listeners are
+    // primed separately in attachListeners() with an initial snapshot.
+    if (event === "init") return;
     onStateChange?.({ from, to, event });
     emitBattleEvent("battleStateChange", { from, to, event });
     emitDiagnostics(from, to, event);

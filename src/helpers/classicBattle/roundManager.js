@@ -392,7 +392,9 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   const timer = createRoundTimer({ starter: engineStartCoolDown });
   // Delay initial snackbar render until first tick to avoid overshadowing
   // the short-lived "Opponent is choosing…" message.
-  attachCooldownRenderer(timer);
+  // Provide initial remaining to render immediately and avoid an early
+  // off-by-one visual jump on the first engine tick.
+  attachCooldownRenderer(timer, cooldownSeconds);
   let expired = false;
   /** @type {ReturnType<typeof setTimeout>|null|undefined} */
   let fallbackId;
