@@ -305,8 +305,8 @@ Phase 9 — Actions & Outcome (Replay)
 - Notes:
   - Kept imports static; minimal UI reset to reflect fresh match state post‑replay.
 
-
 Phase 10 — Actions & Outcome (End-of-match modal)
+
 - Added tests first:
   - Unit: tests/classicBattle/end-modal.test.js — direct invocation of the end modal verifies structure and actions (Replay/Quit present).
   - Replay integration: tests/classicBattle/replay.test.js — confirms replay resets scoreboard after a 1‑point match.
@@ -322,8 +322,8 @@ Phase 10 — Actions & Outcome (End-of-match modal)
 - Notes:
   - Kept imports static; end modal uses existing Modal/Button components and roundManager.handleReplay/quitModal.quitMatch.
 
-
 Phase 11 — Actions & Outcome (Debug panel + State badge)
+
 - Added tests first:
   - Unit: tests/classicBattle/debug-gating.test.js — enables flags via overrides and asserts debug panel renders and battle state badge is visible.
   - Playwright: playwright/battle-classic/badge-debug.spec.js — flags enabled via addInitScript; asserts badge visible and debug panel open.
