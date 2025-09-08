@@ -189,6 +189,29 @@ function init() {
     } catch (err) {
       console.debug("battleClassic: bindUIHelperEventHandlersDynamic failed", err);
     }
+    // Show modal when a round resolves with matchEnded=true (covers direct-resolve path)
+    try {
+      onBattleEvent("roundResolved", (e) => {
+        try {
+          const result = e?.detail?.result;
+          if (!result || !result.matchEnded) return;
+          const outcome = String(result?.outcome || "");
+          const winner =
+            outcome === "matchWinPlayer"
+              ? "player"
+              : outcome === "matchWinOpponent"
+                ? "opponent"
+                : "none";
+          const scores = {
+            player: Number(result?.playerScore) || 0,
+            opponent: Number(result?.opponentScore) || 0
+          };
+          showEndModal(store, { winner, scores });
+        } catch {}
+      });
+    } catch (err) {
+      console.debug("battleClassic: binding roundResolved listener failed", err);
+    }
     // Initialize debug panel when enabled
     try {
       initDebugPanel();

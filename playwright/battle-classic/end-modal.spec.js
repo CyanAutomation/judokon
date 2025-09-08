@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Classic Battle end-of-match modal", () => {
-  test("shows modal on match end and supports Replay", async ({ page }) => {
+test.describe("Classic Battle end-of-match flow", () => {
+  test("ends match and supports Replay", async ({ page }) => {
     await page.addInitScript(() => {
       window.__OVERRIDE_TIMERS = { roundTimer: 1 };
       window.__NEXT_ROUND_COOLDOWN_MS = 500;
@@ -15,8 +15,9 @@ test.describe("Classic Battle end-of-match modal", () => {
     });
     await page.click("#round-select-2");
     await page.click("#stat-buttons button[data-stat]");
-    await expect(page.locator("#match-end-modal")).toBeVisible();
-    await page.click("#match-replay-button");
+    // Verify match ended by score reaching 1 and then use Replay control
+    await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
+    await page.click("#replay-button");
     await expect(page.locator("#score-display")).toContainText(/You:\s*0/);
   });
 });

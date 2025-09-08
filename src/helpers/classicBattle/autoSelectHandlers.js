@@ -6,7 +6,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./orchestrator.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-import { realScheduler } from "../scheduler.js";
+import { getScheduler } from "../scheduler.js";
 
 /**
  * Force a stat auto-select and ensure the state machine advances.
@@ -40,7 +40,6 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
  * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store Battle state store.
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect Stat selection callback.
  * @param {number} [timeoutMs=5000] Delay before prompting.
- * @param {{ setTimeout: Function }} [scheduler=realScheduler] Scheduler for timeouts.
  * @returns {void}
  * @summary Prompt for stalled stat selection and queue auto-select when enabled.
  * @pseudocode
@@ -55,43 +54,40 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
 export function handleStatSelectionTimeout(
   store,
   onSelect,
-  timeoutMs = 5000,
-  scheduler = realScheduler
+  timeoutMs = 5000
 ) {
+  const scheduler = getScheduler();
   store.autoSelectId = scheduler.setTimeout(() => {
-    if (store && store.selectionMade) return;
+    if (store?.selectionMade) return;
+
+    // 1. Show stalled message
     const stalledMsg = t("ui.statSelectionStalled");
-    scheduler.setTimeout(() => {
-      try {
-        showSnackbar(stalledMsg);
-      } catch {}
+    try {
+      showSnackbar(stalledMsg);
       if (!isEnabled("autoSelect")) {
-        try {
-          scoreboard.showMessage(stalledMsg);
-        } catch {}
+        scoreboard.showMessage(stalledMsg);
       }
-      try {
-        emitBattleEvent("statSelectionStalled");
-      } catch {}
-    }, 100);
+      emitBattleEvent("statSelectionStalled");
+    } catch {}
+
     if (isEnabled("autoSelect")) {
-      try {
-        const secs = computeNextRoundCooldown();
+      // 2. Schedule countdown message
+      scheduler.setTimeout(() => {
+        if (store?.selectionMade) return;
+        try {
+          const secs = computeNextRoundCooldown();
+          showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
+        } catch {}
+
+        // 3. Schedule auto-select
         scheduler.setTimeout(() => {
-          try {
-            showSnackbar(t("ui.nextRoundIn", { seconds: secs }));
-          } catch {}
-        }, 800);
-      } catch {}
-      try {
-        scheduler.setTimeout(() => {
+          if (store?.selectionMade) return;
           try {
             autoSelectStat(onSelect);
           } catch {}
-        }, 250);
-      } catch {
-        autoSelectStat(onSelect);
-      }
+        }, 250); // 250ms after countdown message
+
+      }, 800); // 800ms after stalled message
     }
   }, timeoutMs);
 }
