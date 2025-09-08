@@ -41,7 +41,8 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
   updateDebugPanel: vi.fn()
 }));
 vi.mock("../../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn()
+  showSnackbar: vi.fn(),
+  updateSnackbar: vi.fn()
 }));
 
 describe("roundResolved stat button reset", () => {
