@@ -28,7 +28,8 @@ vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
 }));
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
-  showSnackbar: vi.fn()
+  showSnackbar: vi.fn(),
+  updateSnackbar: vi.fn()
 }));
 
 vi.mock("../../src/helpers/i18n.js", () => ({
