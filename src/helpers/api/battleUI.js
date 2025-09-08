@@ -107,12 +107,12 @@ export function evaluateRound(playerVal, opponentVal) {
     
     // Update DOM directly for test compatibility
     try {
-      const scoreEl = document.getElementById("score-display");
+      const scoreEl = document.querySelector("header #score-display");
       if (scoreEl) {
         scoreEl.textContent = `You: ${fallbackPlayerScore}\nOpponent: ${fallbackOpponentScore}`;
       }
       
-      const messageEl = document.getElementById("round-message");
+      const messageEl = document.querySelector("header #round-message");
       if (messageEl && message) {
         messageEl.textContent = message;
       }

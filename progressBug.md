@@ -40,12 +40,60 @@ Battle engine is not properly initialized in test environments, causing `handleS
 
 ## Current Status
 - ✅ 1 test fixed: `stat-buttons.test.js`
-- ❌ 5 tests still failing:
-  - `matchEnd.test.js`
-  - `statSelection.test.js` 
-  - `roundResolver.test.js`
-  - `battleUI.test.js`
-  - `roundMessage.test.js`
+- ✅ 2 tests already passing: `roundResolver.resolveRound.test.js`, `roundResolved.statButton.test.js`
+- ❌ 2 test files still failing:
+  - `matchEnd.test.js` (2 failures): Score display not updating to 10 wins
+  - `statSelection.test.js` (3 failures): Round messages not displaying
 
-## Remaining Issues
-Different test files use different code paths and require targeted fixes for their specific failure patterns.
+## Remaining Issues Analysis
+
+### matchEnd.test.js Failures
+- **Issue**: Score display shows "You: 0\nOpponent: 0" instead of "You: 10\nOpponent: 0"
+- **Root Cause**: Fallback score tracking not being applied to header #score-display element
+- **Fix Needed**: Ensure fallback scores update the DOM header element
+
+### statSelection.test.js Failures  
+- **Issue**: Round messages are empty ("") instead of showing "Tie", "You win the round", "Opponent wins the round"
+- **Root Cause**: Round message display logic not working in test environment
+- **Fix Needed**: Ensure round messages are written to header #round-message element
+
+---
+
+# Activity Plan
+
+## Phase 1: Fix Score Display (matchEnd.test.js) - IN PROGRESS
+**Target**: 2 failing tests in `tests/helpers/classicBattle/matchEnd.test.js`
+
+### Step 1.1: Examine Score Update Logic ✅
+- ✅ Read `matchEnd.test.js` to understand how scores should be updated
+- ✅ Identified that header #score-display should be updated
+- ✅ Found that BattleEngine is actually working correctly
+
+### Step 1.2: Fix Score Display Updates - PARTIAL
+- ✅ Added direct DOM updates in `updateScoreboard` function
+- ✅ Fixed DOM selectors to target `header #score-display`
+- ❌ Scores still showing as 0 despite engine working correctly
+- **Issue**: DOM updates not taking effect, need different approach
+
+## Phase 2: Fix Round Messages (statSelection.test.js)
+**Target**: 3 failing tests in `tests/helpers/classicBattle/statSelection.test.js`
+
+### Step 2.1: Examine Round Message Logic
+- Read `statSelection.test.js` to understand expected round messages
+- Identify where header #round-message should be updated
+- Check current round message implementation
+
+### Step 2.2: Fix Round Message Updates
+- Ensure round messages are written to `header #round-message` element
+- Add direct DOM updates for test environment
+- Test the fix
+
+## Phase 3: Validation
+- Run all battle-related tests to ensure no regressions
+- Verify fixes work in both test and browser environments
+- Clean up any temporary debugging code
+
+## Success Criteria
+- All 5 previously failing tests now pass
+- No new test failures introduced
+- Battle system continues to work in browser
