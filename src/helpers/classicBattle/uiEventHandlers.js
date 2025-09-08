@@ -49,6 +49,9 @@ export function bindUIHelperEventHandlersDynamic() {
     try {
       const opts = (e && e.detail && e.detail.opts) || {};
       if (!opts.delayOpponentMessage) {
+        try {
+          showSnackbar(t("ui.opponentChoosing"));
+        } catch {}
         opponentSnackbarId = setTimeout(
           () => showSnackbar(t("ui.opponentChoosing")),
           getOpponentDelay()

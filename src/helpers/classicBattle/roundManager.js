@@ -390,7 +390,9 @@ async function handleNextRoundExpiration(controls, btn) {
 
 function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   const timer = createRoundTimer({ starter: engineStartCoolDown });
-  attachCooldownRenderer(timer, cooldownSeconds);
+  // Delay initial snackbar render until first tick to avoid overshadowing
+  // the short-lived "Opponent is choosing…" message.
+  attachCooldownRenderer(timer);
   let expired = false;
   /** @type {ReturnType<typeof setTimeout>|null|undefined} */
   let fallbackId;

@@ -25,17 +25,12 @@ import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 
 /**
- * Start a round cycle: update round counter, render stat buttons, start the selection timer.
+ * Update the round counter from engine state.
  *
  * @pseudocode
- * 1. Update the round counter to `getRoundsPlayed()+1` when available; otherwise default to 1.
- * 2. Render stat buttons with click handlers that resolve the round.
- * 3. Start the round selection timer; on expiration or selection, compute result and enter cooldown.
- *
- * @param {ReturnType<typeof createBattleStore>} store
- * @returns {Promise<void>}
+ * 1. Read `getRoundsPlayed()`; set counter to `played + 1` (fallback 1).
  */
-async function startRoundCycle(store) {
+function updateRoundCounterFromEngine() {
   try {
     const played = Number(getRoundsPlayed?.() || 0);
     updateRoundCounter(Number.isFinite(played) ? played + 1 : 1);
@@ -47,117 +42,134 @@ async function startRoundCycle(store) {
       console.debug("battleClassic: updateRoundCounter fallback failed", err2);
     }
   }
+}
 
-  // Render stat buttons and wiring
-  function renderStatButtons() {
-    const container = document.getElementById("stat-buttons");
-    if (!container) return;
-    container.innerHTML = "";
-    const created = [];
-    for (const stat of STATS) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = String(stat);
-      btn.setAttribute("data-stat", String(stat));
-      btn.addEventListener("click", async () => {
-        if (btn.disabled) return;
+/**
+ * Render stat buttons and bind click handlers to resolve the round.
+ *
+ * @pseudocode
+ * 1. Create buttons for STATS, enable them, and handle selection.
+ */
+function renderStatButtons(store) {
+  const container = document.getElementById("stat-buttons");
+  if (!container) return;
+  container.innerHTML = "";
+  for (const stat of STATS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = String(stat);
+    btn.setAttribute("data-stat", String(stat));
+    btn.addEventListener("click", async () => {
+      if (btn.disabled) return;
+      try {
+        const delayOverride =
+          typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
+            ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
+            : 0;
+        const result = await handleStatSelection(store, String(stat), {
+          playerVal: 5,
+          opponentVal: 3,
+          delayMs: delayOverride
+        });
         try {
-          const delayOverride =
-            typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
-              ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
-              : 0;
-          const result = await handleStatSelection(store, String(stat), {
-            playerVal: 5,
-            opponentVal: 3,
-            delayMs: delayOverride
-          });
-          try {
-            const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
-            if (isMatchEnded() || (result && result.matchEnded)) {
-              showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
-            } else {
-              startCooldown(store);
-            }
-          } catch (err) {
-            console.debug("battleClassic: checking match end failed", err);
+          const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
+          if (isMatchEnded() || (result && result.matchEnded)) {
+            showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
+          } else {
             startCooldown(store);
           }
         } catch (err) {
-          console.debug("battleClassic: stat selection handler failed", err);
+          console.debug("battleClassic: checking match end failed", err);
+          startCooldown(store);
         }
-      });
-      created.push(btn);
-      container.appendChild(btn);
+      } catch (err) {
+        console.debug("battleClassic: stat selection handler failed", err);
+      }
+    });
+    container.appendChild(btn);
+  }
+  try {
+    const buttons = container.querySelectorAll("button[data-stat]");
+    setStatButtonsEnabled(
+      buttons,
+      container,
+      true,
+      () => resolveStatButtonsReady(),
+      () => {}
+    );
+  } catch {}
+}
+
+/**
+ * Start the round selection timer and enter cooldown on expiration.
+ *
+ * @pseudocode
+ * 1. In Vitest use `createCountdownTimer`; otherwise `startTimer` and compute outcome.
+ */
+async function beginSelectionTimer(store) {
+  const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+  if (IS_VITEST) {
+    const dur = Number(getDefaultTimer("roundTimer")) || 2;
+    const timer = createCountdownTimer(dur, {
+      onTick: (remaining) => {
+        try {
+          const el = document.getElementById("next-round-timer");
+          if (el) el.textContent = remaining > 0 ? `Time Left: ${remaining}s` : "";
+        } catch (err) {
+          console.debug("battleClassic: onTick DOM update failed", err);
+        }
+      },
+      onExpired: () => {
+        try {
+          document.body.dataset.autoSelected = document.body.dataset.autoSelected || "auto";
+        } catch (err) {
+          console.debug("battleClassic: set autoSelected failed", err);
+        }
+        try {
+          computeRoundResult(store, "speed", 5, 3);
+          startCooldown(store);
+        } catch (err) {
+          console.debug("battleClassic: computeRoundResult (vitest) failed", err);
+        }
+      },
+      pauseOnHidden: false
+    });
+    timer.start();
+    return;
+  }
+  await startTimer(async (stat) => {
+    try {
+      document.body.dataset.autoSelected = String(stat || "auto");
+    } catch (err) {
+      console.debug("battleClassic: set autoSelected (timer) failed", err);
     }
     try {
-      const buttons = container.querySelectorAll("button[data-stat]");
-      setStatButtonsEnabled(
-        buttons,
-        container,
-        true,
-        () => resolveStatButtonsReady(),
-        () => {}
-      );
-    } catch {}
-  }
+      await computeRoundResult(store, String(stat || "speed"), 5, 3);
+      startCooldown(store);
+    } catch (err) {
+      console.debug("battleClassic: computeRoundResult (timer) failed", err);
+    }
+    return Promise.resolve();
+  });
+}
 
+/**
+ * Start a round cycle: update counter, draw UI, run timer.
+ *
+ * @pseudocode
+ * 1. Update round counter.
+ * 2. Render selection UI.
+ * 3. Begin selection timer.
+ */
+async function startRoundCycle(store) {
+  updateRoundCounterFromEngine();
   try {
-    renderStatButtons();
+    renderStatButtons(store);
   } catch (err) {
     console.debug("battleClassic: renderStatButtons failed", err);
   }
-
-  // Start the selection timer; in Vitest use a lightweight fallback to ensure deterministic ticks
   try {
-    const IS_VITEST =
-      typeof process !== "undefined" && process.env && process.env.VITEST === "true";
-    if (IS_VITEST) {
-      const dur = Number(getDefaultTimer("roundTimer")) || 2;
-      const timer = createCountdownTimer(dur, {
-        onTick: (remaining) => {
-          try {
-            const el = document.getElementById("next-round-timer");
-            if (el) el.textContent = remaining > 0 ? `Time Left: ${remaining}s` : "";
-          } catch (err) {
-            console.debug("battleClassic: onTick DOM update failed", err);
-          }
-        },
-        onExpired: () => {
-          try {
-            document.body.dataset.autoSelected = document.body.dataset.autoSelected || "auto";
-          } catch (err) {
-            console.debug("battleClassic: set autoSelected failed", err);
-          }
-          // Deterministic outcome for unit tests so score visibly changes
-          try {
-            computeRoundResult(store, "speed", 5, 3);
-            // Begin inter-round cooldown and expose Next controls
-            startCooldown(store);
-          } catch (err) {
-            console.debug("battleClassic: computeRoundResult (vitest) failed", err);
-          }
-        },
-        pauseOnHidden: false
-      });
-      timer.start();
-    } else {
-      await startTimer(async (stat) => {
-        try {
-          document.body.dataset.autoSelected = String(stat || "auto");
-        } catch (err) {
-          console.debug("battleClassic: set autoSelected (timer) failed", err);
-        }
-        // Use a simple deterministic comparison so the scoreboard reflects a change
-        try {
-          await computeRoundResult(store, String(stat || "speed"), 5, 3);
-          // After outcome, begin cooldown for Next
-          startCooldown(store);
-        } catch (err) {
-          console.debug("battleClassic: computeRoundResult (timer) failed", err);
-        }
-        return Promise.resolve();
-      });
-    }
+    await beginSelectionTimer(store);
   } catch {}
 }
 
