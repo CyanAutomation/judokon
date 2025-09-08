@@ -251,27 +251,21 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
-  let resolvedByMachine = false;
   try {
-    resolvedByMachine = await dispatchBattleEvent("statSelected");
+    await dispatchBattleEvent("statSelected");
   } catch {}
 
-  // If the machine handled the event or a battle state is present,
-  // exit early and let the state machine continue the flow.
-  if (resolvedByMachine) {
-    return;
-  }
-
   // Some test/machine setups may not return an explicit boolean from dispatch.
-  // In those cases, treat the presence of a battle state as authoritative and
-  // avoid resolving locally to prevent duplicate dispatches.
+  // Prefer deferring to the machine when it is not yet in `roundDecision`.
   try {
     // If the machine cleared the player's choice, it took over resolution.
     if (store.playerChoice == null) {
       return;
     }
     const current = typeof getBattleState === "function" ? getBattleState() : null;
-    if (current) {
+    // Defer to the machine in non-decision states; resolve locally when already
+    // in `roundDecision` and the machine hasn't handled it.
+    if (current && current !== "roundDecision") {
       return;
     }
   } catch {}
