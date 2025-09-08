@@ -140,6 +140,91 @@ function ensureTooltipElement() {
 }
 
 /**
+ * Resolve tooltip text for an element ID.
+ *
+ * @pseudocode
+ * 1. Attempt direct lookup of `data[id]`.
+ * 2. If missing, try `${id}.label` and `${id}.description`.
+ * 3. When still missing, log a warning once and return fallback text.
+ *
+ * @param {string|undefined} id - Tooltip identifier from the element.
+ * @param {Record<string,string>} data - Flattened tooltip dataset.
+ * @returns {string} Resolved tooltip text or fallback.
+ */
+export function resolveTooltipText(id, data) {
+  let text = data[id];
+  if (!text && id && typeof id === "string") {
+    text = data[`${id}.label`] || data[`${id}.description`];
+  }
+  if (!text) {
+    if (!loggedMissing.has(id)) {
+      console.warn(`Unknown tooltip id: ${id}`);
+      loggedMissing.add(id);
+    }
+    return "More info coming…";
+  }
+  return text;
+}
+
+/**
+ * Parse and sanitize tooltip HTML, warning on unbalanced markup.
+ *
+ * @pseudocode
+ * 1. Parse markdown via `parseTooltipText` to get HTML and warning flag.
+ * 2. Sanitize the HTML with `DOMPurify`.
+ * 3. When warning is true, log once per `id` about unbalanced markup.
+ *
+ * @param {string} text - Raw tooltip text.
+ * @param {string|undefined} id - Tooltip identifier for logging.
+ * @param {object} DOMPurify - Sanitizer instance.
+ * @returns {string} Sanitized HTML.
+ */
+export function sanitizeTooltip(text, id, DOMPurify) {
+  const { html, warning } = parseTooltipText(text);
+  if (warning && !loggedUnbalanced.has(id)) {
+    console.warn(`Unbalanced markup in tooltip id: ${id}`);
+    loggedUnbalanced.add(id);
+  }
+  return DOMPurify.sanitize(html);
+}
+
+/**
+ * Position tooltip relative to the target within viewport.
+ *
+ * @pseudocode
+ * 1. Read `getBoundingClientRect()` of `target`.
+ * 2. Compute top/bottom positions with page scroll offsets.
+ * 3. For zero-size targets, pin to bottom-left of viewport.
+ * 4. Clamp horizontal position to avoid overflowing the viewport width.
+ * 5. Apply `top` and `left` styles to the tooltip element.
+ *
+ * @param {HTMLElement} tip - Tooltip element to position.
+ * @param {Element} target - Triggering element.
+ * @returns {void}
+ */
+export function positionTooltip(tip, target) {
+  const rect = target?.getBoundingClientRect?.() || {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 0,
+    height: 0
+  };
+  let top = rect.bottom + window.scrollY;
+  let left = rect.left + window.scrollX;
+  if (!rect.width && !rect.height) {
+    top = window.innerHeight - tip.offsetHeight;
+    left = 0;
+  }
+  const viewportWidth = document.documentElement.clientWidth;
+  if (left + tip.offsetWidth > viewportWidth) {
+    left = viewportWidth - tip.offsetWidth;
+  }
+  tip.style.top = `${top}px`;
+  tip.style.left = `${left}px`;
+}
+
+/**
  * Initialize tooltips for elements with `[data-tooltip-id]`.
  *
  * @pseudocode
@@ -190,43 +275,10 @@ export async function initTooltips(root = globalThis.document) {
   function show(e) {
     const target = e.currentTarget || e.target;
     const id = target?.dataset?.tooltipId;
-    let text = data[id];
-    // Fallback for parent IDs like `settings.foo` by trying common leaf keys
-    if (!text && id && typeof id === "string") {
-      text = data[`${id}.label`] || data[`${id}.description`];
-    }
-    if (!text) {
-      if (!loggedMissing.has(id)) {
-        console.warn(`Unknown tooltip id: ${id}`);
-        loggedMissing.add(id);
-      }
-      text = "More info coming…";
-    }
-    const { html, warning } = parseTooltipText(text);
-    tip.innerHTML = DOMPurify.sanitize(html);
-    if (warning && !loggedUnbalanced.has(id)) {
-      console.warn(`Unbalanced markup in tooltip id: ${id}`);
-      loggedUnbalanced.add(id);
-    }
+    const text = resolveTooltipText(id, data);
+    tip.innerHTML = sanitizeTooltip(text, id, DOMPurify);
     tip.style.display = "block";
-    const rect = target?.getBoundingClientRect?.() || {
-      top: 0,
-      bottom: 0,
-      left: 0,
-      width: 0,
-      height: 0
-    };
-    let top = rect.bottom + window.scrollY;
-    let left = rect.left + window.scrollX;
-    if (!rect.width && !rect.height) {
-      top = window.innerHeight - tip.offsetHeight;
-      left = 0;
-    }
-    if (left + tip.offsetWidth > document.documentElement.clientWidth) {
-      left = document.documentElement.clientWidth - tip.offsetWidth;
-    }
-    tip.style.top = `${top}px`;
-    tip.style.left = `${left}px`;
+    positionTooltip(tip, target);
   }
 
   function hide() {

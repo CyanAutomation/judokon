@@ -25,7 +25,7 @@ vi.mock("../src/helpers/classicBattle/orchestrator.js", async (importOriginal) =
         return Promise.resolve(true);
       }
       return mod.dispatchBattleEvent(eventName);
-    }),
+    })
   };
 });
 
@@ -86,7 +86,7 @@ afterEach(() => {
 // Simulate URL changes by updating history without performing a real navigation.
 beforeEach(async () => {
   // Mute noisy console methods by default; tests can opt-in to logging
-// muteConsole(["warn", "error", "debug", "log"]);
+  // muteConsole(["warn", "error", "debug", "log"]);
   try {
     // Ensure snackbars are enabled for tests by default
     if (typeof window !== "undefined" && window.__disableSnackbars) {

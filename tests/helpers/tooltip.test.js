@@ -126,6 +126,43 @@ describe("initTooltips", () => {
     expect(tip.style.left).toBe("0px");
   });
 
+  it("repositions tooltip to avoid right overflow", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ stat: { fix: "text" } })
+    }));
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("div");
+    el.dataset.tooltipId = "stat.fix";
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    Object.defineProperty(tip, "offsetWidth", { value: 40 });
+    const originalWidth = document.documentElement.clientWidth;
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: 100,
+      configurable: true
+    });
+    el.getBoundingClientRect = () => ({
+      bottom: 10,
+      left: 80,
+      width: 10,
+      height: 10
+    });
+
+    el.dispatchEvent(new Event("mouseover"));
+
+    expect(tip.style.left).toBe("60px");
+
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: originalWidth,
+      configurable: true
+    });
+  });
+
   it("loads tooltip text for new UI elements", async () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({
@@ -226,5 +263,17 @@ describe("flattenTooltips", () => {
     const { flattenTooltips } = await import("../../src/helpers/tooltip.js");
     const result = flattenTooltips({ a: { b: "c" }, d: "e" });
     expect(result).toEqual({ "a.b": "c", d: "e" });
+  });
+});
+
+describe("resolveTooltipText", () => {
+  it("warns once and returns fallback when id missing", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { resolveTooltipText } = await import("../../src/helpers/tooltip.js");
+    const data = {};
+    expect(resolveTooltipText(undefined, data)).toBe("More info coming…");
+    resolveTooltipText(undefined, data);
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
   });
 });
