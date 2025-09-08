@@ -37,23 +37,100 @@ function displayCard(element, card, skipAnimation = false) {
 }
 
 /**
- * Creates and displays a card for the specified judoka.
+ * Loads gokyo data and returns a lookup object.
  *
  * @pseudocode
- * 1. Build a card for `judoka` using the `JudokaCard` component.
- * 2. When a card element is returned, display it with `displayCard`.
+ * 1. Use `gokyoData` or fetch `gokyo.json`.
+ * 2. Build lookup with `createGokyoLookup`.
+ * 3. On failure, log error, build minimal lookup, and notify user.
+ *
+ * @param {GokyoEntry[]} [gokyoData] - Preloaded gokyo data.
+ * @returns {Promise<Object<string, GokyoEntry>>} Lookup of gokyo moves.
+ */
+export async function loadGokyoLookup(gokyoData) {
+  try {
+    const gokyo = gokyoData || (await fetchJson(`${DATA_DIR}gokyo.json`));
+    return createGokyoLookup(gokyo);
+  } catch (gokyoError) {
+    console.error("Error loading gokyo data:", gokyoError);
+    const lookup = createGokyoLookup([{ id: 0, name: "Jigoku-guruma" }]);
+    try {
+      const { showSnackbar } = await import("./showSnackbar.js");
+      showSnackbar("Move list unavailable; using fallback data");
+    } catch (notifyError) {
+      console.warn("Unable to notify about missing gokyo data:", notifyError);
+    }
+    return lookup;
+  }
+}
+
+/**
+ * Selects a judoka from data or falls back to the default.
+ *
+ * @pseudocode
+ * 1. Use `activeCards` or fetch `judoka.json`.
+ * 2. Filter out hidden or invalid entries.
+ * 3. Choose a random judoka and invoke `onSelect`.
+ * 4. On failure, return fallback judoka and invoke `onSelect`.
+ *
+ * @param {Judoka[]} [activeCards] - Preloaded judoka data.
+ * @param {function} [onSelect] - Callback for the chosen judoka.
+ * @returns {Promise<Judoka>} The selected or fallback judoka.
+ */
+export async function pickJudoka(activeCards, onSelect) {
+  try {
+    const judokaData = activeCards || (await fetchJson(`${DATA_DIR}judoka.json`));
+    const validJudoka = Array.isArray(judokaData)
+      ? judokaData.filter((j) => !j.isHidden && hasRequiredJudokaFields(j))
+      : [];
+    if (validJudoka.length === 0) {
+      throw new Error("No valid judoka entries found");
+    }
+    const selectedJudoka = getRandomJudoka(validJudoka);
+    if (typeof onSelect === "function") {
+      onSelect(selectedJudoka);
+    }
+    return selectedJudoka;
+  } catch (error) {
+    console.error("Error selecting judoka:", error);
+    const fallbackJudoka = await getFallbackJudoka();
+    if (typeof onSelect === "function") {
+      onSelect(fallbackJudoka);
+    }
+    return fallbackJudoka;
+  }
+}
+
+/**
+ * Renders a card for the specified judoka and appends it to the container.
+ *
+ * @pseudocode
+ * 1. Build a `JudokaCard` for `judoka`.
+ * 2. When rendering succeeds, display the card.
+ * 3. Log and ignore any rendering errors.
  *
  * @param {Judoka} judoka - Judoka data used to build the card.
  * @param {Object<string, GokyoEntry>} gokyoLookup - Lookup of gokyo moves.
  * @param {HTMLElement} containerEl - Element to contain the card.
  * @param {boolean} prefersReducedMotion - Motion preference flag.
- * @returns {Promise<void>} Resolves when the card is displayed.
- * @private
+ * @param {boolean} [enableInspector] - Enable inspector feature.
+ * @returns {Promise<void>} Resolves when rendering completes.
  */
-async function createCardForJudoka(judoka, gokyoLookup, containerEl, prefersReducedMotion) {
-  const card = await new JudokaCard(judoka, gokyoLookup).render();
-  if (card) {
-    displayCard(containerEl, card, prefersReducedMotion);
+export async function renderJudokaCard(
+  judoka,
+  gokyoLookup,
+  containerEl,
+  prefersReducedMotion,
+  enableInspector
+) {
+  if (!containerEl) return;
+  try {
+    const card = await new JudokaCard(judoka, gokyoLookup, { enableInspector }).render();
+    if (card) {
+      displayCard(containerEl, card, prefersReducedMotion);
+    }
+  } catch (error) {
+    console.error("Error displaying card:", error);
   }
 }
 
@@ -95,57 +172,16 @@ export async function generateRandomCard(
   const { enableInspector, skipRender = false } = options;
   if (!skipRender && !containerEl) return;
 
-  let gokyoLookup = {};
-  try {
-    const gokyo = gokyoData || (await fetchJson(`${DATA_DIR}gokyo.json`));
-    gokyoLookup = createGokyoLookup(gokyo);
-  } catch (gokyoError) {
-    console.error("Error loading gokyo data:", gokyoError);
-    gokyoLookup = createGokyoLookup([{ id: 0, name: "Jigoku-guruma" }]);
-    try {
-      const { showSnackbar } = await import("./showSnackbar.js");
-      showSnackbar("Move list unavailable; using fallback data");
-    } catch (notifyError) {
-      console.warn("Unable to notify about missing gokyo data:", notifyError);
-    }
-  }
+  const gokyoLookup = await loadGokyoLookup(gokyoData);
+  const judoka = await pickJudoka(activeCards, onSelect);
 
-  try {
-    const judokaData = activeCards || (await fetchJson(`${DATA_DIR}judoka.json`));
-
-    const validJudoka = Array.isArray(judokaData)
-      ? judokaData.filter((j) => !j.isHidden && hasRequiredJudokaFields(j))
-      : [];
-
-    if (validJudoka.length === 0) {
-      throw new Error("No valid judoka entries found");
-    }
-
-    const selectedJudoka = getRandomJudoka(validJudoka);
-    if (typeof onSelect === "function") {
-      onSelect(selectedJudoka);
-    }
-    if (!skipRender && containerEl) {
-      const card = await new JudokaCard(selectedJudoka, gokyoLookup, {
-        enableInspector
-      }).render();
-      if (card) {
-        displayCard(containerEl, card, prefersReducedMotion);
-      }
-    }
-  } catch (error) {
-    console.error("Error generating random card:", error);
-
-    const fallbackJudoka = await getFallbackJudoka();
-    if (typeof onSelect === "function") {
-      onSelect(fallbackJudoka);
-    }
-    if (!skipRender && containerEl) {
-      try {
-        await createCardForJudoka(fallbackJudoka, gokyoLookup, containerEl, prefersReducedMotion);
-      } catch (fallbackError) {
-        console.error("Error displaying fallback card:", fallbackError);
-      }
-    }
+  if (!skipRender && containerEl) {
+    await renderJudokaCard(
+      judoka,
+      gokyoLookup,
+      containerEl,
+      prefersReducedMotion,
+      enableInspector
+    );
   }
 }
