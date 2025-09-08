@@ -84,7 +84,7 @@ beforeEach(() => {
   }));
 
   vi.mock("../../../src/helpers/i18n.js", () => ({
-    t: (key) => key === "ui.opponentChoosing" ? "Opponent is choosing…" : key
+    t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key)
   }));
 });
 
@@ -95,8 +95,10 @@ describe("classicBattle opponent delay", () => {
     await initClassicBattleTest({ afterMock: true });
     const mod = await import("../../../src/helpers/classicBattle.js");
     const { setOpponentDelay } = await import("../../../src/helpers/classicBattle/snackbar.js");
-    const { bindUIHelperEventHandlersDynamic } = await import("../../../src/helpers/classicBattle/uiEventHandlers.js");
-    
+    const { bindUIHelperEventHandlersDynamic } = await import(
+      "../../../src/helpers/classicBattle/uiEventHandlers.js"
+    );
+
     setOpponentDelay(0);
     vi.spyOn(mod, "simulateOpponentStat").mockReturnValue("power");
     vi.spyOn(mod, "evaluateRound").mockReturnValue({ matchEnded: false });
@@ -105,7 +107,7 @@ describe("classicBattle opponent delay", () => {
     showSnackbar = vi.fn();
     // Bind the UI event handlers so the statSelected event is handled
     bindUIHelperEventHandlersDynamic();
-    
+
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(1);
     const promise = mod.handleStatSelection(store, mod.simulateOpponentStat(), {
       playerVal: 5,

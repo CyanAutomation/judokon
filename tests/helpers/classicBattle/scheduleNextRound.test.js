@@ -196,22 +196,22 @@ describe("classicBattle startCooldown", () => {
     setTestMode(true);
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
-    
+
     // Set up orchestrator like other tests
     const startRoundWrapper = vi.fn(async () => {
       await battleMod.startRound(store);
     });
     await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
     const machine = orchestrator.getBattleStateMachine();
-    
+
     await battleMod.startRound(store);
     await machine.dispatch("roundOver");
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
-    
+
     const controls = battleMod.startCooldown(store);
     expect(nextButton.dataset.nextReady).toBeUndefined();
-    
+
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
     await controls.ready;
