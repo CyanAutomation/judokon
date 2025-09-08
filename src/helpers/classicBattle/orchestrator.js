@@ -288,7 +288,7 @@ function attachListeners(machineRef) {
  * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export async function dispatchBattleEvent(eventName, payload) {
-  if (!machine) return;
+  if (!machine) return false;
   try {
     // PRD taxonomy: emit interrupt.requested with payload context
     if (eventName === "interrupt") {
@@ -308,6 +308,7 @@ export async function dispatchBattleEvent(eventName, payload) {
     } catch {
       // ignore: debug updates are best effort
     }
+    return false;
   }
 }
 

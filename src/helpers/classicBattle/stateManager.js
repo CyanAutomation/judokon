@@ -61,13 +61,14 @@ export async function createStateManager(
       const trigger = state?.triggers?.find((t) => t.on === eventName);
       let target = trigger?.target;
       if (!target && byName.has(eventName)) target = eventName;
-      if (!target || !byName.has(target)) return;
+      if (!target || !byName.has(target)) return false;
       const from = current;
       current = target;
       try {
         await onTransition?.({ from, to: target, event: eventName });
       } catch {}
       await runOnEnter(target, payload);
+      return true;
     }
   };
 

@@ -96,4 +96,24 @@ describe("handleStatSelection helpers", () => {
     expect(store.autoSelectId).toBeNull();
     spy.mockRestore();
   });
+
+  it('should not call resolveRoundDirect when orchestrator handles the event', async () => {
+    const { resolveRound } = await import("../../src/helpers/classicBattle/roundResolver.js");
+    dispatchBattleEvent.mockResolvedValue(true); // Simulate orchestrator handling it
+
+    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("statSelected");
+    expect(resolveRound).not.toHaveBeenCalled();
+  });
+
+  it('should call resolveRoundDirect when orchestrator does not handle the event', async () => {
+    const { resolveRound } = await import("../../src/helpers/classicBattle/roundResolver.js");
+    dispatchBattleEvent.mockResolvedValue(false); // Simulate orchestrator not handling it
+
+    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("statSelected");
+    expect(resolveRound).toHaveBeenCalled();
+  });
 });

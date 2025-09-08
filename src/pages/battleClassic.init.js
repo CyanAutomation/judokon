@@ -3,7 +3,8 @@ import {
   createBattleEngine,
   getPointsToWin,
   STATS,
-  on as onEngine
+  on as onEngine,
+  getRoundsPlayed
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer } from "../helpers/classicBattle/timerService.js";
@@ -36,7 +37,6 @@ import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
  */
 async function startRoundCycle(store) {
   try {
-    const { getRoundsPlayed } = await import("../helpers/battleEngineFacade.js");
     const played = Number(getRoundsPlayed?.() || 0);
     updateRoundCounter(Number.isFinite(played) ? played + 1 : 1);
   } catch (err) {

@@ -251,20 +251,13 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
-  const initialChoice = store.playerChoice;
-  let resolvedByMachine = false;
-  try {
-    await dispatchBattleEvent("statSelected");
-    resolvedByMachine = initialChoice !== null && store.playerChoice === null;
-  } catch {}
-  try {
-    if (!resolvedByMachine && getBattleState()) {
-      resolvedByMachine = true;
-    }
-  } catch {}
+  const resolvedByMachine = await dispatchBattleEvent("statSelected");
+
   if (resolvedByMachine) {
     return;
   }
+
+  // Fallback for when the orchestrator doesn't handle the event
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
   try {
     await dispatchBattleEvent("roundResolved");
