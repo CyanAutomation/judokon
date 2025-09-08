@@ -220,6 +220,7 @@ export function positionTooltip(tip, target) {
   if (left + tip.offsetWidth > viewportWidth) {
     left = viewportWidth - tip.offsetWidth;
   }
+  left = Math.max(0, left);
   tip.style.top = `${top}px`;
   tip.style.left = `${left}px`;
 }
