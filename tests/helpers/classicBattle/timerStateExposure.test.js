@@ -22,6 +22,7 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
 
 // These will be defined per test run
 let timerState;
+let store;
 const engineMock = {
   getTimerState: () => ({ ...timerState })
 };

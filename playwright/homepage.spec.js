@@ -47,7 +47,7 @@ test.describe("Homepage", () => {
     await page.keyboard.press("Tab");
     await expect(tiles.first()).toBeFocused();
 
-    await Promise.all([page.waitForURL("**/battleJudoka.html"), tiles.first().press("Enter")]);
+    await Promise.all([page.waitForURL("**/battleClassic.html"), tiles.first().press("Enter")]);
   });
 
   test("fallback icon applied on load failure", async ({ page }) => {
