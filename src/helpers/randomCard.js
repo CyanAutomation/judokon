@@ -105,9 +105,10 @@ export async function pickJudoka(activeCards, onSelect) {
  * Renders a card for the specified judoka and appends it to the container.
  *
  * @pseudocode
- * 1. Build a `JudokaCard` for `judoka`.
- * 2. When rendering succeeds, display the card.
- * 3. Log and ignore any rendering errors.
+ * 1. Ensure `containerEl` exists; throw if missing.
+ * 2. Build a `JudokaCard` for `judoka`.
+ * 3. When rendering succeeds, display the card.
+ * 4. Log and ignore any rendering errors.
  *
  * @param {Judoka} judoka - Judoka data used to build the card.
  * @param {Object<string, GokyoEntry>} gokyoLookup - Lookup of gokyo moves.
@@ -123,7 +124,9 @@ export async function renderJudokaCard(
   prefersReducedMotion,
   enableInspector
 ) {
-  if (!containerEl) return;
+  if (!containerEl) {
+    throw new Error("renderJudokaCard: containerEl is required but was not provided.");
+  }
   try {
     const card = await new JudokaCard(judoka, gokyoLookup, { enableInspector }).render();
     if (card) {
@@ -176,12 +179,6 @@ export async function generateRandomCard(
   const judoka = await pickJudoka(activeCards, onSelect);
 
   if (!skipRender && containerEl) {
-    await renderJudokaCard(
-      judoka,
-      gokyoLookup,
-      containerEl,
-      prefersReducedMotion,
-      enableInspector
-    );
+    await renderJudokaCard(judoka, gokyoLookup, containerEl, prefersReducedMotion, enableInspector);
   }
 }

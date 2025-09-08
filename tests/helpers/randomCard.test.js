@@ -65,9 +65,7 @@ describe("loadGokyoLookup", () => {
       const result = await loadGokyoLookup();
 
       expect(fetchJsonMock).toHaveBeenCalled();
-      expect(createGokyoLookupMock).toHaveBeenCalledWith([
-        { id: 0, name: "Jigoku-guruma" }
-      ]);
+      expect(createGokyoLookupMock).toHaveBeenCalledWith([{ id: 0, name: "Jigoku-guruma" }]);
       expect(showSnackbarMock).toHaveBeenCalled();
       expect(result).toBe(lookup);
     });
@@ -134,6 +132,18 @@ describe("renderJudokaCard", () => {
 
       expect(container.childNodes.length).toBe(0);
     });
+  });
+
+  it("throws when container element is missing", async () => {
+    renderMock.mockClear();
+    const { renderJudokaCard } = await import("../../src/helpers/randomCard.js");
+    await expect(renderJudokaCard({ id: 1 }, {}, null, true)).rejects.toThrow(
+      "renderJudokaCard: containerEl is required but was not provided."
+    );
+    await expect(renderJudokaCard({ id: 1 }, {}, undefined, true)).rejects.toThrow(
+      "renderJudokaCard: containerEl is required but was not provided."
+    );
+    expect(JudokaCardMock).not.toHaveBeenCalled();
   });
 });
 
@@ -293,4 +303,3 @@ describe("generateRandomCard", () => {
     expect(container.childNodes.length).toBe(0);
   });
 });
-
