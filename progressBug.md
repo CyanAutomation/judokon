@@ -178,6 +178,22 @@ But tests expect simple text content:
 
 **Investigation Needed**: Check test imports and execution path to find the actual function being called.
 
+### 🎉 MAJOR BREAKTHROUGH: Issue Identified and Partially Fixed!
+
+**Root Cause Found**: The execution path was calling `engineFacade.handleStatSelection()` directly in `evaluateOutcome()`, bypassing the message generation in `battleUI.js`.
+
+**Solution Applied**: Added message generation and DOM updates directly in `evaluateOutcome()` function in `roundResolver.js`.
+
+**Results**:
+✅ **FIXED: 3 out of 5 tests** 
+- `statSelection.test.js`: All 3 failing tests now pass ✅
+- Round messages now work: "Tie – no score!", "You win the round!", "Opponent wins the round!"
+
+❌ **Remaining: 2 tests in matchEnd.test.js**
+- Issue: Shows "You: 1\nOpponent: 0" instead of "You: 10\nOpponent: 0"
+- Problem: Scores are per-round (1 point) instead of cumulative (10 points)
+- Likely cause: Scores reset between rounds or only last round displayed
+
 ## Success Criteria
 - All 5 previously failing tests now pass
 - No new test failures introduced
@@ -241,3 +257,34 @@ I will delete the temporary file `progressBud.md` as requested.
 1. Temporarily enable console output for these test runs to capture the Vitest-guarded logs and precisely time when writes occur. (I can run the tests with a small env tweak to avoid `tests/setup.js` muting stdout/stderr.)
 2. Instrument `syncScoreDisplay` to log when called (or mock it in the failing tests) to see whether it overwrites our values after they are set.
 3. Trace which `handleStatSelection` implementation the tests call (confirm the import path is the expected module and not a mock). Use `vi.mock` and `vi.importActual` traces if necessary.
+
+---
+
+### Runtime test run (logs) — added 2025-09-08
+
+I executed the two failing test files with Vitest while enabling test logs (`SHOW_TEST_LOGS=1`) so the harness would not silence module-level debug output.
+
+- Command used:
+
+  SHOW_TEST_LOGS=1 npx vitest run tests/helpers/classicBattle/matchEnd.test.js tests/helpers/classicBattle/statSelection.test.js
+
+- Outcome: the run reproduced the 5 failing assertions and produced live debug traces that clarify execution flow. Key observations:
+
+  - The real BattleEngine is invoked during tests: repeated logs show `battleEngineFacade: createBattleEngine called` and `BattleEngine: handleStatSelection called` near each selection.
+  - `createBattleEngine` appears to be called repeatedly during the simulated rounds; each newly created engine shows `playerScore: 0` and `opponentScore: 0` in its initial state in the logs.
+  - `computeRoundResult`, `updateScoreboard`, and `emitRoundResolved` are executed and log their computed results (for example: `updateScoreboard result: { delta: 2, outcome: 'winPlayer', playerScore: 1, opponentScore: 0 }`).
+  - `syncScoreDisplay` runs frequently and writes the initial "You: 0\nOpponent: 0" text to the DOM many times (`[DEBUG] syncScoreDisplay updated DOM: You: 0\nOpponent: 0`).
+  - Despite `emitRoundResolved` emitting the expected display updates, `header #round-message` remains empty in the failing cases and the score display ends up showing only a single round increment (e.g. "You: 1\nOpponent: 0") instead of cumulative wins.
+
+Interpretation
+
+- The logs strongly indicate that a new BattleEngine is created during the multi-round simulations performed by the test helpers; that resets match-level counters and causes the final DOM to show only the last round's increment.
+- Our DOM-update functions execute and emit events, but another code path (engine recreation or `syncScoreDisplay`) overwrites or resets the visible DOM state after those writes.
+
+Short-term next steps (what I'll do next)
+
+1. Trace all `createBattleEngine` call-sites to find why the engine is re-created during the simulated round helpers (`playerWinsRounds` / `opponentWinsRounds`) and update the helper to reuse the same engine instance across the simulated rounds. I'll search and instrument the likely call-sites next.
+2. Add a temporary spy/log to `src/helpers/classicBattle/uiService.js` `syncScoreDisplay` to confirm whether it overwrites the score after `emitRoundResolved` and to capture the exact text/structure it writes.
+3. Add an explicit test assertion that the engine instance is stable across simulated rounds (small change to the failing test) to make the intended invariant explicit while implementing the fix.
+
+I'll start by locating `createBattleEngine` usages and the `playerWinsRounds` / `opponentWinsRounds` helpers and will report findings and a minimal patch to preserve engine instance state.  

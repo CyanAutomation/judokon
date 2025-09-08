@@ -19,9 +19,12 @@ import { muteConsole, restoreConsole } from "./utils/console.js";
 // Early module-level mute: some modules emit test-oriented logs during import
 // time which run before `beforeEach` executes. When running under Vitest we
 // apply a global mute immediately to avoid captured worker stdout lines.
+// For debugging local test runs set SHOW_TEST_LOGS=1 in the environment to
+// bypass muting and allow console/stdout to appear in the test run.
 try {
   const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
-  if (IS_VITEST) {
+  const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
+  if (IS_VITEST && !SHOW_LOGS) {
     // mute console methods immediately
     muteConsole(["warn", "error", "debug", "log"]);
     try {
@@ -115,14 +118,17 @@ afterEach(() => {
 beforeEach(async () => {
   // Mute noisy console methods by default; tests can opt-in to logging
   // Mute noisy console methods by default; tests can opt-in to logging
-  muteConsole(["warn", "error", "debug", "log"]);
-  // Also mute direct stdout/stderr writes which some telemetry utilities use
-  try {
-    __originalStdoutWrite = process.stdout.write;
-    __originalStderrWrite = process.stderr.write;
-    process.stdout.write = () => {};
-    process.stderr.write = () => {};
-  } catch {}
+  const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
+  if (!SHOW_LOGS) {
+    muteConsole(["warn", "error", "debug", "log"]);
+    // Also mute direct stdout/stderr writes which some telemetry utilities use
+    try {
+      __originalStdoutWrite = process.stdout.write;
+      __originalStderrWrite = process.stderr.write;
+      process.stdout.write = () => {};
+      process.stderr.write = () => {};
+    } catch {}
+  }
   try {
     // Ensure snackbars are enabled for tests by default
     if (typeof window !== "undefined" && window.__disableSnackbars) {
