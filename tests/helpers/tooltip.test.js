@@ -163,6 +163,43 @@ describe("initTooltips", () => {
     });
   });
 
+  it("clamps left to zero when tip wider than viewport", async () => {
+    vi.doMock("../../src/helpers/dataUtils.js", () => ({
+      fetchJson: vi.fn().mockResolvedValue({ stat: { fix: "text" } })
+    }));
+
+    const { initTooltips } = await import("../../src/helpers/tooltip.js");
+
+    const el = document.createElement("div");
+    el.dataset.tooltipId = "stat.fix";
+    document.body.appendChild(el);
+
+    await initTooltips();
+
+    const tip = document.querySelector(".tooltip");
+    Object.defineProperty(tip, "offsetWidth", { value: 150 });
+    const originalWidth = document.documentElement.clientWidth;
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: 100,
+      configurable: true
+    });
+    el.getBoundingClientRect = () => ({
+      bottom: 10,
+      left: 0,
+      width: 10,
+      height: 10
+    });
+
+    el.dispatchEvent(new Event("mouseover"));
+
+    expect(tip.style.left).toBe("0px");
+
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      value: originalWidth,
+      configurable: true
+    });
+  });
+
   it("loads tooltip text for new UI elements", async () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue({
