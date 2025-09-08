@@ -267,6 +267,7 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   // avoid resolving locally to prevent duplicate dispatches.
   try {
     // If the machine cleared the player's choice, it took over resolution.
+    // eslint-disable-next-line eqeqeq
     if (store.playerChoice == null) {
       return;
     }
