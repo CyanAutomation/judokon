@@ -63,7 +63,8 @@ async function playRound(battleMod, store, playerValue, opponentValue) {
   const opponentVal = battleMod.getCardStatValue(document.getElementById("opponent-card"), "power");
   const p = battleMod.handleStatSelection(store, "power", {
     playerVal,
-    opponentVal
+    opponentVal,
+    forceDirectResolution: true
   });
   await vi.runAllTimersAsync();
   await p;

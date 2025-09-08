@@ -270,8 +270,9 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
 
   let handledByOrchestrator;
   try {
-    // In test environments, force direct resolution to ensure proper score accumulation
-    if (IS_VITEST) {
+    // Check for test-specific flag to force direct resolution for score accumulation tests
+    const forceDirectResolution = IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
+    if (forceDirectResolution) {
       handledByOrchestrator = false;
     } else {
       handledByOrchestrator = await dispatchBattleEvent("statSelected");
