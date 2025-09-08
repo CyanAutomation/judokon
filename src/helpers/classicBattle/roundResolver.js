@@ -28,6 +28,12 @@ export function bridgeEngineEvents() {
     // Legacy bridge → classic events
     onEngine("roundEnded", (detail) => {
       emitBattleEvent("roundResolved", detail);
+      // Also emit display.score.update for scoreboard
+      try {
+        const player = Number(detail?.playerScore) || 0;
+        const opponent = Number(detail?.opponentScore) || 0;
+        emitBattleEvent("display.score.update", { player, opponent });
+      } catch {}
     });
     onEngine("matchEnded", (detail) => {
       emitBattleEvent("matchOver", detail);

@@ -24,6 +24,7 @@ import { isEnabled } from "../helpers/featureFlags.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
+import { bridgeEngineEvents } from "../helpers/classicBattle/roundResolver.js";
 
 /**
  * Update the round counter from engine state.
@@ -231,6 +232,14 @@ function init() {
   // Initialize the battle engine and present the round selection modal.
   try {
     createBattleEngine();
+    
+    // Initialize engine event bridge after engine is created
+    try {
+      bridgeEngineEvents();
+    } catch (err) {
+      console.debug("battleClassic: bridgeEngineEvents failed", err);
+    }
+    
     const store = createBattleStore();
     try {
       window.battleStore = store;
