@@ -8,14 +8,37 @@
  * 1. When chunking text, split into pieces no larger than `CHUNK_SIZE`.
  * 2. Sentences or headings may be used as natural boundaries before enforcing this limit.
  */
-export const CHUNK_SIZE = 1400;
 /**
- * Fraction of characters to overlap between adjacent chunks to preserve
- * context for semantic search (value in range 0..1).
+ * Maximum number of characters per chunk when splitting large texts for
+ * embeddings and vector indexing.
+ *
+ * @description
+ * This value controls the upper bound of chunk length. Chunking algorithms
+ * should try to split on natural boundaries (sentences/headings) before
+ * enforcing this limit.
  *
  * @pseudocode
- * 1. Compute overlap size as Math.floor(CHUNK_SIZE * OVERLAP_RATIO).
- * 2. When concatenating adjacent chunks, include the last `overlapSize` chars
- *    from the previous chunk at the start of the next to retain context.
+ * 1. When processing a long document, iterate and produce substrings no larger
+ *    than `CHUNK_SIZE` characters.
+ * 2. Prefer natural boundaries before splitting to avoid chopping semantic
+ *    units (e.g., sentences or markdown headings).
+ *
+ * @type {number}
+ */
+export const CHUNK_SIZE = 1400;
+
+/**
+ * Fraction (0..1) of characters to overlap between adjacent chunks.
+ *
+ * @description
+ * Overlap preserves context across chunk boundaries for semantic search and
+ * improves recall when queries span a boundary.
+ *
+ * @pseudocode
+ * 1. Calculate `overlapSize = Math.floor(CHUNK_SIZE * OVERLAP_RATIO)`.
+ * 2. For each chunk after the first, include the last `overlapSize` characters
+ *    from the previous chunk at the start of the current chunk.
+ *
+ * @type {number}
  */
 export const OVERLAP_RATIO = 0.15;

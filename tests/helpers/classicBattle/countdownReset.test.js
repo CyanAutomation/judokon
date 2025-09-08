@@ -34,7 +34,8 @@ async function selectPower(battleMod, store) {
   const opponentVal = battleMod.getCardStatValue(document.getElementById("opponent-card"), "power");
   const p = battleMod.handleStatSelection(store, "power", {
     playerVal,
-    opponentVal
+    opponentVal,
+    forceDirectResolution: true
   });
   await vi.advanceTimersByTimeAsync(1000);
   await p;
