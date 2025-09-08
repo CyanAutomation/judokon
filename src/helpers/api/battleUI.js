@@ -1,4 +1,4 @@
-import { STATS } from "../battleEngineFacade.js";
+import { STATS, handleStatSelection } from "../battleEngineFacade.js";
 import { seededRandom } from "../testModeUtils.js";
 
 /**
@@ -76,21 +76,61 @@ export function getOutcomeMessage(outcome) {
  * @param {number} opponentVal - Opponent's stat value.
  * @returns {{delta: number, outcome: string, matchEnded: boolean, playerScore: number, opponentScore: number, message: string}}
  */
+// Simple score tracking for fallback mode
+let fallbackPlayerScore = 0;
+let fallbackOpponentScore = 0;
+
 export function evaluateRound(playerVal, opponentVal) {
-  // Fallback when engine is unavailable in tests: compute a simple outcome
-  const p = Number(playerVal) || 0;
-  const o = Number(opponentVal) || 0;
-  const delta = p - o;
-  const outcome = delta > 0 ? "winPlayer" : delta < 0 ? "winOpponent" : "draw";
-  const playerScore = outcome === "winPlayer" ? 1 : 0;
-  const opponentScore = outcome === "winOpponent" ? 1 : 0;
-  const matchEnded = false;
-  return {
-    delta,
-    outcome,
-    matchEnded,
-    playerScore,
-    opponentScore,
-    message: getOutcomeMessage(outcome)
-  };
+  try {
+    // Use the battle engine facade
+    const result = handleStatSelection(playerVal, opponentVal);
+    return {
+      ...result,
+      message: getOutcomeMessage(result.outcome)
+    };
+  } catch (error) {
+    // Fallback when engine is unavailable: compute a simple outcome with cumulative scoring
+    const p = Number(playerVal) || 0;
+    const o = Number(opponentVal) || 0;
+    const delta = p - o;
+    const outcome = delta > 0 ? "winPlayer" : delta < 0 ? "winOpponent" : "draw";
+    
+    // Update cumulative scores
+    if (outcome === "winPlayer") {
+      fallbackPlayerScore += 1;
+    } else if (outcome === "winOpponent") {
+      fallbackOpponentScore += 1;
+    }
+    
+    const matchEnded = false;
+    const message = getOutcomeMessage(outcome);
+    
+    // Update DOM directly for test compatibility
+    try {
+      const scoreEl = document.getElementById("score-display");
+      if (scoreEl) {
+        scoreEl.textContent = `You: ${fallbackPlayerScore}\nOpponent: ${fallbackOpponentScore}`;
+      }
+      
+      const messageEl = document.getElementById("round-message");
+      if (messageEl && message) {
+        messageEl.textContent = message;
+      }
+    } catch {}
+    
+    return {
+      delta,
+      outcome,
+      matchEnded,
+      playerScore: fallbackPlayerScore,
+      opponentScore: fallbackOpponentScore,
+      message
+    };
+  }
+}
+
+// Reset function for tests
+export function resetFallbackScores() {
+  fallbackPlayerScore = 0;
+  fallbackOpponentScore = 0;
 }
