@@ -7,7 +7,6 @@ export {
   enableNextRoundButton,
   disableNextRoundButton
 } from "./classicBattle/uiHelpers.js";
-export { updateDebugPanel } from "./classicBattle/debugPanel.js";
 /**
  * @summary TODO: Add summary
  * @pseudocode

@@ -21,15 +21,13 @@ import { createButton } from "../../components/Button.js";
 import { onBattleEvent } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
 import {
-  resetStatButtonsReadyPromise,
-  setStatButtonsEnabled,
-  createStatHotkeyHandler,
-  resolveStatButtonsReady
+  enableStatButtons,
+  disableStatButtons,
+  wireStatHotkeys
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
-export { showSelectionPrompt, setOpponentDelay, getOpponentDelay } from "./snackbar.js";
 import { runWhenIdle } from "./idleCallback.js";
 
 export const INITIAL_SCOREBOARD_TEXT = "You: 0\nOpponent: 0";
@@ -934,22 +932,30 @@ export function initStatButtons(store) {
 
   const statButtons = statContainer.querySelectorAll("button");
   if (!statButtons.length) {
-    resolveStatButtonsReady();
+    window.statButtonsReadyPromise = Promise.resolve();
     guard(() => console.warn("[uiHelpers] #stat-buttons has no buttons"));
     return { enable: () => {}, disable: () => {} };
   }
 
-  let resolveReady = typeof window !== "undefined" ? window.__resolveStatButtonsReady : undefined;
-  const resetReadyPromise = () => {
-    ({ resolve: resolveReady } = resetStatButtonsReadyPromise());
+  let resolveReady;
+  const resetReady = () => {
+    window.statButtonsReadyPromise = new Promise((r) => {
+      resolveReady = r;
+      window.__resolveStatButtonsReady = r;
+    });
   };
 
-  const setEnabled = (enable = true) =>
-    setStatButtonsEnabled(statButtons, statContainer, enable, resolveReady, resetReadyPromise);
+  const enable = () => {
+    enableStatButtons(statButtons, statContainer);
+    resolveReady?.();
+  };
+  const disable = () => {
+    disableStatButtons(statButtons, statContainer);
+    resetReady();
+  };
 
-  // Start disabled until the game enters the player action state
-  resetReadyPromise();
-  setEnabled(false);
+  resetReady();
+  disable();
 
   statButtons.forEach((btn) => {
     const statName = btn.dataset.stat;
@@ -969,7 +975,7 @@ export function initStatButtons(store) {
       });
       // Disable buttons right away; selected class is applied via the
       // 'statSelected' event to keep a single source of truth.
-      guard(() => setEnabled(false));
+      guard(disable);
     };
     btn.addEventListener("click", clickHandler);
     btn.addEventListener("keydown", (e) => {
@@ -980,14 +986,9 @@ export function initStatButtons(store) {
     });
   });
 
-  // Optional keyboard shortcuts (1..5) behind feature flag `statHotkeys`
-  const handleHotkeys = createStatHotkeyHandler(statButtons);
-  guard(() => document.addEventListener("keydown", handleHotkeys));
+  wireStatHotkeys(statButtons);
 
-  return {
-    enable: () => setEnabled(true),
-    disable: () => setEnabled(false)
-  };
+  return { enable, disable };
 }
 
 /**
