@@ -1,4 +1,5 @@
 {
   "github-actions.workflows.pinned.workflows": [".github/workflows/test.yml"],
-  "remote.restoreForwardedPorts": true
+  "remote.restoreForwardedPorts": true,
+  "amazonQ.telemetry": false
 }

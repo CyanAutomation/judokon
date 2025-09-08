@@ -23,6 +23,7 @@ import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
 import { isEnabled } from "../helpers/featureFlags.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
+import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 
 /**
  * Update the round counter from engine state.
@@ -154,6 +155,41 @@ async function beginSelectionTimer(store) {
 }
 
 /**
+ * Handle replay button click to restart the match.
+ *
+ * @pseudocode
+ * 1. Reset the battle engine.
+ * 2. Clear any existing state.
+ * 3. Restart the match.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @returns {Promise<void>}
+ */
+async function handleReplay(store) {
+  try {
+    // Reset engine state
+    const { createBattleEngine } = await import("../helpers/battleEngineFacade.js");
+    createBattleEngine();
+    
+    // Reset store state
+    store.selectionMade = false;
+    store.playerChoice = null;
+    
+    // Clear any pending timers
+    if (store.statTimeoutId) {
+      clearTimeout(store.statTimeoutId);
+      store.statTimeoutId = null;
+    }
+    if (store.autoSelectId) {
+      clearTimeout(store.autoSelectId);
+      store.autoSelectId = null;
+    }
+  } catch (err) {
+    console.debug("battleClassic: handleReplay failed", err);
+  }
+}
+
+/**
  * Start a round cycle: update counter, draw UI, run timer.
  *
  * @pseudocode
@@ -176,6 +212,13 @@ async function startRoundCycle(store) {
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
   setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
+  
+  // Initialize scoreboard adapter to handle display.score.update events
+  try {
+    initScoreboardAdapter();
+  } catch (err) {
+    console.debug("battleClassic: initScoreboardAdapter failed", err);
+  }
   // Seed visible defaults to avoid invisible empty elements and enable a11y announcements
   try {
     updateScore(0, 0);
