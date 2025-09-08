@@ -1,5 +1,10 @@
 import { setupScoreboard, updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
-import { createBattleEngine, getPointsToWin, STATS } from "../helpers/battleEngineFacade.js";
+import {
+  createBattleEngine,
+  getPointsToWin,
+  STATS,
+  on as onEngine
+} from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer } from "../helpers/classicBattle/timerService.js";
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
@@ -189,6 +194,27 @@ function init() {
       initDebugPanel();
     } catch (err) {
       console.debug("battleClassic: initDebugPanel failed", err);
+    }
+    // Show end-of-match modal on engine event to cover all resolution paths
+    try {
+      onEngine?.("matchEnded", (detail) => {
+        try {
+          const outcome = String(detail?.outcome || "");
+          const winner =
+            outcome === "matchWinPlayer"
+              ? "player"
+              : outcome === "matchWinOpponent"
+                ? "opponent"
+                : "none";
+          const scores = {
+            player: Number(detail?.playerScore) || 0,
+            opponent: Number(detail?.opponentScore) || 0
+          };
+          showEndModal(store, { winner, scores });
+        } catch {}
+      });
+    } catch (err) {
+      console.debug("battleClassic: binding matchEnded listener failed", err);
     }
     // Setup battle state badge when enabled
     try {

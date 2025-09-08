@@ -40,7 +40,7 @@ export function setBattleStateGetter(fn) {
  *
  * @pseudocode
  * 1. Invoke the stored `dispatcher` with `eventName` and `payload`.
- * 2. If the dispatcher throws, swallow the error.
+ * 2. If the dispatcher throws, log the error.
  *
  * @param {string} eventName
  * @param {any} [payload]
@@ -49,8 +49,8 @@ export function setBattleStateGetter(fn) {
 export async function dispatchBattleEvent(eventName, payload) {
   try {
     await dispatcher(eventName, payload);
-  } catch {
-    // Swallow dispatcher errors to keep battle flow
+  } catch (error) {
+    console.error(`[eventBus] Failed to dispatch event "${eventName}":`, error);
   }
 }
 
@@ -59,15 +59,15 @@ export async function dispatchBattleEvent(eventName, payload) {
  *
  * @pseudocode
  * 1. Invoke the stored `stateGetter`.
- * 2. If invocation throws, swallow the error and return `null`.
+ * 2. If invocation throws, log the error and return `null`.
  *
  * @returns {string|null}
  */
 export function getBattleState() {
   try {
     return stateGetter();
-  } catch {
-    // Swallow getter errors; state is unknown
+  } catch (error) {
+    console.error(`[eventBus] Failed to get battle state:`, error);
     return null;
   }
 }

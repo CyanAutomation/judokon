@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { resolve } from "node:path";
 
 test.describe("Classic Battle page scaffold", () => {
   test("loads without console errors and has scoreboard nodes", async ({ page }) => {
@@ -7,8 +6,7 @@ test.describe("Classic Battle page scaffold", () => {
     page.on("console", (msg) => {
       if (msg.type() === "error") errors.push(msg.text());
     });
-    const filePath = resolve(process.cwd(), "src/pages/battleClassic.html");
-    await page.goto(`file://${filePath}`);
+    await page.goto("/src/pages/battleClassic.html");
 
     await expect(page.locator("header #round-message")).toBeVisible();
     await expect(page.locator("header #next-round-timer")).toBeVisible();

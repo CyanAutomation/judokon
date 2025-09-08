@@ -7,7 +7,8 @@ test.describe("Classic Battle end-of-match modal", () => {
       window.__NEXT_ROUND_COOLDOWN_MS = 500;
     });
     await page.goto("/src/pages/battleClassic.html");
-    // pointsToWin=1
+    // Ensure initialization has created the engine, then pointsToWin=1
+    await page.waitForFunction(() => !!window.battleStore);
     await page.evaluate(async () => {
       const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
       setPointsToWin(1);

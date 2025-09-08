@@ -1,10 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { resolve } from "node:path";
 
 test.describe("Classic Battle round select", () => {
   test("choosing 15 marks target", async ({ page }) => {
-    const filePath = resolve(process.cwd(), "src/pages/battleClassic.html");
-    await page.goto(`file://${filePath}`);
+    await page.goto("/src/pages/battleClassic.html");
 
     // Wait for modal buttons and click the Long (id=3) option
     await page.locator("#round-select-3").click();
