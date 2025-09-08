@@ -16,6 +16,26 @@ import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
 
+// Early module-level mute: some modules emit test-oriented logs during import
+// time which run before `beforeEach` executes. When running under Vitest we
+// apply a global mute immediately to avoid captured worker stdout lines.
+try {
+  const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
+  if (IS_VITEST) {
+    // mute console methods immediately
+    muteConsole(["warn", "error", "debug", "log"]);
+    try {
+      if (process && process.stdout && process.stderr) {
+        // save originals at module scope so afterEach can restore them
+        __originalStdoutWrite = process.stdout.write;
+        __originalStderrWrite = process.stderr.write;
+        process.stdout.write = () => {};
+        process.stderr.write = () => {};
+      }
+    } catch {}
+  }
+} catch {}
+
 vi.mock("../src/helpers/classicBattle/orchestrator.js", async (importOriginal) => {
   const mod = await importOriginal();
   return {
