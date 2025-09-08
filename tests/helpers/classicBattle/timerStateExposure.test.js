@@ -56,10 +56,6 @@ describe("classic battle timer state exposure", () => {
     document.body.innerHTML = "";
     timerState = { remaining: 30, paused: false };
     store = {};
-    vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
-      store[k] = v;
-    });
-    vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
     orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
     await orchestrator.initClassicBattleOrchestrator({});
     machine = orchestrator.getBattleStateMachine();

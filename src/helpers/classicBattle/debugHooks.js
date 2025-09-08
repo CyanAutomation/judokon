@@ -29,4 +29,12 @@ export function readDebugState(key) {
   return debugState[key];
 }
 
+// Expose hooks on global for modules that cannot reliably share ESM bindings in tests.
+try {
+  if (typeof globalThis !== "undefined") {
+    globalThis.__classicBattleDebugExpose = exposeDebugState;
+    globalThis.__classicBattleDebugRead = readDebugState;
+  }
+} catch {}
+
 export default { exposeDebugState, readDebugState };

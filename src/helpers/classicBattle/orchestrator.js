@@ -17,7 +17,7 @@ import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./ro
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
 import { getStateSnapshot } from "./battleDebug.js";
-import { exposeDebugState } from "./debugHooks.js";
+import * as debugHooks from "./debugHooks.js";
 import { preloadTimerUtils } from "../TimerController.js";
 import stateCatalog from "./stateCatalog.js";
 import { initScoreboardAdapter } from "./scoreboardAdapter.js";
@@ -97,23 +97,72 @@ function emitReadiness(from, to, event) {
  * @param {string|null} from - Previous state.
  * @param {string} to - New state.
  */
-function emitStateChange(from, to) {
-  try {
-    const engine = machine?.context?.engine;
-    const context = {
-      roundIndex: Number(engine?.getRoundsPlayed?.() || 0),
-      scores: engine?.getScores?.() || { playerScore: 0, opponentScore: 0 },
-      seed: engine?.getSeed?.(),
-      timerState: engine?.getTimerState?.() || null
-    };
-    emitBattleEvent("control.state.changed", {
-      from,
-      to,
-      context,
-      catalogVersion: stateCatalog?.version || "v1"
-    });
+  function emitStateChange(from, to) {
+    try {
+      const engine = machine?.context?.engine;
+      const context = {
+        roundIndex: Number(engine?.getRoundsPlayed?.() || 0),
+        scores: engine?.getScores?.() || { playerScore: 0, opponentScore: 0 },
+        seed: engine?.getSeed?.(),
+        timerState: engine?.getTimerState?.() || null
+      };
+      // Mirror timer state for tests/diagnostics
+      if (context.timerState) {
+        try {
+          // Also write onto the shared store for tests that spy on debug hooks
+          try {
+            const s = machine?.context?.store;
+            if (s && typeof s === "object") s.classicBattleTimerState = context.timerState;
+          } catch {}
+          if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+            globalThis.__classicBattleDebugExpose("classicBattleTimerState", context.timerState);
+          } else {
+            debugHooks.exposeDebugState("classicBattleTimerState", context.timerState);
+          }
+        } catch {}
+      }
+      emitBattleEvent("control.state.changed", {
+        from,
+        to,
+        context,
+        catalogVersion: stateCatalog?.version || "v1"
+      });
   } catch {
     // ignore: state change events should not block transitions
+  }
+}
+
+/**
+ * Mirror the engine timer state into debug hooks for tests and diagnostics.
+ *
+ * @pseudocode
+ * 1. Read `engine` from the current machine context.
+ * 2. If `engine.getTimerState` exists, call it and expose the result via
+ *    `exposeDebugState('classicBattleTimerState', state)`.
+ * 3. Swallow errors to keep transitions resilient.
+ *
+ * @returns {void}
+ */
+function mirrorTimerState() {
+  try {
+    const engine = machine?.context?.engine;
+    const state = typeof engine?.getTimerState === "function" ? engine.getTimerState() : undefined;
+    if (state) {
+      // Also write onto the shared store for tests that spy on debug hooks
+      try {
+        const s = machine?.context?.store;
+        if (s && typeof s === "object") s.classicBattleTimerState = state;
+      } catch {}
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        try {
+          globalThis.__classicBattleDebugExpose("classicBattleTimerState", state);
+        } catch {}
+      } else {
+        debugHooks.exposeDebugState("classicBattleTimerState", state);
+      }
+    }
+  } catch {
+    // ignore: timer state exposure is best-effort for tests
   }
 }
 
@@ -222,7 +271,7 @@ function attachListeners(machineRef) {
   } catch {
     // ignore: catalog event is informational
   }
-  exposeDebugState("getClassicBattleMachine", () => machineRef);
+  debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef);
   if (typeof document !== "undefined") {
     visibilityHandler = () => {
       const engine = machineRef.context?.engine;
@@ -237,6 +286,23 @@ function attachListeners(machineRef) {
       emitBattleEvent("debugPanelUpdate");
       engine.handleTimerDrift(drift);
     };
+    // Expose initial timer state for tests/diagnostics
+    try {
+      const ts = typeof engine.getTimerState === "function" ? engine.getTimerState() : null;
+      if (ts) {
+        try {
+          const s = machineRef?.context?.store;
+          if (s && typeof s === "object") s.classicBattleTimerState = ts;
+        } catch {}
+        try {
+          if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+            globalThis.__classicBattleDebugExpose("classicBattleTimerState", ts);
+          } else {
+            debugHooks.exposeDebugState("classicBattleTimerState", ts);
+          }
+        } catch {}
+      }
+    } catch {}
     if (typeof window !== "undefined") {
       window.injectClassicBattleError = (msg) => {
         engine.injectError(msg);
@@ -353,11 +419,16 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     emitDiagnostics(from, to, event);
     emitReadiness(from, to, event);
     emitStateChange(from, to);
+    mirrorTimerState();
     emitResolution(event);
   };
 
   machine = await createStateManager(onEnter, context, onTransition);
   attachListeners(machine);
+  // Prime timer state exposure for tests/diagnostics
+  try {
+    mirrorTimerState();
+  } catch {}
   return machine;
 }
 
