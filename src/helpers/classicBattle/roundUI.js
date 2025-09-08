@@ -197,8 +197,8 @@ export function bindRoundResolved() {
           }
         })();
         if (!orchestrated) {
-          if (secs >= 2) setTimeout(() => updateSnackbar(`Next round in: ${secs - 1}s`), 2000);
-          if (secs >= 3) setTimeout(() => updateSnackbar(`Next round in: ${secs - 2}s`), 3000);
+          if (secs >= 2) setTimeout(() => updateSnackbar(`Next round in: ${secs - 1}s`), 1000);
+          if (secs >= 3) setTimeout(() => updateSnackbar(`Next round in: ${secs - 2}s`), 2000);
         }
       } catch {}
     }
@@ -363,9 +363,9 @@ export function bindRoundUIEventHandlersDynamic() {
           }
         })();
         if (!orchestrated) {
-          // Delay updates by 2s/3s to align with test expectations
-          if (secs >= 2) setTimeout(() => uSb(`Next round in: ${secs - 1}s`), 2000);
-          if (secs >= 3) setTimeout(() => uSb(`Next round in: ${secs - 2}s`), 3000);
+          // Delay updates by 1s/2s to align with test expectations
+          if (secs >= 2) setTimeout(() => uSb(`Next round in: ${secs - 1}s`), 1000);
+          if (secs >= 3) setTimeout(() => uSb(`Next round in: ${secs - 2}s`), 2000);
         }
       } catch {}
     }

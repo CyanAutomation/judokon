@@ -86,7 +86,9 @@ export function offBattleEvent(type, handler) {
 export function emitBattleEvent(type, detail) {
   try {
     getTarget().dispatchEvent(new CustomEvent(type, { detail }));
-  } catch {}
+  } catch (error) {
+    console.error(`[battleEvents] Failed to emit event "${type}":`, error);
+  }
 }
 
 /**
