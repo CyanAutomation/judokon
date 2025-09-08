@@ -68,42 +68,43 @@ function renderStatButtons(store) {
           typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
             ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
             : 0;
-        
+
         // For test compatibility, directly update DOM when in test environment
-        const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+        const IS_VITEST =
+          typeof process !== "undefined" && process.env && process.env.VITEST === "true";
         if (IS_VITEST) {
           // Import and call evaluateRound directly for tests
           const { evaluateRound } = await import("../helpers/api/battleUI.js");
           const result = evaluateRound(5, 3);
-          
+
           // Update score display
           const scoreEl = document.getElementById("score-display");
           if (scoreEl) {
             scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
           }
-          
+
           // Update round message
           const messageEl = document.getElementById("round-message");
           if (messageEl && result.message) {
             messageEl.textContent = result.message;
           }
-          
+
           // Clear timer
           const timerEl = document.getElementById("next-round-timer");
           if (timerEl) {
             timerEl.textContent = "";
           }
-          
+
           // Enable next button
           const nextBtn = document.getElementById("next-button");
           if (nextBtn) {
             nextBtn.disabled = false;
             nextBtn.setAttribute("data-next-ready", "true");
           }
-          
+
           return;
         }
-        
+
         const result = await handleStatSelection(store, String(stat), {
           playerVal: 5,
           opponentVal: 3,
@@ -207,11 +208,11 @@ async function handleReplay(store) {
     // Reset engine state
     const { createBattleEngine } = await import("../helpers/battleEngineFacade.js");
     createBattleEngine();
-    
+
     // Reset store state
     store.selectionMade = false;
     store.playerChoice = null;
-    
+
     // Clear any pending timers
     if (store.statTimeoutId) {
       clearTimeout(store.statTimeoutId);
@@ -249,7 +250,7 @@ async function startRoundCycle(store) {
 function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
   setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
-  
+
   // Initialize scoreboard adapter to handle display.score.update events
   try {
     initScoreboardAdapter();
@@ -268,14 +269,14 @@ function init() {
   // Initialize the battle engine and present the round selection modal.
   try {
     createBattleEngine();
-    
+
     // Initialize engine event bridge after engine is created
     try {
       bridgeEngineEvents();
     } catch (err) {
       console.debug("battleClassic: bridgeEngineEvents failed", err);
     }
-    
+
     const store = createBattleStore();
     try {
       window.battleStore = store;

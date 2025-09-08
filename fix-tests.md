@@ -26,5 +26,5 @@ The `evaluateRound` function in `battleUI.js` was using a fallback implementatio
 ## Tests Fixed
 
 - `tests/classicBattle/stat-buttons.test.js`
-- `tests/helpers/classicBattle/matchEnd.test.js` 
+- `tests/helpers/classicBattle/matchEnd.test.js`
 - `tests/helpers/classicBattle/statSelection.test.js`

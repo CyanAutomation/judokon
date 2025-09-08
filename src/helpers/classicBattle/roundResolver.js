@@ -105,14 +105,14 @@ let isResolving = false;
 export function evaluateRoundData(playerVal, opponentVal) {
   const base = evaluateRoundApi(playerVal, opponentVal);
   const result = { ...base, playerVal, opponentVal };
-  
+
   // Debug logging for message generation
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      console.log('[DEBUG] evaluateRoundData result:', result);
+      console.log("[DEBUG] evaluateRoundData result:", result);
     }
   } catch {}
-  
+
   return result;
 }
 
@@ -187,43 +187,42 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   } catch {}
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
-  
 
   try {
     const result = engineFacade.handleStatSelection(pVal, oVal);
     try {
       debugLog("DEBUG: evaluateOutcome result", result);
     } catch {}
-    
+
     // Add message generation and DOM updates for tests
     const message = getOutcomeMessage(result.outcome);
     const resultWithMessage = { ...result, message };
-    
+
     try {
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        console.log('[DEBUG] evaluateOutcome with message:', {
+        console.log("[DEBUG] evaluateOutcome with message:", {
           outcome: result.outcome,
           message,
           playerScore: result.playerScore,
           opponentScore: result.opponentScore
         });
-        
+
         const messageEl = document.querySelector("header #round-message");
         const scoreEl = document.querySelector("header #score-display");
-        
+
         if (messageEl && message) {
           messageEl.textContent = message;
-          console.log('[DEBUG] Set round message in evaluateOutcome:', messageEl.textContent);
+          console.log("[DEBUG] Set round message in evaluateOutcome:", messageEl.textContent);
         }
-        
+
         if (scoreEl) {
-          scoreEl.innerHTML = '';
+          scoreEl.innerHTML = "";
           scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
-          console.log('[DEBUG] Set score in evaluateOutcome:', scoreEl.textContent);
+          console.log("[DEBUG] Set score in evaluateOutcome:", scoreEl.textContent);
         }
       }
     } catch {}
-    
+
     return resultWithMessage;
   } catch (error) {
     // Fallback when engine is not initialized
@@ -308,7 +307,7 @@ export async function updateScoreboard(result) {
       } catch {}
     }
   } catch {}
-  
+
   // Force DOM update for tests regardless of scoreboard component
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -318,7 +317,7 @@ export async function updateScoreboard(result) {
       }
     }
   } catch {}
-  
+
   return result;
 }
 
@@ -365,7 +364,7 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
       }
     } catch {}
   } catch {}
-  
+
   // Update DOM directly for tests to ensure messages are displayed
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -375,7 +374,7 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
       }
     }
   } catch {}
-  
+
   // Force DOM update for round messages in tests
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -385,7 +384,7 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
       }
     }
   } catch {}
-  
+
   store.playerChoice = null;
   return result;
 }
@@ -411,7 +410,7 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
       console.log("[test] computeRoundResult called with:", { stat, playerVal, opponentVal });
     }
   } catch {}
-  
+
   const evaluated = evaluateOutcome(store, stat, playerVal, opponentVal);
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {

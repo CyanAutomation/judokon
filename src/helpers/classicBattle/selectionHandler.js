@@ -195,11 +195,16 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
         const msg = document.getElementById("round-message");
         if (msg) msg.textContent = "";
       } catch {}
-      try {
-        const ui = await import("../showSnackbar.js");
-        const i18n = await import("../i18n.js");
-        ui.showSnackbar(i18n.t("ui.opponentChoosing"));
-      } catch {}
+      // Only show "Opponent is choosing..." snackbar when using direct resolution
+      // to avoid interfering with orchestrator countdown displays
+      const forceDirectResolution = opts.forceDirectResolution || store.forceDirectResolution;
+      if (forceDirectResolution) {
+        try {
+          const ui = await import("../showSnackbar.js");
+          const i18n = await import("../i18n.js");
+          ui.showSnackbar(i18n.t("ui.opponentChoosing"));
+        } catch {}
+      }
     }
   } catch {}
 }
@@ -245,7 +250,6 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * @returns {Promise<ReturnType<typeof resolveRound>|void>} The resolved round result when handled locally.
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
-  
   try {
     if (IS_VITEST)
       console.log("[DEBUG] handleStatSelection called", {
@@ -271,7 +275,8 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   let handledByOrchestrator;
   try {
     // Check for test-specific flag to force direct resolution for score accumulation tests
-    const forceDirectResolution = IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
+    const forceDirectResolution =
+      IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
     if (forceDirectResolution) {
       handledByOrchestrator = false;
     } else {
@@ -303,24 +308,24 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   } catch {}
 
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
-  
+
   // Direct DOM updates for test compatibility
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       const messageEl = document.querySelector("header #round-message");
       const scoreEl = document.querySelector("header #score-display");
-      
+
       if (result && result.message && messageEl) {
         messageEl.textContent = result.message;
       }
-      
+
       if (result && scoreEl) {
-        scoreEl.innerHTML = '';
+        scoreEl.innerHTML = "";
         scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
       }
     }
   } catch {}
-  
+
   try {
     await dispatchBattleEvent("roundResolved");
   } catch {}

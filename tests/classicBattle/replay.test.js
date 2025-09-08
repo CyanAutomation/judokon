@@ -1,8 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-
-
 describe("Classic Battle replay flow", () => {
   test("after match end, clicking Replay resets scoreboard", async () => {
     const file = resolve(process.cwd(), "src/pages/battleClassic.html");
@@ -12,7 +10,7 @@ describe("Classic Battle replay flow", () => {
     // Initialize the page
     const mod = await import("../../src/pages/battleClassic.init.js");
     if (typeof mod.init === "function") mod.init();
-    
+
     // Reduce points to win so one win ends the match
     const engine = await import("../../src/helpers/battleEngineFacade.js");
     engine.setPointsToWin?.(1);
@@ -21,10 +19,10 @@ describe("Classic Battle replay flow", () => {
     console.log("[test] Calling handleStatSelection directly");
     const result = engine.handleStatSelection(5, 3);
     console.log("[test] Battle result:", result);
-    
+
     // Wait a moment for events to propagate
     await new Promise((r) => setTimeout(r, 10));
-    
+
     const score = document.getElementById("score-display");
     console.log("[test] Score after stat selection:", score?.textContent);
     expect(score.textContent || "").toMatch(/You:\s*1/);

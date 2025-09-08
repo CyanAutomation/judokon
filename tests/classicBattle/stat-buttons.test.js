@@ -7,7 +7,7 @@ describe("Classic Battle stat buttons", () => {
   test("render enabled after start; clicking resolves and starts cooldown", async () => {
     // Reset fallback scores for clean test state
     resetFallbackScores();
-    
+
     const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
       if (cat === "roundTimer") return 5; // allow time for click
       if (cat === "coolDownTimer") return 1;

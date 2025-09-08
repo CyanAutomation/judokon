@@ -276,7 +276,12 @@ export class BattleEngine {
    * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   handleStatSelection(playerVal, opponentVal) {
-    console.log("BattleEngine: handleStatSelection called with playerVal:", playerVal, "opponentVal:", opponentVal);
+    console.log(
+      "BattleEngine: handleStatSelection called with playerVal:",
+      playerVal,
+      "opponentVal:",
+      opponentVal
+    );
     if (this.matchEnded) {
       return this.#resultWhenMatchEnded(playerVal, opponentVal);
     }
@@ -284,7 +289,12 @@ export class BattleEngine {
     const outcome = determineOutcome(playerVal, opponentVal);
     console.log("BattleEngine: determineOutcome result:", outcome);
     applyOutcome(this, outcome);
-    console.log("BattleEngine: after applyOutcome, playerScore:", this.playerScore, "opponentScore:", this.opponentScore);
+    console.log(
+      "BattleEngine: after applyOutcome, playerScore:",
+      this.playerScore,
+      "opponentScore:",
+      this.opponentScore
+    );
     this.roundsPlayed += 1;
     return this.#finalizeRound(outcome);
   }

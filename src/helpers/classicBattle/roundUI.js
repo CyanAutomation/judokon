@@ -198,10 +198,7 @@ export function bindRoundResolved() {
           // Drive a JS-based countdown in non-orchestrated environments so the
           // snackbar updates are anchored relative to this point in time.
           const secs = Math.max(3, computeNextRoundCooldown());
-          Promise.all([
-            import("../timers/createRoundTimer.js"),
-            import("../CooldownRenderer.js")
-          ])
+          Promise.all([import("../timers/createRoundTimer.js"), import("../CooldownRenderer.js")])
             .then(([{ createRoundTimer }, { attachCooldownRenderer }]) => {
               const timer = createRoundTimer();
               attachCooldownRenderer(timer, secs);

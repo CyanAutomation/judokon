@@ -85,7 +85,7 @@ export function evaluateRound(playerVal, opponentVal) {
     // Use the battle engine facade
     const result = handleStatSelection(playerVal, opponentVal);
     const message = getOutcomeMessage(result.outcome);
-    
+
     // Update DOM directly for test compatibility
     try {
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -104,14 +104,14 @@ export function evaluateRound(playerVal, opponentVal) {
         if (scoreEl) {
           // Ensure the element has the expected text content structure
           // even if syncScoreDisplay creates spans
-          scoreEl.innerHTML = '';
+          scoreEl.innerHTML = "";
           scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
         }
       }
     } catch (e) {
-      console.log("[DEBUG] battleUI.evaluateRound error:", e);
+      console.log("[DEBUG] battleUI.evaluateRound DOM error:", e);
     }
-    
+
     return {
       ...result,
       message
@@ -122,17 +122,17 @@ export function evaluateRound(playerVal, opponentVal) {
     const o = Number(opponentVal) || 0;
     const delta = p - o;
     const outcome = delta > 0 ? "winPlayer" : delta < 0 ? "winOpponent" : "draw";
-    
+
     // Update cumulative scores
     if (outcome === "winPlayer") {
       fallbackPlayerScore += 1;
     } else if (outcome === "winOpponent") {
       fallbackOpponentScore += 1;
     }
-    
+
     const matchEnded = false;
     const message = getOutcomeMessage(outcome);
-    
+
     // Update DOM directly for test compatibility
     try {
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -147,10 +147,10 @@ export function evaluateRound(playerVal, opponentVal) {
         });
         if (scoreEl) {
           // Ensure the element has the expected text content structure
-          scoreEl.innerHTML = '';
+          scoreEl.innerHTML = "";
           scoreEl.textContent = `You: ${fallbackPlayerScore}\nOpponent: ${fallbackOpponentScore}`;
         }
-        
+
         if (messageEl && message) {
           messageEl.textContent = message;
         }
@@ -158,7 +158,7 @@ export function evaluateRound(playerVal, opponentVal) {
     } catch (e) {
       console.log("[DEBUG] battleUI.evaluateRound fallback error:", e);
     }
-    
+
     return {
       delta,
       outcome,

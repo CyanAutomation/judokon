@@ -30,7 +30,7 @@ let currentFlags;
 beforeEach(() => {
   // Reset fallback scores for clean test state
   resetFallbackScores();
-  
+
   ({
     timerSpy,
     fetchJsonMock,
