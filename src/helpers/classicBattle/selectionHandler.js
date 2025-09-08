@@ -266,6 +266,10 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   // In those cases, treat the presence of a battle state as authoritative and
   // avoid resolving locally to prevent duplicate dispatches.
   try {
+    // If the machine cleared the player's choice, it took over resolution.
+    if (store.playerChoice == null) {
+      return;
+    }
     const current = typeof getBattleState === "function" ? getBattleState() : null;
     if (current) {
       return;
