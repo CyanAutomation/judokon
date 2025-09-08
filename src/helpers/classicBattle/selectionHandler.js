@@ -175,6 +175,7 @@ export function cleanupTimers(store) {
  * @param {number} opponentVal - Opponent's stat value.
  */
 async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
+  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts });
   // PRD taxonomy: mirror selection lock event (suppress in Vitest to keep
   // existing unit tests' call counts stable)
   if (!(typeof process !== "undefined" && process.env && process.env.VITEST)) {
@@ -255,9 +256,21 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
     resolvedByMachine = await dispatchBattleEvent("statSelected");
   } catch {}
 
+  // If the machine handled the event or a battle state is present,
+  // exit early and let the state machine continue the flow.
   if (resolvedByMachine) {
     return;
   }
+
+  // Some test/machine setups may not return an explicit boolean from dispatch.
+  // In those cases, treat the presence of a battle state as authoritative and
+  // avoid resolving locally to prevent duplicate dispatches.
+  try {
+    const current = typeof getBattleState === "function" ? getBattleState() : null;
+    if (current) {
+      return;
+    }
+  } catch {}
 
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
   try {

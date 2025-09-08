@@ -10,6 +10,16 @@ describe("classicBattle stat selection timing", () => {
       if (typeof window !== "undefined" && window.__disableSnackbars)
         delete window.__disableSnackbars;
     } catch {}
+    document.body.innerHTML = `
+      <header>
+        <p id="round-message"></p>
+        <p id="next-round-timer"></p>
+        <p id="round-counter"></p>
+        <p id="score-display"></p>
+      </header>
+      <div id="player-card"></div>
+      <div id="opponent-card"></div>
+    `;
   });
 
   it("auto-selects a stat when timer expires", async () => {
@@ -19,6 +29,10 @@ describe("classicBattle stat selection timing", () => {
     const battleMod = await initClassicBattleTest({ afterMock: true });
     const store = battleMod.createBattleStore();
     battleMod._resetForTest(store);
+    document.getElementById("player-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
+    document.getElementById("opponent-card").innerHTML =
+      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
     await battleMod.startRound(store, battleMod.applyRoundUI);
     const pending = battleMod.__triggerRoundTimeoutNow(store);
     await timerSpy.runAllTimersAsync();

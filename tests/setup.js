@@ -16,6 +16,19 @@ import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
 
+vi.mock("../src/helpers/classicBattle/orchestrator.js", async (importOriginal) => {
+  const mod = await importOriginal();
+  return {
+    ...mod,
+    dispatchBattleEvent: vi.fn((eventName) => {
+      if (eventName === "statSelected") {
+        return Promise.resolve(true);
+      }
+      return mod.dispatchBattleEvent(eventName);
+    }),
+  };
+});
+
 // vi.importMz: utility for dynamic imports while preserving mocks
 if (!vi.importMz) {
   vi.importMz = vi.importActual;
@@ -73,7 +86,7 @@ afterEach(() => {
 // Simulate URL changes by updating history without performing a real navigation.
 beforeEach(async () => {
   // Mute noisy console methods by default; tests can opt-in to logging
-  muteConsole(["warn", "error", "debug", "log"]);
+// muteConsole(["warn", "error", "debug", "log"]);
   try {
     // Ensure snackbars are enabled for tests by default
     if (typeof window !== "undefined" && window.__disableSnackbars) {

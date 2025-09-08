@@ -15,6 +15,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.js"],
+    log: true,
     /**
      * IMPORTANT: Force Node worker threads and disable the browser runner.
      * This prevents crashes where Vitest's runtime calls `process.listeners(...)`
