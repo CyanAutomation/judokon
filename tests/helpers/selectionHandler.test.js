@@ -97,7 +97,7 @@ describe("handleStatSelection helpers", () => {
     spy.mockRestore();
   });
 
-  it('should not call resolveRoundDirect when orchestrator handles the event', async () => {
+  it("should not call resolveRoundDirect when orchestrator handles the event", async () => {
     const { resolveRound } = await import("../../src/helpers/classicBattle/roundResolver.js");
     dispatchBattleEvent.mockResolvedValue(true); // Simulate orchestrator handling it
 
@@ -107,7 +107,7 @@ describe("handleStatSelection helpers", () => {
     expect(resolveRound).not.toHaveBeenCalled();
   });
 
-  it('should call resolveRoundDirect when orchestrator does not handle the event', async () => {
+  it("should call resolveRoundDirect when orchestrator does not handle the event", async () => {
     const { resolveRound } = await import("../../src/helpers/classicBattle/roundResolver.js");
     dispatchBattleEvent.mockResolvedValue(false); // Simulate orchestrator not handling it
 

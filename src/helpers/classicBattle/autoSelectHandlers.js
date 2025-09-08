@@ -51,11 +51,7 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
  *       ii. Trigger `autoSelectStat(onSelect)` shortly after.
  * 2. Store the timeout id on `store.autoSelectId`.
  */
-export function handleStatSelectionTimeout(
-  store,
-  onSelect,
-  timeoutMs = 5000
-) {
+export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
   const scheduler = getScheduler();
   store.autoSelectId = scheduler.setTimeout(() => {
     if (store?.selectionMade) return;
@@ -86,7 +82,6 @@ export function handleStatSelectionTimeout(
             autoSelectStat(onSelect);
           } catch {}
         }, 250); // 250ms after countdown message
-
       }, 800); // 800ms after stalled message
     }
   }, timeoutMs);
