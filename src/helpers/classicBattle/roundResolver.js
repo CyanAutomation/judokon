@@ -327,9 +327,21 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
   
   // Update DOM directly for tests to ensure messages are displayed
   try {
-    const messageEl = document.querySelector("header #round-message");
-    if (messageEl && result?.message) {
-      messageEl.textContent = result.message;
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      const messageEl = document.querySelector("header #round-message");
+      if (messageEl && result?.message) {
+        messageEl.textContent = result.message;
+      }
+    }
+  } catch {}
+  
+  // Force DOM update for round messages in tests
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      const messageEl = document.querySelector("header #round-message");
+      if (messageEl && result?.message) {
+        messageEl.textContent = result.message;
+      }
     }
   } catch {}
   

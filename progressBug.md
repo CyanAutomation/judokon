@@ -93,6 +93,34 @@ Battle engine is not properly initialized in test environments, causing `handleS
 - Verify fixes work in both test and browser environments
 - Clean up any temporary debugging code
 
+## Current Status Summary
+
+### ✅ Fixed: 1 test file
+- `stat-buttons.test.js` - ✅ PASSING
+
+### ❌ Still Failing: 2 test files (5 total failures)
+- `matchEnd.test.js` (2 failures): Score display issues
+- `statSelection.test.js` (3 failures): Round message issues
+
+### Key Findings
+1. **BattleEngine Works Correctly**: Engine is initialized and tracking scores properly
+2. **DOM Updates Not Taking Effect**: Despite multiple DOM update attempts, elements remain unchanged
+3. **Message Generation Works**: Messages are correctly generated in `getOutcomeMessage`
+4. **Fallback Logic Added**: Multiple fallback DOM updates added but not effective
+
+### Attempted Fixes
+- ✅ Fixed DOM selectors to target `header #score-display` and `header #round-message`
+- ✅ Added fallback score tracking in `battleUI.js`
+- ✅ Added direct DOM updates in `roundResolver.js` `updateScoreboard` function
+- ✅ Added direct DOM updates in `roundResolver.js` `emitRoundResolved` function  
+- ✅ Added direct DOM updates in `battleUI.js` `evaluateRound` function
+- ❌ All DOM updates fail to take effect in test environment
+
+### Next Steps Needed
+- Investigate why DOM updates aren't working despite correct selectors
+- Check if DOM elements exist and are accessible during test execution
+- Consider alternative approaches to ensure test compatibility
+
 ## Success Criteria
 - All 5 previously failing tests now pass
 - No new test failures introduced
