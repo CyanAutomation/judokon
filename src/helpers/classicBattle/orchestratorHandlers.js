@@ -131,7 +131,7 @@ export function isStateTransition(from, to) {
  */
 export async function waitingForMatchStartEnter(machine) {
   if (isStateTransition("waitingForMatchStart", "waitingForMatchStart")) return;
-  const { doResetGame } = machine.context;
+    const { doResetGame } = _machine.context;
   if (typeof doResetGame === "function") doResetGame();
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");

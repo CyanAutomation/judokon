@@ -195,16 +195,8 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
         const msg = document.getElementById("round-message");
         if (msg) msg.textContent = "";
       } catch {}
-      // Only show "Opponent is choosing..." snackbar when using direct resolution
-      // to avoid interfering with orchestrator countdown displays
-      const forceDirectResolution = opts.forceDirectResolution || store.forceDirectResolution;
-      if (forceDirectResolution) {
-        try {
-          const ui = await import("../showSnackbar.js");
-          const i18n = await import("../i18n.js");
-          ui.showSnackbar(i18n.t("ui.opponentChoosing"));
-        } catch {}
-      }
+      // Note: "Opponent is choosing..." snackbar will be shown later
+      // only if direct resolution is actually used
     }
   } catch {}
 }
@@ -304,6 +296,15 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
           console.log("[test] handleStatSelection: machine in non-decision state", current);
         } catch {}
       return;
+    }
+  } catch {}
+
+  // Show "Opponent is choosing..." snackbar only when using direct resolution
+  try {
+    if (IS_VITEST) {
+      const ui = await import("../showSnackbar.js");
+      const i18n = await import("../i18n.js");
+      ui.showSnackbar(i18n.t("ui.opponentChoosing"));
     }
   } catch {}
 

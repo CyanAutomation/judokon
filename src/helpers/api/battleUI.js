@@ -109,14 +109,14 @@ export function evaluateRound(playerVal, opponentVal) {
         }
       }
     } catch (e) {
-      console.log("[DEBUG] battleUI.evaluateRound DOM error:", e);
+      console.log("[DEBUG] battleUI.evaluateRound error:", e);
     }
 
     return {
       ...result,
       message
     };
-  } catch (error) {
+  } catch {
     // Fallback when engine is unavailable: compute a simple outcome with cumulative scoring
     const p = Number(playerVal) || 0;
     const o = Number(opponentVal) || 0;
