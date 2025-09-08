@@ -176,7 +176,14 @@ export function cleanupTimers(store) {
  * @param {number} opponentVal - Opponent's stat value.
  */
 async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
-  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts });
+  // Delay opponent message when not using direct resolution to let orchestrator handle countdown
+  const forceDirectResolution =
+    IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
+  const eventOpts = {
+    ...opts,
+    delayOpponentMessage: !forceDirectResolution
+  };
+  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts: eventOpts });
   // PRD taxonomy: mirror selection lock event (suppress in Vitest to keep
   // existing unit tests' call counts stable)
   if (!IS_VITEST) {
@@ -195,8 +202,7 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
         const msg = document.getElementById("round-message");
         if (msg) msg.textContent = "";
       } catch {}
-      // Note: "Opponent is choosing..." snackbar will be shown later
-      // only if direct resolution is actually used
+      // Snackbar display is handled elsewhere based on resolution path
     }
   } catch {}
 }

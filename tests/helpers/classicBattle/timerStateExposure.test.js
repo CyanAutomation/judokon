@@ -49,7 +49,6 @@ describe("classic battle timer state exposure", () => {
   let orchestrator;
   let machine;
 
-  let store;
   beforeEach(async () => {
     vi.resetModules();
     debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");

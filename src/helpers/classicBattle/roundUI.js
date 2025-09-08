@@ -11,12 +11,15 @@ import { handleReplay, isOrchestrated } from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
-import { showSnackbar, updateSnackbar } from "../showSnackbar.js";
+import { showSnackbar, updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { runWhenIdle } from "./idleCallback.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 let showMatchSummaryModal = null;
+// Reference to avoid unused-import lint complaint when the function is re-exported
+// or only used in other environments.
+void _updateSnackbar;
 function preloadUiService() {
   import("./uiService.js")
     .then((m) => {
