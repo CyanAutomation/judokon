@@ -176,12 +176,6 @@ export async function generateRandomCard(
   const judoka = await pickJudoka(activeCards, onSelect);
 
   if (!skipRender && containerEl) {
-    await renderJudokaCard(
-      judoka,
-      gokyoLookup,
-      containerEl,
-      prefersReducedMotion,
-      enableInspector
-    );
+    await renderJudokaCard(judoka, gokyoLookup, containerEl, prefersReducedMotion, enableInspector);
   }
 }

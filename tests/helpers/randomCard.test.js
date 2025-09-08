@@ -65,9 +65,7 @@ describe("loadGokyoLookup", () => {
       const result = await loadGokyoLookup();
 
       expect(fetchJsonMock).toHaveBeenCalled();
-      expect(createGokyoLookupMock).toHaveBeenCalledWith([
-        { id: 0, name: "Jigoku-guruma" }
-      ]);
+      expect(createGokyoLookupMock).toHaveBeenCalledWith([{ id: 0, name: "Jigoku-guruma" }]);
       expect(showSnackbarMock).toHaveBeenCalled();
       expect(result).toBe(lookup);
     });
@@ -293,4 +291,3 @@ describe("generateRandomCard", () => {
     expect(container.childNodes.length).toBe(0);
   });
 });
-
