@@ -172,7 +172,7 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
   } catch {}
   const pVal = Number.isFinite(Number(playerVal)) ? Number(playerVal) : 0;
   const oVal = Number.isFinite(Number(opponentVal)) ? Number(opponentVal) : 0;
-  const result = evaluateRound(store, stat, pVal, oVal);
+  const result = engineFacade.handleStatSelection(pVal, oVal);
   try {
     debugLog("DEBUG: evaluateOutcome result", result);
   } catch {}
@@ -229,6 +229,12 @@ export async function updateScoreboard(result) {
   resetStatButtons();
   try {
     const sb = await import("../setupScoreboard.js");
+    try {
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        // Print clearly to test stdout so we can observe call flow.
+        console.log("[test] updateScoreboard result:", result, "sb.updateScore?", typeof sb.updateScore);
+      }
+    } catch {}
     if (typeof sb.updateScore === "function") {
       sb.updateScore(result.playerScore, result.opponentScore);
     }
@@ -286,6 +292,13 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   const evaluated = evaluateOutcome(store, stat, playerVal, opponentVal);
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      // Helpful test-only debug to surface evaluation results in Vitest runs.
+
+      console.debug("[test] computeRoundResult evaluated:", evaluated);
+    }
+  } catch {}
   const dispatched = await dispatchOutcomeEvents(evaluated);
   const scored = await updateScoreboard(dispatched);
   return emitRoundResolved(store, stat, playerVal, opponentVal, scored);

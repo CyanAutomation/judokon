@@ -77,12 +77,6 @@ export function getOutcomeMessage(outcome) {
  * @returns {{delta: number, outcome: string, matchEnded: boolean, playerScore: number, opponentScore: number, message: string}}
  */
 export function evaluateRound(playerVal, opponentVal) {
-  try {
-    if (typeof handleStatSelection === "function") {
-      const result = handleStatSelection(playerVal, opponentVal);
-      return { ...result, message: getOutcomeMessage(result.outcome) };
-    }
-  } catch {}
   // Fallback when engine is unavailable in tests: compute a simple outcome
   const p = Number(playerVal) || 0;
   const o = Number(opponentVal) || 0;

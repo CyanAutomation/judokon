@@ -59,12 +59,20 @@ export function syncScoreDisplay() {
   try {
     const el = document.getElementById("score-display");
     if (el) {
-      let playerSpan = el.firstElementChild;
-      let opponentSpan = el.lastElementChild;
+      // Prefer spans with explicit data-side attributes so other scoreboard
+      // code can recognize them. Remove any stray text nodes (for example
+      // the static scaffold 'You: 0 Opponent: 0') and render two spans.
+      let playerSpan = el.querySelector('span[data-side="player"]');
+      let opponentSpan = el.querySelector('span[data-side="opponent"]');
       if (!playerSpan || !opponentSpan) {
+        // Clear existing content (text nodes or otherwise) and recreate
+        // canonical children: <span data-side="player">..</span>\n<span data-side="opponent">..</span>
+        el.textContent = "";
         playerSpan = document.createElement("span");
+        playerSpan.setAttribute("data-side", "player");
         opponentSpan = document.createElement("span");
-        el.append(playerSpan, opponentSpan);
+        opponentSpan.setAttribute("data-side", "opponent");
+        el.append(playerSpan, document.createTextNode("\n"), opponentSpan);
       }
       playerSpan.textContent = `You: ${playerScore}`;
       opponentSpan.textContent = `Opponent: ${opponentScore}`;

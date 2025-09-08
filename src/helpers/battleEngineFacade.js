@@ -87,6 +87,7 @@ function requireEngine() {
  * @returns {IBattleEngine}
  */
 export function createBattleEngine(config = {}) {
+  console.log("battleEngineFacade: createBattleEngine called");
   battleEngine = new BattleEngine({
     pointsToWin: CLASSIC_BATTLE_POINTS_TO_WIN,
     maxRounds: CLASSIC_BATTLE_MAX_ROUNDS,
@@ -94,6 +95,7 @@ export function createBattleEngine(config = {}) {
     debugHooks: { getStateSnapshot },
     ...config
   });
+  console.log("battleEngineFacade: battleEngine set to", battleEngine);
   try {
     if (typeof config?.seed === "number") {
       setTestMode({ enabled: true, seed: Number(config.seed) });
