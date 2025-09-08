@@ -138,22 +138,20 @@ export class Scoreboard {
 
   _setScoreText(player, opponent) {
     if (!this.scoreEl) return;
-  // Always render a clean structure for the score display to avoid
-  // preserving any stray text nodes present in the static HTML scaffold
-  // (for example: "You: 0 Opponent: 0"). Recreate canonical children so
-  // the resulting content is predictable for tests and assistive tech.
-  const doc = typeof document !== "undefined" ? document : null;
-  if (!doc) return;
-  // Clear all existing child nodes
-  while (this.scoreEl.firstChild) {
-    this.scoreEl.removeChild(this.scoreEl.firstChild);
-  }
-  const playerSpan = doc.createElement("span");
-  playerSpan.setAttribute("data-side", "player");
-  const separator = doc.createTextNode("\n");
-  const opponentSpan = doc.createElement("span");
-  opponentSpan.setAttribute("data-side", "opponent");
-  this.scoreEl.append(playerSpan, separator, opponentSpan);
+    // Always render a clean structure for the score display to avoid
+    // preserving any stray text nodes present in the static HTML scaffold
+    // (for example: "You: 0 Opponent: 0"). Recreate canonical children so
+    // the resulting content is predictable for tests and assistive tech.
+    const doc = typeof document !== "undefined" ? document : null;
+    if (!doc) return;
+    // Clear any existing content and recreate the expected children
+    this.scoreEl.textContent = "";
+    const playerSpan = doc.createElement("span");
+    playerSpan.setAttribute("data-side", "player");
+    const separator = doc.createTextNode("\n");
+    const opponentSpan = doc.createElement("span");
+    opponentSpan.setAttribute("data-side", "opponent");
+    this.scoreEl.append(playerSpan, separator, opponentSpan);
     try {
       playerSpan.textContent = `You: ${player}`;
       opponentSpan.textContent = `Opponent: ${opponent}`;
