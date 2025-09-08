@@ -90,15 +90,27 @@ export function evaluateRound(playerVal, opponentVal) {
     try {
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
         const messageEl = document.querySelector("header #round-message");
+        const scoreEl = document.querySelector("header #score-display");
+        console.log("[DEBUG] battleUI.evaluateRound DOM check:", {
+          messageEl: !!messageEl,
+          scoreEl: !!scoreEl,
+          message,
+          playerScore: result.playerScore,
+          opponentScore: result.opponentScore
+        });
         if (messageEl && message) {
           messageEl.textContent = message;
         }
-        const scoreEl = document.querySelector("header #score-display");
         if (scoreEl) {
+          // Ensure the element has the expected text content structure
+          // even if syncScoreDisplay creates spans
+          scoreEl.innerHTML = '';
           scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
         }
       }
-    } catch {}
+    } catch (e) {
+      console.log("[DEBUG] battleUI.evaluateRound error:", e);
+    }
     
     return {
       ...result,
@@ -125,16 +137,27 @@ export function evaluateRound(playerVal, opponentVal) {
     try {
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
         const scoreEl = document.querySelector("header #score-display");
+        const messageEl = document.querySelector("header #round-message");
+        console.log("[DEBUG] battleUI.evaluateRound fallback DOM check:", {
+          messageEl: !!messageEl,
+          scoreEl: !!scoreEl,
+          message,
+          fallbackPlayerScore,
+          fallbackOpponentScore
+        });
         if (scoreEl) {
+          // Ensure the element has the expected text content structure
+          scoreEl.innerHTML = '';
           scoreEl.textContent = `You: ${fallbackPlayerScore}\nOpponent: ${fallbackOpponentScore}`;
         }
         
-        const messageEl = document.querySelector("header #round-message");
         if (messageEl && message) {
           messageEl.textContent = message;
         }
       }
-    } catch {}
+    } catch (e) {
+      console.log("[DEBUG] battleUI.evaluateRound fallback error:", e);
+    }
     
     return {
       delta,

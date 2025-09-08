@@ -49,6 +49,14 @@ function handleCountdownExpired() {
  */
 export function syncScoreDisplay() {
   const { playerScore, opponentScore } = getScores();
+  
+  // Debug logging for tests
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      console.log("[DEBUG] syncScoreDisplay called:", { playerScore, opponentScore });
+    }
+  } catch {}
+  
   // Update via the component API when available
   if (typeof scoreboard.updateScore === "function") {
     try {
@@ -76,6 +84,13 @@ export function syncScoreDisplay() {
       }
       playerSpan.textContent = `You: ${playerScore}`;
       opponentSpan.textContent = `Opponent: ${opponentScore}`;
+      
+      // Debug logging for tests
+      try {
+        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+          console.log("[DEBUG] syncScoreDisplay updated DOM:", el.textContent);
+        }
+      } catch {}
     }
   } catch {}
 }
