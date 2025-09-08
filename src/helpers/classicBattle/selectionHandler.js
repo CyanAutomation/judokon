@@ -63,10 +63,7 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
  * @returns {Promise<ReturnType<typeof resolveRound>>}
  */
 export async function resolveRoundDirect(store, stat, playerVal, opponentVal, opts = {}) {
-  const deterministicOpts =
-    typeof process !== "undefined" && process.env && process.env.VITEST
-      ? { ...opts, delayMs: 0 }
-      : opts;
+  const deterministicOpts = IS_VITEST ? { ...opts, delayMs: 0 } : opts;
   const result = await resolveRound(store, stat, playerVal, opponentVal, deterministicOpts);
   store.playerChoice = null;
   return result;
@@ -155,9 +152,13 @@ export function cleanupTimers(store) {
   try {
     stopTimer();
   } catch {}
-  clearTimeout(store.statTimeoutId);
+  try {
+    clearTimeout(store.statTimeoutId);
+  } catch {}
   store.statTimeoutId = null;
-  clearTimeout(store.autoSelectId);
+  try {
+    clearTimeout(store.autoSelectId);
+  } catch {}
   store.autoSelectId = null;
 }
 
@@ -178,14 +179,14 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts });
   // PRD taxonomy: mirror selection lock event (suppress in Vitest to keep
   // existing unit tests' call counts stable)
-  if (!(typeof process !== "undefined" && process.env && process.env.VITEST)) {
+  if (!IS_VITEST) {
     try {
       emitBattleEvent("round.selection.locked", { statKey: stat, source: "player" });
     } catch {}
   }
 
   try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+    if (IS_VITEST) {
       try {
         const sb = await import("../setupScoreboard.js");
         sb.clearTimer();
@@ -245,15 +246,19 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
   try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      console.log("[test] handleStatSelection called", { stat, playerVal, opponentVal, selectionMade: store.selectionMade });
-    }
+    if (IS_VITEST)
+      console.log("[test] handleStatSelection called", {
+        stat,
+        playerVal,
+        opponentVal,
+        selectionMade: store.selectionMade
+      });
   } catch {}
+
   if (!validateSelectionState(store)) {
     try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      if (IS_VITEST)
         console.log("[test] handleStatSelection: validateSelectionState returned false");
-      }
     } catch {}
     return;
   }
@@ -261,36 +266,31 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
-  let handledByOrchestrator = undefined;
+
+  let handledByOrchestrator;
   try {
     handledByOrchestrator = await dispatchBattleEvent("statSelected");
-  } catch {}
+  } catch {
+    handledByOrchestrator = undefined;
+  }
 
-  // Some test/machine setups may not return an explicit boolean from dispatch.
-  // Prefer deferring to the machine when it is not yet in `roundDecision`.
   try {
-    // If the orchestrator explicitly handled the event, do not resolve locally.
     if (handledByOrchestrator === true) {
-      try {
-        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      if (IS_VITEST)
+        try {
           console.log("[test] handleStatSelection: handledByOrchestrator true");
-        }
-      } catch {}
+        } catch {}
       return;
     }
-    // If the machine cleared the player's choice, it took over resolution.
-    if (store.playerChoice == null) {
-      return;
-    }
+
+    if (store.playerChoice === null) return;
+
     const current = typeof getBattleState === "function" ? getBattleState() : null;
-    // Defer to the machine in non-decision states; resolve locally when already
-    // in `roundDecision` and the machine hasn't handled it.
     if (current && current !== "roundDecision") {
-      try {
-        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      if (IS_VITEST)
+        try {
           console.log("[test] handleStatSelection: machine in non-decision state", current);
-        }
-      } catch {}
+        } catch {}
       return;
     }
   } catch {}

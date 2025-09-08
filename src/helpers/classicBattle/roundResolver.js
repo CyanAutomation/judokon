@@ -232,7 +232,12 @@ export async function updateScoreboard(result) {
     try {
       if (typeof process !== "undefined" && process.env && process.env.VITEST) {
         // Print clearly to test stdout so we can observe call flow.
-        console.log("[test] updateScoreboard result:", result, "sb.updateScore?", typeof sb.updateScore);
+        console.log(
+          "[test] updateScoreboard result:",
+          result,
+          "sb.updateScore?",
+          typeof sb.updateScore
+        );
       }
     } catch {}
     if (typeof sb.updateScore === "function") {
@@ -270,6 +275,20 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
         opponent: Number(result?.opponentScore) || 0
       }
     });
+  } catch {}
+  // Also emit a PRD display score update so any scoreboard adapters reliably
+  // receive the latest scores regardless of how the resolution was driven
+  // (orchestrator vs direct resolution). This makes tests less brittle and
+  // ensures the scoreboard UI stays in sync.
+  try {
+    const player = Number(result?.playerScore) || 0;
+    const opponent = Number(result?.opponentScore) || 0;
+    emitBattleEvent("display.score.update", { player, opponent });
+    try {
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        console.log("[test] emitRoundResolved -> display.score.update", { player, opponent });
+      }
+    } catch {}
   } catch {}
   store.playerChoice = null;
   return result;

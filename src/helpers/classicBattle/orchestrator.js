@@ -94,36 +94,36 @@ function emitReadiness(from, to, event) {
  * @param {string|null} from - Previous state.
  * @param {string} to - New state.
  */
-  function emitStateChange(from, to) {
-    try {
-      const engine = machine?.context?.engine;
-      const context = {
-        roundIndex: Number(engine?.getRoundsPlayed?.() || 0),
-        scores: engine?.getScores?.() || { playerScore: 0, opponentScore: 0 },
-        seed: engine?.getSeed?.(),
-        timerState: engine?.getTimerState?.() || null
-      };
-      // Mirror timer state for tests/diagnostics
-      if (context.timerState) {
+function emitStateChange(from, to) {
+  try {
+    const engine = machine?.context?.engine;
+    const context = {
+      roundIndex: Number(engine?.getRoundsPlayed?.() || 0),
+      scores: engine?.getScores?.() || { playerScore: 0, opponentScore: 0 },
+      seed: engine?.getSeed?.(),
+      timerState: engine?.getTimerState?.() || null
+    };
+    // Mirror timer state for tests/diagnostics
+    if (context.timerState) {
+      try {
+        // Also write onto the shared store for tests that spy on debug hooks
         try {
-          // Also write onto the shared store for tests that spy on debug hooks
-          try {
-            const s = machine?.context?.store;
-            if (s && typeof s === "object") s.classicBattleTimerState = context.timerState;
-          } catch {}
-          if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-            globalThis.__classicBattleDebugExpose("classicBattleTimerState", context.timerState);
-          } else {
-            debugHooks.exposeDebugState("classicBattleTimerState", context.timerState);
-          }
+          const s = machine?.context?.store;
+          if (s && typeof s === "object") s.classicBattleTimerState = context.timerState;
         } catch {}
-      }
-      emitBattleEvent("control.state.changed", {
-        from,
-        to,
-        context,
-        catalogVersion: stateCatalog?.version || "v1"
-      });
+        if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+          globalThis.__classicBattleDebugExpose("classicBattleTimerState", context.timerState);
+        } else {
+          debugHooks.exposeDebugState("classicBattleTimerState", context.timerState);
+        }
+      } catch {}
+    }
+    emitBattleEvent("control.state.changed", {
+      from,
+      to,
+      context,
+      catalogVersion: stateCatalog?.version || "v1"
+    });
   } catch {
     // ignore: state change events should not block transitions
   }
@@ -366,9 +366,10 @@ export async function dispatchBattleEvent(eventName, payload) {
       }
     }
     return await machine.dispatch(eventName, payload);
-  } catch {
+  } catch (error) {
     // ignore: dispatch failures only trigger debug updates
     try {
+      console.error("Error dispatching battle event:", eventName, error);
       emitBattleEvent("debugPanelUpdate");
     } catch {
       // ignore: debug updates are best effort
