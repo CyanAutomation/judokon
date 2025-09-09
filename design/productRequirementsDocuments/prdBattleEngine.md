@@ -1,7 +1,3 @@
-Got it — here’s the **final reconciled Battle Engine PRD**. I’ve merged back the valuable details from the original (explicit Engine vs Orchestrator responsibilities, determinism guarantee, fake timers/testability contract, event conformance targets, authority rules, diagnostics/interrupt events) while keeping the architectural fixes and alignment with the Scoreboard PRD.
-
----
-
 # PRD: Battle Engine
 
 **Entry Point:** `src/helpers/battleEngine.js`
@@ -110,7 +106,76 @@ Canonical events emitted:
 
 ---
 
-## 7. Public API
+## 7. Finite-State Machine (FSM) Overview
+
+### States
+
+* **init** — engine constructed, no match started.
+* **prestart** — optional countdown / readiness handshake before round 1.
+* **selection** — players/AI lock a stat or the round timer expires (auto-pick).
+* **evaluation** — engine computes outcome, updates scores, emits result.
+* **cooldown** — optional inter-round cooldown.
+* **end** — match concluded (target wins reached or terminal interrupt).
+
+### Transition events
+
+* `startMatch()` → `control.countdown.started` → `control.countdown.completed`
+* `round.started({ roundIndex })`
+* `round.selection.locked` / `round.timer.expired`
+* `round.evaluated({ outcome, scores })`
+* `cooldown.timer.*`
+* `match.concluded({ scores })`
+* `interrupt.raised` / `interrupt.resolved`
+
+### Guards & rules
+
+* Win guard: if `scores.player >= targetWins || scores.opponent >= targetWins` → transition to `end`.
+* Timer expiry in `selection` auto-locks per mode rules (e.g. random stat).
+* UIs must never infer transitions from non-control events.
+
+```mermaid
+stateDiagram-v2
+  [*] --> init
+
+  init --> prestart: startMatch()
+  prestart --> selection: control.countdown.completed\nround.started(roundIndex=1)
+
+  selection --> evaluation: round.selection.locked(statKey)\nOR round.timer.expired(auto-pick)
+  evaluation --> end: match.concluded(scores) [win guard]
+  evaluation --> cooldown: round.evaluated(outcome,scores) [!win guard]
+
+  cooldown --> selection: cooldown.timer.expired\nround.started(roundIndex+1)
+  selection --> end: match.concluded(scores) [win guard]
+
+  state interrupted <<choice>>
+  init --> interrupted: interrupt.raised
+  prestart --> interrupted: interrupt.raised
+  selection --> interrupted: interrupt.raised
+  evaluation --> interrupted: interrupt.raised
+  cooldown --> interrupted: interrupt.raised
+  interrupted --> [*]: match.concluded (hard stop)
+  interrupted --> (restore): interrupt.resolved
+
+  (restore) --> prestart: if before first selection
+  (restore) --> selection: if in-round
+  (restore) --> evaluation: if evaluation in-flight
+  (restore) --> cooldown: if between rounds
+```
+
+### State table
+
+| State      | Entry actions                                                 | Accepts                                         | Exit on                                            | Notes                          |
+| ---------- | ------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------- | ------------------------------ |
+| init       | set roundIndex=0, reset scores/outcome                        | startMatch()                                    | countdown started                                  | No timers running.             |
+| prestart   | emit `control.countdown.started`                              | readiness/skip, countdown ticks                 | `control.countdown.completed` → `round.started(1)` | Optional per mode.             |
+| selection  | start round timer; emit `control.state.changed(to=selection)` | `round.selection.locked`, `round.timer.expired` | to `evaluation`                                    | Auto-pick on expiry.           |
+| evaluation | compute outcome; emit `round.evaluated`                       | —                                               | to `end` (win guard) or `cooldown`                 | Deterministic with seeded RNG. |
+| cooldown   | start cooldown timer                                          | cooldown ticks                                  | `cooldown.timer.expired` → `round.started(n+1)`    | Optional in some modes.        |
+| end        | emit `match.concluded`, freeze timers                         | —                                               | —                                                  | Terminal.                      |
+
+---
+
+## 8. Public API
 
 * **create(config) → EngineInstance**
   Initializes engine with seeded RNG, config, and empty state.
@@ -132,7 +197,7 @@ Canonical events emitted:
 
 ---
 
-## 8. Lifecycle & Idempotency
+## 9. Lifecycle & Idempotency
 
 * Duplicate stat selections for the same round are ignored (`input.ignored`).
 * Out-of-order events (lower `roundIndex` than current) are ignored.
@@ -142,7 +207,7 @@ Canonical events emitted:
 
 ---
 
-## 9. Performance & Testability
+## 10. Performance & Testability
 
 * Timer tick granularity: 1s, drift ≤ 100 ms per 10s.
 * Event dispatch latency ≤ 16 ms per frame.
@@ -152,7 +217,7 @@ Canonical events emitted:
 
 ---
 
-## 10. Acceptance Criteria (Gherkin)
+## 11. Acceptance Criteria (Gherkin)
 
 Feature: Engine emits canonical events
 
@@ -198,7 +263,7 @@ Then the engine emits "debug.state.snapshot" with the full state
 
 ---
 
-## 11. Risks & Open Questions
+## 12. Risks & Open Questions
 
 * Should we emit a consolidated `scoreboard.update` adapter event to simplify UI consumption?
 * Should cooldown visuals be considered part of the Scoreboard or Snackbar?
@@ -206,89 +271,3 @@ Then the engine emits "debug.state.snapshot" with the full state
 * How should interrupts be exposed to UIs — surfaced directly, or wrapped in Snackbar notifications?
 
 ---
-
-# Finite-State Machine (FSM) Overview
-
-States (authoritative via `control.state.changed`):
-
-* init — engine constructed, no match started.
-* prestart — optional countdown / readiness handshake before round 1.
-* selection — players/AI lock a stat or the round timer expires (auto-pick).
-* evaluation — engine computes outcome, updates scores, emits result.
-* cooldown — optional inter-round cooldown (UI can show via Snackbar).
-* end — match concluded (target wins reached or terminal interrupt).
-
-Events that drive transitions (emitted by engine/orchestrator):
-
-* startMatch() → `control.countdown.started` → `control.countdown.completed`
-* `round.started({ roundIndex })`, `round.selection.locked`, `round.timer.expired`
-* `round.evaluated({ outcome, scores })`
-* `cooldown.timer.*`
-* `match.concluded({ scores })`
-* `interrupt.raised` / `interrupt.resolved`
-
-Guards & rules:
-
-* Win guard: `scores.player >= targetWins || scores.opponent >= targetWins` → transition to `end`.
-* Timer expiry in `selection` auto-locks per mode rules (e.g., random stat).
-* UIs must never infer transitions from non-control events; only react to `control.state.changed`.
-
-```mermaid
-stateDiagram-v2
-  [*] --> init
-
-  init --> prestart: startMatch()
-  prestart --> selection: control.countdown.completed\nround.started(roundIndex=1)
-
-  selection --> evaluation: round.selection.locked(statKey)\nOR round.timer.expired(auto-pick)
-  evaluation --> end: match.concluded(scores) [win guard]
-  evaluation --> cooldown: round.evaluated(outcome,scores) [!win guard]
-
-  cooldown --> selection: cooldown.timer.expired\nround.started(roundIndex+1)
-  selection --> end: match.concluded(scores) [win guard]
-
-  state interrupted <<choice>>
-  init --> interrupted: interrupt.raised
-  prestart --> interrupted: interrupt.raised
-  selection --> interrupted: interrupt.raised
-  evaluation --> interrupted: interrupt.raised
-  cooldown --> interrupted: interrupt.raised
-  interrupted --> [*]: match.concluded (hard stop)
-  interrupted --> (restore): interrupt.resolved
-
-  (restore) --> prestart: if before first selection
-  (restore) --> selection: if in-round
-  (restore) --> evaluation: if evaluation in-flight
-  (restore) --> cooldown: if between rounds
-```
-
-## State table (entry/exit actions & primary events)
-
-| State      | Entry actions                                                 | Accepts                                         | Exit on                                            | Notes                          |
-| ---------- | ------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------- | ------------------------------ |
-| init       | set roundIndex=0, reset scores/outcome                        | startMatch()                                    | countdown started                                  | No timers running.             |
-| prestart   | emit `control.countdown.started`                              | readiness/skip, countdown ticks                 | `control.countdown.completed` → `round.started(1)` | Optional per mode.             |
-| selection  | start round timer; emit `control.state.changed(to=selection)` | `round.selection.locked`, `round.timer.expired` | to `evaluation`                                    | Auto-pick on expiry.           |
-| evaluation | compute outcome; emit `round.evaluated`                       | —                                               | to `end` (win guard) or `cooldown`                 | Deterministic with seeded RNG. |
-| cooldown   | start cooldown timer                                          | cooldown ticks                                  | `cooldown.timer.expired` → `round.started(n+1)`    | Optional in some modes.        |
-| end        | emit `match.concluded`, freeze timers                         | —                                               | —                                                  | Terminal.                      |
-
-## Adapter emission (optional, for dumb UIs)
-
-If you choose to keep UIs ultra-simple, the orchestrator may emit a consolidated:
-
-```
-scoreboard.update({
-  roundIndex,
-  timerRemainingMs,                // null outside selection
-  scores: { player, opponent },
-  outcome,                         // null | playerWin | opponentWin | draw
-  state,                           // FSM state name
-  catalogVersion
-})
-```
-
-This doesn’t replace the canonical events; it’s a convenience layer for reflectors.
-
----
-
