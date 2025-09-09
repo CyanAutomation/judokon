@@ -639,24 +639,13 @@ export function registerRoundStartErrorHandler(retryFn) {
 /**
  * @summary Attach the Next button click handler and warn when absent.
  *
- * Optionally logs a test-mode warning when the button is missing or when a fallback is used.
- *
- * @pseudocode
- * 1. Query `#next-button` and store in `btn`.
- * 2. If `btn` is `null`, optionally warn and query `[data-role="next-round"]`.
- * 3. If `btn` is still `null`, optionally warn and return.
- * 4. Bind `onNextButtonClick` to the `click` event of `btn`.
- */
-/**
- * Attach the Next button click handler to the DOM Next control.
- *
  * Ensures the primary Next control receives the `onNextButtonClick` handler.
- * Falls back to a `[data-role="next-round"]` selector when `#next-button` is
- * missing (tests may exercise this fallback).
+ * Falls back to `[data-role="next-round"]` when `#next-button` is missing
+ * (useful for tests or alternate UIs).
  *
  * @pseudocode
  * 1. Query `#next-button`, falling back to `[data-role="next-round"]`.
- * 2. If the element is missing, optionally log test-mode warnings and return early.
+ * 2. If not found, optionally warn in test mode and return.
  * 3. Attach `onNextButtonClick` to the element's `click` event.
  *
  * @returns {void}
@@ -708,19 +697,23 @@ export function setupNextButton() {
  * 1. TODO: Add pseudocode
  */
 /**
- * Programmatically select a stat as if the user clicked its button.
+ * Programmatically select a stat and trigger the standard selection flow.
  *
- * This helper triggers the same selection flow used by UI interactions but
- * is safe to call from tests and automation scripts.
+ * Normalizes the selection to the same pathway used by UI clicks so tests and
+ * automation see identical side effects: visual state, selection handling,
+ * and a snackbar hint. This is intentionally defensive and does not throw on
+ * missing DOM nodes.
  *
  * @pseudocode
- * 1. Locate the stat button element and derive a human-readable label.
- * 2. Disable the stat group and mark the chosen button as `selected`.
- * 3. Read player and opponent stat values from their cards and call `handleStatSelection`.
- * 4. Show a snackbar indicating the chosen stat.
+ * 1. Find the button for `stat` in `#stat-buttons`.
+ * 2. If the button is missing, return early.
+ * 3. Disable all stat buttons and apply a `selected` class to the chosen button.
+ * 4. Read player/opponent stat values from their cards.
+ * 5. Call `handleStatSelection(store, stat, { playerVal, opponentVal })`.
+ * 6. Show a snackbar with the chosen stat label.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
- * @param {string} stat - Stat key to select.
+ * @param {string} stat - Stat key to select (e.g. 'strength').
  * @returns {void}
  */
 export function selectStat(store, stat) {
