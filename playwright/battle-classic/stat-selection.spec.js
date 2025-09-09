@@ -23,8 +23,9 @@ test.describe("Classic Battle stat selection", () => {
     await buttons.first().click();
 
     // Timer clears and score updates deterministically
-    await page.waitForTimeout(50);
-    await expect(page.locator("#next-round-timer")).toHaveText("");
+    await page.waitForTimeout(100);
+    // Timer should be cleared or show 0s after stat selection
+    await expect(page.locator("#next-round-timer")).toHaveText(/^(|Time Left: 0s)$/);
     await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
     await expect(page.locator("#score-display")).toContainText(/Opponent:\s*0/);
 

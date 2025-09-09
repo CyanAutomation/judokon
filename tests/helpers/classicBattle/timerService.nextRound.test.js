@@ -41,7 +41,7 @@ describe("timerService next round handling", () => {
       STATS: []
     }));
     dispatchBattleEvent = vi.fn();
-    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
       dispatchBattleEvent
     }));
   });
@@ -61,7 +61,7 @@ describe("timerService next round handling", () => {
       timer: { stop },
       resolveReady: null
     });
-    const dispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     expect(stop).not.toHaveBeenCalled();
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
   });
@@ -76,7 +76,7 @@ describe("timerService next round handling", () => {
       timer: { stop },
       resolveReady: null
     });
-    const dispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     expect(stop).toHaveBeenCalled();
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
   });
