@@ -189,3 +189,30 @@ stateDiagram-v2
 | AC6 | Accessibility                    | Live regions update within 500ms; ARIA compliance verified; reduced motion respected.                        |
 | AC7 | Testability                      | `getSnapshot()` returns a deterministic state; integration tests validate updates with mocked engine events. |
 | AC8 | Reusability                      | `createScoreboard()` and `destroy()` can be called in isolation; no mode-specific branching in logic.        |
+
+
+## Tasks
+
+- [ ] 1.0 Implement Scoreboard Creation
+  - [ ] 1.1 Define `createScoreboard(container)` to create and append DOM nodes
+  - [ ] 1.2 Ensure DOM structure matches canonical layout with proper `data-scoreboard-*` attributes
+  - [ ] 1.3 Apply CSS themes for mode-specific visuals
+
+- [ ] 2.0 Implement Event-Driven Updates
+  - [ ] 2.1 Define `update(event)` to handle specific engine events
+  - [ ] 2.2 Implement outcome persistence until next event
+  - [ ] 2.3 Add fallback "Waiting..." message after 500ms of silence
+  - [ ] 2.4 Enforce no updates outside of engine event triggers
+
+- [ ] 3.0 Add Accessibility Support
+  - [ ] 3.1 Add ARIA live regions for status and score
+  - [ ] 3.2 Implement reduced motion respect for animations
+  - [ ] 3.3 Ensure CLI output renders an equivalent text representation
+
+- [ ] 4.0 Implement State Snapshotting
+  - [ ] 4.1 Implement `getSnapshot()` to return current scoreboard state
+  - [ ] 4.2 Ensure returned state is serializable and test-friendly
+
+- [ ] 5.0 Lifecycle & Cleanup
+  - [ ] 5.1 Implement `destroy()` to remove DOM nodes and event listeners
+  - [ ] 5.2 Validate against double-destroy or destroy-before-create edge cases
