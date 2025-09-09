@@ -122,8 +122,8 @@ export class Scoreboard {
   render(patch = {}) {
     if (patch.score) {
       const { player, opponent } = patch.score;
-      const havePlayer = player !== undefined && player !== null;
-      const haveOpponent = opponent !== undefined && opponent !== null;
+      const havePlayer = player !== undefined;
+      const haveOpponent = opponent !== undefined;
       if (havePlayer && haveOpponent) {
         this.updateScore(player, opponent);
       }
@@ -165,8 +165,7 @@ export class Scoreboard {
  * 3. Store default scoreboard for module-level helpers.
  * @param {HTMLElement|null} container - Header container or null for headless.
  */
-export function initScoreboard(container, _controls = {}) {
-  void _controls;
+export function initScoreboard(container) {
   if (!container) {
     defaultScoreboard = new Scoreboard();
     return;
