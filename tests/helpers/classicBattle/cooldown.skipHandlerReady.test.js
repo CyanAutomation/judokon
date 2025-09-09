@@ -31,7 +31,7 @@ describe("skip handler clears fallback timer", () => {
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
       dispatchBattleEvent: vi.fn().mockResolvedValue(undefined)
     }));
     vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
@@ -72,16 +72,16 @@ describe("skip handler clears fallback timer", () => {
   });
 
   it("fires ready once after skipping", async () => {
-    const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
     const { skipCurrentPhase } = await import("../../../src/helpers/classicBattle/skipHandler.js");
     startCooldown({}, scheduler);
     skipCurrentPhase();
     await vi.advanceTimersByTimeAsync(0);
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
     const FALLBACK_DELAY_MS = 20; // advance past fallback timeout (10ms) to ensure it would fire if uncleared
     await vi.advanceTimersByTimeAsync(FALLBACK_DELAY_MS);
-    expect(orchestrator.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 });

@@ -5,7 +5,7 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   stopTimer: vi.fn()
 }));
 
-vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn()
 }));
 
@@ -30,7 +30,7 @@ describe("handleStatSelection resolution", () => {
 
   beforeEach(async () => {
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
-    dispatchMock = (await import("../../../src/helpers/classicBattle/orchestrator.js"))
+    dispatchMock = (await import("../../../src/helpers/classicBattle/eventDispatcher.js"))
       .dispatchBattleEvent;
     resolveMock = (await import("../../../src/helpers/classicBattle/roundResolver.js"))
       .resolveRound;

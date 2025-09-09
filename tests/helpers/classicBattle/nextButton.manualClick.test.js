@@ -12,7 +12,7 @@ describe("Next button manual click", () => {
 
   it("dispatches ready within 50ms", async () => {
     document.body.innerHTML = '<button id="next-button" data-role="next-round"></button>';
-    const dispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const dispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     __setStateSnapshot({ state: "cooldown" });
 
