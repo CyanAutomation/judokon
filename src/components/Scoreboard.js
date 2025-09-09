@@ -164,7 +164,8 @@ export class Scoreboard {
  * 2. Create model and view bound to them.
  * 3. Store default scoreboard for module-level helpers.
  * @param {HTMLElement|null} container - Header container or null for headless.
- * @param {object} [_controls] - Deprecated controls parameter.
+ * @param {object} [_controls] - Deprecated controls parameter retained only for backward compatibility; ignored.
+ * @deprecated The `_controls` parameter is unused and will be removed in a future release.
  */
 export function initScoreboard(container, _controls) {
   void _controls;
