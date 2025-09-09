@@ -647,6 +647,20 @@ export function registerRoundStartErrorHandler(retryFn) {
  * 3. If `btn` is still `null`, optionally warn and return.
  * 4. Bind `onNextButtonClick` to the `click` event of `btn`.
  */
+/**
+ * Attach the Next button click handler to the DOM Next control.
+ *
+ * Ensures the primary Next control receives the `onNextButtonClick` handler.
+ * Falls back to a `[data-role="next-round"]` selector when `#next-button` is
+ * missing (tests may exercise this fallback).
+ *
+ * @pseudocode
+ * 1. Query `#next-button`, falling back to `[data-role="next-round"]`.
+ * 2. If the element is missing, optionally log test-mode warnings and return early.
+ * 3. Attach `onNextButtonClick` to the element's `click` event.
+ *
+ * @returns {void}
+ */
 export function setupNextButton() {
   let btn = document.getElementById("next-button");
   if (!btn) {
@@ -693,6 +707,22 @@ export function setupNextButton() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Programmatically select a stat as if the user clicked its button.
+ *
+ * This helper triggers the same selection flow used by UI interactions but
+ * is safe to call from tests and automation scripts.
+ *
+ * @pseudocode
+ * 1. Locate the stat button element and derive a human-readable label.
+ * 2. Disable the stat group and mark the chosen button as `selected`.
+ * 3. Read player and opponent stat values from their cards and call `handleStatSelection`.
+ * 4. Show a snackbar indicating the chosen stat.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
+ * @param {string} stat - Stat key to select.
+ * @returns {void}
+ */
 export function selectStat(store, stat) {
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
   // derive label from button text if available
@@ -718,6 +748,31 @@ export function selectStat(store, stat) {
 }
 
 /**
+ * Attach the Next button click handler to the DOM Next control.
+ *
+ * @pseudocode
+ * 1. Query the DOM for `#next-button` and fallback to `[data-role="next-round"]`.
+ * 2. If not found, emit optional test-mode warnings and return.
+ * 3. Attach `onNextButtonClick` to the `click` event of the discovered button.
+ *
+ * @returns {void}
+ */
+
+/**
+ * Programmatically select a stat button and trigger the selection flow.
+ *
+ * @pseudocode
+ * 1. Locate the stat button element for `stat` and derive a human label.
+ * 2. Disable all stat buttons and mark the chosen button as `selected` for visual feedback.
+ * 3. Read player/opponent values from card elements and call `handleStatSelection`.
+ * 4. Show a snackbar message indicating the chosen stat.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
+ * @param {string} stat - Stat key to select (e.g. 'strength').
+ * @returns {void}
+ */
+
+/**
  * Remove modal backdrops and destroy the current quit modal.
  *
  * @pseudocode
@@ -725,11 +780,7 @@ export function selectStat(store, stat) {
  * 2. Destroy and nullify `store.quitModal` when present.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store]
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {void}
  */
 /**
  * Remove modal backdrops and destroy any active quit modal.
@@ -750,6 +801,16 @@ export function selectStat(store, stat) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Remove modal backdrops and destroy any active quit modal.
+ *
+ * @pseudocode
+ * 1. Remove all elements matching `.modal-backdrop` from the document.
+ * 2. If `store.quitModal` exists, call `destroy()` on it and set it to null.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store]
+ * @returns {void}
+ */
 export function removeBackdrops(store) {
   try {
     document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
@@ -763,6 +824,17 @@ export function removeBackdrops(store) {
     store.quitModal = null;
   }
 }
+
+/**
+ * Remove modal backdrops and destroy any active quit modal stored on `store`.
+ *
+ * @pseudocode
+ * 1. Remove all elements matching `.modal-backdrop` from the DOM.
+ * 2. If `store.quitModal` exists, call its `destroy()` method and nullify the reference.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store]
+ * @returns {void}
+ */
 
 /**
  * Replace the Next button with a fresh disabled clone and wire the click handler.
@@ -809,6 +881,17 @@ export function resetNextButton() {
 }
 
 /**
+ * Replace the Next button with a disabled clone to drop attached listeners.
+ *
+ * @pseudocode
+ * 1. Query `#next-button` and return early if missing.
+ * 2. Clone the node, disable the clone and remove `data-next-ready`.
+ * 3. Attach `onNextButtonClick` to the clone and replace the original in the DOM.
+ *
+ * @returns {void}
+ */
+
+/**
  * Replace the Quit button with a fresh clone to drop existing listeners.
  *
  * @pseudocode
@@ -845,6 +928,16 @@ export function resetQuitButton() {
     quitBtn.replaceWith(quitBtn.cloneNode(true));
   }
 }
+
+/**
+ * Replace the Quit button with an inert clone to remove existing event listeners.
+ *
+ * @pseudocode
+ * 1. Locate `#quit-match-button` in the DOM.
+ * 2. Replace it with `cloneNode(true)` so existing listeners are dropped.
+ *
+ * @returns {void}
+ */
 
 /**
  * Clear scoreboard and round messages, then synchronize the score display.
@@ -892,6 +985,17 @@ export function clearScoreboardAndMessages() {
     syncScoreDisplay();
   } catch {}
 }
+
+/**
+ * Clear scoreboard messages/timers and synchronize the scoreboard display.
+ *
+ * @pseudocode
+ * 1. Call `scoreboard.clearMessage()` and `scoreboard.clearTimer()` to remove transient state.
+ * 2. Clear `#round-result` text if present.
+ * 3. Call `syncScoreDisplay()` to ensure the scoreboard shows initial text when empty.
+ *
+ * @returns {void}
+ */
 
 /**
  * Initialize stat selection buttons.
@@ -1073,6 +1177,17 @@ export async function applyStatLabels() {
 }
 
 /**
+ * Update the battle state badge text content to reflect the current state.
+ *
+ * @pseudocode
+ * 1. Query `#battle-state-badge` and exit if missing.
+ * 2. Set its text content to `State: <state>` or `State: —` when `state` is null.
+ *
+ * @param {string|null} state - Current battle state or null when unknown.
+ * @returns {void}
+ */
+
+/**
  * Update the text content of the battle state badge.
  *
  * @param {string | null} state The current battle state.
@@ -1109,6 +1224,18 @@ export function updateBattleStateBadge(state) {
     badge.textContent = "State: —";
   }
 }
+
+/**
+ * Enable or remove the battle state badge element according to `enable`.
+ *
+ * @pseudocode
+ * 1. If `enable` is false and a badge exists, remove it and return.
+ * 2. If enabling and no badge exists, create the badge element and append it to header/right area.
+ * 3. Populate the badge text using the current state snapshot.
+ *
+ * @param {boolean} enable - True to show the badge, false to remove it.
+ * @returns {void}
+ */
 
 /**
  * Toggle visibility of the battle state badge based on feature flag.
@@ -1223,6 +1350,20 @@ export function applyBattleFeatureFlags(battleArea, banner) {
 }
 
 /**
+ * Apply active feature flags to the battle UI and subscribe for changes.
+ *
+ * @pseudocode
+ * 1. Set `data-mode` and `data-testMode` on the `battleArea` element.
+ * 2. Toggle visibility of the `banner` according to `enableTestMode`.
+ * 3. Toggle inspector panels, viewport simulation and the debug panel per flags.
+ * 4. Subscribe to `featureFlagsEmitter` `change` events to reapply flags dynamically.
+ *
+ * @param {HTMLElement|null} battleArea - The main battle container element.
+ * @param {HTMLElement|null} banner - Optional banner element to show/hide for test mode.
+ * @returns {void}
+ */
+
+/**
  * Initialize the optional debug panel.
  *
 
@@ -1277,6 +1418,19 @@ export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.s
 }
 
 /**
+ * Show a temporary stat hint tooltip unless previously shown.
+ *
+ * @pseudocode
+ * 1. Check `localStorage.statHintShown` and return if present.
+ * 2. Trigger `mouseenter` on `#stat-help` and schedule `mouseleave` after `durationMs`.
+ * 3. Record that the hint has been shown in `localStorage`.
+ *
+ * @param {number} [durationMs=3000] - Milliseconds to keep the hint visible.
+ * @param {Function} [setTimeoutFn=globalThis.setTimeout] - Optional timeout function (testable).
+ * @returns {void}
+ */
+
+/**
  * Reset battle UI elements to their initial state.
  *
  * @pseudocode
@@ -1320,6 +1474,19 @@ export function resetBattleUI(store) {
   clearScoreboardAndMessages();
   updateDebugPanel();
 }
+
+/**
+ * Reset all battle UI elements to their initial state.
+ *
+ * @pseudocode
+ * 1. Remove modal backdrops and destroy quit modal (if `store` provided).
+ * 2. Reset Next and Quit buttons to drop listeners.
+ * 3. Clear scoreboard messages and timers.
+ * 4. Update debug panel to reflect the reset state.
+ *
+ * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store] - Optional store used to destroy active modals.
+ * @returns {void}
+ */
 
 // --- Event bindings ---
 
