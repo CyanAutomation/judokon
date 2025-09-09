@@ -142,25 +142,27 @@ describe("initTooltips", () => {
     const tip = document.querySelector(".tooltip");
     Object.defineProperty(tip, "offsetWidth", { value: 40 });
     const originalWidth = document.documentElement.clientWidth;
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      value: 100,
-      configurable: true
-    });
-    el.getBoundingClientRect = () => ({
-      bottom: 10,
-      left: 80,
-      width: 10,
-      height: 10
-    });
+    try {
+      Object.defineProperty(document.documentElement, "clientWidth", {
+        value: 100,
+        configurable: true
+      });
+      el.getBoundingClientRect = () => ({
+        bottom: 10,
+        left: 80,
+        width: 10,
+        height: 10
+      });
 
-    el.dispatchEvent(new Event("mouseover"));
+      el.dispatchEvent(new Event("mouseover"));
 
-    expect(tip.style.left).toBe("60px");
-
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      value: originalWidth,
-      configurable: true
-    });
+      expect(tip.style.left).toBe("60px");
+    } finally {
+      Object.defineProperty(document.documentElement, "clientWidth", {
+        value: originalWidth,
+        configurable: true
+      });
+    }
   });
 
   it("clamps left to zero when tip wider than viewport", async () => {
@@ -179,25 +181,27 @@ describe("initTooltips", () => {
     const tip = document.querySelector(".tooltip");
     Object.defineProperty(tip, "offsetWidth", { value: 150 });
     const originalWidth = document.documentElement.clientWidth;
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      value: 100,
-      configurable: true
-    });
-    el.getBoundingClientRect = () => ({
-      bottom: 10,
-      left: 0,
-      width: 10,
-      height: 10
-    });
+    try {
+      Object.defineProperty(document.documentElement, "clientWidth", {
+        value: 100,
+        configurable: true
+      });
+      el.getBoundingClientRect = () => ({
+        bottom: 10,
+        left: 0,
+        width: 10,
+        height: 10
+      });
 
-    el.dispatchEvent(new Event("mouseover"));
+      el.dispatchEvent(new Event("mouseover"));
 
-    expect(tip.style.left).toBe("0px");
-
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      value: originalWidth,
-      configurable: true
-    });
+      expect(tip.style.left).toBe("0px");
+    } finally {
+      Object.defineProperty(document.documentElement, "clientWidth", {
+        value: originalWidth,
+        configurable: true
+      });
+    }
   });
 
   it("loads tooltip text for new UI elements", async () => {
