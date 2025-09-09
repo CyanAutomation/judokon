@@ -28,9 +28,28 @@ function setupScoreboard(controls, scheduler = realScheduler) {
   controls.scheduler = scheduler;
   if (!header) {
     initScoreboard(null, controls);
-    return;
+  } else {
+    initScoreboard(header, controls);
   }
-  initScoreboard(header, controls);
+  
+  // Handle visibility changes for timer pause/resume
+  try {
+    const handleVisibilityChange = () => {
+      if (document.hidden && controls.pauseTimer) {
+        controls.pauseTimer();
+      }
+    };
+    
+    const handleFocus = () => {
+      if (!document.hidden && controls.resumeTimer) {
+        controls.resumeTimer();
+      }
+    };
+    
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+  } catch {}
+  
   try {
     // Passively reflect Next button readiness to the badge without announcements.
     const nextButton = document.getElementById("next-button");

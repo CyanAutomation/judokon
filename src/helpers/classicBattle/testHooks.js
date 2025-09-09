@@ -159,10 +159,17 @@ export async function triggerStallPromptNow(store) {
   };
   handleStatSelectionTimeout(store, onSelect, 0);
   // Surface the stall prompt immediately in tests to avoid waiting on timers.
+  const stallMessage = "Stat selection stalled. Pick a stat or wait for auto-pick.";
   try {
     const scoreboard = await import("../setupScoreboard.js");
-    scoreboard.showMessage("Stat selection stalled. Pick a stat or wait for auto-pick.");
-  } catch {}
+    scoreboard.showMessage(stallMessage);
+  } catch {
+    // Fallback: set message directly in DOM when scoreboard isn't initialized
+    const messageEl = document.getElementById("round-message");
+    if (messageEl) {
+      messageEl.textContent = stallMessage;
+    }
+  }
   try {
     const { emitBattleEvent } = await import("./battleEvents.js");
     emitBattleEvent("statSelectionStalled");

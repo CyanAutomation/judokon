@@ -97,12 +97,16 @@ describe("Scoreboard integration without setupScoreboard", () => {
     }));
 
     const { Scoreboard } = await import("../../src/components/Scoreboard.js");
-    scoreboard = new Scoreboard({
+    const { ScoreboardModel } = await import("../../src/components/ScoreboardModel.js");
+    const { ScoreboardView } = await import("../../src/components/ScoreboardView.js");
+    const model = new ScoreboardModel();
+    const view = new ScoreboardView(model, {
       messageEl: document.getElementById("round-message"),
       timerEl: document.getElementById("next-round-timer"),
       roundCounterEl: document.getElementById("round-counter"),
       scoreEl: document.getElementById("score-display")
     });
+    scoreboard = new Scoreboard(model, view);
 
     const { initClassicBattleTest } = await import("./initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });

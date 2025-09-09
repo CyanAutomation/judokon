@@ -14,9 +14,17 @@ export class ScoreboardView {
    * 1. Set textContent of message element.
    * 2. Return void.
    * @param {string} text - Message to show.
+   * @param {{outcome?:boolean}} [opts] - Options including outcome flag.
    */
-  showMessage(text) {
-    if (this.messageEl) this.messageEl.textContent = text;
+  showMessage(text, opts = {}) {
+    if (this.messageEl) {
+      this.messageEl.textContent = text;
+      if (opts.outcome) {
+        this.messageEl.dataset.outcome = "true";
+      } else {
+        delete this.messageEl.dataset.outcome;
+      }
+    }
   }
 
   /**

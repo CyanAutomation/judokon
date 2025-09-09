@@ -68,7 +68,7 @@ export class Scoreboard {
   showMessage(text, opts = {}) {
     const now = Date.now();
     if (now < this._messageLockedUntil && !opts.outcome) return;
-    this.view.showMessage(text);
+    this.view.showMessage(text, opts);
     this._messageLockedUntil = opts.outcome ? now + 1000 : 0;
   }
 

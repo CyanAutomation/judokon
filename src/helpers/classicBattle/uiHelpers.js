@@ -1,6 +1,8 @@
 import { getOpponentCardData } from "./opponentController.js";
 import { isEnabled } from "../featureFlags.js";
 import { STATS } from "../battleEngineFacade.js";
+import { JudokaCard } from "../../components/JudokaCard.js";
+import { setupLazyPortraits } from "../lazyPortrait.js";
 
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
@@ -27,6 +29,7 @@ import { guard } from "./guard.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 import { runWhenIdle } from "./idleCallback.js";
+import { getStateSnapshot } from "./battleDebug.js";
 
 /**
  * Determine whether round cooldowns should be skipped.
@@ -208,6 +211,26 @@ export function setupNextButton() {
  *
  * @returns {void}
  */
+/**
+ * Enable the Next-round button and set its ready state.
+ *
+ * Finds `#next-button` (or fallback) and enables it, setting the
+ * `data-next-ready` marker so consumers know the control is ready.
+ *
+ * @pseudocode
+ * 1. Query `#next-button` and fallback to `[data-role="next-round"]`.
+ * 2. If found, set `disabled = false` and `data-next-ready = "true"`.
+ *
+ * @returns {void}
+ */
+export function enableNextRoundButton() {
+  const btn =
+    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+  if (!btn) return;
+  btn.disabled = false;
+  btn.dataset.nextReady = "true";
+}
+
 /**
  * Disable the Next-round button and clear its ready state.
  *
@@ -418,6 +441,19 @@ export function registerRoundStartErrorHandler(retryFn) {
   return () => document.removeEventListener("round-start-error", onError);
 }
 
+/**
+ * Programmatically select a stat button and trigger the selection flow.
+ *
+ * @pseudocode
+ * 1. Locate the stat button element for `stat` and derive a human label.
+ * 2. Disable all stat buttons and mark the chosen button as `selected` for visual feedback.
+ * 3. Read player/opponent values from card elements and call `handleStatSelection`.
+ * 4. Show a snackbar message indicating the chosen stat.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
+ * @param {string} stat - Stat key to select (e.g. 'strength').
+ * @returns {void}
+ */
 export function selectStat(store, stat) {
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
   // derive label from button text if available
@@ -451,22 +487,6 @@ export function selectStat(store, stat) {
  * 3. Attach `onNextButtonClick` to the `click` event of the discovered button.
  *
  * @returns {void}
- */
-
-/**
- * Programmatically select a stat button and trigger the selection flow.
- *
- * @pseudocode
- * 1. Locate the stat button element for `stat` and derive a human label.
- * 2. Disable all stat buttons and mark the chosen button as `selected` for visual feedback.
- * 3. Read player/opponent values from card elements and call `handleStatSelection`.
- * 4. Show a snackbar message indicating the chosen stat.
- *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
- * @param {string} stat - Stat key to select (e.g. 'strength').
- * @returns {void}
- */
-
 export function removeBackdrops(store) {
   try {
     document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
@@ -801,6 +821,20 @@ export function setBattleStateBadgeEnabled(enable) {
  *
  * @param {object} [store]
  */
+
+export function removeBackdrops(store) {
+  try {
+    document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
+      if (typeof m.remove === "function") m.remove();
+    });
+  } catch {}
+  if (store?.quitModal) {
+    try {
+      store.quitModal.destroy();
+    } catch {}
+    store.quitModal = null;
+  }
+}
 
 export function resetBattleUI(store) {
   removeBackdrops(store);
