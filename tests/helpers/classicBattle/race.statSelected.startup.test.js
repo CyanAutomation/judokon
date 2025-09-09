@@ -16,22 +16,24 @@ afterEach(() => {
 
 // Minimal mocks for modules used by the selection flow
 vi.mock("../../../src/helpers/battleEngineFacade.js", async () => {
-  const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
+  const actual = await vi.importActual(
+    "../../../src/helpers/battleEngineFacade.js"
+  );
   return {
     ...actual,
-    stopTimer: vi.fn()
+    stopTimer: vi.fn(),
   };
 });
 
 // Capture dispatched machine events and simulate no machine at click time
-vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => {
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
   const events = [];
   return {
     dispatchBattleEvent: vi.fn(async (eventName) => {
       events.push(eventName);
       // No machine wired yet -> just resolve
     }),
-    __getEvents: () => events
+    __getEvents: () => events,
   };
 });
 
@@ -56,14 +58,16 @@ describe("race: early stat selection still resolves", () => {
     </ul>`;
     document.body.append(playerCard, opponentCard, header);
 
-    const selectionMod = await import("../../../src/helpers/classicBattle/selectionHandler.js");
+    const selectionMod = await import(
+      "../../../src/helpers/classicBattle/selectionHandler.js"
+    );
     const { handleStatSelection, getPlayerAndOpponentValues } = selectionMod;
 
     const store = {
       selectionMade: false,
       playerChoice: null,
       statTimeoutId: null,
-      autoSelectId: null
+      autoSelectId: null,
     };
 
     const { playerVal, opponentVal } = getPlayerAndOpponentValues("power");
@@ -72,7 +76,9 @@ describe("race: early stat selection still resolves", () => {
     await vi.advanceTimersByTimeAsync(1000);
     await p;
 
-    const eventDispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const eventDispatcher = await import(
+      "../../../src/helpers/classicBattle/eventDispatcher.js"
+    );
     const events = eventDispatcher.__getEvents();
 
     // Round flow should have proceeded and cleared the choice
@@ -82,6 +88,8 @@ describe("race: early stat selection still resolves", () => {
     const hasOutcome = events.some((e) => String(e).startsWith("outcome="));
     expect(hasOutcome).toBe(true);
     expect(events.includes("roundResolved")).toBe(true);
-    expect(events.includes("continue") || events.includes("matchPointReached")).toBe(true);
+    expect(
+      events.includes("continue") || events.includes("matchPointReached")
+    ).toBe(true);
   });
 });

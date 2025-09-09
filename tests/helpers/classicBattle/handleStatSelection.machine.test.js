@@ -2,51 +2,23 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   STATS: ["power"],
-  stopTimer: vi.fn()
+  stopTimer: vi.fn(),
 }));
 
-vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
-  dispatchBattleEvent: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
-  resolveRound: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
-  getCardStatValue: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
-  getBattleState: vi.fn(() => "waitingForPlayerAction")
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+  dispatchBattleEvent: vi.fn(),
 }));
 
 vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
-  resolveRound: vi.fn()
+  resolveRound: vi.fn(),
 }));
 
 vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
-  getCardStatValue: vi.fn()
+  getCardStatValue: vi.fn(),
 }));
 
 vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
-  getBattleState: vi.fn(() => "waitingForPlayerAction")
-}));
-
-vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
-  dispatchBattleEvent: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/roundResolver.js", () => ({
-  resolveRound: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
-  getCardStatValue: vi.fn()
-}));
-
-vi.mock("../../../src/helpers/classicBattle/eventBus.js", () => ({
-  getBattleState: vi.fn(() => "waitingForPlayerAction")
+  getBattleState: vi.fn(() => "waitingForPlayerAction"),
 }));
 
 import * as selection from "../../../src/helpers/classicBattle/selectionHandler.js";
@@ -60,9 +32,15 @@ describe("handleStatSelection machine interaction", () => {
   let resolveSpy;
 
   beforeEach(async () => {
-    store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
-    dispatchMock = (await import("../../../src/helpers/classicBattle/orchestrator.js"))
-      .dispatchBattleEvent;
+    store = {
+      selectionMade: false,
+      playerChoice: null,
+      statTimeoutId: null,
+      autoSelectId: null,
+    };
+    dispatchMock = (
+      await import("../../../src/helpers/classicBattle/eventDispatcher.js")
+    ).dispatchBattleEvent;
     dispatchCalls = [];
     dispatchMock.mockImplementation((...args) => {
       dispatchCalls.push(args);
