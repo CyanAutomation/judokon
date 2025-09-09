@@ -8,6 +8,20 @@ import { exposeDebugState, readDebugState } from "../debugHooks.js";
 import { autoContinue } from "../autoContinue.js";
 import isStateTransition from "../isStateTransition.js";
 
+function getElementIfDocument(id) {
+  return typeof document !== "undefined" ? document.getElementById(id) : null;
+}
+
+function getOpponentStatValue(stat, fallbackCard) {
+  try {
+    const opp = getOpponentJudoka();
+    const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+    return Number.isFinite(raw) ? raw : getStatValue(fallbackCard, stat);
+  } catch {
+    return getStatValue(fallbackCard, stat);
+  }
+}
+
 /**
  * Compute round outcome and dispatch the resulting events.
  *
@@ -49,19 +63,11 @@ export async function computeAndDispatchOutcome(store, machine) {
 function determineOutcomeEvent(store) {
   try {
     const stat = store.playerChoice;
-    const hasDocument = typeof document !== "undefined";
-    const pCard = hasDocument ? document.getElementById("player-card") : null;
-    const oCard = hasDocument ? document.getElementById("opponent-card") : null;
+    const pCard = getElementIfDocument("player-card");
+    const oCard = getElementIfDocument("opponent-card");
     const playerVal = getStatValue(pCard, stat);
     debugLog("DEBUG: computeAndDispatchOutcome values", { stat, playerVal });
-    let opponentVal = 0;
-    try {
-      const opp = getOpponentJudoka();
-      const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-      opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
-    } catch {
-      opponentVal = getStatValue(oCard, stat);
-    }
+    const opponentVal = getOpponentStatValue(stat, oCard);
     if (Number.isFinite(playerVal) && Number.isFinite(opponentVal)) {
       if (playerVal > opponentVal) return "outcome=winPlayer";
       if (playerVal < opponentVal) return "outcome=winOpponent";
@@ -80,8 +86,11 @@ async function dispatchOutcome(outcomeEvent, machine) {
           if (autoContinue) await machine.dispatch("continue");
         } catch {}
       };
-      if (typeof queueMicrotask === "function") queueMicrotask(run);
-      setTimeout(run, 0);
+      if (typeof queueMicrotask === "function") {
+        queueMicrotask(run);
+      } else {
+        setTimeout(run, 0);
+      }
     } catch {
       try {
         await machine.dispatch(outcomeEvent);
@@ -131,9 +140,8 @@ export function recordEntry() {
 export async function resolveSelectionIfPresent(store) {
   if (!store.playerChoice) return false;
   const stat = store.playerChoice;
-  const hasDocument = typeof document !== "undefined";
-  const pCard = hasDocument ? document.getElementById("player-card") : null;
-  const oCard = hasDocument ? document.getElementById("opponent-card") : null;
+  const pCard = getElementIfDocument("player-card");
+  const oCard = getElementIfDocument("opponent-card");
   let playerVal = 0;
   if (store.currentPlayerJudoka?.stats) {
     const raw = Number(store.currentPlayerJudoka.stats[stat]);
@@ -141,14 +149,7 @@ export async function resolveSelectionIfPresent(store) {
   } else {
     playerVal = getStatValue(pCard, stat);
   }
-  let opponentVal = 0;
-  try {
-    const opp = getOpponentJudoka();
-    const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-    opponentVal = Number.isFinite(raw) ? raw : getStatValue(oCard, stat);
-  } catch {
-    opponentVal = getStatValue(oCard, stat);
-  }
+  const opponentVal = getOpponentStatValue(stat, oCard);
   try {
     debugLog("DEBUG: roundDecision.resolveImmediate", { stat, playerVal, opponentVal });
   } catch {}
