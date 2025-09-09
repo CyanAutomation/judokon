@@ -211,8 +211,10 @@ export const __test = {
  *   updateRoundHeader(0, engineFacade.getPointsToWin?.())
  *   updateScoreLine()
  *   setRoundMessage("")
- * } followed by initClassicBattleOrchestrator()
- * return resetPromise // waits for orchestrator
+ * }
+ * await initClassicBattleOrchestrator()
+ * // Return a promise that resolves after both reset and orchestrator initialization are complete.
+ * // Callers should await the returned promise to ensure the reset is finished.
  */
 let resetPromise = Promise.resolve();
 async function resetMatch() {
