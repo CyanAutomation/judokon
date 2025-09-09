@@ -9,7 +9,12 @@ test.describe("Classic Battle CLI", () => {
         localStorage.setItem("battleCLI.verbose", "false");
       } catch {}
       try {
+        // Set both the legacy test key and the canonical storage key so the
+        // round-select modal is skipped in browser tests.
         localStorage.setItem("battleCLI.pointsToWin", "5");
+        try {
+          localStorage.setItem("battle.pointsToWin", "5");
+        } catch {}
       } catch {}
       try {
         localStorage.setItem(
@@ -21,7 +26,10 @@ test.describe("Classic Battle CLI", () => {
       window.__NEXT_ROUND_COOLDOWN_MS = 0;
     });
     await page.goto("/src/pages/battleCLI.html");
-    await page.locator("#start-match-button").click();
+    // Some environments auto-start the match (when persistent storage is set).
+    // Click the start button only if it exists to avoid flaky timeouts.
+    const startBtn = page.locator("#start-match-button");
+    if ((await startBtn.count()) > 0) await startBtn.click();
   });
 
   test("loads without console errors", async ({ page }) => {

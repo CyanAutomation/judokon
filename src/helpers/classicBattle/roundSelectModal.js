@@ -87,7 +87,12 @@ export async function initRoundSelectModal(onStart) {
   }
 
   try {
-    const storage = wrap(BATTLE_POINTS_TO_WIN);
+    // Read from persistent localStorage when available so browser tests
+    // that set the storage key (and real users) are respected. The
+    // default wrapper fallback ('session') uses an in-memory store which
+    // is not populated by Playwright's `page.addInitScript`, so explicitly
+    // request the persistent storage behavior here.
+    const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
     const saved = storage.get();
     if (POINTS_TO_WIN_OPTIONS.includes(Number(saved))) {
       try {
