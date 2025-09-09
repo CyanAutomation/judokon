@@ -8,7 +8,9 @@
 
 ## 1. Problem Statement
 
-Battle modes in the game suffer from inconsistent or tightly-coupled scoreboard implementations. These lead to fragmented user experiences, increased maintenance overhead, and difficulty in adapting to new modes like CLI or Bandit. A unified, reusable scoreboard component is required to reflect battle state in a consistent and deterministic manner, decoupled from the rest of the game UI.
+Players often struggle to understand who is winning or what just happened in a battle because the scoreboard looks and behaves differently across modes (Classic, CLI, Bandit). For example, in one mode the “Round Winner” stays visible, but in another it disappears quickly, leaving kids unsure of the result.
+This inconsistency makes it harder for players (especially 8–12-year-olds, who rely on clear, persistent cues) to track progress and feel confident in their decisions. It also leads to frustration when switching between battle modes, since the same game information isn’t always shown in the same way.
+We need a unified scoreboard that always shows the battle state (rounds, timer, scores, and outcome messages) clearly, consistently, and predictably — so kids can easily follow the action and feel rewarded when they win a round.
 
 ---
 
@@ -228,16 +230,50 @@ stateDiagram-v2
 
 ## 16. Acceptance Criteria
 
-| ID  | Requirement                      | Acceptance Criteria                                                               |
-| --- | -------------------------------- | --------------------------------------------------------------------------------- |
-| AC1 | Independence from main game area | Scoreboard functions with only engine events; no UI dependencies.                 |
-| AC2 | Consistency across modes         | DOM structure identical; differences achieved only via CSS themes.                |
-| AC3 | Event-driven updates             | Scoreboard updates only from engine events.                                       |
-| AC4 | Outcome/status persistence       | Outcome persists until replaced; fallback if no event in 500ms.                   |
-| AC5 | Performance                      | Score update ≤200ms; 1Hz timer with ≤100ms drift; animation ≤500ms.               |
-| AC6 | Accessibility                    | Live region compliance; screen reader output; respects reduced motion.            |
-| AC7 | Testability                      | `getSnapshot()` is deterministic; integration tests pass with mocked events.      |
-| AC8 | Reusability                      | `createScoreboard()`/`destroy()` usable in isolation; no mode-specific branching. |
+AC1 – Independence from Main Game Area
+Given the player is in any battle mode
+When the scoreboard is displayed
+Then it should show round, timer, scores, and messages without depending on other UI components.
+
+AC2 – Consistency Across Modes
+Given the player switches between Classic, Bandit, or CLI mode
+When the scoreboard is shown
+Then the structure and information should be identical, with only visual style changing.
+
+AC3 – Event-Driven Updates
+Given the battle engine sends a new event (e.g., round completed)
+When the scoreboard receives it
+Then the scoreboard should update only from that event and not from unrelated UI actions.
+
+AC4 – Outcome/Status Persistence
+Given a round has ended with an outcome (e.g., Player Wins)
+When no new engine events have arrived
+Then the scoreboard should keep showing the outcome until the next event replaces it.
+
+AC5 – Fallback Message
+Given no valid event is received for 500ms
+When the scoreboard is idle
+Then it should show a “Waiting…” message so the player is never left confused.
+
+AC6 – Performance & Responsiveness
+Given the player is watching the scoreboard update
+When a round ends and scores change
+Then the scoreboard should update within 200ms, animations should finish within 500ms, and the timer should tick every second with no more than 100ms drift.
+
+AC7 – Accessibility & Comprehension
+Given a player is using a screen reader or reduced motion setting
+When the scoreboard updates
+Then it should announce the change within 500ms and respect reduced-motion preferences.
+
+AC8 – Testability & Determinism
+Given a developer runs integration tests with mocked events
+When getSnapshot() is called
+Then the scoreboard should return a deterministic state that matches what the player sees.
+
+AC9 – Edge Cases
+Given the battle engine sends an invalid or duplicate event
+When the scoreboard processes it
+Then the scoreboard should ignore it and keep showing the last valid state.
 
 ---
 
