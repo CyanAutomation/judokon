@@ -1,471 +1,294 @@
+Got it — here’s the **final reconciled Battle Engine PRD**. I’ve merged back the valuable details from the original (explicit Engine vs Orchestrator responsibilities, determinism guarantee, fake timers/testability contract, event conformance targets, authority rules, diagnostics/interrupt events) while keeping the architectural fixes and alignment with the Scoreboard PRD.
+
+---
+
 # PRD: Battle Engine
 
-**Supports:**
-
-- [Classic Battle PRD](prdBattleClassic.md)
-- [Classic Battle CLI PRD](prdBattleCLI.md)
-
----
-
-Players aged **8–12** sometimes experience **confusion and frustration** in
-battles:
-
-- Timers feel inconsistent across devices.
-- Kids are unsure what to do when they run out of time or press the wrong
-
-The **Battle Engine** is split into two cooperating components:
-emission.
-
-- **Orchestrator**: owns the state machine, cooldowns, readiness handshakes,
-  interrupts, and UI adapter events.
-- Enforce **strict separation of concerns** between game logic and
-  orchestration.
-- Guarantee **deterministic outcomes** using seeded randomness (100% match
-  determinism under identical inputs).
-- Ensure **testability** through snapshot state inspection and injected
-  conformance coverage in integration tests.
+**Entry Point:** `src/helpers/battleEngine.js`
+**Used By:** Classic Battle, Battle CLI, Battle Bandit, future modes
+**Related Docs:** \[prdBattleScoreboard.md], \[prdSnackbar.md], \[prdBattleStateIndicator.md]
 
 ---
 
-## 2. Responsibilities & boundaries
+## 1. Problem Statement
 
-### Engine
+Previous implementations mixed orchestration, logic, and UI responsibilities, leading to inconsistent behaviour, non-deterministic outcomes, and difficulty testing.
+The engine must provide a **deterministic, event-driven foundation** for all battle modes, with clear separation of concerns and a stable event taxonomy.
 
-- Owns the **round timer** (start, pause, resume, stop).
-- Compares stat values and computes outcomes.
-- Tracks scores and end conditions.
-- Emits **domain events** and **round timer events** only.
+---
+
+## 2. TL;DR
+
+The **Battle Engine** is composed of two cooperating layers:
+
+* **Engine Core** — owns stat evaluation, scoring, round timer, and domain/timer event emission.
+* **Orchestrator** — owns the FSM, cooldowns, readiness handshakes, interrupts, and control event emission.
+
+Design goals:
+
+* Strict separation of concerns.
+* Deterministic outcomes with seeded randomness (**100% identical outcomes given identical inputs**).
+* Testability via state snapshots and **injected fake timers**.
+* Canonical event taxonomy, with **≥90% event conformance coverage** in integration tests.
+
+---
+
+## 3. Responsibilities & Boundaries
+
+### Engine Core
+
+* Evaluate chosen stat values and compute round outcome.
+* Track cumulative scores.
+* Own the **round timer** (start, tick, expire).
+* Emit **domain** and **timer** events.
 
 ### Orchestrator
 
-- Drives the authoritative state machine.
-- Owns **all cooldowns** between rounds.
-- Emits **control events** for readiness and cooldown.
-- Handles interrupts and validation events.
-- Provides test seams (`getState`, `injectFakeTimers`) and optional
-  diagnostics (`debug:*`).
+* Maintain finite-state machine (FSM).
+* Manage **cooldown timers** between rounds.
+* Coordinate readiness handshakes.
+* Manage interrupts and their resolution.
+* Emit **control** events (authoritative for UIs).
+* Optionally emit adapter updates (e.g. `scoreboard.update`) for simplified UI wiring.
 
-  ### State Catalog Contract
+### Out of Scope
 
-  Orchestrator publishes a State Catalog describing all available FSM nodes. This catalog is the authoritative table used by UI and tooling to render state indicators and to keep client mappings stable.
-
-  Structure:
-
-  ```
-  type StateCatalog = {
-    version: string;                 // e.g., "v1"
-    order: FSMStateName[];           // strict render order
-    ids: Record<FSMStateName, number>;  // stable ordinals (10,20,…)
-    labels?: Record<FSMStateName,string>; // optional human-readable
-    display: { include: FSMStateName[] }; // subset for passive UI
-  }
-  ```
-
-  Delivery mechanisms:
-  - On demand via `getState()` → includes `catalogVersion`
-  - Sticky broadcast: `control.state.catalog` event (optional)
+* Rendering.
+* Snackbar-style prompts.
+* Mode-specific visual layout.
 
 ---
 
-### 3.1 Engine constructor
+## 4. Event Catalog (Authoritative)
 
-`createBattleEngine(config) => BattleEngine`
-Config fields:
+Canonical events emitted:
 
-- `pointsToWin`
-
-### 3.2 Engine controls
-
-- `startRoundTimer(durationMs, onDrift?)`
-- `pauseRoundTimer()`
-- `resumeRoundTimer()`
-- `getScores()`
-- `isMatchPoint()`
-- `getSeed()` – returns seed in use (for replay/debug).
-
-- `on(eventType, handler)`
-- `off(eventType, handler)`
-
-### 3.5 Orchestrator interface
-
-- `confirmReadiness()` – replaces DOM readiness flags
-- `requestInterrupt(scope: "round"|"match", reason: string)`
-- `getState() => { node, context }`
-  - `context` must include at least:
-    - `roundIndex`
-    - `seed`
-    - `timerState`
-
-- `injectFakeTimers(fakeTimersApi)`
+| Category    | Event                                                          | Purpose                            |
+| ----------- | -------------------------------------------------------------- | ---------------------------------- |
+| Domain      | `round.started({ roundIndex })`                                | New round begins                   |
+|             | `round.selection.locked({ roundIndex, statKey })`              | Stat selection locked              |
+|             | `round.evaluated({ outcome, scores })`                         | Outcome computed                   |
+|             | `match.checkpoint({ scores })`                                 | Periodic checkpoint                |
+|             | `match.concluded({ scores })`                                  | Match ends                         |
+| Timers      | `round.timer.tick({ remainingMs })`                            | Selection countdown                |
+|             | `round.timer.expired()`                                        | Selection timer expired            |
+|             | `cooldown.timer.tick({ remainingMs })`                         | Cooldown countdown                 |
+|             | `cooldown.timer.expired()`                                     | Cooldown expired                   |
+| Control     | `control.state.changed({ from, to, context, catalogVersion })` | **Authoritative FSM transition**   |
+|             | `control.countdown.started/ completed`                         | Match pre-start countdown          |
+|             | `control.readiness.required/ confirmed`                        | Readiness handshake                |
+| Validation  | `input.invalid`, `input.ignored`                               | Invalid or duplicate input         |
+| Interrupts  | `interrupt.raised`, `interrupt.resolved`                       | Handling of match-level interrupts |
+| Diagnostics | `debug.state.snapshot`                                         | Emit full engine state for tests   |
 
 ---
 
-## 4. Event taxonomy
+## 5. Authority Rules
 
-- `round.started({ roundIndex, availableStats })`
-- `round.selection.locked({ statKey, source })`
-- `round.evaluated({ statKey, playerVal, opponentVal, outcome, scores })`
-- `match.checkpoint({ reason })`
-- `match.concluded({ winner, scores, reason })`
-
-### 4.2 Timer events
-
-- `round.timer.tick({ remainingMs })`
-- `round.timer.expired()`
-- `cooldown.timer.tick({ remainingMs })`
-- `cooldown.timer.expired()`
-
-### 4.3 Control / UI adapter events
-
-- `control.countdown.started({ durationMs })`
-- `control.countdown.completed()`
-- `control.readiness.required({ for })`
-- `control.readiness.confirmed({ for })`
-  -- `control.state.changed({ from, to, context, catalogVersion })`  
-   Emitted by the Orchestrator after every valid FSM transition.  
-   Payload includes:
-  - `from`: previous FSM state name (e.g., "matchInit")
-  - `to`: new FSM state name (e.g., "cooldown")
-  - `context`: minimal snapshot `{ roundIndex, scores, seed, timerState }`
-  - `catalogVersion`: version string of the current State Catalog
-  - Optional debug metadata (`{ transition: { trigger } }`)
-
-  Notes:
-  - This event is the authoritative adapter signal for UI consumers (Battle State Indicator, Scoreboard, CLI renderers).
-  - Always fired after state entry is confirmed.
-  - Guaranteed idempotent: the latest event fully reflects the current FSM node.
-  - UI consumers must treat this event as the single source of truth for rendering and testing assertions.
-
-### 4.4 Interrupt & validation
-
-- `interrupt.requested({ scope: "round"|"match", reason })`
-- `interrupt.resolved({ outcome: "restartRound"|"resumeLobby"|"abortMatch" })`
-- `input.invalid({ kind, detail })`
-- `input.ignored({ kind:"duplicateSelection" })`
-- `error.recoverable({ message, scope })`
-- `error.fatal({ message, scope })`
-
-### 4.5 Diagnostics (optional)
-
-- `debug.transition({ from, to, trigger })`
-- `debug.state.snapshot({ state, context })`
-- `debug.watchdog({ where, elapsedMs })`
+* **UIs must not infer transitions** from domain or timer events.
+* **Only** `control.state.changed` is authoritative for view/state progression.
+* Domain/timer events update values, not transitions.
 
 ---
 
-## 5. State machine overview
+## 6. State Model
 
-```
-[Diagram Recommended Here: state graph from idle → matchFinished with overlay]
-```
-
-### 5.1 States
-
-- `idle`
-- `matchInit`
-- `cooldown`
-- `selection`
-- `roundEvaluation`
-- `betweenRounds`
-- `matchEvaluation`
-- `matchFinished`
-- Overlay: `adminOverlay` (debug/test only)
-
-### 5.2 Transitions
-
-- `idle --startMatch--> matchInit`
-- `matchInit --ready--> cooldown`
-- `cooldown --cooldown.timer.expired|control.countdown.completed--> selection`
-- `selection --player.statSelected(first)--> roundEvaluation`
-- `selection --round.timer.expired & autoSelect=true--> roundEvaluation`
-- `selection --round.timer.expired & autoSelect=false--> interrupt.requested({reason:"selectionTimeout"})`
-- `roundEvaluation --evaluate--> betweenRounds`
-- `betweenRounds --check & (match point|maxRounds)--> matchEvaluation`
-- `betweenRounds --check & else--> cooldown`
-- `matchEvaluation --finalize--> matchFinished`
-- `interrupt.* --resolve--> interrupt.resolved({outcome})`
-
----
-
-## 6. Timer & readiness contract
-
-- Engine emits only `round.timer.*` events.
-- Orchestrator emits `cooldown.timer.*` and `control.*` events.
-- UI adapter listens to control events and calls `confirmReadiness()`.
-
-No DOM selectors are part of the contract.
-
-Note:
-
-- After each readiness or timer-triggered transition, the orchestrator must emit `control.state.changed`.
-- UI modules must not infer transitions from domain/timer events directly; they consume only `control.state.changed` for authoritative rendering and logic.
-- Transition handling is composed through helpers (`emitDiagnostics`, `emitReadiness`, `emitStateChange`) to isolate diagnostics, control, and taxonomy concerns.
-- Interrupt resolutions use an explicit `{ event: outcome }` map (e.g., `restartMatch → restartRound`).
-
----
-
-## 7. Interrupts & validation
-
-- Emit `interrupt.requested({reason})` on abnormal flows.
-- Emit `interrupt.resolved({outcome})` once handled.
-- Emit `input.invalid()` or `input.ignored()` as required.
-- Admin overlay may override or replay rounds.
-
----
-
-## 8. Determinism & seeding
-
-- All randomness must be seeded.
-- Orchestrator injects the seed.
-- Engine exposes `getSeed()`.
-- Same seed + inputs = identical outcomes (100% determinism goal).
-
----
-
-## 9. Edge case handling
-
-### Normative rules
-
-- Invalid input → `input.invalid`
-- Duplicate input → `input.ignored`
-- Timeout without autoSelect → `interrupt.requested({reason})`
-- Interrupts must resolve with `interrupt.resolved`
-
-### Deprecated behaviors
-
-- Silent invalid ties (NaN=0)
-- UI imperative events (`scoreboardShowMessage`)
-
----
-
-## 10. Acceptance criteria (Gherkin)
-
-```gherkin
-Feature: Battle Engine acceptance criteria
-  In order to verify the Battle Engine and Orchestrator meet the PRD
-  As a product/test author
-  I want executable-style Gherkin scenarios that describe the expected behaviour
-
-  Background:
-    Given a Battle Engine and Orchestrator are available
-
-  Scenario: Engine emits required domain and timer events
-    Given a match is started
-    When a round begins
-    Then the engine emits "round.started"
-    And the engine emits "round.timer.tick" events while the timer runs
-    And the engine emits "round.timer.expired" when the round timer reaches zero
-    And the engine emits "round.evaluated" after a stat selection is evaluated
-
-  Scenario: Orchestrator uses control events for readiness and cooldown
-    Given the orchestrator begins the match initialization
-    When the countdown for readiness starts
-    Then the orchestrator emits "control.countdown.started"
-    And when the countdown completes it emits "control.countdown.completed"
-    And cooldown timers are published as "cooldown.timer.tick" and "cooldown.timer.expired"
-
-  Scenario: Validation and interrupt events are emitted (per §4.4)
-    Given an invalid input is received
-    Then the system emits "input.invalid" with details
-    Given a duplicate selection is received
-    Then the system emits "input.ignored" with kind "duplicateSelection"
-    Given a selection timeout occurs and autoSelect is false
-    Then the system emits "interrupt.requested" with reason "selectionTimeout"
-
-  Scenario: Public APIs expose state and test seams
-    Given a match is started with a known seed
-    When the API client calls getState()
-    Then the returned state includes at least "roundIndex", "scores", "seed", and "timerState"
-    And the engine exposes getSeed()
-    And injectFakeTimers() can be called to control timer progression in tests
-
-  Scenario: Deterministic outcomes with fixed seed
-    Given two engine instances are created with the same seed
-    And both receive the same sequence of inputs and selections
-    When both matches are executed
-    Then both instances produce identical outcomes and scores
-
-  Scenario: Debug events are optional and excluded from acceptance tests
-    Given debug mode is disabled for acceptance tests
-    When a match runs in acceptance mode
-    Then no "debug.*" events are emitted as part of the verified behaviour
-
-  Scenario: Readiness confirmation after countdown
-    Given a player starts a match
-    When the readiness countdown finishes
-    Then the player is shown a readiness confirmation screen
-    And the orchestrator emits "control.readiness.confirmed"
-
-  Scenario: Auto-select when round timer expires and autoSelect=true
-    Given a round begins with autoSelect set to true
-    When the round timer expires
-    Then the system automatically selects a stat on behalf of the player
-    And the round proceeds to evaluation
-
-  Scenario: Timeout screen when round timer expires and autoSelect=false
-    Given a round begins with autoSelect set to false
-    When the round timer expires
-    Then the system emits "round.timer.expired"
-    And the player is shown a timeout screen with recovery options
-    And the orchestrator emits "interrupt.requested" with a selection timeout reason
-
-  Scenario: Animated comparison and scoreboard update after evaluation
-    Given a stat has been chosen for the round
-    When evaluation occurs
-    Then the UI shows an animated comparison of values
-    And the scoreboard is updated with the new scores
-
-  Scenario: Victory or defeat screen on match conclusion
-    Given a match concludes and a winner is determined
-    When the match finalization occurs
-    Then the player sees a clear victory or defeat screen
-    And the final scores are displayed
+```ts
+{
+  state: string,              // FSM state
+  roundIndex: number,
+  scores: { player: number, opponent: number },
+  outcome: "playerWin" | "opponentWin" | "draw" | null,
+  selection: { statKey: string | null },
+  timers: {
+    roundRemainingMs: number | null,
+    cooldownRemainingMs: number | null
+  },
+  catalogVersion: string
+}
 ```
 
 ---
 
-## 11. Testing & observability
+## 7. Public API
 
-- `getState()` snapshot for FSM + context.
-- `injectFakeTimers()` for full test determinism.
-- Fixed seed → repeatable outcomes.
-- Optional `debug:*` events for diagnostics.
+* **create(config) → EngineInstance**
+  Initializes engine with seeded RNG, config, and empty state.
 
-Note:
+* **startMatch()**
+  Begin match; emit countdown + round.started.
 
-- `control.state.changed` is the contract event for snapshotting FSM transitions during tests.
-- Consumers (UI, tests) should assert against `to` and `context` values rather than raw engine timer or debug events.
-- `debug.state.snapshot` remains available but is not normative.
+* **lockSelection(statKey: string)**
+  Lock stat and evaluate.
 
----
+* **advanceRound()**
+  Progress FSM to next round or conclude match.
 
-## 12. Migration support
+* **getSnapshot() → StateModel**
+  Deterministic state for tests/debugging.
 
-During transition:
-
-| Legacy Event        | Replacement Event             |
-| ------------------- | ----------------------------- |
-| `roundResolved`     | `round.evaluated`             |
-| `roundStart`        | `round.started`               |
-| `matchOver`         | `match.concluded`             |
-| `roundTimeout`      | `round.timer.expired`         |
-| `countdownStart`    | `control.countdown.started`   |
-| `countdownFinished` | `control.countdown.completed` |
-
-Remove legacy glue code post-migration.
+* **destroy()**
+  Stops timers, unsubscribes, resets state.
 
 ---
 
-## 13. Glossary
+## 8. Lifecycle & Idempotency
 
-- **Engine**: Timer, scoring, stat evaluation, emits core game events.
-- **Orchestrator**: Controls state machine and UI readiness/cooldowns.
-- **Readiness**: Programmatic confirmation, not DOM-based.
-- **Interrupts**: Explicit recovery paths with `interrupt.resolved`.
-- **Admin Overlay**: Dev/test-only state layer, not in production FSM.
-
-- **State Catalog**: authoritative table of FSM states, IDs, labels, and display rules.
-- **Catalog Version**: semantic version string ensuring client ↔ engine alignment.
-- **UI Adapter Event**: stable, engine-owned events (e.g., `control.state.changed`) consumed by presentation modules.
+* Duplicate stat selections for the same round are ignored (`input.ignored`).
+* Out-of-order events (lower `roundIndex` than current) are ignored.
+* Engine must be restartable (destroy() + create()).
+* Determinism guaranteed if seeded RNG and identical inputs provided.
+* Snapshots are idempotent and repeatable.
 
 ---
 
-## 14. Mermaid state diagram — Battle Engine
+## 9. Performance & Testability
 
-_Figure: Mermaid state diagram — shows the battle engine state machine from
-idle to matchFinished. Suggested alt text: "State machine with orchestrator
-cooldown, selection, evaluation, interrupts, and match conclusion."_
+* Timer tick granularity: 1s, drift ≤ 100 ms per 10s.
+* Event dispatch latency ≤ 16 ms per frame.
+* Must support **fake timers** for deterministic testing.
+* Deterministic playback possible with recorded event tapes.
+* ≥90% event types must have conformance tests in integration suite.
+
+---
+
+## 10. Acceptance Criteria (Gherkin)
+
+Feature: Engine emits canonical events
+
+Scenario: Round start
+When startMatch() is called
+Then the engine emits "round.started" with roundIndex 1
+And "control.state.changed" to "selection"
+
+Scenario: Timer ticks
+Given a selection timer of 5 seconds
+When 3 seconds pass
+Then the engine emits "round.timer.tick" with remainingMs 2000
+
+Scenario: Stat locked and outcome evaluated
+When lockSelection("power") is called
+Then the engine emits "round.selection.locked" with statKey "power"
+And then emits "round.evaluated" with an outcome and updated scores
+
+Scenario: Outcome persists until state change
+Given outcome "playerWin" was emitted for round 3
+When "control.state.changed" moves to "selection" for round 4
+Then outcome is reset to null
+
+Scenario: Match concluded
+When a player reaches 10 wins
+Then the engine emits "match.concluded" with final scores
+And "control.state.changed" to "end"
+
+Scenario: Ignore duplicate input
+When lockSelection("power") is called twice for the same round
+Then only the first is accepted
+And the second emits "input.ignored"
+
+Scenario: Interrupt raised and resolved
+When an interrupt is raised
+Then the engine emits "interrupt.raised"
+When the interrupt is resolved
+Then the engine emits "interrupt.resolved"
+
+Scenario: Debug snapshot
+When getSnapshot() is called
+Then the engine emits "debug.state.snapshot" with the full state
+
+---
+
+## 11. Risks & Open Questions
+
+* Should we emit a consolidated `scoreboard.update` adapter event to simplify UI consumption?
+* Should cooldown visuals be considered part of the Scoreboard or Snackbar?
+* Should catalogVersion mismatches throw or warn only?
+* How should interrupts be exposed to UIs — surfaced directly, or wrapped in Snackbar notifications?
+
+---
+
+# Finite-State Machine (FSM) Overview
+
+States (authoritative via `control.state.changed`):
+
+* init — engine constructed, no match started.
+* prestart — optional countdown / readiness handshake before round 1.
+* selection — players/AI lock a stat or the round timer expires (auto-pick).
+* evaluation — engine computes outcome, updates scores, emits result.
+* cooldown — optional inter-round cooldown (UI can show via Snackbar).
+* end — match concluded (target wins reached or terminal interrupt).
+
+Events that drive transitions (emitted by engine/orchestrator):
+
+* startMatch() → `control.countdown.started` → `control.countdown.completed`
+* `round.started({ roundIndex })`, `round.selection.locked`, `round.timer.expired`
+* `round.evaluated({ outcome, scores })`
+* `cooldown.timer.*`
+* `match.concluded({ scores })`
+* `interrupt.raised` / `interrupt.resolved`
+
+Guards & rules:
+
+* Win guard: `scores.player >= targetWins || scores.opponent >= targetWins` → transition to `end`.
+* Timer expiry in `selection` auto-locks per mode rules (e.g., random stat).
+* UIs must never infer transitions from non-control events; only react to `control.state.changed`.
 
 ```mermaid
-stateDiagram
-  direction LR
+stateDiagram-v2
+  [*] --> init
 
-  [*] --> idle
+  init --> prestart: startMatch()
+  prestart --> selection: control.countdown.completed\nround.started(roundIndex=1)
 
-  idle --> matchInit: startMatch(config/seed)
-  matchInit --> cooldown: ready
+  selection --> evaluation: round.selection.locked(statKey)\nOR round.timer.expired(auto-pick)
+  evaluation --> end: match.concluded(scores) [win guard]
+  evaluation --> cooldown: round.evaluated(outcome,scores) [!win guard]
 
-  %% Cooldown is orchestrator-owned
-  state cooldown {
-    [*] --> waiting
-    waiting --> readyToSelect: cooldown.timer.expired / control.countdown.completed
-  }
-  cooldown --> selection: enter selection
+  cooldown --> selection: cooldown.timer.expired\nround.started(roundIndex+1)
+  selection --> end: match.concluded(scores) [win guard]
 
-  %% Selection phase (engine round timer active)
-  state selection {
-    [*] --> awaitingInput
-    awaitingInput --> roundEvaluation: player.statSelected(first) / autoSelect
-    awaitingInput --> timeoutInterrupt: round.timer.expired && !autoSelect
-  }
-  selection --> roundEvaluation: player.statSelected(first) / (round.timer.expired & autoSelect)
-  selection --> interruptRound: interrupt.requested(reason="selectionTimeout")
+  state interrupted <<choice>>
+  init --> interrupted: interrupt.raised
+  prestart --> interrupted: interrupt.raised
+  selection --> interrupted: interrupt.raised
+  evaluation --> interrupted: interrupt.raised
+  cooldown --> interrupted: interrupt.raised
+  interrupted --> [*]: match.concluded (hard stop)
+  interrupted --> (restore): interrupt.resolved
 
-  %% Round evaluation (pure scoring + domain event)
-  roundEvaluation --> betweenRounds: round.evaluated
-
-  %% Between rounds: decide continue or finish
-  state betweenRounds {
-    [*] --> deciding
-    deciding --> matchEvaluation: match.checkpoint (pointsToWin|maxRounds)
-    deciding --> cooldown: continue
-  }
-
-  matchEvaluation --> matchFinished: match.concluded
-  matchFinished --> [*]
-
-  %% Interrupt handling (explicit resolution)
-  state "interruptRound" as interruptRound {
-    [*] --> pendingResolution
-    pendingResolution --> cooldown: interrupt.resolved(outcome="restartRound")
-    pendingResolution --> idle:    interrupt.resolved(outcome="resumeLobby")
-    pendingResolution --> matchFinished: interrupt.resolved(outcome="abortMatch")
-  }
-
-  %% Fatal/Match-scope interrupts route similarly
-  state "interruptMatch" as interruptMatch {
-    [*] --> pendingResolution2
-    pendingResolution2 --> idle:          interrupt.resolved(outcome="resumeLobby")
-    pendingResolution2 --> matchFinished: interrupt.resolved(outcome="abortMatch")
-  }
+  (restore) --> prestart: if before first selection
+  (restore) --> selection: if in-round
+  (restore) --> evaluation: if evaluation in-flight
+  (restore) --> cooldown: if between rounds
 ```
 
-Notes
-Engine emits: round.started, round.selection.locked, round.evaluated, round.timer.tick/expired.
-Orchestrator emits: cooldown.timer._, control.countdown._, control.readiness._, match.checkpoint, match.concluded, interrupt._.
-Admin overlay is out-of-band (not shown) and can re-enter at roundEvaluation via a controlled override.
+## State table (entry/exit actions & primary events)
+
+| State      | Entry actions                                                 | Accepts                                         | Exit on                                            | Notes                          |
+| ---------- | ------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------- | ------------------------------ |
+| init       | set roundIndex=0, reset scores/outcome                        | startMatch()                                    | countdown started                                  | No timers running.             |
+| prestart   | emit `control.countdown.started`                              | readiness/skip, countdown ticks                 | `control.countdown.completed` → `round.started(1)` | Optional per mode.             |
+| selection  | start round timer; emit `control.state.changed(to=selection)` | `round.selection.locked`, `round.timer.expired` | to `evaluation`                                    | Auto-pick on expiry.           |
+| evaluation | compute outcome; emit `round.evaluated`                       | —                                               | to `end` (win guard) or `cooldown`                 | Deterministic with seeded RNG. |
+| cooldown   | start cooldown timer                                          | cooldown ticks                                  | `cooldown.timer.expired` → `round.started(n+1)`    | Optional in some modes.        |
+| end        | emit `match.concluded`, freeze timers                         | —                                               | —                                                  | Terminal.                      |
+
+## Adapter emission (optional, for dumb UIs)
+
+If you choose to keep UIs ultra-simple, the orchestrator may emit a consolidated:
+
+```
+scoreboard.update({
+  roundIndex,
+  timerRemainingMs,                // null outside selection
+  scores: { player, opponent },
+  outcome,                         // null | playerWin | opponentWin | draw
+  state,                           // FSM state name
+  catalogVersion
+})
+```
+
+This doesn’t replace the canonical events; it’s a convenience layer for reflectors.
 
 ---
 
-## 15. Tasks
-
-- [ ] 1.0 Implement Battle Engine Core
-  - [ ] 1.1 Add constructor `createBattleEngine(config)`
-  - [ ] 1.2 Implement round timer controls: start, pause, resume, stop
-  - [ ] 1.3 Implement `evaluateSelection()` logic
-  - [ ] 1.4 Track scores and rounds
-  - [ ] 1.5 Emit domain and timer events
-
-- [ ] 2.0 Implement Orchestrator State Machine
-  - [ ] 2.1 Define all states and transitions per spec
-  - [ ] 2.2 Integrate readiness confirmation flow
-  - [ ] 2.3 Manage cooldown timers and transitions
-  - [ ] 2.4 Handle interrupts and validation events
-  - [ ] 2.5 Emit `control.state.changed` after each FSM transition
-  - [ ] 2.6 Provide State Catalog (getState() + optional sticky event)
-  - [ ] 2.7 Ensure `catalogVersion` is included in all state change payloads
-  - [ ] 2.8 Update tests to assert on `control.state.changed`
-
-- [ ] 3.0 Public API Surface
-  - [ ] 3.1 Implement `getState()` and `injectFakeTimers()`
-  - [ ] 3.2 Add `confirmReadiness()` and `requestInterrupt()`
-  - [ ] 3.3 Expose event binding methods (`on`, `off`)
-
-- [ ] 4.0 Testing & Observability
-  - [ ] 4.1 Add snapshot state validation
-  - [ ] 4.2 Validate deterministic outputs under fixed seeds
-  - [ ] 4.3 Include optional `debug:*` event hooks
-
-- [ ] 5.0 Migration Support
-  - [ ] 5.1 Dual-emit legacy and new events during transition period
-  - [ ] 5.2 Clean up legacy UI glue code after migration window
