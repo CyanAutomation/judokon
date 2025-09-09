@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn().mockResolvedValue()
 }));
 vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
@@ -89,7 +89,7 @@ describe.sequential("classicBattle round resolver once", () => {
     _resetForTest(store);
     const { updateScore } = await import("../../../src/helpers/setupScoreboard.js");
     const { dispatchBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/orchestrator.js"
+      "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
     const result = await computeRoundResult(store, "power", 5, 3);
     expect(result.outcome).toBe("winPlayer");
@@ -110,7 +110,7 @@ describe.sequential("classicBattle round resolver once", () => {
     });
     const { updateScore } = await import("../../../src/helpers/setupScoreboard.js");
     const { dispatchBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/orchestrator.js"
+      "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
     const result = await computeRoundResult(store, "power", 4, 4);
     expect(result.outcome).toBe("draw");

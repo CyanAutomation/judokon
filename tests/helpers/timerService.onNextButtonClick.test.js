@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { __setStateSnapshot } from "../../src/helpers/classicBattle/battleDebug.js";
 
-vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
+vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn(() => Promise.resolve())
 }));
 
@@ -39,7 +39,7 @@ describe("onNextButtonClick", () => {
     __setStateSnapshot({ state: "cooldown" });
     const resolveReady = vi.fn();
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady });
-    const dispatcher = await import("../../src/helpers/classicBattle/orchestrator.js");
+    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
@@ -54,7 +54,7 @@ describe("onNextButtonClick", () => {
     const stop = vi.fn();
     __setStateSnapshot({ state: "roundDecision" });
     await onNextButtonClick(new MouseEvent("click"), { timer: { stop }, resolveReady: null });
-    const dispatcher = await import("../../src/helpers/classicBattle/orchestrator.js");
+    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
     expect(stop).toHaveBeenCalledTimes(1);
     expect(events.emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
@@ -66,7 +66,7 @@ describe("onNextButtonClick", () => {
     __setStateSnapshot({ state: "cooldown" });
     const resolveReady = vi.fn();
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady });
-    const dispatcher = await import("../../src/helpers/classicBattle/orchestrator.js");
+    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
     expect(events.emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
@@ -79,7 +79,7 @@ describe("onNextButtonClick", () => {
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
-    const dispatcher = await import("../../src/helpers/classicBattle/orchestrator.js");
+    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
     expect(events.emitBattleEvent).not.toHaveBeenCalled();
     expect(dispatcher.dispatchBattleEvent).not.toHaveBeenCalled();

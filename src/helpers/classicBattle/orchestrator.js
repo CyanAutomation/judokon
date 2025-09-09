@@ -417,3 +417,6 @@ export function disposeClassicBattleOrchestrator() {
 export function getBattleStateMachine() {
   return machine;
 }
+
+// Re-export for test compatibility
+export { dispatchBattleEvent };

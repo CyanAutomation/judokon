@@ -23,8 +23,13 @@ vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
   resolveRound: vi.fn()
 }));
 
-vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
-  dispatchBattleEvent: vi.fn()
+vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+  dispatchBattleEvent: vi.fn(async (eventName) => {
+    if (eventName === "statSelected") {
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
+  })
 }));
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
@@ -53,7 +58,7 @@ describe("handleStatSelection helpers", () => {
     ({ stopTimer } = await import("../../src/helpers/battleEngineFacade.js"));
     ({ emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js"));
     ({ showSnackbar } = await import("../../src/helpers/showSnackbar.js"));
-    ({ dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js"));
+    ({ dispatchBattleEvent } = await import("../../src/helpers/classicBattle/eventDispatcher.js"));
     ({ getBattleState } = await import("../../src/helpers/classicBattle/eventBus.js"));
     getBattleState.mockReturnValue(null);
   });
@@ -79,6 +84,9 @@ describe("handleStatSelection helpers", () => {
 
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
     initScoreboard(document.body);
+
+    // Mock dispatchBattleEvent to return false so direct resolution is used
+    dispatchBattleEvent.mockResolvedValueOnce(false);
 
     await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
 

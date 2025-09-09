@@ -7,7 +7,7 @@ let modalElement;
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   interruptMatch: vi.fn()
 }));
-vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn()
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
@@ -78,7 +78,7 @@ describe("initInterruptHandlers", () => {
     );
     const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
     const { dispatchBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/orchestrator.js"
+      "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
     const { showMessage, clearTimer } = await import("../../../src/helpers/setupScoreboard.js");
     const { stop: stopScheduler, cancel } = await import("../../../src/utils/scheduler.js");
@@ -110,7 +110,7 @@ describe("initInterruptHandlers", () => {
     );
     const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
     const { dispatchBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/orchestrator.js"
+      "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
     const { showMessage } = await import("../../../src/helpers/setupScoreboard.js");
 
@@ -133,7 +133,7 @@ describe("initInterruptHandlers", () => {
     );
     const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
     const { dispatchBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/orchestrator.js"
+      "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
     const { showMessage } = await import("../../../src/helpers/setupScoreboard.js");
 
@@ -159,7 +159,7 @@ describe("initInterruptHandlers", () => {
     );
     const { interruptMatch } = await import("../../../src/helpers/battleEngineFacade.js");
     const { dispatchBattleEvent } = await import(
-      "../../../src/helpers/classicBattle/orchestrator.js"
+      "../../../src/helpers/classicBattle/eventDispatcher.js"
     );
     const { showMessage } = await import("../../../src/helpers/setupScoreboard.js");
 

@@ -39,18 +39,7 @@ try {
   }
 } catch {}
 
-vi.mock("../src/helpers/classicBattle/orchestrator.js", async (importOriginal) => {
-  const mod = await importOriginal();
-  return {
-    ...mod,
-    dispatchBattleEvent: vi.fn((eventName) => {
-      if (eventName === "statSelected") {
-        return Promise.resolve(true);
-      }
-      return mod.dispatchBattleEvent(eventName);
-    })
-  };
-});
+// Global mock removed - individual tests should handle their own mocking
 
 // vi.importMz: utility for dynamic imports while preserving mocks
 if (!vi.importMz) {

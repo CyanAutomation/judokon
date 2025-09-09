@@ -9,7 +9,7 @@ let generateRandomCardMock;
 let getRandomJudokaMock;
 let renderMock;
 
-vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => {
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
   let state = "roundDecision";
   const stateLog = [];
   return {
@@ -90,7 +90,7 @@ describe("classicBattle stat selection", () => {
     } = await initClassicBattleTest({ afterMock: true }));
     store = createBattleStore();
     _resetForTest(store);
-    const eventDispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     eventDispatcher.__reset();
     selectStat = async (stat) => {
       const playerVal = getCardStatValue(document.getElementById("player-card"), stat);
@@ -166,7 +166,7 @@ describe("classicBattle stat selection", () => {
   });
 
   it("advances machine to cooldown after stat selection", async () => {
-    const eventDispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     document.getElementById("player-card").innerHTML =
       `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
     document.getElementById("opponent-card").innerHTML =
@@ -206,7 +206,7 @@ describe("classicBattle stat selection", () => {
     "dispatches matchPointReached when $description",
     async ({ pointsToWin, playerStat, opponentStat, outcome, rounds }) => {
       const { setPointsToWin } = await import("../../../src/helpers/battleEngineFacade.js");
-      const eventDispatcher = await import("../../../src/helpers/classicBattle/orchestrator.js");
+      const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
       setPointsToWin(pointsToWin);
       eventDispatcher.__reset();
       document.getElementById("player-card").innerHTML =

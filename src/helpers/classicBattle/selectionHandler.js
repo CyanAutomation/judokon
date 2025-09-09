@@ -263,6 +263,12 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       if (IS_VITEST)
         console.log("[test] handleStatSelection: validateSelectionState returned false");
     } catch {}
+    // For duplicate selections, still dispatch roundResolved to maintain test compatibility
+    if (store.selectionMade) {
+      try {
+        await dispatchBattleEvent("roundResolved");
+      } catch {}
+    }
     return;
   }
 
