@@ -11,7 +11,7 @@
  * @pseudocode
  * 1. Re-export the internal `__test` helper as `battleCLI` for tests.
  */
-export { __test as battleCLI } from "./battleCLI.js";
+export { __test as battleCLI, setupFlags, wireEvents, subscribeEngine } from "./battleCLI/init.js";
 
 /**
  * Re-export the global key handler for the battle CLI page.
