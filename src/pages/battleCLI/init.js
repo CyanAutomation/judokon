@@ -1,5 +1,11 @@
-// Classic Battle CLI bootstrap and controller
-// Wires the existing Classic Battle engine/state machine to a terminal-style UI.
+/**
+ * Classic Battle CLI bootstrap and controller.
+ * Wires the classic battle engine/state machine to a terminal-style UI.
+ *
+ * Exports the `init` entry point and helper handlers used by tests.
+ *
+ * @module pages/battleCLI/init
+ */
 
 import {
   createBattleStore,
@@ -1286,26 +1292,6 @@ export function handleGlobalKey(key) {
  * return false
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Handle key input while waiting for the player's stat selection.
  *
  * @summary Convert numeric key presses into stat selections when appropriate.
@@ -1344,26 +1330,6 @@ export function handleWaitingForPlayerActionKey(key) {
  * return false
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Handle key input after a round has resolved.
  *
  * @summary Treat Enter/Space as confirmation to continue to the next state.
@@ -1397,26 +1363,6 @@ export function handleRoundOverKey(key) {
  * return false
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Handle key input during cooldown between rounds.
  *
  * @summary Allow Enter/Space to skip cooldown, clear timers, and mark machine as ready.
@@ -1447,17 +1393,6 @@ registerBattleHandlers({
   handleCooldownKey,
   handleStatListArrowKey
 });
-
-/**
- * Global keyboard handler that routes input based on the current battle state.
- *
- * @summary Normalize keyboard events, run global handlers, then state-specific handlers.
- * @param {KeyboardEvent} e - Browser keyboard event.
- * @returns {void}
- * @pseudocode
- * key = lowercased key from event
- * if cliShortcuts disabled AND key != 'q': return
-
 
 /**
  * Advance battle state when clicking outside interactive areas.
@@ -1928,8 +1863,24 @@ export function wireEvents() {
   } catch {}
 }
 
-async function init() {
-  console.log("init called");
+/**
+ * Boot the battle CLI page.
+ *
+ * @summary Initialize store, flags, UI, and orchestrator wiring.
+ * @returns {Promise<void>}
+ * @pseudocode
+ * initSeed()
+ * store = createBattleStore()
+ * expose store on window
+ * await renderStatList()
+ * restorePointsToWin()
+ * await setupFlags()
+ * subscribeEngine()
+ * battleOrchestrator.initClassicBattleOrchestrator(store, startRoundWrapper)
+ * await renderStartButton()
+ * wireEvents()
+ */
+export async function init() {
   initSeed();
   store = createBattleStore();
   try {
