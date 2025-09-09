@@ -1,4 +1,4 @@
-# PRD: Battle Engine (Enhanced)
+# PRD: Battle Engine
 
 **Supports:**
 
