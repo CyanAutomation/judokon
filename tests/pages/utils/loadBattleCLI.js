@@ -162,6 +162,9 @@ export async function loadBattleCLI(options = {}) {
     skipRoundCooldownIfEnabled: vi.fn(),
     updateBattleStateBadge: vi.fn()
   }));
+  vi.doMock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+    initRoundSelectModal: vi.fn().mockRejectedValue(new Error("Modal init failed"))
+  }));
   {
     let __autoContinue = true;
     vi.doMock("../../../src/helpers/classicBattle/orchestratorHandlers.js", () => ({
@@ -206,7 +209,8 @@ export async function cleanupBattleCLI() {
     "../../../src/helpers/constants.js",
     "../../../src/helpers/classicBattle/autoSelectStat.js",
     "../../../src/helpers/classicBattle/uiHelpers.js",
-    "../../../src/helpers/classicBattle/orchestratorHandlers.js"
+    "../../../src/helpers/classicBattle/orchestratorHandlers.js",
+    "../../../src/helpers/classicBattle/roundSelectModal.js"
   ];
   mocked.forEach((m) => vi.doUnmock(m));
   try {

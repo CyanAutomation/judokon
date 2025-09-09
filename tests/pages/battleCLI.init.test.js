@@ -21,8 +21,13 @@ describe("battleCLI init helpers", () => {
     });
     const emitSpy = vi.spyOn(battleEvents, "emitBattleEvent");
     await mod.init();
+    // Wait for the full async initialization chain to complete
+    await vi.waitFor(() => {
+      const startBtn = document.getElementById("start-match-button");
+      expect(startBtn).toBeTruthy();
+      return startBtn;
+    });
     const startBtn = document.getElementById("start-match-button");
-    expect(startBtn).toBeTruthy();
     expect(emitSpy).not.toHaveBeenCalledWith("startClicked");
     startBtn?.click();
     expect(emitSpy).toHaveBeenCalledWith("startClicked");
