@@ -30,24 +30,27 @@ import { renderGameModes } from "./settings/renderGameModes.js";
 import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
 
 /**
- * @summary TODO: Add summary
+ * Helper: create and return refs for settings controls and containers.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Query the DOM for known control elements (toggles, radios, reset button).
+ * 2. Return an object with `controls`, `errorPopup`, and `resetButton` refs.
+ * 3. Keep this function minimal and DOM-only so it is easy to unit test.
  */
 /**
- * @summary TODO: Add summary
+ * Page-ready lifecycle: initialize and render settings when the DOM is ready.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Fetch feature flags, game modes, and tooltips via `fetchSettingsData()`.
+ * 2. Call `renderWithFallbacks` with the loaded data to render the UI.
+ * 3. If loading fails, show a visible error message and surface a fallback.
  */
 /**
- * @summary TODO: Add summary
+ * Expose a small testing hook that resolves when the settings UI is ready.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Create `settingsReadyPromise` resolved when `settings:ready` is dispatched.
+ * 2. Attach it to `window` so tests can await it.
  */
 /**
  * Promise that resolves when the Settings UI has finished rendering and

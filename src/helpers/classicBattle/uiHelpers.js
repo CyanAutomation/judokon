@@ -1,8 +1,6 @@
 import { getOpponentCardData } from "./opponentController.js";
 import { isEnabled } from "../featureFlags.js";
 import { STATS } from "../battleEngineFacade.js";
-import { JudokaCard } from "../../components/JudokaCard.js";
-import { setupLazyPortraits } from "../lazyPortrait.js";
 
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
@@ -791,12 +789,15 @@ export function updateBattleStateBadge(state) {
  * @returns {void}
  */
 export function setBattleStateBadgeEnabled(enable) {
+  console.debug("setBattleStateBadgeEnabled called with:", enable);
   let badge = document.getElementById("battle-state-badge");
+  console.debug("Found existing badge:", badge);
   if (!enable) {
     if (badge) badge.remove();
     return;
   }
   if (!badge) {
+    console.debug("Creating new badge");
     const headerRight =
       document.getElementById("scoreboard-right") ||
       document.querySelector(".battle-header .scoreboard-right");
@@ -809,6 +810,10 @@ export function setBattleStateBadgeEnabled(enable) {
     if (headerRight) headerRight.appendChild(badge);
     else document.querySelector("header")?.appendChild(badge);
   }
+  console.debug("Setting badge visible, before:", badge.hidden, badge.hasAttribute("hidden"));
+  badge.hidden = false;
+  badge.removeAttribute("hidden");
+  console.debug("Setting badge visible, after:", badge.hidden, badge.hasAttribute("hidden"));
   updateBattleStateBadge(getStateSnapshot().state);
 }
 

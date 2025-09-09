@@ -3,25 +3,13 @@ export * from "./listenerUtils.js";
 export * from "./gameModeSwitches.js";
 export * from "./featureFlagSwitches.js";
 export * from "./makeHandleUpdate.js";
+
 /**
- * @summary TODO: Add summary
+ * Settings helpers barrel module.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Re-export modular helpers used by the Settings page (rendering and persistence).
+ * 2. Keep this file minimal so imports elsewhere can reference a single stable path.
  */
 /**
  * Initialize feature flags and return the settings object augmented with
