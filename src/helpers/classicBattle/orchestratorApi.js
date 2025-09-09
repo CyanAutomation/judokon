@@ -1,4 +1,5 @@
-import { dispatchBattleEvent, getBattleStateMachine } from "./orchestrator.js";
+import { getBattleStateMachine } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 
 /**
  * Confirm orchestrator readiness.

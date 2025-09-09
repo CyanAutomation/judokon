@@ -3,7 +3,7 @@ import { t } from "../i18n.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { emitBattleEvent } from "./battleEvents.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { autoSelectStat } from "./autoSelectStat.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { getScheduler } from "../scheduler.js";

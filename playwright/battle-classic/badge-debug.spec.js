@@ -5,7 +5,11 @@ test.describe("State badge and debug panel", () => {
     // Listen for all console messages
     const messages = [];
     page.on('console', msg => {
-      messages.push(`${msg.type()}: ${msg.text()}`);
+      const text = `${msg.type()}: ${msg.text()}`;
+      messages.push(text);
+      if (msg.type() === 'error') {
+        console.log('Browser error:', text);
+      }
     });
     
     await page.addInitScript(() => {
@@ -15,8 +19,13 @@ test.describe("State badge and debug panel", () => {
     await page.goto("/src/pages/battleClassic.html");
     
     // Check for console messages
-    if (messages.length > 0) {
-      console.log('Console messages:', messages.filter(m => m.includes('battleClassic')));
+    const battleMessages = messages.filter(m => m.includes('battleClassic'));
+    const errorMessages = messages.filter(m => m.startsWith('error:'));
+    if (battleMessages.length > 0) {
+      console.log('Battle messages:', battleMessages);
+    }
+    if (errorMessages.length > 0) {
+      console.log('Error messages:', errorMessages);
     }
     
     // Wait for initialization to complete and check document state

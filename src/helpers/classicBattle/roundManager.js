@@ -1,7 +1,7 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
-import { bridgeEngineEvents } from "./roundResolver.js";
+import { bridgeEngineEvents } from "./engineBridge.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
@@ -9,7 +9,7 @@ import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import { showSnackbar } from "../showSnackbar.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { startCoolDown as engineStartCoolDown } from "../battleEngineFacade.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";

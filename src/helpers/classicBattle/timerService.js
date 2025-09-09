@@ -10,7 +10,7 @@ import { isEnabled } from "../featureFlags.js";
 import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
 
 import { realScheduler } from "../scheduler.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { getNextRoundControls } from "./roundManager.js";
 import { guard } from "./guard.js";

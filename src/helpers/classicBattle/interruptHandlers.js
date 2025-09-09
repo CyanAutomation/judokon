@@ -1,5 +1,5 @@
 import { interruptMatch } from "../battleEngineFacade.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { showMessage, clearTimer } from "../setupScoreboard.js";
 import { stop as stopScheduler, cancel as cancelFrame } from "../../utils/scheduler.js";
 import { resetSkipState } from "./skipHandler.js";

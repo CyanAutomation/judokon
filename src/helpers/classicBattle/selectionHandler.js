@@ -1,7 +1,7 @@
 import { STATS, stopTimer } from "../battleEngineFacade.js";
 import { chooseOpponentStat } from "../api/battleUI.js";
 import { emitBattleEvent } from "./battleEvents.js";
-import { dispatchBattleEvent } from "./orchestrator.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getBattleState } from "./eventBus.js";

@@ -132,6 +132,7 @@ runWhenIdle(preloadUiService);
  *
  * @param {object} judoka - Data required by `JudokaCard` (may include `lookup`).
  * @param {HTMLElement|null} container - DOM element to receive the rendered card.
+ */
 export async function renderOpponentCard(judoka, container) {
   if (!judoka || !container) return;
   const { lookup, enableInspector, ...data } = judoka;

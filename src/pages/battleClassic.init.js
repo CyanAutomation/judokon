@@ -24,7 +24,7 @@ import { isEnabled } from "../helpers/featureFlags.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
-import { bridgeEngineEvents } from "../helpers/classicBattle/roundResolver.js";
+import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags, featureFlagsEmitter } from "../helpers/featureFlags.js";
 
 /**
