@@ -32,7 +32,7 @@ function showLoadError(error) {
   if (msg.includes("Cannot access uninitialized variable")) {
     msg = "A critical error occurred during data loading. Please try again.";
   }
-  
+
   // Try to show message via scoreboard, fallback to direct DOM manipulation
   try {
     showMessage(msg);
@@ -43,7 +43,7 @@ function showLoadError(error) {
       messageEl.textContent = msg;
     }
   }
-  
+
   // Also ensure the message is set directly for tests
   const messageEl = document.getElementById("round-message");
   if (messageEl) {

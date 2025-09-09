@@ -36,21 +36,22 @@ import { initFeatureFlags, featureFlagsEmitter } from "../helpers/featureFlags.j
 function initBattleStateBadge() {
   try {
     // Check for feature flag override first
-    const overrideEnabled = typeof window !== "undefined" && 
-      window.__FF_OVERRIDES && 
+    const overrideEnabled =
+      typeof window !== "undefined" &&
+      window.__FF_OVERRIDES &&
       window.__FF_OVERRIDES.battleStateBadge;
-    
+
     console.debug("battleClassic: badge check", { overrideEnabled });
-    
+
     const badge = document.getElementById("battle-state-badge");
     if (!badge) return;
-    
+
     if (overrideEnabled) {
       console.debug("battleClassic: enabling badge via override");
       badge.hidden = false;
       badge.removeAttribute("hidden");
       badge.textContent = "Lobby";
-      console.debug("battleClassic: badge enabled", badge.hidden, badge.hasAttribute('hidden'));
+      console.debug("battleClassic: badge enabled", badge.hidden, badge.hasAttribute("hidden"));
     } else {
       console.debug("battleClassic: badge remains hidden");
     }
@@ -350,17 +351,17 @@ async function init() {
   if (typeof window !== "undefined") {
     window.__initCalled = true;
   }
-  
+
   // Initialize badge immediately based on overrides (synchronous)
   initBattleStateBadge();
-  
+
   // Initialize feature flags (async, for other features)
   try {
     await initFeatureFlags();
   } catch (err) {
     console.debug("battleClassic: initFeatureFlags failed", err);
   }
-  
+
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
   setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
 
@@ -474,7 +475,7 @@ async function init() {
           try {
             updateScore(0, 0);
             updateRoundCounter(1);
-            
+
             // Reset fallback scores for tests
             const { resetFallbackScores } = await import("../helpers/api/battleUI.js");
             resetFallbackScores();
@@ -524,10 +525,11 @@ async function init() {
 // Simple synchronous badge initialization
 function initBadgeSync() {
   try {
-    const overrideEnabled = typeof window !== "undefined" && 
-      window.__FF_OVERRIDES && 
+    const overrideEnabled =
+      typeof window !== "undefined" &&
+      window.__FF_OVERRIDES &&
       window.__FF_OVERRIDES.battleStateBadge;
-    
+
     const badge = document.getElementById("battle-state-badge");
     if (badge && overrideEnabled) {
       badge.hidden = false;

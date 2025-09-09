@@ -14,19 +14,19 @@ import { join } from "path";
 export function createRealHtmlTestEnvironment() {
   const htmlPath = join(process.cwd(), "src/pages/battleClassic.html");
   const htmlContent = readFileSync(htmlPath, "utf-8");
-  
+
   const dom = new JSDOM(htmlContent, {
     url: "http://localhost:3000/battleClassic.html",
     pretendToBeVisual: true
   });
-  
+
   const window = dom.window;
   const document = window.document;
-  
+
   // Set up globals
   global.window = window;
   global.document = document;
-  
+
   return {
     dom,
     window,
@@ -47,7 +47,7 @@ export function validateRealHtmlStructure(document) {
     hasRequiredElements: false,
     missingInManualDOM: []
   };
-  
+
   // Check semantic structure
   const header = document.querySelector("header[role='banner']");
   const main = document.querySelector("main[role='main']");
@@ -56,7 +56,7 @@ export function validateRealHtmlStructure(document) {
   } else {
     results.missingInManualDOM.push("semantic structure (header, main)");
   }
-  
+
   // Check accessibility attributes
   const ariaElements = document.querySelectorAll("[aria-live], [aria-atomic], [aria-label]");
   if (ariaElements.length > 0) {
@@ -64,26 +64,24 @@ export function validateRealHtmlStructure(document) {
   } else {
     results.missingInManualDOM.push("accessibility attributes");
   }
-  
+
   // Check required elements that manual DOM often skips
   const requiredElements = [
     "snackbar-container",
-    "battle-state-badge", 
+    "battle-state-badge",
     "round-message",
     "score-display"
   ];
-  
-  const foundElements = requiredElements.filter(id => 
-    document.getElementById(id)
-  );
-  
+
+  const foundElements = requiredElements.filter((id) => document.getElementById(id));
+
   if (foundElements.length === requiredElements.length) {
     results.hasRequiredElements = true;
   } else {
-    const missing = requiredElements.filter(id => !document.getElementById(id));
+    const missing = requiredElements.filter((id) => !document.getElementById(id));
     results.missingInManualDOM.push(`missing elements: ${missing.join(", ")}`);
   }
-  
+
   return results;
 }
 
@@ -97,20 +95,20 @@ export async function compareTestApproaches(testFn) {
     manualDOM: { success: false, error: null },
     realHTML: { success: false, error: null }
   };
-  
+
   // Test with manual DOM
   try {
     const manualDom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
     global.window = manualDom.window;
     global.document = manualDom.window.document;
-    
+
     await testFn("manual");
     results.manualDOM.success = true;
     manualDom.window.close();
   } catch (error) {
     results.manualDOM.error = error.message;
   }
-  
+
   // Test with real HTML
   try {
     const { cleanup } = createRealHtmlTestEnvironment();
@@ -120,6 +118,6 @@ export async function compareTestApproaches(testFn) {
   } catch (error) {
     results.realHTML.error = error.message;
   }
-  
+
   return results;
 }

@@ -4,7 +4,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createRealHtmlTestEnvironment, validateRealHtmlStructure } from "../utils/realHtmlTestUtils.js";
+import {
+  createRealHtmlTestEnvironment,
+  validateRealHtmlStructure
+} from "../utils/realHtmlTestUtils.js";
 
 // ✅ Pattern 1: Unit Tests (Pure Logic)
 describe("Score Calculator (Unit)", () => {
@@ -20,11 +23,13 @@ describe("Button Handler (DOM)", () => {
     // Manual DOM acceptable for simple component testing
     document.body.innerHTML = '<button id="test-btn">Click</button>';
     const btn = document.getElementById("test-btn");
-    
+
     let clicked = false;
-    btn.addEventListener("click", () => { clicked = true; });
+    btn.addEventListener("click", () => {
+      clicked = true;
+    });
     btn.click();
-    
+
     expect(clicked).toBe(true);
   });
 });
@@ -44,7 +49,7 @@ describe("Page Initialization (Integration)", () => {
   it("validates complete HTML structure", () => {
     const { document } = testEnv;
     const validation = validateRealHtmlStructure(document);
-    
+
     expect(validation.hasSemanticStructure).toBe(true);
     expect(validation.hasAccessibilityAttributes).toBe(true);
     expect(validation.hasRequiredElements).toBe(true);
@@ -52,13 +57,13 @@ describe("Page Initialization (Integration)", () => {
 
   it("tests initialization with real DOM context", () => {
     const { document } = testEnv;
-    
+
     // Test with complete HTML structure
     const badge = document.getElementById("battle-state-badge");
     expect(badge).toBeTruthy();
     expect(badge.tagName).toBe("SPAN");
     expect(badge.hasAttribute("hidden")).toBe(true);
-    
+
     // Test accessibility attributes that manual DOM would miss
     const snackbar = document.getElementById("snackbar-container");
     expect(snackbar.getAttribute("aria-live")).toBe("polite");
