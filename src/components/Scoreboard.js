@@ -51,11 +51,25 @@ export class Scoreboard {
   constructor(model = new ScoreboardModel(), view = new ScoreboardView(model)) {
     this.model = model;
     this.view = view;
+    /** @private */
+    this._messageLockedUntil = 0;
   }
 
-  /** @param {string} text */
-  showMessage(text) {
+  /**
+   * Display a message with optional outcome lock.
+   *
+   * @pseudocode
+   * 1. Ignore non-outcome messages while locked.
+   * 2. Render text via view.showMessage.
+   * 3. When outcome, lock for one second.
+   * @param {string} text - Message to show.
+   * @param {{outcome?:boolean}} [opts] - Outcome flag.
+   */
+  showMessage(text, opts = {}) {
+    const now = Date.now();
+    if (now < this._messageLockedUntil && !opts.outcome) return;
     this.view.showMessage(text);
+    this._messageLockedUntil = opts.outcome ? now + 1000 : 0;
   }
 
   clearMessage() {
@@ -100,18 +114,23 @@ export class Scoreboard {
    * Render a partial patch into model/view.
    *
    * @pseudocode
-   * 1. Apply score patch via model/view when provided.
-   * 2. Forward message, timer and round to view helpers.
+   * 1. Apply score patch when player & opponent defined.
+   * 2. Forward message (with outcome) and timer/round updates.
    * 3. Return void.
    * @param {object} patch - Partial state updates.
    */
   render(patch = {}) {
     if (patch.score) {
-      this.updateScore(patch.score.player, patch.score.opponent);
+      const { player, opponent } = patch.score;
+      const havePlayer = player !== undefined && player !== null;
+      const haveOpponent = opponent !== undefined && opponent !== null;
+      if (havePlayer && haveOpponent) {
+        this.updateScore(player, opponent);
+      }
     }
     if (patch.message) {
-      const msg = typeof patch.message === "string" ? patch.message : patch.message.text;
-      this.showMessage(msg);
+      const msg = typeof patch.message === "string" ? { text: patch.message } : patch.message;
+      this.showMessage(msg.text, { outcome: msg.outcome });
     }
     if ("timerSeconds" in patch) {
       this.updateTimer(patch.timerSeconds);
@@ -146,7 +165,8 @@ export class Scoreboard {
  * 3. Store default scoreboard for module-level helpers.
  * @param {HTMLElement|null} container - Header container or null for headless.
  */
-export function initScoreboard(container, controls = {}) {
+export function initScoreboard(container, _controls = {}) {
+  void _controls;
   if (!container) {
     defaultScoreboard = new Scoreboard();
     return;
@@ -161,7 +181,7 @@ export function initScoreboard(container, controls = {}) {
   defaultScoreboard = new Scoreboard(model, view);
 }
 
-export const showMessage = (text) => defaultScoreboard?.showMessage(text);
+export const showMessage = (text, opts) => defaultScoreboard?.showMessage(text, opts);
 export const clearMessage = () => defaultScoreboard?.clearMessage();
 export const showTemporaryMessage = (text) => defaultScoreboard?.showTemporaryMessage(text);
 export const updateTimer = (s) => defaultScoreboard?.updateTimer(s);
@@ -171,7 +191,8 @@ export const clearRoundCounter = () => defaultScoreboard?.clearRoundCounter();
 export const updateScore = (p, o) => defaultScoreboard?.updateScore(p, o);
 export const showAutoSelect = (stat) => defaultScoreboard?.showAutoSelect(stat);
 export const render = (patch) => defaultScoreboard?.render(patch);
-export const getState = () => defaultScoreboard?.getState() ?? { score: { player: 0, opponent: 0 } };
+export const getState = () =>
+  defaultScoreboard?.getState() ?? { score: { player: 0, opponent: 0 } };
 export const destroy = () => {
   defaultScoreboard = null;
 };

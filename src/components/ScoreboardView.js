@@ -34,13 +34,17 @@ export class ScoreboardView {
    *
    * @pseudocode
    * 1. Render the provided text.
-   * 2. Return function that clears message.
+   * 2. Return clearer that only wipes if unchanged.
    * @param {string} text - Message to display temporarily.
    * @returns {Function} Clearer function.
    */
   showTemporaryMessage(text) {
     this.showMessage(text);
-    return () => this.clearMessage();
+    return () => {
+      if (this.messageEl && this.messageEl.textContent === text) {
+        this.clearMessage();
+      }
+    };
   }
 
   /**
