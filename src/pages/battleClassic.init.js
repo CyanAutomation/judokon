@@ -248,6 +248,33 @@ async function startRoundCycle(store) {
 }
 
 /**
+ * Display a fallback start button when the round select modal fails.
+ *
+ * @pseudocode
+ * 1. Render error message and start button.
+ * 2. Clicking the button starts the round cycle.
+ */
+function showRoundSelectFallback(store) {
+  const msg = document.createElement("p");
+  msg.id = "round-select-error";
+  msg.textContent = "Round selection failed. Start match?";
+
+  const btn = document.createElement("button");
+  btn.id = "round-select-fallback";
+  btn.type = "button";
+  btn.textContent = "Start Match";
+  btn.addEventListener("click", async () => {
+    try {
+      await startRoundCycle(store);
+    } catch (err) {
+      console.error("battleClassic: fallback start failed", err);
+    }
+  });
+
+  document.body.append(msg, btn);
+}
+
+/**
  * Initialize the classic battle page and its UI bindings.
  *
  * @description
@@ -261,10 +288,11 @@ async function startRoundCycle(store) {
  * 3. Create the battle engine and bridge engine events to UI handlers.
  * 4. Create and expose the `store` via `createBattleStore()`.
  * 5. Bind transient UI event handlers and modals (round select, end modal).
- * 6. Start the first round via `startRoundCycle` when the round select modal
- *    completes. Wire Next/Replay/Quit buttons.
+ * 6. Await round select modal; on success start the first round via
+ *    `startRoundCycle`. On failure, render a fallback start button.
+ * 7. Wire Next/Replay/Quit buttons.
  */
-function init() {
+async function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
   setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
 
@@ -401,19 +429,24 @@ function init() {
     } catch (err) {
       console.debug("battleClassic: wiring quit button failed", err);
     }
-    initRoundSelectModal(async () => {
-      try {
-        const pts = getPointsToWin();
-        document.body.dataset.target = String(pts);
-      } catch {}
-      // Reflect state change in badge
-      try {
-        const badge = document.getElementById("battle-state-badge");
-        if (badge && !badge.hidden) badge.textContent = "Round";
-      } catch {}
-      // Begin first round
-      await startRoundCycle(store);
-    });
+    try {
+      await initRoundSelectModal(async () => {
+        try {
+          const pts = getPointsToWin();
+          document.body.dataset.target = String(pts);
+        } catch {}
+        // Reflect state change in badge
+        try {
+          const badge = document.getElementById("battle-state-badge");
+          if (badge && !badge.hidden) badge.textContent = "Round";
+        } catch {}
+        // Begin first round
+        await startRoundCycle(store);
+      });
+    } catch (err) {
+      console.error("battleClassic: initRoundSelectModal failed", err);
+      showRoundSelectFallback(store);
+    }
 
     // In the simplified (non-orchestrated) page, start the next round when the user
     // clicks Next and the cooldown is considered finished.
@@ -426,9 +459,11 @@ function init() {
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", () => {
+    init().catch((err) => console.error("battleClassic: init failed", err));
+  });
 } else {
-  init();
+  init().catch((err) => console.error("battleClassic: init failed", err));
 }
 
 export { init };
