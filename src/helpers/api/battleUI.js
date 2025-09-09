@@ -171,6 +171,16 @@ export function evaluateRound(playerVal, opponentVal) {
 }
 
 // Reset function for tests
+/**
+ * Reset the cumulative fallback scores used when the engine is unavailable.
+ *
+ * Useful for tests that rely on deterministic cumulative scoring.
+ *
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. Set module-scoped `fallbackPlayerScore` and `fallbackOpponentScore` back to 0.
+ */
 export function resetFallbackScores() {
   fallbackPlayerScore = 0;
   fallbackOpponentScore = 0;

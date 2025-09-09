@@ -416,6 +416,12 @@ let defaultScoreboard = null;
  * @param {HTMLElement|null} container - Header element containing the scoreboard nodes.
  * @param {object} [controls={}] - Timer control callbacks.
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Query the header for existing scoreboard elements (#round-message, #next-round-timer, #round-counter, #score-display).
+ * 2. If an existing default scoreboard is present, destroy it to avoid duplicate listeners.
+ * 3. Construct a new `Scoreboard` instance with the found elements and provided control callbacks.
+ * 4. Store the instance as the module-level `defaultScoreboard` for use by convenience wrappers.
  */
 export function initScoreboard(container, controls = {}) {
   const header = container || null;
