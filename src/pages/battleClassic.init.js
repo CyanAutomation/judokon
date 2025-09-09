@@ -517,38 +517,30 @@ async function init() {
   } catch {}
 }
 
-// Simple synchronous badge initialization for tests
+// Simple synchronous badge initialization
 function initBadgeSync() {
   try {
     const overrideEnabled = typeof window !== "undefined" && 
       window.__FF_OVERRIDES && 
       window.__FF_OVERRIDES.battleStateBadge;
     
-    console.debug("battleClassic: initBadgeSync called", { overrideEnabled });
-    
     const badge = document.getElementById("battle-state-badge");
     if (badge && overrideEnabled) {
       badge.hidden = false;
       badge.removeAttribute("hidden");
       badge.textContent = "Lobby";
-      console.debug("battleClassic: badge enabled synchronously", badge.hidden);
     }
   } catch (err) {
     console.debug("battleClassic: sync badge init failed", err);
   }
 }
 
-console.debug("battleClassic: script loaded, readyState:", document.readyState);
-
 if (document.readyState === "loading") {
-  console.debug("battleClassic: waiting for DOMContentLoaded");
   document.addEventListener("DOMContentLoaded", () => {
-    console.debug("battleClassic: DOMContentLoaded fired");
     initBadgeSync();
     init().catch((err) => console.debug("battleClassic: init failed", err));
   });
 } else {
-  console.debug("battleClassic: DOM already ready");
   initBadgeSync();
   init().catch((err) => console.debug("battleClassic: init failed", err));
 }
