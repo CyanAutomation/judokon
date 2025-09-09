@@ -211,8 +211,8 @@ export const __test = {
  *   updateRoundHeader(0, engineFacade.getPointsToWin?.())
  *   updateScoreLine()
  *   setRoundMessage("")
- * } then initClassicBattleOrchestrator()
- * await resetPromise // waits for orchestrator
+ * } followed by initClassicBattleOrchestrator()
+ * return resetPromise // waits for orchestrator
  */
 let resetPromise = Promise.resolve();
 async function resetMatch() {
@@ -236,9 +236,11 @@ async function resetMatch() {
   resetPromise = next.then(async () => {
     try {
       await battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
-    } catch {}
+    } catch (err) {
+      console.error("Failed to initialize classic battle orchestrator:", err);
+    }
   });
-  await next;
+  return resetPromise;
 }
 
 /**
