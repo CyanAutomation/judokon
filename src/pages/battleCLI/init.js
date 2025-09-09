@@ -211,9 +211,8 @@ export const __test = {
  *   updateRoundHeader(0, engineFacade.getPointsToWin?.())
  *   updateScoreLine()
  *   setRoundMessage("")
- *   await initClassicBattleOrchestrator(store, startRoundWrapper)
- * }
- * await resetPromise
+ * } then initClassicBattleOrchestrator()
+ * await resetPromise // waits for orchestrator
  */
 let resetPromise = Promise.resolve();
 async function resetMatch() {
@@ -225,23 +224,30 @@ async function resetMatch() {
     document.getElementById("play-again-button")?.remove();
     document.getElementById("start-match-button")?.remove();
   } catch {}
-  // Perform synchronous reset work and kick orchestrator init asynchronously
+  // Perform synchronous reset work
   const next = (async () => {
     disposeClassicBattleOrchestrator();
     await resetGame(store);
     updateRoundHeader(0, engineFacade.getPointsToWin?.());
     updateScoreLine();
     setRoundMessage("");
-    // Initialize orchestrator in the background to avoid hanging under fake timers in tests.
-    try {
-      const p = battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
-      // Do not await here; allow caller to proceed and render Start button.
-      void p;
-    } catch {}
   })();
-  resetPromise = next;
+  // Initialize orchestrator after sync work without blocking callers
+  resetPromise = next.then(async () => {
+    try {
+      await battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
+    } catch {}
+  });
   await next;
 }
+
+/**
+ * No-op callback for round selection start.
+ *
+ * Used to satisfy initRoundSelectModal's `onStart` parameter in the CLI,
+ * which does not require additional setup on round start.
+ */
+function noopStartCallback() {}
 
 /**
  * Render the Start button after the orchestrator reset completes.
@@ -1878,6 +1884,7 @@ export function wireEvents() {
  * await setupFlags()
  * subscribeEngine()
  * await resetMatch()
+ * await resetPromise
  * try initRoundSelectModal()
  * catch → await renderStartButton()
  * wireEvents()
@@ -1893,8 +1900,9 @@ export async function init() {
   await setupFlags();
   subscribeEngine();
   await resetMatch();
+  await resetPromise;
   try {
-    await initRoundSelectModal(() => {});
+    await initRoundSelectModal(noopStartCallback);
   } catch {
     await renderStartButton();
   }
