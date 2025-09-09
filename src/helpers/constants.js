@@ -64,27 +64,13 @@ export function resolveDataDir(moduleUrl) {
 /**
  * Path to the directory containing JSON data files.
  *
+ * The value is derived from `import.meta.url` via `resolveDataDir` so tests
+ * and runtime code can load JSON assets consistently.
+ *
  * @constant {string}
- */
-/**
- * @summary TODO: Add summary
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Call `resolveDataDir(import.meta.url)` to compute the data directory URL.
+ * 2. Return the resulting absolute URL string for consumers to fetch JSON.
  */
 export const DATA_DIR = resolveDataDir(import.meta.url);
 
@@ -113,6 +99,16 @@ export const DATA_DIR = resolveDataDir(import.meta.url);
  * @summary TODO: Add summary
  * @pseudocode
  * 1. TODO: Add pseudocode
+ */
+/**
+ * Minimum horizontal movement in pixels required to trigger carousel
+ * scrolling on touch devices.
+ *
+ * @constant {number}
+ * @pseudocode
+ * 1. While tracking a touch gesture compute deltaX = endX - startX.
+ * 2. If abs(deltaX) >= CAROUSEL_SWIPE_THRESHOLD treat gesture as swipe.
+ * 3. Otherwise treat as a tap; do not change the carousel position.
  */
 export const CAROUSEL_SWIPE_THRESHOLD = 40;
 
