@@ -24,13 +24,13 @@ describe("vectorSearch loader helpers", () => {
       vectorLength: 2,
       items: sample.map(({ id, text, source, tags }) => ({ id, text, source, tags }))
     };
-    const vec = Buffer.from(sample.flatMap((s) => s.embedding));
+    const vec = Buffer.from(new Float32Array(sample.flatMap((s) => s.embedding)).buffer);
     const { readFile } = await import("node:fs/promises");
     readFile.mockImplementation((path) => {
       if (String(path).includes("offline_rag_metadata.json")) {
         return Promise.resolve(JSON.stringify(meta));
       }
-      return Promise.resolve(Buffer.from(vec));
+      return Promise.resolve(vec);
     });
     const { loadOfflineEmbeddings } = await import("../../../src/helpers/vectorSearch/loader.js");
     const result = await loadOfflineEmbeddings();
