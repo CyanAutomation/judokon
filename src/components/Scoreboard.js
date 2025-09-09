@@ -114,7 +114,7 @@ export class Scoreboard {
    * Render a partial patch into model/view.
    *
    * @pseudocode
-   * 1. Apply score patch when player & opponent defined.
+   * 1. Apply score patch when player & opponent numbers.
    * 2. Forward message (with outcome) and timer/round updates.
    * 3. Return void.
    * @param {object} patch - Partial state updates.
@@ -122,9 +122,9 @@ export class Scoreboard {
   render(patch = {}) {
     if (patch.score) {
       const { player, opponent } = patch.score;
-      const havePlayer = player !== undefined;
-      const haveOpponent = opponent !== undefined;
-      if (havePlayer && haveOpponent) {
+      const playerIsNumber = typeof player === "number";
+      const opponentIsNumber = typeof opponent === "number";
+      if (playerIsNumber && opponentIsNumber) {
         this.updateScore(player, opponent);
       }
     }
@@ -164,8 +164,10 @@ export class Scoreboard {
  * 2. Create model and view bound to them.
  * 3. Store default scoreboard for module-level helpers.
  * @param {HTMLElement|null} container - Header container or null for headless.
+ * @param {object} [_controls] - Deprecated controls parameter.
  */
-export function initScoreboard(container) {
+export function initScoreboard(container, _controls) {
+  void _controls;
   if (!container) {
     defaultScoreboard = new Scoreboard();
     return;
