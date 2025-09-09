@@ -23,7 +23,8 @@ import * as battleEvents from "./battleEvents.js";
 import {
   enableStatButtons,
   disableStatButtons,
-  wireStatHotkeys
+  wireStatHotkeys,
+  resolveStatButtonsReady
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
@@ -933,6 +934,7 @@ export function initStatButtons(store) {
   const statButtons = statContainer.querySelectorAll("button");
   if (!statButtons.length) {
     window.statButtonsReadyPromise = Promise.resolve();
+    resolveStatButtonsReady();
     guard(() => console.warn("[uiHelpers] #stat-buttons has no buttons"));
     return { enable: () => {}, disable: () => {} };
   }
@@ -945,13 +947,18 @@ export function initStatButtons(store) {
     });
   };
 
+  let detachHotkeys = null;
+
   const enable = () => {
     enableStatButtons(statButtons, statContainer);
     resolveReady?.();
+    if (!detachHotkeys) detachHotkeys = wireStatHotkeys(statButtons);
   };
   const disable = () => {
     disableStatButtons(statButtons, statContainer);
     resetReady();
+    detachHotkeys?.();
+    detachHotkeys = null;
   };
 
   resetReady();
@@ -986,7 +993,7 @@ export function initStatButtons(store) {
     });
   });
 
-  wireStatHotkeys(statButtons);
+  detachHotkeys = wireStatHotkeys(statButtons);
 
   return { enable, disable };
 }
