@@ -83,7 +83,8 @@ describe("classicBattle startCooldown", () => {
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
-    const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    const dispatchSpy = vi.spyOn(eventDispatcher, "dispatchBattleEvent");
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
@@ -98,6 +99,9 @@ describe("classicBattle startCooldown", () => {
     await machine.dispatch("roundOver");
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
+
+    // Clear spy after manual continue call to only capture automatic ready call
+    dispatchSpy.mockClear();
 
     const controls = battleMod.startCooldown(store);
 
