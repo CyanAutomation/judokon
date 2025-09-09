@@ -25,6 +25,7 @@ import { battleCLI, onKeyDown } from "src/pages/index.js";
 - The `battleCLI` export exposes test helpers and utilities such as `renderStatList`.
 - `getEscapeHandledPromise` resolves after Escape key processing, simplifying async tests.
 - Background clicks advance from **round over** or **cooldown** states; clicks on stat rows are ignored.
+- Matches start via a **Start match** button that opens a round selection modal to choose the points target.
 
 ## Headless simulations
 

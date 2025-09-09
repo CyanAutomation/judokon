@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
+import { waitFor } from "../waitFor.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 describe("battleCLI points to win start", () => {
@@ -63,9 +64,11 @@ describe("battleCLI points to win start", () => {
     });
     expect(btn).toBeTruthy();
     btn.click();
-    expect(emitBattleEvent).toHaveBeenCalledWith("battleStateChange", {
-      to: "waitingForPlayerAction"
-    });
+    await waitFor(() =>
+      emitBattleEvent.mock.calls.some(
+        (c) => c[0] === "battleStateChange" && c[1]?.to === "waitingForPlayerAction"
+      )
+    );
     confirmSpy.mockRestore();
   });
 });

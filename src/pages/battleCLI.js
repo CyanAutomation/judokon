@@ -31,6 +31,7 @@ import { wrap } from "../helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../config/battleDefaults.js";
 import * as debugHooks from "../helpers/classicBattle/debugHooks.js";
+import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { setAutoContinue, autoContinue } from "../helpers/classicBattle/orchestratorHandlers.js";
 import { SNACKBAR_REMOVE_MS } from "../helpers/constants.js";
 import { registerModal, unregisterModal, onEsc } from "../helpers/modalManager.js";
@@ -284,13 +285,13 @@ async function resetMatch() {
 }
 
 /**
- * Render the Start button after the orchestrator reset completes.
+ * Render the Start button after reset and launch round selection.
  *
  * @pseudocode
  * await resetPromise
  * if main missing or button exists → return
  * create section + button
- * on click → emit "startClicked" and dispatch to machine
+ * on click → open round selection modal
  * remove section
  */
 async function renderStartButton() {
@@ -304,25 +305,10 @@ async function renderStartButton() {
     className: "primary-button"
   });
   btn.addEventListener("click", () => {
-    try {
-      // Notify UI/event listeners that start was clicked
-      emitBattleEvent("startClicked");
-    } catch {}
-    try {
-      const getter = debugHooks.readDebugState("getClassicBattleMachine");
-      const machine = typeof getter === "function" ? getter() : getter;
-      if (machine) machine.dispatch("startClicked");
-      else if (typeof window !== "undefined" && window.__TEST__) {
-        // Test fallback: in fake-timer environments where the orchestrator init is mocked
-        // and not advanced, simulate the post-start transition so countdown can begin.
-        try {
-          emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
-        } catch {}
-      }
-    } catch (err) {
-      console.debug("Failed to dispatch startClicked", err);
-    }
     section.remove();
+    try {
+      void initRoundSelectModal();
+    } catch {}
   });
   section.append(btn);
   main.append(section);
@@ -1680,7 +1666,7 @@ function handleRoundResolved(e) {
  *
  * @pseudocode
  * 1. Locate `#cli-main`; abort if missing or already rendered.
- * 2. Build a "Play again" button that resets the match and restarts on click.
+ * 2. Build a "Play again" button that resets the match and relaunches round selection on click.
  * 3. If a home link exists, append a "Return to lobby" anchor using its href.
  * 4. Append the controls section to the main container.
  */
@@ -1696,7 +1682,9 @@ function handleMatchOver() {
   btn.addEventListener("click", async () => {
     await resetMatch();
     section.remove();
-    emitBattleEvent("startClicked");
+    try {
+      void initRoundSelectModal();
+    } catch {}
   });
   section.append(btn);
   try {
@@ -1834,15 +1822,15 @@ function installEventBindings() {
 }
 
 async function init() {
-  console.log("init called");
   initSeed();
   store = createBattleStore();
   // Expose store for debug panels if needed
   try {
     window.battleStore = store;
   } catch {}
-  await renderStatList();
   restorePointsToWin();
+  await resetMatch();
+  await renderStatList();
   // Initialize feature flags and verbose section
   const checkbox = byId("verbose-toggle");
   const section = byId("cli-verbose-section");
@@ -1950,12 +1938,6 @@ async function init() {
         setRoundMessage(`Match over: ${outcome}`);
       });
     }
-  } catch {}
-  // Initialize orchestrator using our startRound wrapper
-  // Kick off orchestrator init but don't await it; this keeps tests using fake timers from hanging.
-  try {
-    const p = battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
-    void p;
   } catch {}
   await renderStartButton();
   // Keyboard controls
