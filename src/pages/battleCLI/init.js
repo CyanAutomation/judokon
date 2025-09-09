@@ -256,32 +256,9 @@ async function resetMatch() {
  * triggering the state machine when a round value has been selected from storage.
  */
 async function startCallback() {
-  try {
-    const getter = debugHooks.readDebugState("getClassicBattleMachine");
-    const machine = typeof getter === "function" ? getter() : getter;
-    if (machine) {
-      machine.dispatch("startClicked");
-    } else {
-      // Fallback: try to dispatch via orchestrator or emit state change
-      const dispatched = await safeDispatch("startClicked").catch(() => false);
-      if (!dispatched) {
-        // Final fallback: manually progress through state transitions
-        console.warn("[CLI] Orchestrator unavailable, using manual state progression");
-        emitBattleEvent("battleStateChange", { to: "matchStart" });
-        setTimeout(() => {
-          emitBattleEvent("battleStateChange", { to: "cooldown" });
-          setTimeout(() => {
-            emitBattleEvent("battleStateChange", { to: "roundStart" });
-            setTimeout(() => {
-              emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
-            }, 50);
-          }, 50);
-        }, 50);
-      }
-    }
-  } catch (err) {
-    console.error("Failed to dispatch from startCallback", err);
-  }
+  // The round select modal will dispatch "startClicked" automatically when emitEvents=true,
+  // so we don't need to dispatch it here. The machine should receive the event via the
+  // regular event dispatcher system.
 }
 
 /**
