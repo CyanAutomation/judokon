@@ -1,9 +1,9 @@
 import { getOpponentCardData } from "./opponentController.js";
-import { isEnabled, featureFlagsEmitter } from "../featureFlags.js";
+import { isEnabled } from "../featureFlags.js";
 import { STATS } from "../battleEngineFacade.js";
-import { isTestModeEnabled, setTestMode } from "../testModeUtils.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
 import { setupLazyPortraits } from "../lazyPortrait.js";
+
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
 import * as scoreboard from "../setupScoreboard.js";
@@ -14,8 +14,7 @@ import { handleStatSelection } from "./selectionHandler.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { onNextButtonClick } from "./timerService.js";
 import { loadStatNames } from "../stats.js";
-import { toggleViewportSimulation } from "../viewportDebug.js";
-import { toggleInspectorPanels } from "../cardUtils.js";
+
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { onBattleEvent } from "./battleEvents.js";
@@ -27,7 +26,7 @@ import {
   resolveStatButtonsReady
 } from "./statButtons.js";
 import { guard } from "./guard.js";
-import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
+import { updateDebugPanel } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 import { runWhenIdle } from "./idleCallback.js";
 
@@ -60,7 +59,7 @@ export let syncScoreDisplay = () => {
 function preloadUiService() {
   import("./uiService.js")
     .then((m) => {
-      syncScoreDisplay = m.syncScoreDisplay || syncScoreDisplay;
+      syncScoreDisplay = m.syncScoreDisplay || syncScoreДisplay;
     })
     .catch(() => {});
 }
@@ -86,11 +85,7 @@ runWhenIdle(preloadUiService);
  * 1. Clear any existing text in `#round-message`.
  * 2. Show "Select your move" via `showSnackbar`.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Prompt the player to select a stat via snackbar and clear round message.
  *
@@ -113,11 +108,7 @@ runWhenIdle(preloadUiService);
  * @param {{lookup: object, enableInspector?: boolean}} judoka Judoka data plus render deps.
  * @param {HTMLElement | null} container Target container for the card.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Render the opponent's Judoka card into a container.
  *
@@ -129,16 +120,7 @@ runWhenIdle(preloadUiService);
  * @param {object} judoka
  * @param {HTMLElement|null} container
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Render the opponent's Judoka card into the given container element.
  *
@@ -151,8 +133,6 @@ runWhenIdle(preloadUiService);
  *
  * @param {object} judoka - Data required by `JudokaCard` (may include `lookup`).
  * @param {HTMLElement|null} container - DOM element to receive the rendered card.
-async function renderOpponentCard(judoka, container) {
- */
 export async function renderOpponentCard(judoka, container) {
   if (!judoka || !container) return;
   const { lookup, enableInspector, ...data } = judoka;
@@ -179,32 +159,7 @@ export async function renderOpponentCard(judoka, container) {
   }
 }
 
-/**
- * Disable the Next button and clear its ready marker.
- *
- * @pseudocode
- * btn ← document.querySelector('[data-role="next-round"]')
- * if btn: set disabled = true and delete data-next-ready
- */
-// (Removed duplicate disableNextRoundButton; canonical version is below)
 
-/**
- * Enable the Next button and mark it as ready.
- *
- * @pseudocode
- * btn ← document.querySelector('[data-role="next-round"]')
- * if btn: set data-next-ready = "true" and disabled = false
- */
-// (Removed duplicate enableNextRoundButton; canonical version is below)
-
-export function enableNextRoundButton() {
-  const btn =
-    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
-  if (!btn) return;
-  // Be permissive here for helpers: explicitly enable and mark ready
-  btn.dataset.nextReady = "true";
-  btn.disabled = false;
-}
 
 /**
  * Mark the Next round button ready and enabled.
@@ -215,15 +170,10 @@ export function enableNextRoundButton() {
  *
  * @returns {void}
  */
-  export function setupNextButton() {
-   let btn = document.getElementById("next-button");
-   // setupNextButton wires the DOM next control; nothing else should be
-   // declared inside this function. `selectStat` is defined at module scope.
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+export function setupNextButton() {
+  document.getElementById("next-button");
+}
+
 /**
  * Disable the Next-round button and clear its ready state.
  *
@@ -261,35 +211,6 @@ export function disableNextRoundButton() {
  */
 
 /**
- * Show the round outcome across UI elements.
- *
- * @pseudocode
- * 1. Display `message` via `showResult`.
- * 2. Forward the message to `scoreboard.showMessage`.
- * 3. Show the same message in a snackbar.
- *
- * @param {string} message - Outcome text to display.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Display a round outcome across scoreboard and snackbar.
- *
- * @pseudocode
- * 1. Call `showResult` to render the result.
- * 2. Show the outcome in the scoreboard and optionally in snackbar.
- *
- * @param {string} message
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Display a round outcome across scoreboard and result regions.
  *
  * Renders the outcome into the non-transient result area and forwards a
@@ -311,50 +232,6 @@ export function showRoundOutcome(message) {
   // here so countdowns and hints can occupy it consistently.
 }
 
-/**
- * Show animated stat comparison for the last round.
- *
- * @pseudocode
- * 1. Obtain `#round-result` element; exit if missing.
- * 2. Cancel any previous animation frame stored in `store.compareRaf`.
- * 3. If reduced motion is preferred, update text immediately and exit.
- * 4. Otherwise animate values from current to target over 500ms using scheduler frames.
- * 5. Store the new frame id on `store.compareRaf`.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Stat key selected for the round.
- * @param {number} playerVal - Player's stat value.
- * @param {number} compVal - Opponent's stat value.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Animate or immediately update stat comparison values in the UI.
- *
- * @pseudocode
- * 1. Locate `#round-result` element; exit if missing.
- * 2. Cancel any previous RAF and either update immediately (reduced motion)
- *    or animate values using scheduler frames over ~500ms.
- * 3. Store RAF id on `store.compareRaf` for cancellation.
- *
- * @param {object} store
- * @param {string} stat
- * @param {number} playerVal
- * @param {number} compVal
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 /**
  * Animate or update the stat comparison area after a round resolves.
  *
@@ -409,47 +286,6 @@ export function showStatComparison(store, stat, playerVal, compVal) {
   store.compareRaf = id;
 }
 
-/**
- * Observe device orientation/resize and run `callback` to apply orientation.
- *
- * The provided `callback` should return a Promise<boolean> or boolean indicating
- * whether orientation was successfully applied. The helper exposes
- * `window.applyBattleOrientation` for manual invocations and throttles
- * resize/orientation events to avoid excessive layout work.
- *
- * @pseudocode
- * 1. Expose `window.applyBattleOrientation` which invokes `callback`.
- * 2. Invoke `callback()` immediately; if it fails, start RAF polling until it succeeds.
- * 3. Attach `orientationchange` and `resize` listeners that throttle via RAF and re-run `callback`.
- *
- * @param {() => Promise<boolean>} callback - Called to apply orientation; should resolve `true` on success.
- * @returns {void}
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Observe device orientation/resize and run `callback` to apply orientation.
- *
- * The provided `callback` should return a Promise<boolean> or a boolean to
- * indicate whether orientation was successfully applied. The function exposes
- * `window.applyBattleOrientation` for manual invocations and throttles
- * resize/orientation events to avoid excessive layout work.
- *
- * @param {() => Promise<boolean>} callback - Called to apply orientation; should resolve `true` on success.
- * @returns {void}
- * @pseudocode
- * 1. Expose `window.applyBattleOrientation` which invokes `callback`.
- * 2. Invoke `callback()` immediately; if it fails, start RAF polling until it succeeds.
- * 3. Attach `orientationchange` and `resize` listeners that throttle via RAF and re-run `callback`.
- */
 export function watchBattleOrientation(callback) {
   if (typeof callback !== "function") {
     return;
@@ -557,86 +393,6 @@ export function registerRoundStartErrorHandler(retryFn) {
   return () => document.removeEventListener("round-start-error", onError);
 }
 
-/**
- * Attach the Next button click handler.
- *
- * Ensures the primary Next control receives the `onNextButtonClick` handler.
- * Falls back to `[data-role="next-round"]` when `#next-button` is missing
- * (useful for tests or alternate UIs).
- *
- * @pseudocode
- * 1. Query `#next-button`, falling back to `[data-role="next-round"]`.
- * 2. If not found, optionally warn in test mode and return.
- * 3. Attach `onNextButtonClick` to the element's `click` event.
- *
- * @returns {void}
- */
-export function setupNextButton() {
-  let btn = document.getElementById("next-button");
-  if (!btn) {
-    if (isTestModeEnabled())
-      console.warn('[test] #next-button missing, falling back to [data-role="next-round"]');
-    btn = document.querySelector('[data-role="next-round"]');
-    if (!btn) {
-      if (isTestModeEnabled()) console.warn("[test] next round button missing");
-      return;
-    }
-  }
-  btn.addEventListener("click", onNextButtonClick);
-}
-
-/**
- * Programmatically select a stat as if the user clicked the button.
- *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store
- * @param {string} stat
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Programmatically select a stat as if the user clicked its button.
- *
- * @pseudocode
- * 1. Find the stat button and infer a label.
- * 2. Update visual state and disable all stat buttons.
- * 3. Invoke selection handler and show a snackbar message.
- *
- * @param {object} store
- * @param {string} stat
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Programmatically select a stat and trigger the standard selection flow.
- *
- * Normalizes the selection to the same pathway used by UI clicks so tests and
- * automation see identical side effects: visual state, selection handling,
- * and a snackbar hint. This is intentionally defensive and does not throw on
- * missing DOM nodes.
- *
- * @pseudocode
- * 1. Find the button for `stat` in `#stat-buttons`.
- * 2. If the button is missing, return early.
- * 3. Disable all stat buttons and apply a `selected` class to the chosen button.
- * 4. Read player/opponent stat values from their cards.
- * 5. Call `handleStatSelection(store, stat, { playerVal, opponentVal })`.
- * 6. Show a snackbar with the chosen stat label.
- *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
- * @param {string} stat - Stat key to select (e.g. 'strength').
- * @returns {void}
- */
 export function selectStat(store, stat) {
   const btn = document.querySelector(`#stat-buttons [data-stat='${stat}']`);
   // derive label from button text if available
@@ -686,45 +442,6 @@ export function selectStat(store, stat) {
  * @returns {void}
  */
 
-/**
- * Remove modal backdrops and destroy the current quit modal.
- *
- * @pseudocode
- * 1. Remove all `.modal-backdrop` elements.
- * 2. Destroy and nullify `store.quitModal` when present.
- *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store]
- * @returns {void}
- */
-/**
- * Remove modal backdrops and destroy any active quit modal.
- *
- * @pseudocode
- * 1. Remove all elements matching `.modal-backdrop`.
- * 2. Destroy `store.quitModal` when present and nullify the reference.
- *
- * @param {object} [store]
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Remove modal backdrops and destroy any active quit modal.
- *
- * @pseudocode
- * 1. Remove all elements matching `.modal-backdrop` from the document.
- * 2. If `store.quitModal` exists, call `destroy()` on it and set it to null.
- *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store]
- * @returns {void}
- */
 export function removeBackdrops(store) {
   try {
     document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
@@ -838,38 +555,6 @@ export function clearScoreboardAndMessages() {
  * @returns {void}
  */
 
-/**
- * Initialize stat selection buttons.
- *
- * @pseudocode
- * 1. Gather all stat buttons inside `#stat-buttons`.
- * 2. Define `setEnabled` to toggle disabled state, tabindex and `data-buttons-ready`.
- * 3. Resolve `window.statButtonsReadyPromise` when buttons are enabled; reset when disabled.
- * 4. On click or Enter/Space, disable all buttons and handle selection.
- * 5. Return controls to enable/disable the group.
- *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle store.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary Initialize stat selection buttons; assert DOM nodes.
- *
- * Throws when the container is missing and warns when no buttons are found.
- *
- * @pseudocode
- * 1. Locate `#stat-buttons`; throw if absent.
- * 2. Gather buttons; warn and return noop controls when empty.
- * 3. Disable buttons initially.
- * 4. Wire click and keyboard handlers for stat selection.
- * 5. Return an API `{ enable, disable }`.
- *
- * @param {object} store Battle store for selection handling.
- * @returns {{ enable: () => void, disable: () => void }} Control API.
- */
 export function initStatButtons(store) {
   const statContainer = document.getElementById("stat-buttons");
   if (!statContainer) {
@@ -943,34 +628,6 @@ export function initStatButtons(store) {
   return { enable, disable };
 }
 
-/**
- * Apply localized stat labels to selection buttons.
- *
- * @pseudocode
- * 1. Load stat names via `loadStatNames`.
- * 2. Map each name to the corresponding button's text and aria-label.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Apply localized stat labels to stat selection buttons.
- *
- * @pseudocode
- * 1. Load stat names and map each to the corresponding button text and aria-label.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export async function applyStatLabels() {
   const names = await loadStatNames();
   names.forEach((n, i) => {
@@ -1111,119 +768,6 @@ export function setBattleStateBadgeEnabled(enable) {
 }
 
 /**
- * Apply active feature flags to the battle UI and subscribe for changes.
- *
- * @pseudocode
- * 1. Set `data-mode` and `data-testMode` on the `battleArea` element.
- * 2. Toggle visibility of the `banner` according to `enableTestMode`.
- * 3. Toggle inspector panels, viewport simulation and the debug panel per flags.
- * 4. Subscribe to `featureFlagsEmitter` `change` events to reapply flags dynamically.
- *
- * @param {HTMLElement|null} battleArea - The main battle container element.
- * @param {HTMLElement|null} banner - Optional banner element to show/hide for test mode.
- * @returns {void}
- */
-export function applyBattleFeatureFlags(battleArea, banner) {
-  if (battleArea) {
-    battleArea.dataset.mode = "classic";
-    battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
-  }
-  if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
-  setTestMode(isEnabled("enableTestMode"));
-  toggleInspectorPanels(isEnabled("enableCardInspector"));
-  toggleViewportSimulation(isEnabled("viewportSimulation"));
-  setDebugPanelEnabled(isEnabled("enableTestMode"));
-
-  featureFlagsEmitter.addEventListener("change", () => {
-    if (battleArea) battleArea.dataset.testMode = String(isEnabled("enableTestMode"));
-    if (banner) banner.classList.toggle("hidden", !isEnabled("enableTestMode"));
-    setTestMode(isEnabled("enableTestMode"));
-    toggleInspectorPanels(isEnabled("enableCardInspector"));
-    toggleViewportSimulation(isEnabled("viewportSimulation"));
-    setDebugPanelEnabled(isEnabled("enableTestMode"));
-  });
-}
-
-/**
- * Apply active feature flags to the battle UI and subscribe for changes.
- *
- * @pseudocode
- * 1. Set `data-mode` and `data-testMode` on the `battleArea` element.
- * 2. Toggle visibility of the `banner` according to `enableTestMode`.
- * 3. Toggle inspector panels, viewport simulation and the debug panel per flags.
- * 4. Subscribe to `featureFlagsEmitter` `change` events to reapply flags dynamically.
- *
- * @param {HTMLElement|null} battleArea - The main battle container element.
- * @param {HTMLElement|null} banner - Optional banner element to show/hide for test mode.
- * @returns {void}
- */
-
-/**
- * Initialize the optional debug panel.
- *
-
-/**
- * Show a temporary stat hint tooltip unless previously shown.
- *
- * @pseudocode
- * 1. Check `localStorage.statHintShown` and return if present.
- * 2. Trigger `mouseenter` on `#stat-help` and schedule `mouseleave` after `durationMs`.
- * 3. Record that the hint has been shown in `localStorage`.
- *
- * @param {number} [durationMs=3000] - Milliseconds to keep the hint visible.
- * @param {Function} [setTimeoutFn=globalThis.setTimeout] - Optional timeout function (testable).
- * @returns {void}
- */
-export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.setTimeout) {
-  try {
-    if (typeof localStorage === "undefined") return;
-    const hintShown = localStorage.getItem("statHintShown");
-    if (hintShown) return;
-    const help = document.getElementById("stat-help");
-    help?.dispatchEvent(new Event("mouseenter"));
-    setTimeoutFn(() => {
-      help?.dispatchEvent(new Event("mouseleave"));
-    }, durationMs);
-    localStorage.setItem("statHintShown", "true");
-  } catch {}
-}
-
-/**
- * Show a temporary stat hint tooltip unless previously shown.
- *
- * @pseudocode
- * 1. Check `localStorage.statHintShown` and return if present.
- * 2. Trigger `mouseenter` on `#stat-help` and schedule `mouseleave` after `durationMs`.
- * 3. Record that the hint has been shown in `localStorage`.
- *
- * @param {number} [durationMs=3000] - Milliseconds to keep the hint visible.
- * @param {Function} [setTimeoutFn=globalThis.setTimeout] - Optional timeout function (testable).
- * @returns {void}
- */
-
-/**
- * Reset all battle UI elements to their initial state.
- *
- * Removes modal backdrops, resets Next/Quit buttons (dropping listeners),
- * clears scoreboard messages/timers and updates the debug panel. If a
- * `store` with an active quit modal is provided, the modal will be destroyed.
- *
- * @pseudocode
- * 1. Call `removeBackdrops(store)`.
- * 2. Call `resetNextButton()`.
- * 3. Call `resetQuitButton()`.
- * 4. Call `clearScoreboardAndMessages()`.
- * 5. Update the debug panel.
- *
- * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store]
- * - Optional battle state store used to tear down the quit modal.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Reset all battle UI elements to their initial state.
  *
  * @pseudocode
@@ -1232,16 +776,7 @@ export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.s
  *
  * @param {object} [store]
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 export function resetBattleUI(store) {
   removeBackdrops(store);
   resetNextButton();
@@ -1259,7 +794,7 @@ export function resetBattleUI(store) {
  * 3. Clear scoreboard messages and timers.
  * 4. Update debug panel to reflect the reset state.
  *
- * @param {ReturnType<import("./roundManager.js").createBattleStore>} [store] - Optional store used to destroy active modals.
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store] - Optional store used to destroy active modals.
  * @returns {void}
  */
 
@@ -1273,27 +808,6 @@ if (typeof window !== "undefined") {
 
 let opponentSnackbarId = 0;
 
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Bind core UI helper event handlers to battle events (static variant).
- *
- * @pseudocode
- * 1. Register listeners for `opponentReveal`, `statSelected` and `roundResolved`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function bindUIHelperEventHandlers() {
   onBattleEvent("opponentReveal", () => {
     const container = document.getElementById("opponent-card");
