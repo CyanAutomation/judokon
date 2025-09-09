@@ -26,7 +26,7 @@ export const CURRENT_EMBEDDING_VERSION = 1;
  * @pseudocode
  * 1. Exit early when not in Node or when `RAG_FORCE_JSON` is set.
  * 2. Read metadata and vector binary files.
- * 3. For each item, slice the buffer with `Float32Array` and attach the embedding array.
+ * 3. For each item, slice the buffer with `Int8Array` and attach the embedding array.
  * 4. Return the assembled embeddings array; on error, return `null`.
  *
  * @returns {Promise<Array|Null>} Embeddings array on success, otherwise `null`.
@@ -44,8 +44,8 @@ export async function loadOfflineEmbeddings() {
     const buffer = await readFile(fileURLToPath(vecUrl));
     const out = new Array(items.length);
     for (let i = 0; i < items.length; i++) {
-      const offset = i * vectorLength * Float32Array.BYTES_PER_ELEMENT;
-      const view = new Float32Array(buffer.buffer, buffer.byteOffset + offset, vectorLength);
+      const offset = i * vectorLength * Int8Array.BYTES_PER_ELEMENT;
+      const view = new Int8Array(buffer.buffer, buffer.byteOffset + offset, vectorLength);
       out[i] = { ...items[i], embedding: Array.from(view) };
     }
     return out;
