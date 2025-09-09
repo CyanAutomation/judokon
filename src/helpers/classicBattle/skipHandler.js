@@ -41,6 +41,21 @@ export function setSkipHandler(fn) {
   }
 }
 
+/**
+ * Invoke the registered skip handler or record a pending skip.
+ *
+ * @pseudocode
+ * 1. If a handler is registered:
+ *    - Capture the handler in a local variable and clear the global
+ *      reference by calling `setSkipHandler(null)`.
+ *    - Defer the invocation with `setTimeout(..., 0)` to avoid
+ *      reentrancy inside event handlers and make the state observable
+ *      by synchronous tests.
+ * 2. If no handler is registered, set `pendingSkip = true` so the next
+ *    call to `setSkipHandler` will immediately consume it.
+ *
+ * @returns {void}
+ */
 export function skipCurrentPhase() {
   if (skipHandler) {
     const fn = skipHandler;
