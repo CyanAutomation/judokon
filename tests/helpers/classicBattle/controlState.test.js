@@ -15,7 +15,7 @@ function mockQuitMatch() {
 }
 
 vi.mock("../../../src/helpers/featureFlags.js", () => ({
-  isEnabled: () => false,
+  isEnabled: vi.fn().mockReturnValue(false),
   featureFlagsEmitter: new EventTarget(),
   initFeatureFlags: vi.fn()
 }));
@@ -180,15 +180,44 @@ describe("classicBattle battle control state", () => {
   });
 
   it("triggers stat selection via keyboard hotkeys", async () => {
-    const { wireStatHotkeys } = await import(
-      "../../../src/helpers/classicBattle/statButtons.js"
-    );
+    const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
+    const { isEnabled } = await import("../../../src/helpers/featureFlags.js");
+    isEnabled.mockReturnValue(true);
     const btn = document.querySelector("#stat-buttons button");
     const clickSpy = vi.spyOn(btn, "click");
     const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
     btn.disabled = false;
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
     expect(clickSpy).toHaveBeenCalledTimes(1);
+    detach();
+  });
+
+  it("ignores hotkeys when feature disabled", async () => {
+    const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
+    const { isEnabled } = await import("../../../src/helpers/featureFlags.js");
+    isEnabled.mockReturnValue(false);
+    const btn = document.querySelector("#stat-buttons button");
+    const clickSpy = vi.spyOn(btn, "click");
+    const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
+    btn.disabled = false;
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    expect(clickSpy).not.toHaveBeenCalled();
+    detach();
+  });
+
+  it("ignores hotkeys when focus is in input", async () => {
+    const { wireStatHotkeys } = await import("../../../src/helpers/classicBattle/statButtons.js");
+    const { isEnabled } = await import("../../../src/helpers/featureFlags.js");
+    isEnabled.mockReturnValue(true);
+    const btn = document.querySelector("#stat-buttons button");
+    const clickSpy = vi.spyOn(btn, "click");
+    const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
+    btn.disabled = false;
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+    expect(clickSpy).not.toHaveBeenCalled();
     detach();
   });
 });
