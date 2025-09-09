@@ -131,11 +131,16 @@ export async function initRoundSelectModal(onStart) {
   });
 
   document.body.appendChild(modal.element);
-  try {
-    cleanupTooltips = await initTooltips(modal.element);
-  } catch (err) {
-    console.error("Failed to initialize tooltips:", err);
-  }
+  // Initialize tooltips asynchronously so modal presentation is not
+  // delayed by tooltip data or sanitizer setup. Attach a cleanup when
+  // the async init completes; failures are non-fatal for modal display.
+  initTooltips(modal.element)
+    .then((fn) => {
+      cleanupTooltips = fn;
+    })
+    .catch((err) => {
+      console.error("Failed to initialize tooltips:", err);
+    });
   modal.open();
   emitBattleEvent("roundOptionsReady");
 }
