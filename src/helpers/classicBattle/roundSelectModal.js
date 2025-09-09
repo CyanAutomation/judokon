@@ -87,12 +87,11 @@ export async function initRoundSelectModal(onStart) {
   }
 
   try {
-    // Read from persistent localStorage when available so browser tests
-    // that set the storage key (and real users) are respected. The
-    // default wrapper fallback ('session') uses an in-memory store which
-    // is not populated by Playwright's `page.addInitScript`, so explicitly
-    // request the persistent storage behavior here.
-    const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
+    // Read from storage. In tests we use the default "session" fallback
+    // (in-memory) so honour the default wrapper here rather than forcing
+    // persistent localStorage — forcing `fallback: "none"` prevented
+    // tests that set the session value from being detected.
+    const storage = wrap(BATTLE_POINTS_TO_WIN);
     const saved = storage.get();
     if (POINTS_TO_WIN_OPTIONS.includes(Number(saved))) {
       try {
@@ -143,4 +142,8 @@ export async function initRoundSelectModal(onStart) {
     });
   modal.open();
   emitBattleEvent("roundOptionsReady");
+  // Give a microtask tick so any asynchronous tooltip initialization
+  // rejection is handled (tests expect console.error to run before
+  // this function returns) while still not awaiting tooltip setup.
+  await Promise.resolve();
 }
