@@ -49,6 +49,19 @@ export function getEscapeHandledPromise() {
  * 1. If a resolver exists, call it to resolve the current promise.
  * 2. Create a new Promise and store its resolver on `state` for the next cycle.
  */
+/**
+ * Resolve the pending Escape-handled promise and create a fresh one.
+ *
+ * @description
+ * When Escape is processed, call this to resolve any waiter and reset the
+ * internal promise so future Escape events can be awaited independently.
+ *
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. If a resolver exists, call it to resolve the current promise.
+ * 2. Create a new Promise and store its resolver on `state` for the next cycle.
+ */
 export function resolveEscapeHandled() {
   try {
     state.escapeHandledResolve?.();

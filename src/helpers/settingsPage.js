@@ -291,6 +291,18 @@ function showSectionError(containerId, message) {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Render settings UI and show section-level fallbacks when data is missing.
+ *
+ * @param {{settings: Settings, gameModes: Array, tooltipMap: object}} data - Loaded settings payload.
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. If `settings` is falsy, return early (nothing to render).
+ * 2. If `gameModes` is not an Array or empty, show a Game Modes error message.
+ * 3. If `settings.featureFlags` is missing, show Advanced Settings error.
+ * 4. Call `renderSettingsControls(settings, gameModes || [], tooltipMap)`.
+ */
 export function renderWithFallbacks({ settings, gameModes, tooltipMap }) {
   if (!settings) return;
   if (!Array.isArray(gameModes) || gameModes.length === 0) {

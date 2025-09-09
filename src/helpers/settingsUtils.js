@@ -81,6 +81,19 @@ export { loadDefaultSettings } from "./settingsCache.js";
  *
  * @type {Object}
  */
+/**
+ * Re-export of the canonical default settings object used across the application.
+ *
+ * @description
+ * Consumers may read this object to seed UI defaults or for validation. Callers
+ * who intend to mutate values should shallow-clone before modifying.
+ *
+ * @type {Object}
+ *
+ * @pseudocode
+ * 1. Import the defaults from the source of truth (`settingsDefaults.js`).
+ * 2. Export the object under the name `DEFAULT_SETTINGS` for other modules.
+ */
 export { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 
 /**

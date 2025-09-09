@@ -23,6 +23,19 @@ let clearTimer = (...args) => clearTimeout(...args);
  *
  * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
  */
+/**
+ * Inject custom timer functions used by the settings save debounce.
+ *
+ * Useful for tests that need deterministic timing or fake timers.
+ *
+ * @param {{ setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout }} [fns]
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. If `fns.setTimeout` is provided, assign it to the internal `setTimer`.
+ * 2. If `fns.clearTimeout` is provided, assign it to the internal `clearTimer`.
+ * 3. Subsequent debounced saves will use the injected timer functions.
+ */
 export function setSettingsStorageTimers(fns = {}) {
   if (fns.setTimeout) setTimer = fns.setTimeout;
   if (fns.clearTimeout) clearTimer = fns.clearTimeout;
@@ -53,6 +66,16 @@ const debouncedSave = debounce(
  * @pseudocode
  * 1. Call the debounced save's `flush` method so any queued write runs now.
  * 2. This is primarily intended for tests to force synchronous persistence.
+ */
+/**
+ * Flush any pending debounced settings save immediately.
+ *
+ * Intended primarily for tests to force synchronous persistence.
+ *
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. Call the debounced save's `flush` method so any queued write runs now.
  */
 export const flushSettingsSave = () => debouncedSave.flush();
 

@@ -3,7 +3,7 @@ import "./commonMocks.js";
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
-import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
+// Note: battleEvents is imported where needed inside tests; avoid unused named import here.
 import { waitForState } from "../../waitForState.js";
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
