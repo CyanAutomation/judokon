@@ -19,10 +19,10 @@ The scoreboard resolves this by **cleanly separating persistent battle state (sc
 
 The **Battle Scoreboard** is a **UI-only reflector** of persistent battle information.
 
-* It consumes events from the **Battle Engine/Orchestrator** event bus.
-* It does **not** contain any business logic.
-* It renders only **engine-derived state** and persists outcome/score until the next authoritative state transition.
-* Styling and layout may differ by mode (via CSS themes), but structure and behavior remain identical.
+- It consumes events from the **Battle Engine/Orchestrator** event bus.
+- It does **not** contain any business logic.
+- It renders only **engine-derived state** and persists outcome/score until the next authoritative state transition.
+- Styling and layout may differ by mode (via CSS themes), but structure and behavior remain identical.
 
 ---
 
@@ -34,19 +34,18 @@ The **Battle Scoreboard** is a **UI-only reflector** of persistent battle inform
 4. Deterministic, idempotent updates suitable for automated and AI-driven matches.
 5. Accessibility and reduced-motion compliance.
 6. Numeric UX thresholds:
-
-   * Score animation completes within ≤500 ms and persists ≥1 s.
-   * Stat selection timer visible within ≤200 ms of event.
-   * Fallback “Waiting…” state visible within ≤500 ms if no state arrives.
+   - Score animation completes within ≤500 ms and persists ≥1 s.
+   - Stat selection timer visible within ≤200 ms of event.
+   - Fallback “Waiting…” state visible within ≤500 ms if no state arrives.
 
 ---
 
 ## 4. Non-Goals
 
-* Transient prompts (e.g. *“Opponent is choosing…”*) — handled by **Snackbar**.
-* Game/business logic such as stat comparison or round winner calculation.
-* Readiness handshakes — handled by Snackbar or control panels.
-* Cooldown visuals (unless explicitly added later).
+- Transient prompts (e.g. _“Opponent is choosing…”_) — handled by **Snackbar**.
+- Game/business logic such as stat comparison or round winner calculation.
+- Readiness handshakes — handled by Snackbar or control panels.
+- Cooldown visuals (unless explicitly added later).
 
 ---
 
@@ -66,10 +65,10 @@ The scoreboard listens **only** to the canonical events from the Battle Engine/O
 
 ## 6. Authority Rules
 
-* **All visual transitions** are keyed off `control.state.changed`.
-* Domain/timer events update values but **do not** drive transitions.
-* Outcomes persist until the next `control.state.changed` to `selection` or `cooldown`.
-* Duplicate or out-of-order events are ignored (idempotency guard).
+- **All visual transitions** are keyed off `control.state.changed`.
+- Domain/timer events update values but **do not** drive transitions.
+- Outcomes persist until the next `control.state.changed` to `selection` or `cooldown`.
+- Duplicate or out-of-order events are ignored (idempotency guard).
 
 ---
 
@@ -88,43 +87,42 @@ The scoreboard listens **only** to the canonical events from the Battle Engine/O
 
 **DOM Contract:**
 
-* Outcome is exposed via `data-outcome` attribute on the root scoreboard element.
-* Values: `"playerWin"`, `"opponentWin"`, `"draw"`, or `"none"`.
-* This supports deterministic UI testing.
+- Outcome is exposed via `data-outcome` attribute on the root scoreboard element.
+- Values: `"playerWin"`, `"opponentWin"`, `"draw"`, or `"none"`.
+- This supports deterministic UI testing.
 
 ---
 
 ## 8. Public API
 
-* **create(container?: HTMLElement) → HTMLElement**
+- **create(container?: HTMLElement) → HTMLElement**
   Creates scoreboard DOM, subscribes to engine events.
 
-* **destroy()**
+- **destroy()**
   Unsubscribes, clears DOM, resets state.
 
-* **getSnapshot() → StateModel**
+- **getSnapshot() → StateModel**
   Returns the current internal state (for tests/debugging).
 
 ---
 
 ## 9. Lifecycle & Idempotency
 
-* Multiple `create()` calls return the same instance.
-* `destroy()` unsubscribes from all topics and nulls state.
-* Out-of-order events (older `roundIndex`) are ignored.
-* Duplicate events with same `(roundIndex, statKey)` tuple are ignored.
-* **Fallback behaviour:**
-
-  * If no `control.state.changed` event is received within 500 ms of mount, display “Waiting…” until the first state arrives.
+- Multiple `create()` calls return the same instance.
+- `destroy()` unsubscribes from all topics and nulls state.
+- Out-of-order events (older `roundIndex`) are ignored.
+- Duplicate events with same `(roundIndex, statKey)` tuple are ignored.
+- **Fallback behaviour:**
+  - If no `control.state.changed` event is received within 500 ms of mount, display “Waiting…” until the first state arrives.
 
 ---
 
 ## 10. Performance & Accessibility
 
-* Updates must commit within 16 ms (60 fps budget).
-* Animation duration ≤ 500 ms; disable via `prefers-reduced-motion`.
-* Timer drift ≤ 100 ms per 10 seconds (driven only by engine ticks).
-* Live region announcements triggered only on outcome or state change (not every tick).
+- Updates must commit within 16 ms (60 fps budget).
+- Animation duration ≤ 500 ms; disable via `prefers-reduced-motion`.
+- Timer drift ≤ 100 ms per 10 seconds (driven only by engine ticks).
+- Live region announcements triggered only on outcome or state change (not every tick).
 
 ---
 
@@ -171,9 +169,10 @@ And it is cleared on the next state change
 
 ## 12. Risks & Open Questions
 
-* Should cooldown timers ever be displayed here, or always via Snackbar?
-* Do we need a lightweight adapter event (`scoreboard.update`) to simplify UI wiring?
-* Should we version-lock `catalogVersion` at binding time and throw if mismatched?
+- Should cooldown timers ever be displayed here, or always via Snackbar?
+- Do we need a lightweight adapter event (`scoreboard.update`) to simplify UI wiring?
+- Should we version-lock `catalogVersion` at binding time and throw if mismatched?
 
 ---
+
 Would you like me to now do the **same reconciliation pass for the Battle Engine PRD** — i.e. check what detail from the original was lost when I aligned it, and merge back any important omissions?

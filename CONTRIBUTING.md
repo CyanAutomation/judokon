@@ -123,24 +123,23 @@ This helps reviewers validate AI-generated work more quickly.
 
 - ❌ Don’t manipulate the DOM directly in tests
 
-	Justification: directly mutating DOM nodes in unit or integration tests (for example calling
-	appendChild/replaceChildren, setting innerHTML, toggling classes, or changing attributes to
-	simulate state) bypasses the application’s runtime logic, lifecycle hooks, accessibility
-	attributes, and scheduling. That makes tests brittle and can hide regressions — tests may
-	pass because they short-circuit real code paths rather than exercising them.
+  Justification: directly mutating DOM nodes in unit or integration tests (for example calling
+  appendChild/replaceChildren, setting innerHTML, toggling classes, or changing attributes to
+  simulate state) bypasses the application’s runtime logic, lifecycle hooks, accessibility
+  attributes, and scheduling. That makes tests brittle and can hide regressions — tests may
+  pass because they short-circuit real code paths rather than exercising them.
 
-	Recommended alternatives:
+  Recommended alternatives:
+  - Drive behavior through public APIs and helpers (e.g. click handlers, `setup*` helpers,
+    orchestrator mocks) so tests exercise the same code the app runs in production.
+  - Use user-focused testing helpers (Playwright `page.click`/`page.fill`, @testing-library's
+    `userEvent` / `fireEvent`) to simulate interactions instead of directly mutating nodes.
+  - In unit tests prefer querying and asserting observable state changes (DOM queries,
+    emitted events, store/orchestrator calls) rather than checking implementation details.
+  - If a test must manipulate DOM (rare), isolate it, document why it's required, restore
+    the DOM state after the test, and prefer using helper fixtures rather than ad-hoc mutations.
 
-	- Drive behavior through public APIs and helpers (e.g. click handlers, `setup*` helpers,
-		orchestrator mocks) so tests exercise the same code the app runs in production.
-	- Use user-focused testing helpers (Playwright `page.click`/`page.fill`, @testing-library's
-		`userEvent` / `fireEvent`) to simulate interactions instead of directly mutating nodes.
-	- In unit tests prefer querying and asserting observable state changes (DOM queries,
-		emitted events, store/orchestrator calls) rather than checking implementation details.
-	- If a test must manipulate DOM (rare), isolate it, document why it's required, restore
-		the DOM state after the test, and prefer using helper fixtures rather than ad-hoc mutations.
-
-	Short rule: assert behavior, not implementation; simulate users, not internals.
+  Short rule: assert behavior, not implementation; simulate users, not internals.
 
 ---
 

@@ -167,12 +167,11 @@ export function initDebugPanel() {
   const debugPanel = document.getElementById("debug-panel");
   if (!debugPanel) return;
   const battleArea = document.getElementById("battle-area");
-  
+
   // Check for feature flag override first
-  const overrideEnabled = typeof window !== "undefined" && 
-    window.__FF_OVERRIDES && 
-    window.__FF_OVERRIDES.enableTestMode;
-  
+  const overrideEnabled =
+    typeof window !== "undefined" && window.__FF_OVERRIDES && window.__FF_OVERRIDES.enableTestMode;
+
   if ((isEnabled("enableTestMode") || overrideEnabled) && battleArea) {
     if (debugPanel.tagName !== "DETAILS") {
       const details = document.createElement("details");

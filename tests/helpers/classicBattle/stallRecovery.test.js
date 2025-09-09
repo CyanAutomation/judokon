@@ -65,7 +65,7 @@ describe("classicBattle stalled stat selection recovery", () => {
     const { initScoreboard } = await import("../../../src/components/Scoreboard.js");
     const header = document.querySelector("header");
     initScoreboard(header);
-    
+
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     await battleMod.__ensureClassicBattleBindings();
     const store = battleMod.createBattleStore();

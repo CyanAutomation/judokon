@@ -159,8 +159,6 @@ export async function renderOpponentCard(judoka, container) {
   }
 }
 
-
-
 /**
  * Mark the Next round button ready and enabled.
  *

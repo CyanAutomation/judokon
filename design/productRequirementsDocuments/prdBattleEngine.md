@@ -17,15 +17,15 @@ The engine must provide a **deterministic, event-driven foundation** for all bat
 
 The **Battle Engine** is composed of two cooperating layers:
 
-* **Engine Core** — owns stat evaluation, scoring, round timer, and domain/timer event emission.
-* **Orchestrator** — owns the FSM, cooldowns, readiness handshakes, interrupts, and control event emission.
+- **Engine Core** — owns stat evaluation, scoring, round timer, and domain/timer event emission.
+- **Orchestrator** — owns the FSM, cooldowns, readiness handshakes, interrupts, and control event emission.
 
 Design goals:
 
-* Strict separation of concerns.
-* Deterministic outcomes with seeded randomness (**100% identical outcomes given identical inputs**).
-* Testability via state snapshots and **injected fake timers**.
-* Canonical event taxonomy, with **≥90% event conformance coverage** in integration tests.
+- Strict separation of concerns.
+- Deterministic outcomes with seeded randomness (**100% identical outcomes given identical inputs**).
+- Testability via state snapshots and **injected fake timers**.
+- Canonical event taxonomy, with **≥90% event conformance coverage** in integration tests.
 
 ---
 
@@ -33,25 +33,25 @@ Design goals:
 
 ### Engine Core
 
-* Evaluate chosen stat values and compute round outcome.
-* Track cumulative scores.
-* Own the **round timer** (start, tick, expire).
-* Emit **domain** and **timer** events.
+- Evaluate chosen stat values and compute round outcome.
+- Track cumulative scores.
+- Own the **round timer** (start, tick, expire).
+- Emit **domain** and **timer** events.
 
 ### Orchestrator
 
-* Maintain finite-state machine (FSM).
-* Manage **cooldown timers** between rounds.
-* Coordinate readiness handshakes.
-* Manage interrupts and their resolution.
-* Emit **control** events (authoritative for UIs).
-* Optionally emit adapter updates (e.g. `scoreboard.update`) for simplified UI wiring.
+- Maintain finite-state machine (FSM).
+- Manage **cooldown timers** between rounds.
+- Coordinate readiness handshakes.
+- Manage interrupts and their resolution.
+- Emit **control** events (authoritative for UIs).
+- Optionally emit adapter updates (e.g. `scoreboard.update`) for simplified UI wiring.
 
 ### Out of Scope
 
-* Rendering.
-* Snackbar-style prompts.
-* Mode-specific visual layout.
+- Rendering.
+- Snackbar-style prompts.
+- Mode-specific visual layout.
 
 ---
 
@@ -81,9 +81,9 @@ Canonical events emitted:
 
 ## 5. Authority Rules
 
-* **UIs must not infer transitions** from domain or timer events.
-* **Only** `control.state.changed` is authoritative for view/state progression.
-* Domain/timer events update values, not transitions.
+- **UIs must not infer transitions** from domain or timer events.
+- **Only** `control.state.changed` is authoritative for view/state progression.
+- Domain/timer events update values, not transitions.
 
 ---
 
@@ -110,28 +110,28 @@ Canonical events emitted:
 
 ### States
 
-* **init** — engine constructed, no match started.
-* **prestart** — optional countdown / readiness handshake before round 1.
-* **selection** — players/AI lock a stat or the round timer expires (auto-pick).
-* **evaluation** — engine computes outcome, updates scores, emits result.
-* **cooldown** — optional inter-round cooldown.
-* **end** — match concluded (target wins reached or terminal interrupt).
+- **init** — engine constructed, no match started.
+- **prestart** — optional countdown / readiness handshake before round 1.
+- **selection** — players/AI lock a stat or the round timer expires (auto-pick).
+- **evaluation** — engine computes outcome, updates scores, emits result.
+- **cooldown** — optional inter-round cooldown.
+- **end** — match concluded (target wins reached or terminal interrupt).
 
 ### Transition events
 
-* `startMatch()` → `control.countdown.started` → `control.countdown.completed`
-* `round.started({ roundIndex })`
-* `round.selection.locked` / `round.timer.expired`
-* `round.evaluated({ outcome, scores })`
-* `cooldown.timer.*`
-* `match.concluded({ scores })`
-* `interrupt.raised` / `interrupt.resolved`
+- `startMatch()` → `control.countdown.started` → `control.countdown.completed`
+- `round.started({ roundIndex })`
+- `round.selection.locked` / `round.timer.expired`
+- `round.evaluated({ outcome, scores })`
+- `cooldown.timer.*`
+- `match.concluded({ scores })`
+- `interrupt.raised` / `interrupt.resolved`
 
 ### Guards & rules
 
-* Win guard: if `scores.player >= targetWins || scores.opponent >= targetWins` → transition to `end`.
-* Timer expiry in `selection` auto-locks per mode rules (e.g. random stat).
-* UIs must never infer transitions from non-control events.
+- Win guard: if `scores.player >= targetWins || scores.opponent >= targetWins` → transition to `end`.
+- Timer expiry in `selection` auto-locks per mode rules (e.g. random stat).
+- UIs must never infer transitions from non-control events.
 
 ```mermaid
 stateDiagram-v2
@@ -177,43 +177,43 @@ stateDiagram-v2
 
 ## 8. Public API
 
-* **create(config) → EngineInstance**
+- **create(config) → EngineInstance**
   Initializes engine with seeded RNG, config, and empty state.
 
-* **startMatch()**
+- **startMatch()**
   Begin match; emit countdown + round.started.
 
-* **lockSelection(statKey: string)**
+- **lockSelection(statKey: string)**
   Lock stat and evaluate.
 
-* **advanceRound()**
+- **advanceRound()**
   Progress FSM to next round or conclude match.
 
-* **getSnapshot() → StateModel**
+- **getSnapshot() → StateModel**
   Deterministic state for tests/debugging.
 
-* **destroy()**
+- **destroy()**
   Stops timers, unsubscribes, resets state.
 
 ---
 
 ## 9. Lifecycle & Idempotency
 
-* Duplicate stat selections for the same round are ignored (`input.ignored`).
-* Out-of-order events (lower `roundIndex` than current) are ignored.
-* Engine must be restartable (destroy() + create()).
-* Determinism guaranteed if seeded RNG and identical inputs provided.
-* Snapshots are idempotent and repeatable.
+- Duplicate stat selections for the same round are ignored (`input.ignored`).
+- Out-of-order events (lower `roundIndex` than current) are ignored.
+- Engine must be restartable (destroy() + create()).
+- Determinism guaranteed if seeded RNG and identical inputs provided.
+- Snapshots are idempotent and repeatable.
 
 ---
 
 ## 10. Performance & Testability
 
-* Timer tick granularity: 1s, drift ≤ 100 ms per 10s.
-* Event dispatch latency ≤ 16 ms per frame.
-* Must support **fake timers** for deterministic testing.
-* Deterministic playback possible with recorded event tapes.
-* ≥90% event types must have conformance tests in integration suite.
+- Timer tick granularity: 1s, drift ≤ 100 ms per 10s.
+- Event dispatch latency ≤ 16 ms per frame.
+- Must support **fake timers** for deterministic testing.
+- Deterministic playback possible with recorded event tapes.
+- ≥90% event types must have conformance tests in integration suite.
 
 ---
 
@@ -265,9 +265,9 @@ Then the engine emits "debug.state.snapshot" with the full state
 
 ## 12. Risks & Open Questions
 
-* Should we emit a consolidated `scoreboard.update` adapter event to simplify UI consumption?
-* Should cooldown visuals be considered part of the Scoreboard or Snackbar?
-* Should catalogVersion mismatches throw or warn only?
-* How should interrupts be exposed to UIs — surfaced directly, or wrapped in Snackbar notifications?
+- Should we emit a consolidated `scoreboard.update` adapter event to simplify UI consumption?
+- Should cooldown visuals be considered part of the Scoreboard or Snackbar?
+- Should catalogVersion mismatches throw or warn only?
+- How should interrupts be exposed to UIs — surfaced directly, or wrapped in Snackbar notifications?
 
 ---

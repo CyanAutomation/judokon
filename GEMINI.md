@@ -142,7 +142,6 @@ Recommended alternatives:
 
 Short rule: assert behavior, not implementation; simulate users, not internals.
 
-
 ## 🧯 Runtime Safeguards
 
 - Exclude embeddings files in grep/search

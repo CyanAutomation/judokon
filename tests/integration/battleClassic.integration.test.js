@@ -17,7 +17,7 @@ describe("Battle Classic Integration", () => {
     // Load actual HTML file
     const htmlPath = join(process.cwd(), "src/pages/battleClassic.html");
     const htmlContent = readFileSync(htmlPath, "utf-8");
-    
+
     // Create JSDOM with real HTML
     dom = new JSDOM(htmlContent, {
       url: "http://localhost:3000/battleClassic.html",
@@ -25,10 +25,10 @@ describe("Battle Classic Integration", () => {
       resources: "usable",
       pretendToBeVisual: true
     });
-    
+
     window = dom.window;
     document = window.document;
-    
+
     // Set up globals
     global.window = window;
     global.document = document;
@@ -39,7 +39,7 @@ describe("Battle Classic Integration", () => {
       removeItem: vi.fn(),
       clear: vi.fn()
     };
-    
+
     // Mock feature flag overrides for badge visibility
     window.__FF_OVERRIDES = {
       battleStateBadge: true,
@@ -68,20 +68,20 @@ describe("Battle Classic Integration", () => {
   it("should initialize badge with real HTML structure", async () => {
     // Import and run initialization
     const { initBattleStateBadge } = await import("../../src/pages/battleClassic.init.js");
-    
+
     const badge = document.getElementById("battle-state-badge");
     expect(badge).toBeTruthy();
-    
+
     // Debug: Check actual state
     console.log("Badge initial state:", {
       hasHiddenAttr: badge.hasAttribute("hidden"),
       hidden: badge.hidden,
       outerHTML: badge.outerHTML
     });
-    
+
     // Run initialization
     initBattleStateBadge();
-    
+
     // Debug: Check state after init
     console.log("Badge after init:", {
       hasHiddenAttr: badge.hasAttribute("hidden"),
@@ -89,7 +89,7 @@ describe("Battle Classic Integration", () => {
       textContent: badge.textContent,
       outerHTML: badge.outerHTML
     });
-    
+
     // Verify badge is now visible
     expect(badge.hasAttribute("hidden")).toBe(false);
     expect(badge.hidden).toBe(false);
@@ -99,16 +99,16 @@ describe("Battle Classic Integration", () => {
   it("should demonstrate difference from manual DOM tests", () => {
     // This test shows what manual DOM tests miss
     const badge = document.getElementById("battle-state-badge");
-    
+
     // Real HTML has proper structure
     expect(badge.tagName).toBe("SPAN");
     expect(badge.hasAttribute("hidden")).toBe(true);
-    
+
     // Real HTML has all required elements that manual DOM tests often skip
     expect(document.getElementById("snackbar-container")).toBeTruthy();
     expect(document.querySelector("header")).toBeTruthy();
     expect(document.querySelector("main")).toBeTruthy();
-    
+
     // Manual DOM tests typically create minimal structure like:
     // document.body.innerHTML = '<div id="battle-state-badge"></div>';
     // This misses the proper HTML structure and attributes
@@ -118,7 +118,7 @@ describe("Battle Classic Integration", () => {
     // This test verifies the module can be imported and doesn't throw
     // when working with real HTML structure
     let initError = null;
-    
+
     try {
       const module = await import("../../src/pages/battleClassic.init.js");
       expect(module.init).toBeDefined();
@@ -126,7 +126,7 @@ describe("Battle Classic Integration", () => {
     } catch (error) {
       initError = error;
     }
-    
+
     expect(initError).toBeNull();
   });
 
@@ -134,7 +134,7 @@ describe("Battle Classic Integration", () => {
     // Integration test advantage: tests with complete HTML structure
     const elements = [
       "battle-state-badge",
-      "stat-buttons", 
+      "stat-buttons",
       "next-button",
       "quit-button",
       "player-card",
@@ -143,12 +143,12 @@ describe("Battle Classic Integration", () => {
       "score-display",
       "snackbar-container"
     ];
-    
+
     // All elements exist in real HTML
-    elements.forEach(id => {
+    elements.forEach((id) => {
       expect(document.getElementById(id)).toBeTruthy();
     });
-    
+
     // Real HTML has proper semantic structure
     expect(document.querySelector("header[role='banner']")).toBeTruthy();
     expect(document.querySelector("main[role='main']")).toBeTruthy();

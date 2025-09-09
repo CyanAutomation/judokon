@@ -323,8 +323,6 @@ function attachListeners(machineRef) {
   }
 }
 
-
-
 /**
  * Initialize the classic battle orchestrator. This function sets up the battle state machine,
  * defines its transition behavior, and exposes debugging utilities.

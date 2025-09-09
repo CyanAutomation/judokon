@@ -22,9 +22,9 @@ describe("Classic Battle replay flow", () => {
 
     // Simulate clicking a stat button instead of calling engine directly
     console.log("[test] Looking for stat buttons");
-    const statButtons = document.querySelectorAll('#stat-buttons button[data-stat]');
+    const statButtons = document.querySelectorAll("#stat-buttons button[data-stat]");
     console.log("[test] Found stat buttons:", statButtons.length);
-    
+
     if (statButtons.length > 0) {
       console.log("[test] Clicking first stat button");
       statButtons[0].click();

@@ -22,9 +22,9 @@ export async function dispatchBattleEvent(eventName, payload) {
   // Get machine from debug state to avoid circular dependency
   const getMachine = readDebugState("getClassicBattleMachine");
   const machine = typeof getMachine === "function" ? getMachine() : null;
-  
+
   if (!machine) return false;
-  
+
   try {
     // PRD taxonomy: emit interrupt.requested with payload context
     if (eventName === "interrupt") {
