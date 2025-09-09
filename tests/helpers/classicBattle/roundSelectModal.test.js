@@ -4,13 +4,28 @@ import { wrap } from "../../../src/helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../../../src/config/storageKeys.js";
 import rounds from "../../../src/data/battleRounds.js";
 
-const mocks = vi.hoisted(() => ({
-  setPointsToWin: vi.fn(),
-  initTooltips: vi.fn(),
-  modal: { open: vi.fn(), close: vi.fn(), destroy: vi.fn() },
-  emit: vi.fn(),
-  logEvent: vi.fn()
-}));
+const mocks = vi.hoisted(() => {
+  const modal = { open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
+  const defaultCreateModal = (content) => {
+    const element = document.createElement("div");
+    element.appendChild(content);
+    return {
+      element,
+      open: modal.open,
+      close: modal.close,
+      destroy: modal.destroy
+    };
+  };
+  return {
+    setPointsToWin: vi.fn(),
+    initTooltips: vi.fn(),
+    modal,
+    emit: vi.fn(),
+    logEvent: vi.fn(),
+    createModal: vi.fn(defaultCreateModal),
+    defaultCreateModal
+  };
+});
 vi.mock("../../../src/components/Button.js", () => ({
   createButton: (label, { id } = {}) => {
     const btn = document.createElement("button");
@@ -20,16 +35,7 @@ vi.mock("../../../src/components/Button.js", () => ({
   }
 }));
 vi.mock("../../../src/components/Modal.js", () => ({
-  createModal: (content) => {
-    const element = document.createElement("div");
-    element.appendChild(content);
-    return {
-      element,
-      open: mocks.modal.open,
-      close: mocks.modal.close,
-      destroy: mocks.modal.destroy
-    };
-  }
+  createModal: (...args) => mocks.createModal(...args)
 }));
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   setPointsToWin: mocks.setPointsToWin
@@ -49,6 +55,7 @@ describe("initRoundSelectModal", () => {
     vi.clearAllMocks();
     mocks.cleanup = vi.fn();
     mocks.initTooltips.mockResolvedValue(mocks.cleanup);
+    mocks.createModal.mockImplementation(mocks.defaultCreateModal);
     window.history.replaceState({}, "", "/");
   });
 
@@ -122,5 +129,15 @@ describe("initRoundSelectModal", () => {
     expect(document.querySelector(".round-select-buttons")).toBeNull();
     expect(mocks.initTooltips).not.toHaveBeenCalled();
     expect(mocks.cleanup).not.toHaveBeenCalled();
+  });
+
+  it("propagates errors when modal creation fails", async () => {
+    const onStart = vi.fn();
+    const error = new Error("modal fail");
+    mocks.createModal.mockImplementation(() => {
+      throw error;
+    });
+    await expect(initRoundSelectModal(onStart)).rejects.toThrow(error);
+    expect(onStart).not.toHaveBeenCalled();
   });
 });
