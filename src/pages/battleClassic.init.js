@@ -267,7 +267,7 @@ function showRoundSelectFallback(store) {
     try {
       await startRoundCycle(store);
     } catch (err) {
-      console.error("battleClassic: fallback start failed", err);
+      console.debug("battleClassic: fallback start failed", err);
     }
   });
 
@@ -444,7 +444,7 @@ async function init() {
         await startRoundCycle(store);
       });
     } catch (err) {
-      console.error("battleClassic: initRoundSelectModal failed", err);
+      console.debug("battleClassic: initRoundSelectModal failed", err);
       showRoundSelectFallback(store);
     }
 
@@ -460,10 +460,10 @@ async function init() {
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
-    init().catch((err) => console.error("battleClassic: init failed", err));
+    init().catch((err) => console.debug("battleClassic: init failed", err));
   });
 } else {
-  init().catch((err) => console.error("battleClassic: init failed", err));
+  init().catch((err) => console.debug("battleClassic: init failed", err));
 }
 
 export { init };
