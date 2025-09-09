@@ -22,6 +22,8 @@ vi.mock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
 
 // These will be defined per test run
 let timerState;
+// eslint-disable-next-line no-unused-vars
+let store;
 // `store` declared previously was unused; keep tests focused on timerState.
 const engineMock = {
   getTimerState: () => ({ ...timerState })
