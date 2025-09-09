@@ -140,7 +140,7 @@ runWhenIdle(preloadUiService);
  *
  * @param {object} judoka - Data required by `JudokaCard` (may include `lookup`).
  * @param {HTMLElement|null} container - DOM element to receive the rendered card.
- * @returns {Promise<void>}
+async function renderOpponentCard(judoka, container) {
  */
 export async function renderOpponentCard(judoka, container) {
   if (!judoka || !container) return;
@@ -199,27 +199,15 @@ export function enableNextRoundButton() {
  * Mark the Next round button ready and enabled.
  *
  * @pseudocode
- * 1. Locate `#next-button` in the DOM.
- * 2. If present, set `disabled=false` and `data-next-ready=true`.
- */
-
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Disable the Next-round UI button and clear ready state.
+ * 1. Locate the `#next-button` element in the DOM.
+ * 2. If found, set `disabled = false` and `data-next-ready = "true"`.
  *
- * @pseudocode
- * 1. Find `#next-button` and disable it.
- * 2. Remove `data-next-ready` attribute.
+ * @returns {void}
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+  export function setupNextButton() {
+   let btn = document.getElementById("next-button");
+   // setupNextButton wires the DOM next control; nothing else should be
+   // declared inside this function. `selectStat` is defined at module scope.
 /**
  * @summary TODO: Add summary
  * @pseudocode
@@ -231,6 +219,18 @@ export function enableNextRoundButton() {
  * @pseudocode
  * 1. Locate `#next-button` in the DOM.
  * 2. If present, set `disabled = true` and remove the `data-next-ready` flag.
+ *
+ * @returns {void}
+ */
+/**
+ * Disable the Next-round button and clear its ready state.
+ *
+ * Finds `#next-button` (or fallback) and disables it, removing the
+ * `data-next-ready` marker so consumers know the control is not ready.
+ *
+ * @pseudocode
+ * 1. Query `#next-button` and return early if missing.
+ * 2. Set `disabled = true` and delete `data-next-ready`.
  *
  * @returns {void}
  */
@@ -547,19 +547,7 @@ export function registerRoundStartErrorHandler(retryFn) {
 }
 
 /**
- * Attach click handler to the Next button.
- *
- * @pseudocode
- * 1. Locate `#next-button`; exit if missing.
- * 2. Add `onNextButtonClick` listener for `click` events.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary Attach the Next button click handler and warn when absent.
+ * Attach the Next button click handler.
  *
  * Ensures the primary Next control receives the `onNextButtonClick` handler.
  * Falls back to `[data-role="next-round"]` when `#next-button` is missing
@@ -1203,7 +1191,11 @@ export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.s
  */
 
 /**
- * Reset battle UI elements to their initial state.
+ * Reset all battle UI elements to their initial state.
+ *
+ * Removes modal backdrops, resets Next/Quit buttons (dropping listeners),
+ * clears scoreboard messages/timers and updates the debug panel. If a
+ * `store` with an active quit modal is provided, the modal will be destroyed.
  *
  * @pseudocode
  * 1. Call `removeBackdrops(store)`.
