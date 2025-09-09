@@ -74,7 +74,25 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   timer.on("tick", onTick);
   timer.on("expired", onExpired);
   if (typeof initialRemaining === "number") {
-    render(initialRemaining);
+    // If a transient opponent message is currently shown (for example
+    // "Opponent is choosing…"), avoid immediately replacing it with the
+    // cooldown snackbar and header timer. Defer the visible render until the
+    // first tick so short-lived messages are not overshadowed.
+    try {
+      const existing = typeof document !== "undefined" ? document.querySelector(".snackbar") : null;
+      const opponentMsg = typeof t === "function" ? t("ui.opponentChoosing") : null;
+      const shouldDefer =
+        existing &&
+        existing.textContent &&
+        opponentMsg &&
+        existing.textContent.includes(opponentMsg);
+      if (!shouldDefer) {
+        render(initialRemaining);
+      } else {
+        // Leave `rendered` false so the first tick will perform the render.
+        rendered = false;
+      }
+    } catch {}
   }
   return () => {
     timer.off("tick", onTick);

@@ -34,10 +34,21 @@ test.describe("Classic Battle CLI", () => {
 
   test("loads without console errors", async ({ page }) => {
     const errors = [];
+    const logs = [];
     page.on("pageerror", (err) => errors.push(err.message));
     page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(msg.text());
+      const text = msg.text();
+      logs.push(text);
+      if (msg.type() === "error") errors.push(text);
     });
+
+    // Wait a bit to see the console logs
+    await page.waitForTimeout(1000);
+    console.log(
+      "Console logs:",
+      logs.filter((log) => log.includes("[RoundSelectModal]") || log.includes("[CLI]"))
+    );
+
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
     expect(errors).toEqual([]);
   });

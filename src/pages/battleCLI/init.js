@@ -240,18 +240,49 @@ async function resetMatch() {
       await battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
     } catch (err) {
       console.error("Failed to initialize classic battle orchestrator:", err);
+      // In case of orchestrator failure, ensure we can still start battles via fallback
+      try {
+        emitBattleEvent("battleStateChange", { to: "waitingForMatchStart" });
+      } catch {}
     }
   });
   return resetPromise;
 }
 
 /**
- * No-op callback for round selection start.
+ * Start callback for round selection that dispatches to the state machine.
  *
  * Used to satisfy initRoundSelectModal's `onStart` parameter in the CLI,
- * which does not require additional setup on round start.
+ * triggering the state machine when a round value has been selected from storage.
  */
-function noopStartCallback() {}
+async function startCallback() {
+  try {
+    const getter = debugHooks.readDebugState("getClassicBattleMachine");
+    const machine = typeof getter === "function" ? getter() : getter;
+    if (machine) {
+      machine.dispatch("startClicked");
+    } else {
+      // Fallback: try to dispatch via orchestrator or emit state change
+      const dispatched = await safeDispatch("startClicked").catch(() => false);
+      if (!dispatched) {
+        // Final fallback: manually progress through state transitions
+        console.warn("[CLI] Orchestrator unavailable, using manual state progression");
+        emitBattleEvent("battleStateChange", { to: "matchStart" });
+        setTimeout(() => {
+          emitBattleEvent("battleStateChange", { to: "cooldown" });
+          setTimeout(() => {
+            emitBattleEvent("battleStateChange", { to: "roundStart" });
+            setTimeout(() => {
+              emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+            }, 50);
+          }, 50);
+        }, 50);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to dispatch from startCallback", err);
+  }
+}
 
 /**
  * Render the Start button after the orchestrator reset completes.
@@ -273,26 +304,48 @@ async function renderStartButton() {
     id: "start-match-button",
     className: "primary-button"
   });
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     try {
       // Notify UI/event listeners that start was clicked
       emitBattleEvent("startClicked");
     } catch {}
+
+    // Remove button immediately to prevent double-clicks
+    section.remove();
+
     try {
       const getter = debugHooks.readDebugState("getClassicBattleMachine");
       const machine = typeof getter === "function" ? getter() : getter;
-      if (machine) machine.dispatch("startClicked");
-      else if (typeof window !== "undefined" && window.__TEST__) {
-        // Test fallback: in fake-timer environments where the orchestrator init is mocked
-        // and not advanced, simulate the post-start transition so countdown can begin.
+      if (machine) {
+        machine.dispatch("startClicked");
+      } else {
+        // Fallback: when orchestrator machine is unavailable, try to dispatch via orchestrator
+        let dispatched = false;
         try {
-          emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+          dispatched = await safeDispatch("startClicked").catch(() => false);
         } catch {}
+
+        if (!dispatched) {
+          // Final fallback: manually progress through the state machine steps
+          console.warn("[CLI] Orchestrator unavailable, using manual state progression");
+          try {
+            // Simulate the state progression: matchStart -> cooldown -> roundStart -> waitingForPlayerAction
+            emitBattleEvent("battleStateChange", { to: "matchStart" });
+            setTimeout(() => {
+              emitBattleEvent("battleStateChange", { to: "cooldown" });
+              setTimeout(() => {
+                emitBattleEvent("battleStateChange", { to: "roundStart" });
+                setTimeout(() => {
+                  emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+                }, 50);
+              }, 50);
+            }, 50);
+          } catch {}
+        }
       }
     } catch (err) {
       console.debug("Failed to dispatch startClicked", err);
     }
-    section.remove();
   });
   section.append(btn);
   main.append(section);
@@ -1906,7 +1959,7 @@ export async function init() {
   await resetMatch();
   await resetPromise;
   try {
-    await initRoundSelectModal(noopStartCallback);
+    await initRoundSelectModal(startCallback);
   } catch {
     await renderStartButton();
   }

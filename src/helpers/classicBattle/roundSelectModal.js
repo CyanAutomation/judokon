@@ -87,11 +87,8 @@ export async function initRoundSelectModal(onStart) {
   }
 
   try {
-    // Read from storage. In tests we use the default "session" fallback
-    // (in-memory) so honour the default wrapper here rather than forcing
-    // persistent localStorage — forcing `fallback: "none"` prevented
-    // tests that set the session value from being detected.
-    const storage = wrap(BATTLE_POINTS_TO_WIN);
+    // Use localStorage directly to match how tests set values via page.addInitScript
+    const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
     const saved = storage.get();
     if (POINTS_TO_WIN_OPTIONS.includes(Number(saved))) {
       try {
