@@ -19,7 +19,7 @@ import { toggleInspectorPanels } from "../cardUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { onBattleEvent } from "./battleEvents.js";
-import * as battleEvents from "./battleEvents.js";
+// Removed unused import for 'battleEvents'
 import {
   enableStatButtons,
   disableStatButtons,
@@ -54,51 +54,6 @@ function preloadUiService() {
     .catch(() => {});
 }
 runWhenIdle(preloadUiService);
-/**
- * Skip the inter-round cooldown when the corresponding feature flag is enabled.
- *
- * @pseudocode
- * 1. If the `skipRoundCooldown` feature flag is disabled, return false.
- * 2. Otherwise schedule a microtask (or setTimeout fallback) to emit `countdownFinished`.
- * 3. Return true to indicate the cooldown will be skipped.
- *
- * @returns {boolean} `true` if the cooldown was skipped.
- */
-export function skipRoundCooldownIfEnabled() {
-  if (!isEnabled("skipRoundCooldown")) return false;
-  const run = () => {
-    try {
-      // Emit via module namespace so spies observe the call
-      battleEvents.emitBattleEvent("countdownFinished");
-    } catch {}
-  };
-  try {
-    queueMicrotask(run);
-  } catch {
-    setTimeout(run, 0);
-  }
-  return true;
-}
-
-// Ensure a global statButtonsReadyPromise exists synchronously so tests
-// and early code can safely await it even before `initStatButtons` runs.
-if (typeof window !== "undefined") {
-  try {
-    if (!window.statButtonsReadyPromise) {
-      let _resolve;
-      window.statButtonsReadyPromise = new Promise((r) => {
-        _resolve = r;
-      });
-      // Keep a handle to the current resolver so `initStatButtons` can
-      // replace/resolve it when the real button wiring happens.
-      window.__resolveStatButtonsReady = _resolve;
-      try {
-        window.__promiseEvents = window.__promiseEvents || [];
-        window.__promiseEvents.push({ type: "statButtonsReady-initialized", ts: Date.now() });
-      } catch {}
-    }
-  } catch {}
-}
 
 /**
  * Ensure the debug panel has a copy button that copies the panel text.
@@ -231,37 +186,6 @@ export async function renderOpponentCard(judoka, container) {
  */
 // (Removed duplicate enableNextRoundButton; canonical version is below)
 
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Enable and mark the Next-round UI button as ready.
- *
- * @pseudocode
- * 1. Find `#next-button` and enable it.
- * 2. Set `data-next-ready` attribute to "true".
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Enable the Next-round button and mark it ready for interaction.
- *
- * @pseudocode
- * 1. Locate the `#next-button` element in the DOM.
- * 2. If found, set `disabled = false` and `data-next-ready = "true"` to indicate readiness.
- *
- * @returns {void}
- */
 export function enableNextRoundButton() {
   const btn =
     document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
@@ -355,19 +279,19 @@ export function disableNextRoundButton() {
  * 1. TODO: Add pseudocode
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Display a round outcome across scoreboard and result regions.
+ *
+ * Renders the outcome into the non-transient result area and forwards a
+ * copy to the scoreboard. Avoids using snackbars for outcome messages so
+ * transient countdown/hint flows remain unaffected.
+ *
+ * @pseudocode
+ * 1. Call `showResult(message)` to render the main outcome.
+ * 2. Call `scoreboard.showMessage(message, { outcome: true })`.
+ * 3. Avoid showing a snackbar for outcome messages.
  *
  * @param {string} message - Outcome text to display (e.g. "You Win").
  * @returns {void}
- * @pseudocode
- * 1. Render the message using `showResult(message)`.
- * 2. Forward the message to `scoreboard.showMessage` marking it as an outcome.
- * 3. Keep outcome messaging out of transient snackbars to avoid UI conflicts.
  */
 export function showRoundOutcome(message) {
   showResult(message);
@@ -423,15 +347,22 @@ export function showRoundOutcome(message) {
 /**
  * Animate or update the stat comparison area after a round resolves.
  *
+ * Cancels any previously scheduled animation and either renders the final
+ * values immediately (when reduced motion is preferred) or animates the
+ * numeric transition over ~500ms using the scheduler helper.
+ *
+ * @pseudocode
+ * 1. Query `#round-result`; return early if missing.
+ * 2. Cancel any prior RAF stored in `store.compareRaf`.
+ * 3. If reduced motion is enabled, write final text and return.
+ * 4. Otherwise animate numeric values from start to target over ~500ms using RAF.
+ * 5. Store the new RAF id on `store.compareRaf` for future cancellation.
+ *
  * @param {object} store - Battle state store (used to save RAF ids and flags).
  * @param {string} stat - Stat key that was compared.
  * @param {number} playerVal - Player's stat value.
  * @param {number} compVal - Opponent's stat value.
  * @returns {void}
- * @pseudocode
- * 1. Locate the `#round-result` element and cancel any previous animation.
- * 2. If reduced motion is requested, write the final text immediately.
- * 3. Otherwise animate numbers from current to target over ~500ms using RAF.
  */
 export function showStatComparison(store, stat, playerVal, compVal) {
   const el = document.getElementById("round-result");
@@ -837,28 +768,6 @@ export function removeBackdrops(store) {
  * 2. Clone it, disable the clone, remove `data-next-ready`, and add `onNextButtonClick`.
  * 3. Replace the original button with the clone.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Replace the Next button with a fresh disabled clone and rewire handlers.
- *
- * @pseudocode
- * 1. Locate existing `#next-button`, clone it and disable the clone.
- * 2. Attach `onNextButtonClick` to the clone and replace the original.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function resetNextButton() {
   let nextBtn;
   try {
@@ -891,27 +800,6 @@ export function resetNextButton() {
  * 1. Locate `#quit-match-button`.
  * 2. Replace it with an inert clone.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Replace the Quit button with an inert clone to drop existing listeners.
- *
- * @pseudocode
- * 1. Locate `#quit-match-button` and replace it with `cloneNode(true)`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function resetQuitButton() {
   let quitBtn;
   try {
@@ -932,36 +820,6 @@ export function resetQuitButton() {
  * @returns {void}
  */
 
-/**
- * Clear scoreboard and round messages, then synchronize the score display.
- *
- * @pseudocode
- * 1. Clear scoreboard message and timer.
- * 2. Empty `#round-result` text.
- * 3. Invoke `syncScoreDisplay`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Clear scoreboard messages and timers, and synchronize the score display.
- *
- * @pseudocode
- * 1. Clear scoreboard message and timer.
- * 2. Empty `#round-result` text and call `syncScoreDisplay()`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export function clearScoreboardAndMessages() {
   try {
     scoreboard.clearMessage();
