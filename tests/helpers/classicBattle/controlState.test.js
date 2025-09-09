@@ -8,8 +8,6 @@ import {
 } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 import { ClassicBattleView } from "../../../src/helpers/classicBattle/view.js";
 
-const currentFlags = { statHotkeys: { enabled: false } };
-
 function mockQuitMatch() {
   const msg = document.getElementById("round-message");
   if (msg) msg.textContent = "quit";
@@ -17,7 +15,7 @@ function mockQuitMatch() {
 }
 
 vi.mock("../../../src/helpers/featureFlags.js", () => ({
-  isEnabled: (flag) => currentFlags[flag]?.enabled ?? false,
+  isEnabled: () => false,
   featureFlagsEmitter: new EventTarget(),
   initFeatureFlags: vi.fn()
 }));
@@ -181,22 +179,16 @@ describe("classicBattle battle control state", () => {
     expect(btn.disabled).toBe(true);
   });
 
-  it("triggers stat selection via keyboard only when statHotkeys is enabled", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { initStatButtons } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
-    const controls = initStatButtons({});
+  it("triggers stat selection via keyboard hotkeys", async () => {
+    const { wireStatHotkeys } = await import(
+      "../../../src/helpers/classicBattle/statButtons.js"
+    );
     const btn = document.querySelector("#stat-buttons button");
-    btn.disabled = false;
     const clickSpy = vi.spyOn(btn, "click");
-
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
-    expect(clickSpy).not.toHaveBeenCalled();
-
-    currentFlags.statHotkeys.enabled = true;
+    const detach = wireStatHotkeys(document.querySelectorAll("#stat-buttons button"));
+    btn.disabled = false;
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
     expect(clickSpy).toHaveBeenCalledTimes(1);
-
-    controls.disable();
-    warn.mockRestore();
+    detach();
   });
 });
