@@ -1,8 +1,6 @@
 import { getOpponentCardData } from "./opponentController.js";
 import { isEnabled } from "../featureFlags.js";
 import { STATS } from "../battleEngineFacade.js";
-import { JudokaCard } from "../../components/JudokaCard.js";
-import { setupLazyPortraits } from "../lazyPortrait.js";
 
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
@@ -167,11 +165,38 @@ export async function renderOpponentCard(judoka, container) {
  * @pseudocode
  * 1. Locate the `#next-button` element in the DOM.
  * 2. If found, set `disabled = false` and `data-next-ready = "true"`.
+ * 3. If not found, warn and fall back to `[data-role="next-round"]`.
+ * 4. If fallback found, attach click handler; otherwise warn about missing button.
  *
  * @returns {void}
  */
 export function setupNextButton() {
-  document.getElementById("next-button");
+  let btn = document.getElementById("next-button");
+
+  if (!btn) {
+    guard(() => {
+      if (typeof window !== "undefined" && window.__testMode) {
+        console.warn('[test] #next-button missing, falling back to [data-role="next-round"]');
+      }
+    });
+    btn = document.querySelector('[data-role="next-round"]');
+
+    if (btn) {
+      btn.addEventListener("click", onNextButtonClick);
+    } else {
+      guard(() => {
+        if (typeof window !== "undefined" && window.__testMode) {
+          console.warn("[test] next round button missing");
+        }
+      });
+      return;
+    }
+  }
+
+  if (btn) {
+    btn.disabled = false;
+    btn.dataset.nextReady = "true";
+  }
 }
 
 /**

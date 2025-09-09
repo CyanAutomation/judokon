@@ -50,6 +50,11 @@ export function setTestMode(enableOrOptions, initialSeed = 1) {
     active = Boolean(enableOrOptions);
     seed = initialSeed;
   }
+
+  // Set global flag for other modules to detect test mode
+  if (typeof window !== "undefined") {
+    window.__testMode = active;
+  }
 }
 
 /**
