@@ -58,7 +58,7 @@ Found multiple tests bypassing real initialization:
 ### Phase 4: Remediation Strategy (IN PROGRESS)
 - [x] **Priority 1**: Fix browser-specific initialization issues ✅
 - [x] **Priority 2**: Create integration tests using real HTML pages ✅
-- [ ] **Priority 3**: Reduce test DOM manipulation where appropriate
+- [x] **Priority 3**: Reduce test DOM manipulation where appropriate ✅
 - [ ] **Priority 4**: Establish consistent test architecture patterns
 
 ### Phase 5: Long-term Improvements (PLANNED)
@@ -263,6 +263,61 @@ Found multiple tests bypassing real initialization:
 - **Integration Baseline**: Established pattern for testing with real HTML pages
 - **Architecture Validation**: Confirmed initialization works with complete DOM structure
 
+## Phase 4.3 Results: Selective DOM Manipulation Reduction ✅
+
+### Improved Tests Created
+**Enhanced Test Files**:
+- `tests/classicBattle/opponent-message-handler.improved.test.js` - Real HTML version
+- `tests/classicBattle/opponent-message-handler.simplified.test.js` - Using utility functions
+- `tests/utils/realHtmlTestUtils.js` - Utility functions for easy conversion
+
+### Conversion Strategy Demonstrated
+**Before (Manual DOM)**:
+```javascript
+document.body.innerHTML = '<div id="snackbar-container"></div><div id="round-message"></div>';
+```
+
+**After (Real HTML)**:
+```javascript
+const testEnv = createRealHtmlTestEnvironment();
+// Full HTML structure with proper attributes and semantic markup
+```
+
+### Key Improvements Achieved
+**Real HTML Structure Benefits**:
+1. **Proper Attributes**: `aria-live="polite"`, `aria-atomic="true"` on snackbar container
+2. **Semantic Structure**: `header[role='banner']`, `main[role='main']` elements
+3. **Complete Context**: Tests run with full page structure, not isolated elements
+4. **Accessibility Validation**: Tests verify ARIA attributes and semantic markup
+
+### Utility Functions Created
+**`realHtmlTestUtils.js` provides**:
+- `createRealHtmlTestEnvironment()` - Easy setup for real HTML tests
+- `validateRealHtmlStructure()` - Validates structure that manual DOM tests miss
+- `compareTestApproaches()` - Compare manual vs real HTML test results
+
+### Test Results
+**Enhanced Tests**: ✅ PASS
+- `opponent-message-handler.improved.test.js` - 2/2 tests pass
+- `opponent-message-handler.simplified.test.js` - 2/2 tests pass
+- Original manual DOM test still passes for backward compatibility
+
+**Playwright Tests**: ✅ PASS (No Regression)
+- `playwright/battle-classic/badge-debug.spec.js` - Browser functionality maintained
+
+### Value Demonstrated
+**Selective Improvement Strategy**:
+1. **High-Impact Tests**: Focus on tests that benefit most from real HTML structure
+2. **Utility Functions**: Make conversion easy and reduce boilerplate
+3. **Backward Compatibility**: Keep original tests working during transition
+4. **Validation Tools**: Automatically check for structure that manual DOM misses
+
+### Impact
+- **Testing Quality**: Enhanced tests validate accessibility and semantic structure
+- **Easy Conversion**: Utility functions reduce effort to improve existing tests
+- **Architecture Pattern**: Established approach for selective test improvement
+- **No Regression**: All existing functionality maintained
+
 ---
 
-**Status**: Phase 4.2 complete - integration test baseline established. Ready for Phase 4.3 selective DOM manipulation reduction.
+**Status**: Phase 4.3 complete - selective DOM manipulation reduction achieved. Ready for Phase 4.4 test architecture patterns.
