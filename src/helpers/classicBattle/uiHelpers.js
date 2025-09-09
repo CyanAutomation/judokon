@@ -31,6 +31,17 @@ import { updateDebugPanel, setDebugPanelEnabled } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 import { runWhenIdle } from "./idleCallback.js";
 
+/**
+ * Determine whether round cooldowns should be skipped.
+ *
+ * @returns {boolean}
+ * @pseudocode
+ * 1. Return the `skipRoundCooldown` feature flag state.
+ */
+export function skipRoundCooldownIfEnabled() {
+  return isEnabled("skipRoundCooldown");
+}
+
 export const INITIAL_SCOREBOARD_TEXT = "You: 0\nOpponent: 0";
 
 /**
