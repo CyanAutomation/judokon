@@ -331,3 +331,14 @@ export function _resetForTest() {
   opponentJudoka = null;
   loadErrorModal = null;
 }
+
+/**
+ * @summary Test helper: reset module-scoped caches and UI artifacts.
+ *
+ * This is safe to call from unit tests to ensure a clean module state
+ * between cases. It clears cached datasets, lookup tables and any modal
+ * references to avoid cross-test leakage.
+ *
+ * @pseudocode
+ * 1. Set `judokaData`, `gokyoLookup`, `opponentJudoka`, and `loadErrorModal` to `null`.
+ */

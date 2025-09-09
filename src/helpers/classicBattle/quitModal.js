@@ -106,3 +106,21 @@ export function quitMatch(store, trigger) {
   check();
   return quitConfirmButtonPromise;
 }
+
+/**
+ * @summary Public test hook: a promise resolving to the confirm button of the
+ * quit modal when it is opened.
+ *
+ * Tests can await `window.quitConfirmButtonPromise` to interact with the
+ * confirm button. The promise is replaced every time `quitMatch` is invoked.
+ *
+ * @type {Promise<HTMLButtonElement>}
+ */
+
+/**
+ * @summary Present the quit confirmation modal and expose the confirm button.
+ * @pseudocode
+ * 1. Create a new Promise and assign it to `quitConfirmButtonPromise` and `window`.
+ * 2. If no modal exists on the store, create one and store it.
+ * 3. Open modal and poll DOM until confirm button appears, then resolve the promise.
+ */

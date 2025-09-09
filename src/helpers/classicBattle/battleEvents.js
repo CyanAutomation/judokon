@@ -105,6 +105,14 @@ export function __resetBattleEventTarget() {
   __tuneMaxListenersIfNode(t);
 }
 /**
+ * @summary Low-level helpers for testing and cross-module coordination.
+ * @pseudocode
+ * 1. Provide a stable global EventTarget so isolated modules and tests can
+ *    share a single event bus without importing runtime instances.
+ * 2. Expose small helpers (`onBattleEvent`, `offBattleEvent`, `emitBattleEvent`)
+ *    to keep call-sites terse and readable.
+ */
+/**
  * Get the global EventTarget used by classic battle.
  *
  * @returns {EventTarget}

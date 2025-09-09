@@ -38,3 +38,17 @@ try {
 } catch {}
 
 export default { exposeDebugState, readDebugState };
+
+/**
+ * @summary Debug state helpers used by the orchestrator and tests.
+ *
+ * These functions provide a simple in-memory map for storing diagnostic
+ * values (timestamps, cancel functions, debug flags) that are useful when
+ * tests or UI components cannot share module bindings directly.
+ *
+ * @pseudocode
+ * 1. `exposeDebugState(key, value)` stores `value` under `key` in a module map.
+ * 2. `readDebugState(key)` returns the stored value or `undefined`.
+ * 3. Also export the helpers as properties on `globalThis` to support
+ *    cross-worker or global test access when necessary.
+ */

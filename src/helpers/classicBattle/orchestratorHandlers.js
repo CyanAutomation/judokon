@@ -37,6 +37,13 @@ export function setAutoContinue(val) {
 }
 
 /**
+ * @summary Controls whether the orchestrator auto-advances after outcomes.
+ * @pseudocode
+ * 1. Default to `true` so automatic continuation happens in the UI.
+ * 2. Call `setAutoContinue(false)` to pause after outcome events for inspection.
+ */
+
+/**
  * Handle round-related errors in a consistent manner.
  *
  * @param {object} machine
@@ -74,6 +81,15 @@ export function isStateTransition(from, to) {
     return false;
   }
 }
+
+/**
+ * @summary Determine whether the orchestrator transitioned from `from` to `to`.
+ * @pseudocode
+ * 1. Read `document.body.dataset.battleState` and `prevBattleState`.
+ * 2. If `from` is null/undefined -> compare only current to `to`.
+ * 3. Otherwise check `prev === from && current === to`.
+ * 4. Return `false` on any error.
+ */
 
 /**
  * onEnter handler for `waitingForMatchStart` state.

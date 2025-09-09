@@ -63,6 +63,15 @@ export function createBattleStore() {
   };
 }
 
+/**
+ * @summary Detect whether the classic battle orchestrator is active.
+ *
+ * This checks for the presence of `data-battle-state` on the document body
+ * which is set when the state machine is initialized.
+ *
+ * @returns {boolean} True when orchestration appears active.
+ */
+
 function getStartRound(store) {
   const api = readDebugState("classicBattleDebugAPI");
   if (api?.startRoundOverride) return api.startRoundOverride;
