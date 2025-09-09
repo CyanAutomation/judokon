@@ -38,6 +38,7 @@ import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 import { POINTS_TO_WIN_OPTIONS } from "../../config/battleDefaults.js";
 import * as debugHooks from "../../helpers/classicBattle/debugHooks.js";
 import { setAutoContinue, autoContinue } from "../../helpers/classicBattle/orchestratorHandlers.js";
+import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
 import { SNACKBAR_REMOVE_MS } from "../../helpers/constants.js";
 import { registerModal, unregisterModal, onEsc } from "../../helpers/modalManager.js";
 import state, { resolveEscapeHandled, getEscapeHandledPromise } from "./state.js";
@@ -1188,7 +1189,7 @@ export function restorePointsToWin() {
         await resetMatch();
         engineFacade.setPointsToWin?.(val);
         updateRoundHeader(0, val);
-        renderStartButton();
+        await renderStartButton();
         current = val;
       } else {
         select.value = String(current);
@@ -1876,8 +1877,9 @@ export function wireEvents() {
  * restorePointsToWin()
  * await setupFlags()
  * subscribeEngine()
- * battleOrchestrator.initClassicBattleOrchestrator(store, startRoundWrapper)
- * await renderStartButton()
+ * await resetMatch()
+ * try initRoundSelectModal()
+ * catch → await renderStartButton()
  * wireEvents()
  */
 export async function init() {
@@ -1890,11 +1892,12 @@ export async function init() {
   restorePointsToWin();
   await setupFlags();
   subscribeEngine();
+  await resetMatch();
   try {
-    const p = battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
-    void p;
-  } catch {}
-  await renderStartButton();
+    await initRoundSelectModal(() => {});
+  } catch {
+    await renderStartButton();
+  }
   wireEvents();
 }
 
