@@ -2,11 +2,17 @@
 
 **Entry Point:** `src/helpers/battleScoreboard.js`
 **Used By:** Classic Battle (UI), Battle CLI, Battle Bandit, future modes
-**Related Docs:** \[prdBattleEngine.md], \[prdSnackbar.md]
+**Related Docs:** \[prdBattleEngine.md], \[prdSnackbar.md], \[prdClassicBattle.md], \[prdBattleStateIndicator.md]
 
 ---
 
-## 1. TL;DR
+## 1. Problem Statement
+
+Battle modes in the game suffer from inconsistent or tightly-coupled scoreboard implementations. These lead to fragmented user experiences, increased maintenance overhead, and difficulty in adapting to new modes like CLI or Bandit. A unified, reusable scoreboard component is required to reflect battle state in a consistent and deterministic manner, decoupled from the rest of the game UI.
+
+---
+
+## 2. TL;DR
 
 The **Battle Scoreboard** is a **mode-agnostic, UI-only reflector** of persistent battle information.
 It communicates **only with the Battle Engine/Orchestrator**, not with any other UI elements or the main battle area.
@@ -16,7 +22,7 @@ Styling and layout may differ per mode (via CSS themes), but the **structure, at
 
 ---
 
-## 2. Goals
+## 3. Goals
 
 1. Independence from main battle area and UI components.
 2. Reusability across Classic, CLI, Bandit, and future battle modes.
@@ -27,7 +33,7 @@ Styling and layout may differ per mode (via CSS themes), but the **structure, at
 
 ---
 
-## 3. Scope & Non-Goals
+## 4. Scope & Non-Goals
 
 **In Scope**
 
@@ -53,7 +59,7 @@ Styling and layout may differ per mode (via CSS themes), but the **structure, at
 
 ---
 
-## 4. Responsibilities & Boundaries
+## 5. Responsibilities & Boundaries
 
 The scoreboard is an **information presentation function**.
 It does not emit control events or infer logic.
@@ -62,37 +68,69 @@ The scoreboard must remain usable in **any battle mode** without code modificati
 
 ---
 
-## 5. Public API
+## 6. Public API
 
-| Name                 | Signature                                  | Purpose                                                                       |
-| -------------------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
-| **createScoreboard** | `(container?: HTMLElement) -> HTMLElement` | Create scoreboard DOM elements and append to container. Returns root element. |
-| **update**           | `(event: BattleEngineEvent) -> void`       | React to Battle Engine events and update relevant scoreboard sections.        |
-| **getSnapshot**      | `() -> ScoreboardState`                    | Return current scoreboard state (round, score, status message, timer).        |
-| **destroy**          | `() -> void`                               | Clean up event listeners and DOM nodes.                                       |
-
----
-
-## 6. Event Handling
-
-The scoreboard consumes only **canonical engine events**, for example:
-
-* `engine.round.started({ roundNumber })`
-* `engine.timer.tick({ secondsRemaining })`
-* `engine.round.completed({ outcome, scores })`
-* `engine.match.completed({ winner })`
-
-**Persistence rules**
-
-* Outcome messages (`round.completed`) persist until replaced by a new engine event.
-* Fallback “Waiting…” state is displayed if no event is received for 500ms+.
-* Status messages (e.g., “Round 2 started”) overwrite the previous message immediately.
-
-No scoreboard update should occur outside of an engine event.
+| Name                     | Signature                                              | Purpose                                                    |
+| ------------------------ | ------------------------------------------------------ | ---------------------------------------------------------- |
+| **createScoreboard**     | `(container?: HTMLElement) -> HTMLElement`             | Create scoreboard DOM elements and append to container.    |
+| **update**               | `(event: BattleEngineEvent) -> void`                   | React to Battle Engine events and update scoreboard state. |
+| **getSnapshot**          | `() -> ScoreboardState`                                | Return current state (round, score, timer, status).        |
+| **destroy**              | `() -> void`                                           | Remove event listeners, DOM cleanup.                       |
+| **initScoreboard**       | `() -> void`                                           | Initialize internal state.                                 |
+| **showMessage**          | `(text: string) -> void`                               | Force update scoreboard message (overrides).               |
+| **clearMessage**         | `() -> void`                                           | Remove any message.                                        |
+| **showTemporaryMessage** | `(text: string, duration: number) -> void`             | Show temporary message and revert.                         |
+| **updateTimer**          | `(secondsRemaining: number) -> void`                   | Update timer UI.                                           |
+| **clearTimer**           | `() -> void`                                           | Hide timer.                                                |
+| **updateRoundCounter**   | `(round: number) -> void`                              | Update round number.                                       |
+| **updateScore**          | `(playerScore: number, opponentScore: number) -> void` | Update scoreboard scores.                                  |
 
 ---
 
-## 7. Reusability & Theming
+## 7. Event Handling
+
+**Event Types Consumed:**
+
+* `engine.round.started`
+* `engine.round.completed`
+* `engine.match.completed`
+* `engine.timer.tick`
+* `display.round.message`
+* `display.timer.show`
+* `display.readiness.update`
+
+**Event Guarantees:**
+
+* Events are **idempotent**.
+* Delivered in **strict order**.
+* Scoreboard should not rely on UI-specific dispatch chains.
+
+---
+
+## 8. State Model
+
+The scoreboard maintains an immutable internal `ScoreboardState`:
+
+```ts
+interface ScoreboardState {
+  roundNumber: number;
+  timer: number | null;
+  playerScore: number;
+  opponentScore: number;
+  statusMessage: string;
+  outcomeMessage?: string;
+}
+```
+
+**Message Precedence:**
+
+1. Outcome message (if present)
+2. Engine round messages
+3. "Waiting..." fallback
+
+---
+
+## 9. Reusability & Theming
 
 * DOM structure is stable and identical across all modes.
 * Mode variations are achieved via **CSS themes**, applied to the scoreboard root element.
@@ -101,8 +139,9 @@ No scoreboard update should occur outside of an engine event.
 
 ---
 
-## 8. Canonical DOM Structure
+## 10. Canonical DOM Structure
 
+```html
 <div class="scoreboard" data-scoreboard-root>
   <div class="scoreboard__round" data-scoreboard-round>
     Round <span data-scoreboard-round-number>1</span>
@@ -124,46 +163,56 @@ No scoreboard update should occur outside of an engine event.
     <span class="scoreboard__score-opponent" data-scoreboard-opponent-score>0</span>
   </div>
 </div>
+```
 
-**Notes**
+**Notes:**
 
 * Root always includes `data-scoreboard-root`.
-* Each section has its own `data-scoreboard-*` attribute for stable selectors.
-* CLI variant renders the same structure as plain text.
+* Each section has its own `data-scoreboard-*` attribute.
+* CLI variant renders same structure in plain text.
 
 ---
 
-## 9. Accessibility
+## 11. Accessibility
 
-* ARIA live regions used for score and status updates (`aria-atomic="true"`).
+* Uses ARIA live regions (`aria-live="polite"`, `aria-atomic="true"`).
 * Announcements must occur within 500ms of event receipt.
-* Reduced motion preference respected for score animations.
-* CLI variant must provide equivalent plain-text output.
+* Respects reduced motion system preferences.
+* CLI mode must mirror visual output.
 
 ---
 
-## 10. Testing & Determinism
+## 12. Behavioral Specifications
 
-* `getSnapshot()` provides deterministic state for integration tests.
-* Tests validate scoreboard independence by mocking engine events without rendering other UI.
-* Persistence behaviour tested by simulating delayed events and verifying fallback to “Waiting…”.
+* **Outcome messages override all others.**
+* **"Waiting..." fallback appears** if no update is received within 500ms.
+* Timer must **tick once per second**, with a drift of ≤100ms.
+* Timer and score updates **must complete animations within 500ms**, and persist for ≥1s.
+* Score updates are announced **if different** from previous snapshot.
 
 ---
 
-## 11. Dependencies
+## 13. Testing & Determinism
+
+* `getSnapshot()` exposes internal state for testing.
+* Integration tests use mocked events, no visual rendering.
+* Verify message precedence and timer behavior under delay.
+
+---
+
+## 14. Dependencies
 
 * Battle Engine/Orchestrator event stream.
-* CSS themes for mode-specific styling.
-* No other dependencies.
+* CSS themes.
+* No awareness of other UI or battle systems.
 
 ---
 
-## 12. Lifecycle Diagram
+## 15. Lifecycle Diagram
 
 ```mermaid
 stateDiagram-v2
     [*] --> Idle
-
     Idle --> Listening: createScoreboard()
     Listening --> Updating: on engine event
     Updating --> DOMUpdated: render changes
@@ -177,19 +226,41 @@ stateDiagram-v2
 
 ---
 
-## 13. Acceptance Criteria
+## 16. Acceptance Criteria
 
-| ID  | Requirement                      | Acceptance Criteria                                                                                          |
-| --- | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| AC1 | Independence from main game area | Scoreboard functions correctly with only engine events, no references to battle area DOM or other UI.        |
-| AC2 | Consistency across modes         | DOM structure identical across Classic, CLI, Bandit; differences achieved only via CSS themes.               |
-| AC3 | Event-driven updates             | Scoreboard only updates in response to Battle Engine events, never from direct UI calls.                     |
-| AC4 | Outcome/status persistence       | Outcome messages persist until replaced; fallback “Waiting…” appears if no event for >500ms.                 |
-| AC5 | Performance and timing           | Score updates within 200ms; timer ticks at 1Hz with ≤100ms drift; animations complete ≤500ms, persist ≥1s.   |
-| AC6 | Accessibility                    | Live regions update within 500ms; ARIA compliance verified; reduced motion respected.                        |
-| AC7 | Testability                      | `getSnapshot()` returns a deterministic state; integration tests validate updates with mocked engine events. |
-| AC8 | Reusability                      | `createScoreboard()` and `destroy()` can be called in isolation; no mode-specific branching in logic.        |
+| ID  | Requirement                      | Acceptance Criteria                                                               |
+| --- | -------------------------------- | --------------------------------------------------------------------------------- |
+| AC1 | Independence from main game area | Scoreboard functions with only engine events; no UI dependencies.                 |
+| AC2 | Consistency across modes         | DOM structure identical; differences achieved only via CSS themes.                |
+| AC3 | Event-driven updates             | Scoreboard updates only from engine events.                                       |
+| AC4 | Outcome/status persistence       | Outcome persists until replaced; fallback if no event in 500ms.                   |
+| AC5 | Performance                      | Score update ≤200ms; 1Hz timer with ≤100ms drift; animation ≤500ms.               |
+| AC6 | Accessibility                    | Live region compliance; screen reader output; respects reduced motion.            |
+| AC7 | Testability                      | `getSnapshot()` is deterministic; integration tests pass with mocked events.      |
+| AC8 | Reusability                      | `createScoreboard()`/`destroy()` usable in isolation; no mode-specific branching. |
 
+---
+
+## 17. Functional Requirements (Prioritized)
+
+| Priority | Feature                  | Description                                                         |
+| -------- | ------------------------ | ------------------------------------------------------------------- |
+| P1       | Scoreboard DOM Structure | Generate stable DOM with `data-scoreboard-*` selectors              |
+| P1       | Event-Driven Updates     | Only update on engine events; 500ms fallback                        |
+| P1       | Accessibility Compliance | Live regions, screen reader support, reduced motion                 |
+| P2       | Snapshot API             | `getSnapshot()` for deterministic state inspection                  |
+| P2       | CSS Theming              | Allow external themes to visually differentiate scoreboard per mode |
+| P3       | CLI Compatibility        | Render scoreboard in plain text format with identical structure     |
+
+---
+
+## 18. Open Decisions
+
+* Should win/loss messages use different colors or icons?
+* Should the scoreboard announce player readiness, or defer to Snackbar?
+* Should we display draw outcomes differently in score format?
+
+---
 
 ## Tasks
 
