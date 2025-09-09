@@ -399,29 +399,20 @@ export function showStatComparison(store, stat, playerVal, compVal) {
 }
 
 /**
- * Watch for orientation changes and update the battle header.
- *
- * @pseudocode
- * 1. Determine current orientation via `matchMedia` when possible.
- * 2. Apply orientation to `.battle-header[data-orientation]` when changed.
- * 3. Expose `window.applyBattleOrientation` for manual updates.
- * 4. If the header is missing, poll via `scheduleFrame` until applied.
- * 5. On resize/orientation change, throttle updates with `requestAnimationFrame`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Observe device orientation/resize and run `callback` to apply orientation.
+ *
+ * The provided `callback` should return a Promise<boolean> or boolean indicating
+ * whether orientation was successfully applied. The helper exposes
+ * `window.applyBattleOrientation` for manual invocations and throttles
+ * resize/orientation events to avoid excessive layout work.
  *
  * @pseudocode
  * 1. Expose `window.applyBattleOrientation` which invokes `callback`.
- * 2. Poll via RAF until `callback` reports success.
- * 3. Attach listeners for `orientationchange` and `resize` and throttle via RAF.
+ * 2. Invoke `callback()` immediately; if it fails, start RAF polling until it succeeds.
+ * 3. Attach `orientationchange` and `resize` listeners that throttle via RAF and re-run `callback`.
  *
- * @param {() => Promise<boolean>} callback
+ * @param {() => Promise<boolean>} callback - Called to apply orientation; should resolve `true` on success.
+ * @returns {void}
  */
 /**
  * @summary TODO: Add summary
@@ -1044,27 +1035,19 @@ export async function applyStatLabels() {
  * @param {string | null} state The current battle state.
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Update the battle state badge with the current state text.
  *
- * @pseudocode
- * 1. Find `#battle-state-badge` and set its text content to the provided state.
+ * Updates the DOM element `#battle-state-badge` to reflect the provided
+ * `state`. This helper is defensive: if the badge is missing or a DOM
+ * operation throws, the function returns without propagating an error.
  *
- * @param {string|null} state
- */
-/**
- * @summary TODO: Add summary
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Query `#battle-state-badge`; if absent return early.
+ * 2. Set text to `State: <state>` when `state` is non-null, otherwise `State: —`.
+ * 3. Catch DOM errors and set fallback text `State: —`.
+ *
+ * @param {string|null} state - Current battle state or null when unknown.
+ * @returns {void}
  */
 export function updateBattleStateBadge(state) {
   const badge = document.getElementById("battle-state-badge");
@@ -1097,28 +1080,14 @@ export function updateBattleStateBadge(state) {
  * 3. Update text content with current state when available.
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Toggle insertion and visibility of the battle state badge based on a flag.
  *
  * @pseudocode
  * 1. If enabling, create the badge element and append to header/right area.
  * 2. If disabling, remove the badge.
  *
- * @param {boolean} enable
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {boolean} enable - True to show the badge, false to remove it.
+ * @returns {void}
  */
 export function setBattleStateBadgeEnabled(enable) {
   let badge = document.getElementById("battle-state-badge");
@@ -1143,41 +1112,17 @@ export function setBattleStateBadgeEnabled(enable) {
 }
 
 /**
- * Apply battle-related feature flags to the page.
+ * Apply active feature flags to the battle UI and subscribe for changes.
  *
  * @pseudocode
- * 1. Set mode/test-mode data attributes on `battleArea`.
- * 2. Toggle test banner visibility and various debug features.
- * 3. Reapply flags when `featureFlagsEmitter` emits changes.
+ * 1. Set `data-mode` and `data-testMode` on the `battleArea` element.
+ * 2. Toggle visibility of the `banner` according to `enableTestMode`.
+ * 3. Toggle inspector panels, viewport simulation and the debug panel per flags.
+ * 4. Subscribe to `featureFlagsEmitter` `change` events to reapply flags dynamically.
  *
- * @param {HTMLElement|null} battleArea
- * @param {HTMLElement|null} banner
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Apply feature flags to the battle page UI, toggling debug/test features.
- *
- * @pseudocode
- * 1. Set `data-mode` and `data-testMode` on `battleArea`.
- * 2. Toggle inspector, viewport simulation and debug panel per flags.
- * 3. Subscribe to `featureFlagsEmitter` to reapply on changes.
- *
- * @param {HTMLElement|null} battleArea
- * @param {HTMLElement|null} banner
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {HTMLElement|null} battleArea - The main battle container element.
+ * @param {HTMLElement|null} banner - Optional banner element to show/hide for test mode.
+ * @returns {void}
  */
 export function applyBattleFeatureFlags(battleArea, banner) {
   if (battleArea) {
@@ -1219,40 +1164,16 @@ export function applyBattleFeatureFlags(battleArea, banner) {
  *
 
 /**
- * Show a temporary hint for stat buttons.
- *
- * @pseudocode
- * 1. Skip if `localStorage.statHintShown` is set or unavailable.
- * 2. Trigger hover events on `#stat-help` for `durationMs` milliseconds.
- * 3. Record that the hint has been shown.
- *
- * @param {number} [durationMs=3000] Hover duration in milliseconds.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Show a temporary stat hint tooltip unless previously shown.
  *
  * @pseudocode
- * 1. Check `localStorage.statHintShown` and exit if present.
- * 2. Dispatch mouseenter on `#stat-help`, then schedule mouseleave after `durationMs`.
- * 3. Persist that the hint was shown.
+ * 1. Check `localStorage.statHintShown` and return if present.
+ * 2. Trigger `mouseenter` on `#stat-help` and schedule `mouseleave` after `durationMs`.
+ * 3. Record that the hint has been shown in `localStorage`.
  *
- * @param {number} [durationMs=3000]
- * @param {Function} [setTimeoutFn=globalThis.setTimeout]
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {number} [durationMs=3000] - Milliseconds to keep the hint visible.
+ * @param {Function} [setTimeoutFn=globalThis.setTimeout] - Optional timeout function (testable).
+ * @returns {void}
  */
 export function maybeShowStatHint(durationMs = 3000, setTimeoutFn = globalThis.setTimeout) {
   try {
