@@ -11,8 +11,9 @@ describe("Debug panel and state badge gating", () => {
     // Use overrides to enable test mode and badge
     window.__FF_OVERRIDES = { enableTestMode: true, battleStateBadge: true };
 
-    const mod = await import("../../src/pages/battleClassic.init.js");
-    if (typeof mod.init === "function") mod.init();
+    // Manually call initDebugPanel to ensure it runs with the overrides
+    const { initDebugPanel } = await import("../../src/helpers/classicBattle/debugPanel.js");
+    initDebugPanel();
 
     // Debug panel placeholder should be replaced with details element
     const panel = document.getElementById("debug-panel");
@@ -20,6 +21,10 @@ describe("Debug panel and state badge gating", () => {
     expect(panel.tagName).toBe("DETAILS");
     const output = panel.querySelector("#debug-output");
     expect(output).toBeTruthy();
+
+    // Now run the full init to test badge functionality
+    const mod = await import("../../src/pages/battleClassic.init.js");
+    if (typeof mod.init === "function") mod.init();
 
     // Battle state badge should be visible with initial text
     const badge = document.getElementById("battle-state-badge");

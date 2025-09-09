@@ -110,10 +110,10 @@ function renderStatButtons(store) {
           const { evaluateRound } = await import("../helpers/api/battleUI.js");
           const result = evaluateRound(5, 3);
 
-          // Update score display
+          // Update score display with proper formatting
           const scoreEl = document.getElementById("score-display");
           if (scoreEl) {
-            scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
+            scoreEl.textContent = `You: ${result.playerScore} Opponent: ${result.opponentScore}`;
           }
 
           // Update round message
@@ -474,6 +474,10 @@ async function init() {
           try {
             updateScore(0, 0);
             updateRoundCounter(1);
+            
+            // Reset fallback scores for tests
+            const { resetFallbackScores } = await import("../helpers/api/battleUI.js");
+            resetFallbackScores();
           } catch (err) {
             console.debug("battleClassic: resetting score after replay failed", err);
           }

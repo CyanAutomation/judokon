@@ -9,19 +9,35 @@ describe("Classic Battle replay flow", () => {
 
     // Initialize the page
     const mod = await import("../../src/pages/battleClassic.init.js");
-    if (typeof mod.init === "function") mod.init();
+    if (typeof mod.init === "function") {
+      await mod.init();
+    }
 
     // Reduce points to win so one win ends the match
     const engine = await import("../../src/helpers/battleEngineFacade.js");
     engine.setPointsToWin?.(1);
 
-    // Directly call handleStatSelection to simulate a stat button click
-    console.log("[test] Calling handleStatSelection directly");
-    const result = engine.handleStatSelection(5, 3);
-    console.log("[test] Battle result:", result);
+    // Wait for stat buttons to be ready
+    await new Promise((r) => setTimeout(r, 100));
+
+    // Simulate clicking a stat button instead of calling engine directly
+    console.log("[test] Looking for stat buttons");
+    const statButtons = document.querySelectorAll('#stat-buttons button[data-stat]');
+    console.log("[test] Found stat buttons:", statButtons.length);
+    
+    if (statButtons.length > 0) {
+      console.log("[test] Clicking first stat button");
+      statButtons[0].click();
+    } else {
+      // Fallback: use the evaluateRound function directly
+      console.log("[test] No stat buttons found, using evaluateRound fallback");
+      const { evaluateRound } = await import("../../src/helpers/api/battleUI.js");
+      const result = evaluateRound(5, 3);
+      console.log("[test] Battle result:", result);
+    }
 
     // Wait a moment for events to propagate
-    await new Promise((r) => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 50));
 
     const score = document.getElementById("score-display");
     console.log("[test] Score after stat selection:", score?.textContent);

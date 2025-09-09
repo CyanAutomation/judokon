@@ -8,10 +8,13 @@ describe("Classic Battle quit flow", () => {
     document.documentElement.innerHTML = html;
 
     const mod = await import("../../src/pages/battleClassic.init.js");
-    if (typeof mod.init === "function") mod.init();
+    if (typeof mod.init === "function") {
+      await mod.init();
+    }
 
     const quit = document.getElementById("quit-button");
     expect(quit).toBeTruthy();
+    console.log("[test] Clicking quit button");
     quit.click();
 
     // Wait for modal confirm button to appear
@@ -19,7 +22,18 @@ describe("Classic Battle quit flow", () => {
       const start = Date.now();
       const tick = () => {
         const el = document.getElementById("confirm-quit-button");
-        if (el) return resolveBtn(el);
+        if (el) {
+          console.log("[test] Found confirm button");
+          return resolveBtn(el);
+        }
+        // Check if any modal elements exist
+        const modal = document.querySelector('[role="dialog"]');
+        const modalTitle = document.getElementById("quit-modal-title");
+        console.log("[test] Checking for modal elements:", {
+          modal: !!modal,
+          modalTitle: !!modalTitle,
+          bodyChildren: document.body.children.length
+        });
         if (Date.now() - start > 1000) return reject(new Error("confirm not found"));
         setTimeout(tick, 10);
       };

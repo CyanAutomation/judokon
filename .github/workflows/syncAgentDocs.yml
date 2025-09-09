@@ -11,6 +11,7 @@ on:
       - AGENTS.md
       - GEMINI.md
       - .github/copilot-instructions.md
+      - .amazonq/rules/AgentQ.md
   workflow_dispatch: {}
 
 concurrency:
@@ -264,6 +265,7 @@ jobs:
           set -euo pipefail
           diff -u AGENTS.md GEMINI.md || { echo "GEMINI.md is out of sync with AGENTS.md"; exit 1; }
           diff -u AGENTS.md .github/copilot-instructions.md || { echo ".github/copilot-instructions.md is out of sync with AGENTS.md"; exit 1; }
+          diff -u AGENTS.md .amazonq/rules/AgentQ.md || { echo ".amazonq/rules/AgentQ.md is out of sync with AGENTS.md"; exit 1; }
       - name: Write verification summary
         if: success()
         run: |

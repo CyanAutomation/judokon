@@ -105,7 +105,7 @@ export function evaluateRound(playerVal, opponentVal) {
           // Ensure the element has the expected text content structure
           // even if syncScoreDisplay creates spans
           scoreEl.innerHTML = "";
-          scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
+          scoreEl.textContent = `You: ${result.playerScore} Opponent: ${result.opponentScore}`;
         }
       }
     } catch (e) {
@@ -148,7 +148,7 @@ export function evaluateRound(playerVal, opponentVal) {
         if (scoreEl) {
           // Ensure the element has the expected text content structure
           scoreEl.innerHTML = "";
-          scoreEl.textContent = `You: ${fallbackPlayerScore}\nOpponent: ${fallbackOpponentScore}`;
+          scoreEl.textContent = `You: ${fallbackPlayerScore} Opponent: ${fallbackOpponentScore}`;
         }
 
         if (messageEl && message) {
