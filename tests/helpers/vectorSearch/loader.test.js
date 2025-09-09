@@ -24,7 +24,12 @@ describe("vectorSearch loader helpers", () => {
       vectorLength: 2,
       items: sample.map(({ id, text, source, tags }) => ({ id, text, source, tags }))
     };
-    const vec = Buffer.from(Int8Array.from(sample.flatMap((s) => s.embedding)).buffer);
+    // Quantize sample embeddings to Int8 with rounding and clamping
+    const vec = Buffer.from(
+      Int8Array.from(
+        sample.flatMap((s) => s.embedding.map((v) => Math.max(-128, Math.min(127, Math.round(v)))))
+      ).buffer
+    );
     const { readFile } = await import("node:fs/promises");
     readFile.mockImplementation((path) => {
       if (String(path).includes("offline_rag_metadata.json")) {
