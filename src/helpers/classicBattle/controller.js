@@ -1,7 +1,13 @@
 import { createBattleStore, startRound } from "./roundManager.js";
 import { initClassicBattleOrchestrator } from "./orchestrator.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "../featureFlags.js";
-import { startCoolDown, pauseTimer, resumeTimer } from "../battleEngineFacade.js";
+import {
+  startCoolDown,
+  pauseTimer,
+  resumeTimer,
+  createBattleEngine,
+  getEngine
+} from "../battleEngineFacade.js";
 import { emitBattleEvent } from "./battleEvents.js";
 
 /**
@@ -37,7 +43,15 @@ export class ClassicBattleController extends EventTarget {
     await initFeatureFlags();
     this.#emitFeatureFlags();
     featureFlagsEmitter.addEventListener("change", () => this.#emitFeatureFlags());
-    await initClassicBattleOrchestrator(this.store, () => this.startRound());
+
+    // Create the battle engine and assign it to the store
+    createBattleEngine();
+    this.store.engine = getEngine();
+
+    // Initialize orchestrator and assign it to the store
+    this.store.orchestrator = await initClassicBattleOrchestrator(this.store, () =>
+      this.startRound()
+    );
   }
 
   #emitFeatureFlags() {

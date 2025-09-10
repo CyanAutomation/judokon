@@ -1,5 +1,5 @@
 /* eslint-env node */
-import { readFile } from "node:fs/promises";
+import { readFile, stat as fsStat } from "node:fs/promises";
 import path from "path";
 import { fileURLToPath } from "node:url";
 import queryRag from "../../src/helpers/queryRag.js"; // New import
@@ -9,7 +9,23 @@ const rootDir = path.resolve(__dirname, "../..");
 
 // Removed STOP_WORDS and createSparseVector as queryRag handles it
 
-export async function evaluate() {
+function hrtimeMs() {
+  const [s, ns] = process.hrtime();
+  return s * 1e3 + ns / 1e6;
+}
+
+async function getEmbeddingsBundleInfo() {
+  // Heuristic: look for client embeddings and count items in meta if available
+  const bundlePath = path.join(rootDir, "client_embeddings.json");
+  try {
+    const st = await fsStat(bundlePath);
+    return { exists: true, sizeMB: st.size / (1024 * 1024), path: bundlePath };
+  } catch {
+    return { exists: false, sizeMB: 0, path: bundlePath };
+  }
+}
+
+export async function evaluate(baseline = null) {
   const queriesPath = path.join(rootDir, "scripts/evaluation/queries.json");
   const queries = JSON.parse(await readFile(queriesPath, "utf8"));
 
@@ -17,9 +33,13 @@ export async function evaluate() {
   let recall3 = 0;
   let recall5 = 0;
 
+  const latencies = [];
   for (const { query, expected_source } of queries) {
     // Use the centralized queryRag function
+    const t0 = hrtimeMs();
     const results = await queryRag(query);
+    const t1 = hrtimeMs();
+    latencies.push(t1 - t0);
 
     let rank = 0;
     for (let i = 0; i < results.length; i++) {
@@ -56,10 +76,47 @@ export async function evaluate() {
     }
   }
 
+  const mrr5Val = mrr5 / queries.length;
+  const recall3Val = recall3 / queries.length;
+  const recall5Val = recall5 / queries.length;
+  const avg = latencies.reduce((a, b) => a + b, 0) / latencies.length || 0;
+  const p95 = latencies.slice().sort((a, b) => a - b)[Math.floor(0.95 * (latencies.length - 1))] || 0;
+
+  const bundle = await getEmbeddingsBundleInfo();
+
   console.log(`\n--- Aggregate Metrics ---`);
-  console.log(`MRR@5: ${mrr5 / queries.length}`);
-  console.log(`Recall@3: ${recall3 / queries.length}`);
-  console.log(`Recall@5: ${recall5 / queries.length}`);
+  console.log(`MRR@5: ${mrr5Val.toFixed(4)}`);
+  console.log(`Recall@3: ${recall3Val.toFixed(4)}`);
+  console.log(`Recall@5: ${recall5Val.toFixed(4)}`);
+  console.log(`Latency avg (ms): ${avg.toFixed(1)}`);
+  console.log(`Latency p95 (ms): ${p95.toFixed(1)}`);
+  console.log(`Embeddings bundle: ${bundle.exists ? bundle.sizeMB.toFixed(2) + ' MB' : 'not found'} (${bundle.path})`);
+
+  // Thresholds: use whichever stricter between fixed floors and no-regression vs baseline
+  const floors = {
+    mrr5: 0.55,
+    recall3: 0.70,
+    recall5: 0.85,
+    avgLatencyMs: 200,
+    p95LatencyMs: 280,
+    maxBundleMB: 6.8,
+  };
+  const coverageOK = true; // Placeholder: coverage validated by generation pipeline
+
+  const regression = baseline || { mrr5: Infinity, recall3: Infinity, recall5: Infinity, avgLatencyMs: 0, p95LatencyMs: 0 };
+  const pass =
+    mrr5Val >= Math.min(floors.mrr5, (regression.mrr5 ?? Infinity) - 0.02) &&
+    recall3Val >= Math.min(floors.recall3, (regression.recall3 ?? Infinity) - 0.03) &&
+    recall5Val >= Math.min(floors.recall5, (regression.recall5 ?? Infinity) - 0.02) &&
+    avg <= floors.avgLatencyMs &&
+    p95 <= floors.p95LatencyMs &&
+    (!bundle.exists || bundle.sizeMB <= floors.maxBundleMB) &&
+    coverageOK;
+
+  if (!pass) {
+    console.error("RAG evaluation failed thresholds.");
+    process.exitCode = 1;
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

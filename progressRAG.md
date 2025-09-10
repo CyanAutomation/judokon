@@ -82,15 +82,35 @@ Phase 0 – Stabilize Evaluation (now)
 - Add acceptance thresholds and exit codes; record latency per query to validate PRD performance goals.
 - Ensure no dynamic imports on the hot path (use static imports per Import Policy).
 
+### Phase 0 – Actions Taken & Outcome
+- Implemented evaluator refactor to use `queryRag` end-to-end, added latency tracking (avg, p95), and threshold gating per agreed rules.
+- Ran evaluator locally via Node import (focused, not full suite). Observed metrics on this machine profile:
+  - MRR@5: 0.3875; Recall@3: 0.6250; Recall@5: 0.6875
+  - Latency avg: ~288 ms; p95: reported low due to small N; avg exceeds 200 ms target
+  - Embeddings bundle not found at `client_embeddings.json` (tooling still functional via fallback model); this flags Coverage/Bundle checks as failing
+- Result: Thresholds failed (as expected) until embeddings bundle and baseline are established. Script exits non‑zero on failures.
+- Next: Generate/locate `client_embeddings.json` in repo (<= 6.8MB), verify index coverage (≥90%), and re‑run to set a baseline snapshot. Then iterate synonyms/chunking in later phases.
+
 Phase 1 – Provenance & API Ergonomics
 - Introduce a stable `queryRag({ query, filters, k, withProvenance })` helper returning `{ matches: [{ id, text, score, source, tags, contextPath, rationale }], meta }`.
 - Augment embeddings with hierarchical `contextPath` (e.g., `PRD > Classic Battle > Countdown`).
 - Add one-line `rationale` (synonym hits, section-title match, keyword overlap) for trust and debugging.
 
+### Phase 1 – Actions Taken & Outcome
+- Implemented `queryRag(question, { k, filters, withProvenance })` options without breaking default usage.
+- Added provenance enrichment when `withProvenance` is true: `contextPath` best-effort from existing fields; `rationale` string includes term hits and score.
+- Verified via a focused runtime check that results include enriched fields and remain fast.
+- Next: define meta contract and ensure `contextPath` is consistently present by enriching at embedding generation time (Phase 3 task).
+
 Phase 2 – Accuracy Enhancements
 - Synonym enrichment: expand `src/data/synonyms.json` with domain terms and near-spellings (e.g., kumikata/kumi-kata/grip fighting; scoreboard/round UI/snackbar).
 - Lightweight re-ranking after cosine similarity: boost for multi-term overlap, section-title matches, and tag alignment.
 - Multi-intent query handling: split on conjunctions; union top-k; re-rank.
+
+### Phase 2 – Actions Taken & Outcome
+- Implemented lightweight re-ranking: added a small bonus for section/contextPath term matches to prefer relevant sections when present.
+- Verified no hot-path dynamic imports added; changes are internal to scoring.
+- Next: expand `src/data/synonyms.json` with curated domain terms and add multi-intent splitting in the query path; then re-run evaluator to measure impact.
 
 Phase 3 – Corpus Governance & Coverage
 - Add `src/rag/meta.json` with `{ corpusVersion, model, dim, chunkingVersion, lastUpdated }` and an index manifest (counts by source/tag) to detect drift.

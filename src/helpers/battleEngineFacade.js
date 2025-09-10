@@ -378,6 +378,18 @@ export const isMatchPoint = () => requireEngine().isMatchPoint?.() ?? false;
  */
 export const getSeed = () => requireEngine().getSeed?.();
 
+/**
+ * Get the active battle engine instance.
+ *
+ * @pseudocode
+ * 1. Call requireEngine() to get the active engine.
+ * 2. Return the engine instance.
+ *
+ * @returns {IBattleEngine} The active battle engine instance.
+ * @throws {Error} When no engine has been created.
+ */
+export const getEngine = () => requireEngine();
+
 // Internal test helper removed; tests should instantiate engines via `createBattleEngine()`.
 
 /**

@@ -237,7 +237,13 @@ async function resetMatch() {
   // Initialize orchestrator after sync work without blocking callers
   resetPromise = next.then(async () => {
     try {
-      await battleOrchestrator.initClassicBattleOrchestrator?.(store, startRoundWrapper);
+      const orchestrator = await battleOrchestrator.initClassicBattleOrchestrator?.(
+        store,
+        startRoundWrapper
+      );
+      if (orchestrator) {
+        store.orchestrator = orchestrator;
+      }
     } catch (err) {
       console.error("Failed to initialize classic battle orchestrator:", err);
       // In case of orchestrator failure, ensure we can still start battles via fallback
@@ -1928,6 +1934,14 @@ export async function init() {
   restorePointsToWin();
   await setupFlags();
   subscribeEngine();
+
+  // Assign the engine to the store for debug access
+  try {
+    if (typeof engineFacade.getEngine === "function") {
+      store.engine = engineFacade.getEngine();
+    }
+  } catch {}
+
   await resetMatch();
   await resetPromise;
   try {

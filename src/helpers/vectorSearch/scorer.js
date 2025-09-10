@@ -2,6 +2,7 @@ import { loadEmbeddings } from "./loader.js";
 
 /** Bonus applied when the query text contains exact terms from the entry. */
 const EXACT_MATCH_BONUS = 0.1;
+const SECTION_TITLE_BONUS = 0.05;
 
 function resolveFirstValid(entries) {
   if (entries === null) return { kind: "null" };
@@ -198,7 +199,9 @@ export function scoreEntries(entries, queryVector, queryText) {
       const normalized = (sim + 1) / 2;
       const text = entry.text?.toLowerCase() ?? "";
       const hasTerm = terms.some((t) => text.includes(t));
-      const bonus = hasTerm ? EXACT_MATCH_BONUS : 0;
+      const section = (entry.section || entry.contextPath || "").toLowerCase();
+      const hasSectionHit = section && terms.some((t) => section.includes(t));
+      const bonus = (hasTerm ? EXACT_MATCH_BONUS : 0) + (hasSectionHit ? SECTION_TITLE_BONUS : 0);
       return { score: Math.min(1, normalized + bonus), ...entry };
     })
     .sort((a, b) => b.score - a.score);
