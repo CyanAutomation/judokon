@@ -1,0 +1,409 @@
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-import { getStatValue } from "../../battle/index.js";
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js:import { emitBattleEvent, onBattleEvent, offBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-import { resolveRound } from "../roundResolver.js";
+--
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-    await dispatchOutcome(outcomeEvent, machine);
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js:    emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-  } catch {}
+--
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-  } catch {}
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js:  emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-}
+--
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js-} from "./roundDecisionHelpers.js";
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js:import { emitBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js-import { guard, guardAsync } from "../guard.js";
+--
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js-      guard(() =>
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js:        emitBattleEvent("scoreboardShowMessage", "No selection detected. Interrupting round.")
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js-      );
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js:      guard(() => emitBattleEvent("debugPanelUpdate"));
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js-      await guardAsync(() => machine.dispatch("interrupt", { reason: "noSelection" }));
+--
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js:import { emitBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js-import { cleanupTimers } from "../selectionHandler.js";
+--
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js-
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js:  emitBattleEvent("scoreboardClearMessage");
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js:  emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js-
+--
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js-  if (payload?.reason) {
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js:    emitBattleEvent("scoreboardShowMessage", `Match interrupted: ${payload.reason}`);
+src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js-  }
+--
+src/helpers/classicBattle/stateHandlers/matchOverEnter.js:import { emitBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/matchOverEnter.js-
+--
+src/helpers/classicBattle/stateHandlers/matchOverEnter.js-export async function matchOverEnter() {
+src/helpers/classicBattle/stateHandlers/matchOverEnter.js:  emitBattleEvent("matchOver");
+src/helpers/classicBattle/stateHandlers/matchOverEnter.js-}
+--
+src/helpers/classicBattle/stateHandlers/roundModificationEnter.js:import { emitBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/roundModificationEnter.js-
+--
+src/helpers/classicBattle/stateHandlers/roundModificationEnter.js-export async function roundModificationEnter(machine, payload) {
+src/helpers/classicBattle/stateHandlers/roundModificationEnter.js:  emitBattleEvent("scoreboardClearMessage");
+src/helpers/classicBattle/stateHandlers/roundModificationEnter.js:  emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/stateHandlers/roundModificationEnter.js-  if (payload?.modification) {
+src/helpers/classicBattle/stateHandlers/roundModificationEnter.js:    emitBattleEvent("scoreboardShowMessage", `Round modified: ${payload.modification}`);
+src/helpers/classicBattle/stateHandlers/roundModificationEnter.js-  }
+--
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js:import { emitBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js-import { startTimer } from "../timerService.js";
+--
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js-  // prompt:chooseStat - Enable stat buttons
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js:  emitBattleEvent("statButtons:enable");
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js-
+--
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js:import { emitBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js-
+--
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js-export async function waitingForPlayerActionExit() {
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js:  emitBattleEvent("statButtons:disable");
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js-}
+--
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js:import { emitBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js-import { exposeDebugState, readDebugState } from "../debugHooks.js";
+--
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js-
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js:  emitBattleEvent("scoreboardClearMessage");
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js:  emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js-
+--
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js-  if (payload?.reason) {
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js:    emitBattleEvent("scoreboardShowMessage", `Round interrupted: ${payload.reason}`);
+src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js-  }
+--
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js:import { emitBattleEvent } from "../battleEvents.js";
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js-import isStateTransition from "../isStateTransition.js";
+--
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js-  if (typeof doResetGame === "function") doResetGame();
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js:  emitBattleEvent("scoreboardClearMessage");
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js:  emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js-  try {
+--
+src/helpers/classicBattle/snackbar.js-  showSnackbar(t("ui.selectMove"));
+src/helpers/classicBattle/snackbar.js:  safeCall(() => battleEvents.emitBattleEvent("roundPrompt"));
+src/helpers/classicBattle/snackbar.js-  safeCall(() => {
+--
+src/helpers/classicBattle/handleRoundError.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/handleRoundError.js-import { guard, guardAsync } from "./guard.js";
+--
+src/helpers/classicBattle/handleRoundError.js-export async function handleRoundError(machine, reason, err) {
+src/helpers/classicBattle/handleRoundError.js:  guard(() => emitBattleEvent("scoreboardShowMessage", "Round error. Recovering…"));
+src/helpers/classicBattle/handleRoundError.js:  guard(() => emitBattleEvent("debugPanelUpdate"));
+src/helpers/classicBattle/handleRoundError.js-  await guardAsync(() => machine.dispatch("interrupt", { reason, error: err?.message }));
+--
+src/helpers/classicBattle/roundManager.js-import { resetSkipState, setSkipHandler } from "./skipHandler.js";
+src/helpers/classicBattle/roundManager.js:import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/roundManager.js-import { readDebugState, exposeDebugState } from "./debugHooks.js";
+--
+src/helpers/classicBattle/roundManager.js-  }
+src/helpers/classicBattle/roundManager.js:  emitBattleEvent("roundStarted", { store, roundNumber });
+src/helpers/classicBattle/roundManager.js-  return { ...cards, roundNumber };
+--
+src/helpers/classicBattle/roundManager.js-    try {
+src/helpers/classicBattle/roundManager.js:      emitBattleEvent("nextRoundTimerReady");
+src/helpers/classicBattle/roundManager.js-    } catch {}
+--
+src/helpers/classicBattle/roundManager.js-  try {
+src/helpers/classicBattle/roundManager.js:    emitBattleEvent("control.countdown.started", {
+src/helpers/classicBattle/roundManager.js-      durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000
+--
+src/helpers/classicBattle/roundManager.js-    controls.resolveReady = () => {
+src/helpers/classicBattle/roundManager.js:      emitBattleEvent("nextRoundTimerReady");
+src/helpers/classicBattle/roundManager.js-      resolve();
+--
+src/helpers/classicBattle/roundManager.js-    try {
+src/helpers/classicBattle/roundManager.js:      emitBattleEvent("nextRoundTimerReady");
+src/helpers/classicBattle/roundManager.js-    } catch {}
+--
+src/helpers/classicBattle/roundManager.js-    try {
+src/helpers/classicBattle/roundManager.js:      emitBattleEvent("cooldown.timer.expired");
+src/helpers/classicBattle/roundManager.js:      emitBattleEvent("control.countdown.completed");
+src/helpers/classicBattle/roundManager.js-    } catch {}
+--
+src/helpers/classicBattle/roundManager.js-    try {
+src/helpers/classicBattle/roundManager.js:      emitBattleEvent("cooldown.timer.tick", {
+src/helpers/classicBattle/roundManager.js-        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
+--
+src/helpers/classicBattle/roundManager.js-      maybeMock("roundEnded", (detail) => {
+src/helpers/classicBattle/roundManager.js:        emitBattleEvent("roundResolved", detail);
+src/helpers/classicBattle/roundManager.js-      });
+src/helpers/classicBattle/roundManager.js-      maybeMock("matchEnded", (detail) => {
+src/helpers/classicBattle/roundManager.js:        emitBattleEvent("matchOver", detail);
+src/helpers/classicBattle/roundManager.js-      });
+--
+src/helpers/classicBattle/selectionHandler.js-import { chooseOpponentStat } from "../api/battleUI.js";
+src/helpers/classicBattle/selectionHandler.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/selectionHandler.js-import { dispatchBattleEvent } from "./eventDispatcher.js";
+--
+src/helpers/classicBattle/selectionHandler.js-    try {
+src/helpers/classicBattle/selectionHandler.js:      emitBattleEvent("input.ignored", { kind: "duplicateSelection" });
+src/helpers/classicBattle/selectionHandler.js-    } catch {}
+--
+src/helpers/classicBattle/selectionHandler.js-      try {
+src/helpers/classicBattle/selectionHandler.js:        emitBattleEvent("input.ignored", { kind: "invalidState", state: current });
+src/helpers/classicBattle/selectionHandler.js-      } catch {}
+--
+src/helpers/classicBattle/selectionHandler.js- * @pseudocode
+src/helpers/classicBattle/selectionHandler.js: * 1. Emit `statSelected` via `emitBattleEvent`.
+src/helpers/classicBattle/selectionHandler.js- * 2. In Vitest, clear the next-round timer and round message elements.
+--
+src/helpers/classicBattle/selectionHandler.js-  };
+src/helpers/classicBattle/selectionHandler.js:  emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts: eventOpts });
+src/helpers/classicBattle/selectionHandler.js-  // PRD taxonomy: mirror selection lock event (suppress in Vitest to keep
+--
+src/helpers/classicBattle/selectionHandler.js-    try {
+src/helpers/classicBattle/selectionHandler.js:      emitBattleEvent("round.selection.locked", { statKey: stat, source: "player" });
+src/helpers/classicBattle/selectionHandler.js-    } catch {}
+--
+src/helpers/classicBattle/battleEvents.js- */
+src/helpers/classicBattle/battleEvents.js:export function emitBattleEvent(type, detail) {
+src/helpers/classicBattle/battleEvents.js-  try {
+--
+src/helpers/classicBattle/battleEvents.js- *    share a single event bus without importing runtime instances.
+src/helpers/classicBattle/battleEvents.js: * 2. Expose small helpers (`onBattleEvent`, `offBattleEvent`, `emitBattleEvent`)
+src/helpers/classicBattle/battleEvents.js- *    to keep call-sites terse and readable.
+--
+src/helpers/classicBattle/eventDispatcher.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/eventDispatcher.js-import { readDebugState } from "./debugHooks.js";
+--
+src/helpers/classicBattle/eventDispatcher.js-          payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
+src/helpers/classicBattle/eventDispatcher.js:        emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
+src/helpers/classicBattle/eventDispatcher.js-      } catch {
+--
+src/helpers/classicBattle/eventDispatcher.js-      console.error("Error dispatching battle event:", eventName, error);
+src/helpers/classicBattle/eventDispatcher.js:      emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/eventDispatcher.js-    } catch {
+--
+src/helpers/classicBattle/stateTransitionListeners.js- */
+src/helpers/classicBattle/stateTransitionListeners.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/stateTransitionListeners.js-import { logStateTransition } from "./battleDebug.js";
+--
+src/helpers/classicBattle/stateTransitionListeners.js-    } catch {}
+src/helpers/classicBattle/stateTransitionListeners.js:    emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/stateTransitionListeners.js-  };
+--
+src/helpers/classicBattle/timerService.js-import { autoSelectStat } from "./autoSelectStat.js";
+src/helpers/classicBattle/timerService.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/timerService.js-import { isEnabled } from "../featureFlags.js";
+--
+src/helpers/classicBattle/timerService.js-  if (!snapState || snapState === "cooldown") {
+src/helpers/classicBattle/timerService.js:    emitBattleEvent("countdownFinished");
+src/helpers/classicBattle/timerService.js-  }
+--
+src/helpers/classicBattle/timerService.js-    try {
+src/helpers/classicBattle/timerService.js:      emitBattleEvent("round.timer.expired");
+src/helpers/classicBattle/timerService.js-    } catch {}
+--
+src/helpers/classicBattle/timerService.js-    try {
+src/helpers/classicBattle/timerService.js:      emitBattleEvent("roundTimeout");
+src/helpers/classicBattle/timerService.js-    } catch {}
+--
+src/helpers/classicBattle/timerService.js-    try {
+src/helpers/classicBattle/timerService.js:      emitBattleEvent("round.timer.tick", {
+src/helpers/classicBattle/timerService.js-        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
+--
+src/helpers/classicBattle/roundUI.js-import { handleReplay, isOrchestrated } from "./roundManager.js";
+src/helpers/classicBattle/roundUI.js:import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
+src/helpers/classicBattle/roundUI.js-import { getCardStatValue } from "./cardStatUtils.js";
+--
+src/helpers/classicBattle/roundUI.js-    }
+src/helpers/classicBattle/roundUI.js:    emitBattleEvent("statButtons:disable");
+src/helpers/classicBattle/roundUI.js-  });
+--
+src/helpers/classicBattle/roundUI.js-      } catch {}
+src/helpers/classicBattle/roundUI.js:      emitBattleEvent("matchOver");
+src/helpers/classicBattle/roundUI.js-    } else {
+--
+src/helpers/classicBattle/roundUI.js-    }
+src/helpers/classicBattle/roundUI.js:    emitBattleEvent("statButtons:disable");
+src/helpers/classicBattle/roundUI.js-  });
+--
+src/helpers/classicBattle/roundUI.js-        } catch {}
+src/helpers/classicBattle/roundUI.js:        emitBattleEvent("matchOver");
+src/helpers/classicBattle/roundUI.js-      } catch {}
+--
+src/helpers/classicBattle/uiService.js-  activeCountdown = null;
+src/helpers/classicBattle/uiService.js:  battleEvents.emitBattleEvent("countdownFinished");
+src/helpers/classicBattle/uiService.js-}
+--
+src/helpers/classicBattle/engineBridge.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/engineBridge.js-import * as engineFacade from "../battleEngineFacade.js";
+--
+src/helpers/classicBattle/engineBridge.js-/**
+src/helpers/classicBattle/engineBridge.js: * Bridge events emitted by the battle engine to classic-battle `emitBattleEvent` names.
+src/helpers/classicBattle/engineBridge.js- *
+--
+src/helpers/classicBattle/engineBridge.js- * 2. Subscribe to engine events (`roundEnded`, `matchEnded`, `roundStarted`, `timerTick`).
+src/helpers/classicBattle/engineBridge.js: * 3. For each engine event, emit corresponding `emitBattleEvent` with normalized detail.
+src/helpers/classicBattle/engineBridge.js- */
+--
+src/helpers/classicBattle/engineBridge.js-    onEngine("roundEnded", (detail) => {
+src/helpers/classicBattle/engineBridge.js:      emitBattleEvent("roundResolved", detail);
+src/helpers/classicBattle/engineBridge.js-      // Also emit display.score.update for scoreboard
+--
+src/helpers/classicBattle/engineBridge.js-        const opponent = Number(detail?.opponentScore) || 0;
+src/helpers/classicBattle/engineBridge.js:        emitBattleEvent("display.score.update", { player, opponent });
+src/helpers/classicBattle/engineBridge.js-      } catch {}
+--
+src/helpers/classicBattle/engineBridge.js-    onEngine("matchEnded", (detail) => {
+src/helpers/classicBattle/engineBridge.js:      emitBattleEvent("matchOver", detail);
+src/helpers/classicBattle/engineBridge.js-    });
+--
+src/helpers/classicBattle/engineBridge.js-      // Emit `round.started({ roundIndex, availableStats })`
+src/helpers/classicBattle/engineBridge.js:      emitBattleEvent("round.started", {
+src/helpers/classicBattle/engineBridge.js-        roundIndex: Number(detail?.round) || 0,
+--
+src/helpers/classicBattle/engineBridge.js-      if (detail?.phase === "round") {
+src/helpers/classicBattle/engineBridge.js:        emitBattleEvent("round.timer.tick", { remainingMs: Math.max(0, remaining) * 1000 });
+src/helpers/classicBattle/engineBridge.js-      } else if (detail?.phase === "cooldown") {
+src/helpers/classicBattle/engineBridge.js-        // Prefer orchestrator emission for cooldown ticks, but mirror here when available
+src/helpers/classicBattle/engineBridge.js:        emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, remaining) * 1000 });
+src/helpers/classicBattle/engineBridge.js-      }
+--
+src/helpers/classicBattle/engineBridge.js-            : "none";
+src/helpers/classicBattle/engineBridge.js:      emitBattleEvent("match.concluded", {
+src/helpers/classicBattle/engineBridge.js-        winner,
+--
+src/helpers/classicBattle/roundResolver.js-import { dispatchBattleEvent } from "./eventDispatcher.js";
+src/helpers/classicBattle/roundResolver.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/roundResolver.js-import * as engineFacade from "../battleEngineFacade.js";
+--
+src/helpers/classicBattle/roundResolver.js-export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
+src/helpers/classicBattle/roundResolver.js:  emitBattleEvent("roundResolved", { store, stat, playerVal, opponentVal, result });
+src/helpers/classicBattle/roundResolver.js-  try {
+src/helpers/classicBattle/roundResolver.js:    emitBattleEvent("round.evaluated", {
+src/helpers/classicBattle/roundResolver.js-      statKey: stat,
+--
+src/helpers/classicBattle/roundResolver.js-    const opponent = Number(result?.opponentScore) || 0;
+src/helpers/classicBattle/roundResolver.js:    emitBattleEvent("display.score.update", { player, opponent });
+src/helpers/classicBattle/roundResolver.js-    try {
+--
+src/helpers/classicBattle/roundResolver.js-  } catch {}
+src/helpers/classicBattle/roundResolver.js:  emitBattleEvent("opponentReveal");
+src/helpers/classicBattle/roundResolver.js-}
+--
+src/helpers/classicBattle/autoSelectHandlers.js-import { showSnackbar } from "../showSnackbar.js";
+src/helpers/classicBattle/autoSelectHandlers.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/autoSelectHandlers.js-import { dispatchBattleEvent } from "./eventDispatcher.js";
+--
+src/helpers/classicBattle/autoSelectHandlers.js-      }
+src/helpers/classicBattle/autoSelectHandlers.js:      emitBattleEvent("statSelectionStalled");
+src/helpers/classicBattle/autoSelectHandlers.js-    } catch {}
+--
+src/helpers/classicBattle/roundSelectModal.js-import { isTestModeEnabled } from "../testModeUtils.js";
+src/helpers/classicBattle/roundSelectModal.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/roundSelectModal.js-import { dispatchBattleEvent } from "./eventDispatcher.js";
+--
+src/helpers/classicBattle/roundSelectModal.js-    if (emitEvents) {
+src/helpers/classicBattle/roundSelectModal.js:      emitBattleEvent("startClicked");
+src/helpers/classicBattle/roundSelectModal.js-      await dispatchBattleEvent("startClicked");
+--
+src/helpers/classicBattle/roundSelectModal.js-  modal.open();
+src/helpers/classicBattle/roundSelectModal.js:  emitBattleEvent("roundOptionsReady");
+src/helpers/classicBattle/roundSelectModal.js-  // Give a microtask tick so any asynchronous tooltip initialization
+--
+src/helpers/classicBattle/testHooks.js:import { emitBattleEvent, __resetBattleEventTarget } from "./battleEvents.js";
+src/helpers/classicBattle/testHooks.js-import { stopTimer } from "../battleEngineFacade.js";
+--
+src/helpers/classicBattle/testHooks.js-  try {
+src/helpers/classicBattle/testHooks.js:    emitBattleEvent("roundTimeout");
+src/helpers/classicBattle/testHooks.js-  } catch {}
+--
+src/helpers/classicBattle/testHooks.js-  try {
+src/helpers/classicBattle/testHooks.js:    const { emitBattleEvent } = await import("./battleEvents.js");
+src/helpers/classicBattle/testHooks.js:    emitBattleEvent("statSelectionStalled");
+src/helpers/classicBattle/testHooks.js-  } catch {}
+--
+src/helpers/classicBattle/orchestrator.js-import { resetGame as resetGameLocal, startRound as startRoundLocal } from "./roundManager.js";
+src/helpers/classicBattle/orchestrator.js:import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/orchestrator.js-import { domStateListener, createDebugLogListener } from "./stateTransitionListeners.js";
+--
+src/helpers/classicBattle/orchestrator.js-  try {
+src/helpers/classicBattle/orchestrator.js:    emitBattleEvent("debug.transition", { from, to, trigger: event });
+src/helpers/classicBattle/orchestrator.js-    const snap = getStateSnapshot();
+src/helpers/classicBattle/orchestrator.js:    emitBattleEvent("debug.state.snapshot", { state: snap?.state || to, context: snap || {} });
+src/helpers/classicBattle/orchestrator.js-  } catch {
+--
+src/helpers/classicBattle/orchestrator.js-    try {
+src/helpers/classicBattle/orchestrator.js:      emitBattleEvent("control.readiness.required", { for: "match" });
+src/helpers/classicBattle/orchestrator.js-    } catch {
+--
+src/helpers/classicBattle/orchestrator.js-    try {
+src/helpers/classicBattle/orchestrator.js:      emitBattleEvent("control.readiness.confirmed", { for: scope });
+src/helpers/classicBattle/orchestrator.js-    } catch {
+--
+src/helpers/classicBattle/orchestrator.js-    }
+src/helpers/classicBattle/orchestrator.js:    emitBattleEvent("control.state.changed", {
+src/helpers/classicBattle/orchestrator.js-      from,
+--
+src/helpers/classicBattle/orchestrator.js-    const outcome = interruptResolutionMap[event];
+src/helpers/classicBattle/orchestrator.js:    if (outcome) emitBattleEvent("interrupt.resolved", { outcome });
+src/helpers/classicBattle/orchestrator.js-  } catch {
+--
+src/helpers/classicBattle/orchestrator.js-    const snap = getStateSnapshot();
+src/helpers/classicBattle/orchestrator.js:    emitBattleEvent("debug.state.snapshot", {
+src/helpers/classicBattle/orchestrator.js-      state: snap?.state || machineRef.getState(),
+--
+src/helpers/classicBattle/orchestrator.js-  try {
+src/helpers/classicBattle/orchestrator.js:    emitBattleEvent("control.state.catalog", stateCatalog);
+src/helpers/classicBattle/orchestrator.js-  } catch {
+--
+src/helpers/classicBattle/orchestrator.js-    engine.onTimerDrift = (drift) => {
+src/helpers/classicBattle/orchestrator.js:      emitBattleEvent("scoreboardShowMessage", `Timer drift detected: ${drift}s. Timer reset.`);
+src/helpers/classicBattle/orchestrator.js:      emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/orchestrator.js-      engine.handleTimerDrift(drift);
+--
+src/helpers/classicBattle/orchestrator.js-        engine.injectError(msg);
+src/helpers/classicBattle/orchestrator.js:        emitBattleEvent("scoreboardShowMessage", `Injected error: ${msg}`);
+src/helpers/classicBattle/orchestrator.js:        emitBattleEvent("debugPanelUpdate");
+src/helpers/classicBattle/orchestrator.js-        machineRef.dispatch("interruptMatch", { reason: msg });
+--
+src/helpers/classicBattle/orchestrator.js-    onStateChange?.({ from, to, event });
+src/helpers/classicBattle/orchestrator.js:    emitBattleEvent("battleStateChange", { from, to, event });
+src/helpers/classicBattle/orchestrator.js-    emitDiagnostics(from, to, event);
+--
+src/helpers/classicBattle/controller.js-import { startCoolDown, pauseTimer, resumeTimer } from "../battleEngineFacade.js";
+src/helpers/classicBattle/controller.js:import { emitBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/controller.js-
+--
+src/helpers/classicBattle/controller.js-    }
+src/helpers/classicBattle/controller.js:    emitBattleEvent("opponentCardReady");
+src/helpers/classicBattle/controller.js-    this.dispatchEvent(new Event("opponentCardReady"));
+--
+src/helpers/classicBattle/cooldowns.js-import { isTestModeEnabled } from "../testModeUtils.js";
+src/helpers/classicBattle/cooldowns.js:import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+src/helpers/classicBattle/cooldowns.js-import { guard, guardAsync } from "./guard.js";
+--
+src/helpers/classicBattle/cooldowns.js-    guard(() => clearTimeout(fallback));
+src/helpers/classicBattle/cooldowns.js:    guard(() => emitBattleEvent("control.countdown.completed"));
+src/helpers/classicBattle/cooldowns.js-    guardAsync(() => machine.dispatch("ready"));
+--
+src/helpers/classicBattle/cooldowns.js-  onBattleEvent("countdownFinished", finish);
+src/helpers/classicBattle/cooldowns.js:  guard(() => emitBattleEvent("countdownStart", { duration }));
+src/helpers/classicBattle/cooldowns.js:  guard(() => emitBattleEvent("control.countdown.started", { durationMs: duration * 1000 }));
+src/helpers/classicBattle/cooldowns.js-  if (isTestModeEnabled && isTestModeEnabled()) {
+--
+src/helpers/classicBattle/cooldowns.js-  };
+src/helpers/classicBattle/cooldowns.js:  guard(() => emitBattleEvent("countdownStart", { duration }));
+src/helpers/classicBattle/cooldowns.js:  guard(() => emitBattleEvent("control.countdown.started", { durationMs: duration * 1000 }));
+src/helpers/classicBattle/cooldowns.js-  const btn =
+--
+src/helpers/classicBattle/cooldowns.js-  }
+src/helpers/classicBattle/cooldowns.js:  guard(() => emitBattleEvent("nextRoundTimerReady"));
+src/helpers/classicBattle/cooldowns.js-  const timer = createRoundTimer({ starter: startCoolDown });
+--
+src/helpers/classicBattle/cooldowns.js-    ]) {
+src/helpers/classicBattle/cooldowns.js:      guard(() => emitBattleEvent(evt));
+src/helpers/classicBattle/cooldowns.js-    }
+--
+src/helpers/classicBattle/cooldowns.js-    guard(() =>
+src/helpers/classicBattle/cooldowns.js:      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, Number(r) || 0) * 1000 })
+src/helpers/classicBattle/cooldowns.js-    )
+--
+src/helpers/classicBattle/cooldowns.js-    for (const evt of ["nextRoundTimerReady", "countdownFinished"]) {
+src/helpers/classicBattle/cooldowns.js:      guard(() => emitBattleEvent(evt));
+src/helpers/classicBattle/cooldowns.js-    }

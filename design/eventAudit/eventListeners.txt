@@ -1,0 +1,1374 @@
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-    debugLog("DEBUG: computeAndDispatchOutcome start", { playerChoice: store?.playerChoice });
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js:    if (!isStateTransition(null, "roundDecision")) return;
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-    const rd = readDebugState("roundDebug");
+--
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js:export function guardSelectionResolution(store, machine) {
+src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js-  const cancel = scheduleGuard(1200, () => computeAndDispatchOutcome(store, machine));
+--
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js- * recordEntry()
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js: * cancel ← guardSelectionResolution(store, machine)
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js- * if !resolveSelectionIfPresent(store) → awaitPlayerChoice(store)
+--
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js-  recordEntry();
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js:  const cancel = guardSelectionResolution(store, machine);
+src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js-  try {
+--
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js-      // Handle the stat selection via the normal selection handler
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js:      return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
+src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js-    }, store);
+--
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js-export async function waitingForMatchStartEnter(machine) {
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js:  if (isStateTransition("waitingForMatchStart", "waitingForMatchStart")) return;
+src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js-  const { doResetGame } = machine.context;
+--
+src/helpers/classicBattle/endModal.js-  actions.className = "modal-actions";
+src/helpers/classicBattle/endModal.js:  const replay = createButton("Replay", { id: "match-replay-button" });
+src/helpers/classicBattle/endModal.js:  const quit = createButton("Quit", { id: "match-quit-button" });
+src/helpers/classicBattle/endModal.js-  actions.append(replay, quit);
+--
+src/helpers/classicBattle/endModal.js-  modal.element.id = "match-end-modal";
+src/helpers/classicBattle/endModal.js:  replay.addEventListener("click", async () => {
+src/helpers/classicBattle/endModal.js-    await handleReplay(store);
+--
+src/helpers/classicBattle/endModal.js-  });
+src/helpers/classicBattle/endModal.js:  quit.addEventListener("click", () => {
+src/helpers/classicBattle/endModal.js-    try {
+--
+src/helpers/classicBattle/roundManager.js-
+src/helpers/classicBattle/roundManager.js:async function handleNextRoundExpiration(controls, btn) {
+src/helpers/classicBattle/roundManager.js-  setSkipHandler(null);
+--
+src/helpers/classicBattle/roundManager.js-    } catch {}
+src/helpers/classicBattle/roundManager.js:    return handleNextRoundExpiration(controls, btn);
+src/helpers/classicBattle/roundManager.js-  };
+src/helpers/classicBattle/roundManager.js:  timer.on("expired", onExpired);
+src/helpers/classicBattle/roundManager.js-  // PRD taxonomy: cooldown timer ticks
+src/helpers/classicBattle/roundManager.js:  timer.on("tick", (remaining) => {
+src/helpers/classicBattle/roundManager.js-    try {
+--
+src/helpers/classicBattle/roundManager.js-  });
+src/helpers/classicBattle/roundManager.js:  timer.on("drift", () => {
+src/helpers/classicBattle/roundManager.js-    const msgEl = typeof document !== "undefined" ? document.getElementById("round-message") : null;
+--
+src/helpers/classicBattle/roundManager.js-  resetSkipState();
+src/helpers/classicBattle/roundManager.js:  resetSelection();
+src/helpers/classicBattle/roundManager.js-  // In test environments, preserve existing engine to maintain score accumulation
+--
+src/helpers/classicBattle/selectionHandler.js- */
+src/helpers/classicBattle/selectionHandler.js:export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+src/helpers/classicBattle/selectionHandler.js-  try {
+--
+src/helpers/classicBattle/stateManager.js- *    from `onEnterMap` if present and swallows errors in test mode.
+src/helpers/classicBattle/stateManager.js: * 6. Initialize the machine by invoking `onTransition({from:null,to:init,event:'init'})`
+src/helpers/classicBattle/stateManager.js- *    and run the initial state's `onEnter` handler.
+--
+src/helpers/classicBattle/battleEvents.js-export function onBattleEvent(type, handler) {
+src/helpers/classicBattle/battleEvents.js:  getTarget().addEventListener(type, handler);
+src/helpers/classicBattle/battleEvents.js-}
+--
+src/helpers/classicBattle/isStateTransition.js- */
+src/helpers/classicBattle/isStateTransition.js:export function isStateTransition(from, to) {
+src/helpers/classicBattle/isStateTransition.js-  try {
+--
+src/helpers/classicBattle/stateTransitionListeners.js-    const { from, to, event } = e.detail || {};
+src/helpers/classicBattle/stateTransitionListeners.js:    logStateTransition(from, to, event);
+src/helpers/classicBattle/stateTransitionListeners.js-    try {
+--
+src/helpers/classicBattle/timerService.js-  });
+src/helpers/classicBattle/timerService.js:  timer.on("tick", onTick);
+src/helpers/classicBattle/timerService.js-  // PRD taxonomy: round timer tick
+src/helpers/classicBattle/timerService.js:  timer.on("tick", (remaining) => {
+src/helpers/classicBattle/timerService.js-    try {
+--
+src/helpers/classicBattle/timerService.js-  });
+src/helpers/classicBattle/timerService.js:  timer.on("expired", onExpired);
+src/helpers/classicBattle/timerService.js:  timer.on("drift", () => {
+src/helpers/classicBattle/timerService.js-    const msgEl = document.getElementById("round-message");
+--
+src/helpers/classicBattle/promises.js- */
+src/helpers/classicBattle/promises.js:function setupPromise(key, eventName) {
+src/helpers/classicBattle/promises.js-  let resolve;
+--
+src/helpers/classicBattle/promises.js- *
+src/helpers/classicBattle/promises.js: * These promises are created with `setupPromise()` which attaches a window-
+src/helpers/classicBattle/promises.js- * scoped reference and automatically re-creates a fresh Promise each time the
+--
+src/helpers/classicBattle/promises.js- * @pseudocode
+src/helpers/classicBattle/promises.js: * 1. For each well-known battle lifecycle event, call `setupPromise(key, event)`
+src/helpers/classicBattle/promises.js- *    to create a self-resetting Promise and assign it to the exported symbol.
+--
+src/helpers/classicBattle/promises.js-export function resetBattlePromises() {
+src/helpers/classicBattle/promises.js:  roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
+src/helpers/classicBattle/promises.js:  roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
+src/helpers/classicBattle/promises.js:  nextRoundTimerReadyPromise = setupPromise("nextRoundTimerReadyPromise", "nextRoundTimerReady")();
+src/helpers/classicBattle/promises.js:  matchOverPromise = setupPromise("matchOverPromise", "matchOver")();
+src/helpers/classicBattle/promises.js:  countdownStartedPromise = setupPromise("countdownStartedPromise", "nextRoundCountdownStarted")();
+src/helpers/classicBattle/promises.js:  roundTimeoutPromise = setupPromise("roundTimeoutPromise", "roundTimeout")();
+src/helpers/classicBattle/promises.js:  statSelectionStalledPromise = setupPromise(
+src/helpers/classicBattle/promises.js-    "statSelectionStalledPromise",
+--
+src/helpers/classicBattle/promises.js-  )();
+src/helpers/classicBattle/promises.js:  roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
+src/helpers/classicBattle/promises.js-}
+--
+src/helpers/classicBattle/promises.js-// Return the latest promise instance for each awaitable, using the window-scoped
+src/helpers/classicBattle/promises.js:// reference maintained by setupPromise(). This avoids races where a module-level
+src/helpers/classicBattle/promises.js-// Promise was already resolved before the test started awaiting it.
+--
+src/helpers/classicBattle/roundUI.js-    } catch {}
+src/helpers/classicBattle/roundUI.js:    return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
+src/helpers/classicBattle/roundUI.js-  }, store);
+--
+src/helpers/classicBattle/roundUI.js-      } catch {}
+src/helpers/classicBattle/roundUI.js:      return handleStatSelection(store, s, { playerVal, opponentVal, ...opts });
+src/helpers/classicBattle/roundUI.js-    },
+--
+src/helpers/classicBattle/view.js-    this.controller = controller;
+src/helpers/classicBattle/view.js:    controller.addEventListener("featureFlagsChange", () => {
+src/helpers/classicBattle/view.js-      setBattleStateBadgeEnabled(controller.isEnabled("battleStateBadge"));
+--
+src/helpers/classicBattle/view.js-    });
+src/helpers/classicBattle/view.js:    controller.addEventListener("roundStartError", (e) => {
+src/helpers/classicBattle/view.js-      document.dispatchEvent(new CustomEvent("round-start-error", { detail: e.detail }));
+--
+src/helpers/classicBattle/view.js-   */
+src/helpers/classicBattle/view.js:  async applyBattleOrientation() {
+src/helpers/classicBattle/view.js-    const header = document.querySelector(".battle-header");
+src/helpers/classicBattle/view.js-    if (header) {
+src/helpers/classicBattle/view.js:      header.dataset.orientation = getOrientation();
+src/helpers/classicBattle/view.js-      return true;
+--
+src/helpers/classicBattle/setupUIBindings.js-  setupScoreboard(view.controller.timerControls);
+src/helpers/classicBattle/setupUIBindings.js:  initQuitButton(store);
+src/helpers/classicBattle/setupUIBindings.js-  initInterruptHandlers(store);
+src/helpers/classicBattle/setupUIBindings.js:  watchBattleOrientation(() => view.applyBattleOrientation());
+src/helpers/classicBattle/setupUIBindings.js-
+src/helpers/classicBattle/setupUIBindings.js:  setupNextButton();
+src/helpers/classicBattle/setupUIBindings.js-  const statButtonControls = initStatButtons(store);
+--
+src/helpers/classicBattle/setupUIBindings.js-    if (cleanupBattleStateProgress) {
+src/helpers/classicBattle/setupUIBindings.js:      window.addEventListener("pagehide", cleanupBattleStateProgress, { once: true });
+src/helpers/classicBattle/setupUIBindings.js-    }
+--
+src/helpers/classicBattle/uiService.js-
+src/helpers/classicBattle/uiService.js:  const quit = createButton("Quit Match", {
+src/helpers/classicBattle/uiService.js-    id: "match-summary-quit",
+--
+src/helpers/classicBattle/uiService.js-
+src/helpers/classicBattle/uiService.js:  const next = createButton("Next Match", { id: "match-summary-next" });
+src/helpers/classicBattle/uiService.js-
+--
+src/helpers/classicBattle/uiService.js-
+src/helpers/classicBattle/uiService.js:  quit.addEventListener("click", () => {
+src/helpers/classicBattle/uiService.js-    modal.close();
+--
+src/helpers/classicBattle/uiService.js-
+src/helpers/classicBattle/uiService.js:  next.addEventListener("click", () => {
+src/helpers/classicBattle/uiService.js-    modal.close();
+--
+src/helpers/classicBattle/uiService.js-      attachCooldownRenderer(timer, duration);
+src/helpers/classicBattle/uiService.js:      timer.on("expired", onExpired);
+src/helpers/classicBattle/uiService.js-      setSkipHandler(() => {
+--
+src/helpers/classicBattle/uiEventHandlers.js-      showRoundOutcome(result.message || "");
+src/helpers/classicBattle/uiEventHandlers.js:      showStatComparison(store, stat, playerVal, opponentVal);
+src/helpers/classicBattle/uiEventHandlers.js-      updateDebugPanel();
+--
+src/helpers/classicBattle/roundResolver.js-  try {
+src/helpers/classicBattle/roundResolver.js:    const result = engineFacade.handleStatSelection(pVal, oVal);
+src/helpers/classicBattle/roundResolver.js-    try {
+--
+src/helpers/classicBattle/roundSelectModal.js-  rounds.forEach((r) => {
+src/helpers/classicBattle/roundSelectModal.js:    const btn = createButton(r.label, { id: `round-select-${r.id}` });
+src/helpers/classicBattle/roundSelectModal.js-    btn.dataset.tooltipId = `ui.round${r.label}`;
+src/helpers/classicBattle/roundSelectModal.js:    btn.addEventListener("click", () =>
+src/helpers/classicBattle/roundSelectModal.js-      handleRoundSelect({
+--
+src/helpers/classicBattle/testHooks.js-    } catch {}
+src/helpers/classicBattle/testHooks.js:    return handleStatSelection(store, stat, {
+src/helpers/classicBattle/testHooks.js-      playerVal,
+--
+src/helpers/classicBattle/testHooks.js-    } catch {}
+src/helpers/classicBattle/testHooks.js:    return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
+src/helpers/classicBattle/testHooks.js-  };
+--
+src/helpers/classicBattle/quitModal.js-
+src/helpers/classicBattle/quitModal.js:function createQuitConfirmation(store, onConfirm) {
+src/helpers/classicBattle/quitModal.js-  const title = document.createElement("h2");
+--
+src/helpers/classicBattle/quitModal.js-
+src/helpers/classicBattle/quitModal.js:  const cancel = createButton(t("modal.quit.cancel") || "Cancel", {
+src/helpers/classicBattle/quitModal.js-    id: "cancel-quit-button",
+--
+src/helpers/classicBattle/quitModal.js-  });
+src/helpers/classicBattle/quitModal.js:  const quit = createButton(t("modal.quit.confirm") || "Quit", { id: "confirm-quit-button" });
+src/helpers/classicBattle/quitModal.js-  actions.append(cancel, quit);
+--
+src/helpers/classicBattle/quitModal.js-  const modal = createModal(frag, { labelledBy: title, describedBy: desc });
+src/helpers/classicBattle/quitModal.js:  cancel.addEventListener("click", () => modal.close());
+src/helpers/classicBattle/quitModal.js:  quit.addEventListener("click", async () => {
+src/helpers/classicBattle/quitModal.js-    try {
+--
+src/helpers/classicBattle/quitModal.js-  if (!store.quitModal) {
+src/helpers/classicBattle/quitModal.js:    store.quitModal = createQuitConfirmation(store, () => {
+src/helpers/classicBattle/quitModal.js-      const result = battleEngine.quitMatch();
+--
+src/helpers/classicBattle/quitButton.js- */
+src/helpers/classicBattle/quitButton.js:export function initQuitButton(store, { quitMatch: injectedQuitMatch } = {}) {
+src/helpers/classicBattle/quitButton.js-  const quitBtn = document.getElementById("quit-match-button");
+src/helpers/classicBattle/quitButton.js-  if (!quitBtn) return;
+src/helpers/classicBattle/quitButton.js:  quitBtn.addEventListener("click", async () => {
+src/helpers/classicBattle/quitButton.js-    const quitMatch = injectedQuitMatch ?? (await import("./quitModal.js")).quitMatch;
+--
+src/helpers/classicBattle/setupScheduler.js-    startScheduler();
+src/helpers/classicBattle/setupScheduler.js:    window.addEventListener("pagehide", stopScheduler, { once: true });
+src/helpers/classicBattle/setupScheduler.js-  }
+--
+src/helpers/classicBattle/orchestrator.js- */
+src/helpers/classicBattle/orchestrator.js:function emitResolution(event) {
+src/helpers/classicBattle/orchestrator.js-  try {
+--
+src/helpers/classicBattle/orchestrator.js-    };
+src/helpers/classicBattle/orchestrator.js:    document.addEventListener("visibilitychange", visibilityHandler);
+src/helpers/classicBattle/orchestrator.js-  }
+--
+src/helpers/classicBattle/orchestrator.js-    mirrorTimerState();
+src/helpers/classicBattle/orchestrator.js:    emitResolution(event);
+src/helpers/classicBattle/orchestrator.js-  };
+--
+src/helpers/classicBattle/controller.js-    this.#emitFeatureFlags();
+src/helpers/classicBattle/controller.js:    featureFlagsEmitter.addEventListener("change", () => this.#emitFeatureFlags());
+src/helpers/classicBattle/controller.js-    await initClassicBattleOrchestrator(this.store, () => this.startRound());
+--
+src/helpers/classicBattle/cooldowns.js-  const timer = createRoundTimer({ starter: startCoolDown });
+src/helpers/classicBattle/cooldowns.js:  timer.on("expired", () => {
+src/helpers/classicBattle/cooldowns.js-    guard(() => {
+--
+src/helpers/classicBattle/cooldowns.js-  });
+src/helpers/classicBattle/cooldowns.js:  timer.on("tick", (r) =>
+src/helpers/classicBattle/cooldowns.js-    guard(() =>
+--
+src/helpers/classicBattle/debugPanel.js-
+src/helpers/classicBattle/debugPanel.js:function ensureDebugCopyButton(panel) {
+src/helpers/classicBattle/debugPanel.js-  if (!panel) return;
+--
+src/helpers/classicBattle/debugPanel.js-  if (!btn) {
+src/helpers/classicBattle/debugPanel.js:    btn = createButton("Copy", { id: "debug-copy" });
+src/helpers/classicBattle/debugPanel.js-    btn.dataset.tooltipId = "ui.copyDebug";
+src/helpers/classicBattle/debugPanel.js:    btn.addEventListener("click", (e) => {
+src/helpers/classicBattle/debugPanel.js-      e.preventDefault();
+src/helpers/classicBattle/debugPanel.js:      e.stopPropagation();
+src/helpers/classicBattle/debugPanel.js-      const text = getDebugOutputEl()?.textContent ?? "";
+--
+src/helpers/classicBattle/debugPanel.js-    const panel = document.getElementById("debug-panel");
+src/helpers/classicBattle/debugPanel.js:    ensureDebugCopyButton(panel);
+src/helpers/classicBattle/debugPanel.js-    safeCall(() => {
+--
+src/helpers/classicBattle/debugPanel.js-      panel.open = saved ? saved === "true" : true;
+src/helpers/classicBattle/debugPanel.js:      panel.addEventListener("toggle", () => {
+src/helpers/classicBattle/debugPanel.js-        safeCall(() => localStorage.setItem("battleDebugOpen", String(panel.open)));
+--
+src/helpers/classicBattle/debugPanel.js-    }
+src/helpers/classicBattle/debugPanel.js:    ensureDebugCopyButton(panel);
+src/helpers/classicBattle/debugPanel.js-    safeCall(() => {
+--
+src/helpers/classicBattle/debugPanel.js-      panel.open = saved ? saved === "true" : true;
+src/helpers/classicBattle/debugPanel.js:      panel.addEventListener("toggle", () => {
+src/helpers/classicBattle/debugPanel.js-        safeCall(() => localStorage.setItem("battleDebugOpen", String(panel.open)));
+--
+src/helpers/classicBattle/interruptHandlers.js-   */
+src/helpers/classicBattle/interruptHandlers.js:  function handleNavigation() {
+src/helpers/classicBattle/interruptHandlers.js-    cleanup();
+--
+src/helpers/classicBattle/interruptHandlers.js-
+src/helpers/classicBattle/interruptHandlers.js:  window.addEventListener("pagehide", handleNavigation);
+src/helpers/classicBattle/interruptHandlers.js:  window.addEventListener("beforeunload", handleNavigation);
+src/helpers/classicBattle/interruptHandlers.js:  window.addEventListener("error", handleError);
+src/helpers/classicBattle/interruptHandlers.js:  window.addEventListener("unhandledrejection", handleError);
+src/helpers/classicBattle/interruptHandlers.js-}
+--
+src/helpers/classicBattle/interruptHandlers.js-    actions.className = "modal-actions";
+src/helpers/classicBattle/interruptHandlers.js:    const reload = createButton("Reload", { id: "error-reload-btn", className: "primary-button" });
+src/helpers/classicBattle/interruptHandlers.js:    reload.addEventListener("click", () => {
+src/helpers/classicBattle/interruptHandlers.js-      try {
+--
+src/helpers/classicBattle/statButtons.js- * @param {boolean} enable - True to enable, false to disable.
+src/helpers/classicBattle/statButtons.js: * @param {function(): void} [resolveReady] - Optional callback when buttons become ready.
+src/helpers/classicBattle/statButtons.js: * @param {function(): void} [resetReady] - Optional callback when buttons are reset.
+src/helpers/classicBattle/statButtons.js- * @returns {void}
+--
+src/helpers/classicBattle/statButtons.js-  };
+src/helpers/classicBattle/statButtons.js:  document.addEventListener("keydown", handler);
+src/helpers/classicBattle/statButtons.js-  return () => document.removeEventListener("keydown", handler);
+--
+src/helpers/classicBattle/battleDebug.js- */
+src/helpers/classicBattle/battleDebug.js:export function logStateTransition(from, to, event) {
+src/helpers/classicBattle/battleDebug.js-  currentState = to;
+--
+src/helpers/classicBattle/uiHelpers.js- */
+src/helpers/classicBattle/uiHelpers.js:export function setupNextButton() {
+src/helpers/classicBattle/uiHelpers.js-  let btn = document.getElementById("next-button");
+--
+src/helpers/classicBattle/uiHelpers.js-    if (btn) {
+src/helpers/classicBattle/uiHelpers.js:      btn.addEventListener("click", onNextButtonClick);
+src/helpers/classicBattle/uiHelpers.js-    } else {
+--
+src/helpers/classicBattle/uiHelpers.js- */
+src/helpers/classicBattle/uiHelpers.js:export function enableNextRoundButton() {
+src/helpers/classicBattle/uiHelpers.js-  const btn =
+--
+src/helpers/classicBattle/uiHelpers.js- */
+src/helpers/classicBattle/uiHelpers.js:export function disableNextRoundButton() {
+src/helpers/classicBattle/uiHelpers.js-  const btn =
+--
+src/helpers/classicBattle/uiHelpers.js- */
+src/helpers/classicBattle/uiHelpers.js:export function showStatComparison(store, stat, playerVal, compVal) {
+src/helpers/classicBattle/uiHelpers.js-  const el = document.getElementById("round-result");
+--
+src/helpers/classicBattle/uiHelpers.js-
+src/helpers/classicBattle/uiHelpers.js:export function watchBattleOrientation(callback) {
+src/helpers/classicBattle/uiHelpers.js-  if (typeof callback !== "function") {
+--
+src/helpers/classicBattle/uiHelpers.js-
+src/helpers/classicBattle/uiHelpers.js:  window.addEventListener("orientationchange", onChange);
+src/helpers/classicBattle/uiHelpers.js:  window.addEventListener("resize", onChange);
+src/helpers/classicBattle/uiHelpers.js-}
+--
+src/helpers/classicBattle/uiHelpers.js-  msg.textContent = "Unable to start the round. Please check your connection or try again.";
+src/helpers/classicBattle/uiHelpers.js:  const retryBtn = createButton("Retry", { id: "retry-round-btn", className: "primary-button" });
+src/helpers/classicBattle/uiHelpers.js-  const actions = document.createElement("div");
+--
+src/helpers/classicBattle/uiHelpers.js-  modal.element.id = "round-retry-modal";
+src/helpers/classicBattle/uiHelpers.js:  retryBtn.addEventListener("click", async () => {
+src/helpers/classicBattle/uiHelpers.js-    modal.close();
+--
+src/helpers/classicBattle/uiHelpers.js-  };
+src/helpers/classicBattle/uiHelpers.js:  document.addEventListener("round-start-error", onError);
+src/helpers/classicBattle/uiHelpers.js-  return () => document.removeEventListener("round-start-error", onError);
+--
+src/helpers/classicBattle/uiHelpers.js-  try {
+src/helpers/classicBattle/uiHelpers.js:    Promise.resolve(handleStatSelection(store, stat, { playerVal, opponentVal })).catch(() => {});
+src/helpers/classicBattle/uiHelpers.js-  } catch {}
+--
+src/helpers/classicBattle/uiHelpers.js- */
+src/helpers/classicBattle/uiHelpers.js:export function resetNextButton() {
+src/helpers/classicBattle/uiHelpers.js-  let nextBtn;
+--
+src/helpers/classicBattle/uiHelpers.js-    delete clone.dataset.nextReady;
+src/helpers/classicBattle/uiHelpers.js:    clone.addEventListener("click", onNextButtonClick);
+src/helpers/classicBattle/uiHelpers.js-    nextBtn.replaceWith(clone);
+--
+src/helpers/classicBattle/uiHelpers.js- */
+src/helpers/classicBattle/uiHelpers.js:export function resetQuitButton() {
+src/helpers/classicBattle/uiHelpers.js-  let quitBtn;
+--
+src/helpers/classicBattle/uiHelpers.js-      guard(() => {
+src/helpers/classicBattle/uiHelpers.js:        Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
+src/helpers/classicBattle/uiHelpers.js-      });
+--
+src/helpers/classicBattle/uiHelpers.js-    };
+src/helpers/classicBattle/uiHelpers.js:    btn.addEventListener("click", clickHandler);
+src/helpers/classicBattle/uiHelpers.js:    btn.addEventListener("keydown", (e) => {
+src/helpers/classicBattle/uiHelpers.js-      if (e.key === "Enter" || e.key === " ") {
+--
+src/helpers/classicBattle/uiHelpers.js-  removeBackdrops(store);
+src/helpers/classicBattle/uiHelpers.js:  resetNextButton();
+src/helpers/classicBattle/uiHelpers.js:  resetQuitButton();
+src/helpers/classicBattle/uiHelpers.js-  clearScoreboardAndMessages();
+--
+src/helpers/classicBattle/uiHelpers.js-if (typeof window !== "undefined") {
+src/helpers/classicBattle/uiHelpers.js:  window.addEventListener("game:reset-ui", (e) => {
+src/helpers/classicBattle/uiHelpers.js-    resetBattleUI(e.detail?.store);
+--
+src/helpers/classicBattle/uiHelpers.js-    showRoundOutcome(result.message || "");
+src/helpers/classicBattle/uiHelpers.js:    showStatComparison(store, stat, playerVal, opponentVal);
+src/helpers/classicBattle/uiHelpers.js-    updateDebugPanel();
+--
+src/helpers/classicBattle/skipHandler.js- *
+src/helpers/classicBattle/skipHandler.js: * @param {null|function(): void|Promise<void>} fn - Handler to invoke when skipping.
+src/helpers/classicBattle/skipHandler.js- * @returns {void}
+--
+src/helpers/classicBattle/cardSelection.js-
+src/helpers/classicBattle/cardSelection.js:    const retry = createButton("Retry", { id: "retry-draw-button" });
+src/helpers/classicBattle/cardSelection.js:    retry.addEventListener("click", async () => {
+src/helpers/classicBattle/cardSelection.js-      loadErrorModal.close();
+--
+src/helpers/classicBattle/cardSelection.js-  try {
+src/helpers/classicBattle/cardSelection.js:    judokaData = await fetchJson(`${DATA_DIR}judoka.json`);
+src/helpers/classicBattle/cardSelection.js-    return Array.isArray(judokaData) ? judokaData : [];
+--
+src/helpers/classicBattle/cardSelection.js-  try {
+src/helpers/classicBattle/cardSelection.js:    const gokyoData = await fetchJson(`${DATA_DIR}gokyo.json`);
+src/helpers/classicBattle/cardSelection.js-    gokyoLookup = createGokyoLookup(gokyoData);
+--
+tests/config/loadSettings.test.js-      setup();
+tests/config/loadSettings.test.js:      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/config/loadSettings.test.js-      const { loadSettings } = await import("../../src/config/loadSettings.js");
+--
+tests/config/loadSettings.test.js-      );
+tests/config/loadSettings.test.js:      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/config/loadSettings.test.js-      const { loadSettings } = await import("../../src/config/loadSettings.js");
+--
+tests/examples/testArchitectureDemo.test.js-    let clicked = false;
+tests/examples/testArchitectureDemo.test.js:    btn.addEventListener("click", () => {
+tests/examples/testArchitectureDemo.test.js-      clicked = true;
+--
+tests/classicBattle/stat-buttons.test.js-
+tests/classicBattle/stat-buttons.test.js:    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
+tests/classicBattle/stat-buttons.test.js-      if (cat === "roundTimer") return 5; // allow time for click
+--
+tests/classicBattle/cooldown.test.js-    // Make round timer short so resolution happens quickly
+tests/classicBattle/cooldown.test.js:    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
+tests/classicBattle/cooldown.test.js-      if (cat === "roundTimer") return 1;
+--
+tests/classicBattle/timer.test.js-    // Force a short timer for the test
+tests/classicBattle/timer.test.js:    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
+tests/classicBattle/timer.test.js-      if (cat === "roundTimer") return 2;
+--
+tests/classicBattle/resolution.test.js-  test("score updates after auto-select on expiry", async () => {
+tests/classicBattle/resolution.test.js:    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
+tests/classicBattle/resolution.test.js-      if (cat === "roundTimer") return 1;
+--
+tests/card/judokaCardHtmlFallback.test.js-  it("adds fallback when portrait generation throws", async () => {
+tests/card/judokaCardHtmlFallback.test.js:    vi.spyOn(cardRender, "generateCardPortrait").mockImplementation(() => {
+tests/card/judokaCardHtmlFallback.test.js-      throw new Error("portrait fail");
+--
+tests/card/judokaCardHtmlFallback.test.js-  it("adds fallback when stats panel generation throws", async () => {
+tests/card/judokaCardHtmlFallback.test.js:    vi.mocked(statsPanel.createStatsPanel).mockImplementation(() =>
+tests/card/judokaCardHtmlFallback.test.js-      Promise.reject(new Error("stats fail"))
+--
+tests/card/judokaCardHtmlFallback.test.js-  it("adds fallback when signature move generation throws", async () => {
+tests/card/judokaCardHtmlFallback.test.js:    vi.spyOn(cardRender, "generateCardSignatureMove").mockImplementation(() => {
+tests/card/judokaCardHtmlFallback.test.js-      throw new Error("signature fail");
+--
+tests/card/judokaCardHtmlFallback.test.js-  it("adds fallback when cardRender throws a non-Error value", async () => {
+tests/card/judokaCardHtmlFallback.test.js:    vi.spyOn(cardRender, "generateCardPortrait").mockImplementation(() => {
+tests/card/judokaCardHtmlFallback.test.js-      throw "fail string";
+--
+tests/card/judokaCardHtmlFallback.test.js-  it("adds fallback when stats panel throws undefined", async () => {
+tests/card/judokaCardHtmlFallback.test.js:    vi.mocked(statsPanel.createStatsPanel).mockImplementation(() => Promise.reject(undefined));
+tests/card/judokaCardHtmlFallback.test.js-    const card = await withMutedConsole(async () => new JudokaCard(judoka, gokyoLookup).render());
+--
+tests/card/judokaCardWeightClass.test.js-  it("adds tooltip id to weight class element", () => {
+tests/card/judokaCardWeightClass.test.js:    const portrait = createPortraitSection(judoka);
+tests/card/judokaCardWeightClass.test.js-    const weight = portrait.querySelector(".card-weight-class");
+--
+tests/card/judokaCardInspector.test.js-  it("renders debug panel when extra is serializable", async () => {
+tests/card/judokaCardInspector.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/card/judokaCardInspector.test.js-    const container = await new JudokaCard({ ...baseJudoka, extra: { note: "ok" } }, gokyoLookup, {
+--
+tests/card/judokaCardInspector.test.js-  it("renders fallback paragraph when card data cannot be stringified", async () => {
+tests/card/judokaCardInspector.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/card/judokaCardInspector.test.js-    const container = await new JudokaCard({ ...baseJudoka, extra: 1n }, gokyoLookup, {
+--
+tests/card/cardBuilder.test.js-  it("createScrollButton returns left button with correct class and inner HTML", () => {
+tests/card/cardBuilder.test.js:    const button = createScrollButton("left", container);
+tests/card/cardBuilder.test.js-    expect(button.className).toBe("scroll-button left");
+--
+tests/card/cardBuilder.test.js-  it("createScrollButton returns right button with correct class and inner HTML", () => {
+tests/card/cardBuilder.test.js:    const button = createScrollButton("right", container);
+tests/card/cardBuilder.test.js-    expect(button.className).toBe("scroll-button right");
+--
+tests/card/cardBuilder.test.js-  it("createScrollButton throws when direction is invalid", () => {
+tests/card/cardBuilder.test.js:    expect(() => createScrollButton("up", container)).toThrowError("Invalid direction");
+tests/card/cardBuilder.test.js-  });
+--
+tests/card/cardBuilder.test.js-  it("createScrollButton scrolls container to the left when clicked", () => {
+tests/card/cardBuilder.test.js:    const button = createScrollButton("left", container);
+tests/card/cardBuilder.test.js-    button.click();
+--
+tests/card/cardBuilder.test.js-  it("createScrollButton scrolls container to the right when clicked", () => {
+tests/card/cardBuilder.test.js:    const button = createScrollButton("right", container);
+tests/card/cardBuilder.test.js-    button.click();
+--
+tests/card/cardBuilder.test.js-  it("createScrollButton throws when container is null", () => {
+tests/card/cardBuilder.test.js:    expect(() => createScrollButton("left", null)).toThrowError("Container is required");
+tests/card/cardBuilder.test.js-  });
+--
+tests/card/cardBuilder.test.js-    const div = document.createElement("div");
+tests/card/cardBuilder.test.js:    expect(() => createScrollButton("left", div)).not.toThrow();
+tests/card/cardBuilder.test.js-  });
+--
+tests/data/aesopsMetaCrossCheck.test.js-
+tests/data/aesopsMetaCrossCheck.test.js:async function loadJson(name) {
+tests/data/aesopsMetaCrossCheck.test.js-  const file = path.join(dataDir, name);
+--
+tests/data/aesopsMetaCrossCheck.test.js-    const [fables, meta] = await Promise.all([
+tests/data/aesopsMetaCrossCheck.test.js:      loadJson("aesopsFables.json"),
+tests/data/aesopsMetaCrossCheck.test.js:      loadJson("aesopsMeta.json")
+tests/data/aesopsMetaCrossCheck.test.js-    ]);
+--
+tests/scripts/evaluateRAG.test.js-  it("does not fetch when network is blocked", async () => {
+tests/scripts/evaluateRAG.test.js:    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(() => {
+tests/scripts/evaluateRAG.test.js-      throw new Error("network blocked");
+--
+tests/scripts/check-jsdoc.spec.js-      const content = `
+tests/scripts/check-jsdoc.spec.js:        export function myFunction() {}
+tests/scripts/check-jsdoc.spec.js:        export async function myAsyncFunction() {}
+tests/scripts/check-jsdoc.spec.js-      `;
+--
+tests/scripts/check-jsdoc.spec.js-        export const myVar = () => {};
+tests/scripts/check-jsdoc.spec.js:        export let myLet = function() {};
+tests/scripts/check-jsdoc.spec.js-      `;
+--
+tests/scripts/check-jsdoc.spec.js-      const content = `
+tests/scripts/check-jsdoc.spec.js:        export default function myFunction() {}
+tests/scripts/check-jsdoc.spec.js:        export default function() {}
+tests/scripts/check-jsdoc.spec.js-      `;
+--
+tests/scripts/check-jsdoc.spec.js-         */
+tests/scripts/check-jsdoc.spec.js:        export function myFunction(name) {}
+tests/scripts/check-jsdoc.spec.js-      `;
+--
+tests/scripts/check-jsdoc.spec.js-      const content = `
+tests/scripts/check-jsdoc.spec.js:        export function myFunction(name) {}
+tests/scripts/check-jsdoc.spec.js-      `;
+--
+tests/scripts/check-jsdoc.spec.js-         */
+tests/scripts/check-jsdoc.spec.js:        export function myFunction(name) {}
+tests/scripts/check-jsdoc.spec.js-      `;
+--
+tests/pages/battleCLI.onKeyDown.test.js-    store = {};
+tests/pages/battleCLI.onKeyDown.test.js:    vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+tests/pages/battleCLI.onKeyDown.test.js-      store[k] = v;
+tests/pages/battleCLI.onKeyDown.test.js-    });
+tests/pages/battleCLI.onKeyDown.test.js:    vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+tests/pages/battleCLI.onKeyDown.test.js-    dispatchSpy = vi.fn();
+--
+tests/pages/battleCLI.onKeyDown.test.js-    const originalIsEnabled = featureFlags.isEnabled;
+tests/pages/battleCLI.onKeyDown.test.js:    vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) =>
+tests/pages/battleCLI.onKeyDown.test.js-      flag === "cliShortcuts" ? false : originalIsEnabled(flag)
+--
+tests/pages/battleCLI.onKeyDown.test.js-    const originalIsEnabled = featureFlags.isEnabled;
+tests/pages/battleCLI.onKeyDown.test.js:    vi.spyOn(featureFlags, "isEnabled").mockImplementation((flag) =>
+tests/pages/battleCLI.onKeyDown.test.js-      flag === "cliShortcuts" ? false : originalIsEnabled(flag)
+--
+tests/pages/utils/loadBattleCLI.js-        try {
+tests/pages/utils/loadBattleCLI.js:          battleBus.addEventListener(type, handler);
+tests/pages/utils/loadBattleCLI.js-        } catch {}
+--
+tests/pages/battleCLI.pointsToWin.startOnce.test.js-    let machine;
+tests/pages/battleCLI.pointsToWin.startOnce.test.js:    initClassicBattleOrchestrator.mockImplementation(() => {
+tests/pages/battleCLI.pointsToWin.startOnce.test.js-      machine = {
+--
+tests/pages/battleCLI.handlers.test.js-    const pre = document.getElementById("cli-verbose-log");
+tests/pages/battleCLI.handlers.test.js:    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+tests/pages/battleCLI.handlers.test.js-    handlers.setVerboseEnabled(false);
+--
+tests/pages/battleCLI.helpers.test.js-  it("wireEvents attaches listeners", async () => {
+tests/pages/battleCLI.helpers.test.js:    const addWin = vi.spyOn(window, "addEventListener");
+tests/pages/battleCLI.helpers.test.js:    const addDoc = vi.spyOn(document, "addEventListener");
+tests/pages/battleCLI.helpers.test.js-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+--
+tests/helpers/displayMode.test.js-  it("warns when an invalid mode is provided", () => {
+tests/helpers/displayMode.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/displayMode.test.js-    document.body.dataset.theme = "dark";
+--
+tests/helpers/populateCountryList.test.js-beforeEach(() => {
+tests/helpers/populateCountryList.test.js:  getFlagUrl.mockImplementation((code) => `https://flagcdn.com/w320/${code}.png`);
+tests/helpers/populateCountryList.test.js-});
+--
+tests/helpers/populateCountryList.test.js-  it("handles fetch failure gracefully", async () => {
+tests/helpers/populateCountryList.test.js:    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/populateCountryList.test.js-
+--
+tests/helpers/errorUtils.test.js-  test("returns fallback for synchronous errors", async () => {
+tests/helpers/errorUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/errorUtils.test.js-    const result = await safeGenerate(
+--
+tests/helpers/errorUtils.test.js-  test("returns fallback for asynchronous errors", async () => {
+tests/helpers/errorUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/errorUtils.test.js-    const result = await safeGenerate(
+--
+tests/helpers/errorUtils.test.js-    const fallback = (err) => err.message;
+tests/helpers/errorUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/errorUtils.test.js-    const result = await safeGenerate(
+--
+tests/helpers/errorUtils.test.js-  test("handles non-Error thrown values", async () => {
+tests/helpers/errorUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/errorUtils.test.js-    const result = await safeGenerate(
+--
+tests/helpers/errorUtils.test.js-  test("handles undefined fallback", async () => {
+tests/helpers/errorUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/errorUtils.test.js-    const result = await safeGenerate(() => {
+--
+tests/helpers/orchestratorHandlers.roundDecisionEnter.test.js-  store = {};
+tests/helpers/orchestratorHandlers.roundDecisionEnter.test.js:  vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+tests/helpers/orchestratorHandlers.roundDecisionEnter.test.js-    store[k] = v;
+tests/helpers/orchestratorHandlers.roundDecisionEnter.test.js-  });
+tests/helpers/orchestratorHandlers.roundDecisionEnter.test.js:  vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+tests/helpers/orchestratorHandlers.roundDecisionEnter.test.js-});
+--
+tests/helpers/setupCarouselToggle.test.js-    const initScrollMarkers = vi.fn();
+tests/helpers/setupCarouselToggle.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/setupCarouselToggle.test.js-
+--
+tests/helpers/setupCarouselToggle.test.js-    const button = document.createElement("button");
+tests/helpers/setupCarouselToggle.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/setupCarouselToggle.test.js-
+--
+tests/helpers/cardUtils.test.js-  it("returns early with console error when gameArea is null", async () => {
+tests/helpers/cardUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/cardUtils.test.js-    await expect(displayJudokaCard(validJudoka, {}, null)).resolves.toBeUndefined();
+--
+tests/helpers/cardUtils.test.js-  it("handles null gameArea even when judoka is invalid", async () => {
+tests/helpers/cardUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/cardUtils.test.js-    await expect(displayJudokaCard({}, {}, null)).resolves.toBeUndefined();
+--
+tests/helpers/cardUtils.test.js-  it("escapes missing fields before inserting HTML", async () => {
+tests/helpers/cardUtils.test.js:    vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/cardUtils.test.js-    vi.spyOn(validation, "hasRequiredJudokaFields").mockReturnValue(false);
+--
+tests/helpers/navMenuResponsive.test.js-  it("cleanup removes the button and listeners", () => {
+tests/helpers/navMenuResponsive.test.js:    addSpy = vi.spyOn(window, "addEventListener");
+tests/helpers/navMenuResponsive.test.js-    removeSpy = vi.spyOn(window, "removeEventListener");
+--
+tests/helpers/dataUtils.test.js-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+tests/helpers/dataUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    await expect(fetchJson("/error.json")).rejects.toThrow(
+tests/helpers/dataUtils.test.js-      "Failed to fetch /error.json (HTTP 500)"
+--
+tests/helpers/dataUtils.test.js-      .mockResolvedValue({ ok: true, json: vi.fn().mockRejectedValue(new SyntaxError("fail")) });
+tests/helpers/dataUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    await expect(fetchJson("/error.json")).rejects.toBeInstanceOf(SyntaxError);
+tests/helpers/dataUtils.test.js-    errorSpy.mockRestore();
+--
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    const first = await fetchJson("/data.json");
+tests/helpers/dataUtils.test.js:    const second = await fetchJson("/data.json");
+tests/helpers/dataUtils.test.js-
+--
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    const first = await fetchJson(fileUrl, schema);
+tests/helpers/dataUtils.test.js:    const second = await fetchJson(fileUrl, schema);
+tests/helpers/dataUtils.test.js-    expect(Array.isArray(first)).toBe(true);
+--
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    const data = await fetchJson("src/data/gameModes.json");
+tests/helpers/dataUtils.test.js-    expect(Array.isArray(data)).toBe(true);
+--
+tests/helpers/dataUtils.test.js-    const url2 = "/two.json";
+tests/helpers/dataUtils.test.js:    const first = await fetchJson(url1);
+tests/helpers/dataUtils.test.js:    const second = await fetchJson(url2);
+tests/helpers/dataUtils.test.js-
+--
+tests/helpers/dataUtils.test.js-    const url = "/fail-then-success.json";
+tests/helpers/dataUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/dataUtils.test.js:    await expect(fetchJson(url)).rejects.toThrow();
+tests/helpers/dataUtils.test.js-    errorSpy.mockRestore();
+tests/helpers/dataUtils.test.js:    const result = await fetchJson(url);
+tests/helpers/dataUtils.test.js-    expect(result).toEqual({ foo: "bar" });
+--
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    await expect(fetchJson("/schema.json", schema)).resolves.toEqual(data);
+tests/helpers/dataUtils.test.js-  });
+--
+tests/helpers/dataUtils.test.js-    const schema = { type: "object", properties: { a: { type: "string" } }, required: ["a"] };
+tests/helpers/dataUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    await expect(fetchJson("/schema.json", schema)).rejects.toThrow("Schema validation failed");
+tests/helpers/dataUtils.test.js-    errorSpy.mockRestore();
+--
+tests/helpers/dataUtils.test.js-    global.fetch = vi.fn().mockRejectedValue(new Error("offline"));
+tests/helpers/dataUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    await expect(fetchJson("/err.json")).rejects.toThrow("offline");
+tests/helpers/dataUtils.test.js-    errorSpy.mockRestore();
+--
+tests/helpers/dataUtils.test.js-
+tests/helpers/dataUtils.test.js:  it("throws if .json() throws a non-SyntaxError", async () => {
+tests/helpers/dataUtils.test.js-    global.fetch = vi.fn().mockResolvedValue({
+--
+tests/helpers/dataUtils.test.js-    });
+tests/helpers/dataUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    await expect(fetchJson("/notjson.json")).rejects.toThrow("not json");
+tests/helpers/dataUtils.test.js-    errorSpy.mockRestore();
+--
+tests/helpers/dataUtils.test.js-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(data) });
+tests/helpers/dataUtils.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/dataUtils.test.js-    const { fetchJson } = await import("../../src/helpers/dataUtils.js");
+tests/helpers/dataUtils.test.js:    await expect(fetchJson("/good.json", "not-an-object")).rejects.toThrow();
+tests/helpers/dataUtils.test.js-    errorSpy.mockRestore();
+--
+tests/helpers/dataUtils.test.js-    global.window = {};
+tests/helpers/dataUtils.test.js:    errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/dataUtils.test.js-    vi.resetModules();
+--
+tests/helpers/orchestratorHandlers.computeOutcome.test.js-  store = {};
+tests/helpers/orchestratorHandlers.computeOutcome.test.js:  vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+tests/helpers/orchestratorHandlers.computeOutcome.test.js-    store[k] = v;
+tests/helpers/orchestratorHandlers.computeOutcome.test.js-  });
+tests/helpers/orchestratorHandlers.computeOutcome.test.js:  vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+tests/helpers/orchestratorHandlers.computeOutcome.test.js-});
+--
+tests/helpers/tooltipViewerPage.test.js-
+tests/helpers/tooltipViewerPage.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/tooltipViewerPage.test.js-
+--
+tests/helpers/tooltipViewerPage.test.js-
+tests/helpers/tooltipViewerPage.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/tooltipViewerPage.test.js-
+--
+tests/helpers/timers/createRoundTimer.test.js-    });
+tests/helpers/timers/createRoundTimer.test.js:    timer.on("tick", (r) => events.push(["tick", r]));
+tests/helpers/timers/createRoundTimer.test.js-    let expired = 0;
+tests/helpers/timers/createRoundTimer.test.js:    timer.on("expired", () => {
+tests/helpers/timers/createRoundTimer.test.js-      expired += 1;
+--
+tests/helpers/tooltip.test.js-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+tests/helpers/tooltip.test.js:    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/tooltip.test.js-
+--
+tests/helpers/tooltip.test.js-    vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
+tests/helpers/tooltip.test.js:    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/tooltip.test.js-
+--
+tests/helpers/tooltip.test.js-  it("warns once and returns fallback when id missing", async () => {
+tests/helpers/tooltip.test.js:    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/tooltip.test.js-    const { resolveTooltipText } = await import("../../src/helpers/tooltip.js");
+--
+tests/helpers/judokaCard.test.js-  it("toggleInspectorPanels warns and skips on invalid JSON", async () => {
+tests/helpers/judokaCard.test.js:    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/judokaCard.test.js-    const card = await new JudokaCard(judoka, gokyoLookup).render();
+--
+tests/helpers/browseJudokaPage.test.js-    global.requestAnimationFrame = (cb) => cb();
+tests/helpers/browseJudokaPage.test.js:    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/browseJudokaPage.test.js-
+--
+tests/helpers/buttonEffects.test.js-    document.body.appendChild(button);
+tests/helpers/buttonEffects.test.js:    window.matchMedia = vi.fn().mockImplementation((q) => ({
+tests/helpers/buttonEffects.test.js-      matches: false,
+--
+tests/helpers/buttonEffects.test.js-      removeListener: vi.fn(),
+tests/helpers/buttonEffects.test.js:      addEventListener: vi.fn(),
+tests/helpers/buttonEffects.test.js-      removeEventListener: vi.fn(),
+--
+tests/helpers/motionUtils.test.js-const matchMediaMock = (matches) =>
+tests/helpers/motionUtils.test.js:  vi.fn().mockImplementation((query) => ({
+tests/helpers/motionUtils.test.js-    matches,
+--
+tests/helpers/motionUtils.test.js-    removeListener: vi.fn(),
+tests/helpers/motionUtils.test.js:    addEventListener: vi.fn(),
+tests/helpers/motionUtils.test.js-    removeEventListener: vi.fn(),
+--
+tests/helpers/motionUtils.test.js-    localStorage.setItem("settings", "not json");
+tests/helpers/motionUtils.test.js:    const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+tests/helpers/motionUtils.test.js-    await loadSettings();
+--
+tests/helpers/headlessMode.timing.test.js-    vi.useFakeTimers();
+tests/helpers/headlessMode.timing.test.js:    vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/headlessMode.timing.test.js:    vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/headlessMode.timing.test.js-  });
+--
+tests/helpers/featureFlags.test.js-    const changeSpy = vi.fn();
+tests/helpers/featureFlags.test.js:    featureFlagsEmitter.addEventListener("change", changeSpy);
+tests/helpers/featureFlags.test.js-
+--
+tests/helpers/buttonComponent.test.js-  it("creates a styled button with given options", () => {
+tests/helpers/buttonComponent.test.js:    const btn = createButton("Click", {
+tests/helpers/buttonComponent.test.js-      id: "btn",
+--
+tests/helpers/buttonComponent.test.js-  it("defaults type to button", () => {
+tests/helpers/buttonComponent.test.js:    const btn = createButton("Label");
+tests/helpers/buttonComponent.test.js-    expect(btn.type).toBe("button");
+--
+tests/helpers/buttonComponent.test.js-    const icon = '<svg aria-hidden="true"></svg>';
+tests/helpers/buttonComponent.test.js:    const btn = createButton("Label", { icon });
+tests/helpers/buttonComponent.test.js-    expect(btn.innerHTML).toContain(icon);
+--
+tests/helpers/orchestratorHandlers.helpers.test.js-  store = {};
+tests/helpers/orchestratorHandlers.helpers.test.js:  vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+tests/helpers/orchestratorHandlers.helpers.test.js-    store[k] = v;
+tests/helpers/orchestratorHandlers.helpers.test.js-  });
+tests/helpers/orchestratorHandlers.helpers.test.js:  vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+tests/helpers/orchestratorHandlers.helpers.test.js-});
+--
+tests/helpers/orchestratorHandlers.helpers.test.js-    const outcomeSpy = vi.spyOn(mod, "computeAndDispatchOutcome").mockResolvedValue(undefined);
+tests/helpers/orchestratorHandlers.helpers.test.js:    const cancel = mod.guardSelectionResolution({}, {});
+tests/helpers/orchestratorHandlers.helpers.test.js-    expect(typeof debugHooks.readDebugState("roundDecisionGuard")).toBe("function");
+--
+tests/helpers/classicBattle/statSelectionTiming.test.js-      );
+tests/helpers/classicBattle/statSelectionTiming.test.js:      const p = battleMod.handleStatSelection(store, "power", {
+tests/helpers/classicBattle/statSelectionTiming.test.js-        playerVal,
+--
+tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js-    vi.resetModules();
+tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js:    errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js:    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js-    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
+--
+tests/helpers/classicBattle/roundSelectModal.test.js-    mocks.initTooltips.mockResolvedValue(mocks.cleanup);
+tests/helpers/classicBattle/roundSelectModal.test.js:    mocks.createModal.mockImplementation(mocks.defaultCreateModal);
+tests/helpers/classicBattle/roundSelectModal.test.js-    window.history.replaceState({}, "", "/");
+--
+tests/helpers/classicBattle/roundSelectModal.test.js-    mocks.initTooltips.mockRejectedValue(error);
+tests/helpers/classicBattle/roundSelectModal.test.js:    const consoleErr = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/classicBattle/roundSelectModal.test.js-    await initRoundSelectModal(onStart);
+--
+tests/helpers/classicBattle/roundSelectModal.test.js-    const error = new Error("modal fail");
+tests/helpers/classicBattle/roundSelectModal.test.js:    mocks.createModal.mockImplementation(() => {
+tests/helpers/classicBattle/roundSelectModal.test.js-      throw error;
+--
+tests/helpers/classicBattle/scheduleNextRound.test.js-
+tests/helpers/classicBattle/scheduleNextRound.test.js:    fetchJsonMock.mockImplementation(async (url) => {
+tests/helpers/classicBattle/scheduleNextRound.test.js-      if (String(url).includes("gameTimers.js")) {
+--
+tests/helpers/classicBattle/scheduleNextRound.test.js-
+tests/helpers/classicBattle/scheduleNextRound.test.js:    vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/classicBattle/scheduleNextRound.test.js:    vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/scheduleNextRound.test.js-
+--
+tests/helpers/classicBattle/pauseTimer.test.js-    timer = vi.useFakeTimers();
+tests/helpers/classicBattle/pauseTimer.test.js:    logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+tests/helpers/classicBattle/pauseTimer.test.js-
+--
+tests/helpers/classicBattle/pauseTimer.test.js-    );
+tests/helpers/classicBattle/pauseTimer.test.js:    const promise = battleMod.handleStatSelection(store, "power", {
+tests/helpers/classicBattle/pauseTimer.test.js-      playerVal,
+--
+tests/helpers/classicBattle/cardSelection.test.js-  it("draws a different card for the opponent", async () => {
+tests/helpers/classicBattle/cardSelection.test.js:    fetchJsonMock.mockImplementation(async (p) => {
+tests/helpers/classicBattle/cardSelection.test.js-      if (p.includes("judoka")) {
+--
+tests/helpers/classicBattle/cardSelection.test.js-  it("excludes hidden judoka from selection", async () => {
+tests/helpers/classicBattle/cardSelection.test.js:    fetchJsonMock.mockImplementation(async (p) => {
+tests/helpers/classicBattle/cardSelection.test.js-      if (p.includes("judoka")) {
+--
+tests/helpers/classicBattle/cardSelection.test.js-    const calls = [];
+tests/helpers/classicBattle/cardSelection.test.js:    fetchJsonMock.mockImplementation(async (p) => {
+tests/helpers/classicBattle/cardSelection.test.js-      calls.push(p);
+--
+tests/helpers/classicBattle/cardSelection.test.js-      return {
+tests/helpers/classicBattle/cardSelection.test.js:        JudokaCard: vi.fn().mockImplementation(() => ({
+tests/helpers/classicBattle/cardSelection.test.js-          render: vi.fn(async () => "nope")
+--
+tests/helpers/classicBattle/cardSelection.test.js-    });
+tests/helpers/classicBattle/cardSelection.test.js:    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/classicBattle/cardSelection.test.js-    const { drawCards, _resetForTest } = await import(
+--
+tests/helpers/classicBattle/roundResolverOnce.test.js-  beforeEach(async () => {
+tests/helpers/classicBattle/roundResolverOnce.test.js:    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/roundResolverOnce.test.js-    timer = vi.useFakeTimers();
+--
+tests/helpers/classicBattle/roundResolverOnce.test.js-    const opponentVal = getCardStatValue(document.getElementById("opponent-card"), "power");
+tests/helpers/classicBattle/roundResolverOnce.test.js:    handleStatSelection(store, "power", { playerVal, opponentVal });
+tests/helpers/classicBattle/roundResolverOnce.test.js-    expect(store.playerChoice).toBe("power");
+--
+tests/helpers/classicBattle/mockSetup.js-  mocks.renderMock = vi.fn();
+tests/helpers/classicBattle/mockSetup.js:  mocks.JudokaCardMock = vi.fn().mockImplementation(() => ({ render: mocks.renderMock }));
+tests/helpers/classicBattle/mockSetup.js-  return { JudokaCard: mocks.JudokaCardMock };
+--
+tests/helpers/classicBattle/initInterRoundCooldown.event.test.js-  it("still enables button and emits event when a prior emit fails", async () => {
+tests/helpers/classicBattle/initInterRoundCooldown.event.test.js:    emitBattleEvent.mockImplementation((evt) => {
+tests/helpers/classicBattle/initInterRoundCooldown.event.test.js-      if (evt === "countdownStart") throw new Error("boom");
+--
+tests/helpers/classicBattle/stateTransitions.test.js-// Generates a state manager scoped to a single transition
+tests/helpers/classicBattle/stateTransitions.test.js:async function createMachineForTransition(state, trigger, onTransition) {
+tests/helpers/classicBattle/stateTransitions.test.js-  const source = { ...state, triggers: [trigger], type: "initial" };
+--
+tests/helpers/classicBattle/stateTransitions.test.js-        delete document.body.dataset.prevBattleState;
+tests/helpers/classicBattle/stateTransitions.test.js:        const machine = await createMachineForTransition(state, trigger, onTransition);
+tests/helpers/classicBattle/stateTransitions.test.js-        await machine.dispatch(trigger.on);
+--
+tests/helpers/classicBattle/timerStateExposure.test.js-        this.current = to;
+tests/helpers/classicBattle/timerStateExposure.test.js:        await onTransition({ from, to, event });
+tests/helpers/classicBattle/timerStateExposure.test.js-      },
+--
+tests/helpers/classicBattle/handleStatSelection.machine.test.js-    dispatchCalls = [];
+tests/helpers/classicBattle/handleStatSelection.machine.test.js:    dispatchMock.mockImplementation((...args) => {
+tests/helpers/classicBattle/handleStatSelection.machine.test.js-      dispatchCalls.push(args);
+--
+tests/helpers/classicBattle/handleStatSelection.machine.test.js-    expect(dispatchCalls.length).toBe(0);
+tests/helpers/classicBattle/handleStatSelection.machine.test.js:    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+tests/helpers/classicBattle/handleStatSelection.machine.test.js-    await Promise.resolve();
+--
+tests/helpers/classicBattle/roundResolved.statButton.test.js-    vi.useFakeTimers();
+tests/helpers/classicBattle/roundResolved.statButton.test.js:    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/roundResolved.statButton.test.js-    document.body.innerHTML =
+--
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-  it("warns and returns when next round button is missing", async () => {
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
+--
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-    const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js:    mod.setupNextButton();
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-    expect(warnSpy).toHaveBeenNthCalledWith(
+--
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-  it("falls back to data-role when #next-button is missing", async () => {
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-    const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js:    const onClick = vi.spyOn(timerSvc, "onNextButtonClick").mockImplementation(() => {});
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-    const btn = document.createElement("button");
+--
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-    const mod = await import("../../../src/helpers/classicBattle/uiHelpers.js");
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js:    mod.setupNextButton();
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-    btn.click();
+--
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-  it("warns when no stat buttons are found", async () => {
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/uiHelpers.missingElements.test.js-    const resolveSpy = vi.fn();
+--
+tests/helpers/classicBattle/matchEnd.test.js-  const opponentVal = battleMod.getCardStatValue(document.getElementById("opponent-card"), "power");
+tests/helpers/classicBattle/matchEnd.test.js:  const p = battleMod.handleStatSelection(store, "power", {
+tests/helpers/classicBattle/matchEnd.test.js-    playerVal,
+--
+tests/helpers/classicBattle/statSelection.test.js-      const opponentVal = getCardStatValue(document.getElementById("opponent-card"), stat);
+tests/helpers/classicBattle/statSelection.test.js:      const p = handleStatSelection(store, stat, { playerVal, opponentVal });
+tests/helpers/classicBattle/statSelection.test.js-      await vi.runAllTimersAsync();
+--
+tests/helpers/classicBattle/orchestrator.init.test.js-    const preloadTimerUtils = vi.fn().mockRejectedValue(new Error("fail"));
+tests/helpers/classicBattle/orchestrator.init.test.js:    const initScoreboardAdapter = vi.fn().mockImplementation(() => {
+tests/helpers/classicBattle/orchestrator.init.test.js-      throw new Error("fail");
+--
+tests/helpers/classicBattle/race.statSelected.startup.test.js-
+tests/helpers/classicBattle/race.statSelected.startup.test.js:    const p = handleStatSelection(store, "power", { playerVal, opponentVal });
+tests/helpers/classicBattle/race.statSelected.startup.test.js-    await vi.advanceTimersByTimeAsync(1000);
+--
+tests/helpers/classicBattle/drawNextRound.test.js-    window.__NEXT_ROUND_COOLDOWN_MS = 0;
+tests/helpers/classicBattle/drawNextRound.test.js:    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/drawNextRound.test.js-  });
+--
+tests/helpers/classicBattle/drawNextRound.test.js-    store.selectionMade = false;
+tests/helpers/classicBattle/drawNextRound.test.js:    const p = battleMod.handleStatSelection(store, "power", {
+tests/helpers/classicBattle/drawNextRound.test.js-      forceDirectResolution: true
+--
+tests/helpers/classicBattle/nextButton.manualClick.test.js-      const timer = setTimeout(() => reject(new Error("ready not dispatched")), 50);
+tests/helpers/classicBattle/nextButton.manualClick.test.js:      vi.spyOn(dispatcher, "dispatchBattleEvent").mockImplementation(async (evt) => {
+tests/helpers/classicBattle/nextButton.manualClick.test.js-        if (evt === "ready") {
+--
+tests/helpers/classicBattle/countdownReset.test.js-  const opponentVal = battleMod.getCardStatValue(document.getElementById("opponent-card"), "power");
+tests/helpers/classicBattle/countdownReset.test.js:  const p = battleMod.handleStatSelection(store, "power", {
+tests/helpers/classicBattle/countdownReset.test.js-    playerVal,
+--
+tests/helpers/classicBattle/opponentDelay.test.js-    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(1);
+tests/helpers/classicBattle/opponentDelay.test.js:    const promise = mod.handleStatSelection(store, mod.simulateOpponentStat(), {
+tests/helpers/classicBattle/opponentDelay.test.js-      playerVal: 5,
+--
+tests/helpers/classicBattle/nextButton.countdownFinished.test.js-    vi.useFakeTimers();
+tests/helpers/classicBattle/nextButton.countdownFinished.test.js:    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/nextButton.countdownFinished.test.js-    vi.clearAllMocks();
+--
+tests/helpers/classicBattle/onTransition.test.js-        this.current = to;
+tests/helpers/classicBattle/onTransition.test.js:        await onTransition({ from, to, event });
+tests/helpers/classicBattle/onTransition.test.js-      },
+--
+tests/helpers/classicBattle/timerService.nextRound.test.js-    const controls = roundMod.startCooldown({}, scheduler);
+tests/helpers/classicBattle/timerService.nextRound.test.js:    nextButton.addEventListener("click", (e) => timerMod.onNextButtonClick(e, controls));
+tests/helpers/classicBattle/timerService.nextRound.test.js-    scheduler.tick(100);
+--
+tests/helpers/classicBattle/timerService.nextRound.test.js-  it("auto-dispatches ready after 1s cooldown", async () => {
+tests/helpers/classicBattle/timerService.nextRound.test.js:    startCoolDown.mockImplementation((_t, onExpired) => {
+tests/helpers/classicBattle/timerService.nextRound.test.js-      onExpired();
+--
+tests/helpers/classicBattle/timerService.nextRound.test.js-  it("computeNextRoundCooldown is 0 in headless mode", async () => {
+tests/helpers/classicBattle/timerService.nextRound.test.js:    vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/timerService.nextRound.test.js-    const { computeNextRoundCooldown } = await import(
+--
+tests/helpers/classicBattle/timerService.nextRound.test.js-    setTestMode(true);
+tests/helpers/classicBattle/timerService.nextRound.test.js:    vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/timerService.nextRound.test.js-    const controls = roundMod.startCooldown({}, scheduler);
+--
+tests/helpers/classicBattle/view.initHelpers.test.js-  it("starts and registers stop handler", () => {
+tests/helpers/classicBattle/view.initHelpers.test.js:    const add = vi.spyOn(window, "addEventListener");
+tests/helpers/classicBattle/view.initHelpers.test.js-    const original = process.env.VITEST;
+--
+tests/helpers/classicBattle/controller.startRound.test.js-    const events = [];
+tests/helpers/classicBattle/controller.startRound.test.js:    controller.addEventListener("roundStarted", () => events.push("roundStarted"));
+tests/helpers/classicBattle/controller.startRound.test.js:    controller.addEventListener("opponentCardReady", () => events.push("opponentCardReady"));
+tests/helpers/classicBattle/controller.startRound.test.js-    await controller.startRound();
+--
+tests/helpers/classicBattle/controller.startRound.test.js-    const opponentSpy = vi.fn();
+tests/helpers/classicBattle/controller.startRound.test.js:    controller.addEventListener("roundStartError", errorSpy);
+tests/helpers/classicBattle/controller.startRound.test.js:    controller.addEventListener("opponentCardReady", opponentSpy);
+tests/helpers/classicBattle/controller.startRound.test.js-    await expect(controller.startRound()).rejects.toThrow("fail");
+--
+tests/helpers/classicBattle/controller.startRound.test.js-    const events = { roundStarted: 0, opponentCardReady: 0, error: 0 };
+tests/helpers/classicBattle/controller.startRound.test.js:    controller.addEventListener("roundStarted", () => events.roundStarted++);
+tests/helpers/classicBattle/controller.startRound.test.js:    controller.addEventListener("opponentCardReady", () => events.opponentCardReady++);
+tests/helpers/classicBattle/controller.startRound.test.js:    controller.addEventListener("roundStartError", () => events.error++);
+tests/helpers/classicBattle/controller.startRound.test.js-    await expect(controller.startRound()).rejects.toThrow("no card");
+--
+tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js-    timer = vi.useFakeTimers();
+tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js:    vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js:    vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js-  });
+--
+tests/helpers/classicBattle/interruptHandlers.test.js-const listeners = [];
+tests/helpers/classicBattle/interruptHandlers.test.js:const origAdd = window.addEventListener;
+tests/helpers/classicBattle/interruptHandlers.test.js-const origRemove = window.removeEventListener;
+--
+tests/helpers/classicBattle/interruptHandlers.test.js-  listeners.length = 0;
+tests/helpers/classicBattle/interruptHandlers.test.js:  window.addEventListener = (type, listener, options) => {
+tests/helpers/classicBattle/interruptHandlers.test.js-    listeners.push({ type, listener, options });
+--
+tests/helpers/classicBattle/interruptHandlers.test.js-  }
+tests/helpers/classicBattle/interruptHandlers.test.js:  window.addEventListener = origAdd;
+tests/helpers/classicBattle/interruptHandlers.test.js-  window.removeEventListener = origRemove;
+--
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-  it("resolves round and dispatches roundResolved", async () => {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js:    resolveMock.mockImplementation(async (s) => {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-      s.playerChoice = null;
+--
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-    });
+tests/helpers/classicBattle/selectionHandler.resolve.test.js:    const result = await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-    expect(resolveMock).toHaveBeenCalled();
+--
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-    dispatchMock.mockRejectedValue(new Error("fail"));
+tests/helpers/classicBattle/selectionHandler.resolve.test.js:    resolveMock.mockImplementation(async (s) => {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-      s.playerChoice = null;
+--
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-    });
+tests/helpers/classicBattle/selectionHandler.resolve.test.js:    const result = await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-    expect(resolveMock).toHaveBeenCalled();
+--
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-  it("skips direct resolution when machine handles round", async () => {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js:    dispatchMock.mockImplementation(async (event) => {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-      if (event === "statSelected") {
+--
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-    getBattleState.mockReturnValue("roundDecision");
+tests/helpers/classicBattle/selectionHandler.resolve.test.js:    const result = await handleStatSelection(store, "power", {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-      playerVal: 1,
+--
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-  it("skips direct resolution when machine clears playerChoice but state unknown", async () => {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js:    dispatchMock.mockImplementation(async (event) => {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-      if (event === "statSelected") {
+--
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-    getBattleState.mockReturnValue(null);
+tests/helpers/classicBattle/selectionHandler.resolve.test.js:    const result = await handleStatSelection(store, "power", {
+tests/helpers/classicBattle/selectionHandler.resolve.test.js-      playerVal: 1,
+--
+tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js-    timerSpy = vi.useFakeTimers();
+tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js:    vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js:    vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js-    machine = { dispatch: vi.fn(), getState: vi.fn(() => "cooldown"), context: {} };
+--
+tests/helpers/classicBattle/statDoubleClick.test.js-    window.__NEXT_ROUND_COOLDOWN_MS = 0;
+tests/helpers/classicBattle/statDoubleClick.test.js:    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/statDoubleClick.test.js-  });
+--
+tests/helpers/classicBattle/statDoubleClick.test.js-    store.forceDirectResolution = true;
+tests/helpers/classicBattle/statDoubleClick.test.js:    const p = battleMod.handleStatSelection(store, "power", { forceDirectResolution: true });
+tests/helpers/classicBattle/statDoubleClick.test.js:    battleMod.handleStatSelection(store, "power", { forceDirectResolution: true });
+tests/helpers/classicBattle/statDoubleClick.test.js-    await vi.runAllTimersAsync();
+--
+tests/helpers/classicBattle/onTransition.helpers.test.js-        this.current = to;
+tests/helpers/classicBattle/onTransition.helpers.test.js:        await onTransition({ from, to, event });
+tests/helpers/classicBattle/onTransition.helpers.test.js-      },
+--
+tests/helpers/classicBattle/scheduleNextRound.fallback.test.js-    vi.resetModules();
+tests/helpers/classicBattle/scheduleNextRound.fallback.test.js:    vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/classicBattle/scheduleNextRound.fallback.test.js:    vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/classicBattle/scheduleNextRound.fallback.test.js-    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
+--
+tests/helpers/classicBattle/controlState.test.js-    const btn = document.querySelector('[data-role="next-round"]');
+tests/helpers/classicBattle/controlState.test.js:    disableNextRoundButton();
+tests/helpers/classicBattle/controlState.test.js-    expect(btn.disabled).toBe(true);
+tests/helpers/classicBattle/controlState.test.js-    expect(btn.dataset.nextReady).toBeUndefined();
+tests/helpers/classicBattle/controlState.test.js:    enableNextRoundButton();
+tests/helpers/classicBattle/controlState.test.js-    expect(btn.disabled).toBe(false);
+--
+tests/helpers/classicBattle/controlState.test.js-    window.battleStore = createBattleStore();
+tests/helpers/classicBattle/controlState.test.js:    initQuitButton(window.battleStore, { quitMatch: mockQuitMatch });
+tests/helpers/classicBattle/controlState.test.js-    document.querySelector('[data-testid="quit-match"]').click();
+--
+tests/helpers/classicBattle/controlState.test.js-      isEnabled: () => false,
+tests/helpers/classicBattle/controlState.test.js:      addEventListener: vi.fn(),
+tests/helpers/classicBattle/controlState.test.js-      startRound: vi.fn()
+--
+tests/helpers/roundResolver.resolveRound.test.js-    dispatchMock.mockResolvedValue();
+tests/helpers/roundResolver.resolveRound.test.js:    emitMock.mockImplementation(() => {});
+tests/helpers/roundResolver.resolveRound.test.js-  });
+--
+tests/helpers/roundResolver.resolveRound.test.js-    const callOrder = [];
+tests/helpers/roundResolver.resolveRound.test.js:    dispatchMock.mockImplementation(async (evt) => {
+tests/helpers/roundResolver.resolveRound.test.js-      callOrder.push(`dispatch:${evt}`);
+tests/helpers/roundResolver.resolveRound.test.js-    });
+tests/helpers/roundResolver.resolveRound.test.js:    emitMock.mockImplementation((evt) => {
+tests/helpers/roundResolver.resolveRound.test.js-      callOrder.push(`emit:${evt}`);
+--
+tests/helpers/randomJudokaPage.historyPanel.test.js-      .fn()
+tests/helpers/randomJudokaPage.historyPanel.test.js:      .mockImplementation(async (_c, _g, container, _m, onSelect) => {
+tests/helpers/randomJudokaPage.historyPanel.test.js-        const card = document.createElement("div");
+--
+tests/helpers/setupBottomNavbar.test.js-    vi.resetModules();
+tests/helpers/setupBottomNavbar.test.js:    window.matchMedia = vi.fn().mockImplementation((q) => ({
+tests/helpers/setupBottomNavbar.test.js-      matches: false,
+--
+tests/helpers/setupBottomNavbar.test.js-      removeListener: vi.fn(),
+tests/helpers/setupBottomNavbar.test.js:      addEventListener: vi.fn(),
+tests/helpers/setupBottomNavbar.test.js-      removeEventListener: vi.fn(),
+--
+tests/helpers/vectorSearch.loader.test.js-    await withAllowedConsole(async () => {
+tests/helpers/vectorSearch.loader.test.js:      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/vectorSearch.loader.test.js:      fetchJsonMock.mockImplementation((url) => {
+tests/helpers/vectorSearch.loader.test.js-        if (url.endsWith("client_embeddings.manifest.json")) {
+--
+tests/helpers/swipeNavigation.test.js-
+tests/helpers/swipeNavigation.test.js:    setupSwipeNavigation(container);
+tests/helpers/swipeNavigation.test.js-
+--
+tests/helpers/swipeNavigation.test.js-
+tests/helpers/swipeNavigation.test.js:    setupSwipeNavigation(container);
+tests/helpers/swipeNavigation.test.js-
+--
+tests/helpers/quoteBuilder.test.js-
+tests/helpers/quoteBuilder.test.js:    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/quoteBuilder.test.js-    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+--
+tests/helpers/handleKeyboardNavigation.test.js-    const event = { key: "ArrowRight", preventDefault: vi.fn() };
+tests/helpers/handleKeyboardNavigation.test.js:    handleKeyboardNavigation(event, container, "flag-button");
+tests/helpers/handleKeyboardNavigation.test.js-    expect(event.preventDefault).toHaveBeenCalled();
+--
+tests/helpers/handleKeyboardNavigation.test.js-    const event = { key: "Enter", preventDefault: vi.fn() };
+tests/helpers/handleKeyboardNavigation.test.js:    handleKeyboardNavigation(event, container, "flag-button");
+tests/helpers/handleKeyboardNavigation.test.js-    expect(event.preventDefault).not.toHaveBeenCalled();
+--
+tests/helpers/battleEngine/events.test.js-    const tick = vi.fn();
+tests/helpers/battleEngine/events.test.js:    engine.on("roundStarted", started);
+tests/helpers/battleEngine/events.test.js:    engine.on("timerTick", tick);
+tests/helpers/battleEngine/events.test.js-    await engine.startRound();
+--
+tests/helpers/battleEngine/events.test.js-    const matchEnd = vi.fn();
+tests/helpers/battleEngine/events.test.js:    engine.on("roundEnded", roundEnd);
+tests/helpers/battleEngine/events.test.js:    engine.on("matchEnded", matchEnd);
+tests/helpers/battleEngine/events.test.js:    const result = engine.handleStatSelection(10, 5);
+tests/helpers/battleEngine/events.test.js-    expect(roundEnd).toHaveBeenCalledWith(result);
+--
+tests/helpers/battleEngine/events.test.js-    const err = vi.fn();
+tests/helpers/battleEngine/events.test.js:    engine.on("error", err);
+tests/helpers/battleEngine/events.test.js-    engine.handleError("fail");
+--
+tests/helpers/battleEngine/events.test.js-    const events = [];
+tests/helpers/battleEngine/events.test.js:    engine.on("roundStarted", () => events.push("roundStarted"));
+tests/helpers/battleEngine/events.test.js:    engine.on("timerTick", ({ phase }) => events.push(`timerTick-${phase}`));
+tests/helpers/battleEngine/events.test.js:    engine.on("roundEnded", () => events.push("roundEnded"));
+tests/helpers/battleEngine/events.test.js:    engine.on("matchEnded", () => events.push("matchEnded"));
+tests/helpers/battleEngine/events.test.js-    await engine.startRound();
+tests/helpers/battleEngine/events.test.js:    engine.handleStatSelection(10, 5);
+tests/helpers/battleEngine/events.test.js-    expect(events).toEqual(["roundStarted", "timerTick-round", "roundEnded", "matchEnded"]);
+--
+tests/helpers/battleEngine/events.test.js-    const events = [];
+tests/helpers/battleEngine/events.test.js:    engine.on("roundStarted", () => events.push("roundStarted"));
+tests/helpers/battleEngine/events.test.js:    engine.on("timerTick", ({ phase }) => events.push(`timerTick-${phase}`));
+tests/helpers/battleEngine/events.test.js:    engine.on("roundEnded", () => events.push("roundEnded"));
+tests/helpers/battleEngine/events.test.js:    engine.on("matchEnded", () => events.push("matchEnded"));
+tests/helpers/battleEngine/events.test.js-    await engine.startRound();
+--
+tests/helpers/battleEngine/multipleInstances.test.js-    const bEnd = vi.fn();
+tests/helpers/battleEngine/multipleInstances.test.js:    engineA.on("matchEnded", aEnd);
+tests/helpers/battleEngine/multipleInstances.test.js:    engineB.on("matchEnded", bEnd);
+tests/helpers/battleEngine/multipleInstances.test.js-
+tests/helpers/battleEngine/multipleInstances.test.js:    engineA.handleStatSelection(10, 5);
+tests/helpers/battleEngine/multipleInstances.test.js-    expect(engineA.matchEnded).toBe(true);
+--
+tests/helpers/battleEngine/multipleInstances.test.js-
+tests/helpers/battleEngine/multipleInstances.test.js:    engineB.handleStatSelection(10, 5);
+tests/helpers/battleEngine/multipleInstances.test.js-    expect(engineB.matchEnded).toBe(false);
+tests/helpers/battleEngine/multipleInstances.test.js:    engineB.handleStatSelection(8, 4);
+tests/helpers/battleEngine/multipleInstances.test.js-    expect(engineB.matchEnded).toBe(true);
+--
+tests/helpers/battleEngine/interrupts.test.js-
+tests/helpers/battleEngine/interrupts.test.js:    const result = engine.roundModification(modification);
+tests/helpers/battleEngine/interrupts.test.js-
+--
+tests/helpers/battleEngine/interrupts.test.js-    const end = vi.fn();
+tests/helpers/battleEngine/interrupts.test.js:    engine.on("matchEnded", end);
+tests/helpers/battleEngine/interrupts.test.js-    await engine.startRound(
+--
+tests/helpers/battleEngine/interrupts.test.js-    const end = vi.fn();
+tests/helpers/battleEngine/interrupts.test.js:    engine.on("matchEnded", end);
+tests/helpers/battleEngine/interrupts.test.js-    await engine.startRound(
+--
+tests/helpers/battleEngine/config.test.js-    const engine = new BattleEngine({ maxRounds: 1 });
+tests/helpers/battleEngine/config.test.js:    const res = engine.handleStatSelection(1, 1);
+tests/helpers/battleEngine/config.test.js-    expect(res.matchEnded).toBe(true);
+--
+tests/helpers/battleEngine/config.test.js-
+tests/helpers/battleEngine/config.test.js:    engineA.handleStatSelection(10, 5);
+tests/helpers/battleEngine/config.test.js:    engineB.handleStatSelection(10, 5);
+tests/helpers/battleEngine/config.test.js-
+--
+tests/helpers/battleEngine/outcome.test.js-  it("handles player win", () => {
+tests/helpers/battleEngine/outcome.test.js:    const res = engine.handleStatSelection(5, 3);
+tests/helpers/battleEngine/outcome.test.js-    expect(res).toMatchObject({
+--
+tests/helpers/battleEngine/outcome.test.js-  it("handles opponent win", () => {
+tests/helpers/battleEngine/outcome.test.js:    const res = engine.handleStatSelection(3, 5);
+tests/helpers/battleEngine/outcome.test.js-    expect(res).toMatchObject({
+--
+tests/helpers/battleEngine/outcome.test.js-  it("handles tie", () => {
+tests/helpers/battleEngine/outcome.test.js:    const res = engine.handleStatSelection(4, 4);
+tests/helpers/battleEngine/outcome.test.js-    expect(res).toMatchObject({
+--
+tests/helpers/battleEngine/outcome.test.js-    engine.setPointsToWin(1);
+tests/helpers/battleEngine/outcome.test.js:    const res = engine.handleStatSelection(5, 3);
+tests/helpers/battleEngine/outcome.test.js-    expect(res.matchEnded).toBe(true);
+--
+tests/helpers/CooldownRenderer.test.js-      handlers: { tick: [], expired: [] },
+tests/helpers/CooldownRenderer.test.js:      on(event, fn) {
+tests/helpers/CooldownRenderer.test.js-        this.handlers[event].push(fn);
+--
+tests/helpers/vectorSearch/mockDataset.js-  fetchJson.mockReset();
+tests/helpers/vectorSearch/mockDataset.js:  fetchJson.mockImplementation((url) => {
+tests/helpers/vectorSearch/mockDataset.js-    if (url.endsWith("client_embeddings.manifest.json")) {
+--
+tests/helpers/vectorSearch/loader.test.js-    const { readFile } = await import("node:fs/promises");
+tests/helpers/vectorSearch/loader.test.js:    readFile.mockImplementation((path) => {
+tests/helpers/vectorSearch/loader.test.js-      if (String(path).includes("offline_rag_metadata.json")) {
+--
+tests/helpers/keyboardNavigation.test.js-
+tests/helpers/keyboardNavigation.test.js:    setupKeyboardNavigation(container);
+tests/helpers/keyboardNavigation.test.js-    expect(container.tabIndex).toBe(0);
+--
+tests/helpers/keyboardNavigation.test.js-
+tests/helpers/keyboardNavigation.test.js:    setupKeyboardNavigation(container);
+tests/helpers/keyboardNavigation.test.js-
+--
+tests/helpers/uiHelpers.collectDebugState.test.js-    store = {};
+tests/helpers/uiHelpers.collectDebugState.test.js:    vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
+tests/helpers/uiHelpers.collectDebugState.test.js-      store[k] = v;
+tests/helpers/uiHelpers.collectDebugState.test.js-    });
+tests/helpers/uiHelpers.collectDebugState.test.js:    vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
+tests/helpers/uiHelpers.collectDebugState.test.js-    debugHooks.exposeDebugState("roundDecisionEnter", 123);
+--
+tests/helpers/timerService.cooldownGuard.test.js-  it("does not warn when state changes", async () => {
+tests/helpers/timerService.cooldownGuard.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/timerService.cooldownGuard.test.js-    __setStateSnapshot({ state: "cooldown" });
+--
+tests/helpers/timerService.cooldownGuard.test.js-  it("warns if still in cooldown", async () => {
+tests/helpers/timerService.cooldownGuard.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/timerService.cooldownGuard.test.js-    __setStateSnapshot({ state: "cooldown" });
+--
+tests/helpers/timerService.cooldownGuard.test.js-  it("clears previous warning timer on rapid clicks", async () => {
+tests/helpers/timerService.cooldownGuard.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/timerService.cooldownGuard.test.js-    __setStateSnapshot({ state: "cooldown" });
+--
+tests/helpers/timerService.cooldownGuard.test.js-  it("resets warning timer after firing", async () => {
+tests/helpers/timerService.cooldownGuard.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/timerService.cooldownGuard.test.js-    __setStateSnapshot({ state: "cooldown" });
+--
+tests/helpers/selectionHandler.test.js-  it("ignores repeated selections", async () => {
+tests/helpers/selectionHandler.test.js:    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+tests/helpers/selectionHandler.test.js:    await handleStatSelection(store, "speed", { playerVal: 3, opponentVal: 4 });
+tests/helpers/selectionHandler.test.js-
+--
+tests/helpers/selectionHandler.test.js-
+tests/helpers/selectionHandler.test.js:    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+tests/helpers/selectionHandler.test.js-
+--
+tests/helpers/selectionHandler.test.js-
+tests/helpers/selectionHandler.test.js:    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+tests/helpers/selectionHandler.test.js-
+--
+tests/helpers/selectionHandler.test.js-
+tests/helpers/selectionHandler.test.js:    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+tests/helpers/selectionHandler.test.js-
+--
+tests/helpers/orchestrator.stateChange.test.js-      createStateManager: vi.fn(async (_onEnter, _context, onTransition) => {
+tests/helpers/orchestrator.stateChange.test.js:        await onTransition({ from: "a", to: "b", event: "go" });
+tests/helpers/orchestrator.stateChange.test.js-        return { context: {}, getState: () => "b", dispatch: vi.fn() };
+--
+tests/helpers/settingsPage.test.js-    const resetSettings = vi.fn();
+tests/helpers/settingsPage.test.js:    const initFeatureFlags = vi.fn().mockImplementation(async () => {
+tests/helpers/settingsPage.test.js-      currentFlags = baseSettings.featureFlags;
+--
+tests/helpers/settingsPage.test.js-    const resetButton = document.getElementById("reset-settings-button");
+tests/helpers/settingsPage.test.js:    const addSpy = vi.spyOn(resetButton, "addEventListener");
+tests/helpers/settingsPage.test.js-    renderSettingsControls(baseSettings, [], tooltipMap);
+--
+tests/helpers/settingsPage.test.js-    vi.resetModules();
+tests/helpers/settingsPage.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/settingsPage.test.js-    const showSettingsError = vi.fn();
+--
+tests/helpers/settingsPage.test.js-    vi.resetModules();
+tests/helpers/settingsPage.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/settingsPage.test.js-    const navItems = [
+--
+tests/helpers/visibilityTimer.test.js-    tickCb = null;
+tests/helpers/visibilityTimer.test.js:    originalAdd = document.addEventListener;
+tests/helpers/visibilityTimer.test.js:    document.addEventListener = new Proxy(originalAdd, {
+tests/helpers/visibilityTimer.test.js-      apply(target, thisArg, args) {
+--
+tests/helpers/visibilityTimer.test.js-  afterEach(() => {
+tests/helpers/visibilityTimer.test.js:    document.addEventListener = originalAdd;
+tests/helpers/visibilityTimer.test.js-    if (originalHiddenDesc && originalHiddenDesc.configurable) {
+--
+tests/helpers/timerService.onNextButtonClick.test.js-    vi.useFakeTimers();
+tests/helpers/timerService.onNextButtonClick.test.js:    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/timerService.onNextButtonClick.test.js-    document.body.innerHTML = '<button id="next-button" data-role="next-round"></button>';
+--
+tests/helpers/orientation.test.js-    window.matchMedia = mockMatchMedia(true);
+tests/helpers/orientation.test.js:    expect(getOrientation()).toBe("portrait");
+tests/helpers/orientation.test.js-  });
+--
+tests/helpers/orientation.test.js-    window.matchMedia = mockMatchMedia(false);
+tests/helpers/orientation.test.js:    expect(getOrientation()).toBe("landscape");
+tests/helpers/orientation.test.js-  });
+--
+tests/helpers/uiHelpers.resetBattleUI.test.js-
+tests/helpers/uiHelpers.resetBattleUI.test.js:    helpers.resetNextButton();
+tests/helpers/uiHelpers.resetBattleUI.test.js-
+--
+tests/helpers/uiHelpers.resetBattleUI.test.js-    const listener = vi.fn();
+tests/helpers/uiHelpers.resetBattleUI.test.js:    btn.addEventListener("click", listener);
+tests/helpers/uiHelpers.resetBattleUI.test.js-    document.body.append(btn);
+tests/helpers/uiHelpers.resetBattleUI.test.js-
+tests/helpers/uiHelpers.resetBattleUI.test.js:    helpers.resetQuitButton();
+tests/helpers/uiHelpers.resetBattleUI.test.js-
+--
+tests/helpers/navigationCache.test.js-  test("load removes invalid stored data", async () => {
+tests/helpers/navigationCache.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/navigationCache.test.js-    try {
+--
+tests/helpers/vectorSearchPage/errorHandling.test.js-  it("shows a message when embedding load fails", async () => {
+tests/helpers/vectorSearchPage/errorHandling.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/vectorSearchPage/errorHandling.test.js-    mockVectorSearch({
+--
+tests/helpers/vectorSearchPage/errorHandling.test.js-  it("shows a fallback message when query vector construction fails", async () => {
+tests/helpers/vectorSearchPage/errorHandling.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/vectorSearchPage/errorHandling.test.js-    const findMatches = vi.fn();
+--
+tests/helpers/battleEngineFacade.test.js-    vi.doMock("../../src/helpers/TimerController.js", () => ({
+tests/helpers/battleEngineFacade.test.js:      TimerController: vi.fn().mockImplementation(() => ({
+tests/helpers/battleEngineFacade.test.js-        startRound,
+--
+tests/helpers/gameModeUtils.test.js-    const mod = await import("../../src/helpers/gameModeUtils.js");
+tests/helpers/gameModeUtils.test.js:    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/gameModeUtils.test.js-    const result = await mod.loadNavigationItems();
+--
+tests/helpers/BattleEngine.test.js-    const handler = vi.fn();
+tests/helpers/BattleEngine.test.js:    emitter.on("test", handler);
+tests/helpers/BattleEngine.test.js-    emitter.emit("test", 1);
+--
+tests/helpers/randomJudokaPage.drawButton.test.js-
+tests/helpers/randomJudokaPage.drawButton.test.js:    const generateRandomCard = vi.fn().mockImplementation(async (_c, _g, container) => {
+tests/helpers/randomJudokaPage.drawButton.test.js-      const card = document.createElement("div");
+--
+tests/helpers/bottomNavigation.test.js-    const ready = new Promise((resolve) =>
+tests/helpers/bottomNavigation.test.js:      document.addEventListener("nav:ready", resolve, { once: true })
+tests/helpers/bottomNavigation.test.js-    );
+--
+tests/helpers/bottomNavigation.test.js-    const ready = new Promise((resolve) =>
+tests/helpers/bottomNavigation.test.js:      document.addEventListener("nav:ready", resolve, { once: true })
+tests/helpers/bottomNavigation.test.js-    );
+--
+tests/helpers/settingsUtils.test.js-    const { loadSettings } = await import("../../src/helpers/settingsStorage.js");
+tests/helpers/settingsUtils.test.js:    const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => {});
+tests/helpers/settingsUtils.test.js-    const settings = await loadSettings();
+--
+tests/helpers/carouselController.test.js-  it("removes input listeners on destroy", () => {
+tests/helpers/carouselController.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/carouselController.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/carouselController.test.js-
+--
+tests/helpers/carouselController.test.js-  it("resets state on cancel events", () => {
+tests/helpers/carouselController.test.js:    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+tests/helpers/carouselController.test.js:    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+tests/helpers/carouselController.test.js-
+--
+tests/helpers/domReady.test.js-    });
+tests/helpers/domReady.test.js:    const addSpy = vi.spyOn(document, "addEventListener");
+tests/helpers/domReady.test.js-    const { onDomReady } = await import("../../src/helpers/domReady.js");

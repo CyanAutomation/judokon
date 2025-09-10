@@ -1,0 +1,28 @@
+tests/pages/battleCLI.onKeyDown.test.js-describe("battleCLI onKeyDown", () => {
+tests/pages/battleCLI.onKeyDown.test.js:  let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy;
+tests/pages/battleCLI.onKeyDown.test.js-
+--
+tests/pages/battleCLI.onKeyDown.test.js-      battleCLI: __test,
+tests/pages/battleCLI.onKeyDown.test.js:      getEscapeHandledPromise
+tests/pages/battleCLI.onKeyDown.test.js-    } = await import("../../src/pages/index.js"));
+--
+tests/pages/battleCLI.onKeyDown.test.js-    expect(sec.hidden).toBe(false);
+tests/pages/battleCLI.onKeyDown.test.js:    const handled = getEscapeHandledPromise();
+tests/pages/battleCLI.onKeyDown.test.js-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+--
+tests/pages/battleCLI.onKeyDown.test.js-      } else if (action === "escape") {
+tests/pages/battleCLI.onKeyDown.test.js:        const handled = getEscapeHandledPromise();
+tests/pages/battleCLI.onKeyDown.test.js-        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+--
+tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js-
+tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js:    const timeoutPromise = battleMod.getRoundTimeoutPromise();
+tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js:    const countdownPromise = battleMod.getCountdownStartedPromise();
+tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js-
+--
+tests/helpers/timerService.test.js-vi.mock("../../src/helpers/timerUtils.js", () => ({
+tests/helpers/timerService.test.js:  getDefaultTimer: () => Promise.resolve(2)
+tests/helpers/timerService.test.js-}));
+--
+playwright/fixtures/waits.js- */
+playwright/fixtures/waits.js:export async function waitForNextRoundReadyEvent(page, timeout = 4000) {
+playwright/fixtures/waits.js-  await page.waitForFunction(
