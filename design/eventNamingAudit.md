@@ -1,4 +1,5 @@
 # Event System Audit Report
+
 Generated: 2025-09-10T13:18:40.632Z
 
 ## Summary
@@ -76,6 +77,7 @@ Generated: 2025-09-10T13:18:40.632Z
 ## Current Event Names Analysis
 
 **All unique event names currently in use:**
+
 ```
 "battleStateChange"
 "control.countdown.completed"
@@ -123,31 +125,32 @@ Generated: 2025-09-10T13:18:40.632Z
 
 ### Proposed Structure
 
-**timer.***: timer.roundExpired, timer.countdownStarted, timer.statSelectionExpired, timer.cooldownFinished
-**ui.***: ui.statButtonsEnabled, ui.statButtonsDisabled, ui.cardsRevealed, ui.countdownStarted
-**state.***: state.transitioned, state.matchStarted, state.roundStarted, state.matchOver
-**player.***: player.statSelected, player.interrupted, player.actionTimeout
-**scoreboard.***: scoreboard.messageShown, scoreboard.messageCleared, scoreboard.scoreUpdated
-**debug.***: debug.panelUpdated, debug.stateExposed
+**timer.\***: timer.roundExpired, timer.countdownStarted, timer.statSelectionExpired, timer.cooldownFinished
+**ui.\***: ui.statButtonsEnabled, ui.statButtonsDisabled, ui.cardsRevealed, ui.countdownStarted
+**state.\***: state.transitioned, state.matchStarted, state.roundStarted, state.matchOver
+**player.\***: player.statSelected, player.interrupted, player.actionTimeout
+**scoreboard.\***: scoreboard.messageShown, scoreboard.messageCleared, scoreboard.scoreUpdated
+**debug.\***: debug.panelUpdated, debug.stateExposed
 
 ## Migration Mapping
 
 ### High-Priority Migrations
 
-| Current Name | Proposed Name | Category | Priority |
-|--------------|---------------|----------|----------|
-| `roundTimeout` | `timer.roundExpired` | timer | High |
-| `statButtons:enable` | `ui.statButtonsEnabled` | ui | Medium |
-| `statButtons:disable` | `ui.statButtonsDisabled` | ui | Medium |
-| `scoreboardShowMessage` | `scoreboard.messageShown` | scoreboard | Medium |
-| `scoreboardClearMessage` | `scoreboard.messageCleared` | scoreboard | Medium |
-| `debugPanelUpdate` | `debug.panelUpdated` | debug | Medium |
-| `matchOver` | `state.matchOver` | state | High |
-| `statSelected` | `player.statSelected` | player | Medium |
+| Current Name             | Proposed Name               | Category   | Priority |
+| ------------------------ | --------------------------- | ---------- | -------- |
+| `roundTimeout`           | `timer.roundExpired`        | timer      | High     |
+| `statButtons:enable`     | `ui.statButtonsEnabled`     | ui         | Medium   |
+| `statButtons:disable`    | `ui.statButtonsDisabled`    | ui         | Medium   |
+| `scoreboardShowMessage`  | `scoreboard.messageShown`   | scoreboard | Medium   |
+| `scoreboardClearMessage` | `scoreboard.messageCleared` | scoreboard | Medium   |
+| `debugPanelUpdate`       | `debug.panelUpdated`        | debug      | Medium   |
+| `matchOver`              | `state.matchOver`           | state      | High     |
+| `statSelected`           | `player.statSelected`       | player     | Medium   |
 
 ## Test Integration Points
 
 **Test helper functions that need updating:**
+
 - `getCountdownStartedPromise`
 - `getEscapeHandledPromise`
 - `getRoundTimeoutPromise`

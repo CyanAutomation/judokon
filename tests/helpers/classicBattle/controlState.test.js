@@ -28,7 +28,7 @@ vi.mock("../../../src/helpers/classicBattle/interruptHandlers.js", () => ({
   initInterruptHandlers: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
-  onNextButtonClick: vi.fn(),
+  onNextButtonClick: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/uiHelpers.js");
@@ -96,7 +96,7 @@ describe("classicBattle battle control state", () => {
 
   it("resetBattleUI replaces Next button and reattaches click handler", async () => {
     const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
-    const onNextButtonClickSpy = vi.spyOn(timerSvc, 'onNextButtonClick'); // Spy on the imported mock
+    const onNextButtonClickSpy = vi.spyOn(timerSvc, "onNextButtonClick"); // Spy on the imported mock
     const { resetBattleUI } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     const btn = document.querySelector('[data-role="next-round"]');
     btn.dataset.nextReady = "true";

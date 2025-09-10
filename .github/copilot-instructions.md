@@ -38,12 +38,14 @@
 This project contains a high-performance vector database with 16,000+ indexed chunks covering documentation, code standards, and game rules. RAG queries return results in ~2 seconds with 62.5% accuracy for finding correct sources.
 
 ### 🚀 Performance Benefits
+
 - **⚡ 15x Speed Boost:** 2-second RAG queries vs 30+ seconds of manual exploration
 - **🎯 High Accuracy:** 62.5% success rate for implementation queries, 95% for design docs
 - **🧠 Comprehensive Coverage:** PRDs, design guidelines, code patterns, and test examples
 - **📊 Proven Success:** Currently serving production-level results for architectural queries
 
 ### ⚡ Simple Usage Rule
+
 **Default to RAG for ANY question containing:** "How", "Why", "What", "Where", "Which", or when requesting examples/references.
 
 **When in doubt → Query RAG first.**
@@ -51,22 +53,24 @@ This project contains a high-performance vector database with 16,000+ indexed ch
 ### 🎯 Optimized Query Patterns
 
 **High-Success Examples:**
+
 ```
-✅ "tooltip implementation data structure JSON format" 
+✅ "tooltip implementation data structure JSON format"
 ✅ "navigation bar button transition duration styling"
 ✅ "classic battle mode game timer phases scoreboard"
 ✅ "judoka bio tone guidelines character design"
 ```
 
 **Pattern Guide:**
+
 - Include **file types**: "JSON structure", "CSS styling", "JavaScript function"
-- Add **context**: "configuration", "data format", "UI component"  
+- Add **context**: "configuration", "data format", "UI component"
 - Use **technical terms**: "implementation", "validation", "guidelines"
 
 ### 🔄 Smart Workflow
 
 1. **Primary RAG Query** → Use user's terms with optimization
-2. **If results are weak** → Rephrase with technical/synonym terms  
+2. **If results are weak** → Rephrase with technical/synonym terms
 3. **If still weak** → Use broader category approach
 4. **Final step** → Combine RAG context with targeted file search
 
@@ -81,13 +85,15 @@ This project contains a high-performance vector database with 16,000+ indexed ch
 **Outcome:** Correct implementation on first attempt
 
 ### 📋 Quick Reference
+
 - **Strong Categories:** Design docs (95%), PRDs (90%), Architecture (85%)
 - **Improving Categories:** Implementation files (35% → targeting 60%)
 - **Detailed Guide:** See [`ragUsageGuide.md`](design/agentWorkflows/ragUsageGuide.md)
 
 You **MUST** use RAG as your first step for questions related to:
+
 1. **"How-to" or "Why"** questions
-2. **Definitions** and terminology  
+2. **Definitions** and terminology
 3. **Conventions and Standards**
 4. **Existing Implementations** and examples
 

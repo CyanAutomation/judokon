@@ -18,7 +18,7 @@ describe("Debug Logger Integration", () => {
   beforeEach(() => {
     // Create a test logger instance
     logger = new BattleDebugLogger({ enabled: true, outputMode: "memory" });
-    
+
     // Spy on console to ensure no violations
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
