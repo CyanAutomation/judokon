@@ -245,6 +245,7 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 - **Action:** Simplify the RAG decision tree for agents
 - **Current Issue:** Complex categorization ("How-to", "Definitions", "Conventions", "Implementations")
 - **Solution:** Replace with simple trigger patterns:
+
   ```markdown
   🔍 **When to use RAG (Simple Rule):**
 
@@ -276,6 +277,7 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 **5. Real-Time Success Feedback**
 
 - **Implementation:** Add success metrics display to agent instructions:
+
   ```markdown
   ## 📊 RAG Performance Dashboard
 

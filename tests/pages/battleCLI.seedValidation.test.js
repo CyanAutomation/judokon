@@ -34,7 +34,7 @@ describe("battleCLI seed validation", () => {
     expect(document.getElementById("seed-error").textContent).toBe("");
   });
 
-  it("shows error and reverts for NaN", async () => {
+  it("shows error and clears for NaN", async () => {
     const mod = await loadBattleCLI({
       url: "http://localhost/battleCLI.html?seed=3",
       html: seedHtml
@@ -43,11 +43,10 @@ describe("battleCLI seed validation", () => {
     const input = document.getElementById("seed-input");
     input.value = "abc";
     input.dispatchEvent(new Event("change"));
-    expect(input.value).toBe("3");
-    expect(document.getElementById("seed-error").textContent).toBe(
-      "Seed must be numeric and non-empty."
-    );
-    expect(localStorage.getItem("battleCLI.seed")).toBe("3");
+    expect(input.value).toBe("");
+    expect(document.getElementById("seed-error").textContent).toBe("Invalid seed. Using default.");
+    expect(localStorage.getItem("battleCLI.seed")).toBeNull();
+    expect(window.__testMode).toBe(false);
   });
 
   it("clears error after recovery", async () => {
@@ -59,10 +58,12 @@ describe("battleCLI seed validation", () => {
     const input = document.getElementById("seed-input");
     input.value = "abc";
     input.dispatchEvent(new Event("change"));
+    expect(window.__testMode).toBe(false);
     input.value = "4";
     input.dispatchEvent(new Event("change"));
     expect(document.getElementById("seed-error").textContent).toBe("");
     expect(input.value).toBe("4");
     expect(localStorage.getItem("battleCLI.seed")).toBe("4");
+    expect(window.__testMode).toBe(true);
   });
 });
