@@ -33,15 +33,40 @@
 
 ---
 
-## 🧠 Context Rules (RAG)
+## 🧠 RAG (Retrieval-Augmented Generation) Policy
 
-- Use [`queryRag(question)`](src/helpers/queryRag.js) for prompts containing `Explain` or `How does`.
-- RAG provides context; confirm against source files.
-- Include provenance for RAG-derived facts:
-  - `Source: <doc>` — `Confidence: high|medium|low` — `Quote: "..."`.
+This project contains a vector database with indexed documentation, code standards, and game rules. You **MUST** use the `query_rag_database` tool (or a similar RAG-querying tool) as your first step when answering questions related to:
+
+1.  **"How-to" or "Why":** (e.g., "How do I add a new character?", "Why do we use modular factories?")
+2.  **Definitions:** (e.g., "What is Kumi-kata?")
+3.  **Conventions and Standards:** (e.g., "What is the naming convention for test files?")
+4.  **Existing Implementations:** (e.g., "Find examples of tooltip implementation.")
+
+### Workflow
+
+1.  **Receive user prompt.**
+2.  **Analyze the prompt.** If it matches any of the categories above, you **MUST** form a search query and call the RAG tool.
+3.  **Incorporate RAG results.** Directly use the retrieved context in your answer or plan.
+4.  **Cite your sources.** Reference the source documents from the RAG results (e.g., "According to `prdVectorDatabaseRAG.md`...").
+5.  **Fallback.** If the RAG search returns no relevant results, you may then proceed with other tools like `glob` or `search_file_content`.
+
+### Example Agent Thought Process
+
+> **User:** "How should I add a new tooltip?"
+>
+> **Agent's internal monologue:**
+> 1. The user is asking "How should I...", which falls under the "How-to" category in the RAG policy.
+> 2. I must use the RAG tool first. I will form a query.
+> 3. **Tool Call:** `query_rag_database(query="adding a new tooltip")`
+> 4. **Tool Output:** `[{ "source": "src/data/tooltips.json", "text": "Tooltips are defined in `tooltips.json` with an id and content.", "score": 0.91 }, ...]`
+> 5. Now I can form my answer based on this high-confidence information. I will explain that tooltips are added to `src/data/tooltips.json` and describe the required format.
+
+### Provenance
+
+When using information from the RAG tool, include provenance for the facts:
+- `Source: <doc>` — `Confidence: high|medium|low` — `Quote: "..."`.
 
 RAG Provenance JSON schema:
-
 ```json
 {
   "source": "design/agentWorkflows/exampleVectorQueries.md",

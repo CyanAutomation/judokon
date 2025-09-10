@@ -163,11 +163,40 @@ function createSparseVector(text) {
 }
 
 async function loadModel() {
+  // Logic copied from the working generateEmbeddings.js script
   if (typeof process !== "undefined" && process.versions?.node) {
+    const { stat } = await import("node:fs/promises");
+    const { createRequire } = await import("node:module");
+    const nodeRequire = createRequire(import.meta.url);
+
     env.allowLocalModels = true;
-    const modelDir = path.join(rootDir, "models/minilm");
-    const modelUrl = pathToFileURL(modelDir).href;
-    return pipeline("feature-extraction", modelUrl, { quantized: true });
+    env.localModelPath = rootDir;
+    try {
+      const workerPath = nodeRequire.resolve(
+        "onnxruntime-web/dist/ort-wasm-simd-threaded.worker.js"
+      );
+      await stat(workerPath);
+      const ortDir = path.dirname(workerPath);
+      env.backends.onnx.wasm.wasmPaths = ortDir + path.sep;
+      env.backends.onnx.wasm.worker = workerPath;
+    } catch {
+      // ONNX runtime not found, use library defaults
+    }
+    env.backends.onnx.wasm.proxy = false;
+    const modelDir = path.join("models", "minilm");
+    const configPath = path.join(rootDir, modelDir, "config.json");
+
+    try {
+      await stat(configPath);
+      return pipeline("feature-extraction", modelDir, { quantized: true });
+    } catch {
+      console.warn(
+        "Local model not found; falling back to Xenova/all-MiniLM-L6-v2"
+      );
+      return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+        quantized: true
+      });
+    }
   }
   return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
     quantized: true
