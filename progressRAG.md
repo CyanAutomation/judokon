@@ -640,6 +640,7 @@ This section evaluates the RAG tools available to AI agents based on documentati
 - Focused evaluator indicates stable latency and no regressions; accuracy impact will be monitored as we expand allowlists and refine queries.
 
 Unit test impact and fixes
+
 - Some unit tests relied on implicit loader behavior. After we refactored the scorer to use the centralized loader, tests were updated to inject sample entries directly into `findMatches` via a new optional `entriesOverride` argument. This keeps unit tests deterministic and isolates them from I/O.
 - The `queryRag` test was updated to mock `vectorSearch.findMatches` so the test remains focused on synonym expansion and extractor usage rather than loader behavior.
 - A precision test was simplified to validate decimal rounding without invoking the loader to avoid timeouts.
@@ -650,7 +651,9 @@ Unit test impact and fixes
   - `navigationItems.js`: now includes `label`, `name`, `title` in addition to `url`, `category`.
   - `settings.json`: now includes `sound`, `defaults`, `volume` (alongside `displayMode`, `aiDifficulty`).
   - `statNames.js`: explicitly includes stat keys such as `power`, `speed`, `technique` in addition to generic name/description fields.
+
 ### Phase 9 – Actions Taken & Outcome
+
 - Embeddings regenerated with updated allowlists (bundle ~9.07MB). Focused evaluator on this profile:
   - MRR@5: 0.3333; Recall@3: 0.4375; Recall@5: 0.4375; Latency avg ~55ms; p95 ~22ms.
 - Observations: allowlist exposure helped surface some data-chunk references (e.g., tooltips entries for sound/labels), but several expected data sources still lag for direct key queries (navigation items, statNames, gameTimers). Next steps:
