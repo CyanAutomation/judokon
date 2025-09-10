@@ -90,7 +90,7 @@ export function emitBattleEvent(type, detail) {
   try {
     // Debug logging for event emission
     logEventEmit(type, detail, { timestamp: Date.now() });
-    
+
     getTarget().dispatchEvent(new CustomEvent(type, { detail }));
   } catch (error) {
     console.error(`[battleEvents] Failed to emit event "${type}":`, error);
@@ -116,7 +116,7 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
   try {
     // Debug logging for aliased event emission
     eventLogger.event(`Emitting with aliases: ${type}`, detail, { options });
-    
+
     // Dynamic import to avoid circular dependencies
     import("./eventAliases.js").then(({ emitBattleEventWithAliases: aliasEmitter }) => {
       aliasEmitter(type, detail, options);

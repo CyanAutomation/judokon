@@ -88,7 +88,7 @@ export async function initRoundSelectModal(onStart) {
 
   try {
     // Use localStorage directly to match how tests set values via page.addInitScript
-    const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
+    const storage = wrap(BATTLE_POINTS_TO_WIN);
     const saved = storage.get();
     if (POINTS_TO_WIN_OPTIONS.includes(Number(saved))) {
       try {

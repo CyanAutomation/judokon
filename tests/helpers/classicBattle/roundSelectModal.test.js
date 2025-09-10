@@ -117,16 +117,10 @@ describe("initRoundSelectModal", () => {
   });
 
   it("uses persisted selection when available and skips modal", async () => {
-    // Explicitly mock telemetry.js within the test block
-    vi.doMock("../../../src/helpers/telemetry.js", () => ({ logEvent: vi.fn() }));
-
-    // Import logEvent and initRoundSelectModal after the mock is set up
-    const { logEvent } = await import("../../../src/helpers/telemetry.js");
-    const { initRoundSelectModal } = await import("../../../src/helpers/classicBattle/roundSelectModal.js");
     const onStart = vi.fn();
     wrap(BATTLE_POINTS_TO_WIN).set(rounds[1].value);
     await initRoundSelectModal(onStart);
-        expect(logEvent).toHaveBeenCalledWith("battle.start", {
+    expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
       pointsToWin: rounds[1].value,
       source: "storage"
     });
