@@ -26,6 +26,36 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 
+// Store the active selection timer for cleanup when stat selection occurs
+let activeSelectionTimer = null;
+
+/**
+ * Stop the active selection timer and clear the timer display.
+ *
+ * @pseudocode
+ * 1. Stop the active timer if one exists.
+ * 2. Clear the timer display element.
+ * 3. Reset the stored timer reference.
+ */
+function stopActiveSelectionTimer() {
+  if (activeSelectionTimer) {
+    try {
+      activeSelectionTimer.stop();
+    } catch {}
+    activeSelectionTimer = null;
+  }
+  // Clear the timer display
+  try {
+    const el = document.getElementById("next-round-timer");
+    if (el) el.textContent = "";
+  } catch {}
+}
+
+// Expose the timer cleanup function globally for use by selectionHandler
+if (typeof window !== "undefined") {
+  window.__battleClassicStopSelectionTimer = stopActiveSelectionTimer;
+}
+
 /**
  * Initialize the battle state badge based on feature flag state.
  * Uses synchronous DOM manipulation to avoid race conditions.
@@ -212,6 +242,8 @@ async function beginSelectionTimer(store) {
       },
       pauseOnHidden: false
     });
+    // Store the timer so it can be stopped when stat selection occurs
+    activeSelectionTimer = timer;
     timer.start();
     return;
   }

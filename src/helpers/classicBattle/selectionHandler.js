@@ -202,6 +202,12 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
         const msg = document.getElementById("round-message");
         if (msg) msg.textContent = "";
       } catch {}
+      // Stop the active selection timer created in battleClassic.init.js
+      try {
+        if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
+          window.__battleClassicStopSelectionTimer();
+        }
+      } catch {}
       // Snackbar display is handled elsewhere based on resolution path
     }
   } catch {}
