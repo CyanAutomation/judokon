@@ -136,25 +136,28 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("state badge visible when flag enabled", async ({ page }) => {
-    await page.addInitScript(() => {
-      try {
-        // Keep existing storage values and add feature flag
-        localStorage.setItem("battleCLI.verbose", "false");
-        localStorage.setItem("battleCLI.pointsToWin", "5");
-        localStorage.setItem("battle.pointsToWin", "5");
-        localStorage.setItem(
-          "settings",
-          JSON.stringify({
-            featureFlags: { cliShortcuts: { enabled: true }, battleStateBadge: { enabled: true } }
-          })
-        );
-      } catch {}
-      // Speed up inter-round where possible
-      window.__NEXT_ROUND_COOLDOWN_MS = 0;
-    });
-    await page.reload(); // reload to apply the init script
-    await page.locator("#start-match-button").click();
+    // Wait for battle to start normally (beforeEach should handle this)
     await waitForBattleState(page, "waitingForPlayerAction", 15000);
+
+    // Now set the battleStateBadge feature flag dynamically
+    await page.evaluate(() => {
+      try {
+        const current = localStorage.getItem("settings");
+        const settings = current ? JSON.parse(current) : {};
+        settings.featureFlags = settings.featureFlags || {};
+        settings.featureFlags.battleStateBadge = { enabled: true };
+        localStorage.setItem("settings", JSON.stringify(settings));
+
+        // Try to trigger the feature flag update
+        if (window.featureFlagsEmitter && window.featureFlagsEmitter.dispatchEvent) {
+          window.featureFlagsEmitter.dispatchEvent(
+            new CustomEvent("change", { detail: { flag: "battleStateBadge" } })
+          );
+        }
+      } catch (err) {
+        console.log("Error updating feature flag:", err);
+      }
+    });
     const badge = page.locator("#battle-state-badge");
     await expect(badge).toBeVisible();
     await expect(badge).toContainText(/State:\s*waitingForPlayerAction/);
