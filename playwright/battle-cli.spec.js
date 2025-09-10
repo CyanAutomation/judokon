@@ -181,7 +181,7 @@ test.describe("Classic Battle CLI", () => {
         localStorage.setItem("battle.pointsToWin", "5");
         localStorage.setItem("battleCLI.verbose", "true");
       } catch {}
-      
+
       // Speed up battle progression
       window.__NEXT_ROUND_COOLDOWN_MS = 0;
     });
@@ -230,7 +230,26 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("help panel toggles via keyboard and close button", async ({ page }) => {
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    });
+
+    await page.goto("/src/pages/battleCLI.html?autostart=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
+
     const panel = page.locator("#cli-shortcuts");
     await expect(panel).toBeHidden();
     await page.keyboard.press("h");
@@ -241,15 +260,31 @@ test.describe("Classic Battle CLI", () => {
 
   test("closing help panel ignores next advance click", async ({ page }) => {
     await page.addInitScript(() => {
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
       window.__NEXT_ROUND_COOLDOWN_MS = 10000;
     });
-    await page.reload();
-    await page.locator("#start-match-button").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+
+    await page.goto("/src/pages/battleCLI.html?autostart=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
 
     // Play first round; machine auto-advances outcome to cooldown
     await page.keyboard.press("1");
-    await waitForBattleState(page, "cooldown", 10000);
+    await page.waitForSelector('[data-battle-state="cooldown"]', {
+      state: "attached",
+      timeout: 10000
+    });
 
     // Close shortcuts panel
     await page.keyboard.press("h");
@@ -262,29 +297,54 @@ test.describe("Classic Battle CLI", () => {
 
     // Second click advances to next round
     await page.locator("body").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 10000);
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
   });
 
   test("plays a full round and skips cooldown", async ({ page }) => {
     await page.addInitScript(() => {
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
       window.__NEXT_ROUND_COOLDOWN_MS = 3000;
     });
-    await page.reload();
-    await page.locator("#start-match-button").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+
+    await page.goto("/src/pages/battleCLI.html?autostart=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
 
     const score = page.locator("#cli-score");
 
     await page.keyboard.press("1");
-    await waitForBattleState(page, "cooldown", 10000);
+    await page.waitForSelector('[data-battle-state="cooldown"]', {
+      state: "attached",
+      timeout: 10000
+    });
     const playerAfterRound = await score.getAttribute("data-score-player");
     const opponentAfterRound = await score.getAttribute("data-score-opponent");
     const cardBefore = await page.locator("#player-card ul").elementHandle();
 
-    await waitForBattleState(page, "cooldown", 10000);
+    await page.waitForSelector('[data-battle-state="cooldown"]', {
+      state: "attached",
+      timeout: 10000
+    });
     // Pressing Enter advances to the next round
     await page.keyboard.press("Enter");
-    await waitForBattleState(page, "waitingForPlayerAction", 10000);
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
     const cardAfter = await page.locator("#player-card ul").elementHandle();
     const playerAfterCooldown = await score.getAttribute("data-score-player");
     const opponentAfterCooldown = await score.getAttribute("data-score-opponent");

@@ -345,6 +345,8 @@ The investigation successfully identified and resolved the core technical issue 
 
 ## Implementation Notes
 
+## Implementation Notes
+
 The core lesson from this investigation is that **Playwright tests should avoid page reloads** and instead:
 
 1. Use `page.addInitScript()` to set up window overrides
@@ -353,3 +355,40 @@ The core lesson from this investigation is that **Playwright tests should avoid 
 4. Prefer deterministic initial setup over dynamic runtime changes
 
 This aligns with Playwright best practices and the existing codebase patterns seen in other successful tests.
+
+## Extended Investigation: Additional Test Failures
+
+### Second Test Fixed: ✅ "verbose log toggles and records transitions"
+
+**Issue**: Same pattern as badge test - waiting for `#start-match-button` that never appeared due to battle initialization failure.
+
+**Solution Applied**: 
+- Used `?autostart=1&verbose=1` URL parameters
+- Added `addInitScript()` setup for localStorage state  
+- Replaced `waitForBattleState()` with `waitForSelector('[data-battle-state="..."]')`
+- **Result**: ✅ Test passes in 6.2s (was timing out at 30s)
+
+### Remaining Test Issues Identified
+
+**8 additional tests failing** with the same core pattern:
+- `help panel toggles via keyboard and close button`
+- `closing help panel ignores next advance click` 
+- `plays a full round and skips cooldown`
+- `skips cooldown with Space key`
+- `scoreboard updates after each round`
+- `allows tab navigation without invalid key messages`
+- `returns to lobby after quitting`
+- `shows restart control after match completes`
+
+**Root Causes**:
+1. **Tests bypassing beforeEach**: Some tests call `page.goto()` directly, skipping the `beforeEach` setup that handles battle initialization
+2. **Tests using page.reload()**: Several tests call `page.reload()` which breaks the battle system initialization we fixed
+3. **Tests depending on waitForBattleState()**: All failing tests use the `waitForBattleState()` helper instead of DOM selectors
+
+**Systematic Fix Required**: Apply the same pattern used for badge and verbose tests:
+- Individual `addInitScript()` setup per test
+- Use `?autostart=1` parameter consistently  
+- Replace `waitForBattleState()` with `waitForSelector('[data-battle-state="..."]')`
+- Eliminate all `page.reload()` calls in favor of proper initialization
+
+```
