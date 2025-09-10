@@ -33,7 +33,7 @@ export async function evaluate() {
     // --- START: Added logging for detailed analysis ---
     console.log(`\n--- Query: "${query}" ---`);
     console.log(`Expected Source: "${expected_source}"`);
-    console.log(`Rank Found: ${rank > 0 ? rank : 'Not Found'}`);
+    console.log(`Rank Found: ${rank > 0 ? rank : "Not Found"}`);
     console.log("Top Results:");
     results.slice(0, 3).forEach((result, index) => {
       console.log(`  ${index + 1}. Source: "${result.source}", Score: ${result.score.toFixed(4)}`);
