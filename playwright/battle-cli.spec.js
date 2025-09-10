@@ -138,11 +138,19 @@ test.describe("Classic Battle CLI", () => {
   test("state badge visible when flag enabled", async ({ page }) => {
     await page.addInitScript(() => {
       try {
+        // Keep existing storage values and add feature flag
+        localStorage.setItem("battleCLI.verbose", "false");
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
         localStorage.setItem(
           "settings",
-          JSON.stringify({ featureFlags: { battleStateBadge: { enabled: true } } })
+          JSON.stringify({
+            featureFlags: { cliShortcuts: { enabled: true }, battleStateBadge: { enabled: true } }
+          })
         );
       } catch {}
+      // Speed up inter-round where possible
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
     });
     await page.reload(); // reload to apply the init script
     await page.locator("#start-match-button").click();

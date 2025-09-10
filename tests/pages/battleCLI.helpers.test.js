@@ -58,7 +58,8 @@ describe("battleCLI helper exports", () => {
     const addWin = vi.spyOn(window, "addEventListener");
     const addDoc = vi.spyOn(document, "addEventListener");
     vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      onBattleEvent: vi.fn()
+      onBattleEvent: vi.fn(),
+      emitBattleEvent: vi.fn()
     }));
     const mod = await import("../../src/pages/index.js");
     mod.wireEvents();
