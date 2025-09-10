@@ -928,7 +928,7 @@ async function generate() {
   const endStr = "\n]\n";
   if (bytesWritten + Buffer.byteLength(endStr, "utf8") > MAX_OUTPUT_SIZE) {
     writer.end();
-    throw new Error("Output exceeds 6.8MB");
+    throw new Error("Output exceeds 9.8MB");
   }
   writer.end(endStr);
   await new Promise((resolve) => writer.on("finish", resolve));

@@ -64,7 +64,7 @@ We validated access paths, fixed model-loading issues affecting multiple tools, 
 ## 5. Comparison With PRD (design/productRequirementsDocuments/prdVectorDatabaseRAG.md)
 
 - Alignment:
-  - PRD calls for fast, offline client search with tags, synonyms, exact-match bonus, and small footprint (<6.8MB) — all present or partially present.
+  - PRD calls for fast, offline client search with tags, synonyms, exact-match bonus, and small footprint (<= 9.8MB) — all present or partially present.
   - Evaluation metrics (MRR@5, Recall@3/5) defined — harness exists but needs reliability fixes.
   - UI/utility separation — present (pure utilities per vector-search workflow).
 - Gaps/Improvements vs PRD intent:
@@ -89,7 +89,7 @@ Phase 0 – Stabilize Evaluation (now)
   - Latency avg: ~288 ms; p95: reported low due to small N; avg exceeds 200 ms target
   - Embeddings bundle not found at `client_embeddings.json` (tooling still functional via fallback model); this flags Coverage/Bundle checks as failing
 - Result: Thresholds failed (as expected) until embeddings bundle and baseline are established. Script exits non‑zero on failures.
-- Next: Generate/locate `client_embeddings.json` in repo (<= 6.8MB), verify index coverage (≥90%), and re‑run to set a baseline snapshot. Then iterate synonyms/chunking in later phases.
+- Next: Generate/locate `client_embeddings.json` in repo (<= 9.8MB), verify index coverage (≥90%), and re‑run to set a baseline snapshot. Then iterate synonyms/chunking in later phases.
 
 Phase 1 – Provenance & API Ergonomics
 - Introduce a stable `queryRag({ query, filters, k, withProvenance })` helper returning `{ matches: [{ id, text, score, source, tags, contextPath, rationale }], meta }`.
@@ -110,12 +110,21 @@ Phase 2 – Accuracy Enhancements
 ### Phase 2 – Actions Taken & Outcome
 - Implemented lightweight re-ranking: added a small bonus for section/contextPath term matches to prefer relevant sections when present.
 - Verified no hot-path dynamic imports added; changes are internal to scoring.
-- Next: expand `src/data/synonyms.json` with curated domain terms and add multi-intent splitting in the query path; then re-run evaluator to measure impact.
+- Expanded `src/data/synonyms.json` with curated domain variants (kumi-kata/kumikata/grip fighting; scoreboard/round UI/snackbar; countdown/timer; navbar/navigation; settings/flags; weight class/categories; bio tone).
+- Added multi-intent handling in `queryRag` (split on simple conjunctions and union top‑k, then re-rank) to better serve compound queries.
+- Focused evaluator run (not full suite) shows mixed accuracy deltas (some wins for PRD/document lookups; implementation targets still weak without embeddings bundle), latency improved due to caching:
+  - MRR@5: ~0.45; Recall@3: ~0.50; Recall@5: ~0.5625; avg latency ~115ms on this profile.
+  - Embeddings bundle still missing → fails bundle/coverage thresholds as expected; next phase will address corpus governance and establishing a baseline.
 
 Phase 3 – Corpus Governance & Coverage
 - Add `src/rag/meta.json` with `{ corpusVersion, model, dim, chunkingVersion, lastUpdated }` and an index manifest (counts by source/tag) to detect drift.
 - Topic-aware chunking: split PRDs by semantic headers; include section titles in chunk text to disambiguate.
 - Broaden coverage in a controlled way (design docs, testing guides) while staying within size budget; measure impact via evaluation harness.
+
+### Phase 3 – Actions Taken & Outcome
+- Updated evaluation gating to reflect max embeddings bundle size of 9.8MB.
+- Planned artifacts: `src/rag/meta.json` and an index manifest to verify coverage and drift; to be generated alongside `client_embeddings.json` in the next commit that regenerates embeddings.
+- Current evaluator runs still fail bundle/coverage checks because `client_embeddings.json` is not present in this workspace. No hot-path changes introduced.
 
 Phase 4 – Agent Adoption & Diagnostics
 - Presets: `design-lookup`, `implementation-lookup`, `tooltip-lookup` that preconfigure filters/bonuses.

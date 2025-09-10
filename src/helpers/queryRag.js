@@ -27,7 +27,40 @@ export async function queryRag(question, opts = {}) {
     embedding && typeof embedding === "object" && "data" in embedding ? embedding.data : embedding;
   if (!isIterable(source)) return [];
   const vector = Array.from(source);
-  const matches = await vectorSearch.findMatches(vector, k, filters, question);
+  // Multi-intent: split simple conjunctions and union-re-rank
+  const subQueries = splitMultiIntent(question);
+  let matches;
+  if (subQueries.length > 1) {
+    const parts = await Promise.all(
+      subQueries.map(async (q) => {
+        const exp = await vectorSearch.expandQueryWithSynonyms(q);
+        const emb = await extractor(exp, { pooling: "mean" });
+        const src = emb && typeof emb === "object" && "data" in emb ? emb.data : emb;
+        const vec = Array.isArray(src) ? Array.from(src) : null;
+        if (!vec) return [];
+        return vectorSearch.findMatches(vec, k, filters, q);
+      })
+    );
+    const merged = Object.values(
+      Object.fromEntries(
+        parts
+          .flat()
+          .filter(Boolean)
+          .map((m) => [m.id || `${m.source}|${m.text?.slice(0,40)}`, m])
+      )
+    );
+    // Re-score merged against the main vector using original question text
+    matches = await vectorSearch.findMatches(vector, k, filters, question);
+    // Merge scores: prefer existing score if present else keep from merged set
+    const byId = new Map(matches.map((m) => [m.id || m.source, m]));
+    for (const m of merged) {
+      const key = m.id || m.source;
+      if (!byId.has(key)) byId.set(key, m);
+    }
+    matches = Array.from(byId.values()).sort((a, b) => b.score - a.score).slice(0, k);
+  } else {
+    matches = await vectorSearch.findMatches(vector, k, filters, question);
+  }
   if (!withProvenance || !Array.isArray(matches)) return matches;
   return matches.map((m) => ({
     ...m,
@@ -47,6 +80,13 @@ function buildRationale(query, match) {
   } catch {
     return "cosine+exact bonus";
   }
+}
+
+function splitMultiIntent(query) {
+  const raw = String(query).toLowerCase();
+  const parts = raw.split(/\b(?:and|\+|&|with|vs)\b/g).map((s) => s.trim()).filter(Boolean);
+  // Avoid over-splitting short queries
+  return parts.length >= 2 && raw.length >= 20 ? parts.slice(0, 3) : [raw];
 }
 
 export default queryRag;

@@ -136,28 +136,38 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("state badge visible when flag enabled", async ({ page }) => {
-    // Wait for battle to start normally (beforeEach should handle this)
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    // Set up feature flag before page load to avoid runtime changes
+    await page.addInitScript(() => {
+      // Override feature flags before page initialization
+      window.__FF_OVERRIDES = { battleStateBadge: true };
+    });
 
-    // Now set the battleStateBadge feature flag dynamically
     await page.evaluate(() => {
       try {
-        const current = localStorage.getItem("settings");
-        const settings = current ? JSON.parse(current) : {};
-        settings.featureFlags = settings.featureFlags || {};
-        settings.featureFlags.battleStateBadge = { enabled: true };
+        // Set feature flag in localStorage before page load
+        const settings = {
+          featureFlags: {
+            cliShortcuts: { enabled: true },
+            battleStateBadge: { enabled: true }
+          }
+        };
         localStorage.setItem("settings", JSON.stringify(settings));
 
-        // Try to trigger the feature flag update
-        if (window.featureFlagsEmitter && window.featureFlagsEmitter.dispatchEvent) {
-          window.featureFlagsEmitter.dispatchEvent(
-            new CustomEvent("change", { detail: { flag: "battleStateBadge" } })
-          );
-        }
-      } catch (err) {
-        console.log("Error updating feature flag:", err);
-      }
+        // Speed up battle progression
+        window.__NEXT_ROUND_COOLDOWN_MS = 0;
+      } catch {}
     });
+
+    // Load page with autostart to avoid modal/click issues
+    await page.goto("/src/pages/battleCLI.html?autostart=1");
+
+    // Wait for battle to reach active state (it progresses automatically)
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
+
+    // Now check that badge is visible and has correct content
     const badge = page.locator("#battle-state-badge");
     await expect(badge).toBeVisible();
     await expect(badge).toContainText(/State:\s*waitingForPlayerAction/);

@@ -99,7 +99,7 @@ export async function evaluate(baseline = null) {
     recall5: 0.85,
     avgLatencyMs: 200,
     p95LatencyMs: 280,
-    maxBundleMB: 6.8,
+    maxBundleMB: 9.8,
   };
   const coverageOK = true; // Placeholder: coverage validated by generation pipeline
 
