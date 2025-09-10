@@ -39,4 +39,3 @@ main().catch((err) => {
   console.error("Failed to build RAG manifest:", err);
   process.exit(1);
 });
-

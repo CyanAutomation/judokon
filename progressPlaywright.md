@@ -14,9 +14,10 @@ Call log:
 
 ### Initial Analysis
 
-The test was failing because it couldn't find the `#start-mat### Systematic Fix Required**: Apply the same pattern used for badge and verbose tests:
+The test was failing because it couldn't find the `#start-mat### Systematic Fix Required\*\*: Apply the same pattern used for badge and verbose tests:
+
 - Individual `addInitScript()` setup per test
-- Use `?autostart=1` parameter consistently  
+- Use `?autostart=1` parameter consistently
 - Replace `waitForBattleState()` with `waitForSelector('[data-battle-state="..."]')`
 - Eliminate all `page.reload()` calls in favor of proper initialization
 
@@ -25,7 +26,8 @@ The test was failing because it couldn't find the `#start-mat### Systematic Fix 
 **Objective**: Fix all 8 remaining failing tests using the proven pattern
 
 **Tests Fixed**:
-1. ✅ `"help panel toggles via keyboard and close button"` 
+
+1. ✅ `"help panel toggles via keyboard and close button"`
 2. ✅ `"closing help panel ignores next advance click"`
 3. ✅ `"plays a full round and skips cooldown"`
 4. ✅ `"skips cooldown with Space key"`
@@ -35,6 +37,7 @@ The test was failing because it couldn't find the `#start-mat### Systematic Fix 
 8. ✅ `"shows restart control after match completes"`
 
 **Applied Pattern for Each Test**:
+
 1. **Individual Initialization**: Each test sets its own `addInitScript()` with:
    - localStorage configuration for battle settings
    - Feature flag setup for `cliShortcuts`
@@ -44,12 +47,14 @@ The test was failing because it couldn't find the `#start-mat### Systematic Fix 
 4. **Eliminated Anti-Patterns**: Removed all `page.reload()` calls that broke initialization
 
 **Performance Results**:
+
 - ✅ **All 12 battle-cli tests now pass** (was 4 passed / 8 failed)
 - ✅ **Total execution time: 1.1 minutes** (down from 4.3+ minutes with timeouts)
 - ✅ **Individual test performance**: Most tests now complete in 3-8 seconds instead of 30+ second timeouts
 - ✅ **Zero timeout failures**: All tests pass consistently
 
 **Architecture Improvements**:
+
 - **Eliminated Wait-Based Anti-Patterns**: Removed 15+ `waitForBattleState()` calls across 8 tests
 - **Consistent Initialization Strategy**: All tests now follow the same reliable pattern
 - **Better Test Isolation**: Each test manages its own setup without depending on `beforeEach` hooks
@@ -61,7 +66,8 @@ The test was failing because it couldn't find the `#start-mat### Systematic Fix 
 
 **Original Problem**: 9 Playwright tests failing with battle initialization timeouts
 
-**Final Results**: 
+**Final Results**:
+
 - ✅ **12/12 tests passing** (100% success rate)
 - ✅ **Performance improved by 75%**: 1.1 minutes total vs 4.3+ minutes with failures
 - ✅ **Zero wait-based anti-patterns remain**: All `waitForBattleState()` calls eliminated from failing tests
@@ -243,6 +249,7 @@ The issue **IS** with:
 - [x] Root cause is orchestrator initialization, not badge functionality
 
 ### **Phase 3: Solution Implementation** ✅ **COMPLETED**
+
 **Objective**: Fix the core technical issue without using page reloads
 
 ### Implementation Results
@@ -250,12 +257,13 @@ The issue **IS** with:
 **✅ Root Cause Fixed**: Dynamic import path resolution failures in Playwright browser context
 
 **✅ Technical Solutions Applied**:
-1. **Fixed Dynamic Import Path Resolution**: 
+
+1. **Fixed Dynamic Import Path Resolution**:
    - Updated 11 files with relative dynamic imports (`import("./module.js")`) to absolute paths (`import("/src/helpers/classicBattle/module.js")`)
    - Fixed files: `orchestrator.js`, `uiHelpers.js`, `quitButton.js`, `testHooks.js`, `roundUI.js`, `battleEvents.js`, `roundManager.js`
 
 2. **Fixed Engine/Orchestrator Assignment**:
-   - Added `getEngine()` export to `battleEngineFacade.js` 
+   - Added `getEngine()` export to `battleEngineFacade.js`
    - Modified `src/pages/battleCLI/init.js` to assign both `engine` and `orchestrator` to the battleStore
    - Now `window.battleStore.engine` and `window.battleStore.orchestrator` are properly populated
 
@@ -267,36 +275,42 @@ The issue **IS** with:
 ### Battle System Validation
 
 **✅ State Machine Working**: Battle now progresses correctly through all states:
+
 ```
 null → waitingForMatchStart → matchStart → cooldown → roundStart → waitingForPlayerAction
 ```
 
 **✅ Component Initialization**: Debug tests confirmed:
+
 - `storeEngine: "exists"` (previously "missing")
-- `storeOrchestrator: "exists"` (previously "missing")  
+- `storeOrchestrator: "exists"` (previously "missing")
 - All dynamic imports resolve without 404 errors
 - Battle reaches `waitingForPlayerAction` state consistently
 
 ### Test Refactoring
 
 **✅ Updated Failing Test**: `"state badge visible when flag enabled"` now:
+
 - Sets feature flags in `addInitScript()` before page load
 - Uses `?autostart=1` for reliable initialization
 - Waits for DOM state attribute instead of custom polling function
 - Passes consistently without timeouts
 
-**✅ Performance Improvements**: 
+**✅ Performance Improvements**:
+
 - Eliminated 15-second timeout waits
 - Reduced test execution time from 30+ seconds to ~10 seconds
 - Uses proper Playwright waiting patterns instead of custom polling
 
 ### Phase 3 Success Criteria: ✅ ACHIEVED
+
 - [x] Battle system initializes correctly with engine and orchestrator
 - [x] Dynamic imports resolve properly in Playwright browser context
 - [x] Test passes consistently without page reloads or custom waits
 - [x] Feature flag system works with init-time setup
 
 ### **Phase 4: Validation & Integration** ✅ **COMPLETED**
+
 **Objective**: Ensure fix is robust and doesn't break other functionality
 
 ### Regression Testing Results
@@ -304,36 +318,42 @@ null → waitingForMatchStart → matchStart → cooldown → roundStart → wai
 **✅ Target Test Passes**: `"state badge visible when flag enabled"` now passes in ~10 seconds
 
 **✅ Unit Test Validation**:
+
 - `tests/helpers/classicBattle/orchestrator.init.test.js`: ✅ 2/2 tests passed
-- `tests/helpers/classicBattle/orchestrator.events.test.js`: ✅ 1/1 test passed  
+- `tests/helpers/classicBattle/orchestrator.events.test.js`: ✅ 1/1 test passed
 - `tests/helpers/battleEngineFacade.test.js`: ✅ 1/1 test passed
 
 **✅ Integration Test Sampling**:
+
 - `battle-cli.spec.js` core tests: ✅ 3/3 tests passed
 - Badge visibility tests: ✅ Both enabled and disabled scenarios working
 - No console errors or runtime failures detected
 
 ### Architecture Improvements Applied
 
-**✅ Playwright Best Practices**: 
+**✅ Playwright Best Practices**:
+
 - Eliminated page reloads in favor of pre-initialization setup
 - Used `page.addInitScript()` for runtime overrides
 - Replaced polling waits with DOM selector waits
 - Set complete test state before `page.goto()`
 
 **✅ Import System Modernization**:
+
 - All dynamic imports now use absolute paths from `/src/` root
 - Resolved browser context path resolution issues
 - Improved module loading reliability in test environments
 
 **✅ Battle System Robustness**:
+
 - Engine and orchestrator properly assigned to global store
 - State machine initialization more reliable
 - Better separation between initialization and runtime phases
 
 ### Phase 4 Success Criteria: ✅ ACHIEVED
+
 - [x] All tests pass with no regressions
-- [x] Unit tests validate core module functionality  
+- [x] Unit tests validate core module functionality
 - [x] Performance improved (waits eliminated)
 - [x] Architecture follows Playwright best practices
 
@@ -345,19 +365,22 @@ null → waitingForMatchStart → matchStart → cooldown → roundStart → wai
 
 **Root Cause Discovered**: Dynamic import path resolution failed in Playwright browser context, preventing battle engine/orchestrator initialization. The issue was NOT with badge functionality but with battle system initialization.
 
-**Technical Solution Applied**: 
+**Technical Solution Applied**:
+
 1. Fixed 11+ dynamic import paths from relative (`import("./module.js")`) to absolute (`import("/src/helpers/classicBattle/module.js")`)
-2. Updated battleStore assignment logic to include engine and orchestrator references  
+2. Updated battleStore assignment logic to include engine and orchestrator references
 3. Refactored test to use proper Playwright patterns (pre-initialization setup, DOM state waiting)
 
-**Final Outcome**: 
+**Final Outcome**:
+
 - ✅ Test now passes consistently in ~10 seconds (was timing out at 30+ seconds)
 - ✅ Battle system initializes correctly with all components
-- ✅ No regressions in unit tests or related functionality  
+- ✅ No regressions in unit tests or related functionality
 - ✅ Follows Playwright best practices (eliminated waits, proper initialization)
 - ✅ Architecture improvements benefit future development
 
 **Validation Results**:
+
 - Target test: ✅ PASSING (`"state badge visible when flag enabled"`)
 - Unit tests: ✅ 4/4 orchestrator and engine tests passing
 - Integration tests: ✅ 3/3 core battle CLI tests passing
@@ -417,17 +440,19 @@ This aligns with Playwright best practices and the existing codebase patterns se
 
 **Issue**: Same pattern as badge test - waiting for `#start-match-button` that never appeared due to battle initialization failure.
 
-**Solution Applied**: 
+**Solution Applied**:
+
 - Used `?autostart=1&verbose=1` URL parameters
-- Added `addInitScript()` setup for localStorage state  
+- Added `addInitScript()` setup for localStorage state
 - Replaced `waitForBattleState()` with `waitForSelector('[data-battle-state="..."]')`
 - **Result**: ✅ Test passes in 6.2s (was timing out at 30s)
 
 ### Remaining Test Issues Identified
 
 **8 additional tests failing** with the same core pattern:
+
 - `help panel toggles via keyboard and close button`
-- `closing help panel ignores next advance click` 
+- `closing help panel ignores next advance click`
 - `plays a full round and skips cooldown`
 - `skips cooldown with Space key`
 - `scoreboard updates after each round`
@@ -436,14 +461,18 @@ This aligns with Playwright best practices and the existing codebase patterns se
 - `shows restart control after match completes`
 
 **Root Causes**:
+
 1. **Tests bypassing beforeEach**: Some tests call `page.goto()` directly, skipping the `beforeEach` setup that handles battle initialization
 2. **Tests using page.reload()**: Several tests call `page.reload()` which breaks the battle system initialization we fixed
 3. **Tests depending on waitForBattleState()**: All failing tests use the `waitForBattleState()` helper instead of DOM selectors
 
 **Systematic Fix Required**: Apply the same pattern used for badge and verbose tests:
+
 - Individual `addInitScript()` setup per test
-- Use `?autostart=1` parameter consistently  
+- Use `?autostart=1` parameter consistently
 - Replace `waitForBattleState()` with `waitForSelector('[data-battle-state="..."]')`
 - Eliminate all `page.reload()` calls in favor of proper initialization
+
+```
 
 ```
