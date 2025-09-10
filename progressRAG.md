@@ -156,6 +156,7 @@ To action the recommendations for continued optimization, an AI agent can follow
         *   **Action:** Run `npm run generate:embeddings` to re-generate the embeddings with the new configuration.
         *   **Action:** Run `node scripts/evaluation/evaluateRAG.js` to evaluate the RAG performance with the new chunking strategy.
         *   **Action:** Document the results and compare them to previous evaluations.
+            *   **Outcome:** After changing `CHUNK_SIZE` to 1000 and `OVERLAP_RATIO` to 0.2, the aggregate metrics (MRR@5: 0.3927, Recall@3: 0.5, Recall@5: 0.625) remained identical to the previous evaluation. This suggests that these specific changes to chunk size and overlap ratio did not significantly impact the overall RAG performance for the current test set.
     *   **Step 3: Investigate Semantic Chunking (if experimentation shows promise):**
         *   **Action:** Research libraries or algorithms for semantic chunking (e.g., sentence tokenization, markdown parsing).
         *   **Action:** Propose a plan to implement a more sophisticated chunking logic within the existing embedding generation process.

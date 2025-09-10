@@ -36,12 +36,12 @@ export async function interruptMatchEnter(machine, payload) {
 
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
-  
+
   // log:analyticsInterruptMatch - Show interrupt message when reason provided
   if (payload?.reason) {
     emitBattleEvent("scoreboardShowMessage", `Match interrupted: ${payload.reason}`);
   }
-  
+
   await machine.dispatch("toLobby", payload);
 }
 

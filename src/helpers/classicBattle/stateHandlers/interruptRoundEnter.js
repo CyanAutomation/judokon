@@ -28,7 +28,7 @@ export async function interruptRoundEnter(machine, payload) {
 
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
-  
+
   // rollback:roundContextIfNeeded - Reset selection state and cancel decision guard
   try {
     if (store) {
@@ -39,12 +39,12 @@ export async function interruptRoundEnter(machine, payload) {
     if (typeof fn === "function") fn();
     exposeDebugState("roundDecisionGuard", null);
   } catch {}
-  
+
   // log:analyticsInterruptRound - Expose interrupt reason for analytics
   try {
     exposeDebugState("classicBattleLastInterruptReason", payload?.reason || "");
   } catch {}
-  
+
   if (payload?.reason) {
     emitBattleEvent("scoreboardShowMessage", `Round interrupted: ${payload.reason}`);
   }
