@@ -13,9 +13,19 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
         await cb?.();
       })
     }));
-    vi.mock("../../../src/helpers/timerUtils.js", () => ({
-      getDefaultTimer: vi.fn(async () => 1)
-    }));
+    vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
+      const actual = await importOriginal();
+      return {
+        ...actual,
+        getDefaultTimer: vi.fn(async () => 1),
+        createCountdownTimer: vi.fn(() => ({
+          start: vi.fn(),
+          stop: vi.fn(),
+          pause: vi.fn(),
+          resume: vi.fn()
+        }))
+      };
+    });
     vi.resetModules();
     document.body.innerHTML = "";
     const { playerCard, opponentCard } = createBattleCardContainers();
@@ -39,6 +49,8 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
   });
 
   it("advances from cooldown after interrupt with 1s auto-advance", async () => {
+    console.log("[TEST] Starting test...");
+    
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
@@ -46,21 +58,29 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
 
+    console.log("[TEST] Machine initialized, dispatching events...");
     await machine.dispatch("matchStart");
     await machine.dispatch("ready");
     await machine.dispatch("ready");
+    console.log("[TEST] About to dispatch cardsRevealed...");
     await machine.dispatch("cardsRevealed");
+    console.log("[TEST] cardsRevealed dispatched, machine state:", machine.getState?.());
 
     const timeoutPromise = battleMod.getRoundTimeoutPromise();
     const countdownPromise = battleMod.getCountdownStartedPromise();
+    console.log("[TEST] Promises created, advancing timers by 1000ms...");
 
     await vi.advanceTimersByTimeAsync(1000);
+    console.log("[TEST] Timers advanced, waiting for timeout promise...");
     await timeoutPromise;
+    console.log("[TEST] Timeout promise resolved, waiting for countdown promise...");
     await countdownPromise;
+    console.log("[TEST] Countdown promise resolved, advancing timers by 1000ms again...");
 
     await vi.advanceTimersByTimeAsync(1000);
     const { getStateSnapshot } = await import("../../../src/helpers/classicBattle/battleDebug.js");
     const snapshot = getStateSnapshot();
+    console.log("[TEST] Final snapshot:", snapshot);
     expect(["roundStart", "waitingForPlayerAction"]).toContain(snapshot?.state);
   }, 10000);
 });

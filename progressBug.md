@@ -68,3 +68,66 @@ This makes debugging difficult but is by design for clean test output.
 2. **Event Name Consolidation**: Consider standardizing the countdown event naming across the codebase.
 
 3. **Debugging Infrastructure**: Implement battle state machine logging that can be enabled for debugging without violating console discipline.
+
+---
+
+## Actions Taken
+
+### 1. Code Validation ✅
+- **Event Name Analysis**: Confirmed that `promises.js` correctly maps:
+  - `getRoundTimeoutPromise()` → listens for `roundTimeout` (emitted by `timerService.js`)
+  - `getCountdownStartedPromise()` → listens for `nextRoundCountdownStarted` (emitted by `CooldownRenderer.js`)
+- **State Handler Gap**: Verified that `waitingForPlayerActionEnter.js` was missing the documented `timer:startStatSelection` logic
+
+### 2. Implementation Fix 🔧
+- **File Modified**: `/workspaces/judokon/src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js`
+- **Changes Applied**:
+  - Added imports for `startTimer`, `handleStatSelection`, `getCardStatValue`, `getOpponentJudoka`
+  - Implemented proper timer initialization with auto-select callback
+  - Added machine context handling to access the battle store
+  - Maintained scheduler compatibility for fake timer tests
+  - Added comprehensive JSDoc documentation
+
+### 3. State Contract Compliance ✅
+The implementation now properly follows the documented state contract:
+- **"prompt:chooseStat"** → `emitBattleEvent("statButtons:enable")`
+- **"timer:startStatSelection"** → `startTimer(onExpiredSelect, store)`
+- **"a11y:exposeTimerStatus"** → Timer accessibility handled by scoreboard updates
+
+---
+
+## Proposed Next Steps
+
+### Phase 1: Validation (Immediate)
+1. **Run Failing Test**: Execute `tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js` to verify the fix
+2. **Lint Check**: Ensure code passes ESLint and Prettier validation
+3. **Integration Test**: Run broader classic battle test suite to check for regressions
+
+### Phase 2: Comprehensive Testing (Next)
+1. **Event Flow Verification**: Test the complete timeout → interrupt → cooldown → advance sequence
+2. **Edge Case Testing**: Verify behavior with auto-select enabled/disabled
+3. **Timer Synchronization**: Confirm fake timer compatibility in test environment
+
+### Phase 3: Technical Debt (Future)
+1. **State Handler Audit**: Review all remaining state handlers for contract compliance
+2. **Event System Cleanup**: Standardize event naming patterns across battle system
+3. **Debug Infrastructure**: Implement structured logging for state machine debugging
+
+---
+
+## Risk Assessment
+
+### Low Risk ✅
+- Implementation follows existing patterns from `roundUI.js`
+- Uses established scheduler abstraction for timer compatibility
+- Maintains backward compatibility with existing event system
+
+### Medium Risk ⚠️
+- Dependency on DOM elements (`document.querySelector`) in state handler
+- Potential race conditions between timer expiry and manual stat selection
+- Test environment differences may affect timer behavior
+
+### Monitoring Points 📊
+- Test execution time and reliability
+- Console log suppression effectiveness
+- State machine transition timing in different environments
