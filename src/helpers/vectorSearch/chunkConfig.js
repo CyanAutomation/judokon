@@ -41,7 +41,7 @@
  *
  * @type {number}
  */
-export const CHUNK_SIZE = 1400;
+export const CHUNK_SIZE = 1000;
 
 /**
  * Fraction (0..1) of characters to overlap between adjacent chunks.
@@ -71,4 +71,4 @@ export const CHUNK_SIZE = 1400;
  *
  * @type {number}
  */
-export const OVERLAP_RATIO = 0.15;
+export const OVERLAP_RATIO = 0.2;

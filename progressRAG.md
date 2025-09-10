@@ -142,6 +142,50 @@ Based on the comprehensive evaluation conducted in September 2025, the following
 
 ### 9.3 Future Enhancements
 
+**Action Plan for AI Agents**
+
+To action the recommendations for continued optimization, an AI agent can follow these steps:
+
+**1. Refining the Text Chunking Strategy:**
+    *   **Step 1: Analyze Current Chunking Logic:**
+        *   **Action:** Read `src/helpers/vectorSearch/chunkConfig.js` to understand `CHUNK_SIZE` and `OVERLAP_RATIO`.
+        *   **Action:** Search the codebase (e.g., `search_file_content` for `CHUNK_SIZE` and `OVERLAP_RATIO`) to identify where these configurations are used in the chunking implementation.
+            *   **Outcome:** `CHUNK_SIZE` and `OVERLAP_RATIO` are imported and used by `scripts/generateEmbeddings.js` for generating embeddings.
+    *   **Step 2: Propose and Execute Experimentation:**
+        *   **Action:** Suggest modifying `src/helpers/vectorSearch/chunkConfig.js` with new `CHUNK_SIZE` and `OVERLAP_RATIO` values.
+        *   **Action:** Run `npm run generate:embeddings` to re-generate the embeddings with the new configuration.
+        *   **Action:** Run `node scripts/evaluation/evaluateRAG.js` to evaluate the RAG performance with the new chunking strategy.
+        *   **Action:** Document the results and compare them to previous evaluations.
+    *   **Step 3: Investigate Semantic Chunking (if experimentation shows promise):**
+        *   **Action:** Research libraries or algorithms for semantic chunking (e.g., sentence tokenization, markdown parsing).
+        *   **Action:** Propose a plan to implement a more sophisticated chunking logic within the existing embedding generation process.
+
+**2. Expanding the `src/data/synonyms.json` File:**
+    *   **Step 1: Review Current Synonyms:**
+        *   **Action:** Read `src/data/synonyms.json` to understand existing entries.
+    *   **Step 2: Identify Missing Synonyms:**
+        *   **Action:** Analyze `scripts/evaluation/queries.json` and the results from `node scripts/evaluation/evaluateRAG.js` to identify queries that failed due to missing terminology.
+        *   **Action:** Review project documentation and common user queries for terms that could benefit from synonym mapping.
+    *   **Step 3: Add New Synonyms:**
+        *   **Action:** Use the `replace` or `write_file` tool to add new key-value pairs to `src/data/synonyms.json`. Ensure proper JSON formatting.
+        *   **Example:** `replace(file_path='src/data/synonyms.json', old_string='}', new_string='  "new term": ["synonym1", "synonym2"]
+}')` (adjusting for proper JSON structure).
+    *   **Step 4: Re-generate Embeddings and Re-evaluate:**
+        *   **Action:** Run `npm run generate:embeddings` to incorporate the new synonyms.
+        *   **Action:** Run `node scripts/evaluation/evaluateRAG.js` to assess the impact on RAG performance.
+
+**3. Adding More Diverse or Granular Data Sources:**
+    *   **Step 1: Identify Target Data Sources:**
+        *   **Action:** List specific file paths or glob patterns for desired new data sources (e.g., `design/productRequirementsDocuments/**/*.md`, `design/codeStandards/**/*.md`, `playwright/**/*.js`, `tests/**/*.js`, `src/**/*.js` for JSDoc extraction).
+    *   **Step 2: Update Embedding Generation Script:**
+        *   **Action:** Read `scripts/generateEmbeddings.js`.
+        *   **Action:** Use the `replace` tool to modify the script to include the new file paths/glob patterns in the data collection process.
+    *   **Step 3: Re-generate Embeddings:**
+        *   **Action:** Run `npm run generate:embeddings` to rebuild the RAG corpus with the newly included data sources.
+    *   **Step 4: Re-evaluate RAG Performance:**
+        *   **Action:** Run `node scripts/evaluation/evaluateRAG.js` to measure the impact of the expanded corpus on retrieval quality.
+
+
 **1. Hybrid Search Implementation**
 - **Concept:** Combine semantic search with traditional keyword/regex search for implementation-specific queries
 - **Benefit:** Improve retrieval of specific file types and code patterns
@@ -384,7 +428,26 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
     - **Recommendation:** Investigate potential improvements such as:
       - Refining the text chunking strategy in `src/helpers/vectorSearch/chunkConfig.js`.
       - Expanding the `src/data/synonyms.json` file to improve query understanding.
+      - Refining the text chunking strategy in `src/helpers/vectorSearch/chunkConfig.js`.
+        *   **Dynamic Chunk Sizing:** Consider making `CHUNK_SIZE` dynamic based on content type (e.g., smaller for code, larger for prose).
+        *   **Semantic Chunking:** Implement more sophisticated semantic chunking that understands document structure (e.g., markdown headings, code blocks) to ensure semantically coherent chunks.
+        *   **Experimentation:** Experiment with different `CHUNK_SIZE` and `OVERLAP_RATIO` values and evaluate their impact on RAG performance.
+        *   **Robust Splitters:** Ensure robust sentence or paragraph splitting mechanisms are in place before applying `CHUNK_SIZE` limits.
+
+      - Expanding the `src/data/synonyms.json` file to improve query understanding.
+        *   **Comprehensive Judo Terminology:** Expand with more judo techniques, terms, and common misspellings.
+        *   **Project-Specific Synonyms:** Include synonyms for project-specific terms, UI elements, or common abbreviations (e.g., "CLI" -> "Command Line Interface").
+        *   **Automated Extraction:** Explore methods for automated or semi-automated synonym extraction from existing documentation or user queries.
+        *   **User Feedback Loop:** Implement a mechanism to collect user queries that yield poor results to identify missing synonyms.
+
       - Adding more diverse or granular data sources to the RAG corpus.
+        *   **Product Requirements Documents (PRDs):** Include detailed PRDs from `design/productRequirementsDocuments/` for feature explanations and design decisions.
+        *   **Design Documents:** Incorporate files from `design/` (e.g., `architecture.md`, `codeStandards/`) for context on design choices and coding conventions.
+        *   **Test Files:** Use test files (e.g., `playwright/`, `tests/`) as examples of feature implementation and usage.
+        *   **Code Comments/JSDoc:** Extract well-written code comments and JSDoc from source files for granular information about functions and modules.
+        *   **User Manuals/FAQs:** If available, integrate user manuals or FAQs for common user questions.
+        *   **Troubleshooting Guides:** Include troubleshooting guides to help answer "why" and "how to fix" questions.
+        *   **Chat Logs/Support Tickets:** Curated and anonymized chat logs or support tickets can reveal common user pain points.
 
 2.  **Integrate RAG into Agent Workflows:**
     - **Action:** Ensure AI agents are consistently utilizing the `queryRag` tool for relevant queries.
