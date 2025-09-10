@@ -6,40 +6,65 @@ This document outlines the investigation into the timeout failure of the unit te
 
 The test `advances from cooldown after interrupt with 1s auto-advance` was failing with a 5000ms timeout error. The test is intended to verify that the classic battle state machine correctly handles a player selection timeout, transitions to a cooldown period, and then auto-advances to the next round.
 
-## Investigation Steps
+## Validated Root Cause Analysis
 
-My investigation followed these steps:
+### 1. Event Name Ecosystem Complexity (Validated: CONFIRMED)
 
-1.  **Code Review:** I started by reviewing the test file, the classic battle orchestrator (`orchestrator.js`), the state machine definition (`stateTable.js`), and the relevant `onEnter` handlers for the states involved in the test.
+The battle event system uses multiple distinct event names for similar concepts:
+- **`roundTimeout`**: Emitted by `timerService.js` (line 226) when round timer expires
+- **`control.countdown.started`**: Emitted by `roundManager.js` and `cooldowns.js` for internal countdown state
+- **`nextRoundCountdownStarted`**: Emitted by `CooldownRenderer.js` for UI countdown events
 
-2.  **Event Name Mismatch:** I discovered a mismatch between the event name the test was waiting for (`roundTimeout`) and the event name being dispatched by the timeout handling logic (`control.countdown.started`). I corrected this by aligning the event names in `promises.js`.
+**Promise Configuration** (from `promises.js` lines 100-101):
+- `getRoundTimeoutPromise()` correctly listens for `roundTimeout` ✓
+- `getCountdownStartedPromise()` listens for `nextRoundCountdownStarted` (not `control.countdown.started`)
 
-3.  **Missing Timer Logic:** I found that the `onEnter` handler for the `waitingForPlayerAction` state was not starting the selection timer as documented in `stateTable.js`. I added the timer logic to `waitingForPlayerActionEnter.js`.
+**Impact**: Tests waiting for countdown events must use `nextRoundCountdownStarted`, not `control.countdown.started`.
 
-4.  **Fake Timer Issues:** I realized that the test was using `vi.useFakeTimers()`, but the timer logic I added was using the real `setTimeout`. I corrected this by using a scheduler that could be replaced with `vi.timers` in the test environment.
+### 2. Incomplete State Machine Implementation (Validated: CRITICAL ISSUE)
 
-5.  **Debugging Attempts:** I attempted to debug the test by adding `console.log` statements to the test file and the application code. However, I was unable to see any console output from the test runner, which made it impossible to determine the exact point of failure.
+**State Table Contract** (`stateTable.js` line 68):
+```javascript
+// waitingForPlayerAction state documented onEnter handlers:
+onEnter: ["prompt:chooseStat", "timer:startStatSelection", "a11y:exposeTimerStatus"]
+```
 
-## Root Cause Analysis
+**Actual Implementation** (`waitingForPlayerActionEnter.js`):
+```javascript
+export async function waitingForPlayerActionEnter() {
+  emitBattleEvent("statButtons:enable");  // Only this - missing timer start!
+}
+```
 
-The root cause of the test failure is a combination of factors:
+**Impact**: No round timer is started, so `roundTimeout` events never fire, causing test timeouts.
 
-*   **Inconsistent Event Names:** The event names used in the testing promises did not match the event names used in the application code.
-*   **Incomplete State Machine Implementation:** The `waitingForPlayerAction` state was missing the timer logic that was documented in the state table.
-*   **Untestable Timer Logic:** The timer logic was not designed to be easily testable with fake timers.
-*   **Debugging Environment Issues:** The inability to see console output from the test runner made it impossible to effectively debug the test.
+### 3. Timer Architecture Assessment (Validated: MOSTLY ADDRESSED)
 
-## Recommendations for Next Steps
+The codebase uses an injectable scheduler abstraction (`realScheduler` from `scheduler.js`) that works with fake timers. The main timer service (`timerService.startTimer()`) is designed to be testable, but it's never called because the state machine doesn't invoke it.
 
-1.  **Fix Console Output:** The highest priority is to resolve the issue with the test runner's console output. Without the ability to log information, debugging complex issues like this is nearly impossible.
+### 4. Test Environment Console Suppression (Validated: CONFIRMED)
 
-2.  **Systematic State Machine Debugging:** A more systematic approach to debugging the state machine is needed. This could involve:
-    *   Adding a visual state machine debugger.
-    *   Implementing a more robust logging system that can be enabled or disabled as needed.
-    *   Writing more focused unit tests for individual state transitions.
+Console output is intentionally muted in tests via:
+- `process.env.VITEST` guards in various files
+- `guard()` function wrapping console statements
+- Agent instructions enforce "no unsuppressed console logs"
 
-3.  **Refactor Timer Logic:** The timer logic in the battle orchestrator should be refactored to make it more testable. This could involve:
-    *   Creating a dedicated timer service that can be easily mocked or replaced in tests.
-    *   Using a dependency injection framework to provide the timer service to the state machine.
+This makes debugging difficult but is by design for clean test output.
 
-4.  **Review Test Suite:** The entire test suite for the classic battle orchestrator should be reviewed to ensure that it is robust, reliable, and easy to debug.
+## Updated Recommendations
+
+### Immediate Fixes Required:
+
+1. **Implement Missing Timer Logic**: Add `startTimer()` call to `waitingForPlayerActionEnter.js` following the documented state contract.
+
+2. **Ensure Scheduler Integration**: Use the injectable scheduler pattern for test compatibility.
+
+3. **Verify Event Flow**: Confirm that `roundTimeout` → `interruptRound` → cooldown → `nextRoundCountdownStarted` flows correctly.
+
+### Technical Debt:
+
+1. **State Handler Audit**: Review all state handlers against their documented contracts in `stateTable.js`.
+
+2. **Event Name Consolidation**: Consider standardizing the countdown event naming across the codebase.
+
+3. **Debugging Infrastructure**: Implement battle state machine logging that can be enabled for debugging without violating console discipline.
