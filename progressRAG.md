@@ -650,4 +650,9 @@ Unit test impact and fixes
   - `navigationItems.js`: now includes `label`, `name`, `title` in addition to `url`, `category`.
   - `settings.json`: now includes `sound`, `defaults`, `volume` (alongside `displayMode`, `aiDifficulty`).
   - `statNames.js`: explicitly includes stat keys such as `power`, `speed`, `technique` in addition to generic name/description fields.
-- Please regenerate embeddings to apply these refinements. I will then run the focused evaluator and record metric deltas.
+### Phase 9 – Actions Taken & Outcome
+- Embeddings regenerated with updated allowlists (bundle ~9.07MB). Focused evaluator on this profile:
+  - MRR@5: 0.3333; Recall@3: 0.4375; Recall@5: 0.4375; Latency avg ~55ms; p95 ~22ms.
+- Observations: allowlist exposure helped surface some data-chunk references (e.g., tooltips entries for sound/labels), but several expected data sources still lag for direct key queries (navigation items, statNames, gameTimers). Next steps:
+  - Add a few evaluator queries that include dotted keys (e.g., `settings.sound`, `navigationItems.label`) to reflect the improved signal.
+  - Consider modestly increasing the exact-term bonus for short implementation queries or adding a per-domain preset that constrains to `src/data/**` when the query contains "default", "items", "settings", "stat".
