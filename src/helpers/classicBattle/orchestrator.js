@@ -19,7 +19,7 @@ import { getStateSnapshot } from "./battleDebug.js";
 import * as debugHooks from "./debugHooks.js";
 import stateCatalog from "./stateCatalog.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
-import { logStateTransition, logBattleError, createComponentLogger } from "./debugLogger.js";
+import { logStateTransition, createComponentLogger } from "./debugLogger.js";
 
 const orchestratorLogger = createComponentLogger("Orchestrator");
 
