@@ -3,29 +3,25 @@ import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { createTimerNodes, createSnackbarContainer } from "./domUtils.js";
 
+vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+  initRoundSelectModal: vi.fn(async (cb) => {
+    await cb?.();
+  })
+}));
+
+vi.mock("../../../src/helpers/timerUtils.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/timerUtils.js");
+  return {
+    ...actual,
+    getDefaultTimer: vi.fn(async () => 1)
+  };
+});
+
 describe("timeout → interruptRound → cooldown auto-advance", () => {
   let battleMod;
   let timers;
 
   beforeEach(async () => {
-    vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
-      initRoundSelectModal: vi.fn(async (cb) => {
-        await cb?.();
-      })
-    }));
-    vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
-      const actual = await importOriginal();
-      return {
-        ...actual,
-        getDefaultTimer: vi.fn(async () => 1),
-        createCountdownTimer: vi.fn(() => ({
-          start: vi.fn(),
-          stop: vi.fn(),
-          pause: vi.fn(),
-          resume: vi.fn()
-        }))
-      };
-    });
     vi.resetModules();
     document.body.innerHTML = "";
     const { playerCard, opponentCard } = createBattleCardContainers();
