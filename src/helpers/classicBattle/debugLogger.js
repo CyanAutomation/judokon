@@ -79,7 +79,7 @@ export class BattleDebugLogger {
     if (options.enabled !== undefined) return options.enabled;
 
     // Check environment variables
-    if (process.env.DEBUG_BATTLE) return true;
+    if (typeof process !== "undefined" && process.env && process.env.DEBUG_BATTLE) return true;
 
     // Check URL parameters in browser
     if (typeof window !== "undefined") {
@@ -88,7 +88,7 @@ export class BattleDebugLogger {
     }
 
     // Default: enabled in development, disabled in production/tests
-    return process.env.NODE_ENV === "development";
+    return typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development";
   }
 
   /**
@@ -98,11 +98,17 @@ export class BattleDebugLogger {
     if (options.outputMode) return options.outputMode;
 
     // Never output to console in tests to maintain console discipline
-    if (process.env.VITEST) return "memory";
-    if (process.env.NODE_ENV === "test") return "memory";
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      return "memory";
+    }
+    if (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "test") {
+      return "memory";
+    }
 
     // Production mode: memory only
-    if (process.env.NODE_ENV === "production") return "memory";
+    if (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "production") {
+      return "memory";
+    }
 
     // Development: both memory and console
     return "both";
@@ -351,7 +357,9 @@ export class BattleDebugLogger {
  * Explicitly enabled for testing and development use
  */
 export const debugLogger = new BattleDebugLogger({
-  enabled: process.env.VITEST || process.env.NODE_ENV === "development"
+  enabled:
+    (typeof process !== "undefined" && process.env && process.env.VITEST) ||
+    (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development")
 });
 
 /**

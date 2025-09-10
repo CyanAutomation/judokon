@@ -91,7 +91,11 @@ export function emitEventWithAliases(eventTarget, eventName, payload, options = 
       eventTarget.dispatchEvent(new CustomEvent(alias, { detail: payload }));
 
       // Warn about deprecated usage in development
-      if (warnDeprecated && (process.env.NODE_ENV === "development" || process.env.VITEST)) {
+      const isDev =
+        typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development";
+      const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST;
+
+      if (warnDeprecated && (isDev || isVitest)) {
         console.warn(`⚠️ Deprecated event alias '${alias}' used. Update to '${eventName}'`);
       }
     }
@@ -127,10 +131,11 @@ export function emitBattleEventWithAliases(eventName, payload, options = {}) {
 
   if (standardizedName) {
     // Old name used - emit with standardized name and warn
-    if (
-      options.warnDeprecated !== false &&
-      (process.env.NODE_ENV === "development" || process.env.VITEST)
-    ) {
+    const isDev =
+      typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development";
+    const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST;
+
+    if (options.warnDeprecated !== false && (isDev || isVitest)) {
       console.warn(`⚠️ Deprecated event name '${eventName}' used. Update to '${standardizedName}'`);
     }
     emitEventWithAliases(battleEventTarget, standardizedName, payload, options);

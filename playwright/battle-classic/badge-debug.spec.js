@@ -7,8 +7,8 @@ test.describe("State badge and debug panel", () => {
     page.on("console", (msg) => {
       const text = `${msg.type()}: ${msg.text()}`;
       messages.push(text);
-      if (msg.type() === "error") {
-        console.log("Browser error:", text);
+      if (msg.type() === "error" || msg.type() === "debug") {
+        console.log("Browser message:", text);
       }
     });
 
@@ -21,11 +21,17 @@ test.describe("State badge and debug panel", () => {
     // Check for console messages
     const battleMessages = messages.filter((m) => m.includes("battleClassic"));
     const errorMessages = messages.filter((m) => m.startsWith("error:"));
+    const debugMessages = messages.filter((m) => m.startsWith("debug:"));
+    
+    console.log("All console messages:", messages);
     if (battleMessages.length > 0) {
       console.log("Battle messages:", battleMessages);
     }
     if (errorMessages.length > 0) {
       console.log("Error messages:", errorMessages);
+    }
+    if (debugMessages.length > 0) {
+      console.log("Debug messages:", debugMessages);
     }
 
     // Wait for initialization to complete and check document state
