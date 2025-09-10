@@ -437,4 +437,10 @@ export function getBattleStateMachine() {
 }
 
 // Re-export for test compatibility
+/**
+ * Re-export battle event dispatcher for external modules.
+ *
+ * @pseudocode
+ * 1. Provide thin alias to `eventDispatcher.dispatchBattleEvent`.
+ */
 export { dispatchBattleEvent };

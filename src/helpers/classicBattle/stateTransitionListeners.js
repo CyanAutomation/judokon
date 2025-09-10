@@ -8,29 +8,16 @@ import { logStateTransition } from "./battleDebug.js";
 import { exposeDebugState } from "./debugHooks.js";
 
 /**
- * Mirror the current battle state to the DOM.
+ * Sync battle state transitions to DOM attributes for UI and tests.
  *
- * @param {CustomEvent<{from:string|null,to:string,event:string|null}>} e
- *   State transition detail.
- * @summary Sync battle state to DOM.
  * @pseudocode
- * 1. Extract `from`, `to`, and `event` from `e.detail`.
- * 2. If `document` is available:
- *    a. Update `document.body.dataset.battleState` to `to`.
- *    b. Set `prevBattleState` when `from` exists, otherwise remove it.
+ * 1. Read `from` and `to` from the event detail.
+ * 2. If `document` exists, update `document.body.dataset.battleState` and `prevBattleState`.
+ *
+ * @param {CustomEvent<{from:string|null,to:string,event:string|null}>} e - Event containing transition detail.
+ * @returns {void}
  */
 export function domStateListener(e) {
-  /**
-   * Sync battle state transitions to DOM attributes for UI and tests.
-   *
-   * @param {CustomEvent<{from:string|null,to:string,event:string|null}>} e
-   *   Event containing transition detail.
-   * @returns {void}
-   * @pseudocode
-   * 1. Read `from` and `to` from event detail.
-   * 2. If `document` exists, update `document.body.dataset.battleState` and
-   *    `prevBattleState` accordingly.
-   */
   const { from, to } = e.detail || {};
   if (typeof document === "undefined") return;
   try {

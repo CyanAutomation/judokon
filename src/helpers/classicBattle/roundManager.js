@@ -17,12 +17,13 @@ import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
 
 /**
- * Check if the classic battle orchestrator is active.
+ * Detect whether the classic battle orchestrator is active.
  *
- * The presence of `data-battle-state` on the body is a reliable indicator
- * that the state machine is running and managing the battle flow.
+ * @pseudocode
+ * 1. Read `document.body.dataset.battleState` inside a try/catch.
+ * 2. Return `true` when the attribute exists, otherwise `false`.
  *
- * @returns {boolean} True if the orchestrator is active.
+ * @returns {boolean} True if orchestration appears active.
  */
 export function isOrchestrated() {
   try {
@@ -31,12 +32,6 @@ export function isOrchestrated() {
     return false;
   }
 }
-
-/**
- * @pseudocode
- * 1. Attempt to read `document.body.dataset.battleState`.
- * 2. Return true when present, otherwise false. Swallow errors.
- */
 
 /**
  * Create a new battle state store.
@@ -287,17 +282,15 @@ export function startCooldown(_store, scheduler = realScheduler) {
 /**
  * Expose current cooldown controls for Next button helpers.
  *
+ * @pseudocode
+ * 1. Return the `currentNextRound` object containing timer and readiness resolver.
+ * 2. When no cooldown is active, return `null`.
+ *
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
  */
 export function getNextRoundControls() {
   return currentNextRound;
 }
-
-/**
- * @pseudocode
- * 1. Return the `currentNextRound` controls object which contains timer and
- *    readiness resolver. This is null when no cooldown is active.
- */
 
 /**
  * Schedule a fallback timeout and return its id.

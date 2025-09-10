@@ -355,6 +355,9 @@ export class BattleDebugLogger {
 /**
  * Default logger instance for battle debugging
  * Explicitly enabled for testing and development use
+ *
+ * @pseudocode
+ * 1. Instantiate `BattleDebugLogger` with `enabled` flag true in tests or development.
  */
 export const debugLogger = new BattleDebugLogger({
   enabled:
@@ -374,6 +377,10 @@ export const debugLogger = new BattleDebugLogger({
  * @param {string} trigger - Transition trigger
  * @param {object} context - Additional context
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Use `debugLogger.log` with category STATE and INFO level.
+ * 2. Include from/to/trigger and extra context.
  */
 export function logStateTransition(from, to, trigger, context = {}) {
   debugLogger.log(
@@ -391,6 +398,10 @@ export function logStateTransition(from, to, trigger, context = {}) {
  * @param {any} payload - Event payload
  * @param {object} context - Additional context
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Call `debugLogger.log` with EVENT category and INFO level.
+ * 2. Attach event name, payload and context.
  */
 export function logEventEmit(eventName, payload, context = {}) {
   debugLogger.log(DEBUG_CATEGORIES.EVENT, LOG_LEVELS.INFO, `Event emitted: ${eventName}`, {
@@ -408,6 +419,9 @@ export function logEventEmit(eventName, payload, context = {}) {
  * @param {number} duration - Timer duration (for start operations)
  * @param {object} context - Additional context
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Forward details to `debugLogger.log` with TIMER category.
  */
 export function logTimerOperation(operation, name, duration, context = {}) {
   debugLogger.log(DEBUG_CATEGORIES.TIMER, LOG_LEVELS.INFO, `Timer ${operation}: ${name}`, {
@@ -425,6 +439,9 @@ export function logTimerOperation(operation, name, duration, context = {}) {
  * @param {Error} error - Error object
  * @param {object} context - Additional context
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Use ERROR category and include error object and context.
  */
 export function logError(message, error, context = {}) {
   debugLogger.log(DEBUG_CATEGORIES.ERROR, LOG_LEVELS.ERROR, message, { error, ...context });
@@ -437,6 +454,9 @@ export function logError(message, error, context = {}) {
  * @param {number} duration - Duration in milliseconds
  * @param {object} context - Additional context
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Log with PERFORMANCE category, INFO level and timing data.
  */
 export function logPerformance(operation, duration, context = {}) {
   debugLogger.log(
@@ -452,8 +472,13 @@ export function logPerformance(operation, duration, context = {}) {
 /**
  * Log state handler entry with timing and context.
  * @pseudocode
- * 1. Log when entering a state handler
- * 2. Include store state and handler context
+ * 1. Log when entering a state handler.
+ * 2. Include store state and handler context.
+ *
+ * @param {string} handlerName - Name of handler.
+ * @param {string} state - Current state.
+ * @param {object} data - Extra context.
+ * @returns {void}
  */
 export function logStateHandlerEnter(handlerName, state, data = {}) {
   debugLogger.log("state", "debug", `Handler Enter: ${handlerName}`, {
@@ -466,9 +491,15 @@ export function logStateHandlerEnter(handlerName, state, data = {}) {
 
 /**
  * Log state handler exit with timing and results.
+ *
  * @pseudocode
- * 1. Log when exiting a state handler
- * 2. Include any results or next actions
+ * 1. Log when exiting a state handler.
+ * 2. Include any results or next actions.
+ *
+ * @param {string} handlerName - Name of handler.
+ * @param {object} [results={}] - Result data.
+ * @param {object} [data={}] - Extra context.
+ * @returns {void}
  */
 export function logStateHandlerExit(handlerName, results = {}, data = {}) {
   debugLogger.log("state", "debug", `Handler Exit: ${handlerName}`, {
@@ -481,9 +512,15 @@ export function logStateHandlerExit(handlerName, results = {}, data = {}) {
 
 /**
  * Log UI events and interactions.
+ *
  * @pseudocode
- * 1. Log UI events like button clicks, state changes
- * 2. Include user interaction context
+ * 1. Log UI events like button clicks or state changes.
+ * 2. Include user interaction context.
+ *
+ * @param {string} interaction - Description of interaction.
+ * @param {any} element - Associated element or identifier.
+ * @param {object} [data={}] - Extra context.
+ * @returns {void}
  */
 export function logUIInteraction(interaction, element, data = {}) {
   debugLogger.log("ui", "info", `UI: ${interaction}`, {
@@ -496,9 +533,15 @@ export function logUIInteraction(interaction, element, data = {}) {
 
 /**
  * Log battle errors with enhanced context.
+ *
  * @pseudocode
- * 1. Log errors with context about where they occurred
- * 2. Include stack trace and error details
+ * 1. Log errors with context about where they occurred.
+ * 2. Include stack trace and error details.
+ *
+ * @param {Error} error - Error instance or message.
+ * @param {string} context - Where the error happened.
+ * @param {object} [data={}] - Additional context.
+ * @returns {void}
  */
 export function logBattleError(error, context, data = {}) {
   debugLogger.log("error", "error", `Battle Error in ${context}`, {
@@ -511,9 +554,13 @@ export function logBattleError(error, context, data = {}) {
 
 /**
  * Create a logger instance for a specific battle component.
+ *
  * @pseudocode
- * 1. Create logger scoped to a specific component
- * 2. Enable easy identification of log source
+ * 1. Return helper methods that call `debugLogger` with the component name.
+ * 2. Provide info/debug/error/timer/event/ui logging wrappers.
+ *
+ * @param {string} componentName - Component label for log prefixing.
+ * @returns {object} Component-scoped logging helpers.
  */
 export function createComponentLogger(componentName) {
   return {

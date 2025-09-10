@@ -7,6 +7,7 @@
  * 3. Attach click and key handlers that invoke `toggle`.
  *
  * @param {HTMLElement} cardElement - Card container to enable flipping on.
+ * @returns {void}
  */
 export function enableCardFlip(cardElement) {
   if (!cardElement) return;

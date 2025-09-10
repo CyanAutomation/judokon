@@ -66,11 +66,14 @@ export function getOutcomeMessage(outcome) {
 }
 
 /**
- * @summary Evaluate a round and map the outcome to a message.
+ * Evaluate a stat matchup and return engine results with a user-facing message.
  *
  * @pseudocode
- * 1. Delegate to `handleStatSelection` on the battle engine with the provided values.
- * 2. Map the returned outcome code to a user-facing message.
+ * 1. Invoke `handleStatSelection(playerVal, opponentVal)` on the battle engine.
+ * 2. Map the outcome code to a localized message.
+ * 3. In Vitest, mirror message and scores into DOM nodes for assertions.
+ * 4. If the engine throws, compute a simple delta outcome and track fallback scores.
+ * 5. Return the result merged with the message.
  *
  * @param {number} playerVal - Player's stat value.
  * @param {number} opponentVal - Opponent's stat value.

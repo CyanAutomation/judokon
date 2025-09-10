@@ -1,6 +1,10 @@
 /**
  * Control automatic continuation after round outcomes.
  *
+ * @pseudocode
+ * 1. Default to `true` so rounds advance automatically.
+ * 2. Can be toggled via `setAutoContinue(false)` to pause between rounds.
+ *
  * @type {boolean}
  */
 export let autoContinue = true;

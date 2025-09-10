@@ -64,6 +64,10 @@ function createQuitConfirmation(store, onConfirm) {
  * confirmation modal is presented. Tests can await `window.quitConfirmButtonPromise`
  * to interact with the modal's confirm button.
  *
+ * @pseudocode
+ * 1. Initialize to a resolved promise until `quitMatch` sets a new one.
+ * 2. Expose the promise globally for tests.
+ *
  * @type {Promise<HTMLButtonElement>}
  */
 export let quitConfirmButtonPromise = Promise.resolve();

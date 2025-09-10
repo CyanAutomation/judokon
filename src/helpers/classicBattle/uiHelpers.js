@@ -132,6 +132,7 @@ runWhenIdle(preloadUiService);
  *
  * @param {object} judoka - Data required by `JudokaCard` (may include `lookup`).
  * @param {HTMLElement|null} container - DOM element to receive the rendered card.
+ * @returns {Promise<void>}
  */
 export async function renderOpponentCard(judoka, container) {
   if (!judoka || !container) return;
@@ -331,6 +332,16 @@ export function showStatComparison(store, stat, playerVal, compVal) {
   store.compareRaf = id;
 }
 
+/**
+ * Watch orientation changes and invoke a callback until it succeeds.
+ *
+ * @pseudocode
+ * 1. Invoke `callback`; if it returns falsey, poll via rAF until it succeeds.
+ * 2. Register `orientationchange` and `resize` listeners to retry invocation.
+ *
+ * @param {() => any} callback - Function returning truthy when orientation applied.
+ * @returns {void}
+ */
 export function watchBattleOrientation(callback) {
   if (typeof callback !== "function") {
     return;

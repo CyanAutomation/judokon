@@ -56,6 +56,8 @@ function getTarget() {
  * @pseudocode
  * 1. Retrieve the shared target.
  * 2. Add `handler` as a listener.
+ *
+ * @returns {void}
  */
 export function onBattleEvent(type, handler) {
   getTarget().addEventListener(type, handler);
@@ -70,6 +72,8 @@ export function onBattleEvent(type, handler) {
  * @pseudocode
  * 1. Retrieve the shared target.
  * 2. Remove `handler`.
+ *
+ * @returns {void}
  */
 export function offBattleEvent(type, handler) {
   getTarget().removeEventListener(type, handler);
@@ -85,6 +89,8 @@ export function offBattleEvent(type, handler) {
  * 1. Create a `CustomEvent` with the provided detail.
  * 2. Retrieve the shared target.
  * 3. Dispatch the event.
+ *
+ * @returns {void}
  */
 export function emitBattleEvent(type, detail) {
   try {
@@ -107,10 +113,11 @@ export function emitBattleEvent(type, detail) {
  * @param {boolean} [options.warnDeprecated] - Warn about deprecated usage.
  * @summary Emit a battle event with backward-compatible aliases.
  * @pseudocode
- * 1. Check if event name is deprecated, convert to standardized name.
- * 2. Emit standardized event name.
- * 3. Emit deprecated aliases for backward compatibility.
- * 4. Show deprecation warnings in development mode.
+ * 1. Check if event name is deprecated and map to its standard name.
+ * 2. Emit the standardized event and any legacy aliases.
+ * 3. Optionally warn about deprecated usage.
+ *
+ * @returns {void}
  */
 export function emitBattleEventWithAliases(type, detail, options = {}) {
   try {
@@ -138,6 +145,8 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
  * @pseudocode
  * 1. Create a new `EventTarget`.
  * 2. Store it under `EVENT_TARGET_KEY` on `globalThis`.
+ *
+ * @returns {void}
  */
 export function __resetBattleEventTarget() {
   const t = new EventTarget();
@@ -154,6 +163,9 @@ export function __resetBattleEventTarget() {
  */
 /**
  * Get the global EventTarget used by classic battle.
+ *
+ * @pseudocode
+ * 1. Return the shared target via `getTarget()`.
  *
  * @returns {EventTarget}
  */
