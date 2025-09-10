@@ -21,7 +21,7 @@ let showMatchSummaryModal = null;
 // or only used in other environments.
 void _updateSnackbar;
 function preloadUiService() {
-  import("./uiService.js")
+  import("/src/helpers/classicBattle/uiService.js")
     .then((m) => {
       showMatchSummaryModal = m.showMatchSummaryModal;
     })
@@ -301,8 +301,8 @@ export function bindRoundUIEventHandlersDynamic() {
   const scoreboardP = silence(import("../setupScoreboard.js"));
   const showSnackbarP = silence(import("../showSnackbar.js"));
   const computeNextRoundCooldownP = silence(import("../timers/computeNextRoundCooldown.js"));
-  const roundManagerP = silence(import("./roundManager.js"));
-  const uiHelpersP = silence(import("./uiHelpers.js"));
+  const roundManagerP = silence(import("/src/helpers/classicBattle/roundManager.js"));
+  const uiHelpersP = silence(import("/src/helpers/classicBattle/uiHelpers.js"));
   onBattleEvent("roundStarted", (e) => {
     const { store, roundNumber } = e.detail || {};
     if (store && typeof roundNumber === "number") {

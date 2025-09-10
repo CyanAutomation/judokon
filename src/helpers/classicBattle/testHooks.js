@@ -25,23 +25,23 @@ export async function ensureBindings(opts = {}) {
   const force = !!opts.force;
   // Bind round UI listeners once per worker to avoid duplicate handlers.
   if (!__uiBound) {
-    await import("./roundUI.js");
+    await import("/src/helpers/classicBattle/roundUI.js");
     __uiBound = true;
   } else if (force) {
     // Reset the event bus and bind dynamic handlers to honor vi.mocks.
     try {
       __resetBattleEventTarget();
     } catch {}
-    const ui = await import("./roundUI.js");
+    const ui = await import("/src/helpers/classicBattle/roundUI.js");
     if (typeof ui.bindRoundUIEventHandlersDynamic === "function")
       ui.bindRoundUIEventHandlersDynamic();
-    const eventHandlers = await import("./uiEventHandlers.js");
+    const eventHandlers = await import("/src/helpers/classicBattle/uiEventHandlers.js");
     if (typeof eventHandlers.bindUIHelperEventHandlersDynamic === "function")
       eventHandlers.bindUIHelperEventHandlersDynamic();
   }
   // Ensure event promises exist; allow a forced refresh after mocks in tests.
   if (!__promisesBound || force) {
-    const prom = await import("./promises.js");
+    const prom = await import("/src/helpers/classicBattle/promises.js");
     if (typeof prom.resetBattlePromises === "function") prom.resetBattlePromises();
     __promisesBound = true;
   }
@@ -85,11 +85,11 @@ export function resetBindings() {
  * @returns {Promise<void>} Resolves after the timeout flow completes.
  */
 export async function triggerRoundTimeoutNow(store) {
-  const { getOpponentJudoka } = await import("./cardSelection.js");
-  const { getCardStatValue } = await import("./cardStatUtils.js");
-  const { handleStatSelection } = await import("./selectionHandler.js");
-  const { dispatchBattleEvent } = await import("./eventDispatcher.js");
-  const { autoSelectStat } = await import("./autoSelectStat.js");
+  const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
+  const { getCardStatValue } = await import("/src/helpers/classicBattle/cardStatUtils.js");
+  const { handleStatSelection } = await import("/src/helpers/classicBattle/selectionHandler.js");
+  const { dispatchBattleEvent } = await import("/src/helpers/classicBattle/eventDispatcher.js");
+  const { autoSelectStat } = await import("/src/helpers/classicBattle/autoSelectStat.js");
 
   const onExpiredSelect = async (stat, opts) => {
     const playerCard = document.getElementById("player-card");
@@ -140,10 +140,12 @@ export async function triggerRoundTimeoutNow(store) {
  * @returns {Promise<void>} Resolves after stall prompt setup completes.
  */
 export async function triggerStallPromptNow(store) {
-  const { getOpponentJudoka } = await import("./cardSelection.js");
-  const { getCardStatValue } = await import("./cardStatUtils.js");
-  const { handleStatSelection } = await import("./selectionHandler.js");
-  const { handleStatSelectionTimeout } = await import("./autoSelectHandlers.js");
+  const { getOpponentJudoka } = await import("/src/helpers/classicBattle/cardSelection.js");
+  const { getCardStatValue } = await import("/src/helpers/classicBattle/cardStatUtils.js");
+  const { handleStatSelection } = await import("/src/helpers/classicBattle/selectionHandler.js");
+  const { handleStatSelectionTimeout } = await import(
+    "/src/helpers/classicBattle/autoSelectHandlers.js"
+  );
 
   const onSelect = (stat, opts) => {
     const playerCard = document.getElementById("player-card");
@@ -171,7 +173,7 @@ export async function triggerStallPromptNow(store) {
     }
   }
   try {
-    const { emitBattleEvent } = await import("./battleEvents.js");
+    const { emitBattleEvent } = await import("/src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("statSelectionStalled");
   } catch {}
 }

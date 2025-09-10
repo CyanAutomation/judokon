@@ -1,16 +1,19 @@
-# RAG System Evaluation & Remediation Report
+# RAG System Evaluation & Improvement Plan
 
 ## 1. Objective
 
-The goal was to test the RAG vector database's access tools and provide a thorough evaluation of its readiness and efficacy for use by AI agents.
+Evaluate the current RAG vector database against project goals; compare observed status with PRD intent; identify concrete, phased improvements that raise retrieval accuracy and make the system more attractive and dependable for AI agents.
 
 ## 2. Initial State
 
-The project contained a RAG system with an embeddings file (`client_embeddings.json`), an embedding generation script (`scripts/generateEmbeddings.js`), a quantitative evaluation script (`scripts/evaluation/evaluateRAG.js`), and a CLI query tool (`scripts/queryRagCli.mjs`). The system's actual performance and the readiness of its tooling were unknown.
+- Embeddings corpus in `client_embeddings.json` with `id`, `text`, `embedding`, `source`, `tags` (per PRD).
+- Generation script `scripts/generateEmbeddings.js`; CLI `scripts/queryRagCli.mjs`.
+- Evaluation harness `scripts/evaluation/evaluateRAG.js` targeting MRR@5, Recall@3/5.
+- UI workflow documented in `docs/vector-search.md` (buildQueryVector → findMatches → selectTopMatches).
 
 ## 3. Investigation & Actions Taken
 
-The evaluation process involved a sequence of debugging steps to uncover a systemic issue with the project's tooling.
+We validated access paths, fixed model-loading issues affecting multiple tools, and verified qualitative retrieval behavior end-to-end.
 
 ### Step 1: Quantitative Evaluation Failure
 
@@ -51,18 +54,58 @@ The evaluation process involved a sequence of debugging steps to uncover a syste
 
 ## 4. Final Analysis & Current State
 
-- **Efficacy:** The core RAG system is **effective**. A qualitative test showed it successfully retrieves relevant documents that connect a user's query to specific data files and components in the codebase.
-- **Readiness:**
-  - **Core System & Query Tools (✅ Ready):** The embedding generation and the primary `queryRag` function are now working correctly.
-  - **Quantitative Evaluation (`evaluateRAG.js`) (❌ Not Ready):** The evaluation script is still broken and produces misleading zero-score results due to the model caching discrepancy.
+- Efficacy: Core RAG is effective; qualitative tests retrieve relevant PRDs/tooltips quickly. Exact-match bonus and synonym expansion help precision.
+- Readiness:
+  - Core search + CLI: ✅ Working with corrected extractor path.
+  - Evaluation: ❌ Brittle; caching/versioning issues lead to misleading metrics when generating fresh embeddings inside the evaluator.
+  - Metadata/provenance: Partial; results include `source`/`tags` but not consistent section paths or rationale strings.
+  - Usability for agents: Good policy guidance exists; a stable one-call API and presets would reduce friction and increase adoption.
 
-## 5. Next Step Recommendations
+## 5. Comparison With PRD (design/productRequirementsDocuments/prdVectorDatabaseRAG.md)
 
-To arrive at a fully effective and maintainable RAG system, the following next step is crucial:
+- Alignment:
+  - PRD calls for fast, offline client search with tags, synonyms, exact-match bonus, and small footprint (<6.8MB) — all present or partially present.
+  - Evaluation metrics (MRR@5, Recall@3/5) defined — harness exists but needs reliability fixes.
+  - UI/utility separation — present (pure utilities per vector-search workflow).
+- Gaps/Improvements vs PRD intent:
+  - Provenance depth: PRD expects clear source references; add section headers/context paths and short rationale for ranking.
+  - Evaluation robustness: Shift to end-to-end evaluation using the same `queryRag` path as agents.
+  - Query strategy: Multi-intent queries and lightweight re-ranking not yet implemented; PRD allows scoring/bonus tuning.
+  - Corpus governance: Versioning/manifest not formalized; PRD hints at embedding versioning.
 
-1.  **Refactor the Evaluation Script (`scripts/evaluation/evaluateRAG.js`):**
-    - **Problem:** The script's methodology of loading a separate model instance to generate embeddings on-the-fly is fundamentally flawed due to the library's caching behavior.
-    - **Recommendation:** Modify the script to stop loading a model entirely. Instead, it should import and use the now-functional `queryRag` helper from `src/helpers/queryRag.js`. It should iterate through its test queries, pass each one to `queryRag`, and then check if the expected source appears in the returned results. This will provide a true, end-to-end evaluation of the system as it is actually used by agents.
+## 6. Phased Improvement Plan
+
+The following phased actions raise accuracy, reliability, and agent adoption while respecting import and testing policies.
+
+Phase 0 – Stabilize Evaluation (now)
+- Refactor `scripts/evaluation/evaluateRAG.js` to call the existing `queryRag` path rather than generating embeddings inline; compute MRR@5, Recall@3/5 from returned results.
+- Add acceptance thresholds and exit codes; record latency per query to validate PRD performance goals.
+- Ensure no dynamic imports on the hot path (use static imports per Import Policy).
+
+Phase 1 – Provenance & API Ergonomics
+- Introduce a stable `queryRag({ query, filters, k, withProvenance })` helper returning `{ matches: [{ id, text, score, source, tags, contextPath, rationale }], meta }`.
+- Augment embeddings with hierarchical `contextPath` (e.g., `PRD > Classic Battle > Countdown`).
+- Add one-line `rationale` (synonym hits, section-title match, keyword overlap) for trust and debugging.
+
+Phase 2 – Accuracy Enhancements
+- Synonym enrichment: expand `src/data/synonyms.json` with domain terms and near-spellings (e.g., kumikata/kumi-kata/grip fighting; scoreboard/round UI/snackbar).
+- Lightweight re-ranking after cosine similarity: boost for multi-term overlap, section-title matches, and tag alignment.
+- Multi-intent query handling: split on conjunctions; union top-k; re-rank.
+
+Phase 3 – Corpus Governance & Coverage
+- Add `src/rag/meta.json` with `{ corpusVersion, model, dim, chunkingVersion, lastUpdated }` and an index manifest (counts by source/tag) to detect drift.
+- Topic-aware chunking: split PRDs by semantic headers; include section titles in chunk text to disambiguate.
+- Broaden coverage in a controlled way (design docs, testing guides) while staying within size budget; measure impact via evaluation harness.
+
+Phase 4 – Agent Adoption & Diagnostics
+- Presets: `design-lookup`, `implementation-lookup`, `tooltip-lookup` that preconfigure filters/bonuses.
+- Diagnostics helper `explainQuery(query)` returning expanded terms, applied filters, and rank features to aid agents.
+- Documentation updates to AGENTS guide with examples and provenance requirements; ensure tests for “no unsuppressed console” and import policy guards.
+
+Phase 5 – Continuous Validation
+- Add `npm run rag:validate` (JSON shape/dim checks, no dynamic imports in hot paths, evaluation metrics >= threshold, synonyms present) and integrate into CI.
+
+Planned acceptance: measurable Recall@5 improvement (+5% baseline), provenance completeness (source + contextPath + rationale), and stable latency within PRD targets.
 
 ### Planned Action: Refactor `scripts/evaluation/evaluateRAG.js`
 
@@ -188,17 +231,16 @@ _ **Step 3: Re-generate Embeddings:**
 _ **Action:** Run `npm run generate:embeddings` to rebuild the RAG corpus with the newly included data sources.
 _ **Step 4: Re-evaluate RAG Performance:** \* **Action:** Run `node scripts/evaluation/evaluateRAG.js` to measure the impact of the expanded corpus on retrieval quality.
 
-**1. Hybrid Search Implementation**
+## 7. Opportunities (Tied to Phases)
 
-- **Concept:** Combine semantic search with traditional keyword/regex search for implementation-specific queries
-- **Benefit:** Improve retrieval of specific file types and code patterns
+- Phase 0: End-to-end evaluator; caching-safe; consistent metrics with agent path.
+- Phase 1: Stable API + provenance fields; improved agent ergonomics and trust.
+- Phase 2: Higher accuracy via synonyms, re-rank, multi-intent handling.
+- Phase 3: Better disambiguation and coverage via topic-aware chunking and governance.
+- Phase 4: Adoption via presets and diagnostics; clearer guidance; faster issue triage.
+- Phase 5: Guardrails in CI; prevent regressions; observable quality over time.
 
-**2. Dynamic Context Injection**
-
-- **Concept:** Automatically include related files (imports, dependencies) in search results
-- **Benefit:** Provide more comprehensive context for implementation queries
-
-## 10. Conclusion
+## 8. Conclusion
 
 **Current State Summary:**
 
@@ -207,7 +249,7 @@ _ **Step 4: Re-evaluate RAG Performance:** \* **Action:** Run `node scripts/eval
 - **⚠️ Performance:** Good overall performance with identified areas for improvement
 - **✅ Maintainability:** Robust evaluation and testing infrastructure in place
 
-**Overall Assessment:** The RAG system is **production-ready** for AI agent use, with a solid foundation for continued optimization. The system effectively serves its primary purpose of providing contextual information to AI agents, particularly excelling in design documentation and architectural queries while showing room for improvement in implementation-specific scenarios.
+**Overall Assessment:** The RAG system is usable and fast for agent workflows and aligns with PRD intent. The proposed phased plan addresses the key remaining gaps: evaluation stability, richer provenance, accuracy boosters (synonyms/re-rank/multi-intent), governance/versioning, and agent-first ergonomics. These steps will improve accuracy, trust, and adoption with minimal risk to hot paths and CI stability.
 
 ## 11. Strategies to Encourage AI Agent RAG Usage
 

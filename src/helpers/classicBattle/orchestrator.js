@@ -206,18 +206,20 @@ function emitResolution(event) {
  */
 async function preloadDependencies() {
   try {
-    const mod = await import("../TimerController.js");
+    const mod = await import("/src/helpers/TimerController.js");
     await mod.preloadTimerUtils();
   } catch {
     // ignore: timer utilities are optional preloads
   }
   try {
-    await import("./uiService.js");
+    await import("/src/helpers/classicBattle/uiService.js");
   } catch {
     // ignore: UI service preload is optional
   }
   try {
-    const { initScoreboardAdapter } = await import("./scoreboardAdapter.js");
+    const { initScoreboardAdapter } = await import(
+      "/src/helpers/classicBattle/scoreboardAdapter.js"
+    );
     initScoreboardAdapter();
   } catch {
     // ignore: scoreboard adapter preload is optional
@@ -391,7 +393,7 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     emitResolution(event);
   };
 
-  const { createStateManager } = await import("./stateManager.js");
+  const { createStateManager } = await import("/src/helpers/classicBattle/stateManager.js");
   machine = await createStateManager(onEnter, context, onTransition);
   attachListeners(machine);
   // Prime timer state exposure for tests/diagnostics

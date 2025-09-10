@@ -14,7 +14,8 @@ export function initQuitButton(store, { quitMatch: injectedQuitMatch } = {}) {
   const quitBtn = document.getElementById("quit-match-button");
   if (!quitBtn) return;
   quitBtn.addEventListener("click", async () => {
-    const quitMatch = injectedQuitMatch ?? (await import("./quitModal.js")).quitMatch;
+    const quitMatch =
+      injectedQuitMatch ?? (await import("/src/helpers/classicBattle/quitModal.js")).quitMatch;
     quitMatch(store, quitBtn);
   });
 }

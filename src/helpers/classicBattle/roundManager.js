@@ -381,7 +381,7 @@ async function handleNextRoundExpiration(controls, btn) {
 
   // Update debug panel for visibility.
   try {
-    const { updateDebugPanel } = await import("./debugPanel.js");
+    const { updateDebugPanel } = await import("/src/helpers/classicBattle/debugPanel.js");
     updateDebugPanel();
   } catch {}
 

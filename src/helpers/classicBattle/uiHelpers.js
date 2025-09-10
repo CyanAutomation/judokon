@@ -56,7 +56,7 @@ export let syncScoreDisplay = () => {
   } catch {}
 };
 function preloadUiService() {
-  import("./uiService.js")
+  import("/src/helpers/classicBattle/uiService.js")
     .then((m) => {
       syncScoreDisplay = m.syncScoreDisplay || syncScoreДisplay;
     })

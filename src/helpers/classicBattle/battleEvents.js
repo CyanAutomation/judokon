@@ -125,9 +125,11 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
     eventLogger.event(`Emitting with aliases: ${type}`, detail, { options });
 
     // Dynamic import to avoid circular dependencies
-    import("./eventAliases.js").then(({ emitBattleEventWithAliases: aliasEmitter }) => {
-      aliasEmitter(type, detail, options);
-    });
+    import("/src/helpers/classicBattle/eventAliases.js").then(
+      ({ emitBattleEventWithAliases: aliasEmitter }) => {
+        aliasEmitter(type, detail, options);
+      }
+    );
 
     // Fallback: emit standard event immediately
     getTarget().dispatchEvent(new CustomEvent(type, { detail }));
