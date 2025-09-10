@@ -42,6 +42,7 @@ import { glob } from "glob";
 import * as acorn from "acorn";
 import { walk } from "estree-walker";
 import { CHUNK_SIZE, OVERLAP_RATIO } from "../src/helpers/vectorSearch/chunkConfig.js";
+import { deriveContextPath } from "./generation/contextPathHelper.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -844,6 +845,7 @@ async function generate() {
           embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
           sparseVector,
           source: `${relativePath} [${id}]`,
+          contextPath: deriveContextPath({ source: `${relativePath} [${id}]`, tags }),
           tags,
           metadata,
           version: 1
@@ -884,6 +886,7 @@ async function generate() {
           embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
           sparseVector,
           source: `${relativePath} [chunk ${index + 1}]`,
+          contextPath: deriveContextPath({ source: `${relativePath} [chunk ${index + 1}]`, tags }),
           tags,
           metadata,
           version: 1
@@ -917,6 +920,7 @@ async function generate() {
           embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
           sparseVector,
           source: `${relativePath} [${idSuffix}]`,
+          contextPath: deriveContextPath({ source: `${relativePath} [${idSuffix}]`, tags }),
           tags,
           metadata,
           version: 1

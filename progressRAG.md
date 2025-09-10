@@ -160,8 +160,8 @@ Planned acceptance: measurable Recall@5 improvement (+5% baseline), provenance c
 ### Phase 6 – Context Provenance & Chunking Prep
 
 - Implemented query-time `contextPath` normalization to provide a consistent, human-readable path derived from `source`, tags, and chunk markers; improves provenance clarity and enables mild section-aware re-ranking without regeneration.
-- Added `scripts/generation/contextPathHelper.js` to derive `contextPath` at generation time (no side effects yet). You can wire this into your generator to persist normalized context in each entry during the next embeddings regeneration.
-- Focused evaluator run confirms no regression in metrics (accuracy unchanged, latency stable). Further accuracy gains depend on generation-side chunking/context enrichment.
+- Added `scripts/generation/contextPathHelper.js` to derive `contextPath` at generation time and wired it into `scripts/generateEmbeddings.js` so regenerated embeddings will include consistent `contextPath` per chunk.
+- Focused evaluator run confirms no regression in metrics (accuracy unchanged, latency stable). Further accuracy gains depend on regeneration with the new `contextPath` and potential topic-aware chunking.
 
 ### Phase 5 – Actions Taken & Outcome
 - Added `npm run rag:validate` to run evaluator thresholds, data validation, and hot‑path import checks.
