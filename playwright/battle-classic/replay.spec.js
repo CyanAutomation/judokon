@@ -8,6 +8,9 @@ test.describe("Classic Battle replay", () => {
     });
     await page.goto("/src/pages/battleClassic.html");
 
+    // Wait for initialization to complete before calling setPointsToWin
+    await page.waitForFunction(() => window.__initCalled === true, { timeout: 5000 });
+
     // Initialize and set points to win = 1
     await page.evaluate(async () => {
       const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
