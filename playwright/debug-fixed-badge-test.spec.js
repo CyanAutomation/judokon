@@ -12,10 +12,10 @@ test("state badge visible when flag enabled (fixed)", async ({ page }) => {
     // Speed up inter-round where possible
     window.__NEXT_ROUND_COOLDOWN_MS = 0;
   });
-  
+
   // Use autostart=1 like our working debug test
   await page.goto("/src/pages/battleCLI.html?autostart=1");
-  
+
   // Wait for battle to start normally
   await waitForBattleState(page, "waitingForPlayerAction", 15000);
 
