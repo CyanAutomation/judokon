@@ -72,13 +72,41 @@ export async function getExtractor() {
     try {
       if (isNodeEnvironment()) {
         const { pipeline, env } = await import("@xenova/transformers");
+        const { stat } = await import("fs/promises");
+        const { createRequire } = await import("module");
+        const { resolve, dirname, sep } = await import("path");
+        const nodeRequire = createRequire(import.meta.url);
+        const rootDir = resolve(dirname(new URL(import.meta.url).pathname), "../..");
+
         env.allowLocalModels = true;
-        const { resolve } = await import("path");
-        const { pathToFileURL } = await import("url");
-        const modelPath = pathToFileURL(resolve("models/minilm")).href;
-        extractor = await pipeline("feature-extraction", modelPath, {
-          quantized: true
-        });
+        env.localModelPath = rootDir;
+
+        try {
+          const workerPath = nodeRequire.resolve(
+            "onnxruntime-web/dist/ort-wasm-simd-threaded.worker.js"
+          );
+          await stat(workerPath);
+          const ortDir = dirname(workerPath);
+          env.backends.onnx.wasm.wasmPaths = ortDir + sep;
+          env.backends.onnx.wasm.worker = workerPath;
+        } catch {
+          // ONNX runtime not found, use library defaults
+        }
+
+        env.backends.onnx.wasm.proxy = false;
+        const modelDir = resolve(rootDir, "models", "minilm");
+
+        try {
+          await stat(resolve(modelDir, "config.json"));
+          extractor = await pipeline("feature-extraction", modelDir, { quantized: true });
+        } catch {
+          console.warn(
+            "Local model not found; falling back to Xenova/all-MiniLM-L6-v2"
+          );
+          extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+            quantized: true
+          });
+        }
       } else {
         const { pipeline } = await import(
           "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"
