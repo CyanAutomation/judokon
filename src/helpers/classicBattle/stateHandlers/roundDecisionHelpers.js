@@ -157,6 +157,17 @@ export async function resolveSelectionIfPresent(store) {
   return true;
 }
 
+/**
+ * Await the player's stat choice with timeout safeguards.
+ *
+ * @pseudocode
+ * 1. If `store.playerChoice` already set → resolve immediately.
+ * 2. Otherwise race event listener, polling, and timeout to resolve or reject.
+ *
+ * @param {ReturnType<import('../roundManager.js').createBattleStore>} store - Battle state store.
+ * @param {number} timeoutMs - Milliseconds before rejecting.
+ * @returns {Promise<void>} Resolves when choice made; rejects on timeout.
+ */
 export function waitForPlayerChoice(store, timeoutMs) {
   if (store.playerChoice) return Promise.resolve();
 
@@ -197,10 +208,30 @@ export function waitForPlayerChoice(store, timeoutMs) {
   return Promise.race([eventPromise, storePromise, timeoutPromise]);
 }
 
+/**
+ * Convenience wrapper waiting a fixed 1500ms for player choice.
+ *
+ * @pseudocode
+ * 1. Delegate to `waitForPlayerChoice(store, 1500)`.
+ *
+ * @param {ReturnType<import('../roundManager.js').createBattleStore>} store - Battle state store.
+ * @returns {Promise<void>}
+ */
 export async function awaitPlayerChoice(store) {
   await waitForPlayerChoice(store, 1500);
 }
 
+/**
+ * Schedule a watchdog to resolve the round if selection stalls.
+ *
+ * @pseudocode
+ * 1. Use `scheduleGuard` to call `computeAndDispatchOutcome` after 1200ms.
+ * 2. Store cancel function in debug state and return a cleanup function.
+ *
+ * @param {ReturnType<import('../roundManager.js').createBattleStore>} store - Battle store.
+ * @param {import('../stateManager.js').ClassicBattleStateManager} machine - State machine.
+ * @returns {() => void} Cleanup that cancels the guard.
+ */
 export function guardSelectionResolution(store, machine) {
   const cancel = scheduleGuard(1200, () => computeAndDispatchOutcome(store, machine));
   exposeDebugState("roundDecisionGuard", cancel);
@@ -213,6 +244,16 @@ export function guardSelectionResolution(store, machine) {
   };
 }
 
+/**
+ * Ensure the state machine leaves `roundDecision` shortly after resolution.
+ *
+ * @pseudocode
+ * 1. After 600ms, check the machine's state.
+ * 2. If still in `roundDecision`, dispatch `interrupt`.
+ *
+ * @param {import('../stateManager.js').ClassicBattleStateManager} machine - State machine.
+ * @returns {void}
+ */
 export function schedulePostResolveWatchdog(machine) {
   setTimeout(() => {
     guardAsync(async () => {

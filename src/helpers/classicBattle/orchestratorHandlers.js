@@ -32,6 +32,15 @@ export { roundModificationEnter } from "./stateHandlers/roundModificationEnter.j
  * @param {string} state
  * @returns {Function|undefined}
  */
+/**
+ * Look up the onEnter handler for a state.
+ *
+ * @pseudocode
+ * 1. Return `stateHandlers[state]?.onEnter`.
+ *
+ * @param {string} state - State name.
+ * @returns {Function|undefined} Handler function or undefined.
+ */
 export function getOnEnterHandler(state) {
   return stateHandlers[state]?.onEnter;
 }
@@ -41,6 +50,15 @@ export function getOnEnterHandler(state) {
  *
  * @param {string} state
  * @returns {Function|undefined}
+ */
+/**
+ * Look up the onExit handler for a state.
+ *
+ * @pseudocode
+ * 1. Return `stateHandlers[state]?.onExit`.
+ *
+ * @param {string} state - State name.
+ * @returns {Function|undefined} Handler function or undefined.
  */
 export function getOnExitHandler(state) {
   return stateHandlers[state]?.onExit;

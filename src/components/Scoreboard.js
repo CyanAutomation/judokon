@@ -183,18 +183,136 @@ export function initScoreboard(container, _controls) {
   defaultScoreboard = new Scoreboard(model, view);
 }
 
+/**
+ * Display a message via the default scoreboard if available.
+ *
+ * @pseudocode
+ * 1. If `defaultScoreboard` exists, call `showMessage` with the provided args.
+ * 2. Otherwise, do nothing.
+ *
+ * @param {string} text - Message to show.
+ * @param {{outcome?: boolean}} [opts] - Outcome flag locking the message.
+ * @returns {void}
+ */
 export const showMessage = (text, opts) => defaultScoreboard?.showMessage(text, opts);
+
+/**
+ * Clear any scoreboard message.
+ *
+ * @pseudocode
+ * 1. Invoke `clearMessage` on `defaultScoreboard` when present.
+ *
+ * @returns {void}
+ */
 export const clearMessage = () => defaultScoreboard?.clearMessage();
+
+/**
+ * Show a temporary message that disappears automatically.
+ *
+ * @pseudocode
+ * 1. Forward text to `showTemporaryMessage` on the default scoreboard.
+ *
+ * @param {string} text - Message to display briefly.
+ * @returns {Promise<void>|void} Result of the underlying call.
+ */
 export const showTemporaryMessage = (text) => defaultScoreboard?.showTemporaryMessage(text);
+
+/**
+ * Update the visible round timer.
+ *
+ * @pseudocode
+ * 1. If the scoreboard exists, call `updateTimer(seconds)`.
+ *
+ * @param {number} s - Seconds remaining.
+ * @returns {void}
+ */
 export const updateTimer = (s) => defaultScoreboard?.updateTimer(s);
+
+/**
+ * Clear the round timer display.
+ *
+ * @pseudocode
+ * 1. Delegate to `clearTimer` on the default scoreboard when present.
+ *
+ * @returns {void}
+ */
 export const clearTimer = () => defaultScoreboard?.clearTimer();
+
+/**
+ * Update the round counter on the scoreboard.
+ *
+ * @pseudocode
+ * 1. Forward the round number to `updateRoundCounter` if the scoreboard exists.
+ *
+ * @param {number} n - Current round number.
+ * @returns {void}
+ */
 export const updateRoundCounter = (n) => defaultScoreboard?.updateRoundCounter(n);
+
+/**
+ * Clear the round counter display.
+ *
+ * @pseudocode
+ * 1. Call `clearRoundCounter` on the default scoreboard when available.
+ *
+ * @returns {void}
+ */
 export const clearRoundCounter = () => defaultScoreboard?.clearRoundCounter();
+
+/**
+ * Update player and opponent scores.
+ *
+ * @pseudocode
+ * 1. Delegate to `updateScore(player, opponent)` on the default scoreboard.
+ *
+ * @param {number} p - Player score.
+ * @param {number} o - Opponent score.
+ * @returns {void}
+ */
 export const updateScore = (p, o) => defaultScoreboard?.updateScore(p, o);
+
+/**
+ * Highlight an auto-selected stat on the scoreboard.
+ *
+ * @pseudocode
+ * 1. Forward the stat key to `showAutoSelect` when a scoreboard exists.
+ *
+ * @param {string} stat - Stat identifier.
+ * @returns {void}
+ */
 export const showAutoSelect = (stat) => defaultScoreboard?.showAutoSelect(stat);
+
+/**
+ * Render a partial state patch into the default scoreboard.
+ *
+ * @pseudocode
+ * 1. If the scoreboard exists, call its `render(patch)`.
+ *
+ * @param {object} patch - Partial scoreboard state.
+ * @returns {void}
+ */
 export const render = (patch) => defaultScoreboard?.render(patch);
+
+/**
+ * Get the current scoreboard state or a default structure.
+ *
+ * @pseudocode
+ * 1. Return `defaultScoreboard.getState()` when available.
+ * 2. Otherwise return zeroed score object.
+ *
+ * @returns {{score:{player:number,opponent:number}}}
+ */
 export const getState = () =>
   defaultScoreboard?.getState() ?? { score: { player: 0, opponent: 0 } };
+
+/**
+ * Destroy the default scoreboard instance.
+ *
+ * @pseudocode
+ * 1. Set `defaultScoreboard` to `null` so helpers no longer forward calls.
+ *
+ * @returns {void}
+ */
 export const destroy = () => {
   defaultScoreboard = null;
 };

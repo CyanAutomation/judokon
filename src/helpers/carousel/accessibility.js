@@ -51,27 +51,6 @@ export function applyAccessibilityImprovements(wrapper) {
     card.style.color = "var(--color-text-inverted)";
   });
 }
-
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export { ensureTouchTargetSize };
 
 /**

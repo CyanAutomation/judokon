@@ -276,11 +276,6 @@ export { addScrollMarkers };
  *
  * @pseudocode
  * 1. Set a global flag so `buildCardCarousel` shows the spinner without delay.
- */
-/**
- * Force the carousel spinner to appear immediately for testing.
- *
- * Sets a global flag so `buildCardCarousel` will show the spinner without a delay.
  *
  * @returns {void}
  */

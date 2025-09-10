@@ -47,6 +47,7 @@ runWhenIdle(preloadUiService);
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - Battle state store.
  * @param {number} roundNumber - Current round number to display.
  * @param {number} [stallTimeoutMs=5000] - Delay before auto-select kicks in.
+ * @returns {void}
  */
 export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   try {
@@ -115,6 +116,8 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
  * 1. Listen for `roundStarted`.
  * 2. Extract store and round number.
  * 3. Invoke `applyRoundUI`.
+ *
+ * @returns {void}
  */
 export function bindRoundStarted() {
   onBattleEvent("roundStarted", (e) => {
@@ -132,6 +135,8 @@ export function bindRoundStarted() {
  * 1. Listen for `statSelected`.
  * 2. Highlight the chosen button and optionally show feedback.
  * 3. Disable further stat selections.
+ *
+ * @returns {void}
  */
 export function bindStatSelected() {
   onBattleEvent("statSelected", (e) => {
@@ -162,6 +167,8 @@ export function bindStatSelected() {
  * 1. Listen for `roundResolved`.
  * 2. Surface outcome, update score, maybe show summary.
  * 3. Clear selection highlight and refresh debug panel.
+ *
+ * @returns {void}
  */
 export function bindRoundResolved() {
   onBattleEvent("roundResolved", (e) => {
@@ -237,6 +244,8 @@ export function bindRoundResolved() {
  * 1. Bind `roundStarted` handler.
  * 2. Bind `statSelected` handler.
  * 3. Bind `roundResolved` handler.
+ *
+ * @returns {void}
  */
 export function bindRoundUIEventHandlers() {
   bindRoundStarted();

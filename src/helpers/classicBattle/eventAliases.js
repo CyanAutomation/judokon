@@ -75,6 +75,11 @@ for (const [newName, oldNames] of Object.entries(EVENT_ALIASES)) {
  * @param {boolean} options.skipAliases - Skip emitting alias events
  * @param {boolean} options.warnDeprecated - Warn about deprecated usage
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Dispatch the standardized event on `eventTarget`.
+ * 2. Unless `skipAliases`, loop through alias names and dispatch each.
+ * 3. Optionally warn in development/test when deprecated aliases are used.
  */
 export function emitEventWithAliases(eventTarget, eventName, payload, options = {}) {
   const { skipAliases = false, warnDeprecated = true } = options;
@@ -109,6 +114,11 @@ export function emitEventWithAliases(eventTarget, eventName, payload, options = 
  * @param {any} payload - Event payload
  * @param {object} options - Emission options
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Resolve the battle event target via `getBattleEventTarget`.
+ * 2. If `eventName` is deprecated, warn and emit both new and old names.
+ * 3. Otherwise delegate to `emitEventWithAliases` with the given name.
  */
 export function emitBattleEventWithAliases(eventName, payload, options = {}) {
   // Import the battle event target dynamically to avoid circular deps
@@ -150,6 +160,10 @@ export function emitBattleEventWithAliases(eventName, payload, options = {}) {
  *
  * @param {string} oldEventName - Deprecated event name
  * @returns {object} Migration information
+ *
+ * @pseudocode
+ * 1. Look up new name in `REVERSE_EVENT_ALIASES`.
+ * 2. Return info indicating whether migration is needed and recommended name.
  */
 export function getMigrationInfo(oldEventName) {
   const newName = REVERSE_EVENT_ALIASES[oldEventName];
@@ -175,6 +189,9 @@ export function getMigrationInfo(oldEventName) {
  *
  * @param {string[]} aliasesToDisable - Array of old event names to stop aliasing
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. For each alias, remove it from the mapping in `EVENT_ALIASES`.
  */
 export function disableAliases(aliasesToDisable) {
   for (const alias of aliasesToDisable) {
@@ -190,6 +207,9 @@ export function disableAliases(aliasesToDisable) {
  *
  * @param {string} eventName - Event name to check
  * @returns {boolean} True if the event name is deprecated
+ *
+ * @pseudocode
+ * 1. Return `true` when `eventName` exists in `REVERSE_EVENT_ALIASES`.
  */
 export function isDeprecatedEventName(eventName) {
   return eventName in REVERSE_EVENT_ALIASES;

@@ -15,6 +15,10 @@ import rounds from "../../data/battleRounds.js";
 /**
  * Check if the URL requests an automatic start.
  *
+ * @pseudocode
+ * 1. Parse `location.search` for `autostart=1` inside a try/catch.
+ * 2. Return `true` when present; otherwise `false`.
+ *
  * @returns {boolean} True when `?autostart=1` is present.
  */
 export function shouldAutostart() {

@@ -29,8 +29,9 @@ export const browseJudokaReadyPromise =
  * @pseudocode
  * 1. If layoutBtn exists, add click listener to toggle panel display mode.
  *
- * @param {HTMLButtonElement} layoutBtn
- * @param {Element} panel
+ * @param {HTMLButtonElement} layoutBtn - Toggle button.
+ * @param {Element} panel - Panel element to switch layout.
+ * @returns {void}
  */
 export function setupLayoutToggle(layoutBtn, panel) {
   if (layoutBtn) {
@@ -213,6 +214,8 @@ export async function setupBrowseJudokaPage() {
 
   await init();
   initTooltips();
+  // Function is async for historical reasons; resolves when page is ready.
+  return;
 }
 
 setupBrowseJudokaPage();
