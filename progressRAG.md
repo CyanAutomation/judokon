@@ -68,3 +68,63 @@ To arrive at a fully effective and maintainable RAG system, the following next s
 
 - **Action:** Modify `scripts/evaluation/evaluateRAG.js` to remove direct model loading and instead import and utilize the `queryRag` function from `../../src/helpers/queryRag.js`. This will ensure the evaluation uses the same RAG pipeline as the agents.
 - **Expected Outcome:** The script will run successfully and provide meaningful MRR and Recall scores, reflecting the true performance of the RAG system.
+
+### Action Taken: Refactored `scripts/evaluation/evaluateRAG.js`
+
+- **Action:** Overwrote `scripts/evaluation/evaluateRAG.js` with the refactored code that uses `queryRag`.
+- **Outcome:** The script executed successfully, producing the following metrics:
+    - `MRR@5: 0.3927`
+    - `Recall@3: 0.5`
+    - `Recall@5: 0.625`
+    These scores indicate a reasonable level of retrieval performance for the RAG system.
+
+### Planned Action: Analyze and Improve Retrieval Quality
+
+- **Action:** Modify `scripts/evaluation/evaluateRAG.js` to log detailed per-query results (query, expected source, rank, top 3 retrieved sources with scores).
+- **Expected Outcome:** Detailed logs will enable identification of specific queries where retrieval fails or performs poorly, guiding further optimization efforts.
+
+### Action Taken: Analyzed Detailed Retrieval Results
+
+- **Action:** Ran `node scripts/evaluation/evaluateRAG.js` with detailed logging and analyzed the per-query output.
+- **Outcome:** The analysis revealed patterns in retrieval performance:
+
+    **Queries with "Not Found" (Rank 0):**
+    *   "settings feature flags order" (Expected: `design/codeStandards/settingsPageDesignGuidelines.md`)
+    *   "navbar button transition duration" (Expected: `src/styles/main.css`)
+    *   "how to add a new tooltip" (Expected: `src/data/tooltips.json`)
+    *   "how are judoka stats calculated" (Expected: `src/data/judoka.json`)
+    *   "default navigation items" (Expected: `src/data/navigationItems.js`)
+    *   "default sound setting in configuration" (Expected: `src/data/settings.json`)
+
+    **General Observations & Hypotheses:**
+    *   **Strength in PRDs/Design Docs:** The RAG system performs well when the expected source is a PRD or a design document. These documents likely contain more descriptive text that aligns well with semantic search.
+    *   **Weakness in Specific Code/Data Files:** The system struggles to retrieve specific `.json`, `.js`, or `.css` files, especially when the query asks about "how-to", "calculation", or "default items" that might be implicitly defined by the file's structure rather than explicitly described within a text chunk.
+    *   **Chunking Strategy:** The current chunking strategy (especially for JSON and JS files) might not be extracting enough semantic context for these types of queries.
+    *   **Query vs. Document Content:** Some queries might be asking for information that isn't explicitly stated in the expected document's indexed chunks, even if the document is the "correct" place to look for the answer.
+
+## 6. Future Work & Continuous Improvement
+
+With the core RAG system and its evaluation now functional, the next steps focus on enhancing its effectiveness and integrating it more deeply into AI agent workflows:
+
+1.  **Analyze and Improve Retrieval Quality:**
+    *   **Action:** Review the `scripts/evaluation/queries.json` test cases and the RAG results to identify patterns in retrieval failures or areas with lower scores.
+    *   **Recommendation:** Investigate potential improvements such as:
+        *   Refining the text chunking strategy in `src/helpers/vectorSearch/chunkConfig.js`.
+        *   Expanding the `src/data/synonyms.json` file to improve query understanding.
+        *   Adding more diverse or granular data sources to the RAG corpus.
+
+2.  **Integrate RAG into Agent Workflows:**
+    *   **Action:** Ensure AI agents are consistently utilizing the `queryRag` tool for relevant queries.
+    *   **Recommendation:**
+        *   Develop and refine agent prompts that explicitly guide agents to use the `queryRag` tool for architectural, design, or game rule questions.
+        *   Monitor agent logs to track `queryRag` tool usage and analyze its impact on agent performance and accuracy.
+
+### Planned Action: Integrate RAG into Agent Workflows
+
+- **Action:** Confirm that `AGENTS.md` has been updated to guide agents on using the `queryRag` tool. Highlight the need for the user to monitor agent logs for actual usage and impact.
+- **Expected Outcome:** Agents will be explicitly instructed to use the RAG system, and the user will have a clear understanding of the monitoring responsibilities.
+
+### Action Taken: Integrate RAG into Agent Workflows
+
+- **Action:** Confirmed that `AGENTS.md` was previously updated with a detailed RAG policy, explicitly guiding agents on when and how to use the `queryRag` tool.
+- **Outcome:** Agents are now formally instructed to leverage the RAG system for relevant queries. Monitoring actual agent usage and its impact on performance is an ongoing responsibility for the user, as direct access to agent execution logs is not available to this model.

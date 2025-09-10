@@ -30,6 +30,19 @@ export async function evaluate() {
       }
     }
 
+    // --- START: Added logging for detailed analysis ---
+    console.log(`\n--- Query: "${query}" ---`);
+    console.log(`Expected Source: "${expected_source}"`);
+    console.log(`Rank Found: ${rank > 0 ? rank : 'Not Found'}`);
+    console.log("Top Results:");
+    results.slice(0, 3).forEach((result, index) => {
+      console.log(`  ${index + 1}. Source: "${result.source}", Score: ${result.score.toFixed(4)}`);
+    });
+    if (results.length === 0) {
+      console.log("  (No results returned)");
+    }
+    // --- END: Added logging for detailed analysis ---
+
     if (rank > 0) {
       if (rank <= 5) {
         mrr5 += 1 / rank;
@@ -43,6 +56,7 @@ export async function evaluate() {
     }
   }
 
+  console.log(`\n--- Aggregate Metrics ---`);
   console.log(`MRR@5: ${mrr5 / queries.length}`);
   console.log(`Recall@3: ${recall3 / queries.length}`);
   console.log(`Recall@5: ${recall5 / queries.length}`);
