@@ -115,7 +115,10 @@ Example:
 
 ```js
 import queryRag from "./src/helpers/queryRag.js";
-const results = await queryRag("classic battle countdown snackbar", { withProvenance: true, withDiagnostics: true });
+const results = await queryRag("classic battle countdown snackbar", {
+  withProvenance: true,
+  withDiagnostics: true
+});
 // results[0] → { id, text, score, source, tags, contextPath, rationale }
 // results.diagnostics → { expandedQuery: "...", multiIntentApplied: true|false, timingMs }
 ```

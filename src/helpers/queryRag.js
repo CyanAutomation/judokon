@@ -19,8 +19,14 @@ function isIterable(value) {
  * @returns {Promise<Array<{score:number} & Record<string, any>>|null>} Top matches or null if data missing.
  */
 export async function queryRag(question, opts = {}) {
-  const { k = 5, filters = [], strategy = null, withProvenance = false, withDiagnostics = false } = opts;
-  const t0 = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+  const {
+    k = 5,
+    filters = [],
+    strategy = null,
+    withProvenance = false,
+    withDiagnostics = false
+  } = opts;
+  const t0 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
   const expanded = await vectorSearch.expandQueryWithSynonyms(question);
   const extractor = await getExtractor();
   const embedding = await extractor(expanded, { pooling: "mean" });
@@ -78,14 +84,14 @@ export async function queryRag(question, opts = {}) {
 
   const enriched = withProvenance
     ? matches.map((m) => ({
-      ...m,
-      contextPath: normalizeContextPath(m),
-      rationale: buildRationale(question, m)
-    }))
+        ...m,
+        contextPath: normalizeContextPath(m),
+        rationale: buildRationale(question, m)
+      }))
     : matches;
 
   if (!withDiagnostics) return enriched;
-  const t1 = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+  const t1 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
   return Object.assign([], enriched, {
     diagnostics: {
       expandedQuery: expanded,
@@ -126,7 +132,10 @@ function normalizeContextPath(match) {
   const parts = file.split("/");
   const name = parts[parts.length - 1] || file;
   const domain = parts[0] || "src";
-  const base = name.replace(/\.(md|js|json)$/i, "").replace(/^prd/i, "").replace(/[-_]/g, " ");
+  const base = name
+    .replace(/\.(md|js|json)$/i, "")
+    .replace(/^prd/i, "")
+    .replace(/[-_]/g, " ");
   const tags = Array.isArray(match.tags) ? match.tags.join(" > ") : "";
   const pieces = [domain, base.trim()].filter(Boolean);
   if (tags) pieces.push(tags);
