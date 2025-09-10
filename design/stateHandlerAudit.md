@@ -1,4 +1,5 @@
 # State Handler Contract Compliance Audit
+
 Generated: 2025-09-10T13:13:37.758Z
 
 ## Summary
@@ -9,10 +10,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ## Detailed Analysis
 
 ### waitingForMatchStart
+
 **ID**: 1 | **Type**: initial
 **Description**: Idle state before the match begins. UI shows Start/Ready and win target selection (5, 10, or 15).
 
 **Required onEnter actions**: 2
+
 ```
 - render:matchLobby
 - reset:scoresAndUI
@@ -25,10 +28,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### matchStart
+
 **ID**: 2 | **Type**: normal
 **Description**: Initialises match context. Stores selected win target, resets scores, and fixes user as first player for all rounds.
 
 **Required onEnter actions**: 4
+
 ```
 - init:matchContext
 - store:winTargetSelection
@@ -43,10 +48,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### cooldown
+
 **ID**: 7 | **Type**: normal
 **Description**: Short pacing pause before the first round and between rounds; allows animations and readability.
 
 **Required onEnter actions**: 2
+
 ```
 - timer:startShortCountdown
 - announce:nextRoundInUI
@@ -61,10 +68,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### roundStart
+
 **ID**: 3 | **Type**: normal
 **Description**: Begins a new round. Randomly draws judoka for user and opponent, reveals both, user is the active chooser.
 
 **Required onEnter actions**: 3
+
 ```
 - draw:randomJudokaBothSides
 - reveal:roundCards
@@ -78,10 +87,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### waitingForPlayerAction
+
 **ID**: 4 | **Type**: normal
 **Description**: Awaiting the user's stat choice. If no action within the round timer, optional auto-select may fire.
 
 **Required onEnter actions**: 3
+
 ```
 - prompt:chooseStat
 - timer:startStatSelection
@@ -95,10 +106,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### roundDecision
+
 **ID**: 5 | **Type**: normal
 **Description**: Compares the selected stat and determines the round outcome.
 
 **Required onEnter actions**: 3
+
 ```
 - compare:selectedStat
 - compute:roundOutcome
@@ -115,10 +128,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### roundOver
+
 **ID**: 6 | **Type**: normal
 **Description**: Updates scores and presents a brief summary. No card transfers occur.
 
 **Required onEnter actions**: 2
+
 ```
 - update:score
 - update:UIRoundSummary
@@ -132,10 +147,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### matchDecision
+
 **ID**: 8 | **Type**: normal
 **Description**: Determines the overall winner once a player reaches the selected win target.
 
 **Required onEnter actions**: 2
+
 ```
 - compute:matchOutcome
 - render:matchSummary
@@ -150,10 +167,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### matchOver
+
 **ID**: 9 | **Type**: final
 **Description**: Match completed. Offer Rematch or Home. Final score remains visible.
 
 **Required onEnter actions**: 1
+
 ```
 - show:matchResultScreen
 ```
@@ -166,10 +185,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### interruptRound
+
 **ID**: 98 | **Type**: normal
 **Description**: Round-level interruption (quit, navigation, or error). Performs safe rollback and offers options.
 
 **Required onEnter actions**: 3
+
 ```
 - timer:clearIfRunning
 - rollback:roundContextIfNeeded
@@ -183,10 +204,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### roundModification
+
 **ID**: 97 | **Type**: normal
 **Description**: Admin/test-only branch to adjust round decision parameters before re-evaluating.
 
 **Required onEnter actions**: 1
+
 ```
 - open:roundModificationPanel
 ```
@@ -198,10 +221,12 @@ Generated: 2025-09-10T13:13:37.758Z
 ---
 
 ### interruptMatch
+
 **ID**: 99 | **Type**: normal
 **Description**: Match-level interruption from setup or critical error. Cleans up context and returns to lobby on request.
 
 **Required onEnter actions**: 3
+
 ```
 - timer:clearIfRunning
 - teardown:matchContext

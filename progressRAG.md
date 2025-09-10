@@ -109,20 +109,23 @@ Based on the comprehensive evaluation conducted in September 2025, the following
 ### 9.1 Priority Improvements
 
 **1. Enhanced Chunking Strategy for Implementation Files**
+
 - **Issue:** The system struggles to retrieve specific implementation details from JSON, JS, and CSS files
-- **Recommendation:** 
+- **Recommendation:**
   - Refine chunking strategy in `src/helpers/vectorSearch/chunkConfig.js` to better capture semantic meaning from structured data files
   - Consider adding metadata extraction for JSON schemas and configuration files
   - Implement file-type specific chunking rules
 
 **2. Expanded Synonym Coverage**
+
 - **Issue:** Implementation-specific terminology may not be well-covered by current synonym mapping
-- **Recommendation:** 
+- **Recommendation:**
   - Expand `src/data/synonyms.json` with development-specific terms
   - Add mappings for common "how-to" patterns to implementation concepts
   - Include technical jargon to natural language mappings
 
 **3. Context Enhancement for Code Files**
+
 - **Issue:** Code files may lack sufficient descriptive context for semantic search
 - **Recommendation:**
   - Enhance documentation within code files with JSDoc comments
@@ -132,11 +135,13 @@ Based on the comprehensive evaluation conducted in September 2025, the following
 ### 9.2 Monitoring and Maintenance
 
 **1. Performance Tracking**
-- **Action:** Implement periodic evaluation runs using the existing `scripts/evaluation/evaluateRAG.js` 
+
+- **Action:** Implement periodic evaluation runs using the existing `scripts/evaluation/evaluateRAG.js`
 - **Frequency:** Monthly or after significant content changes
 - **Targets:** Maintain MRR@5 > 0.4, Recall@5 > 0.6
 
 **2. Query Pattern Analysis**
+
 - **Action:** Implement logging of actual agent RAG queries to identify common patterns and failure cases
 - **Benefit:** Data-driven optimization of the RAG corpus and query processing
 
@@ -147,57 +152,56 @@ Based on the comprehensive evaluation conducted in September 2025, the following
 To action the recommendations for continued optimization, an AI agent can follow these steps:
 
 **1. Refining the Text Chunking Strategy:**
-    *   **Step 1: Analyze Current Chunking Logic:**
-        *   **Action:** Read `src/helpers/vectorSearch/chunkConfig.js` to understand `CHUNK_SIZE` and `OVERLAP_RATIO`.
-        *   **Action:** Search the codebase (e.g., `search_file_content` for `CHUNK_SIZE` and `OVERLAP_RATIO`) to identify where these configurations are used in the chunking implementation.
-            *   **Outcome:** `CHUNK_SIZE` and `OVERLAP_RATIO` are imported and used by `scripts/generateEmbeddings.js` for generating embeddings.
-    *   **Step 2: Propose and Execute Experimentation:**
-        *   **Action:** Suggest modifying `src/helpers/vectorSearch/chunkConfig.js` with new `CHUNK_SIZE` and `OVERLAP_RATIO` values.
-        *   **Action:** Run `npm run generate:embeddings` to re-generate the embeddings with the new configuration.
-        *   **Action:** Run `node scripts/evaluation/evaluateRAG.js` to evaluate the RAG performance with the new chunking strategy.
-        *   **Action:** Document the results and compare them to previous evaluations.
-            *   **Outcome:** After changing `CHUNK_SIZE` to 1000 and `OVERLAP_RATIO` to 0.2, the aggregate metrics (MRR@5: 0.3927, Recall@3: 0.5, Recall@5: 0.625) remained identical to the previous evaluation. This suggests that these specific changes to chunk size and overlap ratio did not significantly impact the overall RAG performance for the current test set.
-    *   **Step 3: Investigate Semantic Chunking (if experimentation shows promise):**
-        *   **Action:** Research libraries or algorithms for semantic chunking (e.g., sentence tokenization, markdown parsing).
-        *   **Action:** Propose a plan to implement a more sophisticated chunking logic within the existing embedding generation process.
+_ **Step 1: Analyze Current Chunking Logic:**
+_ **Action:** Read `src/helpers/vectorSearch/chunkConfig.js` to understand `CHUNK_SIZE` and `OVERLAP_RATIO`.
+_ **Action:** Search the codebase (e.g., `search_file_content` for `CHUNK_SIZE` and `OVERLAP_RATIO`) to identify where these configurations are used in the chunking implementation.
+_ **Outcome:** `CHUNK_SIZE` and `OVERLAP_RATIO` are imported and used by `scripts/generateEmbeddings.js` for generating embeddings.
+_ **Step 2: Propose and Execute Experimentation:**
+_ **Action:** Suggest modifying `src/helpers/vectorSearch/chunkConfig.js` with new `CHUNK_SIZE` and `OVERLAP_RATIO` values.
+_ **Action:** Run `npm run generate:embeddings` to re-generate the embeddings with the new configuration.
+_ **Action:** Run `node scripts/evaluation/evaluateRAG.js` to evaluate the RAG performance with the new chunking strategy.
+_ **Action:** Document the results and compare them to previous evaluations.
+_ **Outcome:** After changing `CHUNK_SIZE` to 1000 and `OVERLAP_RATIO` to 0.2, the aggregate metrics (MRR@5: 0.3927, Recall@3: 0.5, Recall@5: 0.625) remained identical to the previous evaluation. This suggests that these specific changes to chunk size and overlap ratio did not significantly impact the overall RAG performance for the current test set.
+_ **Step 3: Investigate Semantic Chunking (if experimentation shows promise):**
+_ **Action:** Research libraries or algorithms for semantic chunking (e.g., sentence tokenization, markdown parsing). \* **Action:** Propose a plan to implement a more sophisticated chunking logic within the existing embedding generation process.
 
 **2. Expanding the `src/data/synonyms.json` File:**
-    *   **Step 1: Review Current Synonyms:**
-        *   **Action:** Read `src/data/synonyms.json` to understand existing entries.
-    *   **Step 2: Identify Missing Synonyms:**
-        *   **Action:** Analyze `scripts/evaluation/queries.json` and the results from `node scripts/evaluation/evaluateRAG.js` to identify queries that failed due to missing terminology.
-        *   **Action:** Review project documentation and common user queries for terms that could benefit from synonym mapping.
-    *   **Step 3: Add New Synonyms:**
-        *   **Action:** Use the `replace` or `write_file` tool to add new key-value pairs to `src/data/synonyms.json`. Ensure proper JSON formatting.
-        *   **Example:** `replace(file_path='src/data/synonyms.json', old_string='}', new_string='  "new term": ["synonym1", "synonym2"]
+_ **Step 1: Review Current Synonyms:**
+_ **Action:** Read `src/data/synonyms.json` to understand existing entries.
+_ **Step 2: Identify Missing Synonyms:**
+_ **Action:** Analyze `scripts/evaluation/queries.json` and the results from `node scripts/evaluation/evaluateRAG.js` to identify queries that failed due to missing terminology.
+_ **Action:** Review project documentation and common user queries for terms that could benefit from synonym mapping.
+_ **Step 3: Add New Synonyms:**
+_ **Action:** Use the `replace` or `write_file` tool to add new key-value pairs to `src/data/synonyms.json`. Ensure proper JSON formatting.
+_ **Example:** `replace(file_path='src/data/synonyms.json', old_string='}', new_string='  "new term": ["synonym1", "synonym2"]
 }')` (adjusting for proper JSON structure).
-    *   **Step 4: Re-generate Embeddings and Re-evaluate:**
-        *   **Action:** Run `npm run generate:embeddings` to incorporate the new synonyms.
-        *   **Action:** Run `node scripts/evaluation/evaluateRAG.js` to assess the impact on RAG performance.
+_ **Step 4: Re-generate Embeddings and Re-evaluate:**
+_ **Action:** Run `npm run generate:embeddings` to incorporate the new synonyms. \* **Action:** Run `node scripts/evaluation/evaluateRAG.js` to assess the impact on RAG performance.
 
 **3. Adding More Diverse or Granular Data Sources:**
-    *   **Step 1: Identify Target Data Sources:**
-        *   **Action:** List specific file paths or glob patterns for desired new data sources (e.g., `design/productRequirementsDocuments/**/*.md`, `design/codeStandards/**/*.md`, `playwright/**/*.js`, `tests/**/*.js`, `src/**/*.js` for JSDoc extraction).
-    *   **Step 2: Update Embedding Generation Script:**
-        *   **Action:** Read `scripts/generateEmbeddings.js`.
-        *   **Action:** Use the `replace` tool to modify the script to include the new file paths/glob patterns in the data collection process.
-    *   **Step 3: Re-generate Embeddings:**
-        *   **Action:** Run `npm run generate:embeddings` to rebuild the RAG corpus with the newly included data sources.
-    *   **Step 4: Re-evaluate RAG Performance:**
-        *   **Action:** Run `node scripts/evaluation/evaluateRAG.js` to measure the impact of the expanded corpus on retrieval quality.
-
+_ **Step 1: Identify Target Data Sources:**
+_ **Action:** List specific file paths or glob patterns for desired new data sources (e.g., `design/productRequirementsDocuments/**/*.md`, `design/codeStandards/**/*.md`, `playwright/**/*.js`, `tests/**/*.js`, `src/**/*.js` for JSDoc extraction).
+_ **Step 2: Update Embedding Generation Script:**
+_ **Action:** Read `scripts/generateEmbeddings.js`.
+_ **Action:** Use the `replace` tool to modify the script to include the new file paths/glob patterns in the data collection process.
+_ **Step 3: Re-generate Embeddings:**
+_ **Action:** Run `npm run generate:embeddings` to rebuild the RAG corpus with the newly included data sources.
+_ **Step 4: Re-evaluate RAG Performance:** \* **Action:** Run `node scripts/evaluation/evaluateRAG.js` to measure the impact of the expanded corpus on retrieval quality.
 
 **1. Hybrid Search Implementation**
+
 - **Concept:** Combine semantic search with traditional keyword/regex search for implementation-specific queries
 - **Benefit:** Improve retrieval of specific file types and code patterns
 
 **2. Dynamic Context Injection**
+
 - **Concept:** Automatically include related files (imports, dependencies) in search results
 - **Benefit:** Provide more comprehensive context for implementation queries
 
 ## 10. Conclusion
 
 **Current State Summary:**
+
 - **✅ Core Functionality:** RAG system is fully operational and stable
 - **✅ Agent Integration:** Comprehensive integration with clear usage policies
 - **⚠️ Performance:** Good overall performance with identified areas for improvement
@@ -212,21 +216,24 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 ### 11.1 Immediate Implementation Strategies
 
 **1. Enhanced Tool Discoverability**
+
 - **Action:** Create a dedicated `queryRag` tool showcase in agent instructions with concrete success examples
-- **Implementation:** 
+- **Implementation:**
+
   ```markdown
   ## 🌟 RAG Success Examples
-  
+
   **Query:** "How do I add a new tooltip?"
   **RAG Result:** Found `src/data/tooltips.json` with structure guide
   **Agent Success:** Provided accurate implementation steps in 2 seconds
-  
+
   **Query:** "What are the judoka bio tone guidelines?"  
   **RAG Result:** Retrieved design document with specific requirements
   **Agent Success:** Maintained consistency with established standards
   ```
 
 **2. Performance-Based Incentives**
+
 - **Concept:** Frame RAG usage as a performance enhancer rather than just a requirement
 - **Implementation:** Update agent instructions to emphasize:
   - "⚡ **Speed Boost:** RAG queries typically return results in <2 seconds vs 30+ seconds of code exploration"
@@ -234,11 +241,13 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
   - "🧠 **Context Boost:** Access to 16,000+ indexed chunks covering design decisions and implementation patterns"
 
 **3. Friction Reduction**
+
 - **Action:** Simplify the RAG decision tree for agents
-- **Current Issue:** Complex categorization ("How-to", "Definitions", "Conventions", "Implementations")  
+- **Current Issue:** Complex categorization ("How-to", "Definitions", "Conventions", "Implementations")
 - **Solution:** Replace with simple trigger patterns:
   ```markdown
   🔍 **When to use RAG (Simple Rule):**
+
   - User asks questions containing: "How", "Why", "What", "Where", "Which"
   - User requests examples or references
   - User mentions unfamiliar terms or concepts
@@ -248,12 +257,13 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 ### 11.2 Quality Enhancement to Drive Usage
 
 **4. Targeted Content Improvement**
+
 - **Priority Areas** (based on evaluation data):
   ```json
   {
     "high_priority": [
       "src/data/*.json files - Add descriptive headers and usage examples",
-      "src/styles/*.css files - Include semantic comments for UI components", 
+      "src/styles/*.css files - Include semantic comments for UI components",
       "Configuration files - Document purpose and modification procedures"
     ],
     "medium_priority": [
@@ -264,11 +274,13 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
   ```
 
 **5. Real-Time Success Feedback**
+
 - **Implementation:** Add success metrics display to agent instructions:
   ```markdown
   ## 📊 RAG Performance Dashboard
+
   - **Current MRR@5:** 0.393 (improving - target: 0.45)
-  - **Current Recall@5:** 0.625 (strong - target: 0.70)  
+  - **Current Recall@5:** 0.625 (strong - target: 0.70)
   - **Strong Categories:** Design docs (95%), PRDs (90%), Architecture (85%)
   - **Improving Categories:** Implementation files (35% → targeting 60%)
   ```
@@ -276,29 +288,33 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 ### 11.3 Advanced Engagement Strategies
 
 **6. Context-Aware RAG Prompting**
+
 - **Problem:** Generic queries may return poor results, discouraging future use
 - **Solution:** Provide query optimization guidance:
+
   ```markdown
   ## 🎯 RAG Query Optimization Tips
-  
+
   **Instead of:** "How do I add tooltips?"
   **Try:** "tooltip implementation data structure JSON format"
-  
+
   **Instead of:** "CSS styling help"  
   **Try:** "navigation bar button transition duration styling"
-  
+
   **Instead of:** "Battle system logic"
   **Try:** "classic battle mode game timer phases scoreboard"
   ```
 
 **7. Fallback Strategy Enhancement**
+
 - **Current:** If RAG fails, proceed with other tools
 - **Enhanced:** Multi-tier approach with guided escalation:
+
   ```markdown
   ## 🔄 Smart RAG Workflow
-  
+
   1. **Primary RAG Query:** Use user's exact terms
-  2. **If poor results:** Rephrase with synonyms/technical terms  
+  2. **If poor results:** Rephrase with synonyms/technical terms
   3. **If still poor:** Use broader category terms
   4. **Final fallback:** Combine RAG partial results with targeted file search
   5. **Document learning:** Note successful query patterns for future use
@@ -307,30 +323,37 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 ### 11.4 Measurement and Reinforcement
 
 **8. Usage Tracking Integration**
+
 - **Goal:** Make RAG usage visible and rewarding
-- **Implementation:** 
+- **Implementation:**
+
   ```markdown
   ## 📈 RAG Usage Tracking (Agent Self-Assessment)
-  
+
   **At task completion, note:**
+
   - Did I use RAG? (Y/N)
-  - If yes: Was result helpful? (1-5 scale)  
+  - If yes: Was result helpful? (1-5 scale)
   - If no: Could RAG have helped? (Y/N)
   - Query patterns that worked well
   - Areas where RAG failed but should succeed
   ```
 
 **9. Peer Learning System**
+
 - **Concept:** Create a knowledge base of successful RAG interactions
 - **Implementation:** Maintain `design/agentWorkflows/ragSuccessPatterns.md`:
+
   ```markdown
   ## 🏆 RAG Success Patterns
-  
+
   ### Implementation Queries That Work Well
+
   - "judoka stats calculation data structure" → `src/data/judoka.json`
   - "tooltip content validation requirements" → PRD documents
-  
-  ### Query Transformations That Improve Results  
+
+  ### Query Transformations That Improve Results
+
   - "how to X" → "X implementation guide procedure"
   - "default settings" → "configuration default values structure"
   ```
@@ -338,13 +361,16 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 ### 11.5 Technical Infrastructure Improvements
 
 **10. Proactive RAG Integration**
+
 - **Advanced Concept:** Auto-suggest RAG queries based on user input patterns
 - **Implementation:** Add to agent instructions:
+
   ```markdown
   ## 🤖 Proactive RAG Assistance
-  
+
   **When user mentions these terms, automatically suggest RAG:**
-  - File names (*.json, *.css, *.js) → "Let me search our docs for [filename] usage patterns"
+
+  - File names (_.json, _.css, \*.js) → "Let me search our docs for [filename] usage patterns"
   - Component names → "Let me find design guidelines for [component]"
   - Technical terms → "Let me check our definitions for [term]"
   ```
@@ -352,14 +378,16 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 ### 11.6 Success Metrics & Goals
 
 **Target Improvements (90-day goals):**
+
 - **Agent RAG Usage Rate:** Current unknown → Target 80% of eligible queries
-- **RAG Query Success Rate:** Current 62.5% → Target 75%  
+- **RAG Query Success Rate:** Current 62.5% → Target 75%
 - **Implementation Query Success:** Current 35% → Target 60%
 - **Agent Satisfaction:** Implement feedback system targeting >4/5 rating
 
 **Monthly Review Process:**
+
 1. Run evaluation script and compare metrics
-2. Review agent feedback and pain points  
+2. Review agent feedback and pain points
 3. Identify top 3 query patterns that failed
 4. Enhance content or synonyms for those patterns
 5. Update agent instructions based on learning
@@ -378,6 +406,7 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 **Evaluation Results:**
 
 **Quantitative Metrics (16 test queries):**
+
 - **MRR@5:** 0.393 (39.3% average reciprocal rank within top 5 results)
 - **Recall@3:** 0.5 (50% of expected sources found within top 3 results)
 - **Recall@5:** 0.625 (62.5% of expected sources found within top 5 results)
@@ -385,11 +414,13 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 **Performance Analysis by Query Type:**
 
 **Strong Performance Areas:**
+
 - **Design Documentation Queries:** Excellent retrieval for PRDs and design guidelines (e.g., "judoka bio tone guidelines", "tooltip content coverage guidelines")
 - **Conceptual Questions:** High accuracy for purpose-driven queries (e.g., "purpose of the prd viewer tool", "goals of the tooltip viewer")
 - **Architectural Information:** Effective retrieval of structural information (e.g., "weight category definitions", "game timer phases")
 
 **Challenging Areas:**
+
 - **Implementation-Specific Queries:** Lower success rate for "how-to" queries targeting specific JSON/JS files (e.g., "how to add a new tooltip", "default navigation items")
 - **Code File Retrieval:** Difficulty retrieving CSS and configuration files (e.g., "navbar button transition duration", "default sound setting in configuration")
 - **Calculation Details:** Struggles with queries about algorithmic implementations (e.g., "how are judoka stats calculated")
@@ -397,12 +428,14 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 ### 8.2 System Stability and Availability
 
 **Infrastructure Status:**
+
 - **Model Loading:** Functional with fallback to Xenova/all-MiniLM-L6-v2
 - **Query Processing:** Responsive and consistent performance
 - **Error Handling:** Graceful degradation when local models are unavailable
 - **Test Coverage:** Unit tests pass successfully with mock dataset functionality
 
 **Tool Availability:**
+
 - ✅ `queryRag` helper function fully operational
 - ✅ CLI tool (`scripts/queryRagCli.mjs`) working correctly
 - ✅ Evaluation script (`scripts/evaluation/evaluateRAG.js`) producing reliable metrics
@@ -411,14 +444,16 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
 ### 8.3 Agent Integration Assessment
 
 **Current Integration Status:**
+
 - **Documentation:** RAG usage policy clearly defined in `AGENTS.md` with explicit "MUST" directives
 - **Tool Access:** `queryRag` function available and properly integrated into agent workflow
 - **Guidance:** Comprehensive examples and workflow instructions provided for AI agents
 - **Fallback Strategy:** Clear escalation path when RAG queries return insufficient results
 
 **Integration Quality Score:** ⭐⭐⭐⭐⭐ **Excellent**
+
 - All policy requirements met
-- Clear usage guidelines established  
+- Clear usage guidelines established
 - Robust fallback mechanisms in place
 - Consistent tool availability
 
@@ -430,25 +465,25 @@ Based on the comprehensive evaluation and analysis of barriers to RAG adoption, 
       - Refining the text chunking strategy in `src/helpers/vectorSearch/chunkConfig.js`.
       - Expanding the `src/data/synonyms.json` file to improve query understanding.
       - Refining the text chunking strategy in `src/helpers/vectorSearch/chunkConfig.js`.
-        *   **Dynamic Chunk Sizing:** Consider making `CHUNK_SIZE` dynamic based on content type (e.g., smaller for code, larger for prose).
-        *   **Semantic Chunking:** Implement more sophisticated semantic chunking that understands document structure (e.g., markdown headings, code blocks) to ensure semantically coherent chunks.
-        *   **Experimentation:** Experiment with different `CHUNK_SIZE` and `OVERLAP_RATIO` values and evaluate their impact on RAG performance.
-        *   **Robust Splitters:** Ensure robust sentence or paragraph splitting mechanisms are in place before applying `CHUNK_SIZE` limits.
+        - **Dynamic Chunk Sizing:** Consider making `CHUNK_SIZE` dynamic based on content type (e.g., smaller for code, larger for prose).
+        - **Semantic Chunking:** Implement more sophisticated semantic chunking that understands document structure (e.g., markdown headings, code blocks) to ensure semantically coherent chunks.
+        - **Experimentation:** Experiment with different `CHUNK_SIZE` and `OVERLAP_RATIO` values and evaluate their impact on RAG performance.
+        - **Robust Splitters:** Ensure robust sentence or paragraph splitting mechanisms are in place before applying `CHUNK_SIZE` limits.
 
       - Expanding the `src/data/synonyms.json` file to improve query understanding.
-        *   **Comprehensive Judo Terminology:** Expand with more judo techniques, terms, and common misspellings.
-        *   **Project-Specific Synonyms:** Include synonyms for project-specific terms, UI elements, or common abbreviations (e.g., "CLI" -> "Command Line Interface").
-        *   **Automated Extraction:** Explore methods for automated or semi-automated synonym extraction from existing documentation or user queries.
-        *   **User Feedback Loop:** Implement a mechanism to collect user queries that yield poor results to identify missing synonyms.
+        - **Comprehensive Judo Terminology:** Expand with more judo techniques, terms, and common misspellings.
+        - **Project-Specific Synonyms:** Include synonyms for project-specific terms, UI elements, or common abbreviations (e.g., "CLI" -> "Command Line Interface").
+        - **Automated Extraction:** Explore methods for automated or semi-automated synonym extraction from existing documentation or user queries.
+        - **User Feedback Loop:** Implement a mechanism to collect user queries that yield poor results to identify missing synonyms.
 
       - Adding more diverse or granular data sources to the RAG corpus.
-        *   **Product Requirements Documents (PRDs):** Include detailed PRDs from `design/productRequirementsDocuments/` for feature explanations and design decisions.
-        *   **Design Documents:** Incorporate files from `design/` (e.g., `architecture.md`, `codeStandards/`) for context on design choices and coding conventions.
-        *   **Test Files:** Use test files (e.g., `playwright/`, `tests/`) as examples of feature implementation and usage.
-        *   **Code Comments/JSDoc:** Extract well-written code comments and JSDoc from source files for granular information about functions and modules.
-        *   **User Manuals/FAQs:** If available, integrate user manuals or FAQs for common user questions.
-        *   **Troubleshooting Guides:** Include troubleshooting guides to help answer "why" and "how to fix" questions.
-        *   **Chat Logs/Support Tickets:** Curated and anonymized chat logs or support tickets can reveal common user pain points.
+        - **Product Requirements Documents (PRDs):** Include detailed PRDs from `design/productRequirementsDocuments/` for feature explanations and design decisions.
+        - **Design Documents:** Incorporate files from `design/` (e.g., `architecture.md`, `codeStandards/`) for context on design choices and coding conventions.
+        - **Test Files:** Use test files (e.g., `playwright/`, `tests/`) as examples of feature implementation and usage.
+        - **Code Comments/JSDoc:** Extract well-written code comments and JSDoc from source files for granular information about functions and modules.
+        - **User Manuals/FAQs:** If available, integrate user manuals or FAQs for common user questions.
+        - **Troubleshooting Guides:** Include troubleshooting guides to help answer "why" and "how to fix" questions.
+        - **Chat Logs/Support Tickets:** Curated and anonymized chat logs or support tickets can reveal common user pain points.
 
 2.  **Integrate RAG into Agent Workflows:**
     - **Action:** Ensure AI agents are consistently utilizing the `queryRag` tool for relevant queries.
@@ -460,18 +495,18 @@ This section evaluates the RAG tools available to AI agents based on documentati
 
 ### 7.1 Documentation
 
-*   **Assessment:** The RAG system's usage for AI agents is well-documented in `AGENTS.md`. This document clearly outlines the purpose of RAG, when and how agents should use the `queryRag` tool, and provides an example thought process for an agent.
-*   **Opportunities for Improvement:** While comprehensive, adding more diverse examples of `queryRag` usage within `AGENTS.md` could further enhance clarity. Potentially, a dedicated tool definition file (if the agent framework supports introspection) could provide programmatic documentation.
+- **Assessment:** The RAG system's usage for AI agents is well-documented in `AGENTS.md`. This document clearly outlines the purpose of RAG, when and how agents should use the `queryRag` tool, and provides an example thought process for an agent.
+- **Opportunities for Improvement:** While comprehensive, adding more diverse examples of `queryRag` usage within `AGENTS.md` could further enhance clarity. Potentially, a dedicated tool definition file (if the agent framework supports introspection) could provide programmatic documentation.
 
 ### 7.2 Encouragement for Use
 
-*   **Assessment:** Agents are strongly encouraged to use the RAG tool. The `AGENTS.md` policy uses explicit directives like "MUST" and "ALWAYS" when describing scenarios where `queryRag` should be the first step. This direct instruction is a powerful form of encouragement.
-*   **Opportunities for Improvement:** Beyond explicit instructions, the system could be designed to provide feedback or gentle nudges if an agent attempts to answer a RAG-relevant question without first querying the database. However, implementing such a feedback loop would require advanced agent orchestration capabilities.
+- **Assessment:** Agents are strongly encouraged to use the RAG tool. The `AGENTS.md` policy uses explicit directives like "MUST" and "ALWAYS" when describing scenarios where `queryRag` should be the first step. This direct instruction is a powerful form of encouragement.
+- **Opportunities for Improvement:** Beyond explicit instructions, the system could be designed to provide feedback or gentle nudges if an agent attempts to answer a RAG-relevant question without first querying the database. However, implementing such a feedback loop would require advanced agent orchestration capabilities.
 
-- **Action:** Confirmed that `AGENTS.md` was previously updated with a detailed RAG policy, explicitly guiding agents on when and how to use the `queryRag` tool.
-- **Outcome:** Agents are now formally instructed to leverage the RAG system for relevant queries. Monitoring actual agent usage and its impact on performance is an ongoing responsibility for the user, as direct access to agent execution logs is not available to this model.
+* **Action:** Confirmed that `AGENTS.md` was previously updated with a detailed RAG policy, explicitly guiding agents on when and how to use the `queryRag` tool.
+* **Outcome:** Agents are now formally instructed to leverage the RAG system for relevant queries. Monitoring actual agent usage and its impact on performance is an ongoing responsibility for the user, as direct access to agent execution logs is not available to this model.
 
 ### 7.3 High Availability
 
-*   **Assessment:** The `queryRag` tool is now highly available. The extensive debugging process resolved critical model loading and caching issues, ensuring the tool is consistently accessible and functional. The underlying model is loaded efficiently, and the retrieval process is responsive.
-*   **Opportunities for Improvement:** The current model caching relies on the `transformers.js` library's global cache, which, while functional, is not ideal for strict reproducibility across diverse environments. Exploring options to bundle the model directly with the project or implement a more explicit, project-local model management strategy would enhance long-term robustness and reproducibility. Additionally, continuous monitoring of query latency would ensure performance remains optimal as the RAG corpus grows.
+- **Assessment:** The `queryRag` tool is now highly available. The extensive debugging process resolved critical model loading and caching issues, ensuring the tool is consistently accessible and functional. The underlying model is loaded efficiently, and the retrieval process is responsive.
+- **Opportunities for Improvement:** The current model caching relies on the `transformers.js` library's global cache, which, while functional, is not ideal for strict reproducibility across diverse environments. Exploring options to bundle the model directly with the project or implement a more explicit, project-local model management strategy would enhance long-term robustness and reproducibility. Additionally, continuous monitoring of query latency would ensure performance remains optimal as the RAG corpus grows.

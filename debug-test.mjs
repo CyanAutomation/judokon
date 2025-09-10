@@ -3,14 +3,14 @@ import { vi } from "vitest";
 // Mock setup similar to the test
 const mocks = {
   setPointsToWin: vi.fn(),
-  logEvent: vi.fn(),
+  logEvent: vi.fn()
 };
 
 vi.mock("./src/helpers/battleEngineFacade.js", () => ({
   setPointsToWin: mocks.setPointsToWin
 }));
-vi.mock("./src/helpers/telemetry.js", () => ({ 
-  logEvent: mocks.logEvent 
+vi.mock("./src/helpers/telemetry.js", () => ({
+  logEvent: mocks.logEvent
 }));
 
 const { wrap } = await import("./src/helpers/storage.js");
@@ -31,7 +31,10 @@ const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
 const saved = storage.get();
 console.log("Saved value with fallback none:", saved);
 console.log("Number(saved):", Number(saved));
-console.log("POINTS_TO_WIN_OPTIONS.includes(Number(saved)):", POINTS_TO_WIN_OPTIONS.includes(Number(saved)));
+console.log(
+  "POINTS_TO_WIN_OPTIONS.includes(Number(saved)):",
+  POINTS_TO_WIN_OPTIONS.includes(Number(saved))
+);
 
 // Process env check
 const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";

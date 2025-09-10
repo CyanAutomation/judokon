@@ -223,7 +223,7 @@ export async function startTimer(onExpiredSelect, store = null) {
     logTimerOperation("expired", "selectionTimer", duration, {
       store: store ? { selectionMade: store.selectionMade } : null
     });
-    
+
     setSkipHandler(null);
     scoreboard.clearTimer();
     // PRD taxonomy: round timer expired
