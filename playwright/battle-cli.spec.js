@@ -174,9 +174,38 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("verbose log toggles and records transitions", async ({ page }) => {
-    await page.goto("/src/pages/battleCLI.html?verbose=1");
-    await page.locator("#start-match-button").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.addInitScript(() => {
+      // Set up localStorage for battle initialization
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem("battleCLI.verbose", "true");
+      } catch {}
+      
+      // Speed up battle progression
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    });
+
+    await page.evaluate(() => {
+      try {
+        // Set feature flags in localStorage
+        const settings = {
+          featureFlags: {
+            cliShortcuts: { enabled: true }
+          }
+        };
+        localStorage.setItem("settings", JSON.stringify(settings));
+      } catch {}
+    });
+
+    // Load page with both autostart and verbose enabled
+    await page.goto("/src/pages/battleCLI.html?autostart=1&verbose=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
 
     // Verbose enabled via query param
     const toggle = page.locator("#verbose-toggle");
@@ -186,8 +215,11 @@ test.describe("Classic Battle CLI", () => {
     // Cause a transition by selecting a stat via keyboard (mapped to 1)
     await page.keyboard.press("1");
 
-    // Wait for a later state to appear in the badge and log
-    await waitForBattleState(page, "roundDecision", 10000);
+    // Wait for a later state to appear using DOM selector
+    await page.waitForSelector('[data-battle-state="roundDecision"]', {
+      state: "attached",
+      timeout: 10000
+    });
 
     const log = page.locator("#cli-verbose-log");
     await expect(log).toContainText(/roundDecision/);

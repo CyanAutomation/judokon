@@ -16,7 +16,7 @@ function hrtimeMs() {
 
 async function getEmbeddingsBundleInfo() {
   // Heuristic: look for client embeddings and count items in meta if available
-  const bundlePath = path.join(rootDir, "client_embeddings.json");
+  const bundlePath = path.join(rootDir, "src/data/client_embeddings.json");
   try {
     const st = await fsStat(bundlePath);
     return { exists: true, sizeMB: st.size / (1024 * 1024), path: bundlePath };

@@ -27,6 +27,7 @@
     "check:jsdoc": "node scripts/run-check-jsdoc.mjs",
     "sync:agents": "node scripts/syncAgentDocs.mjs",
     "rag:query": "node scripts/queryRagCli.mjs",
+    "rag:validate": "node scripts/evaluation/evaluateRAG.js && npm run validate:data && node scripts/checkHotPaths.js",
     "build:offline-rag": "node scripts/buildOfflineRag.mjs",
     "rgs": "bash ./scripts/rgs",
     "test:value": "node scripts/test-value-evaluator.js",

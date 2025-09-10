@@ -131,8 +131,14 @@ Phase 3 – Corpus Governance & Coverage
 ### Phase 3 – Actions Taken & Outcome
 
 - Updated evaluation gating to reflect max embeddings bundle size of 9.8MB.
-- Planned artifacts: `src/rag/meta.json` and an index manifest to verify coverage and drift; to be generated alongside `client_embeddings.json` in the next commit that regenerates embeddings.
-- Current evaluator runs still fail bundle/coverage checks because `client_embeddings.json` is not present in this workspace. No hot-path changes introduced.
+- Confirmed regenerated embeddings present at `src/data/client_embeddings.json` (~8.96MB) → bundle/size check PASS.
+- Focused evaluator baseline on this profile:
+  - MRR@5: 0.2208; Recall@3: 0.5000; Recall@5: 0.5625; Latency avg: ~45ms, p95: ~23ms.
+  - Accuracy thresholds not met; latency and bundle size constraints pass. Results show gaps primarily on implementation/data-file queries.
+- Generated governance artifacts without altering embeddings:
+  - `src/rag/meta.json` with { corpusVersion: 1, model: MiniLM (Xenova), dim: 384, chunkingVersion: 1, lastUpdated }.
+  - `src/rag/index-manifest.json` summarizing totals and counts by source/tag (total items ≈ 2276).
+- Next: use the manifest to verify ≥90% coverage and target weak domains.
 
 Phase 4 – Agent Adoption & Diagnostics
 
@@ -140,11 +146,21 @@ Phase 4 – Agent Adoption & Diagnostics
 - Diagnostics helper `explainQuery(query)` returning expanded terms, applied filters, and rank features to aid agents.
 - Documentation updates to AGENTS guide with examples and provenance requirements; ensure tests for “no unsuppressed console” and import policy guards.
 
+### Phase 4 – Actions Taken & Outcome
+- Added optional diagnostics to `queryRag(question, { withDiagnostics: true })` returning `{ expandedQuery, multiIntentApplied, timingMs }` alongside results; default behavior unchanged and no hot-path logs added.
+- Updated AGENTS.md with concise usage tips and an example showing `withProvenance` and `withDiagnostics`.
+- Focused runtime check verified diagnostics fields without affecting results.
+
 Phase 5 – Continuous Validation
 
 - Add `npm run rag:validate` (JSON shape/dim checks, no dynamic imports in hot paths, evaluation metrics >= threshold, synonyms present) and integrate into CI.
 
 Planned acceptance: measurable Recall@5 improvement (+5% baseline), provenance completeness (source + contextPath + rationale), and stable latency within PRD targets.
+
+### Phase 5 – Actions Taken & Outcome
+- Added `npm run rag:validate` to run evaluator thresholds, data validation, and hot‑path import checks.
+- Ran the validation locally; current baseline (MRR@5 ~0.221, Recall@3 ~0.50, Recall@5 ~0.563) fails accuracy thresholds as expected, while latency and bundle size pass. This sets a clear baseline for subsequent accuracy work (chunking/governance).
+- No regressions observed in query helpers; changes are additive and behind flags.
 
 ### Planned Action: Refactor `scripts/evaluation/evaluateRAG.js`
 

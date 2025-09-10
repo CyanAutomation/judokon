@@ -65,9 +65,17 @@ export async function loadOfflineEmbeddings() {
  * @returns {Promise<Array|Null>} Parsed embeddings or `null`.
  */
 export async function loadSingleFileEmbeddings() {
-  if (typeof window === "undefined") return null;
+  // Allow Node to read the single-file JSON via file URL as well as browser fetch.
   try {
-    const single = await fetchJson(`${DATA_DIR}client_embeddings.json`);
+    const url = `${DATA_DIR}client_embeddings.json`;
+    if (typeof window === "undefined") {
+      const { fileURLToPath } = await import("node:url");
+      const { readFile } = await import("node:fs/promises");
+      const raw = await readFile(fileURLToPath(new URL(url)), "utf8");
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : null;
+    }
+    const single = await fetchJson(url);
     return Array.isArray(single) ? single : null;
   } catch {
     return null;

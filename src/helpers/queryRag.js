@@ -19,7 +19,8 @@ function isIterable(value) {
  * @returns {Promise<Array<{score:number} & Record<string, any>>|null>} Top matches or null if data missing.
  */
 export async function queryRag(question, opts = {}) {
-  const { k = 5, filters = [], withProvenance = false } = opts;
+  const { k = 5, filters = [], withProvenance = false, withDiagnostics = false } = opts;
+  const t0 = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
   const expanded = await vectorSearch.expandQueryWithSynonyms(question);
   const extractor = await getExtractor();
   const embedding = await extractor(expanded, { pooling: "mean" });
@@ -63,12 +64,25 @@ export async function queryRag(question, opts = {}) {
   } else {
     matches = await vectorSearch.findMatches(vector, k, filters, question);
   }
-  if (!withProvenance || !Array.isArray(matches)) return matches;
-  return matches.map((m) => ({
-    ...m,
-    contextPath: m.contextPath || m.section || m.tags?.join(" > ") || null,
-    rationale: buildRationale(question, m)
-  }));
+  if (!Array.isArray(matches)) return matches;
+
+  const enriched = withProvenance
+    ? matches.map((m) => ({
+      ...m,
+      contextPath: m.contextPath || m.section || m.tags?.join(" > ") || null,
+      rationale: buildRationale(question, m)
+    }))
+    : matches;
+
+  if (!withDiagnostics) return enriched;
+  const t1 = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+  return Object.assign([], enriched, {
+    diagnostics: {
+      expandedQuery: expanded,
+      multiIntentApplied: subQueries.length > 1,
+      timingMs: +(t1 - t0).toFixed(2)
+    }
+  });
 }
 
 function buildRationale(query, match) {
