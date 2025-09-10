@@ -69,7 +69,7 @@ export async function queryRag(question, opts = {}) {
   const enriched = withProvenance
     ? matches.map((m) => ({
       ...m,
-      contextPath: m.contextPath || m.section || m.tags?.join(" > ") || null,
+      contextPath: normalizeContextPath(m),
       rationale: buildRationale(question, m)
     }))
     : matches;
@@ -99,6 +99,29 @@ function buildRationale(query, match) {
   } catch {
     return "cosine+exact bonus";
   }
+}
+
+function normalizeContextPath(match) {
+  if (match.contextPath) return match.contextPath;
+  const src = String(match.source || "");
+  // Example sources: "design/productRequirementsDocuments/prdNavigationBar.md [chunk 21]"
+  // Pull base filename and optional bracket info.
+  let file = src;
+  let bracket = "";
+  const bIdx = src.indexOf("[");
+  if (bIdx !== -1) {
+    file = src.slice(0, bIdx).trim();
+    bracket = src.slice(bIdx).replace(/^[\[\s]*|[\]\s]*$/g, "");
+  }
+  const parts = file.split("/");
+  const name = parts[parts.length - 1] || file;
+  const domain = parts[0] || "src";
+  const base = name.replace(/\.(md|js|json)$/i, "").replace(/^prd/i, "").replace(/[-_]/g, " ");
+  const tags = Array.isArray(match.tags) ? match.tags.join(" > ") : "";
+  const pieces = [domain, base.trim()].filter(Boolean);
+  if (tags) pieces.push(tags);
+  if (bracket) pieces.push(bracket);
+  return pieces.join(" > ").toLowerCase();
 }
 
 function splitMultiIntent(query) {

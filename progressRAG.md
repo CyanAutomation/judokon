@@ -157,6 +157,12 @@ Phase 5 – Continuous Validation
 
 Planned acceptance: measurable Recall@5 improvement (+5% baseline), provenance completeness (source + contextPath + rationale), and stable latency within PRD targets.
 
+### Phase 6 – Context Provenance & Chunking Prep
+
+- Implemented query-time `contextPath` normalization to provide a consistent, human-readable path derived from `source`, tags, and chunk markers; improves provenance clarity and enables mild section-aware re-ranking without regeneration.
+- Added `scripts/generation/contextPathHelper.js` to derive `contextPath` at generation time (no side effects yet). You can wire this into your generator to persist normalized context in each entry during the next embeddings regeneration.
+- Focused evaluator run confirms no regression in metrics (accuracy unchanged, latency stable). Further accuracy gains depend on generation-side chunking/context enrichment.
+
 ### Phase 5 – Actions Taken & Outcome
 - Added `npm run rag:validate` to run evaluator thresholds, data validation, and hot‑path import checks.
 - Ran the validation locally; current baseline (MRR@5 ~0.221, Recall@3 ~0.50, Recall@5 ~0.563) fails accuracy thresholds as expected, while latency and bundle size pass. This sets a clear baseline for subsequent accuracy work (chunking/governance).
