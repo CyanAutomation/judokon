@@ -80,7 +80,8 @@ export async function evaluate(baseline = null) {
   const recall3Val = recall3 / queries.length;
   const recall5Val = recall5 / queries.length;
   const avg = latencies.reduce((a, b) => a + b, 0) / latencies.length || 0;
-  const p95 = latencies.slice().sort((a, b) => a - b)[Math.floor(0.95 * (latencies.length - 1))] || 0;
+  const p95 =
+    latencies.slice().sort((a, b) => a - b)[Math.floor(0.95 * (latencies.length - 1))] || 0;
 
   const bundle = await getEmbeddingsBundleInfo();
 
@@ -90,20 +91,28 @@ export async function evaluate(baseline = null) {
   console.log(`Recall@5: ${recall5Val.toFixed(4)}`);
   console.log(`Latency avg (ms): ${avg.toFixed(1)}`);
   console.log(`Latency p95 (ms): ${p95.toFixed(1)}`);
-  console.log(`Embeddings bundle: ${bundle.exists ? bundle.sizeMB.toFixed(2) + ' MB' : 'not found'} (${bundle.path})`);
+  console.log(
+    `Embeddings bundle: ${bundle.exists ? bundle.sizeMB.toFixed(2) + " MB" : "not found"} (${bundle.path})`
+  );
 
   // Thresholds: use whichever stricter between fixed floors and no-regression vs baseline
   const floors = {
     mrr5: 0.55,
-    recall3: 0.70,
+    recall3: 0.7,
     recall5: 0.85,
     avgLatencyMs: 200,
     p95LatencyMs: 280,
-    maxBundleMB: 9.8,
+    maxBundleMB: 9.8
   };
   const coverageOK = true; // Placeholder: coverage validated by generation pipeline
 
-  const regression = baseline || { mrr5: Infinity, recall3: Infinity, recall5: Infinity, avgLatencyMs: 0, p95LatencyMs: 0 };
+  const regression = baseline || {
+    mrr5: Infinity,
+    recall3: Infinity,
+    recall5: Infinity,
+    avgLatencyMs: 0,
+    p95LatencyMs: 0
+  };
   const pass =
     mrr5Val >= Math.min(floors.mrr5, (regression.mrr5 ?? Infinity) - 0.02) &&
     recall3Val >= Math.min(floors.recall3, (regression.recall3 ?? Infinity) - 0.03) &&
