@@ -97,7 +97,7 @@ export function resetBattlePromises() {
   roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
   nextRoundTimerReadyPromise = setupPromise("nextRoundTimerReadyPromise", "nextRoundTimerReady")();
   matchOverPromise = setupPromise("matchOverPromise", "matchOver")();
-  countdownStartedPromise = setupPromise("countdownStartedPromise", "nextRoundCountdownStarted")();
+  countdownStartedPromise = setupPromise("countdownStartedPromise", "control.countdown.started")();
   roundTimeoutPromise = setupPromise("roundTimeoutPromise", "roundTimeout")();
   statSelectionStalledPromise = setupPromise(
     "statSelectionStalledPromise",
