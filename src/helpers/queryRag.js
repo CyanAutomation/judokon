@@ -46,7 +46,7 @@ export async function queryRag(question, opts = {}) {
         parts
           .flat()
           .filter(Boolean)
-          .map((m) => [m.id || `${m.source}|${m.text?.slice(0,40)}`, m])
+          .map((m) => [m.id || `${m.source}|${m.text?.slice(0, 40)}`, m])
       )
     );
     // Re-score merged against the main vector using original question text
@@ -57,7 +57,9 @@ export async function queryRag(question, opts = {}) {
       const key = m.id || m.source;
       if (!byId.has(key)) byId.set(key, m);
     }
-    matches = Array.from(byId.values()).sort((a, b) => b.score - a.score).slice(0, k);
+    matches = Array.from(byId.values())
+      .sort((a, b) => b.score - a.score)
+      .slice(0, k);
   } else {
     matches = await vectorSearch.findMatches(vector, k, filters, question);
   }
@@ -74,9 +76,12 @@ function buildRationale(query, match) {
     const terms = String(query).toLowerCase().split(/\s+/).filter(Boolean);
     const text = String(match.text || "").toLowerCase();
     const hits = terms.filter((t) => text.includes(t));
-    const tagNote = Array.isArray(match.tags) && match.tags.length ? `; tags: ${match.tags.slice(0,3).join(',')}` : '';
-    const section = match.contextPath ? ` in ${match.contextPath}` : '';
-    return `cosine+exact bonus; terms hit: ${hits.slice(0,3).join('/')} ; score=${match.score.toFixed?.(3) ?? match.score}${section}${tagNote}`;
+    const tagNote =
+      Array.isArray(match.tags) && match.tags.length
+        ? `; tags: ${match.tags.slice(0, 3).join(",")}`
+        : "";
+    const section = match.contextPath ? ` in ${match.contextPath}` : "";
+    return `cosine+exact bonus; terms hit: ${hits.slice(0, 3).join("/")} ; score=${match.score.toFixed?.(3) ?? match.score}${section}${tagNote}`;
   } catch {
     return "cosine+exact bonus";
   }
@@ -84,7 +89,10 @@ function buildRationale(query, match) {
 
 function splitMultiIntent(query) {
   const raw = String(query).toLowerCase();
-  const parts = raw.split(/\b(?:and|\+|&|with|vs)\b/g).map((s) => s.trim()).filter(Boolean);
+  const parts = raw
+    .split(/\b(?:and|\+|&|with|vs)\b/g)
+    .map((s) => s.trim())
+    .filter(Boolean);
   // Avoid over-splitting short queries
   return parts.length >= 2 && raw.length >= 20 ? parts.slice(0, 3) : [raw];
 }

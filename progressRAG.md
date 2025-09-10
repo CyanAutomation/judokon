@@ -78,11 +78,13 @@ We validated access paths, fixed model-loading issues affecting multiple tools, 
 The following phased actions raise accuracy, reliability, and agent adoption while respecting import and testing policies.
 
 Phase 0 – Stabilize Evaluation (now)
+
 - Refactor `scripts/evaluation/evaluateRAG.js` to call the existing `queryRag` path rather than generating embeddings inline; compute MRR@5, Recall@3/5 from returned results.
 - Add acceptance thresholds and exit codes; record latency per query to validate PRD performance goals.
 - Ensure no dynamic imports on the hot path (use static imports per Import Policy).
 
 ### Phase 0 – Actions Taken & Outcome
+
 - Implemented evaluator refactor to use `queryRag` end-to-end, added latency tracking (avg, p95), and threshold gating per agreed rules.
 - Ran evaluator locally via Node import (focused, not full suite). Observed metrics on this machine profile:
   - MRR@5: 0.3875; Recall@3: 0.6250; Recall@5: 0.6875
@@ -92,22 +94,26 @@ Phase 0 – Stabilize Evaluation (now)
 - Next: Generate/locate `client_embeddings.json` in repo (<= 9.8MB), verify index coverage (≥90%), and re‑run to set a baseline snapshot. Then iterate synonyms/chunking in later phases.
 
 Phase 1 – Provenance & API Ergonomics
+
 - Introduce a stable `queryRag({ query, filters, k, withProvenance })` helper returning `{ matches: [{ id, text, score, source, tags, contextPath, rationale }], meta }`.
 - Augment embeddings with hierarchical `contextPath` (e.g., `PRD > Classic Battle > Countdown`).
 - Add one-line `rationale` (synonym hits, section-title match, keyword overlap) for trust and debugging.
 
 ### Phase 1 – Actions Taken & Outcome
+
 - Implemented `queryRag(question, { k, filters, withProvenance })` options without breaking default usage.
 - Added provenance enrichment when `withProvenance` is true: `contextPath` best-effort from existing fields; `rationale` string includes term hits and score.
 - Verified via a focused runtime check that results include enriched fields and remain fast.
 - Next: define meta contract and ensure `contextPath` is consistently present by enriching at embedding generation time (Phase 3 task).
 
 Phase 2 – Accuracy Enhancements
+
 - Synonym enrichment: expand `src/data/synonyms.json` with domain terms and near-spellings (e.g., kumikata/kumi-kata/grip fighting; scoreboard/round UI/snackbar).
 - Lightweight re-ranking after cosine similarity: boost for multi-term overlap, section-title matches, and tag alignment.
 - Multi-intent query handling: split on conjunctions; union top-k; re-rank.
 
 ### Phase 2 – Actions Taken & Outcome
+
 - Implemented lightweight re-ranking: added a small bonus for section/contextPath term matches to prefer relevant sections when present.
 - Verified no hot-path dynamic imports added; changes are internal to scoring.
 - Expanded `src/data/synonyms.json` with curated domain variants (kumi-kata/kumikata/grip fighting; scoreboard/round UI/snackbar; countdown/timer; navbar/navigation; settings/flags; weight class/categories; bio tone).
@@ -117,21 +123,25 @@ Phase 2 – Accuracy Enhancements
   - Embeddings bundle still missing → fails bundle/coverage thresholds as expected; next phase will address corpus governance and establishing a baseline.
 
 Phase 3 – Corpus Governance & Coverage
+
 - Add `src/rag/meta.json` with `{ corpusVersion, model, dim, chunkingVersion, lastUpdated }` and an index manifest (counts by source/tag) to detect drift.
 - Topic-aware chunking: split PRDs by semantic headers; include section titles in chunk text to disambiguate.
 - Broaden coverage in a controlled way (design docs, testing guides) while staying within size budget; measure impact via evaluation harness.
 
 ### Phase 3 – Actions Taken & Outcome
+
 - Updated evaluation gating to reflect max embeddings bundle size of 9.8MB.
 - Planned artifacts: `src/rag/meta.json` and an index manifest to verify coverage and drift; to be generated alongside `client_embeddings.json` in the next commit that regenerates embeddings.
 - Current evaluator runs still fail bundle/coverage checks because `client_embeddings.json` is not present in this workspace. No hot-path changes introduced.
 
 Phase 4 – Agent Adoption & Diagnostics
+
 - Presets: `design-lookup`, `implementation-lookup`, `tooltip-lookup` that preconfigure filters/bonuses.
 - Diagnostics helper `explainQuery(query)` returning expanded terms, applied filters, and rank features to aid agents.
 - Documentation updates to AGENTS guide with examples and provenance requirements; ensure tests for “no unsuppressed console” and import policy guards.
 
 Phase 5 – Continuous Validation
+
 - Add `npm run rag:validate` (JSON shape/dim checks, no dynamic imports in hot paths, evaluation metrics >= threshold, synonyms present) and integrate into CI.
 
 Planned acceptance: measurable Recall@5 improvement (+5% baseline), provenance completeness (source + contextPath + rationale), and stable latency within PRD targets.
