@@ -315,6 +315,17 @@ function extractAllowedValues(base, item) {
   return String(item);
 }
 
+function collectKeyPaths(obj, prefix = "", out = []) {
+  if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+    for (const [k, v] of Object.entries(obj)) {
+      const p = prefix ? `${prefix}.${k}` : k;
+      if (v && typeof v === "object") collectKeyPaths(v, p, out);
+      else out.push([p, String(v)]);
+    }
+  }
+  return out;
+}
+
 function chunkMarkdown(text) {
   // Split by headings first to maintain logical sections
   const sections = text.split(/\n(?=#{1,6} )/);
@@ -852,13 +863,20 @@ async function generate() {
         });
       };
 
+      // Topic-aware data chunks: prefer key-path anchored entries
+      const baseName = base;
       if (Array.isArray(json)) {
         for (const [index, item] of json.entries()) {
-          await processItem(item, index + 1);
+          const allowed = extractAllowedValues(baseName, item);
+          if (!allowed) continue;
+          await processItem({ text: allowed }, `item-${index + 1}`);
         }
       } else if (json && typeof json === "object") {
-        for (const [key, value] of Object.entries(json)) {
-          await processItem(value, key);
+        const flat = collectKeyPaths(json);
+        for (const [keyPath, value] of flat) {
+          const allowed = extractAllowedValues(baseName, { [keyPath]: value });
+          if (!allowed) continue;
+          await processItem({ text: `${keyPath}: ${allowed}` }, keyPath);
         }
       }
     } else if (isMarkdown) {
@@ -909,6 +927,36 @@ async function generate() {
         for (const call of metadata.relations.calls) tagSet.add(call);
         for (const pat of metadata.patterns) tagSet.add(pat);
         for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
+        const tags = Array.from(tagSet);
+        const result = await extractor(chunkText, { pooling: "mean" });
+        const qa = createQaContext(chunkText);
+        const sparseVector = createSparseVector(chunkText);
+        writeEntry({
+          id: `${base}-${idSuffix}`,
+          text: chunkText,
+          ...(qa ? { qaContext: qa } : {}),
+          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
+          sparseVector,
+          source: `${relativePath} [${idSuffix}]`,
+          contextPath: deriveContextPath({ source: `${relativePath} [${idSuffix}]`, tags }),
+          tags,
+          metadata,
+          version: 1
+        });
+      }
+    }
+    // Basic CSS support: if file extension is .css
+    if (ext === ".css") {
+      const selectors = text.match(/^[^\{]+\{/gm) || [];
+      for (const [index, sel] of selectors.entries()) {
+        const chunkText = normalizeAndFilter(sel.replace("{", "").trim(), seenTexts);
+        if (!chunkText) continue;
+        const idSuffix = `selector-${index + 1}`;
+        const intent = determineIntent(chunkText);
+        const metadata = buildMetadata(relativePath);
+        const tagSet = new Set(["code", ...baseTags]);
+        tagSet.add("css");
+        tagSet.add(intent);
         const tags = Array.from(tagSet);
         const result = await extractor(chunkText, { pooling: "mean" });
         const qa = createQaContext(chunkText);

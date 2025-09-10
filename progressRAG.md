@@ -161,7 +161,7 @@ Planned acceptance: measurable Recall@5 improvement (+5% baseline), provenance c
 
 - Implemented query-time `contextPath` normalization to provide a consistent, human-readable path derived from `source`, tags, and chunk markers; improves provenance clarity and enables mild section-aware re-ranking without regeneration.
 - Added `scripts/generation/contextPathHelper.js` to derive `contextPath` at generation time and wired it into `scripts/generateEmbeddings.js` so regenerated embeddings will include consistent `contextPath` per chunk.
-- Focused evaluator run confirms no regression in metrics (accuracy unchanged, latency stable). Further accuracy gains depend on regeneration with the new `contextPath` and potential topic-aware chunking.
+- Focused evaluator run after regeneration shows provenance fields present; metrics currently unchanged for the tracked query set (MRR@5 ~0.221, Recall@3 ~0.50, Recall@5 ~0.563). Latency remains well within targets; bundle size ~9.32MB (PASS). Accuracy improvements will require topic-aware chunking for implementation/data files and possibly targeted synonyms.
 
 ### Phase 5 – Actions Taken & Outcome
 - Added `npm run rag:validate` to run evaluator thresholds, data validation, and hot‑path import checks.
@@ -615,3 +615,8 @@ This section evaluates the RAG tools available to AI agents based on documentati
 
 - **Assessment:** The `queryRag` tool is now highly available. The extensive debugging process resolved critical model loading and caching issues, ensuring the tool is consistently accessible and functional. The underlying model is loaded efficiently, and the retrieval process is responsive.
 - **Opportunities for Improvement:** The current model caching relies on the `transformers.js` library's global cache, which, while functional, is not ideal for strict reproducibility across diverse environments. Exploring options to bundle the model directly with the project or implement a more explicit, project-local model management strategy would enhance long-term robustness and reproducibility. Additionally, continuous monitoring of query latency would ensure performance remains optimal as the RAG corpus grows.
+### Phase 7 – Topic-Aware Chunking (Prep)
+
+- Added data-aware chunking for `src/data` JSON/JS: emits key-path anchored chunks (e.g., `navigationItems.item-1`, `settings.displayMode`), preserving allowlist constraints and contextPath.
+- Added minimal CSS-aware chunking: emits selector-based chunks including selector names to help CSS queries (e.g., navbar/button transition).
+- Kept generation changes minimal and deterministic; no dynamic imports. You have regenerated embeddings once already; please regenerate again to include these topic-aware chunks. After regeneration, we will run the focused evaluator and record metric deltas.

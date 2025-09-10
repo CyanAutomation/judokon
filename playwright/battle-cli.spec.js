@@ -356,32 +356,77 @@ test.describe("Classic Battle CLI", () => {
 
   test("skips cooldown with Space key", async ({ page }) => {
     await page.addInitScript(() => {
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
       window.__NEXT_ROUND_COOLDOWN_MS = 3000;
     });
-    await page.reload();
-    await page.locator("#start-match-button").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+
+    await page.goto("/src/pages/battleCLI.html?autostart=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
 
     await page.keyboard.press("1");
-    await waitForBattleState(page, "cooldown", 10000);
+    await page.waitForSelector('[data-battle-state="cooldown"]', {
+      state: "attached",
+      timeout: 10000
+    });
     await page.keyboard.press("Space");
-    await waitForBattleState(page, "waitingForPlayerAction", 10000);
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
   });
 
   test("scoreboard updates after each round", async ({ page }) => {
-    await page.goto("/src/pages/battleCLI.html?seed=1");
-    await page.locator("#start-match-button").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    });
+
+    await page.goto("/src/pages/battleCLI.html?autostart=1&seed=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
+
     const score = page.locator("#cli-score");
     await page.keyboard.press("1");
-    await waitForBattleState(page, "cooldown", 10000);
+    await page.waitForSelector('[data-battle-state="cooldown"]', {
+      state: "attached",
+      timeout: 10000
+    });
     const firstPlayer = await score.getAttribute("data-score-player");
     const firstOpponent = await score.getAttribute("data-score-opponent");
 
     await page.keyboard.press("Enter");
-    await waitForBattleState(page, "waitingForPlayerAction", 10000);
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
     await page.keyboard.press("1");
-    await waitForBattleState(page, "cooldown", 10000);
+    await page.waitForSelector('[data-battle-state="cooldown"]', {
+      state: "attached",
+      timeout: 10000
+    });
     const secondPlayer = await score.getAttribute("data-score-player");
     const secondOpponent = await score.getAttribute("data-score-opponent");
     expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(
@@ -390,9 +435,26 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("allows tab navigation without invalid key messages", async ({ page }) => {
-    await page.goto("/src/pages/battleCLI.html");
-    await page.locator("#start-match-button").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    });
+
+    await page.goto("/src/pages/battleCLI.html?autostart=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
+
     const countdown = page.locator("#cli-countdown");
 
     const steps = ["Tab", "Tab", "Tab", "Shift+Tab", "Tab", "Tab", "Tab", "Tab", "Tab"];
@@ -411,9 +473,26 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("returns to lobby after quitting", async ({ page }) => {
-    await page.goto("/src/pages/battleCLI.html");
-    await page.locator("#start-match-button").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    });
+
+    await page.goto("/src/pages/battleCLI.html?autostart=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
+
     await page.keyboard.press("q");
     const confirm = page.locator("#confirm-quit-button");
     await expect(confirm).toBeVisible();
@@ -423,9 +502,26 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("shows restart control after match completes", async ({ page }) => {
-    await page.goto("/src/pages/battleCLI.html?seed=1");
-    await page.locator("#start-match-button").click();
-    await waitForBattleState(page, "waitingForPlayerAction", 15000);
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        localStorage.setItem("battle.pointsToWin", "5");
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    });
+
+    await page.goto("/src/pages/battleCLI.html?autostart=1&seed=1");
+
+    // Wait for battle to reach active state
+    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
+      state: "attached",
+      timeout: 10000
+    });
+
     await page.locator("#cli-stats .cli-stat").first().click();
     await page.evaluate(() => {
       globalThis.__classicBattleEventTarget?.dispatchEvent(new CustomEvent("matchOver"));
