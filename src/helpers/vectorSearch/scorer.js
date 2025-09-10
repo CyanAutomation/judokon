@@ -252,9 +252,10 @@ export async function findMatches(
   topN = 5,
   tags = [],
   queryText = "",
-  sparseQueryVector = {}
+  sparseQueryVector = {},
+  entriesOverride
 ) {
-  const entries = await loadEmbeddings();
+  const entries = Array.isArray(entriesOverride) ? entriesOverride : await loadEmbeddings();
   if (entries === null) return null;
   const initial = {
     status: "ok",

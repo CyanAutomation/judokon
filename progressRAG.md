@@ -639,6 +639,11 @@ This section evaluates the RAG tools available to AI agents based on documentati
 - Added `strategy: 'implementation-lookup'` option to `queryRag` that biases tag filters toward implementation domains (`data`, `code`, `css`).
 - Focused evaluator indicates stable latency and no regressions; accuracy impact will be monitored as we expand allowlists and refine queries.
 
+Unit test impact and fixes
+- Some unit tests relied on implicit loader behavior. After we refactored the scorer to use the centralized loader, tests were updated to inject sample entries directly into `findMatches` via a new optional `entriesOverride` argument. This keeps unit tests deterministic and isolates them from I/O.
+- The `queryRag` test was updated to mock `vectorSearch.findMatches` so the test remains focused on synonym expansion and extractor usage rather than loader behavior.
+- A precision test was simplified to validate decimal rounding without invoking the loader to avoid timeouts.
+
 ### Phase 9 – Allowlist Refinements (Prep)
 
 - Expanded data allowlists in the generator to improve inclusion of useful fields:

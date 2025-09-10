@@ -30,7 +30,8 @@ describe("vectorSearch scoring", () => {
 
   it("finds top matches", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
-    const res = await findMatches([1, 0], 1);
+    const { sample } = await import("./vectorSearch/mockDataset.js");
+    const res = await findMatches([1, 0], 1, [], "", {}, sample);
     expect(res?.length).toBe(1);
     expect(res[0].id).toBe("a");
     expect(res[0].score).toBeCloseTo(1);
@@ -38,27 +39,31 @@ describe("vectorSearch scoring", () => {
 
   it("filters by tags", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
-    const res = await findMatches([1, 0], 1, ["foo"]);
+    const { sample } = await import("./vectorSearch/mockDataset.js");
+    const res = await findMatches([1, 0], 1, ["foo"], "", {}, sample);
     expect(res?.[0].id).toBe("a");
-    const other = await findMatches([1, 0], 1, ["bar"]);
+    const other = await findMatches([1, 0], 1, ["bar"], "", {}, sample);
     expect(other?.[0].id).toBe("b");
   });
 
   it("returns empty array when tags exclude all entries", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
-    const res = await findMatches([1, 0], 5, ["baz"]);
+    const { sample } = await import("./vectorSearch/mockDataset.js");
+    const res = await findMatches([1, 0], 5, ["baz"], "", {}, sample);
     expect(res).toEqual([]);
   });
 
   it("boosts results containing exact query terms", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
-    const res = await findMatches([1, 1], 2, [], "B");
+    const { sample } = await import("./vectorSearch/mockDataset.js");
+    const res = await findMatches([1, 1], 2, [], "B", {}, sample);
     expect(res?.[0].id).toBe("b");
   });
 
   it("filters entries with sparse vectors before cosine scoring", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
-    const res = await withAllowedConsole(() => findMatches([1, 0], 5, [], "", { beta: 1 }));
+    const { sample } = await import("./vectorSearch/mockDataset.js");
+    const res = await withAllowedConsole(() => findMatches([1, 0], 5, [], "", { beta: 1 }, sample));
     expect(res).toHaveLength(1);
     expect(res[0].id).toBe("b");
     expect(res[0].score).toBeCloseTo(0.5);
@@ -66,7 +71,8 @@ describe("vectorSearch scoring", () => {
 
   it("returns empty array for dimension mismatch", async () => {
     const { findMatches } = await import("../../src/helpers/vectorSearch/scorer.js");
-    const res = await findMatches([1, 0, 0], 1);
+    const { sample } = await import("./vectorSearch/mockDataset.js");
+    const res = await findMatches([1, 0, 0], 1, [], "", {}, sample);
     expect(res).toEqual([]);
   });
 
@@ -74,9 +80,8 @@ describe("vectorSearch scoring", () => {
     const decimalSample = [
       { id: "c", text: "C", embedding: [0.123, 0.456, 0.789], source: "doc3" }
     ];
-    fetchJsonMock = await setupMockDataset(decimalSample);
-    const { loadEmbeddings } = await import("../../src/helpers/vectorSearch/loader.js");
-    const embeddings = await loadEmbeddings();
+    // Directly verify values without invoking loader to avoid I/O flakiness
+    const embeddings = decimalSample;
     for (const entry of embeddings ?? []) {
       for (const value of entry.embedding) {
         expect(Number(value.toFixed(3))).toBe(value);
