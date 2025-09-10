@@ -21,7 +21,7 @@ import { toggleLayoutDebugPanel } from "../layoutDebugPanel.js";
  *   getCurrentSettings: Function,
  *   handleUpdate: Function
  * }} params - Handler dependencies.
- * @returns {Promise} Resolves when persistence completes.
+ * @returns {Promise<void>} Resolves when persistence completes.
  */
 export function handleFeatureFlagChange({
   input,
@@ -65,38 +65,23 @@ function formatFlagLabel(flag) {
 /**
  * Render feature flag toggle switches.
  *
- * @pseudocode
- * 1. For each flag, generate a labelled toggle switch element and description.
- * 2. When tooltip text is missing, convert the flag name to a readable label.
- * 3. Persist updates via `handleUpdate` when toggled.
- * 4. After saving, show a snackbar confirming the new state.
- * 5. When toggling `viewportSimulation`, call `toggleViewportSimulation`.
+ * @description
+ * For each flag in `flags`, create a labelled `ToggleSwitch` with an optional
+ * description pulled from the `tooltipMap`. Wire the `change` event to
+ * `handleFeatureFlagChange` so changes are persisted and side effects applied.
  *
- * @param {HTMLElement} container - Container for the switches.
- * @param {Record<string, { enabled: boolean, tooltipId?: string }>} flags - Feature flag metadata.
- * @param {Function} getCurrentSettings - Returns current settings.
- * @param {Function} handleUpdate - Persist function.
- * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
- */
-/**
- * @summary TODO: Add summary
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Validate `container` and `flags`. Return early if invalid.
+ * 2. Iterate over flags and create `ToggleSwitch` instances with labels and descriptions.
+ * 3. Append toggles into the container, attempting to insert before the first hidden child.
+ * 4. Wire `change` events to `handleFeatureFlagChange` to persist and apply side effects.
+ *
+ * @param {HTMLElement} container - DOM element that will receive toggle controls.
+ * @param {Record<string, { enabled: boolean, tooltipId?: string }>} flags - Map of flag names to metadata.
+ * @param {() => Object} getCurrentSettings - Function that returns the current settings object.
+ * @param {(key: string, value: any, onError?: Function) => Promise} handleUpdate - Function to persist setting updates.
+ * @param {Record<string, string>} [tooltipMap={}] - Optional map of tooltip ids to localized text.
+ * @returns {void}
  */
 export function renderFeatureFlagSwitches(
   container,

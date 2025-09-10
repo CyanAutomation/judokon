@@ -51,37 +51,24 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
 /**
  * Render game mode toggle switches within the settings page.
  *
- * @pseudocode
- * 1. If `container` is missing or `gameModes` is not an array, warn and exit.
- * 2. Sort `gameModes` by `order`, warn on missing `name`, skip malformed entries, create a toggle for each with a tooltip id, and attach debug data attributes.
- * 3. When toggled, update navigation visibility via `updateNavigationItemHidden`.
- * 4. Persist the updated `gameModes` setting using `handleUpdate`.
- * 5. Show a snackbar confirming the new mode state.
+ * @description
+ * Create a ToggleSwitch for each provided game mode and wire change handlers
+ * to persist updates and update navigation visibility.
  *
- * @param {HTMLElement} container - Target container for switches.
- * @param {Array} gameModes - List of mode definitions.
- * @param {Function} getCurrentSettings - Returns the current settings.
- * @param {Function} handleUpdate - Persist function.
- */
-/**
- * @summary TODO: Add summary
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Validate `container` and `gameModes` input; return early when invalid.
+ * 2. Sort `gameModes` by `order` and iterate each entry.
+ * 3. For each mode:
+ *    a. Build a `ToggleSwitch` with proper label, tooltip, and accessibility attributes.
+ *    b. Append description text when available and set `aria-describedby`.
+ *    c. Attach a `change` listener that calls `handleGameModeChange`.
+ * 4. Leave existing DOM structure intact when possible and avoid throwing.
+ *
+ * @param {HTMLElement} container - DOM element that will receive toggle controls.
+ * @param {Array<Object>} gameModes - Array of game-mode objects (id, name, order, description, isHidden, category).
+ * @param {() => Object} getCurrentSettings - Function that returns the current settings object.
+ * @param {(key: string, value: any, onError?: Function) => Promise} handleUpdate - Function to persist setting updates.
+ * @returns {void}
  */
 export function renderGameModeSwitches(container, gameModes, getCurrentSettings, handleUpdate) {
   if (!container || !Array.isArray(gameModes)) {

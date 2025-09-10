@@ -384,38 +384,30 @@ onDomReady(initializeSettingsPage);
  * 1. TODO: Add pseudocode
  */
 /**
- * Re-export the game mode toggle handler used by the Settings UI.
+ * Re-export the game-mode toggle handler used by the Settings UI.
+ *
+ * @description
+ * The implementation lives in `./settings/gameModeSwitches.js`. Re-exporting it
+ * from this module provides a stable import surface for the Settings page and
+ * for tests that need to directly call the handler.
  *
  * @pseudocode
- * 1. Provide `handleGameModeChange` to callers so tests and other modules can reuse the same
- *    handler implementation when wiring game-mode toggles.
+ * 1. Import the concrete handler implementation from `settings/gameModeSwitches.js`.
+ * 2. Re-export it under the same name to keep call sites stable.
+ * 3. Consumers may call `handleGameModeChange(event)` when wiring toggles.
  */
 export { handleGameModeChange } from "./settings/gameModeSwitches.js";
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Re-export the feature-flag toggle handler used by the Settings UI.
  *
+ * @description
+ * The actual logic for applying and validating feature-flag toggles is
+ * implemented in `./settings/featureFlagSwitches.js`. This re-export allows
+ * other modules and tests to reuse the same handler implementation.
+ *
  * @pseudocode
- * 1. Expose `handleFeatureFlagChange` so the same logic is used when wiring feature flag switches
- *    and in tests.
+ * 1. Import `handleFeatureFlagChange` from `settings/featureFlagSwitches.js`.
+ * 2. Re-export it so callers can attach it to UI controls or invoke it in tests.
  */
 export { handleFeatureFlagChange } from "./settings/featureFlagSwitches.js";

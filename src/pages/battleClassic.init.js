@@ -20,18 +20,23 @@ import {
 import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
-import { isEnabled } from "../helpers/featureFlags.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
-import { initFeatureFlags, featureFlagsEmitter } from "../helpers/featureFlags.js";
+import { initFeatureFlags } from "../helpers/featureFlags.js";
 
 /**
  * Initialize the battle state badge based on feature flag state.
  * Uses synchronous DOM manipulation to avoid race conditions.
  *
  * @returns {void}
+ *
+ * @pseudocode
+ * 1. Read any runtime override from `window.__FF_OVERRIDES.battleStateBadge`.
+ * 2. If override is truthy and the badge exists: remove `hidden` and set text to "Lobby".
+ * 3. Otherwise leave badge hidden (no-op).
+ * 4. Wrap DOM operations in try/catch to avoid throwing during page init.
  */
 function initBattleStateBadge() {
   try {
