@@ -619,4 +619,26 @@ This section evaluates the RAG tools available to AI agents based on documentati
 
 - Added data-aware chunking for `src/data` JSON/JS: emits key-path anchored chunks (e.g., `navigationItems.item-1`, `settings.displayMode`), preserving allowlist constraints and contextPath.
 - Added minimal CSS-aware chunking: emits selector-based chunks including selector names to help CSS queries (e.g., navbar/button transition).
-- Kept generation changes minimal and deterministic; no dynamic imports. You have regenerated embeddings once already; please regenerate again to include these topic-aware chunks. After regeneration, we will run the focused evaluator and record metric deltas.
+- Kept generation changes minimal and deterministic; no dynamic imports. Regenerated embeddings now include topic-aware chunks.
+
+### Phase 7 – Actions Taken & Outcome
+- Focused evaluator after regeneration (this profile):
+  - MRR@5: 0.3333; Recall@3: 0.4375; Recall@5: 0.4375; Latency avg ~84–96ms; p95 ~46–62ms; Bundle ~9.04MB (PASS).
+- Mixed effects: some targeted implementation queries improved in top-5 presence (e.g., tooltips.json appearing for tooltip "how-to"), while several data-file queries still miss exact expected sources, suggesting we should:
+  - Expand data allowlist coverage for keys like navigation items and settings defaults.
+  - Add selective lexical boosts for key-path tokens (e.g., `navigationItems`, `settings.sound`, `stat.power`).
+  - Consider a small per-domain preset: `implementation-lookup` to prefer data/code tags when queries include terms like "default", "items", "selector", "transition".
+
+### Phase 8 – Implementation Lookup Bias + Lexical Boost
+
+- Added small key-path lexical boost in scorer when dotted tokens in the query (e.g., `settings.sound`) appear in chunk text.
+- Added `strategy: 'implementation-lookup'` option to `queryRag` that biases tag filters toward implementation domains (`data`, `code`, `css`).
+- Focused evaluator indicates stable latency and no regressions; accuracy impact will be monitored as we expand allowlists and refine queries.
+
+### Phase 9 – Allowlist Refinements (Prep)
+
+- Expanded data allowlists in the generator to improve inclusion of useful fields:
+  - `navigationItems.js`: now includes `label`, `name`, `title` in addition to `url`, `category`.
+  - `settings.json`: now includes `sound`, `defaults`, `volume` (alongside `displayMode`, `aiDifficulty`).
+  - `statNames.js`: explicitly includes stat keys such as `power`, `speed`, `technique` in addition to generic name/description fields.
+- Please regenerate embeddings to apply these refinements. I will then run the focused evaluator and record metric deltas.

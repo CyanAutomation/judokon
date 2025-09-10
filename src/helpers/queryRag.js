@@ -19,7 +19,7 @@ function isIterable(value) {
  * @returns {Promise<Array<{score:number} & Record<string, any>>|null>} Top matches or null if data missing.
  */
 export async function queryRag(question, opts = {}) {
-  const { k = 5, filters = [], withProvenance = false, withDiagnostics = false } = opts;
+  const { k = 5, filters = [], strategy = null, withProvenance = false, withDiagnostics = false } = opts;
   const t0 = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
   const expanded = await vectorSearch.expandQueryWithSynonyms(question);
   const extractor = await getExtractor();
@@ -39,7 +39,7 @@ export async function queryRag(question, opts = {}) {
         const src = emb && typeof emb === "object" && "data" in emb ? emb.data : emb;
         const vec = Array.isArray(src) ? Array.from(src) : null;
         if (!vec) return [];
-        return vectorSearch.findMatches(vec, k, filters, q);
+        return vectorSearch.findMatches(vec, k, filtersForStrategy(filters, strategy), q);
       })
     );
     const merged = Object.values(
@@ -51,7 +51,12 @@ export async function queryRag(question, opts = {}) {
       )
     );
     // Re-score merged against the main vector using original question text
-    matches = await vectorSearch.findMatches(vector, k, filters, question);
+    matches = await vectorSearch.findMatches(
+      vector,
+      k,
+      filtersForStrategy(filters, strategy),
+      question
+    );
     // Merge scores: prefer existing score if present else keep from merged set
     const byId = new Map(matches.map((m) => [m.id || m.source, m]));
     for (const m of merged) {
@@ -62,7 +67,12 @@ export async function queryRag(question, opts = {}) {
       .sort((a, b) => b.score - a.score)
       .slice(0, k);
   } else {
-    matches = await vectorSearch.findMatches(vector, k, filters, question);
+    matches = await vectorSearch.findMatches(
+      vector,
+      k,
+      filtersForStrategy(filters, strategy),
+      question
+    );
   }
   if (!Array.isArray(matches)) return matches;
 
@@ -132,6 +142,15 @@ function splitMultiIntent(query) {
     .filter(Boolean);
   // Avoid over-splitting short queries
   return parts.length >= 2 && raw.length >= 20 ? parts.slice(0, 3) : [raw];
+}
+
+function filtersForStrategy(filters, strategy) {
+  if (strategy === "implementation-lookup") {
+    const biasTags = ["data", "code", "css"];
+    const set = new Set([...(filters || []), ...biasTags]);
+    return Array.from(set);
+  }
+  return filters || [];
 }
 
 export default queryRag;

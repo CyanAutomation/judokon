@@ -227,8 +227,9 @@ const DATA_FIELD_ALLOWLIST = {
   ],
   "locations.json": ["name", "japaneseName", "description"],
   "navigationItems.js": ["url", "category"],
-  "statNames.js": ["name", "japanese", "description", "category"],
-  "settings.json": ["displayMode", "aiDifficulty"],
+  "statNames.js": ["name", "japanese", "description", "category", "power", "speed", "technique"],
+  "settings.json": ["displayMode", "aiDifficulty", "sound", "defaults", "volume"],
+  "navigationItems.js": ["url", "category", "label", "name", "title"],
   "svgCodes.json": ["name", "category"],
   "synonyms.json": true,
   "tooltips.json": true, // Allow all fields

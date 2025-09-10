@@ -3,6 +3,7 @@ import { loadEmbeddings } from "./loader.js";
 /** Bonus applied when the query text contains exact terms from the entry. */
 const EXACT_MATCH_BONUS = 0.1;
 const SECTION_TITLE_BONUS = 0.05;
+const KEYPATH_BONUS = 0.06; // small nudge for dotted key tokens (e.g., settings.sound)
 
 function resolveFirstValid(entries) {
   if (entries === null) return { kind: "null" };
@@ -193,6 +194,7 @@ export function cosineSimilarity(a, b) {
  */
 export function scoreEntries(entries, queryVector, queryText) {
   const terms = String(queryText).toLowerCase().split(/\s+/).filter(Boolean);
+  const dottedTerms = terms.filter((t) => t.includes("."));
   return entries
     .map((entry) => {
       const sim = cosineSimilarity(queryVector, entry.embedding);
@@ -201,7 +203,11 @@ export function scoreEntries(entries, queryVector, queryText) {
       const hasTerm = terms.some((t) => text.includes(t));
       const section = (entry.section || entry.contextPath || "").toLowerCase();
       const hasSectionHit = section && terms.some((t) => section.includes(t));
-      const bonus = (hasTerm ? EXACT_MATCH_BONUS : 0) + (hasSectionHit ? SECTION_TITLE_BONUS : 0);
+      const hasKeyPathHit = dottedTerms.length > 0 && dottedTerms.some((t) => text.includes(t));
+      const bonus =
+        (hasTerm ? EXACT_MATCH_BONUS : 0) +
+        (hasSectionHit ? SECTION_TITLE_BONUS : 0) +
+        (hasKeyPathHit ? KEYPATH_BONUS : 0);
       return { score: Math.min(1, normalized + bonus), ...entry };
     })
     .sort((a, b) => b.score - a.score);
