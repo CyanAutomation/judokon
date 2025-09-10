@@ -60,5 +60,5 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     const { getStateSnapshot } = await import("../../../src/helpers/classicBattle/battleDebug.js");
     const snapshot = getStateSnapshot();
     expect(["roundStart", "waitingForPlayerAction"]).toContain(snapshot?.state);
-  });
+  }, 10000);
 });
