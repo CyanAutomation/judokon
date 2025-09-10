@@ -18,11 +18,13 @@ export function deriveContextPath(item) {
   const parts = file.split("/");
   const name = parts[parts.length - 1] || file;
   const domain = parts[0] || "src";
-  const base = name.replace(/\.(md|js|json)$/i, "").replace(/^prd/i, "").replace(/[-_]/g, " ");
+  const base = name
+    .replace(/\.(md|js|json)$/i, "")
+    .replace(/^prd/i, "")
+    .replace(/[-_]/g, " ");
   const tags = Array.isArray(item.tags) ? item.tags.join(" > ") : "";
   const pieces = [domain, base.trim()].filter(Boolean);
   if (tags) pieces.push(tags);
   if (bracket) pieces.push(bracket);
   return pieces.join(" > ").toLowerCase();
 }
-
