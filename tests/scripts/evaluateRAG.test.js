@@ -9,9 +9,20 @@ vi.mock("@xenova/transformers", () => ({
   })
 }));
 
-const findMatches = vi.hoisted(() => vi.fn(async () => [{ source: "design/doc.md" }]));
+vi.mock("../../src/helpers/api/vectorSearchPage.js", () => ({
+  getExtractor: vi.fn(async () => {
+    // Mock extractor that returns fake embedding data
+    return async () => ({ data: new Float32Array([0.1, 0.2, 0.3]) });
+  })
+}));
+
+const findMatches = vi.hoisted(() => vi.fn(async () => [{ source: "design/doc.md", score: 0.95 }]));
+const expandQueryWithSynonyms = vi.hoisted(() => vi.fn(async (query) => query));
 vi.mock("../../src/helpers/vectorSearch/index.js", () => ({
-  default: { findMatches }
+  default: {
+    findMatches,
+    expandQueryWithSynonyms
+  }
 }));
 
 import { evaluate } from "../../scripts/evaluation/evaluateRAG.js";
