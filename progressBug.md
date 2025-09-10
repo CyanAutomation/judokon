@@ -390,7 +390,39 @@ export function getRoundTimeoutPromise() {
 - **Low Risk**: Additive feature, doesn't modify core logic
 - **High Value**: Significantly improves debugging capabilities
 
-### Phase 3.1: Debug Logger Architecture ⏱️ _3-4 hours_
+### Phase 3.1: Debug Logger Architecture ✅ COMPLETED (Jan 15, 2025)
+
+**Task Contract**: Core logger implementation with console discipline compliance
+
+**Technical Implementation**:
+- ✅ Created comprehensive `BattleDebugLogger` class (`src/helpers/classicBattle/debugLogger.js`)
+- ✅ Implemented memory-first approach - all logs buffered in memory regardless of output mode
+- ✅ Zero console violations in test environments (memory-only mode)
+- ✅ Structured logging with 7 categories: state, event, timer, error, performance, ui, network
+- ✅ Advanced querying capabilities with filtering, sorting, and search functionality
+- ✅ Data sanitization handling circular references, functions, and errors
+- ✅ Performance-optimized with configurable buffer limits (1000 entries default)
+- ✅ Export/import functionality for log analysis and debugging
+
+**Console Discipline Compliance**:
+- ✅ Zero unsuppressed console output in test environments (VITEST/test mode = memory only)
+- ✅ Controlled console output only in development with explicit configuration
+- ✅ Memory-first buffering ensures no console pollution
+- ✅ All 26 comprehensive tests passing with strict console discipline validation
+
+**Core Features Validated**:
+- Logger configuration: categories, levels, output modes, buffer management
+- Memory buffering: automatic size limits, efficient storage, query performance
+- Data sanitization: circular reference handling, function serialization, error capture
+- Query system: category/level filtering, message search, time-based queries, sorting
+- Statistics: entry counts by category/level, time ranges, performance metrics
+- Environment detection: automatic mode selection based on NODE_ENV and VITEST
+
+**Integration Readiness**: Convenience functions implemented for battle-specific logging scenarios
+
+---
+
+### Phase 3.2: Battle System Integration ⏭️ NEXT
 
 **Task Contract**:
 ```json
