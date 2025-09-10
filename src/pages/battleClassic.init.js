@@ -26,8 +26,6 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 
-console.log("BADGE DEBUG: battleClassic.init.js script loaded");
-
 /**
  * Initialize the battle state badge based on feature flag state.
  * Uses synchronous DOM manipulation to avoid race conditions.
@@ -531,52 +529,29 @@ async function init() {
 
 // Simple synchronous badge initialization
 function initBadgeSync() {
-  console.log("BADGE DEBUG: initBadgeSync called");
   try {
     const overrideEnabled =
       typeof window !== "undefined" &&
       window.__FF_OVERRIDES &&
       window.__FF_OVERRIDES.battleStateBadge;
 
-    console.log("BADGE DEBUG: initBadgeSync called", {
-      window: typeof window,
-      overrides: window.__FF_OVERRIDES,
-      battleStateBadge: window.__FF_OVERRIDES?.battleStateBadge,
-      overrideEnabled
-    });
-
     const badge = document.getElementById("battle-state-badge");
-    console.log("BADGE DEBUG: badge element", { exists: !!badge });
 
     if (badge && overrideEnabled) {
       badge.hidden = false;
       badge.removeAttribute("hidden");
       badge.textContent = "Lobby";
-      console.log("BADGE DEBUG: badge updated via sync", {
-        hidden: badge.hidden,
-        hasHidden: badge.hasAttribute("hidden"),
-        text: badge.textContent
-      });
-    } else {
-      console.log("BADGE DEBUG: badge sync conditions not met", {
-        badge: !!badge,
-        overrideEnabled
-      });
     }
   } catch (err) {
-    console.log("BADGE DEBUG: sync badge init failed", err);
+    console.debug("battleClassic: sync badge init failed", err);
   }
 }
-
 if (document.readyState === "loading") {
-  console.log("BADGE DEBUG: document loading, adding event listener");
   document.addEventListener("DOMContentLoaded", () => {
-    console.log("BADGE DEBUG: DOMContentLoaded fired");
     initBadgeSync();
     init().catch((err) => console.debug("battleClassic: init failed", err));
   });
 } else {
-  console.log("BADGE DEBUG: document already loaded, running immediately");
   initBadgeSync();
   init().catch((err) => console.debug("battleClassic: init failed", err));
 }
