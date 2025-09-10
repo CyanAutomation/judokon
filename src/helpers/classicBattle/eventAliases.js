@@ -113,8 +113,13 @@ export function emitBattleEventWithAliases(eventName, payload, options = {}) {
     const battleEvents = require("./battleEvents.js");
     battleEventTarget = battleEvents.getBattleEventTarget();
   } catch {
-    // Fallback for ES modules or test environments
-    return;
+    // Fallback for browser environment - try globalThis
+    const EVENT_TARGET_KEY = "__classicBattleEventTarget";
+    battleEventTarget = globalThis[EVENT_TARGET_KEY];
+    if (!battleEventTarget) {
+      console.warn("[eventAliases] Battle event target not found, skipping emission");
+      return;
+    }
   }
 
   // Check if this is an old event name being used

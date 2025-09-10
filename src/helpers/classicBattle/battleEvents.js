@@ -112,7 +112,7 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
     import("./eventAliases.js").then(({ emitBattleEventWithAliases: aliasEmitter }) => {
       aliasEmitter(type, detail, options);
     });
-    
+
     // Fallback: emit standard event immediately
     getTarget().dispatchEvent(new CustomEvent(type, { detail }));
   } catch (error) {
