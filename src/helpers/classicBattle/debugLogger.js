@@ -438,3 +438,88 @@ export function logPerformance(operation, duration, context = {}) {
     { operation, duration, ...context }
   );
 }
+
+// Battle System Integration Helpers
+
+/**
+ * Log state handler entry with timing and context.
+ * @pseudocode
+ * 1. Log when entering a state handler
+ * 2. Include store state and handler context
+ */
+export function logStateHandlerEnter(handlerName, state, data = {}) {
+  debugLogger.log("state", "debug", `Handler Enter: ${handlerName}`, {
+    handler: handlerName,
+    state,
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+/**
+ * Log state handler exit with timing and results.
+ * @pseudocode
+ * 1. Log when exiting a state handler
+ * 2. Include any results or next actions
+ */
+export function logStateHandlerExit(handlerName, results = {}, data = {}) {
+  debugLogger.log("state", "debug", `Handler Exit: ${handlerName}`, {
+    handler: handlerName,
+    results,
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+/**
+ * Log UI events and interactions.
+ * @pseudocode
+ * 1. Log UI events like button clicks, state changes
+ * 2. Include user interaction context
+ */
+export function logUIInteraction(interaction, element, data = {}) {
+  debugLogger.log("ui", "info", `UI: ${interaction}`, {
+    interaction,
+    element,
+    timestamp: Date.now(),
+    ...data
+  });
+}
+
+/**
+ * Log battle errors with enhanced context.
+ * @pseudocode
+ * 1. Log errors with context about where they occurred
+ * 2. Include stack trace and error details
+ */
+export function logBattleError(error, context, data = {}) {
+  debugLogger.log("error", "error", `Battle Error in ${context}`, {
+    error: error.message || error,
+    stack: error.stack,
+    context,
+    ...data
+  });
+}
+
+/**
+ * Create a logger instance for a specific battle component.
+ * @pseudocode
+ * 1. Create logger scoped to a specific component
+ * 2. Enable easy identification of log source
+ */
+export function createComponentLogger(componentName) {
+  return {
+    info: (message, data = {}) =>
+      debugLogger.log("state", "info", `[${componentName}] ${message}`, data),
+    debug: (message, data = {}) =>
+      debugLogger.log("state", "debug", `[${componentName}] ${message}`, data),
+    error: (message, data = {}) =>
+      debugLogger.log("error", "error", `[${componentName}] ${message}`, data),
+    timer: (operation, name, duration, data = {}) =>
+      logTimerOperation(operation, name, duration, { component: componentName, ...data }),
+    event: (eventName, payload, data = {}) =>
+      logEventEmit(eventName, payload, { component: componentName, ...data }),
+    ui: (interaction, element, data = {}) =>
+      logUIInteraction(interaction, element, { component: componentName, ...data })
+  };
+}

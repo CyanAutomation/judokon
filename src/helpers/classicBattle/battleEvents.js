@@ -6,6 +6,9 @@
  * 2. Create it if missing.
  * 3. Provide helpers to subscribe, unsubscribe, emit, and reset events.
  */
+import { logEventEmit, createComponentLogger } from "./debugLogger.js";
+
+const eventLogger = createComponentLogger("BattleEvents");
 const EVENT_TARGET_KEY = "__classicBattleEventTarget";
 
 function __tuneMaxListenersIfNode(target) {
@@ -85,6 +88,9 @@ export function offBattleEvent(type, handler) {
  */
 export function emitBattleEvent(type, detail) {
   try {
+    // Debug logging for event emission
+    logEventEmit(type, detail, { timestamp: Date.now() });
+    
     getTarget().dispatchEvent(new CustomEvent(type, { detail }));
   } catch (error) {
     console.error(`[battleEvents] Failed to emit event "${type}":`, error);
@@ -108,6 +114,9 @@ export function emitBattleEvent(type, detail) {
  */
 export function emitBattleEventWithAliases(type, detail, options = {}) {
   try {
+    // Debug logging for aliased event emission
+    eventLogger.event(`Emitting with aliases: ${type}`, detail, { options });
+    
     // Dynamic import to avoid circular dependencies
     import("./eventAliases.js").then(({ emitBattleEventWithAliases: aliasEmitter }) => {
       aliasEmitter(type, detail, options);

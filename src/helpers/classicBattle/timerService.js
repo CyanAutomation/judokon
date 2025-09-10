@@ -8,6 +8,9 @@ import { autoSelectStat } from "./autoSelectStat.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { isEnabled } from "../featureFlags.js";
 import { skipRoundCooldownIfEnabled } from "./uiHelpers.js";
+import { logTimerOperation, createComponentLogger } from "./debugLogger.js";
+
+const timerLogger = createComponentLogger("TimerService");
 
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
@@ -203,11 +206,24 @@ export async function startTimer(onExpiredSelect, store = null) {
   let duration = 30;
   let synced = true;
 
+  // Debug logging for timer start
+  timerLogger.info("Starting selection timer", {
+    initialDuration: duration,
+    synced,
+    hasStore: !!store,
+    selectionMade: store?.selectionMade
+  });
+
   const onTick = (remaining) => {
     scoreboard.updateTimer(remaining);
   };
 
   const onExpired = async () => {
+    // Debug logging for timer expiry
+    logTimerOperation("expired", "selectionTimer", duration, {
+      store: store ? { selectionMade: store.selectionMade } : null
+    });
+    
     setSkipHandler(null);
     scoreboard.clearTimer();
     // PRD taxonomy: round timer expired

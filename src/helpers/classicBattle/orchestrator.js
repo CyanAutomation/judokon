@@ -19,6 +19,9 @@ import { getStateSnapshot } from "./battleDebug.js";
 import * as debugHooks from "./debugHooks.js";
 import stateCatalog from "./stateCatalog.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
+import { logStateTransition, logBattleError, createComponentLogger } from "./debugLogger.js";
+
+const orchestratorLogger = createComponentLogger("Orchestrator");
 
 let machine = null;
 let debugLogListener = null;
@@ -104,6 +107,14 @@ function emitStateChange(from, to) {
       seed: engine?.getSeed?.(),
       timerState: engine?.getTimerState?.() || null
     };
+
+    // Debug logging for state changes
+    logStateTransition(from, to, null, {
+      context,
+      engine: !!engine,
+      machineState: machine?.currentState
+    });
+
     // Mirror timer state for tests/diagnostics
     if (context.timerState) {
       try {
@@ -362,6 +373,15 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     // Ignore the machine's synthetic init transition; listeners are
     // primed separately in attachListeners() with an initial snapshot.
     if (event === "init") return;
+
+    // Debug logging for orchestrator transitions
+    orchestratorLogger.info(`State transition: ${from} → ${to}`, {
+      from,
+      to,
+      event,
+      timestamp: Date.now()
+    });
+
     onStateChange?.({ from, to, event });
     emitBattleEvent("battleStateChange", { from, to, event });
     emitDiagnostics(from, to, event);

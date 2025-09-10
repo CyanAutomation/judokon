@@ -3,6 +3,13 @@ import { startTimer } from "../timerService.js";
 import { handleStatSelection } from "../selectionHandler.js";
 import { getCardStatValue } from "../cardStatUtils.js";
 import { getOpponentJudoka } from "../cardSelection.js";
+import {
+  logStateHandlerEnter,
+  logStateHandlerExit,
+  createComponentLogger
+} from "../debugLogger.js";
+
+const stateLogger = createComponentLogger("WaitingForPlayerAction");
 
 /**
  * onEnter handler for `waitingForPlayerAction` state.
@@ -20,13 +27,34 @@ import { getOpponentJudoka } from "../cardSelection.js";
  * 3. Timer will emit "roundTimeout" on expiry and dispatch "timeout" to state machine.
  */
 export async function waitingForPlayerActionEnter(machine) {
+  // Debug logging for state handler entry
+  logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
+    hasStore: !!machine?.context?.store,
+    storeState: machine?.context?.store
+      ? {
+          selectionMade: machine.context.store.selectionMade,
+          roundsPlayed: machine.context.store.roundsPlayed
+        }
+      : null
+  });
+
   // prompt:chooseStat - Enable stat buttons
   emitBattleEvent("statButtons:enable");
 
   // timer:startStatSelection - Start round timer with timeout callback
   const store = machine?.context?.store;
   if (store) {
+    stateLogger.info("Starting stat selection timer", {
+      store: {
+        selectionMade: store.selectionMade,
+        roundsPlayed: store.roundsPlayed
+      }
+    });
+
     await startTimer(async (stat, opts) => {
+      // Debug logging for auto-selection
+      stateLogger.debug("Auto-selecting stat due to timeout", { stat, opts });
+
       // Get card values for the auto-selected stat
       const playerCard = document.querySelector("[data-role='player-card']");
       const opponentCard = document.querySelector("[data-role='opponent-card']");
@@ -47,6 +75,12 @@ export async function waitingForPlayerActionEnter(machine) {
 
   // a11y:exposeTimerStatus - Timer accessibility is handled by timerService
   // when it updates the scoreboard timer display
+
+  // Debug logging for state handler exit
+  logStateHandlerExit("waitingForPlayerAction", {
+    timerStarted: !!store,
+    buttonsEnabled: true
+  });
 }
 
 export default waitingForPlayerActionEnter;
