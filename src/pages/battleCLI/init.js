@@ -1954,4 +1954,8 @@ if (!window.__TEST__) {
 // Expose for tests
 if (typeof window !== "undefined") {
   window.__test = __test;
+  // Expose debug hooks for test access
+  window.debugHooks = debugHooks;
+  // Expose battle event emitter for test access
+  window.emitBattleEvent = emitBattleEvent;
 }
