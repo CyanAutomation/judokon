@@ -30,8 +30,8 @@ The evaluation process involved a sequence of debugging steps to uncover a syste
 - **Result:** The inspection revealed that the core model file (`model_quantized.onnx`) was 0 bytes, confirming a corrupted cache.
 - **Analysis:** The model needed to be cleared and re-downloaded.
 - **Action:**
-    1. Deleted the corrupted directory: `rm -rf models/minilm`.
-    2. Ran the embedding generation script `npm run generate:embeddings` to trigger a fresh download.
+  1. Deleted the corrupted directory: `rm -rf models/minilm`.
+  2. Ran the embedding generation script `npm run generate:embeddings` to trigger a fresh download.
 
 ### Step 4: Root Cause Discovery
 
@@ -51,18 +51,18 @@ The evaluation process involved a sequence of debugging steps to uncover a syste
 
 ## 4. Final Analysis & Current State
 
-*   **Efficacy:** The core RAG system is **effective**. A qualitative test showed it successfully retrieves relevant documents that connect a user's query to specific data files and components in the codebase.
-*   **Readiness:**
-    *   **Core System & Query Tools (✅ Ready):** The embedding generation and the primary `queryRag` function are now working correctly.
-    *   **Quantitative Evaluation (`evaluateRAG.js`) (❌ Not Ready):** The evaluation script is still broken and produces misleading zero-score results due to the model caching discrepancy.
+- **Efficacy:** The core RAG system is **effective**. A qualitative test showed it successfully retrieves relevant documents that connect a user's query to specific data files and components in the codebase.
+- **Readiness:**
+  - **Core System & Query Tools (✅ Ready):** The embedding generation and the primary `queryRag` function are now working correctly.
+  - **Quantitative Evaluation (`evaluateRAG.js`) (❌ Not Ready):** The evaluation script is still broken and produces misleading zero-score results due to the model caching discrepancy.
 
 ## 5. Next Step Recommendations
 
 To arrive at a fully effective and maintainable RAG system, the following next step is crucial:
 
 1.  **Refactor the Evaluation Script (`scripts/evaluation/evaluateRAG.js`):**
-    *   **Problem:** The script's methodology of loading a separate model instance to generate embeddings on-the-fly is fundamentally flawed due to the library's caching behavior.
-    *   **Recommendation:** Modify the script to stop loading a model entirely. Instead, it should import and use the now-functional `queryRag` helper from `src/helpers/queryRag.js`. It should iterate through its test queries, pass each one to `queryRag`, and then check if the expected source appears in the returned results. This will provide a true, end-to-end evaluation of the system as it is actually used by agents.
+    - **Problem:** The script's methodology of loading a separate model instance to generate embeddings on-the-fly is fundamentally flawed due to the library's caching behavior.
+    - **Recommendation:** Modify the script to stop loading a model entirely. Instead, it should import and use the now-functional `queryRag` helper from `src/helpers/queryRag.js`. It should iterate through its test queries, pass each one to `queryRag`, and then check if the expected source appears in the returned results. This will provide a true, end-to-end evaluation of the system as it is actually used by agents.
 
 ### Planned Action: Refactor `scripts/evaluation/evaluateRAG.js`
 
@@ -73,9 +73,9 @@ To arrive at a fully effective and maintainable RAG system, the following next s
 
 - **Action:** Overwrote `scripts/evaluation/evaluateRAG.js` with the refactored code that uses `queryRag`.
 - **Outcome:** The script executed successfully, producing the following metrics:
-    - `MRR@5: 0.3927`
-    - `Recall@3: 0.5`
-    - `Recall@5: 0.625`
+  - `MRR@5: 0.3927`
+  - `Recall@3: 0.5`
+  - `Recall@5: 0.625`
     These scores indicate a reasonable level of retrieval performance for the RAG system.
 
 ### Planned Action: Analyze and Improve Retrieval Quality
@@ -88,36 +88,36 @@ To arrive at a fully effective and maintainable RAG system, the following next s
 - **Action:** Ran `node scripts/evaluation/evaluateRAG.js` with detailed logging and analyzed the per-query output.
 - **Outcome:** The analysis revealed patterns in retrieval performance:
 
-    **Queries with "Not Found" (Rank 0):**
-    *   "settings feature flags order" (Expected: `design/codeStandards/settingsPageDesignGuidelines.md`)
-    *   "navbar button transition duration" (Expected: `src/styles/main.css`)
-    *   "how to add a new tooltip" (Expected: `src/data/tooltips.json`)
-    *   "how are judoka stats calculated" (Expected: `src/data/judoka.json`)
-    *   "default navigation items" (Expected: `src/data/navigationItems.js`)
-    *   "default sound setting in configuration" (Expected: `src/data/settings.json`)
+  **Queries with "Not Found" (Rank 0):**
+  - "settings feature flags order" (Expected: `design/codeStandards/settingsPageDesignGuidelines.md`)
+  - "navbar button transition duration" (Expected: `src/styles/main.css`)
+  - "how to add a new tooltip" (Expected: `src/data/tooltips.json`)
+  - "how are judoka stats calculated" (Expected: `src/data/judoka.json`)
+  - "default navigation items" (Expected: `src/data/navigationItems.js`)
+  - "default sound setting in configuration" (Expected: `src/data/settings.json`)
 
-    **General Observations & Hypotheses:**
-    *   **Strength in PRDs/Design Docs:** The RAG system performs well when the expected source is a PRD or a design document. These documents likely contain more descriptive text that aligns well with semantic search.
-    *   **Weakness in Specific Code/Data Files:** The system struggles to retrieve specific `.json`, `.js`, or `.css` files, especially when the query asks about "how-to", "calculation", or "default items" that might be implicitly defined by the file's structure rather than explicitly described within a text chunk.
-    *   **Chunking Strategy:** The current chunking strategy (especially for JSON and JS files) might not be extracting enough semantic context for these types of queries.
-    *   **Query vs. Document Content:** Some queries might be asking for information that isn't explicitly stated in the expected document's indexed chunks, even if the document is the "correct" place to look for the answer.
+  **General Observations & Hypotheses:**
+  - **Strength in PRDs/Design Docs:** The RAG system performs well when the expected source is a PRD or a design document. These documents likely contain more descriptive text that aligns well with semantic search.
+  - **Weakness in Specific Code/Data Files:** The system struggles to retrieve specific `.json`, `.js`, or `.css` files, especially when the query asks about "how-to", "calculation", or "default items" that might be implicitly defined by the file's structure rather than explicitly described within a text chunk.
+  - **Chunking Strategy:** The current chunking strategy (especially for JSON and JS files) might not be extracting enough semantic context for these types of queries.
+  - **Query vs. Document Content:** Some queries might be asking for information that isn't explicitly stated in the expected document's indexed chunks, even if the document is the "correct" place to look for the answer.
 
 ## 6. Future Work & Continuous Improvement
 
 With the core RAG system and its evaluation now functional, the next steps focus on enhancing its effectiveness and integrating it more deeply into AI agent workflows:
 
 1.  **Analyze and Improve Retrieval Quality:**
-    *   **Action:** Review the `scripts/evaluation/queries.json` test cases and the RAG results to identify patterns in retrieval failures or areas with lower scores.
-    *   **Recommendation:** Investigate potential improvements such as:
-        *   Refining the text chunking strategy in `src/helpers/vectorSearch/chunkConfig.js`.
-        *   Expanding the `src/data/synonyms.json` file to improve query understanding.
-        *   Adding more diverse or granular data sources to the RAG corpus.
+    - **Action:** Review the `scripts/evaluation/queries.json` test cases and the RAG results to identify patterns in retrieval failures or areas with lower scores.
+    - **Recommendation:** Investigate potential improvements such as:
+      - Refining the text chunking strategy in `src/helpers/vectorSearch/chunkConfig.js`.
+      - Expanding the `src/data/synonyms.json` file to improve query understanding.
+      - Adding more diverse or granular data sources to the RAG corpus.
 
 2.  **Integrate RAG into Agent Workflows:**
-    *   **Action:** Ensure AI agents are consistently utilizing the `queryRag` tool for relevant queries.
-    *   **Recommendation:**
-        *   Develop and refine agent prompts that explicitly guide agents to use the `queryRag` tool for architectural, design, or game rule questions.
-        *   Monitor agent logs to track `queryRag` tool usage and analyze its impact on agent performance and accuracy.
+    - **Action:** Ensure AI agents are consistently utilizing the `queryRag` tool for relevant queries.
+    - **Recommendation:**
+      - Develop and refine agent prompts that explicitly guide agents to use the `queryRag` tool for architectural, design, or game rule questions.
+      - Monitor agent logs to track `queryRag` tool usage and analyze its impact on agent performance and accuracy.
 
 ### Planned Action: Integrate RAG into Agent Workflows
 

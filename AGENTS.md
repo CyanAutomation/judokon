@@ -55,6 +55,7 @@ This project contains a vector database with indexed documentation, code standar
 > **User:** "How should I add a new tooltip?"
 >
 > **Agent's internal monologue:**
+>
 > 1. The user is asking "How should I...", which falls under the "How-to" category in the RAG policy.
 > 2. I must use the RAG tool first. I will form a query.
 > 3. **Tool Call:** `query_rag_database(query="adding a new tooltip")`
@@ -64,9 +65,11 @@ This project contains a vector database with indexed documentation, code standar
 ### Provenance
 
 When using information from the RAG tool, include provenance for the facts:
+
 - `Source: <doc>` — `Confidence: high|medium|low` — `Quote: "..."`.
 
 RAG Provenance JSON schema:
+
 ```json
 {
   "source": "design/agentWorkflows/exampleVectorQueries.md",

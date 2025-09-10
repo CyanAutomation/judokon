@@ -100,9 +100,7 @@ export async function getExtractor() {
           await stat(resolve(modelDir, "config.json"));
           extractor = await pipeline("feature-extraction", modelDir, { quantized: true });
         } catch {
-          console.warn(
-            "Local model not found; falling back to Xenova/all-MiniLM-L6-v2"
-          );
+          console.warn("Local model not found; falling back to Xenova/all-MiniLM-L6-v2");
           extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
             quantized: true
           });
