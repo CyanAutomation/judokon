@@ -1,5 +1,5 @@
 # State Handler Contract Compliance Audit
-Generated: 2025-09-10T13:07:28.329Z
+Generated: 2025-09-10T13:13:37.758Z
 
 ## Summary
 
@@ -176,10 +176,8 @@ Generated: 2025-09-10T13:07:28.329Z
 - log:analyticsInterruptRound
 ```
 
-**Implementation Status**: No implementation found
-**❌ Missing (3)**: timer:clearIfRunning, rollback:roundContextIfNeeded, log:analyticsInterruptRound
-**🚨 Priority 1 (Critical)**: timer:clearIfRunning
-**ℹ️ Priority 3 (Nice-to-have)**: rollback:roundContextIfNeeded, log:analyticsInterruptRound
+**Implementation Status**: Fully compliant
+**✅ Implemented (3)**: timer:clearIfRunning, rollback:roundContextIfNeeded, log:analyticsInterruptRound
 **Handler file**: `interruptRoundEnter.js`
 
 ---
@@ -210,10 +208,8 @@ Generated: 2025-09-10T13:07:28.329Z
 - log:analyticsInterruptMatch
 ```
 
-**Implementation Status**: No implementation found
-**❌ Missing (3)**: timer:clearIfRunning, teardown:matchContext, log:analyticsInterruptMatch
-**🚨 Priority 1 (Critical)**: timer:clearIfRunning
-**ℹ️ Priority 3 (Nice-to-have)**: teardown:matchContext, log:analyticsInterruptMatch
+**Implementation Status**: Fully compliant
+**✅ Implemented (3)**: timer:clearIfRunning, teardown:matchContext, log:analyticsInterruptMatch
 **Handler file**: `interruptMatchEnter.js`
 
 ---
@@ -221,9 +217,9 @@ Generated: 2025-09-10T13:07:28.329Z
 ## Compliance Summary
 
 - **Total contract actions**: 29
-- **Implemented**: 14 (48%)
-- **Missing**: 15 (52%)
-- **Critical gaps**: 4
+- **Implemented**: 20 (69%)
+- **Missing**: 9 (31%)
+- **Critical gaps**: 2
 
 🚨 **Critical gaps found!** These should be addressed first as they may break battle flow.
 
