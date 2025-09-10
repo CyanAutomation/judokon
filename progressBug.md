@@ -216,7 +216,15 @@ Test Dependencies:
 ❓ getCountdownStartedPromise() → "nextRoundCountdownStarted"
 ```
 
-### Phase 2.1: Event Naming Audit & Design ⏱️ _2-3 hours_
+## 🎯 Phase 2: Event System Standardization 🔄 **IN PROGRESS**
+
+**Objective**: Implement consistent event naming patterns across the battle system
+
+**Risk Assessment**: 🟡 Medium  
+- **Risk**: Breaking existing event listeners
+- **Mitigation**: Backward compatibility aliases + gradual migration
+
+### Phase 2.1: Event Naming Audit & Design ⏱️ _2-3 hours_ ✅ **COMPLETED**
 
 **Task Contract**:
 ```json
@@ -228,45 +236,39 @@ Test Dependencies:
 }
 ```
 
-**Step 1: Comprehensive Event Inventory** ⏱️ _1.5 hours_
-```bash
-# Find all event emissions
-rg "emitBattleEvent|eventBus\.emit|emit\(" src/helpers/classicBattle/ > design/eventEmissions.txt
+**✅ Results Summary**:
+- **Events discovered**: 84 unique event names across battle system
+- **Event listeners**: 83 listener patterns identified
+- **Test integration points**: 7 test promise helpers
+- **Event categories**: Timer (22), UI (6), State (20), Player (3), Scoreboard (11), Debug (13), Control (1), Other (8)
 
-# Find all event listeners  
-rg "addEventListener|on\(|setupPromise" src/helpers/classicBattle/ tests/ > design/eventListeners.txt
+**🔍 Key Findings**:
 
-# Find test event promises
-rg "get.*Promise|waitFor.*Event" tests/ playwright/ > design/testEventUsage.txt
+**Inconsistent Naming Patterns Identified**:
+```
+Current → Proposed Migrations:
+• "roundTimeout" → "timer.roundExpired" 
+• "statButtons:enable" → "ui.statButtonsEnabled"
+• "statButtons:disable" → "ui.statButtonsDisabled"
+• "scoreboardShowMessage" → "scoreboard.messageShown"
+• "scoreboardClearMessage" → "scoreboard.messageCleared"
+• "debugPanelUpdate" → "debug.panelUpdated"
+• "matchOver" → "state.matchOver"
+• "statSelected" → "player.statSelected"
 ```
 
-**Step 2: Event Categorization** ⏱️ _1 hour_
-```
-Current Events → Proposed Categories:
+**Test Integration Dependencies**:
+- `getRoundTimeoutPromise()` → listens to `"roundTimeout"`
+- `getCountdownStartedPromise()` → listens to `"nextRoundCountdownStarted"`
+- Other promise helpers rely on specific event names
 
-Timer Events:
-- "roundTimeout" → "timer.roundExpired" 
-- "statTimeout" → "timer.statSelectionExpired"
-- "control.countdown.started" → "timer.countdownStarted"
+**Deliverables**:
+- ✅ `/design/eventNamingAudit.md` - Complete event inventory generated
+- ✅ `/scripts/auditEventSystem.mjs` - Reusable audit tool created
+- ✅ Event categorization and migration priorities established
+- ✅ Backward compatibility strategy designed
 
-UI Events:  
-- "nextRoundCountdownStarted" → "ui.countdownStarted"
-- "statButtons:enable" → "ui.statButtonsEnabled" 
-- "cards:revealed" → "ui.cardsRevealed"
-
-Player Events:
-- "statSelected" → "player.statSelected"
-- "playerInterrupted" → "player.interrupted"
-
-State Events:
-- "stateChanged" → "state.transitioned"
-- "matchStart" → "state.matchStarted"
-```
-
-**Step 3: Convention Documentation** ⏱️ _0.5 hour_
-- Document naming patterns and rationale
-- Define migration strategy and timeline
-- Plan backward compatibility approach
+**Next Steps**: Proceed to Phase 2.2 with event alias system implementation
 
 ### Phase 2.2: Backward-Compatible Migration ⏱️ _3-4 hours_
 

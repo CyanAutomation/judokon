@@ -92,6 +92,37 @@ export function emitBattleEvent(type, detail) {
 }
 
 /**
+ * Dispatch a battle event with alias support for backward compatibility.
+ *
+ * @param {string} type - Event name (new or deprecated).
+ * @param {any} [detail] - Optional data for listeners.
+ * @param {object} [options] - Emission options.
+ * @param {boolean} [options.skipAliases] - Skip emitting alias events.
+ * @param {boolean} [options.warnDeprecated] - Warn about deprecated usage.
+ * @summary Emit a battle event with backward-compatible aliases.
+ * @pseudocode
+ * 1. Check if event name is deprecated, convert to standardized name.
+ * 2. Emit standardized event name.
+ * 3. Emit deprecated aliases for backward compatibility.
+ * 4. Show deprecation warnings in development mode.
+ */
+export function emitBattleEventWithAliases(type, detail, options = {}) {
+  try {
+    // Dynamic import to avoid circular dependencies
+    import("./eventAliases.js").then(({ emitBattleEventWithAliases: aliasEmitter }) => {
+      aliasEmitter(type, detail, options);
+    });
+    
+    // Fallback: emit standard event immediately
+    getTarget().dispatchEvent(new CustomEvent(type, { detail }));
+  } catch (error) {
+    console.error(`[battleEvents] Failed to emit aliased event "${type}":`, error);
+    // Fallback to standard emission
+    emitBattleEvent(type, detail);
+  }
+}
+
+/**
  * Replace the shared `EventTarget` instance.
  *
  * @summary Refresh the global event bus.

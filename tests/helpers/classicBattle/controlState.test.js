@@ -20,14 +20,16 @@ vi.mock("../../../src/helpers/featureFlags.js", () => ({
   initFeatureFlags: vi.fn()
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({ setupScoreboard: vi.fn() }));
-vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({ skipCurrentPhase: vi.fn() }));
+vi.mock("../../../src/helpers/classicBattle/skipHandler.js", async () => {
+  const actual = await vi.importActual("../../../src/helpers/classicBattle/skipHandler.js");
+  return { ...actual, skipCurrentPhase: vi.fn(), setSkipHandler: vi.fn() };
+});
 vi.mock("../../../src/helpers/classicBattle/interruptHandlers.js", () => ({
   initInterruptHandlers: vi.fn()
 }));
-vi.mock("../../../src/helpers/classicBattle/timerService.js", async () => {
-  const actual = await vi.importActual("../../../src/helpers/classicBattle/timerService.js");
-  return { ...actual, onNextButtonClick: vi.fn() };
-});
+vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
+  onNextButtonClick: vi.fn(),
+}));
 vi.mock("../../../src/helpers/classicBattle/uiHelpers.js", async () => {
   const actual = await vi.importActual("../../../src/helpers/classicBattle/uiHelpers.js");
   return {
@@ -94,6 +96,7 @@ describe("classicBattle battle control state", () => {
 
   it("resetBattleUI replaces Next button and reattaches click handler", async () => {
     const timerSvc = await import("../../../src/helpers/classicBattle/timerService.js");
+    const onNextButtonClickSpy = vi.spyOn(timerSvc, 'onNextButtonClick'); // Spy on the imported mock
     const { resetBattleUI } = await import("../../../src/helpers/classicBattle/uiHelpers.js");
     const btn = document.querySelector('[data-role="next-round"]');
     btn.dataset.nextReady = "true";
@@ -103,7 +106,7 @@ describe("classicBattle battle control state", () => {
     expect(cloned.disabled).toBe(true);
     expect(cloned.dataset.nextReady).toBeUndefined();
     cloned.dispatchEvent(new MouseEvent("click"));
-    expect(timerSvc.onNextButtonClick).toHaveBeenCalledTimes(1);
+    expect(onNextButtonClickSpy).toHaveBeenCalledTimes(1);
   });
 
   it("quit button triggers quitMatch", async () => {
