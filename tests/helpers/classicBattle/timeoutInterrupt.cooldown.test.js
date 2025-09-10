@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
-import { waitForState } from "../../waitForState.js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import "./commonMocks.js";
+import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { createTimerNodes, createSnackbarContainer } from "./domUtils.js";
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   initRoundSelectModal: vi.fn(async (cb) => {
@@ -8,46 +9,55 @@ vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   })
 }));
 
+vi.mock("../../../src/helpers/timerUtils.js", () => ({
+  getDefaultTimer: vi.fn(async () => 1)
+}));
+
 describe("timeout → interruptRound → cooldown auto-advance", () => {
-  beforeEach(() => {
+  let battleMod;
+  let timers;
+  beforeEach(async () => {
     vi.resetModules();
-    document.body.innerHTML = `
-      <div id="player-card"></div>
-      <div id="opponent-card"></div>
-      <p id="round-message"></p>
-      <p id="next-round-timer"></p>
-      <button id="next-button" data-role="next-round" disabled>Next</button>
-      <div id="snackbar-container"></div>
-    `;
-    // Use minimal 1s cooldown for auto-advance
+    document.body.innerHTML = "";
+    const { playerCard, opponentCard } = createBattleCardContainers();
+    const header = createBattleHeader();
+    header.querySelector("#next-round-timer")?.remove();
+    document.body.append(playerCard, opponentCard, header);
+    createTimerNodes();
+    createSnackbarContainer();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+    timers = vi.useFakeTimers();
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    battleMod = await initClassicBattleTest({ afterMock: true });
+  });
+
+  afterEach(() => {
+    timers.clearAllTimers();
+    delete window.__NEXT_ROUND_COOLDOWN_MS;
   });
 
   it("advances from cooldown after interrupt with 1s auto-advance", async () => {
-    const { initClassicBattleOrchestrator } = await import(
+    const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
-    // minimal store
     const store = { selectionMade: false, playerChoice: null };
     await initClassicBattleOrchestrator(store, undefined, {});
-    const machine = (
-      await import("../../../src/helpers/classicBattle/orchestrator.js")
-    ).getBattleStateMachine();
+    const machine = getBattleStateMachine();
 
-    // Simulate match start then go to waitingForPlayerAction
     await machine.dispatch("matchStart");
-    await machine.dispatch("ready"); // to cooldown
-    await machine.dispatch("ready"); // to roundStart
-    await machine.dispatch("cardsRevealed"); // to waitingForPlayerAction
+    await machine.dispatch("ready");
+    await machine.dispatch("ready");
+    await machine.dispatch("cardsRevealed");
 
-    // Trigger timeout: machine goes to roundDecision then interruptRound(noSelection)
-    await machine.dispatch("timeout");
-    // Wait until cooldown is reached
-    await waitForState("cooldown", 5000);
+    const timeoutPromise = battleMod.getRoundTimeoutPromise();
+    const countdownPromise = battleMod.getCountdownStartedPromise();
 
-    // CooldownEnter should emit countdownStart and then auto-dispatch ready via fallback timer.
-    // With the 1s floor, computeNextRoundCooldown() = 1 → auto-advance after ~1s to roundStart.
-    await new Promise((r) => setTimeout(r, 1250));
+    await vi.advanceTimersByTimeAsync(1000);
+    await timeoutPromise;
+    await countdownPromise;
+
+    await vi.advanceTimersByTimeAsync(1000);
+    const { getStateSnapshot } = await import("../../../src/helpers/classicBattle/battleDebug.js");
     const snapshot = getStateSnapshot();
     expect(["roundStart", "waitingForPlayerAction"]).toContain(snapshot?.state);
   });
