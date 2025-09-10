@@ -22,7 +22,7 @@ beforeEach(async () => {
   fetchJsonMock = await setupMockDataset();
   // Reset modules to clear any cached embeddings from previous tests
   vi.resetModules();
-  
+
   // Set up readFile mock to work with the test dataset
   const { readFile } = await import("node:fs/promises");
   readFileMock = readFile;
