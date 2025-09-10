@@ -105,6 +105,21 @@ You **MUST** use RAG as your first step for questions related to:
 4.  **Cite your sources.** Reference the source documents from the RAG results (e.g., "According to `prdVectorDatabaseRAG.md`...").
 5.  **Fallback.** If the RAG search returns no relevant results, you may then proceed with other tools like `glob` or `search_file_content`.
 
+### Agent Usage Tips (RAG)
+
+- Prefer `queryRag({ withProvenance: true })` for “How/Why/What/Where/Which” questions to include `contextPath` and a short `rationale` explaining ranking.
+- During development, you may pass `withDiagnostics: true` to receive `{ expandedQuery, multiIntentApplied, timingMs }` for debugging. Do not enable diagnostics in hot paths.
+- For compound queries, RAG automatically splits simple conjunctions and re-ranks the union; still keep queries concise and specific.
+
+Example:
+
+```js
+import queryRag from "./src/helpers/queryRag.js";
+const results = await queryRag("classic battle countdown snackbar", { withProvenance: true, withDiagnostics: true });
+// results[0] → { id, text, score, source, tags, contextPath, rationale }
+// results.diagnostics → { expandedQuery: "...", multiIntentApplied: true|false, timingMs }
+```
+
 ### Example Agent Thought Process
 
 > **User:** "How should I add a new tooltip?"
