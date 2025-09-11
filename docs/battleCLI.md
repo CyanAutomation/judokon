@@ -23,7 +23,7 @@ import { battleCLI, onKeyDown } from "src/pages/index.js";
 
 **CLI Layout Status: PRD Compliant** (Last assessed: 2024)
 
-The battleCLI interface has been validated against PRD requirements with comprehensive Playwright testing:
+The battleCLI interface has been validated against PRD requirements with comprehensive Playwright testing (default desktop viewport 1920×1080):
 
 - **✅ Touch Targets**: All interactive elements meet 44px minimum height requirement
 - **✅ Responsive Grid**: CSS Grid layout adapts to viewport with proper column distribution
