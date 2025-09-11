@@ -2,6 +2,7 @@
 node_modules/
 dist/
 build/
+models/
 *.log
 .github/ISSUE_TEMPLATE/*.md
 src/schemas/*.json
@@ -15,4 +16,3 @@ src/data/client_embeddings.manifest.json
 src/data/offline_rag_metadata.json
 eslint-dry.json
 .eslintcache
-tests/pages/battleCLI.onKeyDown.test.js
