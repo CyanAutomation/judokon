@@ -1,0 +1,3868 @@
+{
+  "config": {
+    "configFile": "/workspaces/judokon/playwright.config.js",
+    "rootDir": "/workspaces/judokon/playwright",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/workspaces/judokon/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspaces/judokon/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.2",
+    "workers": 1,
+    "webServer": {
+      "command": "node scripts/playwrightServer.js",
+      "port": 5000,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "battle-classic/badge-debug.spec.js",
+      "file": "battle-classic/badge-debug.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "State badge and debug panel",
+          "file": "battle-classic/badge-debug.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "badge visible and debug panel present with flags",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1021,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Battle messages: [\n  \u001b[32m'debug: battleClassic: badge check {overrideEnabled: true}'\u001b[39m,\n  \u001b[32m'debug: battleClassic: enabling badge via override'\u001b[39m,\n  \u001b[32m'debug: battleClassic: badge enabled false false'\u001b[39m\n]\n"
+                        },
+                        {
+                          "text": "Document state: { readyState: \u001b[32m'complete'\u001b[39m, hasScript: \u001b[33mtrue\u001b[39m }\n"
+                        },
+                        {
+                          "text": "Debug info: {\n  badge: {\n    exists: \u001b[33mtrue\u001b[39m,\n    hidden: \u001b[33mfalse\u001b[39m,\n    hasHiddenAttr: \u001b[33mfalse\u001b[39m,\n    textContent: \u001b[32m'Lobby'\u001b[39m,\n    style: \u001b[32m''\u001b[39m\n  },\n  featureFlags: {\n    overrides: { enableTestMode: \u001b[33mtrue\u001b[39m, battleStateBadge: \u001b[33mtrue\u001b[39m },\n    battleStateBadge: \u001b[33mtrue\u001b[39m\n  },\n  initCalled: \u001b[33mtrue\u001b[39m\n}\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:47.764Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f08c1d4151dd715b3188-f0cd9b0a60a55bef8661",
+              "file": "battle-classic/badge-debug.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/bootstrap.spec.js",
+      "file": "battle-classic/bootstrap.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle bootstrap",
+          "file": "battle-classic/bootstrap.spec.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "scoreboard shows initial content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 175,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:48.862Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "71a39951bb2187049535-851974d7c6f7f10cd207",
+              "file": "battle-classic/bootstrap.spec.js",
+              "line": 5,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/cooldown.spec.js",
+      "file": "battle-classic/cooldown.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle cooldown + Next",
+          "file": "battle-classic/cooldown.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Next becomes ready after resolution and advances on click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2389,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:49.047Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "74330832371e3221d6ab-34c7b004b2e0267d27ba",
+              "file": "battle-classic/cooldown.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/end-modal.spec.js",
+      "file": "battle-classic/end-modal.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle end-of-match flow",
+          "file": "battle-classic/end-modal.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "ends match and supports Replay",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1751,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:51.447Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d6cc1cac819e8dcef8ee-096066a63a01c00b6f7e",
+              "file": "battle-classic/end-modal.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/opponent-reveal.spec.js",
+      "file": "battle-classic/opponent-reveal.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle opponent reveal",
+          "file": "battle-classic/opponent-reveal.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "shows 'Opponent is choosing…' before outcome",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2037,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:53.210Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2aa4c346d8bb19bb3c6c-6c7dfd2ed3da13cfe07e",
+              "file": "battle-classic/opponent-reveal.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/quit-flow.spec.js",
+      "file": "battle-classic/quit-flow.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle quit flow",
+          "file": "battle-classic/quit-flow.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Quit opens confirmation modal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1005,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:55.265Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "504c5776a5716df557da-33fd81ffbfad1a806e5a",
+              "file": "battle-classic/quit-flow.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/replay.spec.js",
+      "file": "battle-classic/replay.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle replay",
+          "file": "battle-classic/replay.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Replay resets scoreboard after match end",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1475,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:56.278Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "52a1d63692c5e7a6dd5b-61d3cbb9f17e8d32be6b",
+              "file": "battle-classic/replay.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/round-counter.spec.js",
+      "file": "battle-classic/round-counter.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle round counter",
+          "file": "battle-classic/round-counter.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "shows Round 1 after start and increments after Next",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 758,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:57.768Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "68dc2632cac87d505f87-95a327cb1d8d66e2fd88",
+              "file": "battle-classic/round-counter.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/round-select.server.spec.js",
+      "file": "battle-classic/round-select.server.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle round select (server)",
+          "file": "battle-classic/round-select.server.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "choosing 15 marks target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 510,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:58.534Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c0f7607c52709a46e92e-b93d1249c7af92a77b94",
+              "file": "battle-classic/round-select.server.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/round-select.spec.js",
+      "file": "battle-classic/round-select.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle round select",
+          "file": "battle-classic/round-select.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "choosing 15 marks target",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 497,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:59.051Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ce16e49a50bcf43b190f-15e045c09a6acec46dab",
+              "file": "battle-classic/round-select.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/smoke.spec.js",
+      "file": "battle-classic/smoke.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle page scaffold",
+          "file": "battle-classic/smoke.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads without console errors and has scoreboard nodes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 527,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:38:59.555Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6e4b57ea33a9ce203fd8-3017f70bb879b7d84afe",
+              "file": "battle-classic/smoke.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/stat-selection.spec.js",
+      "file": "battle-classic/stat-selection.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle stat selection",
+          "file": "battle-classic/stat-selection.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "buttons enabled after start; clicking resolves and starts cooldown",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2571,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:00.088Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "aa3a84d3b570d0667c99-531aaa6f42a5aedc19c4",
+              "file": "battle-classic/stat-selection.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/timer-clearing.spec.js",
+      "file": "battle-classic/timer-clearing.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle timer clearing",
+          "file": "battle-classic/timer-clearing.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "timer is cleared immediately when stat selection is made",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2585,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:02.666Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7826b0e54b95a7f73b3c-e7b9b3863d775845ddf7",
+              "file": "battle-classic/timer-clearing.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-classic/timer.spec.js",
+      "file": "battle-classic/timer.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle timer",
+          "file": "battle-classic/timer.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "shows selection countdown after choosing rounds",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 449,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:05.257Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4eef16fd59e6689654a6-acde0b38a64b4a4c534e",
+              "file": "battle-classic/timer.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-cli.spec.js",
+      "file": "battle-cli.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Classic Battle CLI",
+          "file": "battle-cli.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads without console errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5683,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Test API available for battle state checking\n"
+                        },
+                        {
+                          "text": "Console logs: []\n"
+                        },
+                        {
+                          "text": "Battle did not reach waitingForPlayerAction state, but no console errors detected\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:05.726Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-0c6e459ba917a0dc8e84",
+              "file": "battle-cli.spec.js",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "state badge hidden when flag disabled",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5608,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Battle initialization state: { hasTestAPI: \u001b[33mtrue\u001b[39m, battleState: \u001b[1mnull\u001b[22m }\n"
+                        },
+                        {
+                          "text": "No start button found, assuming auto-start should work\n"
+                        },
+                        {
+                          "text": "Current battle state: {\n  \"hasGetStateSnapshot\": true,\n  \"stateSnapshot\": {\n    \"state\": null,\n    \"prev\": null,\n    \"event\": null,\n    \"log\": []\n  }\n}\n"
+                        },
+                        {
+                          "text": "Battle did not reach waitingForPlayerAction state, but that's OK for this test\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:11.414Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-276e535f56d93a1cdfe7",
+              "file": "battle-cli.spec.js",
+              "line": 78,
+              "column": 3
+            },
+            {
+              "title": "state badge visible when flag enabled",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4241,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        },
+                        {
+                          "text": "✅ Battle reached state: waitingForPlayerAction via Test API\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:17.026Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-4991bf67f4eccccb6ab8",
+              "file": "battle-cli.spec.js",
+              "line": 182,
+              "column": 3
+            },
+            {
+              "title": "verbose log toggles and records transitions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4294,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: roundDecision\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:21.271Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-77a48ad2bebbf5a883fb",
+              "file": "battle-cli.spec.js",
+              "line": 221,
+              "column": 3
+            },
+            {
+              "title": "help panel toggles via keyboard and close button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4065,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:25.569Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-c822b4d5e9d1fdfc30e5",
+              "file": "battle-cli.spec.js",
+              "line": 271,
+              "column": 3
+            },
+            {
+              "title": "closing help panel ignores next advance click",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 14916,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: cooldown\n"
+                        },
+                        {
+                          "text": "[browser:warning] [test] startCooldown: testMode=false cooldown=10\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:29.638Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-79d1f19dad7f231c275b",
+              "file": "battle-cli.spec.js",
+              "line": 297,
+              "column": 3
+            },
+            {
+              "title": "plays a full round and skips cooldown",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4741,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: cooldown\n"
+                        },
+                        {
+                          "text": "[browser:warning] [test] startCooldown: testMode=false cooldown=3\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: cooldown\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:44.558Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-246cf28b93efb0cf1bb0",
+              "file": "battle-cli.spec.js",
+              "line": 339,
+              "column": 3
+            },
+            {
+              "title": "skips cooldown with Space key",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4690,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: cooldown\n"
+                        },
+                        {
+                          "text": "[browser:warning] [test] startCooldown: testMode=false cooldown=3\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:49.303Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-24e0efc87b23a5bd1678",
+              "file": "battle-cli.spec.js",
+              "line": 386,
+              "column": 3
+            },
+            {
+              "title": "scoreboard updates after each round",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2314,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: cooldown\n"
+                        },
+                        {
+                          "text": "[browser:warning] [test] startCooldown: testMode=true cooldown=1\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        },
+                        {
+                          "text": "⚡ Using Test API to wait for state: cooldown\n"
+                        },
+                        {
+                          "text": "[browser:warning] [test] startCooldown: testMode=true cooldown=1\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:53.997Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-da52b4576dee8bb2a7b6",
+              "file": "battle-cli.spec.js",
+              "line": 416,
+              "column": 3
+            },
+            {
+              "title": "allows tab navigation without invalid key messages",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4079,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:39:56.314Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-cac5117ba46cab09f5be",
+              "file": "battle-cli.spec.js",
+              "line": 459,
+              "column": 3
+            },
+            {
+              "title": "returns to lobby after quitting",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4478,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        },
+                        {
+                          "text": "[browser:warning] [test] startCooldown: testMode=false cooldown=1\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:00.397Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-7d08b8abd813e85129e9",
+              "file": "battle-cli.spec.js",
+              "line": 496,
+              "column": 3
+            },
+            {
+              "title": "shows restart control after match completes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1042,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⚡ Using Test API to wait for state: waitingForPlayerAction\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:04.880Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e9d6f6af6efe1fde1d50-628e93c126649ec09df9",
+              "file": "battle-cli.spec.js",
+              "line": 524,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "battle-next-skip.non-orchestrated.spec.js",
+      "file": "battle-next-skip.non-orchestrated.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "skips cooldown without orchestrator",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 662,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[browser:warning] [test] startCooldown call#1: state=null\n"
+                    },
+                    {
+                      "text": "[browser:warning] [test] startCooldown: testMode=false cooldown=5\n"
+                    },
+                    {
+                      "text": "[browser:warning] [test] roundManager: marked Next ready\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-11T11:40:05.931Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d187f7c4b38f0a667006-7da2bb635bb606578ea4",
+          "file": "battle-next-skip.non-orchestrated.spec.js",
+          "line": 13,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "browse-judoka.spec.js",
+      "file": "browse-judoka.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Browse Judoka screen",
+          "file": "browse-judoka.spec.js",
+          "line": 12,
+          "column": 6,
+          "specs": [
+            {
+              "title": "browse judoka elements visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 708,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:06.604Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9c54a44d3d6c33d05c5-bbf010d77d1c9208b342",
+              "file": "browse-judoka.spec.js",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "scroll buttons have labels",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 981,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:07.316Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9c54a44d3d6c33d05c5-c7f00c4b536d0caf5050",
+              "file": "browse-judoka.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "filter panel toggles",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 976,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:08.303Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9c54a44d3d6c33d05c5-d9082df67f3c9b0080b3",
+              "file": "browse-judoka.spec.js",
+              "line": 34,
+              "column": 3
+            },
+            {
+              "title": "filters judoka by country and resets",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1092,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:09.284Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9c54a44d3d6c33d05c5-77deedf43204100c74e2",
+              "file": "browse-judoka.spec.js",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "displays country flags",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 943,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:10.381Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9c54a44d3d6c33d05c5-94b200528dbf12ccb5a4",
+              "file": "browse-judoka.spec.js",
+              "line": 69,
+              "column": 3
+            },
+            {
+              "title": "carousel updates page counter with arrow keys",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1241,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:11.328Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9c54a44d3d6c33d05c5-6bbaeae70f0be9961052",
+              "file": "browse-judoka.spec.js",
+              "line": 82,
+              "column": 3
+            },
+            {
+              "title": "shows loading spinner",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1192,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:12.573Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9c54a44d3d6c33d05c5-a1f734e4770fe50a3f12",
+              "file": "browse-judoka.spec.js",
+              "line": 113,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "card-inspector-accessibility.spec.js",
+      "file": "card-inspector-accessibility.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Card inspector accessibility",
+          "file": "card-inspector-accessibility.spec.js",
+          "line": 42,
+          "column": 6,
+          "specs": [
+            {
+              "title": "summary keyboard support and ARIA state",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 214,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:13.785Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fefe2974691cad04c8eb-3d83a18df944d1adba60",
+              "file": "card-inspector-accessibility.spec.js",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "announces invalid card data on JSON failure",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 184,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[browser:error] Failed to serialize judoka: TypeError: Do not know how to serialize a BigInt\n    at JSON.stringify (<anonymous>)\n    at createInspectorPanel (<anonymous>:19:17)\n    at mountInspectorPanel (<anonymous>:87:17)\n    at eval (eval at evaluate (:291:30), <anonymous>:21:14)\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:14.003Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fefe2974691cad04c8eb-d5f236706a64ae0b32af",
+              "file": "card-inspector-accessibility.spec.js",
+              "line": 68,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "cli-flows-improved.spec.mjs",
+      "file": "cli-flows-improved.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Battle state access via Test API (no DOM manipulation)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 587,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ Current battle state: \u001b[1mnull\u001b[22m (could be null in CLI - that's expected)\n"
+                    },
+                    {
+                      "text": "✅ Battle ready: \u001b[33mtrue\u001b[39m\n"
+                    },
+                    {
+                      "text": "✅ Store info: \u001b[36m<ref *1>\u001b[39m {\n  quitModal: \u001b[1mnull\u001b[22m,\n  statTimeoutId: \u001b[1mnull\u001b[22m,\n  autoSelectId: \u001b[1mnull\u001b[22m,\n  compareRaf: \u001b[33m0\u001b[39m,\n  selectionMade: \u001b[33mfalse\u001b[39m,\n  stallTimeoutMs: \u001b[33m35000\u001b[39m,\n  playerChoice: \u001b[1mnull\u001b[22m,\n  playerCardEl: \u001b[1mnull\u001b[22m,\n  opponentCardEl: \u001b[1mnull\u001b[22m,\n  statButtonEls: \u001b[1mnull\u001b[22m,\n  currentPlayerJudoka: \u001b[1mnull\u001b[22m,\n  engine: {\n    pointsToWin: \u001b[33m10\u001b[39m,\n    maxRounds: \u001b[33m25\u001b[39m,\n    stats: [ \u001b[32m'power'\u001b[39m, \u001b[32m'speed'\u001b[39m, \u001b[32m'technique'\u001b[39m, \u001b[32m'kumikata'\u001b[39m, \u001b[32m'newaza'\u001b[39m ],\n    debugHooks: { getStateSnapshot: \u001b[90mundefined\u001b[39m },\n    seed: \u001b[90mundefined\u001b[39m,\n    playerScore: \u001b[33m0\u001b[39m,\n    opponentScore: \u001b[33m0\u001b[39m,\n    timer: {\n      currentTimer: \u001b[1mnull\u001b[22m,\n      remaining: \u001b[33m0\u001b[39m,\n      paused: \u001b[33mfalse\u001b[39m,\n      onTickCb: \u001b[1mnull\u001b[22m,\n      onExpiredCb: \u001b[1mnull\u001b[22m,\n      onSecondTick: \u001b[90mundefined\u001b[39m,\n      cancel: \u001b[90mundefined\u001b[39m,\n      driftId: \u001b[1mnull\u001b[22m\n    },\n    matchEnded: \u001b[33mfalse\u001b[39m,\n    roundsPlayed: \u001b[33m0\u001b[39m,\n    roundInterrupted: \u001b[33mfalse\u001b[39m,\n    lastInterruptReason: \u001b[32m''\u001b[39m,\n    lastError: \u001b[32m''\u001b[39m,\n    lastModification: \u001b[1mnull\u001b[22m,\n    _initialConfig: {\n      pointsToWin: \u001b[33m10\u001b[39m,\n      maxRounds: \u001b[33m25\u001b[39m,\n      stats: \u001b[36m[Array]\u001b[39m,\n      debugHooks: \u001b[36m[Object]\u001b[39m,\n      seed: \u001b[90mundefined\u001b[39m\n    },\n    emitter: { listeners: {} },\n    on: \u001b[90mundefined\u001b[39m,\n    off: \u001b[90mundefined\u001b[39m,\n    emit: \u001b[90mundefined\u001b[39m\n  },\n  orchestrator: {\n    context: {\n      store: \u001b[36m[Circular *1]\u001b[39m,\n      doResetGame: \u001b[90mundefined\u001b[39m,\n      doStartRound: \u001b[90mundefined\u001b[39m,\n      startRoundWrapper: \u001b[90mundefined\u001b[39m\n    },\n    getState: \u001b[90mundefined\u001b[39m,\n    dispatch: \u001b[90mundefined\u001b[39m\n  }\n}\n"
+                    },
+                    {
+                      "text": "✅ State snapshot: {\n  state: \u001b[32m'waitingForMatchStart'\u001b[39m,\n  prev: \u001b[1mnull\u001b[22m,\n  event: \u001b[32m'init'\u001b[39m,\n  log: [\n    {\n      from: \u001b[1mnull\u001b[22m,\n      to: \u001b[32m'waitingForMatchStart'\u001b[39m,\n      event: \u001b[32m'init'\u001b[39m,\n      ts: \u001b[33m1757590814544\u001b[39m\n    }\n  ]\n} (state could be null in CLI)\n"
+                    },
+                    {
+                      "text": "✅ Debug info: {\n  store: { selectionMade: \u001b[33mfalse\u001b[39m, playerChoice: \u001b[1mnull\u001b[22m, roundsPlayed: \u001b[33m0\u001b[39m },\n  machine: { currentState: \u001b[32m'waitingForMatchStart'\u001b[39m, hasDispatch: \u001b[33mtrue\u001b[39m },\n  snapshot: {\n    state: \u001b[32m'waitingForMatchStart'\u001b[39m,\n    prev: \u001b[1mnull\u001b[22m,\n    event: \u001b[32m'init'\u001b[39m,\n    log: [ \u001b[36m[Object]\u001b[39m ]\n  },\n  dom: {\n    battleState: \u001b[32m'waitingForMatchStart'\u001b[39m,\n    hasNextButton: \u001b[33mfalse\u001b[39m,\n    nextButtonReady: \u001b[33mfalse\u001b[39m\n  }\n}\n"
+                    },
+                    {
+                      "text": "✅ Test completed successfully with direct API access - no DOM manipulation needed!\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-11T11:40:14.195Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fcd371bdea37488aea65-7246b925ea97d7b84465",
+          "file": "cli-flows-improved.spec.mjs",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "cli-flows.spec.mjs",
+      "file": "cli-flows.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Keyboard flows: select stat, toggle help, quit modal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 226,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "CLI Test API available: \u001b[33mfalse\u001b[39m\n"
+                    },
+                    {
+                      "text": "Found 5 real stats, testing keyboard interaction\n"
+                    },
+                    {
+                      "text": "ℹ️ Keyboard stat selection not implemented or different pattern\n"
+                    },
+                    {
+                      "text": "ℹ️ Help panel not implemented or different pattern\n"
+                    },
+                    {
+                      "text": "✅ Quit key pressed - testing real quit modal behavior\n"
+                    },
+                    {
+                      "text": "ℹ️ Quit modal not implemented or different pattern\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-11T11:40:14.794Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "95763a63f6b12bbf2db4-38444781bc0b4d63bae7",
+          "file": "cli-flows.spec.mjs",
+          "line": 4,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "cli-scroll.spec.js",
+      "file": "cli-scroll.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "CLI layout has no horizontal scrollbar when content fits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 460,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-11T11:40:15.028Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0d175b908bfe769f601b-1f97f777cf0821c450ed",
+          "file": "cli-scroll.spec.js",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "cli.spec.js",
+      "file": "cli.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "CLI skeleton and helpers smoke",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 573,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-11T11:40:15.497Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e730f02ae96b49fb6510-dd8d241dcadab97badbc",
+          "file": "cli.spec.js",
+          "line": 2,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "cli.spec.mjs",
+      "file": "cli.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "CLI skeleton and helpers smoke",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 230,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-11T11:40:16.076Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b2437ec9350ef9ca57a8-be5008e4ec4899f205c4",
+          "file": "cli.spec.mjs",
+          "line": 4,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "countdown.spec.js",
+      "file": "countdown.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Battle CLI countdown timing",
+          "file": "countdown.spec.js",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "setCountdown updates data-remaining-time instantly via Test API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 573,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Window props: {\n  hasTestAPI: \u001b[33mtrue\u001b[39m,\n  hasBattleCLIInit: \u001b[33mtrue\u001b[39m,\n  hasSetCountdown: \u001b[33mtrue\u001b[39m,\n  testAPIProps: [ \u001b[32m'state'\u001b[39m, \u001b[32m'timers'\u001b[39m, \u001b[32m'init'\u001b[39m, \u001b[32m'inspect'\u001b[39m ],\n  windowKeys: [\n    \u001b[32m'__classicBattleDebugExpose'\u001b[39m,\n    \u001b[32m'__classicBattleDebugRead'\u001b[39m,\n    \u001b[32m'__classicBattleEventTarget'\u001b[39m,\n    \u001b[32m'__classicBattleUIHelpersBound'\u001b[39m,\n    \u001b[32m'__TEST_API'\u001b[39m,\n    \u001b[32m'__BATTLE_STATE_API'\u001b[39m,\n    \u001b[32m'__TIMER_API'\u001b[39m,\n    \u001b[32m'__INIT_API'\u001b[39m,\n    \u001b[32m'__INSPECT_API'\u001b[39m,\n    \u001b[32m'__battleCLIinit'\u001b[39m,\n    \u001b[32m'__test'\u001b[39m,\n    \u001b[32m'__battleCLIStatListBoundTargets'\u001b[39m\n  ]\n}\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:16.313Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2735e9fda8ddfca883-c8a6076bd47980d37f58",
+              "file": "countdown.spec.js",
+              "line": 6,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "homepage-layout.spec.js",
+      "file": "homepage-layout.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Homepage layout",
+          "file": "homepage-layout.spec.js",
+          "line": 5,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "desktop",
+              "file": "homepage-layout.spec.js",
+              "line": 6,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "grid has two columns",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 641,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-09-11T11:40:16.894Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "eb5e67e4d313b7d4521a-60d936a317bd13de65b4",
+                  "file": "homepage-layout.spec.js",
+                  "line": 15,
+                  "column": 5
+                },
+                {
+                  "title": "home screen matches viewport height",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 673,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-09-11T11:40:17.541Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "eb5e67e4d313b7d4521a-474e8329e2a9c79d776e",
+                  "file": "homepage-layout.spec.js",
+                  "line": 23,
+                  "column": 5
+                },
+                {
+                  "title": "grid does not overlap footer (desktop)",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 565,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-09-11T11:40:18.222Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "eb5e67e4d313b7d4521a-22280bf538fd48589663",
+                  "file": "homepage-layout.spec.js",
+                  "line": 32,
+                  "column": 5
+                },
+                {
+                  "title": "bottom navbar displays in a single row",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 557,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-09-11T11:40:18.792Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "eb5e67e4d313b7d4521a-4aa6a7dfa6d2786fea47",
+                  "file": "homepage-layout.spec.js",
+                  "line": 48,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "mobile",
+              "file": "homepage-layout.spec.js",
+              "line": 59,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "grid has one column",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 482,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-09-11T11:40:19.353Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "eb5e67e4d313b7d4521a-0bc22c184706f3247cee",
+                  "file": "homepage-layout.spec.js",
+                  "line": 68,
+                  "column": 5
+                },
+                {
+                  "title": "home screen matches viewport height",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 459,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-09-11T11:40:19.840Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "eb5e67e4d313b7d4521a-6ed2dfe4eb55b4eef4c0",
+                  "file": "homepage-layout.spec.js",
+                  "line": 76,
+                  "column": 5
+                },
+                {
+                  "title": "grid does not overlap footer (mobile)",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "",
+                      "projectName": "",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 457,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-09-11T11:40:20.302Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "eb5e67e4d313b7d4521a-5bcfad187b7c909c6aec",
+                  "file": "homepage-layout.spec.js",
+                  "line": 85,
+                  "column": 5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "homepage.spec.js",
+      "file": "homepage.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Homepage",
+          "file": "homepage.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "homepage loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 568,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:20.767Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-2ee28820a6049a7f82c7",
+              "file": "homepage.spec.js",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "navigation order and visibility",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 509,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:21.339Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-910da4da75a808e18749",
+              "file": "homepage.spec.js",
+              "line": 22,
+              "column": 3
+            },
+            {
+              "title": "view judoka link navigates",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5931,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:21.853Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-e6c3e3bba38542c1ae3a",
+              "file": "homepage.spec.js",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "keyboard navigation activates tiles",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 973,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:27.791Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-9c9cf76e25068e506af8",
+              "file": "homepage.spec.js",
+              "line": 44,
+              "column": 3
+            },
+            {
+              "title": "fallback icon applied on load failure",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 875,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Expect \"poll toContain\"",
+                          "duration": 39
+                        }
+                      ],
+                      "startTime": "2025-09-11T11:40:28.768Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-f0d7f8ac43f05d89f0c7",
+              "file": "homepage.spec.js",
+              "line": 53,
+              "column": 3
+            },
+            {
+              "title": "tiles meet contrast ratio",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 521,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:29.651Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "cf4ffee829137744e3cd-215ab7e76c1cc8deccf0",
+              "file": "homepage.spec.js",
+              "line": 75,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "hover-zoom.spec.js",
+      "file": "hover-zoom.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Hover zoom markers",
+          "file": "hover-zoom.spec.js",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "card toggles data-enlarged on hover",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 551,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:30.180Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a057904411008487b94b-015a48aec63ca03a322f",
+              "file": "hover-zoom.spec.js",
+              "line": 33,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "meditation-screen.spec.js",
+      "file": "meditation-screen.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Meditation screen",
+          "file": "meditation-screen.spec.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "navigation check",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 516,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:30.739Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "da3e6fa8d88788ddc686-f8a22eebefd9cef3bfc0",
+              "file": "meditation-screen.spec.js",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "elements visible with accessibility attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 588,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:31.258Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "da3e6fa8d88788ddc686-2bb1d54dd962bcf841b5",
+              "file": "meditation-screen.spec.js",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "continue button navigates home",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6012,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:31.850Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "da3e6fa8d88788ddc686-d63c09e4e3d5fc336c98",
+              "file": "meditation-screen.spec.js",
+              "line": 33,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "narrow-layout.spec.js",
+      "file": "narrow-layout.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Responsive scenarios",
+          "file": "narrow-layout.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "renders ultra-narrow layout without horizontal scroll",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1122,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:37.873Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "423f2c11ef04e34dbebf-af370a2fa1ddd62be830",
+              "file": "narrow-layout.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "navigation.spec.js",
+      "file": "navigation.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "navigation links navigate to expected pages",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8271,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-11T11:40:39.002Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ce7c070a851ea64285fd-710f5b671e88ba79f732",
+          "file": "navigation.spec.js",
+          "line": 20,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "orchestrator-debug.spec.js",
+      "file": "orchestrator-debug.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Battle Orchestrator Debug",
+          "file": "orchestrator-debug.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "debug orchestrator initialization",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5430,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "=== DEBUG INFO ===\n"
+                        },
+                        {
+                          "text": "{\n  \"battleState\": \"waitingForMatchStart\",\n  \"hasStartButton\": false,\n  \"hasGetStateSnapshot\": true,\n  \"hasBattleStore\": true,\n  \"initDebug\": {\n    \"cliInitImported\": false,\n    \"cliInitExecuted\": false,\n    \"debugHooksImported\": false,\n    \"battleEventsImported\": false,\n    \"orchestratorImported\": false,\n    \"errors\": []\n  },\n  \"orchestratorErrors\": [],\n  \"orchestratorInitFailed\": false,\n  \"machineExists\": true,\n  \"machineState\": \"waitingForMatchStart\",\n  \"stateSnapshot\": {\n    \"state\": \"waitingForMatchStart\",\n    \"prev\": null,\n    \"event\": \"init\",\n    \"log\": [\n      {\n        \"from\": null,\n        \"to\": \"waitingForMatchStart\",\n        \"event\": \"init\",\n        \"ts\": 1757590847599\n      }\n    ]\n  }\n}\n"
+                        },
+                        {
+                          "text": "\n=== CONSOLE MESSAGES ===\n"
+                        },
+                        {
+                          "text": "[log] battleEngineFacade: createBattleEngine called\n"
+                        },
+                        {
+                          "text": "[log] battleEngineFacade: battleEngine set to BattleEngine\n"
+                        },
+                        {
+                          "text": "[log] battleEngineFacade: createBattleEngine called\n"
+                        },
+                        {
+                          "text": "[log] battleEngineFacade: returning existing engine instance\n"
+                        },
+                        {
+                          "text": "[log] battleEngineFacade: createBattleEngine called\n"
+                        },
+                        {
+                          "text": "[log] battleEngineFacade: returning existing engine instance\n"
+                        },
+                        {
+                          "text": "\n=== NETWORK REQUESTS ===\n"
+                        },
+                        {
+                          "text": "Failed requests:\n"
+                        },
+                        {
+                          "text": "\n=== ERRORS ===\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:47.282Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "92dc5d80e6b138a75bb5-4d15808a920315b75093",
+              "file": "orchestrator-debug.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "prd-reader.spec.js",
+      "file": "prd-reader.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PRD Reader page",
+          "file": "prd-reader.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "PRD reader basics",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 464,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:52.719Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e3f4e2114443335e39d3-fe9f95c945eca2bcd374",
+              "file": "prd-reader.spec.js",
+              "line": 21,
+              "column": 3
+            },
+            {
+              "title": "forward and back navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 548,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:53.187Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e3f4e2114443335e39d3-55fa55f142f2ef0e65f4",
+              "file": "prd-reader.spec.js",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "sidebar-tab-traversal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 485,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:53.744Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e3f4e2114443335e39d3-65d1b502ae689b94a370",
+              "file": "prd-reader.spec.js",
+              "line": 47,
+              "column": 3
+            },
+            {
+              "title": "arrow-key-content-switching",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 620,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:54.238Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e3f4e2114443335e39d3-5b3b01ccc3e2512ff083",
+              "file": "prd-reader.spec.js",
+              "line": 61,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "pseudo-japanese-toggle.spec.js",
+      "file": "pseudo-japanese-toggle.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Pseudo-Japanese toggle",
+          "file": "pseudo-japanese-toggle.spec.js",
+          "line": 13,
+          "column": 6,
+          "specs": [
+            {
+              "title": "toggle updates quote text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1312,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:54.866Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "73c7fd672329e229dcb3-7f6b96a30ae271d372ac",
+              "file": "pseudo-japanese-toggle.spec.js",
+              "line": 34,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "random-judoka.spec.js",
+      "file": "random-judoka.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "View Judoka screen",
+          "file": "random-judoka.spec.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "random judoka elements visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 553,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:56.185Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7d499da5661f450deb55-de0d7e0444722b345284",
+              "file": "random-judoka.spec.js",
+              "line": 11,
+              "column": 3
+            },
+            {
+              "title": "draw button accessible name constant",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 612,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:56.742Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7d499da5661f450deb55-9143b7b2e43af6200863",
+              "file": "random-judoka.spec.js",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "draw card populates container",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 758,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:57.359Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7d499da5661f450deb55-40c641b7f50a521ce83f",
+              "file": "random-judoka.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "draw button shows loading state",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1577,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:58.121Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7d499da5661f450deb55-f4f64a4ea03291d2c79d",
+              "file": "random-judoka.spec.js",
+              "line": 36,
+              "column": 3
+            },
+            {
+              "title": "portrait and landscape layouts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 564,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:40:59.701Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7d499da5661f450deb55-bc06e8a6e86fe4a95e35",
+              "file": "random-judoka.spec.js",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "draw button remains within viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 768,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:00.270Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7d499da5661f450deb55-fd2967b838cf64a0652d",
+              "file": "random-judoka.spec.js",
+              "line": 64,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "settings-collapse.spec.js",
+      "file": "settings-collapse.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Battle CLI settings collapse",
+          "file": "settings-collapse.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "settings toggle exists and toggles aria-expanded / body visibility",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1023,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:01.047Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a555601f606fb833362e-f3b9683e11b46eef3de9",
+              "file": "settings-collapse.spec.js",
+              "line": 4,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "settings.spec.js",
+      "file": "settings.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Settings page",
+          "file": "settings.spec.js",
+          "line": 48,
+          "column": 6,
+          "specs": [
+            {
+              "title": "settings elements visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 590,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:02.100Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90e6e24ee78bd89d0a34-b6d9ce303118d9ae8d1b",
+              "file": "settings.spec.js",
+              "line": 54,
+              "column": 3
+            },
+            {
+              "title": "controls expose correct labels",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 612,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:02.695Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90e6e24ee78bd89d0a34-1b0a78ac11412c099499",
+              "file": "settings.spec.js",
+              "line": 62,
+              "column": 3
+            },
+            {
+              "title": "tab order follows expected sequence",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 838,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:03.312Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90e6e24ee78bd89d0a34-e5977000b71cfcd3950c",
+              "file": "settings.spec.js",
+              "line": 91,
+              "column": 3
+            },
+            {
+              "title": "auto-select toggle reachable via keyboard tabbing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 848,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:04.153Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90e6e24ee78bd89d0a34-4bd1dd15dbc6ad4b2681",
+              "file": "settings.spec.js",
+              "line": 126,
+              "column": 3
+            },
+            {
+              "title": "controls meet minimum color contrast",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 548,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:05.005Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90e6e24ee78bd89d0a34-1939a8d523a21b21e81e",
+              "file": "settings.spec.js",
+              "line": 147,
+              "column": 3
+            },
+            {
+              "title": "controls meet 44px touch target size",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 544,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:05.558Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90e6e24ee78bd89d0a34-15e1ab0040d11f1f9fec",
+              "file": "settings.spec.js",
+              "line": 193,
+              "column": 3
+            },
+            {
+              "title": "toggles retro display mode",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 840,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:06.104Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90e6e24ee78bd89d0a34-ca783111cff82457ea02",
+              "file": "settings.spec.js",
+              "line": 212,
+              "column": 3
+            },
+            {
+              "title": "restore defaults resets settings",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1320,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:06.948Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "90e6e24ee78bd89d0a34-c1fa27d8839d37271d39",
+              "file": "settings.spec.js",
+              "line": 217,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "static-pages.spec.js",
+      "file": "static-pages.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Static pages",
+          "file": "static-pages.spec.js",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Create Judoka page loads and nav visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 364,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:08.295Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "beef11a04036cfcb183a-f7bd7b26cb702fd9e905",
+              "file": "static-pages.spec.js",
+              "line": 16,
+              "column": 5
+            },
+            {
+              "title": "Update Judoka page loads and nav visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 500,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:08.664Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "beef11a04036cfcb183a-0e35f011c35d4ebe3872",
+              "file": "static-pages.spec.js",
+              "line": 16,
+              "column": 5
+            },
+            {
+              "title": "Change Log page loads and nav visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 507,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:09.168Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "beef11a04036cfcb183a-025b6f48d8b9c478916a",
+              "file": "static-pages.spec.js",
+              "line": 16,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tooltip.spec.js",
+      "file": "tooltip.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Tooltip behavior",
+          "file": "tooltip.spec.js",
+          "line": 15,
+          "column": 6,
+          "specs": [
+            {
+              "title": "tooltip appears on hover and hides on mouse out",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 588,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:09.682Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ccba567f414da03df9e8-f6cb3af7886b69af8497",
+              "file": "tooltip.spec.js",
+              "line": 28,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "vector-search.spec.js",
+      "file": "vector-search.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Vector search page",
+          "file": "vector-search.spec.js",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "selecting a result loads context",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 700,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-11T11:41:10.281Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "530d219a41a519cc6eb1-58ed6af193f13d743892",
+              "file": "vector-search.spec.js",
+              "line": 23,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-11T11:38:46.833Z",
+    "duration": 144208.575,
+    "expected": 87,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
