@@ -60,13 +60,10 @@ describe("CarouselController (Enhanced Natural Interactions)", () => {
     const nextSpy = carousel.testApi.spyOnMethod("next");
     const prevSpy = carousel.testApi.spyOnMethod("prev");
 
-    // Test natural swipe gestures
-    carousel.testApi.swipeGesture("left", 100); // left swipe -> next
-    carousel.testApi.swipeGesture("right", 100); // right swipe -> prev
-    carousel.testApi.swipeGesture("left", 20); // small swipe should be ignored
-
-    // Allow time for gesture processing
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // Test natural swipe gestures (await for proper timing)
+    await carousel.testApi.swipeGesture("left", 100); // left swipe -> next
+    await carousel.testApi.swipeGesture("right", 100); // right swipe -> prev
+    await carousel.testApi.swipeGesture("left", 20); // small swipe should be ignored
 
     expect(nextSpy).toHaveBeenCalledTimes(1);
     expect(prevSpy).toHaveBeenCalledTimes(1);
@@ -82,11 +79,8 @@ describe("CarouselController (Enhanced Natural Interactions)", () => {
     // Test all interaction types work before destroy
     carousel.testApi.pressArrowKey("right");
     carousel.testApi.pressArrowKey("left");
-    carousel.testApi.swipeGesture("left", 100);
-    carousel.testApi.pointerGesture("right", 100);
-
-    // Allow time for gesture processing
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await carousel.testApi.swipeGesture("left", 100);
+    await carousel.testApi.pointerGesture("right", 100);
 
     expect(nextSpy).toHaveBeenCalledTimes(2);
     expect(prevSpy).toHaveBeenCalledTimes(2);
@@ -99,11 +93,8 @@ describe("CarouselController (Enhanced Natural Interactions)", () => {
 
     carousel.testApi.pressArrowKey("right");
     carousel.testApi.pressArrowKey("left");
-    carousel.testApi.swipeGesture("left", 100);
-    carousel.testApi.pointerGesture("right", 100);
-
-    // Allow time for gesture processing
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await carousel.testApi.swipeGesture("left", 100);
+    await carousel.testApi.pointerGesture("right", 100);
 
     expect(nextSpy).not.toHaveBeenCalled();
     expect(prevSpy).not.toHaveBeenCalled();

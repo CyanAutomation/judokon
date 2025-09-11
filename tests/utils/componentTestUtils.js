@@ -473,12 +473,20 @@ export function createTestCarousel(options = {}) {
         interactions.naturalKeyboardNavigation(container, key);
       },
 
-      swipeGesture: (direction, distance = 100) => {
-        interactions.naturalSwipe(container, direction, distance);
+      swipeGesture: async (direction, distance = 100) => {
+        return new Promise((resolve) => {
+          interactions.naturalSwipe(container, direction, distance);
+          // Wait for gesture to complete
+          setTimeout(resolve, 20);
+        });
       },
 
-      pointerGesture: (direction, distance = 100) => {
-        interactions.naturalPointerGesture(container, direction, distance);
+      pointerGesture: async (direction, distance = 100) => {
+        return new Promise((resolve) => {
+          interactions.naturalPointerGesture(container, direction, distance);
+          // Wait for gesture to complete
+          setTimeout(resolve, 20);
+        });
       },
 
       // Trigger scroll events naturally
