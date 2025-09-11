@@ -82,17 +82,17 @@
   .battle-content {
     padding: var(--space-sm);
   }
-  
+
   .battle-controls {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .battle-controls button {
     width: 100%;
     max-width: none;
   }
-  
+
   .battle-status-header {
     margin: var(--space-xs) 0;
   }

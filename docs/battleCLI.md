@@ -26,13 +26,14 @@ import { battleCLI, onKeyDown } from "src/pages/index.js";
 The battleCLI interface has been validated against PRD requirements with comprehensive Playwright testing:
 
 - **✅ Touch Targets**: All interactive elements meet 44px minimum height requirement
-- **✅ Responsive Grid**: CSS Grid layout adapts to viewport with proper column distribution  
+- **✅ Responsive Grid**: CSS Grid layout adapts to viewport with proper column distribution
 - **✅ Keyboard Navigation**: Arrow keys navigate stats, accessible focus management
 - **✅ Terminal Aesthetic**: Monospace typography with retro/CLI theme support
 - **✅ Accessibility**: ARIA live regions, proper labeling, screen reader support
 - **✅ Performance**: Optimized bundle loading, minimal layout shifts
 
 Key layout features:
+
 - `#cli-stats` container uses CSS Grid with responsive columns
 - `.cli-stat` elements maintain 44px minimum touch targets
 - Height reservations (`min-height: 8rem`) prevent layout instability
