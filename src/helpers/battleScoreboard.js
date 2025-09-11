@@ -21,6 +21,7 @@ let _handlers = [];
   } catch {}
 
 let _state = { current: null, lastOutcome: "none" };
+let _lastRoundIndex = 0;
 let _waitingTimer = null;
 let _waitingClearer = null;
 function _cancelWaiting() {
@@ -72,7 +73,10 @@ export function initBattleScoreboardAdapter() {
     try {
       const d = e?.detail || {};
       const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
-      if (typeof n === "number") updateRoundCounter(n);
+      if (typeof n === "number" && n > _lastRoundIndex) {
+        updateRoundCounter(n);
+        _lastRoundIndex = n;
+      }
       // Ensure root outcome resets to none at round start
       showMessage("", { outcome: true, outcomeType: "none" });
     } catch {}

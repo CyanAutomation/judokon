@@ -310,15 +310,13 @@ test.describe("Classic Battle CLI", () => {
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
     // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
 
     // Play first round; machine auto-advances outcome to cooldown
     await page.keyboard.press("1");
-    await page.waitForSelector('[data-battle-state="cooldown"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "cooldown", {
       timeout: 10000
     });
 
@@ -333,8 +331,7 @@ test.describe("Classic Battle CLI", () => {
 
     // Second click advances to next round
     await page.locator("body").click();
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
   });
@@ -355,30 +352,26 @@ test.describe("Classic Battle CLI", () => {
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
     // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
 
     const score = page.locator("#cli-score");
 
     await page.keyboard.press("1");
-    await page.waitForSelector('[data-battle-state="cooldown"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "cooldown", {
       timeout: 10000
     });
     const playerAfterRound = await score.getAttribute("data-score-player");
     const opponentAfterRound = await score.getAttribute("data-score-opponent");
     const cardBefore = await page.locator("#player-card ul").elementHandle();
 
-    await page.waitForSelector('[data-battle-state="cooldown"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "cooldown", {
       timeout: 10000
     });
     // Pressing Enter advances to the next round
     await page.keyboard.press("Enter");
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
     const cardAfter = await page.locator("#player-card ul").elementHandle();
@@ -406,19 +399,16 @@ test.describe("Classic Battle CLI", () => {
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
     // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
 
     await page.keyboard.press("1");
-    await page.waitForSelector('[data-battle-state="cooldown"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "cooldown", {
       timeout: 10000
     });
     await page.keyboard.press("Space");
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
   });
@@ -439,28 +429,24 @@ test.describe("Classic Battle CLI", () => {
     await page.goto("/src/pages/battleCLI.html?autostart=1&seed=1");
 
     // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
 
     const score = page.locator("#cli-score");
     await page.keyboard.press("1");
-    await page.waitForSelector('[data-battle-state="cooldown"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "cooldown", {
       timeout: 10000
     });
     const firstPlayer = await score.getAttribute("data-score-player");
     const firstOpponent = await score.getAttribute("data-score-opponent");
 
     await page.keyboard.press("Enter");
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
     await page.keyboard.press("1");
-    await page.waitForSelector('[data-battle-state="cooldown"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "cooldown", {
       timeout: 10000
     });
     const secondPlayer = await score.getAttribute("data-score-player");
@@ -486,8 +472,7 @@ test.describe("Classic Battle CLI", () => {
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
     // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
 
@@ -524,8 +509,7 @@ test.describe("Classic Battle CLI", () => {
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
     // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
 
@@ -553,8 +537,7 @@ test.describe("Classic Battle CLI", () => {
     await page.goto("/src/pages/battleCLI.html?autostart=1&seed=1");
 
     // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
 

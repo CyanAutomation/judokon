@@ -245,3 +245,23 @@ Step 4.3: Phase 4 validation
 - Outcome: PASS (3 tests across 3 files). Score display is now `aria-live=off` even when DOM is pre-built; outcome message remains stable across timer ticks.
 
 Pausing after Phase 4 for review.
+
+Phase 5 — progress log
+
+Step 5.1: Idempotent init + destroy cleanup
+- Actions: Made `initScoreboard` idempotent by returning early when a default instance already exists; `destroy()` now attempts to dispose the PRD adapter (if loaded) and leaves the DOM intact but stops future updates.
+- Outcome: Re-initialization no longer rebuilds internals; destroy halts adapter-driven updates.
+
+Step 5.2: Out-of-order guard (round.started)
+- Actions: Added `_lastRoundIndex` tracking in `src/helpers/battleScoreboard.js` and ignore `round.started` events with an index ≤ last seen.
+- Outcome: Round counter resists regressions from late/out-of-order events.
+
+Step 5.3: Add targeted tests
+- Actions: Added `tests/helpers/battleScoreboard.ordering.test.js` and `tests/components/Scoreboard.idempotency.test.js` to verify ordering guard and idempotent init/destroy behavior.
+- Outcome: Targeted coverage for new guards and lifecycle.
+
+Step 5.4: Phase 5 validation
+- Actions: Ran targeted tests: `npx vitest run tests/helpers/battleScoreboard.ordering.test.js tests/components/Scoreboard.idempotency.test.js --run`.
+- Outcome: PASS (3 tests across 2 files). Ordering guard holds; destroy stops scoreboard updates as expected; re-initialization does not clear message content.
+
+Pausing after Phase 5 for review.

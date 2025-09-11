@@ -152,7 +152,11 @@ export class Scoreboard {
   }
 
   destroy() {
-    /* no-op for simplified implementation */
+    try {
+      import("../helpers/battleScoreboard.js").then((m)=>{
+        try { if (typeof m.disposeBattleScoreboardAdapter === "function") m.disposeBattleScoreboardAdapter(); } catch {}
+      }).catch(()=>{});
+    } catch {}
   }
 }
 
@@ -171,6 +175,9 @@ export function initScoreboard(container, _controls) {
   void _controls;
   if (!container) {
     defaultScoreboard = new Scoreboard();
+    return;
+  }
+  if (defaultScoreboard) {
     return;
   }
   const model = new ScoreboardModel();
