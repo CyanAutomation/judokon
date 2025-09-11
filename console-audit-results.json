@@ -2626,336 +2626,232 @@
     {
       "file": "tests/helpers/dataUtils.test.js",
       "instances": 8,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/errorUtils.test.js",
       "instances": 5,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/classicBattle/debugIntegration.test.js",
       "instances": 5,
-      "methods": [
-        "log",
-        "warn",
-        "error",
-        "info",
-        "debug"
-      ]
+      "methods": ["log", "warn", "error", "info", "debug"]
     },
     {
       "file": "tests/helpers/timerService.cooldownGuard.test.js",
       "instances": 4,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/carouselController.test.js",
       "instances": 4,
-      "methods": [
-        "warn",
-        "error"
-      ]
+      "methods": ["warn", "error"]
     },
     {
       "file": "tests/helpers/tooltip.test.js",
       "instances": 3,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/showSettingsError.test.js",
       "instances": 3,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/cardUtils.test.js",
       "instances": 3,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/classicBattle/uiHelpers.missingElements.test.js",
       "instances": 3,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/tooltipViewerPage.test.js",
       "instances": 2,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/setupCarouselToggle.test.js",
       "instances": 2,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/settingsPage.test.js",
       "instances": 2,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/headlessMode.timing.test.js",
       "instances": 2,
-      "methods": [
-        "warn",
-        "error"
-      ]
+      "methods": ["warn", "error"]
     },
     {
       "file": "tests/config/loadSettings.test.js",
       "instances": 2,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/card/judokaCardInspector.test.js",
       "instances": 2,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/vectorSearchPage/errorHandling.test.js",
       "instances": 2,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/classicBattle/timerService.nextRound.test.js",
       "instances": 2,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/classicBattle/scheduleNextRound.test.js",
       "instances": 2,
-      "methods": [
-        "error",
-        "warn"
-      ]
+      "methods": ["error", "warn"]
     },
     {
       "file": "tests/helpers/classicBattle/scheduleNextRound.fallback.test.js",
       "instances": 2,
-      "methods": [
-        "error",
-        "warn"
-      ]
+      "methods": ["error", "warn"]
     },
     {
       "file": "tests/helpers/classicBattle/eventAliases.test.js",
       "instances": 2,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/classicBattle/debugLogger.test.js",
       "instances": 2,
-      "methods": [
-        "log",
-        "error"
-      ]
+      "methods": ["log", "error"]
     },
     {
       "file": "tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js",
       "instances": 2,
-      "methods": [
-        "error",
-        "warn"
-      ]
+      "methods": ["error", "warn"]
     },
     {
       "file": "tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js",
       "instances": 2,
-      "methods": [
-        "error",
-        "warn"
-      ]
+      "methods": ["error", "warn"]
     },
     {
       "file": "tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js",
       "instances": 2,
-      "methods": [
-        "error",
-        "warn"
-      ]
+      "methods": ["error", "warn"]
     },
     {
       "file": "tests/pages/battleCLI.handlers.test.js",
       "instances": 1,
-      "methods": [
-        "info"
-      ]
+      "methods": ["info"]
     },
     {
       "file": "tests/helpers/vectorSearch.loader.test.js",
       "instances": 1,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/timerService.onNextButtonClick.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/settingsUtils.test.js",
       "instances": 1,
-      "methods": [
-        "debug"
-      ]
+      "methods": ["debug"]
     },
     {
       "file": "tests/helpers/quoteBuilder.test.js",
       "instances": 1,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/populateCountryList.test.js",
       "instances": 1,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/navigationCache.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/motionUtils.test.js",
       "instances": 1,
-      "methods": [
-        "debug"
-      ]
+      "methods": ["debug"]
     },
     {
       "file": "tests/helpers/judokaCard.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/gameModeUtils.test.js",
       "instances": 1,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/displayMode.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/browseJudokaPage.test.js",
       "instances": 1,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/classicBattle/statDoubleClick.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/classicBattle/roundSelectModal.test.js",
       "instances": 1,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/classicBattle/roundResolverOnce.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/classicBattle/roundResolved.statButton.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/classicBattle/pauseTimer.test.js",
       "instances": 1,
-      "methods": [
-        "log"
-      ]
+      "methods": ["log"]
     },
     {
       "file": "tests/helpers/classicBattle/nextButton.countdownFinished.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/classicBattle/eventSystemIntegration.test.js",
       "instances": 1,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     },
     {
       "file": "tests/helpers/classicBattle/eventMigrationValidation.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/classicBattle/drawNextRound.test.js",
       "instances": 1,
-      "methods": [
-        "warn"
-      ]
+      "methods": ["warn"]
     },
     {
       "file": "tests/helpers/classicBattle/cardSelection.test.js",
       "instances": 1,
-      "methods": [
-        "error"
-      ]
+      "methods": ["error"]
     }
   ]
 }
