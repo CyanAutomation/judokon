@@ -47,7 +47,7 @@ test.describe("PRD Reader page", () => {
   test("sidebar-tab-traversal", async ({ page }) => {
     const items = page.locator(".sidebar-list li");
     const container = page.locator("#prd-content");
-
+    await expect(container).toBeFocused();
     await items.first().focus();
     await expect(items.first()).toBeFocused();
 
