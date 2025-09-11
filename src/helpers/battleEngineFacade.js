@@ -53,15 +53,6 @@ export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
  */
 let battleEngine;
 
-function requireEngine() {
-  if (!battleEngine) {
-    // Provide a clear error for consumers that call helpers before
-    // initialization.
-    throw new Error("Battle engine not initialized. Call createBattleEngine() first.");
-  }
-  return battleEngine;
-}
-
 /**
  * Internal guard that returns the active engine or throws if none exists.
  *
@@ -73,7 +64,14 @@ function requireEngine() {
  * @throws {Error} When no engine has been created.
  * @returns {IBattleEngine}
  */
-// (The function implementation appears above; this comment supplies the required JSDoc.)
+function requireEngine() {
+  if (!battleEngine) {
+    // Provide a clear error for consumers that call helpers before
+    // initialization.
+    throw new Error("Battle engine not initialized. Call createBattleEngine() first.");
+  }
+  return battleEngine;
+}
 
 /**
  * Create a new battle engine instance.
