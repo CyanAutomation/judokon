@@ -4,6 +4,7 @@ import {
   getCurrentBattleState
 } from "./helpers/battleStateHelper.js";
 import { waitForBattleState } from "./fixtures/waits.js";
+import { withMutedConsole } from "../tests/utils/console.js";
 
 test.describe("Classic Battle CLI", () => {
   test.beforeEach(async ({ page }) => {
@@ -36,7 +37,7 @@ test.describe("Classic Battle CLI", () => {
     if ((await startBtn.count()) > 0) await startBtn.click();
   });
 
-  test("loads without console errors", async ({ page }) => {
+  test("loads without console errors", async ({ page }) => withMutedConsole(async () => {
     const errors = [];
     const logs = [];
     page.on("pageerror", (err) => errors.push(err.message));
@@ -52,15 +53,15 @@ test.describe("Classic Battle CLI", () => {
     });
 
     if (hasTestAPI) {
-      console.log("✅ Test API available for battle state checking");
+      // console.log("✅ Test API available for battle state checking");
     } else {
-      console.log("ℹ️ Test API not available, using DOM-based approach");
+      // console.log("ℹ️ Test API not available, using DOM-based approach");
     }
 
-    console.log(
-      "Console logs:",
-      logs.filter((log) => log.includes("[RoundSelectModal]") || log.includes("[CLI]"))
-    );
+    // console.log(
+    //   "Console logs:",
+    //   logs.filter((log) => log.includes("[RoundSelectModal]") || log.includes("[CLI]"))
+    // );
 
     // Check for console errors first
     expect(errors).toEqual([]);
@@ -69,13 +70,13 @@ test.describe("Classic Battle CLI", () => {
     try {
       await waitForBattleState(page, "waitingForPlayerAction", 5000);
     } catch {
-      console.log(
-        "Battle did not reach waitingForPlayerAction state, but no console errors detected"
-      );
+      // console.log(
+      //   "Battle did not reach waitingForPlayerAction state, but no console errors detected"
+      // );
     }
-  });
+  }, ["log", "warn", "error"]));
 
-  test("state badge hidden when flag disabled", async ({ page }) => {
+  test("state badge hidden when flag disabled", async ({ page }) => withMutedConsole(async () => {
     // Use Test API for faster initialization check instead of arbitrary timeout
     const stateInfo = await page.evaluate(() => {
       if (window.__TEST_API && window.__TEST_API.state) {
@@ -85,7 +86,7 @@ test.describe("Classic Battle CLI", () => {
       return { hasTestAPI: false, battleState: null };
     });
 
-    console.log("Battle initialization state:", stateInfo);
+    // console.log("Battle initialization state:", stateInfo);
 
     // Either auto-start should work, or we need to click a start button
     const startBtn = page.locator("#start-match-button");
@@ -93,7 +94,7 @@ test.describe("Classic Battle CLI", () => {
 
     if (startBtnCount > 0) {
       // Start button is present, click it
-      console.log("Found start button, clicking it");
+      // console.log("Found start button, clicking it");
       await startBtn.click();
 
       // Use Test API to check state transition instead of arbitrary wait
@@ -107,14 +108,14 @@ test.describe("Classic Battle CLI", () => {
             { timeout: 3000 }
           )
           .catch(() => {
-            console.log("Battle state didn't transition quickly, continuing test");
+            // console.log("Battle state didn't transition quickly, continuing test");
           });
       } else {
         // Fallback: brief wait for DOM updates
         await page.waitForTimeout(500);
       }
     } else {
-      console.log("No start button found, assuming auto-start should work");
+      // console.log("No start button found, assuming auto-start should work");
     }
 
     // Check the current battle state for debugging
@@ -128,18 +129,18 @@ test.describe("Classic Battle CLI", () => {
             : "not available"
       };
     });
-    console.log("Current battle state:", JSON.stringify(currentState, null, 2));
+    // console.log("Current battle state:", JSON.stringify(currentState, null, 2));
 
     // If we're still in waitingForMatchStart, try to trigger the start manually
     if (currentState.bodyDataset === "waitingForMatchStart") {
-      console.log("Battle still in waitingForMatchStart, attempting manual start");
+      // console.log("Battle still in waitingForMatchStart, attempting manual start");
 
       // Try to dispatch the start event manually
       await page.evaluate(() => {
         try {
           // Try different ways to start the battle
           if (typeof window.emitBattleEvent === "function") {
-            console.log("Emitting startClicked event");
+            // console.log("Emitting startClicked event");
             window.emitBattleEvent("startClicked");
           }
 
@@ -147,11 +148,11 @@ test.describe("Classic Battle CLI", () => {
           const getter = window.debugHooks?.readDebugState?.("getClassicBattleMachine");
           const machine = typeof getter === "function" ? getter() : getter;
           if (machine?.dispatch) {
-            console.log("Dispatching startClicked to machine");
+            // console.log("Dispatching startClicked to machine");
             machine.dispatch("startClicked");
           }
         } catch (err) {
-          console.log("Failed to manually start battle:", err.message);
+          // console.log("Failed to manually start battle:", err.message);
         }
       });
 
@@ -163,7 +164,7 @@ test.describe("Classic Battle CLI", () => {
         return "unknown";
       });
 
-      console.log("Final battle state after manual start attempt:", finalState);
+      // console.log("Final battle state after manual start attempt:", finalState);
     }
 
     // Check that the battle state badge is hidden when flag is disabled
@@ -175,11 +176,11 @@ test.describe("Classic Battle CLI", () => {
     try {
       await waitForBattleState(page, "waitingForPlayerAction", 5000);
     } catch {
-      console.log("Battle did not reach waitingForPlayerAction state, but that's OK for this test");
+      // console.log("Battle did not reach waitingForPlayerAction state, but that's OK for this test");
     }
-  });
+  }, ["log", "warn", "error"]));
 
-  test("state badge visible when flag enabled", async ({ page }) => {
+  test("state badge visible when flag enabled", async ({ page }) => withMutedConsole(async () => {
     // Set up feature flag before page load to avoid runtime changes
     await page.addInitScript(() => {
       // Override feature flags before page initialization
@@ -210,15 +211,15 @@ test.describe("Classic Battle CLI", () => {
 
     // Check current state using Test API
     const currentState = await getCurrentBattleState(page);
-    console.log(`✅ Battle reached state: ${currentState} via Test API`);
+    // console.log(`✅ Battle reached state: ${currentState} via Test API`);
 
     // Now check that badge is visible and has correct content
     const badge = page.locator("#battle-state-badge");
     await expect(badge).toBeVisible();
     await expect(badge).toContainText(/State:\s*waitingForPlayerAction/);
-  });
+  }, ["log", "warn", "error"]));
 
-  test("verbose log toggles and records transitions", async ({ page }) => {
+  test("verbose log toggles and records transitions", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       // Set up localStorage for battle initialization
       try {
@@ -266,9 +267,9 @@ test.describe("Classic Battle CLI", () => {
     // Turn verbose off hides the section
     await toggle.uncheck();
     await expect(page.locator("#cli-verbose-section")).toBeHidden();
-  });
+  }, ["log", "warn", "error"]));
 
-  test("help panel toggles via keyboard and close button", async ({ page }) => {
+  test("help panel toggles via keyboard and close button", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
@@ -292,9 +293,9 @@ test.describe("Classic Battle CLI", () => {
     await expect(panel).toBeVisible();
     await page.locator("#cli-shortcuts-close").click();
     await expect(panel).toBeHidden();
-  });
+  }, ["log", "warn", "error"]));
 
-  test("closing help panel ignores next advance click", async ({ page }) => {
+  test("closing help panel ignores next advance click", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
@@ -334,9 +335,9 @@ test.describe("Classic Battle CLI", () => {
     await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
-  });
+  }, ["log", "warn", "error"]));
 
-  test("plays a full round and skips cooldown", async ({ page }) => {
+  test("plays a full round and skips cooldown", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
@@ -381,9 +382,9 @@ test.describe("Classic Battle CLI", () => {
     expect(playerAfterCooldown).toBe(playerAfterRound);
     expect(opponentAfterCooldown).toBe(opponentAfterRound);
     expect(cardAfter).not.toBe(cardBefore);
-  });
+  }, ["log", "warn", "error"]));
 
-  test("skips cooldown with Space key", async ({ page }) => {
+  test("skips cooldown with Space key", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
@@ -411,9 +412,9 @@ test.describe("Classic Battle CLI", () => {
     await waitForBattleStateHelper(page, "waitingForPlayerAction", {
       timeout: 10000
     });
-  });
+  }, ["log", "warn", "error"]));
 
-  test("scoreboard updates after each round", async ({ page }) => {
+  test("scoreboard updates after each round", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
@@ -454,9 +455,9 @@ test.describe("Classic Battle CLI", () => {
     expect(Number(secondPlayer) + Number(secondOpponent)).toBeGreaterThanOrEqual(
       Number(firstPlayer) + Number(firstOpponent)
     );
-  });
+  }, ["log", "warn", "error"]));
 
-  test("allows tab navigation without invalid key messages", async ({ page }) => {
+  test("allows tab navigation without invalid key messages", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
@@ -491,9 +492,9 @@ test.describe("Classic Battle CLI", () => {
     await expect(countdown).not.toContainText("Invalid key");
     await page.keyboard.press("Shift+Tab");
     await expect(countdown).not.toContainText("Invalid key");
-  });
+  }, ["log", "warn", "error"]));
 
-  test("returns to lobby after quitting", async ({ page }) => {
+  test("returns to lobby after quitting", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
@@ -519,9 +520,9 @@ test.describe("Classic Battle CLI", () => {
     await confirm.click();
     await page.waitForURL("**/index.html");
     await expect(page.locator(".home-screen")).toBeVisible();
-  });
+  }, ["log", "warn", "error"]));
 
-  test("shows restart control after match completes", async ({ page }) => {
+  test("shows restart control after match completes", async ({ page }) => withMutedConsole(async () => {
     await page.addInitScript(() => {
       try {
         localStorage.setItem("battleCLI.pointsToWin", "5");
@@ -546,5 +547,5 @@ test.describe("Classic Battle CLI", () => {
       globalThis.__classicBattleEventTarget?.dispatchEvent(new CustomEvent("matchOver"));
     });
     await expect(page.locator("#play-again-button")).toBeVisible();
-  });
+  }, ["log", "warn", "error"]));
 });

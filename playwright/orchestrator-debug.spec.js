@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { withMutedConsole } from "../tests/utils/console.js";
 
 test.describe("Battle Orchestrator Debug", () => {
-  test("debug orchestrator initialization", async ({ page }) => {
+  test("debug orchestrator initialization", async ({ page }) => withMutedConsole(async () => {
     // Capture console output and network requests
     const consoleMessages = [];
     const errors = [];
@@ -196,5 +197,5 @@ test.describe("Battle Orchestrator Debug", () => {
     }
 
     expect(true).toBe(true);
-  });
+  }, ["log", "warn", "error"]));
 });

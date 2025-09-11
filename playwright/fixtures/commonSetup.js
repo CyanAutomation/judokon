@@ -30,13 +30,13 @@ export const test = base.extend({
         /Failed to fetch (navigation items|game modes), falling back to import/i.test(text);
       if (isNoisyResource404 || isBenignCountryMapping || isBenignNavFallback) return;
       try {
-        console.log(`[browser:${type}]`, text);
+        // console.log(`[browser:${type}]`, text);
       } catch {}
     });
     page.on("pageerror", (err) => {
       try {
-        console.log(`[pageerror] ${err?.message || err}`);
-        if (err?.stack) console.log(err.stack);
+        // console.log(`[pageerror] ${err?.message || err}`);
+        // if (err?.stack) console.log(err.stack);
       } catch {}
     });
     page.on("requestfailed", (req) => {
@@ -48,7 +48,7 @@ export const test = base.extend({
         const isAborted = err.includes("ERR_ABORTED");
         const isStatic = /\.(png|jpg|jpeg|svg|ico|woff2?|css)$/i.test(url);
         if (isAborted || isStatic) return;
-        console.log(`[requestfailed] ${req.method()} ${url} ${err}`);
+        // console.log(`[requestfailed] ${req.method()} ${url} ${err}`);
       } catch {}
     });
 

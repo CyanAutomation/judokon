@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { resolve } from "path";
+import { withMutedConsole } from "../tests/utils/console.js";
 
-test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) => {
+test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) => withMutedConsole(async () => {
   const file = "file://" + resolve(process.cwd(), "src/pages/battleCLI.html");
   await page.goto(file);
 
@@ -17,7 +18,7 @@ test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) =>
   const hasTestAPI = await page.evaluate(() => {
     return typeof window.__TEST_API !== "undefined";
   });
-  console.log("CLI Test API available:", hasTestAPI);
+  // console.log("CLI Test API available:", hasTestAPI);
 
   // Wait for natural stat loading instead of replacing DOM
   const stats = page.locator("#cli-stats .cli-stat");
@@ -26,7 +27,7 @@ test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) =>
   expect(statCount).toBeGreaterThan(0);
 
   // Test actual keyboard interaction with real stats (not replaced DOM)
-  console.log(`Found ${statCount} real stats, testing keyboard interaction`);
+  // console.log(`Found ${statCount} real stats, testing keyboard interaction`);
 
   // Test keyboard stat selection using actual application handlers
   await page.keyboard.press("1");
@@ -38,11 +39,11 @@ test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) =>
   });
 
   if (firstStatSelected) {
-    console.log("✅ Keyboard stat selection working with real handlers");
+    // console.log("✅ Keyboard stat selection working with real handlers");
     const first = page.locator("#cli-stats .cli-stat").first();
     await expect(first).toHaveClass(/selected/);
   } else {
-    console.log("ℹ️ Keyboard stat selection not implemented or different pattern");
+    // console.log("ℹ️ Keyboard stat selection not implemented or different pattern");
     // Test still passes - we're verifying no DOM manipulation crashes occur
   }
 
@@ -56,14 +57,14 @@ test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) =>
     const helpBtn = page.locator("[data-action='toggle-shortcuts']");
     const helpBtnCount = await helpBtn.count();
     if (helpBtnCount > 0) {
-      console.log("Using help button fallback");
+      // console.log("Using help button fallback");
       await helpBtn.first().click();
       // Test still passes - verifying no crashes with real interactions
     } else {
-      console.log("ℹ️ Help panel not implemented or different pattern");
+      // console.log("ℹ️ Help panel not implemented or different pattern");
     }
   } else {
-    console.log("✅ Help panel toggle working with 'h' key");
+    // console.log("✅ Help panel toggle working with 'h' key");
     // Hide it again if we opened it
     await page.keyboard.press("h");
     await expect(shortcuts).toBeHidden();
@@ -71,7 +72,7 @@ test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) =>
 
   // Test quit modal with actual application handlers
   await page.keyboard.press("q");
-  console.log("✅ Quit key pressed - testing real quit modal behavior");
+  // console.log("✅ Quit key pressed - testing real quit modal behavior");
 
   // Verify page stability and no crashes from real quit handling
   await expect(page).toHaveURL(/battleCLI.html/);
@@ -81,8 +82,8 @@ test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) =>
   const modalVisible = await quitModal.isVisible().catch(() => false);
 
   if (modalVisible) {
-    console.log("✅ Quit modal appeared with real handlers");
+    // console.log("✅ Quit modal appeared with real handlers");
   } else {
-    console.log("ℹ️ Quit modal not implemented or different pattern");
+    // console.log("ℹ️ Quit modal not implemented or different pattern");
   }
-});
+}, ["log", "warn", "error"]));

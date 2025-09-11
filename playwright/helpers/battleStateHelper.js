@@ -24,7 +24,7 @@ export async function waitForBattleState(page, expectedState, options = {}) {
   });
 
   if (hasTestAPI) {
-    console.log(`⚡ Using Test API to wait for state: ${expectedState}`);
+    // console.log(`⚡ Using Test API to wait for state: ${expectedState}`);
     // Use Test API for fast, direct state checking
     try {
       await page.waitForFunction(
@@ -37,12 +37,12 @@ export async function waitForBattleState(page, expectedState, options = {}) {
       );
       return;
     } catch (error) {
-      console.log(
-        `⚠️ Test API state check failed, current state:`,
-        await page.evaluate(() => {
-          return window.__TEST_API.state.getBattleState();
-        })
-      );
+      // console.log(
+      //   `⚠️ Test API state check failed, current state:`,
+      //   await page.evaluate(() => {
+      //     return window.__TEST_API.state.getBattleState();
+      //   })
+      // );
       if (!allowFallback) {
         throw error;
       }
@@ -50,7 +50,7 @@ export async function waitForBattleState(page, expectedState, options = {}) {
   }
 
   if (allowFallback) {
-    console.log(`🔄 Falling back to DOM polling for state: ${expectedState}`);
+    // console.log(`🔄 Falling back to DOM polling for state: ${expectedState}`);
     // Fallback to DOM polling if Test API unavailable or failed
     await page.waitForSelector(`[data-battle-state="${expectedState}"]`, { timeout });
   } else {
@@ -90,7 +90,7 @@ export async function triggerStateTransition(page, event) {
         window.__TEST_API.state.triggerStateTransition(eventName);
         return true;
       } catch (error) {
-        console.log("State transition failed:", error);
+        // console.log("State transition failed:", error);
         return false;
       }
     }

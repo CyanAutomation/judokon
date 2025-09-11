@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { withMutedConsole } from "../../tests/utils/console.js";
 
 test.describe("State badge and debug panel", () => {
-  test("badge visible and debug panel present with flags", async ({ page }) => {
+  test("badge visible and debug panel present with flags", async ({ page }) => withMutedConsole(async () => {
     // Listen for all console messages
     const messages = [];
     page.on("console", (msg) => {
@@ -59,5 +60,5 @@ test.describe("State badge and debug panel", () => {
 
     await expect(page.locator("#battle-state-badge")).toBeVisible();
     await expect(page.locator("#battle-state-badge")).toHaveText("Lobby");
-  });
+  }, ["log", "warn", "error"]));
 });
