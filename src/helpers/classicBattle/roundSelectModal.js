@@ -173,7 +173,8 @@ function applyGameModePositioning(modal) {
   if (!backdrop) return;
 
   const cliHeader = document.getElementById("cli-header") || document.querySelector(".cli-header");
-  const classicHeader = document.querySelector('header[role="banner"]') || document.querySelector("header");
+  const classicHeader =
+    document.querySelector('header[role="banner"]') || document.querySelector("header");
   const isCliMode = Boolean(cliHeader);
   const header = (isCliMode ? cliHeader : classicHeader) || null;
 
@@ -199,8 +200,10 @@ function applyGameModePositioning(modal) {
 
   // Track resize/orientation while modal is mounted; clean up on close
   let resizeId = null;
-  const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : (cb) => setTimeout(cb, 0);
-  const caf = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : (id) => clearTimeout(id);
+  const raf =
+    typeof requestAnimationFrame === "function" ? requestAnimationFrame : (cb) => setTimeout(cb, 0);
+  const caf =
+    typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : (id) => clearTimeout(id);
   const onResize = () => {
     if (resizeId) caf(resizeId);
     resizeId = raf(updateInset);
