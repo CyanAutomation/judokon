@@ -1,4 +1,5 @@
 import stateHandlers from "./stateHandlers.js";
+import { autoContinue, setAutoContinue } from "./autoContinue.js";
 /**
  * Re-export of the `stateHandlers` object, which maps battle state names
  * to their corresponding `onEnter` and `onExit` handler functions.
@@ -63,7 +64,7 @@ export { waitingForMatchStartEnter } from "./stateHandlers/waitingForMatchStartE
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { waitingForMatchStartEnter };
+// (Removed duplicate re-export)
 export { matchStartEnter } from "./stateHandlers/matchStartEnter.js";
 /**
  * Handler for entering the `matchStart` state.
@@ -81,7 +82,7 @@ export { matchStartEnter } from "./stateHandlers/matchStartEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { matchStartEnter };
+// (Removed duplicate re-export)
 export { cooldownEnter } from "./stateHandlers/cooldownEnter.js";
 /**
  * Handler for entering the `cooldown` state.
@@ -95,7 +96,7 @@ export { cooldownEnter } from "./stateHandlers/cooldownEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { cooldownEnter };
+// (Removed duplicate re-export)
 export { roundStartEnter } from "./stateHandlers/roundStartEnter.js";
 /**
  * Handler for entering the `roundStart` state.
@@ -109,7 +110,7 @@ export { roundStartEnter } from "./stateHandlers/roundStartEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { roundStartEnter };
+// (Removed duplicate re-export)
 export { waitingForPlayerActionEnter } from "./stateHandlers/waitingForPlayerActionEnter.js";
 /**
  * Handler for entering the `waitingForPlayerAction` state.
@@ -124,7 +125,7 @@ export { waitingForPlayerActionEnter } from "./stateHandlers/waitingForPlayerAct
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { waitingForPlayerActionEnter };
+// (Removed duplicate re-export)
 export { waitingForPlayerActionExit } from "./stateHandlers/waitingForPlayerActionExit.js";
 /**
  * Handler for exiting the `waitingForPlayerAction` state.
@@ -136,7 +137,7 @@ export { waitingForPlayerActionExit } from "./stateHandlers/waitingForPlayerActi
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { waitingForPlayerActionExit };
+// (Removed duplicate re-export)
 export { roundDecisionEnter } from "./stateHandlers/roundDecisionEnter.js";
 /**
  * Handler for entering the `roundDecision` state.
@@ -149,7 +150,7 @@ export { roundDecisionEnter } from "./stateHandlers/roundDecisionEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { roundDecisionEnter };
+// (Removed duplicate re-export)
 export { roundDecisionExit } from "./stateHandlers/roundDecisionExit.js";
 /**
  * Handler for exiting the `roundDecision` state.
@@ -161,7 +162,7 @@ export { roundDecisionExit } from "./stateHandlers/roundDecisionExit.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { roundDecisionExit };
+// (Removed duplicate re-export)
 export { roundOverEnter } from "./stateHandlers/roundOverEnter.js";
 /**
  * Handler for entering the `roundOver` state.
@@ -175,7 +176,7 @@ export { roundOverEnter } from "./stateHandlers/roundOverEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { roundOverEnter };
+// (Removed duplicate re-export)
 export { matchDecisionEnter } from "./stateHandlers/matchDecisionEnter.js";
 /**
  * Handler for entering the `matchDecision` state.
@@ -188,7 +189,7 @@ export { matchDecisionEnter } from "./stateHandlers/matchDecisionEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { matchDecisionEnter };
+// (Removed duplicate re-export)
 export { matchOverEnter } from "./stateHandlers/matchOverEnter.js";
 /**
  * Handler for entering the `matchOver` state.
@@ -201,7 +202,7 @@ export { matchOverEnter } from "./stateHandlers/matchOverEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { matchOverEnter };
+// (Removed duplicate re-export)
 export { interruptRoundEnter } from "./stateHandlers/interruptRoundEnter.js";
 /**
  * Handler for entering the `interruptRound` state.
@@ -217,7 +218,7 @@ export { interruptRoundEnter } from "./stateHandlers/interruptRoundEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { interruptRoundEnter };
+// (Removed duplicate re-export)
 export { interruptMatchEnter } from "./stateHandlers/interruptMatchEnter.js";
 /**
  * Handler for entering the `interruptMatch` state.
@@ -233,7 +234,7 @@ export { interruptMatchEnter } from "./stateHandlers/interruptMatchEnter.js";
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { interruptMatchEnter };
+// (Removed duplicate re-export)
 export { roundModificationEnter } from "./stateHandlers/roundModificationEnter.js";
 /**
  * Handler for entering the `roundModification` state.
@@ -247,7 +248,7 @@ export { roundModificationEnter } from "./stateHandlers/roundModificationEnter.j
  * @param {object} context - The state machine context.
  * @returns {Promise<void>}
  */
-export { roundModificationEnter };
+// (Removed duplicate re-export)
 
 /**
  * Look up the onEnter handler for a state.

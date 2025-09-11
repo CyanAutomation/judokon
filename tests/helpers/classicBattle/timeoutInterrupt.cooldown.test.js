@@ -24,8 +24,9 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
         }),
         start: vi.fn(() => {
           if (tickHandler) {
-            // Schedule countdown tick to fire when fake timers advance
-            setTimeout(() => tickHandler(1), 1000);
+            // Use vi.advanceTimersByTime since we're in fake timer environment
+            vi.setSystemTime(Date.now() + 1000);
+            tickHandler(1);
           }
         }),
         stop: vi.fn(),
@@ -47,8 +48,9 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
       }),
       start: vi.fn(() => {
         if (expiredHandler) {
-          // Schedule timer expiry to fire when fake timers advance
-          setTimeout(expiredHandler, 1000);
+          // Use vi.advanceTimersByTime since we're in fake timer environment
+          vi.setSystemTime(Date.now() + 1000);
+          expiredHandler();
         }
       })
     };
@@ -83,9 +85,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
   });
 
   it("advances from cooldown after interrupt with 1s auto-advance", async () => {
-    // Initialize classic battle test environment after mocks
-    const { initClassicBattleTest } = await import("./initClassicBattle.js");
-    await initClassicBattleTest({ afterMock: true });
+    // battleMod is already initialized in beforeEach - don't call initClassicBattleTest again
     
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
