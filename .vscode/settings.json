@@ -2,4 +2,8 @@
   "github-actions.workflows.pinned.workflows": [".github/workflows/test.yml"],
   "remote.restoreForwardedPorts": true,
   "amazonQ.telemetry": false
+  ,
+  "files.associations": {
+    "eslint-dry.json": "plaintext"
+  }
 }

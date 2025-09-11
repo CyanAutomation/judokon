@@ -114,6 +114,10 @@ jobs:
             }
           '
 
+      # Ensure the dry-run report is not committed; it's only for stats
+      - name: Remove dry ESLint report
+        run: rm -f eslint-dry.json || true
+
       - name: Run ESLint with auto-fix
         run: npx eslint . --fix --cache
 
