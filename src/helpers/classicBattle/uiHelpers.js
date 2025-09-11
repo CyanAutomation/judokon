@@ -513,10 +513,12 @@ export function removeBackdrops(store) {
  * Remove modal backdrops and destroy any active quit modal stored on `store`.
  *
  * @pseudocode
- * 1. Remove all elements matching `.modal-backdrop` from the DOM.
- * 2. If `store.quitModal` exists, call its `destroy()` method and nullify the reference.
+ * 1. Query all elements with the class `.modal-backdrop` and remove them from the DOM.
+ * 2. Check if a `quitModal` exists in the provided `store`.
+ * 3. If it exists, call its `destroy()` method to clean up its DOM elements and event listeners.
+ * 4. Set `store.quitModal` to `null` to release the reference.
  *
- * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store]
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store] - Optional store containing a reference to the quit modal.
  * @returns {void}
  */
 
@@ -524,9 +526,14 @@ export function removeBackdrops(store) {
  * Replace the Next button with a fresh disabled clone and wire the click handler.
  *
  * @pseudocode
- * 1. Locate `#next-button`.
- * 2. Clone it, disable the clone, remove `data-next-ready`, and add `onNextButtonClick`.
- * 3. Replace the original button with the clone.
+ * 1. Attempt to locate the `#next-button` element in the DOM.
+ * 2. If the button is found:
+ *    a. Create a deep clone of the button.
+ *    b. Disable the cloned button.
+ *    c. Remove the `data-next-ready` attribute from the clone.
+ *    d. Attach the `onNextButtonClick` event listener to the cloned button.
+ *    e. Replace the original button in the DOM with the newly created clone.
+ * @returns {void}
  */
 export function resetNextButton() {
   let nextBtn;
@@ -557,8 +564,10 @@ export function resetNextButton() {
  * Replace the Quit button with a fresh clone to drop existing listeners.
  *
  * @pseudocode
- * 1. Locate `#quit-match-button`.
- * 2. Replace it with an inert clone.
+ * 1. Attempt to locate the `#quit-match-button` element in the DOM.
+ * 2. If the button is found, replace it with a deep clone of itself. This effectively
+ *    removes all previously attached event listeners from the original button.
+ * @returns {void}
  */
 export function resetQuitButton() {
   let quitBtn;
@@ -608,124 +617,48 @@ export function clearScoreboardAndMessages() {
  * @returns {void}
  */
 
+/**
+ * Initializes the stat selection buttons, wiring up click handlers and hotkeys.
+ *
+ * @pseudocode
+ * 1. Get the stat buttons container (`#stat-buttons`). Throw an error if not found.
+ * 2. Get all stat buttons within the container. If none, resolve `statButtonsReadyPromise` and return inert enable/disable functions.
+ * 3. Define `resetReady` to create a new `statButtonsReadyPromise` and expose its resolver globally.
+ * 4. Define `enable` function: enables stat buttons, resolves `statButtonsReadyPromise`, and wires hotkeys.
+ * 5. Define `disable` function: disables stat buttons, resets `statButtonsReadyPromise`, and detaches hotkeys.
+ * 6. Call `resetReady()` and `disable()` initially.
+ * 7. For each stat button:
+ *    a. Attach a click handler that:
+ *       i. Prevents action if disabled.
+ *       ii. Calls `handleStatSelection` (guarded).
+ *       iii. Shows a snackbar message (guarded).
+ *       iv. Disables all stat buttons (guarded).
+ *    b. Attach a keydown handler for Enter/Space to trigger the click handler.
+ * 8. Wire initial hotkeys.
+ * 9. Return an object with `enable` and `disable` functions.
+ *
+ * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} store - The battle state store.
+ * @returns {{enable: Function, disable: Function}} An object with enable and disable functions for the stat buttons.
+ */
 export function initStatButtons(store) {
-  const statContainer = document.getElementById("stat-buttons");
-  if (!statContainer) {
-    throw new Error("initStatButtons: #stat-buttons missing");
-  }
 
-  const statButtons = statContainer.querySelectorAll("button");
-  if (!statButtons.length) {
-    window.statButtonsReadyPromise = Promise.resolve();
-    resolveStatButtonsReady();
-    guard(() => console.warn("[uiHelpers] #stat-buttons has no buttons"));
-    return { enable: () => {}, disable: () => {} };
-  }
-
-  let resolveReady;
-  const resetReady = () => {
-    window.statButtonsReadyPromise = new Promise((r) => {
-      resolveReady = r;
-      window.__resolveStatButtonsReady = r;
-    });
-  };
-
-  let detachHotkeys = null;
-
-  const enable = () => {
-    enableStatButtons(statButtons, statContainer);
-    resolveReady?.();
-    if (!detachHotkeys) detachHotkeys = wireStatHotkeys(statButtons);
-  };
-  const disable = () => {
-    disableStatButtons(statButtons, statContainer);
-    resetReady();
-    detachHotkeys?.();
-    detachHotkeys = null;
-  };
-
-  resetReady();
-  disable();
-
-  statButtons.forEach((btn) => {
-    const statName = btn.dataset.stat;
-    const clickHandler = () => {
-      if (btn.disabled) return;
-      // Invoke selection logic immediately so tests observing the call
-      // don't need to wait for animation frames. Keep visual updates
-      // deferred to the next frame to avoid mid-dispatch UI changes.
-      guard(() => {
-        Promise.resolve(handleStatSelection(store, statName)).catch(() => {});
-      });
-      // Show snackbar immediately so tests and observers can see the message
-      // synchronously.
-      guard(() => {
-        const label = String(btn.textContent || "").trim();
-        showSnackbar(t("ui.youPicked", { stat: label }));
-      });
-      // Disable buttons right away; selected class is applied via the
-      // 'statSelected' event to keep a single source of truth.
-      guard(disable);
-    };
-    btn.addEventListener("click", clickHandler);
-    btn.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        clickHandler();
-      }
-    });
-  });
-
-  detachHotkeys = wireStatHotkeys(statButtons);
-
-  return { enable, disable };
-}
-
+/**
+ * Applies localized stat names and accessibility attributes to stat buttons.
+ *
+ * @pseudocode
+ * 1. Load stat names asynchronously.
+ * 2. Iterate over the loaded stat names and their corresponding STATS keys.
+ * 3. For each stat:
+ *    a. Construct a selector for the stat button.
+ *    b. Handle potential errors during selector construction or DOM query.
+ *    c. If the button is found:
+ *       i. Set its `textContent` to the localized stat name.
+ *       ii. Set its `aria-label` for accessibility.
+ *       iii. Create or update a visually hidden description for screen readers, linking it via `aria-describedby`.
+ *
+ * @returns {Promise<void>} A promise that resolves when stat labels are applied.
+ */
 export async function applyStatLabels() {
-  const names = await loadStatNames();
-  names.forEach((n, i) => {
-    const key = STATS[i];
-    // Defensive: ensure `key` is a string before building a selector. If not, record for diagnostics.
-    let btn = null;
-    try {
-      if (typeof key !== "string") {
-        try {
-          if (typeof window !== "undefined")
-            window.__classicBattleQuerySelectorError = { key, where: "uiHelpers.applyStatLabels" };
-        } catch {}
-      } else {
-        btn = document.querySelector(`#stat-buttons button[data-stat="${key}"]`);
-      }
-    } catch (e) {
-      try {
-        if (typeof window !== "undefined")
-          window.__classicBattleQuerySelectorError = {
-            key,
-            where: "uiHelpers.applyStatLabels",
-            err: String(e)
-          };
-      } catch {}
-    }
-    if (btn) {
-      btn.textContent = n.name;
-      btn.setAttribute("aria-label", `Select ${n.name}`);
-      // Provide a short, hidden description to screen readers without requiring tooltip open
-      try {
-        const descId = `stat-desc-${key}`;
-        let desc = document.getElementById(descId);
-        if (!desc) {
-          desc = document.createElement("span");
-          desc.id = descId;
-          desc.className = "visually-hidden";
-          desc.textContent = t(`stat.desc.${key}`);
-          const group = document.getElementById("stat-buttons");
-          group?.appendChild(desc);
-        }
-        btn.setAttribute("aria-describedby", descId);
-      } catch {}
-    }
-  });
-}
 
 /**
  * Update the battle state badge text content to reflect the current state.
@@ -863,10 +796,11 @@ export function resetBattleUI(store) {
  * Reset all battle UI elements to their initial state.
  *
  * @pseudocode
- * 1. Remove modal backdrops and destroy quit modal (if `store` provided).
- * 2. Reset Next and Quit buttons to drop listeners.
- * 3. Clear scoreboard messages and timers.
- * 4. Update debug panel to reflect the reset state.
+ * 1. Call `removeBackdrops(store)` to dismiss any open modals and their backdrops.
+ * 2. Call `resetNextButton()` to reset the "Next Round" button to its initial disabled state.
+ * 3. Call `resetQuitButton()` to reset the "Quit Match" button, removing any attached listeners.
+ * 4. Call `clearScoreboardAndMessages()` to clear all messages, timers, and results from the scoreboard.
+ * 5. Call `updateDebugPanel()` to refresh the debug panel's display to reflect the reset state.
  *
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store] - Optional store used to destroy active modals.
  * @returns {void}
@@ -882,35 +816,24 @@ if (typeof window !== "undefined") {
 
 let opponentSnackbarId = 0;
 
+/**
+ * Binds event handlers for various UI updates related to battle events.
+ *
+ * @pseudocode
+ * 1. Listen for `opponentReveal` event:
+ *    a. Get opponent card data.
+ *    b. Render the opponent card in the `#opponent-card` container.
+ * 2. Listen for `statSelected` event:
+ *    a. Clear the scoreboard timer.
+ *    b. If `opponentDelayMessage` feature flag is enabled, show a "Opponent choosing..." snackbar after a delay.
+ * 3. Listen for `roundResolved` event:
+ *    a. Clear any pending opponent choosing snackbar timeout.
+ *    b. Extract round resolution details (store, stat, values, result).
+ *    c. If a result exists, show the round outcome, display stat comparison, and update the debug panel.
+ *
+ * @returns {void}
+ */
 export function bindUIHelperEventHandlers() {
-  onBattleEvent("opponentReveal", () => {
-    const container = document.getElementById("opponent-card");
-    getOpponentCardData()
-      .then((j) => j && renderOpponentCard(j, container))
-      .catch(() => {});
-  });
-
-  onBattleEvent("statSelected", () => {
-    scoreboard.clearTimer();
-    // Show opponent choosing message if feature flag is enabled
-    // (opts.delayOpponentMessage is used for orchestrator logic, not UI control)
-    if (isEnabled("opponentDelayMessage")) {
-      opponentSnackbarId = setTimeout(
-        () => showSnackbar(t("ui.opponentChoosing")),
-        getOpponentDelay()
-      );
-    }
-  });
-
-  onBattleEvent("roundResolved", (e) => {
-    clearTimeout(opponentSnackbarId);
-    const { store, stat, playerVal, opponentVal, result } = e.detail || {};
-    if (!result) return;
-    showRoundOutcome(result.message || "");
-    showStatComparison(store, stat, playerVal, opponentVal);
-    updateDebugPanel();
-  });
-}
 
 // Bind once on module load for runtime. Guard against duplicate bindings when
 // tests reset modules across files within the same worker process.

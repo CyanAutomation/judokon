@@ -161,6 +161,34 @@
         opacity: 0.8;
         color: #9ad1ff;
       }
+
+      /* Standard Scoreboard nodes - Phase 1: Hidden but styled for CLI theme */
+      .standard-scoreboard-nodes {
+        /* Hidden during Phase 1, styled for future CLI theme consistency */
+        display: none;
+      }
+      .standard-scoreboard-nodes #next-round-timer,
+      .standard-scoreboard-nodes #round-counter,
+      .standard-scoreboard-nodes #score-display {
+        margin: 0;
+        font-family: inherit;
+        font-size: inherit;
+        color: #f2f2f2;
+        background: transparent;
+        border: none;
+      }
+      .standard-scoreboard-nodes #next-round-timer:not(:empty):before {
+        content: "⏱ ";
+        color: #fbbf24;
+      }
+      .standard-scoreboard-nodes #round-counter:not(:empty):before {
+        content: "🥋 ";
+        color: #22c55e;
+      }
+      .standard-scoreboard-nodes #score-display:not(:empty):before {
+        content: "📊 ";
+        color: #3b82f6;
+      }
       /* Add prompt indicator for stat selection */
       .cli-block[aria-label="Stat Selection"]:before {
         content: "→ Choose your stat:";
@@ -471,6 +499,13 @@
           <div id="cli-score" data-score-player="0" data-score-opponent="0" data-test="cli-score">
             You: 0 Opponent: 0
           </div>
+        </div>
+
+        <!-- Standard Scoreboard DOM nodes (Phase 1: hidden, for future shared component) -->
+        <div class="standard-scoreboard-nodes" style="display: none" aria-hidden="true">
+          <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
+          <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
+          <p id="score-display" aria-live="off" aria-atomic="true">You: 0 Opponent: 0</p>
         </div>
       </header>
 

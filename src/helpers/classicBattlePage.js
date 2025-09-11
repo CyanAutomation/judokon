@@ -35,10 +35,10 @@
  * event listeners, and any test hooks required for the Classic Battle page.
  *
  * @pseudocode
- * 1. Accept a root element or use the document's default selectors.
- * 2. Attach event listeners for stat selection, next round, and quitting.
- * 3. Initialize carousel, countdown, and scoreboard components.
- * 4. Expose or return handles used by tests to simulate user interaction.
+ * 1. Delegate the call to the underlying `setupClassicBattlePage` function in `bootstrap.js`.
+ * 2. This function is responsible for setting up the entire Classic Battle page.
+ * 3. It initializes UI components, binds event handlers, and prepares the game for interaction.
+ * 4. It may also expose certain elements or functions for testing and debugging purposes.
  */
 export { setupClassicBattlePage } from "./classicBattle/bootstrap.js";
 /**
@@ -49,10 +49,9 @@ export { setupClassicBattlePage } from "./classicBattle/bootstrap.js";
  * resolution process.
  *
  * @pseudocode
- * 1. Accept a stat key or index and optional context identifying the player.
- * 2. Validate the requested stat is selectable (not already locked or stalled).
- * 3. Update UI to reflect the chosen stat and trigger any selection animations.
- * 4. Notify the round manager/orchestrator that a selection has been made.
- * 5. Return a boolean indicating whether the selection was accepted.
+ * 1. Delegate the call to the underlying `selectStat` function in `uiHelpers.js`.
+ * 2. This function simulates a user selecting a stat during a battle round.
+ * 3. It triggers the necessary UI updates and game logic to process the stat selection.
+ * 4. This is useful for automated testing or for programmatic control of the battle.
  */
 export { selectStat } from "./classicBattle/uiHelpers.js";

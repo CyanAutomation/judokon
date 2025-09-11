@@ -65,8 +65,10 @@ function createQuitConfirmation(store, onConfirm) {
  * to interact with the modal's confirm button.
  *
  * @pseudocode
- * 1. Initialize to a resolved promise until `quitMatch` sets a new one.
- * 2. Expose the promise globally for tests.
+ * 1. Initialize `quitConfirmButtonPromise` with an immediately resolved promise.
+ * 2. This promise will be replaced with a new pending promise each time `quitMatch` is called.
+ * 3. The new promise will resolve with the `confirm-quit-button` element once it is rendered in the DOM.
+ * 4. The promise is also exposed globally on `window.quitConfirmButtonPromise` for testability.
  *
  * @type {Promise<HTMLButtonElement>}
  */

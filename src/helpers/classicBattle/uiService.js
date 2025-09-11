@@ -21,31 +21,19 @@ function handleCountdownExpired() {
 }
 
 /**
- * Update the scoreboard with current scores.
+ * Synchronizes the score display on the scoreboard with the current scores from the battle engine.
  *
  * @pseudocode
- * 1. Read scores via `getScores()`.
- * 2. Forward the values to `scoreboard.updateScore`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Retrieve the current `playerScore` and `opponentScore` from the battle engine using `getScores()`.
+ * 2. If `scoreboard.updateScore` function is available, call it to update the scoreboard component.
+ * 3. Locate the `#score-display` element in the DOM.
+ * 4. If `#score-display` exists:
+ *    a. Check for existing `<span>` elements with `data-side="player"` and `data-side="opponent"`.
+ *    b. If these spans are not found, clear the `#score-display` content and create new `<span>` elements for player and opponent scores, appending them to `#score-display`.
+ *    c. Update the `textContent` of the player and opponent score spans with the latest scores.
+ * 5. Includes debug logging for test environments.
+ *
+ * @returns {void}
  */
 export function syncScoreDisplay() {
   const { playerScore, opponentScore } = getScores();

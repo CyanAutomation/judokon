@@ -32,11 +32,14 @@ export const order = [
 ];
 
 /**
- * Stable numeric ids derived from `order`.
+ * Stable numeric IDs derived from the `order` array.
  *
  * @pseudocode
- * 1. Iterate `order` and assign stable ordinal ids (multiples of 10) so
- *    external tooling can rely on numeric versions.
+ * 1. Initialize an empty accumulator object `acc`.
+ * 2. Iterate over the `order` array with each `name` and its `idx`.
+ * 3. For each `name`, assign a stable ordinal ID by multiplying `(idx + 1)` by 10.
+ *    This ensures IDs are multiples of 10 (e.g., 10, 20, 30...) for consistency and extensibility.
+ * 4. Return the populated `acc` object, which maps state names to their numeric IDs.
  */
 export const ids = order.reduce((acc, name, idx) => {
   acc[name] = (idx + 1) * 10;

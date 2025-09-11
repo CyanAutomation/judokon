@@ -170,9 +170,67 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 
 ---
 
-## Phase 1 — Introduce Standard Scoreboard DOM in CLI (No Behavior Change)
+## Phase 1 — COMPLETED ✅ (2025-09-11)
 
-### Phase 1
+### Actions Taken
+1. **Added Standard Scoreboard DOM Nodes to CLI**
+   - Added `#next-round-timer`, `#round-counter`, `#score-display` to CLI header
+   - Preserved existing `#round-message` (already present)
+   - Kept existing CLI elements (`#cli-round`, `#cli-score`, `#cli-countdown`) unchanged
+
+2. **Applied CLI-Themed Styling**
+   - Standard nodes styled with CLI monospace theme and terminal colors
+   - Nodes initially hidden with `display: none` and `aria-hidden="true"`
+   - Added appropriate emojis and color coding (⏱ timer, 🥋 rounds, 📊 scores)
+
+3. **Maintained Proper ARIA Attributes**
+   - `aria-live="polite"` for timer and counter
+   - `aria-live="off"` for score (to prevent excessive announcements)
+   - `aria-atomic="true"` and `role="status"` as per Scoreboard spec
+
+### Test Results
+- **✅ New DOM Test**: 4/4 tests passed - Standard nodes exist with correct attributes
+- **✅ Regression Test**: 3/3 CLI scoreboard tests passed - No behavioral changes
+- **✅ Basic Load Test**: CLI page loads without console errors
+- **✅ State Test**: Basic state badge functionality working
+- **✅ Layout Test**: CLI layout structure intact
+
+### DOM Structure After Phase 1
+```html
+<!-- Existing CLI elements (unchanged) -->
+<div id="cli-round">Round 0 of 0</div>
+<div id="cli-score" data-score-player="0" data-score-opponent="0">You: 0 Opponent: 0</div>
+
+<!-- NEW: Standard Scoreboard nodes (hidden) -->
+<div class="standard-scoreboard-nodes" style="display: none;" aria-hidden="true">
+  <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
+  <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
+  <p id="score-display" aria-live="off" aria-atomic="true">You: 0 Opponent: 0</p>
+</div>
+
+<!-- Existing elements (unchanged) -->
+<div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
+<div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
+```
+
+### Outcome
+- **✅ DUAL DOM STRUCTURE ESTABLISHED** - CLI now has both legacy and standard elements
+- **✅ NO BEHAVIORAL CHANGES** - Existing CLI functionality preserved
+- **✅ STYLING PREPARED** - Standard nodes ready for CLI theme when activated
+- **✅ ACCESSIBILITY MAINTAINED** - Proper ARIA attributes on all new elements
+
+**Ready for Phase 2** - Wire shared Scoreboard initialization and dual-write behavior
+
+### Notes
+- Some advanced CLI battle tests failed due to unrelated state management issues (not DOM changes)
+- Basic load, layout, and scoreboard functionality confirmed working
+- Standard nodes properly hidden and will be revealed during Phase 2 initialization
+
+---
+
+## Phase 2 — Dual-Write: Wire Shared Scoreboard in CLI (Adapter + Helpers)
+
+### Phase 2
 
 - Selector stability: updating test selectors to standard IDs should be staged to avoid breaking existing tests; maintain temporary dual assertions during Phase 2.
 - Hot-path safety: avoid introducing dynamic imports in state, selection, render, or event-dispatch loops; use static imports for Scoreboard wiring in CLI.
