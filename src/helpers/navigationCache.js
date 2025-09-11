@@ -44,10 +44,17 @@ export async function save(items) {
 }
 
 /**
- * Remove cached navigation items from storage.
+ * Removes all cached navigation items from the browser's local storage.
+ *
+ * @summary This function effectively clears any previously saved navigation
+ * data, forcing the application to reload the default navigation items
+ * on the next access.
  *
  * @pseudocode
- * 1. Delete `NAV_ITEMS_KEY` from storage.
+ * 1. Call `removeItem()` with `NAV_ITEMS_KEY` as the argument. This deletes the entry
+ *    associated with navigation items from the storage mechanism (e.g., `localStorage`).
+ *
+ * @returns {void}
  */
 export function reset() {
   removeItem(NAV_ITEMS_KEY);

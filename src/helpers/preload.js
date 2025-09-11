@@ -1,36 +1,19 @@
 /**
- * Preload assets used on the Meditation page.
+ * Preloads essential assets required for the Meditation page to ensure a
+ * smoother user experience by making resources available before they are needed.
+ *
+ * @summary This asynchronous function fetches the helper image and relevant
+ * JSON data files in parallel.
  *
  * @pseudocode
- * 1. Request the helper image and JSON data in parallel.
- *    - Use `fetch` for the image.
- *    - Use `fetchJson` with `DATA_DIR` for `aesopsFables.json` and `aesopsMeta.json`.
- * 2. Await all requests and quietly log errors.
+ * 1. Initiate parallel fetch requests for:
+ *    a. The helper image (`helperKG1.png`) located in the `assets` directory.
+ *    b. The `aesopsFables.json` data file, using `fetchJson` and `DATA_DIR` for its path.
+ *    c. The `aesopsMeta.json` data file, also using `fetchJson` and `DATA_DIR`.
+ * 2. Use `Promise.all()` to await the completion of all these fetch operations.
+ * 3. Wrap the entire operation in a `try...catch` block to gracefully handle any errors that occur during preloading, logging them to the console without re-throwing.
  *
- * @returns {Promise<void>} Resolves once all preload requests complete.
- */
-import { DATA_DIR } from "./constants.js";
-import { fetchJson } from "./dataUtils.js";
-
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {Promise<void>} A promise that resolves once all preload requests have completed, regardless of success or failure.
  */
 export async function preloadMeditationAssets() {
   try {

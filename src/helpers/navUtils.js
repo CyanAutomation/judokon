@@ -25,33 +25,20 @@ export function resolveHomeHref() {
 }
 
 /**
- * Navigate to the resolved home URL.
+ * Navigates the browser to the application's home page.
+ *
+ * @summary This function attempts to redirect the user to the main entry point
+ * of the application, handling various URL resolution scenarios and providing
+ * graceful degradation for unsupported environments.
  *
  * @pseudocode
- * 1. Attempt to assign `window.location.href` to the home URL.
- * 2. If that fails, build an absolute URL relative to the current location.
- * 3. When `history.replaceState` is available, use it to change the address.
- * 4. Swallow any remaining errors silently.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Attempt to directly set `window.location.href` to the URL returned by `resolveHomeHref()`.
+ * 2. If the direct assignment fails (e.g., due to security restrictions or non-browser environment):
+ *    a. Construct a fully qualified absolute URL for the home page by resolving `resolveHomeHref()` against the current `window.location.href`.
+ *    b. If `history.replaceState` is available (indicating a modern browser environment), use it to change the browser's URL without reloading the page.
+ *    c. Catch and silently ignore any further errors during this fallback process to ensure the function does not throw.
+ *
+ * @returns {void}
  */
 export function navigateToHome() {
   try {

@@ -13,34 +13,23 @@ if (typeof window !== "undefined") {
 }
 
 /**
- * Highlight the navigation link matching the current location.
+ * Highlights the navigation link in the bottom navigation bar that corresponds
+ * to the current page's URL.
+ *
+ * @summary This function ensures that the user's current location within the
+ * application is visually indicated in the navigation menu.
  *
  * @pseudocode
- * 1. Guard: return if `document` or `window` is undefined.
- * 2. Select all `.bottom-navbar a` elements.
- * 3. Resolve each link's `href` with `new URL()`.
- * 4. Compare `URL.pathname` with `window.location.pathname`.
- * 5. Toggle the `active` class on match.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Check if `document` or `window` is undefined (e.g., in a non-browser environment). If so, exit early.
+ * 2. Select all `<a>` (anchor) elements within the `.bottom-navbar` container.
+ * 3. Get the current page's pathname from `window.location.pathname`.
+ * 4. Iterate over each navigation `link` found:
+ *    a. Get the `href` attribute of the `link`.
+ *    b. Resolve the `href` into a full URL using `new URL(href, window.location.href)` to handle relative paths correctly.
+ *    c. Compare the `pathname` of the resolved link's URL with the `current` page's pathname.
+ *    d. Toggle the `active` CSS class on the `link` element: add `active` if the pathnames match, remove it otherwise.
+ *
+ * @returns {void}
  */
 export function highlightActiveLink() {
   if (typeof document === "undefined" || typeof window === "undefined") return;

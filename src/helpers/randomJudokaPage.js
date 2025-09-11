@@ -1,28 +1,25 @@
 /**
- * Initialize the Random Judoka page once the DOM is ready.
+ * Sets up the Random Judoka page, including loading data, initializing UI components,
+ * and binding event handlers.
  *
- * Relies on global settings to respect motion preferences.
+ * @summary This asynchronous function orchestrates the entire setup process for
+ * the random judoka card drawing feature, ensuring data is loaded, UI is
+ * responsive, and accessibility features are in place.
  *
  * @pseudocode
- * 1. Load persisted settings and fall back to the system motion preference.
- * 2. Preload judoka and gokyo data via `preloadRandomCardData` service.
- * 3. Initialize a draw history manager with a 5-entry limit.
- * 4. Toggle the `.simulate-viewport` class based on the stored feature flag.
- * 5. Create a hidden slide-out history panel and a toggle button.
- * 6. Define `displayCard` that disables the Draw button, updates its text and `aria-busy` state while loading, verifies the
- *    card container exists, calls `generateRandomCard` with the loaded data and the user's motion preference, handles any
- *    errors by logging and showing a message, updates the history list, then restores the button once the animation completes
- *    (or immediately when motion is disabled) with a timeout fallback if the event never fires, and returns a promise that
- *    resolves when the button is re-enabled.
- * 7. Render a placeholder card in the card container.
- * 8. Create the "Draw Card!" button (min 64px height, 300px width, pill shape, ARIA attributes) and attach its event listener.
- * 9. If data fails to load, disable the Draw button and show an error message or fallback card.
- * 10. Export `initRandomJudokaPage` to perform setup and await navigation readiness; resolve `randomJudokaReadyPromise`
- *     on DOM content loaded after setting `data-random-judoka-ready` on `<body>` and dispatching `random-judoka-ready`.
+ * 1. Initialize feature flag state and determine `prefersReducedMotion`.
+ * 2. Append a card placeholder template to the `#card-container`.
+ * 3. Preload judoka and gokyo data using `preloadRandomCardData()`.
+ * 4. Create a `historyManager` to track drawn cards.
+ * 5. Build the slide-out history panel and its toggle button using `buildHistoryPanel()`.
+ * 6. Create the main "Draw Card!" button using `createDrawButton()` and append it to the `.card-section`.
+ * 7. Define the `onSelect` callback to add drawn judoka to the history manager.
+ * 8. Attach a `click` event listener to the "Draw Card!" button that calls `displayCard()` when clicked.
+ * 9. Attach a `change` event listener to `featureFlagsEmitter` to update UI based on feature flag changes (e.g., inspector panels, viewport simulation, tooltip overlay debug).
+ * 10. If data preloading failed, disable the "Draw Card!" button and display an error message.
+ * 11. Initialize all tooltips on the page using `initTooltips()`.
  *
- * @returns {Promise<void>} Resolves when the page is fully initialized.
- * @see design/productRequirementsDocuments/prdRandomJudoka.md
- * @see design/productRequirementsDocuments/prdDrawRandomCard.md
+ * @returns {Promise<void>} A promise that resolves when the page setup is complete.
  */
 import { generateRandomCard } from "./randomCard.js";
 import { toggleInspectorPanels } from "./cardUtils.js";
@@ -386,29 +383,39 @@ export async function setupRandomJudokaPage() {
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
-export async function initRandomJudokaPage() {
-  await Promise.all([setupRandomJudokaPage(), window.navReadyPromise]);
-}
-
 /**
- * @summary TODO: Add summary
+ * Initializes the Random Judoka page after the DOM is ready and navigation
+ * is prepared.
+ *
+ * @summary This function serves as the primary entry point for bootstrapping
+ * the Random Judoka page, ensuring all necessary components are set up
+ * before user interaction.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Await the completion of two promises in parallel:
+ *    a. `setupRandomJudokaPage()`: This sets up the core UI and data for the page.
+ *    b. `window.navReadyPromise`: This ensures that the main navigation system is ready.
+ * 2. The function resolves once both of these setup processes are complete.
+ *
+ * @returns {Promise<void>} A promise that resolves when the Random Judoka page is fully initialized and ready.
  */
 /**
- * @summary TODO: Add summary
+ * A promise that resolves when the Random Judoka page is fully initialized and ready for interaction.
+ *
+ * @summary This promise provides a reliable signal for external scripts or tests
+ * to know when the Random Judoka page's DOM is ready, data is loaded, and UI
+ * components are set up.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Create a new `Promise` and capture its `resolve` function.
+ * 2. Use `onDomReady()` to ensure the callback executes only after the DOM is fully loaded.
+ * 3. Inside the `onDomReady` callback, call `initRandomJudokaPage()` and await its completion.
+ * 4. Once `initRandomJudokaPage()` resolves:
+ *    a. Set the `data-random-judoka-ready` attribute on `document.body` to `true`.
+ *    b. Dispatch a custom `random-judoka-ready` event on `document` (with bubbling).
+ *    c. Resolve the `randomJudokaReadyPromise`.
+ *
+ * @type {Promise<void>}
  */
 export const randomJudokaReadyPromise = new Promise((resolve) => {
   onDomReady(() => {

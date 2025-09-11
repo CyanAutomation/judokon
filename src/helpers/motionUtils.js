@@ -22,33 +22,19 @@ export function shouldReduceMotionSync() {
 }
 
 /**
- * Apply the motion preference by toggling a body class.
+ * Applies the user's motion preference by adding or removing a CSS class
+ * to the document body.
+ *
+ * @summary This function visually adjusts the application's motion effects
+ * based on whether motion is enabled or should be reduced.
  *
  * @pseudocode
- * 1. If `enabled` is `false`, add the `reduce-motion` class to `document.body`.
- * 2. Otherwise, remove the `reduce-motion` class.
+ * 1. Check the value of the `enabled` parameter.
+ * 2. If `enabled` is `false` (meaning motion effects should be reduced), add the CSS class `reduce-motion` to `document.body`.
+ * 3. If `enabled` is `true` (meaning motion effects are enabled), remove the CSS class `reduce-motion` from `document.body`.
  *
- * @param {boolean} enabled - Whether motion effects are enabled.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {boolean} enabled - `true` if motion effects are enabled, `false` if they should be reduced.
+ * @returns {void}
  */
 export function applyMotionPreference(enabled) {
   if (!enabled) {

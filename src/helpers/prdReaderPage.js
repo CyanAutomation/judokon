@@ -128,19 +128,28 @@ export function createSidebarList(labels, placeholder, onSelect) {
 }
 
 /**
- * Bind navigation events for PRD browsing.
+ * Binds navigation events (click, keyboard, touch) for browsing PRD documents.
+ *
+ * @summary This function sets up event listeners on navigation buttons,
+ * keyboard keys, and touch gestures to allow users to move between PRD documents.
  *
  * @pseudocode
- * 1. Attach click handlers for next/prev buttons.
- * 2. Map keyboard and touch events declaratively.
- * 3. Use provided callbacks to navigate between documents.
+ * 1. Attach `click` event listeners to each `nextButtons` element, calling `showNext` when clicked.
+ * 2. Attach `click` event listeners to each `prevButtons` element, calling `showPrev` when clicked.
+ * 3. Define a `keydown` handler: if the active element is the `container` and the key is `ArrowRight`, call `showNext`; if `ArrowLeft`, call `showPrev`.
+ * 4. Define `touchstart` and `touchend` handlers for swipe gestures on the `container`:
+ *    a. On `touchstart`, record the `clientX` of the first touch.
+ *    b. On `touchend`, calculate the horizontal difference (`diff`). If `abs(diff)` is greater than 30 pixels, call `showNext` for left swipe (`diff < 0`) or `showPrev` for right swipe.
+ * 5. Create an `eventMap` array to store event listener configurations (target, type, handler).
+ * 6. Iterate through `eventMap` and add each event listener to its respective target.
  *
- * @param {object} opts
- * @param {HTMLElement} opts.container
- * @param {NodeListOf<HTMLElement>} opts.nextButtons
- * @param {NodeListOf<HTMLElement>} opts.prevButtons
- * @param {Function} opts.showNext
- * @param {Function} opts.showPrev
+ * @param {object} opts - Options object containing elements and callbacks.
+ * @param {HTMLElement} opts.container - The main container element for PRD content, used for keyboard and touch events.
+ * @param {NodeListOf<HTMLElement>} opts.nextButtons - A NodeList of elements that trigger navigation to the next document.
+ * @param {NodeListOf<HTMLElement>} opts.prevButtons - A NodeList of elements that trigger navigation to the previous document.
+ * @param {Function} opts.showNext - Callback function to display the next document.
+ * @param {Function} opts.showPrev - Callback function to display the previous document.
+ * @returns {void}
  */
 export function bindNavigation({ container, nextButtons, prevButtons, showNext, showPrev }) {
   nextButtons.forEach((btn) => btn.addEventListener("click", showNext));
@@ -169,22 +178,24 @@ export function bindNavigation({ container, nextButtons, prevButtons, showNext, 
 }
 
 /**
- * Fetch markdown documents and compute stats and titles.
+ * Renders the specified PRD document into the content area and updates
+ * associated UI elements like the title and task summary.
+ *
+ * @summary This function is responsible for displaying the content of a PRD
+ * document, sanitizing its HTML, and updating the page's metadata.
  *
  * @pseudocode
- * 1. For each file, read from `docsMap` or fetch from `dir`.
- * 2. Parse markdown with `parserFn`, sanitize the HTML; on failure, show warning with escaped text.
- * 3. Derive task stats and top-level title.
- * 4. Return arrays of HTML documents, task stats, and titles.
- * Render the document at the provided index.
+ * 1. Destructure necessary properties from the `state` object: `container`, `titles`, `taskStats`, `titleEl`, `summaryEl`, `documents`, and `DOMPurify`.
+ * 2. Call `cleanupTooltips()` to remove any tooltips from the previously rendered document.
+ * 3. Sanitize the HTML content of the document at the given `index` using `DOMPurify.sanitize()` and set it as the `innerHTML` of the `container`.
+ * 4. Trigger a fade-in animation for the `container`: remove `fade-in` class, force reflow, then add `fade-in` class.
+ * 5. If `titleEl` exists, set its `textContent` to the title of the document at `index`.
+ * 6. If `summaryEl` exists, calculate and display the task completion summary (e.g., "Tasks: completed/total (percent%)").
+ * 7. Initialize tooltips within the `container` and store the returned cleanup function in `cleanupTooltips`.
  *
- * @pseudocode
- * 1. Replace content with sanitized HTML for the document.
- * 2. Update title and task summary.
- * 3. Initialize tooltips and play fade-in animation.
- *
- * @param {SidebarState} state
- * @param {number} index
+ * @param {SidebarState} state - The state object containing document data and UI element references.
+ * @param {number} index - The index of the document to render within the `documents` array.
+ * @returns {void}
  */
 export function renderDocument(state, index) {
   const { container, titles, taskStats, titleEl, summaryEl, documents, DOMPurify } = state;
@@ -344,15 +355,22 @@ export function setupSidebarUI(docData) {
 }
 
 /**
- * Wire up navigation handlers using sidebar state.
+ * Initializes navigation handlers for the PRD reader, binding UI elements
+ * and browser events to the sidebar's document selection logic.
+ *
+ * @summary This function sets up event listeners for "Next" and "Previous"
+ * buttons, keyboard shortcuts, touch gestures, and browser history changes
+ * to enable seamless navigation between PRD documents.
  *
  * @pseudocode
- * 1. Resolve navigation buttons.
- * 2. Bind click, popstate, key, and swipe handlers.
- * 3. Delegate to sidebar selection logic.
+ * 1. Query and obtain references to "Next" and "Previous" navigation buttons using `data-nav` attributes.
+ * 2. Define `showNext` and `showPrev` callback functions that delegate to `sidebar.selectDocSync` to navigate to the next or previous document, respectively.
+ * 3. Call `bindNavigation()` to attach click handlers to the navigation buttons, and keyboard/touch event listeners to the content container, all triggering `showNext` or `showPrev`.
+ * 4. Call `bindHistory()` to listen for `popstate` events (browser back/forward actions) and update the sidebar's document selection accordingly.
  *
- * @param {object} sidebar
- * @param {string[]} files
+ * @param {object} sidebar - The sidebar state object, containing methods for document selection and UI elements.
+ * @param {string[]} _files - (Ignored) The list of PRD filenames.
+ * @returns {void}
  */
 export function initNavigationHandlers(sidebar, _files) {
   void _files;
@@ -371,15 +389,27 @@ export function initNavigationHandlers(sidebar, _files) {
 }
 
 /**
- * Initialize the Product Requirements Document reader page.
+ * Initializes the Product Requirements Document (PRD) reader page,
+ * setting up document loading, sidebar navigation, and content rendering.
+ *
+ * @summary This asynchronous function orchestrates the entire PRD reader
+ * experience, from data fetching to UI interaction.
  *
  * @pseudocode
- * 1. Load document metadata with `loadPrdDocs`.
- * 2. Build sidebar UI and bind navigation handlers.
- * 3. Seed history, render the start document, then prefetch remaining docs unless test mode is enabled.
+ * 1. Load all PRD document metadata and content using `loadPrdDocs(docsMap, parserFn)`.
+ * 2. Set up the sidebar user interface with the loaded document data using `setupSidebarUI(docData)`. If sidebar setup fails, exit.
+ * 3. Initialize navigation handlers (buttons, keyboard, history) using `initNavigationHandlers(sidebar, sidebar.files)`.
+ * 4. Replace the current browser history entry with the initial PRD document's state using `replaceHistory(sidebar.baseNames, sidebar.index)`.
+ * 5. Show a loading spinner.
+ * 6. Ensure the initial document is loaded and parsed: if not already synchronized, fetch it.
+ * 7. Render the initial PRD document into the content area using `renderDocument(sidebar, sidebar.index)`.
+ * 8. Set focus to the content container for keyboard navigation.
+ * 9. Remove the loading spinner.
+ * 10. If test mode is not enabled, asynchronously preload all remaining PRD documents in the background to improve subsequent navigation performance.
  *
- * @param {Record<string, string>} [docsMap]
- * @param {Function} [parserFn=markdownToHtml]
+ * @param {Record<string, string>} [docsMap] - Optional. A map of document filenames to their markdown content, used for testing or pre-loading.
+ * @param {Function} [parserFn=markdownToHtml] - Optional. The function used to parse markdown content into HTML. Defaults to `markdownToHtml`.
+ * @returns {Promise<void>} A promise that resolves when the PRD reader page is fully set up.
  */
 export async function setupPrdReaderPage(docsMap, parserFn = markdownToHtml) {
   const docData = await loadPrdDocs(docsMap, parserFn);

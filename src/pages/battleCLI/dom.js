@@ -34,28 +34,36 @@ export const byId = (id) => document.getElementById(id);
  * @param {number} target
  * @returns {void}
  * @pseudocode
- * el = byId("cli-round")
- * if el -> set text to `Round ${round} Target: ${target}`
- * root = byId("cli-root")
- * if root -> set dataset.round and dataset.target
- * Phase 2: Also update shared Scoreboard component
+ * Phase 3: Primary: shared Scoreboard updateRoundCounter
+ * Fallback: CLI element for visual consistency
+ * root = byId("cli-root") -> set dataset.round and dataset.target
  */
 export function updateRoundHeader(round, target) {
+  // Phase 3: Primary update via shared Scoreboard component
+  let sharedUpdated = false;
+  try {
+    if (sharedScoreboardHelpers?.updateRoundCounter) {
+      sharedScoreboardHelpers.updateRoundCounter(round);
+      sharedUpdated = true;
+    }
+  } catch {
+    // Fallback will be used below
+  }
+
+  // Phase 3: Keep CLI element for visual consistency (not primary source)
   const el = byId("cli-round");
-  if (el) el.textContent = `Round ${round} Target: ${target}`;
+  if (el && !sharedUpdated) {
+    // Only update CLI element if shared component failed
+    el.textContent = `Round ${round} Target: ${target}`;
+  } else if (el) {
+    // Update to match shared component format
+    el.textContent = `🥋 Round ${round}`;
+  }
+
   const root = byId("cli-root");
   if (root) {
     root.dataset.round = String(round);
     root.dataset.target = String(target);
-  }
-
-  // Phase 2: Dual-write to shared Scoreboard component
-  try {
-    if (sharedScoreboardHelpers?.updateRoundCounter) {
-      sharedScoreboardHelpers.updateRoundCounter(round);
-    }
-  } catch {
-    // Graceful fallback if shared Scoreboard not available
   }
 }
 
@@ -66,21 +74,25 @@ export function updateRoundHeader(round, target) {
  * @param {string} text
  * @returns {void}
  * @pseudocode
- * el = byId("round-message")
- * if el -> set textContent to text or ""
- * Phase 2: Also update shared Scoreboard component
+ * Phase 3: Primary: shared Scoreboard showMessage
+ * Fallback: #round-message element (already shared between CLI and standard)
  */
 export function setRoundMessage(text) {
-  const el = byId("round-message");
-  if (el) el.textContent = text || "";
-
-  // Phase 2: Dual-write to shared Scoreboard component
+  // Phase 3: Primary update via shared Scoreboard component
+  let sharedUpdated = false;
   try {
     if (sharedScoreboardHelpers?.showMessage) {
       sharedScoreboardHelpers.showMessage(text || "", { outcome: false });
+      sharedUpdated = true;
     }
   } catch {
-    // Graceful fallback if shared Scoreboard not available
+    // Fallback will be used below
+  }
+
+  // Fallback: Direct DOM update (shared element already used by both)
+  if (!sharedUpdated) {
+    const el = byId("round-message");
+    if (el) el.textContent = text || "";
   }
 }
 
@@ -90,30 +102,38 @@ export function setRoundMessage(text) {
  * @summary Refresh scores for player and opponent.
  * @returns {void}
  * @pseudocode
- * scores = engineFacade.getScores() or {0,0}
- * el = byId("cli-score")
- * if el -> update textContent and data attributes with scores
- * Phase 2: Also update shared Scoreboard component
+ * Phase 3: Primary: shared Scoreboard updateScore
+ * Fallback: CLI element for visual consistency
  */
 export function updateScoreLine() {
   const { playerScore, opponentScore } = engineFacade.getScores?.() || {
     playerScore: 0,
     opponentScore: 0
   };
-  const el = byId("cli-score");
-  if (el) {
-    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
-    el.dataset.scorePlayer = String(playerScore);
-    el.dataset.scoreOpponent = String(opponentScore);
-  }
 
-  // Phase 2: Dual-write to shared Scoreboard component
+  // Phase 3: Primary update via shared Scoreboard component
+  let sharedUpdated = false;
   try {
     if (sharedScoreboardHelpers?.updateScore) {
       sharedScoreboardHelpers.updateScore(playerScore, opponentScore);
+      sharedUpdated = true;
     }
   } catch {
-    // Graceful fallback if shared Scoreboard not available
+    // Fallback will be used below
+  }
+
+  // Phase 3: Keep CLI element for visual consistency (not primary source)
+  const el = byId("cli-score");
+  if (el && !sharedUpdated) {
+    // Only update CLI element if shared component failed
+    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
+    el.dataset.scorePlayer = String(playerScore);
+    el.dataset.scoreOpponent = String(opponentScore);
+  } else if (el) {
+    // Update to match shared component format
+    el.textContent = `📊 You: ${playerScore} Opponent: ${opponentScore}`;
+    el.dataset.scorePlayer = String(playerScore);
+    el.dataset.scoreOpponent = String(opponentScore);
   }
 }
 

@@ -41,27 +41,16 @@ export function escapeHtml(value) {
 }
 
 /**
- * Base path for navigation links derived from the current module location.
- */
-/**
- * @summary TODO: Add summary
+ * Base path for navigation links, dynamically derived from the current module's location.
+ *
+ * @summary This constant provides a robust way to construct absolute URLs for
+ * navigation within the application, adapting to different deployment environments.
+ *
+ * @constant {URL}
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Create a new `URL` object based on `import.meta.url`, which represents the URL of the current module (`navigationService.js`).
+ * 2. Modify the `pathname` of this URL: replace the segment `/helpers/navigation/navigationService.js` with `/pages/`. This effectively transforms the module's URL into the base URL for the application's pages.
+ * 3. Return the modified `URL` object.
  */
 export const BASE_PATH = (() => {
   const url = new URL(import.meta.url);

@@ -2,44 +2,17 @@ import { buildMenu, setupHamburger } from "./navigationUI.js";
 import { navTooltipKey, BASE_PATH } from "./navigationService.js";
 
 /**
- * @summary TODO: Add summary
+ * Re-exports `navTooltipKey` and `BASE_PATH` from `navigationService.js`.
+ *
+ * @summary This module provides convenient access to constants related to
+ * navigation tooltips and the application's base path.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Import `navTooltipKey` and `BASE_PATH` from `./navigationService.js`.
+ * 2. Re-export these symbols to make them directly available from this module.
+ *
+ * @exports navTooltipKey {string} The key used for navigation menu tooltips.
+ * @exports BASE_PATH {string} The base path of the application.
  */
 export { navTooltipKey, BASE_PATH };
 

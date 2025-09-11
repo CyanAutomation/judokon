@@ -1,12 +1,21 @@
 /**
- * History helpers for the PRD reader.
+ * Pushes a new state onto the browser's history stack for the PRD reader.
+ *
+ * @summary This function updates the browser's URL and history entry to reflect
+ * the currently viewed PRD document, allowing for navigation using browser
+ * back/forward buttons.
  *
  * @pseudocode
- * 1. Construct a URL with the current document.
- * 2. Push the state with index and URL.
+ * 1. Create a new `URL` object based on the current `window.location`.
+ * 2. Set the `doc` search parameter of the URL to the `baseNames[index]`, which represents the name of the current PRD document.
+ * 3. Use `history.pushState()` to add a new entry to the browser's session history.
+ *    a. The `state` object contains the `index` of the current document.
+ *    b. The `title` is an empty string (modern browsers often ignore this).
+ *    c. The `url` is constructed from the current `pathname` and the updated `search` parameters.
  *
- * @param {string[]} baseNames
- * @param {number} index
+ * @param {string[]} baseNames - An array of base names for the PRD documents.
+ * @param {number} index - The index of the current PRD document in the `baseNames` array.
+ * @returns {void}
  */
 export function pushHistory(baseNames, index) {
   const url = new URL(window.location);
@@ -15,14 +24,24 @@ export function pushHistory(baseNames, index) {
 }
 
 /**
- * Replace current history entry with the given document.
+ * Replaces the current entry in the browser's history stack for the PRD reader.
+ *
+ * @summary This function updates the browser's URL and modifies the current
+ * history entry, effectively changing the URL without adding a new entry to
+ * the history stack. This is useful for initial page loads or when
+ * canonicalizing URLs.
  *
  * @pseudocode
- * 1. Construct a URL with the current document.
- * 2. Replace state with index and URL.
+ * 1. Create a new `URL` object based on the current `window.location`.
+ * 2. Set the `doc` search parameter of the URL to the `baseNames[index]`, representing the name of the current PRD document.
+ * 3. Use `history.replaceState()` to modify the current entry in the browser's session history.
+ *    a. The `state` object contains the `index` of the current document.
+ *    b. The `title` is an empty string.
+ *    c. The `url` is constructed from the current `pathname` and the updated `search` parameters.
  *
- * @param {string[]} baseNames
- * @param {number} index
+ * @param {string[]} baseNames - An array of base names for the PRD documents.
+ * @param {number} index - The index of the current PRD document in the `baseNames` array.
+ * @returns {void}
  */
 export function replaceHistory(baseNames, index) {
   const url = new URL(window.location);
