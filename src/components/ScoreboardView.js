@@ -1,6 +1,7 @@
 export class ScoreboardView {
-  constructor(model, { messageEl, timerEl, roundCounterEl, scoreEl } = {}) {
+  constructor(model, { rootEl, messageEl, timerEl, roundCounterEl, scoreEl } = {}) {
     this.model = model;
+    this.rootEl = rootEl || (messageEl && typeof messageEl.closest === "function" ? messageEl.closest("header, .battle-header") : null);
     this.messageEl = messageEl;
     this.timerEl = timerEl;
     this.roundCounterEl = roundCounterEl;
@@ -23,6 +24,14 @@ export class ScoreboardView {
         this.messageEl.dataset.outcome = "true";
       } else {
         delete this.messageEl.dataset.outcome;
+      }
+    }
+    if (this.rootEl) {
+      const type = typeof opts.outcomeType === "string" ? opts.outcomeType : null;
+      if (opts.outcome && type) {
+        this.rootEl.dataset.outcome = type;
+      } else if (!opts.outcome) {
+        this.rootEl.dataset.outcome = "none";
       }
     }
   }

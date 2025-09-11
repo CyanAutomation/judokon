@@ -10,6 +10,14 @@ import {
 
 let _bound = false;
 let _handlers = [];
+function mapOutcomeToEnum(outcome) {
+  const s = String(outcome || "");
+  if (/player/i.test(s)) return "playerWin";
+  if (/opponent/i.test(s)) return "opponentWin";
+  if (/draw/i.test(s)) return "draw";
+  return "none";
+}
+
 
 /**
  * Initialize the scoreboard PRD adapter.
@@ -36,6 +44,8 @@ export function initBattleScoreboardAdapter() {
       const d = e?.detail || {};
       const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
       if (typeof n === "number") updateRoundCounter(n);
+      // Ensure root outcome resets to none at round start
+      showMessage("", { outcome: false });
     } catch {}
   });
 
@@ -54,7 +64,9 @@ export function initBattleScoreboardAdapter() {
       const p = Number(d?.scores?.player) || 0;
       const o = Number(d?.scores?.opponent) || 0;
       updateScore(p, o);
-      if (d.message) showMessage(String(d.message), { outcome: true });
+      const outcomeType = mapOutcomeToEnum(d?.outcome);
+      if (d.message) showMessage(String(d.message), { outcome: true, outcomeType });
+      else showMessage("", { outcome: true, outcomeType });
     } catch {}
   });
 
@@ -66,7 +78,9 @@ export function initBattleScoreboardAdapter() {
       const o = Number(d?.scores?.opponent) || 0;
       updateScore(p, o);
       clearRoundCounter();
-      if (d.message) showMessage(String(d.message), { outcome: true });
+      const outcomeType = mapOutcomeToEnum(d?.winner || d?.reason);
+      if (d.message) showMessage(String(d.message), { outcome: true, outcomeType });
+      else showMessage("", { outcome: true, outcomeType });
     } catch {}
   });
 

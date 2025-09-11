@@ -32,7 +32,8 @@ test.describe("Tooltip behavior", () => {
     await expect(tooltip).toBeVisible();
     await expect(tooltip).toContainText("raw physical strength");
 
-    await page.dispatchEvent("#tip-btn", "mouseout");
+    // Use natural mouse movement instead of synthetic mouseout event
+    await page.mouse.move(0, 0); // Move mouse away from button
     await expect(tooltip).toBeHidden();
   });
 });

@@ -175,6 +175,7 @@ export function initScoreboard(container, _controls) {
   }
   const model = new ScoreboardModel();
   const view = new ScoreboardView(model, {
+    rootEl: container,
     messageEl: container.querySelector("#round-message"),
     timerEl: container.querySelector("#next-round-timer"),
     roundCounterEl: container.querySelector("#round-counter"),

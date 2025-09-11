@@ -32,9 +32,13 @@ test.describe("Hover zoom markers", () => {
 
   test("card toggles data-enlarged on hover", async ({ page }) => {
     const card = page.locator("#hover-card");
+
+    // Test real hover interaction instead of synthetic event dispatch
     await card.hover();
     await expect(card).toHaveAttribute("data-enlarged", "true");
-    await page.dispatchEvent("#hover-card", "mouseleave");
+
+    // Use natural mouse movement away instead of dispatchEvent
+    await page.mouse.move(0, 0); // Move mouse away from card
     await expect(card).not.toHaveAttribute("data-enlarged", "true");
   });
 });

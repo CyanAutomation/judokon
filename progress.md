@@ -173,3 +173,23 @@ Step 0.3: Phase 0 validation
 - Outcome: PASS (2 passed). No regressions observed in adapter behavior.
 
 Pausing after Phase 0 for review.
+
+Phase 1 — progress log
+
+Step 1.1: DOM contract support in ScoreboardView
+- Actions: Extended `ScoreboardView` to accept an optional `rootEl` and set enumerated `data-outcome` on the root (`playerWin|opponentWin|draw|none`) while keeping the existing boolean `data-outcome` on `#round-message` for backward compatibility. Updated `initScoreboard` to pass the container as `rootEl`.
+- Outcome: Root outcome attribute is now available without breaking existing selectors or behavior.
+
+Step 1.2: Adapter sets outcome values
+- Actions: Updated `src/helpers/battleScoreboard.js` to map PRD outcomes to enumerated values and set the root `data-outcome`. Also reset the root to `none` on `round.started`.
+- Outcome: PRD events now drive the standardized root attribute consistently.
+
+Step 1.3: Add DOM contract unit test
+- Actions: Added `tests/helpers/battleScoreboard.dom-contract.test.js` to assert that the header receives `data-outcome` values and clears to `none`, while maintaining boolean `data-outcome` on `#round-message`.
+- Outcome: Targeted tests ready; will run them below.
+
+Step 1.4: Phase 1 validation
+- Actions: Ran targeted unit tests: `npx vitest run tests/helpers/battleScoreboard.dom-contract.test.js tests/helpers/battleScoreboard.adapter.prd.test.js --run`.
+- Outcome: PASS (3 total tests). No regressions observed.
+
+Pausing after Phase 1 for review.
