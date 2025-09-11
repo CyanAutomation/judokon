@@ -7,9 +7,8 @@ const debugState = {};
  * @param {*} value - Any JSON-serializable or runtime value useful for tests.
  *
  * @pseudocode
- * 1. Assign `value` to the `debugState` map under `key`.
- * 2. This map is module-scoped and retained for the lifetime of the page
- *    or test worker.
+ * 1. Take a `key` and a `value`.
+ * 2. Store the `value` in the module-scoped `debugState` object using the `key`.
  */
 export function exposeDebugState(key, value) {
   debugState[key] = value;

@@ -8,13 +8,15 @@ const MIN_TOUCH_TARGET_SIZE = 48;
  * Ensure a carousel control meets minimum touch target dimensions.
  *
  * A small control can be hard to tap on touch devices; this helper ensures
- * controls meet the recommended minimum target size and applies minimal
- * padding when necessary.
+ * controls meet the recommended minimum target size (48x48px) and applies
+ * minimal padding when necessary to enlarge the interactive area.
  *
  * @pseudocode
- * 1. Read the computed width and height of `element`.
- * 2. If either dimension is below `MIN_TOUCH_TARGET_SIZE`, set `minWidth`,
- *    `minHeight`, and apply padding to enlarge the target.
+ * 1. Get the computed style of the element.
+ * 2. Parse its width and height.
+ * 3. If either dimension is less than the minimum target size (48px):
+ *    a. Set `minWidth` and `minHeight` to the minimum size.
+ *    b. Apply a standard padding variable to increase the visible size.
  *
  * @param {HTMLElement} element - Button or element to adjust.
  * @returns {void}

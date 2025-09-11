@@ -43,12 +43,20 @@ export function setupLayoutToggle(layoutBtn, panel) {
  * Initialize the Browse Judoka page.
  *
  * @pseudocode
- * 1. Grab DOM elements for the carousel, layout toggle, and country filters.
- * 2. Show a loading spinner (immediately when `forceSpinner` flag is set) and load judoka and gokyo data from JSON files.
- * 3. Render the card carousel, display a message if there are no judoka, and hide the spinner.
- * 4. Attach event listeners for filtering, layout toggle, and panel controls.
- * 5. Handle errors by rendering a fallback card and showing a retry button when loading fails.
- * 6. Initialize tooltips for interactive elements.
+ * 1. Get references to essential DOM elements (carousel container, country list, etc.).
+ * 2. If the main carousel container is missing, log an error and exit.
+ * 3. Set up the country panel toggle functionality.
+ * 4. Define an `init` function to orchestrate the main setup:
+ *    a. Show a loading spinner.
+ *    b. Fetch judoka and gokyo data concurrently.
+ *    c. Render the judoka carousel with the fetched data.
+ *    d. If successful, set up country filtering and layout toggles.
+ *    e. If data loading fails, display an error message, a fallback judoka card, and a retry button.
+ *    f. Hide the spinner when done.
+ * 5. Execute the `init` function.
+ * 6. Initialize all tooltips on the page.
+ *
+ * @returns {Promise<void>} A promise that resolves when the page setup is complete.
  */
 export async function setupBrowseJudokaPage() {
   const carouselContainer = document.getElementById("carousel-container");

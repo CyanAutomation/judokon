@@ -20,9 +20,9 @@ let resolveReady;
  * @summary A promise consumers can await to know when the battle UI has finished
  * initializing (both 'home' and 'state' parts are ready).
  * @pseudocode
- * 1. Create a promise and capture its resolver.
- * 2. Listen for `battle:init` and call the resolver once fired.
- * 3. Expose the promise on `window` for legacy consumers.
+ * 1. Create a new Promise and store its `resolve` function in `resolveReady`.
+ * 2. Add a 'battle:init' event listener to the document that calls `resolveReady` when the event is dispatched.
+ * 3. If in a browser environment, expose the promise on the `window` object for legacy consumers.
  * @type {Promise<void>}
  */
 export const battleReadyPromise = new Promise((resolve) => {

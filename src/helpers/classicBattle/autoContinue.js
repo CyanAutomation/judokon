@@ -2,8 +2,8 @@
  * Control automatic continuation after round outcomes.
  *
  * @pseudocode
- * 1. Default to `true` so rounds advance automatically.
- * 2. Can be toggled via `setAutoContinue(false)` to pause between rounds.
+ * 1. Initialize `autoContinue` to `true`, enabling automatic progression between rounds by default.
+ * 2. The value can be modified by calling `setAutoContinue(newValue)`.
  *
  * @type {boolean}
  */

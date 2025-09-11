@@ -353,11 +353,12 @@ export class BattleDebugLogger {
 }
 
 /**
- * Default logger instance for battle debugging
- * Explicitly enabled for testing and development use
+ * Default logger instance for battle debugging.
+ * This instance is explicitly enabled for testing and development environments.
  *
  * @pseudocode
- * 1. Instantiate `BattleDebugLogger` with `enabled` flag true in tests or development.
+ * 1. Create a new `BattleDebugLogger` instance.
+ * 2. Set the `enabled` option to `true` if the environment is `VITEST` or `development`, otherwise `false`.
  */
 export const debugLogger = new BattleDebugLogger({
   enabled:

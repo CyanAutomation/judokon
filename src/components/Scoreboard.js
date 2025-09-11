@@ -169,11 +169,16 @@ export class Scoreboard {
  * Initialize default scoreboard instance from container.
  *
  * @pseudocode
- * 1. Locate child elements within container.
- * 2. Create model and view bound to them.
- * 3. Store default scoreboard for module-level helpers.
+ * 1. If no container is provided, create a headless scoreboard and exit.
+ * 2. If a default scoreboard already exists, do nothing.
+ * 3. Create a new ScoreboardModel.
+ * 4. Create a new ScoreboardView, locating child elements within the container.
+ * 5. Set the `aria-live` attribute of the score element to "off".
+ * 6. Create a new Scoreboard with the model and view, and store it as the default.
+ *
  * @param {HTMLElement|null} container - Header container or null for headless.
  * @param {object} [_controls] - Deprecated controls parameter retained only for backward compatibility; ignored.
+ * @returns {void}
  * @deprecated The `_controls` parameter is unused and will be removed in a future release.
  */
 export function initScoreboard(container, _controls) {

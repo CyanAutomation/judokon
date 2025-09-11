@@ -111,12 +111,13 @@ export function renderStateList(coreStates) {
 /**
  * Toggle the active state in the progress list, remapping interrupts.
  *
- * @param {HTMLUListElement} list
- * @param {string} state
+ * @param {HTMLUListElement} list The progress list element.
+ * @param {string} state The new active state.
  * @pseudocode
- * 1. Remap non-core states to their nearest core counterparts.
- * 2. Loop over list items and toggle `active` based on the mapped state.
- * 3. Update the battle state badge with the original state.
+ * 1. Set the target state to the input state.
+ * 2. If the target state is not in the list, remap non-core states (e.g., `interruptRound` to `cooldown`).
+ * 3. Iterate through all list items, toggling the 'active' class based on whether the item's `data-state` matches the target state.
+ * 4. Update the separate battle state badge with the original, unmapped state.
  */
 export function updateActiveState(list, state) {
   let target = state;

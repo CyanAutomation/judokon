@@ -5,20 +5,20 @@ import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import logger from "./logger.js";
 
 /**
- * Re-exports from the engine implementation.
+ * Re-exports `BattleEngine`, `STATS`, and `OUTCOME` from the engine implementation.
  *
- * @summary Provide thin re-exports so callers import from the facade instead of
+ * @summary Provides thin re-exports so callers import from the facade instead of
  * the implementation module directly. This keeps call sites stable if the
  * implementation file is refactored.
+ *
+ * @description
+ * - **BattleEngine**: The class implementing match flow and timer control.
+ * - **STATS**: The canonical stats enumeration used when creating engines.
+ * - **OUTCOME**: Enumerates possible round/match outcomes.
  *
  * @pseudocode
  * 1. Import `BattleEngine`, `STATS`, and `OUTCOME` from `./BattleEngine.js`.
  * 2. Re-export these symbols so other modules consume a stable facade.
- *
- * @remarks
- * - `BattleEngine` is the class implementing match flow and timer control.
- * - `STATS` is the canonical stats enumeration used when creating engines.
- * - `OUTCOME` enumerates possible round/match outcomes.
  */
 export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
 

@@ -440,9 +440,18 @@ export function getBattleStateMachine() {
 
 // Re-export for test compatibility
 /**
- * Re-export battle event dispatcher for external modules.
+ * Dispatches an event to the classic battle state machine.
+ *
+ * @summary A thin re-export of the `dispatchBattleEvent` function from the
+ * `eventDispatcher` module. This allows other modules to dispatch events
+ * without directly depending on the state machine implementation.
  *
  * @pseudocode
- * 1. Provide thin alias to `eventDispatcher.dispatchBattleEvent`.
+ * 1. Import `dispatchBattleEvent` from `./eventDispatcher.js`.
+ * 2. Re-export it for external use.
+ *
+ * @param {string} eventName - The name of the event to dispatch.
+ * @param {any} [payload] - Optional data to pass with the event.
+ * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export { dispatchBattleEvent };

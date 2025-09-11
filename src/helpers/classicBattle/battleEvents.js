@@ -34,9 +34,9 @@ function __tuneMaxListenersIfNode(target) {
  * @returns {EventTarget}
  * @summary Get or create the classic battle event target.
  * @pseudocode
- * 1. Look up `EVENT_TARGET_KEY` on `globalThis`.
- * 2. Create a new `EventTarget` if none exists.
- * 3. Return the stored target.
+ * 1. Check if the global event target exists on `globalThis`.
+ * 2. If it doesn't exist, create a new `EventTarget`, store it on `globalThis`, and adjust Node.js listener limits if applicable.
+ * 3. Return the existing or newly created event target.
  */
 function getTarget() {
   if (!globalThis[EVENT_TARGET_KEY]) {
