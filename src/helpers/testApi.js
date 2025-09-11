@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /**
  * Test API for direct access to battle state, timers, and component internals.
  *
@@ -263,7 +262,7 @@ const initApi = {
         triggerEvent: (event, data) => this.triggerComponentEvent(componentName, event, data),
         cleanup: () => this.cleanupComponent(componentName)
       };
-      
+
       return {
         component: null, // Will be populated by specific component factories
         testApi,
