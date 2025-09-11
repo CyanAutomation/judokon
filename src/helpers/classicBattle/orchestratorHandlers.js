@@ -27,12 +27,6 @@ export { interruptMatchEnter } from "./stateHandlers/interruptMatchEnter.js";
 export { roundModificationEnter } from "./stateHandlers/roundModificationEnter.js";
 
 /**
- * Lookup onEnter handler for a state.
- *
- * @param {string} state
- * @returns {Function|undefined}
- */
-/**
  * Look up the onEnter handler for a state.
  *
  * @pseudocode
@@ -45,12 +39,6 @@ export function getOnEnterHandler(state) {
   return stateHandlers[state]?.onEnter;
 }
 
-/**
- * Lookup onExit handler for a state.
- *
- * @param {string} state
- * @returns {Function|undefined}
- */
 /**
  * Look up the onExit handler for a state.
  *
