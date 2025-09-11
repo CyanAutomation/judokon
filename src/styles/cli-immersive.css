@@ -12,10 +12,12 @@
 }
 
 .cli-immersive .cli-stat {
-  background: transparent;
-  border: none;
-  padding: 2px 0;
-  display: block;
+  background: #001900; /* Dark green background for retro theme */
+  border: 1px solid #8cff6b;
+  padding: 4px 6px;
+  display: flex; /* Override block display to maintain layout */
+  min-height: 44px; /* Maintain touch target requirements */
+  align-items: center;
 }
 
 .cli-immersive #cli-header a[data-testid="home-link"] {

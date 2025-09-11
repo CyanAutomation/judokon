@@ -48,7 +48,7 @@
       }
       /* Reserve visible space for countdown even when empty */
       #cli-countdown {
-        min-height: 1.2em;
+        min-height: 1.2em !important; /* Force em units for PRD compliance */
       }
       .state-badge {
         font-size: 12px;
@@ -136,7 +136,7 @@
       }
       /* Reserve space for round message to prevent layout jump */
       #round-message {
-        min-height: 1.4em; /* ~1 line of monospace text */
+        min-height: 1.4em !important; /* Force em units */
       }
       /* Make verbose section scrollable so newest entries are visible */
       #cli-verbose-log {
@@ -147,11 +147,16 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 8px;
+        min-height: 8rem; /* Reserve space for layout stability and touch targets */
       }
       .cli-stat {
         padding: 4px 6px;
         background: #121212;
         border: 1px solid #3a3a3a;
+        min-height: 44px; /* PRD requirement: touch targets ≥44px */
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       .cli-stat.selected {
         border-color: #9ad1ff;
@@ -332,6 +337,7 @@
         }
         #cli-stats {
           grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          min-height: 8rem; /* Maintain reservation on mobile */
         }
         /* Disable absolute centering on narrow screens so the round indicator
            participates in normal flow and avoids overlap with stacked header items. */

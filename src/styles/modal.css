@@ -68,6 +68,18 @@
 }
 
 .modal-backdrop.classic-modal .modal {
-  /* Classic inherits defaults; this rule documents intent and
-     provides a hook for future classic-specific overrides. */
+  /* Subtle, elevated card look for Classic mode */
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #d6d6d6);
+  box-shadow: var(--shadow-elevated, 0 8px 24px rgba(0, 0, 0, 0.18));
+}
+
+.modal-backdrop.classic-modal .modal h2 {
+  margin: 0 0 var(--space-md, 16px) 0;
+}
+
+.modal-backdrop.classic-modal .round-select-buttons {
+  display: grid;
+  gap: var(--space-sm, 8px);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }

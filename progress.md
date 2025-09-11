@@ -368,6 +368,21 @@ Outcome:
 
 Pausing for review.
 
+Phase 6 — classic-mode visual tweaks
+
+Actions:
+- Updated Classic skin styles in `src/styles/modal.css` under `.modal-backdrop.classic-modal .modal`:
+  - Added subtle border and elevated shadow via CSS variables fallbacks.
+  - Normalized heading spacing and improved layout of round-select buttons with a responsive grid.
+
+Targeted tests run:
+- `tests/helpers/classicBattle/roundSelectModal.test.js`
+- `tests/helpers/classicBattle/roundSelectModal.positioning.test.js`
+
+Outcome:
+- Tests passed (8 total across both files). No lifecycle or behavior regressions; Classic mode modal now has a slightly more polished appearance with better button layout, while CLI styling remains unchanged.
+
+Pausing for review.
 Phase 5 — responsive updates and cleanup tests
 
 Actions:
