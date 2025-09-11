@@ -8,6 +8,7 @@ export default defineConfig({
   reporter: "list",
   use: {
     // No baseURL needed; specs use file:// URLs directly.
+    viewport: { width: 1920, height: 1080 },
     screenshot: "only-on-failure",
     trace: "on-first-retry",
     video: "retain-on-failure"
