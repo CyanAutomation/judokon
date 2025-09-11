@@ -1,6 +1,8 @@
 /**
  * Public entry re-export for the Battle CLI page initializer.
  *
+ * @summary Re-export the Battle CLI page initializer.
+ *
  * @description
  * This module re-exports the `init` function from `./battleCLI/init.js` so
  * the page entry point can be imported from a stable path. Tests import this

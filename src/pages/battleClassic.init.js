@@ -61,6 +61,7 @@ if (typeof window !== "undefined") {
  * Initialize the battle state badge based on feature flag state.
  * Uses synchronous DOM manipulation to avoid race conditions.
  *
+ * @summary Initialize battle state badge based on feature flags.
  * @returns {void}
  *
  * @pseudocode
@@ -349,6 +350,7 @@ function showRoundSelectFallback(store) {
 /**
  * Initialize the classic battle page and its UI bindings.
  *
+ * @summary Initialize classic battle page and UI bindings.
  * @description
  * Bootstraps the scoreboard, battle engine, event bridges and UI handlers.
  * Designed to be safe to call at DOMContentLoaded; internal operations are
@@ -367,6 +369,7 @@ function showRoundSelectFallback(store) {
 /**
  * Initialize the classic battle page and its UI bindings.
  *
+ * @summary Initialize classic battle page and UI bindings.
  * @description
  * Bootstraps the scoreboard, battle engine, event bridges and UI handlers.
  * Designed to be safe to call at DOMContentLoaded; internal operations are
