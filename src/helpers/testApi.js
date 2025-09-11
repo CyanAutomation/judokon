@@ -327,8 +327,14 @@ const testApi = {
 };
 
 /**
- * Initialize the test API by exposing it on the window object
- * Only exposes API in test environments
+ * Initialize the test API by exposing it on the window object.
+ *
+ * @pseudocode
+ * 1. If not in test mode, exit early.
+ * 2. If running in a browser, attach the `testApi` and its sub-APIs to
+ *    properties on `window` for debugging.
+ *
+ * @returns {void}
  */
 export function exposeTestAPI() {
   if (!isTestMode()) return;
@@ -345,7 +351,11 @@ export function exposeTestAPI() {
 }
 
 /**
- * Get the test API object (works in both browser and Node environments)
+ * Get the test API object (works in both browser and Node environments).
+ *
+ * @pseudocode
+ * 1. Return the pre-created `testApi` singleton.
+ *
  * @returns {object} Test API object
  */
 export function getTestAPI() {
