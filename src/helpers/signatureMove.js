@@ -23,18 +23,6 @@ let resolveReady;
  *
  * @type {Promise<void>}
  */
-/**
- * Promise resolved when signature-move UI is ready.
- *
- * Consumers can await this promise to defer behavior until the signature
- * move UI has finished initial rendering/animations.
- *
- * @type {Promise<void>}
- *
- * @pseudocode
- * 1. Construct a Promise and capture its resolve function in `resolveReady`.
- * 2. Export the promise so external code may await readiness.
- */
 export const signatureMoveReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });
