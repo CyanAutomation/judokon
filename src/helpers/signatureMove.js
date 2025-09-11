@@ -12,6 +12,7 @@ let resolveReady;
 /**
  * Promise that resolves when signature moves are ready.
  *
+ * @summary Resolves when signature move UI is ready.
  * @description
  * Consumers can await this promise to defer behavior until the signature
  * move UI has finished initial rendering/animations. The resolver is stored
