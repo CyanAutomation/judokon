@@ -1,6 +1,49 @@
 # 🤖 JU-DO-KON! Agent Guide
 
-**Purpose**: Define deterministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.  
+**Purpose**: Define d---
+
+## 🎯 Quick Reference Cards
+
+### 🔍 Context Acquisition
+```bash
+# Start with RAG for any question
+queryRag("How does the battle engine work?")
+
+# Key files to check
+src/data/tooltips.json        # Tooltip content
+src/data/judoka.json          # Card data
+src/config/settingsDefaults.js # Settings source of truth
+```
+
+### 📋 Task Contract Template
+```json
+{
+  "inputs": ["src/classicBattle.js", "tests/battle.test.js"],
+  "outputs": ["src/classicBattle.js", "tests/battle.test.js"],
+  "success": ["eslint: PASS", "vitest: PASS", "no_unsilenced_console"],
+  "errorMode": "ask_on_public_api_change"
+}
+```
+
+### ✅ Essential Validation
+```bash
+# Core validation (run before commit)
+npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
+
+# Agent-specific checks
+grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle && echo "❌ Dynamic import in hot path"
+```
+
+### 🚫 Critical Violations
+- ❌ Dynamic imports in hot paths (`src/helpers/classicBattle*`, `battleEngineFacade.js`)
+- ❌ Unsilenced `console.warn/error` in tests (use `withMutedConsole`)
+- ❌ Functions >50 lines without refactoring
+- ❌ Missing `@pseudocode` in public function JSDoc
+- ❌ Modifying public APIs without explicit approval
+
+---
+
+## 🗂️ Workflow Orderrministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.  
 **Audience**: AI Agents only. Human readability is not the priority.
 
 **Content Ownership**: This file is the authoritative source for agent-specific rules, validation commands, and quality standards. Other documentation files reference this for agent-specific details.
@@ -9,14 +52,54 @@
 
 ---
 
-## 🗂️ Workflow Order
+## ⚡ Executive Summary
+
+**Quick Orientation for AI Agents (30-second read):**
+
+1. **Default to RAG first** - Query `queryRag("your question")` for any "How/Why/What/Where" questions (15x faster than manual exploration)
+2. **Follow 5-step workflow** - Context → Task Contract → Implementation → Validation → Delivery  
+3. **Core validation suite** - `npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast`
+4. **Critical rules** - No dynamic imports in hot paths, no unsilenced console in tests, include @pseudocode in JSDoc
+5. **Key files** - `src/data/tooltips.json`, `src/data/judoka.json`, `src/config/settingsDefaults.js`
+6. **Quality standards** - Functions ≤50 lines, test happy+edge cases, maintain net-better repo state
+7. **Hot path protection** - Use static imports in `src/helpers/classicBattle*`, `battleEngineFacade.js`
+8. **Machine-readable rules** - See JSON ruleset at bottom of document for programmatic access
+9. **Task contracts required** - Declare inputs/outputs/success/error before execution
+10. **Complete validation reference** - [docs/validation-commands.md](./docs/validation-commands.md) contains all commands and troubleshooting
+
+**JSON Ruleset Location**: [Line 545+](#machine-readable-ruleset) | **RAG Guide**: [docs/rag-system.md](./docs/rag-system.md)
+
+---
+
+## � Table of Contents
+
+- [⚡ Executive Summary](#-executive-summary)
+- [🗂️ Workflow Order](#️-workflow-order)  
+- [🎯 Core Principles](#-core-principles)
+- [🧠 RAG Policy](#-rag-retrieval-augmented-generation-policy)
+- [📚 Key Repository Targets](#-key-repository-targets)
+- [🧪 Task Contract](#-task-contract)
+- [✅ Evaluation Criteria](#-evaluation-criteria)
+- [⚔️ Classic Battle Testing](#️-classic-battle-testing)
+- [🧪 Unit Test Quality Standards](#-unit-test-quality-standards)
+- [🎭 Playwright Test Quality Standards](#-playwright-test-quality-standards)
+- [🧯 Runtime Safeguards](#-runtime-safeguards)
+- [🔧 Import Policy](#-import-policy)
+- [🛠 Validation Commands](#-validation-commands)
+- [🧪 Log Discipline](#-log-discipline)
+- [📦 PR Delivery Rules](#-pr-delivery-rules)
+- [🧭 Plan Discipline](#-plan-discipline-for-bots)
+- [📊 Machine-Readable Ruleset](#-machine-readable-ruleset)
+
+---
+
+## �🗂️ Workflow Order
 
 1. Context acquisition (queryRag, key file references)
 2. Task contract definition (inputs/outputs/success/error)
 3. Implementation (import policy, coding rules)
 4. Validation (lint, format, tests, contrast, logs)
-5. Deli**Agent-specific validation (includes hot-path checks):**
-
+5. Delivery (PR body with verification summary)
 ```bash
 # Fail if dynamic import appears in hot paths
 grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null
@@ -58,6 +141,8 @@ npm run rag:validate
 ## 🧠 RAG (Retrieval-Augmented Generation) Policy
 
 This project contains a high-performance vector database with 16,000+ indexed chunks covering documentation, code standards, and game rules. RAG queries return results in ~2 seconds with 62.5% accuracy for finding correct sources.
+
+**See also**: [Quick Reference Cards](#-quick-reference-cards) | [docs/rag-system.md](./docs/rag-system.md) for complete usage guide
 
 ### 🚀 Performance Benefits
 
@@ -490,7 +575,8 @@ rg -n "preload\(|link rel=preload" src || echo "Consider preloading optional mod
 
 ## 🛠 Validation Commands
 
-**Complete command reference:** [docs/validation-commands.md](./docs/validation-commands.md)
+**Complete command reference:** [docs/validation-commands.md](./docs/validation-commands.md)  
+**See also**: [Quick Reference Cards](#-quick-reference-cards) for essential commands
 
 **Essential validation (run before commit):**
 
@@ -580,8 +666,16 @@ CI pipeline green
 
 ## 📊 Machine-Readable Ruleset
 
+**Schema Version**: 1.0.0  
+**Last Updated**: September 11, 2025  
+**Validation**: This JSON should validate against standard schema checkers
+
 ```json
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "JU-DO-KON Agent Rules",
+  "version": "1.0.0",
+  "lastUpdated": "2025-09-11",
   "workflowOrder": ["context", "taskContract", "implementation", "validation", "delivery"],
   "corePrinciples": [
     "clarity",
