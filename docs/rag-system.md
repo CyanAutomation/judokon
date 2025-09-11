@@ -42,6 +42,7 @@ npm run rag:query "How does the battle engine work?"
 ```
 
 Sample output:
+
 ```text
 - Classic Battle introduces the game's basic one-on-one mode.
 - The round resolver compares chosen stats to decide a winner.

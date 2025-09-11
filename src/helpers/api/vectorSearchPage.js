@@ -137,7 +137,9 @@ export async function getExtractor() {
         console.error("Model failed to load (offline)", error);
         extractor = null;
         const wrapped = new Error(help);
-        try { wrapped.cause = error; } catch {}
+        try {
+          wrapped.cause = error;
+        } catch {}
         throw wrapped;
       }
       console.error("Model failed to load", error);

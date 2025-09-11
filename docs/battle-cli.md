@@ -9,6 +9,7 @@ The Battle CLI (`src/pages/battleCLI.html`) provides a terminal-style UI that re
 ## User Interface
 
 ### Controls
+
 - **Number keys [1–5]**: Select stats
 - **Enter/Space**: Advance rounds
 - **Q**: Quit match
@@ -16,11 +17,13 @@ The Battle CLI (`src/pages/battleCLI.html`) provides a terminal-style UI that re
 - **Esc**: Close help or quit dialogs
 
 ### Interactive Elements
+
 - **Stats**: Can be selected by clicking/tapping in addition to keyboard input
 - **Round advancement**: Click to advance rounds
 - **Help panel**: Closing with the button ignores the next background click to avoid accidental advancement
 
 ### Display Elements
+
 - **State badge**: `#battle-state-badge` reflects the current machine state
 - **Bottom line**: Snackbars render as a single status line using `#snackbar-container`
 - **Win target**: Choose 5/10/15 from the header; persisted in localStorage under `battleCLI.pointsToWin`
@@ -29,22 +32,28 @@ The Battle CLI (`src/pages/battleCLI.html`) provides a terminal-style UI that re
 ## Development
 
 ### Bootstrap Helpers
+
 The following functions orchestrate CLI startup:
+
 - `autostartBattle()`: Initializes the battle system
 - `renderStatList()`: Renders available stat options
 - `restorePointsToWin()`: Restores saved win target preference
 
 ### Testing
+
 CLI-specific tests live in `playwright/battle-cli.spec.js` and verify:
+
 - State badge functionality
-- Verbose log behavior  
+- Verbose log behavior
 - Keyboard selection flow
 - UI state transitions
 
 ### Implementation Details
+
 The CLI reuses the core battle engine and state machine from the standard Classic Battle mode, providing interface parity with different presentation.
 
 ## Related Documentation
+
 - [Battle Engine Events API](./components.md) - Engine event system
 - [Testing Guide](./testing-guide.md) - Testing strategies and utilities
 - [Architecture](../design/architecture.md) - Overall system design
