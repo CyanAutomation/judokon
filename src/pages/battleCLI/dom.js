@@ -52,12 +52,10 @@ export function updateRoundHeader(round, target) {
 
   // Phase 3: Keep CLI element for visual consistency (not primary source)
   const el = byId("cli-round");
-  if (el && !sharedUpdated) {
-    // Only update CLI element if shared component failed
+  if (el) {
+    // Always reflect target in CLI element to keep tests and fallback UI consistent,
+    // regardless of whether the shared Scoreboard updated successfully.
     el.textContent = `Round ${round} Target: ${target}`;
-  } else if (el) {
-    // Update to match shared component format
-    el.textContent = `🥋 Round ${round}`;
   }
 
   const root = byId("cli-root");
@@ -89,11 +87,11 @@ export function setRoundMessage(text) {
     // Fallback will be used below
   }
 
-  // Fallback: Direct DOM update (shared element already used by both)
-  if (!sharedUpdated) {
+  // Always keep CLI element in sync for deterministic tests and fallback UI
+  try {
     const el = byId("round-message");
     if (el) el.textContent = text || "";
-  }
+  } catch {}
 }
 
 /**

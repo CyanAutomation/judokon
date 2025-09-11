@@ -24,13 +24,23 @@
  * @returns {Promise<{ sanitize: (html:string)=>string }>} A promise that resolves to an object with a `sanitize` method.
  */
 export async function getSanitizer() {
+  // Module-level singleton cache
+  // eslint-disable-next-line no-var
+  var cached;
+  try {
+    // Preserve existing cached instance across calls within this module scope
+    // by storing on the function object when available.
+    if (getSanitizer.__cached) return getSanitizer.__cached;
+    cached = getSanitizer.__cached;
+  } catch {}
   if (cached) return cached;
 
   async function tryLoad(specifier) {
     try {
       const mod = await import(specifier);
       const maybe = mod?.default ?? mod;
-      const instance = typeof maybe === "function" ? maybe(window) : maybe;
+      const instance =
+        typeof maybe === "function" ? maybe(typeof window !== "undefined" ? window : undefined) : maybe;
       if (instance && typeof instance.sanitize === "function") return instance;
     } catch {
       // ignore and try next
@@ -40,15 +50,24 @@ export async function getSanitizer() {
 
   // Prefer bare specifier (compatible with Vitest; production static servers use native module resolution)
   const viaBare = await tryLoad("dompurify");
-  if (viaBare) return (cached = viaBare);
+  if (viaBare) {
+    getSanitizer.__cached = viaBare;
+    return (cached = viaBare);
+  }
 
   // Prefer CDN for GitHub Pages (no node_modules on server)
   const viaCDN = await tryLoad("https://esm.sh/dompurify@3.2.6");
-  if (viaCDN) return (cached = viaCDN);
+  if (viaCDN) {
+    getSanitizer.__cached = viaCDN;
+    return (cached = viaCDN);
+  }
 
   // Fallback for raw static servers used in Playwright dev servers
   const viaPath = await tryLoad("/node_modules/dompurify/dist/purify.es.js");
-  if (viaPath) return (cached = viaPath);
+  if (viaPath) {
+    getSanitizer.__cached = viaPath;
+    return (cached = viaPath);
+  }
 
   // Final fallback: minimal allowlist sanitizer good enough for tests
   const ALLOW = new Set(["br", "strong", "em"]);
@@ -73,5 +92,6 @@ export async function getSanitizer() {
     return out;
   }
   cached = { sanitize: sanitizeBasic };
+  getSanitizer.__cached = cached;
   return cached;
 }

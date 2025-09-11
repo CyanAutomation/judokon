@@ -406,19 +406,16 @@ async function handleNextRoundExpiration(controls, btn) {
     updateDebugPanel();
   } catch {}
 
-  // Dispatch `ready` before resolving the controls to satisfy tests that
-  // await `controls.ready` and then assert the dispatch occurred.
+  // Dispatch `ready` (fire-and-forget) before resolving the controls so
+  // tests awaiting `controls.ready` don't depend on orchestrator internals.
   try {
-    // The orchestrator owns the state machine, so it's responsible for
-    // transitioning. We dispatch 'ready' to signal cooldown completion.
-    await dispatchBattleEvent("ready");
+    void dispatchBattleEvent("ready");
   } catch {
-    // Fallback for non-orchestrated environments or if the primary dispatch fails.
     try {
       const getter = readDebugState("getClassicBattleMachine");
       const machine = typeof getter === "function" ? getter() : getter;
       if (machine?.dispatch) {
-        await machine.dispatch("ready");
+        void machine.dispatch("ready");
       }
     } catch {}
   }

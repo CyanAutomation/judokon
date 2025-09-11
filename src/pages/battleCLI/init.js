@@ -199,7 +199,10 @@ export const __test = {
   handleMatchOver,
   handleBattleState,
   handleWaitingForPlayerActionKey,
-  onClickAdvance
+  onClickAdvance,
+  // Re-expose scoreboard message helpers for tests
+  handleScoreboardShowMessage,
+  handleScoreboardClearMessage
 };
 
 /**
@@ -1641,6 +1644,30 @@ function handleMatchOver() {
     }
   } catch {}
   main.append(section);
+}
+
+/**
+ * Handle scoreboard adapter message display by updating the CLI round message.
+ *
+ * @param {{ detail?: string }} e
+ * @returns {void}
+ */
+function handleScoreboardShowMessage(e) {
+  try {
+    const text = e?.detail ?? "";
+    setRoundMessage(String(text));
+  } catch {}
+}
+
+/**
+ * Handle scoreboard adapter message clear by resetting the CLI round message.
+ *
+ * @returns {void}
+ */
+function handleScoreboardClearMessage() {
+  try {
+    setRoundMessage("");
+  } catch {}
 }
 
 /**
