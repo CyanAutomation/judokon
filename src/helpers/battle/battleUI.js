@@ -89,6 +89,8 @@ export function resetStatButtons(
   });
 }
 
+let cancelFade;
+
 /**
  * Display the round result message and fade it out after 2s.
  *
@@ -103,7 +105,6 @@ export function resetStatButtons(
  * @param {object} [scheduler] - Optional scheduler with `onFrame`, `cancel`, `setTimeout`, `clearTimeout`.
  * @returns {void}
  */
-let cancelFade;
 export function showResult(
   message,
   scheduler = {
