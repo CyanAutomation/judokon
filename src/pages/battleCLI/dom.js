@@ -4,13 +4,18 @@ import * as engineFacade from "../../helpers/battleEngineFacade.js";
 // Dynamic import kept for fallback scenarios only
 let sharedScoreboardHelpers = null;
 try {
-  import("../../components/Scoreboard.js").then((module) => {
-    sharedScoreboardHelpers = {
-      showMessage: module.showMessage,
-      updateScore: module.updateScore,
-      updateRoundCounter: module.updateRoundCounter
-    };
-  });
+  import("../../components/Scoreboard.js")
+    .then((module) => {
+      sharedScoreboardHelpers = {
+        showMessage: module.showMessage,
+        updateScore: module.updateScore,
+        updateRoundCounter: module.updateRoundCounter
+      };
+    })
+    .catch(() => {
+      // Graceful fallback if shared Scoreboard not available or methods missing
+      sharedScoreboardHelpers = null;
+    });
 } catch {
   // Graceful fallback if shared Scoreboard not available
 }
@@ -40,21 +45,18 @@ export const byId = (id) => document.getElementById(id);
  */
 export function updateRoundHeader(round, target) {
   // Phase 3: Primary update via shared Scoreboard component
-  let sharedUpdated = false;
   try {
     if (sharedScoreboardHelpers?.updateRoundCounter) {
       sharedScoreboardHelpers.updateRoundCounter(round);
-      sharedUpdated = true;
     }
   } catch {
-    // Fallback will be used below
+    // Graceful fallback if shared component fails
   }
 
   // Phase 3: Keep CLI element for visual consistency (not primary source)
   const el = byId("cli-round");
   if (el) {
-    // Always reflect target in CLI element to keep tests and fallback UI consistent,
-    // regardless of whether the shared Scoreboard updated successfully.
+    // Always show target in CLI element for user clarity
     el.textContent = `Round ${round} Target: ${target}`;
   }
 
@@ -77,11 +79,9 @@ export function updateRoundHeader(round, target) {
  */
 export function setRoundMessage(text) {
   // Phase 3: Primary update via shared Scoreboard component
-  let sharedUpdated = false;
   try {
     if (sharedScoreboardHelpers?.showMessage) {
       sharedScoreboardHelpers.showMessage(text || "", { outcome: false });
-      sharedUpdated = true;
     }
   } catch {
     // Fallback will be used below
@@ -129,7 +129,7 @@ export function updateScoreLine() {
     el.dataset.scoreOpponent = String(opponentScore);
   } else if (el) {
     // Update to match shared component format
-    el.textContent = `📊 You: ${playerScore} Opponent: ${opponentScore}`;
+    el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
     el.dataset.scorePlayer = String(playerScore);
     el.dataset.scoreOpponent = String(opponentScore);
   }

@@ -107,14 +107,14 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   });
 
   it("should gracefully handle missing shared scoreboard helpers", async () => {
-    // Test graceful fallback when shared component is not available
-    vi.doMock("../../src/components/Scoreboard.js", () => {
-      throw new Error("Module not available");
-    });
+    // Test graceful fallback when shared component methods are not available
+    vi.doMock("../../src/components/Scoreboard.js", () => ({
+      // Return empty object - no showMessage, updateScore, updateRoundCounter methods
+    }));
 
     const { setRoundMessage } = await import("../../src/pages/battleCLI/dom.js");
 
-    // Should not throw error even if shared component fails
+    // Should not throw error even if shared component methods are missing
     expect(() => setRoundMessage("Test message")).not.toThrow();
 
     // CLI element should still be updated

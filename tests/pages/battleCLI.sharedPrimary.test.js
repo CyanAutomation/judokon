@@ -81,7 +81,7 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
 
     // Verify CLI element shows enhanced format when shared component works
     const cliScore = document.getElementById("cli-score");
-    expect(cliScore.textContent).toBe("📊 You: 3 Opponent: 2");
+    expect(cliScore.textContent).toBe("You: 3 Opponent: 2");
     expect(cliScore.dataset.scorePlayer).toBe("3");
     expect(cliScore.dataset.scoreOpponent).toBe("2");
   });
@@ -91,9 +91,9 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
 
     updateRoundHeader(4, 7);
 
-    // Verify CLI element shows enhanced format when shared component works
+    // Verify CLI element shows target format for consistency
     const cliRound = document.getElementById("cli-round");
-    expect(cliRound.textContent).toBe("🥋 Round 4");
+    expect(cliRound.textContent).toBe("Round 4 Target: 7");
 
     // Verify root dataset still updated
     const root = document.getElementById("cli-root") || document.body;

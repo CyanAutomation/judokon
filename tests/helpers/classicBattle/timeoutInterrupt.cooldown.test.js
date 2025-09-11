@@ -102,13 +102,13 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     // instead of relying on complex promise coordination
     await machine.dispatch("timeoutReached");
     await machine.dispatch("interruptRound");
-    
+
     // Advance timers to trigger cooldown auto-advance
     await vi.advanceTimersByTimeAsync(1000);
 
     const { getStateSnapshot } = await import("../../../src/helpers/classicBattle/battleDebug.js");
     const snapshot = getStateSnapshot();
-    
+
     // After timeout → interrupt → cooldown → advance, we should be in the next round
     // If auto-select is enabled, we may be in roundDecision; otherwise waitingForPlayerAction
     expect(["roundStart", "waitingForPlayerAction", "roundDecision"]).toContain(snapshot?.state);
