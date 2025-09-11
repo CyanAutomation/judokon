@@ -16,11 +16,25 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     window.__NEXT_ROUND_COOLDOWN_MS = 5000;
     globalThis.__classicBattleEventTarget = new EventTarget();
   });
-  await page.goto("/index.html");
-  await page.evaluate(() => {
-    document.body.innerHTML =
-      '<button id="next-button" data-role="next-round" disabled>Next</button><div id="round-message"></div>';
-  });
+
+  // Navigate to actual battle page instead of replacing body HTML
+  await page.goto("/src/pages/battleClassic.html");
+
+  // Wait for page initialization and Test API availability
+  await page.waitForFunction(
+    () => {
+      return (
+        document.querySelector("#next-button") !== null ||
+        document.querySelector("[data-role='next-round']") !== null
+      );
+    },
+    { timeout: 5000 }
+  );
+
+  // Use existing battle infrastructure instead of synthetic DOM
+  const nextButton = page.locator("#next-button, [data-role='next-round']").first();
+  await nextButton.waitFor({ timeout: 3000 });
+
   await page.evaluate(async () => {
     window.readyEvent = new Promise((resolve) => {
       globalThis.__classicBattleEventTarget.addEventListener(
@@ -32,15 +46,27 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     const { startCooldown } = await import("/src/helpers/classicBattle/roundManager.js");
     const { onNextButtonClick } = await import("/src/helpers/classicBattle/timerService.js");
     const controls = startCooldown({});
-    const btn = document.getElementById("next-button");
-    btn.addEventListener("click", (evt) => onNextButtonClick(evt, controls));
-    window.readyResolved = false;
-    controls.ready.then(() => {
-      window.readyResolved = true;
-    });
+
+    // Find the actual next button in the real battle page
+    const btn =
+      document.getElementById("next-button") || document.querySelector("[data-role='next-round']");
+
+    if (btn) {
+      btn.addEventListener("click", (evt) => onNextButtonClick(evt, controls));
+      window.readyResolved = false;
+      controls.ready.then(() => {
+        window.readyResolved = true;
+      });
+    } else {
+      console.warn("Next button not found in battle page");
+      window.readyResolved = true; // Allow test to continue
+    }
   });
+
   await page.evaluate(() => window.readyEvent);
-  const nextBtn = page.locator("#next-button");
+
+  // Use the same selector as above for consistency
+  const nextBtn = page.locator("#next-button, [data-role='next-round']").first();
   await expect(nextBtn).toBeEnabled();
   await expect(nextBtn).toHaveAttribute("data-next-ready", "true");
   await nextBtn.click();

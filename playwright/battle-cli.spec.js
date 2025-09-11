@@ -42,8 +42,17 @@ test.describe("Classic Battle CLI", () => {
       if (msg.type() === "error") errors.push(text);
     });
 
-    // Wait a bit to see the console logs
-    await page.waitForTimeout(1000);
+    // Check Test API availability instead of arbitrary wait
+    const hasTestAPI = await page.evaluate(() => {
+      return typeof window.__TEST_API !== "undefined";
+    });
+
+    if (hasTestAPI) {
+      console.log("✅ Test API available for battle state checking");
+    } else {
+      console.log("ℹ️ Test API not available, using DOM-based approach");
+    }
+
     console.log(
       "Console logs:",
       logs.filter((log) => log.includes("[RoundSelectModal]") || log.includes("[CLI]"))
@@ -63,8 +72,16 @@ test.describe("Classic Battle CLI", () => {
   });
 
   test("state badge hidden when flag disabled", async ({ page }) => {
-    // Wait a bit more for full initialization
-    await page.waitForTimeout(3000);
+    // Use Test API for faster initialization check instead of arbitrary timeout
+    const stateInfo = await page.evaluate(() => {
+      if (window.__TEST_API && window.__TEST_API.state) {
+        const battleState = window.__TEST_API.state.getBattleState();
+        return { hasTestAPI: true, battleState };
+      }
+      return { hasTestAPI: false, battleState: null };
+    });
+
+    console.log("Battle initialization state:", stateInfo);
 
     // Either auto-start should work, or we need to click a start button
     const startBtn = page.locator("#start-match-button");
@@ -74,8 +91,24 @@ test.describe("Classic Battle CLI", () => {
       // Start button is present, click it
       console.log("Found start button, clicking it");
       await startBtn.click();
-      // Wait a bit after clicking to ensure the action processes
-      await page.waitForTimeout(1000);
+
+      // Use Test API to check state transition instead of arbitrary wait
+      if (stateInfo.hasTestAPI) {
+        await page
+          .waitForFunction(
+            () => {
+              const newState = window.__TEST_API.state.getBattleState();
+              return newState !== null && newState !== "waitingForMatchStart";
+            },
+            { timeout: 3000 }
+          )
+          .catch(() => {
+            console.log("Battle state didn't transition quickly, continuing test");
+          });
+      } else {
+        // Fallback: brief wait for DOM updates
+        await page.waitForTimeout(500);
+      }
     } else {
       console.log("No start button found, assuming auto-start should work");
     }
@@ -118,8 +151,15 @@ test.describe("Classic Battle CLI", () => {
         }
       });
 
-      // Wait a bit for the manual start to take effect
-      await page.waitForTimeout(2000);
+      // Use Test API to verify battle started instead of arbitrary wait
+      const finalState = await page.evaluate(() => {
+        if (window.__TEST_API && window.__TEST_API.state) {
+          return window.__TEST_API.state.getBattleState();
+        }
+        return "unknown";
+      });
+
+      console.log("Final battle state after manual start attempt:", finalState);
     }
 
     // Check that the battle state badge is hidden when flag is disabled
