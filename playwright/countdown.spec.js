@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
+import { withMutedConsole } from "../tests/utils/console.js";
 
 // Improved countdown test using direct Test API access instead of waiting for timers
 
 test.describe("Battle CLI countdown timing", () => {
-  test("setCountdown updates data-remaining-time instantly via Test API", async ({ page }) => {
+  test("setCountdown updates data-remaining-time instantly via Test API", async ({ page }) => withMutedConsole(async () => {
     const url = process.env.CLI_TEST_URL || "http://127.0.0.1:5000/src/pages/battleCLI.html";
     await page.goto(url);
 
@@ -17,11 +18,11 @@ test.describe("Battle CLI countdown timing", () => {
         windowKeys: Object.keys(window).filter((k) => k.startsWith("__"))
       };
     });
-    console.log("Window props:", windowProps);
+    // console.log("Window props:", windowProps);
 
     // For now, fallback to the existing approach if Test API not available
     if (!windowProps.hasTestAPI && windowProps.hasSetCountdown) {
-      console.log("Test API not available, using legacy approach");
+      // console.log("Test API not available, using legacy approach");
 
       // Ensure the countdown element exists
       await expect(page.locator("#cli-countdown")).toHaveCount(1);
@@ -68,5 +69,5 @@ test.describe("Battle CLI countdown timing", () => {
     await page.evaluate(() => window.__TEST_API.timers.setCountdown(0));
     remaining = await page.locator("#cli-countdown").getAttribute("data-remaining-time");
     expect(remaining).toBe("0");
-  });
+  }, ["log", "warn", "error"]));
 });
