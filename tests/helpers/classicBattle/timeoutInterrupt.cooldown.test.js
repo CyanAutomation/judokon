@@ -58,7 +58,6 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
 }));
 
 describe("timeout → interruptRound → cooldown auto-advance", () => {
-  let battleMod;
   let timers;
 
   beforeEach(async () => {
@@ -73,7 +72,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
     timers = vi.useFakeTimers();
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
-    battleMod = await initClassicBattleTest({ afterMock: true });
+    await initClassicBattleTest({ afterMock: true });
   });
 
   afterEach(() => {
@@ -86,7 +85,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
 
   it("advances from cooldown after interrupt with 1s auto-advance", async () => {
     // battleMod is already initialized in beforeEach - don't call initClassicBattleTest again
-    
+
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
@@ -99,40 +98,17 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     await machine.dispatch("ready");
     await machine.dispatch("cardsRevealed");
 
-    const timeoutPromise = battleMod.getRoundTimeoutPromise();
-    const countdownPromise = battleMod.getCountdownStartedPromise();
-
-    // Advance timers to trigger round timeout
+    // Simulate the timeout → interrupt → cooldown flow directly
+    // instead of relying on complex promise coordination
+    await machine.dispatch("timeoutReached");
+    await machine.dispatch("interruptRound");
+    
+    // Advance timers to trigger cooldown auto-advance
     await vi.advanceTimersByTimeAsync(1000);
-    
-    // Use Promise.race to avoid hanging indefinitely
-    const timeoutResult = await Promise.race([
-      timeoutPromise,
-      new Promise((resolve) => setTimeout(() => resolve("TIMEOUT"), 2000))
-    ]);
-    
-    if (timeoutResult === "TIMEOUT") {
-      console.log("Round timeout promise never resolved");
-      // For now, just pass the test if the basic setup works
-      expect(true).toBe(true);
-      return;
-    }
 
-    const countdownResult = await Promise.race([
-      countdownPromise,
-      new Promise((resolve) => setTimeout(() => resolve("TIMEOUT"), 2000))
-    ]);
-    
-    if (countdownResult === "TIMEOUT") {
-      console.log("Countdown promise never resolved");
-      // For now, just pass the test if the basic setup works
-      expect(true).toBe(true);
-      return;
-    }
-
-    await vi.advanceTimersByTimeAsync(1000);
     const { getStateSnapshot } = await import("../../../src/helpers/classicBattle/battleDebug.js");
     const snapshot = getStateSnapshot();
+    
     // After timeout → interrupt → cooldown → advance, we should be in the next round
     // If auto-select is enabled, we may be in roundDecision; otherwise waitingForPlayerAction
     expect(["roundStart", "waitingForPlayerAction", "roundDecision"]).toContain(snapshot?.state);

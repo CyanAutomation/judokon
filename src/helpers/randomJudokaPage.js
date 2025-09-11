@@ -364,25 +364,24 @@ export async function setupRandomJudokaPage() {
 }
 
 /**
- * @summary TODO: Add summary
+ * Initialize the Random Judoka page.
+ *
+ * @summary Boots the page by setting up UI/data and waiting for navigation.
+ * @returns {Promise<void>}
  * @pseudocode
- * 1. TODO: Add pseudocode
+ * setup ← setupRandomJudokaPage()
+ * nav ← window.navReadyPromise || Promise.resolve()
+ * await Promise.all([setup, nav])
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+export async function initRandomJudokaPage() {
+  const setup = setupRandomJudokaPage();
+  let nav = Promise.resolve();
+  try {
+    const maybe = typeof window !== "undefined" ? window.navReadyPromise : null;
+    if (maybe && typeof maybe.then === "function") nav = maybe;
+  } catch {}
+  await Promise.all([setup, nav.catch?.(() => {}) || nav]);
+}
 /**
  * Initializes the Random Judoka page after the DOM is ready and navigation
  * is prepared.

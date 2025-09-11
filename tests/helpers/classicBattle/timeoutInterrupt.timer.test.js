@@ -52,7 +52,7 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
 beforeEach(async () => {
   vi.resetModules();
   vi.clearAllMocks();
-  
+
   // Import battleMod after mocks
   const { initClassicBattleTest } = await import("./initClassicBattle.js");
   await initClassicBattleTest({ afterMock: true });

@@ -7,7 +7,7 @@ let battleMod;
 beforeEach(async () => {
   vi.resetModules();
   vi.clearAllMocks();
-  
+
   // Import battleMod after mocks
   const { initClassicBattleTest } = await import("./initClassicBattle.js");
   battleMod = await initClassicBattleTest({ afterMock: true });
@@ -23,7 +23,7 @@ describe("timeout → interruptRound → cooldown auto-advance - minimal", () =>
   it("can get promises without hanging", async () => {
     const timeoutPromise = battleMod.getRoundTimeoutPromise();
     const countdownPromise = battleMod.getCountdownStartedPromise();
-    
+
     expect(timeoutPromise).toBeInstanceOf(Promise);
     expect(countdownPromise).toBeInstanceOf(Promise);
   });
