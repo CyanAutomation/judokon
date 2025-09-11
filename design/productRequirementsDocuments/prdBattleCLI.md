@@ -4,7 +4,14 @@
 
 ## TL;DR
 
-A **terminal-style, text-first** presentation of Classic Battle that reuses the **same engine and state machine**. It renders prompts, timers, selections, outcomes, and scores using **monospace text** with **full keyboard support** (and optional pointer/touch). The mode targets **fast loads, low memory, high readability**, and **deterministic behavior** suited to both players and automated testing—**without** altering game rules.
+A **terminal-style, text-first** presentation of Classic Battle that reuses the **same engine **Styling**
+
+- Monospace font; ≥4.5:1 contrast; visible focus ring; minimal CSS only.
+- Terminal-authentic design inspired by classic CLI interfaces with clean typography hierarchy.
+- Refined visual spacing using consistent 8px rhythm for authentic terminal feel.
+- Minimal section separators using simple ASCII characters (—, |, >) for clean visual breaks.
+- Enhanced contrast ratios: 7:1+ for primary text, 4.5:1+ for secondary text.
+- Optional "retro" look is acceptable if contrast/accessibility are preserved.state machine**. It renders prompts, timers, selections, outcomes, and scores using **monospace text** with **full keyboard support** (and optional pointer/touch). The mode targets **fast loads, low memory, high readability**, and **deterministic behavior** suited to both players and automated testing—**without** altering game rules.
 
 ---
 
@@ -54,6 +61,8 @@ The animated Classic Battle UI can be heavy for low-spec devices and noisy for p
 2. **Stable Hooks:** Test selectors (`#cli-root`, `#cli-countdown`, etc.) are never renamed post-release.
 3. **Observability:** Verbose log mode shows state transitions and inputs with timestamps in real-time.
 4. **Tiny Footprint:** CLI mode JS bundle <50KB; memory footprint <30MB during steady-state play.
+5. **Terminal Authenticity:** Visual design matches expectations of experienced CLI users while maintaining accessibility.
+6. **Typography Consistency:** Monospace font stack with proper spacing and contrast ratios throughout.
 
 ---
 
@@ -109,32 +118,43 @@ The animated Classic Battle UI can be heavy for low-spec devices and noisy for p
 
 ### Layout (single column, desktop & mobile)
 
-+––––––––––––––––––––––––––+
-| Classic Battle — CLI Round 2 Target: 5 |
-| [State: waitingForPlayerAction] [Score: 1–1] |
-+––––––––––––––––––––––––––+
+```
+┌─────────────────────────────────────────┐
+│ bash — JU-DO-KON                        │
+├─────────────────────────────────────────┤
+│ Classic Battle — CLI │ Round 2 │ You: 1 │
+│                      │  of 5   │ CPU: 1 │
+├─────────────────────────────────────────┤
+│                                         │
+│ ⏱ Timer: 07s                           │
+│ → Choose your stat:                     │
+│                                         │
+│   (1) Power ……………………… 8               │
+│   (2) Speed ……………………… 7               │
+│   (3) Technique ………………… 9               │
+│   (4) Kumi-kata ……………… 6               │
+│   (5) Ne-waza …………………… 7               │
+│                                         │
+│ ────────────────────────────────────────│
+│                                         │
+│ Last: You WON (Technique 9 vs 7)       │
+│                                         │
+│ ────────────────────────────────────────│
+│                                         │
+│ [1-5] Select │ [↵/Space] Next │ [H] Help│
+│                                         │
+└─────────────────────────────────────────┘
+```
 
-[Timer: 07]  
-Choose a stat:  
-(1) Power ………. 8  
-(2) Speed ………. 7  
-(3) Technique …… 9  
-(4) Kumi-kata …… 6  
-(5) Ne-waza …….. 7
+**Sections (Enhanced with Terminal Aesthetics)**
 
-Last round: You WON (Technique 9 vs 7)  
-Match Outcome: You WON (9 vs 7)
-
-Shortcuts: [1–5] Select [Enter]/[Space] Next [H] Help [Q] Quit [Esc] Back
-
-**Sections**
-
-- **Header:** mode title, round context, **optional** state badge, score.
-- **Prompt Area:** timer + instruction.
-- **Stat List:** numbered rows; whole row is focusable/clickable; shows value; each row ≥44px tall for tap targets.
-- **Round Message:** outcome and compared values.
-- **Shortcuts/Help:** inline hints; help panel toggled with `H` and closed with `Esc`.
-- **Settings (collapsible):** win target, seed, verbose toggle (remembered).
+- **Terminal Title Bar:** Authentic window title "bash — JU-DO-KON" with proper styling.
+- **Header:** Clean layout with mode title, round context, and score - no visual clutter.
+- **Status Line:** Timer with clear prompt using terminal-style indicators (⏱, →).
+- **Stat List:** Clean numbered rows with dotted leaders for value alignment; minimal borders.
+- **Round Message:** Simple outcome display with clear contrast and spacing.
+- **Command Hints:** Terminal-style shortcut reference at bottom using pipe separators.
+- **Settings (collapsible):** Minimal styling consistent with terminal aesthetics.
 
 **Focus & Navigation**
 
@@ -165,6 +185,47 @@ Additional test-contract details and page-level helpers
     - `await page.evaluate(() => window.__battleCLIinit.setSettingsCollapsed(true));`
 
   These helpers are intentionally small and synchronous to keep tests deterministic.
+
+---
+
+## Enhanced Visual Design Requirements
+
+### Terminal Authenticity Improvements
+
+Based on analysis of classic CLI interfaces, the following enhancements align the design with terminal user expectations:
+
+**Typography & Spacing:**
+- Consistent 8px spacing rhythm throughout the interface
+- Enhanced contrast ratios: 7:1+ for primary text, 4.5:1+ for secondary
+- Proper line-height (1.4-1.5) for monospace readability
+- Strategic use of Unicode characters for visual separators (│, ─, ⏱, →)
+
+**Visual Hierarchy:**
+- Clean section dividers using minimal ASCII art
+- Dotted leaders (……) for stat value alignment 
+- Reduced visual noise in borders and backgrounds
+- Terminal-style prompt indicators and status symbols
+
+**Layout Density:**
+- Optimized information density without sacrificing accessibility
+- Cleaner stat list presentation with better visual alignment
+- Streamlined header layout with logical information grouping
+- More authentic command hint styling at footer
+
+**Color & Contrast:**
+- Enhanced retro theme with better contrast ratios
+- Subtle background variations to improve readability
+- Focus indicators that maintain terminal aesthetics
+- Status colors that follow terminal conventions
+
+### Accessibility Preservation
+
+All visual enhancements maintain existing accessibility features:
+- WCAG 2.1 AA compliance preserved
+- Touch target sizes (≥44px) maintained  
+- Keyboard navigation unchanged
+- Screen reader announcements preserved
+- Focus management remains consistent
 
 ---
 

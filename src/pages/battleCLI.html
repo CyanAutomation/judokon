@@ -22,6 +22,8 @@
           monospace;
         background: #0b0c0c;
         color: #f2f2f2;
+        line-height: 1.45; /* Enhanced readability for monospace */
+        font-size: 14px; /* Consistent base size */
       }
       .cli-root {
         min-height: 100vh;
@@ -33,22 +35,31 @@
         max-width: 100%;
       }
       .cli-header {
-        padding: 8px 12px;
+        padding: 12px 16px; /* Increased for better touch targets */
         border-bottom: 1px solid #3a3a3a;
         display: flex;
         align-items: center;
         justify-content: space-between;
         min-width: 18ch; /* reserve width for longest state (prevents wrap/jump) */
         box-sizing: border-box; /* include padding in fixed height */
-        height: 56px; /* hard cap header height for consistency */
+        height: 64px; /* Slightly increased for better proportions */
         position: relative; /* allow absolute-centering children like #cli-round */
+        background: #0d0d0d; /* Subtle background variation */
       }
       .cli-title {
-        font-weight: 700;
+        font-weight: 600; /* Slightly reduced for cleaner look */
+        font-size: 15px;
+        color: #ffffff; /* Enhanced contrast */
       }
-      /* Reserve visible space for countdown even when empty */
+      /* Enhanced countdown styling with terminal aesthetics */
       #cli-countdown {
         min-height: 1.2em !important; /* Force em units for PRD compliance */
+        font-weight: 600;
+        color: #ffcc00; /* Warning color for timer */
+      }
+      #cli-countdown:before {
+        content: "⏱ "; /* Timer icon for visual clarity */
+        opacity: 0.8;
       }
       .state-badge {
         font-size: 12px;
@@ -74,8 +85,8 @@
         max-width: 100%;
         margin: 0;
         flex-direction: column;
-        padding: 12px 16px;
-        gap: 12px;
+        padding: 16px 20px; /* Consistent 8px rhythm */
+        gap: 16px; /* 8px rhythm maintained */
       }
       .cli-main > * {
         max-width: 100%;
@@ -104,10 +115,11 @@
         border-color: #8cff6b;
       }
       .cli-block {
-        padding: 8px 10px;
+        padding: 12px 16px; /* Consistent 8px rhythm */
         border: 1px solid #333;
         background: #0f0f0f;
-        border-radius: 6px;
+        border-radius: 4px; /* Subtle rounding */
+        margin-bottom: 4px; /* Better section separation */
       }
       .cli-settings {
         background: #0d0d0d;
@@ -128,15 +140,35 @@
         align-items: center;
         flex-wrap: wrap;
       }
-      /* ASCII separators to mimic terminal panes */
+      /* Terminal-style separators with enhanced visual hierarchy */
       .ascii-sep {
         font-family: inherit;
-        color: inherit;
-        padding: 4px 0;
+        color: #4a4a4a; /* Subtle separator color */
+        padding: 8px 0;
+        text-align: center;
+        font-size: 12px;
+        letter-spacing: 2px; /* Spaced out for visual effect */
+        opacity: 0.7;
       }
-      /* Reserve space for round message to prevent layout jump */
+      /* Enhanced round message styling */
       #round-message {
         min-height: 1.4em !important; /* Force em units */
+        font-weight: 500;
+        color: #ffffff; /* Enhanced contrast for important messages */
+      }
+      #round-message:not(:empty):before {
+        content: "→ "; /* Arrow indicator for results */
+        opacity: 0.8;
+        color: #9ad1ff;
+      }
+      /* Add prompt indicator for stat selection */
+      .cli-block[aria-label="Stat Selection"]:before {
+        content: "→ Choose your stat:";
+        display: block;
+        color: #9ad1ff;
+        font-weight: 500;
+        margin-bottom: 8px;
+        opacity: 0.9;
       }
       /* Make verbose section scrollable so newest entries are visible */
       #cli-verbose-log {
@@ -150,21 +182,31 @@
         min-height: 8rem; /* Reserve space for layout stability and touch targets */
       }
       .cli-stat {
-        padding: 4px 6px;
+        padding: 8px 12px; /* Enhanced padding for better touch targets */
         background: #121212;
         border: 1px solid #3a3a3a;
         min-height: 44px; /* PRD requirement: touch targets ≥44px */
         display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: space-between; /* Better alignment for terminal look */
+        font-family: inherit;
+        font-size: 14px;
+        border-radius: 3px; /* Subtle rounding for modern feel */
+        transition: background-color 0.15s ease; /* Smooth hover feedback */
       }
       .cli-stat.skeleton {
-        opacity: 0.6;
+        opacity: 0.5;
         color: #666;
+        font-style: italic; /* Subtle indicator for placeholder state */
       }
       .cli-stat.selected {
         border-color: #9ad1ff;
         background: #1a1a1a;
+        box-shadow: 0 0 0 1px #9ad1ff33; /* Subtle glow effect */
+      }
+      .cli-stat:hover {
+        background: #181818; /* Subtle hover feedback */
+        border-color: #4a4a4a;
       }
       /* High-contrast focus state for stat rows */
       .cli-stat:focus {
@@ -191,11 +233,12 @@
         align-items: flex-end;
         text-align: right;
         white-space: pre;
-        gap: 2px;
+        gap: 4px; /* Consistent 8px rhythm */
+        font-size: 13px; /* Slightly smaller for hierarchy */
+        color: #e0e0e0; /* Enhanced contrast */
       }
       .cli-status > div {
-        line-height: 1;
-        font-size: 14px;
+        line-height: 1.2;
         margin: 0;
         padding: 0;
       }
@@ -221,12 +264,31 @@
       #cli-controls-hint {
         position: relative;
         z-index: 2;
-        padding: 4px 12px;
+        padding: 8px 16px; /* Consistent spacing */
         font-size: 12px;
         text-align: center;
         background: #0b0c0c;
-        color: #e6e6e6;
-        opacity: 0.8;
+        color: #cccccc; /* Enhanced contrast */
+        opacity: 0.9;
+        border-top: 1px solid #222; /* Subtle separation */
+        font-family: inherit;
+      }
+      #cli-controls-hint:before {
+        content: "│ "; /* Terminal-style separator */
+        opacity: 0.6;
+      }
+      /* Enhanced CLI prompt styling */
+      #cli-prompt {
+        padding: 8px 16px;
+        font-family: inherit;
+        color: #9ad1ff;
+        background: #111;
+        border-top: 1px solid #333;
+        font-weight: 500;
+      }
+      #cli-cursor {
+        color: #9ad1ff;
+        font-weight: bold;
       }
       /* Terminal-style snackbar line at the bottom */
       #snackbar-container {
@@ -310,11 +372,11 @@
           align-items: stretch;
           height: auto;
           gap: 8px;
-          padding: 10px;
+          padding: 12px; /* Consistent with enhanced padding */
         }
         .cli-title {
           margin-bottom: 4px;
-          font-size: 15px;
+          font-size: 14px; /* Slightly smaller for mobile */
         }
         .cli-controls {
           flex-wrap: wrap;
@@ -323,7 +385,7 @@
         }
         .cli-controls label {
           min-width: 6ch;
-          font-size: 13px;
+          font-size: 12px; /* Consistent sizing */
         }
         .cli-status {
           flex-direction: row;
@@ -333,15 +395,19 @@
           margin-top: 4px;
         }
         .cli-status > div {
-          font-size: 13px;
-          line-height: 1;
+          font-size: 12px; /* Consistent sizing */
+          line-height: 1.2;
         }
         .cli-main {
-          padding: 8px;
+          padding: 12px; /* Consistent 8px rhythm */
         }
         #cli-stats {
           grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
           min-height: 8rem; /* Maintain reservation on mobile */
+        }
+        .ascii-sep {
+          font-size: 11px; /* Smaller separators on mobile */
+          letter-spacing: 1px;
         }
         /* Disable absolute centering on narrow screens so the round indicator
            participates in normal flow and avoids overlap with stacked header items. */
@@ -413,7 +479,7 @@
           <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
           <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
         </section>
-        <div class="ascii-sep">---</div>
+        <div class="ascii-sep">────────────────────────</div>
 
         <!-- Less-prominent settings section moved into main to reduce header prominence -->
         <section aria-label="Match Settings" class="cli-block cli-settings">
@@ -476,7 +542,7 @@
             </div>
           </div>
         </section>
-        <div class="ascii-sep">---</div>
+        <div class="ascii-sep">────────────────────────</div>
 
         <section aria-label="Stat Selection" class="cli-block">
           <div
@@ -486,14 +552,14 @@
             aria-label="Select a stat with number keys 1–5"
           >
             <!-- Skeleton placeholders to stabilize layout and tests -->
-            <div class="cli-stat skeleton">(1) —: —</div>
-            <div class="cli-stat skeleton">(2) —: —</div>
-            <div class="cli-stat skeleton">(3) —: —</div>
-            <div class="cli-stat skeleton">(4) —: —</div>
-            <div class="cli-stat skeleton">(5) —: —</div>
+            <div class="cli-stat skeleton">(1) ─────────────── ─</div>
+            <div class="cli-stat skeleton">(2) ─────────────── ─</div>
+            <div class="cli-stat skeleton">(3) ─────────────── ─</div>
+            <div class="cli-stat skeleton">(4) ─────────────── ─</div>
+            <div class="cli-stat skeleton">(5) ─────────────── ─</div>
           </div>
         </section>
-        <div class="ascii-sep">---</div>
+        <div class="ascii-sep">────────────────────────</div>
 
         <section
           aria-label="Shortcuts"
@@ -527,14 +593,14 @@
           </div>
           <div id="cli-shortcuts-body">
             <ul id="cli-help">
-              <li>[1–5] Select Stat</li>
-              <li>[Enter]/[Space] Next</li>
+              <li>[1-5] Select Stat</li>
+              <li>[↵]/[Space] Next</li>
               <li>[Q] Quit</li>
               <li>[H] Toggle Help</li>
             </ul>
           </div>
         </section>
-        <div class="ascii-sep">---</div>
+        <div class="ascii-sep">────────────────────────</div>
 
         <section
           aria-label="Verbose Log"
@@ -557,7 +623,7 @@
 
       <footer class="cli-footer" role="contentinfo">
         <div id="cli-controls-hint" aria-hidden="true">
-          [1–5] Stats · [Enter/Space] Next · [H] Help · [Q] Quit
+          [1-5] Stats │ [↵/Space] Next │ [H] Help │ [Q] Quit
         </div>
         <!-- Terminal-style snackbar container anchored at the bottom -->
         <div id="snackbar-container">

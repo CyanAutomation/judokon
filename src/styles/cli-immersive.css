@@ -72,10 +72,14 @@ body.scanlines::before {
 }
 
 .terminal-title-bar {
-  background: #333;
-  color: #fff;
-  padding: 4px 8px;
-  font-family: monospace;
+  background: linear-gradient(to bottom, #4a4a4a 0%, #2a2a2a 100%); /* Subtle gradient */
+  color: #ffffff;
+  padding: 6px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 12px;
   text-align: center;
+  border-bottom: 1px solid #1a1a1a;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3); /* Subtle depth */
 }
