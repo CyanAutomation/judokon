@@ -265,13 +265,15 @@ It reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, 
 
 ### Run queries offline
 
-1. **Download the model** (one-time):
+1. **Prepare the local model** (one-time):
 
    ```bash
-   npm run generate:embeddings
+   npm run rag:prepare:models
+   # or, if you already have a local copy of the files
+   npm run rag:prepare:models -- --from-dir /path/to/minilm
    ```
 
-   This fetches the quantized `Xenova/all-MiniLM-L6-v2` weights into `models/minilm`.
+   This hydrates `src/models/minilm` with the quantized MiniLM files used by the query encoder.
 2. **Build compact assets** for offline vector search:
 
    ```bash
@@ -281,11 +283,16 @@ It reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, 
    This writes `src/data/offline_rag_vectors.bin` and `src/data/offline_rag_metadata.json`.
 3. **Query without a network connection** using the regular CLI:
 
-   ```bash
-   npm run rag:query "How does the battle engine work?"
-   ```
+  ```bash
+  # Enforce strict offline (no CDN/model downloads)
+  RAG_STRICT_OFFLINE=1 npm run rag:query "How does the battle engine work?"
+  ```
 
-   The browser path continues to load embeddings via the manifest + shard loader, so no changes are required there.
+  Tips:
+  - If strict offline is set but the model is missing, the CLI prints a hint to run `npm run rag:prepare:models`.
+  - If you prefer a degraded but network-free path when the model is unavailable, enable lexical fallback:
+    `RAG_ALLOW_LEXICAL_FALLBACK=1 npm run rag:query "classic battle timer"`.
+  - The browser path continues to load embeddings via the manifest + shard loader; tests can also consume `client_embeddings.json` directly.
    
 ## ⚡ Module Loading Policy
 

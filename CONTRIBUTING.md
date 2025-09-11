@@ -27,12 +27,40 @@ npx vitest run # run unit tests
 npm run test:style # run style tests on demand
 npx playwright test # run Playwright UI tests
 npm run check:jsdoc # ensure exported helpers have JSDoc + @pseudocode
+npm run rag:validate # RAG preflight + evaluator + JSON + hot‑path checks
 ```
 
 - Confirm that any new or modified functions include JSDoc with an `@pseudocode` block so documentation stays complete.
 - Playwright tests clear localStorage at startup. If a manual run fails unexpectedly, clear it in your browser and ensure [http://localhost:5000](http://localhost:5000) is served (start it with `npm start`).
 - Use `src/helpers/storage.js` for persistent data access instead of direct `localStorage` calls.
 - Use the shared scheduler (`src/utils/scheduler.js`) for all timing-sensitive work instead of standalone timers.
+
+### RAG Contribution Checklist
+
+- Use `queryRag` to collect context before large refactors or doc changes; prefer `withProvenance: true` and include `contextPath` in PR descriptions when relevant.
+- For offline/CI environments, hydrate the local model once:
+
+  ```bash
+  npm run rag:prepare:models
+  # or hydrate from an existing directory of MiniLM files
+  npm run rag:prepare:models -- --from-dir /path/to/minilm
+  ```
+
+- Enforce strict offline in CI jobs that run RAG queries:
+
+  ```bash
+  RAG_STRICT_OFFLINE=1 npm run rag:validate
+  ```
+
+- Optional degraded mode: if you must run queries without a model, enable lexical fallback explicitly (do not leave it on by default):
+
+  ```bash
+  RAG_ALLOW_LEXICAL_FALLBACK=1 npm run rag:query "tooltip guidelines"
+  ```
+
+Notes:
+- The model is expected under `src/models/minilm`. The preflight will fail if strict offline is enabled and files are missing.
+- Keep tests free of unsuppressed `console.warn/error`. Use `withMutedConsole` or spies as needed.
 
 ### Animation Scheduler Guidelines
 

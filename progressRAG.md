@@ -138,6 +138,27 @@ Outcome
 
 ## Phase 5 – Docs and Agent Guidance (Planned)
 
-Planned actions
+Actions Taken
 
-- Update `AGENTS.md` and `README.md` with offline quickstart, environment flags, and provenance examples.
+- Updated `README.md` with an "Run queries offline" section:
+  - Added `npm run rag:prepare:models` and `--from-dir` usage, clarified destination at `src/models/minilm`.
+  - Documented `RAG_STRICT_OFFLINE=1` for enforcing no network usage and `RAG_ALLOW_LEXICAL_FALLBACK=1` for degraded mode.
+  - Added tips on behavior and CLI hints when strict offline is enabled.
+- Updated `AGENTS.md` with an "Offline Usage (Agents)" subsection covering strict offline, lexical fallback flags, and provenance requirements.
+
+Validation (targeted tests)
+
+- Re-ran RAG-related unit tests to ensure no regressions:
+  - tests/queryRag/queryRag.test.js → PASS
+  - tests/queryRag/strictOffline.test.js → PASS
+  - tests/queryRag/lexicalFallback.test.js → PASS
+
+Outcome
+
+- Clear developer + agent guidance for offline operation and flags.
+- Documentation now matches the implemented behavior and paths.
+
+Addendum: CONTRIBUTING updates
+
+- CONTRIBUTING.md now references `npm run rag:validate` (preflight + evaluator + JSON + hot‑path checks).
+- Added a RAG contribution checklist covering model hydration (`rag:prepare:models`), strict offline in CI (`RAG_STRICT_OFFLINE=1`), and optional lexical fallback flag.
