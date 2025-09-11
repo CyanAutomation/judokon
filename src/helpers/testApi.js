@@ -255,7 +255,7 @@ const initApi = {
    * @param {object} options - Component options
    * @returns {object} Component instance with test API access
    */
-  createComponent(componentName, options = {}) {
+  createComponent(componentName) {
     try {
       const testApi = {
         getState: () => this.getComponentState(componentName),

@@ -280,8 +280,252 @@ export const interactions = {
 
       check();
     });
+  },
+
+  /**
+   * Simulate natural keyboard navigation
+   * @param {HTMLElement} element - Target element
+   * @param {string} key - Key to press ('ArrowLeft', 'ArrowRight', etc.)
+   * @param {object} options - Additional options
+   */
+  naturalKeyboardNavigation: (element, key, options = {}) => {
+    if (!element) return;
+
+    // Focus the element first (natural behavior)
+    element.focus();
+
+    // Create and dispatch a realistic keyboard event
+    const event = new KeyboardEvent("keydown", {
+      key,
+      code: key,
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      target: element,
+      ...options
+    });
+
+    element.dispatchEvent(event);
+  },
+
+  /**
+   * Simulate natural swipe gesture
+   * @param {HTMLElement} element - Target element
+   * @param {string} direction - 'left' or 'right'
+   * @param {number} distance - Swipe distance in pixels
+   * @param {object} options - Additional options
+   */
+  naturalSwipe: (element, direction, distance = 100, options = {}) => {
+    if (!element) return;
+
+    const startX = direction === "left" ? distance : 0;
+    const endX = direction === "left" ? 0 : distance;
+
+    // TouchStart
+    const touchStart = new TouchEvent("touchstart", {
+      bubbles: true,
+      cancelable: true,
+      touches: [
+        {
+          clientX: startX,
+          clientY: 0,
+          target: element
+        }
+      ],
+      ...options
+    });
+
+    element.dispatchEvent(touchStart);
+
+    // Small delay to simulate realistic gesture
+    setTimeout(() => {
+      // TouchEnd
+      const touchEnd = new TouchEvent("touchend", {
+        bubbles: true,
+        cancelable: true,
+        changedTouches: [
+          {
+            clientX: endX,
+            clientY: 0,
+            target: element
+          }
+        ],
+        ...options
+      });
+
+      element.dispatchEvent(touchEnd);
+    }, 10);
+  },
+
+  /**
+   * Simulate natural pointer gesture
+   * @param {HTMLElement} element - Target element
+   * @param {string} direction - 'left' or 'right'
+   * @param {number} distance - Gesture distance in pixels
+   * @param {object} options - Additional options
+   */
+  naturalPointerGesture: (element, direction, distance = 100, options = {}) => {
+    if (!element) return;
+
+    const startX = direction === "left" ? distance : 0;
+    const endX = direction === "left" ? 0 : distance;
+
+    // PointerDown
+    const pointerDown = new PointerEvent("pointerdown", {
+      bubbles: true,
+      cancelable: true,
+      clientX: startX,
+      clientY: 0,
+      pointerType: "touch",
+      ...options
+    });
+
+    element.dispatchEvent(pointerDown);
+
+    // Small delay to simulate realistic gesture
+    setTimeout(() => {
+      // PointerUp
+      const pointerUp = new PointerEvent("pointerup", {
+        bubbles: true,
+        cancelable: true,
+        clientX: endX,
+        clientY: 0,
+        pointerType: "touch",
+        ...options
+      });
+
+      element.dispatchEvent(pointerUp);
+    }, 10);
+  },
+
+  /**
+   * Simulate natural document ready state change
+   * @param {string} readyState - 'loading', 'interactive', or 'complete'
+   * @param {boolean} fireEvent - Whether to fire DOMContentLoaded event
+   */
+  naturalDocumentReady: (readyState = "complete", fireEvent = true) => {
+    // Change document ready state naturally
+    Object.defineProperty(document, "readyState", {
+      value: readyState,
+      configurable: true
+    });
+
+    if (fireEvent && readyState === "complete") {
+      // Fire DOMContentLoaded in a natural way
+      setTimeout(() => {
+        document.dispatchEvent(
+          new Event("DOMContentLoaded", {
+            bubbles: true,
+            cancelable: false
+          })
+        );
+      }, 0);
+    }
   }
 };
+
+/**
+ * Create a CarouselController component with test API access
+ * @param {object} options - Carousel options
+ * @returns {object} CarouselController instance with test utilities
+ */
+export function createTestCarousel(options = {}) {
+  // Create real DOM structure
+  const container = document.createElement("div");
+  const wrapper = document.createElement("div");
+
+  // Mock scrollTo function
+  container.scrollTo = vi.fn((opts) => {
+    if (typeof opts === "object") container.scrollLeft = opts.left ?? 0;
+    else container.scrollLeft = opts || 0;
+  });
+
+  // Set up realistic dimensions
+  Object.defineProperty(container, "clientWidth", {
+    value: options.clientWidth || 100,
+    configurable: true
+  });
+  Object.defineProperty(container, "scrollWidth", {
+    value: options.scrollWidth || 300,
+    configurable: true
+  });
+  container.scrollLeft = 0;
+
+  // Import CarouselController dynamically
+  let CarouselController;
+  let controller;
+
+  return {
+    element: container,
+    wrapper,
+    testApi: {
+      async initialize() {
+        // Import and initialize controller
+        const module = await import("../../src/helpers/carousel/controller.js");
+        CarouselController = module.CarouselController;
+        controller = new CarouselController(container, wrapper);
+        return controller;
+      },
+
+      // Natural interaction methods
+      pressArrowKey: (direction) => {
+        const key = direction === "left" ? "ArrowLeft" : "ArrowRight";
+        interactions.naturalKeyboardNavigation(container, key);
+      },
+
+      swipeGesture: (direction, distance = 100) => {
+        interactions.naturalSwipe(container, direction, distance);
+      },
+
+      pointerGesture: (direction, distance = 100) => {
+        interactions.naturalPointerGesture(container, direction, distance);
+      },
+
+      // Trigger scroll events naturally
+      simulateScroll: (scrollLeft) => {
+        container.scrollLeft = scrollLeft;
+        container.dispatchEvent(new Event("scroll"));
+      },
+
+      simulateScrollEnd: () => {
+        container.dispatchEvent(new Event("scrollend"));
+      },
+
+      // Cancel events simulation
+      triggerCancel: () => {
+        container.dispatchEvent(new TouchEvent("touchcancel"));
+        container.dispatchEvent(new PointerEvent("pointercancel"));
+      },
+
+      // State access
+      getCurrentPage: () => controller?.currentPage ?? 0,
+      getPageCounter: () => wrapper.querySelector(".page-counter")?.textContent,
+
+      // Controller methods
+      setPage: (page) => controller?.setPage(page),
+      next: () => controller?.next(),
+      prev: () => controller?.prev(),
+      destroy: () => controller?.destroy(),
+
+      // Spying utilities
+      spyOnMethod: (methodName) => {
+        if (controller && typeof controller[methodName] === "function") {
+          return vi.spyOn(controller, methodName);
+        }
+        return null;
+      },
+
+      cleanup: () => {
+        if (controller) {
+          controller.destroy();
+        }
+        if (container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
+      }
+    }
+  };
+}
 
 /**
  * Create a MockupViewer component with test API access
