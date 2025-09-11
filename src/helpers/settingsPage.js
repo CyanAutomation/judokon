@@ -364,27 +364,6 @@ function showLoadSettingsError() {
 }
 
 onDomReady(initializeSettingsPage);
-
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 /**
  * Re-export the game-mode toggle handler used by the Settings UI.
  *
