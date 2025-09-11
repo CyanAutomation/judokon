@@ -1,7 +1,14 @@
-let currentScheduler = {
+/**
+ * Lightweight timeout-based scheduler used for countdowns.
+ *
+ * Exposes `setTimeout`/`clearTimeout` so tests can inject fake timers.
+ */
+export const realScheduler = {
   setTimeout: (...args) => globalThis.setTimeout(...args),
   clearTimeout: (...args) => globalThis.clearTimeout(...args)
 };
+
+let currentScheduler = realScheduler;
 
 // Keep realScheduler for any code that might still use it directly.
 /**
@@ -48,11 +55,7 @@ export function getScheduler() {
  * @returns {void}
  */
 export function setScheduler(newScheduler) {
-  if (
-    !newScheduler ||
-    typeof newScheduler.cancel !== "function" ||
-    typeof newScheduler.onFrame !== "function"
-  ) {
+  if (!newScheduler || typeof newScheduler.setTimeout !== "function") {
     throw new Error("Invalid scheduler object provided");
   }
   currentScheduler = newScheduler;

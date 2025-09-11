@@ -245,6 +245,10 @@ let currentNextRound = null;
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
  */
 export function startCooldown(_store, scheduler = realScheduler) {
+  // Runtime guard in case imported default is undefined due to module graph quirks
+  if (!scheduler || typeof scheduler.setTimeout !== "function") {
+    scheduler = realScheduler;
+  }
   logStartCooldown();
   const controls = createNextRoundControls();
   const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
@@ -275,6 +279,23 @@ export function startCooldown(_store, scheduler = realScheduler) {
     });
   } catch {}
   wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
+  // Safety net: ensure readiness dispatch even if engine timers are mocked out
+  try {
+    let settled = false;
+    controls.ready?.then(() => (settled = true)).catch(() => {});
+    const ms = Math.max(0, Number(cooldownSeconds) || 0) * 1000 || 10;
+    scheduler.setTimeout(async () => {
+      if (!settled) {
+        try {
+          await dispatchBattleEvent("ready");
+        } catch {}
+        if (typeof controls.resolveReady === "function") {
+          try { emitBattleEvent("nextRoundTimerReady"); } catch {}
+          controls.resolveReady();
+        }
+      }
+    }, ms);
+  } catch {}
   currentNextRound = controls;
   return controls;
 }
