@@ -253,6 +253,35 @@ Targeted tests run:
 Outcome:
 - Tests passed; no behavior changes to modal lifecycle or event flow.
 - On both pages, the round select modal will center within the viewport area beneath the header/scoreboard and adopt page-appropriate styling.
+
+Phase 3 — validation
+
+Actions:
+- Ran targeted regression tests for other modals to ensure no unintended impact from header-aware inset and game-mode classes:
+  - `tests/helpers/classicBattle/matchEnd.test.js`
+  - `tests/helpers/classicBattle/quitModal.test.js`
+
+Outcome:
+- Both test files passed (6 tests total). End-of-match and quit confirmation modals are unaffected and retain full-viewport coverage and expected behavior.
+- No code changes required for this phase.
+
+Pausing here for review before proceeding.
+
+Phase 4 — targeted unit tests for positioning/skin
+
+Actions:
+- Added `tests/helpers/classicBattle/roundSelectModal.positioning.test.js` to verify:
+  - Classic page: adds `classic-modal` + `header-aware` and sets `--modal-inset-top` to header height.
+  - CLI page: adds `cli-modal` + `header-aware` and sets `--modal-inset-top` to header height.
+- Tests mock the Modal factory to supply a predictable backdrop element and simulate header `offsetHeight` in JSDOM.
+
+Targeted tests run:
+- `tests/helpers/classicBattle/roundSelectModal.positioning.test.js`
+
+Outcome:
+- Tests passed (2). Confirms per-mode skin classes and header-aware inset are applied as intended without altering modal lifecycle.
+
+Pausing for review.
 Current behavior (observed in source)
 
 - Modal markup: `Modal` creates a `.modal-backdrop` (fixed, full-viewport) with a centered `.modal` (flexbox).
