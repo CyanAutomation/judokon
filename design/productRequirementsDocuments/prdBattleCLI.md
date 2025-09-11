@@ -4,14 +4,14 @@
 
 ## TL;DR
 
-A **terminal-style, text-first** presentation of Classic Battle that reuses the **same engine **Styling**
+A **terminal-style, text-first** presentation of Classic Battle that reuses the **same engine **Styling\*\*
 
 - Monospace font; ≥4.5:1 contrast; visible focus ring; minimal CSS only.
 - Terminal-authentic design inspired by classic CLI interfaces with clean typography hierarchy.
 - Refined visual spacing using consistent 8px rhythm for authentic terminal feel.
 - Minimal section separators using simple ASCII characters (—, |, >) for clean visual breaks.
 - Enhanced contrast ratios: 7:1+ for primary text, 4.5:1+ for secondary text.
-- Optional "retro" look is acceptable if contrast/accessibility are preserved.state machine**. It renders prompts, timers, selections, outcomes, and scores using **monospace text** with **full keyboard support** (and optional pointer/touch). The mode targets **fast loads, low memory, high readability**, and **deterministic behavior** suited to both players and automated testing—**without** altering game rules.
+- Optional "retro" look is acceptable if contrast/accessibility are preserved.state machine**. It renders prompts, timers, selections, outcomes, and scores using **monospace text** with **full keyboard support** (and optional pointer/touch). The mode targets **fast loads, low memory, high readability**, and **deterministic behavior** suited to both players and automated testing—**without\*\* altering game rules.
 
 ---
 
@@ -195,24 +195,28 @@ Additional test-contract details and page-level helpers
 Based on analysis of classic CLI interfaces, the following enhancements align the design with terminal user expectations:
 
 **Typography & Spacing:**
+
 - Consistent 8px spacing rhythm throughout the interface
 - Enhanced contrast ratios: 7:1+ for primary text, 4.5:1+ for secondary
 - Proper line-height (1.4-1.5) for monospace readability
 - Strategic use of Unicode characters for visual separators (│, ─, ⏱, →)
 
 **Visual Hierarchy:**
+
 - Clean section dividers using minimal ASCII art
-- Dotted leaders (……) for stat value alignment 
+- Dotted leaders (……) for stat value alignment
 - Reduced visual noise in borders and backgrounds
 - Terminal-style prompt indicators and status symbols
 
 **Layout Density:**
+
 - Optimized information density without sacrificing accessibility
 - Cleaner stat list presentation with better visual alignment
 - Streamlined header layout with logical information grouping
 - More authentic command hint styling at footer
 
 **Color & Contrast:**
+
 - Enhanced retro theme with better contrast ratios
 - Subtle background variations to improve readability
 - Focus indicators that maintain terminal aesthetics
@@ -221,8 +225,9 @@ Based on analysis of classic CLI interfaces, the following enhancements align th
 ### Accessibility Preservation
 
 All visual enhancements maintain existing accessibility features:
+
 - WCAG 2.1 AA compliance preserved
-- Touch target sizes (≥44px) maintained  
+- Touch target sizes (≥44px) maintained
 - Keyboard navigation unchanged
 - Screen reader announcements preserved
 - Focus management remains consistent
