@@ -1,4 +1,6 @@
 // Lightweight initialization helpers for battleCLI
+import { exposeTestAPI } from "../helpers/testApi.js";
+
 const byId = (id) => document.getElementById(id);
 
 function renderSkeletonStats(count = 5) {
@@ -155,6 +157,9 @@ function init() {
 
 // Expose helpers as early as possible so tests can see them even if init hasn't run yet.
 try {
+  // Expose Test API for testing
+  exposeTestAPI();
+  
   window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
     renderSkeletonStats,
     clearSkeletonStats,

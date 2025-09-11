@@ -100,12 +100,24 @@ export async function getExtractor() {
           await stat(resolve(modelDir, "config.json"));
           extractor = await pipeline("feature-extraction", modelDir, { quantized: true });
         } catch {
+          if (process?.env?.RAG_STRICT_OFFLINE === "1") {
+            const msg =
+              "Strict offline mode: local model missing at models/minilm. " +
+              "Provide a local MiniLM (quantized) or unset RAG_STRICT_OFFLINE.";
+            // Do not proceed to remote fetch in strict mode
+            throw new Error(msg);
+          }
           console.warn("Local model not found; falling back to Xenova/all-MiniLM-L6-v2");
           extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
             quantized: true
           });
         }
       } else {
+        if (typeof process !== "undefined" && process?.env?.RAG_STRICT_OFFLINE === "1") {
+          throw new Error(
+            "Strict offline mode: browser CDN path disabled. Provide local model in Node."
+          );
+        }
         const { pipeline } = await import(
           "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"
         );

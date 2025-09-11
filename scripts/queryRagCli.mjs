@@ -20,6 +20,15 @@ import queryRag from "../src/helpers/queryRag.js";
     matches = await queryRag(prompt);
   } catch (err) {
     console.error("RAG query failed:", err);
+    if (
+      String(err?.message || err)
+        .toLowerCase()
+        .includes("strict offline mode")
+    ) {
+      console.error(
+        "Hint: provide a local MiniLM at models/minilm or run: npm run rag:prepare:models"
+      );
+    }
     process.exit(1);
     return;
   }
