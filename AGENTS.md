@@ -102,11 +102,11 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 5. Delivery (PR body with verification summary)
 ```bash
 # Fail if dynamic import appears in hot paths
-grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null 
+grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null
   && echo "Found dynamic import in hot path" && exit 1 || true
 
 # Fail if unsilenced console.warn/error found in tests (ignore utility wrapper)
-grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" 
+grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"
   && echo "Unsilenced console found" && exit 1 || true
 
 # JSON validation
@@ -363,6 +363,7 @@ Short rule: assert behavior, not implementation; simulate users, not internals.
 ### Core Anti-Patterns to Eliminate
 
 **❌ Avoid These Patterns:**
+
 - Direct DOM manipulation (use natural interactions via component APIs)
 - Synthetic event dispatching (use keyboard/mouse simulation utilities)
 - Raw console.error/warn spies without muting (use withMutedConsole)
@@ -370,23 +371,26 @@ Short rule: assert behavior, not implementation; simulate users, not internals.
 - Manual element creation (use component test utilities)
 
 **✅ Preferred Patterns:**
+
 - Natural component interaction through public APIs
 - Keyboard/gesture simulation via componentTestUtils helpers
-- Console discipline with withMutedConsole() standardization  
+- Console discipline with withMutedConsole() standardization
 - Fake timer control with vi.runAllTimersAsync() for determinism
 - Component factories for consistent test setup
 
 ### Testing Infrastructure Standards
 
 **Component Test Utilities (`tests/utils/componentTestUtils.js`):**
+
 ```js
 // Use natural interaction patterns
 const { container, pressKey, simulateGesture } = createTestComponent(componentFactory);
-await pressKey('ArrowLeft'); // Natural keyboard navigation
-await simulateGesture('swipeLeft'); // Natural gesture interaction
+await pressKey("ArrowLeft"); // Natural keyboard navigation
+await simulateGesture("swipeLeft"); // Natural gesture interaction
 ```
 
 **Console Discipline (`tests/utils/console.js`):**
+
 ```js
 import { withMutedConsole } from "../utils/console.js";
 
@@ -397,6 +401,7 @@ await withMutedConsole(async () => {
 ```
 
 **Timer Management:**
+
 ```js
 // Setup fake timers for deterministic control
 beforeEach(() => {
@@ -423,6 +428,7 @@ await vi.runAllTimersAsync();
 ### Test Quality Verification
 
 Run validation for established patterns:
+
 ```bash
 # Verify no synthetic events in hot paths
 grep -r "dispatchEvent\|createEvent" tests/ && echo "Found synthetic events"
@@ -441,6 +447,7 @@ grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "Found r
 ### Core Anti-Patterns to Eliminate
 
 **❌ Avoid These Patterns:**
+
 - Direct page.evaluate() DOM manipulation (use natural user interactions)
 - Hardcoded wait times with page.waitForTimeout() (use specific condition waits)
 - Complex CSS selectors that test implementation details (use data-testid attributes)
@@ -448,6 +455,7 @@ grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "Found r
 - Assertions without proper waiting (use expect().toHaveText() with auto-retry)
 
 **✅ Preferred Patterns:**
+
 - Natural user interactions via page.click(), page.fill(), page.press()
 - Conditional waiting with page.waitForSelector(), page.waitForLoadState()
 - Semantic selectors using data-testid, role, or accessible names
@@ -457,23 +465,25 @@ grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "Found r
 ### Playwright Infrastructure Standards
 
 **Interaction Patterns:**
+
 ```js
 // Natural user interactions
 await page.click('[data-testid="submit-button"]');
-await page.fill('[data-testid="username-input"]', 'testuser');
-await page.press('body', 'Escape');
+await page.fill('[data-testid="username-input"]', "testuser");
+await page.press("body", "Escape");
 
 // Proper waiting for conditions
 await page.waitForSelector('[data-testid="success-message"]');
-await expect(page.locator('[data-testid="result"]')).toHaveText('Expected');
+await expect(page.locator('[data-testid="result"]')).toHaveText("Expected");
 ```
 
 **State Management:**
+
 ```js
 // Use fixtures for consistent setup
 test.beforeEach(async ({ page }) => {
-  await page.goto('/test-page');
-  await page.waitForLoadState('networkidle');
+  await page.goto("/test-page");
+  await page.waitForLoadState("networkidle");
 });
 
 // Avoid manual localStorage manipulation in tests
@@ -481,6 +491,7 @@ test.beforeEach(async ({ page }) => {
 ```
 
 **Selector Strategy:**
+
 ```js
 // Preferred: Semantic selectors
 await page.click('[data-testid="navigation-menu"]');
@@ -501,6 +512,7 @@ await page.click('role=button[name="Submit"]');
 ### Playwright Quality Verification
 
 Run validation for established patterns:
+
 ```bash
 # Verify no hardcoded timeouts
 grep -r "waitForTimeout\|setTimeout" playwright/ && echo "Found hardcoded waits"
@@ -567,6 +579,7 @@ rg -n "preload\(|link rel=preload" src || echo "Consider preloading optional mod
 **See also**: [Quick Reference Cards](#-quick-reference-cards) for essential commands
 
 **Essential validation (run before commit):**
+
 ```bash
 npx prettier . --check
 npx eslint .
@@ -577,6 +590,7 @@ npm run check:contrast
 ```
 
 **Auto-fix commands:**
+
 ```bash
 npx prettier . --write
 npx eslint . --fix
@@ -697,7 +711,7 @@ CI pipeline green
   "unitTestQualityStandards": {
     "antiPatterns": [
       "directDomManipulation",
-      "syntheticEventDispatching", 
+      "syntheticEventDispatching",
       "rawConsoleSpy",
       "realTimersInTests",
       "manualElementCreation"
@@ -751,7 +765,7 @@ CI pipeline green
     },
     "performanceTargets": [
       "noHardcodedTimeouts",
-      "semanticSelectorUsage", 
+      "semanticSelectorUsage",
       "naturalUserInteractions",
       "properTestIsolation",
       "autoRetryingAssertions"

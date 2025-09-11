@@ -107,7 +107,7 @@ Settings are loaded once and cached for synchronous use.
 ```js
 import { getSetting } from "./src/helpers/settingsUtils.js";
 
-const currentTheme = getSetting('displayMode');
+const currentTheme = getSetting("displayMode");
 ```
 
 - **`getSetting(key)`** – Read a setting value from the cache
@@ -120,16 +120,16 @@ const currentTheme = getSetting('displayMode');
 import { isEnabled, setFlag, featureFlagsEmitter } from "./src/helpers/featureFlags.js";
 
 // Check flag state
-if (isEnabled('statHotkeys')) {
+if (isEnabled("statHotkeys")) {
   // Enable hotkey functionality
 }
 
 // Update flag
-setFlag('statHotkeys', true);
+setFlag("statHotkeys", true);
 
 // Listen for changes
-featureFlagsEmitter.on('change', ({ flag, enabled }) => {
-  console.log(`Flag ${flag} is now ${enabled ? 'enabled' : 'disabled'}`);
+featureFlagsEmitter.on("change", ({ flag, enabled }) => {
+  console.log(`Flag ${flag} is now ${enabled ? "enabled" : "disabled"}`);
 });
 ```
 
