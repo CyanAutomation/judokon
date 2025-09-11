@@ -1,3 +1,88 @@
+## CLI Layout Assessment - Comprehensive Analysis
+
+### Executive Summary ⚠️
+**Playwright assessment reveals 7 critical layout issues preventing CLI mode from meeting PRD requirements.**
+
+### Assessment Results
+
+#### ❌ Critical Issues Found:
+
+1. **Stats Container Visibility Issue**
+   - `#cli-stats` element exists but is `visibility: hidden`
+   - Container has proper markup but fails to display stats
+   - Impacts: Core user interaction completely broken
+
+2. **Layout Height Calculation Error**
+   - `min-height: 100vh` resolved to viewport-specific pixel value instead of viewport units
+   - Suggests CSS cascade or specificity issues
+   - Impacts: Mobile responsive behavior
+
+3. **Touch Target Compliance Failure**
+   - Stats container lacks `min-height: 8rem` reservation
+   - No stat rows visible for height measurement
+   - Impacts: Mobile accessibility (WCAG compliance)
+
+4. **Color Scheme Mismatch**
+   - Expected: `rgb(11, 12, 12)` (#0b0c0c)
+   - Actual: `rgb(0, 0, 0)` (pure black)
+   - Suggests CSS theme override or specificity issues
+
+5. **Grid Layout Not Applied**
+   - Expected: CSS Grid with `repeat|minmax` pattern
+   - Actual: `grid-template-columns: 0px 0px 0px...`
+   - Grid system completely non-functional
+
+6. **Min-Height Units Conversion**
+   - Expected: `1.2em` for countdown
+   - Actual: `19.2px` (converted to pixels)
+   - Layout stability compromised
+
+#### ✅ Passing Assessments:
+
+- Accessibility foundations (ARIA, focus management)
+- Test hooks and data attributes structure
+- Settings panel basic styling
+- Performance bundle loading
+- Monospace font inheritance
+
+### Root Cause Analysis
+
+**Primary Issue: CSS Cascade & Visibility Problems**
+- Stats container rendered but hidden suggests JavaScript state management issue
+- Multiple min-height resolution failures indicate CSS specificity conflicts
+- Grid layout complete failure suggests CSS import order problems
+
+**Secondary Issues:**
+- Color scheme overrides may be from `cli-immersive.css` vs inline styles
+- Height unit conversion suggests browser/framework interference
+
+### PRD Compliance Assessment
+
+| PRD Requirement | Status | Impact |
+|-----------------|---------|---------|
+| Touch targets ≥44px | ❌ FAIL | Critical UX |
+| Monospace typography | ✅ PASS | - |
+| Keyboard navigation | ⚠️ BLOCKED | Stats hidden |
+| Terminal aesthetic | ⚠️ PARTIAL | Colors wrong |
+| Grid responsive layout | ❌ FAIL | Layout broken |
+| Accessibility hooks | ✅ PASS | - |
+| Load performance | ✅ PASS | - |
+
+### Recommended Actions
+
+#### Immediate (P0) - Critical Fixes
+1. **Fix stats visibility**: Investigate JavaScript rendering/state management
+2. **Fix CSS Grid**: Ensure proper grid template application  
+3. **Fix touch targets**: Implement proper min-height reservations
+4. **Fix color scheme**: Resolve CSS cascade issues
+
+#### Next (P1) - Compliance
+1. **Layout stability**: Fix min-height unit conversion issues
+2. **Responsive behavior**: Ensure proper viewport handling
+3. **Theme consistency**: Align color values with PRD specification
+
+---
+
 Round Start Modal — positioning assessment and implementation plan
 
 ## Review and Accuracy Assessment
@@ -17,8 +102,8 @@ Round Start Modal — positioning assessment and implementation plan
 
 **Style Loading Verification:**
 - `battleClassic.html`: ❌ Missing `components.css` link (confirmed in source)
-- `battleCLI.html`: ❌ Missing `components.css` link (confirmed in source)
-- Current links: `battleCLI.html` only includes `cli-immersive.css`
+- `battleCLI.html`: ✅ Has `components.css` link (verified in assessment)
+- Current links: `battleCLI.html` includes both `cli-immersive.css` and `components.css`
 
 **Positioning Issues Confirmed:**
 - Without `modal.css`: Modal renders in document flow (unstyled)
@@ -42,9 +127,9 @@ Round Start Modal — positioning assessment and implementation plan
 
 ### Phase 0 — Enable Modal Styling (Foundation)
 **Actions:**
-- Add `<link rel="stylesheet" href="../styles/components.css">` to both HTML files in `<head>`
+- ✅ `battleCLI.html` already has `components.css` link 
+- Add `<link rel="stylesheet" href="../styles/components.css">` to `battleClassic.html` in `<head>`
 - **Placement consideration:** Add before existing `<style>` blocks to allow inline overrides
-- **CLI consideration:** Place after `cli-immersive.css` to preserve CLI theme priorities
 
 **Validation:**
 - Verify modal styling loads correctly on both pages
@@ -280,6 +365,23 @@ Targeted tests run:
 
 Outcome:
 - Tests passed (2). Confirms per-mode skin classes and header-aware inset are applied as intended without altering modal lifecycle.
+
+Pausing for review.
+
+Phase 5 — responsive updates and cleanup tests
+
+Actions:
+- Added `requestAnimationFrame`/`cancelAnimationFrame` fallbacks in `src/helpers/classicBattle/roundSelectModal.js` so resize handling works in test/JSDOM environments.
+- Added `tests/helpers/classicBattle/roundSelectModal.resize.test.js` to verify:
+  - Inset updates when header height changes and a resize event is dispatched.
+  - After the modal dispatches a `close` event, subsequent resizes no longer update the inset (listener cleanup verified behaviorally).
+
+Targeted tests run:
+- `tests/helpers/classicBattle/roundSelectModal.resize.test.js`
+- `tests/helpers/classicBattle/roundSelectModal.positioning.test.js`
+
+Outcome:
+- Tests passed (3 assertions across both files). Confirmed responsive updating and proper cleanup on close without regressions to skinning/positioning.
 
 Pausing for review.
 Current behavior (observed in source)
