@@ -26,7 +26,7 @@
   <body>
     <div class="home-screen">
       <!-- Header with logo and battle status like other pages -->
-      <header class="header">
+      <header class="header" role="banner">
         <div class="header-spacer left"></div>
         <div class="logo-container">
           <a href="../../index.html" data-testid="home-link">
@@ -46,27 +46,30 @@
       </header>
 
       <!-- Battle content area -->
-      <main class="battle-content">
+      <main class="battle-content" role="main">
         <!-- Debug panel placeholder -->
         <div id="debug-panel" class="hidden"></div>
 
-        <!-- Battle cards section -->
-        <section class="battle-layout" aria-label="Cards">
-          <div id="player-card" aria-label="Your card"></div>
-          <div id="opponent-card" aria-label="Opponent card"></div>
-        </section>
+        <!-- Battle area container -->
+        <div id="battle-area">
+          <!-- Battle cards section -->
+          <section class="battle-layout" aria-label="Cards">
+            <div id="player-card" aria-label="Your card"></div>
+            <div id="opponent-card" aria-label="Opponent card"></div>
+          </section>
 
-        <!-- Stat selection section -->
-        <section class="stat-selection" aria-label="Choose a stat">
-          <div id="stat-buttons" data-buttons-ready="false"></div>
-        </section>
+          <!-- Stat selection section -->
+          <section class="stat-selection" aria-label="Choose a stat">
+            <div id="stat-buttons" data-buttons-ready="false"></div>
+          </section>
 
-        <!-- Controls section -->
-        <section class="battle-controls" aria-label="Round controls">
-          <button id="next-button" data-role="next-round" disabled>Next</button>
-          <button id="replay-button" data-role="replay">Replay</button>
-          <button id="quit-button" data-role="quit">Quit</button>
-        </section>
+          <!-- Controls section -->
+          <section class="controls" aria-label="Round controls">
+            <button id="next-button" data-role="next-round" disabled>Next</button>
+            <button id="replay-button" data-role="replay">Replay</button>
+            <button id="quit-button" data-role="quit">Quit</button>
+          </section>
+        </div>
       </main>
 
       <!-- Footer navigation like other pages -->
@@ -91,6 +94,6 @@
     </div>
 
     <!-- Snackbar container -->
-    <div id="snackbar-container" role="status" aria-live="polite"></div>
+    <div id="snackbar-container" role="status" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>
