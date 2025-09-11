@@ -890,10 +890,11 @@ export function bindUIHelperEventHandlers() {
       .catch(() => {});
   });
 
-  onBattleEvent("statSelected", (e) => {
+  onBattleEvent("statSelected", () => {
     scoreboard.clearTimer();
-    const opts = (e && e.detail && e.detail.opts) || {};
-    if (!opts.delayOpponentMessage) {
+    // Show opponent choosing message if feature flag is enabled
+    // (opts.delayOpponentMessage is used for orchestrator logic, not UI control)
+    if (isEnabled("opponentDelayMessage")) {
       opponentSnackbarId = setTimeout(
         () => showSnackbar(t("ui.opponentChoosing")),
         getOpponentDelay()

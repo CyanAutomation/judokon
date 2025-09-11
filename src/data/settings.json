@@ -64,6 +64,10 @@
     "autoSelect": {
       "enabled": true,
       "tooltipId": "settings.autoSelect"
+    },
+    "opponentDelayMessage": {
+      "enabled": true,
+      "tooltipId": "settings.opponentDelayMessage"
     }
   }
 }

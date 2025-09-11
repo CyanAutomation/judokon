@@ -121,6 +121,10 @@
     "autoSelect": {
       "label": "Auto-Select",
       "description": "Automatically pick a random stat when time runs out."
+    },
+    "opponentDelayMessage": {
+      "label": "Opponent Delay Message",
+      "description": "Show 'Opponent is choosing...' message to create realistic opponent thinking time."
     }
   },
   "card": {
