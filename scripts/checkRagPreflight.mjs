@@ -86,11 +86,9 @@ export async function checkPreflight() {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const res = await checkPreflight();
   if (!res.ok) {
-    // eslint-disable-next-line no-console
     console.error("RAG preflight failed:\n- " + res.errors.join("\n- "));
     process.exit(1);
   }
-  // eslint-disable-next-line no-console
+
   console.log("RAG preflight: OK");
 }
-

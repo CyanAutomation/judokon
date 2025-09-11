@@ -11,23 +11,32 @@ import {
 
 let _bound = false;
 let _handlers = [];
-  // Schedule fallback message if no state is observed within 500ms
-  try {
-    _waitingTimer = setTimeout(() => {
-      try {
-        _waitingClearer = typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
-      } catch {}
-    }, 500);
-  } catch {}
+// Schedule fallback message if no state is observed within 500ms
+try {
+  _waitingTimer = setTimeout(() => {
+    try {
+      _waitingClearer =
+        typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
+    } catch {}
+  }, 500);
+} catch {}
 
 let _state = { current: null, lastOutcome: "none" };
 let _lastRoundIndex = 0;
 let _waitingTimer = null;
 let _waitingClearer = null;
 function _cancelWaiting() {
-  try { if (_waitingTimer) { clearTimeout(_waitingTimer); } } catch {}
+  try {
+    if (_waitingTimer) {
+      clearTimeout(_waitingTimer);
+    }
+  } catch {}
   _waitingTimer = null;
-  try { if (typeof _waitingClearer === "function") { _waitingClearer(); } } catch {}
+  try {
+    if (typeof _waitingClearer === "function") {
+      _waitingClearer();
+    }
+  } catch {}
   _waitingClearer = null;
 }
 function mapOutcomeToEnum(outcome) {
@@ -37,7 +46,6 @@ function mapOutcomeToEnum(outcome) {
   if (/draw/i.test(s)) return "draw";
   return "none";
 }
-
 
 /**
  * Initialize the scoreboard PRD adapter.
@@ -56,11 +64,11 @@ export function initBattleScoreboardAdapter() {
   try {
     _waitingTimer = setTimeout(() => {
       try {
-        _waitingClearer = typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
+        _waitingClearer =
+          typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
       } catch {}
     }, 500);
   } catch {}
-
 
   const on = (type, fn) => {
     _handlers.push([type, fn]);
@@ -158,7 +166,8 @@ export function disposeBattleScoreboardAdapter() {
   try {
     _waitingTimer = setTimeout(() => {
       try {
-        _waitingClearer = typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
+        _waitingClearer =
+          typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
       } catch {}
     }, 500);
   } catch {}

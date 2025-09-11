@@ -1,5 +1,8 @@
 import { describe, it, beforeEach, expect } from "vitest";
-import { __resetBattleEventTarget, emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
+import {
+  __resetBattleEventTarget,
+  emitBattleEvent
+} from "../../src/helpers/classicBattle/battleEvents.js";
 
 describe("battleScoreboard out-of-order guards", () => {
   beforeEach(async () => {
@@ -16,9 +19,7 @@ describe("battleScoreboard out-of-order guards", () => {
     document.body.appendChild(header);
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
     initScoreboard(header);
-    const { initBattleScoreboardAdapter } = await import(
-      "../../src/helpers/battleScoreboard.js"
-    );
+    const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
     initBattleScoreboardAdapter();
   });
 

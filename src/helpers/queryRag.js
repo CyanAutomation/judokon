@@ -34,18 +34,26 @@ export async function queryRag(question, opts = {}) {
     const extractor = await getExtractor();
     const embedding = await extractor(expanded, { pooling: "mean" });
     const source =
-      embedding && typeof embedding === "object" && "data" in embedding ? embedding.data : embedding;
+      embedding && typeof embedding === "object" && "data" in embedding
+        ? embedding.data
+        : embedding;
     if (!isIterable(source)) return [];
     vector = Array.from(source);
   } catch (err) {
-    const fallbackEnabled = allowLexicalFallback || process?.env?.RAG_ALLOW_LEXICAL_FALLBACK === "1";
+    const fallbackEnabled =
+      allowLexicalFallback || process?.env?.RAG_ALLOW_LEXICAL_FALLBACK === "1";
     if (!fallbackEnabled) throw err;
     const results = await lexicalFallbackSearch(question, k, filtersForStrategy(filters, strategy));
     const enriched = withProvenance
-      ? results.map((m) => ({ ...m, contextPath: normalizeContextPath(m), rationale: buildRationale(question, m) }))
+      ? results.map((m) => ({
+          ...m,
+          contextPath: normalizeContextPath(m),
+          rationale: buildRationale(question, m)
+        }))
       : results;
     if (!withDiagnostics) return enriched;
-    const t1 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    const t1 =
+      typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
     return Object.assign([], enriched, {
       diagnostics: {
         expandedQuery: expanded,
@@ -186,7 +194,11 @@ async function lexicalFallbackSearch(question, k, filters) {
     const sv = item.sparseVector || toSparse(item.text || "");
     const base = cosineSparse(q, sv);
     const tagBonus = Array.isArray(item.tags) && item.tags.some((t) => filt.has(t)) ? 0.05 : 0;
-    const exactBonus = typeof item.text === "string" && item.text.toLowerCase().includes(String(question).toLowerCase()) ? 0.05 : 0;
+    const exactBonus =
+      typeof item.text === "string" &&
+      item.text.toLowerCase().includes(String(question).toLowerCase())
+        ? 0.05
+        : 0;
     const score = base + tagBonus + exactBonus;
     if (score > 0) {
       scored.push({ ...item, score });

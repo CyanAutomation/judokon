@@ -33,4 +33,3 @@ describe("getExtractor strict offline mode", () => {
     delete process.env.RAG_STRICT_OFFLINE;
   });
 });
-
