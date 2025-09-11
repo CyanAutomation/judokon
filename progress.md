@@ -142,3 +142,33 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 - Hot-path safety: avoid introducing dynamic imports in state, selection, render, or event-dispatch loops; use static imports for Scoreboard wiring in CLI.
 - Parity: outcome persistence and timer cadence must match PRD expectations; rely on `helpers/battleScoreboard.js` to consume canonical events emitted by the orchestrator (`orchestrator.js`).
 
+## Suggested Improvements to the Plan
+
+The proposed plan is thorough and follows best practices for incremental refactoring. The following suggestions are offered to further enhance its robustness and maintainability.
+
+### 1. Explicit Feature Flagging
+The "Rollback Plan" mentions reversible toggles. This should be formalized into an explicit feature flag (e.g., `cliUseSharedScoreboard`) managed via URL parameter or `localStorage`. This would:
+- **Simplify A/B testing:** Allow developers and testers to instantly switch between the legacy and new scoreboard implementations in the same environment.
+- **Provide instant rollback:** If a problem is found post-deployment, the new implementation can be disabled without a code change or redeployment.
+- **Improve clarity:** A named flag makes the transition state explicit in the code.
+
+### 2. Visual Regression Testing
+While the plan includes Playwright tests, it should explicitly call for **visual regression testing**.
+- **Goal:** To ensure the "terminal look and feel" of the CLI is perfectly preserved after skinning the shared component.
+- **Implementation:** Use Playwright's screenshot capabilities to capture baseline images in Phase 0 and compare them against screenshots from Phase 1 and Phase 3. This automatically catches subtle styling deviations (fonts, colors, layout, spacing) that functional tests would miss.
+
+### 3. Developer-Facing Documentation (Code Comments)
+During the transition (especially Phase 2: Dual-Write), the code will contain both old and new scoreboard logic.
+- **Suggestion:** Add a prominent, temporary block comment in `src/pages/battleCLI/init.js`.
+- **Content:** The comment should briefly explain why two scoreboard implementations coexist, state that this is part of a planned refactoring, and link to this `progress.md` document or the relevant issue tracker ticket. This will prevent developer confusion and accidental "cleanup" of the legacy code before the migration is complete.
+
+### 4. Component-Level Tests for Skinning
+The plan relies on "skinning" the shared `Scoreboard.js` component.
+- **Suggestion:** Add component-level tests for `Scoreboard.js` itself (if not already present).
+- **Goal:** These tests should verify that the component's logic and accessibility features remain intact when different CSS themes (skins) are applied. This proves the component is robustly "skinnable" and that the CLI theme doesn't inadvertently break it.
+
+### 5. Telemetry for Discrepancy Monitoring (Industrial-Strength Option)
+For a production-grade migration, it would be valuable to monitor for any differences between the two implementations during the dual-write phase.
+- **Suggestion:** In Phase 2, add lightweight telemetry that logs a warning if the legacy UI and the new Scoreboard component would display different values (e.g., different scores or timer states).
+- **Benefit:** This provides proactive, data-driven confirmation that the new implementation has reached full parity before the legacy code is removed. While potentially overkill for this project, it represents a gold standard for critical migrations.
+
