@@ -1,5 +1,7 @@
 # Playwright Homepage Specs
 
+Unless overridden, Playwright tests run at a 1920×1080 desktop viewport.
+
 | Spec file | Responsibilities |
 |-----------|------------------|
 | `homepage.spec.js` | Verifies footer navigation link visibility, ordering, and other interactive elements. |
