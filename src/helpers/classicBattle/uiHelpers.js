@@ -12,6 +12,8 @@ import { handleStatSelection } from "./selectionHandler.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { onNextButtonClick } from "./timerService.js";
 import { loadStatNames } from "../stats.js";
+import { JudokaCard } from "../../components/JudokaCard.js";
+import { setupLazyPortraits } from "../lazyPortrait.js";
 
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
@@ -56,9 +58,11 @@ export let syncScoreDisplay = () => {
   } catch {}
 };
 function preloadUiService() {
-  import("/src/helpers/classicBattle/uiService.js")
+  // Preload optional module during idle; keep hot path clean
+  import("./uiService.js")
     .then((m) => {
-      syncScoreDisplay = m.syncScoreDisplay || syncScoreДisplay;
+      // Fall back to local implementation if export missing
+      syncScoreDisplay = m.syncScoreDisplay || syncScoreDisplay;
     })
     .catch(() => {});
 }
@@ -641,6 +645,41 @@ export function clearScoreboardAndMessages() {
  * @returns {{enable: Function, disable: Function}} An object with enable and disable functions for the stat buttons.
  */
 export function initStatButtons(store) {
+  const container = document.getElementById("stat-buttons");
+  if (!container) throw new Error("initStatButtons: #stat-buttons missing");
+  const buttons = Array.from(container.querySelectorAll("button"));
+  if (buttons.length === 0) {
+    console.warn("[uiHelpers] #stat-buttons has no buttons");
+    try {
+      resolveStatButtonsReady();
+    } catch {}
+    return { enable: () => {}, disable: () => {} };
+  }
+
+  let disposeHotkeys = null;
+
+  const enable = () => {
+    enableStatButtons(buttons, container);
+    try {
+      resolveStatButtonsReady();
+    } catch {}
+    try {
+      disposeHotkeys = wireStatHotkeys(buttons);
+    } catch {}
+  };
+
+  const disable = () => {
+    disableStatButtons(buttons, container);
+    try {
+      disposeHotkeys?.();
+    } catch {}
+    disposeHotkeys = null;
+  };
+
+  // Initialize disabled by default
+  disable();
+  return { enable, disable };
+}
 
 /**
  * Applies localized stat names and accessibility attributes to stat buttons.
@@ -659,6 +698,31 @@ export function initStatButtons(store) {
  * @returns {Promise<void>} A promise that resolves when stat labels are applied.
  */
 export async function applyStatLabels() {
+  const names = await loadStatNames().catch(() => ({}));
+  const entries = Object.keys(STATS || {});
+  for (const key of entries) {
+    const selector = `#stat-buttons [data-stat='${key}']`;
+    /** @type {HTMLButtonElement|null} */
+    const btn = document.querySelector(selector);
+    if (!btn) continue;
+    const label = names[key] || key.charAt(0).toUpperCase() + key.slice(1);
+    try {
+      btn.textContent = label;
+      btn.setAttribute("aria-label", label);
+      const descId = `stat-desc-${key}`;
+      let desc = document.getElementById(descId);
+      if (!desc) {
+        desc = document.createElement("span");
+        desc.id = descId;
+        desc.className = "sr-only";
+        desc.textContent =
+          typeof t === "function" ? t("battle.statButtonDescription", label) : label;
+        btn.after(desc);
+      }
+      btn.setAttribute("aria-describedby", descId);
+    } catch {}
+  }
+}
 
 /**
  * Update the battle state badge text content to reflect the current state.
