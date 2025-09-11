@@ -11,6 +11,7 @@
 /**
  * Maximum characters per chunk when splitting large texts for embeddings and vector indexing.
  *
+ * @summary Upper bound on characters per chunk.
  * @description
  * This value controls the upper bound of chunk length. Chunking algorithms
  * should try to split on natural boundaries (sentences/headings) before
@@ -29,6 +30,7 @@ export const CHUNK_SIZE = 1000;
 /**
  * Fraction (0..1) of characters to overlap between adjacent chunks.
  *
+ * @summary Fraction overlapped between consecutive chunks.
  * @description
  * Overlap preserves context across chunk boundaries for semantic search and
  * improves recall when queries span a boundary.

@@ -1856,6 +1856,7 @@ export async function setupFlags() {
 /**
  * Subscribe UI helpers to engine events.
  *
+ * @summary Subscribe UI helpers to engine events.
  * @pseudocode
  * 1. If facade exposes `on`, listen for `timerTick` and `matchEnded`.
  * 2. Update timer text and round message from events.
@@ -1879,6 +1880,7 @@ export function subscribeEngine() {
 /**
  * Attach global event listeners for the CLI.
  *
+ * @summary Attach global event listeners for the CLI.
  * @pseudocode
  * 1. Install battle event bindings.
  * 2. Bind keydown and click handlers.
