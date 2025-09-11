@@ -13,30 +13,82 @@ function shouldLog() {
   return true;
 }
 
+/**
+ * Logs a general message to the console.
+ *
+ * @summary This function acts as a wrapper around `console.log`, conditionally
+ * logging messages based on the `shouldLog()` check.
+ *
+ * @pseudocode
+ * 1. Call `shouldLog()` to determine if logging is permitted in the current environment.
+ * 2. If `shouldLog()` returns `false`, exit the function without logging.
+ * 3. If `shouldLog()` returns `true`, forward all provided `args` to `console.log()`.
+ *
+ * @param {...any} args - The arguments to log.
+ * @returns {void}
+ */
 export const log = (...args) => {
-  if (!shouldLog()) return;
-  // keep original console behaviour
-  console.log(...args);
-};
 
+/**
+ * Logs a debug message to the console.
+ *
+ * @summary This function acts as a wrapper around `console.debug`, conditionally
+ * logging messages based on the `shouldLog()` check.
+ *
+ * @pseudocode
+ * 1. Call `shouldLog()` to determine if debug logging is permitted.
+ * 2. If `shouldLog()` returns `false`, exit.
+ * 3. If `shouldLog()` returns `true`, forward all `args` to `console.debug()`.
+ *
+ * @param {...any} args - The arguments to log.
+ * @returns {void}
+ */
 export const debug = (...args) => {
-  if (!shouldLog()) return;
-  console.debug(...args);
-};
 
+/**
+ * Logs an informational message to the console.
+ *
+ * @summary This function acts as a wrapper around `console.info`, conditionally
+ * logging messages based on the `shouldLog()` check.
+ *
+ * @pseudocode
+ * 1. Call `shouldLog()` to determine if informational logging is permitted.
+ * 2. If `shouldLog()` returns `false`, exit.
+ * 3. If `shouldLog()` returns `true`, forward all `args` to `console.info()`.
+ *
+ * @param {...any} args - The arguments to log.
+ * @returns {void}
+ */
 export const info = (...args) => {
-  if (!shouldLog()) return;
-  console.info(...args);
-};
 
+/**
+ * Logs a warning message to the console.
+ *
+ * @summary This function acts as a wrapper around `console.warn`. Warnings
+ * are always surfaced, even during test runs, as they often indicate potential
+ * issues that tests might need to assert on.
+ *
+ * @pseudocode
+ * 1. Forward all provided `args` directly to `console.warn()`.
+ *
+ * @param {...any} args - The arguments to log as a warning.
+ * @returns {void}
+ */
 export const warn = (...args) => {
-  // always surface warnings even during test runs; tests may assert on them
-  console.warn(...args);
-};
 
+/**
+ * Logs an error message to the console.
+ *
+ * @summary This function acts as a wrapper around `console.error`. Errors
+ * are always surfaced, even during test runs, as they indicate critical
+ * issues that should not be suppressed.
+ *
+ * @pseudocode
+ * 1. Forward all provided `args` directly to `console.error()`.
+ *
+ * @param {...any} args - The arguments to log as an error.
+ * @returns {void}
+ */
 export const error = (...args) => {
-  // always surface errors even during test runs
-  console.error(...args);
-};
 
 export default { log, debug, info, warn, error };

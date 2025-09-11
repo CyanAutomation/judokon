@@ -21,8 +21,17 @@ export const DEBUG_LOGGING =
   (typeof window !== "undefined" && window.DEBUG_LOGGING === true);
 
 /**
- * Log provided arguments when debugging is enabled.
- * @param {...unknown} args - Data passed to `console.log`.
+ * Logs provided arguments to the console only when debug logging is enabled.
+ *
+ * @summary This function acts as a conditional logger, preventing debug messages
+ * from appearing in production environments unless explicitly enabled.
+ *
+ * @pseudocode
+ * 1. Check the value of the `DEBUG_LOGGING` constant.
+ * 2. If `DEBUG_LOGGING` is `true`, forward all `args` to `console.log()`.
+ * 3. If `DEBUG_LOGGING` is `false`, do nothing.
+ *
+ * @param {...unknown} args - Any number of arguments to be logged.
  * @returns {void}
  */
 export function debugLog(...args) {

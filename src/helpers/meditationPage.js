@@ -1,14 +1,15 @@
 /**
- * Initialize the Meditation page.
+ * Sets up the Meditation page by loading a quote, configuring language toggles,
+ * and initializing tooltips.
+ *
+ * @summary This function orchestrates the initial rendering and interactive
+ * elements of the meditation screen.
  *
  * @pseudocode
- * 1. Import `setupLanguageToggle` from `pseudoJapanese/ui.js` and `loadQuote` from `quoteBuilder.js`.
- * 2. Define `setupMeditationPage` which:
- *    a. Retrieves the quote element from the DOM.
- *    b. Calls `loadQuote` to display a random quote.
- *    c. Calls `setupLanguageToggle` with the quote element.
- *    d. Initializes tooltips.
- * 3. Use `onDomReady` to run `setupMeditationPage` once the DOM is ready.
+ * 1. Retrieve the DOM element intended to display the quote (e.g., by ID "quote").
+ * 2. Call `loadQuote()` to fetch and display a random meditation quote.
+ * 3. Call `setupLanguageToggle()` with the quote element to enable language switching for the quote.
+ * 4. Call `initTooltips()` to initialize any tooltips present on the page.
  *
  * @returns {void}
  */

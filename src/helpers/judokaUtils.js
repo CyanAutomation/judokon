@@ -2,37 +2,24 @@ import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
 /**
- * Retrieve the fallback judoka (id `0`) from `judoka.json`.
+ * Retrieves the fallback judoka data (the entry with `id: 0`) from `judoka.json`.
+ *
+ * @summary This function provides a default judoka profile to be used when
+ * other judoka data cannot be loaded or is unavailable. It caches the result
+ * for subsequent calls.
  *
  * @pseudocode
- * 1. Return the cached value when available.
- * 2. Fetch `judoka.json` and locate the entry with `id` `0`.
- *    - Cache and return this entry when found.
- * 3. On error, log the issue and return a hard-coded object
- *    identical to the entry in `judoka.json`.
+ * 1. Check if `cachedFallback` already holds the judoka data. If yes, return it immediately.
+ * 2. Attempt to fetch `judoka.json` using `fetchJson`.
+ * 3. If the fetch is successful and the data is an array, find the judoka entry where `id` is `0`.
+ * 4. If the entry with `id: 0` is found, cache it in `cachedFallback` and return it.
+ * 5. If the entry is not found in the fetched data, throw an error indicating its absence.
+ * 6. If any error occurs during fetching or finding the judoka (including the error from step 5):
+ *    a. Log the error to the console.
+ *    b. Assign a hard-coded, predefined fallback judoka object to `cachedFallback`.
+ *    c. Return the hard-coded `cachedFallback` object.
  *
- * @returns {Promise<Judoka>} A promise that resolves to the fallback judoka.
- */
-let cachedFallback;
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {Promise<Judoka>} A promise that resolves to the fallback judoka object.
  */
 export async function getFallbackJudoka() {
   if (cachedFallback) {

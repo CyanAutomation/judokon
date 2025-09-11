@@ -6,11 +6,13 @@ import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 /**
  * Event emitter broadcasting feature flag changes.
  *
- * @summary Lightweight emitter to observe feature flag updates.
+ * @summary This `EventTarget` instance serves as a central hub for observing
+ * updates to feature flags across the application.
+ *
  * @pseudocode
- * 1. Create a shared `EventTarget` instance.
- * 2. Export as `featureFlagsEmitter` so listeners can subscribe to `change`.
- * 3. Dispatch `change` after `initFeatureFlags()` and on each `setFlag()` call.
+ * 1. A new `EventTarget` instance is created and assigned to `featureFlagsEmitter`.
+ * 2. Other parts of the application can subscribe to the `change` event on this emitter to react to feature flag modifications.
+ * 3. The `change` event is dispatched by `initFeatureFlags()` when flags are initially loaded, and by `setFlag()` whenever an individual flag's state is altered.
  *
  * @type {EventTarget}
  */

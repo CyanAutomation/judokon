@@ -1,13 +1,20 @@
 /**
- * Apply the chosen display mode by setting a theme data attribute on the body.
+ * Applies the chosen display mode to the document body, updating theme-related
+ * data attributes and CSS classes.
+ *
+ * @summary This function ensures the UI reflects the selected visual theme,
+ * handling legacy mode names and providing validation.
  *
  * @pseudocode
- * 1. Normalize legacy values: if `mode === "high-contrast"`, map to `"retro"`.
- * 2. Validate `mode` is one of "light", "dark", or "retro"; warn and bail if invalid.
- * 3. Set `document.body.dataset.theme = mode`.
- * 4. Remove any existing `*-mode` classes then add the corresponding `${mode}-mode` class.
+ * 1. Define an array of valid display modes: "light", "dark", "retro".
+ * 2. If the input `mode` is "high-contrast", remap it to "retro" for backward compatibility and log a console info message.
+ * 3. Validate the `mode`: if it's not one of the `validModes`, log a warning and exit.
+ * 4. Set the `data-theme` attribute on `document.body` to the resolved `mode`.
+ * 5. Iterate through all `validModes` and remove any existing `${mode}-mode` CSS classes from `document.body`.
+ * 6. Add the CSS class corresponding to the resolved `mode` (e.g., `light-mode`, `dark-mode`, `retro-mode`) to `document.body`.
  *
- * @param {"light"|"dark"|"retro"|"high-contrast"} mode - Desired display mode; "high-contrast" is accepted as an alias for backward compatibility.
+ * @param {"light"|"dark"|"retro"|"high-contrast"} mode - The desired display mode. "high-contrast" is accepted as an alias for "retro".
+ * @returns {void}
  */
 export function applyDisplayMode(mode) {
   const validModes = ["light", "dark", "retro"];

@@ -1,44 +1,28 @@
 /**
- * Toggle the visibility of the country flag panel.
+ * Toggles the visibility of the country flag panel, managing its open/closed state,
+ * accessibility attributes, and focus.
+ *
+ * @summary This function controls the display of the country panel, including
+ * its visual animation (slide-in/out) and proper ARIA attributes for accessibility.
  *
  * @pseudocode
- * 1. Determine if the panel is currently open using the `open` class.
- * 2. Decide the next state based on the optional `show` parameter or the
- *    current state.
- * 3. If opening:
- *    a. Remove the `hidden` attribute from the panel.
- *    b. Add the `open` class for the slide-in animation.
- *    c. Set `aria-expanded` on the toggle button to `true`.
- *    d. Focus the first flag button inside the panel if it exists.
- * 4. If closing:
- *    a. Add the `hidden` attribute to hide the panel.
- *    b. Remove the `open` class.
- *    c. Set `aria-expanded` on the toggle button to `false`.
- *    d. Return focus to the toggle button.
+ * 1. Determine the current open state of the `panel` by checking for the `open` CSS class.
+ * 2. Calculate the `shouldOpen` state: if `show` is explicitly provided, use it; otherwise, invert the current `isOpen` state.
+ * 3. If `shouldOpen` is true (opening the panel):
+ *    a. Remove the `hidden` attribute from the `panel` to make it visible.
+ *    b. Add the `open` class to trigger the slide-in animation.
+ *    c. Set the `aria-expanded` attribute of the `toggleButton` to `true`.
+ *    d. Attempt to focus the first flag button within the `panel` for improved accessibility.
+ * 4. If `shouldOpen` is false (closing the panel):
+ *    a. Remove the `open` class to trigger the slide-out animation.
+ *    b. Add the `hidden` attribute to the `panel` to hide it from layout and assistive technologies.
+ *    c. Set the `aria-expanded` attribute of the `toggleButton` to `false`.
+ *    d. Return focus to the `toggleButton`.
  *
- * @param {HTMLButtonElement} toggleButton - The controlling button.
- * @param {HTMLElement} panel - The panel element.
- * @param {boolean} [show] - Force open (`true`) or closed (`false`).
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {HTMLButtonElement} toggleButton - The button that controls the panel's visibility.
+ * @param {HTMLElement} panel - The country flag panel element.
+ * @param {boolean} [show] - Optional. If `true`, forces the panel to open; if `false`, forces it to close. If omitted, toggles the current state.
+ * @returns {void}
  */
 export function toggleCountryPanel(toggleButton, panel, show) {
   const isOpen = panel.classList.contains("open");
@@ -62,16 +46,21 @@ export function toggleCountryPanel(toggleButton, panel, show) {
 }
 
 /**
- * Toggle the panel between slide-in and full-screen grid modes.
+ * Toggles the display mode of the country panel between a default slide-in mode
+ * and a full-screen grid mode.
+ *
+ * @summary This function applies or removes the `grid` CSS class to the panel
+ * element, which visually transforms its layout.
  *
  * @pseudocode
- * 1. Check if the panel currently has the `grid` class.
- * 2. Determine the desired state using the optional `enable` parameter
- *    or by inverting the current state.
- * 3. If enabling grid mode, add the `grid` class; otherwise remove it.
+ * 1. Check if the `panel` currently has the `grid` CSS class, indicating it's in grid mode.
+ * 2. Determine the `shouldGrid` state: if `enable` is explicitly provided, use it; otherwise, invert the current `isGrid` state.
+ * 3. If `shouldGrid` is true, add the `grid` class to the `panel`.
+ * 4. If `shouldGrid` is false, remove the `grid` class from the `panel`.
  *
- * @param {HTMLElement} panel - The panel element to update.
- * @param {boolean} [enable] - Force grid mode on (`true`) or off (`false`).
+ * @param {HTMLElement} panel - The panel element whose display mode will be toggled.
+ * @param {boolean} [enable] - Optional. If `true`, forces grid mode; if `false`, forces default mode. If omitted, toggles the current mode.
+ * @returns {void}
  */
 export function toggleCountryPanelMode(panel, enable) {
   const isGrid = panel.classList.contains("grid");

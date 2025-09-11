@@ -240,41 +240,22 @@ export async function fetchJson(url, schema) {
 }
 
 /**
- * Validates the provided data to ensure it is a non-null object.
+ * Validates the provided data to ensure it is a non-null object and, for specific types,
+ * checks for the presence of required fields.
+ *
+ * @summary This function performs basic type checking and content validation
+ * to ensure data integrity before further processing.
  *
  * @pseudocode
- * 1. Verify that `data` is an object:
- *    - Use `typeof data` to check that the data is of type "object".
- *    - Ensure `data` is not `null`.
- *    - If validation fails, throw an error with a descriptive message.
- *
- * 2. For `judoka` type data:
- *    - Use `getMissingJudokaFields` to determine which fields are absent.
- *    - Throw an error listing the missing fields when any are found.
+ * 1. Check if `data` is strictly an object and not `null`. If not, throw an `Error` indicating invalid or missing data for the given `type`.
+ * 2. If `type` is "judoka":
+ *    a. Call `getMissingJudokaFields(data)` to identify any required fields that are absent.
+ *    b. If `missingFields` array is not empty, throw an `Error` listing the missing fields.
  *
  * @param {any} data - The data to validate.
  * @param {string} type - A descriptive name for the type of data being validated (e.g., "judoka", "country").
- * @throws {Error} If the `data` is not an object or is `null`.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @throws {Error} If the `data` is not a valid object or if required fields are missing for specific data types.
+ * @returns {void}
  */
 export function validateData(data, type) {
   if (typeof data !== "object" || data === null) {
@@ -290,19 +271,26 @@ export function validateData(data, type) {
 }
 
 /**
- * Validates data against a JSON schema using Ajv.
+ * Validates data against a JSON schema using the Ajv library.
+ *
+ * @summary This function ensures that the provided data conforms to a given
+ * JSON schema, leveraging a cached Ajv validator for performance.
  *
  * @pseudocode
- * 1. Retrieve the Ajv instance by calling `getAjv()`.
- * 2. Check the cache for a compiled validator for the given `schema`.
- * 3. Compile the schema with Ajv and store it in the cache when needed.
- * 4. Validate `data` with the compiled function.
- *    - If validation fails, build an error message from `validate.errors`.
- *    - Throw an error including the validation details.
+ * 1. Obtain a singleton instance of the Ajv validator using `getAjv()`.
+ * 2. Check if a compiled validator for the specific `schema` already exists in the `schemaCache`.
+ * 3. If no compiled validator is found:
+ *    a. Compile the `schema` using `ajv.compile(schema)`.
+ *    b. Store the newly compiled validator in the `schemaCache` for future use.
+ * 4. Execute the compiled `validate` function with the `data`.
+ * 5. If `validate(data)` returns `false` (meaning validation failed):
+ *    a. Generate a human-readable error message from `validate.errors` using `ajv.errorsText()`.
+ *    b. Throw an `Error` containing the schema validation failure message.
  *
- * @param {any} data - Data to validate.
- * @param {object} schema - JSON schema to validate against.
- * @throws {Error} If validation fails.
+ * @param {any} data - The data to be validated.
+ * @param {object} schema - The JSON schema object to validate against.
+ * @throws {Error} If the data does not conform to the provided schema.
+ * @returns {Promise<void>} A promise that resolves if validation is successful, or rejects with an error if validation fails.
  */
 export async function validateWithSchema(data, schema) {
   const ajv = await getAjv();

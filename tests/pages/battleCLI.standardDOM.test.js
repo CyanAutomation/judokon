@@ -48,7 +48,7 @@ describe("battleCLI standard DOM nodes (Phase 1)", () => {
     expect(document.getElementById("cli-round")).toBeTruthy();
     expect(document.getElementById("cli-score")).toBeTruthy();
     expect(document.getElementById("cli-countdown")).toBeTruthy();
-    
+
     // Verify both old and new coexist
     expect(document.getElementById("cli-score")).toBeTruthy();
     expect(document.getElementById("score-display")).toBeTruthy();

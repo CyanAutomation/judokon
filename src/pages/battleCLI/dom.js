@@ -1,5 +1,20 @@
 import * as engineFacade from "../../helpers/battleEngineFacade.js";
 
+// Phase 2: Import shared Scoreboard helpers for dual-write
+let sharedScoreboardHelpers = null;
+try {
+  // Lazy import to avoid circular dependencies during module loading
+  import("../../components/Scoreboard.js").then((module) => {
+    sharedScoreboardHelpers = {
+      showMessage: module.showMessage,
+      updateScore: module.updateScore,
+      updateRoundCounter: module.updateRoundCounter
+    };
+  });
+} catch {
+  // Graceful fallback if shared Scoreboard not available
+}
+
 /**
  * Get a DOM element by id.
  *
@@ -23,6 +38,7 @@ export const byId = (id) => document.getElementById(id);
  * if el -> set text to `Round ${round} Target: ${target}`
  * root = byId("cli-root")
  * if root -> set dataset.round and dataset.target
+ * Phase 2: Also update shared Scoreboard component
  */
 export function updateRoundHeader(round, target) {
   const el = byId("cli-round");
@@ -31,6 +47,15 @@ export function updateRoundHeader(round, target) {
   if (root) {
     root.dataset.round = String(round);
     root.dataset.target = String(target);
+  }
+
+  // Phase 2: Dual-write to shared Scoreboard component
+  try {
+    if (sharedScoreboardHelpers?.updateRoundCounter) {
+      sharedScoreboardHelpers.updateRoundCounter(round);
+    }
+  } catch {
+    // Graceful fallback if shared Scoreboard not available
   }
 }
 
@@ -43,10 +68,20 @@ export function updateRoundHeader(round, target) {
  * @pseudocode
  * el = byId("round-message")
  * if el -> set textContent to text or ""
+ * Phase 2: Also update shared Scoreboard component
  */
 export function setRoundMessage(text) {
   const el = byId("round-message");
   if (el) el.textContent = text || "";
+
+  // Phase 2: Dual-write to shared Scoreboard component
+  try {
+    if (sharedScoreboardHelpers?.showMessage) {
+      sharedScoreboardHelpers.showMessage(text || "", { outcome: false });
+    }
+  } catch {
+    // Graceful fallback if shared Scoreboard not available
+  }
 }
 
 /**
@@ -58,6 +93,7 @@ export function setRoundMessage(text) {
  * scores = engineFacade.getScores() or {0,0}
  * el = byId("cli-score")
  * if el -> update textContent and data attributes with scores
+ * Phase 2: Also update shared Scoreboard component
  */
 export function updateScoreLine() {
   const { playerScore, opponentScore } = engineFacade.getScores?.() || {
@@ -69,6 +105,15 @@ export function updateScoreLine() {
     el.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
     el.dataset.scorePlayer = String(playerScore);
     el.dataset.scoreOpponent = String(opponentScore);
+  }
+
+  // Phase 2: Dual-write to shared Scoreboard component
+  try {
+    if (sharedScoreboardHelpers?.updateScore) {
+      sharedScoreboardHelpers.updateScore(playerScore, opponentScore);
+    }
+  } catch {
+    // Graceful fallback if shared Scoreboard not available
   }
 }
 

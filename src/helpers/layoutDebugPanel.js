@@ -2,37 +2,24 @@ let enabledState = false;
 const DEFAULT_SELECTORS = ["body *:not(script):not(style)"];
 
 /**
- * Toggle the global layout debug panel.
+ * Toggles the visibility of a global layout debug panel, which outlines
+ * visible DOM elements to aid in debugging layout issues.
+ *
+ * @summary This function applies or removes a CSS class to elements,
+ * causing them to display a visual border, useful for inspecting page layout.
  *
  * @pseudocode
- * 1. Exit early if `document.body` is unavailable.
- * 2. Remove any existing `.layout-debug-outline` classes.
- * 3. When `enabled` is true, add `.layout-debug-outline` to all visible
- *    elements matching the provided selectors. The default selector highlights
- *    all visible containers across the page.
+ * 1. If `document.body` is not available (e.g., in a non-browser environment), exit early.
+ * 2. Update the internal `enabledState` to reflect the new `enabled` value.
+ * 3. Remove the `layout-debug-outline` class from all elements that currently have it, clearing any previous outlines.
+ * 4. If `enabledState` is `true`:
+ *    a. Iterate through each selector in the `selectors` array (defaulting to `DEFAULT_SELECTORS`).
+ *    b. For each selector, query all matching elements in the document.
+ *    c. For each matching element, if it is currently visible (i.e., `offsetParent` is not `null`), add the `layout-debug-outline` class to it.
  *
- * @param {boolean} enabled - Whether to show the outlines.
- * @param {string[]} [selectors] - Optional custom selectors.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {boolean} enabled - If `true`, enables the debug panel and outlines elements; if `false`, disables it and removes outlines.
+ * @param {string[]} [selectors=DEFAULT_SELECTORS] - Optional. An array of CSS selectors specifying which elements to outline. Defaults to outlining all visible elements.
+ * @returns {void}
  */
 export function toggleLayoutDebugPanel(enabled, selectors = DEFAULT_SELECTORS) {
   if (!document.body) return;

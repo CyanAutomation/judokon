@@ -42,6 +42,15 @@ import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectMod
 import { SNACKBAR_REMOVE_MS } from "../../helpers/constants.js";
 import { registerModal, unregisterModal, onEsc } from "../../helpers/modalManager.js";
 import { exposeTestAPI } from "../../helpers/testApi.js";
+// Phase 2: Shared Scoreboard imports for dual-write
+import { setupScoreboard } from "../../helpers/setupScoreboard.js";
+import { initBattleScoreboardAdapter } from "../../helpers/battleScoreboard.js";
+import {
+  showMessage as scoreboardShowMessage,
+  updateScore as scoreboardUpdateScore,
+  updateTimer as scoreboardUpdateTimer,
+  updateRoundCounter as scoreboardUpdateRoundCounter
+} from "../../components/Scoreboard.js";
 import state, { resolveEscapeHandled, getEscapeHandledPromise } from "./state.js";
 import { onKeyDown } from "./events.js";
 import { registerBattleHandlers } from "./battleHandlers.js";
@@ -1953,6 +1962,29 @@ export async function init() {
 
   await resetMatch();
   await resetPromise;
+
+  // Phase 2: Initialize shared Scoreboard alongside CLI-specific logic
+  try {
+    // Setup shared Scoreboard component with timer controls
+    const timerControls = {
+      pauseTimer: () => {}, // CLI handles its own timers
+      resumeTimer: () => {} // CLI handles its own timers
+    };
+    setupScoreboard(timerControls);
+
+    // Initialize PRD battle scoreboard adapter for canonical events
+    initBattleScoreboardAdapter();
+
+    // Reveal standard scoreboard nodes (remove hidden state)
+    const standardNodes = document.querySelector(".standard-scoreboard-nodes");
+    if (standardNodes) {
+      standardNodes.style.display = "block";
+      standardNodes.removeAttribute("aria-hidden");
+    }
+  } catch (error) {
+    console.warn("Failed to initialize shared Scoreboard in CLI:", error);
+  }
+
   try {
     await initRoundSelectModal(startCallback);
   } catch {
