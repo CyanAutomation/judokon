@@ -1,7 +1,7 @@
 /**
  * Integration tests for debug logging system integration
  */
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   BattleDebugLogger,
   DEBUG_CATEGORIES,
@@ -14,17 +14,25 @@ import {
 
 describe("Debug Logger Integration", () => {
   let logger;
+  let consoleMocks;
 
   beforeEach(() => {
     // Create a test logger instance
     logger = new BattleDebugLogger({ enabled: true, outputMode: "memory" });
 
-    // Spy on console to ensure no violations
-    vi.spyOn(console, "log").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "debug").mockImplementation(() => {});
+    // Create console spies to verify compliance (legitimate testing of console non-usage)
+    consoleMocks = {
+      log: vi.spyOn(console, "log").mockImplementation(() => {}),
+      warn: vi.spyOn(console, "warn").mockImplementation(() => {}),
+      error: vi.spyOn(console, "error").mockImplementation(() => {}),
+      info: vi.spyOn(console, "info").mockImplementation(() => {}),
+      debug: vi.spyOn(console, "debug").mockImplementation(() => {})
+    };
+  });
+
+  afterEach(() => {
+    // Clean up console spies
+    Object.values(consoleMocks).forEach((mock) => mock.mockRestore());
   });
 
   describe("Console Discipline", () => {
@@ -33,11 +41,11 @@ describe("Debug Logger Integration", () => {
       logEventEmit("testEvent", { data: "test" });
       logTimerOperation("start", "testTimer", 1000);
 
-      expect(console.log).not.toHaveBeenCalled();
-      expect(console.warn).not.toHaveBeenCalled();
-      expect(console.error).not.toHaveBeenCalled();
-      expect(console.info).not.toHaveBeenCalled();
-      expect(console.debug).not.toHaveBeenCalled();
+      expect(consoleMocks.log).not.toHaveBeenCalled();
+      expect(consoleMocks.warn).not.toHaveBeenCalled();
+      expect(consoleMocks.error).not.toHaveBeenCalled();
+      expect(consoleMocks.info).not.toHaveBeenCalled();
+      expect(consoleMocks.debug).not.toHaveBeenCalled();
     });
 
     it("should buffer logs in memory during tests", () => {
@@ -66,11 +74,11 @@ describe("Debug Logger Integration", () => {
       componentLogger.debug("Debug message");
       componentLogger.error("Error message");
 
-      expect(console.log).not.toHaveBeenCalled();
-      expect(console.warn).not.toHaveBeenCalled();
-      expect(console.error).not.toHaveBeenCalled();
-      expect(console.info).not.toHaveBeenCalled();
-      expect(console.debug).not.toHaveBeenCalled();
+      expect(consoleMocks.log).not.toHaveBeenCalled();
+      expect(consoleMocks.warn).not.toHaveBeenCalled();
+      expect(consoleMocks.error).not.toHaveBeenCalled();
+      expect(consoleMocks.info).not.toHaveBeenCalled();
+      expect(consoleMocks.debug).not.toHaveBeenCalled();
     });
   });
 
