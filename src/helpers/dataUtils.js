@@ -304,26 +304,6 @@ export function validateData(data, type) {
  * @param {object} schema - JSON schema to validate against.
  * @throws {Error} If validation fails.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export async function validateWithSchema(data, schema) {
   const ajv = await getAjv();
   let validate = schemaCache.get(schema);

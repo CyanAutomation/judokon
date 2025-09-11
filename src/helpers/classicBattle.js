@@ -8,26 +8,6 @@ export {
   disableNextRoundButton
 } from "./classicBattle/uiHelpers.js";
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Re-export: returns the opponent's judoka selection for the current match.
  *
  * This is a compatibility re-export of `getOpponentJudoka` from

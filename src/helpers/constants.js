@@ -281,24 +281,4 @@ export const CLASSIC_BATTLE_POINTS_TO_WIN = 10;
  *
  * @constant {number}
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
 export const CLASSIC_BATTLE_MAX_ROUNDS = 25;

@@ -42,26 +42,6 @@
  */
 export { setupClassicBattlePage } from "./classicBattle/bootstrap.js";
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Re-export: programmatically select a stat during a round.
  *
  * Delegates to `selectStat` in `./classicBattle/uiHelpers.js`. Used by the
