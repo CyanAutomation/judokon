@@ -195,8 +195,64 @@ function createHeaderTracker(modal, header) {
 - Performance optimization
 - Comprehensive testing strategy
 
-**Ready for Phase 0 implementation** with stakeholder approval.
+Phase 0 — implementation
 
+Actions:
+- Added `<link rel="stylesheet" href="../styles/components.css" />` to `src/pages/battleClassic.html` and `src/pages/battleCLI.html` heads so modal base styles (`modal.css`) load on both pages.
+- Placement: after `cli-immersive.css` on CLI page to preserve page theme; before inline `<style>` in Classic page to allow page-specific overrides to win.
+
+Targeted tests run:
+- `vitest` unit tests relevant to modals:
+  - `tests/helpers/modalComponent.test.js`
+  - `tests/helpers/modalManager.stack.test.js`
+  - `tests/helpers/classicBattle/roundSelectModal.test.js`
+
+Outcome:
+- All targeted tests executed (see CLI output below) with no regressions.
+- Modal base styles now available on both pages; no functional JavaScript changes.
+
+CLI output (abridged):
+- modalComponent.test.js — PASS
+- modalManager.stack.test.js — PASS
+- roundSelectModal.test.js — PASS
+
+Proceeding to Phase 1.
+
+Phase 1 — implementation
+
+Actions:
+- Updated `src/styles/modal.css` to make the backdrop top inset configurable via `--modal-inset-top` with a default of `0`.
+- Added `.header-aware` helper class that applies a small gap using `--modal-header-gap` (defaults to `8px`).
+
+Targeted tests run:
+- `tests/helpers/modalComponent.test.js`
+- `tests/helpers/modalManager.stack.test.js`
+
+Outcome:
+- Tests passed; no behavior change when the variable is unset (backwards compatible).
+- Backdrop now supports header-aware positioning without affecting other modals by default.
+
+Proceeding to Phase 2.
+
+Phase 2 — implementation
+
+Actions:
+- Enhanced `src/helpers/classicBattle/roundSelectModal.js` to apply header-aware positioning and page-specific skinning:
+  - Detects CLI vs Classic via page header.
+  - Sets `--modal-inset-top` on the modal backdrop and adds `header-aware` class.
+  - Adds `.cli-modal` or `.classic-modal` class to enable theming.
+  - Tracks `resize`/`orientationchange` while open and updates inset; cleans up on close.
+- Added game mode skin hooks in `src/styles/modal.css`:
+  - `.modal-backdrop.cli-modal .modal` gets terminal-like styling consistent with CLI page.
+  - `.modal-backdrop.classic-modal .modal` is a documented hook (no-op by default).
+
+Targeted tests run:
+- `tests/helpers/classicBattle/roundSelectModal.test.js` (modal init path)
+- `tests/helpers/modalComponent.test.js` (baseline modal behavior)
+
+Outcome:
+- Tests passed; no behavior changes to modal lifecycle or event flow.
+- On both pages, the round select modal will center within the viewport area beneath the header/scoreboard and adopt page-appropriate styling.
 Current behavior (observed in source)
 
 - Modal markup: `Modal` creates a `.modal-backdrop` (fixed, full-viewport) with a centered `.modal` (flexbox).

@@ -114,6 +114,13 @@ export async function initRoundSelectModal(onStart) {
   frag.append(title, btnWrap);
 
   const modal = createModal(frag, { labelledBy: title });
+
+  // Apply game-mode specific positioning and skinning before opening the modal.
+  // This ensures the dialog centers within the viewport area beneath the header/scoreboard
+  // and adopts page-appropriate styling without changing modal behavior.
+  try {
+    applyGameModePositioning(modal);
+  } catch {}
   let cleanupTooltips = () => {};
   rounds.forEach((r) => {
     const btn = createButton(r.label, { id: `round-select-${r.id}` });
@@ -147,4 +154,72 @@ export async function initRoundSelectModal(onStart) {
   // rejection is handled (tests expect console.error to run before
   // this function returns) while still not awaiting tooltip setup.
   await Promise.resolve();
+}
+
+/**
+ * Apply header-aware positioning and game mode skin to the round select modal.
+ *
+ * @pseudocode
+ * 1. Detect game mode (CLI vs Classic) by presence of `#cli-header`/`.cli-header`.
+ * 2. Find the header element and read its height.
+ * 3. Set `--modal-inset-top` on the backdrop and add `header-aware` class.
+ * 4. Add a mode-specific class: `cli-modal` or `classic-modal` on the backdrop.
+ * 5. Track resize/orientation changes while open and update inset accordingly.
+ *
+ * @param {{ element: HTMLElement }} modal - Modal instance created by `createModal`.
+ */
+function applyGameModePositioning(modal) {
+  const backdrop = modal?.element;
+  if (!backdrop) return;
+
+  const cliHeader = document.getElementById("cli-header") || document.querySelector(".cli-header");
+  const classicHeader = document.querySelector('header[role="banner"]') || document.querySelector("header");
+  const isCliMode = Boolean(cliHeader);
+  const header = (isCliMode ? cliHeader : classicHeader) || null;
+
+  // Add skin class first so themes can override dialog styles deterministically
+  try {
+    backdrop.classList.add(isCliMode ? "cli-modal" : "classic-modal");
+  } catch {}
+
+  if (!header) return;
+
+  const updateInset = () => {
+    try {
+      const h = header.offsetHeight;
+      if (Number.isFinite(h) && h >= 0) {
+        backdrop.style.setProperty("--modal-inset-top", `${h}px`);
+        backdrop.classList.add("header-aware");
+      }
+    } catch {}
+  };
+
+  // Initial compute
+  updateInset();
+
+  // Track resize/orientation while modal is mounted; clean up on close
+  let resizeId = null;
+  const onResize = () => {
+    if (resizeId) cancelAnimationFrame(resizeId);
+    resizeId = requestAnimationFrame(updateInset);
+  };
+  try {
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+  } catch {}
+
+  const cleanup = () => {
+    try {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+      if (resizeId) cancelAnimationFrame(resizeId);
+    } catch {}
+    try {
+      backdrop.removeEventListener("close", cleanup);
+    } catch {}
+  };
+
+  try {
+    backdrop.addEventListener("close", cleanup, { once: true });
+  } catch {}
 }

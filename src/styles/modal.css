@@ -1,12 +1,19 @@
 /* Modal styles */
 .modal-backdrop {
   position: fixed;
-  inset: 0;
+  /* Allow pages/components to offset the backdrop below a header/scoreboard */
+  inset: var(--modal-inset-top, 0) 0 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
+}
+
+/* Optional helper that adds a small gap under the header area */
+.modal-backdrop.header-aware {
+  --modal-gap: var(--modal-header-gap, 8px);
+  inset: calc(var(--modal-inset-top, 0) + var(--modal-gap)) 0 0 0;
 }
 
 .modal-backdrop[hidden] {
@@ -49,4 +56,18 @@
   .modal {
     animation: none;
   }
+}
+
+/* Game mode skins for Round Select modal
+   These are additive and only apply when the backdrop is given a mode class. */
+.modal-backdrop.cli-modal .modal {
+  background: #1a1a1a;
+  border: 1px solid #8cff6b;
+  color: #8cff6b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.modal-backdrop.classic-modal .modal {
+  /* Classic inherits defaults; this rule documents intent and
+     provides a hook for future classic-specific overrides. */
 }
