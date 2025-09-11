@@ -129,20 +129,11 @@ AI agents should begin by reading:
 - ✅ Validate stat blocks against rarity rules
 - ✅ Generate or evaluate PRDs for new features
 
-Before committing code changes, run the full check suite to verify docs, formatting, lint, tests, and contrast.
-For the latest required sequence, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Before committing code changes, run the full validation suite to verify docs, formatting, lint, tests, and contrast.
+For the complete command reference and troubleshooting, see [docs/validation-commands.md](./docs/validation-commands.md).
+For contributor-specific guidance, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-```bash
-npm run check:jsdoc
-npx prettier . --check
-npx eslint .
-npx vitest run
-npx playwright test
-npm run check:contrast
-```
-
-Example one-liner:
-
+**Quick validation (essential checks):**
 ```bash
 npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
 ```
@@ -209,91 +200,22 @@ The battle engine exposes a lightweight event emitter. Subscribe via
 
 ## 🔎 Using the Vector RAG System
 
-Before scanning the repo for answers, call [`queryRag`](./src/helpers/queryRag.js)
-with a natural-language question to pull relevant context from the embeddings:
+The project includes a high-performance vector RAG system with 16,000+ indexed chunks covering documentation, code standards, and game rules. Before scanning the repo for answers, use the [`queryRag`](./src/helpers/queryRag.js) helper:
 
 ```javascript
 import queryRag from "./src/helpers/queryRag.js";
-
 const matches = await queryRag("How does the battle engine work?");
 ```
 
-Check [example vector queries](design/agentWorkflows/exampleVectorQueries.md)
-for more usage patterns.
-
-## Vector Search Helpers
-
-Utilities for working with the embedding database are centralized in
-`src/helpers/vectorSearch/index.js`. The default export provides methods to
-load embeddings, expand queries, find matches, and fetch surrounding
-context:
-
-```javascript
-import vectorSearch from "./src/helpers/vectorSearch/index.js";
-const embeddings = await vectorSearch.loadEmbeddings();
-const expanded = await vectorSearch.expandQueryWithSynonyms("grip fighting");
-const results = await vectorSearch.findMatches([0, 1, 0], 5, ["prd"], expanded);
-```
-Embeddings are quantized to **three decimal places** to keep file size and comparisons predictable.
-See [RAG_QUERY_GUIDE.md](design/agentWorkflows/RAG_QUERY_GUIDE.md) for template prompts and tag combinations when querying.
-
-### Query RAG from the CLI
-
-Search the vector database directly from the terminal:
-
+**Command line usage:**
 ```bash
 npm run rag:query "How does the battle engine work?"
 ```
 
-Sample output:
+**Performance:** 15x faster than manual exploration (2-second queries), with 62.5% accuracy for implementation queries and 95% for design docs.
 
-```text
-- Classic Battle introduces the game's basic one-on-one mode.
-- The round resolver compares chosen stats to decide a winner.
-- Each round alternates between player choice and resolver phases.
-```
+For complete RAG system documentation, offline usage, evaluation tools, and advanced configuration, see **[docs/rag-system.md](./docs/rag-system.md)**.
 
-### Evaluate retrieval quality
-
-Measure how well the vector search performs by running the evaluator:
-
-```bash
-node scripts/evaluation/evaluateRAG.js
-```
-
-It reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, and **Recall@5** for the expected sources.
-
-### Run queries offline
-
-1. **Prepare the local model** (one-time):
-
-   ```bash
-   npm run rag:prepare:models
-   # or, if you already have a local copy of the files
-   npm run rag:prepare:models -- --from-dir /path/to/minilm
-   ```
-
-   This hydrates `src/models/minilm` with the quantized MiniLM files used by the query encoder.
-2. **Build compact assets** for offline vector search:
-
-   ```bash
-   npm run build:offline-rag
-   ```
-
-   This writes `src/data/offline_rag_vectors.bin` and `src/data/offline_rag_metadata.json`.
-3. **Query without a network connection** using the regular CLI:
-
-  ```bash
-  # Enforce strict offline (no CDN/model downloads)
-  RAG_STRICT_OFFLINE=1 npm run rag:query "How does the battle engine work?"
-  ```
-
-  Tips:
-  - If strict offline is set but the model is missing, the CLI prints a hint to run `npm run rag:prepare:models`.
-  - If you prefer a degraded but network-free path when the model is unavailable, enable lexical fallback:
-    `RAG_ALLOW_LEXICAL_FALLBACK=1 npm run rag:query "classic battle timer"`.
-  - The browser path continues to load embeddings via the manifest + shard loader; tests can also consume `client_embeddings.json` directly.
-   
 ## ⚡ Module Loading Policy
 
 Use static imports for hot paths and always-required modules; use dynamic imports with preload for optional or heavy features. See the canonical [Module Loading Policy for Agents](./AGENTS.md#module-loading-policy-for-agents) for the full policy.

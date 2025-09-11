@@ -3,6 +3,10 @@
 **Purpose**: Define deterministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.  
 **Audience**: AI Agents only. Human readability is not the priority.
 
+**Content Ownership**: This file is the authoritative source for agent-specific rules, validation commands, and quality standards. Other documentation files reference this for agent-specific details.
+
+**Quick Reference**: [docs/validation-commands.md](./docs/validation-commands.md) | [docs/rag-system.md](./docs/rag-system.md)
+
 ---
 
 ## 🗂️ Workflow Order
@@ -11,7 +15,24 @@
 2. Task contract definition (inputs/outputs/success/error)
 3. Implementation (import policy, coding rules)
 4. Validation (lint, format, tests, contrast, logs)
-5. Delivery (PR body with verification summary)
+5. Deli**Agent-specific validation (includes hot-path checks):**
+```bash
+# Fail if dynamic import appears in hot paths
+grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null 
+  && echo "Found dynamic import in hot path" && exit 1 || true
+
+# Fail if unsilenced console.warn/error found in tests (ignore utility wrapper)
+grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" 
+  && echo "Unsilenced console found" && exit 1 || true
+
+# JSON validation
+npm run validate:data
+
+# RAG validation
+npm run rag:validate
+```
+
+**For complete validation commands, quality verification, and troubleshooting, see [docs/validation-commands.md](./docs/validation-commands.md).**ody with verification summary)
 
 ---
 
@@ -456,8 +477,9 @@ rg -n "preload\(|link rel=preload" src || echo "Consider preloading optional mod
 
 ## 🛠 Validation Commands
 
-Run before commit:
+**Complete command reference:** [docs/validation-commands.md](./docs/validation-commands.md)
 
+**Essential validation (run before commit):**
 ```bash
 npx prettier . --check
 npx eslint .
@@ -467,15 +489,14 @@ npx playwright test
 npm run check:contrast
 ```
 
-Fix:
-
+**Auto-fix commands:**
 ```bash
 npx prettier . --write
 npx eslint . --fix
 npm run check:jsdoc:fix
 ```
 
-Quick autochecks (bundle as `npm run check:agents` if desired):
+**Agent-specific validation (includes hot-path checks):**
 
 ```bash
 # Fail if dynamic import appears in hot paths
@@ -676,14 +697,23 @@ CI pipeline green
     "forbiddenContexts": ["statSelection", "roundDecision", "eventDispatch", "renderLoop"],
     "preserveFeatureFlags": true
   },
-  "validationCommands": [
-    "npx prettier . --check",
-    "npx eslint .",
-    "npm run check:jsdoc",
-    "npx vitest run",
-    "npx playwright test",
-    "npm run check:contrast"
-  ],
+  "validationCommands": {
+    "centralReference": "docs/validation-commands.md",
+    "essential": [
+      "npx prettier . --check",
+      "npx eslint .",
+      "npm run check:jsdoc",
+      "npx vitest run",
+      "npx playwright test",
+      "npm run check:contrast"
+    ],
+    "agentSpecific": [
+      "npm run rag:validate",
+      "npm run validate:data",
+      "grep -RIn \"await import\\(\" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle",
+      "grep -RInE \"console\\.(warn|error)\\(\" tests | grep -v \"tests/utils/console.js\""
+    ]
+  },
   "logDiscipline": {
     "forbidUnsuppressed": true,
     "muteHelper": "withMutedConsole",
