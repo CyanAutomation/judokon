@@ -13,7 +13,7 @@
  */
 export async function waitForBattleState(page, expectedState, options = {}) {
   const { timeout = 5000, allowFallback = true } = options;
-  
+
   // First check if Test API is available
   const hasTestAPI = await page.evaluate(() => {
     return (

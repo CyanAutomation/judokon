@@ -1,3 +1,4 @@
+import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
 export class ScoreboardView {
   constructor(model, { rootEl, messageEl, timerEl, roundCounterEl, scoreEl } = {}) {
     this.model = model;
@@ -6,6 +7,8 @@ export class ScoreboardView {
     this.timerEl = timerEl;
     this.roundCounterEl = roundCounterEl;
     this.scoreEl = scoreEl;
+    this._scoreAnimId = 0;
+    this._scoreRaf = null;
   }
 
   /**
@@ -101,7 +104,42 @@ export class ScoreboardView {
   updateScore() {
     if (!this.scoreEl) return;
     const { player, opponent } = this.model.getState().score;
-    this.scoreEl.innerHTML = `<span data-side="player">You: ${player}</span> <span data-side="opponent">Opponent: ${opponent}</span>`;
+    // Reduced motion → immediate update
+    let reduce = false;
+    try { reduce = !!shouldReduceMotionSync(); } catch {}
+    if (reduce) {
+      this.scoreEl.innerHTML = `<span data-side="player">You: ${player}</span> <span data-side="opponent">Opponent: ${opponent}</span>`;
+      return;
+    }
+    // Immediate set for determinism, optional animate when prior spans exist
+    const playerSpan = this.scoreEl.querySelector('span[data-side="player"]');
+    const opponentSpan = this.scoreEl.querySelector('span[data-side="opponent"]');
+    const endVals = { p: Number(player) || 0, o: Number(opponent) || 0 };
+    this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span> <span data-side="opponent">Opponent: ${endVals.o}</span>`;
+    if (!playerSpan || !opponentSpan) return;
+    const parse = (el) => {
+      if (!el) return 0;
+      const m = el.textContent && el.textContent.match(/(\d+)/);
+      return m ? Number(m[1]) : 0;
+    };
+    const startVals = { p: parse(playerSpan), o: parse(opponentSpan) };
+    if (startVals.p === endVals.p && startVals.o === endVals.o) return;
+    const duration = 400;
+    const id = ++this._scoreAnimId;
+    const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const step = (t) => {
+      if (id !== this._scoreAnimId) return;
+      const now = (typeof performance !== 'undefined' && performance.now) ? t : Date.now();
+      const k = Math.min(1, (now - t0) / duration);
+      const curP = Math.round(startVals.p + (endVals.p - startVals.p) * k);
+      const curO = Math.round(startVals.o + (endVals.o - startVals.o) * k);
+      this.scoreEl.innerHTML = `<span data-side="player">You: ${curP}</span> <span data-side="opponent">Opponent: ${curO}</span>`;
+      if (k < 1) {
+        this._scoreRaf = requestAnimationFrame(step);
+      }
+    };
+    if (this._scoreRaf) try { cancelAnimationFrame(this._scoreRaf); } catch {}
+    this._scoreRaf = requestAnimationFrame(step);
   }
 
   /**

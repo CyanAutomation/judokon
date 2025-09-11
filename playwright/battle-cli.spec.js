@@ -205,8 +205,12 @@ test.describe("Classic Battle CLI", () => {
     // Load page with autostart to avoid modal/click issues
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
-    // Wait for battle to reach active state (Test API helper with DOM fallback)
+    // Wait for battle state using Test API helper (replaces DOM polling)
     await waitForBattleStateHelper(page, "waitingForPlayerAction", { timeout: 10000 });
+
+    // Check current state using Test API
+    const currentState = await getCurrentBattleState(page);
+    console.log(`✅ Battle reached state: ${currentState} via Test API`);
 
     // Now check that badge is visible and has correct content
     const badge = page.locator("#battle-state-badge");

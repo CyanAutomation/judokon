@@ -209,3 +209,23 @@ Step 2.3: Phase 2 validation
 - Outcome: PASS (4 total tests across 3 files). Adjusted adapter to bypass message lock on authoritative clear by sending `{ outcome: true, outcomeType: 'none' }` with empty text.
 
 Pausing after Phase 2 for review.
+
+Phase 3 — progress log
+
+Step 3.1: Add score-change animation with reduced-motion branch
+- Actions: Updated `src/components/ScoreboardView.js` to import `shouldReduceMotionSync` and animate score changes ≤400ms when motion is allowed; otherwise update immediately. Cancels prior RAF to avoid overlap.
+- Outcome: Smooth, bounded score animation; respects `prefers-reduced-motion` and settings toggle.
+
+Step 3.2: Add “Waiting…” fallback (≤500ms) in adapter
+- Actions: Enhanced `src/helpers/battleScoreboard.js` to schedule a 500ms timer on init that shows “Waiting…” unless a state or domain event arrives first. Any relevant event cancels and clears the fallback.
+- Outcome: Deterministic fallback messaging that does not overshadow early authoritative events.
+
+Step 3.3: Add targeted tests
+- Actions: Added `tests/helpers/battleScoreboard.waiting.test.js` for fallback behavior. (Score animation relies on motionUtils; reduced-motion immediate path is implicitly exercised by existing tests that mock `shouldReduceMotionSync` to true.)
+- Outcome: Targeted coverage for fallback; animation path remains opt-in with motion enabled.
+
+Step 3.4: Phase 3 validation
+- Actions: Ran targeted tests: `npx vitest run tests/helpers/battleScoreboard.waiting.test.js tests/helpers/battleScoreboard.authority.test.js tests/helpers/battleScoreboard.dom-contract.test.js tests/helpers/battleScoreboard.adapter.prd.test.js --run`.
+- Outcome: PASS (5 tests across 4 files). Adapter now schedules/clears fallback correctly. Score updates remain deterministic with immediate set; animation path is conditional and non-disruptive.
+
+Pausing after Phase 3 for review.

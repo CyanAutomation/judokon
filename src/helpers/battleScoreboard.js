@@ -5,12 +5,30 @@ import {
   updateTimer,
   updateRoundCounter,
   clearRoundCounter,
+  showTemporaryMessage,
   getState as _getState
 } from "../components/Scoreboard.js";
 
 let _bound = false;
 let _handlers = [];
+  // Schedule fallback message if no state is observed within 500ms
+  try {
+    _waitingTimer = setTimeout(() => {
+      try {
+        _waitingClearer = typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
+      } catch {}
+    }, 500);
+  } catch {}
+
 let _state = { current: null, lastOutcome: "none" };
+let _waitingTimer = null;
+let _waitingClearer = null;
+function _cancelWaiting() {
+  try { if (_waitingTimer) { clearTimeout(_waitingTimer); } } catch {}
+  _waitingTimer = null;
+  try { if (typeof _waitingClearer === "function") { _waitingClearer(); } } catch {}
+  _waitingClearer = null;
+}
 function mapOutcomeToEnum(outcome) {
   const s = String(outcome || "");
   if (/player/i.test(s)) return "playerWin";
@@ -33,6 +51,15 @@ export function initBattleScoreboardAdapter() {
   if (_bound) return disposeBattleScoreboardAdapter;
   _bound = true;
   _handlers = [];
+  // Schedule fallback message if no state is observed within 500ms
+  try {
+    _waitingTimer = setTimeout(() => {
+      try {
+        _waitingClearer = typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
+      } catch {}
+    }, 500);
+  } catch {}
+
 
   const on = (type, fn) => {
     _handlers.push([type, fn]);
@@ -41,6 +68,7 @@ export function initBattleScoreboardAdapter() {
 
   // round.started → round counter
   on("round.started", (e) => {
+    _cancelWaiting();
     try {
       const d = e?.detail || {};
       const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
@@ -52,6 +80,7 @@ export function initBattleScoreboardAdapter() {
 
   // round.timer.tick → header timer (seconds)
   on("round.timer.tick", (e) => {
+    _cancelWaiting();
     try {
       const ms = Number(e?.detail?.remainingMs);
       if (Number.isFinite(ms)) updateTimer(Math.max(0, Math.round(ms / 1000)));
@@ -60,6 +89,7 @@ export function initBattleScoreboardAdapter() {
 
   // round.evaluated → scores (+ optional message)
   on("round.evaluated", (e) => {
+    _cancelWaiting();
     try {
       const d = e?.detail || {};
       const p = Number(d?.scores?.player) || 0;
@@ -74,6 +104,7 @@ export function initBattleScoreboardAdapter() {
 
   // match.concluded → final scores + clear round counter (+ optional message)
   on("match.concluded", (e) => {
+    _cancelWaiting();
     try {
       const d = e?.detail || {};
       const p = Number(d?.scores?.player) || 0;
@@ -89,6 +120,7 @@ export function initBattleScoreboardAdapter() {
 
   // control.state.changed reserved for Phase 2
   on("control.state.changed", (e) => {
+    _cancelWaiting();
     try {
       const to = e?.detail?.to;
       _state.current = to || _state.current;
@@ -118,6 +150,15 @@ export function disposeBattleScoreboardAdapter() {
     } catch {}
   }
   _handlers = [];
+  // Schedule fallback message if no state is observed within 500ms
+  try {
+    _waitingTimer = setTimeout(() => {
+      try {
+        _waitingClearer = typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
+      } catch {}
+    }, 500);
+  } catch {}
+
   _bound = false;
 }
 
