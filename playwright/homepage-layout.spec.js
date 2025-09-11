@@ -4,7 +4,7 @@ const ALLOWED_OFFSET = 2;
 
 test.describe("Homepage layout", () => {
   test.describe("desktop", () => {
-    test.use({ viewport: { width: 1024, height: 800 } });
+    test.use({ viewport: { width: 1920, height: 1080 } });
 
     test.beforeEach(async ({ page }) => {
       await page.goto("/index.html");

@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("CLI Layout Assessment - Desktop Focused", () => {
   test.beforeEach(async ({ page }) => {
     // Set standard desktop resolution for consistent testing
-    await page.setViewportSize({ width: 1200, height: 800 });
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto("/src/pages/battleCLI.html");
     await page.waitForSelector("#cli-root");
   });
