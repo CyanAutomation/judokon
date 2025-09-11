@@ -198,6 +198,76 @@ Planned acceptance: measurable Recall@5 improvement (+5% baseline), provenance c
   - "settings feature flags order" (Expected: `design/codeStandards/settingsPageDesignGuidelines.md`)
   - "navbar button transition duration" (Expected: `src/styles/main.css`)
   - "how to add a new tooltip" (Expected: `src/data/tooltips.json`)
+
+---
+
+## 6. Incident: Some agents cannot use RAG offline (Codex error)
+
+Task Contract
+
+```
+{
+  "inputs": [
+    "src/helpers/queryRag.js",
+    "src/helpers/api/vectorSearchPage.js",
+    "src/helpers/vectorSearch/loader.js",
+    ".github/workflows/updateEmbeddings.yml",
+    "scripts/generateEmbeddings.js",
+    "scripts/queryRagCli.mjs",
+    "models/ (presence)",
+    "src/data/ (offline artifacts)"
+  ],
+  "outputs": ["progressRAG.md"],
+  "success": ["root cause identified", "repro path documented", "no public API changes"],
+  "errorMode": "ask_on_public_api_change"
+}
+```
+
+Summary
+
+- Reported error: "queryRag invocation failed to load the model due to network restrictions; proceeded with repo inspection for guidelines" (from an offline OpenAI Codex agent).
+- Finding: Query-time model loading falls back to a network fetch when the local model is absent. In a restricted environment, this fails—preventing query embedding—even though offline vector artifacts exist.
+
+Evidence
+
+- Query path uses a feature-extraction model to embed the user question:
+  - `src/helpers/queryRag.js` → `const extractor = await getExtractor();` → encodes the query vector before scoring.
+- Model loader logic and network fallback:
+  - `src/helpers/api/vectorSearchPage.js#getExtractor` tries local quantized model at `models/minilm` (Node). If missing, it logs a warning and falls back to `"Xenova/all-MiniLM-L6-v2"` (remote), which requires network to download weights on first use.
+  - In browser environments, it imports Transformers via CDN: `https://cdn.jsdelivr.net/.../transformers.min.js` (also requires network).
+- Local model absent in repo by default:
+  - `ls models/` shows no `minilm/` directory in this workspace. Therefore, Node path triggers the remote fallback.
+- Offline RAG artifacts are present but insufficient for query-time embedding:
+  - `src/data/offline_rag_vectors.bin` and `src/data/offline_rag_metadata.json` exist (produced by `.github/workflows/updateEmbeddings.yml` via `scripts/buildOfflineRag.mjs`). These compress the corpus vectors and metadata only; they do not include a query encoder model.
+  - `src/helpers/vectorSearch/loader.js#loadOfflineEmbeddings` correctly loads the corpus offline, but the query still needs the extractor model.
+- CI workflow does not build or commit a local model bundle:
+  - `.github/workflows/updateEmbeddings.yml` updates embeddings and offline artifacts, but there is no step that prepares and commits `models/minilm` for offline consumption.
+- CLI reproducer follows the same path:
+  - `scripts/queryRagCli.mjs` calls `queryRag(...)`, which uses `getExtractor()` and therefore fails offline when remote fallback is attempted.
+
+Root Cause
+
+- The offline solution delivers compressed corpus vectors and metadata but does not provide a locally bundled feature-extraction model (`models/minilm`) for query-time encoding. When agents run with network disabled, `getExtractor()` falls back to a remote model download which fails, resulting in the observed error.
+
+Contributing Factors
+
+- The browser code path uses a CDN import for Transformers.js, which would also fail in an offline browser context.
+- Warning/console handling: `getExtractor()` logs a warning on local-missing then throws after the remote fetch fails; agent UIs may condense this into a single error string.
+
+Reproduction (offline environment)
+
+1. Ensure no `models/minilm` exists locally.
+2. Disable network.
+3. Run: `npm run rag:query -- "how to add a new tooltip"`.
+4. Expected: `Model failed to load ...` error logged from `getExtractor()`, and the process exits with failure.
+
+Non-fix Recommendations (next steps for review)
+
+- Option A: Bundle a quantized MiniLM at `models/minilm` in the repo (or provide a deterministic artifact download in CI and commit it), so `getExtractor()` loads locally with no network.
+- Option B: Add a controlled lexical-only fallback when the model is unavailable (use sparse vectors from `offline_rag_metadata.json`) with clear provenance and a warning; keep this behind a flag to avoid silent quality regressions.
+- Option C: Provide a preloading step/script that materializes `models/minilm` from a pinned artifact in environments where network is available (CI or dev), and disable network fallback at runtime in production/offline agents.
+
+Awaiting review before implementing any of the above.
   - "how are judoka stats calculated" (Expected: `src/data/judoka.json`)
   - "default navigation items" (Expected: `src/data/navigationItems.js`)
   - "default sound setting in configuration" (Expected: `src/data/settings.json`)
