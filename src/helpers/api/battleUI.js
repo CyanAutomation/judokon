@@ -65,6 +65,10 @@ export function getOutcomeMessage(outcome) {
   return OUTCOME_MESSAGES[outcome] || "";
 }
 
+// Simple score tracking for fallback mode
+let fallbackPlayerScore = 0;
+let fallbackOpponentScore = 0;
+
 /**
  * Evaluate a stat matchup and return engine results with a user-facing message.
  *
@@ -79,10 +83,6 @@ export function getOutcomeMessage(outcome) {
  * @param {number} opponentVal - Opponent's stat value.
  * @returns {{delta: number, outcome: string, matchEnded: boolean, playerScore: number, opponentScore: number, message: string}}
  */
-// Simple score tracking for fallback mode
-let fallbackPlayerScore = 0;
-let fallbackOpponentScore = 0;
-
 export function evaluateRound(playerVal, opponentVal) {
   try {
     // Use the battle engine facade

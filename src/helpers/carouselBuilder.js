@@ -6,45 +6,6 @@ import { setupFocusHandlers } from "./carousel/focus.js";
 import { setupLazyPortraits } from "./lazyPortrait.js";
 import { CAROUSEL_SWIPE_THRESHOLD } from "./constants.js";
 import { createSpinner } from "../components/Spinner.js";
-
-/**
- * Adds scroll markers to indicate the user's position in the carousel.
- *
- * @pseudocode
- * 1. Validate inputs: If `container` or `wrapper` is missing, exit early.
- * 2. Check for existing markers: If a `.scroll-markers` element already exists within `wrapper` (meaning a controller has already set them up), exit to avoid duplication.
- * 3. Create the `markers` container: Create a `<div>` element, assign it the class `scroll-markers`.
- * 4. Get card dimensions and calculate page metrics:
- *    a. Query all `.judoka-card` elements within `container`.
- *    b. Get the `firstCard` and its `cardWidth`.
- *    c. Get the `gap` between columns from the computed style of `container`.
- *    d. Calculate `cardsPerPage`: Determine how many cards fit within the `container.clientWidth`, accounting for `gap`, ensuring at least 1 card per page.
- *    e. Calculate `pageCount`: Determine the total number of pages based on `cards.length` and `cardsPerPage`.
- * 5. Create and append page markers:
- *    a. Loop from `i = 0` to `pageCount - 1`:
- *       i. Create a `<span>` element for each `marker`.
- *       ii. Assign it the class `scroll-marker`.
- *       iii. If `i` is 0 (first page), add the "active" class.
- *       iv. Append the `marker` to the `markers` container.
- * 6. Create and append the page counter:
- *    a. Create a `<span>` element for the `counter`.
- *    b. Assign it the class `page-counter`.
- *    c. Set its `aria-live` attribute to "polite" for accessibility.
- *    d. Set its initial `textContent` to "Page 1 of [pageCount]".
- *    e. Append the `counter` to the `markers` container.
- * 7. Append the `markers` container to the `wrapper`.
- * 8. Add a "scroll" event listener to the `container`:
- *    a. Inside the listener, recalculate `gapPx`, `pageWidth`, `maxScroll`, and `remaining` scroll distance.
- *    b. Calculate `currentPage`:
- *       i. If `remaining` is less than or equal to 1px, set `currentPage` to `pageCount - 1` (last page) to handle rounding issues at the end of scroll.
- *       ii. Otherwise, if `pageWidth` is greater than 0, calculate `currentPage` by rounding `container.scrollLeft / pageWidth` and clamping it between 0 and `pageCount - 1`.
- *       iii. If `pageWidth` is 0, set `currentPage` to 0.
- *    c. Update active markers: Iterate through all `.scroll-marker` elements and toggle the "active" class based on whether their index matches `currentPage`.
- *    d. Update counter text: Set `counter.textContent` to `Page [currentPage + 1] of [pageCount]`.
- *
- * @param {HTMLElement} [container] - The carousel container element.
- * @param {HTMLElement} [wrapper] - The carousel wrapper element.
- */
 /**
  * Adds scroll markers to indicate the user's position in the carousel.
  *
@@ -117,17 +78,6 @@ function addScrollMarkers(container, wrapper) {
   });
 }
 
-/**
- * Initialize scroll markers after the carousel is attached to the document.
- *
- * @pseudocode
- * 1. Exit early if `container` or `wrapper` is missing.
- * 2. Schedule `addScrollMarkers` inside `requestAnimationFrame` to ensure
- *    measurements occur after layout.
- *
- * @param {HTMLElement} [container] - The carousel container element.
- * @param {HTMLElement} [wrapper] - The carousel wrapper element.
- */
 /**
  * Initialize scroll markers after the carousel is attached to the document.
  *
