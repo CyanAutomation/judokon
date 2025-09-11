@@ -19,9 +19,7 @@ describe("battleScoreboard PRD adapter", () => {
     document.body.appendChild(header);
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
     initScoreboard(header);
-    const { initBattleScoreboardAdapter } = await import(
-      "../../src/helpers/battleScoreboard.js"
-    );
+    const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
     initBattleScoreboardAdapter();
   });
 

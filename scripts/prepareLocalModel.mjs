@@ -114,11 +114,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = parseArgs(process.argv.slice(2));
   prepareLocalModel(args)
     .then((res) => {
-      // eslint-disable-next-line no-console
       console.log(`Local MiniLM prepared at: ${res.destDir} (source=${res.source})`);
     })
     .catch((err) => {
-      // eslint-disable-next-line no-console
       console.error("Model preparation failed:", err.message || err);
       process.exit(1);
     });

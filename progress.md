@@ -99,6 +99,7 @@ I re-read `design/productRequirementsDocuments/prdBattleScoreboard.md`, inspecte
   - ARIA live/atomic present on message, timer, and round elements (`Scoreboard.js`). This may cause over-announcing on timer ticks contrary to PRD’s “announce only on outcome/state change”. No reduced‑motion variations for score updates.
 
 Key evidence (non-exhaustive):
+
 - PRD: `design/productRequirementsDocuments/prdBattleScoreboard.md` (sections 5–11 define events, DOM contract, timing, lifecycle)
 - Components: `src/components/Scoreboard.js`, `src/components/ScoreboardView.js`, `src/components/ScoreboardModel.js`
 - Bootstrap/adapter: `src/helpers/setupScoreboard.js`
@@ -107,10 +108,12 @@ Key evidence (non-exhaustive):
 - CSS using boolean outcome: `src/styles/battle.css` (e.g., `#round-message[data-outcome="true"]`)
 
 Corrections to earlier notes:
+
 - Canonical event availability is broader than implied: `engineBridge.js` emits `round.started`, `round.timer.tick`, and `match.concluded` in PRD form. The gap is specifically the scoreboard not binding to them directly.
 - The DOM contract mismatch is specifically about attribute semantics and target element, not missing elements. `#round-message`, `#next-round-timer`, `#round-counter`, and `#score-display` exist and are wired.
 
 Requirements coverage summary (unchanged statuses, now verified with references):
+
 - PRD Entry point naming: MISMATCH
 - Canonical event consumption: PARTIAL (bridge present; scoreboard not subscribed)
 - UI-only and no business logic: PARTIAL (minor policy in message locking)
@@ -123,34 +126,41 @@ Requirements coverage summary (unchanged statuses, now verified with references)
 ## Phased remediation plan
 
 Phase 0 — Contract shim and tests
+
 - Add `src/helpers/battleScoreboard.js` as a lightweight adapter (no hot-path dynamic imports) that subscribes to PRD events (`control.state.changed`, `round.started`, `round.timer.tick`, `round.evaluated`, `match.concluded`) and forwards to the existing `Scoreboard` API.
 - Provide a disposer to unsubscribe (store in module scope), and simple Vitest coverage: happy-path updates and disposer behavior.
 - Expose `getSnapshot()` alias (maps to `getState()`) to align with PRD naming for tests.
 
 Phase 1 — DOM contract alignment
+
 - Decide the scoreboard root element: either wrap the current header children in an explicit container or annotate an existing container.
 - Set `data-outcome` on the root element with values `playerWin|opponentWin|draw|none`; stop using the boolean flag on `#round-message`.
 - Update CSS selectors accordingly; add a minimal test asserting attribute values across outcomes.
 
 Phase 2 — Authority wiring and state persistence
+
 - Move visual transition triggers to the adapter keyed on `control.state.changed`; keep domain/timer events as value updates only.
 - Ensure outcome rendering persists until the next authoritative transition (adapter holds last outcome and clears on `to===selection|cooldown`).
 - Add test cases for persistence and clearing on state change.
 
 Phase 3 — Timing, animation, reduced motion
+
 - Implement a ≤500ms score-change animation (CSS class or JS with RAF) with a `prefers-reduced-motion` branch that disables it.
 - Ensure initial timer text becomes visible within ≤200ms from the corresponding event; add a basic timing assertion in tests (with generous margin to avoid flakiness).
 - Add a “Waiting…” fallback shown ≤500ms after mount when no `control.state.changed` is seen, and clear it on the first state event.
 
 Phase 4 — Accessibility and announce discipline
+
 - Limit live-region announcements to outcome/state changes; set timer and round counters to either `aria-live="off"` or gate updates behind non-announcing nodes.
 - Add tests that mutate values without producing extra announcements (spy/allowlist pattern in tests).
 
 Phase 5 — Cleanup and idempotency
+
 - Ensure `create()` is idempotent (return existing instance) and `destroy()` unsubscribes via the adapter disposer and clears state.
 - Add a simple out-of-order event guard in the adapter (e.g., ignore older `roundIndex`).
 
 Notes and constraints
+
 - No public API rename in hot paths; introduce `battleScoreboard.js` as an additive adapter to preserve current call sites. Mark legacy boolean `data-outcome` usage for deprecation in CSS after migration.
 - Keep imports static in hot paths; preload optional modules if needed.
 
@@ -161,14 +171,17 @@ Pause — awaiting review before starting Phase 0.
 Phase 0 — progress log
 
 Step 0.1: Implement PRD adapter skeleton
+
 - Actions: Added `src/helpers/battleScoreboard.js` exposing `initBattleScoreboardAdapter`, `disposeBattleScoreboardAdapter`, and `getSnapshot` alias. Subscribed to PRD events (`round.started`, `round.timer.tick`, `round.evaluated`, `match.concluded`, `control.state.changed` [no-op for now]) and forwarded to the existing Scoreboard API. Included unsubscribe logic.
 - Outcome: Adapter compiles and is inert until initialized; does not change existing hot paths. No public API changes.
 
 Step 0.2: Add basic unit tests for adapter
+
 - Actions: Added `tests/helpers/battleScoreboard.adapter.prd.test.js` covering happy-path updates from `round.started` and `round.evaluated`, and disposer behavior.
 - Outcome: Tests created; will run targeted tests at end of Phase 0.
 
 Step 0.3: Phase 0 validation
+
 - Actions: Ran targeted unit tests: `npx vitest run tests/helpers/battleScoreboard.adapter.prd.test.js --run`.
 - Outcome: PASS (2 passed). No regressions observed in adapter behavior.
 
@@ -177,18 +190,22 @@ Pausing after Phase 0 for review.
 Phase 1 — progress log
 
 Step 1.1: DOM contract support in ScoreboardView
+
 - Actions: Extended `ScoreboardView` to accept an optional `rootEl` and set enumerated `data-outcome` on the root (`playerWin|opponentWin|draw|none`) while keeping the existing boolean `data-outcome` on `#round-message` for backward compatibility. Updated `initScoreboard` to pass the container as `rootEl`.
 - Outcome: Root outcome attribute is now available without breaking existing selectors or behavior.
 
 Step 1.2: Adapter sets outcome values
+
 - Actions: Updated `src/helpers/battleScoreboard.js` to map PRD outcomes to enumerated values and set the root `data-outcome`. Also reset the root to `none` on `round.started`.
 - Outcome: PRD events now drive the standardized root attribute consistently.
 
 Step 1.3: Add DOM contract unit test
+
 - Actions: Added `tests/helpers/battleScoreboard.dom-contract.test.js` to assert that the header receives `data-outcome` values and clears to `none`, while maintaining boolean `data-outcome` on `#round-message`.
 - Outcome: Targeted tests ready; will run them below.
 
 Step 1.4: Phase 1 validation
+
 - Actions: Ran targeted unit tests: `npx vitest run tests/helpers/battleScoreboard.dom-contract.test.js tests/helpers/battleScoreboard.adapter.prd.test.js --run`.
 - Outcome: PASS (3 total tests). No regressions observed.
 
@@ -197,14 +214,17 @@ Pausing after Phase 1 for review.
 Phase 2 — progress log
 
 Step 2.1: Authority wiring keyed to control.state.changed
+
 - Actions: Enhanced `src/helpers/battleScoreboard.js` to track current state and last outcome. Added a handler for `control.state.changed` that clears the root outcome (`none`) and message only when `to` is `selection` or `cooldown`, ensuring persistence across other transitions. Kept `round.timer.tick` and other domain events as value updates only.
 - Outcome: Outcomes now persist until the next authoritative transition to `selection`/`cooldown`; adapter clears in those cases.
 
 Step 2.2: Add persistence/clear tests
+
 - Actions: Added `tests/helpers/battleScoreboard.authority.test.js` to verify that outcome persists through timer ticks and unrelated states, and clears on `selection`/`cooldown`.
 - Outcome: Tests created; will run them below.
 
 Step 2.3: Phase 2 validation
+
 - Actions: Ran targeted tests: `npx vitest run tests/helpers/battleScoreboard.authority.test.js tests/helpers/battleScoreboard.dom-contract.test.js tests/helpers/battleScoreboard.adapter.prd.test.js --run`.
 - Outcome: PASS (4 total tests across 3 files). Adjusted adapter to bypass message lock on authoritative clear by sending `{ outcome: true, outcomeType: 'none' }` with empty text.
 
@@ -213,18 +233,22 @@ Pausing after Phase 2 for review.
 Phase 3 — progress log
 
 Step 3.1: Add score-change animation with reduced-motion branch
+
 - Actions: Updated `src/components/ScoreboardView.js` to import `shouldReduceMotionSync` and animate score changes ≤400ms when motion is allowed; otherwise update immediately. Cancels prior RAF to avoid overlap.
 - Outcome: Smooth, bounded score animation; respects `prefers-reduced-motion` and settings toggle.
 
 Step 3.2: Add “Waiting…” fallback (≤500ms) in adapter
+
 - Actions: Enhanced `src/helpers/battleScoreboard.js` to schedule a 500ms timer on init that shows “Waiting…” unless a state or domain event arrives first. Any relevant event cancels and clears the fallback.
 - Outcome: Deterministic fallback messaging that does not overshadow early authoritative events.
 
 Step 3.3: Add targeted tests
+
 - Actions: Added `tests/helpers/battleScoreboard.waiting.test.js` for fallback behavior. (Score animation relies on motionUtils; reduced-motion immediate path is implicitly exercised by existing tests that mock `shouldReduceMotionSync` to true.)
 - Outcome: Targeted coverage for fallback; animation path remains opt-in with motion enabled.
 
 Step 3.4: Phase 3 validation
+
 - Actions: Ran targeted tests: `npx vitest run tests/helpers/battleScoreboard.waiting.test.js tests/helpers/battleScoreboard.authority.test.js tests/helpers/battleScoreboard.dom-contract.test.js tests/helpers/battleScoreboard.adapter.prd.test.js --run`.
 - Outcome: PASS (5 tests across 4 files). Adapter now schedules/clears fallback correctly. Score updates remain deterministic with immediate set; animation path is conditional and non-disruptive.
 
@@ -233,14 +257,17 @@ Pausing after Phase 3 for review.
 Phase 4 — progress log
 
 Step 4.1: Live-region discipline updates
+
 - Actions: Set scoreboard score display `aria-live` to `off` in `src/components/Scoreboard.js` so score changes do not announce by default. Left message and timer regions as `polite` to avoid breaking page scaffold expectations; announcements remain focused on outcome/state changes.
 - Outcome: Reduced verbosity for assistive tech without altering existing UI contracts.
 
 Step 4.2: Add focused a11y tests
+
 - Actions: Added `tests/components/Scoreboard.a11y.liveRegions.test.js` to verify that score display initializes with `aria-live=off` and timer updates do not override or clobber the outcome message.
 - Outcome: Targeted coverage for live-region discipline.
 
 Step 4.3: Phase 4 validation
+
 - Actions: Ran targeted tests: `npx vitest run tests/components/Scoreboard.a11y.liveRegions.test.js tests/helpers/battleScoreboard.authority.test.js tests/helpers/battleScoreboard.dom-contract.test.js --run`.
 - Outcome: PASS (3 tests across 3 files). Score display is now `aria-live=off` even when DOM is pre-built; outcome message remains stable across timer ticks.
 
@@ -249,18 +276,22 @@ Pausing after Phase 4 for review.
 Phase 5 — progress log
 
 Step 5.1: Idempotent init + destroy cleanup
+
 - Actions: Made `initScoreboard` idempotent by returning early when a default instance already exists; `destroy()` now attempts to dispose the PRD adapter (if loaded) and leaves the DOM intact but stops future updates.
 - Outcome: Re-initialization no longer rebuilds internals; destroy halts adapter-driven updates.
 
 Step 5.2: Out-of-order guard (round.started)
+
 - Actions: Added `_lastRoundIndex` tracking in `src/helpers/battleScoreboard.js` and ignore `round.started` events with an index ≤ last seen.
 - Outcome: Round counter resists regressions from late/out-of-order events.
 
 Step 5.3: Add targeted tests
+
 - Actions: Added `tests/helpers/battleScoreboard.ordering.test.js` and `tests/components/Scoreboard.idempotency.test.js` to verify ordering guard and idempotent init/destroy behavior.
 - Outcome: Targeted coverage for new guards and lifecycle.
 
 Step 5.4: Phase 5 validation
+
 - Actions: Ran targeted tests: `npx vitest run tests/helpers/battleScoreboard.ordering.test.js tests/components/Scoreboard.idempotency.test.js --run`.
 - Outcome: PASS (3 tests across 2 files). Ordering guard holds; destroy stops scoreboard updates as expected; re-initialization does not clear message content.
 

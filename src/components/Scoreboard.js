@@ -153,9 +153,14 @@ export class Scoreboard {
 
   destroy() {
     try {
-      import("../helpers/battleScoreboard.js").then((m)=>{
-        try { if (typeof m.disposeBattleScoreboardAdapter === "function") m.disposeBattleScoreboardAdapter(); } catch {}
-      }).catch(()=>{});
+      import("../helpers/battleScoreboard.js")
+        .then((m) => {
+          try {
+            if (typeof m.disposeBattleScoreboardAdapter === "function")
+              m.disposeBattleScoreboardAdapter();
+          } catch {}
+        })
+        .catch(() => {});
     } catch {}
   }
 }
@@ -188,7 +193,9 @@ export function initScoreboard(container, _controls) {
     roundCounterEl: container.querySelector("#round-counter"),
     scoreEl: container.querySelector("#score-display")
   });
-  try { if (view && view.scoreEl) view.scoreEl.setAttribute("aria-live", "off"); } catch {}
+  try {
+    if (view && view.scoreEl) view.scoreEl.setAttribute("aria-live", "off");
+  } catch {}
   defaultScoreboard = new Scoreboard(model, view);
 }
 

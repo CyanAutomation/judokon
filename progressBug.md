@@ -18,7 +18,7 @@ After auditing the Playwright tests in `/playwright/`, I've identified significa
 
 2. **Integrated Test API Across Components**
    - Modified `src/pages/battleClassic.init.js` to expose Test API during Classic Battle initialization
-   - Modified `src/pages/battleCLI/init.js` to expose Test API during CLI Battle initialization  
+   - Modified `src/pages/battleCLI/init.js` to expose Test API during CLI Battle initialization
    - Modified `src/pages/battleCLI.init.js` to expose Test API early in lightweight CLI initialization
    - Added `exposeTestAPI()` calls to ensure consistent API availability
 
@@ -67,7 +67,7 @@ The Test API infrastructure is now in place and proven effective. Ready to proce
    - **Before**: Multiple `waitForTimeout()` calls - 1000ms, 3000ms, 1000ms, 2000ms (total ~7s waits)
    - **After**: Direct Test API state checking and immediate verification
    - **Performance**: 4.8s vs original ~8-10s (40%+ improvement)
-   - **Key Fixes**: 
+   - **Key Fixes**:
      - Replaced `waitForTimeout(3000)` with immediate Test API state access
      - Replaced `waitForTimeout(2000)` manual start wait with direct state verification
      - Added Test API battle state progression tracking
@@ -82,26 +82,26 @@ The Test API infrastructure is now in place and proven effective. Ready to proce
 
 1. **DOM Manipulation Eliminated**: All 3 high-priority files now use real application components instead of synthetic DOM
 2. **Timing Issues Resolved**: Replaced 7+ seconds of arbitrary `waitForTimeout()` calls with direct API access
-3. **Performance Gains**: Cumulative improvement - 3 tests now run in 3.6s vs original ~15-20s 
+3. **Performance Gains**: Cumulative improvement - 3 tests now run in 3.6s vs original ~15-20s
 4. **Real Behavior Testing**: Tests now verify actual application behavior instead of synthetic implementations
 5. **Test API Integration**: All refactored tests successfully use Test API where available, gracefully degrade otherwise
 
 ### Technical Validation
 
 - ✅ **cli-flows.spec.mjs**: DOM replacement removed, real keyboard handlers tested, 1.5s runtime
-- ✅ **battle-cli.spec.js**: 7s of timeouts replaced with Test API state checking, 4.8s runtime  
+- ✅ **battle-cli.spec.js**: 7s of timeouts replaced with Test API state checking, 4.8s runtime
 - ✅ **battle-next-skip.non-orchestrated.spec.js**: Body HTML replacement removed, real battle page used, 2.1s runtime
 - ✅ **Cumulative Performance**: 3 refactored tests run in 3.6s (75%+ improvement from original timing)
 - ✅ **Test API Usage**: Direct state access working across Classic Battle and CLI modes
 
 ### Phase 2 Impact Summary
 
-| Test File | Issue Fixed | Before | After | Improvement |
-|-----------|------------|--------|-------|-------------|
-| `cli-flows.spec.mjs` | DOM replacement | Synthetic DOM + waits | Real components | 1.5s, no DOM manipulation |
-| `battle-cli.spec.js` | Arbitrary timeouts | ~8-10s waits | Test API state checking | 4.8s, direct state access |
-| `battle-next-skip.non-orchestrated.spec.js` | Body HTML replacement | Synthetic body | Real battle page | 2.1s, real components |
-| **Total** | **Major anti-patterns** | **~15-20s** | **3.6s cumulative** | **75%+ faster, real behavior** |
+| Test File                                   | Issue Fixed             | Before                | After                   | Improvement                    |
+| ------------------------------------------- | ----------------------- | --------------------- | ----------------------- | ------------------------------ |
+| `cli-flows.spec.mjs`                        | DOM replacement         | Synthetic DOM + waits | Real components         | 1.5s, no DOM manipulation      |
+| `battle-cli.spec.js`                        | Arbitrary timeouts      | ~8-10s waits          | Test API state checking | 4.8s, direct state access      |
+| `battle-next-skip.non-orchestrated.spec.js` | Body HTML replacement   | Synthetic body        | Real battle page        | 2.1s, real components          |
+| **Total**                                   | **Major anti-patterns** | **~15-20s**           | **3.6s cumulative**     | **75%+ faster, real behavior** |
 
 ### Ready for Phase 3
 
@@ -154,27 +154,27 @@ Phase 2 successfully demonstrated that the Test API approach eliminates the most
 ### Technical Validation
 
 - ✅ **hover-zoom.spec.js**: Event simulation removed, natural mouse interactions, 2.1s runtime
-- ✅ **tooltip.spec.js**: Event simulation removed, natural mouse interactions, 1.9s runtime  
+- ✅ **tooltip.spec.js**: Event simulation removed, natural mouse interactions, 1.9s runtime
 - ✅ **pseudo-japanese-toggle.spec.js**: innerHTML comparisons removed, functional testing, 3.0s runtime
 - ✅ **Battle State Helper**: Test API integration working with ⚡ fast state access and DOM fallback
 - ✅ **Cumulative Performance**: 3 refactored tests run in 4.5s with real user behavior testing
 
 ### Phase 3 Impact Summary
 
-| Test File | Issue Fixed | Before | After | Improvement |
-|-----------|------------|--------|-------|-------------|
-| `hover-zoom.spec.js` | Event simulation | Synthetic `mouseleave` | Natural mouse movement | 2.1s, real interactions |
-| `tooltip.spec.js` | Event simulation | Synthetic `mouseout` | Natural mouse movement | 1.9s, real interactions |
-| `pseudo-japanese-toggle.spec.js` | innerHTML comparisons | Implementation detail testing | Functional behavior testing | 3.0s, robust testing |
-| `battle-cli.spec.js` (partial) | DOM state polling | `waitForSelector('[data-battle-state=...]')` | Test API direct access | ⚡ Immediate state access |
-| **Total** | **Medium-priority anti-patterns** | **Synthetic behaviors** | **Real user interactions** | **Consistent 2-4s performance** |
+| Test File                        | Issue Fixed                       | Before                                       | After                       | Improvement                     |
+| -------------------------------- | --------------------------------- | -------------------------------------------- | --------------------------- | ------------------------------- |
+| `hover-zoom.spec.js`             | Event simulation                  | Synthetic `mouseleave`                       | Natural mouse movement      | 2.1s, real interactions         |
+| `tooltip.spec.js`                | Event simulation                  | Synthetic `mouseout`                         | Natural mouse movement      | 1.9s, real interactions         |
+| `pseudo-japanese-toggle.spec.js` | innerHTML comparisons             | Implementation detail testing                | Functional behavior testing | 3.0s, robust testing            |
+| `battle-cli.spec.js` (partial)   | DOM state polling                 | `waitForSelector('[data-battle-state=...]')` | Test API direct access      | ⚡ Immediate state access       |
+| **Total**                        | **Medium-priority anti-patterns** | **Synthetic behaviors**                      | **Real user interactions**  | **Consistent 2-4s performance** |
 
 ### Infrastructure Ready for Scale
 
 The Battle State Helper module provides a scalable solution for the remaining 20+ instances of DOM state polling in `battle-cli.spec.js`. The pattern is established:
 
 - ⚡ **Test API First**: Direct state machine access when available
-- 🔄 **Graceful Fallback**: DOM polling when Test API unavailable  
+- 🔄 **Graceful Fallback**: DOM polling when Test API unavailable
 - ✅ **Enhanced Debugging**: State logging and verification
 
 ### Ready for Continuation
@@ -186,6 +186,7 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
 ### 1. Direct DOM Manipulation Issues
 
 #### **High Priority - Explicit DOM Replacement**
+
 - **File**: `cli-flows.spec.mjs` (lines 16-32)
   - **Issue**: Test completely replaces `#cli-stats` innerHTML and manually creates test elements
   - **Problem**: Hides real initialization issues; tests fake DOM instead of actual application behavior
@@ -197,12 +198,14 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
   - **Impact**: Test is testing synthetic DOM, not real application behavior
 
 #### **Medium Priority - Event Simulation**
+
 - **Files**: Multiple (`hover-zoom.spec.js`, `tooltip.spec.js`)
   - **Issue**: Using `page.dispatchEvent()` for `mouseleave`, `mouseout` events
   - **Problem**: Simulates events rather than testing natural user interactions
   - **Impact**: May not catch event handling edge cases that occur with real user actions
 
 #### **Medium Priority - Manual HTML Manipulation**
+
 - **File**: `pseudo-japanese-toggle.spec.js` (lines 41-52)
   - **Issue**: Manually comparing `innerHTML()` content to verify changes
   - **Problem**: Tests implementation details rather than user-visible behavior
@@ -211,6 +214,7 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
 ### 2. Excessive Waiting and Timing Dependencies
 
 #### **High Priority - Arbitrary Timeouts**
+
 - **File**: `battle-cli.spec.js` - Multiple instances:
   - Line 46: `waitForTimeout(1000)` - arbitrary wait for logs
   - Line 67: `waitForTimeout(3000)` - wait for "full initialization"
@@ -225,6 +229,7 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
   - **Impact**: Doesn't test actual timer functionality
 
 #### **Medium Priority - State Polling**
+
 - **Files**: Multiple battle tests using `waitForSelector('[data-battle-state="..."]')`
   - **Issue**: Polling DOM for state changes rather than having direct state access
   - **Problem**: Tests are dependent on DOM updates rather than actual state transitions
@@ -233,11 +238,13 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
 ### 3. Insufficient Direct Function Access
 
 #### **High Priority - Missing Battle State API**
+
 - **Pattern**: Tests frequently poll `data-battle-state` attributes instead of checking actual state
 - **Problem**: No direct access to battle state machine for testing
 - **Impact**: Slow tests that depend on DOM reflection of state rather than state itself
 
 #### **Medium Priority - Timer/Cooldown Dependencies**
+
 - **Pattern**: Tests wait for timers to complete or use `__NEXT_ROUND_COOLDOWN_MS` overrides
 - **Problem**: Tests are coupled to timing mechanisms rather than testing business logic
 - **Impact**: Brittle timing-dependent tests
@@ -247,6 +254,7 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
 ### Phase 1: Expose Direct APIs for Testing
 
 1. **Battle State Machine Access**
+
    ```javascript
    // Add to battle modules
    window.__TEST_API = {
@@ -257,6 +265,7 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
    ```
 
 2. **Countdown/Timer Control**
+
    ```javascript
    // Add to timer modules
    window.__TEST_API = {
@@ -280,16 +289,19 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
 ### Phase 2: Refactor High-Impact Tests
 
 #### Priority 1: `cli-flows.spec.mjs`
+
 - Remove DOM replacement
 - Use proper initialization APIs
 - Test actual keyboard handlers, not synthetic ones
 
 #### Priority 2: `battle-cli.spec.js`
+
 - Replace all `waitForTimeout` with direct state checking
 - Use battle state API instead of polling DOM
 - Remove manual event dispatching
 
 #### Priority 3: State-dependent tests
+
 - Replace `waitForSelector('[data-battle-state="..."]')` with direct state API
 - Use state transition triggers instead of waiting for natural progression
 
@@ -308,9 +320,10 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
 ### For Application Code (`src/` directory)
 
 1. **Add Test API Module** (`src/helpers/testApi.js`)
+
    ```javascript
    export function exposeTestAPI() {
-     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'test') {
+     if (typeof window !== "undefined" && process.env.NODE_ENV === "test") {
        window.__TEST_API = {
          // Direct function access
        };
@@ -343,14 +356,17 @@ Phase 3 successfully eliminated all identified medium-priority anti-patterns and
 ## Files Requiring Immediate Attention
 
 ### High Priority (DOM Manipulation)
+
 1. `playwright/cli-flows.spec.mjs` - Complete DOM replacement
 2. `playwright/battle-next-skip.non-orchestrated.spec.js` - Body HTML replacement
 
 ### High Priority (Excessive Waiting)
+
 1. `playwright/battle-cli.spec.js` - Multiple arbitrary timeouts
 2. `playwright/countdown.spec.js` - Timer-dependent waits
 
 ### Medium Priority (State Polling)
+
 1. All files using `waitForSelector('[data-battle-state="..."]')` pattern
 2. Files using `innerHTML()` comparisons for functionality verification
 

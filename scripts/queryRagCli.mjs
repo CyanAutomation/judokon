@@ -25,7 +25,9 @@ import queryRag from "../src/helpers/queryRag.js";
         .toLowerCase()
         .includes("strict offline mode")
     ) {
-      console.error("Hint: provide a local MiniLM at src/models/minilm or run: npm run rag:prepare:models");
+      console.error(
+        "Hint: provide a local MiniLM at src/models/minilm or run: npm run rag:prepare:models"
+      );
     }
     process.exit(1);
     return;

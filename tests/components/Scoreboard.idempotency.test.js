@@ -26,9 +26,7 @@ describe("Scoreboard idempotent init and destroy cleanup", () => {
     const header = document.querySelector("header");
     const { initScoreboard, destroy } = await import("../../src/components/Scoreboard.js");
     initScoreboard(header);
-    const { initBattleScoreboardAdapter } = await import(
-      "../../src/helpers/battleScoreboard.js"
-    );
+    const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
     initBattleScoreboardAdapter();
 
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");

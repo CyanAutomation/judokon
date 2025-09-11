@@ -59,6 +59,7 @@ npm run rag:validate # RAG preflight + evaluator + JSON + hot‑path checks
   ```
 
 Notes:
+
 - The model is expected under `src/models/minilm`. The preflight will fail if strict offline is enabled and files are missing.
 - Keep tests free of unsuppressed `console.warn/error`. Use `withMutedConsole` or spies as needed.
 
