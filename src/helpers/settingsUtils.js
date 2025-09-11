@@ -84,6 +84,7 @@ export { loadDefaultSettings } from "./settingsCache.js";
 /**
  * Re-export of the canonical default settings object used across the application.
  *
+ * @summary Canonical default configuration applied when user settings are absent.
  * @description
  * Consumers may read this object to seed UI defaults or for validation. Callers
  * who intend to mutate values should shallow-clone before modifying.

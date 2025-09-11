@@ -51,7 +51,7 @@ import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
  * @pseudocode
  * 1. Create `settingsReadyPromise` resolved when `settings:ready` is dispatched.
  * 2. Attach it to `window` so tests can await it.
-*/
+ */
 /**
  * Promise that resolves when the Settings UI has finished rendering and
  * dispatched the `settings:ready` event.
@@ -403,6 +403,7 @@ export { handleGameModeChange } from "./settings/gameModeSwitches.js";
 /**
  * Re-export the feature-flag toggle handler used by the Settings UI.
  *
+ * @summary Provides a stable import for the feature-flag toggle handler.
  * @description
  * The actual logic for applying and validating feature-flag toggles is
  * implemented in `./settings/featureFlagSwitches.js`. This re-export allows
