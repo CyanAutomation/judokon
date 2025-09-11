@@ -97,26 +97,10 @@ export function applyInitialControlValues(controls, settings = DEFAULT_SETTINGS,
  * @param {Object} controls - Collection of form elements.
  * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
  * @returns {Promise<import("../../config/settingsDefaults.js").Settings>} Resolved settings.
- */
-/**
- * @summary TODO: Add summary
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Load settings, falling back to defaults on error.
+ * 2. Apply the loaded settings to the controls.
+ * 3. Return the settings.
  */
 export async function applyInitialValues(controls, tooltipMap = {}) {
   const settings = await loadSettings().catch(() => DEFAULT_SETTINGS);

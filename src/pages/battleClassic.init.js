@@ -356,25 +356,6 @@ function showRoundSelectFallback(store) {
  * Designed to be safe to call at DOMContentLoaded; internal operations are
  * guarded with try/catch to avoid breaking the page on optional failures.
  *
- * @pseudocode
- * 1. Initialize scoreboard and scoreboard adapter.
- * 2. Seed UI defaults (score / round counter) for accessibility.
- * 3. Create the battle engine and bridge engine events to UI handlers.
- * 4. Create and expose the `store` via `createBattleStore()`.
- * 5. Bind transient UI event handlers and modals (round select, end modal).
- * 6. Await round select modal; on success start the first round via
- *    `startRoundCycle`. On failure, render a fallback start button.
- * 7. Wire Next/Replay/Quit buttons.
- */
-/**
- * Initialize the classic battle page and its UI bindings.
- *
- * @summary Initialize classic battle page and UI bindings.
- * @description
- * Bootstraps the scoreboard, battle engine, event bridges and UI handlers.
- * Designed to be safe to call at DOMContentLoaded; internal operations are
- * guarded with try/catch to avoid breaking the page on optional failures.
- *
  * @returns {Promise<void>}
  *
  * @pseudocode

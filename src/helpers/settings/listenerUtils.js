@@ -4,40 +4,6 @@ import { applyMotionPreference } from "../motionUtils.js";
 import { showSnackbar } from "../showSnackbar.js";
 
 /**
- * Attach change listeners that persist settings updates.
- *
- * @pseudocode
- * 1. Listen for changes on each toggle or select element.
- * 2. Use `handleUpdate` to persist the new value, reverting if it fails.
- * 3. Apply side effects like `applyMotionPreference` and `applyDisplayMode`.
- * 4. After a successful update, show a snackbar confirming the change.
- *
- * @param {Object} controls - Form controls with DOM references.
- * @param {Function} getCurrentSettings - Returns the latest settings object.
- * @param {(key: string, value: any, revert: Function) => Promise<any>} handleUpdate -
- *   Persist function that returns a Promise.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Attach event listeners to settings controls that persist changes and apply
  * side effects.
  *
