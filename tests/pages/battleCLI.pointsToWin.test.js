@@ -62,12 +62,12 @@ describe("battleCLI points select", () => {
 
     await waitFor(() => getPointsToWin() === target);
     await waitFor(
-      () => document.getElementById("cli-round").textContent === `Round 0 Target: ${target} 🏆`
+      () => document.getElementById("cli-round").textContent === `Round 0 Target: ${target}`
     );
 
     expect(getPointsToWin()).toBe(target);
     expect(setPointsToWin).toHaveBeenCalledWith(target);
-    expect(document.getElementById("cli-round").textContent).toBe(`Round 0 Target: ${target} 🏆`);
+    expect(document.getElementById("cli-round").textContent).toBe(`Round 0 Target: ${target}`);
   });
 
   it("keeps target after toggling verbose", async () => {
@@ -79,22 +79,16 @@ describe("battleCLI points select", () => {
 
     select.value = "15";
     select.dispatchEvent(new Event("change"));
-    await waitFor(
-      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
-    );
+    await waitFor(() => document.getElementById("cli-round").textContent === "Round 0 Target: 15");
 
     const checkbox = document.getElementById("verbose-toggle");
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event("change"));
-    await waitFor(
-      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
-    );
+    await waitFor(() => document.getElementById("cli-round").textContent === "Round 0 Target: 15");
 
     checkbox.checked = false;
     checkbox.dispatchEvent(new Event("change"));
-    await waitFor(
-      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
-    );
-    expect(document.getElementById("cli-round").textContent).toBe("Round 0 Target: 15 🏆");
+    await waitFor(() => document.getElementById("cli-round").textContent === "Round 0 Target: 15");
+    expect(document.getElementById("cli-round").textContent).toBe("Round 0 Target: 15");
   });
 });

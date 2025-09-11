@@ -18,7 +18,7 @@ User mentions unfamiliar terms? → USE RAG
 When in doubt? → USE RAG FIRST
 ```
 
-## 🏆 High-Success Query Patterns
+## High-Success Query Patterns
 
 ### ✅ These Work Great
 

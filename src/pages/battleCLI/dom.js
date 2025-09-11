@@ -20,13 +20,13 @@ export const byId = (id) => document.getElementById(id);
  * @returns {void}
  * @pseudocode
  * el = byId("cli-round")
- * if el -> set text to `Round ${round} Target: ${target} 🏆`
+ * if el -> set text to `Round ${round} Target: ${target}`
  * root = byId("cli-root")
  * if root -> set dataset.round and dataset.target
  */
 export function updateRoundHeader(round, target) {
   const el = byId("cli-round");
-  if (el) el.textContent = `Round ${round} Target: ${target} 🏆`;
+  if (el) el.textContent = `Round ${round} Target: ${target}`;
   const root = byId("cli-root");
   if (root) {
     root.dataset.round = String(round);

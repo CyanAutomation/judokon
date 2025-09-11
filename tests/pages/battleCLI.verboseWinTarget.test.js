@@ -29,7 +29,7 @@ describe("battleCLI verbose win target", () => {
     select.value = "15";
     select.dispatchEvent(new Event("change"));
     await waitFor(
-      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
+      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15"
     );
     const { getPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
     expect(getPointsToWin()).toBe(15);
@@ -37,13 +37,13 @@ describe("battleCLI verbose win target", () => {
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event("change"));
     await waitFor(
-      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
+      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15"
     );
     expect(getPointsToWin()).toBe(15);
     checkbox.checked = false;
     checkbox.dispatchEvent(new Event("change"));
     await waitFor(
-      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15 🏆"
+      () => document.getElementById("cli-round").textContent === "Round 0 Target: 15"
     );
     expect(getPointsToWin()).toBe(15);
   });
