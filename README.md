@@ -1,6 +1,8 @@
 # JU-DO-KON! 🥋
 
-**JU-DO-KON!** is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
+**JU-DWhen you open `src/pages/battleJudoka.html`, a modal prompts you to choose the match length (win target) before the first round. For debugging or automated tests, append `?autostart=1` to skip the modal and begin immediately.
+
+**Next button behavior:** The `Next` button advances only during inter-round cooldown, canceling any remaining cooldown. It remains disabled during stat selection to avoid accidental skips.* is a fast-paced, web-based card game, featuring real-life elite judoka. Designed for ages 8–12, the game uses simplified stats, vibrant collectible cards, and a player-vs-computer battle format. First to win 10 rounds takes the match!
 
 Try the game live in your browser: [JU-DO-KON!](https://cyanautomation.github.io/judokon/)
 
@@ -29,23 +31,19 @@ Note on Next button behavior:
 - The `Next` button advances only during the inter-round cooldown. Clicking it cancels any remaining cooldown and immediately starts the next round, regardless of the `skipRoundCooldown` setting.
 - It remains disabled while choosing a stat to avoid skipping the cooldown logic accidentally. The cooldown enables `Next` (or auto-advances in test mode); do not expect `Next` to be ready during stat selection.
 
-### Headless & Test Modes
+### Testing & Development Modes
 
-For simulation runs without UI waits, enable headless mode:
+For automated testing and debugging, the game supports specialized modes:
 
 ```js
 import { setHeadlessMode } from "./src/helpers/headlessMode.js";
 import { setTestMode } from "./src/helpers/testModeUtils.js";
 
-setHeadlessMode(true); // zero delays
-setTestMode(true); // deterministic RNG
+setHeadlessMode(true); // zero delays for fast simulation
+setTestMode(true); // deterministic RNG for consistent results
 ```
 
-Headless mode forces cooldowns to `0` and skips opponent reveal sleeps. Test mode remains responsible for seeding randomness and enforces a minimum one-second cooldown when headless mode is off. Disable headless mode to restore normal pacing.
-
-Stat selections now dispatch events and rely on the state machine for round resolution. `handleStatSelection` performs direct resolution only when the orchestrator is absent (e.g., certain tests or CLI utilities).
-
-See [design/battleMarkup.md](design/battleMarkup.md) for the canonical DOM ids used by classic battle scripts.
+For complete testing configuration, debug panels, and CLI details, see **[docs/testing-modes.md](./docs/testing-modes.md)**.
 
 ## 🔌 Engine API
 
@@ -140,63 +138,34 @@ npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run 
 
 This suite includes a DOM regression test (`tests/pages/battleJudoka.dom.test.js`) that loads `battleJudoka.html` and fails if required IDs (`next-button`, `stat-help`, `quit-match-button`, `stat-buttons`) are missing.
 
-### Classic Battle CLI (text-first)
+### Classic Battle CLI
 
-- Page: `src/pages/battleCLI.html` – terminal-style UI that reuses the Classic Battle engine/state machine.
-- Controls: number keys [1–5] select stats, Enter/Space advances, Q quits, H toggles a help panel, and Esc closes help or quit dialogs. Stats can also be selected by clicking or tapping, and rounds can be advanced with a click. Closing the help panel with its button ignores the next background click to avoid accidental advancement.
-- State badge: `#battle-state-badge` reflects the current machine state.
-- Bottom line: snackbars render as a single status line using `#snackbar-container`.
-- Win target: choose 5/10/15 from the header; persisted in localStorage under `battleCLI.pointsToWin`.
-- Optional verbose log: enable header toggle to record recent state transitions.
-- Bootstrap helpers: `autostartBattle()`, `renderStatList()`, and `restorePointsToWin()` orchestrate CLI startup.
+The project includes a terminal-style UI (`src/pages/battleCLI.html`) that reuses the Classic Battle engine with text-first controls:
+- **Number keys [1–5]**: Select stats  
+- **Enter/Space**: Advance rounds
+- **Q**: Quit, **H**: Help panel
+
+For complete CLI documentation, controls, and development details, see **[docs/battle-cli.md](./docs/battle-cli.md)**.
 
 ### Snackbar Container
 
-Pages that display snackbars must include a persistent container near the end of `<body>`:
+Pages that display snackbars must include a persistent container:
 
 ```html
 <div id="snackbar-container" role="status" aria-live="polite"></div>
 ```
 
-Place this element **before** any script that may trigger snackbars during page load to avoid creating a fallback container with duplicate IDs. `showSnackbar` and `updateSnackbar` reuse this element for notifications.
+Place this element **before** any script that may trigger snackbars to avoid duplicate IDs.
 
-## Settings API
+## APIs & Components
 
-Settings are loaded once and cached for synchronous use. Default values come
-from `DEFAULT_SETTINGS` in `src/config/settingsDefaults.js` and are overlaid
-with any persisted values. Helpers in `src/helpers/settingsUtils.js` provide
-safe access:
+The game provides several APIs for development and integration:
 
-- `getSetting(key)` – read a setting value from the cache.
+- **Settings API**: `getSetting(key)` for cached settings, `isEnabled(flag)` for feature flags
+- **Battle Engine**: Event-driven system with `roundStarted`, `roundEnded`, `matchEnded` events  
+- **Display Modes**: Light, Dark, and Retro themes via `document.body.dataset.theme`
 
-Feature flags are managed through `src/helpers/featureFlags.js`:
-
-- `isEnabled(flag)` – synchronous check for a flag's enabled state.
-- `setFlag(flag, value)` – persist a flag change and emit an update.
-- `featureFlagsEmitter` – listen for `change` events when flags toggle.
-
-Call `loadSettings()` during startup to populate the cache before using
-these helpers. Pages should rely on `featureFlags.isEnabled` rather than
-accessing `settings.featureFlags` directly.
-
-### Display Modes
-
-- Available modes: `Light`, `Dark`, and `Retro`.
-- Retro emulates a terminal-style green-on-black palette and replaces the former High Contrast mode.
-- The current mode is exposed via `document.body.dataset.theme` (e.g., `data-theme="retro"`).
-
-> `navigationItems.js` and `gameModes.json` must be present on the server; otherwise, the game loads built-in fallback data.
-
-## Battle Engine Events API
-
-The battle engine exposes a lightweight event emitter. Subscribe via
-`on(event, handler)` from `src/helpers/battleEngineFacade.js`:
-
-- `roundStarted` → `{ round }`
-- `roundEnded` → `{ delta, outcome, matchEnded, playerScore, opponentScore }`
-- `timerTick` → `{ remaining, phase: 'round' | 'cooldown' }`
-- `matchEnded` → same payload as `roundEnded`
-- `error` → `{ message }`
+For complete API documentation, event schemas, and component usage, see **[docs/components.md](./docs/components.md)**.
 
 ## 🔎 Using the Vector RAG System
 
@@ -222,30 +191,23 @@ Use static imports for hot paths and always-required modules; use dynamic import
 
 ## 🧪 Testing
 
-The game includes a **Skip** button that bypasses the current round and cooldown timers. Use it to fast-forward through matches when debugging or running rapid gameplay tests.
-
-### CSS tooling
-
-Color contrast tests parse custom properties with PostCSS directly, relying on standard CSS tooling instead of a bespoke parser.
-
-### Timer utilities
-
-Classic Battle timer logic lives in `src/helpers/classicBattle/timerService.js` and its helpers:
-
-- `timerUtils.js` — shared state snapshot and readiness helpers.
-- `autoSelectHandlers.js` — stat-selection fallbacks when timers drift or stall.
-
-The CLI's pause/resume flow uses `pauseTimers` to clear active selection and cooldown timers while recording their remaining time. `resumeTimers` restarts them with the captured values so modals or tab switches do not lose progress.
-
-On the Browse Judoka page, the country filter panel starts with the `hidden` attribute. When revealed, it must include `aria-label="Country filter panel"` for accessibility and Playwright tests. The country slider loads asynchronously after the panel opens.
-
-Run all Playwright tests with:
+Run the complete test suite with:
 
 ```bash
-npx playwright test
+npx vitest run          # Unit tests
+npx playwright test     # Integration tests  
+npm run test:style      # Style tests (on demand)
 ```
 
-CLI-specific tests live in `playwright/battle-cli.spec.js` and verify the state badge, verbose log behavior, and keyboard selection flow.
+**Key features:**
+- DOM regression testing for required UI elements
+- Stable readiness patterns for Playwright (`window.battleReadyPromise`)
+- Screenshot testing with update capabilities
+- Skip button for fast-forwarding during debugging
+
+For comprehensive testing strategies, Playwright patterns, and quality standards, see **[docs/testing-guide.md](./docs/testing-guide.md)**.
+
+## 🔄 Updating Judoka Card Codes
 
 ### Stable readiness waits in Playwright
 
