@@ -268,6 +268,80 @@ Non-fix Recommendations (next steps for review)
 - Option C: Provide a preloading step/script that materializes `models/minilm` from a pinned artifact in environments where network is available (CI or dev), and disable network fallback at runtime in production/offline agents.
 
 Awaiting review before implementing any of the above.
+
+---
+
+## 7. Phased Remediation Plan
+
+Goal: Ensure `queryRag` works fully offline without attempting network model downloads, while preserving high-quality retrieval and clear diagnostics.
+
+Phase 0 – Immediate Mitigation (Docs + Guardrails)
+
+- Add documentation: When running offline, ensure `models/minilm` exists or enable lexical fallback.
+- Add an environment guard proposal: `RAG_STRICT_OFFLINE=1` causes `getExtractor()` to fail fast with an actionable message instead of attempting a remote download.
+- CLI message proposal: `scripts/queryRagCli.mjs` prints a clear hint when model load fails ("Missing local model. Run: npm run rag:prepare:models").
+
+Phase 1 – Strict Offline Mode (no network fallback)
+
+- Code changes (scoped):
+  - `src/helpers/api/vectorSearchPage.js#getExtractor`
+    - When `process.env.RAG_STRICT_OFFLINE === "1"`, do not attempt remote model; throw with guidance.
+    - Keep default behavior unchanged (backwards compatible) when flag is unset.
+  - Tests: Add unit test toggling `RAG_STRICT_OFFLINE` to verify fast-fail path and actionable message. Use `withMutedConsole` to suppress logs.
+- Validation: `npm run rag:validate` passes; no public API changes.
+
+Phase 2 – Deterministic Local Model Provisioning
+
+- Add script `scripts/prepareLocalModel.mjs` that:
+  - Uses `@xenova/transformers` with `env.allowLocalModels=true` to hydrate `models/minilm` deterministically (quantized files only).
+  - Copies from cache if available; otherwise downloads and places under `models/minilm`.
+- Add npm script `rag:prepare:models` → `node scripts/prepareLocalModel.mjs`.
+- CI/Workflow:
+  - Option A (commit): Extend `.github/workflows/updateEmbeddings.yml` to run `npm run rag:prepare:models` and commit `models/minilm/**` (consider Git LFS for size governance).
+  - Option B (artifact): Build and upload `models_minilm.tgz` as a GitHub Release asset; devs/agents hydrate via `npm run rag:prepare:models -- --from-release`.
+- Risk/Policy:
+  - Repo bloat if committing model files. Artifact path preferred if size exceeds policy.
+
+Phase 3 – Optional Lexical Fallback (offline resilience)
+
+- Implement a degraded but deterministic path when the model is unavailable:
+  - In `src/helpers/queryRag.js`, on extractor failure (or under `opts.allowLexicalFallback === true`), compute a sparse-vector similarity between query tokens and `sparseVector` entries from `offline_rag_metadata.json` via `vectorSearch.loadEmbeddings()` (already loads offline).
+  - Score = BM25-lite or cosine over term frequencies; re-use existing filter/tags routing.
+  - Add options: `{ allowLexicalFallback: true }` and environment gate `RAG_ALLOW_LEXICAL_FALLBACK=1`.
+- Tests:
+  - Happy: With model present, verify neural path used (e.g., via spy on `getExtractor`).
+  - Edge: Without model + fallback enabled, verify lexical results returned; ensure provenance is included.
+- Logging discipline: Wrap warnings in `withMutedConsole` in tests.
+
+Phase 4 – Tooling, Validation, and CI Hardening
+
+- Add preflight to `rag:validate`:
+  - If `RAG_STRICT_OFFLINE=1` and no `models/minilm`, exit non‑zero with guidance.
+  - Verify offline artifacts exist and are consistent (vectorLength × count equals bin length).
+  - Keep existing hot‑path checks and JSON validation.
+- Add a smoke test in CI that runs `RAG_STRICT_OFFLINE=1 npm run rag:query -- "tooltip guidelines"` to assert non‑crashing behavior (either neural or lexical fallback).
+
+Phase 5 – Documentation and Agent Guidance
+
+- Update `AGENTS.md` and `README.md`:
+  - Document `RAG_STRICT_OFFLINE` and `RAG_ALLOW_LEXICAL_FALLBACK`.
+  - Provide a short “Offline Quickstart”: `npm run rag:prepare:models` → `npm run rag:query`.
+  - Include provenance requirements and example queries with `withProvenance: true`.
+
+Phase 6 – Acceptance, Risks, Follow‑ups
+
+- Acceptance criteria:
+  - Offline: `queryRag` returns results without network when `models/minilm` exists.
+  - Strict offline: With no model and `RAG_STRICT_OFFLINE=1`, failure is fast with actionable guidance.
+  - Fallback: With `RAG_ALLOW_LEXICAL_FALLBACK=1`, results are returned with degraded quality but non‑crashing behavior.
+  - Validation: `rag:validate` PASS locally and in CI; no unsuppressed logs.
+- Risks:
+  - Repository size if committing model files; prefer artifact route.
+  - Lexical fallback quality varies; keep feature-gated to avoid silent regressions.
+- Follow‑ups:
+  - Track usage metrics (opt‑in) for fallback path frequency to prioritize bundling versus fallback improvements.
+
+Pending your review to proceed with Phase 1 (strict offline flag) and Phase 2 (model provisioning script).
   - "how are judoka stats calculated" (Expected: `src/data/judoka.json`)
   - "default navigation items" (Expected: `src/data/navigationItems.js`)
   - "default sound setting in configuration" (Expected: `src/data/settings.json`)

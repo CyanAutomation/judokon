@@ -25,6 +25,7 @@ import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
+import { exposeTestAPI } from "../helpers/testApi.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -388,6 +389,11 @@ async function init() {
   if (typeof window !== "undefined") {
     window.__initCalled = true;
   }
+
+  // Expose test API for testing direct access
+  try {
+    exposeTestAPI();
+  } catch {}
 
   // Initialize badge immediately based on overrides (synchronous)
   initBattleStateBadge();

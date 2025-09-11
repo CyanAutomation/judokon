@@ -80,21 +80,21 @@ const stateApi = {
   async waitForBattleState(stateName, timeout = 5000) {
     return new Promise((resolve) => {
       const startTime = Date.now();
-      
+
       const check = () => {
         if (this.getBattleState() === stateName) {
           resolve(true);
           return;
         }
-        
+
         if (Date.now() - startTime > timeout) {
           resolve(false);
           return;
         }
-        
+
         setTimeout(check, 50);
       };
-      
+
       check();
     });
   }
@@ -113,7 +113,7 @@ const timerApi = {
         window.__battleCLIinit.setCountdown(seconds);
         return;
       }
-      
+
       // Direct DOM update as fallback
       const el = document.getElementById("cli-countdown");
       if (el) {
@@ -161,7 +161,7 @@ const timerApi = {
           }
         });
       }
-      
+
       // Clear common timer elements
       const timerElements = ["selectionTimer", "cooldownTimer", "statTimeoutId", "autoSelectId"];
       timerElements.forEach((prop) => {
@@ -171,7 +171,7 @@ const timerApi = {
           window[prop] = null;
         }
       });
-      
+
       return true;
     } catch {
       return false;
@@ -213,22 +213,22 @@ const initApi = {
         resolve(true);
         return;
       }
-      
+
       const startTime = Date.now();
       const check = () => {
         if (this.isBattleReady()) {
           resolve(true);
           return;
         }
-        
+
         if (Date.now() - startTime > timeout) {
           resolve(false);
           return;
         }
-        
+
         setTimeout(check, 100);
       };
-      
+
       check();
     });
   },
@@ -239,7 +239,7 @@ const initApi = {
    */
   getInitPromises() {
     const promises = {};
-    
+
     if (typeof window !== "undefined") {
       if (window.battleReadyPromise) promises.battle = window.battleReadyPromise;
       if (window.settingsReadyPromise) promises.settings = window.settingsReadyPromise;
@@ -247,7 +247,7 @@ const initApi = {
       if (window.quoteReadyPromise) promises.quote = window.quoteReadyPromise;
       if (window.tooltipsReady) promises.tooltips = window.tooltipsReady;
     }
-    
+
     return promises;
   }
 };
@@ -275,7 +275,7 @@ const inspectionApi = {
       const store = this.getBattleStore();
       const machine = getBattleStateMachine();
       const snapshot = getStateSnapshot();
-      
+
       return {
         store: store
           ? {
@@ -317,10 +317,10 @@ const testApi = {
  */
 export function exposeTestAPI() {
   if (!isTestMode()) return;
-  
+
   if (typeof window !== "undefined") {
     window.__TEST_API = testApi;
-    
+
     // Also expose individual APIs for convenience
     window.__BATTLE_STATE_API = stateApi;
     window.__TIMER_API = timerApi;

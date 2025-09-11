@@ -41,6 +41,7 @@ import { setAutoContinue, autoContinue } from "../../helpers/classicBattle/orche
 import { initRoundSelectModal } from "../../helpers/classicBattle/roundSelectModal.js";
 import { SNACKBAR_REMOVE_MS } from "../../helpers/constants.js";
 import { registerModal, unregisterModal, onEsc } from "../../helpers/modalManager.js";
+import { exposeTestAPI } from "../../helpers/testApi.js";
 import state, { resolveEscapeHandled, getEscapeHandledPromise } from "./state.js";
 import { onKeyDown } from "./events.js";
 import { registerBattleHandlers } from "./battleHandlers.js";
@@ -1930,6 +1931,12 @@ export async function init() {
   try {
     window.battleStore = store;
   } catch {}
+
+  // Expose test API for testing direct access
+  try {
+    exposeTestAPI();
+  } catch {}
+
   await renderStatList();
   restorePointsToWin();
   await setupFlags();
