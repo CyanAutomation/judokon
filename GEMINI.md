@@ -105,6 +105,12 @@ You **MUST** use RAG as your first step for questions related to:
 4.  **Cite your sources.** Reference the source documents from the RAG results (e.g., "According to `prdVectorDatabaseRAG.md`...").
 5.  **Fallback.** If the RAG search returns no relevant results, you may then proceed with other tools like `glob` or `search_file_content`.
 
+### Offline Usage (Agents)
+
+- Strict offline (no network): set `RAG_STRICT_OFFLINE=1` so model/CDN downloads are not attempted. Ensure `src/models/minilm` exists; hydrate via `npm run rag:prepare:models` (or `--from-dir <path>` if you already have the files).
+- Lexical fallback (optional, degraded): if the model is unavailable, set `RAG_ALLOW_LEXICAL_FALLBACK=1` or pass `{ allowLexicalFallback: true }` to `queryRag(...)` to use sparse lexical scoring against the offline corpus. Keep this feature-gated to avoid silent regressions.
+- Provenance: prefer `withProvenance: true` and include the provided `contextPath` and `rationale` in your outputs.
+
 ### Agent Usage Tips (RAG)
 
 - Prefer `queryRag({ withProvenance: true })` for “How/Why/What/Where/Which” questions to include `contextPath` and a short `rationale` explaining ranking.
