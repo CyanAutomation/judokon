@@ -249,6 +249,164 @@ Recommended alternatives:
 
 Short rule: assert behavior, not implementation; simulate users, not internals.
 
+---
+
+## 🧪 Unit Test Quality Standards
+
+### Core Anti-Patterns to Eliminate
+
+**❌ Avoid These Patterns:**
+- Direct DOM manipulation (use natural interactions via component APIs)
+- Synthetic event dispatching (use keyboard/mouse simulation utilities)
+- Raw console.error/warn spies without muting (use withMutedConsole)
+- Real timers in deterministic tests (use fake timers with vi.useFakeTimers)
+- Manual element creation (use component test utilities)
+
+**✅ Preferred Patterns:**
+- Natural component interaction through public APIs
+- Keyboard/gesture simulation via componentTestUtils helpers
+- Console discipline with withMutedConsole() standardization  
+- Fake timer control with vi.runAllTimersAsync() for determinism
+- Component factories for consistent test setup
+
+### Testing Infrastructure Standards
+
+**Component Test Utilities (`tests/utils/componentTestUtils.js`):**
+```js
+// Use natural interaction patterns
+const { container, pressKey, simulateGesture } = createTestComponent(componentFactory);
+await pressKey('ArrowLeft'); // Natural keyboard navigation
+await simulateGesture('swipeLeft'); // Natural gesture interaction
+```
+
+**Console Discipline (`tests/utils/console.js`):**
+```js
+import { withMutedConsole } from "../utils/console.js";
+
+// Standard pattern for error testing
+await withMutedConsole(async () => {
+  expect(() => functionThatLogs()).toThrow();
+});
+```
+
+**Timer Management:**
+```js
+// Setup fake timers for deterministic control
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.runAllTimers();
+  vi.restoreAllMocks();
+});
+
+// Advance timers deterministically
+await vi.runAllTimersAsync();
+```
+
+### Performance and Reliability Targets
+
+- **No real timeouts** in unit tests (use fake timers)
+- **Muted console discipline** for all error-generating tests
+- **Natural interaction patterns** over synthetic event dispatching
+- **Component-driven testing** instead of direct DOM manipulation
+- **Deterministic timing control** with async timer resolution
+
+### Test Quality Verification
+
+Run validation for established patterns:
+```bash
+# Verify no synthetic events in hot paths
+grep -r "dispatchEvent\|createEvent" tests/ && echo "Found synthetic events"
+
+# Verify console discipline compliance
+grep -r "console\.(warn\|error)" tests/ | grep -v "tests/utils/console.js" && echo "Found unsilenced console"
+
+# Verify timer discipline
+grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "Found real timers"
+```
+
+---
+
+## 🎭 Playwright Test Quality Standards
+
+### Core Anti-Patterns to Eliminate
+
+**❌ Avoid These Patterns:**
+- Direct page.evaluate() DOM manipulation (use natural user interactions)
+- Hardcoded wait times with page.waitForTimeout() (use specific condition waits)
+- Complex CSS selectors that test implementation details (use data-testid attributes)
+- Manual localStorage clearing in individual tests (use global setup/teardown)
+- Assertions without proper waiting (use expect().toHaveText() with auto-retry)
+
+**✅ Preferred Patterns:**
+- Natural user interactions via page.click(), page.fill(), page.press()
+- Conditional waiting with page.waitForSelector(), page.waitForLoadState()
+- Semantic selectors using data-testid, role, or accessible names
+- Centralized test state management via fixtures and global setup
+- Auto-retrying assertions with proper timeout configuration
+
+### Playwright Infrastructure Standards
+
+**Interaction Patterns:**
+```js
+// Natural user interactions
+await page.click('[data-testid="submit-button"]');
+await page.fill('[data-testid="username-input"]', 'testuser');
+await page.press('body', 'Escape');
+
+// Proper waiting for conditions
+await page.waitForSelector('[data-testid="success-message"]');
+await expect(page.locator('[data-testid="result"]')).toHaveText('Expected');
+```
+
+**State Management:**
+```js
+// Use fixtures for consistent setup
+test.beforeEach(async ({ page }) => {
+  await page.goto('/test-page');
+  await page.waitForLoadState('networkidle');
+});
+
+// Avoid manual localStorage manipulation in tests
+// Use global setup in playwright.config.js instead
+```
+
+**Selector Strategy:**
+```js
+// Preferred: Semantic selectors
+await page.click('[data-testid="navigation-menu"]');
+await page.click('role=button[name="Submit"]');
+
+// Avoid: Implementation-detail selectors
+// await page.click('.menu-container > div:nth-child(2) > button');
+```
+
+### Performance and Reliability Targets
+
+- **No hardcoded timeouts** (use condition-based waiting)
+- **Semantic selectors** that survive refactoring
+- **Natural user interactions** that match real usage patterns
+- **Proper test isolation** with consistent setup/teardown
+- **Auto-retrying assertions** with appropriate timeout configuration
+
+### Playwright Quality Verification
+
+Run validation for established patterns:
+```bash
+# Verify no hardcoded timeouts
+grep -r "waitForTimeout\|setTimeout" playwright/ && echo "Found hardcoded waits"
+
+# Verify semantic selectors usage
+grep -r "data-testid\|role=" playwright/ | wc -l && echo "Semantic selectors count"
+
+# Verify no direct DOM manipulation
+grep -r "page\.evaluate.*DOM\|innerHTML\|appendChild" playwright/ && echo "Found DOM manipulation"
+```
+
+---
+
 ## 🧯 Runtime Safeguards
 
 - Exclude embeddings files in grep/search
@@ -419,6 +577,74 @@ CI pipeline green
     "validateJson": true,
     "netBetter": true,
     "testsRequired": ["happyPath", "edgeCase"]
+  },
+  "unitTestQualityStandards": {
+    "antiPatterns": [
+      "directDomManipulation",
+      "syntheticEventDispatching", 
+      "rawConsoleSpy",
+      "realTimersInTests",
+      "manualElementCreation"
+    ],
+    "preferredPatterns": [
+      "naturalComponentInteraction",
+      "keyboardGestureSimulation",
+      "withMutedConsole",
+      "fakeTimerControl",
+      "componentFactories"
+    ],
+    "testingInfrastructure": {
+      "componentUtils": "tests/utils/componentTestUtils.js",
+      "consoleUtils": "tests/utils/console.js",
+      "timerManagement": "vi.useFakeTimers",
+      "naturalInteraction": "pressKey/simulateGesture"
+    },
+    "performanceTargets": [
+      "noRealTimeouts",
+      "mutedConsoleDiscipline",
+      "naturalInteractionPatterns",
+      "componentDrivenTesting",
+      "deterministicTimingControl"
+    ],
+    "verificationCommands": [
+      "grep -r \"dispatchEvent\\|createEvent\" tests/",
+      "grep -r \"console\\.(warn\\|error)\" tests/ | grep -v \"tests/utils/console.js\"",
+      "grep -r \"setTimeout\\|setInterval\" tests/ | grep -v \"fake\\|mock\""
+    ]
+  },
+  "playwrightTestQualityStandards": {
+    "antiPatterns": [
+      "directPageEvaluateDomManipulation",
+      "hardcodedWaitTimeouts",
+      "complexImplementationSelectors",
+      "manualLocalStorageClearing",
+      "assertionsWithoutWaiting"
+    ],
+    "preferredPatterns": [
+      "naturalUserInteractions",
+      "conditionalWaiting",
+      "semanticSelectors",
+      "centralizedStateManagement",
+      "autoRetryingAssertions"
+    ],
+    "interactionPatterns": {
+      "userActions": "page.click/fill/press",
+      "waiting": "page.waitForSelector/waitForLoadState",
+      "selectors": "data-testid/role/accessible-names",
+      "assertions": "expect().toHaveText() with auto-retry"
+    },
+    "performanceTargets": [
+      "noHardcodedTimeouts",
+      "semanticSelectorUsage", 
+      "naturalUserInteractions",
+      "properTestIsolation",
+      "autoRetryingAssertions"
+    ],
+    "verificationCommands": [
+      "grep -r \"waitForTimeout\\|setTimeout\" playwright/",
+      "grep -r \"data-testid\\|role=\" playwright/ | wc -l",
+      "grep -r \"page\\.evaluate.*DOM\\|innerHTML\\|appendChild\" playwright/"
+    ]
   },
   "classicBattleTesting": {
     "initHelper": "initClassicBattleTest({ afterMock: true })",
