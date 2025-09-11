@@ -84,6 +84,10 @@ function addScrollMarkers(container, wrapper) {
  * Schedules `addScrollMarkers` in `requestAnimationFrame` so that layout
  * measurements (offsetWidth, clientWidth) are stable.
  *
+ * @pseudocode
+ * 1. Verify `container` and `wrapper` are provided; return early if missing.
+ * 2. Schedule `addScrollMarkers(container, wrapper)` via `requestAnimationFrame`.
+ *
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
  * @returns {void}
