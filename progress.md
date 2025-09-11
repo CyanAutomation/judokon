@@ -193,3 +193,19 @@ Step 1.4: Phase 1 validation
 - Outcome: PASS (3 total tests). No regressions observed.
 
 Pausing after Phase 1 for review.
+
+Phase 2 — progress log
+
+Step 2.1: Authority wiring keyed to control.state.changed
+- Actions: Enhanced `src/helpers/battleScoreboard.js` to track current state and last outcome. Added a handler for `control.state.changed` that clears the root outcome (`none`) and message only when `to` is `selection` or `cooldown`, ensuring persistence across other transitions. Kept `round.timer.tick` and other domain events as value updates only.
+- Outcome: Outcomes now persist until the next authoritative transition to `selection`/`cooldown`; adapter clears in those cases.
+
+Step 2.2: Add persistence/clear tests
+- Actions: Added `tests/helpers/battleScoreboard.authority.test.js` to verify that outcome persists through timer ticks and unrelated states, and clears on `selection`/`cooldown`.
+- Outcome: Tests created; will run them below.
+
+Step 2.3: Phase 2 validation
+- Actions: Ran targeted tests: `npx vitest run tests/helpers/battleScoreboard.authority.test.js tests/helpers/battleScoreboard.dom-contract.test.js tests/helpers/battleScoreboard.adapter.prd.test.js --run`.
+- Outcome: PASS (4 total tests across 3 files). Adjusted adapter to bypass message lock on authoritative clear by sending `{ outcome: true, outcomeType: 'none' }` with empty text.
+
+Pausing after Phase 2 for review.

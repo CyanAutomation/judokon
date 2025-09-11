@@ -1,4 +1,8 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
+import {
+  waitForBattleState as waitForBattleStateHelper,
+  getCurrentBattleState
+} from "./helpers/battleStateHelper.js";
 import { waitForBattleState } from "./fixtures/waits.js";
 
 test.describe("Classic Battle CLI", () => {
@@ -201,11 +205,8 @@ test.describe("Classic Battle CLI", () => {
     // Load page with autostart to avoid modal/click issues
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
-    // Wait for battle to reach active state (it progresses automatically)
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
-      timeout: 10000
-    });
+    // Wait for battle to reach active state (Test API helper with DOM fallback)
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", { timeout: 10000 });
 
     // Now check that badge is visible and has correct content
     const badge = page.locator("#battle-state-badge");

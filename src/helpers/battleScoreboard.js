@@ -10,6 +10,7 @@ import {
 
 let _bound = false;
 let _handlers = [];
+let _state = { current: null, lastOutcome: "none" };
 function mapOutcomeToEnum(outcome) {
   const s = String(outcome || "");
   if (/player/i.test(s)) return "playerWin";
@@ -45,7 +46,7 @@ export function initBattleScoreboardAdapter() {
       const n = typeof d.roundIndex === "number" ? d.roundIndex : d.roundNumber;
       if (typeof n === "number") updateRoundCounter(n);
       // Ensure root outcome resets to none at round start
-      showMessage("", { outcome: false });
+      showMessage("", { outcome: true, outcomeType: "none" });
     } catch {}
   });
 
@@ -65,6 +66,7 @@ export function initBattleScoreboardAdapter() {
       const o = Number(d?.scores?.opponent) || 0;
       updateScore(p, o);
       const outcomeType = mapOutcomeToEnum(d?.outcome);
+      _state.lastOutcome = outcomeType;
       if (d.message) showMessage(String(d.message), { outcome: true, outcomeType });
       else showMessage("", { outcome: true, outcomeType });
     } catch {}
@@ -79,13 +81,24 @@ export function initBattleScoreboardAdapter() {
       updateScore(p, o);
       clearRoundCounter();
       const outcomeType = mapOutcomeToEnum(d?.winner || d?.reason);
+      _state.lastOutcome = outcomeType;
       if (d.message) showMessage(String(d.message), { outcome: true, outcomeType });
       else showMessage("", { outcome: true, outcomeType });
     } catch {}
   });
 
   // control.state.changed reserved for Phase 2
-  on("control.state.changed", () => {});
+  on("control.state.changed", (e) => {
+    try {
+      const to = e?.detail?.to;
+      _state.current = to || _state.current;
+      if (to === "selection" || to === "cooldown") {
+        // Clear outcome on authoritative transition back to selection/cooldown
+        showMessage("", { outcome: true, outcomeType: "none" });
+        _state.lastOutcome = "none";
+      }
+    } catch {}
+  });
 
   return disposeBattleScoreboardAdapter;
 }

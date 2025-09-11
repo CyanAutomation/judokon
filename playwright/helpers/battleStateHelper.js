@@ -16,9 +16,11 @@ export async function waitForBattleState(page, expectedState, options = {}) {
   
   // First check if Test API is available
   const hasTestAPI = await page.evaluate(() => {
-    return typeof window.__TEST_API !== "undefined" && 
-           window.__TEST_API.state && 
-           typeof window.__TEST_API.state.getBattleState === "function";
+    return (
+      typeof window.__TEST_API !== "undefined" &&
+      window.__TEST_API.state &&
+      typeof window.__TEST_API.state.getBattleState === "function"
+    );
   });
 
   if (hasTestAPI) {
@@ -35,9 +37,12 @@ export async function waitForBattleState(page, expectedState, options = {}) {
       );
       return;
     } catch (error) {
-      console.log(`⚠️ Test API state check failed, current state:`, await page.evaluate(() => {
-        return window.__TEST_API.state.getBattleState();
-      }));
+      console.log(
+        `⚠️ Test API state check failed, current state:`,
+        await page.evaluate(() => {
+          return window.__TEST_API.state.getBattleState();
+        })
+      );
       if (!allowFallback) {
         throw error;
       }
@@ -70,18 +75,22 @@ export async function getCurrentBattleState(page) {
 
 /**
  * Trigger battle state transition using Test API
- * @param {import('@playwright/test').Page} page - Playwright page object  
+ * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {string} event - Event to trigger
  * @returns {Promise<boolean>} Success status
  */
 export async function triggerStateTransition(page, event) {
   return await page.evaluate((eventName) => {
-    if (window.__TEST_API && window.__TEST_API.state && window.__TEST_API.state.triggerStateTransition) {
+    if (
+      window.__TEST_API &&
+      window.__TEST_API.state &&
+      window.__TEST_API.state.triggerStateTransition
+    ) {
       try {
         window.__TEST_API.state.triggerStateTransition(eventName);
         return true;
       } catch (error) {
-        console.log('State transition failed:', error);
+        console.log("State transition failed:", error);
         return false;
       }
     }
