@@ -155,3 +155,21 @@ Notes and constraints
 - Keep imports static in hot paths; preload optional modules if needed.
 
 Pause — awaiting review before starting Phase 0.
+
+---
+
+Phase 0 — progress log
+
+Step 0.1: Implement PRD adapter skeleton
+- Actions: Added `src/helpers/battleScoreboard.js` exposing `initBattleScoreboardAdapter`, `disposeBattleScoreboardAdapter`, and `getSnapshot` alias. Subscribed to PRD events (`round.started`, `round.timer.tick`, `round.evaluated`, `match.concluded`, `control.state.changed` [no-op for now]) and forwarded to the existing Scoreboard API. Included unsubscribe logic.
+- Outcome: Adapter compiles and is inert until initialized; does not change existing hot paths. No public API changes.
+
+Step 0.2: Add basic unit tests for adapter
+- Actions: Added `tests/helpers/battleScoreboard.adapter.prd.test.js` covering happy-path updates from `round.started` and `round.evaluated`, and disposer behavior.
+- Outcome: Tests created; will run targeted tests at end of Phase 0.
+
+Step 0.3: Phase 0 validation
+- Actions: Ran targeted unit tests: `npx vitest run tests/helpers/battleScoreboard.adapter.prd.test.js --run`.
+- Outcome: PASS (2 passed). No regressions observed in adapter behavior.
+
+Pausing after Phase 0 for review.
