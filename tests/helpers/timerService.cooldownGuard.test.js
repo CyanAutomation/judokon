@@ -25,43 +25,46 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
 
 describe("onNextButtonClick cooldown guard", () => {
   let btn;
+  let consoleMocks;
 
   beforeEach(() => {
     vi.useFakeTimers();
     document.body.innerHTML = '<button id="next-button" data-role="next-round"></button>';
     btn = document.querySelector('[data-role="next-round"]');
     vi.clearAllMocks();
+
+    // Set up console monitoring for testing expected output
+    consoleMocks = {
+      warn: vi.spyOn(console, "warn").mockImplementation(() => {})
+    };
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    // Clean up console spies
+    consoleMocks.warn.mockRestore();
   });
 
   it("does not warn when state changes", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     __setStateSnapshot({ state: "cooldown" });
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     __setStateSnapshot({ state: "roundDecision" });
     await vi.runAllTimersAsync();
-    expect(warnSpy).not.toHaveBeenCalled();
-    warnSpy.mockRestore();
+    expect(consoleMocks.warn).not.toHaveBeenCalled();
   });
 
   it("warns if still in cooldown", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     __setStateSnapshot({ state: "cooldown" });
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     await vi.runAllTimersAsync();
-    expect(warnSpy).toHaveBeenCalledWith("[next] stuck in cooldown");
-    warnSpy.mockRestore();
+    expect(consoleMocks.warn).toHaveBeenCalledWith("[next] stuck in cooldown");
   });
 
   it("clears previous warning timer on rapid clicks", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     __setStateSnapshot({ state: "cooldown" });
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
@@ -69,22 +72,19 @@ describe("onNextButtonClick cooldown guard", () => {
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     await vi.runAllTimersAsync();
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    warnSpy.mockRestore();
+    expect(consoleMocks.warn).toHaveBeenCalledTimes(1);
   });
 
   it("resets warning timer after firing", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     __setStateSnapshot({ state: "cooldown" });
     const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     await vi.runAllTimersAsync();
-    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(consoleMocks.warn).toHaveBeenCalledTimes(1);
     btn.dataset.nextReady = "true";
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     await vi.runAllTimersAsync();
-    expect(warnSpy).toHaveBeenCalledTimes(2);
-    warnSpy.mockRestore();
+    expect(consoleMocks.warn).toHaveBeenCalledTimes(2);
   });
 });
