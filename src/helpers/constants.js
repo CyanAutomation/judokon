@@ -175,7 +175,7 @@ export const CLASSIC_BATTLE_POINTS_TO_WIN = 10;
  * @pseudocode
  * 1. During a Classic Battle match, increment a round counter after each completed round.
  * 2. Before starting a new round, check if the round counter has reached `CLASSIC_BATTLE_MAX_ROUNDS`.
- * 3. If the maximum number of rounds is reached and no winner has been determined by points, 
+ * 3. If the maximum number of rounds is reached and no winner has been determined by points,
  *    the match concludes based on predefined tie-breaking rules or is declared a draw.
  */
 export const CLASSIC_BATTLE_MAX_ROUNDS = 25;

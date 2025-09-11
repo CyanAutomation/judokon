@@ -18,6 +18,9 @@
  *
  * @type {Promise<void>}
  */
+/** @type {(() => void) | null} */
+let resolveReady = null;
+
 export const signatureMoveReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });

@@ -29,6 +29,8 @@ let currentScheduler = {
  * @returns {object} The current scheduler object, containing `setTimeout` and `clearTimeout` methods.
  */
 export function getScheduler() {
+  return currentScheduler;
+}
 
 /**
  * Sets the active scheduler to a new custom scheduler.
@@ -46,3 +48,12 @@ export function getScheduler() {
  * @returns {void}
  */
 export function setScheduler(newScheduler) {
+  if (
+    !newScheduler ||
+    typeof newScheduler.cancel !== "function" ||
+    typeof newScheduler.onFrame !== "function"
+  ) {
+    throw new Error("Invalid scheduler object provided");
+  }
+  currentScheduler = newScheduler;
+}

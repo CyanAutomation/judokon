@@ -11,6 +11,7 @@ Date: 2025-09-11
 ## Findings
 
 ### Classic (Compliant)
+
 - DOM contract present in header:
   - `#round-message`, `#next-round-timer`, `#round-counter`, `#score-display` (src/pages/battleClassic.html)
 - Initialization path:
@@ -22,6 +23,7 @@ Date: 2025-09-11
   - Page includes `styles/battleClassic.css` plus shared styles; behavior is standardized, visuals are mode-specific
 
 ### CLI (Not compliant)
+
 - DOM differs and omits standard Scoreboard nodes:
   - Uses `#cli-round`, `#cli-countdown`, `#cli-score`; only `#round-message` overlaps
 - No Scoreboard init:
@@ -40,6 +42,7 @@ Date: 2025-09-11
 Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and preserving the terminal look via skinning.
 
 ### Phase 0 — Baseline & Guardrails
+
 - Record current behavior in CLI:
   - Verify current scoreboard updates (`#cli-score`, `#cli-countdown`, `#round-message`) during a short match.
 - Run the core validation suite:
@@ -48,6 +51,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 - Outcome: Baseline green state + snapshots to compare post-change.
 
 ### Phase 1 — Introduce Standard Scoreboard DOM in CLI (No Behavior Change)
+
 - Add the shared Scoreboard DOM structure to the CLI header without wiring:
   - Either statically add nodes with IDs `#round-message`, `#next-round-timer`, `#round-counter`, `#score-display` inside `<header id="cli-header">`, or programmatically call `createScoreboard(cliHeader)` from `components/Scoreboard.js`.
   - Keep existing CLI elements (`#cli-round`, `#cli-countdown`, `#cli-score`) for now.
@@ -58,6 +62,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
   - Re-run core validation suite.
 
 ### Phase 2 — Dual-Write: Wire Shared Scoreboard in CLI (Adapter + Helpers)
+
 - Initialize the Scoreboard in CLI:
   - Import `setupScoreboard` in `pages/battleCLI.js` or `pages/battleCLI/init.js` and call `setupScoreboard({ pauseTimer, resumeTimer })` during page init.
   - Initialize PRD adapter: import `initBattleScoreboardAdapter()` from `helpers/battleScoreboard.js` once after orchestrator is up.
@@ -71,6 +76,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
   - Performance: ensure no dynamic imports introduced in hot paths (grep check). Re-run validation suite.
 
 ### Phase 3 — Switch Primary Rendering to Shared Scoreboard (Remove Duplication)
+
 - Make the shared Scoreboard the source of truth in CLI:
   - Stop updating `#cli-score` and `#cli-countdown` directly; rely on Scoreboard API + adapter.
   - Update selectors in CLI tests to prefer standard IDs; keep a small shim if needed for UI text differences.
@@ -80,6 +86,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
   - Re-run core validation suite.
 
 ### Phase 4 — Cleanup & Consolidation
+
 - Remove bespoke scoreboard logic from `pages/battleCLI/init.js` and any redundant DOM.
 - Keep CLI-specific styling applied to the standard nodes (skinning only).
 - Prefer the PRD adapter `helpers/battleScoreboard.js` as the single scoreboard binding in both modes (deprecate mode-specific scoreboard adapters over time if appropriate).
@@ -134,9 +141,10 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 ## Phase 0 — COMPLETED ✅ (2025-09-11)
 
 ### Actions Taken
+
 1. **Baseline CLI Scoreboard Testing**
    - Ran `battleCLI.scoreboard.test.js`: **3/3 tests passed** ✅
-   - Ran `battle-cli.spec.js`: **12/12 tests passed** ✅  
+   - Ran `battle-cli.spec.js`: **12/12 tests passed** ✅
    - Ran `cli-layout-assessment.spec.js`: **4/4 tests passed** ✅
 
 2. **Agent-Specific Validation**
@@ -157,14 +165,16 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
    ```
 
 ### Outcome
+
 - **GREEN BASELINE ESTABLISHED** ✅
 - CLI scoreboard functions correctly with bespoke elements
-- No regressions detected in current implementation  
+- No regressions detected in current implementation
 - Ready to proceed with Phase 1 (DOM standardization)
 
 ### Test Coverage Verified
+
 - Unit tests: CLI scoreboard behavior confirmed working
-- E2E tests: CLI battle flow confirmed working  
+- E2E tests: CLI battle flow confirmed working
 - Layout tests: CLI DOM structure verified
 - Accessibility: Contrast compliance confirmed
 
@@ -173,6 +183,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 ## Phase 1 — COMPLETED ✅ (2025-09-11)
 
 ### Actions Taken
+
 1. **Added Standard Scoreboard DOM Nodes to CLI**
    - Added `#next-round-timer`, `#round-counter`, `#score-display` to CLI header
    - Preserved existing `#round-message` (already present)
@@ -189,6 +200,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
    - `aria-atomic="true"` and `role="status"` as per Scoreboard spec
 
 ### Test Results
+
 - **✅ New DOM Test**: 4/4 tests passed - Standard nodes exist with correct attributes
 - **✅ Regression Test**: 3/3 CLI scoreboard tests passed - No behavioral changes
 - **✅ Basic Load Test**: CLI page loads without console errors
@@ -196,6 +208,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 - **✅ Layout Test**: CLI layout structure intact
 
 ### DOM Structure After Phase 1
+
 ```html
 <!-- Existing CLI elements (unchanged) -->
 <div id="cli-round">Round 0 of 0</div>
@@ -214,6 +227,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 ```
 
 ### Outcome
+
 - **✅ DUAL DOM STRUCTURE ESTABLISHED** - CLI now has both legacy and standard elements
 - **✅ NO BEHAVIORAL CHANGES** - Existing CLI functionality preserved
 - **✅ STYLING PREPARED** - Standard nodes ready for CLI theme when activated
@@ -222,6 +236,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 **Ready for Phase 2** - Wire shared Scoreboard initialization and dual-write behavior
 
 ### Notes
+
 - Some advanced CLI battle tests failed due to unrelated state management issues (not DOM changes)
 - Basic load, layout, and scoreboard functionality confirmed working
 - Standard nodes properly hidden and will be revealed during Phase 2 initialization
@@ -231,6 +246,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 ## Phase 2 — COMPLETED ✅ (2025-09-11)
 
 ### Actions Taken
+
 1. **Added Shared Scoreboard Imports to CLI Init**
    - Imported `setupScoreboard` from `helpers/setupScoreboard.js`
    - Imported `initBattleScoreboardAdapter` from `helpers/battleScoreboard.js`
@@ -253,6 +269,7 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
    - Maintained CLI functionality even if shared component fails
 
 ### Test Results
+
 - **✅ Dual-Write Test**: 5/5 tests passed - Both CLI and standard elements update correctly
 - **✅ Regression Test**: 3/3 CLI scoreboard tests passed - No behavioral changes to existing logic
 - **✅ DOM Structure Test**: 4/4 tests passed - Standard nodes properly revealed and accessible
@@ -261,13 +278,14 @@ Goal: Bring CLI inline with the shared Scoreboard while avoiding regressions and
 - **✅ Agent Validation**: No dynamic imports in hot paths
 
 ### Implementation Details
+
 ```javascript
 // Phase 2: Dual-write example in setRoundMessage()
 export function setRoundMessage(text) {
   // Update CLI element (existing behavior)
   const el = byId("round-message");
   if (el) el.textContent = text || "";
-  
+
   // Phase 2: Also update shared Scoreboard component
   try {
     if (sharedScoreboardHelpers?.showMessage) {
@@ -280,6 +298,7 @@ export function setRoundMessage(text) {
 ```
 
 ### DOM State After Phase 2
+
 ```html
 <!-- Existing CLI elements (still active) -->
 <div id="cli-round">Round 3 Target: 5</div>
@@ -294,6 +313,7 @@ export function setRoundMessage(text) {
 ```
 
 ### Outcome
+
 - **✅ DUAL-WRITE IMPLEMENTED** - Both CLI and standard elements update simultaneously
 - **✅ SHARED COMPONENT ACTIVE** - Standard Scoreboard component initialized and wired
 - **✅ PRD ADAPTER CONNECTED** - Canonical events now flow to shared Scoreboard
@@ -303,6 +323,7 @@ export function setRoundMessage(text) {
 **Ready for Phase 3** - Switch primary rendering to shared Scoreboard and remove CLI duplication
 
 ### Notes
+
 - Some advanced battle state tests fail due to unrelated orchestrator issues, not scoreboard changes
 - Basic CLI functionality confirmed working (load, layout, basic updates)
 - Dynamic import used safely in DOM helper (not in hot path)
@@ -313,8 +334,9 @@ export function setRoundMessage(text) {
 ## Phase 3 — COMPLETED ✅ (2025-09-11)
 
 ### Actions Taken
+
 1. **Switched Primary Rendering to Shared Scoreboard**
-   - Modified `setRoundMessage()` to primarily use shared `showMessage()` 
+   - Modified `setRoundMessage()` to primarily use shared `showMessage()`
    - Modified `updateScoreLine()` to primarily use shared `updateScore()`
    - Modified `updateRoundHeader()` to primarily use shared `updateRoundCounter()`
 
@@ -334,11 +356,12 @@ export function setRoundMessage(text) {
    - Tests verify enhanced emoji formatting in CLI elements
 
 ### Implementation Pattern
+
 ```javascript
 // Phase 3: Primary shared component, fallback to CLI element
 export function updateScoreLine() {
   const scores = engineFacade.getScores() || { playerScore: 0, opponentScore: 0 };
-  
+
   // Primary: Update via shared Scoreboard component
   let sharedUpdated = false;
   try {
@@ -346,7 +369,9 @@ export function updateScoreLine() {
       sharedScoreboardHelpers.updateScore(scores.playerScore, scores.opponentScore);
       sharedUpdated = true;
     }
-  } catch { /* fallback below */ }
+  } catch {
+    /* fallback below */
+  }
 
   // Secondary: CLI element with enhanced format or fallback
   const el = byId("cli-score");
@@ -359,6 +384,7 @@ export function updateScoreLine() {
 ```
 
 ### Test Results
+
 - **✅ Regression Test**: 3/3 CLI scoreboard tests passed - Existing functionality preserved
 - **✅ Standard DOM Test**: 4/4 tests passed - Standard elements properly structured
 - **✅ Basic Load Test**: CLI page loads without console errors
@@ -367,6 +393,7 @@ export function updateScoreLine() {
 - **✅ Code Quality**: Prettier formatting passed
 
 ### DOM State After Phase 3
+
 ```html
 <!-- PRIMARY: Standard Scoreboard nodes (shared component controlled) -->
 <div class="standard-scoreboard-nodes" style="display: block;">
@@ -376,11 +403,14 @@ export function updateScoreLine() {
 </div>
 
 <!-- SECONDARY: CLI elements (fallback + visual consistency) -->
-<div id="cli-round">🥋 Round 3</div>  <!-- Enhanced format -->
-<div id="cli-score">📊 You: 2 Opponent: 1</div>  <!-- Enhanced format -->
+<div id="cli-round">🥋 Round 3</div>
+<!-- Enhanced format -->
+<div id="cli-score">📊 You: 2 Opponent: 1</div>
+<!-- Enhanced format -->
 ```
 
 ### Outcome
+
 - **✅ SHARED SCOREBOARD IS PRIMARY** - Standard components are source of truth
 - **✅ CLI ELEMENTS ARE SECONDARY** - Fallback and visual consistency only
 - **✅ GRACEFUL DEGRADATION** - Works even if shared components fail
@@ -390,6 +420,7 @@ export function updateScoreLine() {
 **Ready for Phase 4** - Cleanup and consolidation, remove redundant logic
 
 ### Notes
+
 - Phase 3 test had JS syntax issues but core functionality verified working
 - Tests should now prefer standard element IDs (`#score-display`, `#round-counter`) over CLI IDs
 - CLI elements maintained for visual consistency and robust fallback
@@ -400,6 +431,7 @@ export function updateScoreLine() {
 ## Phase 4 — Cleanup & Consolidation
 
 ### Objective
+
 Remove bespoke scoreboard logic from `pages/battleCLI/init.js` handlers. Consolidate to use PRD adapter as single scoreboard binding.
 
 ### Actions Taken
@@ -419,12 +451,14 @@ Remove bespoke scoreboard logic from `pages/battleCLI/init.js` handlers. Consoli
    - Removed export statements for cleaned up handlers
 
 ### Test Results
+
 - **✅ Shared Primary Test**: 5/5 tests passed - Shared Scoreboard is primary rendering source
 - **✅ Standard DOM Test**: 4/4 tests passed - DOM structure maintained correctly
 - **✅ No Regressions**: Core CLI functionality preserved via graceful fallback
 - **✅ Syntax Fixed**: All ESLint errors resolved in logger.js
 
 ### Final Code State
+
 ```javascript
 // Clean CLI initialization - only exports what's needed
 export const battleEventHandlers = {
@@ -433,15 +467,16 @@ export const battleEventHandlers = {
   roundSkipped: handleRoundSkipped,
   matchEnded: handleMatchEnded,
   statSelected: handleStatSelected,
-  timerTick: handleTimerTick,
+  timerTick: handleTimerTick
   // Phase 4: Removed scoreboardShowMessage and scoreboardClearMessage handlers
 };
 
 // Uses shared Scoreboard adapter for all scoreboard updates
-initBattleScoreboardAdapter();  // PRD canonical events wired
+initBattleScoreboardAdapter(); // PRD canonical events wired
 ```
 
 ### Outcome
+
 - **✅ CLEANUP COMPLETE** - Redundant CLI scoreboard handlers removed
 - **✅ SINGLE SOURCE OF TRUTH** - PRD adapter is sole scoreboard binding
 - **✅ SIMPLIFIED CODEBASE** - No duplicate event handling logic
@@ -467,23 +502,26 @@ initBattleScoreboardAdapter();  // PRD canonical events wired
 After thorough code examination, the investigation findings are accurate:
 
 ### Validation Results
+
 - **Classic Implementation**: ✅ Correctly identified standard Scoreboard DOM contract (`#round-message`, `#next-round-timer`, `#round-counter`, `#score-display`) in `src/pages/battleClassic.html` header
-- **Classic Initialization**: ✅ Confirmed `src/pages/battleClassic.init.js` imports and calls `setupScoreboard` 
+- **Classic Initialization**: ✅ Confirmed `src/pages/battleClassic.init.js` imports and calls `setupScoreboard`
 - **Classic Event Wiring**: ✅ Verified `src/helpers/classicBattle/scoreboardAdapter.js` implements the PRD adapter pattern
 - **CLI Non-Compliance**: ✅ Confirmed CLI uses bespoke elements (`#cli-round`, `#cli-countdown`, `#cli-score`) and bypasses shared Scoreboard
 - **PRD Alignment**: ✅ Verified `design/productRequirementsDocuments/prdBattleScoreboard.md` specifies mode-agnostic shared component with skinning
 
 ### Code Evidence Summary
+
 ```javascript
 // Classic (Compliant): src/pages/battleClassic.init.js
 import { setupScoreboard } from "../helpers/setupScoreboard.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 
-// CLI (Non-compliant): src/pages/battleCLI/init.js  
+// CLI (Non-compliant): src/pages/battleCLI/init.js
 // Missing setupScoreboard import, uses direct DOM manipulation instead
 ```
 
 ### Risk Assessment
+
 - **Low Risk**: Classic mode remains unaffected during CLI refactoring
 - **Test Coverage**: Existing Playwright tests will catch CLI regressions
 - **Hot Path Safety**: No dynamic imports detected in scoreboard hot paths
@@ -495,47 +533,62 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 The proposed plan is thorough and follows best practices for incremental refactoring. The following suggestions are offered to further enhance its robustness and maintainability.
 
 ### 1. Explicit Feature Flagging
+
 The "Rollback Plan" mentions reversible toggles. This should be formalized into an explicit feature flag (e.g., `cliUseSharedScoreboard`) managed via URL parameter or `localStorage`. This would:
+
 - **Simplify A/B testing:** Allow developers and testers to instantly switch between the legacy and new scoreboard implementations in the same environment.
 - **Provide instant rollback:** If a problem is found post-deployment, the new implementation can be disabled without a code change or redeployment.
 - **Improve clarity:** A named flag makes the transition state explicit in the code.
 
 ### 2. Visual Regression Testing ⭐ **PRIORITY**
+
 While the plan includes Playwright tests, it should explicitly call for **visual regression testing**.
+
 - **Goal:** To ensure the "terminal look and feel" of the CLI is perfectly preserved after skinning the shared component.
 - **Implementation:** Use Playwright's screenshot capabilities to capture baseline images in Phase 0 and compare them against screenshots from Phase 1 and Phase 3. This automatically catches subtle styling deviations (fonts, colors, layout, spacing) that functional tests would miss.
 - **Specific CLI Concerns**: Monospace font rendering, terminal color scheme, character spacing, and CLI-specific layout proportions
 
 ### 3. Developer-Facing Documentation (Code Comments)
+
 During the transition (especially Phase 2: Dual-Write), the code will contain both old and new scoreboard logic.
+
 - **Suggestion:** Add a prominent, temporary block comment in `src/pages/battleCLI/init.js`.
 - **Content:** The comment should briefly explain why two scoreboard implementations coexist, state that this is part of a planned refactoring, and link to this `progress.md` document or the relevant issue tracker ticket. This will prevent developer confusion and accidental "cleanup" of the legacy code before the migration is complete.
 
 ### 4. Component-Level Tests for Skinning
+
 The plan relies on "skinning" the shared `Scoreboard.js` component.
+
 - **Suggestion:** Add component-level tests for `Scoreboard.js` itself (if not already present).
 - **Goal:** These tests should verify that the component's logic and accessibility features remain intact when different CSS themes (skins) are applied. This proves the component is robustly "skinnable" and that the CLI theme doesn't inadvertently break it.
 
 ### 5. Telemetry for Discrepancy Monitoring (Industrial-Strength Option)
+
 For a production-grade migration, it would be valuable to monitor for any differences between the two implementations during the dual-write phase.
+
 - **Suggestion:** In Phase 2, add lightweight telemetry that logs a warning if the legacy UI and the new Scoreboard component would display different values (e.g., different scores or timer states).
 - **Benefit:** This provides proactive, data-driven confirmation that the new implementation has reached full parity before the legacy code is removed. While potentially overkill for this project, it represents a gold standard for critical migrations.
 
 ### 6. **NEW**: JSDoc Compliance Requirement ⚠️
+
 **Current Status**: JSDoc validation shows 130 missing function documentations (including CLI init functions)
+
 - **Recommendation**: Add JSDoc compliance to Phase 1 alongside DOM changes
 - **Specific Action**: Document new Scoreboard initialization functions with `@pseudocode` blocks per repository standards
 - **Validation**: Ensure `npm run check:jsdoc` passes before proceeding to Phase 2
 
 ### 7. **NEW**: Accessibility Audit Integration
+
 **CLI-Specific Concern**: Terminal-style interfaces often have unique accessibility challenges
-- **Recommendation**: Include `npm run check:contrast` validation in each phase  
+
+- **Recommendation**: Include `npm run check:contrast` validation in each phase
 - **Specific Focus**: Ensure CLI color scheme maintains sufficient contrast ratios after skinning
 - **Screen Reader Testing**: Verify ARIA attributes work correctly with CLI's monospace styling
 
 ### 8. **NEW**: Phase Sequencing Optimization
+
 **Current Plan**: Sequential phases with full validation between each
+
 - **Optimization**: Consider merging Phase 1 & 2 for DOM and initialization changes
 - **Rationale**: Reduces intermediate states and avoids "dead" DOM nodes that exist but aren't wired
 - **Alternative**: Implement behind feature flag from Phase 1 to enable rapid iteration
-
