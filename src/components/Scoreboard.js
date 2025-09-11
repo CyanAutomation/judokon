@@ -31,7 +31,7 @@ export function createScoreboard(container = document.createElement("div")) {
 
   const scoreEl = document.createElement("p");
   scoreEl.id = "score-display";
-  scoreEl.setAttribute("aria-live", "polite");
+  scoreEl.setAttribute("aria-live", "off");
   scoreEl.setAttribute("aria-atomic", "true");
 
   container.append(messageEl, timerEl, roundCounterEl, scoreEl);
@@ -181,6 +181,7 @@ export function initScoreboard(container, _controls) {
     roundCounterEl: container.querySelector("#round-counter"),
     scoreEl: container.querySelector("#score-display")
   });
+  try { if (view && view.scoreEl) view.scoreEl.setAttribute("aria-live", "off"); } catch {}
   defaultScoreboard = new Scoreboard(model, view);
 }
 

@@ -246,11 +246,8 @@ test.describe("Classic Battle CLI", () => {
     // Load page with both autostart and verbose enabled
     await page.goto("/src/pages/battleCLI.html?autostart=1&verbose=1");
 
-    // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
-      timeout: 10000
-    });
+    // Wait for battle to reach active state using Test API helper
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", { timeout: 10000 });
 
     // Verbose enabled via query param
     const toggle = page.locator("#verbose-toggle");
@@ -260,11 +257,8 @@ test.describe("Classic Battle CLI", () => {
     // Cause a transition by selecting a stat via keyboard (mapped to 1)
     await page.keyboard.press("1");
 
-    // Wait for a later state to appear using DOM selector
-    await page.waitForSelector('[data-battle-state="roundDecision"]', {
-      state: "attached",
-      timeout: 10000
-    });
+    // Wait for a later state using Test API helper
+    await waitForBattleStateHelper(page, "roundDecision", { timeout: 10000 });
 
     const log = page.locator("#cli-verbose-log");
     await expect(log).toContainText(/roundDecision/);
@@ -289,11 +283,8 @@ test.describe("Classic Battle CLI", () => {
 
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
-    // Wait for battle to reach active state
-    await page.waitForSelector('[data-battle-state="waitingForPlayerAction"]', {
-      state: "attached",
-      timeout: 10000
-    });
+    // Wait for battle to reach active state using Test API helper
+    await waitForBattleStateHelper(page, "waitingForPlayerAction", { timeout: 10000 });
 
     const panel = page.locator("#cli-shortcuts");
     await expect(panel).toBeHidden();

@@ -229,3 +229,19 @@ Step 3.4: Phase 3 validation
 - Outcome: PASS (5 tests across 4 files). Adapter now schedules/clears fallback correctly. Score updates remain deterministic with immediate set; animation path is conditional and non-disruptive.
 
 Pausing after Phase 3 for review.
+
+Phase 4 — progress log
+
+Step 4.1: Live-region discipline updates
+- Actions: Set scoreboard score display `aria-live` to `off` in `src/components/Scoreboard.js` so score changes do not announce by default. Left message and timer regions as `polite` to avoid breaking page scaffold expectations; announcements remain focused on outcome/state changes.
+- Outcome: Reduced verbosity for assistive tech without altering existing UI contracts.
+
+Step 4.2: Add focused a11y tests
+- Actions: Added `tests/components/Scoreboard.a11y.liveRegions.test.js` to verify that score display initializes with `aria-live=off` and timer updates do not override or clobber the outcome message.
+- Outcome: Targeted coverage for live-region discipline.
+
+Step 4.3: Phase 4 validation
+- Actions: Ran targeted tests: `npx vitest run tests/components/Scoreboard.a11y.liveRegions.test.js tests/helpers/battleScoreboard.authority.test.js tests/helpers/battleScoreboard.dom-contract.test.js --run`.
+- Outcome: PASS (3 tests across 3 files). Score display is now `aria-live=off` even when DOM is pre-built; outcome message remains stable across timer ticks.
+
+Pausing after Phase 4 for review.
