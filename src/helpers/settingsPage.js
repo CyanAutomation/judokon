@@ -53,6 +53,9 @@ import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
  * 2. Attach it to `window` so tests can await it.
  */
 /**
+ * @summary Resolves once the Settings page dispatches `settings:ready`.
+ */
+/**
  * Promise that resolves when the Settings UI has finished rendering and
  * dispatched the `settings:ready` event.
  *
