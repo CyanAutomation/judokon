@@ -1,53 +1,79 @@
 /**
- * Test helper re-export for the battle CLI module used by automated tests.
+ * Re-exports the internal test helper object for the Battle CLI module.
  *
- * @summary Expose the internal battle CLI test helper.
+ * @summary This export provides automated tests with direct access to internal
+ * functions and state of the Battle CLI for more granular control and assertions.
+ *
  * @pseudocode
- * 1. Re-export the internal `__test` helper as `battleCLI` for tests.
+ * 1. The `__test` object, which contains various test-specific utilities and internal references, is imported from `./battleCLI/init.js`.
+ * 2. This `__test` object is then re-exported under the alias `battleCLI`.
+ * 3. Automated tests can import `battleCLI` from this module to interact with the Battle CLI's internals.
  */
 export { __test as battleCLI } from "./battleCLI/init.js";
 
 /**
- * Re-export the `setupFlags` helper from the battle CLI initializer.
+ * Re-exports the `setupFlags` helper function from the Battle CLI initializer.
  *
- * @summary Expose the feature flag setup helper.
+ * @summary This export provides a convenient way to access the function
+ * responsible for initializing and configuring feature flags within the
+ * Battle CLI environment.
+ *
  * @pseudocode
- * 1. Export `setupFlags` so callers can initialize feature flags.
+ * 1. The `setupFlags` function is imported from `./battleCLI/init.js`.
+ * 2. It is then re-exported directly from this module.
+ * 3. Callers can use this export to programmatically set up feature flags for the Battle CLI.
  */
 export { setupFlags } from "./battleCLI/init.js";
 
 /**
- * Re-export the `wireEvents` helper from the battle CLI initializer.
+ * Re-exports the `wireEvents` helper function from the Battle CLI initializer.
  *
- * @summary Expose the event wiring helper.
+ * @summary This export provides a convenient way to access the function
+ * responsible for attaching global event listeners to the Battle CLI page.
+ *
  * @pseudocode
- * 1. Export `wireEvents` so callers can attach event listeners.
+ * 1. The `wireEvents` function is imported from `./battleCLI/init.js`.
+ * 2. It is then re-exported directly from this module.
+ * 3. Callers can use this export to programmatically set up event handling for the Battle CLI.
  */
 export { wireEvents } from "./battleCLI/init.js";
 
 /**
- * Re-export the `subscribeEngine` helper from the battle CLI initializer.
+ * Re-exports the `subscribeEngine` helper function from the Battle CLI initializer.
  *
- * @summary Expose the engine subscription helper.
+ * @summary This export provides a convenient way to access the function
+ * responsible for subscribing UI components to events emitted by the battle engine.
+ *
  * @pseudocode
- * 1. Export `subscribeEngine` so callers can subscribe to engine events.
+ * 1. The `subscribeEngine` function is imported from `./battleCLI/init.js`.
+ * 2. It is then re-exported directly from this module.
+ * 3. Callers can use this export to programmatically set up event subscriptions for the Battle CLI.
  */
 export { subscribeEngine } from "./battleCLI/init.js";
 
 /**
- * Re-export the global key handler for the battle CLI page.
+ * Re-exports the global keydown event handler for the Battle CLI page.
  *
- * @summary Expose the global key handler.
+ * @summary This export provides a convenient way to access the function
+ * responsible for processing keyboard input across the Battle CLI.
+ *
  * @pseudocode
- * 1. Re-export `onKeyDown` so external callers (tests/bootstrappers) can attach it.
+ * 1. The `onKeyDown` function is imported from `./battleCLI/events.js`.
+ * 2. It is then re-exported directly from this module.
+ * 3. External modules (e.g., test suites or custom bootstrappers) can attach this function as a global keydown listener.
  */
 export { onKeyDown } from "./battleCLI/events.js";
 
 /**
- * Re-export a promise helper that resolves when Escape is handled in the CLI.
+ * Re-exports a promise helper that resolves when the Escape key press is
+ * handled within the Battle CLI.
  *
- * @summary Expose the Escape-handled promise helper.
+ * @summary This export provides a mechanism for external code (e.g., tests)
+ * to await the completion of Escape key handling logic in the CLI.
+ *
  * @pseudocode
- * 1. Re-export `getEscapeHandledPromise` from the battle CLI state module.
+ * 1. The `getEscapeHandledPromise` function is imported from `./battleCLI/state.js`.
+ * 2. It is then re-exported directly from this module.
+ * 3. Callers can use this export to obtain a promise that resolves once the CLI has processed an Escape key event.
  */
 export { getEscapeHandledPromise } from "./battleCLI/state.js";

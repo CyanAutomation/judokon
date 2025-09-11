@@ -1,26 +1,20 @@
 /**
- * Promise and helpers to signal when signature moves finish rendering.
+ * A promise that resolves when the signature move UI elements are fully
+ * rendered and ready for interaction.
  *
- * @pseudocode
- * 1. Create a promise and store its resolver in `resolveReady`.
- * 2. Export `markSignatureMoveReady` to resolve the promise, set
- *    `data-signature-move-ready` on `<body>`, and dispatch
- *    `signature-move-ready`.
- */
-let resolveReady;
-
-/**
- * Promise that resolves when signature moves are ready.
+ * @summary This promise provides a reliable signal for external scripts or tests
+ * to know when the signature move section of the UI is prepared.
  *
- * @summary Resolves when signature move UI is ready.
  * @description
  * Consumers can await this promise to defer behavior until the signature
  * move UI has finished initial rendering/animations. The resolver is stored
- * internally and triggered by `markSignatureMoveReady`.
+ * internally and triggered by `markSignatureMoveReady()`.
  *
  * @pseudocode
- * 1. Construct a Promise and capture its resolve function in `resolveReady`.
- * 2. Export the promise so external code may await readiness.
+ * 1. A new `Promise` is created and assigned to `signatureMoveReadyPromise`.
+ * 2. The `resolve` function of this promise is captured in the module-scoped `resolveReady` variable.
+ * 3. This promise will remain pending until `markSignatureMoveReady()` is called, which then invokes `resolveReady()`.
+ * 4. External code can `await` this promise to ensure that the signature move UI is fully loaded and interactive before proceeding.
  *
  * @type {Promise<void>}
  */

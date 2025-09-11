@@ -28,6 +28,9 @@ function shouldLog() {
  * @returns {void}
  */
 export const log = (...args) => {
+  if (!shouldLog()) return;
+  console.log(...args);
+};
 
 /**
  * Logs a debug message to the console.
@@ -44,6 +47,9 @@ export const log = (...args) => {
  * @returns {void}
  */
 export const debug = (...args) => {
+  if (!shouldLog()) return;
+  console.debug(...args);
+};
 
 /**
  * Logs an informational message to the console.
@@ -60,6 +66,9 @@ export const debug = (...args) => {
  * @returns {void}
  */
 export const info = (...args) => {
+  if (!shouldLog()) return;
+  console.info(...args);
+};
 
 /**
  * Logs a warning message to the console.
@@ -75,6 +84,8 @@ export const info = (...args) => {
  * @returns {void}
  */
 export const warn = (...args) => {
+  console.warn(...args);
+};
 
 /**
  * Logs an error message to the console.
@@ -90,5 +101,7 @@ export const warn = (...args) => {
  * @returns {void}
  */
 export const error = (...args) => {
+  console.error(...args);
+};
 
 export default { log, debug, info, warn, error };

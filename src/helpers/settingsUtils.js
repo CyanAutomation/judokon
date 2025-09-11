@@ -61,16 +61,18 @@ export { loadDefaultSettings } from "./settingsCache.js";
 /**
  * Re-export of the canonical default settings object used across the application.
  *
- * @summary Canonical default configuration applied when user settings are absent.
+ * @summary This object defines the baseline configuration for all application
+ * settings. It is used when user-specific settings are not found or are incomplete.
+ *
  * @description
  * Consumers may read this object to seed UI defaults or for validation. Callers
- * who intend to mutate values should shallow-clone before modifying.
+ * who intend to mutate values should shallow-clone before modifying to avoid
+ * unintended side effects on the global default.
  *
  * @type {Object}
- *
  * @pseudocode
- * 1. Import the defaults from the source of truth (`settingsDefaults.js`).
- * 2. Export the object under the name `DEFAULT_SETTINGS` for other modules.
+ * 1. The `DEFAULT_SETTINGS` object is imported from `../config/settingsDefaults.js`, which is considered the single source of truth for default configurations.
+ * 2. This imported object is then re-exported under the same name, making it accessible to other modules that need to reference the application's default settings.
  */
 export { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 

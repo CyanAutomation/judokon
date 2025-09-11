@@ -58,17 +58,23 @@ if (typeof window !== "undefined") {
 }
 
 /**
- * Initialize the battle state badge based on feature flag state.
- * Uses synchronous DOM manipulation to avoid race conditions.
+ * Initializes the battle state badge element based on feature flag state
+ * and any runtime overrides. This function performs synchronous DOM
+ * manipulation to ensure the badge's initial visibility is set correctly
+ * before the rest of the page loads.
  *
- * @summary Initialize battle state badge based on feature flags.
+ * @summary Sets the initial visibility and content of the battle state badge.
+ *
  * @returns {void}
  *
  * @pseudocode
- * 1. Read any runtime override from `window.__FF_OVERRIDES.battleStateBadge`.
- * 2. If override is truthy and the badge exists: remove `hidden` and set text to "Lobby".
- * 3. Otherwise leave badge hidden (no-op).
- * 4. Wrap DOM operations in try/catch to avoid throwing during page init.
+ * 1. Check for a `battleStateBadge` override in `window.__FF_OVERRIDES`.
+ * 2. Get a reference to the `#battle-state-badge` element. If not found, exit.
+ * 3. If the override is enabled:
+ *    a. Set `badge.hidden` to `false` and remove the `hidden` attribute.
+ *    b. Set the `badge.textContent` to "Lobby".
+ * 4. If the override is not enabled, the badge remains hidden (its default state).
+ * 5. Wrap all DOM operations in a `try...catch` block to prevent errors during page initialization.
  */
 function initBattleStateBadge() {
   try {
@@ -348,25 +354,39 @@ function showRoundSelectFallback(store) {
 }
 
 /**
- * Initialize the classic battle page and its UI bindings.
+ * Initializes the Classic Battle page and its UI bindings.
  *
- * @summary Initialize classic battle page and UI bindings.
+ * @summary This function bootstraps the scoreboard, battle engine, event bridges,
+ * and UI handlers for the Classic Battle experience. It is designed to be
+ * safely called at `DOMContentLoaded` and includes error handling for robustness.
+ *
  * @description
- * Bootstraps the scoreboard, battle engine, event bridges and UI handlers.
- * Designed to be safe to call at DOMContentLoaded; internal operations are
- * guarded with try/catch to avoid breaking the page on optional failures.
+ * This is the main entry point for setting up the Classic Battle page. It
+ * performs a series of asynchronous operations to ensure all components are
+ * ready and wired correctly. Internal operations are guarded with `try/catch`
+ * blocks to prevent failures in optional features from breaking the entire page.
  *
- * @returns {Promise<void>}
+ * @returns {Promise<void>} A promise that resolves when the Classic Battle page
+ * is fully initialized.
  *
  * @pseudocode
- * 1. Initialize scoreboard and scoreboard adapter.
- * 2. Seed UI defaults (score / round counter) for accessibility.
- * 3. Create the battle engine and bridge engine events to UI handlers.
- * 4. Create and expose the `store` via `createBattleStore()`.
- * 5. Bind transient UI event handlers and modals (round select, end modal).
- * 6. Await round select modal; on success start the first round via
- *    `startRoundCycle`. On failure, render a fallback start button.
- * 7. Wire Next/Replay/Quit buttons.
+ * 1. Mark `window.__initCalled` as true for debugging purposes.
+ * 2. Expose the test API using `exposeTestAPI()`.
+ * 3. Initialize the battle state badge synchronously using `initBattleStateBadge()`.
+ * 4. Initialize feature flags asynchronously using `initFeatureFlags()`.
+ * 5. Set up the shared scoreboard component with no-op timer controls using `setupScoreboard()`.
+ * 6. Initialize the scoreboard adapter using `initScoreboardAdapter()`.
+ * 7. Seed visible UI defaults for score and round counter, and ensure the round counter element is present.
+ * 8. Create the battle engine using `createBattleEngine()`.
+ * 9. Bridge engine events to UI handlers using `bridgeEngineEvents()`.
+ * 10. Create the battle store using `createBattleStore()` and expose it globally as `window.battleStore`.
+ * 11. Bind transient UI helper event handlers using `bindUIHelperEventHandlersDynamic()`.
+ * 12. Bind `roundResolved` event to show the end modal if the match has ended.
+ * 13. Initialize the debug panel using `initDebugPanel()`.
+ * 14. Bind `matchEnded` event from the engine to show the end modal.
+ * 15. Wire click handlers for the "Next", "Replay", and "Quit" buttons.
+ * 16. Initialize the round select modal using `initRoundSelectModal()`. If it fails, show a fallback start button.
+ * 17. Bind `countdownFinished` event to start the next round cycle.
  */
 async function init() {
   // Mark that init was called for debugging

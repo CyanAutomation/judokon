@@ -50,25 +50,36 @@ export async function loadDefaultSettings() {
 }
 
 /**
- * Replace the cached settings object used at runtime.
+ * Replaces the current in-memory cached settings object with a new one.
+ *
+ * @summary This function is crucial for updating the application's runtime
+ * configuration, ensuring that all parts of the application access the most
+ * current settings.
  *
  * @pseudocode
- * 1. Clone the provided `settings` to avoid accidental external mutation.
- * 2. Assign the cloned object to the in-memory `cachedSettings` reference.
- * 3. Consumers can continue to read from `getCachedSettings()` to get the new values.
+ * 1. Call `cloneSettings(settings)` to create a deep copy of the provided `settings` object. This prevents external modifications to the original `settings` object from inadvertently affecting the cached state.
+ * 2. Assign the newly cloned settings object to the module-scoped `cachedSettings` variable.
+ * 3. Subsequent calls to `getCachedSettings()` or `getSetting()` will now return values from this updated cache.
  *
- * @param {import("../config/settingsDefaults.js").Settings} settings - New settings object.
+ * @param {import("../config/settingsDefaults.js").Settings} settings - The new settings object to be cached.
+ * @returns {void}
  */
 export function setCachedSettings(settings) {
   cachedSettings = cloneSettings(settings);
 }
 
 /**
- * Reset the in-memory cache to the canonical default settings.
+ * Resets the in-memory settings cache to the application's canonical default settings.
+ *
+ * @summary This function is typically used to restore all settings to their
+ * factory defaults, discarding any user-specific or persisted configurations.
  *
  * @pseudocode
- * 1. Create a clone of `DEFAULT_SETTINGS` to avoid mutation.
- * 2. Assign the clone to `cachedSettings` so runtime lookups see defaults.
+ * 1. Call `cloneSettings(DEFAULT_SETTINGS)` to create a fresh, deep copy of the `DEFAULT_SETTINGS` object. This ensures that the `cachedSettings` is reset to a pristine state and is not a direct reference to `DEFAULT_SETTINGS` (preventing accidental mutation of the defaults).
+ * 2. Assign this cloned default settings object to the module-scoped `cachedSettings` variable.
+ * 3. Subsequent calls to retrieve settings will now reflect these default values until new settings are loaded or set.
+ *
+ * @returns {void}
  */
 export function resetCache() {
   cachedSettings = cloneSettings(DEFAULT_SETTINGS);

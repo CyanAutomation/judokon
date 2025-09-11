@@ -1,44 +1,42 @@
 /**
- * Shared chunking configuration for embeddings and vector search.
+ * Defines the maximum number of characters allowed in a single chunk when
+ * splitting larger texts for the purpose of generating embeddings and
+ * performing vector search.
  *
- * Maximum number of characters to include in a single chunk when splitting
- * long markdown or text for embeddings and vector search.
+ * @summary This constant sets an upper limit on the size of text segments
+ * processed by the chunking algorithm.
  *
- * @pseudocode
- * 1. When chunking text, split into pieces no larger than `CHUNK_SIZE`.
- * 2. Sentences or headings may be used as natural boundaries before enforcing this limit.
- */
-/**
- * Maximum characters per chunk when splitting large texts for embeddings and vector indexing.
- *
- * @summary Upper bound on characters per chunk.
  * @description
- * This value controls the upper bound of chunk length. Chunking algorithms
- * should try to split on natural boundaries (sentences/headings) before
- * enforcing this limit.
+ * Chunking algorithms should prioritize splitting text at natural boundaries,
+ * such as sentence endings or markdown headings, before strictly enforcing
+ * this character limit. This helps maintain the semantic integrity of each chunk.
  *
  * @pseudocode
- * 1. When processing a long document, iterate and produce substrings no larger
- *    than `CHUNK_SIZE` characters.
- * 2. Prefer natural boundaries before splitting to avoid chopping semantic
- *    units (e.g., sentences or markdown headings).
+ * 1. When a document's content exceeds `CHUNK_SIZE`, the chunking process divides it into smaller segments.
+ * 2. Each resulting segment will contain at most `CHUNK_SIZE` characters.
+ * 3. The algorithm attempts to find logical break points (e.g., end of a sentence, paragraph, or section) within the `CHUNK_SIZE` limit to create more meaningful chunks.
  *
  * @type {number}
  */
 export const CHUNK_SIZE = 1000;
 
 /**
- * Fraction (0..1) of characters to overlap between adjacent chunks.
+ * Defines the fraction (between 0 and 1) of characters that should overlap
+ * between consecutive chunks when a document is split for embeddings.
  *
- * @summary Fraction overlapped between consecutive chunks.
+ * @summary This constant helps maintain contextual continuity across chunk
+ * boundaries, which is crucial for the accuracy of semantic search results.
+ *
  * @description
- * Overlap preserves context across chunk boundaries for semantic search and
- * improves recall when queries span a boundary.
+ * Overlapping chunks ensure that information relevant to a query is not
+ * inadvertently split across two separate chunks, thereby improving recall
+ * and the overall quality of search results, especially when queries span
+ * the boundary of a single chunk.
  *
  * @pseudocode
- * 1. Calculate `overlapSize = Math.floor(CHUNK_SIZE * OVERLAP_RATIO)`.
- * 2. For each chunk after the first, include the last `overlapSize` characters
- *    from the previous chunk at the start of the current chunk.
+ * 1. Calculate the absolute overlap size in characters by multiplying `CHUNK_SIZE` by `OVERLAP_RATIO` and rounding down (`Math.floor`).
+ * 2. When creating a new chunk, append the last `overlapSize` characters from the preceding chunk to the beginning of the current chunk.
+ * 3. This process is applied to all chunks except the very first one.
  *
  * @type {number}
  */

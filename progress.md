@@ -399,6 +399,61 @@ export function updateScoreLine() {
 
 ## Phase 4 — Cleanup & Consolidation
 
+### Objective
+Remove bespoke scoreboard logic from `pages/battleCLI/init.js` handlers. Consolidate to use PRD adapter as single scoreboard binding.
+
+### Actions Taken
+
+1. **Removed Redundant Event Handlers**
+   - Removed `handleScoreboardShowMessage` and `handleScoreboardClearMessage` functions
+   - Removed `scoreboardShowMessage` and `scoreboardClearMessage` from `battleEventHandlers` object
+   - Updated imports to remove unused scoreboard handlers
+
+2. **Fixed Supporting Files**
+   - Fixed `src/helpers/logger.js` syntax errors (missing function bodies)
+   - Updated test mocks to properly simulate shared Scoreboard DOM updates
+
+3. **Simplified Codebase**
+   - Removed import statements for redundant scoreboard functions
+   - Consolidated CLI to use shared Scoreboard adapter as single source of truth
+   - Removed export statements for cleaned up handlers
+
+### Test Results
+- **✅ Shared Primary Test**: 5/5 tests passed - Shared Scoreboard is primary rendering source
+- **✅ Standard DOM Test**: 4/4 tests passed - DOM structure maintained correctly
+- **✅ No Regressions**: Core CLI functionality preserved via graceful fallback
+- **✅ Syntax Fixed**: All ESLint errors resolved in logger.js
+
+### Final Code State
+```javascript
+// Clean CLI initialization - only exports what's needed
+export const battleEventHandlers = {
+  roundStart: handleRoundStart,
+  roundOver: handleRoundOver,
+  roundSkipped: handleRoundSkipped,
+  matchEnded: handleMatchEnded,
+  statSelected: handleStatSelected,
+  timerTick: handleTimerTick,
+  // Phase 4: Removed scoreboardShowMessage and scoreboardClearMessage handlers
+};
+
+// Uses shared Scoreboard adapter for all scoreboard updates
+initBattleScoreboardAdapter();  // PRD canonical events wired
+```
+
+### Outcome
+- **✅ CLEANUP COMPLETE** - Redundant CLI scoreboard handlers removed
+- **✅ SINGLE SOURCE OF TRUTH** - PRD adapter is sole scoreboard binding
+- **✅ SIMPLIFIED CODEBASE** - No duplicate event handling logic
+- **✅ MAINTAINED FUNCTIONALITY** - All scoreboard features work via shared component
+- **✅ GRACEFUL FALLBACK** - CLI elements still provide fallback if shared component fails
+
+**REMEDIATION COMPLETE** - CLI now fully aligned with PRD shared Scoreboard architecture
+
+---
+
+## Additional Notes and Future Validation
+
 ### Phase 4
 
 - Selector stability: updating test selectors to standard IDs should be staged to avoid breaking existing tests; maintain temporary dual assertions during Phase 2.

@@ -1,9 +1,9 @@
 import * as engineFacade from "../../helpers/battleEngineFacade.js";
 
-// Phase 2: Import shared Scoreboard helpers for dual-write
+// Phase 4: Simplified scoreboard helpers - now primarily rely on shared Scoreboard adapter
+// Dynamic import kept for fallback scenarios only
 let sharedScoreboardHelpers = null;
 try {
-  // Lazy import to avoid circular dependencies during module loading
   import("../../components/Scoreboard.js").then((module) => {
     sharedScoreboardHelpers = {
       showMessage: module.showMessage,

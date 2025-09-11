@@ -53,14 +53,17 @@ import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
  * 2. Attach it to `window` so tests can await it.
  */
 /**
- * Promise that resolves when the Settings UI has finished rendering and
+ * A promise that resolves when the Settings UI has finished rendering and
  * dispatched the `settings:ready` event.
  *
- * @summary Resolves once the Settings page dispatches `settings:ready`.
+ * @summary This promise provides a reliable signal for external scripts or tests
+ * to know when the Settings page's DOM is ready and its controls are initialized.
  *
  * @pseudocode
- * 1. Create a new Promise and attach a one-time listener for `settings:ready`.
- * 2. Resolve the promise when the event fires so tests and other code can await readiness.
+ * 1. A new `Promise` is created.
+ * 2. A one-time event listener is attached to `document` for the `settings:ready` event.
+ * 3. When the `settings:ready` event is dispatched (typically after `renderSettingsControls` completes), the promise resolves.
+ * 4. This allows other parts of the application to `await` this promise to ensure the settings UI is fully loaded before interacting with it.
  *
  * @type {Promise<void>}
  */
@@ -365,31 +368,42 @@ function showLoadSettingsError() {
 
 onDomReady(initializeSettingsPage);
 /**
- * @summary Re-export the game-mode toggle handler used by the Settings UI.
+ * Re-exports the game-mode toggle handler used by the Settings UI.
+ *
+ * @summary This provides a stable import surface for the Settings page and
+ * for tests that need to directly call the handler for game mode changes.
  *
  * @description
- * The implementation lives in `./settings/gameModeSwitches.js`. Re-exporting it
- * from this module provides a stable import surface for the Settings page and
- * for tests that need to directly call the handler.
+ * The actual implementation of `handleGameModeChange` resides in
+ * `./settings/gameModeSwitches.js`. This re-export ensures that consumers
+ * can import this function consistently without needing to know its exact
+ * internal location.
  *
  * @pseudocode
- * 1. Import the concrete handler implementation from `settings/gameModeSwitches.js`.
- * 2. Re-export it under the same name to keep call sites stable.
- * 3. Consumers may call `handleGameModeChange(event)` when wiring toggles.
+ * 1. The `handleGameModeChange` function is imported from `./settings/gameModeSwitches.js`.
+ * 2. It is then re-exported from this module, making it available to other parts of the application.
+ * 3. Consumers can attach this function as an event listener to UI controls that modify game mode settings.
+ *
+ * @returns {void}
  */
 export { handleGameModeChange } from "./settings/gameModeSwitches.js";
 
 /**
- * Re-export the feature-flag toggle handler used by the Settings UI.
+ * Re-exports the feature-flag toggle handler used by the Settings UI.
  *
- * @summary Provides a stable import for the feature-flag toggle handler.
+ * @summary This provides a stable import surface for the Settings page and
+ * for tests that need to directly call the handler for feature flag changes.
+ *
  * @description
  * The actual logic for applying and validating feature-flag toggles is
  * implemented in `./settings/featureFlagSwitches.js`. This re-export allows
  * other modules and tests to reuse the same handler implementation.
  *
  * @pseudocode
- * 1. Import `handleFeatureFlagChange` from `settings/featureFlagSwitches.js`.
- * 2. Re-export it so callers can attach it to UI controls or invoke it in tests.
+ * 1. The `handleFeatureFlagChange` function is imported from `./settings/featureFlagSwitches.js`.
+ * 2. It is then re-exported from this module, making it available to other parts of the application.
+ * 3. Consumers can attach this function as an event listener to UI controls that modify feature flag settings.
+ *
+ * @returns {void}
  */
 export { handleFeatureFlagChange } from "./settings/featureFlagSwitches.js";

@@ -1,34 +1,27 @@
 /**
- * Lightweight, environment-tolerant HTML sanitizer loader.
+ * Lazily loads and returns a singleton HTML sanitizer instance (DOMPurify).
+ *
+ * @summary This function attempts to load DOMPurify from various sources
+ * (bare specifier, CDN, local node_modules path) to ensure it works across
+ * different environments (Vitest, GitHub Pages, local development). If all
+ * attempts fail, it falls back to a minimal, built-in sanitizer.
  *
  * @pseudocode
- * 1. Return cached sanitizer if available.
- * 2. Try dynamic import of "dompurify" and instantiate with `window` when needed.
- * 3. On failure, try the ESM path from node_modules for static servers.
- * 4. Fallback to a minimal allowlist sanitizer (keeps br/strong/em; strips others).
+ * 1. If a `cached` sanitizer instance already exists, return it immediately.
+ * 2. Define an asynchronous helper function `tryLoad(specifier)`:
+ *    a. Attempt to dynamically `import(specifier)`.
+ *    b. Extract the default export or the module itself.
+ *    c. If the imported module is a function, call it with `window` to instantiate (for DOMPurify).
+ *    d. If the instance has a `sanitize` method, return it.
+ *    e. On any error during import or instantiation, return `null`.
+ * 3. Attempt to load DOMPurify using `tryLoad` with the bare specifier `"dompurify"`. If successful, cache and return the instance.
+ * 4. If the bare specifier fails, attempt to load from a CDN URL (`"https://esm.sh/dompurify@3.2.6"`). If successful, cache and return.
+ * 5. If the CDN fails, attempt to load from a local `node_modules` path (`"/node_modules/dompurify/dist/purify.es.js"`). If successful, cache and return.
+ * 6. If all loading attempts fail, define a `sanitizeBasic` fallback function:
+ *    a. This function performs basic HTML sanitization by removing script/style tags, inline event handlers, and stripping attributes from non-allowed tags (`br`, `strong`, `em`).
+ *    b. Cache and return an object `{ sanitize: sanitizeBasic }`.
  *
- * @returns {Promise<{ sanitize: (html:string)=>string }>}
- */
-let cached;
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @returns {Promise<{ sanitize: (html:string)=>string }>} A promise that resolves to an object with a `sanitize` method.
  */
 export async function getSanitizer() {
   if (cached) return cached;

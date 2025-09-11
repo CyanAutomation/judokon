@@ -15,35 +15,33 @@ const CONTROL_MAP = [
 ];
 
 /**
- * Initialize control states based on a settings object.
+ * Applies initial values from a settings object to corresponding form controls
+ * and updates their associated labels and descriptions based on a tooltip map.
+ *
+ * @summary This function ensures that the settings page UI accurately reflects
+ * the current application settings when loaded.
  *
  * @pseudocode
- * 1. For each mapping: update value, tooltip ID, label, and description.
- * 2. Update display mode radio buttons.
+ * 1. Define an inner helper function `applyInputState(element, value)`:
+ *    a. If `element` is null, return.
+ *    b. If `element` is a checkbox, set its `checked` property to `Boolean(value)`.
+ *    c. Otherwise, set its `value` property directly.
+ * 2. Iterate over `CONTROL_MAP`, which defines the mapping between control names, setting keys, and description IDs.
+ * 3. For each mapping:
+ *    a. Get the control element from `controls`.
+ *    b. Call `applyInputState` to set the control's value based on `settings[setting]`.
+ *    c. If the control exists and `settings.tooltipIds` has an entry for the `setting`, set the control's `data-tooltip-id`.
+ *    d. Locate the associated label and description elements.
+ *    e. If a localized `label` and `description` are found in `tooltipMap`, update the `textContent` of the label and description elements.
+ * 4. If `controls.displayRadios` exists (for display mode selection):
+ *    a. Iterate over each radio button.
+ *    b. Set `checked` to `true` if the radio's `value` matches `settings.displayMode`.
+ *    c. Set `tabIndex` to `0` for the checked radio and `-1` for others to manage keyboard navigation.
  *
- * @param {Object} controls - Collection of form elements.
- * @param {import("../../config/settingsDefaults.js").Settings} settings - Current settings.
- * @param {Record<string, string>} [tooltipMap] - Flattened tooltip lookup.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * @param {Object} controls - An object containing references to various form elements (e.g., `controls.soundToggle`, `controls.displayRadios`).
+ * @param {import("../../config/settingsDefaults.js").Settings} [settings=DEFAULT_SETTINGS] - The current application settings object. Defaults to `DEFAULT_SETTINGS`.
+ * @param {Record<string, string>} [tooltipMap={}] - A flattened map of tooltip IDs to their localized text content.
+ * @returns {void}
  */
 export function applyInitialControlValues(controls, settings = DEFAULT_SETTINGS, tooltipMap = {}) {
   /**

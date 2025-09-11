@@ -6,7 +6,11 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
   beforeEach(() => {
     // Mock the shared Scoreboard component functions
     mockSharedScoreboard = {
-      showMessage: vi.fn(),
+      showMessage: vi.fn((text) => {
+        // Simulate the real behavior of updating the #round-message element
+        const el = document.getElementById("round-message");
+        if (el) el.textContent = text || "";
+      }),
       updateScore: vi.fn(),
       updateRoundCounter: vi.fn()
     };

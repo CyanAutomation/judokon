@@ -45,12 +45,8 @@ import { exposeTestAPI } from "../../helpers/testApi.js";
 // Phase 2: Shared Scoreboard imports for dual-write
 import { setupScoreboard } from "../../helpers/setupScoreboard.js";
 import { initBattleScoreboardAdapter } from "../../helpers/battleScoreboard.js";
-import {
-  showMessage as scoreboardShowMessage,
-  updateScore as scoreboardUpdateScore,
-  updateTimer as scoreboardUpdateTimer,
-  updateRoundCounter as scoreboardUpdateRoundCounter
-} from "../../components/Scoreboard.js";
+// Phase 4: Removed redundant scoreboardShowMessage, updateScore, updateTimer, updateRoundCounter imports
+// These are now handled by the shared Scoreboard adapter
 import state, { resolveEscapeHandled, getEscapeHandledPromise } from "./state.js";
 import { onKeyDown } from "./events.js";
 import { registerBattleHandlers } from "./battleHandlers.js";
@@ -194,8 +190,8 @@ export const __test = {
   startRoundWrapper,
   // Expose init for tests to manually initialize without DOMContentLoaded
   init,
-  handleScoreboardShowMessage,
-  handleScoreboardClearMessage,
+  // Phase 4: Removed handleScoreboardShowMessage and handleScoreboardClearMessage exports
+  // These functions have been removed as they're now handled by shared Scoreboard adapter
   handleStatSelectionStalled,
   handleCountdownStart,
   handleCountdownFinished,
@@ -1555,13 +1551,8 @@ function onClickAdvance(event) {
   handler();
 }
 
-function handleScoreboardShowMessage(e) {
-  setRoundMessage(String(e.detail || ""));
-}
-
-function handleScoreboardClearMessage() {
-  setRoundMessage("");
-}
+// Phase 4: Removed handleScoreboardShowMessage and handleScoreboardClearMessage
+// These are now handled by the shared Scoreboard adapter via initBattleScoreboardAdapter()
 
 function handleStatSelectionStalled() {
   if (!isEnabled("autoSelect")) {
@@ -1759,8 +1750,8 @@ function handleBattleState(ev) {
 }
 
 const battleEventHandlers = {
-  scoreboardShowMessage: handleScoreboardShowMessage,
-  scoreboardClearMessage: handleScoreboardClearMessage,
+  // Phase 4: Removed scoreboardShowMessage and scoreboardClearMessage handlers
+  // These are now handled by the shared Scoreboard adapter
   statSelectionStalled: handleStatSelectionStalled,
   countdownStart: handleCountdownStart,
   countdownFinished: handleCountdownFinished,
@@ -1863,12 +1854,20 @@ export async function setupFlags() {
 }
 
 /**
- * Subscribe UI helpers to engine events.
+ * Subscribes UI elements and helpers to events emitted by the battle engine.
  *
- * @summary Subscribe UI helpers to engine events.
+ * @summary This function sets up listeners for key battle engine events to
+ * update the CLI's display in real-time.
+ *
  * @pseudocode
- * 1. If facade exposes `on`, listen for `timerTick` and `matchEnded`.
- * 2. Update timer text and round message from events.
+ * 1. Check if the `engineFacade` exposes an `on` method (indicating the engine is available).
+ * 2. If available, subscribe to the `timerTick` event:
+ *    a. When a `timerTick` event occurs, if the `phase` is "round", update the text content of the `#cli-timer` element with the `remaining` time.
+ * 3. Subscribe to the `matchEnded` event:
+ *    a. When a `matchEnded` event occurs, update the round message to display "Match over: [outcome]".
+ * 4. Wrap the subscriptions in a `try...catch` block to gracefully handle any errors during event binding.
+ *
+ * @returns {void}
  */
 export function subscribeEngine() {
   try {
@@ -1887,13 +1886,27 @@ export function subscribeEngine() {
 }
 
 /**
- * Attach global event listeners for the CLI.
+ * Attaches global event listeners for the CLI, managing user input and page
+ * visibility to control battle timers.
  *
- * @summary Attach global event listeners for the CLI.
+ * @summary This function sets up the primary event handling for the CLI,
+ * ensuring responsiveness to user actions and proper timer management
+ * during page lifecycle events.
+ *
  * @pseudocode
- * 1. Install battle event bindings.
- * 2. Bind keydown and click handlers.
- * 3. Handle visibility/page lifecycle to pause or resume timers.
+ * 1. Call `installEventBindings()` to set up battle-specific event handlers.
+ * 2. Add a `keydown` event listener to `window` that delegates to `onKeyDown()` for keyboard input processing.
+ * 3. Add a `click` event listener to `document` that delegates to `onClickAdvance()` for handling clicks outside interactive areas.
+ * 4. Set up `visibilitychange` listener on `document`:
+ *    a. If the document becomes hidden (`document.hidden` is true), `pauseTimers()` is called.
+ *    b. If the document becomes visible, `resumeTimers()` is called.
+ * 5. Add a `pageshow` event listener to `window`:
+ *    a. If the page is shown from the bfcache (`ev.persisted` is true), `resumeTimers()` is called.
+ * 6. Add a `pagehide` event listener to `window`:
+ *    a. When the page is hidden, `pauseTimers()` is called.
+ * 7. Wrap page lifecycle event listeners in a `try...catch` block to prevent errors from disrupting the application.
+ *
+ * @returns {void}
  */
 export function wireEvents() {
   installEventBindings();

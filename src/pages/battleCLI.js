@@ -1,15 +1,20 @@
 /**
  * Public entry re-export for the Battle CLI page initializer.
  *
- * @summary Re-export the Battle CLI page initializer.
+ * @summary This module provides a stable import path for the `init` function
+ * that bootstraps the Battle CLI page.
  *
  * @description
- * This module re-exports the `init` function from `./battleCLI/init.js` so
- * the page entry point can be imported from a stable path. Tests import this
- * symbol to trigger page initialization programmatically.
+ * The `init` function, originally defined in `./battleCLI/init.js`, is
+ * re-exported here. This allows other modules and test suites to
+ * programmatically trigger the initialization of the Battle CLI UI and logic
+ * by simply importing and calling `init()`.
  *
  * @pseudocode
- * 1. Import `init` from `./battleCLI/init.js`.
- * 2. Re-export it unchanged so callers can call `init()` to bootstrap the page.
+ * 1. The `init` function is imported from the `./battleCLI/init.js` module.
+ * 2. This imported `init` function is then re-exported directly from this module.
+ * 3. Consumers can now import `init` from this module and call it to start the Battle CLI application.
+ *
+ * @returns {Promise<void>} A promise that resolves when the Battle CLI page is fully initialized.
  */
 export { init } from "./battleCLI/init.js";
