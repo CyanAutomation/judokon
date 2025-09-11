@@ -296,3 +296,71 @@ Step 5.4: Phase 5 validation
 - Outcome: PASS (3 tests across 2 files). Ordering guard holds; destroy stops scoreboard updates as expected; re-initialization does not clear message content.
 
 Pausing after Phase 5 for review.
+
+---
+
+Round Start Modal — positioning assessment and plan
+
+Scope
+
+- Pages: `src/pages/battleClassic.html`, `src/pages/battleCLI.html`.
+- Component: `src/helpers/classicBattle/roundSelectModal.js` using `src/components/Modal.js` and styles in `src/styles/modal.css` (via `src/styles/components.css`).
+
+Current behavior (observed in source)
+
+- Modal markup: `Modal` creates a `.modal-backdrop` (fixed, full-viewport) with a centered `.modal` (flexbox).
+- Centering: CSS in `src/styles/modal.css` centers vertically/horizontally using `align-items:center; justify-content:center;`.
+- Style loading:
+  - `battleClassic.html` does not link `components.css` (which imports `modal.css`).
+  - `battleCLI.html` links only `cli-immersive.css` and also does not include `components.css`.
+- Resulting issues:
+  - Without `modal.css`, the modal backdrop/dialog have no positioning styles → the dialog may render in normal flow instead of centered.
+  - With `modal.css` loaded, the backdrop covers the entire viewport (`inset: 0`) and the dialog centers in the full viewport, overlapping the scoreboard/header area. The request is for the dialog to appear “in the middle of the viewport and just under the scoreboard,” which the current `inset: 0` does not satisfy.
+
+Constraints/considerations
+
+- No dynamic imports in hot paths; `roundSelectModal` and `Modal` are already statically imported where used.
+- Change should be additive and default-safe (no behavior change unless offset is applied) to avoid regressions in other modal use sites.
+- Headers differ per page:
+  - Classic page: `<header role="banner">` (no id, but reliably first header element).
+  - CLI page: `<header id="cli-header" class="cli-header">` with fixed height styles.
+
+Phased implementation plan (no code changes applied yet)
+
+Phase 0 — Enable component styles on both pages
+
+- Add `<link rel="stylesheet" href="../styles/components.css">` to `battleClassic.html` head.
+- Add `<link rel="stylesheet" href="../styles/components.css">` to `battleCLI.html` head (coexists with `cli-immersive.css`).
+- Rationale: ensures `.modal-backdrop` and `.modal` base styles are present so subsequent positioning fixes take effect.
+
+Phase 1 — CSS support for header-aware positioning
+
+- Update `src/styles/modal.css` to support an optional top inset variable:
+  - Change `.modal-backdrop { inset: 0; }` to `.modal-backdrop { inset: var(--modal-inset-top, 0) 0 0 0; }`.
+  - Keep default `--modal-inset-top: 0` so existing modals elsewhere remain unchanged.
+- Effect: When a page sets `--modal-inset-top` on the backdrop (or inherited), the backdrop area starts below the header, and flex centering occurs within the remaining viewport, naturally placing the dialog “just under the scoreboard.”
+
+Phase 2 — Apply dynamic offset on open (per page)
+
+- In `initRoundSelectModal`, after creating the modal, compute the header height and set the CSS variable on the specific backdrop element:
+  - Classic: `const header = document.querySelector('header[role="banner"], header');`
+  - CLI: `const header = document.getElementById('cli-header') || document.querySelector('.cli-header');`
+  - If found: `modal.element.style.setProperty('--modal-inset-top', header.offsetHeight + 'px');`
+- Add a resize/orientationchange listener while the modal is open to update the value if the header wraps (mobile widths). Remove the listener on `modal.close()`/`destroy()`.
+- Optional: add a small gap variable (e.g., `--modal-offset-gap`, default `8px`) if the design prefers a breathing space under the header, applying `calc(headerHeight + var(--modal-offset-gap))`.
+
+Phase 3 — Validation
+
+- Manual check on both pages at narrow/wide widths: dialog centers within the area below the header, does not overlap the scoreboard, and remains vertically centered relative to the remaining viewport space.
+- Accessibility spot-check: focus enters the dialog as before; backdrop click and Escape close still work (unchanged by inset).
+- Non-regression: open any other modal (if present) without setting the variable → behavior remains full-viewport centered.
+
+Risks and mitigations
+
+- Risk: Other consumers of `Modal` might expect full-viewport coverage. Mitigated by defaulting `--modal-inset-top` to `0` and only setting it for the round start modal instance.
+- Risk: Header height changes on responsive wrap. Mitigated by resize/orientation listeners scoped to the open modal lifecycle.
+- Risk: CSS load order on CLI page. Mitigated by adding `components.css` link before `cli-immersive.css` if any conflicts are observed (none expected for `.modal*`).
+
+Status
+
+- Investigation complete. No code changes performed yet. Pausing here for review before implementing Phase 0–2.
