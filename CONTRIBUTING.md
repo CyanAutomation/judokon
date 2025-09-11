@@ -25,9 +25,10 @@ Before committing any changes, run the following commands from the repository ro
 For complete command documentation, troubleshooting, and advanced quality verification, see **[docs/validation-commands.md](./docs/validation-commands.md)**.
 
 **Core validation suite:**
+
 ```bash
 npx prettier . --check # verify formatting
-npx eslint . # lint the codebase  
+npx eslint . # lint the codebase
 npx vitest run # run unit tests
 npx playwright test # run Playwright UI tests
 npm run check:jsdoc # ensure exported helpers have JSDoc + @pseudocode
@@ -36,6 +37,7 @@ npm run rag:validate # RAG preflight + evaluator + JSON + hot‑path checks
 ```
 
 **Style tests (run on demand):**
+
 ```bash
 npm run test:style # run style tests when needed
 ```
@@ -45,12 +47,13 @@ npm run test:style # run style tests when needed
 In addition to the core checks above, verify test quality standards compliance using the advanced verification commands detailed in [docs/validation-commands.md](./docs/validation-commands.md#advanced-quality-verification):
 
 **Quick quality check:**
+
 ```bash
 # Unit Test Quality Verification
 grep -r "dispatchEvent\|createEvent" tests/ && echo "❌ Found synthetic events" || echo "✅ No synthetic events"
 grep -r "console\.(warn\|error)" tests/ | grep -v "tests/utils/console.js" && echo "❌ Found unsilenced console" || echo "✅ Console discipline maintained"
 
-# Playwright Test Quality Verification  
+# Playwright Test Quality Verification
 grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded waits" || echo "✅ No hardcoded timeouts"
 ```
 
@@ -205,13 +208,15 @@ This helps reviewers validate AI-generated work more quickly.
 The following patterns have been systematically eliminated from our test suite and must not be reintroduced:
 
 **❌ Prohibited Patterns:**
+
 - **Direct DOM Manipulation**: Don't call `appendChild`, `innerHTML`, or manually create DOM elements
-- **Synthetic Event Dispatching**: Don't use `dispatchEvent` or `createEvent` for user interactions  
+- **Synthetic Event Dispatching**: Don't use `dispatchEvent` or `createEvent` for user interactions
 - **Raw Console Spies**: Don't use `vi.spyOn(console, 'error')` without proper muting
 - **Real Timers**: Don't use `setTimeout`/`setInterval` in deterministic tests
 - **Manual Element Creation**: Don't create DOM nodes without component factories
 
 **✅ Required Patterns:**
+
 - **Natural Component Interaction**: Use public APIs and component test utilities
 - **Keyboard/Gesture Simulation**: Use `pressKey()` and `simulateGesture()` helpers
 - **Console Discipline**: Use `withMutedConsole()` for all error-generating tests
@@ -221,14 +226,16 @@ The following patterns have been systematically eliminated from our test suite a
 ### Testing Infrastructure
 
 **Component Test Utilities (`tests/utils/componentTestUtils.js`):**
+
 ```js
 // Natural interaction patterns
 const { container, pressKey, simulateGesture } = createTestComponent(componentFactory);
-await pressKey('ArrowLeft'); // Keyboard navigation
-await simulateGesture('swipeLeft'); // Gesture interaction
+await pressKey("ArrowLeft"); // Keyboard navigation
+await simulateGesture("swipeLeft"); // Gesture interaction
 ```
 
 **Console Discipline (`tests/utils/console.js`):**
+
 ```js
 import { withMutedConsole } from "../utils/console.js";
 
@@ -239,6 +246,7 @@ await withMutedConsole(async () => {
 ```
 
 **Timer Management:**
+
 ```js
 // Setup for deterministic timing control
 beforeEach(() => vi.useFakeTimers());
@@ -247,18 +255,19 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// Advance timers deterministically  
+// Advance timers deterministically
 await vi.runAllTimersAsync();
 ```
 
 ### Quality Verification Commands
 
 Before submitting PRs, verify test quality compliance:
+
 ```bash
 # Check for synthetic events
 grep -r "dispatchEvent\|createEvent" tests/ && echo "❌ Found synthetic events"
 
-# Check for console discipline  
+# Check for console discipline
 grep -r "console\.(warn\|error)" tests/ | grep -v "tests/utils/console.js" && echo "❌ Found unsilenced console"
 
 # Check for real timers
@@ -282,6 +291,7 @@ grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "❌ Fou
 The following patterns have been identified as problematic in end-to-end testing and must be avoided:
 
 **❌ Prohibited Patterns:**
+
 - **Direct DOM Manipulation**: Don't use `page.evaluate()` to manually modify DOM elements
 - **Hardcoded Wait Times**: Don't use `page.waitForTimeout()` with fixed milliseconds
 - **Implementation Detail Selectors**: Don't use complex CSS selectors that break on refactoring
@@ -289,6 +299,7 @@ The following patterns have been identified as problematic in end-to-end testing
 - **Assertions Without Waiting**: Don't use basic assertions without proper condition waiting
 
 **✅ Required Patterns:**
+
 - **Natural User Interactions**: Use `page.click()`, `page.fill()`, `page.press()` for real user actions
 - **Conditional Waiting**: Use `page.waitForSelector()`, `page.waitForLoadState()` for specific conditions
 - **Semantic Selectors**: Use `data-testid`, `role=`, or accessible names for reliable element targeting
@@ -298,39 +309,43 @@ The following patterns have been identified as problematic in end-to-end testing
 ### Playwright Infrastructure
 
 **Natural User Interactions:**
+
 ```js
 // Real user actions that match production usage
 await page.click('[data-testid="submit-button"]');
-await page.fill('[data-testid="username-input"]', 'testuser');
-await page.press('body', 'Escape');
-await page.selectOption('[data-testid="dropdown"]', 'option-value');
+await page.fill('[data-testid="username-input"]', "testuser");
+await page.press("body", "Escape");
+await page.selectOption('[data-testid="dropdown"]', "option-value");
 ```
 
 **Proper Waiting Strategies:**
+
 ```js
 // Wait for specific conditions, not arbitrary time
 await page.waitForSelector('[data-testid="success-message"]');
-await page.waitForLoadState('networkidle');
+await page.waitForLoadState("networkidle");
 await expect(page.locator('[data-testid="result"]')).toBeVisible();
 ```
 
 **Semantic Selector Strategy:**
+
 ```js
 // Robust selectors that survive refactoring
 await page.click('[data-testid="navigation-menu"]');
 await page.click('role=button[name="Submit"]');
-await page.getByLabel('Username').fill('testuser');
+await page.getByLabel("Username").fill("testuser");
 
 // Avoid implementation details
 // ❌ await page.click('.menu > div:nth-child(2) > button.primary');
 ```
 
 **Test State Management:**
+
 ```js
 // Use fixtures for consistent setup
 test.beforeEach(async ({ page }) => {
-  await page.goto('/test-page');
-  await page.waitForLoadState('networkidle');
+  await page.goto("/test-page");
+  await page.waitForLoadState("networkidle");
 });
 
 // Use global setup for authentication/data seeding
@@ -340,6 +355,7 @@ test.beforeEach(async ({ page }) => {
 ### Quality Verification Commands
 
 Before submitting PRs, verify Playwright test quality compliance:
+
 ```bash
 # Check for hardcoded timeouts
 grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded waits"
