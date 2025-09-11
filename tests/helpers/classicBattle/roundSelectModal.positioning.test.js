@@ -38,7 +38,9 @@ describe("roundSelectModal positioning and skinning", () => {
     );
 
     // Mock tooltips to avoid async noise
-    vi.doMock("../../../src/helpers/tooltip.js", () => ({ initTooltips: () => Promise.resolve(() => {}) }));
+    vi.doMock("../../../src/helpers/tooltip.js", () => ({
+      initTooltips: () => Promise.resolve(() => {})
+    }));
 
     await initRoundSelectModal(() => {});
 
@@ -65,7 +67,9 @@ describe("roundSelectModal positioning and skinning", () => {
     );
 
     // Mock tooltips
-    vi.doMock("../../../src/helpers/tooltip.js", () => ({ initTooltips: () => Promise.resolve(() => {}) }));
+    vi.doMock("../../../src/helpers/tooltip.js", () => ({
+      initTooltips: () => Promise.resolve(() => {})
+    }));
 
     await initRoundSelectModal(() => {});
 
@@ -75,4 +79,3 @@ describe("roundSelectModal positioning and skinning", () => {
     expect(backdrop.style.getPropertyValue("--modal-inset-top")).toBe("56px");
   });
 });
-
