@@ -19,8 +19,23 @@ import { isEnabled } from "./featureFlags.js";
 
 // Test mode detection
 function isTestMode() {
-  if (typeof process !== "undefined" && process.env?.NODE_ENV === "test") return true;
-  if (typeof process !== "undefined" && process.env?.VITEST) return true;
+  // Check for common test environment indicators
+  if (typeof process !== "undefined") {
+    if (process.env?.NODE_ENV === "test") return true;
+    if (process.env?.VITEST) return true;
+  }
+
+  // Check for browser test indicators
+  if (typeof window !== "undefined") {
+    if (window.__TEST__) return true;
+    if (
+      window.location?.href?.includes("127.0.0.1") ||
+      window.location?.href?.includes("localhost")
+    )
+      return true;
+  }
+
+  // Check feature flag
   try {
     return isEnabled("enableTestMode");
   } catch {

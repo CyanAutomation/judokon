@@ -24,16 +24,37 @@ export async function queryRag(question, opts = {}) {
     filters = [],
     strategy = null,
     withProvenance = false,
-    withDiagnostics = false
+    withDiagnostics = false,
+    allowLexicalFallback = false
   } = opts;
   const t0 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
   const expanded = await vectorSearch.expandQueryWithSynonyms(question);
-  const extractor = await getExtractor();
-  const embedding = await extractor(expanded, { pooling: "mean" });
-  const source =
-    embedding && typeof embedding === "object" && "data" in embedding ? embedding.data : embedding;
-  if (!isIterable(source)) return [];
-  const vector = Array.from(source);
+  let vector;
+  try {
+    const extractor = await getExtractor();
+    const embedding = await extractor(expanded, { pooling: "mean" });
+    const source =
+      embedding && typeof embedding === "object" && "data" in embedding ? embedding.data : embedding;
+    if (!isIterable(source)) return [];
+    vector = Array.from(source);
+  } catch (err) {
+    const fallbackEnabled = allowLexicalFallback || process?.env?.RAG_ALLOW_LEXICAL_FALLBACK === "1";
+    if (!fallbackEnabled) throw err;
+    const results = await lexicalFallbackSearch(question, k, filtersForStrategy(filters, strategy));
+    const enriched = withProvenance
+      ? results.map((m) => ({ ...m, contextPath: normalizeContextPath(m), rationale: buildRationale(question, m) }))
+      : results;
+    if (!withDiagnostics) return enriched;
+    const t1 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    return Object.assign([], enriched, {
+      diagnostics: {
+        expandedQuery: expanded,
+        multiIntentApplied: false,
+        timingMs: +(t1 - t0).toFixed(2),
+        lexicalFallback: true
+      }
+    });
+  }
   // Multi-intent: split simple conjunctions and union-re-rank
   const subQueries = splitMultiIntent(question);
   let matches;
@@ -99,6 +120,79 @@ export async function queryRag(question, opts = {}) {
       timingMs: +(t1 - t0).toFixed(2)
     }
   });
+}
+
+function tokenize(text) {
+  return String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((t) => !STOP.has(t));
+}
+
+const STOP = new Set([
+  "a",
+  "an",
+  "the",
+  "and",
+  "or",
+  "in",
+  "on",
+  "at",
+  "for",
+  "to",
+  "of",
+  "is",
+  "are",
+  "was",
+  "were",
+  "be",
+  "been",
+  "being",
+  "it",
+  "this",
+  "that",
+  "these",
+  "those"
+]);
+
+function toSparse(text) {
+  const tf = Object.create(null);
+  for (const tok of tokenize(text)) tf[tok] = (tf[tok] || 0) + 1;
+  return tf;
+}
+
+function cosineSparse(a, b) {
+  let dot = 0,
+    na = 0,
+    nb = 0;
+  for (const [t, v] of Object.entries(a)) {
+    na += v * v;
+    if (b[t]) dot += v * b[t];
+  }
+  for (const v of Object.values(b)) nb += v * v;
+  if (na === 0 || nb === 0) return 0;
+  return dot / Math.sqrt(na * nb);
+}
+
+async function lexicalFallbackSearch(question, k, filters) {
+  const entries = await vectorSearch.loadEmbeddings();
+  if (!Array.isArray(entries) || entries.length === 0) return [];
+  const q = toSparse(question);
+  const filt = new Set(filters || []);
+  const scored = [];
+  for (const item of entries) {
+    const sv = item.sparseVector || toSparse(item.text || "");
+    const base = cosineSparse(q, sv);
+    const tagBonus = Array.isArray(item.tags) && item.tags.some((t) => filt.has(t)) ? 0.05 : 0;
+    const exactBonus = typeof item.text === "string" && item.text.toLowerCase().includes(String(question).toLowerCase()) ? 0.05 : 0;
+    const score = base + tagBonus + exactBonus;
+    if (score > 0) {
+      scored.push({ ...item, score });
+    }
+  }
+  return scored.sort((a, b) => b.score - a.score).slice(0, k);
 }
 
 function buildRationale(query, match) {

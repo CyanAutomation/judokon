@@ -159,7 +159,7 @@ function init() {
 try {
   // Expose Test API for testing
   exposeTestAPI();
-  
+
   window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, {
     renderSkeletonStats,
     clearSkeletonStats,

@@ -61,42 +61,78 @@ Next
 
 ## Phase 2 – Deterministic Model Provisioning (Planned)
 
-Planned actions
+Actions Taken
 
-- Add `scripts/prepareLocalModel.mjs` that materializes a quantized MiniLM under `models/minilm` using `@xenova/transformers` cache.
-- NPM script: `rag:prepare:models` → `node scripts/prepareLocalModel.mjs`.
-- Workflow option A: commit `models/minilm/**` in embedding PRs (consider LFS and repo size impact).
-- Workflow option B: publish an artifact `models_minilm.tgz` and hydrate via the script.
+- Added `scripts/prepareLocalModel.mjs`:
+  - Supports `--from-dir <path>` to copy required files locally (config.json, tokenizer.json, tokenizer_config.json, onnx/model_quantized.onnx).
+  - Attempts hydration via `@xenova/transformers` when no `--from-dir` is provided (will download when network is available), then validates presence.
+  - Destination aligns with runtime loader: `src/models/minilm`.
+- Added npm script: `rag:prepare:models` → `node scripts/prepareLocalModel.mjs`.
+- Improved CLI hint to reference `src/models/minilm`.
+
+Validation (targeted tests)
+
+- tests/scripts/prepareLocalModel.test.js
+  - copies required files from --from-dir into src/models/minilm → PASS
+  - allows getExtractor to use local model path when present (ensures pipeline called with local path) → PASS
+
+Outcome
+
+- Deterministic local provisioning enabled without requiring network (via --from-dir).
+- Path alignment fixed/documented: runtime expects `src/models/minilm` (not project-root models/).
+- No public API changes; new script and tests only.
 
 Validation
 
-- Add a preflight check to ensure required model files are present and non-empty.
-- Run a small smoke test: `RAG_STRICT_OFFLINE=1 npm run rag:query -- "tooltip guidelines"` returns results.
+- Manual smoke (optional): with model present, `RAG_STRICT_OFFLINE=1 npm run rag:query -- "tooltip guidelines"` should not error (neural path). In strict offline without model, CLI now prints clear remediation.
 
 ---
 
-## Phase 3 – Optional Lexical Fallback (Planned)
+## Phase 3 – Optional Lexical Fallback
 
-Planned actions
+Actions Taken
 
-- Add a flagged fallback: `{ allowLexicalFallback: true }` and/or `RAG_ALLOW_LEXICAL_FALLBACK=1`.
-- Use `offline_rag_metadata.json` sparse vectors to compute a lexical score when the model is unavailable.
-- Preserve provenance; clearly label degraded path via diagnostics.
+- Implemented a flagged fallback in `src/helpers/queryRag.js`:
+  - When the extractor fails and `allowLexicalFallback` option is true or `RAG_ALLOW_LEXICAL_FALLBACK=1`, compute lexical similarity using item `sparseVector`.
+  - Scoring uses cosine over TF sparse vectors plus small bonuses for tag overlap and exact text containment.
+  - Preserves provenance (`contextPath`, `rationale`) and adds `lexicalFallback: true` in diagnostics.
+- Added targeted unit test `tests/queryRag/lexicalFallback.test.js` that:
+  - Forces extractor failure and mocks `loadEmbeddings` to provide deterministic corpus entries with `sparseVector`.
+  - Verifies results are returned in fallback mode and provenance fields exist when requested.
 
 Validation
 
-- Unit tests for normal path (neural) and fallback path (lexical), both with muted console.
+- tests/queryRag/lexicalFallback.test.js → PASS
+- Regression checks (related area) still PASS:
+  - tests/queryRag/queryRag.test.js
+  - tests/queryRag/strictOffline.test.js
+
+Outcome
+
+- Offline resilience improved without changing defaults. Agents in restricted environments can opt in to lexical fallback to avoid hard failures.
+- No unsuppressed console logs in tests; no public API changes (fallback is opt-in via flag/env).
 
 ---
 
-## Phase 4 – Validation/CI Hardening (Planned)
+## Phase 4 – Validation/CI Hardening
 
-Planned actions
+Actions Taken
 
-- Extend `rag:validate` with:
-  - Strict-offline preflight for `models/minilm` presence.
-  - Offline artifact consistency checks.
-- Add a CI smoke test that runs a strict-offline query to ensure non-crashing behavior.
+- Added `scripts/checkRagPreflight.mjs` with two checks:
+  - Strict offline model check: when `RAG_STRICT_OFFLINE=1`, ensure `src/models/minilm` has all required files (non-empty).
+  - Offline artifacts consistency: verify `src/data/offline_rag_metadata.json` and `src/data/offline_rag_vectors.bin` lengths align (vectorLength × count).
+- Wired preflight into `npm run rag:validate` ahead of existing checks.
+- Added focused tests: `tests/scripts/checkRagPreflight.test.js` to validate both success and failure cases via fs mocks.
+
+Validation (targeted tests)
+
+- tests/scripts/checkRagPreflight.test.js → PASS
+
+Outcome
+
+- Fails early when strict-offline mode is requested but the local model is missing, with actionable messages.
+- Detects corrupted/mismatched offline artifacts deterministically.
+- Keeps existing validation flow intact.
 
 ---
 
@@ -105,4 +141,3 @@ Planned actions
 Planned actions
 
 - Update `AGENTS.md` and `README.md` with offline quickstart, environment flags, and provenance examples.
-
