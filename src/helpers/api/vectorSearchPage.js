@@ -126,6 +126,20 @@ export async function getExtractor() {
         });
       }
     } catch (error) {
+      // Provide actionable guidance when network is unavailable
+      const msg = String(error?.message || error);
+      if (/ENET(?:UNREACH|DOWN|RESET|REFUSED)/i.test(msg) || /fetch failed/i.test(msg)) {
+        const help =
+          "Network unreachable while loading remote MiniLM model. " +
+          "Fix: hydrate a local model at src/models/minilm via `npm run rag:prepare:models -- --from-dir <path>` " +
+          "or run with RAG_STRICT_OFFLINE=1 to avoid CDN attempts. " +
+          "Optionally enable degraded search with RAG_ALLOW_LEXICAL_FALLBACK=1.";
+        console.error("Model failed to load (offline)", error);
+        extractor = null;
+        const wrapped = new Error(help);
+        try { wrapped.cause = error; } catch {}
+        throw wrapped;
+      }
       console.error("Model failed to load", error);
       extractor = null;
       throw error;

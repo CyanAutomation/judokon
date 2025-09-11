@@ -20,13 +20,15 @@ import queryRag from "../src/helpers/queryRag.js";
     matches = await queryRag(prompt);
   } catch (err) {
     console.error("RAG query failed:", err);
-    if (
-      String(err?.message || err)
-        .toLowerCase()
-        .includes("strict offline mode")
-    ) {
+    const lowered = String(err?.message || err).toLowerCase();
+    if (lowered.includes("strict offline mode")) {
       console.error(
         "Hint: provide a local MiniLM at src/models/minilm or run: npm run rag:prepare:models"
+      );
+    } else if (/enet(?:unreach|down|reset|refused)/i.test(lowered) || lowered.includes("fetch failed")) {
+      console.error(
+        "Hint: network unreachable. For offline use, run: npm run rag:prepare:models -- --from-dir <path-with-minilm> " +
+          "or set RAG_STRICT_OFFLINE=1 to avoid CDN attempts. Optionally set RAG_ALLOW_LEXICAL_FALLBACK=1 to degrade gracefully."
       );
     }
     process.exit(1);
