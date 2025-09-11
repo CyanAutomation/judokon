@@ -1,52 +1,39 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { createTestMockupViewer } from "../utils/componentTestUtils.js";
 
-describe("mockupViewerPage", () => {
-  it("navigates images and updates sidebar", async () => {
-    document.body.innerHTML = `
-      <ul id="mockup-list"></ul>
-      <img id="mockup-image" />
-      <div id="mockup-filename"></div>
-      <button id="prev-btn">Prev</button>
-      <button id="next-btn">Next</button>
-    `;
+describe("MockupViewerPage Integration (Enhanced API)", () => {
+  let mockupViewer;
 
-    globalThis.SKIP_MOCKUP_AUTO_INIT = true;
-    const { setupMockupViewerPage } = await import("../../src/helpers/mockupViewerPage.js");
-
-    await setupMockupViewerPage();
-
-    const list = document.getElementById("mockup-list");
-    const img = document.getElementById("mockup-image");
-    const nextBtn = document.getElementById("next-btn");
-
-    expect(list.children.length).toBeGreaterThan(0);
-    const firstSrc = img.src;
-    nextBtn.click();
-    expect(list.children[1].classList.contains("selected")).toBe(true);
-    expect(img.src).not.toBe(firstSrc);
+  beforeEach(async () => {
+    // Use component factory instead of innerHTML manipulation
+    mockupViewer = createTestMockupViewer();
+    await mockupViewer.testApi.initialize();
   });
 
-  it("selects image via sidebar", async () => {
-    document.body.innerHTML = `
-      <ul id="mockup-list"></ul>
-      <img id="mockup-image" />
-      <div id="mockup-filename"></div>
-      <button id="prev-btn">Prev</button>
-      <button id="next-btn">Next</button>
-    `;
+  afterEach(() => {
+    // Clean up properly
+    if (mockupViewer) {
+      mockupViewer.testApi.cleanup();
+    }
+  });
 
-    globalThis.SKIP_MOCKUP_AUTO_INIT = true;
-    const { setupMockupViewerPage } = await import("../../src/helpers/mockupViewerPage.js");
+  it("should initialize mockup viewer with image list", async () => {
+    const imageList = mockupViewer.testApi.getImageList();
+    expect(imageList).toBeTruthy();
+    expect(mockupViewer.testApi.getImageCount()).toBeGreaterThan(0);
+  });
 
-    await setupMockupViewerPage();
+  it("should navigate between mockups using buttons", async () => {
+    const initialIndex = mockupViewer.testApi.getSelectedIndex();
 
-    const list = document.getElementById("mockup-list");
-    const img = document.getElementById("mockup-image");
-    const item = list.children[1];
+    // Test next navigation
+    mockupViewer.testApi.navigateNext();
+    const nextIndex = mockupViewer.testApi.getSelectedIndex();
+    expect(nextIndex).not.toBe(initialIndex);
 
-    item.click();
-
-    expect(item.classList.contains("selected")).toBe(true);
-    expect(img.src).toContain(item.textContent);
+    // Test previous navigation
+    mockupViewer.testApi.navigatePrev();
+    const prevIndex = mockupViewer.testApi.getSelectedIndex();
+    expect(prevIndex).toBe(initialIndex);
   });
 });

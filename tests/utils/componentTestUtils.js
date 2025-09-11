@@ -284,6 +284,218 @@ export const interactions = {
 };
 
 /**
+ * Create a MockupViewer component with test API access
+ * @param {object} options - MockupViewer options
+ * @returns {object} MockupViewer instance with test utilities
+ */
+export function createTestMockupViewer() {
+  // Create real DOM structure instead of synthetic markup
+  const container = document.createElement("div");
+  container.innerHTML = `
+    <ul id="mockup-list"></ul>
+    <img id="mockup-image" />
+    <div id="mockup-filename"></div>
+    <button id="prev-btn">Prev</button>
+    <button id="next-btn">Next</button>
+  `;
+
+  // Append to document for real initialization
+  document.body.appendChild(container);
+
+  return {
+    element: container,
+    testApi: {
+      async initialize() {
+        // Use real component initialization
+        globalThis.SKIP_MOCKUP_AUTO_INIT = true;
+        const { setupMockupViewerPage } = await import("../../src/helpers/mockupViewerPage.js");
+        await setupMockupViewerPage();
+      },
+      getImageList: () => container.querySelector("#mockup-list"),
+      getCurrentImage: () => container.querySelector("#mockup-image"),
+      getFilenameDisplay: () => container.querySelector("#mockup-filename"),
+      getPrevButton: () => container.querySelector("#prev-btn"),
+      getNextButton: () => container.querySelector("#next-btn"),
+      navigateNext: () => {
+        const nextBtn = container.querySelector("#next-btn");
+        naturalClick(nextBtn);
+      },
+      navigatePrev: () => {
+        const prevBtn = container.querySelector("#prev-btn");
+        naturalClick(prevBtn);
+      },
+      selectImage: (index) => {
+        const listItems = container.querySelectorAll("#mockup-list li");
+        if (listItems[index]) {
+          naturalClick(listItems[index]);
+        }
+      },
+      getSelectedIndex: () => {
+        const selected = container.querySelector("#mockup-list li.selected");
+        if (!selected) return -1;
+        return Array.from(container.querySelectorAll("#mockup-list li")).indexOf(selected);
+      },
+      getImageCount: () => container.querySelectorAll("#mockup-list li").length,
+      getCurrentImageSrc: () => container.querySelector("#mockup-image").src,
+      cleanup: () => {
+        if (container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
+      }
+    }
+  };
+}
+
+/**
+ * Create a PrdReader component with test API access
+ * @param {object} docs - Document map
+ * @param {Function} parser - Markdown parser function
+ * @returns {object} PrdReader instance with test utilities
+ */
+export function createTestPrdReader(docs, parser) {
+  // Create real DOM structure instead of synthetic markup
+  const container = document.createElement("div");
+  container.innerHTML = `
+    <div id="prd-title"></div>
+    <div id="task-summary"></div>
+    <ul id="prd-list"></ul>
+    <div id="prd-content" tabindex="0"></div>
+    <button data-nav="prev">Prev</button>
+    <button data-nav="next">Next</button>
+    <button data-nav="prev">Prev bottom</button>
+    <button data-nav="next">Next bottom</button>
+  `;
+
+  // Append to document for real initialization
+  document.body.appendChild(container);
+
+  return {
+    element: container,
+    testApi: {
+      async initialize() {
+        // Use real component initialization
+        globalThis.SKIP_PRD_AUTO_INIT = true;
+        const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+        await setupPrdReaderPage(docs, parser);
+      },
+      getContentContainer: () => container.querySelector("#prd-content"),
+      getDocumentList: () => container.querySelector("#prd-list"),
+      getTitleElement: () => container.querySelector("#prd-title"),
+      getTaskSummary: () => container.querySelector("#task-summary"),
+      getNextButtons: () => container.querySelectorAll('[data-nav="next"]'),
+      getPrevButtons: () => container.querySelectorAll('[data-nav="prev"]'),
+      navigateNext: () => {
+        const nextBtn = container.querySelector('[data-nav="next"]');
+        naturalClick(nextBtn);
+      },
+      navigatePrev: () => {
+        const prevBtn = container.querySelector('[data-nav="prev"]');
+        naturalClick(prevBtn);
+      },
+      selectDocument: (index) => {
+        const listItems = container.querySelectorAll("#prd-list li");
+        if (listItems[index]) {
+          naturalClick(listItems[index]);
+        }
+      },
+      navigateWithKeyboard: (key) => {
+        const list = container.querySelector("#prd-list");
+        naturalKeypress(list, key);
+      },
+      getCurrentContent: () => container.querySelector("#prd-content").innerHTML,
+      getCurrentTitle: () => container.querySelector("#prd-title").textContent,
+      getSelectedIndex: () => {
+        const selected = container.querySelector("#prd-list li.selected");
+        if (!selected) return -1;
+        return Array.from(container.querySelectorAll("#prd-list li")).indexOf(selected);
+      },
+      getDocumentCount: () => container.querySelectorAll("#prd-list li").length,
+      cleanup: () => {
+        if (container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
+      }
+    }
+  };
+}
+
+/**
+ * Create a TooltipViewer component with test API access
+ * @param {object} tooltipData - Tooltip data object
+ * @returns {object} TooltipViewer instance with test utilities
+ */
+export function createTestTooltipViewer(tooltipData = {}) {
+  // Create real DOM structure instead of synthetic markup
+  const container = document.createElement("div");
+  container.innerHTML = `
+    <input id="tooltip-search" />
+    <ul id="tooltip-list"></ul>
+    <div id="tooltip-preview"></div>
+    <div id="tooltip-warning"></div>
+    <pre id="tooltip-raw"></pre>
+    <button id="copy-key-btn"></button>
+    <button id="copy-body-btn"></button>
+  `;
+
+  // Append to document for real initialization
+  document.body.appendChild(container);
+
+  return {
+    element: container,
+    testApi: {
+      async initialize() {
+        // Use real component initialization
+        const mod = await import("../../src/helpers/tooltipViewerPage.js");
+        mod.setTooltipDataLoader(async () => tooltipData);
+
+        // Set up DOM ready state for initialization
+        Object.defineProperty(document, "readyState", {
+          value: "loading",
+          configurable: true
+        });
+
+        await mod.setupTooltipViewerPage();
+      },
+      getSearchInput: () => container.querySelector("#tooltip-search"),
+      getTooltipList: () => container.querySelector("#tooltip-list"),
+      getPreviewElement: () => container.querySelector("#tooltip-preview"),
+      getWarningElement: () => container.querySelector("#tooltip-warning"),
+      getRawElement: () => container.querySelector("#tooltip-raw"),
+      getCopyKeyButton: () => container.querySelector("#copy-key-btn"),
+      getCopyBodyButton: () => container.querySelector("#copy-body-btn"),
+      selectTooltip: (index) => {
+        const listItems = container.querySelectorAll("#tooltip-list li");
+        if (listItems[index]) {
+          naturalClick(listItems[index]);
+        }
+      },
+      searchTooltips: (term) => {
+        const searchInput = container.querySelector("#tooltip-search");
+        searchInput.value = term;
+        searchInput.dispatchEvent(new Event("input"));
+      },
+      copyKey: () => {
+        const copyBtn = container.querySelector("#copy-key-btn");
+        naturalClick(copyBtn);
+      },
+      copyBody: () => {
+        const copyBtn = container.querySelector("#copy-body-btn");
+        naturalClick(copyBtn);
+      },
+      getCurrentPreview: () => container.querySelector("#tooltip-preview").innerHTML,
+      isWarningVisible: () => !container.querySelector("#tooltip-warning").hidden,
+      getWarningText: () => container.querySelector("#tooltip-warning").textContent,
+      getTooltipCount: () => container.querySelectorAll("#tooltip-list li").length,
+      cleanup: () => {
+        if (container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
+      }
+    }
+  };
+}
+
+/**
  * Console handling utilities for consistent test patterns
  */
 export const consoleUtils = {

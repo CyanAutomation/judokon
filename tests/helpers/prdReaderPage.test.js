@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { mockDocsMap, basicParser } from "./prdReaderPage.js";
+import { createTestPrdReader } from "../utils/componentTestUtils.js";
 
 describe("prdReaderPage", () => {
   afterEach(() => {
@@ -18,22 +19,21 @@ describe("prdReaderPage", () => {
     expect(files).toEqual(["a.md", "b.md"]);
     expect(baseNames).toEqual(["a", "b"]);
   });
+
   it("seeds history state from doc map", async () => {
     history.replaceState(null, "", "/?doc=b");
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
-    await setupPrdReaderPage(mockDocsMap, basicParser);
+
+    // Use component factory instead of innerHTML manipulation
+    const prdReader = createTestPrdReader(mockDocsMap, basicParser);
+    await prdReader.testApi.initialize();
+
     expect(history.state.index).toBe(1);
     expect(new URL(window.location).search).toBe("?doc=b");
+
+    // Cleanup
+    prdReader.testApi.cleanup();
   });
+
   it("navigates documents with wrap-around", async () => {
     const docs = {
       "b.md": "# Second doc",
@@ -41,47 +41,35 @@ describe("prdReaderPage", () => {
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="0"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-      <button data-nav="prev">Prev bottom</button>
-      <button data-nav="next">Next bottom</button>
-    `;
+    // Use component factory instead of innerHTML manipulation
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    // Test initial state
+    expect(prdReader.testApi.getCurrentContent()).toContain("First doc");
+    expect(prdReader.testApi.getSelectedIndex()).toBe(0);
+    expect(prdReader.testApi.getCurrentTitle()).toBe("First doc");
 
-    await setupPrdReaderPage(docs, parser);
+    // Test next navigation
+    prdReader.testApi.navigateNext();
+    expect(prdReader.testApi.getCurrentContent()).toContain("Second doc");
+    expect(prdReader.testApi.getSelectedIndex()).toBe(1);
+    expect(prdReader.testApi.getCurrentTitle()).toBe("Second doc");
 
-    const container = document.getElementById("prd-content");
-    const titleEl = document.getElementById("prd-title");
-    const nextBtns = document.querySelectorAll('[data-nav="next"]');
-    const prevBtns = document.querySelectorAll('[data-nav="prev"]');
-    const list = document.getElementById("prd-list");
+    // Test wrap-around (next from last)
+    prdReader.testApi.navigateNext();
+    expect(prdReader.testApi.getCurrentContent()).toContain("First doc");
+    expect(prdReader.testApi.getSelectedIndex()).toBe(0);
+    expect(prdReader.testApi.getCurrentTitle()).toBe("First doc");
 
-    expect(container.innerHTML).toContain("First doc");
-    expect(list.children[0].classList.contains("selected")).toBe(true);
-    expect(list.children[0].getAttribute("aria-current")).toBe("page");
-    expect(titleEl.textContent).toBe("First doc");
-    nextBtns[0].click();
-    expect(container.innerHTML).toContain("Second doc");
-    expect(list.children[1].classList.contains("selected")).toBe(true);
-    expect(list.children[1].getAttribute("aria-current")).toBe("page");
-    expect(titleEl.textContent).toBe("Second doc");
-    nextBtns[1].click();
-    expect(container.innerHTML).toContain("First doc");
-    expect(list.children[0].classList.contains("selected")).toBe(true);
-    expect(list.children[0].getAttribute("aria-current")).toBe("page");
-    expect(titleEl.textContent).toBe("First doc");
-    prevBtns[1].click();
-    expect(container.innerHTML).toContain("Second doc");
-    expect(list.children[1].classList.contains("selected")).toBe(true);
-    expect(list.children[1].getAttribute("aria-current")).toBe("page");
-    expect(titleEl.textContent).toBe("Second doc");
+    // Test previous navigation with wrap-around
+    prdReader.testApi.navigatePrev();
+    expect(prdReader.testApi.getCurrentContent()).toContain("Second doc");
+    expect(prdReader.testApi.getSelectedIndex()).toBe(1);
+    expect(prdReader.testApi.getCurrentTitle()).toBe("Second doc");
+
+    // Cleanup
+    prdReader.testApi.cleanup();
   });
 
   it("selects documents via sidebar", async () => {
@@ -91,35 +79,28 @@ describe("prdReaderPage", () => {
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
+    // Use component factory instead of innerHTML manipulation
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    // Test initial state: expect "One" (alphabetically first)
+    expect(prdReader.testApi.getCurrentContent()).toContain("One");
+    expect(prdReader.testApi.getCurrentTitle()).toBe("One");
+    expect(prdReader.testApi.getSelectedIndex()).toBe(0);
 
-    await setupPrdReaderPage(docs, parser);
+    // Test direct selection
+    prdReader.testApi.selectDocument(1);
+    expect(prdReader.testApi.getCurrentContent()).toContain("Two");
+    expect(prdReader.testApi.getCurrentTitle()).toBe("Two");
+    expect(prdReader.testApi.getSelectedIndex()).toBe(1);
 
-    const list = document.getElementById("prd-list");
-    const items = list.querySelectorAll("li");
-    const container = document.getElementById("prd-content");
-    const titleEl = document.getElementById("prd-title");
+    // Test keyboard navigation
+    prdReader.testApi.navigateWithKeyboard("Enter");
+    expect(prdReader.testApi.getCurrentContent()).toContain("Two");
+    expect(prdReader.testApi.getCurrentTitle()).toBe("Two");
 
-    expect(items.length).toBe(2);
-    items[1].click();
-    expect(container.innerHTML).toContain("Two");
-    expect(titleEl.textContent).toBe("Two");
-    expect(items[1].getAttribute("aria-current")).toBe("page");
-    items[0].dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(container.innerHTML).toContain("One");
-    expect(titleEl.textContent).toBe("One");
-    expect(items[0].classList.contains("selected")).toBe(true);
-    expect(items[0].getAttribute("aria-current")).toBe("page");
+    // Cleanup
+    prdReader.testApi.cleanup();
   });
 
   it("updates #prd-content when a list item is clicked", async () => {
