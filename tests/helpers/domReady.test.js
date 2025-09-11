@@ -1,7 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { interactions } from "../utils/componentTestUtils.js";
 
 describe("onDomReady (Enhanced Natural Document Lifecycle)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
   it("runs callback immediately when document is ready", async () => {
     // Set document ready state naturally
     interactions.naturalDocumentReady("complete", false);
@@ -27,8 +34,8 @@ describe("onDomReady (Enhanced Natural Document Lifecycle)", () => {
     // Trigger natural document ready
     interactions.naturalDocumentReady("complete", true);
 
-    // Allow the event to process
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Process any pending timers synchronously instead of real delay
+    await vi.runAllTimersAsync();
 
     expect(fn).toHaveBeenCalledTimes(1);
   });

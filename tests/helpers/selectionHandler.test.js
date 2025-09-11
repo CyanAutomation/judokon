@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
   STATS: ["power"],
@@ -54,6 +54,7 @@ describe("handleStatSelection helpers", () => {
   let getBattleState;
 
   beforeEach(async () => {
+    vi.useFakeTimers();
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
     ({ stopTimer } = await import("../../src/helpers/battleEngineFacade.js"));
     ({ emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js"));
@@ -61,6 +62,10 @@ describe("handleStatSelection helpers", () => {
     ({ dispatchBattleEvent } = await import("../../src/helpers/classicBattle/eventDispatcher.js"));
     ({ getBattleState } = await import("../../src/helpers/classicBattle/eventBus.js"));
     getBattleState.mockReturnValue(null);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("ignores repeated selections", async () => {
@@ -96,12 +101,16 @@ describe("handleStatSelection helpers", () => {
   });
 
   it("clears autoSelectId even when feature flag disabled", async () => {
-    const timeout = setTimeout(() => {}, 1000);
-    store.autoSelectId = timeout;
+    // Use fake timer instead of real setTimeout
+    const timeout = vi.fn();
+    const timerId = setTimeout(timeout, 1000);
+    store.autoSelectId = timerId;
+
     await setFlag("autoSelect", false);
     const spy = vi.spyOn(global, "clearTimeout");
     cleanupTimers(store);
-    expect(spy).toHaveBeenCalledWith(timeout);
+
+    expect(spy).toHaveBeenCalledWith(timerId);
     expect(store.autoSelectId).toBeNull();
     spy.mockRestore();
   });
