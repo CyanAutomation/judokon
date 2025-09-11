@@ -35,7 +35,9 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     mockModalReturning(backdrop);
 
     // Mock tooltips to resolve quickly
-    vi.doMock("../../../src/helpers/tooltip.js", () => ({ initTooltips: () => Promise.resolve(() => {}) }));
+    vi.doMock("../../../src/helpers/tooltip.js", () => ({
+      initTooltips: () => Promise.resolve(() => {})
+    }));
 
     const { initRoundSelectModal } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
@@ -64,4 +66,3 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     expect(backdrop.style.getPropertyValue("--modal-inset-top")).toBe("80px");
   });
 });
-

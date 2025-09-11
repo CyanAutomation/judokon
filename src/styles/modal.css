@@ -64,7 +64,9 @@
   background: #1a1a1a;
   border: 1px solid #8cff6b;
   color: #8cff6b;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
 }
 
 .modal-backdrop.classic-modal .modal {
