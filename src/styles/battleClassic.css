@@ -1,0 +1,109 @@
+/* Battle Classic specific styles */
+.battle-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Battle status within header */
+.battle-status-header {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-xs);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  margin: var(--space-xs);
+  box-shadow: var(--shadow-base);
+  text-align: center;
+}
+
+.battle-status-header p {
+  min-height: 1.2em;
+  margin: 0;
+  font-weight: 500;
+  font-size: var(--font-small);
+}
+
+.battle-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+@media (max-width: 720px) {
+  .battle-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: var(--space-lg) 0;
+}
+
+#stat-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+  max-width: 100%;
+}
+
+#stat-buttons button {
+  min-width: var(--touch-target-size);
+  min-height: var(--touch-target-size);
+}
+
+.battle-controls {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-lg);
+}
+
+.battle-controls button {
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .battle-content {
+    padding: var(--space-sm);
+  }
+  
+  .battle-controls {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .battle-controls button {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .battle-status-header {
+    margin: var(--space-xs) 0;
+  }
+}
+
+/* Snackbar positioning for battle page */
+#snackbar-container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--footer-height) + env(safe-area-inset-bottom));
+  padding: var(--space-sm) var(--space-md);
+  z-index: 1000;
+}

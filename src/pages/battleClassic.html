@@ -2,108 +2,95 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="JU-DO-KON! – Classic Battle" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="keywords" content="judo, card game, web game, judoka" />
+    <meta name="author" content="Marc Scheimann" />
+    <meta name="description" content="JU-DO-KON! – Classic Battle Mode" />
+    <meta property="og:title" content="JU-DO-KON! – Classic Battle" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cyanautomation.github.io/judokon/" />
+    <meta property="og:description" content="JU-DO-KON! – Classic Battle Mode" />
+    <meta name="theme-color" content="#ffffff" />
     <title>JU-DO-KON! – Classic Battle</title>
+    
+    <!-- Import design system CSS files -->
+    <link rel="stylesheet" href="../styles/fonts.css" />
+    <link rel="stylesheet" href="../styles/base.css" />
+    <link rel="stylesheet" href="../styles/layout.css" />
     <link rel="stylesheet" href="../styles/components.css" />
-    <style>
-      :root {
-        color-scheme: light dark;
-      }
-      body {
-        margin: 0;
-        font-family:
-          system-ui,
-          -apple-system,
-          Segoe UI,
-          Roboto,
-          Ubuntu,
-          Cantarell,
-          Noto Sans,
-          Arial,
-          "Apple Color Emoji",
-          "Segoe UI Emoji";
-      }
-      header {
-        padding: 12px 16px;
-        border-bottom: 1px solid #ccc;
-        display: grid;
-        gap: 6px;
-      }
-      /* Reserve visible space for scoreboard rows even when empty */
-      header p {
-        min-height: 1.2em;
-        margin: 0;
-      }
-      main {
-        padding: 12px 16px;
-        display: grid;
-        gap: 16px;
-      }
-      .battle-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-      @media (max-width: 720px) {
-        .battle-layout {
-          grid-template-columns: 1fr;
-        }
-      }
-      #stat-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-      #stat-buttons button {
-        min-width: 44px;
-        min-height: 44px;
-      }
-      .controls {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      #snackbar-container {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        padding: 8px 12px;
-      }
-    </style>
+    <link rel="stylesheet" href="../styles/utilities.css" />
+    <link rel="stylesheet" href="../styles/battleClassic.css" />
+    <link rel="icon" type="image/png" href="../assets/images/favicon.ico" />
   </head>
+
   <body>
-    <!-- Persistent snackbar container placed before scripts to prevent duplicate IDs during early messages. -->
-    <div id="snackbar-container" aria-live="polite" aria-atomic="true"></div>
+    <div class="home-screen">
+      <!-- Header with logo and battle status like other pages -->
+      <header class="header">
+        <div class="header-spacer left"></div>
+        <div class="logo-container">
+          <a href="../../index.html" data-testid="home-link">
+            <img src="../assets/images/judokonLogoSmall.png" alt="JU-DO-KON! Logo" class="logo" />
+          </a>
+        </div>
+        <div class="header-spacer right"></div>
+        
+        <!-- Battle status elements within header for backward compatibility -->
+        <div class="battle-status-header">
+          <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
+          <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
+          <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
+          <p id="score-display" aria-live="polite" aria-atomic="true">You: 0 Opponent: 0</p>
+          <span id="battle-state-badge" hidden></span>
+        </div>
+      </header>
 
-    <header role="banner">
-      <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
-      <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
-      <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
-      <p id="score-display" aria-live="polite" aria-atomic="true">You: 0 Opponent: 0</p>
-      <span id="battle-state-badge" hidden></span>
-    </header>
+      <!-- Battle content area -->
+      <main class="battle-content">
+        <!-- Debug panel placeholder -->
+        <div id="debug-panel" class="hidden"></div>
 
-    <!-- Debug panel placeholder (replaced when enabled) -->
-    <div id="debug-panel" class="hidden"></div>
+        <!-- Battle cards section -->
+        <section class="battle-layout" aria-label="Cards">
+          <div id="player-card" aria-label="Your card"></div>
+          <div id="opponent-card" aria-label="Opponent card"></div>
+        </section>
 
-    <main role="main" id="battle-area">
-      <section class="battle-layout" aria-label="Cards">
-        <div id="player-card" aria-label="Your card"></div>
-        <div id="opponent-card" aria-label="Opponent card"></div>
-      </section>
+        <!-- Stat selection section -->
+        <section class="stat-selection" aria-label="Choose a stat">
+          <div id="stat-buttons" data-buttons-ready="false"></div>
+        </section>
 
-      <section aria-label="Choose a stat">
-        <div id="stat-buttons" data-buttons-ready="false"></div>
-      </section>
+        <!-- Controls section -->
+        <section class="battle-controls" aria-label="Round controls">
+          <button id="next-button" data-role="next-round" disabled>Next</button>
+          <button id="replay-button" data-role="replay">Replay</button>
+          <button id="quit-button" data-role="quit">Quit</button>
+        </section>
+      </main>
 
-      <section class="controls" aria-label="Round controls">
-        <button id="next-button" data-role="next-round" disabled>Next</button>
-        <button id="replay-button" data-role="replay">Replay</button>
-        <button id="quit-button" data-role="quit">Quit</button>
-      </section>
-    </main>
-    <script type="module" src="./battleClassic.init.js"></script>
+      <!-- Footer navigation like other pages -->
+      <footer>
+        <nav class="bottom-navbar" data-testid="bottom-nav">
+          <ul>
+            <li><a href="./battleJudoka.html" data-testid="nav-1">Classic Battle</a></li>
+            <li><a href="./browseJudoka.html" data-testid="nav-7">Browse Judoka</a></li>
+            <li><a href="./updateJudoka.html" data-testid="nav-9">Update Judoka</a></li>
+            <li><a href="./meditation.html" data-testid="nav-11">Meditation</a></li>
+            <li><a href="./randomJudoka.html" data-testid="nav-12">Random Judoka</a></li>
+            <li><a href="./settings.html" data-testid="nav-13">Settings</a></li>
+          </ul>
+        </nav>
+      </footer>
+
+      <!-- Scripts -->
+      <script type="module" src="../helpers/setupBottomNavbar.js"></script>
+      <script type="module" src="../helpers/setupDisplaySettings.js"></script>
+      <script type="module" src="../helpers/setupSvgFallback.js"></script>
+      <script type="module" src="./battleClassic.init.js"></script>
+    </div>
+    
+    <!-- Snackbar container -->
+    <div id="snackbar-container" role="status" aria-live="polite"></div>
   </body>
 </html>
