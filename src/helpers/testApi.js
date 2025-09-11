@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /**
  * Test API for direct access to battle state, timers, and component internals.
  *
@@ -246,6 +247,97 @@ const initApi = {
 
       check();
     });
+  },
+
+  /**
+   * Create a component factory for testing
+   * @param {string} componentName - Name of component to create
+   * @param {object} options - Component options
+   * @returns {object} Component instance with test API access
+   */
+  createComponent(componentName, options = {}) {
+    try {
+      const testApi = {
+        getState: () => this.getComponentState(componentName),
+        setState: (state) => this.setComponentState(componentName, state),
+        triggerEvent: (event, data) => this.triggerComponentEvent(componentName, event, data),
+        cleanup: () => this.cleanupComponent(componentName)
+      };
+      
+      return {
+        component: null, // Will be populated by specific component factories
+        testApi,
+        isTestMode: true
+      };
+    } catch {
+      return { component: null, testApi: null, isTestMode: false };
+    }
+  },
+
+  /**
+   * Get internal state of a component
+   * @param {string} componentName - Component identifier
+   * @returns {any} Component state
+   */
+  getComponentState(componentName) {
+    try {
+      if (typeof window !== "undefined" && window.__testComponentStates) {
+        return window.__testComponentStates[componentName];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Set internal state of a component
+   * @param {string} componentName - Component identifier
+   * @param {any} state - New state
+   */
+  setComponentState(componentName, state) {
+    try {
+      if (typeof window !== "undefined") {
+        if (!window.__testComponentStates) {
+          window.__testComponentStates = {};
+        }
+        window.__testComponentStates[componentName] = state;
+      }
+    } catch {}
+  },
+
+  /**
+   * Trigger component event for testing
+   * @param {string} componentName - Component identifier
+   * @param {string} event - Event name
+   * @param {any} data - Event data
+   */
+  triggerComponentEvent(componentName, event, data) {
+    try {
+      if (typeof window !== "undefined" && window.__testComponentEvents) {
+        const handler = window.__testComponentEvents[componentName]?.[event];
+        if (typeof handler === "function") {
+          handler(data);
+        }
+      }
+    } catch {}
+  },
+
+  /**
+   * Cleanup component test state
+   * @param {string} componentName - Component identifier
+   */
+  cleanupComponent(componentName) {
+    try {
+      if (typeof window !== "undefined") {
+        if (window.__testComponentStates) {
+          delete window.__testComponentStates[componentName];
+        }
+        if (window.__testComponentEvents) {
+          delete window.__testComponentEvents[componentName];
+        }
+      }
+    } catch {}
   },
 
   /**

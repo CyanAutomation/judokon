@@ -1,0 +1,2961 @@
+{
+  "summary": {
+    "totalFiles": 276,
+    "filesWithRawSpying": 46,
+    "filesWithProperMuting": 16,
+    "rawSpyingInstances": 90,
+    "properMutingInstances": 32
+  },
+  "fileDetails": [
+    {
+      "file": "tests/vectorSearch/vectorSearchHelpers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/utils/deepMerge.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/utils/debounce.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/utils/countryCodes.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/styles/touchTargets.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/styles/battleContrast.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/styles/battleCLI.focusContrast.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/scripts/prepareLocalModel.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/scripts/generateEmbeddings.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/scripts/evaluateRAG.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/scripts/collectTestStats.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/scripts/checkRagPreflight.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/queryRag/strictOffline.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 1,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/queryRag/queryRag.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/queryRag/lexicalFallback.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 1,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.verboseWinTarget.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.verboseToggle.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.verboseFlag.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.verbose.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 1,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.selectedStat.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.seedValidation.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.seed.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.scoreboard.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.roundHeader.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.retroTheme.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.pointsToWin.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.pointsToWin.startOnce.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.onKeyDown.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.invalidNumber.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.init.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.helpers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.handlers.test.js",
+      "rawSpying": [
+        {
+          "method": "info",
+          "line": 329
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.countdown.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.cliShortcutsFlag.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.a11y.smoke.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/pages/battleCLI.a11y.focus.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/integration/manualDomComparison.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/integration/battleClassic.integration.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/visibilityTimer.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/viewTransitionTheme.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearchQuery.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearchIndex.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearch.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 1
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearch.loader.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 55
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 1
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearch.context.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/updateCodes.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 1,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/uiHelpers.resetBattleUI.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/uiHelpers.collectDebugState.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/typewriter.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/tooltipViewerPage.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 209
+        },
+        {
+          "method": "error",
+          "line": 225
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/tooltip.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 40
+        },
+        {
+          "method": "warn",
+          "line": 64
+        },
+        {
+          "method": "warn",
+          "line": 312
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/toggleSwitch.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/timerUtils.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/timerService.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/timerService.ordering.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/timerService.onNextButtonClick.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 24
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/timerService.cooldownGuard.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 41
+        },
+        {
+          "method": "warn",
+          "line": 53
+        },
+        {
+          "method": "warn",
+          "line": 64
+        },
+        {
+          "method": "warn",
+          "line": 77
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/timerService.autoSelectDisabled.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/timerService.autoSelect.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/testModeUtils.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/syncDisplayMode.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 2,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/swipeNavigation.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/svgFallback.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/stats.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/showSnackbar.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/showSettingsError.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 25
+        },
+        {
+          "method": "error",
+          "line": 49
+        },
+        {
+          "method": "error",
+          "line": 57
+        }
+      ],
+      "properMuting": {
+        "withMuted": 3,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/setupScoreboard.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/setupCarouselToggle.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 70
+        },
+        {
+          "method": "error",
+          "line": 96
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/setupBottomNavbar.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/settingsUtils.test.js",
+      "rawSpying": [
+        {
+          "method": "debug",
+          "line": 124
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/settingsStorage.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/settingsPage.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 236
+        },
+        {
+          "method": "error",
+          "line": 265
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/settingsFormUtils.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/settingsCache.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/selectionHandler.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/scrollMarkers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/scrollButtonState.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/scoreboard.readiness.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/scoreboard.integration.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/scoreboard.adapter.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/roundResolver.resolveRound.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/renderGameModes.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 2,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/renderFeatureFlags.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 2,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/randomJudokaPage.historyPanel.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/randomJudokaPage.featureFlags.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/randomJudokaPage.drawButton.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 1,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/randomCard.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 6,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/quoteBuilder.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 53
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/pseudoJapanese.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/prdTaskStats.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/prdReaderPage.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/populateCountryList.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 146
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/parseTooltipText.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/orientation.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/orchestratorHandlers.roundDecisionEnter.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/orchestratorHandlers.map.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/orchestratorHandlers.helpers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/orchestratorHandlers.computeOutcome.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/orchestrator.stateChange.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/navigationTooltips.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/navigationCache.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 41
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/navMenuResponsive.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/motionUtils.test.js",
+      "rawSpying": [
+        {
+          "method": "debug",
+          "line": 47
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/modalManager.stack.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/modalManager.callbacks.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 1,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/modalComponent.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/mockupViewerPage.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/meditationContrast.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/markdownToHtml.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/layoutDebugPanel.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/keyboardNavigation.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/judokaValidation.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/judokaCard.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 61
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/helpers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/headlessMode.timing.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 27
+        },
+        {
+          "method": "error",
+          "line": 28
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/handleKeyboardNavigation.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/gameRandom.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/gameModeUtils.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 19
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/focusHandlers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/featureFlags.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/errorUtils.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 7
+        },
+        {
+          "method": "error",
+          "line": 20
+        },
+        {
+          "method": "error",
+          "line": 39
+        },
+        {
+          "method": "error",
+          "line": 52
+        },
+        {
+          "method": "error",
+          "line": 65
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/domReady.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/displayMode.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 30
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/debugClassToggles.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/dataUtils.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 51
+        },
+        {
+          "method": "error",
+          "line": 63
+        },
+        {
+          "method": "error",
+          "line": 136
+        },
+        {
+          "method": "error",
+          "line": 156
+        },
+        {
+          "method": "error",
+          "line": 164
+        },
+        {
+          "method": "error",
+          "line": 175
+        },
+        {
+          "method": "error",
+          "line": 184
+        },
+        {
+          "method": "error",
+          "line": 272
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/createInspectorPanel.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/createCountdownTimer.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/countrySlider.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/coreUtils.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/colorContrast.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattlePage.syncScoreDisplay.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattleBindings.idempotent.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/changeLogPage.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/carouselController.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 73
+        },
+        {
+          "method": "error",
+          "line": 74
+        },
+        {
+          "method": "warn",
+          "line": 149
+        },
+        {
+          "method": "error",
+          "line": 150
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/carouselBuilder.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 2,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/cardUtils.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 22
+        },
+        {
+          "method": "error",
+          "line": 29
+        },
+        {
+          "method": "error",
+          "line": 36
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/cardComponent.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/cardCode.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/cardBuilder.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/buttonEffects.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/buttonComponent.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/buildMenu.ssr.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/browseJudokaPage.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 229
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/bottomNavigation.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleStateIndicator.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleScoreboard.waiting.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleScoreboard.ordering.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleScoreboard.dom-contract.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleScoreboard.authority.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleScoreboard.adapter.prd.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleHeaderEllipsis.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngineTimer.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngineFacade.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngine.pointsToWin.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/autoSelectStat.min.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/appendCards.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/addHoverZoomMarkers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/TimerController.drift.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/CooldownRenderer.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/BattleEngine.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/examples/testArchitectureDemo.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/data/tooltipsEntries.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/data/schemaValidation.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/data/aesopsMetaCrossCheck.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/config/loadSettings.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 75
+        },
+        {
+          "method": "warn",
+          "line": 113
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 2
+      }
+    },
+    {
+      "file": "tests/config/dataDir.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/components/StatsPanel.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/components/SidebarList.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/components/ScoreboardView.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/components/ScoreboardModel.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/components/Scoreboard.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/components/Scoreboard.idempotency.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/components/Scoreboard.a11y.liveRegions.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/components/PlayerInfo.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/timer.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/stat-buttons.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/round-select.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/resolution.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/replay.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/quit-flow.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/page-scaffold.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/opponent-message-handler.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/opponent-message-handler.simplified.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/opponent-message-handler.improved.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/end-modal.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/debug-gating.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/cooldown.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/bootstrap.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/classicBattle/autoSelectHandlers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/carousel/metrics.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/judokaZeroId.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/judokaCardWeightClass.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/judokaCardSignatureMove.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/judokaCardInspector.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 28
+        },
+        {
+          "method": "error",
+          "line": 37
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/judokaCardHtmlFallback.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 5,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/judokaCardFlip.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/judokaCardAccessibility.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/epicCardBadge.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/cardTopBar.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/card/cardBuilder.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearchPage/tagFilter.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearchPage/selectTopMatches.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearchPage/rendering.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearchPage/queryBuilding.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearchPage/errorHandling.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 10
+        },
+        {
+          "method": "error",
+          "line": 28
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearchPage/buildQueryVector.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/vectorSearch/loader.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/timers/createRoundTimer.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/waitingForPlayerAction.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/view.initHelpers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/uiHelpers.missingElements.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 14
+        },
+        {
+          "method": "warn",
+          "line": 27
+        },
+        {
+          "method": "warn",
+          "line": 53
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/timerStateExposure.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/timerService.nextRound.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 170
+        },
+        {
+          "method": "warn",
+          "line": 212
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/timerService.drift.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/stateTransitions.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/statSelectionTiming.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/statSelection.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/statDoubleClick.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 35
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/stallRecovery.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/selectionHandler.resolve.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/scheduleNextRound.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 128
+        },
+        {
+          "method": "warn",
+          "line": 129
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/scheduleNextRound.fallback.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 13
+        },
+        {
+          "method": "warn",
+          "line": 14
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundUI.handlers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundStartError.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundSelectModal.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 95
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundResolverOnce.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 42
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundResolver.resolveRound.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundResolved.statButton.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 51
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundReset.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundDecisionGuard.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/resolveSelectionIfPresent.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/rebindEngineEvents.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/race.statSelected.startup.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/quitModal.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/playerChoiceReset.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/pauseTimer.test.js",
+      "rawSpying": [
+        {
+          "method": "log",
+          "line": 32
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/orchestrator.init.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/orchestrator.events.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/opponentDelay.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/onTransition.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/onTransition.helpers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/nextButton.manualClick.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/nextButton.countdownFinished.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 25
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/nextButton.cooldown.fallback.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/matchEnd.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/interruptRoundEnter.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/interruptHandlers.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/interruptFlow.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/initStartCooldown.event.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/initInterRoundCooldown.event.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/idleCallback.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/handleStatSelection.machine.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/eventSystemIntegration.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 104
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/eventMigrationValidation.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 40
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/eventAliases.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 97
+        },
+        {
+          "method": "warn",
+          "line": 155
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/drawNextRound.test.js",
+      "rawSpying": [
+        {
+          "method": "warn",
+          "line": 35
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/difficulty.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/debugPanel.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/debugLogger.test.js",
+      "rawSpying": [
+        {
+          "method": "log",
+          "line": 231
+        },
+        {
+          "method": "error",
+          "line": 284
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/debugIntegration.test.js",
+      "rawSpying": [
+        {
+          "method": "log",
+          "line": 23
+        },
+        {
+          "method": "warn",
+          "line": 24
+        },
+        {
+          "method": "error",
+          "line": 25
+        },
+        {
+          "method": "info",
+          "line": 26
+        },
+        {
+          "method": "debug",
+          "line": 27
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/debugCopy.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/countdownReset.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 29
+        },
+        {
+          "method": "warn",
+          "line": 30
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 18
+        },
+        {
+          "method": "warn",
+          "line": 19
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 18
+        },
+        {
+          "method": "warn",
+          "line": 19
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/controller.startRound.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/controlState.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/classicBattle/cardSelection.test.js",
+      "rawSpying": [
+        {
+          "method": "error",
+          "line": 182
+        }
+      ],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngine/pauseResumeTimer.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngine/outcome.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngine/multipleInstances.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngine/interrupts.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngine/events.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    },
+    {
+      "file": "tests/helpers/battleEngine/config.test.js",
+      "rawSpying": [],
+      "properMuting": {
+        "withMuted": 0,
+        "withAllowed": 0
+      }
+    }
+  ],
+  "migrationCandidates": [
+    {
+      "file": "tests/helpers/dataUtils.test.js",
+      "instances": 8,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/errorUtils.test.js",
+      "instances": 5,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/debugIntegration.test.js",
+      "instances": 5,
+      "methods": [
+        "log",
+        "warn",
+        "error",
+        "info",
+        "debug"
+      ]
+    },
+    {
+      "file": "tests/helpers/timerService.cooldownGuard.test.js",
+      "instances": 4,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/carouselController.test.js",
+      "instances": 4,
+      "methods": [
+        "warn",
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/tooltip.test.js",
+      "instances": 3,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/showSettingsError.test.js",
+      "instances": 3,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/cardUtils.test.js",
+      "instances": 3,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/uiHelpers.missingElements.test.js",
+      "instances": 3,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/tooltipViewerPage.test.js",
+      "instances": 2,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/setupCarouselToggle.test.js",
+      "instances": 2,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/settingsPage.test.js",
+      "instances": 2,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/headlessMode.timing.test.js",
+      "instances": 2,
+      "methods": [
+        "warn",
+        "error"
+      ]
+    },
+    {
+      "file": "tests/config/loadSettings.test.js",
+      "instances": 2,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/card/judokaCardInspector.test.js",
+      "instances": 2,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/vectorSearchPage/errorHandling.test.js",
+      "instances": 2,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/timerService.nextRound.test.js",
+      "instances": 2,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/scheduleNextRound.test.js",
+      "instances": 2,
+      "methods": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/scheduleNextRound.fallback.test.js",
+      "instances": 2,
+      "methods": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/eventAliases.test.js",
+      "instances": 2,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/debugLogger.test.js",
+      "instances": 2,
+      "methods": [
+        "log",
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/cooldownEnter.zeroDuration.test.js",
+      "instances": 2,
+      "methods": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js",
+      "instances": 2,
+      "methods": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/cooldown.skipHandlerReady.test.js",
+      "instances": 2,
+      "methods": [
+        "error",
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/pages/battleCLI.handlers.test.js",
+      "instances": 1,
+      "methods": [
+        "info"
+      ]
+    },
+    {
+      "file": "tests/helpers/vectorSearch.loader.test.js",
+      "instances": 1,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/timerService.onNextButtonClick.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/settingsUtils.test.js",
+      "instances": 1,
+      "methods": [
+        "debug"
+      ]
+    },
+    {
+      "file": "tests/helpers/quoteBuilder.test.js",
+      "instances": 1,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/populateCountryList.test.js",
+      "instances": 1,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/navigationCache.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/motionUtils.test.js",
+      "instances": 1,
+      "methods": [
+        "debug"
+      ]
+    },
+    {
+      "file": "tests/helpers/judokaCard.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/gameModeUtils.test.js",
+      "instances": 1,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/displayMode.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/browseJudokaPage.test.js",
+      "instances": 1,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/statDoubleClick.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundSelectModal.test.js",
+      "instances": 1,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundResolverOnce.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/roundResolved.statButton.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/pauseTimer.test.js",
+      "instances": 1,
+      "methods": [
+        "log"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/nextButton.countdownFinished.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/eventSystemIntegration.test.js",
+      "instances": 1,
+      "methods": [
+        "error"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/eventMigrationValidation.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/drawNextRound.test.js",
+      "instances": 1,
+      "methods": [
+        "warn"
+      ]
+    },
+    {
+      "file": "tests/helpers/classicBattle/cardSelection.test.js",
+      "instances": 1,
+      "methods": [
+        "error"
+      ]
+    }
+  ]
+}
