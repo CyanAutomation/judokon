@@ -365,7 +365,7 @@ function showLoadSettingsError() {
 
 onDomReady(initializeSettingsPage);
 /**
- * Re-export the game-mode toggle handler used by the Settings UI.
+ * @summary Re-export the game-mode toggle handler used by the Settings UI.
  *
  * @description
  * The implementation lives in `./settings/gameModeSwitches.js`. Re-exporting it
