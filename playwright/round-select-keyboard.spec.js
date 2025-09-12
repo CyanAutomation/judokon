@@ -2,13 +2,18 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Round Select Modal - Keyboard Navigation", () => {
   test.beforeEach(async ({ page }) => {
-    // Clear localStorage and enable the round select modal to show in tests
+    // Clear localStorage to force the round select modal to appear
     await page.addInitScript(() => {
       localStorage.clear();
+      // Ensure the modal shows in test environment
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
+      // Prevent auto-start conditions
+      delete window.location.search;
+      // Disable test mode that would skip modal
+      window.__TEST_MODE_ENABLED = false;
     });
-    
-    await page.goto("/battleCLI.html");
+
+    await page.goto("/src/pages/battleCLI.html");
     await page.waitForSelector(".modal-backdrop", { state: "visible", timeout: 10000 });
   });
 
@@ -20,11 +25,11 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
 
   test("should select Quick with number key 1", async ({ page }) => {
     await page.keyboard.press("1");
-    
+
     // Wait for the modal to close and stats to appear
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
-    
+
     // Check that Quick mode was selected (5 points to win)
     const header = page.locator("#cli-header");
     await expect(header).toContainText("Target: 5");
@@ -32,11 +37,11 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
 
   test("should select Medium with number key 2", async ({ page }) => {
     await page.keyboard.press("2");
-    
+
     // Wait for the modal to close and stats to appear
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
-    
+
     // Check that Medium mode was selected (10 points to win)
     const header = page.locator("#cli-header");
     await expect(header).toContainText("Target: 10");
@@ -44,11 +49,11 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
 
   test("should select Long with number key 3", async ({ page }) => {
     await page.keyboard.press("3");
-    
+
     // Wait for the modal to close and stats to appear
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
-    
+
     // Check that Long mode was selected (15 points to win)
     const header = page.locator("#cli-header");
     await expect(header).toContainText("Target: 15");
@@ -81,11 +86,11 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
 
     // Press Enter to select Long
     await page.keyboard.press("Enter");
-    
+
     // Wait for the modal to close and stats to appear
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
-    
+
     // Check that Long mode was selected (15 points to win)
     const header = page.locator("#cli-header");
     await expect(header).toContainText("Target: 15");
