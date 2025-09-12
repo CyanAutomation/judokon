@@ -179,7 +179,7 @@ function renderStatButtons(store) {
             nextBtn.disabled = false;
             nextBtn.setAttribute("data-next-ready", "true");
           }
-
+          startCooldown(store);
           return;
         }
 
