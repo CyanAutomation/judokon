@@ -30,8 +30,6 @@ npm run test:style
 
 ## Playwright Testing
 
-Playwright specs default to a 1920×1080 desktop viewport. Use per-test viewport overrides to cover mobile or other sizes.
-
 ### Stable Readiness Patterns
 
 **Preferred readiness waits:**

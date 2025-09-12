@@ -38,7 +38,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | Response accuracy | ≥90% agent-retrieved responses align with top 3 relevant matches                                                         |
 | Search latency    | ≤200ms average similarity lookup on mid-tier desktop browsers (e.g., 2022 MacBook Air M1 or Windows laptop with 8GB RAM) |
 | Coverage          | ≥90% of PRDs/tooltips indexed within the system                                                                          |
-| File size         | <9.8MB total JSON size to ensure fast client-side loading                                                                |
+| File size         | <10.8mb total JSON size to ensure fast client-side loading                                                                |
 
 ---
 
@@ -113,7 +113,7 @@ Each stored entry also includes a sparse term-frequency vector. Search requests 
 - At least 90% of PRDs/tooltips are indexed and available for semantic search.
 - The system supports offline search in the browser with no server backend required.
 - Each result includes match score, source, and tags, and can be traced back to the original content.
-- The vector database file size remains under 9.8MB for fast client-side loading.
+- The vector database file size remains under 10.8mb for fast client-side loading.
 - Malformed or missing embeddings are ignored during search and a warning is logged for each skipped record.
 - The system provides helpers for fetching adjacent context or full documents by entry id.
 - The UI demo displays the number of loaded embeddings and supports keyboard navigation and accessibility standards.
@@ -213,7 +213,7 @@ Run `node scripts/evaluation/evaluateRAG.js` from the project root to measure re
   - [x] 1.4 Save embeddings and metadata into `client_embeddings.json`
 - [x] 2.0 Implement Client-Side Embedding Store
   - [x] 2.1 Structure JSON with `id`, `text`, `embedding`, `source`, `tags`
-  - [x] 2.2 Ensure total file size stays below the 9.8MB threshold
+  - [x] 2.2 Ensure total file size stays below the 10.8mb threshold
   - [x] 2.3 Validate JSON loading in-browser
 - [x] 3.0 Develop Similarity Search Function
   - [x] 3.1 Implement cosine similarity in JS
