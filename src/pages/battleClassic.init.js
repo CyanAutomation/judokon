@@ -179,6 +179,13 @@ function renderStatButtons(store) {
             nextBtn.disabled = false;
             nextBtn.setAttribute("data-next-ready", "true");
           }
+          if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
+            try {
+              window.__battleClassicStopSelectionTimer();
+            } catch (err) {
+              console.debug("battleClassic: cancel selection timer failed", err);
+            }
+          }
           startCooldown(store);
           return;
         }
