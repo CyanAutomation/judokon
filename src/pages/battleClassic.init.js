@@ -236,17 +236,21 @@ async function beginSelectionTimer(store) {
           console.debug("battleClassic: onTick DOM update failed", err);
         }
       },
-      onExpired: () => {
+      onExpired: async () => {
         try {
           document.body.dataset.autoSelected = document.body.dataset.autoSelected || "auto";
         } catch (err) {
           console.debug("battleClassic: set autoSelected failed", err);
         }
         try {
-          computeRoundResult(store, "speed", 5, 3);
-          startCooldown(store);
+          await computeRoundResult(store, "speed", 5, 3);
         } catch (err) {
           console.debug("battleClassic: computeRoundResult (vitest) failed", err);
+        }
+        try {
+          startCooldown(store);
+        } catch (err) {
+          console.debug("battleClassic: startCooldown (vitest) failed", err);
         }
       },
       pauseOnHidden: false
