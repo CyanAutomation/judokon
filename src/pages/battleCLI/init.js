@@ -1158,10 +1158,10 @@ export async function renderStatList(judoka) {
       for (const key of Object.keys(statDisplayNames)) delete statDisplayNames[key];
       const rows = buildStatRows(stats, judoka);
       rows.forEach((row) => list.appendChild(row));
-      
+
       // Mark as not skeleton after adding real content to prevent clearSkeletonStats from clearing it
       list.dataset.skeleton = "false";
-      
+
       if (rows.length) setActiveStatRow(rows[0], { focus: false });
       ensureStatClickBinding(list);
       try {

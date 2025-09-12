@@ -58,11 +58,21 @@ async function startRound(value, onStart, emitEvents) {
   }
 }
 
-async function handleRoundSelect({ value, modal, cleanupTooltips, onStart, emitEvents }) {
+async function handleRoundSelect({
+  value,
+  modal,
+  cleanupTooltips,
+  cleanupKeyboard,
+  onStart,
+  emitEvents
+}) {
   persistRoundAndLog(value);
   modal.close();
   try {
     cleanupTooltips();
+  } catch {}
+  try {
+    cleanupKeyboard();
   } catch {}
   try {
     modal.destroy();
@@ -122,8 +132,13 @@ export async function initRoundSelectModal(onStart) {
   const btnWrap = document.createElement("div");
   btnWrap.className = "round-select-buttons";
 
+  // Add keyboard instructions
+  const instructions = document.createElement("p");
+  instructions.className = "round-select-instructions";
+  instructions.textContent = "Use number keys (1-3) or arrow keys to select";
+
   const frag = document.createDocumentFragment();
-  frag.append(title, btnWrap);
+  frag.append(title, instructions, btnWrap);
 
   const modal = createModal(frag, { labelledBy: title });
 
@@ -134,6 +149,59 @@ export async function initRoundSelectModal(onStart) {
     applyGameModePositioning(modal);
   } catch {}
   let cleanupTooltips = () => {};
+
+  // Add keyboard event handler for round selection
+  const handleKeyDown = (e) => {
+    const buttons = Array.from(btnWrap.querySelectorAll("button"));
+    const currentFocus = document.activeElement;
+    const currentIndex = buttons.indexOf(currentFocus);
+
+    switch (e.key) {
+      case "1":
+        e.preventDefault();
+        buttons[0]?.click();
+        break;
+      case "2":
+        e.preventDefault();
+        buttons[1]?.click();
+        break;
+      case "3":
+        e.preventDefault();
+        buttons[2]?.click();
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (currentIndex > 0) {
+          buttons[currentIndex - 1].focus();
+        } else {
+          buttons[buttons.length - 1].focus();
+        }
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        if (currentIndex < buttons.length - 1) {
+          buttons[currentIndex + 1].focus();
+        } else {
+          buttons[0].focus();
+        }
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (currentFocus && buttons.includes(currentFocus)) {
+          currentFocus.click();
+        }
+        break;
+    }
+  };
+
+  // Attach keyboard handler to modal element
+  modal.element.addEventListener("keydown", handleKeyDown);
+
+  // Create cleanup function for keyboard handler
+  const cleanupKeyboard = () => {
+    modal.element.removeEventListener("keydown", handleKeyDown);
+  };
+
   rounds.forEach((r) => {
     const btn = createButton(r.label, { id: `round-select-${r.id}` });
     btn.dataset.tooltipId = `ui.round${r.label}`;
@@ -142,6 +210,7 @@ export async function initRoundSelectModal(onStart) {
         value: r.value,
         modal,
         cleanupTooltips,
+        cleanupKeyboard,
         onStart,
         emitEvents: true
       })
