@@ -40,11 +40,13 @@ vi.mock("../../../src/components/Modal.js", () => ({
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   createBattleEngine: vi.fn(),
   getPointsToWin: vi.fn(),
+  getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 })),
   setPointsToWin: mocks.setPointsToWin
 }));
 vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: mocks.initTooltips }));
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: mocks.emit
+  emitBattleEvent: mocks.emit,
+  onBattleEvent: vi.fn()
 }));
 vi.mock("../../../src/helpers/telemetry.js", () => ({ logEvent: mocks.logEvent }));
 
