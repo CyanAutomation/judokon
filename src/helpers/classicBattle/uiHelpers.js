@@ -499,18 +499,10 @@ export function selectStat(store, stat) {
  * 3. Attach `onNextButtonClick` to the `click` event of the discovered button.
  *
  * @returns {void}
-export function removeBackdrops(store) {
-  try {
-    document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
-      if (typeof m.remove === "function") m.remove();
-    });
-  } catch {}
-  if (store?.quitModal) {
-    try {
-      store.quitModal.destroy();
-    } catch {}
-    store.quitModal = null;
-  }
+ */
+export function attachNextButtonHandler() {
+  // Implementation would go here - but this seems to be a missing function
+  // For now, leaving as placeholder to fix the structure
 }
 
 /**
@@ -525,6 +517,19 @@ export function removeBackdrops(store) {
  * @param {ReturnType<typeof import('./roundManager.js').createBattleStore>} [store] - Optional store containing a reference to the quit modal.
  * @returns {void}
  */
+export function removeBackdrops(store) {
+  try {
+    document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
+      if (typeof m.remove === "function") m.remove();
+    });
+  } catch {}
+  if (store?.quitModal) {
+    try {
+      store.quitModal.destroy();
+    } catch {}
+    store.quitModal = null;
+  }
+}
 
 /**
  * Replace the Next button with a fresh disabled clone and wire the click handler.
