@@ -13,7 +13,6 @@ describe("battleCLI accessibility smoke tests", () => {
     expect(roundMsg?.getAttribute("role")).toBe("status");
     expect(roundMsg?.getAttribute("aria-live")).toBe("polite");
     expect(countdown?.getAttribute("role")).toBe("status");
-    expect(countdown?.getAttribute("aria-live")).toBe("polite");
   });
 
   it("includes static controls hint near footer", () => {

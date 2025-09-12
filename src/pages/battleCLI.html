@@ -65,18 +65,7 @@
         font-size: 12px;
         opacity: 0.8;
         margin-left: 8px;
-        /* Reserve vertical space for stat rows to avoid layout shift when populated */
-        min-height: 8rem;
-      }
-      .cli-stat {
-        padding: 4px 6px;
-        background: #121212;
-        border: 1px solid #3a3a3a;
-        min-height: 2.4em;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        align-items: center;
+        /* DEPRECATED: min-height was here to reserve space, but it bloated the header. Space is reserved by #cli-stats. */
       }
       .cli-main {
         flex: 1;
@@ -217,6 +206,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between; /* Better alignment for terminal look */
+        gap: 8px;
         font-family: inherit;
         font-size: 14px;
         border-radius: 3px; /* Subtle rounding for modern feel */
@@ -376,22 +366,18 @@
       .skip-link:focus {
         top: 0;
       }
-      #start-match-button {
-        background: transparent;
-        border: 1px solid #9ad1ff;
-        color: #9ad1ff;
-        padding: 8px 12px;
-        font-family: inherit;
-        cursor: pointer;
-        font-size: 1em;
-      }
 
-      #start-match-button:hover,
-      #start-match-button:focus {
-        background: #1a1a1a;
-        outline: 2px solid #9ad1ff;
-        outline-offset: 2px;
-      }
+      /* Utility classes for inline style replacement */
+      .d-flex { display: flex; }
+      .flex-col { flex-direction: column; }
+      .align-items-center { align-items: center; }
+      .justify-content-between { justify-content: space-between; }
+      .fw-600 { font-weight: 600; }
+      .button-reset { background: transparent; border: 0; color: inherit; cursor: pointer; font-family: inherit; }
+      .seed-input { width: 6ch; }
+      .seed-error { color: #f88; font-size: 12px; }
+      .pre-wrap { margin: 0; white-space: pre-wrap; }
+
 
       /* Responsive tweaks: improve header wrapping and control spacing on narrow screens */
       @media (max-width: 720px) {
@@ -476,7 +462,7 @@
       }
     </script>
   </head>
-  <body class="cli-retro cli-immersive">
+  <body>
     <div class="terminal-title-bar">bash — JU-DO-KON</div>
     <a href="#cli-main" class="skip-link">Skip to main content</a>
     <div id="cli-root" class="cli-root" data-round="0" data-target="0" data-test="cli-root">
@@ -488,13 +474,12 @@
             id="battle-state-badge"
             data-flag="battleStateBadge"
             class="state-badge"
-            aria-live="polite"
             style="display: none"
             >State: —</span
           >
         </div>
         <!-- header title + status only; controls moved into main.settings for less prominence -->
-        <div class="cli-status" aria-live="polite" aria-atomic="true">
+        <div class="cli-status" aria-atomic="true">
           <div id="cli-round">Round 0 of 0</div>
           <div id="cli-score" data-score-player="0" data-score-opponent="0" data-test="cli-score">
             You: 0 Opponent: 0
@@ -503,8 +488,8 @@
 
         <!-- Standard Scoreboard DOM nodes (Phase 1: hidden, for future shared component) -->
         <div class="standard-scoreboard-nodes" style="display: none" aria-hidden="true">
-          <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
-          <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
+          <p id="next-round-timer" aria-atomic="true" role="status"></p>
+          <p id="round-counter" aria-atomic="true">Round 0</p>
           <p id="score-display" aria-live="off" aria-atomic="true">You: 0 Opponent: 0</p>
         </div>
       </header>
@@ -512,29 +497,22 @@
       <main id="cli-main" class="cli-main" role="main">
         <section aria-label="Round Status" class="cli-block">
           <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
-          <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
+          <div id="cli-countdown" role="status" data-remaining-time="0"></div>
         </section>
         <div class="ascii-sep">────────────────────────</div>
 
         <!-- Less-prominent settings section moved into main to reduce header prominence -->
         <section aria-label="Match Settings" class="cli-block cli-settings">
           <div
-            class="cli-settings-header"
-            style="display: flex; align-items: center; justify-content: space-between"
+            class="cli-settings-header d-flex align-items-center justify-content-between"
           >
-            <div style="font-weight: 600">Match Settings</div>
+            <div class="fw-600">Match Settings</div>
             <div>
               <button
                 id="cli-settings-toggle"
                 aria-expanded="true"
                 aria-controls="cli-settings-body"
-                style="
-                  background: transparent;
-                  border: 0;
-                  color: inherit;
-                  cursor: pointer;
-                  font-family: inherit;
-                "
+                class="button-reset"
               >
                 Settings ▾
               </button>
@@ -564,15 +542,16 @@
             </div>
             <div class="cli-settings-row">
               <label for="seed-input">Seed:</label>
-              <div style="display: flex; flex-direction: column">
+              <div class="d-flex flex-col">
                 <input
                   id="seed-input"
                   type="number"
                   inputmode="numeric"
                   aria-label="Deterministic seed (optional)"
-                  style="width: 6ch"
+                  aria-describedby="seed-error"
+                  class="seed-input"
                 />
-                <div id="seed-error" style="color: #f88; font-size: 12px"></div>
+                <div id="seed-error" class="seed-error"></div>
               </div>
             </div>
           </div>
@@ -585,13 +564,14 @@
             role="listbox"
             tabindex="0"
             aria-label="Select a stat with number keys 1–5"
+            aria-busy="true"
           >
             <!-- Skeleton placeholders to stabilize layout and tests -->
-            <div class="cli-stat skeleton">(1) ─────────────── ─</div>
-            <div class="cli-stat skeleton">(2) ─────────────── ─</div>
-            <div class="cli-stat skeleton">(3) ─────────────── ─</div>
-            <div class="cli-stat skeleton">(4) ─────────────── ─</div>
-            <div class="cli-stat skeleton">(5) ─────────────── ─</div>
+            <div class="cli-stat skeleton" role="presentation">(1) ─────────────── ─</div>
+            <div class="cli-stat skeleton" role="presentation">(2) ─────────────── ─</div>
+            <div class="cli-stat skeleton" role="presentation">(3) ─────────────── ─</div>
+            <div class="cli-stat skeleton" role="presentation">(4) ─────────────── ─</div>
+            <div class="cli-stat skeleton" role="presentation">(5) ─────────────── ─</div>
           </div>
         </section>
         <div class="ascii-sep">────────────────────────</div>
@@ -604,23 +584,16 @@
           hidden
         >
           <div
-            class="cli-settings-header"
-            style="display: flex; align-items: center; justify-content: space-between"
+            class="cli-settings-header d-flex align-items-center justify-content-between"
           >
-            <div style="font-weight: 600">Shortcuts</div>
+            <div class="fw-600">Shortcuts</div>
             <div>
               <button
                 id="cli-shortcuts-close"
                 aria-label="Close help"
                 aria-controls="cli-shortcuts-body"
                 aria-expanded="false"
-                style="
-                  background: transparent;
-                  border: 0;
-                  color: inherit;
-                  cursor: pointer;
-                  font-family: inherit;
-                "
+                class="button-reset"
               >
                 ×
               </button>
@@ -646,12 +619,11 @@
         >
           <pre
             id="cli-verbose-log"
-            aria-live="polite"
             aria-atomic="false"
-            style="margin: 0; white-space: pre-wrap"
+            class="pre-wrap"
           ></pre>
         </section>
-        <div id="cli-prompt" role="textbox" aria-label="Command prompt">
+        <div id="cli-prompt" role="status" aria-label="Command prompt">
           &gt; <span id="cli-cursor" aria-hidden="true">▌</span>
         </div>
       </main>
