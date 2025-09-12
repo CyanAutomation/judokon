@@ -253,8 +253,7 @@ export function startCooldown(_store, scheduler = realScheduler) {
   const controls = createNextRoundControls();
   const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
   if (btn) {
-    btn.disabled = false;
-    btn.dataset.nextReady = "true";
+    markNextReady(btn);
     try {
       emitBattleEvent("nextRoundTimerReady");
     } catch {}
@@ -264,11 +263,12 @@ export function startCooldown(_store, scheduler = realScheduler) {
     try {
       setTimeout(() => {
         const b = document.getElementById("next-button");
-        if (b) {
-          b.disabled = false;
-          b.dataset.nextReady = "true";
-        }
+        markNextReady(b);
       }, 0);
+      setTimeout(() => {
+        const b = document.getElementById("next-button");
+        markNextReady(b);
+      }, 20);
     } catch {}
   }
   const cooldownSeconds = computeNextRoundCooldown();
