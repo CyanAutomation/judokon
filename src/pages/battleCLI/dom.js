@@ -56,7 +56,7 @@ export function updateRoundHeader(round, target) {
   // Phase 3: Keep CLI element for visual consistency (not primary source)
   const el = byId("cli-round");
   if (el) {
-    // Use clear format: "Round 0 Target: 5"
+    // Use clear format with space after colon: "Round 0 Target: 5"
     el.textContent = `Round ${round} Target: ${target}`;
   }
 
