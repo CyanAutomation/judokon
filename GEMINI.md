@@ -5,7 +5,6 @@
 ## 🎯 Quick Reference Cards
 
 ### 🔍 Context Acquisition
-
 ```bash
 # Start with RAG for any question
 queryRag("How does the battle engine work?")
@@ -17,7 +16,6 @@ src/config/settingsDefaults.js # Settings source of truth
 ```
 
 ### 📋 Task Contract Template
-
 ```json
 {
   "inputs": ["src/classicBattle.js", "tests/battle.test.js"],
@@ -28,7 +26,6 @@ src/config/settingsDefaults.js # Settings source of truth
 ```
 
 ### ✅ Essential Validation
-
 ```bash
 # Core validation (run before commit)
 npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
@@ -38,7 +35,6 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 ```
 
 ### 🚫 Critical Violations
-
 - ❌ Dynamic imports in hot paths (`src/helpers/classicBattle*`, `battleEngineFacade.js`)
 - ❌ Unsilenced `console.warn/error` in tests (use `withMutedConsole`)
 - ❌ Functions >50 lines without refactoring
@@ -47,8 +43,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 
 ---
 
-## 🗂️ Workflow Orderrministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.
-
+## 🗂️ Workflow Orderrministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.  
 **Audience**: AI Agents only. Human readability is not the priority.
 
 **Content Ownership**: This file is the authoritative source for agent-specific rules, validation commands, and quality standards. Other documentation files reference this for agent-specific details.
@@ -62,7 +57,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 **Quick Orientation for AI Agents (30-second read):**
 
 1. **Default to RAG first** - Query `queryRag("your question")` for any "How/Why/What/Where" questions (15x faster than manual exploration)
-2. **Follow 5-step workflow** - Context → Task Contract → Implementation → Validation → Delivery
+2. **Follow 5-step workflow** - Context → Task Contract → Implementation → Validation → Delivery  
 3. **Core validation suite** - `npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast`
 4. **Critical rules** - No dynamic imports in hot paths, no unsilenced console in tests, include @pseudocode in JSDoc
 5. **Key files** - `src/data/tooltips.json`, `src/data/judoka.json`, `src/config/settingsDefaults.js`
@@ -79,7 +74,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 ## � Table of Contents
 
 - [⚡ Executive Summary](#-executive-summary)
-- [🗂️ Workflow Order](#️-workflow-order)
+- [🗂️ Workflow Order](#️-workflow-order)  
 - [🎯 Core Principles](#-core-principles)
 - [🧠 RAG Policy](#-rag-retrieval-augmented-generation-policy)
 - [📚 Key Repository Targets](#-key-repository-targets)
@@ -105,7 +100,6 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 3. Implementation (import policy, coding rules)
 4. Validation (lint, format, tests, contrast, logs)
 5. Delivery (PR body with verification summary)
-
 ```bash
 # Fail if dynamic import appears in hot paths
 grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null
@@ -677,13 +671,10 @@ CI pipeline green
 **Validation**: This JSON should validate against standard schema checkers
 
 ### Version History
-
 - **v1.0.0** (2025-09-11): Initial versioned schema with structured validation commands, comprehensive test standards, and centralized documentation references
 
 ### Schema Usage
-
 This JSON ruleset can be programmatically parsed for:
-
 - Automated rule validation in CI/CD pipelines
 - Agent configuration and initialization
 - Policy compliance checking
