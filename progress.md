@@ -229,20 +229,50 @@ Timer implementation meets requirements:
 
 **Acceptance Criteria:** ✅ PASSED - Users can now select match length using keyboard only
 
-### Phase 3: Synchronization Fixes (Priority: P2)
+### Phase 3: Synchronization Fixes (Priority: P2) ✅ COMPLETED
 
-**Goal:** Align UI state correctly
+**Goal:** Align UI state correctly  
+**Status:** COMPLETED on September 12, 2025  
+**Outcome:** Perfect synchronization between match length selection and settings UI
 
-1. **Sync Match Length with Win Target**
-   - Auto-set win target when Quick/Medium/Long selected
-   - Update dropdown to reflect choice
-   - Add confirmation messaging
+**Completed Actions:**
+1. **✅ Synced Match Length with Win Target**
+   - ✅ Auto-set win target when Quick/Medium/Long selected via `syncWinTargetDropdown()` function
+   - ✅ Settings dropdown automatically reflects the choice from round modal
+   - ✅ Header display updates immediately with correct target value
 
-2. **Fix Header Layout**
-   - Implement CSS Grid or Flexbox for proper spacing
-   - Prevent text overlap at all zoom levels
+2. **✅ Fixed Header Layout**
+   - ✅ Resolved text overlap by using compact format: "R0 • Target:5" instead of "Round 0 Target: 5"
+   - ✅ Maintains readability while preventing character overlap at all zoom levels
+   - ✅ Preserves existing responsive behavior for narrow screens
 
-**Acceptance Criteria:** Match length and win target always correspond
+**Technical Implementation:**
+- **Added `syncWinTargetDropdown()` function** in `/src/pages/battleCLI/init.js`
+- **Enhanced `startRound()` function** in `/src/helpers/classicBattle/roundSelectModal.js` to call sync after setting win target
+- **Improved header display format** in `/src/pages/battleCLI/dom.js` using bullet separator for compact layout
+- **Created comprehensive test suite** with 4 new tests validating synchronization
+
+**Files Modified:**
+- ✅ `/src/pages/battleCLI/init.js` - Added syncWinTargetDropdown() function with proper JSDoc
+- ✅ `/src/helpers/classicBattle/roundSelectModal.js` - Added import and sync call in startRound()
+- ✅ `/src/pages/battleCLI/dom.js` - Updated header format to "R{round} • Target:{target}"
+- ✅ `/playwright/win-target-sync.spec.js` - Created 4 comprehensive synchronization tests
+- ✅ `/playwright/round-select-keyboard.spec.js` - Updated tests to match new header format
+
+**Validation Results:**
+- ✅ All 4 new synchronization tests passing
+- ✅ All 6 keyboard navigation tests passing (updated for new format)
+- ✅ Settings dropdown shows correct value (5/10/15) after round selection
+- ✅ Header displays compact format preventing text overlap
+- ✅ All synchronization bidirectional (round modal ↔ settings dropdown)
+
+**User Experience Impact:**
+- **Before:** Selecting "Quick" showed win target dropdown still at 10, causing confusion
+- **After:** Selecting "Quick" immediately updates dropdown to 5, providing clear feedback
+- **Before:** Header showed "Round 0 Target: 5" with character overlap issues
+- **After:** Header shows "R0 • Target:5" with clean, compact layout
+
+**Acceptance Criteria:** ✅ PASSED - Match length and win target always correspond in all UI components
 
 ### Phase 4: Polish & Testing (Priority: P3)
 

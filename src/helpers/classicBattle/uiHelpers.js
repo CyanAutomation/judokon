@@ -647,6 +647,8 @@ export function clearScoreboardAndMessages() {
  * @returns {{enable: Function, disable: Function}} An object with enable and disable functions for the stat buttons.
  */
 export function initStatButtons(store) {
+  // Mark intentionally unused to satisfy eslint while preserving API
+  void store;
   const container = document.getElementById("stat-buttons");
   if (!container) throw new Error("initStatButtons: #stat-buttons missing");
   const buttons = Array.from(container.querySelectorAll("button"));
