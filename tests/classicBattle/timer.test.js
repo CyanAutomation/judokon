@@ -15,7 +15,7 @@ describe("Classic Battle round timer", () => {
       document.documentElement.innerHTML = html;
 
       const mod = await import("../../src/pages/battleClassic.init.js");
-      if (typeof mod.init === "function") mod.init();
+      await mod.init();
 
       // Click the 15 button to start the match and timer
       const waitForBtn = () =>
@@ -30,11 +30,17 @@ describe("Classic Battle round timer", () => {
       const btn = await waitForBtn();
       btn.click();
 
+      await window.statButtonsReadyPromise;
       const timerEl = document.getElementById("next-round-timer");
       expect(timerEl).toBeTruthy();
       // It should show a countdown shortly
-      await new Promise((r) => setTimeout(r, 10));
-      expect(timerEl.textContent || "").toMatch(/Time Left:/);
+      await new Promise((resolve) => {
+        const check = () => {
+          if (/Time Left:/.test(timerEl.textContent || "")) return resolve();
+          setTimeout(check, 10);
+        };
+        check();
+      });
       // After ~2s it should clear on expiration
       await new Promise((r) => setTimeout(r, 2200));
       expect(timerEl.textContent || "").toBe("");
