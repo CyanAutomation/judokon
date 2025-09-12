@@ -33,6 +33,10 @@ describe("roundSelectModal positioning and skinning", () => {
     backdrop.className = "modal-backdrop";
     mockModalReturning(backdrop);
 
+    vi.doMock("../../../src/pages/battleCLI/init.js", () => ({
+      syncWinTargetDropdown: vi.fn()
+    }));
+
     const { initRoundSelectModal } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
     );
@@ -61,6 +65,10 @@ describe("roundSelectModal positioning and skinning", () => {
     const backdrop = document.createElement("div");
     backdrop.className = "modal-backdrop";
     mockModalReturning(backdrop);
+
+    vi.doMock("../../../src/pages/battleCLI/init.js", () => ({
+      syncWinTargetDropdown: vi.fn()
+    }));
 
     const { initRoundSelectModal } = await import(
       "../../../src/helpers/classicBattle/roundSelectModal.js"
