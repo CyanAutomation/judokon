@@ -104,10 +104,12 @@ export function setRoundMessage(text) {
  * Fallback: CLI element for visual consistency
  */
 export function updateScoreLine() {
-  const { playerScore, opponentScore } = engineFacade.getScores?.() || {
-    playerScore: 0,
-    opponentScore: 0
-  };
+  let getScores;
+  try {
+    ({ getScores } = engineFacade);
+  } catch {}
+  const { playerScore, opponentScore } =
+    typeof getScores === "function" ? getScores() : { playerScore: 0, opponentScore: 0 };
 
   // Phase 3: Primary update via shared Scoreboard component
   let sharedUpdated = false;
