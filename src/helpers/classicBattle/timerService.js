@@ -271,6 +271,19 @@ export async function startTimer(onExpiredSelect, store = null) {
   }
   const restore = !synced ? scoreboard.showTemporaryMessage(t("ui.waiting")) : () => {};
 
+  // Ensure the timer UI reflects the starting value immediately so tests and
+  // users see a countdown without waiting for the first tick callback.
+  try {
+    if (typeof duration === "number" && Number.isFinite(duration)) {
+      scoreboard.updateTimer(duration);
+      // Also update the DOM element directly to decouple from scoreboard init timing
+      try {
+        const el = document.getElementById("next-round-timer");
+        if (el) el.textContent = `Time Left: ${duration}s`;
+      } catch {}
+    }
+  } catch {}
+
   const timer = createRoundTimer({
     starter: engineStartRound,
     onDriftFail: () => forceAutoSelectAndDispatch(onExpiredSelect)
