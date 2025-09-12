@@ -1017,34 +1017,18 @@ export function handleStatListArrowKey(key) {
  * @returns {Promise<Array>} Cached stat definition objects.
  */
 async function loadStatDefs() {
-  console.log("🔍 loadStatDefs called, current cache:", cachedStatDefs);
   if (!cachedStatDefs) {
     try {
-      console.log("🔍 Attempting to fetch statNames.json...");
       const { fetchJson } = await import("../../helpers/dataUtils.js");
       const { DATA_DIR } = await import("../../helpers/constants.js");
-      console.log("🔍 DATA_DIR:", DATA_DIR);
-
       const defs = await fetchJson(`${DATA_DIR}/statNames.json`);
-      console.log("🔍 fetchJson returned:", defs);
-
       if (Array.isArray(defs) && defs.length) {
         cachedStatDefs = defs;
-        console.log("✅ Cached statNames.json data");
-      } else {
-        console.warn("⚠️ fetchJson returned invalid data, will fallback to module");
       }
-    } catch (err) {
-      console.warn("⚠️ Failed to fetch statNames.json:", err, "- falling back to module");
-    }
-    if (!cachedStatDefs) {
-      console.log("🔍 Using fallback statNamesData:", statNamesData);
-      cachedStatDefs = statNamesData;
-    }
+    } catch {}
+    if (!cachedStatDefs) cachedStatDefs = statNamesData;
   }
-  const result = Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
-  console.log("🔍 loadStatDefs returning:", result.length, "definitions");
-  return result;
+  return Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
 }
 
 /**
@@ -1060,20 +1044,14 @@ async function loadStatDefs() {
  * @returns {Array<HTMLElement>} Array of constructed row elements.
  */
 function buildStatRows(stats, judoka) {
-  console.log("🔍 buildStatRows called with:", { statsCount: stats.length, judoka, STATS });
   const rows = [];
   stats
     .slice()
     .sort((a, b) => (a.statIndex || 0) - (b.statIndex || 0))
     .forEach((s) => {
-      console.log("🔍 Processing stat:", s);
       const idx = Number(s.statIndex) || 0;
-      if (!idx) {
-        console.warn("⚠️ Skipping stat with invalid statIndex:", s);
-        return;
-      }
+      if (!idx) return;
       const key = STATS[idx - 1];
-      console.log("🔍 Mapped to STATS key:", key, "for index", idx);
       if (key) statDisplayNames[key] = s.name;
       const div = document.createElement("div");
       div.className = "cli-stat";
@@ -1083,10 +1061,8 @@ function buildStatRows(stats, judoka) {
       div.dataset.statIndex = String(idx);
       const val = Number(judoka?.stats?.[key]);
       div.textContent = Number.isFinite(val) ? `[${idx}] ${s.name}: ${val}` : `[${idx}] ${s.name}`;
-      console.log("🔍 Created row:", div.textContent);
       rows.push(div);
     });
-  console.log("🔍 buildStatRows returning:", rows.length, "rows");
   return rows;
 }
 
@@ -1174,28 +1150,16 @@ function ensureStatClickBinding(list) {
  * @returns {Promise<void>} Resolves when the stat list has been rendered.
  */
 export async function renderStatList(judoka) {
-  console.log("🔍 renderStatList called with judoka:", judoka);
   try {
     const list = byId("cli-stats");
-    console.log("🔍 cli-stats element found:", !!list);
-    
     const stats = await loadStatDefs();
-    console.log("🔍 loadStatDefs returned:", stats.length, "stats:", stats);
-    
     if (list && stats.length) {
-      console.log("🔍 Proceeding to build stat rows...");
       list.innerHTML = "";
       for (const key of Object.keys(statDisplayNames)) delete statDisplayNames[key];
-      
       const rows = buildStatRows(stats, judoka);
-      console.log("🔍 buildStatRows returned:", rows.length, "rows");
+      rows.forEach((row) => list.appendChild(row));
       
-      rows.forEach((row) => {
-        console.log("🔍 Appending row:", row.textContent);
-        list.appendChild(row);
-      });
-      
-      // Mark as not skeleton after adding real content
+      // Mark as not skeleton after adding real content to prevent clearSkeletonStats from clearing it
       list.dataset.skeleton = "false";
       
       if (rows.length) setActiveStatRow(rows[0], { focus: false });
@@ -1206,15 +1170,9 @@ export async function renderStatList(judoka) {
         console.error("renderStatList: failed to clear skeleton stats", err);
       }
       renderHelpMapping(stats);
-      console.log("✅ renderStatList completed successfully");
-    } else {
-      console.warn("⚠️ renderStatList: Missing list element or no stats loaded", {
-        listExists: !!list,
-        statsCount: stats.length
-      });
     }
   } catch (err) {
-    console.error("❌ renderStatList failed", err);
+    console.error("renderStatList failed", err);
   }
 }
 
@@ -1304,9 +1262,7 @@ export function restorePointsToWin() {
  * 4. Update round header with roundNumber and points target.
  */
 async function startRoundWrapper() {
-  console.log("🔍 startRoundWrapper called");
   const { playerJudoka, roundNumber } = await startRoundCore(store);
-  console.log("🔍 startRoundCore returned:", { playerJudoka, roundNumber });
   currentPlayerJudoka = playerJudoka || null;
   await renderStatList(currentPlayerJudoka);
   renderHiddenPlayerStats(currentPlayerJudoka);
