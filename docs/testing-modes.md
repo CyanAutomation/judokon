@@ -86,7 +86,7 @@ Stat selections now dispatch events and rely on the state machine for round reso
 
 ### State Tracking
 
-See [design/battleMarkup.md](../design/battleMarkup.md) for the canonical DOM IDs used by classic battle scripts.
+See [technical/battleMarkup.md](technical/battleMarkup.md) for the canonical DOM IDs used by classic battle scripts.
 
 ## Testing Utilities
 
