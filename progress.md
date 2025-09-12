@@ -454,7 +454,7 @@ Remove bespoke scoreboard logic from `pages/battleCLI/init.js` handlers. Consoli
 
 - **✅ Shared Primary Test**: 5/5 tests passed - Shared Scoreboard is primary rendering source
 - **✅ Standard DOM Test**: 4/4 tests passed - DOM structure maintained correctly
-- **✅ Basic Load Test**: CLI loads without console errors (Playwright validation)  
+- **✅ Basic Load Test**: CLI loads without console errors (Playwright validation)
 - **✅ No Regressions**: Core CLI functionality preserved via graceful fallback
 - **✅ Manual Edits Preserved**: User's manual edits to CLI init file remain intact
 

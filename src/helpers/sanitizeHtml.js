@@ -25,7 +25,7 @@
  */
 export async function getSanitizer() {
   // Module-level singleton cache
-  // eslint-disable-next-line no-var
+
   var cached;
   try {
     // Preserve existing cached instance across calls within this module scope
@@ -40,7 +40,9 @@ export async function getSanitizer() {
       const mod = await import(specifier);
       const maybe = mod?.default ?? mod;
       const instance =
-        typeof maybe === "function" ? maybe(typeof window !== "undefined" ? window : undefined) : maybe;
+        typeof maybe === "function"
+          ? maybe(typeof window !== "undefined" ? window : undefined)
+          : maybe;
       if (instance && typeof instance.sanitize === "function") return instance;
     } catch {
       // ignore and try next
