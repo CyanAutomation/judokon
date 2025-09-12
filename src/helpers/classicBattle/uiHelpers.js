@@ -1,4 +1,3 @@
-import { getOpponentCardData } from "./opponentController.js";
 import { isEnabled } from "../featureFlags.js";
 import { STATS } from "../battleEngineFacade.js";
 
@@ -17,7 +16,6 @@ import { setupLazyPortraits } from "../lazyPortrait.js";
 
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
-import { onBattleEvent } from "./battleEvents.js";
 // Removed unused import for 'battleEvents'
 import {
   enableStatButtons,
@@ -27,7 +25,6 @@ import {
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { updateDebugPanel } from "./debugPanel.js";
-import { getOpponentDelay } from "./snackbar.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { getStateSnapshot } from "./battleDebug.js";
 
@@ -838,8 +835,8 @@ export function setBattleStateBadgeEnabled(enable) {
  *
  * @param {object} [store]
  */
-export function resetBattleUI(store) {
-  removeBackdrops(store);
+export function resetBattleUI() {
+  removeBackdrops();
   resetNextButton();
   resetQuitButton();
   clearScoreboardAndMessages();
@@ -867,8 +864,6 @@ if (typeof window !== "undefined") {
     resetBattleUI(e.detail?.store);
   });
 }
-
-let opponentSnackbarId = 0;
 
 /**
  * Binds event handlers for various UI updates related to battle events.

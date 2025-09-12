@@ -63,7 +63,7 @@ export async function checkOfflineArtifacts() {
         );
       }
     }
-  } catch (err) {
+  } catch {
     errors.push(
       `Offline artifacts: failed to read files (${path.relative(rootDir, metaPath)}, ${path.relative(
         rootDir,

@@ -5,7 +5,7 @@ describe("checkRagPreflight", () => {
   it("passes when offline artifacts consistent and strict offline disabled", async () => {
     // Mock fs to simulate consistent artifacts
     vi.doMock("node:fs/promises", () => ({
-      readFile: vi.fn(async (p, enc) => {
+      readFile: vi.fn(async (p) => {
         const pathStr = String(p);
         if (pathStr.endsWith("offline_rag_metadata.json")) {
           return JSON.stringify({ vectorLength: 3, count: 2, items: [] });
@@ -24,7 +24,7 @@ describe("checkRagPreflight", () => {
 
   it("reports missing model files when strict offline is enabled", async () => {
     vi.doMock("node:fs/promises", () => ({
-      readFile: vi.fn(async (p, enc) => {
+      readFile: vi.fn(async (p) => {
         if (String(p).endsWith("offline_rag_metadata.json")) {
           return JSON.stringify({ vectorLength: 1, count: 1, items: [] });
         }

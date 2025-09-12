@@ -11,6 +11,7 @@ import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
 import { logEvent } from "../telemetry.js";
 import { t } from "../i18n.js";
 import rounds from "../../data/battleRounds.js";
+import { syncWinTargetDropdown } from "../../pages/battleCLI/init.js";
 
 /**
  * Check if the URL requests an automatic start.
@@ -47,6 +48,10 @@ function persistRoundAndLog(value) {
 
 async function startRound(value, onStart, emitEvents) {
   setPointsToWin(value);
+  // Sync the settings dropdown to reflect the new win target
+  try {
+    syncWinTargetDropdown();
+  } catch {}
   try {
     if (typeof onStart === "function") await onStart();
     if (emitEvents) {

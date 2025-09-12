@@ -242,7 +242,7 @@ function categorizeGaps(missing, stateName) {
   const priority3 = []; // Nice-to-have: Logging, optional features
 
   for (const action of missing) {
-    const [category, operation] = action.split(":");
+    const [category] = action.split(":");
 
     if (
       category === "timer" ||

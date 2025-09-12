@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
-import { mkdtemp, writeFile, mkdir, rm, stat, readFile } from "node:fs/promises";
+import { mkdtemp, writeFile, mkdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 
@@ -49,7 +49,7 @@ describe("prepareLocalModel", () => {
     // Mock transformers pipeline; ensure called with local modelDir not remote name
     const pipelineMock = vi.fn(async () => ({
       // Dummy extractor that returns small vector-like result
-      apply: async (t) => [0, 0]
+      apply: async () => [0, 0]
     }));
     vi.doMock("@xenova/transformers", () => ({
       pipeline: pipelineMock,

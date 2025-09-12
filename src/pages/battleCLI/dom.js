@@ -56,8 +56,8 @@ export function updateRoundHeader(round, target) {
   // Phase 3: Keep CLI element for visual consistency (not primary source)
   const el = byId("cli-round");
   if (el) {
-    // Always show target in CLI element for user clarity
-    el.textContent = `Round ${round} Target: ${target}`;
+    // Use compact format to prevent text overlap: "R0 • Target:5"
+    el.textContent = `R${round} • Target:${target}`;
   }
 
   const root = byId("cli-root");

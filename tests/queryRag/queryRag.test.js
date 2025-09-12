@@ -42,7 +42,7 @@ describe("queryRag", () => {
           ...actual.default,
           expandQueryWithSynonyms: vi.fn(async (q) => `${q} kumi kata`),
           // Return our dataset directly so queryRag hits expected entries
-          findMatches: vi.fn(async (_vec, _k, _filters, _q) => dataset)
+          findMatches: vi.fn(async () => dataset)
         }
       };
     });

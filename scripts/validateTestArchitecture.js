@@ -6,7 +6,7 @@
  */
 
 import { readFileSync, readdirSync, statSync } from "fs";
-import { join, extname } from "path";
+import { join } from "path";
 
 const ANTI_PATTERNS = {
   manualDomForComplex: {

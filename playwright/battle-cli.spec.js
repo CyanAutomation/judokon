@@ -134,29 +134,28 @@ test.describe("Classic Battle CLI", () => {
       // console.log("Current battle state:", JSON.stringify(currentState, null, 2));
 
       // If we're still in waitingForMatchStart, try to trigger the start manually
-      if (currentState.bodyDataset === "waitingForMatchStart") {
-        // console.log("Battle still in waitingForMatchStart, attempting manual start");
+      // console.log("Battle still in waitingForMatchStart, attempting manual start");
 
-        // Try to dispatch the start event manually
-        await page.evaluate(() => {
-          try {
-            // Try different ways to start the battle
-            if (typeof window.emitBattleEvent === "function") {
-              // console.log("Emitting startClicked event");
-              window.emitBattleEvent("startClicked");
-            }
-
-            // Also try to dispatch to machine if available
-            const getter = window.debugHooks?.readDebugState?.("getClassicBattleMachine");
-            const machine = typeof getter === "function" ? getter() : getter;
-            if (machine?.dispatch) {
-              // console.log("Dispatching startClicked to machine");
-              machine.dispatch("startClicked");
-            }
-          } catch {
-            // console.log("Failed to manually start battle:", err.message);
+      // Try to dispatch the start event manually
+      await page.evaluate(() => {
+        try {
+          // Try different ways to start the battle
+          if (typeof window.emitBattleEvent === "function") {
+            // console.log("Emitting startClicked event");
+            window.emitBattleEvent("startClicked");
           }
-        });
+
+          // Also try to dispatch to machine if available
+          const getter = window.debugHooks?.readDebugState?.("getClassicBattleMachine");
+          const machine = typeof getter === "function" ? getter() : getter;
+          if (machine?.dispatch) {
+            // console.log("Dispatching startClicked to machine");
+            machine.dispatch("startClicked");
+          }
+        } catch {
+          // console.log("Failed to manually start battle:", err.message);
+        }
+      });
 
         // Use Test API to verify battle started instead of arbitrary wait
         await page.evaluate(() => {

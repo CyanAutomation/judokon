@@ -1212,6 +1212,29 @@ function renderHiddenPlayerStats(judoka) {
  *    d. Otherwise revert to previous value.
  */
 /**
+ * Update the win target dropdown to reflect the current engine value.
+ *
+ * @pseudocode
+ * 1. Get the current points to win from the engine
+ * 2. Find the points-select dropdown element
+ * 3. Update its value to match the engine setting
+ * 4. Update the round header to show the new target
+ *
+ * @returns {void}
+ */
+export function syncWinTargetDropdown() {
+  try {
+    const select = byId("points-select");
+    const currentTarget = engineFacade.getPointsToWin?.();
+    if (select && currentTarget) {
+      select.value = String(currentTarget);
+      const round = Number(byId("cli-root")?.dataset.round || 0);
+      updateRoundHeader(round, currentTarget);
+    }
+  } catch {}
+}
+
+/**
  * Restore, persist, and handle changes to the points-to-win selector.
  *
  * @summary Read the saved points-to-win value, apply it, and prompt the user on change.

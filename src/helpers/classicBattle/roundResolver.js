@@ -4,11 +4,9 @@ import { isHeadlessModeEnabled } from "../headlessMode.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import * as engineFacade from "../battleEngineFacade.js";
-import { STATS } from "../battleEngineFacade.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
-import { bridgeEngineEvents } from "./engineBridge.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
