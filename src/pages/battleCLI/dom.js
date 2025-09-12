@@ -27,9 +27,10 @@ try {
  * @param {string} id
  * @returns {HTMLElement | null}
  * @pseudocode
+ * if typeof document is "undefined" -> return null
  * return document.getElementById(id)
  */
-export const byId = (id) => document.getElementById(id);
+export const byId = (id) => (typeof document === "undefined" ? null : document.getElementById(id));
 
 /**
  * Update the round header line.
