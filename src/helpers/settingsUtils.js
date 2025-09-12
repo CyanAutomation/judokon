@@ -73,6 +73,7 @@ export { loadDefaultSettings } from "./settingsCache.js";
  * @pseudocode
  * 1. The `DEFAULT_SETTINGS` object is imported from `../config/settingsDefaults.js`, which is considered the single source of truth for default configurations.
  * 2. This imported object is then re-exported under the same name, making it accessible to other modules that need to reference the application's default settings.
+ * @returns {Object}
  */
 export { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
 

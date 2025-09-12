@@ -66,6 +66,7 @@ import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
  * 4. This allows other parts of the application to `await` this promise to ensure the settings UI is fully loaded before interacting with it.
  *
  * @type {Promise<void>}
+ * @param {(value?: void) => void} resolve - Internal resolver for readiness.
  */
 export const settingsReadyPromise = new Promise((resolve) => {
   document.addEventListener("settings:ready", resolve, { once: true });

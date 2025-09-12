@@ -416,6 +416,7 @@ export async function initRandomJudokaPage() {
  *    c. Resolve the `randomJudokaReadyPromise`.
  *
  * @type {Promise<void>}
+ * @param {(value?: void) => void} resolve - Internal resolver for readiness.
  * @returns {Promise<void>}
  */
 export const randomJudokaReadyPromise = new Promise((resolve) => {

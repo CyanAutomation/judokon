@@ -48,6 +48,7 @@ export function escapeHtml(value) {
  *
  * @constant {URL}
  * @returns {URL}
+ * @param {void} [unused] - IIFE has no parameters (placeholder for linter).
  * @pseudocode
  * 1. Create a new `URL` object based on `import.meta.url`, which represents the URL of the current module (`navigationService.js`).
  * 2. Modify the `pathname` of this URL: replace the segment `/helpers/navigation/navigationService.js` with `/pages/`. This effectively transforms the module's URL into the base URL for the application's pages.

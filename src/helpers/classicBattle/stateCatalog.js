@@ -40,6 +40,9 @@ export const order = [
  * 3. For each `name`, assign a stable ordinal ID by multiplying `(idx + 1)` by 10.
  *    This ensures IDs are multiples of 10 (e.g., 10, 20, 30...) for consistency and extensibility.
  * 4. Return the populated `acc` object, which maps state names to their numeric IDs.
+ * @param {Record<string, number>} acc
+ * @param {string} name
+ * @param {number} idx
  * @returns {Record<string, number>}
  */
 export const ids = order.reduce((acc, name, idx) => {

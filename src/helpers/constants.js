@@ -55,6 +55,7 @@ export function resolveDataDir(moduleUrl) {
  * and runtime code can load JSON assets consistently.
  *
  * @constant {string}
+ * @param {string|URL} moduleUrl - Source module URL used by resolveDataDir.
  * @returns {string}
  * @pseudocode
  * 1. The `DATA_DIR` constant is assigned the return value of `resolveDataDir(import.meta.url)`.
@@ -163,6 +164,7 @@ export const SNACKBAR_REMOVE_MS = 3000;
  * Classic Battle match. The first player to reach or exceed this score wins.
  *
  * @constant {number}
+ * @returns {number}
  * @pseudocode
  * 1. During a Classic Battle match, track the scores of both the player and the opponent.
  * 2. After each round, compare the current scores against `CLASSIC_BATTLE_POINTS_TO_WIN`.
@@ -179,6 +181,7 @@ export const CLASSIC_BATTLE_POINTS_TO_WIN = 10;
  * in a draw or be decided by other criteria.
  *
  * @constant {number}
+ * @returns {number}
  * @pseudocode
  * 1. During a Classic Battle match, increment a round counter after each completed round.
  * 2. Before starting a new round, check if the round counter has reached `CLASSIC_BATTLE_MAX_ROUNDS`.

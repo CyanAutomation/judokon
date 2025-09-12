@@ -32,6 +32,7 @@ let resolveReady = null;
  * 2. Resolve it when `markSignatureMoveReady()` is called.
  *
  * @returns {Promise<void>}
+ * @param {(value?: void) => void} resolve - Internal resolver for readiness.
  */
 export const signatureMoveReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
