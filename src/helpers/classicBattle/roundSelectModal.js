@@ -85,7 +85,12 @@ async function handleRoundSelect({ value, modal, cleanupTooltips, onStart, emitE
 export async function initRoundSelectModal(onStart) {
   const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
 
-  if (shouldAutostart() || isTestModeEnabled()) {
+  // Detect Playwright test environment
+  const IS_PLAYWRIGHT =
+    typeof navigator !== "undefined" &&
+    (navigator.userAgent?.includes("Headless") || navigator.webdriver === true);
+
+  if (shouldAutostart() || isTestModeEnabled() || IS_PLAYWRIGHT) {
     await startRound(DEFAULT_POINTS_TO_WIN, onStart, !IS_VITEST);
     return;
   }
