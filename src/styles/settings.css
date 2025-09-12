@@ -32,6 +32,8 @@
 
 .settings-form {
   padding: var(--space-lg);
+  /* Ensure clearance from fixed bottom navigation */
+  padding-bottom: calc(var(--space-lg) + var(--footer-height) + env(safe-area-inset-bottom) + var(--space-md));
 }
 
 .settings-form legend {
