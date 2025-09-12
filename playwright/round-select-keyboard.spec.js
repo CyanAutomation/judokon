@@ -2,13 +2,14 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Round Select Modal - Keyboard Navigation", () => {
   test.beforeEach(async ({ page }) => {
-    // Enable the round select modal to show in tests
+    // Clear localStorage and enable the round select modal to show in tests
     await page.addInitScript(() => {
+      localStorage.clear();
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
     
     await page.goto("/battleCLI.html");
-    await page.waitForSelector(".modal-backdrop", { state: "visible" });
+    await page.waitForSelector(".modal-backdrop", { state: "visible", timeout: 10000 });
   });
 
   test("should show keyboard instructions in modal", async ({ page }) => {
