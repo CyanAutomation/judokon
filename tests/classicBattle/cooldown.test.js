@@ -61,4 +61,56 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       spy.mockRestore();
     }
   });
+
+  test("re-enables Next if a callback disables it", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = '<button id="next-button" disabled></button>';
+    document.body.dataset.battleState = "cooldown";
+    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
+      clearTimer: vi.fn(),
+      showMessage: () => {},
+      showAutoSelect: () => {},
+      showTemporaryMessage: () => () => {},
+      updateTimer: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/classicBattle/debugPanel.js", () => ({
+      updateDebugPanel: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent: vi.fn().mockResolvedValue(undefined)
+    }));
+    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
+      onBattleEvent: vi.fn(),
+      offBattleEvent: vi.fn(),
+      emitBattleEvent: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
+      createRoundTimer: () => ({ on: vi.fn(), start: vi.fn(), stop: vi.fn() })
+    }));
+    vi.doMock("../../src/helpers/CooldownRenderer.js", () => ({
+      attachCooldownRenderer: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
+      computeNextRoundCooldown: () => 0
+    }));
+
+    const { startCooldown } = await import("../../src/helpers/classicBattle/roundManager.js");
+    startCooldown({}, { setTimeout: (cb, ms) => setTimeout(cb, ms) });
+    setTimeout(() => {
+      const btn = document.getElementById("next-button");
+      if (btn) {
+        btn.disabled = true;
+        btn.dataset.nextReady = "false";
+      }
+    }, 5);
+
+    await vi.advanceTimersByTimeAsync(50);
+    const next = document.getElementById("next-button");
+    expect(next?.disabled).toBe(false);
+    expect(next?.getAttribute("data-next-ready")).toBe("true");
+  });
 });
