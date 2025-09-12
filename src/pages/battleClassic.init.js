@@ -26,6 +26,7 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
+import { removeBackdrops } from "../helpers/classicBattle/uiHelpers.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -389,6 +390,14 @@ function showRoundSelectFallback(store) {
  * 17. Bind `countdownFinished` event to start the next round cycle.
  */
 async function init() {
+  // Clean up any stray modal backdrops from previous page loads or test runs
+  // This ensures that modal backdrops don't interfere with UI interactions
+  try {
+    removeBackdrops();
+  } catch (err) {
+    console.debug("battleClassic: removeBackdrops failed during init", err);
+  }
+
   // Mark that init was called for debugging
   if (typeof window !== "undefined") {
     window.__initCalled = true;
