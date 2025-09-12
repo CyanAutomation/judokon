@@ -5,7 +5,7 @@ test.describe("Classic Battle round select (server)", () => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
-    
+
     await page.goto("/src/pages/battleClassic.html");
     await page.locator("#round-select-3").click();
     await expect(page.locator("body")).toHaveAttribute("data-target", "15");

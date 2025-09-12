@@ -38,7 +38,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 | Response accuracy | ≥90% agent-retrieved responses align with top 3 relevant matches                                                         |
 | Search latency    | ≤200ms average similarity lookup on mid-tier desktop browsers (e.g., 2022 MacBook Air M1 or Windows laptop with 8GB RAM) |
 | Coverage          | ≥90% of PRDs/tooltips indexed within the system                                                                          |
-| File size         | <14.8mb total JSON size to ensure fast client-side loading                                                                |
+| File size         | <14.8mb total JSON size to ensure fast client-side loading                                                               |
 
 ---
 

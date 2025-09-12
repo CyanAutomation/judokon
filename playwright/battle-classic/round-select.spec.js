@@ -5,7 +5,7 @@ test.describe("Classic Battle round select", () => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
-    
+
     await page.goto("/src/pages/battleClassic.html");
 
     // Wait for modal buttons and click the Long (id=3) option
