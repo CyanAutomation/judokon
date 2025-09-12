@@ -1,4 +1,4 @@
-import { test } from "./playwright/fixtures/commonSetup.js";
+import { test } from "./fixtures/commonSetup.js";
 
 test("debug stat loading issue", async ({ page }) => {
   const logs = [];
