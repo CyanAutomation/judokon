@@ -19,7 +19,7 @@ describe("Classic Battle stat buttons", () => {
       document.documentElement.innerHTML = html;
 
       const mod = await import("../../src/pages/battleClassic.init.js");
-      if (typeof mod.init === "function") mod.init();
+      await mod.init();
 
       // Start the match via modal
       const waitForBtn = () =>
@@ -35,9 +35,9 @@ describe("Classic Battle stat buttons", () => {
       startBtn.click();
 
       // Wait for stat buttons to render and be enabled
+      await window.statButtonsReadyPromise;
       const container = document.getElementById("stat-buttons");
       expect(container).toBeTruthy();
-      await new Promise((r) => setTimeout(r, 10));
       // Should have at least one button and be marked ready
       const buttons = container.querySelectorAll("button[data-stat]");
       expect(buttons.length).toBeGreaterThan(0);
@@ -56,8 +56,8 @@ describe("Classic Battle stat buttons", () => {
       expect(scoreEl.textContent || "").toMatch(/You:\s*1/);
       expect(scoreEl.textContent || "").toMatch(/Opponent:\s*0/);
       // Cooldown should begin and Next should be ready
+      await window.nextRoundTimerReadyPromise;
       const next = document.getElementById("next-button");
-      await new Promise((r) => setTimeout(r, 10));
       expect(next.disabled).toBe(false);
       expect(next.getAttribute("data-next-ready")).toBe("true");
     } finally {
