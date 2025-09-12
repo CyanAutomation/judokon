@@ -290,7 +290,9 @@ export function startCooldown(_store, scheduler = realScheduler) {
           await dispatchBattleEvent("ready");
         } catch {}
         if (typeof controls.resolveReady === "function") {
-          try { emitBattleEvent("nextRoundTimerReady"); } catch {}
+          try {
+            emitBattleEvent("nextRoundTimerReady");
+          } catch {}
           controls.resolveReady();
         }
       }
