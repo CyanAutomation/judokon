@@ -45,6 +45,8 @@ describe("Classic Battle stat buttons", () => {
       // Buttons should be enabled
       buttons.forEach((b) => expect(b.disabled).toBe(false));
 
+      // Start awaiting cooldown before triggering event (promise self-resets after dispatch)
+      const nextRoundTimerReady = window.nextRoundTimerReadyPromise;
       // Click the first stat button
       buttons[0].click();
 
@@ -56,7 +58,7 @@ describe("Classic Battle stat buttons", () => {
       expect(scoreEl.textContent || "").toMatch(/You:\s*1/);
       expect(scoreEl.textContent || "").toMatch(/Opponent:\s*0/);
       // Cooldown should begin and Next should be ready
-      await window.nextRoundTimerReadyPromise;
+      await nextRoundTimerReady;
       const next = document.getElementById("next-button");
       expect(next.disabled).toBe(false);
       expect(next.getAttribute("data-next-ready")).toBe("true");
