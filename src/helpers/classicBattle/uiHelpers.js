@@ -833,21 +833,6 @@ export function setBattleStateBadgeEnabled(enable) {
  *
  * @param {object} [store]
  */
-
-export function removeBackdrops(store) {
-  try {
-    document.querySelectorAll?.(".modal-backdrop").forEach((m) => {
-      if (typeof m.remove === "function") m.remove();
-    });
-  } catch {}
-  if (store?.quitModal) {
-    try {
-      store.quitModal.destroy();
-    } catch {}
-    store.quitModal = null;
-  }
-}
-
 export function resetBattleUI(store) {
   removeBackdrops(store);
   resetNextButton();

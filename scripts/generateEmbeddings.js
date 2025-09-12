@@ -804,7 +804,7 @@ async function generate() {
     const size = Buffer.byteLength(chunk + "\n]", "utf8");
     if (bytesWritten + size > MAX_OUTPUT_SIZE) {
       writer.end();
-      throw new Error("Output exceeds 12.8mb");
+      throw new Error("Output exceeds 14.8mb");
     }
     writer.write(chunk);
     bytesWritten += Buffer.byteLength(chunk, "utf8");
@@ -981,7 +981,7 @@ async function generate() {
   const endStr = "\n]\n";
   if (bytesWritten + Buffer.byteLength(endStr, "utf8") > MAX_OUTPUT_SIZE) {
     writer.end();
-    throw new Error("Output exceeds 12.8mb");
+    throw new Error("Output exceeds 14.8mb");
   }
   writer.end(endStr);
   await new Promise((resolve) => writer.on("finish", resolve));

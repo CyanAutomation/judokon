@@ -108,6 +108,6 @@ If a mismatch warning appears, bump the constant and rerun
 `npm run generate:embeddings` to refresh both
 `client_embeddings.json` and `client_embeddings.meta.json`.
 
-If the result would be larger than 12.8mb, the generator exits with
-`"Output exceeds 12.8mb"`. Increase the `CHUNK_SIZE` constant or omit large files to
+If the result would be larger than 14.8mb, the generator exits with
+`"Output exceeds 14.8mb"`. Increase the `CHUNK_SIZE` constant or omit large files to
 reduce the output size before running the script again.
