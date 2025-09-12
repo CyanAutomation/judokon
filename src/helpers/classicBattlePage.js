@@ -39,6 +39,8 @@
  * 2. This function is responsible for setting up the entire Classic Battle page.
  * 3. It initializes UI components, binds event handlers, and prepares the game for interaction.
  * 4. It may also expose certain elements or functions for testing and debugging purposes.
+ *
+ * @returns {void}
  */
 export { setupClassicBattlePage } from "./classicBattle/bootstrap.js";
 /**
@@ -53,5 +55,7 @@ export { setupClassicBattlePage } from "./classicBattle/bootstrap.js";
  * 2. This function simulates a user selecting a stat during a battle round.
  * 3. It triggers the necessary UI updates and game logic to process the stat selection.
  * 4. This is useful for automated testing or for programmatic control of the battle.
+ *
+ * @returns {void}
  */
 export { selectStat } from "./classicBattle/uiHelpers.js";

@@ -836,6 +836,7 @@ export function setBattleStateBadgeEnabled(enable) {
  * 2. Clear scoreboard/messages and update debug panel.
  *
  * @param {object} [store]
+ * @returns {void}
  */
 export function resetBattleUI() {
   removeBackdrops();

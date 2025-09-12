@@ -174,5 +174,27 @@ export function __resetBattleEventTarget() {
 export function getBattleEventTarget() {
   return getTarget();
 }
+/**
+ * Re-export the shared event target getter for external modules.
+ *
+ * @summary Allows consumers to access the global Classic Battle EventTarget
+ * without importing internal helpers.
+ *
+ * @pseudocode
+ * 1. Export the `getTarget` function defined above for public consumption.
+ *
+ * @returns {EventTarget} The shared Classic Battle event bus target.
+ */
 export { getTarget };
+
+/**
+ * Default export of the shared event target getter.
+ *
+ * @summary Provides a convenient default export alias for `getTarget`.
+ *
+ * @pseudocode
+ * 1. Export `getTarget` as the default export from this module.
+ *
+ * @returns {EventTarget} The shared Classic Battle event bus target.
+ */
 export default getTarget;

@@ -97,6 +97,7 @@ export function initScoreboardAdapter() {
  * 2. For each handler object, call `offBattleEvent` using its `type` and `fn` properties to remove the event listener.
  * 3. Clear the `handlers` array by setting its length to 0.
  * 4. Set the `bound` flag to `false` to indicate that the adapter is no longer active.
+ * @returns {void}
  */
 export function disposeScoreboardAdapter() {
   for (const { type, fn } of handlers) {

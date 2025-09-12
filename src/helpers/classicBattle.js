@@ -19,6 +19,8 @@ export {
  * 2. This function is responsible for determining the opponent's chosen judoka card for the current round.
  * 3. It may involve logic to select a card based on game state, AI, or pre-defined rules.
  * 4. The returned value is the opponent's judoka data, or `null` if no selection is made.
+ *
+ * @returns {any}
  */
 export { getOpponentJudoka } from "./classicBattle/cardSelection.js";
 /**
@@ -54,6 +56,8 @@ export { getOpponentJudoka } from "./classicBattle/cardSelection.js";
  * 3. It extracts the raw stat value from the card, handling various data types (e.g., string, number, range).
  * 4. It then normalizes this raw value into a comparable numeric format, suitable for battle calculations.
  * 5. The normalized numeric stat value is returned.
+ *
+ * @returns {number}
  */
 export { getCardStatValue } from "./classicBattle/cardStatUtils.js";
 /**
@@ -87,6 +91,8 @@ export { getCardStatValue } from "./classicBattle/cardStatUtils.js";
  * 2. This function initiates a timed cooldown period between battle rounds.
  * 3. It typically involves setting a timer and updating the UI to reflect the cooldown state.
  * 4. The cooldown can be configured with a specific duration and may trigger callbacks upon completion.
+ *
+ * @returns {void}
  */
 export { startCooldown } from "./classicBattle/roundManager.js";
 /**
@@ -121,6 +127,8 @@ export { startCooldown } from "./classicBattle/roundManager.js";
  * 2. This function is responsible for updating the user interface based on the current round's state.
  * 3. It handles visual elements such as card highlights, countdown timers, and hints.
  * 4. It ensures the UI accurately reflects the progress and outcome of the battle round.
+ *
+ * @returns {void}
  */
 export { applyRoundUI } from "./classicBattle/roundUI.js";
 /**
@@ -155,6 +163,8 @@ export { applyRoundUI } from "./classicBattle/roundUI.js";
  * 2. This function is responsible for fetching or generating the data for the opponent's card.
  * 3. The data includes display information (e.g., name, image, stats) and any internal identifiers required by the battle engine.
  * 4. The composed opponent card data object is returned.
+ *
+ * @returns {object}
  */
 export { getOpponentCardData } from "./classicBattle/opponentController.js";
 /**
@@ -189,6 +199,8 @@ export { getOpponentCardData } from "./classicBattle/opponentController.js";
  * 1. Delegate the call to the underlying `createClassicBattleDebugAPI` function in `setupTestHelpers.js`.
  * 2. This function creates and returns an object containing various utilities for debugging and testing the Classic Battle system.
  * 3. These utilities may include methods to manipulate game state, control timers, or trigger specific events for testing scenarios.
+ *
+ * @returns {object}
  */
 export { createClassicBattleDebugAPI } from "./classicBattle/setupTestHelpers.js";
 export {

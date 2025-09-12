@@ -19,6 +19,8 @@ import logger from "./logger.js";
  * @pseudocode
  * 1. Import `BattleEngine`, `STATS`, and `OUTCOME` from `./BattleEngine.js`.
  * 2. Re-export these symbols so other modules consume a stable facade.
+ *
+ * @returns {void}
  */
 export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
 

@@ -221,6 +221,7 @@ export async function buildCardCarousel(judokaList, gokyoData) {
  *
  * @param {HTMLElement} [container] - The carousel container element.
  * @param {HTMLElement} [wrapper] - The carousel wrapper element.
+ * @returns {void}
  */
 export { addScrollMarkers };
 

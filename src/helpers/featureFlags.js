@@ -15,6 +15,7 @@ import { DEFAULT_SETTINGS } from "../config/settingsDefaults.js";
  * 3. The `change` event is dispatched by `initFeatureFlags()` when flags are initially loaded, and by `setFlag()` whenever an individual flag's state is altered.
  *
  * @type {EventTarget}
+ * @returns {EventTarget}
  */
 export const featureFlagsEmitter = new EventTarget();
 

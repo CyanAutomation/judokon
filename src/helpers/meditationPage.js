@@ -38,6 +38,19 @@ import { loadQuote } from "./quoteBuilder.js";
  * @pseudocode
  * 1. TODO: Add pseudocode
  */
+/**
+ * Initialize the Meditation page UI and interactions.
+ *
+ * @summary Loads a random quote, wires the language toggle, and enables tooltips.
+ *
+ * @pseudocode
+ * 1. Query `#quote` element.
+ * 2. Call `loadQuote()` to render a random quote.
+ * 3. Call `setupLanguageToggle(quoteEl)` for language switching.
+ * 4. Call `initTooltips()` to activate tooltips.
+ *
+ * @returns {void}
+ */
 export function setupMeditationPage() {
   const quoteEl = document.getElementById("quote");
   loadQuote();

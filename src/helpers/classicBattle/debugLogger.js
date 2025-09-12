@@ -359,6 +359,8 @@ export class BattleDebugLogger {
  * @pseudocode
  * 1. Create a new `BattleDebugLogger` instance.
  * 2. Set the `enabled` option to `true` if the environment is `VITEST` or `development`, otherwise `false`.
+ *
+ * @returns {BattleDebugLogger}
  */
 export const debugLogger = new BattleDebugLogger({
   enabled:

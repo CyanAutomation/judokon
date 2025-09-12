@@ -17,6 +17,7 @@
  * 3. The algorithm attempts to find logical break points (e.g., end of a sentence, paragraph, or section) within the `CHUNK_SIZE` limit to create more meaningful chunks.
  *
  * @type {number}
+ * @returns {number}
  */
 export const CHUNK_SIZE = 1000;
 
@@ -39,5 +40,6 @@ export const CHUNK_SIZE = 1000;
  * 3. This process is applied to all chunks except the very first one.
  *
  * @type {number}
+ * @returns {number}
  */
 export const OVERLAP_RATIO = 0.2;

@@ -13,6 +13,7 @@ import { navTooltipKey, BASE_PATH } from "./navigationService.js";
  *
  * @exports navTooltipKey {string} The key used for navigation menu tooltips.
  * @exports BASE_PATH {string} The base path of the application.
+ * @returns {void}
  */
 export { navTooltipKey, BASE_PATH };
 

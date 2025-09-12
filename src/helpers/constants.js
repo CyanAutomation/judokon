@@ -55,6 +55,7 @@ export function resolveDataDir(moduleUrl) {
  * and runtime code can load JSON assets consistently.
  *
  * @constant {string}
+ * @returns {string}
  * @pseudocode
  * 1. The `DATA_DIR` constant is assigned the return value of `resolveDataDir(import.meta.url)`.
  * 2. `resolveDataDir` determines the absolute URL of the `data/` directory relative to the current module's URL.
@@ -71,6 +72,7 @@ export const DATA_DIR = resolveDataDir(import.meta.url);
  * recognized as a carousel scroll action, rather than a tap or accidental movement.
  *
  * @constant {number}
+ * @returns {number}
  * @pseudocode
  * 1. During a touch interaction, calculate the horizontal displacement (`deltaX`) from the touch start to the current touch position.
  * 2. If the absolute value of `deltaX` is greater than or equal to `CAROUSEL_SWIPE_THRESHOLD`, interpret the gesture as a swipe, and initiate carousel scrolling.
@@ -87,6 +89,7 @@ export const CAROUSEL_SWIPE_THRESHOLD = 40;
  * fast operations, improving perceived performance.
  *
  * @constant {number}
+ * @returns {number}
  * @pseudocode
  * 1. When a loading operation begins, start a timer with a duration of `SPINNER_DELAY_MS`.
  * 2. If the loading operation completes before the timer expires, the spinner is never shown.
@@ -101,6 +104,7 @@ export const SPINNER_DELAY_MS = 2000;
  * error message before it starts its fade-out animation.
  *
  * @constant {number}
+ * @returns {number}
  * @pseudocode
  * 1. When a settings error popup is displayed, a timer is started.
  * 2. After `SETTINGS_FADE_MS` milliseconds, the popup's opacity begins to decrease, initiating its fade-out effect.
@@ -116,6 +120,7 @@ export const SETTINGS_FADE_MS = 1800;
  * animation duration.
  *
  * @constant {number}
+ * @returns {number}
  * @pseudocode
  * 1. After a settings error popup is displayed, a timer is set for `SETTINGS_REMOVE_MS`.
  * 2. Upon timer expiration, the popup element is completely removed from the Document Object Model (DOM).
@@ -129,6 +134,7 @@ export const SETTINGS_REMOVE_MS = 2000;
  * visible before its fade-out animation starts.
  *
  * @constant {number}
+ * @returns {number}
  * @pseudocode
  * 1. When a snackbar is displayed, a timer is initiated.
  * 2. After `SNACKBAR_FADE_MS` milliseconds, the snackbar's opacity will start to decrease, making it gradually disappear.
@@ -143,6 +149,7 @@ export const SNACKBAR_FADE_MS = 2500;
  * This includes any fade-out animation time.
  *
  * @constant {number}
+ * @returns {number}
  * @pseudocode
  * 1. After a snackbar is displayed, a timer is set for `SNACKBAR_REMOVE_MS`.
  * 2. When this timer expires, the snackbar element is completely detached from the DOM.

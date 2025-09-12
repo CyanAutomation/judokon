@@ -9,6 +9,7 @@ const debugState = {};
  * @pseudocode
  * 1. Take a `key` and a `value`.
  * 2. Store the `value` in the module-scoped `debugState` object using the `key`.
+ * @returns {void}
  */
 export function exposeDebugState(key, value) {
   debugState[key] = value;

@@ -12,6 +12,7 @@
  * @exports determineOutcome {function} Determines the outcome of a battle round based on stat comparison.
  * @exports applyOutcome {function} Applies the outcome of a battle round to the game state.
  * @exports BattleEngine {class} The main class for managing battle logic and state.
+ * @returns {void}
  */
 
 export { compareStats, determineOutcome, applyOutcome, BattleEngine } from "./BattleEngine.js";

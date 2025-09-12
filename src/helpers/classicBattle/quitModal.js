@@ -71,6 +71,7 @@ function createQuitConfirmation(store, onConfirm) {
  * 4. The promise is also exposed globally on `window.quitConfirmButtonPromise` for testability.
  *
  * @type {Promise<HTMLButtonElement>}
+ * @returns {Promise<HTMLButtonElement>}
  */
 export let quitConfirmButtonPromise = Promise.resolve();
 /**

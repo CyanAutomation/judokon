@@ -12,6 +12,8 @@ import { autoContinue, setAutoContinue } from "./autoContinue.js";
  * 2. Re-export `stateHandlers` for use by the orchestrator.
  *
  * @type {Record<string, {onEnter?: Function, onExit?: Function}>}
+ *
+ * @returns {Record<string, {onEnter?: Function, onExit?: Function}>}
  */
 export { stateHandlers };
 
@@ -26,6 +28,7 @@ export { stateHandlers };
  * @pseudocode
  * 1. Re-export `autoContinue` from `./autoContinue.js`.
  * @type {boolean}
+ * @returns {boolean}
  */
 export { autoContinue };
 
@@ -50,6 +53,16 @@ export {
   guardSelectionResolution,
   schedulePostResolveWatchdog
 } from "./stateHandlers/roundDecisionHelpers.js";
+/**
+ * Re-export the `waitingForMatchStartEnter` state handler.
+ *
+ * @summary Delegates to the implementation in `stateHandlers/waitingForMatchStartEnter.js`.
+ *
+ * @pseudocode
+ * 1. Provide a named export so the orchestrator can import from a single facade.
+ *
+ * @returns {Promise<void>} Resolves when the handler completes its work.
+ */
 export { waitingForMatchStartEnter } from "./stateHandlers/waitingForMatchStartEnter.js";
 /**
  * Handler for entering the `waitingForMatchStart` state.

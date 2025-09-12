@@ -21,7 +21,7 @@ const MIN_TOUCH_TARGET_SIZE = 48;
  * @param {HTMLElement} element - Button or element to adjust.
  * @returns {void}
  */
-function ensureTouchTargetSize(element) {
+export function ensureTouchTargetSize(element) {
   const style = window.getComputedStyle(element);
   const width = parseInt(style.width, 10);
   const height = parseInt(style.height, 10);
@@ -53,7 +53,7 @@ export function applyAccessibilityImprovements(wrapper) {
     card.style.color = "var(--color-text-inverted)";
   });
 }
-export { ensureTouchTargetSize };
+// Named export provided via function declaration above
 
 /**
  * Initialize carousel accessibility and interaction helpers.

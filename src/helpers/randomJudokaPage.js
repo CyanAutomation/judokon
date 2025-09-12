@@ -298,19 +298,20 @@ async function displayCard({
  * 1. TODO: Add pseudocode
  */
 /**
- * @summary TODO: Add summary
+ * Set up the Random Judoka page UI and behavior.
+ *
+ * @summary Renders the draw button/history panel, preloads data, wires listeners,
+ * and initializes tooltips and feature-flag driven panels.
+ *
  * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
+ * 1. Initialize feature flags and read motion preference.
+ * 2. Render placeholder, preload judoka/gokyo data and compute `dataLoaded`.
+ * 3. Build history panel and draw button; wire draw click to `displayCard`.
+ * 4. Wire history toggle and feature-flag-driven debug panels.
+ * 5. If data failed to load, render an error and disable draw button.
+ * 6. Initialize tooltips.
+ *
+ * @returns {Promise<void>}
  */
 export async function setupRandomJudokaPage() {
   const { prefersReducedMotion } = await initFeatureFlagState();
@@ -415,6 +416,7 @@ export async function initRandomJudokaPage() {
  *    c. Resolve the `randomJudokaReadyPromise`.
  *
  * @type {Promise<void>}
+ * @returns {Promise<void>}
  */
 export const randomJudokaReadyPromise = new Promise((resolve) => {
   onDomReady(() => {

@@ -12,15 +12,15 @@ test.describe("Classic Battle CLI", () => {
       // Keep UI deterministic for tests
       try {
         localStorage.setItem("battleCLI.verbose", "false");
-      } catch (e) {}
+      } catch {}
       try {
         // Set both the legacy test key and the canonical storage key so the
         // round-select modal is skipped in browser tests.
         localStorage.setItem("battleCLI.pointsToWin", "5");
         try {
           localStorage.setItem("battle.pointsToWin", "5");
-        } catch (e) {}
-      } catch (e) {}
+        } catch {}
+      } catch {}
       try {
         localStorage.setItem(
           "settings",
@@ -70,7 +70,7 @@ test.describe("Classic Battle CLI", () => {
       // Optional: Try to wait for battle to start, but don't fail the test if it doesn't
       try {
         await waitForBattleState(page, "waitingForPlayerAction", 5000);
-      } catch (e) {
+      } catch {
         // console.log(
         //   "Battle did not reach waitingForPlayerAction state, but no console errors detected"
         // );
@@ -83,10 +83,10 @@ test.describe("Classic Battle CLI", () => {
       // Use Test API for faster initialization check instead of arbitrary timeout
       const stateInfo = await page.evaluate(() => {
         if (window.__TEST_API && window.__TEST_API.state) {
-          const battleState = window.__TEST_API.state.getBattleState();
-          return { hasTestAPI: true, battleState };
+          window.__TEST_API.state.getBattleState();
+          return { hasTestAPI: true };
         }
-        return { hasTestAPI: false, battleState: null };
+        return { hasTestAPI: false };
       });
 
       // console.log("Battle initialization state:", stateInfo);
@@ -110,7 +110,7 @@ test.describe("Classic Battle CLI", () => {
               },
               { timeout: 3000 }
             )
-            .catch((e) => {
+            .catch(() => {
               // console.log("Battle state didn't transition quickly, continuing test");
             });
         } else {
@@ -153,21 +153,20 @@ test.describe("Classic Battle CLI", () => {
             // console.log("Dispatching startClicked to machine");
             machine.dispatch("startClicked");
           }
-        } catch (e) {
-          // console.log("Failed to manually start battle:", err.message);
+        } catch {
+          // console.log("Failed to manually start battle:", e.message);
         }
       });
 
-        // Use Test API to verify battle started instead of arbitrary wait
-        await page.evaluate(() => {
-          if (window.__TEST_API && window.__TEST_API.state) {
-            return window.__TEST_API.state.getBattleState();
-          }
-          return "unknown";
-        });
+      // Use Test API to verify battle started instead of arbitrary wait
+      await page.evaluate(() => {
+        if (window.__TEST_API && window.__TEST_API.state) {
+          return window.__TEST_API.state.getBattleState();
+        }
+        return "unknown";
+      });
 
-        // console.log("Final battle state after manual start attempt:", finalState);
-      }
+      // console.log("Final battle state after manual start attempt:", finalState);
 
       // Check that the battle state badge is hidden when flag is disabled
       // The badge should be hidden regardless of the current battle state
@@ -177,7 +176,7 @@ test.describe("Classic Battle CLI", () => {
       // but don't fail the test if this doesn't happen within a reasonable time
       try {
         await waitForBattleState(page, "waitingForPlayerAction", 5000);
-      } catch (e) {
+      } catch {
         // console.log("Battle did not reach waitingForPlayerAction state, but that's OK for this test");
       }
     }, ["log", "warn", "error"]);
@@ -214,7 +213,7 @@ test.describe("Classic Battle CLI", () => {
       await waitForBattleStateHelper(page, "waitingForPlayerAction", { timeout: 10000 });
 
       // Check current state using Test API
-      const currentState = await getCurrentBattleState(page);
+      await getCurrentBattleState(page);
       // console.log(`✅ Battle reached state: ${currentState} via Test API`);
 
       // Now check that badge is visible and has correct content

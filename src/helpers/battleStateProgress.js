@@ -118,6 +118,7 @@ export function renderStateList(coreStates) {
  * 2. If the target state is not in the list, remap non-core states (e.g., `interruptRound` to `cooldown`).
  * 3. Iterate through all list items, toggling the 'active' class based on whether the item's `data-state` matches the target state.
  * 4. Update the separate battle state badge with the original, unmapped state.
+ * @returns {void}
  */
 export function updateActiveState(list, state) {
   let target = state;

@@ -21,6 +21,18 @@
 /** @type {(() => void) | null} */
 let resolveReady = null;
 
+/**
+ * Promise that resolves when signature move UI is ready.
+ *
+ * @summary Consumers and tests can await this to run after the signature
+ * move section has fully initialized.
+ *
+ * @pseudocode
+ * 1. Create a pending Promise and capture its resolver.
+ * 2. Resolve it when `markSignatureMoveReady()` is called.
+ *
+ * @returns {Promise<void>}
+ */
 export const signatureMoveReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
 });

@@ -6,6 +6,7 @@
  * 2. The value can be modified by calling `setAutoContinue(newValue)`.
  *
  * @type {boolean}
+ * @returns {boolean}
  */
 export let autoContinue = true;
 

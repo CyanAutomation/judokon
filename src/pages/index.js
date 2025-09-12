@@ -8,6 +8,7 @@
  * 1. The `__test` object, which contains various test-specific utilities and internal references, is imported from `./battleCLI/init.js`.
  * 2. This `__test` object is then re-exported under the alias `battleCLI`.
  * 3. Automated tests can import `battleCLI` from this module to interact with the Battle CLI's internals.
+ * @returns {void}
  */
 export { __test as battleCLI } from "./battleCLI/init.js";
 
@@ -22,6 +23,7 @@ export { __test as battleCLI } from "./battleCLI/init.js";
  * 1. The `setupFlags` function is imported from `./battleCLI/init.js`.
  * 2. It is then re-exported directly from this module.
  * 3. Callers can use this export to programmatically set up feature flags for the Battle CLI.
+ * @returns {void}
  */
 export { setupFlags } from "./battleCLI/init.js";
 
@@ -35,6 +37,7 @@ export { setupFlags } from "./battleCLI/init.js";
  * 1. The `wireEvents` function is imported from `./battleCLI/init.js`.
  * 2. It is then re-exported directly from this module.
  * 3. Callers can use this export to programmatically set up event handling for the Battle CLI.
+ * @returns {void}
  */
 export { wireEvents } from "./battleCLI/init.js";
 
@@ -48,6 +51,7 @@ export { wireEvents } from "./battleCLI/init.js";
  * 1. The `subscribeEngine` function is imported from `./battleCLI/init.js`.
  * 2. It is then re-exported directly from this module.
  * 3. Callers can use this export to programmatically set up event subscriptions for the Battle CLI.
+ * @returns {void}
  */
 export { subscribeEngine } from "./battleCLI/init.js";
 
@@ -61,6 +65,7 @@ export { subscribeEngine } from "./battleCLI/init.js";
  * 1. The `onKeyDown` function is imported from `./battleCLI/events.js`.
  * 2. It is then re-exported directly from this module.
  * 3. External modules (e.g., test suites or custom bootstrappers) can attach this function as a global keydown listener.
+ * @returns {void}
  */
 export { onKeyDown } from "./battleCLI/events.js";
 
@@ -75,5 +80,6 @@ export { onKeyDown } from "./battleCLI/events.js";
  * 1. The `getEscapeHandledPromise` function is imported from `./battleCLI/state.js`.
  * 2. It is then re-exported directly from this module.
  * 3. Callers can use this export to obtain a promise that resolves once the CLI has processed an Escape key event.
+ * @returns {Promise<void>}
  */
 export { getEscapeHandledPromise } from "./battleCLI/state.js";

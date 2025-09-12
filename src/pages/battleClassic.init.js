@@ -607,4 +607,16 @@ if (document.readyState === "loading") {
   init().catch((err) => console.debug("battleClassic: init failed", err));
 }
 
+/**
+ * Re-export initialization helpers for the Classic Battle page.
+ *
+ * @summary Provides named exports for `init` and `initBattleStateBadge` so
+ * tests and bootstrappers can import them from this module.
+ *
+ * @pseudocode
+ * 1. Expose `init` which bootstraps the page and UI.
+ * 2. Expose `initBattleStateBadge` which sets initial badge visibility/content.
+ *
+ * @returns {void}
+ */
 export { init, initBattleStateBadge };

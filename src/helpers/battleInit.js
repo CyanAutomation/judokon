@@ -24,6 +24,7 @@ let resolveReady;
  * 2. Add a 'battle:init' event listener to the document that calls `resolveReady` when the event is dispatched.
  * 3. If in a browser environment, expose the promise on the `window` object for legacy consumers.
  * @type {Promise<void>}
+ * @returns {Promise<void>}
  */
 export const battleReadyPromise = new Promise((resolve) => {
   resolveReady = resolve;
