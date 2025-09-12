@@ -205,7 +205,7 @@ function categorizeEvents(events) {
 /**
  * Generate naming convention recommendations
  */
-function generateNamingConventions(categories) {
+function generateNamingConventions() {
   return {
     proposed: {
       "timer.*": [

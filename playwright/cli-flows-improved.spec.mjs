@@ -10,7 +10,7 @@ test("Battle state access via Test API (no DOM manipulation)", async ({ page }) 
     await page.waitForFunction(() => window.__TEST_API !== undefined);
 
     // Test direct battle state access instead of DOM polling
-    const battleState = await page.evaluate(() => window.__TEST_API.state.getBattleState());
+    await page.evaluate(() => window.__TEST_API.state.getBattleState());
     // console.log("✅ Current battle state:", battleState, "(could be null in CLI - that's expected)");
 
     // Test battle readiness via Test API instead of DOM inspection
@@ -25,7 +25,7 @@ test("Battle state access via Test API (no DOM manipulation)", async ({ page }) 
     // console.log("✅ Store info:", storeInfo);
 
     // Test state snapshot access - direct API instead of DOM data attributes
-    const snapshot = await page.evaluate(() => window.__TEST_API.state.getStateSnapshot());
+    await page.evaluate(() => window.__TEST_API.state.getStateSnapshot());
     // console.log("✅ State snapshot:", snapshot, "(state could be null in CLI)");
 
     // Test debug info compilation - comprehensive state without DOM inspection

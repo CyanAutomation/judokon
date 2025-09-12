@@ -19,17 +19,17 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 
 **Personas**
 
-* **Low-spec user:** Needs fast loading and low memory usage.
-* **Keyboard-only user:** Must finish a match without a mouse.
-* **Screen-reader user:** Requires clear announcements and focus control.
-* **Automation pipeline:** Needs deterministic, stable DOM hooks.
-* **QA engineer:** Requires observability and reliable selectors.
+- **Low-spec user:** Needs fast loading and low memory usage.
+- **Keyboard-only user:** Must finish a match without a mouse.
+- **Screen-reader user:** Requires clear announcements and focus control.
+- **Automation pipeline:** Needs deterministic, stable DOM hooks.
+- **QA engineer:** Requires observability and reliable selectors.
 
 **Success looks like:**
 
-* Opens fast, runs on modest hardware, navigable by keyboard alone.
-* Mirrors Classic Battle mechanics exactly.
-* Provides stable test hooks and optional verbose logs.
+- Opens fast, runs on modest hardware, navigable by keyboard alone.
+- Mirrors Classic Battle mechanics exactly.
+- Provides stable test hooks and optional verbose logs.
 
 ---
 
@@ -60,21 +60,21 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 
 ## Non-Goals
 
-* Rich card art, animations, or images.
-* Alternate rules or power-ups.
-* Tooltip parity with visual mode.
-* Multiplayer/networked features.
+- Rich card art, animations, or images.
+- Alternate rules or power-ups.
+- Tooltip parity with visual mode.
+- Multiplayer/networked features.
 
 ---
 
 ## User Stories
 
-* As a player on a low-spec device, I want a mode that loads fast and is easy to read.
-* As a keyboard-only user, I want to select stats and advance rounds without the mouse.
-* As a screen-reader user, I want clear announcements for prompts, timers, and outcomes.
-* As a tester, I want stable selectors and deterministic runs for automation.
-* As a returning player, I want to jump in quickly for a short session.
-* As a player, I want to cancel or change stat selection before the timer expires.
+- As a player on a low-spec device, I want a mode that loads fast and is easy to read.
+- As a keyboard-only user, I want to select stats and advance rounds without the mouse.
+- As a screen-reader user, I want clear announcements for prompts, timers, and outcomes.
+- As a tester, I want stable selectors and deterministic runs for automation.
+- As a returning player, I want to jump in quickly for a short session.
+- As a player, I want to cancel or change stat selection before the timer expires.
 
 ---
 
@@ -98,11 +98,11 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 
 **Feature Flags**
 
-* `cliVerbose` — show log panel.
-* `cliShortcuts` — enable single-key shortcuts.
-* `battleStateBadge` — header badge reflecting state.
-* `autoSelect` — auto-pick on timeout.
-* `skipRoundCooldown` — bypass inter-round countdown.
+- `cliVerbose` — show log panel.
+- `cliShortcuts` — enable single-key shortcuts.
+- `battleStateBadge` — header badge reflecting state.
+- `autoSelect` — auto-pick on timeout.
+- `skipRoundCooldown` — bypass inter-round countdown.
 
 ---
 
@@ -133,18 +133,18 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 
 **Enhancements**
 
-* **Terminal Title Bar**: Enhanced gradient styling with authentic terminal appearance.
-* **Unicode Indicators**: ⏱ for timer, → for prompts and results, │ for separators.
-* **Professional Separators**: Proper `────────────────────` instead of simple `---`.
-* **Typography Excellence**: Consistent 8px rhythm, improved line-height 1.45.
-* **Enhanced Stat List**: Refined padding, hover states, and visual feedback.
-* **Terminal Colors**: Command prompt styling with proper terminal background.
-* **Improved Contrast**: Enhanced from basic compliance to 7:1+ for primary text.
-* **Warning Indicators**: Timer warning color (#ffcc00) when approaching expiry.
-* **Status Text**: Better contrast (#ffffff, #e0e0e0) for improved readability.
-* **Mobile Optimization**: Smaller text sizes while preserving 44px tap targets.
-* **Background Hierarchy**: Subtle background variations for visual organization.
-* **Focus States**: Enhanced visibility while maintaining terminal aesthetics.
+- **Terminal Title Bar**: Enhanced gradient styling with authentic terminal appearance.
+- **Unicode Indicators**: ⏱ for timer, → for prompts and results, │ for separators.
+- **Professional Separators**: Proper `────────────────────` instead of simple `---`.
+- **Typography Excellence**: Consistent 8px rhythm, improved line-height 1.45.
+- **Enhanced Stat List**: Refined padding, hover states, and visual feedback.
+- **Terminal Colors**: Command prompt styling with proper terminal background.
+- **Improved Contrast**: Enhanced from basic compliance to 7:1+ for primary text.
+- **Warning Indicators**: Timer warning color (#ffcc00) when approaching expiry.
+- **Status Text**: Better contrast (#ffffff, #e0e0e0) for improved readability.
+- **Mobile Optimization**: Smaller text sizes while preserving 44px tap targets.
+- **Background Hierarchy**: Subtle background variations for visual organization.
+- **Focus States**: Enhanced visibility while maintaining terminal aesthetics.
 
 **Layout Structure**: Single column design optimized for both desktop and mobile with responsive adjustments that maintain terminal authenticity across all screen sizes.
 
@@ -152,30 +152,30 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 
 ## Accessibility Requirements
 
-* WCAG 2.1 AA compliance preserved and enhanced.
-* Touch target ≥44px.
-* Keyboard navigation unchanged.
-* Screen reader announcements preserved.
-* Logical tab order; ESC closes modals.
-* Focus indicators visible and authentic to terminal style.
+- WCAG 2.1 AA compliance preserved and enhanced.
+- Touch target ≥44px.
+- Keyboard navigation unchanged.
+- Screen reader announcements preserved.
+- Logical tab order; ESC closes modals.
+- Focus indicators visible and authentic to terminal style.
 
 ---
 
 ## Observability & Telemetry
 
-* Verbose pane (flagged) listing timestamped transitions, inputs, and ticks.
-* Structured test hooks (data-attrs for round/time).
-* Console routed via logger, silenced in CI.
+- Verbose pane (flagged) listing timestamped transitions, inputs, and ticks.
+- Structured test hooks (data-attrs for round/time).
+- Console routed via logger, silenced in CI.
 
 ---
 
 ## Error & Edge Cases
 
-* Invalid keys ignored; small hint “Press H for help.”
-* Rapid multi-input debounced.
-* Timers pause on tab hide; resume on return.
-* Unexpected error: readable message, rollback to safe state.
-* Quit confirmation pauses/resumes timers as expected.
+- Invalid keys ignored; small hint “Press H for help.”
+- Rapid multi-input debounced.
+- Timers pause on tab hide; resume on return.
+- Unexpected error: readable message, rollback to safe state.
+- Quit confirmation pauses/resumes timers as expected.
 
 ---
 
@@ -187,27 +187,27 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 
 ## Dependencies
 
-* Classic Battle engine/state table.
-* Settings storage helper.
-* Logger utility.
+- Classic Battle engine/state table.
+- Settings storage helper.
+- Logger utility.
 
 ---
 
 ## Implementation Notes
 
-* DOM/test selectors remain unchanged.
-* Styling is additive, no functional regressions.
-* CSS file `src/styles/cli-immersive.css` introduced for immersive styling.
+- DOM/test selectors remain unchanged.
+- Styling is additive, no functional regressions.
+- CSS file `src/styles/cli-immersive.css` introduced for immersive styling.
 
 ---
 
 ## Testing & Verification
 
-* Visual regression testing.
-* Accessibility compliance (WCAG 2.1 AA).
-* Touch target verification.
-* Keyboard navigation flows.
-* Screen reader compatibility.
+- Visual regression testing.
+- Accessibility compliance (WCAG 2.1 AA).
+- Touch target verification.
+- Keyboard navigation flows.
+- Screen reader compatibility.
 
 ---
 
@@ -277,8 +277,9 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 ### Accessibility Preservation
 
 All improvements maintain and enhance existing accessibility standards:
+
 - ✅ WCAG 2.1 AA compliance preserved and improved
-- ✅ Touch target requirements (≥44px) maintained across all interactive elements  
+- ✅ Touch target requirements (≥44px) maintained across all interactive elements
 - ✅ Keyboard navigation patterns unchanged and enhanced
 - ✅ Screen reader announcements preserved with improved clarity
 - ✅ Mobile responsiveness improved while maintaining usability standards
@@ -291,10 +292,7 @@ All improvements maintain and enhance existing accessibility standards:
 - **Memory Efficiency**: Preserved low memory footprint (<30MB) target requirements
 
 ---
-  - [ ] 5.1 Add seed-based determinism and localStorage persistence.
-  - [ ] 5.2 Handle timer pause/resume on tab visibility change.
-  - [ ] 5.3 Display helpful errors and fallback UIs.
 
-
-
-
+- [ ] 5.1 Add seed-based determinism and localStorage persistence.
+- [ ] 5.2 Handle timer pause/resume on tab visibility change.
+- [ ] 5.3 Display helpful errors and fallback UIs.

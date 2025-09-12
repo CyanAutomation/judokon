@@ -118,7 +118,7 @@ function analyzeHandlerImplementation(handler, contractActions) {
   const missing = [];
 
   for (const action of contractActions) {
-    const [category, operation] = action.split(":");
+    const [category] = action.split(":");
     let isImplemented = false;
 
     // Check for different implementation patterns

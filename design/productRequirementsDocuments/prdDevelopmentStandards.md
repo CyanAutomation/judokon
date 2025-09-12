@@ -34,15 +34,15 @@ Inconsistent development practices across the JU-DO-KON! codebase lead to reduce
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature | Description |
-|----------|---------|-------------|
-| P1 | JSDoc Documentation Standards | Mandatory documentation format for all public functions and classes |
-| P1 | Function Naming Conventions | Consistent prefix-based naming patterns (create, setup, is) |
-| P1 | Pseudocode Documentation | Structured high-level logic descriptions using @pseudocode marker |
-| P1 | Code Quality Rules | Function length limits, modularity requirements, and refactoring guidelines |
-| P2 | UI Design System Integration | Component design patterns, color systems, and accessibility standards |
-| P2 | Settings Page Guidelines | Specific layout and structure requirements for settings interfaces |
-| P3 | Advanced Documentation | Additional JSDoc tags and specialized documentation patterns |
+| Priority | Feature                       | Description                                                                 |
+| -------- | ----------------------------- | --------------------------------------------------------------------------- |
+| P1       | JSDoc Documentation Standards | Mandatory documentation format for all public functions and classes         |
+| P1       | Function Naming Conventions   | Consistent prefix-based naming patterns (create, setup, is)                 |
+| P1       | Pseudocode Documentation      | Structured high-level logic descriptions using @pseudocode marker           |
+| P1       | Code Quality Rules            | Function length limits, modularity requirements, and refactoring guidelines |
+| P2       | UI Design System Integration  | Component design patterns, color systems, and accessibility standards       |
+| P2       | Settings Page Guidelines      | Specific layout and structure requirements for settings interfaces          |
+| P3       | Advanced Documentation        | Additional JSDoc tags and specialized documentation patterns                |
 
 ---
 
@@ -51,6 +51,7 @@ Inconsistent development practices across the JU-DO-KON! codebase lead to reduce
 ### 1. JSDoc Documentation Standards (P1)
 
 **Required Format:**
+
 - Use block comments `/** ... */` for all public functions, classes, and modules
 - Start with single-sentence summary describing function purpose
 - Document parameters with `@param {Type} name - Description` format
@@ -59,6 +60,7 @@ Inconsistent development practices across the JU-DO-KON! codebase lead to reduce
 - Include default values in parameter descriptions when applicable
 
 **Example:**
+
 ```javascript
 /**
  * Build the card carousel HTML elements.
@@ -71,6 +73,7 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ```
 
 **Quality Requirements:**
+
 - Documentation must match actual function signature
 - Brief, clear descriptions using imperative style
 - No modification of comments marked with `@pseudocode`
@@ -78,13 +81,15 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ### 2. Function Naming Conventions (P1)
 
 **Prefix-Based Patterns:**
+
 - `createX` - Factory functions returning DOM nodes or component objects
-- `setupY` - Functions attaching event listeners or initializing behavior  
+- `setupY` - Functions attaching event listeners or initializing behavior
 - `isZ` - Predicate helpers returning boolean values
 - `handleX` - Event handler functions
 - `loadX` - Data loading and fetching functions
 
 **Grouping Requirements:**
+
 - Group related functions by concern within modules
 - Use consistent prefixes to indicate function purpose
 - Maintain alphabetical ordering within prefix groups
@@ -92,6 +97,7 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ### 3. Pseudocode Documentation (P1)
 
 **Format Requirements:**
+
 - Use `@pseudocode` marker at beginning of pseudocode blocks
 - Employ numbered list format for step-by-step logic
 - Focus on **why** operations occur, not just **what** happens
@@ -99,6 +105,7 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 - Place only where adding value for complex functions
 
 **Example:**
+
 ```javascript
 /**
  * Populates the bottom navigation bar with game modes.
@@ -118,12 +125,14 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ### 4. Code Quality Standards (P1)
 
 **Function Complexity:**
+
 - Maximum 50 lines per function
 - Single responsibility principle enforcement
 - Extract helper functions for complex logic blocks
 - Avoid deep nesting (maximum 3 levels)
 
 **Modularity Requirements:**
+
 - Group helpers by functional concern
 - Clear module boundaries and dependencies
 - Consistent export patterns
@@ -132,6 +141,7 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ### 5. UI Design System Integration (P2)
 
 **Core Design Principles:**
+
 - Touch-first interaction (minimum 48x48px targets)
 - Responsive feedback for all interactions
 - Visual hierarchy with clear information prioritization
@@ -140,12 +150,14 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 - Consistent component reuse patterns
 
 **Color System:**
+
 - Primary: #CB2504 (buttons, highlights)
 - Structured token-based color usage
 - High contrast requirements for accessibility
 - Consistent application across components
 
 **Component Structure:**
+
 - Flat color with geometric background textures
 - Layered card layouts with z-depth
 - Emphasis typography (caps, bold, white-on-color)
@@ -154,12 +166,14 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ### 6. Settings Page Guidelines (P2)
 
 **Layout Requirements:**
+
 - Section grouping with `<fieldset>` elements and descriptive `<legend>` titles
 - Consistent form structure across all sections
 - Settings item containers using `<div class="settings-item">`
 - Responsive grid layout using `.game-mode-toggle-container` class
 
 **Structure Template:**
+
 ```html
 <div class="settings-item">
   <label for="example-toggle">Example Toggle</label>
@@ -168,6 +182,7 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ```
 
 **Responsive Design:**
+
 - 3-column layout on desktop
 - 1-column stacked layout on mobile
 - Logical keyboard navigation order
@@ -193,21 +208,25 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ## Non-Functional Requirements
 
 **Performance:**
+
 - Documentation generation must not impact build times
 - Code quality checks integrated into CI/CD pipeline
 - Automated validation of naming conventions
 
 **Maintainability:**
+
 - Standards must be easily discoverable through PRD system
 - Regular updates to reflect evolving best practices
 - Clear migration path for existing non-compliant code
 
 **Accessibility:**
+
 - All UI components meet WCAG AA standards
 - Keyboard navigation support for all interactive elements
 - Screen reader compatibility for all text content
 
 **Developer Experience:**
+
 - Standards enforceable through automated tooling
 - Clear examples for all documented patterns
 - Integration with AI agent workflows
@@ -217,12 +236,14 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ## Dependencies and Open Questions
 
 **Dependencies:**
+
 - ESLint configuration for automated checking
 - Prettier integration for consistent formatting
 - CI/CD pipeline for quality validation
 - RAG system integration for AI agent access
 
 **Open Questions:**
+
 - Should standards be enforced retroactively on existing code?
 - What level of automation is appropriate for documentation generation?
 - How to handle standards conflicts between different component types?
@@ -244,6 +265,7 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 ## Source Files Consolidated
 
 This PRD consolidates content from the following design/codeStandards files:
+
 - `codeJSDocStandards.md` - JSDoc formatting and documentation requirements
 - `codeNamingPatterns.md` - Function naming conventions and patterns
 - `codePseudocodeStandards.md` - Pseudocode documentation standards

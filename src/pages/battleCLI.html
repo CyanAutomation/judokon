@@ -368,16 +368,39 @@
       }
 
       /* Utility classes for inline style replacement */
-      .d-flex { display: flex; }
-      .flex-col { flex-direction: column; }
-      .align-items-center { align-items: center; }
-      .justify-content-between { justify-content: space-between; }
-      .fw-600 { font-weight: 600; }
-      .button-reset { background: transparent; border: 0; color: inherit; cursor: pointer; font-family: inherit; }
-      .seed-input { width: 6ch; }
-      .seed-error { color: #f88; font-size: 12px; }
-      .pre-wrap { margin: 0; white-space: pre-wrap; }
-
+      .d-flex {
+        display: flex;
+      }
+      .flex-col {
+        flex-direction: column;
+      }
+      .align-items-center {
+        align-items: center;
+      }
+      .justify-content-between {
+        justify-content: space-between;
+      }
+      .fw-600 {
+        font-weight: 600;
+      }
+      .button-reset {
+        background: transparent;
+        border: 0;
+        color: inherit;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .seed-input {
+        width: 6ch;
+      }
+      .seed-error {
+        color: #f88;
+        font-size: 12px;
+      }
+      .pre-wrap {
+        margin: 0;
+        white-space: pre-wrap;
+      }
 
       /* Responsive tweaks: improve header wrapping and control spacing on narrow screens */
       @media (max-width: 720px) {
@@ -503,9 +526,7 @@
 
         <!-- Less-prominent settings section moved into main to reduce header prominence -->
         <section aria-label="Match Settings" class="cli-block cli-settings">
-          <div
-            class="cli-settings-header d-flex align-items-center justify-content-between"
-          >
+          <div class="cli-settings-header d-flex align-items-center justify-content-between">
             <div class="fw-600">Match Settings</div>
             <div>
               <button
@@ -583,9 +604,7 @@
           data-flag="cliShortcuts"
           hidden
         >
-          <div
-            class="cli-settings-header d-flex align-items-center justify-content-between"
-          >
+          <div class="cli-settings-header d-flex align-items-center justify-content-between">
             <div class="fw-600">Shortcuts</div>
             <div>
               <button
@@ -617,11 +636,7 @@
           data-flag="cliVerbose"
           hidden
         >
-          <pre
-            id="cli-verbose-log"
-            aria-atomic="false"
-            class="pre-wrap"
-          ></pre>
+          <pre id="cli-verbose-log" aria-atomic="false" class="pre-wrap"></pre>
         </section>
         <div id="cli-prompt" role="status" aria-label="Command prompt">
           &gt; <span id="cli-cursor" aria-hidden="true">▌</span>

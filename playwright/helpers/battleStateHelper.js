@@ -89,7 +89,7 @@ export async function triggerStateTransition(page, event) {
       try {
         window.__TEST_API.state.triggerStateTransition(eventName);
         return true;
-      } catch (error) {
+      } catch {
         // console.log("State transition failed:", error);
         return false;
       }

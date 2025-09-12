@@ -35,15 +35,15 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature | Description |
-|----------|---------|-------------|
-| P1 | Core Character Design | Fundamental appearance specifications including proportions, colors, and style |
-| P1 | Facial Features and Expressions | Detailed facial design with expression variations for different contexts |
-| P1 | Default Outfit and Variations | Primary judo gi design with alternative clothing options |
-| P1 | Color Palette Standards | Exact color specifications for consistent reproduction |
-| P2 | Pose Library | Standard poses for common game scenarios and interactions |
-| P2 | Scene-Specific Adaptations | Character variations for different game contexts and backgrounds |
-| P3 | Accessory and Prop Guidelines | Optional items and tools for specific scenarios |
+| Priority | Feature                         | Description                                                                    |
+| -------- | ------------------------------- | ------------------------------------------------------------------------------ |
+| P1       | Core Character Design           | Fundamental appearance specifications including proportions, colors, and style |
+| P1       | Facial Features and Expressions | Detailed facial design with expression variations for different contexts       |
+| P1       | Default Outfit and Variations   | Primary judo gi design with alternative clothing options                       |
+| P1       | Color Palette Standards         | Exact color specifications for consistent reproduction                         |
+| P2       | Pose Library                    | Standard poses for common game scenarios and interactions                      |
+| P2       | Scene-Specific Adaptations      | Character variations for different game contexts and backgrounds               |
+| P3       | Accessory and Prop Guidelines   | Optional items and tools for specific scenarios                                |
 
 ---
 
@@ -52,12 +52,14 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ### 1. Core Character Design (P1)
 
 **Character Identity:**
+
 - **Name**: KG
 - **Role**: Friendly, energetic guide character providing advice and encouragement
 - **Target Appeal**: Ages 8-12 with universal approachability
 - **Personality**: Confident, encouraging, slightly exaggerated for expressiveness
 
 **Design Style:**
+
 - **Art Style**: Chibi (super-deformed) cartoon style
 - **Proportions**: 3 heads tall with large head relative to body
 - **Head-to-body Ratio**: Head approximately 1/3 of total height
@@ -65,6 +67,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 - **Extremities**: Large hands and feet for expressiveness and visual balance
 
 **Visual Treatment:**
+
 - **Outlines**: Bold, dark black outlines around character
 - **Shading**: Flat cell shading style with slight warm lighting
 - **Highlights**: Soft highlights for dimensional depth
@@ -73,6 +76,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ### 2. Facial Features and Expressions (P1)
 
 **Facial Structure:**
+
 - **Head Shape**: Rounded head with broad, expressive face
 - **Eyes**: Large, rounded eyes with thick black eyebrows
 - **Mouth**: Wide mouth capability for various expressions
@@ -81,6 +85,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 - **Skin Tone**: Light to medium tone representing Japanese ethnicity (HEX `#F0C8A0` to `#D9A57E`)
 
 **Expression Variations:**
+
 - **Default**: Cheerful and friendly with wide smile showing visible teeth
 - **Determined**: Brows furrowed with serious mouth for important moments
 - **Surprised**: Wide eyes with open mouth for unexpected events
@@ -88,6 +93,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 - **Thinking**: Hand on chin with curious, contemplative expression
 
 **Expression Usage Guidelines:**
+
 - Default cheerful expression for 80% of appearances
 - Determined expression for challenge introductions and serious advice
 - Surprised expression for achievement celebrations and unexpected events
@@ -97,18 +103,21 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ### 3. Default Outfit and Variations (P1)
 
 **Primary Outfit (Default):**
+
 - **Gi Color**: Blue judo gi (HEX `#3C7DC4` - Pantone 285M)
 - **Belt**: Black belt tied at waist with proper knot detail (HEX `#1A1A1A`)
 - **Insignia**: Japan flag patch on left chest of gi
 - **Footwear**: Barefoot by default for authentic martial arts representation
 
 **Alternative Outfits:**
+
 - **Casual Variation**: Red t-shirt and blue shorts for informal scenes
 - **Gi Color Alternatives**: Red or white gi for special contexts (black belt remains constant)
 - **Seasonal Adaptations**: Lightweight variations for outdoor scenes
 - **Ceremonial**: Formal gi presentation for awards and achievements
 
 **Outfit Usage Guidelines:**
+
 - Default blue gi for 90% of game interactions
 - Casual clothes for non-martial arts contexts (tutorials, celebrations)
 - Alternative gi colors for special events or opponent matching
@@ -117,6 +126,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ### 4. Color Palette Standards (P1)
 
 **Primary Colors:**
+
 - **Gi Blue**: HEX `#3C7DC4` (Pantone 285M)
 - **Belt Black**: HEX `#1A1A1A`
 - **Skin Tone Range**: HEX `#F0C8A0` to `#D9A57E`
@@ -124,12 +134,14 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 - **Eye Color**: HEX `#4A4A4A` (dark gray-brown)
 
 **Secondary Colors:**
+
 - **Casual Shirt Red**: HEX `#D32F2F`
 - **Casual Shorts Blue**: HEX `#1976D2`
 - **Japan Flag Red**: HEX `#BC002D`
 - **Japan Flag White**: HEX `#FFFFFF`
 
 **Color Usage Requirements:**
+
 - All colors must maintain WCAG AA contrast ratios against backgrounds
 - Color consistency across all digital and print media
 - Accessibility consideration for colorblind users
@@ -138,6 +150,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ### 5. Pose Library (P2)
 
 **Standard Poses:**
+
 - **Default Dynamic**: Pointing upward with confident expression
 - **Thumbs Up**: Encouraging gesture with bright smile
 - **Energetic Jump**: Mid-air with fists raised in triumph
@@ -146,12 +159,14 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 - **Cheering**: Fists in air for celebrations and victories
 
 **Prop Interaction Poses:**
+
 - **Holding Signs**: Large signboards with pointer stick
 - **Award Presentation**: Holding trophies, scrolls, or certificates
 - **Teaching Gesture**: Demonstrating techniques or pointing to information
 - **Welcome Pose**: Open arms for greetings and introductions
 
 **Pose Selection Guidelines:**
+
 - Match pose to emotional context of interaction
 - Ensure stable foot placement for visual balance
 - Maintain open, confident posture across all poses
@@ -160,6 +175,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ### 6. Scene-Specific Adaptations (P2)
 
 **Background Integration:**
+
 - **Dojo Scenes**: Tatami mats and wooden walls, slightly blurred
 - **Stadium Context**: Crowd backgrounds for celebrations
 - **Outdoor Training**: Grassy areas with blue sky
@@ -167,6 +183,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 - **UI Integration**: Plain backgrounds for interface elements
 
 **Contextual Adaptations:**
+
 - **Giving Advice**: Pointing gesture with dojo background
 - **Victory Celebration**: Trophy holding with cheering crowd
 - **Casual Interaction**: Relaxed pose with informal background
@@ -193,21 +210,25 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ## Non-Functional Requirements
 
 **Visual Quality:**
+
 - Character design must render clearly at minimum 32x32 pixel resolution
 - Scalable design that maintains clarity from small icons to large illustrations
 - Consistent appearance across different display technologies and color profiles
 
 **Performance:**
+
 - Character artwork files optimized for web and mobile platforms
 - Efficient sprite sheets and animation frame management
 - Quick loading times for character appearances in game interfaces
 
 **Accessibility:**
+
 - Character design distinguishable for users with color vision deficiencies
 - Clear visual hierarchy and contrast for all expressions and poses
 - Alternative text descriptions available for screen reader users
 
 **Cultural Sensitivity:**
+
 - Respectful representation of Japanese martial arts traditions
 - Appropriate use of cultural symbols (Japan flag, traditional gi)
 - Avoidance of stereotypes while maintaining cultural authenticity
@@ -217,16 +238,19 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ## Edge Cases / Failure States
 
 **Design Inconsistency:**
+
 - Documentation of acceptable variation ranges for different implementation contexts
 - Guidelines for maintaining character identity when technical limitations require simplification
 - Procedures for quality review and approval of new character artwork
 
 **Cultural Appropriateness:**
+
 - Review process for ensuring respectful cultural representation
 - Guidelines for adapting character for different cultural contexts if needed
 - Sensitivity protocols for character use in marketing and promotional materials
 
 **Technical Limitations:**
+
 - Fallback designs for low-resolution or low-color display scenarios
 - Simplified versions for performance-constrained environments
 - Alternative representations for accessibility requirements
@@ -236,12 +260,14 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ## Dependencies and Open Questions
 
 **Dependencies:**
+
 - Art asset creation and management system
 - Brand guidelines and style guide integration
 - Cultural consultation for authentic representation
 - User testing capabilities for age-appropriate appeal validation
 
 **Open Questions:**
+
 - Should KG have voice acting, and if so, what vocal characteristics?
 - How should the character evolve or be updated over time?
 - What level of animation is appropriate for different game contexts?
@@ -252,6 +278,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ## Mockups / Visual Reference
 
 **Character Sheet Requirements:**
+
 - Full character design sheet showing proportions and construction guidelines
 - Expression chart displaying all approved facial expressions
 - Color palette swatches with exact HEX values
@@ -259,6 +286,7 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 - Context examples showing character in various game scenarios
 
 **Style Guide Integration:**
+
 - Character design elements must align with overall JU-DO-KON! visual identity
 - Consistent art direction with game UI and environmental design
 - Brand-appropriate character personality expression
@@ -283,5 +311,6 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ## Source Files Consolidated
 
 This PRD consolidates content from the following design/characterDesign files:
+
 - `kgCharacterDesignDocument.md` - Comprehensive character specifications including proportions, features, and style guidelines
 - `kgCharacterPromptSheet.md` - Scene-specific prompts, color references, and implementation guidelines for character artwork creation

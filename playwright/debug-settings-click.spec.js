@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 
 test("settings button force click test", async ({ page }) => {
   await page.goto("/src/pages/settings.html");

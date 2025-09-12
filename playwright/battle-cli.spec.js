@@ -121,7 +121,7 @@ test.describe("Classic Battle CLI", () => {
       }
 
       // Check the current battle state for debugging
-      const currentState = await page.evaluate(() => {
+      await page.evaluate(() => {
         return {
           bodyDataset: document.body?.dataset?.battleState,
           hasGetStateSnapshot: typeof window.getStateSnapshot === "function",
@@ -153,13 +153,13 @@ test.describe("Classic Battle CLI", () => {
               // console.log("Dispatching startClicked to machine");
               machine.dispatch("startClicked");
             }
-          } catch (err) {
+          } catch {
             // console.log("Failed to manually start battle:", err.message);
           }
         });
 
         // Use Test API to verify battle started instead of arbitrary wait
-        const finalState = await page.evaluate(() => {
+        await page.evaluate(() => {
           if (window.__TEST_API && window.__TEST_API.state) {
             return window.__TEST_API.state.getBattleState();
           }

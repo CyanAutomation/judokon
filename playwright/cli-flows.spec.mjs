@@ -16,7 +16,7 @@ test("Keyboard flows: select stat, toggle help, quit modal", async ({ page }) =>
     );
 
     // Check if Test API is available (might not be in CLI mode)
-    const hasTestAPI = await page.evaluate(() => {
+    await page.evaluate(() => {
       return typeof window.__TEST_API !== "undefined";
     });
     // console.log("CLI Test API available:", hasTestAPI);

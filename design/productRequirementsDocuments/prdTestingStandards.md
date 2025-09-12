@@ -35,15 +35,15 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature | Description |
-|----------|---------|-------------|
-| P1 | Unit Test Quality Standards | Behavior-focused testing principles and evaluation criteria |
-| P1 | Playwright Test Guidelines | End-to-end testing best practices and locator strategies |
-| P1 | Test Naming Conventions | Consistent file and test case naming patterns |
-| P1 | Quality Evaluation System | Automated scoring system for test value assessment |
-| P2 | Test Structure Templates | Standardized patterns for common testing scenarios |
-| P2 | Performance Optimization | Guidelines for efficient test execution |
-| P3 | Advanced Testing Patterns | Specialized testing approaches for complex scenarios |
+| Priority | Feature                     | Description                                                 |
+| -------- | --------------------------- | ----------------------------------------------------------- |
+| P1       | Unit Test Quality Standards | Behavior-focused testing principles and evaluation criteria |
+| P1       | Playwright Test Guidelines  | End-to-end testing best practices and locator strategies    |
+| P1       | Test Naming Conventions     | Consistent file and test case naming patterns               |
+| P1       | Quality Evaluation System   | Automated scoring system for test value assessment          |
+| P2       | Test Structure Templates    | Standardized patterns for common testing scenarios          |
+| P2       | Performance Optimization    | Guidelines for efficient test execution                     |
+| P3       | Advanced Testing Patterns   | Specialized testing approaches for complex scenarios        |
 
 ---
 
@@ -52,6 +52,7 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 ### 1. Unit Test Quality Standards (P1)
 
 **Core Philosophy:**
+
 - **Behavior-focused**: Tests verify observable behavior, not implementation details
 - **High-signal**: Test failures clearly indicate genuine problems
 - **Low-cost**: Tests are fast, reliable, and easy to maintain
@@ -59,31 +60,37 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 **Quality Evaluation Rubric (0-10 scale):**
 
 **Intent Clarity (Weight: 2)**
+
 - Descriptive test titles using 'should', 'when', 'given/then' patterns
 - Clear links to requirements or specifications
 - Tests clearly state expected behavior
 
 **Behavioral Relevance (Weight: 2)**
+
 - Tests relate to required features or documented bug fixes
 - Linked to PRDs, issue trackers, or bug reports
 - Cover critical user-facing functionality
 
 **Assertion Quality (Weight: 2)**
+
 - High-quality semantic assertions (`.toEqual`, `.toBeCalledWith`)
 - Minimal reliance on snapshot-only tests
 - Precise, meaningful validation of behavior
 
 **Isolation and Robustness (Weight: 2)**
+
 - Proper test isolation from external factors
 - Use of fake timers (`vi.useFakeTimers`) for time-dependent tests
 - Minimal heavy mocking (fewer than 4 spies per test)
 
 **Cost vs Coverage (Weight: 2)**
+
 - Efficient test execution time
 - High value per line of test code
 - Appropriate coverage without redundancy
 
 **Scoring Classification:**
+
 - **Keep (≥8)**: High-quality tests providing genuine value
 - **Refactor (5-7)**: Tests needing improvement but worth salvaging
 - **Remove/Merge (≤4)**: Low-value tests requiring removal or consolidation
@@ -91,6 +98,7 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 ### 2. Playwright Test Guidelines (P1)
 
 **Core Philosophy:**
+
 - **User-centric**: Model realistic user journeys
 - **Robust & Reliable**: Consistent results, free from flakiness
 - **Efficient**: Fast and reliable execution
@@ -98,31 +106,37 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 **Quality Evaluation Rubric (0-10 scale):**
 
 **Intent Clarity (Weight: 2)**
+
 - Clear user flow descriptions using 'given/when/then', 'user navigates'
 - Links to requirements and specifications
 - Descriptive test scenarios
 
 **Behavioral Relevance (Weight: 2)**
+
 - Maps to critical user paths or documented bug fixes
 - Linked to PRDs, issues, or feature annotations
 - Covers essential user-facing functionality
 
 **Assertion Quality (Weight: 2)**
+
 - User-facing locators (`getByRole`, `getByTestId`)
 - Semantic assertions over screenshot-only tests
 - Minimal reliance on CSS/XPath selectors
 
 **Robustness (Weight: 2)**
+
 - Stable locator strategies
 - Proper wait conditions
 - Minimal hardcoded delays
 
 **Performance (Weight: 2)**
+
 - Efficient test execution
 - Appropriate parallelization
 - Minimal resource consumption
 
 **Best Practices:**
+
 - Use `data-testid` attributes for test-specific element identification
 - Implement proper wait conditions (`waitForSelector`, `waitForLoadState`)
 - Avoid hardcoded timeouts in favor of condition-based waiting
@@ -131,26 +145,30 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 ### 3. Test Naming Conventions (P1)
 
 **File Naming Standards:**
+
 - Unit tests: `featureOrComponent.test.js`
 - Integration tests: `featureOrComponent.integration.test.js`
 - Playwright tests: `featureOrComponent.spec.js`
 - File names directly reflect the area under test
 
 **Examples:**
+
 - `matchControls.test.js` - Unit tests for match control functionality
 - `navigation.spec.js` - E2E tests for navigation behavior
 - `cardCarousel.integration.test.js` - Integration tests for card carousel
 
 **Test Structure Standards:**
+
 - **Describe Blocks**: Start with module/feature name, followed by specific behavior
 - **Test Messages**: Short, explicit descriptions of expected outcomes
 - **Consistent Hierarchy**: Logical grouping from general to specific
 
 **Template Structure:**
+
 ```javascript
-describe('ComponentName', () => {
-  describe('when condition occurs', () => {
-    it('should produce expected behavior', () => {
+describe("ComponentName", () => {
+  describe("when condition occurs", () => {
+    it("should produce expected behavior", () => {
       // Test implementation
     });
   });
@@ -160,17 +178,20 @@ describe('ComponentName', () => {
 ### 4. Quality Evaluation System (P1)
 
 **Automated Assessment:**
+
 - Programmatic scoring based on established rubrics
 - Regular evaluation of test suite health
 - Identification of tests requiring attention
 
 **Evaluation Metrics:**
+
 - Test execution performance
 - Assertion quality and coverage
 - Locator strategy effectiveness (Playwright)
 - Test isolation and reliability
 
 **Reporting:**
+
 - Classification of tests by quality score
 - Recommendations for improvement or removal
 - Trend analysis of test suite health
@@ -178,8 +199,9 @@ describe('ComponentName', () => {
 ### 5. Test Structure Templates (P2)
 
 **Unit Test Template:**
+
 ```javascript
-describe('FeatureName', () => {
+describe("FeatureName", () => {
   beforeEach(() => {
     // Setup common to all tests
     vi.useFakeTimers();
@@ -190,14 +212,14 @@ describe('FeatureName', () => {
     vi.restoreAllMocks();
   });
 
-  describe('when specific condition', () => {
-    it('should produce expected behavior', () => {
+  describe("when specific condition", () => {
+    it("should produce expected behavior", () => {
       // Arrange
       const mockData = createTestData();
-      
+
       // Act
       const result = functionUnderTest(mockData);
-      
+
       // Assert
       expect(result).toEqual(expectedValue);
     });
@@ -206,22 +228,23 @@ describe('FeatureName', () => {
 ```
 
 **Playwright Test Template:**
+
 ```javascript
-test.describe('Feature Name', () => {
+test.describe("Feature Name", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/feature-page');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/feature-page");
+    await page.waitForLoadState("networkidle");
   });
 
-  test('should complete user workflow', async ({ page }) => {
+  test("should complete user workflow", async ({ page }) => {
     // Given user is on feature page
     await expect(page.locator('[data-testid="feature-element"]')).toBeVisible();
-    
+
     // When user performs action
     await page.click('[data-testid="action-button"]');
-    
+
     // Then expected result occurs
-    await expect(page.locator('[data-testid="result"]')).toContainText('Expected Result');
+    await expect(page.locator('[data-testid="result"]')).toContainText("Expected Result");
   });
 });
 ```
@@ -229,18 +252,21 @@ test.describe('Feature Name', () => {
 ### 6. Performance Optimization (P2)
 
 **Unit Test Performance:**
+
 - Use fake timers for time-dependent functionality
 - Mock external dependencies appropriately
 - Minimize test setup and teardown overhead
 - Parallel test execution where safe
 
 **Playwright Performance:**
+
 - Optimize page load strategies
 - Use appropriate wait conditions
 - Implement efficient test isolation
 - Leverage browser context reuse when possible
 
 **Monitoring:**
+
 - Track test execution times
 - Identify performance bottlenecks
 - Regular review of slow tests
@@ -265,21 +291,25 @@ test.describe('Feature Name', () => {
 ## Non-Functional Requirements
 
 **Performance:**
+
 - Unit test suite completes in under 30 seconds
 - Playwright tests complete in under 5 minutes
 - Test quality evaluation completes in under 10 seconds
 
 **Reliability:**
+
 - Tests produce consistent results across environments
 - Minimal flakiness in CI/CD pipeline
 - Clear failure messages for debugging
 
 **Maintainability:**
+
 - Test standards are easily discoverable and understandable
 - Regular updates reflect evolving best practices
 - Clear migration path for improving existing tests
 
 **Developer Experience:**
+
 - Standards enforceable through automated tooling
 - Clear examples and templates for common scenarios
 - Integration with development workflows
@@ -289,16 +319,19 @@ test.describe('Feature Name', () => {
 ## Edge Cases / Failure States
 
 **Flaky Tests:**
+
 - Automated identification of inconsistent test results
 - Quarantine system for unreliable tests
 - Root cause analysis procedures
 
 **Performance Degradation:**
+
 - Monitoring for increasing test execution times
 - Alerts for tests exceeding performance thresholds
 - Optimization recommendations
 
 **Quality Regression:**
+
 - Detection of declining test quality scores
 - Alerts for tests falling below quality thresholds
 - Remediation workflows
@@ -308,12 +341,14 @@ test.describe('Feature Name', () => {
 ## Dependencies and Open Questions
 
 **Dependencies:**
+
 - Vitest testing framework for unit tests
 - Playwright testing framework for E2E tests
 - CI/CD pipeline integration for automated evaluation
 - Code coverage tools for quality assessment
 
 **Open Questions:**
+
 - What level of test coverage is appropriate for different component types?
 - How frequently should test quality evaluation run?
 - What is the appropriate balance between test isolation and realistic scenarios?
@@ -335,6 +370,7 @@ test.describe('Feature Name', () => {
 ## Source Files Consolidated
 
 This PRD consolidates content from the following design/codeStandards files:
+
 - `evaluatingUnitTests.md` - Unit test quality assessment rubric and philosophy
 - `evaluatingPlaywrightTests.md` - End-to-end test evaluation criteria and best practices
 - `testNamingStandards.md` - File naming and test structure conventions

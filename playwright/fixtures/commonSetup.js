@@ -33,7 +33,7 @@ export const test = base.extend({
         // console.log(`[browser:${type}]`, text);
       } catch {}
     });
-    page.on("pageerror", (err) => {
+    page.on("pageerror", () => {
       try {
         // console.log(`[pageerror] ${err?.message || err}`);
         // if (err?.stack) console.log(err.stack);
