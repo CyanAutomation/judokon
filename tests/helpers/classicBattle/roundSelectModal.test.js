@@ -38,6 +38,8 @@ vi.mock("../../../src/components/Modal.js", () => ({
   createModal: (...args) => mocks.createModal(...args)
 }));
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
+  createBattleEngine: vi.fn(),
+  getPointsToWin: vi.fn(),
   setPointsToWin: mocks.setPointsToWin
 }));
 vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: mocks.initTooltips }));
