@@ -81,14 +81,12 @@ export function attachCooldownRenderer(timer, initialRemaining) {
     try {
       const existing = typeof document !== "undefined" ? document.querySelector(".snackbar") : null;
       const opponentMsg = typeof t === "function" ? t("ui.opponentChoosing") : null;
-      const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
       const shouldDefer =
         existing &&
         existing.textContent &&
         opponentMsg &&
         existing.textContent.includes(opponentMsg);
-      // In Vitest, defer initial render to avoid interfering with selection timer assertions
-      if (!shouldDefer && !IS_VITEST) {
+      if (!shouldDefer) {
         render(initialRemaining);
       } else {
         // Leave `rendered` false so the first tick will perform the render.
