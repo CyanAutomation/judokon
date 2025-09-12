@@ -1,16 +1,7 @@
-import { test, expect } from "@playwright/test";
+const { test, expect } = require("@playwright/test");
 
 test("settings button force click test", async ({ page }) => {
   await page.goto("/src/pages/settings.html");
-
-  // Get viewport and scroll info
-  const viewportInfo = await page.evaluate(() => ({
-    viewportHeight: window.innerHeight,
-    scrollHeight: document.body.scrollHeight,
-    scrollTop: window.scrollY,
-    documentHeight: document.documentElement.scrollHeight
-  }));
-  console.log("Viewport info:", viewportInfo);
 
   // First try to see if we can scroll to make more space
   await page.evaluate(() => {
@@ -29,11 +20,6 @@ test("settings button force click test", async ({ page }) => {
   const footer = page.locator("footer");
   const footerBox = await footer.boundingBox();
   console.log("Footer bounding box:", footerBox);
-
-  // Check bottom navbar specifically
-  const bottomNav = page.locator(".bottom-navbar");
-  const bottomNavBox = await bottomNav.boundingBox();
-  console.log("Bottom navbar bounding box:", bottomNavBox);
 
   // Try force click as a workaround
   try {
