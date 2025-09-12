@@ -5,6 +5,7 @@ test.describe("Classic Battle timer clearing", () => {
     await page.addInitScript(() => {
       window.__OVERRIDE_TIMERS = { roundTimer: 5 };
       window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+      window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
     await page.goto("/src/pages/battleClassic.html");
 

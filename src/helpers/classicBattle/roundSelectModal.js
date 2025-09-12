@@ -85,12 +85,19 @@ async function handleRoundSelect({ value, modal, cleanupTooltips, onStart, emitE
 export async function initRoundSelectModal(onStart) {
   const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
 
-  // Detect Playwright test environment
+  // Detect Playwright test environment, but allow tests to opt-in to showing the modal
   const IS_PLAYWRIGHT =
     typeof navigator !== "undefined" &&
     (navigator.userAgent?.includes("Headless") || navigator.webdriver === true);
 
-  if (shouldAutostart() || isTestModeEnabled() || IS_PLAYWRIGHT) {
+  // Check if test wants to see the modal (via feature flag override)
+  const showModalInTest =
+    typeof window !== "undefined" &&
+    window.__FF_OVERRIDES &&
+    window.__FF_OVERRIDES.showRoundSelectModal;
+
+  // Auto-start unless explicitly disabled in test environment
+  if (shouldAutostart() || isTestModeEnabled() || (IS_PLAYWRIGHT && !showModalInTest)) {
     await startRound(DEFAULT_POINTS_TO_WIN, onStart, !IS_VITEST);
     return;
   }

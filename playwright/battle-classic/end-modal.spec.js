@@ -5,6 +5,7 @@ test.describe("Classic Battle end-of-match flow", () => {
     await page.addInitScript(() => {
       window.__OVERRIDE_TIMERS = { roundTimer: 1 };
       window.__NEXT_ROUND_COOLDOWN_MS = 500;
+      window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
     await page.goto("/src/pages/battleClassic.html");
     // Ensure initialization has created the engine, then pointsToWin=1

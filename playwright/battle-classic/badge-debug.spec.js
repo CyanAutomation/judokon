@@ -15,7 +15,11 @@ test.describe("State badge and debug panel", () => {
       });
 
       await page.addInitScript(() => {
-        window.__FF_OVERRIDES = { enableTestMode: true, battleStateBadge: true };
+        window.__FF_OVERRIDES = {
+          enableTestMode: true,
+          battleStateBadge: true,
+          showRoundSelectModal: true
+        };
       });
 
       await page.goto("/src/pages/battleClassic.html");

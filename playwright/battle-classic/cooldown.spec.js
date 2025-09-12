@@ -6,6 +6,7 @@ test.describe("Classic Battle cooldown + Next", () => {
       // Speed up timers during e2e: 1s round, 1s cooldown
       window.__OVERRIDE_TIMERS = { roundTimer: 1 };
       window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+      window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
     await page.goto("/src/pages/battleClassic.html");
 
