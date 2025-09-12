@@ -1,4 +1,255 @@
-JU‑DO‑KON Classic Battle CLI – QA Evaluation
+# JU‑DO‑KON Classic Battle CLI – QA Evaluation
+
+**Last Updated:** September 12, 2025  
+**Status:** Critical Issues Identified  
+**Overall Assessment:** ⚠️ Core functionality blocked by stat loading failure
+
+---
+
+## Executive Summary
+
+The Classic Battle CLI implements the terminal aesthetic and accessibility requirements well, but contains **critical functional bugs** that prevent core gameplay. The stat list never loads after starting a match, making the game unplayable. Additionally, keyboard navigation is incomplete for match length selection, breaking the "keyboard-first" design goal.
+
+**Priority:** HIGH - Game is essentially non-functional until stat loading is fixed.
+
+---
+
+## Assessment by Area
+
+### ✅ Text‑first Renderer / Terminal Look
+**Status:** PASS
+
+The CLI page successfully implements the terminal aesthetic:
+- Monospace font (ui-monospace family) with high contrast colors
+- ASCII separators and green-on-black retro theme 
+- DOM structure mirrors PRD: `#cli-header`, `#cli-countdown`, `#cli-stats`, `#round-message`, `#cli-score`
+- Single-column layout without images or animations
+- Proper terminal-style prompt with cursor
+
+### ✅ Accessible Markup  
+**Status:** MOSTLY PASS
+
+Accessibility implementation is strong with proper ARIA:
+- `aria-live="polite"` and `role="status"` on countdown, round message, and header elements
+- Screen reader announcements for timers and outcomes
+- `role="listbox"` and labeled form controls for settings
+- `aria-expanded` and `aria-controls` on help/settings panels
+- ESC key properly closes quit confirmation dialog
+- Focus trap working in modals
+
+**Gap:** Missing focus management when stats fail to load - users can focus empty container.
+
+### ⚠️ Match Settings & Win Target Selection
+**Status:** PARTIAL PASS
+
+Settings functionality works but has synchronization issues:
+- Settings panel allows selection of win target (5/10/15), verbose mode, and deterministic seed
+- Win target changes trigger confirmation dialog and score reset as required
+- Settings persistence via localStorage functions correctly
+- **Issue:** Match length selection (Quick/Medium/Long) doesn't automatically update win target dropdown
+
+### ✅ Help & Shortcuts
+**Status:** PASS
+
+Keyboard help system works correctly:
+- H key shows/hides help panel with all shortcuts listed (1–5 for stats, Enter/Space to advance, Q to quit, H for help)
+- ESC also hides help panel
+- Help content matches PRD keyboard specification
+
+### ✅ Quit Confirmation
+**Status:** PASS
+
+Quit flow works as specified:
+- Q key opens modal ("Quit the match?") with Cancel and Quit options
+- ESC cancels quit and returns to match
+- Proper focus management and modal behavior
+
+### ✅ Win Target & Settings Persistence
+**Status:** PASS
+
+Persistence working correctly:
+- localStorage remembers collapsed state, retro theme, and win target
+- Test helpers exposed: `setSettingsCollapsed`, `setCountdown`, etc.
+- Header reflects win target changes after confirmation
+
+### ✅ Countdown Timer
+**Status:** PASS
+
+Timer implementation meets requirements:
+- 30-second countdown displays at top left
+- 1 Hz textual updates ("Timer: 30", "Timer: 29", etc.)
+- Pauses during quit dialog, resumes when closed
+- Handles interruptions correctly
+
+---
+
+## 🚨 Critical Issues Found 
+
+### 1. Stat List Never Loads (CRITICAL)
+**Severity:** P0 - Blocks core gameplay  
+**Repro Steps:**
+1. Navigate to Classic Battle CLI
+2. Select match length (e.g., Quick) 
+3. Choose win target (default or 5)
+4. Click "Start match"
+
+**Expected:** Stat list populates with 5 selectable stats  
+**Actual:** Empty blue outline container, no stat rows appear, no keyboard input possible
+
+**Impact:** Core mechanic broken - stat selection and round progression impossible. Violates engine parity requirement.
+
+**Root Cause Analysis:** Initial investigation suggests `renderStatList()` may be failing after `startRoundWrapper()` is called. The `await renderStatList(currentPlayerJudoka)` call in line 1252 of `init.js` might be throwing an error or the stat data isn't loading properly.
+
+### 2. Keyboard Cannot Select Match Length (HIGH)
+**Severity:** P1 - Accessibility violation  
+**Repro Steps:**
+1. Open "Select Match Length" modal
+2. Try pressing number keys (1–3), Enter, or arrow keys
+
+**Expected:** Keyboard navigation works as per "keyboard-first" design  
+**Actual:** Only mouse clicks work for Quick/Medium/Long selection
+
+**Impact:** Breaks accessibility and keyboard-first navigation goal. Users relying on keyboard cannot start matches.
+
+**Root Cause:** Round select modal in `roundSelectModal.js` doesn't implement keyboard event handlers for button selection. Modal has focus trap but no key binding for option selection.
+
+### 3. Match Length/Win Target Mismatch (MEDIUM)
+**Severity:** P2 - UX confusion  
+**Repro Steps:**
+1. Choose "Quick" from match length modal
+2. Observe win target dropdown
+
+**Expected:** Quick mode sets win target to 5 automatically  
+**Actual:** Dropdown still shows 10 points until manually changed
+
+**Impact:** Confuses players about game length. Violates PRD requirement for automatic correspondence.
+
+### 4. Header Text Overlap (LOW)
+**Severity:** P3 - Visual polish  
+**Observation:** Header shows "Round 0 Target: 5" with overlapping characters in "Target"
+
+**Impact:** Reduces readability, fails visual hierarchy specification
+
+### 5. Cannot Test Additional Features
+**Blocked by Issue #1:**
+- Stat selection cancellation/overwriting
+- Outcome & score display  
+- Round progression
+- Auto-selection behavior
+- Full accessibility with screen readers during gameplay
+
+---
+
+## 🎯 Proposed Action Plan
+
+### Phase 1: Critical Fix (Priority: P0)
+**Goal:** Make the game playable
+
+1. **Debug Stat Loading Failure**
+   - Add error logging to `renderStatList()` function
+   - Verify `loadStatDefs()` is returning valid data
+   - Check if `buildStatRows()` is executing properly
+   - Add fallback error display instead of empty container
+
+2. **Files to Investigate:**
+   - `/src/pages/battleCLI/init.js` (lines 1152, 1252)
+   - `/src/data/statNames.js` (data source)
+   - `/src/helpers/BattleEngine.js` (STATS array)
+
+**Acceptance Criteria:** Stats appear and can be selected with number keys 1-5
+
+### Phase 2: Keyboard Navigation (Priority: P1)
+**Goal:** Complete keyboard-first design
+
+1. **Add Keyboard Support to Round Select Modal**
+   - Implement number key shortcuts (1=Quick, 2=Medium, 3=Long)
+   - Add arrow key navigation between options
+   - Include visual instructions in modal
+
+2. **Files to Modify:**
+   - `/src/helpers/classicBattle/roundSelectModal.js`
+   - `/src/components/Modal.js` (if needed for key binding)
+
+**Acceptance Criteria:** Users can select match length using keyboard only
+
+### Phase 3: Synchronization Fixes (Priority: P2)
+**Goal:** Align UI state correctly
+
+1. **Sync Match Length with Win Target**
+   - Auto-set win target when Quick/Medium/Long selected
+   - Update dropdown to reflect choice
+   - Add confirmation messaging
+
+2. **Fix Header Layout**
+   - Implement CSS Grid or Flexbox for proper spacing
+   - Prevent text overlap at all zoom levels
+
+**Acceptance Criteria:** Match length and win target always correspond
+
+### Phase 4: Polish & Testing (Priority: P3)
+**Goal:** Complete feature verification
+
+1. **Comprehensive Testing**
+   - Verify all originally blocked features work
+   - Test accessibility at 200% zoom
+   - Validate screen reader announcements
+
+2. **Theme Toggle**
+   - Add retro theme toggle to settings
+   - Ensure localStorage persistence
+
+---
+
+## 🔍 Technical Investigation Notes
+
+### Stat Loading Flow Analysis
+From code review, the stat loading follows this pattern:
+1. `init()` calls `renderStatList()` during setup
+2. `startRoundWrapper()` calls `renderStatList(currentPlayerJudoka)` when round starts
+3. `renderStatList()` should call `loadStatDefs()` and `buildStatRows()`
+
+**Hypothesis:** Error likely occurs in the async chain between `startRoundCore()` and `renderStatList()`.
+
+### Keyboard Modal Investigation
+The round select modal uses `createModal()` from Modal.js which implements focus trapping but no key event delegation. The modal needs custom keyboard handlers for option selection.
+
+### Test Infrastructure
+✅ Playwright tests are passing, suggesting the issues may be environment-specific or race conditions in async loading.
+
+---
+
+## 🎯 PRD Alignment Status
+
+| Requirement | Status | Notes |
+|-------------|---------|-------|
+| Engine parity & determinism | ❌ **BLOCKED** | Cannot validate - rounds never start |
+| Keyboard controls | ⚠️ **PARTIAL** | H/Q work, stats/match selection broken |
+| Pointer/touch targets | ✅ **PASS** | Settings and start button meet 44px requirement |
+| Timer display | ✅ **PASS** | 1 Hz countdown with pause/resume |
+| Outcome & score | ❌ **BLOCKED** | Cannot observe - no rounds complete |
+| Accessibility hooks | ⚠️ **PARTIAL** | ARIA present but missing stat focus management |
+| Test hooks | ✅ **PASS** | `window.__battleCLIinit` exposed correctly |
+| Settings & observability | ⚠️ **PARTIAL** | Win target works, verbose untestable |
+
+---
+
+## 📋 Next Steps
+
+1. **Immediate:** Assign critical stat loading fix to development team
+2. **Short-term:** Implement keyboard navigation for modal
+3. **Medium-term:** Complete synchronization and polish fixes
+4. **Validation:** Re-run full QA evaluation after fixes
+
+**Estimated Timeline:** 2-3 days for P0 fix, 1 week for complete resolution
+
+---
+
+## 🔗 Related Files
+
+- **Main Implementation:** `/src/pages/battleCLI.html`, `/src/pages/battleCLI/init.js`
+- **Test Files:** `/playwright/battle-cli.spec.js`, `/tests/pages/battleCLI.*.test.js`
+- **Documentation:** `/docs/battleCLI.md`, `/design/productRequirementsDocuments/prdClassicBattleCLI.md`
+- **Dependencies:** `/src/helpers/classicBattle/`, `/src/data/statNames.js`
 
 Area Evidence & Assessment
 Text‑first
