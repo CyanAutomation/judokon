@@ -44,7 +44,8 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
 }));
 vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: mocks.initTooltips }));
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: mocks.emit
+  emitBattleEvent: mocks.emit,
+  onBattleEvent: vi.fn()
 }));
 vi.mock("../../../src/helpers/telemetry.js", () => ({ logEvent: mocks.logEvent }));
 
