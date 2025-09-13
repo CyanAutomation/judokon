@@ -17,7 +17,7 @@
  * @returns {HTMLButtonElement} The styled button element.
  */
 export function createButton(text, options = {}) {
-  const { id, className, type = "button", icon } = options;
+  const { id, className, type = "button", icon, "data-testid": dataTestId } = options;
   const button = document.createElement("button");
   button.type = type;
   if (icon) {
@@ -41,5 +41,6 @@ export function createButton(text, options = {}) {
   button.style.color = "var(--button-text-color)";
   if (id) button.id = id;
   if (className) button.className = className;
+  if (dataTestId) button.dataset.testid = dataTestId;
   return button;
 }

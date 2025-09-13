@@ -60,7 +60,10 @@ import {
 
 // Initialize engine and subscribe to engine events when available.
 try {
-  if (!window.__TEST__ && typeof engineFacade.createBattleEngine === "function") {
+  if (
+    (typeof window === "undefined" || !window.__TEST__) &&
+    typeof engineFacade.createBattleEngine === "function"
+  ) {
     engineFacade.createBattleEngine();
   }
 } catch {}
@@ -294,7 +297,8 @@ async function renderStartButton() {
   section.className = "cli-block";
   const btn = createButton("Start match", {
     id: "start-match-button",
-    className: "primary-button"
+    className: "primary-button",
+    "data-testid": "start-battle-button"
   });
   btn.addEventListener("click", async () => {
     try {
@@ -1964,24 +1968,30 @@ export function subscribeEngine() {
  */
 export function wireEvents() {
   installEventBindings();
-  window.addEventListener("keydown", onKeyDown);
-  document.addEventListener("click", onClickAdvance);
-  try {
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) pauseTimers();
-      else resumeTimers();
-    });
-    window.addEventListener("pageshow", (ev) => {
-      try {
-        if (ev && ev.persisted) resumeTimers();
-      } catch {}
-    });
-    window.addEventListener("pagehide", () => {
-      try {
-        pauseTimers();
-      } catch {}
-    });
-  } catch {}
+  if (typeof window !== "undefined") {
+    window.addEventListener("keydown", onKeyDown);
+  }
+  if (typeof document !== "undefined") {
+    document.addEventListener("click", onClickAdvance);
+    try {
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) pauseTimers();
+        else resumeTimers();
+      });
+      if (typeof window !== "undefined") {
+        window.addEventListener("pageshow", (ev) => {
+          try {
+            if (ev && ev.persisted) resumeTimers();
+          } catch {}
+        });
+        window.addEventListener("pagehide", () => {
+          try {
+            pauseTimers();
+          } catch {}
+        });
+      }
+    } catch {}
+  }
 }
 
 /**
@@ -2007,7 +2017,9 @@ export async function init() {
   initSeed();
   store = createBattleStore();
   try {
-    window.battleStore = store;
+    if (typeof window !== "undefined") {
+      window.battleStore = store;
+    }
   } catch {}
 
   // Expose test API for testing direct access
@@ -2060,7 +2072,7 @@ export async function init() {
   wireEvents();
 }
 
-if (!window.__TEST__) {
+if (typeof window === "undefined" || !window.__TEST__) {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
