@@ -289,6 +289,7 @@ Timer implementation meets requirements:
 **Issue:** Header shows "Round 0 Target: 5" instead of "R0 • Target:5"
 
 **Required Changes:**
+
 - Update `updateRoundHeader()` function in `/src/pages/battleCLI/dom.js`
 - Change format from `Round ${round} Target: ${target}` to `R${round} • Target:${target}`
 - Update test expectations in keyboard and sync test files
@@ -308,7 +309,7 @@ Timer implementation meets requirements:
    - **Result:** 6/6 tests passing
 
 2. **✅ Fixed Synchronization Tests**
-   - Updated `win-target-sync.spec.js` expectations  
+   - Updated `win-target-sync.spec.js` expectations
    - Changed from `toContainText("Target:5")` to `toContainText("Round 1 Target: 5")`
    - Applied to all test cases (Quick/Medium/Long modes)
    - **Result:** 4/4 tests passing
@@ -322,7 +323,7 @@ Timer implementation meets requirements:
 **Test Results Summary:**
 
 - **Main CLI Tests:** 12/12 ✅ PASSING (core functionality)
-- **Keyboard Tests:** 6/6 ✅ PASSING (keyboard navigation)  
+- **Keyboard Tests:** 6/6 ✅ PASSING (keyboard navigation)
 - **Sync Tests:** 4/4 ✅ PASSING (win target synchronization)
 - **Total:** 22/22 tests passing
 
@@ -345,7 +346,7 @@ Timer implementation meets requirements:
    - **UI:** Instructions displayed: "Use number keys (1-3) or arrow keys to select"
 
 3. **Win Target Synchronization (MEDIUM)**
-   - **Status:** ✅ IMPLEMENTED  
+   - **Status:** ✅ IMPLEMENTED
    - **Evidence:** `syncWinTargetDropdown()` function exists and is called during round selection
    - **Behavior:** Settings dropdown updates automatically when modal selection changes
 
@@ -368,18 +369,21 @@ Timer implementation meets requirements:
 ## 📋 Updated Action Plan
 
 ### Immediate Priority (Fix Tests)
+
 1. **Update Test Expectations**
    - Fix `round-select-keyboard.spec.js` to expect "Round 1 Target: 5" format
    - Fix `win-target-sync.spec.js` to expect "Round 1 Target: 5" format
    - Verify all tests pass after updates
 
 ### Short-term Priority (Polish)
+
 2. **Implement Compact Header Format**
    - Update `updateRoundHeader()` in `dom.js` to use "R{round} • Target:{target}" format
    - Update tests to match new compact format
    - Verify no text overlap on narrow screens
 
 ### Validation Priority
+
 3. **Complete Feature Verification**
    - Confirm stat loading works in all scenarios
    - Verify keyboard navigation accessibility
@@ -390,16 +394,16 @@ Timer implementation meets requirements:
 
 ## 🎯 Updated PRD Alignment Status
 
-| Requirement                 | Status         | Notes                                           |
-| --------------------------- | -------------- | ----------------------------------------------- |
-| Engine parity & determinism | ✅ **PASS**    | Stat loading fixed, all CLI tests passing       |
-| Keyboard controls           | ✅ **PASS**    | Full keyboard navigation implemented            |
-| Pointer/touch targets       | ✅ **PASS**    | Settings and start button meet requirements     |
-| Timer display               | ✅ **PASS**    | 1 Hz countdown with pause/resume                |
-| Outcome & score             | ✅ **PASS**    | Core functionality working                     |
-| Accessibility hooks         | ✅ **PASS**    | ARIA present, focus management working          |
-| Test hooks                  | ✅ **PASS**    | All test APIs exposed correctly                 |
-| Settings & observability    | ✅ **PASS**    | Win target sync working, verbose mode available |
+| Requirement                 | Status      | Notes                                           |
+| --------------------------- | ----------- | ----------------------------------------------- |
+| Engine parity & determinism | ✅ **PASS** | Stat loading fixed, all CLI tests passing       |
+| Keyboard controls           | ✅ **PASS** | Full keyboard navigation implemented            |
+| Pointer/touch targets       | ✅ **PASS** | Settings and start button meet requirements     |
+| Timer display               | ✅ **PASS** | 1 Hz countdown with pause/resume                |
+| Outcome & score             | ✅ **PASS** | Core functionality working                      |
+| Accessibility hooks         | ✅ **PASS** | ARIA present, focus management working          |
+| Test hooks                  | ✅ **PASS** | All test APIs exposed correctly                 |
+| Settings & observability    | ✅ **PASS** | Win target sync working, verbose mode available |
 
 ---
 
@@ -644,18 +648,18 @@ meeting the edge‑case requirement for interruptions.
 
 1. **Stat Loading (CRITICAL)** ✅ FIXED - Race condition resolved, all tests passing
 2. **Keyboard Navigation (HIGH)** ✅ IMPLEMENTED - Full keyboard support working
-3. **Win Target Sync (MEDIUM)** ✅ IMPLEMENTED - Automatic synchronization working  
+3. **Win Target Sync (MEDIUM)** ✅ IMPLEMENTED - Automatic synchronization working
 4. **Test Suite (MEDIUM)** ✅ FIXED - All tests updated and passing
 5. **Header Format (LOW)** ❌ REMAINING - Still uses "Round 0 Target: 5" format
 
 ### 🎯 **PRD COMPLIANCE ACHIEVED**
 
-| Requirement | Status | Evidence |
-|-------------|--------|----------|
-| Engine parity | ✅ PASS | 12/12 core tests passing |
-| Keyboard controls | ✅ PASS | 6/6 keyboard tests passing |
-| Settings sync | ✅ PASS | 4/4 sync tests passing |
-| Accessibility | ✅ PASS | ARIA, focus management working |
-| Test coverage | ✅ PASS | Comprehensive test suite |
+| Requirement       | Status  | Evidence                       |
+| ----------------- | ------- | ------------------------------ |
+| Engine parity     | ✅ PASS | 12/12 core tests passing       |
+| Keyboard controls | ✅ PASS | 6/6 keyboard tests passing     |
+| Settings sync     | ✅ PASS | 4/4 sync tests passing         |
+| Accessibility     | ✅ PASS | ARIA, focus management working |
+| Test coverage     | ✅ PASS | Comprehensive test suite       |
 
 **Final Recommendation:** The Classic Battle CLI is now **fully functional** and meets all PRD requirements. The remaining header format issue is cosmetic and doesn't impact functionality.
