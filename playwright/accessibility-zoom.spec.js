@@ -52,7 +52,9 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
   test("stat selection interface works at 200% zoom", async ({ page }) => {
     // Start a battle to access stat selection
     await page.waitForSelector('[data-testid="start-battle-button"]', { timeout: 10000 });
-    await page.evaluate(() => document.querySelector('[data-testid="start-battle-button"]').click());
+    await page.evaluate(() =>
+      document.querySelector('[data-testid="start-battle-button"]').click()
+    );
 
     // Wait for stat list to load
     await page.waitForSelector("#cli-stats .stat-row", { timeout: 10000 });
@@ -93,16 +95,19 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
   test("settings match length selection works at 200% zoom", async ({ page }) => {
     // Open settings
     await page.evaluate(() => document.querySelector('[data-testid="settings-button"]').click());
-    await expect(page.locator('[data-testid="settings-button"]')).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('[data-testid="settings-button"]')).toHaveAttribute(
+      "aria-expanded",
+      "true"
+    );
 
     // Test round selection dropdown at 200% zoom
-    const roundSelect = page.locator('#points-select');
+    const roundSelect = page.locator("#points-select");
     await expect(roundSelect).toBeVisible();
 
-    await roundSelect.selectOption('5');
+    await roundSelect.selectOption("5");
 
     // Verify settings update
-    await expect(roundSelect).toHaveValue('5');
+    await expect(roundSelect).toHaveValue("5");
 
     await page.keyboard.press("Escape"); // Close settings
   });
