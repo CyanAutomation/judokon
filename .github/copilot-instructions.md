@@ -604,7 +604,7 @@ function TestComponent() {
     Sentry.startSpan(
       {
         op: "ui.click",
-        name: "Test Button Click",
+        name: "Test Button Click"
       },
       (span) => {
         const value = "some config";
@@ -615,7 +615,7 @@ function TestComponent() {
         span.setAttribute("metric", metric);
 
         doSomething();
-      },
+      }
     );
   };
 
@@ -637,13 +637,13 @@ async function fetchUserData(userId) {
   return Sentry.startSpan(
     {
       op: "http.client",
-      name: `GET /api/users/${userId}`,
+      name: `GET /api/users/${userId}`
     },
     async () => {
       const response = await fetch(`/api/users/${userId}`);
       const data = await response.json();
       return data;
-    },
+    }
   );
 }
 ```
@@ -666,8 +666,8 @@ Sentry.init({
   dsn: "https://d5c65640106080845226e89b9a1f589c@o4510014518919168.ingest.de.sentry.io/4510014522130512",
 
   _experiments: {
-    enableLogs: true,
-  },
+    enableLogs: true
+  }
 });
 ```
 
@@ -678,8 +678,8 @@ Sentry.init({
   dsn: "https://d5c65640106080845226e89b9a1f589c@o4510014518919168.ingest.de.sentry.io/4510014522130512",
   integrations: [
     // send console.log, console.warn, and console.error calls as logs to Sentry
-    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
-  ],
+    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] })
+  ]
 });
 ```
 
@@ -697,15 +697,15 @@ logger.debug(logger.fmt`Cache miss for user: ${userId}`);
 logger.info("Updated profile", { profileId: 345 });
 logger.warn("Rate limit reached for endpoint", {
   endpoint: "/api/results/",
-  isEnterprise: false,
+  isEnterprise: false
 });
 logger.error("Failed to process payment", {
   orderId: "order_123",
-  amount: 99.99,
+  amount: 99.99
 });
 logger.fatal("Database connection pool exhausted", {
   database: "users",
-  activeConnections: 100,
+  activeConnections: 100
 });
 ```
 
