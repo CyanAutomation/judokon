@@ -10,6 +10,8 @@ import { debugLog } from "./helpers/debug.js";
 
 let inspectorEnabled = false;
 
+myUndefinedFunction();
+
 /**
  * Wire up the carousel toggle button and lazily build the carousel on demand.
  *
