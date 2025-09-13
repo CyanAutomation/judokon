@@ -366,6 +366,14 @@ function markNextReady(btn) {
   // as ready unconditionally to reflect that the cooldown has completed.
   btn.dataset.nextReady = "true";
   btn.disabled = false;
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      // Lightweight test-only trace to help diagnose flakiness across tests.
+      console.debug(
+        `[test] markNextReady: disabled=${btn.disabled} dataset=${btn.dataset.nextReady}`
+      );
+    }
+  } catch {}
 }
 
 async function handleNextRoundExpiration(controls, btn) {

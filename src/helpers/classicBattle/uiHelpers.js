@@ -228,6 +228,13 @@ export function enableNextRoundButton() {
   if (!btn) return;
   btn.disabled = false;
   btn.dataset.nextReady = "true";
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      console.debug(
+        `[test] enableNextRoundButton: disabled=${btn.disabled} dataset=${btn.dataset.nextReady}`
+      );
+    }
+  } catch {}
 }
 
 /**
@@ -248,6 +255,11 @@ export function disableNextRoundButton() {
   if (!btn) return;
   btn.disabled = true;
   delete btn.dataset.nextReady;
+  try {
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      console.debug(`[test] disableNextRoundButton: disabled=${btn.disabled}`);
+    }
+  } catch {}
 }
 
 /**

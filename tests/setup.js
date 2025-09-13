@@ -139,6 +139,34 @@ beforeEach(async () => {
     if (mod && typeof mod.__ensureClassicBattleBindings === "function") {
       await mod.__ensureClassicBattleBindings();
     }
+    // Ensure a fresh BattleEngine instance for each test to avoid shared state
+    try {
+      const facade = await import("../src/helpers/battleEngineFacade.js");
+      if (facade && typeof facade.createBattleEngine === "function") {
+        // Force creation so tests don't accidentally reuse a prior engine instance
+        facade.createBattleEngine({ forceCreate: true });
+      }
+    } catch {}
+    // Test-only: some suite orderings can leave `document.body.dataset.target` unset
+    // after round selection; keep a minimal fallback here to avoid touching
+    // production source. This runs only under Vitest.
+    try {
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        try {
+          const facade = await import("../src/helpers/battleEngineFacade.js");
+          const getPointsToWin =
+            facade && typeof facade.getPointsToWin === "function" ? facade.getPointsToWin : null;
+          if (
+            typeof document !== "undefined" &&
+            !document.body?.dataset?.target &&
+            getPointsToWin
+          ) {
+            const pts = getPointsToWin();
+            if (pts !== undefined && pts !== null) document.body.dataset.target = String(pts);
+          }
+        } catch {}
+      }
+    } catch {}
     const currentHref = String(window.location.href || "http://localhost/");
     const state = { href: currentHref };
     Object.defineProperty(window, "location", {

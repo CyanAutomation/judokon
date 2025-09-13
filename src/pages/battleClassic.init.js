@@ -565,6 +565,13 @@ async function init() {
         try {
           const pts = getPointsToWin();
           document.body.dataset.target = String(pts);
+          try {
+            if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+              console.debug(
+                `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
+              );
+            }
+          } catch {}
         } catch {}
         // Reflect state change in badge
         try {

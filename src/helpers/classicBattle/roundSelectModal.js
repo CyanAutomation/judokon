@@ -53,7 +53,9 @@ async function startRound(value, onStart, emitEvents) {
     syncWinTargetDropdown();
   } catch {}
   try {
-    if (typeof onStart === "function") await onStart();
+    if (typeof onStart === "function") {
+      await onStart();
+    }
     if (emitEvents) {
       emitBattleEvent("startClicked");
       await dispatchBattleEvent("startClicked");
