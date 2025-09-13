@@ -3,6 +3,20 @@ import { resolve } from "node:path";
 import * as timerUtils from "../../src/helpers/timerUtils.js";
 
 describe("Classic Battle inter-round cooldown + Next", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.resetModules();
+    [
+      "../../src/helpers/setupScoreboard.js",
+      "../../src/helpers/showSnackbar.js",
+      "../../src/helpers/classicBattle/debugPanel.js",
+      "../../src/helpers/classicBattle/eventDispatcher.js",
+      "../../src/helpers/classicBattle/battleEvents.js",
+      "../../src/helpers/timers/createRoundTimer.js",
+      "../../src/helpers/CooldownRenderer.js",
+      "../../src/helpers/timers/computeNextRoundCooldown.js"
+    ].forEach((m) => vi.doUnmock(m));
+  });
   test("enables Next during cooldown and advances on click", async () => {
     // Make round timer short so resolution happens quickly
     const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
