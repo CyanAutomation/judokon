@@ -1,4 +1,5 @@
 [
+  "prdAIAgentWorkflows.md",
   "prdBattleBandit.md",
   "prdBattleClassic.md",
   "prdBattleCLI.md",
@@ -12,7 +13,9 @@
   "prdCardInspector.md",
   "prdCardOfTheDay.md",
   "prdChangeLog.md",
+  "prdCharacterDesign.md",
   "prdCountryPickerFilter.md",
+  "prdDevelopmentStandards.md",
   "prdDrawRandomCard.md",
   "prdGameModes.md",
   "prdHomePageNavigation.md",
@@ -35,9 +38,11 @@
   "prdTeamBattleMixed.md",
   "prdTeamBattleRules.md",
   "prdTeamBattleSelection.md",
+  "prdTestingStandards.md",
   "prdTestMode.md",
   "prdTooltipSystem.md",
   "prdTooltipViewer.md",
+  "prdUIDesignSystem.md",
   "prdUpdateJudoka.md",
   "prdVectorDatabaseRAG.md",
   "prdViewportSimulation.md"

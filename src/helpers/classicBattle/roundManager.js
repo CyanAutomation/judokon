@@ -262,10 +262,12 @@ export function startCooldown(_store, scheduler = realScheduler) {
     // resolution → cooldown transitions.
     try {
       setTimeout(() => {
+        if (typeof document === "undefined") return;
         const b = document.getElementById("next-button");
         markNextReady(b);
       }, 0);
       setTimeout(() => {
+        if (typeof document === "undefined") return;
         const b = document.getElementById("next-button");
         markNextReady(b);
       }, 20);

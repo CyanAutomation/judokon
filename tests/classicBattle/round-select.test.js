@@ -23,8 +23,14 @@ describe("Classic Battle round select modal", () => {
     });
     expect(btnLong).toBeTruthy();
 
+    const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+
+    const started = new Promise((resolve) => onBattleEvent("startClicked", resolve));
+
     // Click the "Long" (15) option
     btnLong.click();
+
+    await started;
 
     // Assert engine pointsToWin updated
     const { getPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");

@@ -82,7 +82,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
     // Verify the header also shows the correct target
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Target:10");
+    await expect(header).toContainText("Target: 10");
   });
 
   test("should sync win target dropdown when Long is selected", async ({ page }) => {
@@ -154,3 +154,4 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     // The dropdown shows 5, which proves our sync function is working correctly
   });
 });
+
