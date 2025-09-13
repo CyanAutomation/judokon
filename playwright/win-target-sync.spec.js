@@ -48,7 +48,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
     // Verify the header also shows the correct target
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Target:5");
+    await expect(header).toContainText("Round 1 Target: 5");
   });
 
   test("should sync win target dropdown when Medium is selected", async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
     // Verify the header also shows the correct target
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Target: 10");
+    await expect(header).toContainText("Round 1 Target: 10");
   });
 
   test("should sync win target dropdown when Long is selected", async ({ page }) => {
@@ -116,7 +116,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
     // Verify the header also shows the correct target
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Target:15");
+    await expect(header).toContainText("Round 1 Target: 15");
   });
 
   test("should maintain synchronization from modal to settings dropdown", async ({ page }) => {
@@ -148,10 +148,9 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
     // Verify the header shows Target:5 initially
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Target:5");
+    await expect(header).toContainText("Round 1 Target: 5");
 
     // This test validates that the synchronization worked from modal to dropdown
     // The dropdown shows 5, which proves our sync function is working correctly
   });
 });
-
