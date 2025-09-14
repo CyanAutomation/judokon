@@ -17,6 +17,7 @@ import { onBattleEvent, emitBattleEvent } from "../../helpers/classicBattle/batt
 import { STATS } from "../../helpers/BattleEngine.js";
 import * as engineFacade from "../../helpers/battleEngineFacade.js";
 import statNamesData from "../../data/statNames.js";
+import { fetchJson } from "../../helpers/dataUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import {
@@ -1014,15 +1015,24 @@ export function handleStatListArrowKey(key) {
  * Load stat definitions once and return them.
  *
  * @pseudocode
- * 1. If the cache is empty, try dynamic fetch of `statNames.json`.
- * 2. Fallback to bundled module data when fetch fails or returns empty.
+ * 1. If no cache, attempt to fetch `statNames.json` via `fetchJson`.
+ * 2. On failure or empty result, fall back to local `statNamesData`.
  * 3. Return the cached definitions array or an empty array.
  *
  * @returns {Promise<Array>} Cached stat definition objects.
  */
 async function loadStatDefs() {
   if (!cachedStatDefs) {
-    cachedStatDefs = statNamesData;
+    try {
+      const fetched = await fetchJson("statNames.json");
+      if (Array.isArray(fetched) && fetched.length) {
+        cachedStatDefs = fetched;
+      } else {
+        cachedStatDefs = statNamesData;
+      }
+    } catch {
+      cachedStatDefs = statNamesData;
+    }
   }
   return Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
 }
