@@ -15,7 +15,10 @@ describe("Scoreboard live region discipline", () => {
 
   it("initializes score display with aria-live=off and does not announce on timer ticks", async () => {
     const header = document.querySelector("header");
-    const { initScoreboard, updateTimer } = await import("../../src/components/Scoreboard.js");
+    const { initScoreboard, updateTimer, resetScoreboard } = await import(
+      "../../src/components/Scoreboard.js"
+    );
+    resetScoreboard();
     initScoreboard(header);
 
     const score = document.getElementById("score-display");

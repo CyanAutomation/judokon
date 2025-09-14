@@ -18,7 +18,8 @@ describe("battleScoreboard out-of-order guards", () => {
       <p id="score-display" aria-live="off" aria-atomic="true"></p>
     `;
     container.appendChild(header);
-    const { initScoreboard } = await import("../../src/components/Scoreboard.js");
+    const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
+    resetScoreboard();
     initScoreboard(header);
     const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
     initBattleScoreboardAdapter();

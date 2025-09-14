@@ -46,6 +46,17 @@ sb.showMessage("Ready!");
 sb.updateScore(1, 0);
 ```
 
+### Testing
+
+Call `resetScoreboard()` before reinitializing the default instance to ensure fresh DOM bindings:
+
+```js
+import { initScoreboard, resetScoreboard } from "../src/components/Scoreboard.js";
+
+resetScoreboard();
+initScoreboard(header);
+```
+
 ## Battle Engine
 
 The battle engine exposes a lightweight event emitter for subscribing to game state changes.

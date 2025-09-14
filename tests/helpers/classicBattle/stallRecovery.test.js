@@ -62,8 +62,11 @@ describe("classicBattle stalled stat selection recovery", () => {
 
   it("auto-selects after stall timeout", async () => {
     // Initialize scoreboard to ensure messages work
-    const { initScoreboard } = await import("../../../src/components/Scoreboard.js");
+    const { initScoreboard, resetScoreboard } = await import(
+      "../../../src/components/Scoreboard.js"
+    );
     const header = document.querySelector("header");
+    resetScoreboard();
     initScoreboard(header);
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");

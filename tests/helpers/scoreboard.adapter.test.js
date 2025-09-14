@@ -24,7 +24,8 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
       <p id=\"score-display\" aria-live=\"polite\" aria-atomic=\"true\"></p>
     `;
     container.appendChild(header);
-    const { initScoreboard } = await import("../../src/components/Scoreboard.js");
+    const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
+    resetScoreboard();
     initScoreboard(header);
     const { initScoreboardAdapter } = await import(
       "../../src/helpers/classicBattle/scoreboardAdapter.js"

@@ -170,7 +170,7 @@ export class Scoreboard {
  *
  * @pseudocode
  * 1. If no container is provided, create a headless scoreboard and exit.
- * 2. If a default scoreboard already exists, do nothing.
+ * 2. If a default scoreboard with a view already exists, do nothing.
  * 3. Create a new ScoreboardModel.
  * 4. Create a new ScoreboardView, locating child elements within the container.
  * 5. Set the `aria-live` attribute of the score element to "off".
@@ -187,7 +187,7 @@ export function initScoreboard(container, _controls) {
     defaultScoreboard = new Scoreboard();
     return;
   }
-  if (defaultScoreboard) {
+  if (defaultScoreboard?.view) {
     return;
   }
   const model = new ScoreboardModel();
@@ -327,13 +327,25 @@ export const getState = () =>
   defaultScoreboard?.getState() ?? { score: { player: 0, opponent: 0 } };
 
 /**
+ * Reset the default scoreboard reference.
+ *
+ * @pseudocode
+ * 1. Set `defaultScoreboard` to `null` for a clean slate.
+ *
+ * @returns {void}
+ */
+export const resetScoreboard = () => {
+  defaultScoreboard = null;
+};
+
+/**
  * Destroy the default scoreboard instance.
  *
  * @pseudocode
- * 1. Set `defaultScoreboard` to `null` so helpers no longer forward calls.
+ * 1. Delegate to `resetScoreboard` so helpers no longer forward calls.
  *
  * @returns {void}
  */
 export const destroy = () => {
-  defaultScoreboard = null;
+  resetScoreboard();
 };
