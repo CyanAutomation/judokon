@@ -839,7 +839,8 @@ export function setBattleStateBadgeEnabled(enable) {
   badge.hidden = false;
   badge.removeAttribute("hidden");
   console.debug("Setting badge visible, after:", badge.hidden, badge.hasAttribute("hidden"));
-  updateBattleStateBadge(getStateSnapshot().state);
+  const state = getStateSnapshot().state ?? "Lobby";
+  updateBattleStateBadge(state);
 }
 
 /**
