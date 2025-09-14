@@ -177,3 +177,26 @@ Agent validation updates
 - Orchestrator‑first resolution preference: `src/helpers/classicBattle/selectionHandler.js` now short‑circuits direct resolution when the orchestrator is active, avoiding double‑resolution races; `forceDirectResolution` in tests remains intact.
 
 Deferred to follow‑ups (tracked above): event naming parity at the engine boundary, centralizing timer fallbacks into a single abstraction, moving test‑only DOM writes into helpers, and converting dynamic imports in hot paths to static/preloaded where feasible.
+
+## 10. Phase 1 — Hot‑Path import cleanup and safety tweaks
+
+Changes
+- Removed dynamic imports from hot paths by converting to static imports:
+  - `classicBattle/stateHandlers/waitingForMatchStartEnter.js`
+  - `classicBattle/selectionHandler.js`
+  - `classicBattle/roundResolver.js`
+  - `classicBattle/roundManager.js` (debug panel import)
+  - `classicBattle/orchestrator.js` (preloads/state manager)
+  - `classicBattle/battleEvents.js` (alias emission and Node shim)
+- Added `src/helpers/nodeEventsShim.js` to isolate Node‑only dynamic import of `events` outside classicBattle.
+- Ensured scoreboard resets to 0 on replay by explicitly updating score in `handleReplay` after engine recreation and UI reset.
+
+Targeted tests executed
+- `tests/helpers/classicBattle/selectionHandler.resolve.test.js` → PASS
+- `tests/helpers/classicBattle/roundResolverOnce.test.js` → PASS
+- `tests/helpers/classicBattle/handleStatSelection.machine.test.js` → PASS
+- `tests/classicBattle/bootstrap.test.js` → PASS (fixed replay scoreboard reset)
+
+Notes
+- Remaining dynamic imports exist in non‑core paths (e.g., `classicBattle/testHooks.js`, `classicBattle/cooldowns.js`, `classicBattle/quitButton.js`). Plan to convert or relocate in Phase 2.
+- No public API changes introduced; orchestrator/event taxonomy unchanged. The scoreboard reset on replay is an internal behavior alignment to test expectations and UI state.

@@ -154,7 +154,11 @@ export async function handleReplay(store) {
     scoreboard.updateScore(0, 0);
   } catch {}
   const startRoundFn = getStartRound(store);
-  return startRoundFn();
+  const res = await startRoundFn();
+  try {
+    scoreboard.updateScore(0, 0);
+  } catch {}
+  return res;
 }
 
 /**
