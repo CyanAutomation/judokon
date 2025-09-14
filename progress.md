@@ -5,7 +5,7 @@ For each item give one-line rationale and a minimal suggested migration (mount +
 End with recommended next step (batch size and options).
 Checklist
 
-Find tests that mutate document.body or assign innerHTML — Done (grep across tests/helpers/**).
+Find tests that mutate document.body or assign innerHTML — Done (grep across tests/helpers/\*\*).
 Prioritize by risk (global leakage, timers, core app flow) — Done.
 Provide per-file suggested migration pattern — Done.
 Summary numbers
@@ -22,7 +22,7 @@ Verification updates (repo scan on 2025-09-14)
 - Correction: `tests/helpers/uiHelpers.resetBattleUI.test.js` still uses `document.body.*` patterns (not yet migrated).
 - Verified: `tests/helpers/bottomNavigation.test.js` is already using `mount()` + `clearBody()`.
 - Verified: `tests/helpers/selectionHandler.test.js` initializes scoreboard with `initScoreboard(document.body)` — should pass a container-scoped header instead.
-High priority — migrate first (safe, small changes, tests that frequently flake or leak)
+  High priority — migrate first (safe, small changes, tests that frequently flake or leak)
 
 classicBattlePage.syncScoreDisplay.test.js
 Why: core UI init; uses document.body.append(header) and multiple app flows.
@@ -49,16 +49,17 @@ Move remaining direct body writes into `mount()`; pass the contained root to hel
 bottomNavigation.test.js (already migrated — keep as-is)
 Keep as-is if uses mount(). If other navigation tests still append to body, migrate same pattern.
 tests/helpers/settingsPage.test.js, renderFeatureFlags.test.js
+
 - renderFeatureFlags.test.js is already on `mount()` — keep as-is.
 - settingsPage.test.js still appends to body — change to `const { container } = mount(); container.appendChild(createSettingsDom());`.
-tests/helpers/renderGameModes.test.js, viewTransitionTheme.test.js, syncDisplayMode.test.js
-Why: append setting DOM to body; move to mount container.
-Low priority — surface/utility tests and fixtures
+  tests/helpers/renderGameModes.test.js, viewTransitionTheme.test.js, syncDisplayMode.test.js
+  Why: append setting DOM to body; move to mount container.
+  Low priority — surface/utility tests and fixtures
 
 fixtures.js (sets document.body.innerHTML = html)
 Why: fixture uses global body; prefer returning a DOM fragment or expose a mountFixture() helper.
 Suggestion: change fixtures to export an element or a string that tests pass to mount(...).
-tests/helpers/randomJudokaPage.* (drawButton/historyPanel)
+tests/helpers/randomJudokaPage.\* (drawButton/historyPanel)
 They append whole sections; move to mount.
 tests/helpers/svgFallback.test.js, layoutDebugPanel.test.js, svg-related tests
 Easy to migrate to mount().
@@ -67,7 +68,7 @@ Tests that should use public APIs rather than direct DOM mutation
 Any test that calls document.body.append(...) then calls an init* function using document implicitly:
 Examples: setupScoreboard, setupChangeLogPage, populateNavbar, setupBottomNavbar, initScoreboardAdapter, initBattleScoreboardAdapter
 Why: these modules typically accept or could accept a root/parent — tests should construct the DOM and pass that element into the public initializer instead of assuming global DOM.
-Suggestion: update tests to create the minimal required element(s) in container and call the corresponding init* or setup* function with that element (or pass { root: container } when available).
+Suggestion: update tests to create the minimal required element(s) in container and call the corresponding init* or setup\* function with that element (or pass { root: container } when available).
 Note: avoid modifying public APIs without explicit approval. Prefer wrapper helpers in tests that adapt existing APIs to container-scoped elements (e.g., construct a header inside the container and pass that element), or use adapter modules that already accept a root.
 Tests that target behavior rather than markup:
 If a test is manipulating markup to simulate internal rendering, but the same behavior is accessible via initFoo() or fooApi, prefer calling the public API and asserting on public outputs (events emitted, callbacks invoked, DOM changes inside container).
@@ -76,7 +77,7 @@ Prioritization rationale
 
 Start with tests that:
 mutate document.body and interact with timers or battle state (high risk of leakage and flakiness).
-call global init* functions expecting body — migrating these yields the largest stability wins.
+call global init\* functions expecting body — migrating these yields the largest stability wins.
 are small, self-contained (easy 1-file fixes). Use these as quick wins to validate the mount pattern.
 Suggested immediate next batch (I can implement)
 

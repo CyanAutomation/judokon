@@ -40,7 +40,12 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
 vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
   const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
   // Immediate expiry (no ticks)
-  mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true, moduleId: "../../../src/helpers/timers/createRoundTimer.js" });
+  mockCreateRoundTimer({
+    scheduled: false,
+    ticks: [],
+    expire: true,
+    moduleId: "../../../src/helpers/timers/createRoundTimer.js"
+  });
   return await import("../../../src/helpers/timers/createRoundTimer.js");
 });
 

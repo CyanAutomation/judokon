@@ -216,7 +216,12 @@ export async function updateScoreboard(result) {
   resetStatButtons();
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      console.log("[test] updateScoreboard result:", result, "sb.updateScore?", typeof sb.updateScore);
+      console.log(
+        "[test] updateScoreboard result:",
+        result,
+        "sb.updateScore?",
+        typeof sb.updateScore
+      );
     }
   } catch {}
   if (typeof sb.updateScore === "function") {
