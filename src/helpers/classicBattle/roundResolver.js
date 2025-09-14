@@ -1,5 +1,4 @@
 import { evaluateRound as evaluateRoundApi, getOutcomeMessage } from "../api/battleUI.js";
-import { seededRandom } from "../testModeUtils.js";
 import { isHeadlessModeEnabled } from "../headlessMode.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { emitBattleEvent } from "./battleEvents.js";
@@ -7,6 +6,7 @@ import * as engineFacade from "../battleEngineFacade.js";
 import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
+import { resolveDelay } from "./timerUtils.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -457,7 +457,7 @@ export async function resolveRound(store, stat, playerVal, opponentVal, opts = {
   const headless = isHeadlessModeEnabled();
   const {
     // Deterministic delay using seeded RNG when available
-    delayMs = headless ? 0 : 300 + Math.floor(seededRandom() * 401),
+    delayMs = headless ? 0 : resolveDelay(),
     sleep = headless ? async () => {} : (ms) => new Promise((r) => setTimeout(r, ms))
   } = opts;
   try {
