@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { mount, clearBody } from "./domUtils.js";
 
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -14,7 +15,7 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     vi.useFakeTimers();
     vi.resetModules();
     __resetBattleEventTarget();
-    document.body.innerHTML = "";
+    const { container } = mount();
     const header = document.createElement("header");
     header.innerHTML = `
       <p id=\"round-message\" aria-live=\"polite\" aria-atomic=\"true\" role=\"status\"></p>
@@ -22,13 +23,19 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
       <p id=\"round-counter\" aria-live=\"polite\" aria-atomic=\"true\"></p>
       <p id=\"score-display\" aria-live=\"polite\" aria-atomic=\"true\"></p>
     `;
-    document.body.appendChild(header);
+    container.appendChild(header);
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
     initScoreboard(header);
+    const mock = await import("./mockScheduler.js");
+    setScheduler(mock.createMockScheduler());
     const { initScoreboardAdapter } = await import(
       "../../src/helpers/classicBattle/scoreboardAdapter.js"
     );
     initScoreboardAdapter();
+  });
+
+  afterEach(() => {
+    clearBody();
   });
 
   it("updates message, outcome lock, timer, round counter, and score", async () => {

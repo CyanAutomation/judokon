@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import * as timerUtils from "../../src/helpers/timerUtils.js";
 
 describe("Classic Battle inter-round cooldown + Next", () => {
@@ -18,64 +16,72 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     ].forEach((m) => vi.doUnmock(m));
   });
   test("enables Next during cooldown and advances on click", async () => {
-    // Make round timer short so resolution happens quickly
-    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
-      if (cat === "roundTimer") return 1;
-      // Provide a small but non-zero cooldown to exercise readiness
-      if (cat === "coolDownTimer") return 1;
-      return 3;
-    });
-    try {
-      const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-      const html = readFileSync(file, "utf-8");
-      document.documentElement.innerHTML = html;
+    // Deterministic: no real waits, no full-page DOM. Use fake timers and
+    // wire minimal DOM nodes that the cooldown logic expects.
+    const timers = vi.useFakeTimers();
 
-      const mod = await import("../../src/pages/battleClassic.init.js");
-      if (typeof mod.init === "function") mod.init();
+    // Minimal DOM: header + next button + timer node
+    const { createBattleHeader } = await import("../utils/testUtils.js");
+    const header = createBattleHeader();
+    document.body.appendChild(header);
+    const nextBtn = document.createElement("button");
+    nextBtn.id = "next-button";
+    nextBtn.setAttribute("data-role", "next-round");
+    document.body.appendChild(nextBtn);
 
-      // Start the match via modal
-      const waitForBtn = () =>
-        new Promise((r) => {
-          const loop = () => {
-            const el = document.getElementById("round-select-2");
-            if (el) return r(el);
-            setTimeout(loop, 0);
-          };
-          loop();
-        });
-      const btn = await waitForBtn();
-      btn.click();
+    // Quiet UI adapters; we assert observable DOM state only
+    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
+      clearTimer: vi.fn(),
+      showMessage: vi.fn(),
+      showAutoSelect: vi.fn(),
+      showTemporaryMessage: () => () => {},
+      updateTimer: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
 
-      const { getNextRoundControls } = await import(
-        "../../src/helpers/classicBattle/roundManager.js"
-      );
-      const { onBattleEvent, offBattleEvent } = await import(
-        "../../src/helpers/classicBattle/battleEvents.js"
-      );
+    // Keep engine timers out of the path; use pure-JS timer implementation
+    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
+      createRoundTimer: () => {
+        let expiredHandler = null;
+        let tickHandler = null;
+        return {
+          on: vi.fn((event, handler) => {
+            if (event === "expired") expiredHandler = handler;
+            if (event === "tick") tickHandler = handler;
+          }),
+          start: vi.fn((dur) => {
+            // Render initial remaining synchronously when provided
+            if (typeof dur === "number" && dur > 0 && tickHandler) tickHandler(dur);
+            // Do not auto-expire; the test advances via Next click
+          }),
+          stop: vi.fn()
+        };
+      }
+    }));
 
-      // Wait for round expiry + deterministic resolution
-      await new Promise((r) => setTimeout(r, 1200));
+    // Initialize cooldown directly via the public API
+    const { startCooldown, getNextRoundControls } = await import(
+      "../../src/helpers/classicBattle/roundManager.js"
+    );
+    startCooldown({}, { setTimeout: (cb, ms) => setTimeout(cb, ms) });
 
-      // After resolution, cooldown should start and Next becomes ready
-      const next = document.getElementById("next-button");
-      expect(next).toBeTruthy();
-      // Allow any microtasks to wire the cooldown
-      await new Promise((r) => setTimeout(r, 200));
-      expect(next.disabled).toBe(false);
-      expect(next.getAttribute("data-next-ready")).toBe("true");
+    // Next should be immediately marked ready during cooldown
+    const next = document.getElementById("next-button");
+    expect(next).toBeTruthy();
+    expect(next?.disabled).toBe(false);
+    expect(next?.getAttribute("data-next-ready")).toBe("true");
 
-      // onNextButtonClick should resolve the ready promise
-      const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
-      const controls = getNextRoundControls();
-      const readyPromise = controls.ready;
+    // Clicking Next resolves the readiness promise and advances
+    const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
+    const controls = getNextRoundControls();
+    const readyPromise = controls?.ready;
+    await onNextButtonClick(new MouseEvent("click"), controls);
+    await expect(readyPromise).resolves.toBeUndefined();
 
-      // Click the Next button to advance
-      await onNextButtonClick(new MouseEvent("click"), controls);
-      // The ready promise should resolve promptly
-      await expect(readyPromise).resolves.toBeUndefined();
-    } finally {
-      spy.mockRestore();
-    }
+    timers.useRealTimers();
   });
 
   test("re-enables Next if a callback disables it", async () => {

@@ -4,11 +4,12 @@ import {
   __resetBattleEventTarget,
   emitBattleEvent
 } from "../../src/helpers/classicBattle/battleEvents.js";
+import { mount, clearBody } from "./domUtils.js";
 
 describe("battleScoreboard PRD adapter", () => {
   beforeEach(async () => {
     __resetBattleEventTarget();
-    document.body.innerHTML = "";
+    const { container } = mount();
     const header = document.createElement("header");
     header.innerHTML = `
       <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
@@ -16,11 +17,17 @@ describe("battleScoreboard PRD adapter", () => {
       <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
       <p id="score-display" aria-live="polite" aria-atomic="true"></p>
     `;
-    document.body.appendChild(header);
+    container.appendChild(header);
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
     initScoreboard(header);
+    const mock = await import("./mockScheduler.js");
+    setScheduler(mock.createMockScheduler());
     const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
     initBattleScoreboardAdapter();
+  });
+
+  afterEach(() => {
+    clearBody();
   });
 
   it("updates round counter and scores from PRD events", async () => {

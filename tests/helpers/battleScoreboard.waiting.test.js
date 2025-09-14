@@ -3,12 +3,14 @@ import {
   __resetBattleEventTarget,
   emitBattleEvent
 } from "../../src/helpers/classicBattle/battleEvents.js";
+import { mount, clearBody } from "./domUtils.js";
+import { setScheduler } from "../../src/helpers/scheduler.js";
 
 describe("battleScoreboard waiting fallback", () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     __resetBattleEventTarget();
-    document.body.innerHTML = "";
+    const { container } = mount();
     const header = document.createElement("header");
     header.className = "battle-header";
     header.innerHTML = `
@@ -17,19 +19,27 @@ describe("battleScoreboard waiting fallback", () => {
       <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
       <p id="score-display" aria-live="polite" aria-atomic="true"></p>
     `;
-    document.body.appendChild(header);
+    container.appendChild(header);
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
     initScoreboard(header);
+    const mock = await import("./mockScheduler.js");
+    setScheduler(mock.createMockScheduler());
     const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
     initBattleScoreboardAdapter();
   });
 
+  afterEach(() => {
+    clearBody();
+  });
+
   it("shows 'Waiting…' after 500ms and clears on first state event", async () => {
+    const { getScheduler } = await import("../../src/helpers/scheduler.js");
+    const scheduler = getScheduler();
     const msg = document.getElementById("round-message");
     expect(msg.textContent).toBe("");
-    await vi.advanceTimersByTimeAsync(499);
+    scheduler.tick(499);
     expect(msg.textContent).toBe("");
-    await vi.advanceTimersByTimeAsync(1);
+    scheduler.tick(1);
     expect(msg.textContent).toMatch(/Waiting/);
 
     // Next state should clear it

@@ -31,6 +31,9 @@ describe("Classic Battle bootstrap", () => {
     const mod = await import("../../src/pages/battleClassic.init.js");
     if (typeof mod.init === "function") await mod.init();
 
+    const { onBattleEvent, offBattleEvent } = await import(
+      "../../src/helpers/classicBattle/battleEvents.js"
+    );
     const { setPointsToWin, createBattleEngine } = await import(
       "../../src/helpers/battleEngineFacade.js"
     );
@@ -39,6 +42,14 @@ describe("Classic Battle bootstrap", () => {
     );
     const { getState } = await import("../../src/components/Scoreboard.js");
 
+    const roundResolvedPromise = new Promise((resolve) => {
+      const handler = (e) => {
+        offBattleEvent("roundResolved", handler);
+        resolve(e);
+      };
+      onBattleEvent("roundResolved", handler);
+    });
+
     setPointsToWin(1);
     const store = window.battleStore;
     await handleStatSelection(store, "power", {
@@ -46,6 +57,7 @@ describe("Classic Battle bootstrap", () => {
       opponentVal: 3,
       forceDirectResolution: true
     });
+    await roundResolvedPromise;
     expect(getState().score.player).toBe(1);
 
     createBattleEngine({ forceCreate: true });
