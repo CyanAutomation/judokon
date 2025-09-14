@@ -251,7 +251,7 @@ export async function startTimer(onExpiredSelect, store = null) {
     const selecting = isEnabled("autoSelect")
       ? (async () => {
           try {
-            await autoSelectStat(onExpiredSelect);
+            await autoSelectStat(onExpiredSelect, process.env.VITEST ? 0 : undefined);
           } catch {}
         })()
       : Promise.resolve();
