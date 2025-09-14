@@ -9,18 +9,22 @@ export function runWithFakeTimers(fn) {
     viGlobal.useFakeTimers();
     try {
       const res = fn();
-      // If fn returns a promise, await it while timers are fake
       if (res && typeof res.then === "function") {
-        return res.finally(() => viGlobal.runAllTimers());
+        return res.finally(async () => {
+          try {
+            viGlobal.runAllTimers();
+          } catch {}
+          viGlobal.useRealTimers();
+        });
       }
+      try {
+        viGlobal.runAllTimers();
+      } catch {}
       return res;
     } finally {
       try {
-        viGlobal.runAllTimers();
-      } catch {
-        // ignore
-      }
-      viGlobal.useRealTimers();
+        viGlobal.useRealTimers();
+      } catch {}
     }
   }
 

@@ -1,5 +1,21 @@
 # Battle Engine Analysis & Improvement Plan
 
+> Validation Addendum (Agent Review)
+
+- Scope: Verified implementation across `src/helpers/classicBattle/*`, `src/helpers/BattleEngine.js`, `src/helpers/battle/engineTimer.js`, and facade bootstrap. Cross‑checked event taxonomy, state flow, and timer responsibilities against the PRD model summarized in AGENTS.md.
+- Summary: The current document is largely accurate. The orchestrator, engine core, and bridging layers exist and operate as described. A few clarifications and additional improvement opportunities are listed below.
+
+Key confirmations
+- Orchestrator present and authoritative: `classicBattle/orchestrator.js` emits `control.state.changed`, mirrors timer state for diagnostics, and coordinates state transitions via `stateHandlers/*`.
+- Engine core present: `BattleEngine.js` + `battle/engineTimer.js` own scoring, match guards, and timers. Engine emits legacy events bridged to PRD taxonomy.
+- Bridge in place: `classicBattle/engineBridge.js` maps `roundStarted`/`timerTick`/`matchEnded` to `round.started`/`round.timer.tick`/`match.concluded` and `display.score.update`.
+- Orchestrator‑first resolution path: `classicBattle/selectionHandler.js` prefers machine handling and schedules a guarded fallback only when needed; direct resolution can still be forced in tests.
+
+Minor corrections and clarifications
+- The orchestrator is not in the facade; it lives under `classicBattle/` and is initialized via `classicBattle/bootstrap.js`. The facade (`battleEngineFacade.js`) is a thin engine wrapper.
+- “Duplicate/fallback timers” are intentional: selection/cooldown timers are owned by engine; orchestrator and UI mirror ticks. Fallbacks (e.g., guarded `setTimeout` in `selectionHandler`) are scoped to test and non‑FSM contexts to avoid stalls.
+- Dynamic imports exist in classic battle hot paths (e.g., `roundResolver.js`, `selectionHandler.js`, several `stateHandlers/*`). These should be converted or preloaded to comply with hot‑path policy.
+
 ## 1. Executive Summary
 
 I reviewed the PRD and the current implementation across the battle engine, facade, and Classic Battle orchestration. Your core concern about complexity and race conditions is valid in places, but there are a few important corrections and confirmations relative to the PRD:
@@ -15,6 +31,13 @@ Where complexity shows up today:
 - Dual resolution paths for a round (orchestrator‑driven vs direct resolution in `selectionHandler`) exist to support tests, which increases surface area for edge cases.
 
 This document validates what already aligns with the PRD, corrects earlier assumptions, and proposes targeted simplifications to reduce race windows and complexity without broad API changes.
+
+Addendum priorities (Agent recommendation)
+- P1: Remove dynamic imports from classic battle hot paths or preload them during idle; keep the hot path free of `await import` per AGENTS.md.
+- P1: Finish `@pseudocode` JSDoc on public/complex functions (notably in `roundResolver.js`) to satisfy validation gates and improve maintainability.
+- P2: Align engine event names to PRD taxonomy at the source and keep a short‑lived compatibility shim in the bridge; treat as a controlled public API change with explicit approval.
+- P2: Centralize fallback timing/guards into a small utility to make race handling auditable (selection fallback, cooldown watchdog, test context shortcuts).
+- P3: Replace remaining `console.warn`/`console.error` in runtime paths with the repo logger (and Sentry integration when enabled); keep tests disciplined via `withMutedConsole`.
 
 ## 2. Architecture Validation vs PRD
 
@@ -50,7 +73,7 @@ Corrections to prior assumptions:
   - `round.started`, `round.timer.tick`, `match.concluded` via `engineBridge.js`
   - `control.state.changed`, readiness, and diagnostics via `orchestrator.js`
 - Pain point: Engine still emits legacy event names (`roundStarted`, `timerTick`, `roundEnded`, `matchEnded`) requiring a bridge to PRD taxonomy. This indirection increases complexity and makes conformance auditing harder.
-- Improvement: Align engine event names to PRD taxonomy and reduce the bridge to a no‑op or temporary compatibility shim. This simplifies mental models and lowers adapter maintenance cost.
+- Improvement: Align engine event names to PRD taxonomy and reduce the bridge to a no‑op or temporary compatibility shim. This simplifies mental models and lowers adapter maintenance cost. Treat this as a public API change: stage behind a feature flag and ship with explicit approval and dual‑path tests.
 
 ### 3.3. Timer Paths and Race Windows
 
@@ -139,6 +162,11 @@ These steps keep public APIs and tests stable while removing complexity at seams
 - `src/helpers/classicBattle/bootstrap.js` incorrectly imports `bridgeEngineEvents` from `roundResolver.js`; should import from `classicBattle/engineBridge.js`.
 - Several functions exceed 50 lines across classic battle helpers; when touching those files, consider extracting helpers per repo standards.
 - Multiple dynamic imports exist in hot paths; plan a small follow‑up to preload or convert to static imports per AGENTS.md.
+
+Agent validation updates
+- Verified bootstrap currently imports `./engineBridge.js` (the mis‑import appears to be historic).
+- Confirmed hot‑path dynamic imports in `classicBattle/*` (e.g., `selectionHandler.js`, `roundResolver.js`, `stateHandlers/*`, `orchestrator.js`). These should be addressed per import policy.
+- Confirmed logger usage in `BattleEngine.js`; recommend extending logger usage across classic battle helpers to replace raw console calls and prefer Sentry logger where configured.
 
 — End of amendments. Pausing here for your review.
 

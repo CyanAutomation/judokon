@@ -1,29 +1,29 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { loadQuote } from "../../src/helpers/quoteBuilder.js";
 import { formatFableStory } from "../../src/helpers/quotes/quoteRenderer.js";
+import { mount, clearBody } from "./domUtils.js";
 
 const originalFetch = global.fetch;
 
 afterEach(() => {
   vi.restoreAllMocks();
   global.fetch = originalFetch;
-  document.body.innerHTML = "";
+  clearBody();
   localStorage.clear();
 });
 
 describe("loadQuote", () => {
   it("formats fable story with HTML", async () => {
-    const quoteDiv = document.createElement("div");
-    quoteDiv.id = "quote";
-    quoteDiv.className = "hidden";
-    const loader = document.createElement("div");
-    loader.id = "quote-loader";
-    const toggle = document.createElement("button");
-    toggle.id = "language-toggle";
-    toggle.className = "hidden";
-    const liveRegion = document.createElement("div");
-    liveRegion.id = "language-announcement";
-    document.body.append(quoteDiv, loader, toggle, liveRegion);
+    const {
+      container,
+      query,
+      cleanup: localCleanup
+    } = mount(
+      `<div id="quote" class="hidden"></div>
+       <div id="quote-loader"></div>
+       <button id="language-toggle" class="hidden"></button>
+       <div id="language-announcement"></div>`
+    );
     localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
 
     const storyData = [{ id: 1, story: "Line1\nLine2\n\nLine3" }];
@@ -36,46 +36,51 @@ describe("loadQuote", () => {
     });
     vi.spyOn(Math, "random").mockReturnValue(0);
 
-    await loadQuote();
+    await loadQuote({ root: container });
 
-    const contentHtml = document.getElementById("quote-content").innerHTML;
+    const contentHtml = query("#quote-content").innerHTML;
     expect(contentHtml).toBe("<p>Line1<br>Line2</p><br><p>Line3</p><br>");
+    localCleanup();
   });
 
   it("renders fallback message when fetch fails", async () => {
-    const quoteDiv = document.createElement("div");
-    quoteDiv.id = "quote";
-    const loader = document.createElement("div");
-    loader.id = "quote-loader";
-    document.body.append(quoteDiv, loader);
+    const {
+      container,
+      query,
+      cleanup: localCleanup
+    } = mount(`<div id="quote"></div><div id="quote-loader"></div>`);
     localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
 
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
 
-    await loadQuote();
+    await loadQuote({ root: container });
 
-    expect(quoteDiv.innerHTML).toBe("<p>Take a breath. Even a still pond reflects the sky.</p>");
+    expect(query("#quote").innerHTML).toBe(
+      "<p>Take a breath. Even a still pond reflects the sky.</p>"
+    );
+    localCleanup();
     consoleErrorSpy.mockRestore();
   });
 
   it("handles empty or invalid quote data gracefully", async () => {
-    const quoteDiv = document.createElement("div");
-    quoteDiv.id = "quote";
-    const loader = document.createElement("div");
-    loader.id = "quote-loader";
-    document.body.append(quoteDiv, loader);
+    const {
+      container,
+      query,
+      cleanup: localCleanup
+    } = mount(`<div id="quote"></div><div id="quote-loader"></div>`);
     localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
 
     // Empty array
     global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [] }));
-    await loadQuote();
-    expect(quoteDiv.textContent).toContain("Take a breath");
+    await loadQuote({ root: container });
+    expect(query("#quote").textContent).toContain("Take a breath");
 
     // Invalid data
     global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [{}] }));
-    await loadQuote();
-    expect(quoteDiv.textContent).toContain("Take a breath");
+    await loadQuote({ root: container });
+    expect(query("#quote").textContent).toContain("Take a breath");
+    localCleanup();
   });
 
   it("does not throw if DOM elements are missing", async () => {
@@ -86,7 +91,7 @@ describe("loadQuote", () => {
       }
       return Promise.resolve({ ok: true, json: async () => [{ id: 1, title: "A" }] });
     });
-    await loadQuote();
+    await loadQuote({ root: document });
     // Should not throw even if #quote, #quote-loader, or #language-toggle are missing
   });
 });

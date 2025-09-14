@@ -141,7 +141,7 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  * - Timer controls returned from `startCooldown`.
  * @returns {Promise<void>}
  */
-export async function onNextButtonClick(_evt, controls = getNextRoundControls()) {
+export async function onNextButtonClick(_evt, controls = getNextRoundControls(), options = {}) {
   if (skipRoundCooldownIfEnabled()) return;
   // Only finish the countdown when in cooldown (or when state is unknown in
   // tests). Emitting this in other states could confuse the state machine.
@@ -150,7 +150,10 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls())
     emitBattleEvent("countdownFinished");
   }
   const { timer = null, resolveReady = null } = controls || {};
-  const btn = document.getElementById("next-button");
+  const root = options.root || document;
+  const btn = root.getElementById
+    ? root.getElementById("next-button")
+    : root.querySelector("#next-button");
   if (!btn) return;
   // Defensive: if a stale readiness flag is present outside of `cooldown`,
   // clear it so we don't advance via an early-ready path.
@@ -265,8 +268,7 @@ export async function startTimer(onExpiredSelect, store = null) {
     // actually resolves so cooldown can begin even when auto-select is disabled.
     // This keeps the standalone Classic Battle page functional in E2E runs.
     try {
-      const { state } = safeGetSnapshot();
-      if (!state && !isEnabled("autoSelect")) {
+      if (!isEnabled("autoSelect")) {
         // Pick a stable fallback stat and resolve via provided handler.
         await onExpiredSelect("speed", { delayOpponentMessage: true });
       }

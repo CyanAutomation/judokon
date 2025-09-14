@@ -35,10 +35,10 @@ export const quoteReadyPromise =
  * @param {QuoteLoadState} state
  * @returns {void}
  */
-export function checkAssetsReady(state) {
+export function checkAssetsReady(state, { root = document } = {}) {
   if (state.kgImageLoaded && state.quoteLoaded) {
-    document.querySelector(".kg-sprite img")?.classList.remove("fade-in");
-    document.querySelector(".quote-block")?.classList.remove("fade-in");
+    root.querySelector(".kg-sprite img")?.classList.remove("fade-in");
+    root.querySelector(".quote-block")?.classList.remove("fade-in");
   }
 }
 
@@ -68,8 +68,10 @@ export function formatFableStory(story) {
     .join("");
 }
 
-function renderQuote(fable) {
-  const quoteDiv = document.getElementById("quote");
+function renderQuote(fable, { root = document } = {}) {
+  const quoteDiv = root.getElementById
+    ? root.getElementById("quote")
+    : root.querySelector("#quote");
   if (!quoteDiv) {
     return;
   }
@@ -81,8 +83,10 @@ function renderQuote(fable) {
     `;
 }
 
-function renderFallback() {
-  const quoteDiv = document.getElementById("quote");
+function renderFallback({ root = document } = {}) {
+  const quoteDiv = root.getElementById
+    ? root.getElementById("quote")
+    : root.querySelector("#quote");
   if (quoteDiv) {
     quoteDiv.innerHTML = "<p>Take a breath. Even a still pond reflects the sky.</p>";
   }
@@ -110,34 +114,42 @@ function notifyQuoteReady() {
  * @param {QuoteLoadState} state
  * @returns {void}
  */
-export function displayFable(fable, state) {
-  const quoteDiv = document.getElementById("quote");
-  const loaderDiv = document.getElementById("quote-loader");
+export function displayFable(fable, state, { root = document } = {}) {
+  const quoteDiv = root.getElementById
+    ? root.getElementById("quote")
+    : root.querySelector("#quote");
+  const loaderDiv = root.getElementById
+    ? root.getElementById("quote-loader")
+    : root.querySelector("#quote-loader");
   if (!quoteDiv || !loaderDiv) {
     state.quoteLoaded = true;
-    checkAssetsReady(state);
+    checkAssetsReady(state, { root });
     return;
   }
 
   if (fable) {
-    renderQuote(fable);
+    renderQuote(fable, { root });
   } else {
-    renderFallback();
+    renderFallback({ root });
   }
 
   loaderDiv.classList.add("hidden");
   quoteDiv.classList.remove("hidden");
-  const toggleBtn = document.getElementById("language-toggle");
+  const toggleBtn = root.getElementById
+    ? root.getElementById("language-toggle")
+    : root.querySelector("#language-toggle");
   if (toggleBtn) {
     toggleBtn.classList.remove("hidden");
     toggleBtn.setAttribute("aria-live", "polite");
     toggleBtn.focus();
-    const liveRegion = document.getElementById("language-announcement");
+    const liveRegion = root.getElementById
+      ? root.getElementById("language-announcement")
+      : root.querySelector("#language-announcement");
     if (liveRegion) {
       liveRegion.textContent = "language toggle available";
     }
   }
   state.quoteLoaded = true;
-  checkAssetsReady(state);
+  checkAssetsReady(state, { root });
   notifyQuoteReady();
 }

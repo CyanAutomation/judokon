@@ -777,9 +777,16 @@ export function updateBattleStateBadge(state) {
   const badge = document.getElementById("battle-state-badge");
   if (!badge) return;
   try {
-    badge.textContent = state ? `State: ${state}` : "State: —";
+    const plain = (badge.dataset && badge.dataset.format) === "plain";
+    if (plain) {
+      // Classic page wants bare labels (e.g., "Lobby")
+      badge.textContent = state ? String(state) : "Lobby";
+    } else {
+      badge.textContent = state ? `State: ${state}` : "State: —";
+    }
   } catch {
-    badge.textContent = "State: —";
+    const plain = (badge.dataset && badge.dataset.format) === "plain";
+    badge.textContent = plain ? "Lobby" : "State: —";
   }
 }
 

@@ -71,9 +71,8 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
     await expect(winTargetSelect).toBeVisible();
 
     // Test that dropdowns work properly at high zoom
-    await winTargetSelect.click();
-    const option = page.locator('#points-select option[value="5"]');
-    await expect(option).toBeVisible();
+    await winTargetSelect.selectOption("5");
+    await expect(winTargetSelect).toHaveValue("5");
 
     await page.keyboard.press("Escape");
   });

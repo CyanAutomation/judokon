@@ -18,8 +18,8 @@ import { displayFable, checkAssetsReady, quoteReadyPromise } from "./quotes/quot
  * @param {QuoteLoadState} state
  * @returns {Promise<void>}
  */
-async function waitForKgImage(state) {
-  const kgImg = document.querySelector(".kg-sprite img");
+async function waitForKgImage(state, { root = document } = {}) {
+  const kgImg = root.querySelector(".kg-sprite img");
   if (!kgImg) {
     state.kgImageLoaded = true;
     checkAssetsReady(state);
@@ -58,9 +58,9 @@ async function waitForKgImage(state) {
  * @returns {Promise<void>} Promise that resolves once the quote and image are
  * loaded.
  */
-export async function loadQuote() {
+export async function loadQuote({ root = document } = {}) {
   const state = { kgImageLoaded: false, quoteLoaded: false };
   const fable = await displayRandomQuote();
-  displayFable(fable, state);
-  await Promise.all([quoteReadyPromise, waitForKgImage(state)]);
+  displayFable(fable, state, { root });
+  await Promise.all([quoteReadyPromise, waitForKgImage(state, { root })]);
 }
