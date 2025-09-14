@@ -16,10 +16,16 @@ describe("Classic Battle round resolution", () => {
       const mod = await import("../../src/pages/battleClassic.init.js");
       if (typeof mod.init === "function") mod.init();
 
-      const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+      const { onBattleEvent, offBattleEvent } = await import(
+        "../../src/helpers/classicBattle/battleEvents.js"
+      );
 
       const roundResolvedPromise = new Promise((resolve) => {
-        onBattleEvent("roundResolved", resolve, { once: true });
+        const handler = (e) => {
+          offBattleEvent("nextRoundTimerReady", handler);
+          resolve(e);
+        };
+        onBattleEvent("nextRoundTimerReady", handler);
       });
 
       // Open modal and pick any option to start

@@ -49,18 +49,21 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       const { getNextRoundControls } = await import(
         "../../src/helpers/classicBattle/roundManager.js"
       );
+      const { onBattleEvent, offBattleEvent } = await import(
+        "../../src/helpers/classicBattle/battleEvents.js"
+      );
 
       // Wait for round expiry + deterministic resolution
       vi.useFakeTimers();
       const roundResolvedPromise = new Promise((resolve) => {
-        const { onBattleEvent } = require("../../src/helpers/classicBattle/battleEvents.js");
-        onBattleEvent("roundResolved", resolve, { once: true });
+        const handler = (e) => {
+          offBattleEvent("nextRoundTimerReady", handler);
+          resolve(e);
+        };
+        onBattleEvent("nextRoundTimerReady", handler);
       });
       vi.advanceTimersByTime(1200);
       await roundResolvedPromise;
-
-      const controls = getNextRoundControls();
-      await controls.ready;
 
       // After resolution, cooldown should start and Next becomes ready
       const next = document.getElementById("next-button");
@@ -70,7 +73,7 @@ describe("Classic Battle inter-round cooldown + Next", () => {
 
       // onNextButtonClick should resolve the ready promise
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
-
+      const controls = getNextRoundControls();
       const readyPromise = controls.ready;
 
       // Click the Next button to advance
