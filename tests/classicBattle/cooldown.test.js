@@ -1,5 +1,3 @@
-import * as timerUtils from "../../src/helpers/timerUtils.js";
-
 describe("Classic Battle inter-round cooldown + Next", () => {
   afterEach(() => {
     vi.useRealTimers();
