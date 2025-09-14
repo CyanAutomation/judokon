@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, expect } from "vitest";
 
 describe("Scoreboard idempotent init and destroy cleanup", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     document.body.innerHTML = "";
     const header = document.createElement("header");
     header.innerHTML = `
@@ -11,6 +11,8 @@ describe("Scoreboard idempotent init and destroy cleanup", () => {
       <p id="score-display" aria-live="off" aria-atomic="true"></p>
     `;
     document.body.appendChild(header);
+    const { resetScoreboard } = await import("../../src/components/Scoreboard.js");
+    resetScoreboard();
   });
 
   it("repeated initScoreboard does not clear existing message", async () => {

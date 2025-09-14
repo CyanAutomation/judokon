@@ -19,7 +19,8 @@ describe("battleScoreboard waiting fallback", () => {
       <p id="score-display" aria-live="polite" aria-atomic="true"></p>
     `;
     container.appendChild(header);
-    const { initScoreboard } = await import("../../src/components/Scoreboard.js");
+    const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
+    resetScoreboard();
     initScoreboard(header);
     const mock = await import("./mockScheduler.js");
     setScheduler(mock.createMockScheduler());
