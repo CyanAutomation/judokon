@@ -23,6 +23,7 @@ import { logStateTransition, createComponentLogger } from "./debugLogger.js";
 import { preloadTimerUtils } from "/src/helpers/TimerController.js";
 import { initScoreboardAdapter } from "/src/helpers/classicBattle/scoreboardAdapter.js";
 import { createStateManager } from "/src/helpers/classicBattle/stateManager.js";
+import "./uiService.js";
 
 const orchestratorLogger = createComponentLogger("Orchestrator");
 
@@ -201,18 +202,14 @@ function emitResolution(event) {
  *
  * @pseudocode
  * 1. Await `preloadTimerUtils`.
- * 2. Dynamically import `./uiService.js`.
- * 3. Initialize `initScoreboardAdapter`.
- * 4. Swallow errors from each step.
+ * 2. Initialize `initScoreboardAdapter`.
+ * 3. Swallow errors from each step.
  *
  * @returns {Promise<void>} resolves when best-effort preloads finish.
  */
 async function preloadDependencies() {
   try {
     await preloadTimerUtils();
-  } catch {}
-  try {
-    await import("./uiService.js");
   } catch {}
   try {
     initScoreboardAdapter();
