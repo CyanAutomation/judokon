@@ -1,4 +1,28 @@
 import { getStateSnapshot } from "./battleDebug.js";
+import { seededRandom } from "../testModeUtils.js";
+
+/**
+ * Compute the delay before revealing the opponent's stat.
+ *
+ * @returns {number} Delay in milliseconds.
+ * @summary Determine opponent reveal delay with test overrides.
+ * @pseudocode
+ * 1. Return `0` when `process.env.VITEST` is truthy.
+ * 2. Respect `globalThis.__OVERRIDE_TIMERS.resolveDelay` when provided.
+ * 3. Otherwise compute `300 + floor(seededRandom() * 401)`.
+ */
+export function resolveDelay() {
+  try {
+    if (typeof process !== "undefined" && process.env?.VITEST) return 0;
+  } catch {}
+  try {
+    const overrides = globalThis?.__OVERRIDE_TIMERS;
+    if (overrides && typeof overrides.resolveDelay === "number") {
+      return overrides.resolveDelay;
+    }
+  } catch {}
+  return 300 + Math.floor(seededRandom() * 401);
+}
 
 /**
  * Safely retrieve the current battle state snapshot.

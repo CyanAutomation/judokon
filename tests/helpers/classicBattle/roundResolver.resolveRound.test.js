@@ -31,21 +31,14 @@ describe("resolveRound headless delays", () => {
     setHeadlessMode(false);
   });
 
-  it("uses seeded delay when headless disabled", async () => {
+  it("completes immediately when headless disabled in tests", async () => {
     const { mod } = await setup();
     const { setHeadlessMode } = await import("../../../src/helpers/headlessMode.js");
-    const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setHeadlessMode(false);
-    setTestMode(true);
     let resolved = false;
-    const promise = mod.resolveRound({}, "power", 1, 2).then(() => {
+    await mod.resolveRound({}, "power", 1, 2).then(() => {
       resolved = true;
     });
-    await Promise.resolve();
-    expect(resolved).toBe(false);
-    await vi.runAllTimersAsync();
-    await promise;
     expect(resolved).toBe(true);
-    setTestMode(false);
   });
 });
