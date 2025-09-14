@@ -67,12 +67,12 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
     await expect(settingsBody).toBeVisible();
 
     // Verify settings controls are accessible at 200% zoom
-    const winTargetSelect = settingsBody.locator("#win-target");
+    const winTargetSelect = settingsBody.locator("#points-select");
     await expect(winTargetSelect).toBeVisible();
 
     // Test that dropdowns work properly at high zoom
     await winTargetSelect.click();
-    const option = page.locator('#win-target option[value="7"]');
+    const option = page.locator('#points-select option[value="5"]');
     await expect(option).toBeVisible();
 
     await page.keyboard.press("Escape");
@@ -89,10 +89,10 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
     }
 
     // Wait for stat list to load
-    await page.waitForSelector("#cli-stats .stat-row", { timeout: 10000 });
+    await page.waitForSelector("#cli-stats .cli-stat", { timeout: 10000 });
 
     // Verify stat rows are visible and properly spaced
-    const statRows = page.locator("#cli-stats .stat-row");
+    const statRows = page.locator("#cli-stats .cli-stat");
     const count = await statRows.count();
     expect(count).toBeGreaterThan(0);
 

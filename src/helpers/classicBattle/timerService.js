@@ -260,6 +260,17 @@ export async function startTimer(onExpiredSelect, store = null) {
       : Promise.resolve();
     await dispatchBattleEvent("timeout");
     await selecting;
+
+    // In non-orchestrated contexts (no FSM state on <body>), ensure the round
+    // actually resolves so cooldown can begin even when auto-select is disabled.
+    // This keeps the standalone Classic Battle page functional in E2E runs.
+    try {
+      const { state } = safeGetSnapshot();
+      if (!state && !isEnabled("autoSelect")) {
+        // Pick a stable fallback stat and resolve via provided handler.
+        await onExpiredSelect("speed", { delayOpponentMessage: true });
+      }
+    } catch {}
   };
 
   try {
