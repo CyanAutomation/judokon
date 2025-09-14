@@ -46,25 +46,31 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       const btn = await waitForBtn();
       btn.click();
 
+      const { getNextRoundControls } = await import(
+        "../../src/helpers/classicBattle/roundManager.js"
+      );
+
       // Wait for round expiry + deterministic resolution
-      await new Promise((r) => setTimeout(r, 1200));
+      vi.useFakeTimers();
+      const roundResolvedPromise = new Promise((resolve) => {
+        const { onBattleEvent } = require("../../src/helpers/classicBattle/battleEvents.js");
+        onBattleEvent("roundResolved", resolve, { once: true });
+      });
+      vi.advanceTimersByTime(1200);
+      await roundResolvedPromise;
+
+      const controls = getNextRoundControls();
+      await controls.ready;
 
       // After resolution, cooldown should start and Next becomes ready
       const next = document.getElementById("next-button");
       expect(next).toBeTruthy();
-      // Allow any microtasks to wire the cooldown
-      await new Promise((r) => setTimeout(r, 10));
       expect(next.disabled).toBe(false);
       expect(next.getAttribute("data-next-ready")).toBe("true");
 
       // onNextButtonClick should resolve the ready promise
-      const { getNextRoundControls } = await import(
-        "../../src/helpers/classicBattle/roundManager.js"
-      );
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
 
-      const controls = getNextRoundControls();
-      expect(controls && controls.ready).toBeTruthy();
       const readyPromise = controls.ready;
 
       // Click the Next button to advance

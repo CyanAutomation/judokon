@@ -79,6 +79,9 @@ async function handleRoundSelect({
   persistRoundAndLog(value);
   modal.close();
   try {
+    modal.element.dispatchEvent(new Event("close"));
+  } catch {}
+  try {
     cleanupTooltips();
   } catch {}
   try {

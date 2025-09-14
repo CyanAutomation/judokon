@@ -16,6 +16,12 @@ describe("Classic Battle round resolution", () => {
       const mod = await import("../../src/pages/battleClassic.init.js");
       if (typeof mod.init === "function") mod.init();
 
+      const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+
+      const roundResolvedPromise = new Promise((resolve) => {
+        onBattleEvent("roundResolved", resolve, { once: true });
+      });
+
       // Open modal and pick any option to start
       const waitForBtn = () =>
         new Promise((r) => {
@@ -29,8 +35,9 @@ describe("Classic Battle round resolution", () => {
       const btn = await waitForBtn();
       btn.click();
 
-      // Wait for auto-select expiry + computeRoundResult
-      await new Promise((r) => setTimeout(r, 1200));
+      vi.useFakeTimers();
+      vi.advanceTimersByTime(1200);
+      await roundResolvedPromise;
 
       const scoreEl = document.getElementById("score-display");
       expect(scoreEl.textContent || "").toMatch(/You:\s*1/);
