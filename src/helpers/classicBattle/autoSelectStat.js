@@ -5,7 +5,8 @@ import { showAutoSelect } from "../setupScoreboard.js";
 // criteria and avoid racing with the cooldown snackbar updates.
 
 const AUTO_SELECT_FEEDBACK_MS = 500;
-const DEFAULT_FEEDBACK_DELAY_MS = process.env.VITEST ? 0 : AUTO_SELECT_FEEDBACK_MS;
+const DEFAULT_FEEDBACK_DELAY_MS =
+  typeof process !== "undefined" && process.env && process.env.VITEST ? 0 : AUTO_SELECT_FEEDBACK_MS;
 
 /**
  * Automatically select a random stat and provide UI feedback.
