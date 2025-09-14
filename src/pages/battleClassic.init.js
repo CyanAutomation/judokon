@@ -26,7 +26,7 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
-import { removeBackdrops } from "../helpers/classicBattle/uiHelpers.js";
+import { removeBackdrops, enableNextRoundButton } from "../helpers/classicBattle/uiHelpers.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -173,12 +173,8 @@ function renderStatButtons(store) {
             timerEl.textContent = "";
           }
 
-          // Enable next button
-          const nextBtn = document.getElementById("next-button");
-          if (nextBtn) {
-            nextBtn.disabled = false;
-            nextBtn.setAttribute("data-next-ready", "true");
-          }
+          startCooldown(store);
+          enableNextRoundButton();
           if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
             try {
               window.__battleClassicStopSelectionTimer();
@@ -186,7 +182,6 @@ function renderStatButtons(store) {
               console.debug("battleClassic: cancel selection timer failed", err);
             }
           }
-          startCooldown(store);
           return;
         }
 
