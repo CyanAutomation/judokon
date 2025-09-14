@@ -764,14 +764,16 @@ export async function applyStatLabels() {
  * operation throws, the function returns without propagating an error.
  *
  * @pseudocode
- * 1. Query `#battle-state-badge`; if absent return early.
- * 2. Set text to `State: <state>` when `state` is non-null, otherwise `State: —`.
- * 3. Catch DOM errors and set fallback text `State: —`.
+ * 1. Return early if `document` is undefined.
+ * 2. Query `#battle-state-badge`; if absent return early.
+ * 3. Set text to `State: <state>` when `state` is non-null, otherwise `State: —`.
+ * 4. Catch DOM errors and set fallback text `State: —`.
  *
  * @param {string|null} state - Current battle state or null when unknown.
  * @returns {void}
  */
 export function updateBattleStateBadge(state) {
+  if (typeof document === "undefined") return;
   const badge = document.getElementById("battle-state-badge");
   if (!badge) return;
   try {
