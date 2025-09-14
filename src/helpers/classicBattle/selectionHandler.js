@@ -5,6 +5,7 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getBattleState } from "./eventBus.js";
+import { getRoundResolvedPromise } from "./promises.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -242,11 +243,12 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * 2. Apply selection to `store` and coerce stat values with `applySelectionToStore`.
  * 3. Call `cleanupTimers` to halt timers and clear pending timeouts.
  * 4. Emit `statSelected` with selection details and any testing options.
- * 5. Store `playerChoice`, dispatch `statSelected`, and detect whether the
- *    machine cleared it.
- * 6. If the machine cleared `playerChoice` or `getBattleState` returns a
- *    state, return early.
- * 7. Otherwise call `resolveRoundDirect` and dispatch `roundResolved`.
+ * 5. Dispatch `statSelected` and detect whether an orchestrator will resolve.
+ * 6. If an orchestrator exists but does not handle the round, install a
+ *    fallback timer that resolves the round directly.
+ * 7. If the machine already resolved or the battle state forbids it, return
+ *    early.
+ * 8. Otherwise call `resolveRoundDirect` and dispatch `roundResolved`.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
@@ -304,9 +306,28 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       typeof document !== "undefined" &&
       !!(document.body && document.body.dataset && document.body.dataset.battleState);
     if (orchestrated && handledByOrchestrator !== true) {
+      const fallbackDelay = IS_VITEST ? 0 : 600;
+      const timeoutId = setTimeout(async () => {
+        if (store.playerChoice !== null) {
+          try {
+            await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
+          } catch {}
+          try {
+            await dispatchBattleEvent("roundResolved");
+          } catch {}
+          store.playerChoice = null;
+        }
+      }, fallbackDelay);
+      try {
+        getRoundResolvedPromise()
+          .then(() => {
+            clearTimeout(timeoutId);
+          })
+          .catch(() => {});
+      } catch {}
       if (IS_VITEST)
         try {
-          console.log("[test] handleStatSelection: orchestrated path; skipping direct resolution");
+          console.log("[test] handleStatSelection: orchestrated path; scheduling fallback");
         } catch {}
       return;
     }
