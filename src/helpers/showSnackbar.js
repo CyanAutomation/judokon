@@ -10,6 +10,7 @@
  * @param {string} message - Text content to display in the snackbar.
  */
 import { SNACKBAR_FADE_MS, SNACKBAR_REMOVE_MS } from "./constants.js";
+import { getScheduler } from "./scheduler.js";
 
 let bar;
 let fadeId;
@@ -22,21 +23,22 @@ function resetState() {
 }
 
 function resetTimers() {
-  clearTimeout(fadeId);
-  clearTimeout(removeId);
+  const scheduler = getScheduler();
+  scheduler.clearTimeout(fadeId);
+  scheduler.clearTimeout(removeId);
   const container = document.getElementById("snackbar-container");
   if (!container) {
     resetState();
     return;
   }
-  fadeId = setTimeout(() => {
+  fadeId = scheduler.setTimeout(() => {
     if (!document.getElementById("snackbar-container")) {
       resetState();
       return;
     }
     bar?.classList.remove("show");
   }, SNACKBAR_FADE_MS);
-  removeId = setTimeout(() => {
+  removeId = scheduler.setTimeout(() => {
     if (!document.getElementById("snackbar-container")) {
       resetState();
       return;

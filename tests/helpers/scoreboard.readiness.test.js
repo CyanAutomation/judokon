@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { mount, clearBody } from "./domUtils.js";
 
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -7,7 +8,10 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
 describe("scoreboard readiness badge reflection", () => {
   beforeEach(() => {
     vi.resetModules();
-    document.body.innerHTML = "";
+  });
+
+  it("toggles #next-ready-badge hidden based on next button readiness", async () => {
+    const { container } = mount();
     const header = document.createElement("header");
     header.className = "header battle-header";
     const left = document.createElement("div");
@@ -28,21 +32,20 @@ describe("scoreboard readiness badge reflection", () => {
       <button id="next-button" disabled>Next</button>
     `;
     header.append(left, controls, right);
-    document.body.appendChild(header);
-  });
+    container.appendChild(header);
 
-  it("toggles #next-ready-badge hidden based on next button readiness", async () => {
     const scheduler = await import("./mockScheduler.js");
     const { setupScoreboard } = await import("../../src/helpers/setupScoreboard.js");
-    const controls = { startCoolDown: vi.fn(), pauseTimer: vi.fn(), resumeTimer: vi.fn() };
-    setupScoreboard(controls, scheduler.createMockScheduler());
-    const nextButton = document.getElementById("next-button");
-    const badge = document.getElementById("next-ready-badge");
+    const controlsApi = { startCoolDown: vi.fn(), pauseTimer: vi.fn(), resumeTimer: vi.fn() };
+    setupScoreboard(controlsApi, scheduler.createMockScheduler());
+    const nextButton = container.querySelector("#next-button");
+    const badge = container.querySelector("#next-ready-badge");
     // Initially disabled => badge hidden
     expect(nextButton.disabled).toBe(true);
     expect(badge.hidden).toBe(true);
     // Enable next button => badge visible
     nextButton.disabled = false;
+    // allow microtasks used by setupScoreboard to run
     await Promise.resolve();
     await Promise.resolve();
     expect(badge.hidden).toBe(false);
@@ -51,5 +54,7 @@ describe("scoreboard readiness badge reflection", () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(badge.hidden).toBe(true);
+
+    clearBody();
   });
 });

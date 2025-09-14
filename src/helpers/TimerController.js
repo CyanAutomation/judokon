@@ -3,6 +3,7 @@
 // When `timerUtils` is partially mocked without `createCountdownTimer`, an
 // internal setTimeout-based countdown keeps tests operational.
 import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
+import { realScheduler } from "./scheduler.js";
 
 let cachedTimerUtils = null;
 
@@ -51,7 +52,11 @@ const DRIFT_THRESHOLD = 2;
  * 5. `getState` returns `{ remaining, paused }`.
  */
 export class TimerController {
-  constructor({ onSecondTick = scheduleSecond, cancel = cancelSchedule } = {}) {
+  constructor({
+    onSecondTick = scheduleSecond,
+    cancel = cancelSchedule,
+    scheduler = realScheduler
+  } = {}) {
     this.currentTimer = null;
     this.remaining = 0;
     this.paused = false;
@@ -59,6 +64,7 @@ export class TimerController {
     this.onExpiredCb = null;
     this.onSecondTick = onSecondTick;
     this.cancel = cancel;
+    this.scheduler = scheduler;
     this.driftId = null;
   }
 
@@ -115,24 +121,28 @@ export class TimerController {
                 remaining = d;
                 paused = false;
                 if (typeof t === "function") t(remaining);
-                id = setTimeout(tick, 1000);
+                id = thisScheduler.setTimeout(tick, 1000);
               },
               stop() {
-                if (id) clearTimeout(id);
+                if (id) thisScheduler.clearTimeout(id);
                 id = 0;
               },
               pause() {
-                if (id) clearTimeout(id);
+                if (id) thisScheduler.clearTimeout(id);
                 id = 0;
                 paused = true;
               },
               resume() {
                 if (!paused) return;
                 paused = false;
-                if (remaining > 0 && !id) id = setTimeout(tick, 1000);
+                if (remaining > 0 && !id) id = thisScheduler.setTimeout(tick, 1000);
               }
             };
           };
+
+    // Use the injected scheduler (or realScheduler) for the fallback timers so
+    // tests can inject a mock scheduler or the test helpers can replace timers.
+    const thisScheduler = this.scheduler || realScheduler;
 
     this.currentTimer = createTimer(duration, {
       onTick: (r) => {

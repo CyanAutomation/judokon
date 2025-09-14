@@ -93,7 +93,7 @@ describe("onNextButtonClick", () => {
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
     expect(events.emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    expect(resolveReady).toHaveBeenCalledTimes(1);
+    expect(resolveReady2).toHaveBeenCalledTimes(1);
   });
 
   it("returns early when feature flag skips cooldown", async () => {

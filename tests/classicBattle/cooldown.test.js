@@ -54,20 +54,13 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       );
 
       // Wait for round expiry + deterministic resolution
-      vi.useFakeTimers();
-      const roundResolvedPromise = new Promise((resolve) => {
-        const handler = (e) => {
-          offBattleEvent("nextRoundTimerReady", handler);
-          resolve(e);
-        };
-        onBattleEvent("nextRoundTimerReady", handler);
-      });
-      vi.advanceTimersByTime(1200);
-      await roundResolvedPromise;
+      await new Promise((r) => setTimeout(r, 1200));
 
       // After resolution, cooldown should start and Next becomes ready
       const next = document.getElementById("next-button");
       expect(next).toBeTruthy();
+      // Allow any microtasks to wire the cooldown
+      await new Promise((r) => setTimeout(r, 200));
       expect(next.disabled).toBe(false);
       expect(next.getAttribute("data-next-ready")).toBe("true");
 

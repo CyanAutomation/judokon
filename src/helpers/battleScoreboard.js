@@ -8,12 +8,14 @@ import {
   showTemporaryMessage,
   getState as _getState
 } from "../components/Scoreboard.js";
+import { getScheduler } from "./scheduler.js";
 
 let _bound = false;
 let _handlers = [];
 // Schedule fallback message if no state is observed within 500ms
 try {
-  _waitingTimer = setTimeout(() => {
+  const scheduler = getScheduler();
+  _waitingTimer = scheduler.setTimeout(() => {
     try {
       _waitingClearer =
         typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
@@ -28,7 +30,8 @@ let _waitingClearer = null;
 function _cancelWaiting() {
   try {
     if (_waitingTimer) {
-      clearTimeout(_waitingTimer);
+      const scheduler = getScheduler();
+      scheduler.clearTimeout(_waitingTimer);
     }
   } catch {}
   _waitingTimer = null;
@@ -62,7 +65,8 @@ export function initBattleScoreboardAdapter() {
   _handlers = [];
   // Schedule fallback message if no state is observed within 500ms
   try {
-    _waitingTimer = setTimeout(() => {
+    const scheduler = getScheduler();
+    _waitingTimer = scheduler.setTimeout(() => {
       try {
         _waitingClearer =
           typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
@@ -164,7 +168,8 @@ export function disposeBattleScoreboardAdapter() {
   _handlers = [];
   // Schedule fallback message if no state is observed within 500ms
   try {
-    _waitingTimer = setTimeout(() => {
+    const scheduler = getScheduler();
+    _waitingTimer = scheduler.setTimeout(() => {
       try {
         _waitingClearer =
           typeof showTemporaryMessage === "function" ? showTemporaryMessage("Waiting…") : null;
