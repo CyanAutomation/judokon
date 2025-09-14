@@ -5,6 +5,7 @@ import { showAutoSelect } from "../setupScoreboard.js";
 // criteria and avoid racing with the cooldown snackbar updates.
 
 const AUTO_SELECT_FEEDBACK_MS = 500;
+const DEFAULT_FEEDBACK_DELAY_MS = process.env.VITEST ? 0 : AUTO_SELECT_FEEDBACK_MS;
 
 /**
  * Automatically select a random stat and provide UI feedback.
@@ -19,10 +20,10 @@ const AUTO_SELECT_FEEDBACK_MS = 500;
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>|void} onSelect
  * - Callback to handle the chosen stat.
- * @param {number} [feedbackDelayMs=AUTO_SELECT_FEEDBACK_MS] - Visual delay before dispatch.
+ * @param {number} [feedbackDelayMs=DEFAULT_FEEDBACK_DELAY_MS] - Visual delay before dispatch.
  * @returns {Promise<void>} Resolves after feedback completes.
  */
-export async function autoSelectStat(onSelect, feedbackDelayMs = AUTO_SELECT_FEEDBACK_MS) {
+export async function autoSelectStat(onSelect, feedbackDelayMs = DEFAULT_FEEDBACK_DELAY_MS) {
   const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
   // Defensive: ensure randomStat is a string before using it in a selector
   let btn = null;
