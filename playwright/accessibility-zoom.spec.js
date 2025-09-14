@@ -10,6 +10,29 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
       document.body.style.zoom = "2";
     });
 
+    await page.addInitScript(() => {
+      // Keep UI deterministic for tests
+      try {
+        localStorage.setItem("battleCLI.verbose", "false");
+      } catch {}
+      try {
+        // Set both the legacy test key and the canonical storage key so the
+        // round-select modal is skipped in browser tests.
+        localStorage.setItem("battleCLI.pointsToWin", "5");
+        try {
+          localStorage.setItem("battle.pointsToWin", "5");
+        } catch {}
+      } catch {}
+      try {
+        localStorage.setItem(
+          "settings",
+          JSON.stringify({ featureFlags: { cliShortcuts: { enabled: true } } })
+        );
+      } catch {}
+      // Speed up inter-round where possible
+      window.__NEXT_ROUND_COOLDOWN_MS = 0;
+    });
+
     await page.goto("/src/pages/battleCLI.html");
     await page.waitForLoadState("networkidle");
   });
@@ -53,10 +76,13 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
 
   test("stat selection interface works at 200% zoom", async ({ page }) => {
     // Start a battle to access stat selection
-    await page.waitForSelector('[data-testid="start-battle-button"]', { timeout: 10000 });
-    await page.evaluate(() =>
-      document.querySelector('[data-testid="start-battle-button"]').click()
-    );
+    const startSelector = '[data-testid="start-battle-button"]';
+    try {
+      await page.waitForSelector(startSelector, { timeout: 10000 });
+      await page.locator(startSelector).click();
+    } catch {
+      // If the button doesn't appear, battle likely auto-started.
+    }
 
     // Wait for stat list to load
     await page.waitForSelector("#cli-stats .stat-row", { timeout: 10000 });
