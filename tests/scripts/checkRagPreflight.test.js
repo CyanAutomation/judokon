@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
+import { withMutedConsole } from "../utils/console.js";
 
 describe("checkRagPreflight", () => {
   it("passes when offline artifacts consistent and strict offline disabled", async () => {
@@ -44,5 +45,32 @@ describe("checkRagPreflight", () => {
     const res = await mod.checkStrictOfflineModel({ RAG_STRICT_OFFLINE: "1" });
     expect(res.ok).toBe(false);
     expect(res.errors.length).toBeGreaterThan(0);
+  });
+
+  it("warns when model files missing and strict offline disabled", async () => {
+    vi.doMock("node:fs/promises", () => ({
+      readFile: vi.fn(async () => Buffer.from([1])),
+      stat: vi.fn(async (p) => {
+        // missing model files
+        if (String(p).includes("models") && String(p).includes("minilm")) {
+          throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+        }
+        return { size: 1 };
+      })
+    }));
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const mod = await import("../../scripts/checkRagPreflight.mjs");
+
+    await withMutedConsole(async () => {
+      const res = await mod.checkStrictOfflineModel({});
+      expect(res.ok).toBe(true);
+      expect(res.errors).toEqual([]);
+    }, ["error"]);
+
+    expect(warnSpy).toHaveBeenCalledOnce();
+    expect(warnSpy.mock.calls[0][0]).toMatch(
+      /npm run rag:prepare:models -- --from-dir \/path\/to\/minilm/
+    );
   });
 });
