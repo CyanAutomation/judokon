@@ -91,7 +91,9 @@ describe("timerService next round handling", () => {
     nextButton.click();
     await controls.ready;
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
-    // Click advances immediately; fallback may be suppressed
+    // Click advances immediately; no additional dispatch after fallback timer elapses
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    scheduler.tick(5000);
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 

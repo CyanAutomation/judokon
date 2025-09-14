@@ -437,6 +437,8 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   let expired = false;
   /** @type {ReturnType<typeof setTimeout>|null|undefined} */
   let fallbackId;
+  /** @type {ReturnType<typeof setTimeout>|null|undefined} */
+  let schedulerFallbackId;
   const onExpired = () => {
     if (expired) return;
     expired = true;
@@ -470,6 +472,13 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
       console.warn("[test] skip: stop nextRoundTimer");
     } catch {}
     clearTimeout(fallbackId);
+    fallbackId = null;
+    try {
+      if (schedulerFallbackId) {
+        scheduler.clearTimeout?.(schedulerFallbackId);
+      }
+    } catch {}
+    schedulerFallbackId = null;
     controls.timer?.stop();
   });
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
@@ -486,10 +495,7 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
     // with test environments that mock timers differently.
     fallbackId = setupFallbackTimer(ms, onExpired);
     try {
-      scheduler.setTimeout(() => onExpired(), ms);
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        scheduler.setTimeout(() => onExpired(), 0);
-      }
+      schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
     } catch {}
   } catch {}
 }
