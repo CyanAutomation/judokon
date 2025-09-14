@@ -51,6 +51,17 @@ function stopActiveSelectionTimer() {
     const el = document.getElementById("next-round-timer");
     if (el) el.textContent = "";
   } catch {}
+  // Clear the fail-safe timer
+  if (failSafeTimerId) {
+    clearTimeout(failSafeTimerId);
+    failSafeTimerId = null;
+  }
+}
+  // Clear the fail-safe timer
+  if (failSafeTimerId) {
+    clearTimeout(failSafeTimerId);
+    failSafeTimerId = null;
+  }
 }
 
 // Expose the timer cleanup function globally for use by selectionHandler

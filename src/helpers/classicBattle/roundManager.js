@@ -85,26 +85,6 @@ function getStartRound(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  */
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
  * Restart the current match by resetting engine state and UI then starting a round.
  *
  * This helper is used by the UI's 'replay' flow to clear engine state, notify
@@ -175,26 +155,6 @@ export async function handleReplay(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart]
  *        Optional callback to apply UI updates immediately.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
  */
 /**
  * Draw new cards and start a round.

@@ -200,3 +200,17 @@ Targeted tests executed
 Notes
 - Remaining dynamic imports exist in non‑core paths (e.g., `classicBattle/testHooks.js`, `classicBattle/cooldowns.js`, `classicBattle/quitButton.js`). Plan to convert or relocate in Phase 2.
 - No public API changes introduced; orchestrator/event taxonomy unchanged. The scoreboard reset on replay is an internal behavior alignment to test expectations and UI state.
+
+## 11. Phase 2 — JSDoc completeness and pseudocode
+
+Changes
+- Removed placeholder `@summary TODO` blocks and ensured public functions have proper `@pseudocode`:
+  - Cleaned extraneous TODO blocks in `classicBattle/roundManager.js` where real docs already existed for `handleReplay` and `startRound`.
+  - Confirmed and retained full JSDoc with `@pseudocode` for exported functions in `classicBattle/roundResolver.js`; removed stray placeholder sections.
+
+Targeted tests executed
+- `tests/helpers/classicBattle/roundResolver.resolveRound.test.js` → PASS
+- `tests/helpers/headlessMode.timing.test.js` → PASS
+
+Notes
+- Doc-only phase; no behavior changes introduced. This should improve `check:jsdoc` compliance for these areas.

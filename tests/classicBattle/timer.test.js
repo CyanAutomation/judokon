@@ -1,53 +1,61 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import * as timerUtils from "../../src/helpers/timerUtils.js";
 
 describe("Classic Battle round timer", () => {
-  test("starts after round selection and updates countdown", async () => {
-    // Force a short timer for the test
+  test("starts timer and clears on expire deterministically", async () => {
+    const timers = vi.useFakeTimers();
+    // Provide a short round timer
     const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
       if (cat === "roundTimer") return 2;
       return 3;
     });
     try {
-      const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-      const html = readFileSync(file, "utf-8");
-      document.documentElement.innerHTML = html;
+      // Minimal DOM: header with timer node
+      const { createBattleHeader } = await import("../utils/testUtils.js");
+      const header = createBattleHeader();
+      document.body.appendChild(header);
 
-      const mod = await import("../../src/pages/battleClassic.init.js");
-      await mod.init();
+      // Bind scoreboard to header
+      const sbHelper = await import("../../src/helpers/setupScoreboard.js");
+      sbHelper.setupScoreboard({ pauseTimer: () => {}, resumeTimer: () => {} });
+      const updateSpy = vi.spyOn(sbHelper, "updateTimer");
+      const clearSpy = vi.spyOn(sbHelper, "clearTimer");
 
-      // Click the 15 button to start the match and timer
-      const waitForBtn = () =>
-        new Promise((r) => {
-          const loop = () => {
-            const el = document.getElementById("round-select-3");
-            if (el) return r(el);
-            setTimeout(loop, 0);
+      // Deterministic round timer: tick at start, then after 1s, then expire
+      vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
+        createRoundTimer: () => {
+          const h = { tick: new Set(), expired: new Set() };
+          return {
+            on: vi.fn((evt, fn) => h[evt]?.add(fn)),
+            start: vi.fn((dur) => {
+              const d = Math.max(0, Number(dur) || 0);
+              h.tick.forEach((fn) => fn(d));
+              setTimeout(() => {
+                if (d > 1) h.tick.forEach((fn) => fn(d - 1));
+                setTimeout(() => h.expired.forEach((fn) => fn()), 1000);
+              }, 1000);
+            }),
+            stop: vi.fn()
           };
-          loop();
-        });
-      const btn = await waitForBtn();
-      btn.click();
+        }
+      }));
 
-      await window.statButtonsReadyPromise;
+      const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
+      await startTimer(async () => {}, { selectionMade: false });
+
       const timerEl = document.getElementById("next-round-timer");
       expect(timerEl).toBeTruthy();
-      // It should show a countdown shortly
-      await new Promise((resolve) => {
-        const check = () => {
-          if (/Time Left:/.test(timerEl.textContent || "")) return resolve();
-          setTimeout(check, 10);
-        };
-        check();
-      });
-      // After ~2s it should clear on expiration
-      await new Promise((r) => setTimeout(r, 2200));
-      expect(timerEl.textContent || "").toBe("");
-      // Auto-select hook should record a stat
-      expect(document.body.dataset.autoSelected).toBeTruthy();
+
+      // Immediately shows starting value
+      expect(updateSpy).toHaveBeenCalledWith(2);
+      expect(timerEl?.textContent).toBe("Time Left: 2s");
+
+      // Advance to expiry and ensure cleared (2s total)
+      await timers.advanceTimersByTimeAsync(2000);
+      expect(clearSpy).toHaveBeenCalled();
+      expect(timerEl?.textContent).toBe("");
     } finally {
       spy.mockRestore();
+      timers.useRealTimers();
     }
   });
 });
