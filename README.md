@@ -185,6 +185,22 @@ npm run rag:query "How does the battle engine work?"
 
 For complete RAG system documentation, offline usage, evaluation tools, and advanced configuration, see **[docs/rag-system.md](./docs/rag-system.md)**.
 
+## 📴 Offline RAG Setup
+
+Hydrate the embedding model for offline use with:
+
+```bash
+npm run rag:prepare:models -- --from-dir /path/to/minilm
+```
+
+Omit `--from-dir` when network access is available to download the model automatically. Once the model files are in place, validate the offline setup:
+
+```bash
+RAG_STRICT_OFFLINE=1 npm run rag:validate
+```
+
+If the model is missing, set `RAG_ALLOW_LEXICAL_FALLBACK=1` to allow a degraded lexical search until embeddings are hydrated.
+
 ## ⚡ Module Loading Policy
 
 Use static imports for hot paths and always-required modules; use dynamic imports with preload for optional or heavy features. See the canonical [Module Loading Policy for Agents](./AGENTS.md#module-loading-policy-for-agents) for the full policy.

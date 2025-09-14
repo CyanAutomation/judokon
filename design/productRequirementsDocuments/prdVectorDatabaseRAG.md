@@ -88,6 +88,22 @@ Chunking rules are shared across tooling via [`src/helpers/vectorSearch/chunkCon
 - **Overlap:** 15% of characters between sequential chunks.
 - **Splitting:** Sentence-aware to avoid mid-sentence breaks.
 
+### Offline RAG Setup
+
+Prepare the embedding model for environments without network access:
+
+```bash
+npm run rag:prepare:models -- --from-dir /path/to/minilm
+```
+
+Run the same command without `--from-dir` to download the model when online. Validate the offline setup afterward:
+
+```bash
+RAG_STRICT_OFFLINE=1 npm run rag:validate
+```
+
+Use `RAG_ALLOW_LEXICAL_FALLBACK=1` to allow degraded lexical search when the model is missing.
+
 ### JSON Field Allowlists and Boilerplate Filtering
 
 The embedding script extracts only approved fields from JSON sources and skips generic text. A field allowlist limits which keys are embedded while boilerplate strings such as "lorem ipsum" are ignored to reduce noise during indexing.
