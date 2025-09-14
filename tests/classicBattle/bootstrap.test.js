@@ -22,4 +22,38 @@ describe("Classic Battle bootstrap", () => {
     // Round counter starts at 0
     expect(round.textContent || "").toMatch(/Round\s*0/);
   });
+
+  test("replay resets scoreboard", async () => {
+    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
+    const html = readFileSync(file, "utf-8");
+    document.documentElement.innerHTML = html;
+
+    const mod = await import("../../src/pages/battleClassic.init.js");
+    if (typeof mod.init === "function") await mod.init();
+
+    const { setPointsToWin, createBattleEngine } = await import(
+      "../../src/helpers/battleEngineFacade.js"
+    );
+    const { handleStatSelection, handleReplay, _resetForTest } = await import(
+      "../../src/helpers/classicBattle.js"
+    );
+    const { getState } = await import("../../src/components/Scoreboard.js");
+
+    setPointsToWin(1);
+    const store = window.battleStore;
+    await handleStatSelection(store, "power", {
+      playerVal: 5,
+      opponentVal: 3,
+      forceDirectResolution: true
+    });
+    expect(getState().score.player).toBe(1);
+
+    createBattleEngine({ forceCreate: true });
+    await handleReplay(store);
+    const { player, opponent } = getState().score;
+    expect(player).toBe(0);
+    expect(opponent).toBe(0);
+
+    _resetForTest(store);
+  });
 });
