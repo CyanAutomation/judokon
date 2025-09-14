@@ -19,26 +19,31 @@ This document validates what already aligns with the PRD, corrects earlier assum
 ## 2. Architecture Validation vs PRD
 
 PRD model (Sections 2–7) expects two cooperating layers:
+
 - Orchestrator (FSM, cooldowns, readiness) that emits `control.*` and consumes domain/timer events.
 - Engine Core (evaluation, scores, timers) that emits domain/timer events.
 
 Findings in repo:
+
 - Orchestrator is present and mode‑scoped: `src/helpers/classicBattle/orchestrator.js` with a full state table and lifecycle hooks via `stateHandlers/*`. It emits `control.state.changed`, readiness events, debug snapshots, and mirrors timer state for diagnostics.
 - Engine Core exists: `src/helpers/BattleEngine.js` + `src/helpers/battle/engineTimer.js` with scoring, match end guards, and round/cooldown timers.
 - Event bridging: `src/helpers/classicBattle/engineBridge.js` maps engine events (`roundStarted`, `timerTick`, `matchEnded`) into PRD taxonomy (`round.started`, `round.timer.tick`, `match.concluded`).
 
 Corrections to prior assumptions:
+
 - The orchestrator is not missing; it is implemented and used by Classic Battle. It is not housed in `battleEngineFacade.js` (which is a factory/singleton wrapper), but under `classicBattle/` as intended for a mode‑specific orchestrator.
 - The UI root `src/helpers/classicBattle.js` is primarily a re‑export surface; the orchestrator logic lives in `classicBattle/orchestrator.js` and `classicBattle/stateHandlers/*`.
 
 ## 3. Specific Problems & Opportunities for Improvement
 
 ### 3.1. State and Responsibility Boundaries
+
 - What’s good: Engine holds scoring/match‑end state and timers; orchestrator owns FSM and emits `control.*` events. This matches PRD intent.
 - Pain point: Some flows bypass the orchestrator for test convenience. `selectionHandler.handleStatSelection` can resolve a round directly (Vitest path) if the machine hasn’t taken over yet. This dual path complicates reasoning and increases surface area for race conditions.
 - Improvement: Prefer a single authoritative path for resolution. Keep the direct‑resolution path only behind an explicit test flag and default to orchestrator‑driven resolution. Add a lightweight invariant in `handleStatSelection` to early‑return when the machine is active and in a compatible state.
 
 ### 3.2. Event Taxonomy and Bridging
+
 - What’s good: PRD dot events are emitted in several places today:
   - `round.selection.locked` in `selectionHandler.js` (non‑Vitest)
   - `round.evaluated` and `display.score.update` in `roundResolver.js`
@@ -48,22 +53,26 @@ Corrections to prior assumptions:
 - Improvement: Align engine event names to PRD taxonomy and reduce the bridge to a no‑op or temporary compatibility shim. This simplifies mental models and lowers adapter maintenance cost.
 
 ### 3.3. Timer Paths and Race Windows
+
 - What’s good: Engine owns selection and cooldown timers; orchestrator mirrors ticks and manages control transitions. Guards in `roundDecisionEnter` and helpers (`guardSelectionResolution`, `schedulePostResolveWatchdog`) reduce stall/race risk.
 - Pain point: Redundant/fallback timers are sprinkled around to protect tests and mocked timers (e.g., `startCooldown` schedules both engine timers and `setTimeout` fallbacks). Selection flow also clears ad‑hoc store timeouts. This increases the number of timing surfaces that need to agree.
 - Improvement: Centralize fallback logic behind a single abstraction (e.g., a `SafeTimer` that wraps engine timers and provides vetted fallbacks). Ensure only one authoritative expiration path triggers state transitions; others should be observability only.
 
 ### 3.4. Logging and Test‑Only DOM Updates
+
 - Observation: Several code paths write directly to DOM or use `console.log` under Vitest. Examples: `BattleEngine.handleStatSelection` logs; `roundResolver` sets `#round-message` and `#score-display` for tests.
 - Risk: Side effects complicate the hot path and can mask issues in real flows.
 - Improvement: Move test DOM updates into test utilities and prefer a structured logger (or Sentry logger) behind an env flag. Keep engine/core modules free of direct DOM writes.
 
 ### 3.5. Import Hygiene in Hot Paths
+
 - Observation: Dynamic imports occur in hot modules (e.g., `selectionHandler` imports `showSnackbar`/`i18n`; `roundResolver` imports `setupScoreboard`). PRD/AGENTS rules discourage dynamic imports in classic battle hot paths.
 - Improvement: Preload optional modules in `orchestrator.preloadDependencies()` (already started) and convert hot‑path dynamic imports to static imports or idle preloads to avoid JIT stalls and simplify flow.
 
 ## 4. Focused Simplification Plan (No Public API changes)
 
-1) Normalize event taxonomy at the engine boundary
+1. Normalize event taxonomy at the engine boundary
+
 - Rename engine emitter events to PRD names, keep a temporary alias layer for compatibility. Targets:
   - `roundStarted` → `round.started({ roundIndex })`
   - `timerTick` → `round.timer.tick` or `cooldown.timer.tick` (phase aware)
@@ -71,21 +80,26 @@ Corrections to prior assumptions:
   - `matchEnded` → `match.concluded`
 - Rationale: Eliminates `engineBridge` indirection and simplifies test conformance.
 
-2) Consolidate timer/fallback logic
+2. Consolidate timer/fallback logic
+
 - Introduce a `SafeTimer` wrapper used by orchestrator for both selection and cooldown phases that delegates to engine timers and only adds a single, tested fallback path used in tests or degraded environments.
 - Remove scattered `setTimeout` safety nets in `roundManager.startCooldown` and related helpers once the wrapper covers those cases.
 
-3) Prefer orchestrator‑first resolution
+3. Prefer orchestrator‑first resolution
+
 - In `selectionHandler.handleStatSelection`, detect an active machine and allow it to resolve the round whenever possible. Keep the direct‑resolution path strictly behind `forceDirectResolution` test flags.
 - Add a defensive check to avoid emitting duplicate outcome flows when the machine already advanced to `roundDecision`.
 
-4) Reduce test‑only DOM writes and console logs
+4. Reduce test‑only DOM writes and console logs
+
 - Move the Vitest DOM updates from `roundResolver` into `tests` helpers. Replace `console.log` in engine code with a project logger gated by env flags, or mute via the existing test console utilities.
 
-5) Import hygiene
+5. Import hygiene
+
 - Convert hot‑path dynamic imports to static imports or preload them in `orchestrator.preloadDependencies()` to respect the “no dynamic import in hot paths” rule.
 
-6) Minor correctness and cleanup
+6. Minor correctness and cleanup
+
 - Fix incorrect import in `classicBattle/bootstrap.js` where `bridgeEngineEvents` is imported from `roundResolver.js`; it should import from `classicBattle/engineBridge.js`.
 - Ensure selection/cooldown tick and expiry events are emitted from a single place to avoid duplicate `ready`/`completed` emissions.
 
