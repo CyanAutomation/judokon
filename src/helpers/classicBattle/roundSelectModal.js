@@ -48,6 +48,9 @@ function persistRoundAndLog(value) {
 
 async function startRound(value, onStart, emitEvents) {
   setPointsToWin(value);
+  try {
+    document.body.dataset.target = String(value);
+  } catch {}
   // Sync the settings dropdown to reflect the new win target
   try {
     syncWinTargetDropdown();

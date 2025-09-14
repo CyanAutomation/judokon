@@ -1,7 +1,6 @@
 import { setupScoreboard, updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
 import {
   createBattleEngine,
-  getPointsToWin,
   STATS,
   on as onEngine,
   getRoundsPlayed
@@ -558,15 +557,11 @@ async function init() {
     try {
       await initRoundSelectModal(async () => {
         try {
-          const pts = getPointsToWin();
-          document.body.dataset.target = String(pts);
-          try {
-            if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-              console.debug(
-                `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
-              );
-            }
-          } catch {}
+          if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+            console.debug(
+              `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
+            );
+          }
         } catch {}
         // Reflect state change in badge
         try {
