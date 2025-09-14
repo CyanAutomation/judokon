@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { mount, clearBody } from "./domUtils.js";
 
 const originalLocation = window.location;
 
 function setupDom() {
+  const { container } = mount();
   const navBar = document.createElement("nav");
   navBar.className = "bottom-navbar";
   navBar.innerHTML = "<ul></ul>";
-  document.body.appendChild(navBar);
+  container.appendChild(navBar);
   return navBar;
 }
 
@@ -14,7 +16,7 @@ afterEach(() => {
   if (global.localStorage) {
     global.localStorage.clear();
   }
-  document.body.innerHTML = "";
+  clearBody();
   vi.resetModules();
   Object.defineProperty(window, "location", {
     value: originalLocation,

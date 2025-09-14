@@ -14,10 +14,11 @@ vi.mock("../../src/helpers/classicBattle/uiService.js", () => ({
 }));
 
 import * as helpers from "../../src/helpers/classicBattle/uiHelpers.js";
+import { mount, clearBody } from "./domUtils.js";
 
 describe("resetBattleUI helpers", () => {
   beforeEach(() => {
-    document.body.innerHTML = "";
+    mount();
     vi.clearAllMocks();
   });
 
@@ -79,5 +80,8 @@ describe("resetBattleUI helpers", () => {
     expect(scoreboard.clearTimer).toHaveBeenCalledTimes(1);
     expect(document.getElementById("round-result").textContent).toBe("");
     expect(uiService.syncScoreDisplay).toHaveBeenCalledTimes(1);
+  });
+  afterEach(() => {
+    clearBody();
   });
 });

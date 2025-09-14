@@ -1,12 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
+import { mount, clearBody } from "./domUtils.js";
 
 describe("timerService timeout ordering", () => {
   it("auto-select starts without waiting for timeout dispatch to resolve", async () => {
     vi.resetModules();
 
     // Minimal DOM
-    document.body.innerHTML =
-      '<div id="next-round-timer"></div><div id="stat-buttons"><button data-stat="a"></button></div>';
+    mount(
+      '<div id="next-round-timer"></div><div id="stat-buttons"><button data-stat="a"></button></div>'
+    );
 
     // Scoreboard + UI stubs
     vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
@@ -55,7 +57,12 @@ describe("timerService timeout ordering", () => {
 
     // Deterministic immediate expiration via shared helper
     const { mockCreateRoundTimer } = await import("./roundTimerMock.js");
-    mockCreateRoundTimer({ scheduled: false, ticks: [0], expire: true, moduleId: "../../src/helpers/timers/createRoundTimer.js" });
+    mockCreateRoundTimer({
+      scheduled: false,
+      ticks: [0],
+      expire: true,
+      moduleId: "../../src/helpers/timers/createRoundTimer.js"
+    });
 
     // Import module under test
     const mod = await import("../../src/helpers/classicBattle/timerService.js");
@@ -68,5 +75,6 @@ describe("timerService timeout ordering", () => {
 
     // Resolve the timeout dispatch to allow the pending await to finish
     resolveTimeout();
+    clearBody();
   });
 });

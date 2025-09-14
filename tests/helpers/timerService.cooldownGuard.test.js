@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { mount, clearBody } from "./domUtils.js";
 
 let mockState = "cooldown";
 vi.mock("../../src/helpers/classicBattle/battleDebug.js", () => ({
@@ -29,8 +30,8 @@ describe("onNextButtonClick cooldown guard", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    document.body.innerHTML = '<button id="next-button" data-role="next-round"></button>';
-    btn = document.querySelector('[data-role="next-round"]');
+    const { query } = mount('<button id="next-button" data-role="next-round"></button>');
+    btn = query('[data-role="next-round"]');
     vi.clearAllMocks();
 
     // Set up console monitoring for testing expected output
@@ -43,6 +44,7 @@ describe("onNextButtonClick cooldown guard", () => {
     vi.useRealTimers();
     // Clean up console spies
     consoleMocks.warn.mockRestore();
+    clearBody();
   });
 
   it("does not warn when state changes", async () => {

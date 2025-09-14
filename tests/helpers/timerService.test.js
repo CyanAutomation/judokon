@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createMockScheduler } from "./mockScheduler.js";
+import { mount, clearBody } from "./domUtils.js";
 let scheduler;
 
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
@@ -35,7 +36,7 @@ vi.mock("../../src/helpers/classicBattle/orchestrator.js", () => ({
 describe("timerService", () => {
   beforeEach(() => {
     scheduler = createMockScheduler();
-    document.body.innerHTML = "";
+    mount();
     vi.clearAllMocks();
     vi.resetModules();
     vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
@@ -64,6 +65,10 @@ describe("timerService", () => {
         STATS: ["a", "b"]
       };
     });
+  });
+
+  afterEach(() => {
+    clearBody();
   });
 
   it("invokes skip handler registered after a pending skip", async () => {

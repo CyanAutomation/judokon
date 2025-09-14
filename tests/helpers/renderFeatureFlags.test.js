@@ -1,14 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createSettingsDom, resetDom } from "../utils/testUtils.js";
 import { withMutedConsole } from "../utils/console.js";
+import { mount, clearBody } from "./domUtils.js";
+import { createSettingsDom } from "../utils/testUtils.js";
 
 beforeEach(() => {
-  resetDom();
-  document.body.appendChild(createSettingsDom());
+  const { container } = mount();
+  container.appendChild(createSettingsDom());
 });
 
 afterEach(() => {
-  resetDom();
+  clearBody();
 });
 
 describe("renderFeatureFlags", () => {

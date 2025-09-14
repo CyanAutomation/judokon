@@ -1,6 +1,28 @@
 import { vi } from "vitest";
 
 /**
+ * Round Timer Mock Helper — Quick Recipes
+ *
+ * Use this helper to make timer-driven tests deterministic without touching real time.
+ *
+ * Common patterns:
+ * - Immediate expiry (no ticks):
+ *   mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true })
+ *
+ * - Immediate tick(0) then expire:
+ *   mockCreateRoundTimer({ scheduled: false, ticks: [0], expire: true })
+ *
+ * - Emit initial tick only (no auto-expire; advance via button):
+ *   mockCreateRoundTimer({ scheduled: false, ticks: [2], expire: false })
+ *
+ * - Scheduled countdown with 1s interval and auto-expire:
+ *   mockCreateRoundTimer({ scheduled: true, tickCount: 2, intervalMs: 1000 })
+ *   // In tests, call vi.useFakeTimers(); then vi.advanceTimersByTimeAsync(1000) to step.
+ *
+ * Note: You can scope to a specific module id via { moduleId: "../../src/helpers/timers/createRoundTimer.js" }.
+ */
+
+/**
  * Consistently stub `createRoundTimer` for deterministic tests.
  *
  * @pseudocode
@@ -127,4 +149,3 @@ function emitTicks(handlers, seq) {
 function emitExpired(handlers) {
   handlers.expired.forEach((fn) => fn());
 }
-

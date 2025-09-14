@@ -56,21 +56,25 @@ describe("createModal", () => {
 
 describe("Modal class", () => {
   it("allows direct instantiation", () => {
+    const { container } = mount();
     const trigger = document.createElement("button");
-    document.body.appendChild(trigger);
+    container.appendChild(trigger);
     const modal = new Modal(buildContent());
-    document.body.appendChild(modal.element);
+    container.appendChild(modal.element);
     modal.open(trigger);
     expect(modal.element.hasAttribute("hidden")).toBe(false);
     modal.close();
     expect(modal.element.hasAttribute("hidden")).toBe(true);
     modal.destroy();
+    clearBody();
   });
 
   it("removes element on destroy", () => {
+    const { container } = mount();
     const modal = createModal(buildContent());
-    document.body.appendChild(modal.element);
+    container.appendChild(modal.element);
     modal.destroy();
-    expect(document.body.contains(modal.element)).toBe(false);
+    expect(container.contains(modal.element)).toBe(false);
+    clearBody();
   });
 });

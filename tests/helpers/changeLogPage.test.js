@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { mount, clearBody } from "./domUtils.js";
 
 const sample = [
   {
@@ -44,14 +45,16 @@ describe("changeLogPage", () => {
 
     const { setupChangeLogPage } = await import("../../src/helpers/changeLogPage.js");
 
-    document.body.innerHTML = `
+    mount(`
       <div id="loading-container"></div>
-      <table id="changelog-table"><tbody></tbody></table>`;
+      <table id="changelog-table"><tbody></tbody></table>
+    `);
 
     await setupChangeLogPage();
 
     const img = document.querySelector("img");
     img.dispatchEvent(new Event("error"));
     expect(img.src).toMatch(/judokaPortrait-0\.png$/);
+    clearBody();
   });
 });
