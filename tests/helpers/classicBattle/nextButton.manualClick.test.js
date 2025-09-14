@@ -16,9 +16,10 @@ describe("Next button manual click", () => {
     const mod = await import("../../../src/helpers/classicBattle/timerService.js");
     __setStateSnapshot({ state: "cooldown" });
 
+    let spy;
     const readyPromise = new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error("ready not dispatched")), 50);
-      vi.spyOn(dispatcher, "dispatchBattleEvent").mockImplementation(async (evt) => {
+      spy = vi.spyOn(dispatcher, "dispatchBattleEvent").mockImplementation(async (evt) => {
         if (evt === "ready") {
           clearTimeout(timer);
           resolve();
@@ -28,5 +29,7 @@ describe("Next button manual click", () => {
 
     await mod.onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     await readyPromise;
+    expect(spy).toHaveBeenCalledWith("ready");
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });
