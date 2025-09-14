@@ -30,16 +30,32 @@ async function fileExistsNonEmpty(p) {
 }
 
 export async function checkStrictOfflineModel(env = process.env) {
-  const errors = [];
   const strict = env?.RAG_STRICT_OFFLINE === "1";
-  if (!strict) return { ok: true, errors };
   const modelDir = path.join(srcDir, "models", "minilm");
+  const missing = [];
   for (const rel of REQUIRED_MODEL_FILES) {
     const full = path.join(modelDir, rel);
     const ok = await fileExistsNonEmpty(full);
-    if (!ok) errors.push(`Strict offline: missing model file ${path.relative(rootDir, full)}`);
+    if (!ok) missing.push(path.relative(rootDir, full));
   }
-  return { ok: errors.length === 0, errors };
+
+  if (missing.length === 0) {
+    return { ok: true, errors: [] };
+  }
+
+  if (strict) {
+    return {
+      ok: false,
+      errors: missing.map((m) => `Strict offline: missing model file ${m}`)
+    };
+  }
+
+  console.warn(
+    `Offline model files missing (${missing.join(", ")}). ` +
+      'Run "npm run rag:prepare:models -- --from-dir /path/to/minilm" or enable RAG_STRICT_OFFLINE=1.'
+  );
+
+  return { ok: true, errors: [] };
 }
 
 export async function checkOfflineArtifacts() {
