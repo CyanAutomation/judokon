@@ -6,6 +6,7 @@ import { resolveRound } from "./roundResolver.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getBattleState } from "./eventBus.js";
 import { getRoundResolvedPromise } from "./promises.js";
+import { resolveDelay } from "./timerUtils.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -245,7 +246,8 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * 4. Emit `statSelected` with selection details and any testing options.
  * 5. Dispatch `statSelected` and detect whether an orchestrator will resolve.
  * 6. If an orchestrator exists but does not handle the round, install a
- *    fallback timer that resolves the round directly.
+ *    fallback timer that resolves the round directly after the orchestrator's
+ *    maximum delay window has passed.
  * 7. If the machine already resolved or the battle state forbids it, return
  *    early.
  * 8. Otherwise call `resolveRoundDirect` and dispatch `roundResolved`.
@@ -306,7 +308,7 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       typeof document !== "undefined" &&
       !!(document.body && document.body.dataset && document.body.dataset.battleState);
     if (orchestrated && handledByOrchestrator !== true) {
-      const fallbackDelay = IS_VITEST ? 0 : 600;
+      const fallbackDelay = IS_VITEST ? 0 : Math.max(resolveDelay() + 100, 800);
       const timeoutId = setTimeout(async () => {
         if (store.playerChoice !== null) {
           try {
