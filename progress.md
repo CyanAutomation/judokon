@@ -127,3 +127,11 @@ These steps keep public APIs and tests stable while removing complexity at seams
 - Multiple dynamic imports exist in hot paths; plan a small follow‑up to preload or convert to static imports per AGENTS.md.
 
 — End of amendments. Pausing here for your review.
+
+## 9. Quick Wins Applied (this pass)
+
+- Fixed wrong import in `src/helpers/classicBattle/bootstrap.js` to use `./engineBridge.js` for `bridgeEngineEvents` (was pointing at `roundResolver.js`).
+- Replaced raw `console.log` calls in `src/helpers/BattleEngine.js` with the project `logger` to reduce noisy logs and follow logging standards; no behavior change, no hot‑path dynamic imports.
+- Orchestrator‑first resolution preference: `src/helpers/classicBattle/selectionHandler.js` now short‑circuits direct resolution when the orchestrator is active, avoiding double‑resolution races; `forceDirectResolution` in tests remains intact.
+
+Deferred to follow‑ups (tracked above): event naming parity at the engine boundary, centralizing timer fallbacks into a single abstraction, moving test‑only DOM writes into helpers, and converting dynamic imports in hot paths to static/preloaded where feasible.

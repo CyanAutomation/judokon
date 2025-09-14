@@ -9,6 +9,7 @@ import { CLASSIC_BATTLE_POINTS_TO_WIN, CLASSIC_BATTLE_MAX_ROUNDS } from "./const
 import { TimerController } from "./TimerController.js";
 import { stop as stopScheduler } from "../utils/scheduler.js";
 import { SimpleEmitter } from "./events/SimpleEmitter.js";
+import logger from "./logger.js";
 import {
   startRoundTimer,
   startCoolDownTimer,
@@ -276,25 +277,15 @@ export class BattleEngine {
    * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   handleStatSelection(playerVal, opponentVal) {
-    console.log(
-      "BattleEngine: handleStatSelection called with playerVal:",
-      playerVal,
-      "opponentVal:",
-      opponentVal
-    );
+    try { logger.debug("BattleEngine.handleStatSelection", { playerVal, opponentVal }); } catch {}
     if (this.matchEnded) {
       return this.#resultWhenMatchEnded(playerVal, opponentVal);
     }
     this.stopTimer();
     const outcome = determineOutcome(playerVal, opponentVal);
-    console.log("BattleEngine: determineOutcome result:", outcome);
+    try { logger.debug("BattleEngine.determineOutcome", outcome); } catch {}
     applyOutcome(this, outcome);
-    console.log(
-      "BattleEngine: after applyOutcome, playerScore:",
-      this.playerScore,
-      "opponentScore:",
-      this.opponentScore
-    );
+    try { logger.debug("BattleEngine.applyOutcome.scores", { playerScore: this.playerScore, opponentScore: this.opponentScore }); } catch {}
     this.roundsPlayed += 1;
     return this.#finalizeRound(outcome);
   }
@@ -310,7 +301,7 @@ export class BattleEngine {
   }
 
   #finalizeRound(outcome) {
-    console.log("BattleEngine: #finalizeRound called with outcome:", outcome);
+    try { logger.debug("BattleEngine.finalizeRound.in", outcome); } catch {}
     const matchOutcome = this.#endMatchIfNeeded();
     const result = {
       ...outcome,
@@ -319,7 +310,7 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
-    console.log("BattleEngine: #finalizeRound result:", result);
+    try { logger.debug("BattleEngine.finalizeRound.out", result); } catch {}
     this.emit("roundEnded", result);
     if (this.matchEnded) this.emit("matchEnded", result);
     return result;

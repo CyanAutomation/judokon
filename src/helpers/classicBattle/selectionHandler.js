@@ -297,6 +297,19 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   }
 
   try {
+    // Prefer orchestrator-first resolution whenever the machine is active.
+    // If an orchestrator is present, avoid falling back to direct resolution
+    // unless explicitly forced by tests.
+    const orchestrated =
+      typeof document !== "undefined" && !!(document.body && document.body.dataset && document.body.dataset.battleState);
+    if (orchestrated && handledByOrchestrator !== true) {
+      if (IS_VITEST)
+        try {
+          console.log("[test] handleStatSelection: orchestrated path; skipping direct resolution");
+        } catch {}
+      return;
+    }
+
     if (handledByOrchestrator === true) {
       if (IS_VITEST)
         try {
