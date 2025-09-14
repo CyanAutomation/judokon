@@ -15,7 +15,7 @@ function buildContent() {
 
 describe("createModal", () => {
   it("opens and closes the modal with focus management", () => {
-    const { root, container } = mount();
+    const { container } = mount();
     const trigger = document.createElement("button");
     trigger.id = "trigger";
     container.appendChild(trigger);
