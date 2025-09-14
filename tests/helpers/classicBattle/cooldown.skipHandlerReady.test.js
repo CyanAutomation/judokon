@@ -8,7 +8,7 @@ describe("skip handler clears fallback timer", () => {
   let errorSpy;
   /** @type {ReturnType<typeof vi.spyOn>} */
   let warnSpy;
-  beforeEach(() => {
+beforeEach(async () => {
     vi.useFakeTimers();
     scheduler = createMockScheduler();
     document.body.innerHTML = "";
@@ -39,7 +39,7 @@ describe("skip handler clears fallback timer", () => {
       offBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
-    const { mockCreateRoundTimer } = await import("../../roundTimerMock.js");
+    const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     // No scheduled ticks; stop() should trigger expired
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
     vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({

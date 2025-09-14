@@ -4,7 +4,7 @@ import { createMockScheduler } from "../mockScheduler.js";
 
 describe("startCooldown fallback timer", () => {
   let scheduler;
-  beforeEach(() => {
+beforeEach(async () => {
     vi.useFakeTimers();
     scheduler = createMockScheduler();
     document.body.innerHTML = "";
@@ -36,7 +36,7 @@ describe("startCooldown fallback timer", () => {
       onBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
-    const { mockCreateRoundTimer } = await import("../../roundTimerMock.js");
+    const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
     vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
       attachCooldownRenderer: vi.fn()

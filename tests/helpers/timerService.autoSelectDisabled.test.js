@@ -44,19 +44,8 @@ describe("timerService without auto-select", () => {
       autoSelectStat: autoSelectSpy
     }));
 
-    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
-      createRoundTimer: () => {
-        const handlers = { tick: [], expired: [], drift: [] };
-        return {
-          on: (event, fn) => handlers[event]?.push(fn),
-          start: () => {
-            handlers.tick.forEach((fn) => fn(0));
-            handlers.expired.forEach((fn) => fn());
-          },
-          stop: () => {}
-        };
-      }
-    }));
+    const { mockCreateRoundTimer } = await import("./roundTimerMock.js");
+    mockCreateRoundTimer({ scheduled: false, ticks: [0], expire: true, moduleId: "../../src/helpers/timers/createRoundTimer.js" });
 
     const mod = await import("../../src/helpers/classicBattle/timerService.js");
     const { handleStatSelectionTimeout } = await import(

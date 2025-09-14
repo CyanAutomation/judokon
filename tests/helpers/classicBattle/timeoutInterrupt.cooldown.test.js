@@ -37,25 +37,12 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
-  createRoundTimer: vi.fn(() => {
-    let expiredHandler = null;
-    return {
-      on: vi.fn((event, handler) => {
-        if (event === "expired") {
-          expiredHandler = handler;
-        }
-      }),
-      start: vi.fn(() => {
-        if (expiredHandler) {
-          // Use vi.advanceTimersByTime since we're in fake timer environment
-          vi.setSystemTime(Date.now() + 1000);
-          expiredHandler();
-        }
-      })
-    };
-  })
-}));
+vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
+  const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
+  // Immediate expiry (no ticks)
+  mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true, moduleId: "../../../src/helpers/timers/createRoundTimer.js" });
+  return await import("../../../src/helpers/timers/createRoundTimer.js");
+});
 
 describe("timeout → interruptRound → cooldown auto-advance", () => {
   let timers;

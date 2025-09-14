@@ -5,6 +5,7 @@ import {
   emitBattleEvent
 } from "../../src/helpers/classicBattle/battleEvents.js";
 import { mount, clearBody } from "./domUtils.js";
+import { setScheduler } from "../../src/helpers/scheduler.js";
 
 describe("battleScoreboard PRD adapter", () => {
   beforeEach(async () => {

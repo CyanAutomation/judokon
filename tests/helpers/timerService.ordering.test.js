@@ -53,23 +53,9 @@ describe("timerService timeout ordering", () => {
       })
     }));
 
-    // Fake round timer factory: trigger expired synchronously on start
-    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => {
-      return {
-        createRoundTimer: () => {
-          const handlers = { tick: [], expired: [], drift: [] };
-          return {
-            on: (event, fn) => handlers[event]?.push(fn),
-            start: () => {
-              // simulate immediate expiry
-              handlers.tick.forEach((fn) => fn(0));
-              handlers.expired.forEach((fn) => fn());
-            },
-            stop: () => {}
-          };
-        }
-      };
-    });
+    // Deterministic immediate expiration via shared helper
+    const { mockCreateRoundTimer } = await import("./roundTimerMock.js");
+    mockCreateRoundTimer({ scheduled: false, ticks: [0], expire: true, moduleId: "../../src/helpers/timers/createRoundTimer.js" });
 
     // Import module under test
     const mod = await import("../../src/helpers/classicBattle/timerService.js");

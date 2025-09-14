@@ -30,24 +30,12 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
-  createRoundTimer: vi.fn(() => {
-    let expiredHandler = null;
-    return {
-      on: vi.fn((event, handler) => {
-        if (event === "expired") {
-          expiredHandler = handler;
-        }
-      }),
-      start: vi.fn(() => {
-        if (expiredHandler) {
-          // Schedule timer expiry to fire when fake timers advance
-          setTimeout(expiredHandler, 1000);
-        }
-      })
-    };
-  })
-}));
+vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
+  const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
+  // Schedule expiry after 1s, no ticks
+  mockCreateRoundTimer({ scheduled: true, ticks: [], intervalMs: 1000, moduleId: "../../../src/helpers/timers/createRoundTimer.js" });
+  return await import("../../../src/helpers/timers/createRoundTimer.js");
+});
 
 beforeEach(async () => {
   vi.resetModules();
