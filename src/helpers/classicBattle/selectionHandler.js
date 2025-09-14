@@ -200,7 +200,10 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   try {
     if (IS_VITEST) {
       try {
-        scoreboard.clearTimer();
+        // Direct DOM fallback to clear timer display when scoreboard adapter is absent
+        const timer = document.getElementById("next-round-timer");
+        if (timer) timer.textContent = "";
+        scoreboard.clearTimer?.();
       } catch {}
       try {
         const msg = document.getElementById("round-message");
