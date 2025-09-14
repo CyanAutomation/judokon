@@ -32,6 +32,14 @@ vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   })
 }));
 
+vi.mock("../../src/helpers/classicBattle/timerUtils.js", () => ({
+  resolveDelay: vi.fn(() => 0)
+}));
+
+vi.mock("../../src/helpers/classicBattle/promises.js", () => ({
+  getRoundResolvedPromise: vi.fn(() => new Promise(() => {}))
+}));
+
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
   showSnackbar: vi.fn(),
   updateSnackbar: vi.fn()
@@ -133,5 +141,27 @@ describe("handleStatSelection helpers", () => {
 
     expect(dispatchBattleEvent).toHaveBeenCalledWith("statSelected");
     expect(resolveRound).toHaveBeenCalled();
+  });
+
+  it("passes zero delay to resolveRoundDirect during orchestrator fallback", async () => {
+    document.body.dataset.battleState = "active";
+    dispatchBattleEvent.mockResolvedValue(false);
+
+    const timerUtils = await import("../../src/helpers/classicBattle/timerUtils.js");
+    const resolver = await import("../../src/helpers/classicBattle/roundResolver.js");
+
+    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+    await vi.runAllTimersAsync();
+
+    expect(resolver.resolveRound).toHaveBeenCalledWith(
+      store,
+      "power",
+      1,
+      2,
+      expect.objectContaining({ delayMs: 0 })
+    );
+    expect(timerUtils.resolveDelay).toHaveBeenCalledTimes(1);
+
+    delete document.body.dataset.battleState;
   });
 });
