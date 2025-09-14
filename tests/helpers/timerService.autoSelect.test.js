@@ -45,7 +45,12 @@ describe("timerService with auto-select", () => {
 
     const { mockCreateRoundTimer } = await import("./roundTimerMock.js");
     // Immediate tick(0) then expire
-    mockCreateRoundTimer({ scheduled: false, ticks: [0], expire: true, moduleId: "../../src/helpers/timers/createRoundTimer.js" });
+    mockCreateRoundTimer({
+      scheduled: false,
+      ticks: [0],
+      expire: true,
+      moduleId: "../../src/helpers/timers/createRoundTimer.js"
+    });
 
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
     await startTimer(async () => {}, { selectionMade: false });

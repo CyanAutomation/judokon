@@ -294,7 +294,8 @@ export function getNextRoundControls() {
   try {
     const btn =
       typeof document !== "undefined"
-        ? document.getElementById("next-button") || document.querySelector('[data-role="next-round"]')
+        ? document.getElementById("next-button") ||
+          document.querySelector('[data-role="next-round"]')
         : null;
     if (btn && (btn.getAttribute("data-next-ready") === "true" || btn.disabled === false)) {
       return { timer: null, resolveReady: () => {}, ready: Promise.resolve() };

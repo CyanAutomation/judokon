@@ -8,7 +8,7 @@ describe("skip handler clears fallback timer", () => {
   let errorSpy;
   /** @type {ReturnType<typeof vi.spyOn>} */
   let warnSpy;
-beforeEach(async () => {
+  beforeEach(async () => {
     vi.useFakeTimers();
     scheduler = createMockScheduler();
     document.body.innerHTML = "";

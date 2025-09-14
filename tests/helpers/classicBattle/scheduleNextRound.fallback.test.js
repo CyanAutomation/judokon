@@ -4,7 +4,7 @@ import { createMockScheduler } from "../mockScheduler.js";
 
 describe("startCooldown fallback timer", () => {
   let scheduler;
-beforeEach(async () => {
+  beforeEach(async () => {
     vi.useFakeTimers();
     scheduler = createMockScheduler();
     document.body.innerHTML = "";

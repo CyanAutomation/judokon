@@ -15,7 +15,12 @@ vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
 // Deterministic no-op round timer
 vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
   const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
-  mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false, moduleId: "../../../src/helpers/timers/createRoundTimer.js" });
+  mockCreateRoundTimer({
+    scheduled: false,
+    ticks: [],
+    expire: false,
+    moduleId: "../../../src/helpers/timers/createRoundTimer.js"
+  });
   return await import("../../../src/helpers/timers/createRoundTimer.js");
 });
 
