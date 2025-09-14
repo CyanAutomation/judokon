@@ -7,6 +7,7 @@ import { resetStatButtons } from "../battle/battleUI.js";
 import { exposeDebugState, readDebugState } from "./debugHooks.js";
 import { debugLog } from "../debug.js";
 import { resolveDelay } from "./timerUtils.js";
+import * as sb from "../setupScoreboard.js";
 
 /**
  * Round resolution helpers and orchestrator for Classic Battle.
@@ -214,31 +215,22 @@ export async function dispatchOutcomeEvents(result) {
 export async function updateScoreboard(result) {
   resetStatButtons();
   try {
-    const sb = await import("../setupScoreboard.js");
-    try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        // Print clearly to test stdout so we can observe call flow.
-        console.log(
-          "[test] updateScoreboard result:",
-          result,
-          "sb.updateScore?",
-          typeof sb.updateScore
-        );
-      }
-    } catch {}
-    if (typeof sb.updateScore === "function") {
-      sb.updateScore(result.playerScore, result.opponentScore);
-      // Also update the DOM directly for tests
-      try {
-        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-          const scoreEl = document.querySelector("header #score-display");
-          if (scoreEl) {
-            scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
-          }
-        }
-      } catch {}
+    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+      console.log("[test] updateScoreboard result:", result, "sb.updateScore?", typeof sb.updateScore);
     }
   } catch {}
+  if (typeof sb.updateScore === "function") {
+    sb.updateScore(result.playerScore, result.opponentScore);
+    // Also update the DOM directly for tests
+    try {
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        const scoreEl = document.querySelector("header #score-display");
+        if (scoreEl) {
+          scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
+        }
+      }
+    } catch {}
+  }
 
   // Force DOM update for tests regardless of scoreboard component
   try {

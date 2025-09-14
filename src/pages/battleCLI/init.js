@@ -1022,15 +1022,7 @@ export function handleStatListArrowKey(key) {
  */
 async function loadStatDefs() {
   if (!cachedStatDefs) {
-    try {
-      const { fetchJson } = await import("../../helpers/dataUtils.js");
-      const { DATA_DIR } = await import("../../helpers/constants.js");
-      const defs = await fetchJson(`${DATA_DIR}/statNames.json`);
-      if (Array.isArray(defs) && defs.length) {
-        cachedStatDefs = defs;
-      }
-    } catch {}
-    if (!cachedStatDefs) cachedStatDefs = statNamesData;
+    cachedStatDefs = statNamesData;
   }
   return Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
 }

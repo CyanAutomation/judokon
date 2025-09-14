@@ -7,6 +7,8 @@
  * 3. Provide helpers to subscribe, unsubscribe, emit, and reset events.
  */
 import { logEventEmit, createComponentLogger } from "./debugLogger.js";
+import { setMaxListenersIfNode } from "../nodeEventsShim.js";
+import { emitEventWithAliases } from "./eventAliases.js";
 
 const eventLogger = createComponentLogger("BattleEvents");
 const EVENT_TARGET_KEY = "__classicBattleEventTarget";
@@ -16,14 +18,8 @@ function __tuneMaxListenersIfNode(target) {
     // Only in Node/Vitest: remove listener cap for this EventTarget
     const isVitest = typeof process !== "undefined" && !!process.env?.VITEST;
     if (!isVitest || !target) return;
-    // Defer import to avoid bundling 'events' in the browser build
-    queueMicrotask(async () => {
-      try {
-        const events = await import("events");
-        if (typeof events.setMaxListeners === "function") {
-          events.setMaxListeners(0, target);
-        }
-      } catch {}
+    queueMicrotask(() => {
+      setMaxListenersIfNode(target);
     });
   } catch {}
 }
@@ -123,19 +119,10 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
   try {
     // Debug logging for aliased event emission
     eventLogger.event(`Emitting with aliases: ${type}`, detail, { options });
-
-    // Dynamic import to avoid circular dependencies
-    import("/src/helpers/classicBattle/eventAliases.js").then(
-      ({ emitBattleEventWithAliases: aliasEmitter }) => {
-        aliasEmitter(type, detail, options);
-      }
-    );
-
-    // Fallback: emit standard event immediately
-    getTarget().dispatchEvent(new CustomEvent(type, { detail }));
+    const target = getTarget();
+    emitEventWithAliases(target, type, detail, options);
   } catch (error) {
     console.error(`[battleEvents] Failed to emit aliased event "${type}":`, error);
-    // Fallback to standard emission
     emitBattleEvent(type, detail);
   }
 }

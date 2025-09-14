@@ -4,7 +4,7 @@ test.describe("Classic Battle page scaffold", () => {
   test("loads without console errors and has scoreboard nodes", async ({ page }) => {
     const errors = [];
     page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(msg.text());
+      if (msg.type() === "error") errors.push(msg.text() + " at " + msg.location().url);
     });
     await page.goto("/src/pages/battleClassic.html");
 

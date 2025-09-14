@@ -29,6 +29,7 @@ import { removeBackdrops, enableNextRoundButton } from "../helpers/classicBattle
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
+let failSafeTimerId = null;
 
 /**
  * Stop the active selection timer and clear the timer display.
@@ -318,7 +319,7 @@ async function beginSelectionTimer(store) {
   // duration. This keeps E2E deterministic even when optional adapters are missing.
   try {
     const ms = (Number(getDefaultTimer("roundTimer")) || 2) * 1000 + 100;
-    setTimeout(async () => {
+    failSafeTimerId = setTimeout(async () => {
       try {
         const btn = document.getElementById("next-button");
         const scoreEl = document.getElementById("score-display");

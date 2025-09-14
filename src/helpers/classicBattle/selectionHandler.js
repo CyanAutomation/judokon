@@ -7,6 +7,9 @@ import { getCardStatValue } from "./cardStatUtils.js";
 import { getBattleState } from "./eventBus.js";
 import { getRoundResolvedPromise } from "./promises.js";
 import { resolveDelay } from "./timerUtils.js";
+import * as scoreboard from "../setupScoreboard.js";
+import { showSnackbar } from "../showSnackbar.js";
+import { t } from "../i18n.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -197,8 +200,7 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
   try {
     if (IS_VITEST) {
       try {
-        const sb = await import("../setupScoreboard.js");
-        sb.clearTimer();
+        scoreboard.clearTimer();
       } catch {}
       try {
         const msg = document.getElementById("round-message");
@@ -361,9 +363,7 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   // Show "Opponent is choosing..." snackbar only when using direct resolution
   try {
     if (IS_VITEST) {
-      const ui = await import("../showSnackbar.js");
-      const i18n = await import("../i18n.js");
-      ui.showSnackbar(i18n.t("ui.opponentChoosing"));
+      showSnackbar(t("ui.opponentChoosing"));
     }
   } catch {}
 

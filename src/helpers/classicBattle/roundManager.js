@@ -7,6 +7,7 @@ import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import { showSnackbar } from "../showSnackbar.js";
+import { updateDebugPanel } from "./debugPanel.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
@@ -144,6 +145,14 @@ export async function handleReplay(store) {
   }
   bridgeEngineEvents();
   window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
+  // Explicitly reset displayed scores to 0 after recreating the engine so
+  // the scoreboard model reflects the fresh match state immediately.
+  try {
+    emitBattleEvent("display.score.update", { player: 0, opponent: 0 });
+  } catch {}
+  try {
+    scoreboard.updateScore(0, 0);
+  } catch {}
   const startRoundFn = getStartRound(store);
   return startRoundFn();
 }
@@ -427,7 +436,6 @@ async function handleNextRoundExpiration(controls, btn) {
 
   // Update debug panel for visibility.
   try {
-    const { updateDebugPanel } = await import("/src/helpers/classicBattle/debugPanel.js");
     updateDebugPanel();
   } catch {}
 

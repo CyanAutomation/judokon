@@ -1,5 +1,7 @@
 import { emitBattleEvent } from "../battleEvents.js";
 import isStateTransition from "../isStateTransition.js";
+import * as scoreboard from "../../setupScoreboard.js";
+import { updateDebugPanel } from "../debugPanel.js";
 
 /**
  * onEnter handler for `waitingForMatchStart`.
@@ -19,12 +21,10 @@ export async function waitingForMatchStartEnter(machine) {
   emitBattleEvent("scoreboardClearMessage");
   emitBattleEvent("debugPanelUpdate");
   try {
-    const scoreboard = await import("../../setupScoreboard.js");
     scoreboard.clearMessage?.();
   } catch {}
   try {
-    const helpers = await import("../debugPanel.js");
-    helpers.updateDebugPanel?.();
+    updateDebugPanel?.();
   } catch {}
 }
 

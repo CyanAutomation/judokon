@@ -20,6 +20,10 @@ import * as debugHooks from "./debugHooks.js";
 import stateCatalog from "./stateCatalog.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { logStateTransition, createComponentLogger } from "./debugLogger.js";
+import { preloadTimerUtils } from "/src/helpers/TimerController.js";
+import "/src/helpers/classicBattle/uiService.js";
+import { initScoreboardAdapter } from "/src/helpers/classicBattle/scoreboardAdapter.js";
+import { createStateManager } from "/src/helpers/classicBattle/stateManager.js";
 
 const orchestratorLogger = createComponentLogger("Orchestrator");
 
@@ -206,24 +210,14 @@ function emitResolution(event) {
  */
 async function preloadDependencies() {
   try {
-    const mod = await import("/src/helpers/TimerController.js");
-    await mod.preloadTimerUtils();
-  } catch {
-    // ignore: timer utilities are optional preloads
-  }
+    await preloadTimerUtils();
+  } catch {}
   try {
-    await import("/src/helpers/classicBattle/uiService.js");
-  } catch {
-    // ignore: UI service preload is optional
-  }
+    // Side-effect import executed at module load; nothing to do here.
+  } catch {}
   try {
-    const { initScoreboardAdapter } = await import(
-      "/src/helpers/classicBattle/scoreboardAdapter.js"
-    );
     initScoreboardAdapter();
-  } catch {
-    // ignore: scoreboard adapter preload is optional
-  }
+  } catch {}
 }
 
 /**
@@ -393,7 +387,6 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
     emitResolution(event);
   };
 
-  const { createStateManager } = await import("/src/helpers/classicBattle/stateManager.js");
   machine = await createStateManager(onEnter, context, onTransition);
   attachListeners(machine);
   // Prime timer state exposure for tests/diagnostics
