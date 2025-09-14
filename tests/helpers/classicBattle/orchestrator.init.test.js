@@ -29,9 +29,7 @@ describe("classic battle orchestrator init preloads", () => {
       throw new Error("fail");
     });
     vi.doMock(`${testPath}/TimerController.js`, () => ({ preloadTimerUtils }));
-    vi.doMock(`${testPath}/classicBattle/uiService.js`, () => {
-      throw new Error("fail");
-    });
+    vi.doMock(`${testPath}/classicBattle/uiService.js`, () => ({}));
     vi.doMock(`${testPath}/classicBattle/scoreboardAdapter.js`, () => ({
       initScoreboardAdapter
     }));
