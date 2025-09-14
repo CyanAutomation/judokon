@@ -44,6 +44,7 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
 
     const helpPanel = page.locator("#cli-shortcuts");
     const settingsButton = page.locator('[data-testid="settings-button"]');
+    const settingsBody = page.locator("#cli-settings-body");
 
     // Verify help panel can be opened and text is readable
     await page.keyboard.press("h");
@@ -59,11 +60,14 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
 
     if ((await settingsButton.getAttribute("aria-expanded")) === "false") {
       await settingsButton.click();
+      await expect(settingsButton).toHaveAttribute("aria-expanded", "true");
+    } else {
+      await expect(settingsButton).toHaveAttribute("aria-expanded", "true");
     }
-    await expect(page.locator("#cli-settings-body")).toBeVisible();
+    await expect(settingsBody).toBeVisible();
 
     // Verify settings controls are accessible at 200% zoom
-    const winTargetSelect = page.locator("#win-target");
+    const winTargetSelect = settingsBody.locator("#win-target");
     await expect(winTargetSelect).toBeVisible();
 
     // Test that dropdowns work properly at high zoom
@@ -122,14 +126,18 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
 
   test("settings match length selection works at 200% zoom", async ({ page }) => {
     // Open settings
-    await page.evaluate(() => document.querySelector('[data-testid="settings-button"]').click());
-    await expect(page.locator('[data-testid="settings-button"]')).toHaveAttribute(
-      "aria-expanded",
-      "true"
-    );
+    const settingsButton = page.locator('[data-testid="settings-button"]');
+    const settingsBody = page.locator("#cli-settings-body");
+    if ((await settingsButton.getAttribute("aria-expanded")) === "false") {
+      await settingsButton.click();
+      await expect(settingsButton).toHaveAttribute("aria-expanded", "true");
+    } else {
+      await expect(settingsButton).toHaveAttribute("aria-expanded", "true");
+    }
+    await expect(settingsBody).toBeVisible();
 
     // Test round selection dropdown at 200% zoom
-    const roundSelect = page.locator("#points-select");
+    const roundSelect = settingsBody.locator("#points-select");
     await expect(roundSelect).toBeVisible();
 
     await roundSelect.selectOption("5");
