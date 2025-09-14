@@ -20,7 +20,7 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
     await expect(header).toBeVisible();
 
     const helpPanel = page.locator("#cli-shortcuts");
-    const settingsPanel = page.locator("#settings-panel");
+    const settingsButton = page.locator('[data-testid="settings-button"]');
 
     // Verify help panel can be opened and text is readable
     await page.keyboard.press("h");
@@ -34,8 +34,10 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
     await page.keyboard.press("Escape");
     // await expect(helpPanel).toBeHidden();
 
-    await page.click('[data-testid="settings-button"]');
-    await expect(settingsPanel).toBeVisible();
+    if ((await settingsButton.getAttribute("aria-expanded")) === "false") {
+      await settingsButton.click();
+    }
+    await expect(page.locator("#cli-settings-body")).toBeVisible();
 
     // Verify settings controls are accessible at 200% zoom
     const winTargetSelect = page.locator("#win-target");
