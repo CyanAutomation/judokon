@@ -308,11 +308,15 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       typeof document !== "undefined" &&
       !!(document.body && document.body.dataset && document.body.dataset.battleState);
     if (orchestrated && handledByOrchestrator !== true) {
-      const fallbackDelay = IS_VITEST ? 0 : Math.max(resolveDelay() + 100, 800);
+      const delay = resolveDelay();
+      const fallbackDelay = IS_VITEST ? 0 : Math.max(delay + 100, 800);
       const timeoutId = setTimeout(async () => {
         if (store.playerChoice !== null) {
           try {
-            await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
+            await resolveRoundDirect(store, stat, playerVal, opponentVal, {
+              ...opts,
+              delayMs: 0
+            });
           } catch {}
           try {
             await dispatchBattleEvent("roundResolved");
