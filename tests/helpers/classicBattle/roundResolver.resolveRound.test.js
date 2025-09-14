@@ -26,6 +26,7 @@ describe("resolveRound headless delays", () => {
     const p = mod.resolveRound({}, "power", 1, 2).then(() => {
       resolved = true;
     });
+    await vi.runAllTimersAsync();
     await p;
     expect(resolved).toBe(true);
     setHeadlessMode(false);
@@ -36,9 +37,11 @@ describe("resolveRound headless delays", () => {
     const { setHeadlessMode } = await import("../../../src/helpers/headlessMode.js");
     setHeadlessMode(false);
     let resolved = false;
-    await mod.resolveRound({}, "power", 1, 2).then(() => {
+    const p = mod.resolveRound({}, "power", 1, 2).then(() => {
       resolved = true;
     });
+    await vi.runAllTimersAsync();
+    await p;
     expect(resolved).toBe(true);
   });
 });

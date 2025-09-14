@@ -57,9 +57,11 @@ describe("headless mode timing", () => {
     setHeadlessMode(true);
     let elapsed = -1;
     const start = Date.now();
-    await rrMod.resolveRound({}, "power", 1, 2).then(() => {
+    const p = rrMod.resolveRound({}, "power", 1, 2).then(() => {
       elapsed = Date.now() - start;
     });
+    await vi.runAllTimersAsync();
+    await p;
     expect(elapsed).toBe(0);
     setHeadlessMode(false);
   });
@@ -72,9 +74,11 @@ describe("headless mode timing", () => {
     setHeadlessMode(false);
     let elapsed = -1;
     const start = Date.now();
-    await rrMod.resolveRound({}, "power", 1, 2).then(() => {
+    const p = rrMod.resolveRound({}, "power", 1, 2).then(() => {
       elapsed = Date.now() - start;
     });
+    await vi.runAllTimersAsync();
+    await p;
     expect(elapsed).toBe(0);
   });
 });
