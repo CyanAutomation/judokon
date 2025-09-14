@@ -21,7 +21,6 @@ import stateCatalog from "./stateCatalog.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { logStateTransition, createComponentLogger } from "./debugLogger.js";
 import { preloadTimerUtils } from "/src/helpers/TimerController.js";
-import "/src/helpers/classicBattle/uiService.js";
 import { initScoreboardAdapter } from "/src/helpers/classicBattle/scoreboardAdapter.js";
 import { createStateManager } from "/src/helpers/classicBattle/stateManager.js";
 
@@ -213,7 +212,7 @@ async function preloadDependencies() {
     await preloadTimerUtils();
   } catch {}
   try {
-    // Side-effect import executed at module load; nothing to do here.
+    await import("./uiService.js");
   } catch {}
   try {
     initScoreboardAdapter();
