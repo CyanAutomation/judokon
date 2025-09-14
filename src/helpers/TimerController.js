@@ -1,5 +1,7 @@
 // Use dynamic import of timerUtils within methods to ensure tests that mock
 // the module with vi.doMock inside an individual test still take effect.
+// When `timerUtils` is partially mocked without `createCountdownTimer`, an
+// internal setTimeout-based countdown keeps tests operational.
 import { onSecondTick as scheduleSecond, cancel as cancelSchedule } from "../utils/scheduler.js";
 
 let cachedTimerUtils = null;
@@ -86,8 +88,53 @@ export class TimerController {
     const start = Date.now();
     let pausedAt = null;
     let pausedMs = 0;
+    const createTimer =
+      timerUtils && "createCountdownTimer" in timerUtils
+        ? timerUtils.createCountdownTimer
+        : (d, { onTick: t, onExpired: e } = {}) => {
+            // Fallback for tests that partially mock `timerUtils` without
+            // `createCountdownTimer`.
+            let remaining = d;
+            let id = 0;
+            let paused = false;
+            const tick = () => {
+              if (paused) return;
+              remaining -= 1;
+              if (typeof t === "function") t(remaining);
+              if (remaining <= 0) {
+                if (id) clearTimeout(id);
+                id = 0;
+                if (typeof e === "function") e();
+              } else {
+                id = setTimeout(tick, 1000);
+              }
+            };
+            return {
+              start() {
+                if (id) clearTimeout(id);
+                remaining = d;
+                paused = false;
+                if (typeof t === "function") t(remaining);
+                id = setTimeout(tick, 1000);
+              },
+              stop() {
+                if (id) clearTimeout(id);
+                id = 0;
+              },
+              pause() {
+                if (id) clearTimeout(id);
+                id = 0;
+                paused = true;
+              },
+              resume() {
+                if (!paused) return;
+                paused = false;
+                if (remaining > 0 && !id) id = setTimeout(tick, 1000);
+              }
+            };
+          };
 
-    this.currentTimer = timerUtils.createCountdownTimer(duration, {
+    this.currentTimer = createTimer(duration, {
       onTick: (r) => {
         this.remaining = r;
         if (this.onTickCb) this.onTickCb(r);
