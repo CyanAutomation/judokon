@@ -277,15 +277,24 @@ export class BattleEngine {
    * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
    */
   handleStatSelection(playerVal, opponentVal) {
-    try { logger.debug("BattleEngine.handleStatSelection", { playerVal, opponentVal }); } catch {}
+    try {
+      logger.debug("BattleEngine.handleStatSelection", { playerVal, opponentVal });
+    } catch {}
     if (this.matchEnded) {
       return this.#resultWhenMatchEnded(playerVal, opponentVal);
     }
     this.stopTimer();
     const outcome = determineOutcome(playerVal, opponentVal);
-    try { logger.debug("BattleEngine.determineOutcome", outcome); } catch {}
+    try {
+      logger.debug("BattleEngine.determineOutcome", outcome);
+    } catch {}
     applyOutcome(this, outcome);
-    try { logger.debug("BattleEngine.applyOutcome.scores", { playerScore: this.playerScore, opponentScore: this.opponentScore }); } catch {}
+    try {
+      logger.debug("BattleEngine.applyOutcome.scores", {
+        playerScore: this.playerScore,
+        opponentScore: this.opponentScore
+      });
+    } catch {}
     this.roundsPlayed += 1;
     return this.#finalizeRound(outcome);
   }
@@ -301,7 +310,9 @@ export class BattleEngine {
   }
 
   #finalizeRound(outcome) {
-    try { logger.debug("BattleEngine.finalizeRound.in", outcome); } catch {}
+    try {
+      logger.debug("BattleEngine.finalizeRound.in", outcome);
+    } catch {}
     const matchOutcome = this.#endMatchIfNeeded();
     const result = {
       ...outcome,
@@ -310,7 +321,9 @@ export class BattleEngine {
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
-    try { logger.debug("BattleEngine.finalizeRound.out", result); } catch {}
+    try {
+      logger.debug("BattleEngine.finalizeRound.out", result);
+    } catch {}
     this.emit("roundEnded", result);
     if (this.matchEnded) this.emit("matchEnded", result);
     return result;

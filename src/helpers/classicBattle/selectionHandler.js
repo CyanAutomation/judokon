@@ -301,7 +301,8 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
     // If an orchestrator is present, avoid falling back to direct resolution
     // unless explicitly forced by tests.
     const orchestrated =
-      typeof document !== "undefined" && !!(document.body && document.body.dataset && document.body.dataset.battleState);
+      typeof document !== "undefined" &&
+      !!(document.body && document.body.dataset && document.body.dataset.battleState);
     if (orchestrated && handledByOrchestrator !== true) {
       if (IS_VITEST)
         try {
