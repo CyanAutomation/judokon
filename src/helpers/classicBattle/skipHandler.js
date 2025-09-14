@@ -84,5 +84,7 @@ export function skipCurrentPhase() {
 export function resetSkipState() {
   skipHandler = null;
   pendingSkip = false;
-  window.dispatchEvent(new CustomEvent("skip-handler-change", { detail: { active: false } }));
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("skip-handler-change", { detail: { active: false } }));
+  }
 }
