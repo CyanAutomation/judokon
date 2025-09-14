@@ -50,7 +50,6 @@ function stopActiveSelectionTimer() {
     const el = document.getElementById("next-round-timer");
     if (el) el.textContent = "";
   } catch {}
-}
   // Clear the fail-safe timer
   if (failSafeTimerId) {
     clearTimeout(failSafeTimerId);
