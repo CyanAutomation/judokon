@@ -3,7 +3,7 @@
  * Demonstrates how to easily convert manual DOM tests
  */
 
-import { beforeEach, afterEach, describe, it, expect } from "vitest";
+import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import {
   createRealHtmlTestEnvironment,
   validateRealHtmlStructure
@@ -23,7 +23,7 @@ describe("UI handlers: opponent message (Simplified with Utils)", () => {
     testEnv.cleanup();
   });
 
-  it("shows snackbar with real HTML structure (simplified)", async () => {
+  it("shows snackbar with delayed message using fake timers", () => {
     const { document } = testEnv;
 
     // Validate we have real HTML structure
@@ -31,14 +31,18 @@ describe("UI handlers: opponent message (Simplified with Utils)", () => {
     expect(validation.hasRequiredElements).toBe(true);
     expect(validation.hasAccessibilityAttributes).toBe(true);
 
+    vi.useFakeTimers();
     setOpponentDelay(10);
     bindUIHelperEventHandlersDynamic();
-    emitBattleEvent("statSelected", { opts: {} });
-
-    await new Promise((r) => setTimeout(r, 15));
+    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
     const snack = document.getElementById("snackbar-container");
+    expect(snack.textContent || "").toBe("");
+
+    vi.advanceTimersByTime(10);
+
     expect(snack.textContent || "").toMatch(/Opponent is choosing/i);
+    vi.useRealTimers();
   });
 
   it("validates structure that manual DOM tests miss", () => {
