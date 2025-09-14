@@ -16,6 +16,7 @@ import { displayFable, checkAssetsReady, quoteReadyPromise } from "./quotes/quot
  * 3. Otherwise, await the `load` event before updating state and calling `checkAssetsReady`.
  *
  * @param {QuoteLoadState} state
+ * @param {{root?: ParentNode}} [options] - Optional root element for queries, defaults to `document`.
  * @returns {Promise<void>}
  */
 async function waitForKgImage(state, { root = document } = {}) {
@@ -55,8 +56,8 @@ async function waitForKgImage(state, { root = document } = {}) {
  * 4. Await both `quoteReadyPromise` and `waitForKgImage(state)` to ensure the
  *    DOM is updated and the KG sprite image is ready.
  *
- * @returns {Promise<void>} Promise that resolves once the quote and image are
- * loaded.
+ * @param {{root?: Document|Element}} [options] - DOM root for lookups (defaults to document).
+ * @returns {Promise<void>} Promise that resolves once the quote and image are loaded.
  */
 export async function loadQuote({ root = document } = {}) {
   const state = { kgImageLoaded: false, quoteLoaded: false };
