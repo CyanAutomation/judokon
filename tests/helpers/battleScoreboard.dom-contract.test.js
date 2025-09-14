@@ -1,14 +1,15 @@
-import { describe, it, beforeEach, expect } from "vitest";
+import { describe, it, beforeEach, afterEach, expect } from "vitest";
 
 import {
   __resetBattleEventTarget,
   emitBattleEvent
 } from "../../src/helpers/classicBattle/battleEvents.js";
+import { mount, clearBody } from "./domUtils.js";
 
 describe("battleScoreboard DOM contract (root data-outcome)", () => {
   beforeEach(async () => {
     __resetBattleEventTarget();
-    document.body.innerHTML = "";
+    const { container } = mount();
     const header = document.createElement("header");
     header.className = "battle-header";
     header.innerHTML = `
@@ -17,11 +18,15 @@ describe("battleScoreboard DOM contract (root data-outcome)", () => {
       <p id="round-counter" aria-live="polite" aria-atomic="true"></p>
       <p id="score-display" aria-live="polite" aria-atomic="true"></p>
     `;
-    document.body.appendChild(header);
+    container.appendChild(header);
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
     initScoreboard(header);
     const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
     initBattleScoreboardAdapter();
+  });
+
+  afterEach(() => {
+    clearBody();
   });
 
   it("sets header data-outcome to enumerated values and clears to none", async () => {

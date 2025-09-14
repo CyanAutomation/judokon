@@ -36,13 +36,8 @@ describe("startCooldown fallback timer", () => {
       onBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({
-      createRoundTimer: () => ({
-        on: vi.fn(),
-        start: vi.fn(),
-        stop: vi.fn()
-      })
-    }));
+    const { mockCreateRoundTimer } = await import("../../roundTimerMock.js");
+    mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
     vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
       attachCooldownRenderer: vi.fn()
     }));

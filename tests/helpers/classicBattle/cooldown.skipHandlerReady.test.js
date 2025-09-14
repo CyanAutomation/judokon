@@ -39,20 +39,9 @@ describe("skip handler clears fallback timer", () => {
       offBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({
-      createRoundTimer: () => {
-        const handlers = {};
-        return {
-          on: (ev, fn) => {
-            handlers[ev] = fn;
-          },
-          start: vi.fn(),
-          stop: () => {
-            handlers.expired && handlers.expired();
-          }
-        };
-      }
-    }));
+    const { mockCreateRoundTimer } = await import("../../roundTimerMock.js");
+    // No scheduled ticks; stop() should trigger expired
+    mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
     vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
       attachCooldownRenderer: vi.fn()
     }));

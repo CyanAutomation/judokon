@@ -42,25 +42,10 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       updateSnackbar: vi.fn()
     }));
 
-    // Keep engine timers out of the path; use pure-JS timer implementation
-    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
-      createRoundTimer: () => {
-        let expiredHandler = null;
-        let tickHandler = null;
-        return {
-          on: vi.fn((event, handler) => {
-            if (event === "expired") expiredHandler = handler;
-            if (event === "tick") tickHandler = handler;
-          }),
-          start: vi.fn((dur) => {
-            // Render initial remaining synchronously when provided
-            if (typeof dur === "number" && dur > 0 && tickHandler) tickHandler(dur);
-            // Do not auto-expire; the test advances via Next click
-          }),
-          stop: vi.fn()
-        };
-      }
-    }));
+    // Keep engine timers out of the path; use shared deterministic timer mock
+    const { mockCreateRoundTimer } = await import("../helpers/roundTimerMock.js");
+    // Immediate initial tick when provided, no auto-expire
+    mockCreateRoundTimer({ scheduled: false, ticks: [2], expire: false });
 
     // Initialize cooldown directly via the public API
     const { startCooldown, getNextRoundControls } = await import(
@@ -110,9 +95,8 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       offBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
-    vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
-      createRoundTimer: () => ({ on: vi.fn(), start: vi.fn(), stop: vi.fn() })
-    }));
+    const { mockCreateRoundTimer: mockTimer2 } = await import("../helpers/roundTimerMock.js");
+    mockTimer2({ scheduled: false, ticks: [], expire: false });
     vi.doMock("../../src/helpers/CooldownRenderer.js", () => ({
       attachCooldownRenderer: vi.fn()
     }));

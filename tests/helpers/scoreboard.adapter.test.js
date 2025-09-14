@@ -26,8 +26,6 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     container.appendChild(header);
     const { initScoreboard } = await import("../../src/components/Scoreboard.js");
     initScoreboard(header);
-    const mock = await import("./mockScheduler.js");
-    setScheduler(mock.createMockScheduler());
     const { initScoreboardAdapter } = await import(
       "../../src/helpers/classicBattle/scoreboardAdapter.js"
     );

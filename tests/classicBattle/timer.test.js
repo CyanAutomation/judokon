@@ -20,24 +20,9 @@ describe("Classic Battle round timer", () => {
       const updateSpy = vi.spyOn(sbHelper, "updateTimer");
       const clearSpy = vi.spyOn(sbHelper, "clearTimer");
 
-      // Deterministic round timer: tick at start, then after 1s, then expire
-      vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
-        createRoundTimer: () => {
-          const h = { tick: new Set(), expired: new Set() };
-          return {
-            on: vi.fn((evt, fn) => h[evt]?.add(fn)),
-            start: vi.fn((dur) => {
-              const d = Math.max(0, Number(dur) || 0);
-              h.tick.forEach((fn) => fn(d));
-              setTimeout(() => {
-                if (d > 1) h.tick.forEach((fn) => fn(d - 1));
-                setTimeout(() => h.expired.forEach((fn) => fn()), 1000);
-              }, 1000);
-            }),
-            stop: vi.fn()
-          };
-        }
-      }));
+      // Deterministic round timer via shared helper
+      const { mockCreateRoundTimer } = await import("../helpers/roundTimerMock.js");
+      mockCreateRoundTimer({ scheduled: true, tickCount: 2, intervalMs: 1000 });
 
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
       await startTimer(async () => {}, { selectionMade: false });

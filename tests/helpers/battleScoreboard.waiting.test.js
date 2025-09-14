@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, expect, vi } from "vitest";
+import { describe, it, beforeEach, expect } from "vitest";
 import {
   __resetBattleEventTarget,
   emitBattleEvent
@@ -8,7 +8,6 @@ import { setScheduler } from "../../src/helpers/scheduler.js";
 
 describe("battleScoreboard waiting fallback", () => {
   beforeEach(async () => {
-    vi.useFakeTimers();
     __resetBattleEventTarget();
     const { container } = mount();
     const header = document.createElement("header");

@@ -12,9 +12,12 @@ vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
   computeNextRoundCooldown: vi.fn(() => 0)
 }));
 
-vi.mock("../../../src/helpers/timers/createRoundTimer.js", () => ({
-  createRoundTimer: vi.fn(() => ({ on: vi.fn(), start: vi.fn() }))
-}));
+// Deterministic no-op round timer
+vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
+  const { mockCreateRoundTimer } = await import("../../roundTimerMock.js");
+  mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false, moduleId: "../../../src/helpers/timers/createRoundTimer.js" });
+  return await import("../../../src/helpers/timers/createRoundTimer.js");
+});
 
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   startCoolDown: vi.fn()
