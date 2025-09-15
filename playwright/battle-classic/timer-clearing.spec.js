@@ -26,8 +26,7 @@ test.describe("Classic Battle timer clearing", () => {
     // Click stat button
     await buttons.first().click();
 
-    // Timer should be cleared immediately (within 50ms)
-    await page.waitForTimeout(50);
+    // Timer should be cleared immediately
     await expect(timerLocator).toHaveText(/^(|Time Left: 0s)$/);
 
     // Score should be updated

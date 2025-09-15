@@ -17,8 +17,9 @@ test("debug stat loading issue", async ({ page }) => {
     await startBtn.click();
   }
 
-  // Wait a moment for logs
-  await page.waitForTimeout(3000);
+  // Allow network to settle and UI to render
+  await page.waitForLoadState("networkidle");
+  await page.waitForSelector("#cli-stats", { timeout: 5000 });
 
   // Print all console messages
   console.log("=== Console Messages ===");

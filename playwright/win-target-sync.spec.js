@@ -25,8 +25,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
-    // Wait a bit for the battle to fully initialize
-    await page.waitForTimeout(500);
+    // Continue once UI is interactive; dropdown value assertion will auto-retry
 
     // Verify settings toggle exists before clicking
     const settingsButton = page.locator("#cli-settings-toggle");
@@ -59,8 +58,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
-    // Wait a bit for the battle to fully initialize
-    await page.waitForTimeout(500);
+    // Continue once UI is interactive; dropdown value assertion will auto-retry
 
     // Verify settings toggle exists before clicking
     const settingsButton = page.locator("#cli-settings-toggle");
@@ -93,8 +91,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
-    // Wait a bit for the battle to fully initialize
-    await page.waitForTimeout(500);
+    // Continue once UI is interactive; dropdown value assertion will auto-retry
 
     // Verify settings toggle exists before clicking
     const settingsButton = page.locator("#cli-settings-toggle");
@@ -125,8 +122,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
-    // Wait a bit for the battle to fully initialize
-    await page.waitForTimeout(500);
+    // Continue once UI is interactive; dropdown value assertion will auto-retry
 
     // Verify settings toggle exists before clicking
     const settingsButton = page.locator("#cli-settings-toggle");

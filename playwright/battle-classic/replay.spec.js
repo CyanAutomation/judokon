@@ -22,12 +22,10 @@ test.describe("Classic Battle replay", () => {
     await page.click("#round-select-2");
     await page.waitForSelector("#stat-buttons button[data-stat]");
     await page.click("#stat-buttons button[data-stat]");
-    await page.waitForTimeout(200);
     await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
 
     // Click Replay and assert scores reset
     await page.click("#replay-button");
-    await page.waitForTimeout(50);
     const score = page.locator("#score-display");
     await expect(score).toContainText(/You:\s*0/);
     await expect(score).toContainText(/Opponent:\s*0/);

@@ -14,13 +14,10 @@ test.describe("Classic Battle cooldown + Next", () => {
     await page.waitForSelector("#round-select-2", { state: "visible" });
     await page.click("#round-select-2");
 
-    // Wait for short round timer to expire and trigger cooldown
-    await page.waitForTimeout(1200);
-
-    // Next should be enabled and marked ready during cooldown
+    // Next should become enabled and marked ready during cooldown
     const next = page.locator("#next-button");
-    await expect(next).toBeEnabled();
     await expect(next).toHaveAttribute("data-next-ready", "true");
+    await expect(next).toBeEnabled();
 
     // Grab controls and ready promise from the page context
     const hadControls = await page.evaluate(async () => {

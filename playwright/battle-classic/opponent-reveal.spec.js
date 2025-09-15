@@ -29,7 +29,6 @@ test.describe("Classic Battle opponent reveal", () => {
     await expect(snack).toContainText(/Opponent is choosing/i, { timeout: 1000 });
 
     // After resolution delay, outcome should apply and cooldown begin
-    await page.waitForTimeout(200);
     await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
     const next = page.locator("#next-button");
     await expect(next).toBeEnabled();

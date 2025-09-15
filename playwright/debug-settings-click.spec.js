@@ -12,16 +12,9 @@ test("settings button force click test", async ({ page }) => {
   }));
   console.log("Viewport info:", viewportInfo);
 
-  // First try to see if we can scroll to make more space
-  await page.evaluate(() => {
-    window.scrollTo(0, document.body.scrollHeight);
-  });
-
-  // Wait a moment for scroll
-  await page.waitForTimeout(500);
-
-  // Check if the button is visible and its position
+  // Scroll the button into view if needed, then click normally
   const button = page.getByRole("button", { name: "Restore Defaults" });
+  await button.scrollIntoViewIfNeeded();
   const buttonBox = await button.boundingBox();
   console.log("Button bounding box:", buttonBox);
 
@@ -36,10 +29,6 @@ test("settings button force click test", async ({ page }) => {
   console.log("Bottom navbar bounding box:", bottomNavBox);
 
   // Try force click as a workaround
-  try {
-    await button.click({ force: true });
-    console.log("Force click succeeded");
-  } catch (error) {
-    console.log("Force click failed:", error.message);
-  }
+  await button.click();
+  console.log("Click executed");
 });

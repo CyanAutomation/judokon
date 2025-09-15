@@ -41,8 +41,6 @@ test.describe("State badge and debug panel", () => {
       }));
       console.log("Document state:", docState);
 
-      await page.waitForTimeout(500);
-
       // Debug initialization state
       const debugInfo = await page.evaluate(() => {
         const badge = document.getElementById("battle-state-badge");

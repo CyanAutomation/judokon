@@ -74,7 +74,7 @@ test.describe("Battle Orchestrator Debug", () => {
       });
 
       await page.goto("/src/pages/battleCLI.html");
-      await page.waitForTimeout(5000);
+      await page.waitForLoadState("networkidle");
 
       // Check orchestrator state
       const debugInfo = await page.evaluate(() => {
