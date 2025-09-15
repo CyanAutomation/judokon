@@ -320,6 +320,14 @@ function applyGameModePositioning(modal) {
     if (!isActive) return;
     isActive = false;
     try {
+      if (typeof window !== "undefined") {
+        window.__cleanupCallCount = (window.__cleanupCallCount || 0) + 1;
+      }
+    } catch {}
+    try {
+      console.log("cleanup called", window?.__cleanupCallCount);
+    } catch {}
+    try {
       backdrop.removeEventListener("close", cleanup);
     } catch {}
     try {

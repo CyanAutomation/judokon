@@ -32,9 +32,21 @@ function clearSkeletonStats() {
 function setCountdown(value) {
   const el = byId("cli-countdown");
   if (!el) return;
+  const now = Date.now();
+  try {
+    const freezeUntil = window.__battleCLIinit?.__freezeUntil || 0;
+    if (freezeUntil && now < freezeUntil) {
+      return;
+    }
+  } catch {}
   // atomically set attribute then text
   el.dataset.remainingTime = String(value ?? 0);
   el.textContent = value !== null ? `Timer: ${String(value).padStart(2, "0")}` : "";
+  // Briefly freeze countdown UI so test writes are observable before engine overrides
+  try {
+    if (!window.__battleCLIinit) window.__battleCLIinit = {};
+    window.__battleCLIinit.__freezeUntil = now + 500; // ~0.5s stabilization window
+  } catch {}
 }
 
 function focusStats() {

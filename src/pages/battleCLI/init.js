@@ -789,6 +789,13 @@ function stopSelectionCountdown() {
   selectionInterval = null;
   const el = byId("cli-countdown");
   if (el) {
+    // Respect any short-lived UI freeze requested by the outer CLI helper
+    try {
+      const freezeUntil = window.__battleCLIinit?.__freezeUntil || 0;
+      if (freezeUntil && Date.now() < freezeUntil) {
+        return;
+      }
+    } catch {}
     el.textContent = "";
     delete el.dataset.remainingTime;
   }
