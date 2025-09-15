@@ -711,16 +711,19 @@ async function init() {
       showRoundSelectFallback(store);
     }
 
-    // In the simplified (non-orchestrated) page, start the next round when the user
-    // clicks Next and the cooldown is considered finished.
+    // In the simplified (non-orchestrated) page, start the next round when the
+    // cooldown is considered finished. Some paths may dispatch `ready` directly
+    // (e.g. when skipping timers), so listen to both events.
     try {
-      onBattleEvent("countdownFinished", async () => {
+      const startIfNotEnded = async () => {
         try {
           const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
           if (typeof isMatchEnded === "function" && isMatchEnded()) return;
         } catch {}
         await startRoundCycle(store);
-      });
+      };
+      onBattleEvent("countdownFinished", startIfNotEnded);
+      onBattleEvent("ready", startIfNotEnded);
     } catch {}
   } catch {}
 }
