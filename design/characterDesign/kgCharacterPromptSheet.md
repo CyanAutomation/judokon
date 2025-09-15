@@ -70,7 +70,7 @@ Art style is bold black outlines, flat cell shading, and warm ambient lighting. 
 
 ---
 
-# Example Prompts
+## Example Prompts
 
 ## Prompt 1: Default Pose — Giving Advice
 

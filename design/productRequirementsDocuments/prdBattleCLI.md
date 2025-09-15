@@ -110,7 +110,7 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 
 ### Layout (single column, desktop & mobile)
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │ bash — JU-DO-KON                        │
 ├─────────────────────────────────────────┤

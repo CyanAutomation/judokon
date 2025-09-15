@@ -46,32 +46,32 @@ term can bump the most literal result to the top.
 
 ### QA Agent
 
-```
+```text
 You are a QA assistant. Search the vector store for requirements on the Settings page. Use the top result titles in your test plan.
 Query: "settings feature flags order"
 ```
 
 To narrow results, pass tag filters to your search call:
 
-```
+```js
 vectorSearch.findMatches(queryVector, 5, ["judoka-data"]);
 ```
 
-```
+```js
 const results = await vectorSearch.findMatches(queryVector, 5);
 const context = await vectorSearch.fetchContextById(results[0].id);
 ```
 
 ### Card Generation Agent
 
-```
+```text
 As a card generation bot, retrieve style notes for judoka bios.
 Query: "judoka bio tone guidelines"
 ```
 
 ### Bug Reproduction Agent
 
-```
+```text
 You debug UI issues. Find references about the navigation bar animation timing.
 Query: "navbar button transition duration"
 ```

@@ -132,7 +132,7 @@ New and returning players often feel confused or overwhelmed when first launchin
 
 ### Wireframe Diagram
 
-```
+```text
 +----------------------------------------------------------+
 |                       JU-DO-KON!                         |
 |               [Game Logo + Title Area]                   |

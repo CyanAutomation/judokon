@@ -78,7 +78,7 @@ Generated: 2025-09-10T13:18:40.632Z
 
 **All unique event names currently in use:**
 
-```
+```js
 "battleStateChange"
 "control.countdown.completed"
 "control.countdown.started"

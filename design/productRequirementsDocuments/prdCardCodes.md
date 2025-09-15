@@ -140,7 +140,7 @@ Simplifies storage and retrieval of Judoka data without exposing sensitive infor
 
 ### Output
 
-```
+```text
 F7KP-WQ9M-ZD23-HYTR
 ```
 

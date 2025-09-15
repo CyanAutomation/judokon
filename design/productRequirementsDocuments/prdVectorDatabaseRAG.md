@@ -176,7 +176,7 @@ Each stored entry also includes a sparse term-frequency vector. Search requests 
 
 ### UI Mockup
 
-```
+```text
 +–––––––––––––––––––––––––––––+
 JU-DO-KON! Vector Search
 [ Search bar (e.g. “Kumi-kata”) ]  [Search Button]
@@ -199,14 +199,14 @@ No user settings or toggles are included. This is appropriate since the feature 
 
 ## Dependencies and Open Questions
 
-### Dependencies:
+### Dependencies
 
 - Sentence embedding model (e.g. `all-MiniLM-L6-v2`, or simulated offline)
 - JSON corpus (e.g. `tooltips.json`, PRDs, `judoka.json`)
 - Cosine similarity JS implementation
 - `markdownToHtml` helper to display markdown chunks in the browser demo
 
-### Open Questions:
+### Open Questions
 
 - Should this feature support live embedding via API (e.g. OpenAI) or remain static?
 - Do we want a UI search tool for developers and designers, or agent-only access?

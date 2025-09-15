@@ -16,7 +16,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 2
 
-```
+```text
 - render:matchLobby
 - reset:scoresAndUI
 ```
@@ -34,7 +34,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 4
 
-```
+```text
 - init:matchContext
 - store:winTargetSelection
 - reset:scores
@@ -54,7 +54,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 2
 
-```
+```text
 - timer:startShortCountdown
 - announce:nextRoundInUI
 ```
@@ -74,7 +74,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 3
 
-```
+```text
 - draw:randomJudokaBothSides
 - reveal:roundCards
 - set:activePlayerUser
@@ -93,7 +93,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 3
 
-```
+```text
 - prompt:chooseStat
 - timer:startStatSelection
 - a11y:exposeTimerStatus
@@ -112,7 +112,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 3
 
-```
+```text
 - compare:selectedStat
 - compute:roundOutcome
 - announce:roundOutcome
@@ -134,7 +134,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 2
 
-```
+```text
 - update:score
 - update:UIRoundSummary
 ```
@@ -153,7 +153,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 2
 
-```
+```text
 - compute:matchOutcome
 - render:matchSummary
 ```
@@ -173,7 +173,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 1
 
-```
+```text
 - show:matchResultScreen
 ```
 
@@ -191,7 +191,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 3
 
-```
+```text
 - timer:clearIfRunning
 - rollback:roundContextIfNeeded
 - log:analyticsInterruptRound
@@ -210,7 +210,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 1
 
-```
+```text
 - open:roundModificationPanel
 ```
 
@@ -227,7 +227,7 @@ Generated: 2025-09-10T13:13:37.758Z
 
 **Required onEnter actions**: 3
 
-```
+```text
 - timer:clearIfRunning
 - teardown:matchContext
 - log:analyticsInterruptMatch

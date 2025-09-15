@@ -67,7 +67,7 @@ As this game is about a Japanese martial art, authentic cultural immersion is ke
 - If local mapping fails, predefined static pseudo-Japanese text is displayed.
 - The toggle button switches text between English and pseudo-Japanese within 200ms.
 - Local conversion for up to 999 characters completes quickly.
-- Validation API (https://romaji2kana.com/api) used during testing phase only, not in live gameplay.
+- Validation API (<https://romaji2kana.com/api>) used during testing phase only, not in live gameplay.
 - Validation testing passes: local conversion is at least 90% identical to API conversion output in test cases.
 - Feature is deployed on 100% of meditation screens.
 - Five diverse test strings are processed successfully without errors.
@@ -175,7 +175,7 @@ Prevents accidental taps and creates distinct flow—finish reading before proce
   - [x] 3.1 Set predefined static pseudo-Japanese text as a final fallback.
   - [x] 3.2 Trigger fallback if local mapping fails unexpectedly.
 - [ ] **4.0 Validation Testing (Non-Production)**
-  - [ ] 4.1 Set up API validation call to https://romaji2kana.com/api. _(Not implemented)_
+  - [ ] 4.1 Set up API validation call to <https://romaji2kana.com/api>. _(Not implemented)_
   - [ ] 4.2 Compare local conversion output with API results. _(Not implemented)_
   - [ ] 4.3 Log discrepancies for manual review. _(Not implemented)_
 - [ ] **5.0 Testing and QA**

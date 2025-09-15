@@ -72,13 +72,13 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ## Dependencies and Open Questions
 
-### Dependencies:
+### Dependencies
 
 - Access to `judoka.json` with up-to-date `lastUpdated` fields.
 - Default placeholder portrait asset.
 - Game header/footer components.
 
-### Open Questions:
+### Open Questions
 
 - Should the log include a link to full card details?
 - Should the log show more than 20 entries if requested?
@@ -88,7 +88,7 @@ Players and developers currently lack a simple, in-game method to see which Judo
 
 ## Visual Reference (Wireframe Description)
 
-```
+```text
 +------------------------------------------------+
 | [Game Logo]                 [Judoka Updates]    |
 +------------------------------------------------+

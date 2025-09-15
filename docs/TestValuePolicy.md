@@ -10,11 +10,11 @@ This guide provides practical advice for writing high-value unit and end-to-end 
 
 Every test file is scored from 0–10 based on the following five criteria. Aim for a score of 8 or higher.
 
-1.  **Intent Clarity (0–2 pts)**: The test's purpose should be immediately obvious.
-2.  **Behavioral Relevance (0–2 pts)**: The test should verify a meaningful aspect of the application's behavior, ideally one linked to a requirement or bug.
-3.  **Assertion Quality (0–2 pts)**: The test should make precise, semantic assertions (and for E2E, use robust locators).
-4.  **Isolation & Robustness (0–2 pts)**: The test should be self-contained and deterministic (i.e., not flaky).
-5.  **Cost vs. Coverage (0–2 pts)**: The test should be as fast and efficient as possible while being effective at finding bugs.
+1. **Intent Clarity (0–2 pts)**: The test's purpose should be immediately obvious.
+2. **Behavioral Relevance (0–2 pts)**: The test should verify a meaningful aspect of the application's behavior, ideally one linked to a requirement or bug.
+3. **Assertion Quality (0–2 pts)**: The test should make precise, semantic assertions (and for E2E, use robust locators).
+4. **Isolation & Robustness (0–2 pts)**: The test should be self-contained and deterministic (i.e., not flaky).
+5. **Cost vs. Coverage (0–2 pts)**: The test should be as fast and efficient as possible while being effective at finding bugs.
 
 ---
 

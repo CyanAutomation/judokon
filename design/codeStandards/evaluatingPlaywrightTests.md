@@ -76,12 +76,12 @@ The workflow is orchestrated by the `scripts/pw-value-evaluator.js` script.
 
 **Workflow Steps**:
 
-1.  **Run Tests & Detect Flakes**: The script consumes a `pw-report.json` file. To gather robust data, it's recommended to generate this report by running each test multiple times (e.g., `--repeat-each=3`). This helps calculate a `flakeRate`.
-2.  **Scan & Analyze**: The script iterates through all spec files and performs two analyses:
+1. **Run Tests & Detect Flakes**: The script consumes a `pw-report.json` file. To gather robust data, it's recommended to generate this report by running each test multiple times (e.g., `--repeat-each=3`). This helps calculate a `flakeRate`.
+2. **Scan & Analyze**: The script iterates through all spec files and performs two analyses:
     - **Header Parsing**: It reads metadata from comments at the top of each test file (e.g., `Spec-ID`, `Linked-Req`).
     - **Playwright Assertion Scanning**: It statically analyzes the source code to identify locator strategies (role vs. CSS), assertion types (semantic vs. screenshot), and the use of problematic waits (`waitForTimeout`).
-3.  **Score Calculation**: It applies the E2E rubric heuristics to the aggregated data to score each spec file.
-4.  **Report Generation**: It outputs a `pw-test-value.json` file and a `pw-test-value.md` summary to the `reports/pw-test-value/` directory.
+3. **Score Calculation**: It applies the E2E rubric heuristics to the aggregated data to score each spec file.
+4. **Report Generation**: It outputs a `pw-test-value.json` file and a `pw-test-value.md` summary to the `reports/pw-test-value/` directory.
 
 ---
 
@@ -89,13 +89,16 @@ The workflow is orchestrated by the `scripts/pw-value-evaluator.js` script.
 
 ### Local Evaluation
 
-1.  **Run the Flake Scan**:
+1. **Run the Flake Scan**:
     This is the recommended way to generate the data needed for a full evaluation. It runs each test 3 times to check for instability.
+
     ```bash
     npm run e2e:flake-scan
     ```
-2.  **Run the Evaluator**:
+
+2. **Run the Evaluator**:
     If you've already generated a report, or want to run against a single run, use this command.
+
     ```bash
     npm run e2e:value
     ```

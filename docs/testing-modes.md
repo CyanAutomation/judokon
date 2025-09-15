@@ -31,7 +31,7 @@ import { setTestMode } from "./src/helpers/testModeUtils.js";
 setTestMode(true); // deterministic RNG
 ```
 
-### Effects
+### Test Mode Effects
 
 - Seeds randomness for predictable outcomes
 - Enforces minimum one-second cooldown when headless mode is off
@@ -68,7 +68,7 @@ Enable via the `enableTestMode` feature flag in settings or programmatically.
 
 For debugging or automated tests, bypass the initial modal:
 
-```
+```html
 battleJudoka.html?autostart=1
 ```
 

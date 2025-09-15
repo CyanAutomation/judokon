@@ -32,20 +32,6 @@ const container = createScoreboard();
 document.body.appendChild(container);
 ```
 
-### Usage
-
-```js
-const sb = new Scoreboard({
-  messageEl: container.querySelector("#round-message"),
-  timerEl: container.querySelector("#next-round-timer"),
-  roundCounterEl: container.querySelector("#round-counter"),
-  scoreEl: container.querySelector("#score-display")
-});
-
-sb.showMessage("Ready!");
-sb.updateScore(1, 0);
-```
-
 ### Testing
 
 Call `resetScoreboard()` before reinitializing the default instance to ensure fresh DOM bindings:
@@ -178,3 +164,15 @@ updateSnackbar("Round 1 begins");
 ```
 
 Both `showSnackbar` and `updateSnackbar` reuse the container element for notifications.
+
+```js
+const sb = new Scoreboard({
+  messageEl: container.querySelector("#round-message"),
+  timerEl: container.querySelector("#next-round-timer"),
+  roundCounterEl: container.querySelector("#round-counter"),
+  scoreEl: container.querySelector("#score-display")
+});
+
+sb.showMessage("Ready!");
+sb.updateScore(1, 0);
+```

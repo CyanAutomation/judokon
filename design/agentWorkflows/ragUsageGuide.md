@@ -11,7 +11,7 @@
 
 ## ⚡ Quick Decision Tree
 
-```
+```text
 User query contains "How", "Why", "What", "Where", "Which"? → USE RAG
 User requests examples or references? → USE RAG
 User mentions unfamiliar terms? → USE RAG
@@ -22,7 +22,7 @@ When in doubt? → USE RAG FIRST
 
 ### ✅ These Work Great
 
-```
+```text
 ❌ Poor: "How do I add tooltips?"
 ✅ Good: "tooltip implementation data structure JSON format"
 
@@ -69,7 +69,7 @@ flowchart TD
 
 ### Example 1: Tooltip Implementation
 
-```
+```text
 Query: "tooltip content validation requirements"
 Result: Found PRD with validation rules and content guidelines
 Time Saved: 25 seconds vs manual file exploration
@@ -78,7 +78,7 @@ Outcome: Accurate implementation matching established patterns
 
 ### Example 2: Design Consistency
 
-```
+```text
 Query: "judoka bio tone guidelines character design"
 Result: Located character design document with specific tone requirements
 Time Saved: 40 seconds vs searching through design folders
@@ -87,7 +87,7 @@ Outcome: Maintained consistency with established design standards
 
 ### Example 3: Architecture Understanding
 
-```
+```text
 Query: "weight category definitions data structure"
 Result: Found exact JSON structure and usage patterns
 Time Saved: 15 seconds vs exploring multiple data files

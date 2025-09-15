@@ -266,24 +266,40 @@ function applyGameModePositioning(modal) {
   const backdrop = modal?.element;
   if (!backdrop) return;
 
+  const datasetKey = "roundSelectModalActive";
+  const setActiveMarker = (value) => {
+    try {
+      backdrop.dataset[datasetKey] = value ? "true" : "false";
+    } catch {}
+  };
+  setActiveMarker(true);
+
+  const originalClose = typeof modal?.close === "function" ? modal.close.bind(modal) : null;
+  const originalDestroy = typeof modal?.destroy === "function" ? modal.destroy.bind(modal) : null;
+  const originalDispatchEvent =
+    typeof backdrop.dispatchEvent === "function" ? backdrop.dispatchEvent.bind(backdrop) : null;
+
   const cliHeader = document.getElementById("cli-header") || document.querySelector(".cli-header");
   const classicHeader =
     document.querySelector('header[role="banner"]') || document.querySelector("header");
   const isCliMode = Boolean(cliHeader);
-  const header = (isCliMode ? cliHeader : classicHeader) || null;
+  const headerEl = (isCliMode ? cliHeader : classicHeader) || null;
 
   // Add skin class first so themes can override dialog styles deterministically
   try {
     backdrop.classList.add(isCliMode ? "cli-modal" : "classic-modal");
   } catch {}
 
-  if (!header) return;
+  if (!headerEl) return;
+
+  let headerRef = headerEl;
 
   let isActive = true;
   const updateInset = () => {
     if (!isActive) return;
+    if (backdrop.dataset?.[datasetKey] !== "true") return;
     try {
-      const h = header.offsetHeight;
+      const h = headerRef?.offsetHeight;
       if (Number.isFinite(h) && h >= 0) {
         backdrop.style.setProperty("--modal-inset-top", `${h}px`);
         backdrop.classList.add("header-aware");
@@ -319,6 +335,7 @@ function applyGameModePositioning(modal) {
   const cleanup = () => {
     if (!isActive) return;
     isActive = false;
+    setActiveMarker(false);
     try {
       if (typeof window !== "undefined") {
         window.__cleanupCallCount = (window.__cleanupCallCount || 0) + 1;
@@ -327,6 +344,11 @@ function applyGameModePositioning(modal) {
     try {
       console.log("cleanup called", window?.__cleanupCallCount);
     } catch {}
+    if (originalDispatchEvent) {
+      try {
+        backdrop.dispatchEvent = originalDispatchEvent;
+      } catch {}
+    }
     try {
       backdrop.removeEventListener("close", cleanup);
     } catch {}
@@ -340,9 +362,45 @@ function applyGameModePositioning(modal) {
       } catch {}
       resizeId = null;
     }
+    headerRef = null;
   };
 
   try {
     backdrop.addEventListener("close", cleanup);
   } catch {}
+
+  if (originalDispatchEvent) {
+    backdrop.dispatchEvent = (event) => {
+      let result;
+      let error;
+      try {
+        result = originalDispatchEvent(event);
+      } catch (err) {
+        error = err;
+      } finally {
+        if (event?.type === "close") {
+          cleanup();
+        }
+      }
+      if (error) {
+        throw error;
+      }
+      return result;
+    };
+  }
+
+  if (originalClose) {
+    modal.close = (...args) => {
+      const result = originalClose(...args);
+      cleanup();
+      return result;
+    };
+  }
+
+  if (originalDestroy) {
+    modal.destroy = (...args) => {
+      cleanup();
+      return originalDestroy(...args);
+    };
+  }
 }

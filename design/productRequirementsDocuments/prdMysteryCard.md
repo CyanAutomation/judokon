@@ -83,7 +83,7 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 
 ### Before Player Chooses Stat
 
-```
+```text
 +————————————————+
 | [ BORDER COLOR BASED ON RARITY OF REAL CARD ]  |
 |                                                |

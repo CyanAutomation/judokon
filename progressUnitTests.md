@@ -1,4 +1,4 @@
-### Agent Assessment
+# Agent Assessment
 
 This document provides a strong framework for improving unit test quality. The rubric-based scoring correctly identifies tests that are costly to maintain and provide low value. The analysis and recommendations align with modern testing best practices, emphasizing behavioral testing over implementation-detail testing.
 
@@ -33,16 +33,15 @@ These tests tend to: duplicate coverage, assert incidental DOM structure, or foc
 
 ### Next steps
 
-1.  **DONE:** Delete or archive the “Remove” tests after confirming no unique coverage is lost.
+1. **DONE:** Delete or archive the “Remove” tests after confirming no unique coverage is lost.
     - `tests/integration/manualDomComparison.test.js`
     - `tests/examples/testArchitectureDemo.test.js`
     - `tests/classicBattle/opponent-message-handler.simplified.test.js`
-2.  **IN PROGRESS:** Create refactor tasks for each test flagged “Refactor”.
+2. **IN PROGRESS:** Create refactor tasks for each test flagged “Refactor”.
     - **DONE:** `tests/integration/battleClassic.integration.test.js` - Refactored to a single, behavioral test verifying initial page state.
     - **DONE:** `tests/pages/battleCLI.helpers.test.js` - Refactored to a set of focused, behavioral unit tests for the module's helpers.
-3.  Create refactor tasks for each remaining test flagged “Refactor”. Use the following template for each:
+3. Create refactor tasks for each remaining test flagged “Refactor”. Use the following template for each:
 
-    ```
     **Refactor Test: `[Test File Path]`**
 
     **Current Problem:**
@@ -54,6 +53,5 @@ These tests tend to: duplicate coverage, assert incidental DOM structure, or foc
     - [ ] The test is refactored to assert user-observable behavior (e.g., final DOM state, text content, emitted events).
     - [ ] Mocks are minimized, and the test interacts with the component through its public API.
     - [ ] The test is deterministic and robust, using helpers like `withMutedConsole` and fake timers where appropriate.
-    ```
 
-4.  Re-run the test suite and measure improvements in run time and flakiness.
+4. Re-run the test suite and measure improvements in run time and flakiness.

@@ -127,7 +127,7 @@ The design must be attractive and **minimize cognitive load**—presenting stats
 
 ## UI Design
 
-```
+```text
 +------------------------------------------------+
 | [ RARITY BORDER COLOR: Blue/Red/Gold ]         |
 |                                                |

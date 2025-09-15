@@ -70,13 +70,13 @@ All enhancements maintain existing accessibility features:
 
 ## File Changes
 
-### Updated Files:
+### Updated Files
 
 1. **`src/pages/battleCLI.html`** - Main interface improvements
 2. **`src/styles/cli-immersive.css`** - Terminal title bar enhancements
 3. **`design/productRequirementsDocuments/prdBattleCLI.md`** - Updated requirements
 
-### Key CSS Improvements:
+### Key CSS Improvements
 
 - Enhanced typography hierarchy
 - Better spacing and padding consistency

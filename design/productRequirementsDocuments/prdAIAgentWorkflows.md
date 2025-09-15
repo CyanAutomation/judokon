@@ -53,7 +53,7 @@ AI agents working with the JU-DO-KON! project lack unified workflows and optimiz
 
 **Core Decision Logic:**
 
-```
+```text
 User query contains "How", "Why", "What", "Where", "Which"? → USE RAG
 User requests examples or references? → USE RAG
 User mentions unfamiliar terms? → USE RAG
@@ -85,7 +85,7 @@ When in doubt? → USE RAG FIRST
 
 **Examples:**
 
-```
+```text
 ❌ Poor: "How do I add tooltips?"
 ✅ Good: "tooltip implementation data structure JSON format"
 

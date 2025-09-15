@@ -177,7 +177,7 @@ Search will be included in a future update to keep the initial scope focused.
 
 ## UI/UX Wireframe
 
-```
+```text
 +---------------------------------------------------------+
 |
 +---------------------------------------------------------+

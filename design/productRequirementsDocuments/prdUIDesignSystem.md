@@ -65,6 +65,7 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 ```
 
 **Rarity System Colors:**
+
 | Rarity | Background | Border | Judogi Color |
 |--------|------------|---------|---------------|
 | Common | #3C5AD6 | #3C5AD6 | White (#FFF) |
@@ -72,6 +73,7 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 | Legendary | #E4AB19 | #E4AB19 | Blue (#3C7DC4) |
 
 **Feature-Specific Colors:**
+
 | Feature/Mode | Color | Usage |
 |--------------|-------|--------|
 | Classic Battle | #E53935 | High-energy, competitive |
@@ -102,6 +104,7 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 - **Fallback**: Sans-serif system fonts for accessibility
 
 **Typography Scale:**
+
 | Element | Style | Usage |
 |---------|-------|--------|
 | Section Titles | ALL CAPS, Bold, Large | Main page headings with tracking |
@@ -198,7 +201,7 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 **Testing Requirements:**
 
 - Automated contrast checking via `npm run check:contrast`
-- Pa11y accessibility auditing at http://localhost:5000
+- Pa11y accessibility auditing at <http://localhost:5000>
 - Keyboard navigation testing for all user flows
 - Screen reader testing with common assistive technologies
 

@@ -91,13 +91,6 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 
 ---
 
-## Open Questions
-
-- **Pending:** Decide whether quotes rotate automatically after a delay.
-- **Pending:** Determine if players need a skip option to bypass the screen entirely.
-
----
-
 ## Edge Cases / Failure States
 
 - **Failure to load quote data:** Display a calming default message such as _“Take a breath. Even a still pond reflects the sky.”_
@@ -201,6 +194,8 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
 - **Pending:** Decide whether players can disable the Meditation screen entirely.
 - **Pending:** Determine if background audio will be added in a later version.
 - **Pending:** Confirm translation requirements beyond English and Japanese.
+- **Pending:** Decide whether quotes rotate automatically after a delay.
+- **Pending:** Determine if players need a skip option to bypass the screen entirely.
 
 ---
 

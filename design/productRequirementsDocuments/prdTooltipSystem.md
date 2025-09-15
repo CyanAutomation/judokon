@@ -107,12 +107,12 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
 
 ## Dependencies and Open Questions
 
-### Dependencies:
+### Dependencies
 
 - Access to `tooltips.json` file within `/data/` or similar directory.
 - Basic utility functions for positioning and parsing markdown-like syntax.
 
-### Open Questions:
+### Open Questions
 
 - Should we support richer content in tooltips (e.g. icons, links)?
 - Do we want to internationalize `tooltips.json` immediately or defer localization support?
@@ -120,7 +120,7 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
 
 ---
 
-## See also:
+## See also
 
 - PRD: Browse Judoka (for card stat structure)
 - PRD: Classic Battle (for stat selection flow where tooltips will appear)

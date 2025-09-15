@@ -71,6 +71,7 @@ Headless mode skips inter-round cooldowns and opponent reveal sleeps. Combine it
 
 - `updateUiForState(state)` synchronizes badges, countdowns, and prompts.
 - `ensureNextRoundButton()` inserts a Next button during `roundOver` when auto continue is off.
+- `logStateChange(from, to)` appends timestamped lines to the verbose log when verbose mode is enabled.
 
 - `onKeyDown` handles key events for the CLI interface.
 - The `battleCLI` export exposes test helpers and utilities such as `renderStatList`.
@@ -78,25 +79,3 @@ Headless mode skips inter-round cooldowns and opponent reveal sleeps. Combine it
 - Background clicks advance from **round over** or **cooldown** states; clicks on stat rows are ignored.
 - The page requests a round target via `initRoundSelectModal` and falls back to a **Start match** button if the modal cannot load.
 - Entering a numeric seed enables deterministic test mode; blank or non-numeric input clears the seed, disables test mode, and uses default randomness.
-
-## Headless simulations
-
-Bulk AI or Monte Carlo runs can remove waits by enabling headless mode:
-
-```js
-import { setHeadlessMode } from "../helpers/headlessMode.js";
-import { setTestMode } from "../helpers/testModeUtils.js";
-
-setHeadlessMode(true); // no cooldown delays
-setTestMode(true); // deterministic RNG
-```
-
-Headless mode skips inter-round cooldowns and opponent reveal sleeps. Combine it with test mode for reproducible, fast CLI matches.
-
-## Battle state transitions
-
-`handleBattleState` orchestrates UI changes when the battle machine moves between states. It delegates to helpers:
-
-- `updateUiForState(state)` synchronizes badges, countdowns, and prompts.
-- `ensureNextRoundButton()` inserts a Next button during `roundOver` when auto continue is off.
-- `logStateChange(from, to)` appends timestamped lines to the verbose log when verbose mode is enabled.

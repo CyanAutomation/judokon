@@ -8,7 +8,7 @@
 
 > After a tough **Classic Battle**, Hiroshi takes a break by entering **Meditation** Mode. Soft music and inspiring quotes help him reconnect with why he loves judo. Later, he updates his Judoka’s signature move, making his fighter truly his own. By offering more than just battles, Ju-Do-Kon! becomes a game players want to return to every day—whether they crave intense combat or quiet reflection.
 
-## Game mode IDs are numeric. Each pre-seeded navigation link references a mode by its ID in `navigationItems.js`, which drives visibility and order via CSS.
+## Game mode IDs are numeric. Each pre-seeded navigation link references a mode by its ID in `navigationItems.js`, which drives visibility and order via CSS
 
 ### Problem Statement
 

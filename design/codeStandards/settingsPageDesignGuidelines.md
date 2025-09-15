@@ -188,11 +188,13 @@ To support AI-assisted testing, variant gameplay modes, and scalable development
 - **Grouping**
   - Place all feature flags in a dedicated `<fieldset>` titled `Feature Flags`.
   - Markup example:
+
     ```html
     <fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">
       ...
     </fieldset>
     ```
+
   - When a flag changes, display a short confirmation using `showSnackbar()` to inform the user of the new state.
 
 ---
@@ -204,6 +206,7 @@ To enable AI agents to test, monitor, and debug the impact of feature flags:
 - **Expose State via `data-*` Attributes**
   - Dynamic components (e.g. game mode managers, card displays) should include `data-*` attributes on their root elements to indicate current internal state
   - Example:
+
     ```html
     <div id="battle-container" data-mode="classic" data-random-stat="true"></div>
     ```
