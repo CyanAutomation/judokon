@@ -56,8 +56,12 @@ Conclusion: Findings align with your scoring. Actions should focus on making the
   - DONE: Loads real `src/pages/battleCLI.html` (no fabricated DOM) and asserts presence and ARIA contracts for standard nodes in Phase 1 (hidden) state. Updated expectations to match current markup (e.g., `next-round-timer` uses `role="status"` and `aria-atomic="true"`; `round-message` carries `aria-live="polite"`).
   - Rationale: Improves determinism and maintenance by pinning to real markup without requiring heavy mocks for `init()`.
 
-- `tests/styles/battleContrast.test.js` and `tests/styles/battleCLI.focusContrast.test.js`
-  - Consolidate into a single data‑driven test verifying the required color pairs. Keep thresholds in one place; add a comment referencing the PRD/guide to reduce drift.
+- `tests/styles/battleContrast.test.js` — DONE
+  - Converted to a single data‑driven test with a shared AA text threshold (>= 4.5) and palette references.
+  - Rationale: centralized thresholds and easier maintenance.
+
+- `tests/styles/battleCLI.focusContrast.test.js`
+  - Leave as‑is for now; consider consolidation later with battleContrast cases.
 
 Implementation notes
 
