@@ -25,6 +25,7 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
+import { showSelectionPrompt } from "../helpers/classicBattle/snackbar.js";
 import { removeBackdrops, enableNextRoundButton } from "../helpers/classicBattle/uiHelpers.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
@@ -397,6 +398,11 @@ async function startRoundCycle(store) {
     renderStatButtons(store);
   } catch (err) {
     console.debug("battleClassic: renderStatButtons failed", err);
+  }
+  try {
+    showSelectionPrompt();
+  } catch (err) {
+    console.debug("battleClassic: showSelectionPrompt failed", err);
   }
   try {
     await beginSelectionTimer(store);
