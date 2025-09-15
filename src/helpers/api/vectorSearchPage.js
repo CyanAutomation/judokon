@@ -94,10 +94,11 @@ export async function getExtractor() {
         }
 
         env.backends.onnx.wasm.proxy = false;
-        const modelDir = resolve(rootDir, "models", "minilm");
+        const modelDir = "models/minilm";
+        const modelDirAbs = resolve(rootDir, modelDir);
 
         try {
-          await stat(resolve(modelDir, "config.json"));
+          await stat(resolve(modelDirAbs, "config.json"));
           extractor = await pipeline("feature-extraction", modelDir, { quantized: true });
         } catch {
           if (process?.env?.RAG_STRICT_OFFLINE === "1") {

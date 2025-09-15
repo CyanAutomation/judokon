@@ -2,41 +2,39 @@
 
 This file lists the Playwright specs that currently provide the least value for their cost. Use it to prioritize removal, consolidation, or refactor work.
 
-| Rank | File                                    | Score (0–10) | Action         | Intent | Relevance | Assertion | Robustness | Cost | Duration (ms) | Quick fix                                                                                                                      |
-| ---: | --------------------------------------- | :----------: | -------------- | :----: | :-------: | :-------: | :--------: | :--: | :-----------: | ------------------------------------------------------------------------------------------------------------------------------ |
-|    1 | `battle-cli.spec.js`                    |      3       | REMOVE / MERGE |   1    |     1     |     1     |     0      |  0   |    60,151     | Drop waitForTimeout(500), switch CSS locators to getByRole/getByTestId, and split the flow into smaller specs to trim runtime. |
-|    2 | `debug-settings-click.spec.js`          |      4       | REMOVE / MERGE |   2    |     1     |     0     |     0      |  1   |       0       | Add semantic expects for the "Restore Defaults" button and replace waitForTimeout with auto‑waiting locators.                  |
-|    3 | `debug-stat-loading.spec.js`            |      4       | REMOVE / MERGE |   2    |     1     |     0     |     0      |  1   |       0       | Add assertions verifying stat list population and drop the 3s waitForTimeout in favor of expect‑based waits.                   |
-|    4 | `orchestrator-debug.spec.js`            |      4       | REMOVE / MERGE |   1    |     1     |     1     |     0      |  1   |     5,430     | Replace placeholder `expect(true).toBe(true)` with real checks and remove the 5s timeout.                                      |
-|    5 | `battle-classic/replay.spec.js`         |      5       | REFACTOR       |   1    |     1     |     1     |     0      |  2   |     1,475     | Swap waitForTimeout/waitForSelector for expect‑based waits and prefer role/test‑id selectors.                                  |
-|    6 | `win-target-sync.spec.js`               |      5       | REFACTOR       |   2    |     1     |     1     |     0      |  1   |       0       | Eliminate repeated waitForTimeout(500) calls, rely on auto‑wait, and stabilize locators for CI.                                |
-|    7 | `static-pages.spec.js`                  |      6       | REFACTOR       |   1    |     1     |     0     |     2      |  2   |     1,371     | Add assertions (e.g., `toHaveURL`, `toContainText`) so the test validates page content instead of only navigating.             |
-|    8 | `battle-classic/timer-clearing.spec.js` |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     2,585     | Replace timeouts and selectors with expect‑based waits; convert CSS selectors to `getByRole`/`getByTestId`.                    |
-|    9 | `battle-classic/stat-selection.spec.js` |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     2,571     | Remove waitForTimeout/waitForSelector and assert selection via accessible locators.                                            |
-|   10 | `battle-classic/cooldown.spec.js`       |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     2,389     | Use auto‑waiting expectations for cooldown transitions and replace ad‑hoc CSS selectors with semantic ones.                    |
+| Rank | File                                    | Score (0–10) | Action         | Intent | Relevance | Assertion | Robustness | Cost | Duration (ms) | Quick fix                                                                                                                                         |
+| ---: | --------------------------------------- | :----------: | -------------- | :----: | :-------: | :-------: | :--------: | :--: | :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+|    1 | `battle-cli.spec.js`                    |      3       | REMOVE / MERGE |   1    |     1     |     1     |     0      |  0   |    61,336     | Split CLI coverage into focused specs that drive the UI (start → play → restart), drop the instrumentation-heavy state polling, and adopt role/test-id locators. |
+|    2 | `debug-settings-click.spec.js`          |      4       | REMOVE  |   2    |     1     |     0     |     0      |  1   |     1,155     | Delete this diagnostic script         |
+|    3 | `debug-stat-loading.spec.js`            |      4       | REMOVE  |   2    |     1     |     0     |     0      |  1   |     1,711     | Remove the spec entirely.      |
+|    4 | `orchestrator-debug.spec.js`            |      4       | REMOVE  |   1    |     1     |     1     |     0      |  1   |     1,443     | Remove the debug harness .          |
+|    5 | `battle-classic/replay.spec.js`         |      5       | REFACTOR       |   1    |     1     |     1     |     0      |  2   |     5,274     | Drive the replay flow through user-facing locators (add test IDs for Replay/scoreboard) and rely on `expect` waits instead of CSS queries plus dynamic imports.  |
+|    6 | `win-target-sync.spec.js`               |      5       | REFACTOR       |   2    |     1     |     1     |     0      |  1   |    19,014     | Collapse the four identical modal flows into one table-driven run, reuse a helper for the settings panel, and lean on locator expectations to trim the 19s cost.  |
+|    7 | `static-pages.spec.js`                  |      6       | REFACTOR       |   1    |     1     |     0     |     2      |  2   |     1,915     | Augment `verifyPageBasics` with page-specific assertions (headings, hero copy) and metadata so each static page proves its real content, not just nav visibility.  |
+|    8 | `battle-classic/timer-clearing.spec.js` |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     5,688     | Add semantic/test-id locators for timers and buttons, swap modal `waitForSelector` calls for `expect` polls, and validate the visible countdown behavior directly. |
+|    9 | `battle-classic/stat-selection.spec.js` |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     7,057     | Introduce accessible locators for the stat buttons and Next control, cover enable/disable transitions with `expect`, and drop the brittle CSS selectors.         |
+|   10 | `battle-classic/cooldown.spec.js`       |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     4,339     | Drive the cooldown flow via the UI (click Next, observe scoreboard/timer) instead of importing modules inside `page.evaluate` + timers, matching user-facing checks. |
+
+Durations reflect single local runs of `npx playwright test <spec> --reporter=json` on 2025‑09‑15.
 
 ### Summary & repo-wide guidance
 
 Common issues observed
 
-- Heavy reliance on `page.waitForTimeout()` and `waitForSelector()` instead of Playwright's auto‑waiting expectations.
-- Many specs lack meaningful assertions or use placeholder checks.
-- Predominant use of brittle CSS selectors instead of accessible locators (role/test-id).
-- Some specs never ran (duration = 0), offering no coverage.
-- No traceability comments (Spec-ID, linked issue) to document intent.
+- The three `debug-*.spec.js` files are diagnostic scripts: they log telemetry without real assertions, so they never catch regressions. These should be removed.
+- `battle-cli.spec.js` depends on Test API instrumentation (`waitForBattleStateHelper` with 10s timeouts, manual fetch mocks), so it burns ~61s validating internals rather than user-visible behavior.
+- Classic battle specs lean on raw `#id` selectors and `page.evaluate` imports instead of the role/test-id locators encouraged by `design/codeStandards/evaluatingPlaywrightTests.md`.
+- None of these low-value specs carry Spec-ID/Linked-Req metadata, so the value evaluator cannot capture intent or requirement coverage.
 
 Recommended fixes (apply repo-wide)
 
-- Ban `waitForTimeout()` in new and refactored specs. Prefer `expect(locator).toBeVisible()`, `toHaveText()`, `toHaveURL()` for synchronization.
-- Adopt `getByRole()` / `getByTestId()` or role-based Playwright locators to improve stability and accessibility alignment.
-- Ensure every test asserts one semantic user outcome (happy-path) and add a focused edge-case where appropriate.
-- Annotate specs with a `Spec-ID` and link to an issue/pr describing intent to avoid orphaned tests.
-- Review slow or unused specs: split long flows into smaller specs and remove debug-only scripts.
+- Retire the diagnostic specs so each file contains meaningful assertions in line with the Playwright rubric (`design/codeStandards/evaluatingPlaywrightTests.md`).
+- Refactor the CLI and classic battle specs to drive the UI with role/test-id locators and Playwright `expect` polls instead of instrumentation or module imports.
+- Introduce Spec-ID/Linked-Req headers so evaluation tooling can score intent clarity and track coverage.
+- After refactors, re-run `npm run e2e:value` (or the full `npm run e2e:flake-scan`) to confirm improved scores, durations, and stability.
 
 Next steps
 
-1. Remove or archive the specs flagged `REMOVE / MERGE` after confirming they don't contain unique coverage.
-2. For each `REFACTOR` spec, open a small task describing the expected behavior to assert and a suggested locator strategy.
-3. Re-run the Playwright suite and compare total runtime and flakiness metrics.
-
-If you'd like, I can create a PR that implements a small subset of these quick fixes (e.g., replacing a few `waitForTimeout` usages and switching selected selectors to `getByRole`).
+1. Remove the `debug-*` specs once we've confirmed no user behavior depends on them.
+2. Plan the CLI/battle refactors: add the necessary test IDs, convert flows to UI-driven assertions, and break the monolithic CLI spec into focused files.
+3. Execute `npm run e2e:value` (or `npm run e2e:flake-scan`) and compare score/runtime deltas to verify the clean-up.

@@ -26,7 +26,7 @@ Verification updates (repo scan on 2025-09-14)
 
 classicBattlePage.syncScoreDisplay.test.js
 Why: core UI init; uses document.body.append(header) and multiple app flows.
-Suggestion: use const { container } = mount(); container.appendChild(header); then call the init or setup* API; teardown with clearBody().
+Suggestion: use const { container } = mount(); container.appendChild(header); then call the init or setup*API; teardown with clearBody().
 tests/helpers/classicBattle/*. (examples)
 controlState.test.js
 stateTransitions.test.js
@@ -65,7 +65,7 @@ tests/helpers/svgFallback.test.js, layoutDebugPanel.test.js, svg-related tests
 Easy to migrate to mount().
 Tests that should use public APIs rather than direct DOM mutation
 
-Any test that calls document.body.append(...) then calls an init* function using document implicitly:
+Any test that calls document.body.append(...) then calls an init*function using document implicitly:
 Examples: setupScoreboard, setupChangeLogPage, populateNavbar, setupBottomNavbar, initScoreboardAdapter, initBattleScoreboardAdapter
 Why: these modules typically accept or could accept a root/parent — tests should construct the DOM and pass that element into the public initializer instead of assuming global DOM.
 Suggestion: update tests to create the minimal required element(s) in container and call the corresponding init* or setup\* function with that element (or pass { root: container } when available).
