@@ -353,7 +353,7 @@ async function beginSelectionTimer(store) {
       console.debug("battleClassic: computeRoundResult (timer) failed", err);
     }
     return Promise.resolve();
-  });
+  }, store);
   // Fail-safe: if for any reason the expiration callback path is interrupted,
   // ensure the round resolves and Next becomes ready shortly after the expected
   // duration. This keeps E2E deterministic even when optional adapters are missing.
