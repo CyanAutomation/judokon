@@ -146,7 +146,8 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
  * stall timeouts so they cannot fire after the player has made a selection.
  *
  * @pseudocode
- * 1. Call engine `stopTimer()` to pause/stop the round countdown.
+ * 1. Call engine `stopTimer()` to pause/stop the round countdown and invoke
+ *    `window.__battleClassicStopSelectionTimer` if available.
  * 2. Clear `store.statTimeoutId` and `store.autoSelectId` via `clearTimeout`.
  * 3. Null out the stored ids so subsequent cleanup calls are safe.
  *
@@ -156,6 +157,11 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
 export function cleanupTimers(store) {
   try {
     stopTimer();
+  } catch {}
+  try {
+    if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
+      window.__battleClassicStopSelectionTimer();
+    }
   } catch {}
   try {
     clearTimeout(store.statTimeoutId);
@@ -208,12 +214,6 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
       try {
         const msg = document.getElementById("round-message");
         if (msg) msg.textContent = "";
-      } catch {}
-      // Stop the active selection timer created in battleClassic.init.js
-      try {
-        if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
-          window.__battleClassicStopSelectionTimer();
-        }
       } catch {}
       // Snackbar display is handled elsewhere based on resolution path
     }
