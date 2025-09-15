@@ -8,13 +8,13 @@ The suggested plan is sound. The proposed updates below aim to add more specific
 
 The list below shows the lowest-scoring tests according to the rubric (each category scored 0–2, total possible = 10). Use this as a prioritized checklist for cleanup: remove or merge noisy/duplicative tests, and refactor tests that assert implementation details instead of observable behavior.
 
-| # | Test file | Intent clarity | Behavioral relevance | Assertion quality | Isolation & robustness | Cost vs coverage | Total | Action |
-|---:|---|:--:|:--:|:--:|:--:|:--:|:--:|---|
-| 1 | `tests/pages/battleCLI.cliShortcutsFlag.test.js` | 2 | 1 | 1 | 1 | 0 | 5 | Refactor |
-| 2 | `tests/classicBattle/page-scaffold.test.js` | 2 | 1 | 1 | 1 | 0 | 5 | Refactor |
-| 3 | `tests/pages/battleCLI.standardDOM.test.js` | 2 | 1 | 1 | 2 | 0 | 6 | Refactor |
-| 4 | `tests/styles/battleContrast.test.js` | 2 | 1 | 1 | 2 | 0 | 6 | Refactor |
-| 5 | `tests/styles/battleCLI.focusContrast.test.js` | 2 | 1 | 2 | 2 | 0 | 7 | Refactor |
+|   # | Test file                                        | Intent clarity | Behavioral relevance | Assertion quality | Isolation & robustness | Cost vs coverage | Total | Action   |
+| --: | ------------------------------------------------ | :------------: | :------------------: | :---------------: | :--------------------: | :--------------: | :---: | -------- |
+|   1 | `tests/pages/battleCLI.cliShortcutsFlag.test.js` |       2        |          1           |         1         |           1            |        0         |   5   | Refactor |
+|   2 | `tests/classicBattle/page-scaffold.test.js`      |       2        |          1           |         1         |           1            |        0         |   5   | Refactor |
+|   3 | `tests/pages/battleCLI.standardDOM.test.js`      |       2        |          1           |         1         |           2            |        0         |   6   | Refactor |
+|   4 | `tests/styles/battleContrast.test.js`            |       2        |          1           |         1         |           2            |        0         |   6   | Refactor |
+|   5 | `tests/styles/battleCLI.focusContrast.test.js`   |       2        |          1           |         2         |           2            |        0         |   7   | Refactor |
 
 ### Notes on selected tests
 
@@ -26,21 +26,22 @@ These tests tend to: duplicate coverage, assert incidental DOM structure, or foc
 
 - Remove or consolidate tests marked “Remove.” Replace them with smaller, behavior-focused tests where necessary.
 - For tests marked “Refactor”:
-	- Assert user-observable behavior (DOM text, emitted events, public API calls), not implementation details.
-	- Reduce heavy fixture/setup cost where possible (use lightweight factories or component test utils, like those found in `tests/utils/componentTestUtils.js`).
-	- Use fake timers and `withMutedConsole` in tests that are timing- or logging-sensitive to keep them deterministic. The `withMutedConsole` helper from `tests/utils/console.js` should be used for any test that intentionally triggers console warnings or errors.
-	- Add one clear acceptance-style assertion per test (happy path) and a targeted edge-case where relevant.
+  - Assert user-observable behavior (DOM text, emitted events, public API calls), not implementation details.
+  - Reduce heavy fixture/setup cost where possible (use lightweight factories or component test utils, like those found in `tests/utils/componentTestUtils.js`).
+  - Use fake timers and `withMutedConsole` in tests that are timing- or logging-sensitive to keep them deterministic. The `withMutedConsole` helper from `tests/utils/console.js` should be used for any test that intentionally triggers console warnings or errors.
+  - Add one clear acceptance-style assertion per test (happy path) and a targeted edge-case where relevant.
 
 ### Next steps
 
 1.  **DONE:** Delete or archive the “Remove” tests after confirming no unique coverage is lost.
-    *   `tests/integration/manualDomComparison.test.js`
-    *   `tests/examples/testArchitectureDemo.test.js`
-    *   `tests/classicBattle/opponent-message-handler.simplified.test.js`
+    - `tests/integration/manualDomComparison.test.js`
+    - `tests/examples/testArchitectureDemo.test.js`
+    - `tests/classicBattle/opponent-message-handler.simplified.test.js`
 2.  **IN PROGRESS:** Create refactor tasks for each test flagged “Refactor”.
-    *   **DONE:** `tests/integration/battleClassic.integration.test.js` - Refactored to a single, behavioral test verifying initial page state.
-    *   **DONE:** `tests/pages/battleCLI.helpers.test.js` - Refactored to a set of focused, behavioral unit tests for the module's helpers.
+    - **DONE:** `tests/integration/battleClassic.integration.test.js` - Refactored to a single, behavioral test verifying initial page state.
+    - **DONE:** `tests/pages/battleCLI.helpers.test.js` - Refactored to a set of focused, behavioral unit tests for the module's helpers.
 3.  Create refactor tasks for each remaining test flagged “Refactor”. Use the following template for each:
+
     ```
     **Refactor Test: `[Test File Path]`**
 
@@ -54,4 +55,5 @@ These tests tend to: duplicate coverage, assert incidental DOM structure, or foc
     - [ ] Mocks are minimized, and the test interacts with the component through its public API.
     - [ ] The test is deterministic and robust, using helpers like `withMutedConsole` and fake timers where appropriate.
     ```
+
 4.  Re-run the test suite and measure improvements in run time and flakiness.

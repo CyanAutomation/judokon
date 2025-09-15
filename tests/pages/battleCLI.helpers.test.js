@@ -16,14 +16,14 @@ describe("Battle CLI Helpers", () => {
       initFeatureFlags: vi.fn().mockResolvedValue(undefined),
       isEnabled: vi.fn(() => true), // Enable cliShortcuts
       setFlag: vi.fn().mockResolvedValue(undefined),
-      featureFlagsEmitter: new EventTarget(),
+      featureFlagsEmitter: new EventTarget()
     }));
     vi.doMock("../../src/pages/battleCLI/dom.js", () => ({
       byId: (id) => document.getElementById(id),
       updateRoundHeader: vi.fn(),
       setRoundMessage: (msg) => {
         document.getElementById("round-message").textContent = msg;
-      },
+      }
     }));
   });
 
@@ -36,7 +36,7 @@ describe("Battle CLI Helpers", () => {
     it("toggles the verbose section when the checkbox is clicked", async () => {
       vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
         getPointsToWin: vi.fn(),
-        setPointsToWin: vi.fn(),
+        setPointsToWin: vi.fn()
       }));
       await setupFlags();
       const verboseToggle = document.getElementById("verbose-toggle");
@@ -45,11 +45,11 @@ describe("Battle CLI Helpers", () => {
       expect(verboseSection.hidden).toBe(true);
 
       verboseToggle.click();
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       expect(verboseSection.hidden).toBe(false);
 
       verboseToggle.click();
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
       expect(verboseSection.hidden).toBe(true);
     });
   });
@@ -72,7 +72,7 @@ describe("Battle CLI Helpers", () => {
       const onSpy = vi.spyOn(battleEngineFacade, "on");
       subscribeEngine();
 
-      const timerTickCallback = onSpy.mock.calls.find(call => call[0] === 'timerTick')[1];
+      const timerTickCallback = onSpy.mock.calls.find((call) => call[0] === "timerTick")[1];
       const countdownDisplay = document.getElementById("cli-countdown");
       expect(countdownDisplay.textContent).toBe("");
 
@@ -85,7 +85,7 @@ describe("Battle CLI Helpers", () => {
       const onSpy = vi.spyOn(battleEngineFacade, "on");
       subscribeEngine();
 
-      const matchEndedCallback = onSpy.mock.calls.find(call => call[0] === 'matchEnded')[1];
+      const matchEndedCallback = onSpy.mock.calls.find((call) => call[0] === "matchEnded")[1];
       const roundMessage = document.getElementById("round-message");
       expect(roundMessage.textContent).toBe("");
 
