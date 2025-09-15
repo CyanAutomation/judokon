@@ -47,7 +47,10 @@ Conclusion: Findings align with your scoring. Actions should focus on making the
   - Consider parameterizing flag state via feature flag overrides instead of mocking unrelated entrypoints.
 
 - `tests/classicBattle/page-scaffold.test.js`
-  - Promote to a minimal integration test that calls the real initializer (e.g. `init()` of classic battle) against the real `battleClassic.html` using JSDOM, then assert the runtime state of visible nodes (message/timer/score values), not just existence.
+  - DONE: Promoted to a minimal behavioral test. Loads the real `battleClassic.html`, runs `init()`, and asserts post‑init observable state:
+    - Regions present with correct ARIA roles.
+    - Visible defaults set (score “You: 0 / Opponent: 0”, counter “Round 0”).
+  - Notes: Provides `__FF_OVERRIDES` and a simple `localStorage` stub to avoid side effects.
 
 - `tests/pages/battleCLI.standardDOM.test.js`
   - Load `src/pages/battleCLI.html` and call `init()`; validate that the “standard scoreboard nodes” are revealed/hidden as the adapter initializes, and that ARIA attributes match after init. Avoid fabricating DOM by hand.

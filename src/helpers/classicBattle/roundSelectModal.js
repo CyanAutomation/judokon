@@ -276,10 +276,6 @@ function applyGameModePositioning(modal) {
   const setActiveMarker = (value) => {
     try {
       backdrop.dataset[datasetKey] = value ? "true" : "false";
-      if (typeof window !== "undefined") {
-        window.__updateLog = window.__updateLog || [];
-        window.__updateLog.push({ mark: value ? "activate" : "deactivate" });
-      }
     } catch {}
   };
   setActiveMarker(true);
@@ -311,14 +307,6 @@ function applyGameModePositioning(modal) {
     if (!backdrop[activeProp]) return;
     if (backdrop.dataset?.[datasetKey] !== "true") return;
     try {
-      if (typeof window !== "undefined") {
-        window.__updateLog = window.__updateLog || [];
-        window.__updateLog.push({
-          active: isActive,
-          dataset: backdrop.dataset?.[datasetKey],
-          headerPresent: Boolean(headerRef)
-        });
-      }
       const h = headerRef?.offsetHeight;
       if (Number.isFinite(h) && h >= 0) {
         backdrop.style.setProperty("--modal-inset-top", `${h}px`);
@@ -356,23 +344,6 @@ function applyGameModePositioning(modal) {
     if (!isActive) return;
     isActive = false;
     setActiveMarker(false);
-    try {
-      if (typeof window !== "undefined") {
-        window.__cleanupCallCount = (window.__cleanupCallCount || 0) + 1;
-      }
-    } catch {}
-    try {
-      console.log("cleanup called", window?.__cleanupCallCount);
-    } catch {}
-    if (typeof window !== "undefined") {
-      window.__updateLog = window.__updateLog || [];
-      window.__updateLog.push({
-        cleanup: true,
-        afterCount: window.__cleanupCallCount,
-        datasetValue: backdrop.dataset?.[datasetKey],
-        headerPresent: Boolean(headerRef)
-      });
-    }
     if (originalDispatchEvent) {
       try {
         backdrop.dispatchEvent = originalDispatchEvent;
