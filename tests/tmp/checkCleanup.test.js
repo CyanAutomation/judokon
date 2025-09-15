@@ -16,6 +16,7 @@ describe("cleanup counter", () => {
     document.body.innerHTML = "";
     vi.resetModules();
     window.__cleanupCallCount = 0;
+    window.__updateLog = [];
     global.requestAnimationFrame = (cb) => setTimeout(() => cb(0), 0);
     global.cancelAnimationFrame = (id) => clearTimeout(id);
   });
@@ -48,9 +49,10 @@ describe("cleanup counter", () => {
     await new Promise((r) => setTimeout(r, 0));
 
     const finalInset = backdrop.style.getPropertyValue("--modal-inset-top");
+    const activeProp = "__roundSelectPositioningActive";
     if (finalInset !== "80px") {
       throw new Error(
-        `expected 80px but got ${finalInset}; cleanup=${window.__cleanupCallCount}`
+        `expected 80px but got ${finalInset}; cleanup=${window.__cleanupCallCount}; updates=${JSON.stringify(window.__updateLog)}; activeProp=${backdrop[activeProp]}`
       );
     }
   });

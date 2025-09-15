@@ -1,10 +1,10 @@
-# Agent Assessment
+# Agent Assessment (Validated)
 
-This document provides a strong framework for improving unit test quality. The rubric-based scoring correctly identifies tests that are costly to maintain and provide low value. The analysis and recommendations align with modern testing best practices, emphasizing behavioral testing over implementation-detail testing.
+Overall, your assessment is directionally correct. The cited test files and their issues match the Unit Test Quality Standards in design/codeStandards and the Agent Guide (avoid direct DOM manipulation, avoid synthetic events, prefer behavioral assertions, use fake timers and withMutedConsole).
 
-The suggested plan is sound. The proposed updates below aim to add more specific, actionable details to the "Action" items and "Next Steps" to accelerate the remediation process.
+Below is a validation summary plus a concrete, test‑by‑test fix plan and verification checklist to make the work immediately actionable.
 
-## Lower-Performing Unit Tests
+## Lower-Performing Unit Tests (Confirmed)
 
 The list below shows the lowest-scoring tests according to the rubric (each category scored 0–2, total possible = 10). Use this as a prioritized checklist for cleanup: remove or merge noisy/duplicative tests, and refactor tests that assert implementation details instead of observable behavior.
 
@@ -16,30 +16,59 @@ The list below shows the lowest-scoring tests according to the rubric (each cate
 |   4 | `tests/styles/battleContrast.test.js`            |       2        |          1           |         1         |           2            |        0         |   6   | Refactor |
 |   5 | `tests/styles/battleCLI.focusContrast.test.js`   |       2        |          1           |         2         |           2            |        0         |   7   | Refactor |
 
-### Notes on selected tests
+### Validation notes (evidence)
 
-(No specific notes on the remaining tests)
+- `tests/pages/battleCLI.cliShortcutsFlag.test.js`
+  - Imports `../../src/pages/index.js` and dispatches synthetic `KeyboardEvent` directly. This bypasses the CLI’s public handlers and is brittle. Matches anti‑patterns: synthetic events and testing internals.
+- `tests/classicBattle/page-scaffold.test.js`
+  - Reads raw HTML, injects into JSDOM, and asserts presence/attributes. This is structural, not behavioral; low value and fragile to markup refactors.
+- `tests/pages/battleCLI.standardDOM.test.js`
+  - Manually constructs DOM and asserts presence/ARIA attributes. Useful as a spec, but higher value when exercised via the real initializer to ensure contracts are wired.
+- `tests/styles/battleContrast.test.js` and `tests/styles/battleCLI.focusContrast.test.js`
+  - Validate constant color pairs. Acceptable as guardrails but not tied to runtime. Could move to a single, consolidated style test or data‑driven matrix.
 
-These tests tend to: duplicate coverage, assert incidental DOM structure, or focus on internal wiring rather than observable contracts.
+Conclusion: Findings align with your scoring. Actions should focus on making these tests assert runtime‑observable behavior via public APIs, not static structure.
 
-### Recommendations
+### Recommendations (refined)
 
 - Remove or consolidate tests marked “Remove.” Replace them with smaller, behavior-focused tests where necessary.
 - For tests marked “Refactor”:
   - Assert user-observable behavior (DOM text, emitted events, public API calls), not implementation details.
-  - Reduce heavy fixture/setup cost where possible (use lightweight factories or component test utils, like those found in `tests/utils/componentTestUtils.js`).
-  - Use fake timers and `withMutedConsole` in tests that are timing- or logging-sensitive to keep them deterministic. The `withMutedConsole` helper from `tests/utils/console.js` should be used for any test that intentionally triggers console warnings or errors.
+  - Reduce heavy fixture/setup cost where possible (use lightweight factories or component test utils).
+  - Use fake timers and `withMutedConsole` to keep timing/log tests deterministic (see `tests/utils/console.js`).
   - Add one clear acceptance-style assertion per test (happy path) and a targeted edge-case where relevant.
 
-### Next steps
+### Targeted refactor plan (per file)
+
+- `tests/pages/battleCLI.cliShortcutsFlag.test.js` — DONE
+  - Refactored to use `wireEvents()` and natural `window.dispatchEvent(new KeyboardEvent(...))` after module mocks are established.
+  - Avoids direct `onKeyDown` calls; asserts only observable behavior (`hidden` toggling).
+  - Fix for module-mocking order: import `wireEvents` lazily inside the test after `loadBattleCLI(...)` so `featureFlags` mocks apply before the event module loads.
+
+- `tests/classicBattle/page-scaffold.test.js`
+  - Promote to a minimal integration test that calls the real initializer (e.g. `init()` of classic battle) against the real `battleClassic.html` using JSDOM, then assert the runtime state of visible nodes (message/timer/score values), not just existence.
+
+- `tests/pages/battleCLI.standardDOM.test.js`
+  - Load `src/pages/battleCLI.html` and call `init()`; validate that the “standard scoreboard nodes” are revealed/hidden as the adapter initializes, and that ARIA attributes match after init. Avoid fabricating DOM by hand.
+
+- `tests/styles/battleContrast.test.js` and `tests/styles/battleCLI.focusContrast.test.js`
+  - Consolidate into a single data‑driven test verifying the required color pairs. Keep thresholds in one place; add a comment referencing the PRD/guide to reduce drift.
+
+Implementation notes
+- Prefer public helpers and exported functions over deep imports. For keyboard flows, prefer `wireEvents()` + native dispatch, or call exported `onKeyDown` directly when that function is the public API.
+- Use `vi.useFakeTimers()` where countdowns or delays are involved; drive time using `await vi.runAllTimersAsync()`.
+- Wrap expected errors/warnings with `withMutedConsole()`.
+
+### Next steps (status updated)
 
 1. **DONE:** Delete or archive the “Remove” tests after confirming no unique coverage is lost.
     - `tests/integration/manualDomComparison.test.js`
     - `tests/examples/testArchitectureDemo.test.js`
     - `tests/classicBattle/opponent-message-handler.simplified.test.js`
-2. **IN PROGRESS:** Create refactor tasks for each test flagged “Refactor”.
-    - **DONE:** `tests/integration/battleClassic.integration.test.js` - Refactored to a single, behavioral test verifying initial page state.
-    - **DONE:** `tests/pages/battleCLI.helpers.test.js` - Refactored to a set of focused, behavioral unit tests for the module's helpers.
+2. **IN PROGRESS:** Refactor items
+    - **DONE (validated):** `tests/integration/battleClassic.integration.test.js` — behavioral assertions against initialized page state.
+    - **DONE (validated):** `tests/pages/battleCLI.helpers.test.js` — focused behavioral tests for helpers with minimal mocking.
+    - **TODO:** Apply targeted plan above to the five flagged tests.
 3. Create refactor tasks for each remaining test flagged “Refactor”. Use the following template for each:
 
     **Refactor Test: `[Test File Path]`**
@@ -55,3 +84,22 @@ These tests tend to: duplicate coverage, assert incidental DOM structure, or foc
     - [ ] The test is deterministic and robust, using helpers like `withMutedConsole` and fake timers where appropriate.
 
 4. Re-run the test suite and measure improvements in run time and flakiness.
+
+### Verification checklist (commands)
+
+- Lint/format/jsdoc/tests/contrast:
+  - `npx prettier . --check`
+  - `npx eslint .`
+  - `npm run check:jsdoc`
+  - `npx vitest run`
+  - `npm run check:contrast`
+
+- Unit test quality spot checks:
+  - `grep -r "dispatchEvent\|createEvent" tests/ && echo "Found synthetic events"`
+  - `grep -r "console\.(warn\|error)" tests/ | grep -v "tests/utils/console.js" && echo "Unsilenced console found"`
+  - `grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "Found real timers"`
+
+Success criteria
+- Refactored tests assert behavior via public APIs and are deterministic with fake timers.
+- No unsilenced console warnings/errors in tests.
+- Net reduction in brittle, structure‑only assertions; equal or improved coverage.

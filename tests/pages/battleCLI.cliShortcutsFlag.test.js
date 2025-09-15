@@ -9,20 +9,23 @@ describe("battleCLI cliShortcuts flag", () => {
   it("does not toggle when cliShortcuts is disabled", async () => {
     const mod = await loadBattleCLI({ cliShortcuts: false });
     await mod.init();
+    const { wireEvents } = await import("../../src/pages/index.js");
+    wireEvents();
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(true);
-    const { onKeyDown } = await import("../../src/pages/index.js");
-    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    // Natural event dispatch through the global listener
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "h" }));
     expect(sec.hidden).toBe(true);
   });
 
   it("toggles when cliShortcuts is enabled", async () => {
     const mod = await loadBattleCLI({ cliShortcuts: true });
     await mod.init();
+    const { wireEvents } = await import("../../src/pages/index.js");
+    wireEvents();
     const sec = document.getElementById("cli-shortcuts");
     expect(sec.hidden).toBe(true);
-    const { onKeyDown } = await import("../../src/pages/index.js");
-    onKeyDown(new KeyboardEvent("keydown", { key: "h" }));
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "h" }));
     expect(sec.hidden).toBe(false);
   });
 });

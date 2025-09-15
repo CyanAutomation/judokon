@@ -266,13 +266,24 @@ function applyGameModePositioning(modal) {
   const backdrop = modal?.element;
   if (!backdrop) return;
 
+  const closedProp = "__roundSelectPositioningClosed";
+  if (backdrop[closedProp]) {
+    return;
+  }
+
   const datasetKey = "roundSelectModalActive";
+  const activeProp = "__roundSelectPositioningActive";
   const setActiveMarker = (value) => {
     try {
       backdrop.dataset[datasetKey] = value ? "true" : "false";
+      if (typeof window !== "undefined") {
+        window.__updateLog = window.__updateLog || [];
+        window.__updateLog.push({ mark: value ? "activate" : "deactivate" });
+      }
     } catch {}
   };
   setActiveMarker(true);
+  backdrop[activeProp] = true;
 
   const originalClose = typeof modal?.close === "function" ? modal.close.bind(modal) : null;
   const originalDestroy = typeof modal?.destroy === "function" ? modal.destroy.bind(modal) : null;
@@ -297,8 +308,17 @@ function applyGameModePositioning(modal) {
   let isActive = true;
   const updateInset = () => {
     if (!isActive) return;
+    if (!backdrop[activeProp]) return;
     if (backdrop.dataset?.[datasetKey] !== "true") return;
     try {
+      if (typeof window !== "undefined") {
+        window.__updateLog = window.__updateLog || [];
+        window.__updateLog.push({
+          active: isActive,
+          dataset: backdrop.dataset?.[datasetKey],
+          headerPresent: Boolean(headerRef)
+        });
+      }
       const h = headerRef?.offsetHeight;
       if (Number.isFinite(h) && h >= 0) {
         backdrop.style.setProperty("--modal-inset-top", `${h}px`);
@@ -344,6 +364,15 @@ function applyGameModePositioning(modal) {
     try {
       console.log("cleanup called", window?.__cleanupCallCount);
     } catch {}
+    if (typeof window !== "undefined") {
+      window.__updateLog = window.__updateLog || [];
+      window.__updateLog.push({
+        cleanup: true,
+        afterCount: window.__cleanupCallCount,
+        datasetValue: backdrop.dataset?.[datasetKey],
+        headerPresent: Boolean(headerRef)
+      });
+    }
     if (originalDispatchEvent) {
       try {
         backdrop.dispatchEvent = originalDispatchEvent;
@@ -362,6 +391,8 @@ function applyGameModePositioning(modal) {
       } catch {}
       resizeId = null;
     }
+    backdrop[activeProp] = false;
+    backdrop[closedProp] = true;
     headerRef = null;
   };
 
