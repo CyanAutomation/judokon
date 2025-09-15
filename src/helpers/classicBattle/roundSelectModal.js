@@ -326,9 +326,6 @@ function applyGameModePositioning(modal) {
         resizeId = null;
       }
     } catch {}
-    try {
-      backdrop.removeEventListener("close", cleanup);
-    } catch {}
   };
 
   try {
