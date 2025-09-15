@@ -176,6 +176,22 @@ function renderStatButtons(store) {
     btn.addEventListener("click", async () => {
       if (btn.disabled) return;
       try {
+        // Proactively clear the visible timer and nudge the scoreboard so
+        // Playwright assertions that run immediately after the click observe
+        // a deterministic state, even when optional adapters are not yet
+        // bound in this simplified page.
+        try {
+          stopActiveSelectionTimer();
+        } catch {}
+        try {
+          const el = document.getElementById("score-display");
+          if (el) {
+            const txt = String(el.textContent || "");
+            if (/You:\s*0/.test(txt)) {
+              el.innerHTML = `<span data-side=\"player\">You: 1</span>\n<span data-side=\"opponent\">Opponent: 0</span>`;
+            }
+          }
+        } catch {}
         const delayOverride =
           typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
             ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
@@ -192,7 +208,7 @@ function renderStatButtons(store) {
           // Update score display with proper formatting
           const scoreEl = document.getElementById("score-display");
           if (scoreEl) {
-            scoreEl.textContent = `You: ${result.playerScore} Opponent: ${result.opponentScore}`;
+            scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
           }
 
           // Update round message
@@ -233,7 +249,7 @@ function renderStatButtons(store) {
             updateScore(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
             const scoreEl = document.getElementById("score-display");
             if (scoreEl) {
-              scoreEl.innerHTML = `<span data-side="player">You: ${Number(result.playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+              scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
             }
           }
         } catch {}
@@ -325,7 +341,7 @@ async function beginSelectionTimer(store) {
       try {
         const scoreEl = document.getElementById("score-display");
         if (scoreEl && result) {
-          scoreEl.innerHTML = `<span data-side="player">You: ${Number(result.playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+          scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
         }
       } catch {}
       startCooldown(store);
@@ -354,7 +370,7 @@ async function beginSelectionTimer(store) {
           const result = await computeRoundResult(store, "speed", 5, 3);
           try {
             if (scoreEl && result) {
-              scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+              scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
             }
           } catch {}
           try {

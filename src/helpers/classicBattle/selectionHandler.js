@@ -1,4 +1,4 @@
-import { STATS, stopTimer } from "../battleEngineFacade.js";
+import { STATS, stopTimer, getScores } from "../battleEngineFacade.js";
 import { chooseOpponentStat } from "../api/battleUI.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
@@ -392,18 +392,14 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   // Robust scoreboard sync for E2E: reflect engine scores even when adapters
   // are not yet bound, so Playwright assertions observe the update
   try {
-    const [{ getScores }, { updateScore }] = await Promise.all([
-      import("../battleEngineFacade.js"),
-      import("../setupScoreboard.js")
-    ]);
     const { playerScore, opponentScore } = getScores();
     try {
-      updateScore(Number(playerScore) || 0, Number(opponentScore) || 0);
+      scoreboard.updateScore(Number(playerScore) || 0, Number(opponentScore) || 0);
     } catch {}
     try {
       const el = document.getElementById("score-display");
       if (el) {
-        el.innerHTML = `<span data-side="player">You: ${Number(playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(opponentScore) || 0}</span>`;
+        el.innerHTML = `<span data-side=\"player\">You: ${Number(playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(opponentScore) || 0}</span>`;
       }
     } catch {}
   } catch {}

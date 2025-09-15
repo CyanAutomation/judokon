@@ -111,7 +111,7 @@ export class ScoreboardView {
     try {
       const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
       if (IS_VITEST) {
-        this.scoreEl.innerHTML = `<span data-side="player">You: ${player}</span> <span data-side="opponent">Opponent: ${opponent}</span>`;
+        this.scoreEl.innerHTML = `<span data-side="player">You: ${player}</span>\n<span data-side="opponent">Opponent: ${opponent}</span>`;
         return;
       }
     } catch {}
@@ -121,14 +121,14 @@ export class ScoreboardView {
       reduce = !!shouldReduceMotionSync();
     } catch {}
     if (reduce) {
-      this.scoreEl.innerHTML = `<span data-side="player">You: ${player}</span> <span data-side="opponent">Opponent: ${opponent}</span>`;
+      this.scoreEl.innerHTML = `<span data-side="player">You: ${player}</span>\n<span data-side="opponent">Opponent: ${opponent}</span>`;
       return;
     }
     // Immediate set for determinism, optional animate when prior spans exist
     const playerSpan = this.scoreEl.querySelector('span[data-side="player"]');
     const opponentSpan = this.scoreEl.querySelector('span[data-side="opponent"]');
     const endVals = { p: Number(player) || 0, o: Number(opponent) || 0 };
-    this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span> <span data-side="opponent">Opponent: ${endVals.o}</span>`;
+    this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
     if (!playerSpan || !opponentSpan) return;
     const parse = (el) => {
       if (!el) return 0;
@@ -147,7 +147,7 @@ export class ScoreboardView {
       const k = Math.min(1, (now - t0) / duration);
       const curP = Math.round(startVals.p + (endVals.p - startVals.p) * k);
       const curO = Math.round(startVals.o + (endVals.o - startVals.o) * k);
-      this.scoreEl.innerHTML = `<span data-side="player">You: ${curP}</span> <span data-side="opponent">Opponent: ${curO}</span>`;
+      this.scoreEl.innerHTML = `<span data-side="player">You: ${curP}</span>\n<span data-side="opponent">Opponent: ${curO}</span>`;
       if (k < 1) {
         this._scoreRaf = requestAnimationFrame(step);
       }

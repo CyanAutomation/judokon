@@ -231,7 +231,7 @@ export async function updateScoreboard(result) {
     try {
       const scoreEl = document.querySelector("header #score-display");
       if (scoreEl) {
-        scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+        scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
       }
     } catch {}
   }
@@ -240,7 +240,7 @@ export async function updateScoreboard(result) {
   try {
     const scoreEl = document.querySelector("header #score-display");
     if (scoreEl) {
-      scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+      scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
     }
   } catch {}
 
