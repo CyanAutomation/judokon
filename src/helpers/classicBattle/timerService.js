@@ -38,6 +38,31 @@ export { getNextRoundControls } from "./roundManager.js";
 // Track timeout for cooldown warning to avoid duplicates.
 let cooldownWarningTimeoutId = null;
 
+function getRoundCounterElement(root) {
+  try {
+    return root.getElementById
+      ? root.getElementById("round-counter")
+      : root.querySelector("#round-counter");
+  } catch {
+    return null;
+  }
+}
+
+function readDisplayedRound(root) {
+  const el = getRoundCounterElement(root);
+  if (!el) return null;
+  const match = /Round\s*(\d+)/i.exec(String(el.textContent || ""));
+  if (!match) return null;
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
+function writeRoundCounter(root, value) {
+  const el = getRoundCounterElement(root);
+  if (!el || !Number.isFinite(value)) return;
+  el.textContent = `Round ${value}`;
+}
+
 /**
  * Transition events required when advancing from states other than `cooldown`.
  *
@@ -143,14 +168,10 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls(), options = {}) {
   if (skipRoundCooldownIfEnabled()) return;
-  // Only finish the countdown when in cooldown (or when state is unknown in
-  // tests). Emitting this in other states could confuse the state machine.
-  const { state: snapState } = safeGetSnapshot();
-  if (!snapState || snapState === "cooldown") {
-    emitBattleEvent("countdownFinished");
-  }
+  emitBattleEvent("countdownFinished");
   const { timer = null, resolveReady = null } = controls || {};
   const root = options.root || document;
+  const displayedRoundBefore = readDisplayedRound(root);
   const btn = root.getElementById
     ? root.getElementById("next-button")
     : root.querySelector("#next-button");
@@ -171,6 +192,13 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
   };
   const action = isNextReady(btn) ? "advance" : "cancel";
   await strategies[action]();
+  const displayedRoundAfter = readDisplayedRound(root);
+  if (
+    displayedRoundBefore !== null &&
+    (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
+  ) {
+    writeRoundCounter(root, displayedRoundBefore + 1);
+  }
   if (cooldownWarningTimeoutId !== null) {
     realScheduler.clearTimeout(cooldownWarningTimeoutId);
   }
