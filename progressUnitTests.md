@@ -10,17 +10,15 @@ The list below shows the lowest-scoring tests according to the rubric (each cate
 
 | # | Test file | Intent clarity | Behavioral relevance | Assertion quality | Isolation & robustness | Cost vs coverage | Total | Action |
 |---:|---|:--:|:--:|:--:|:--:|:--:|:--:|---|
-| 1 | `tests/integration/battleClassic.integration.test.js` | 1 | 1 | 1 | 1 | 0 | 4 | **Refactor** (assert behavior, not just existence) or remove |
-| 2 | `tests/pages/battleCLI.helpers.test.js` | 1 | 1 | 1 | 1 | 0 | 4 | **Refactor** (focus on observable output, not mocks) |
-| 3 | `tests/pages/battleCLI.cliShortcutsFlag.test.js` | 2 | 1 | 1 | 1 | 0 | 5 | Refactor |
-| 4 | `tests/classicBattle/page-scaffold.test.js` | 2 | 1 | 1 | 1 | 0 | 5 | Refactor |
-| 5 | `tests/pages/battleCLI.standardDOM.test.js` | 2 | 1 | 1 | 2 | 0 | 6 | Refactor |
-| 6 | `tests/styles/battleContrast.test.js` | 2 | 1 | 1 | 2 | 0 | 6 | Refactor |
-| 7 | `tests/styles/battleCLI.focusContrast.test.js` | 2 | 1 | 2 | 2 | 0 | 7 | Refactor |
+| 1 | `tests/pages/battleCLI.helpers.test.js` | 1 | 1 | 1 | 1 | 0 | 4 | **Refactor** (focus on observable output, not mocks) |
+| 2 | `tests/pages/battleCLI.cliShortcutsFlag.test.js` | 2 | 1 | 1 | 1 | 0 | 5 | Refactor |
+| 3 | `tests/classicBattle/page-scaffold.test.js` | 2 | 1 | 1 | 1 | 0 | 5 | Refactor |
+| 4 | `tests/pages/battleCLI.standardDOM.test.js` | 2 | 1 | 1 | 2 | 0 | 6 | Refactor |
+| 5 | `tests/styles/battleContrast.test.js` | 2 | 1 | 1 | 2 | 0 | 6 | Refactor |
+| 6 | `tests/styles/battleCLI.focusContrast.test.js` | 2 | 1 | 2 | 2 | 0 | 7 | Refactor |
 
 ### Notes on selected tests
 
-- `tests/integration/battleClassic.integration.test.js` — Loads full HTML and logs internal state but only asserts element existence. **This is a high-cost, low-value integration test. It should be refactored to assert meaningful user-facing behavior or replaced with a more focused Playwright test.**
 - `tests/pages/battleCLI.helpers.test.js` — Heavily mocked; asserts implementation details instead of user-observable outcomes. **This test is a prime candidate for refactoring to focus on the public contract of the helpers, not their internal wiring.**
 
 These tests tend to: duplicate coverage, assert incidental DOM structure, or focus on internal wiring rather than observable contracts.
@@ -40,7 +38,9 @@ These tests tend to: duplicate coverage, assert incidental DOM structure, or foc
     *   `tests/integration/manualDomComparison.test.js`
     *   `tests/examples/testArchitectureDemo.test.js`
     *   `tests/classicBattle/opponent-message-handler.simplified.test.js`
-2.  Create refactor tasks for each test flagged “Refactor”. Use the following template for each:
+2.  **IN PROGRESS:** Create refactor tasks for each test flagged “Refactor”.
+    *   **DONE:** `tests/integration/battleClassic.integration.test.js` - Refactored to a single, behavioral test verifying initial page state.
+3.  Create refactor tasks for each remaining test flagged “Refactor”. Use the following template for each:
     ```
     **Refactor Test: `[Test File Path]`**
 
@@ -54,6 +54,4 @@ These tests tend to: duplicate coverage, assert incidental DOM structure, or foc
     - [ ] Mocks are minimized, and the test interacts with the component through its public API.
     - [ ] The test is deterministic and robust, using helpers like `withMutedConsole` and fake timers where appropriate.
     ```
-3.  Re-run the test suite and measure improvements in run time and flakiness.
-
-If you want, I can create a small PR that removes the truly redundant tests and opens issues for the refactors with suggested acceptance criteria.
+4.  Re-run the test suite and measure improvements in run time and flakiness.

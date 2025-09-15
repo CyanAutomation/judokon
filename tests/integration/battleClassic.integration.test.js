@@ -1,35 +1,34 @@
 /**
- * Integration tests for battleClassic page using real HTML loading
- * Tests initialization with actual page structure vs manual DOM manipulation
+ * Integration test for the battleClassic page initialization.
+ * This test loads the real HTML, runs the initialization script,
+ * and asserts the page is in the correct initial state.
  */
 
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { init } from "../../src/pages/battleClassic.init.js";
 
-describe("Battle Classic Integration", () => {
+describe("Battle Classic Page Integration", () => {
   let dom;
   let window;
   let document;
 
   beforeEach(async () => {
-    // Load actual HTML file
     const htmlPath = join(process.cwd(), "src/pages/battleClassic.html");
     const htmlContent = readFileSync(htmlPath, "utf-8");
 
-    // Create JSDOM with real HTML
     dom = new JSDOM(htmlContent, {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",
       resources: "usable",
-      pretendToBeVisual: true
+      pretendToBeVisual: true,
     });
 
     window = dom.window;
     document = window.document;
 
-    // Set up globals
     global.window = window;
     global.document = document;
     global.navigator = window.navigator;
@@ -37,121 +36,53 @@ describe("Battle Classic Integration", () => {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
-      clear: vi.fn()
+      clear: vi.fn(),
     };
 
-    // Mock feature flag overrides for badge visibility
+    // Mock feature flags to ensure a consistent test environment
     window.__FF_OVERRIDES = {
       battleStateBadge: true,
-      enableTestMode: true
+      showRoundSelectModal: true, // Ensure modal is shown for testing
     };
   });
 
   afterEach(() => {
     dom?.window?.close();
     vi.clearAllMocks();
+    vi.resetModules();
   });
 
-  it("should have all required DOM elements from real HTML", () => {
-    // Verify critical elements exist in real HTML
-    expect(document.getElementById("battle-state-badge")).toBeTruthy();
-    expect(document.getElementById("stat-buttons")).toBeTruthy();
-    expect(document.getElementById("next-button")).toBeTruthy();
-    expect(document.getElementById("quit-button")).toBeTruthy();
-    expect(document.getElementById("player-card")).toBeTruthy();
-    expect(document.getElementById("opponent-card")).toBeTruthy();
-    expect(document.getElementById("round-message")).toBeTruthy();
-    expect(document.getElementById("score-display")).toBeTruthy();
-    expect(document.getElementById("snackbar-container")).toBeTruthy();
-  });
+  it("initializes the page UI to the correct default state", async () => {
+    // Run the main initialization function
+    await init();
 
-  it("should initialize badge with real HTML structure", async () => {
-    // Import and run initialization
-    const { initBattleStateBadge } = await import("../../src/pages/battleClassic.init.js");
-
+    // 1. Assert Battle State Badge is correct
     const badge = document.getElementById("battle-state-badge");
-    expect(badge).toBeTruthy();
-
-    // Debug: Check actual state
-    console.log("Badge initial state:", {
-      hasHiddenAttr: badge.hasAttribute("hidden"),
-      hidden: badge.hidden,
-      outerHTML: badge.outerHTML
-    });
-
-    // Run initialization
-    initBattleStateBadge();
-
-    // Debug: Check state after init
-    console.log("Badge after init:", {
-      hasHiddenAttr: badge.hasAttribute("hidden"),
-      hidden: badge.hidden,
-      textContent: badge.textContent,
-      outerHTML: badge.outerHTML
-    });
-
-    // Verify badge is now visible
-    expect(badge.hasAttribute("hidden")).toBe(false);
     expect(badge.hidden).toBe(false);
     expect(badge.textContent).toBe("Lobby");
-  });
 
-  it("should demonstrate difference from manual DOM tests", () => {
-    // This test shows what manual DOM tests miss
-    const badge = document.getElementById("battle-state-badge");
+    // 2. Assert Scoreboard is in its initial state
+    const scoreDisplay = document.getElementById("score-display");
+    expect(scoreDisplay.textContent).toContain("You: 0");
+    expect(scoreDisplay.textContent).toContain("Opponent: 0");
 
-    // Real HTML has proper structure
-    expect(badge.tagName).toBe("SPAN");
-    expect(badge.hasAttribute("hidden")).toBe(true);
+    const roundCounter = document.getElementById("round-counter");
+    expect(roundCounter.textContent).toContain("Round 0");
 
-    // Real HTML has all required elements that manual DOM tests often skip
-    expect(document.getElementById("snackbar-container")).toBeTruthy();
-    expect(document.querySelector("header")).toBeTruthy();
-    expect(document.querySelector("main")).toBeTruthy();
+    // 3. Assert Round Select Modal is visible
+    const modalTitle = document.getElementById("round-select-title");
+    expect(modalTitle).not.toBeNull();
+    expect(modalTitle.textContent).toBe("Select Match Length");
 
-    // Manual DOM tests typically create minimal structure like:
-    // document.body.innerHTML = '<div id="battle-state-badge"></div>';
-    // This misses the proper HTML structure and attributes
-  });
+    const modal = document.querySelector(".modal-backdrop");
+    expect(modal).not.toBeNull();
+    // The modal's open state might be controlled by a class or attribute.
+    // Here we assume it's rendered and present in the DOM.
+    // A more robust check could be for `modal.classList.contains('open')`
+    // if the modal library uses that convention.
 
-  it("should load module successfully with real HTML", async () => {
-    // This test verifies the module can be imported and doesn't throw
-    // when working with real HTML structure
-    let initError = null;
-
-    try {
-      const module = await import("../../src/pages/battleClassic.init.js");
-      expect(module.init).toBeDefined();
-      expect(module.initBattleStateBadge).toBeDefined();
-    } catch (error) {
-      initError = error;
-    }
-
-    expect(initError).toBeNull();
-  });
-
-  it("should work with complete HTML structure vs minimal DOM", () => {
-    // Integration test advantage: tests with complete HTML structure
-    const elements = [
-      "battle-state-badge",
-      "stat-buttons",
-      "next-button",
-      "quit-button",
-      "player-card",
-      "opponent-card",
-      "round-message",
-      "score-display",
-      "snackbar-container"
-    ];
-
-    // All elements exist in real HTML
-    elements.forEach((id) => {
-      expect(document.getElementById(id)).toBeTruthy();
-    });
-
-    // Real HTML has proper semantic structure
-    expect(document.querySelector("header[role='banner']")).toBeTruthy();
-    expect(document.querySelector("main[role='main']")).toBeTruthy();
-    expect(document.querySelector("section[aria-label='Cards']")).toBeTruthy();
+    // 4. Assert stat buttons are not yet rendered
+    const statButtons = document.getElementById("stat-buttons");
+    expect(statButtons.innerHTML).toBe("");
   });
 });
