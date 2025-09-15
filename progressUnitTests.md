@@ -75,10 +75,14 @@ Implementation notes
     - `tests/integration/manualDomComparison.test.js`
     - `tests/examples/testArchitectureDemo.test.js`
     - `tests/classicBattle/opponent-message-handler.simplified.test.js`
-2. **IN PROGRESS:** Refactor items
+2. **DONE:** Refactor items
     - **DONE (validated):** `tests/integration/battleClassic.integration.test.js` — behavioral assertions against initialized page state.
     - **DONE (validated):** `tests/pages/battleCLI.helpers.test.js` — focused behavioral tests for helpers with minimal mocking.
-    - **TODO:** Apply targeted plan above to the five flagged tests.
+    - **DONE (validated):** `tests/pages/battleCLI.cliShortcutsFlag.test.js`
+    - **DONE (validated):** `tests/classicBattle/page-scaffold.test.js`
+    - **DONE (validated):** `tests/pages/battleCLI.standardDOM.test.js`
+    - **DONE (validated):** `tests/styles/battleContrast.test.js`
+    - **DONE (validated):** `tests/styles/battleCLI.focusContrast.test.js`
 3. Create refactor tasks for each remaining test flagged “Refactor”. Use the following template for each:
 
     **Refactor Test: `[Test File Path]`**
