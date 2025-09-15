@@ -40,10 +40,11 @@ Conclusion: Findings align with your scoring. Actions should focus on making the
 
 ### Targeted refactor plan (per file)
 
-- `tests/pages/battleCLI.cliShortcutsFlag.test.js` — DONE
-  - Refactored to use `wireEvents()` and natural `window.dispatchEvent(new KeyboardEvent(...))` after module mocks are established.
-  - Avoids direct `onKeyDown` calls; asserts only observable behavior (`hidden` toggling).
-  - Fix for module-mocking order: import `wireEvents` lazily inside the test after `loadBattleCLI(...)` so `featureFlags` mocks apply before the event module loads.
+- `tests/pages/battleCLI.cliShortcutsFlag.test.js`
+  - Replace `import("../../src/pages/index.js")` and manual `KeyboardEvent` dispatch with invoking the public CLI key handler:
+    - Import `onKeyDown` from `src/pages/battleCLI/events.js`, or call `wireEvents()` from `src/pages/battleCLI/init.js` and dispatch a real keydown on `window`.
+    - Keep assertions to observable outcomes: section visibility via `hidden`, focus target, or hint text.
+  - Consider parameterizing flag state via feature flag overrides instead of mocking unrelated entrypoints.
 
 - `tests/classicBattle/page-scaffold.test.js`
   - Promote to a minimal integration test that calls the real initializer (e.g. `init()` of classic battle) against the real `battleClassic.html` using JSDOM, then assert the runtime state of visible nodes (message/timer/score values), not just existence.
@@ -55,6 +56,7 @@ Conclusion: Findings align with your scoring. Actions should focus on making the
   - Consolidate into a single data‑driven test verifying the required color pairs. Keep thresholds in one place; add a comment referencing the PRD/guide to reduce drift.
 
 Implementation notes
+
 - Prefer public helpers and exported functions over deep imports. For keyboard flows, prefer `wireEvents()` + native dispatch, or call exported `onKeyDown` directly when that function is the public API.
 - Use `vi.useFakeTimers()` where countdowns or delays are involved; drive time using `await vi.runAllTimersAsync()`.
 - Wrap expected errors/warnings with `withMutedConsole()`.
@@ -100,6 +102,7 @@ Implementation notes
   - `grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "Found real timers"`
 
 Success criteria
+
 - Refactored tests assert behavior via public APIs and are deterministic with fake timers.
 - No unsilenced console warnings/errors in tests.
 - Net reduction in brittle, structure‑only assertions; equal or improved coverage.
