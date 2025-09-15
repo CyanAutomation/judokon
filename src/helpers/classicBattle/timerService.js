@@ -203,7 +203,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>} onExpiredSelect
  * - Callback to handle stat auto-selection.
  * @param {{selectionMade?: boolean}|null} [store=null] - Battle state store.
- * @returns {Promise<void>} Resolves when the timer begins.
+ * @returns {Promise<ReturnType<typeof createRoundTimer>>} Resolves with timer controls.
  */
 export async function startTimer(onExpiredSelect, store = null) {
   let duration = 30;
@@ -327,6 +327,7 @@ export async function startTimer(onExpiredSelect, store = null) {
 
   timer.start(duration);
   restore();
+  return timer;
 }
 
 /**
