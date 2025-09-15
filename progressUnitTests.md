@@ -60,8 +60,8 @@ Conclusion: Findings align with your scoring. Actions should focus on making the
   - Converted to a single data‑driven test with a shared AA text threshold (>= 4.5) and palette references.
   - Rationale: centralized thresholds and easier maintenance.
 
-- `tests/styles/battleCLI.focusContrast.test.js`
-  - Leave as‑is for now; consider consolidation later with battleContrast cases.
+- `tests/styles/battleCLI.focusContrast.test.js` — DONE
+  - Refactored to a data‑driven table using shared WCAG AA thresholds for non‑text (>= 3.0) and text (>= 4.5). Centralizes constants and reduces duplication.
 
 Implementation notes
 
