@@ -279,7 +279,9 @@ function applyGameModePositioning(modal) {
 
   if (!header) return;
 
+  let isActive = true;
   const updateInset = () => {
+    if (!isActive) return;
     try {
       const h = header.offsetHeight;
       if (Number.isFinite(h) && h >= 0) {
@@ -294,7 +296,6 @@ function applyGameModePositioning(modal) {
 
   // Track resize/orientation while modal is mounted; clean up on close
   let resizeId = null;
-  let isActive = true;
   const raf =
     typeof requestAnimationFrame === "function" ? requestAnimationFrame : (cb) => setTimeout(cb, 0);
   const caf =
