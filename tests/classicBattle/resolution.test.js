@@ -39,9 +39,9 @@ describe("Classic Battle round resolution", () => {
           loop();
         });
       const btn = await waitForBtn();
-      btn.click();
 
       vi.useFakeTimers();
+      btn.click();
       vi.advanceTimersByTime(1200);
       await roundResolvedPromise;
 
