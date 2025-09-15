@@ -320,16 +320,21 @@ function applyGameModePositioning(modal) {
     if (!isActive) return;
     isActive = false;
     try {
+      backdrop.removeEventListener("close", cleanup);
+    } catch {}
+    try {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
-      if (resizeId !== null) {
-        caf(resizeId);
-        resizeId = null;
-      }
     } catch {}
+    if (resizeId !== null) {
+      try {
+        caf(resizeId);
+      } catch {}
+      resizeId = null;
+    }
   };
 
   try {
-    backdrop.addEventListener("close", cleanup, { once: true });
+    backdrop.addEventListener("close", cleanup);
   } catch {}
 }
