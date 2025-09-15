@@ -6,6 +6,9 @@ test.describe("Classic Battle page scaffold", () => {
     page.on("console", (msg) => {
       if (msg.type() === "error") errors.push(msg.text() + " at " + msg.location().url);
     });
+    await page.route("https://js-de.sentry-cdn.com/**", (route) =>
+      route.fulfill({ body: "", contentType: "application/javascript" })
+    );
     await page.goto("/src/pages/battleClassic.html");
 
     await expect(page.locator("header #round-message")).toBeVisible();
