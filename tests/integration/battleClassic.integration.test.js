@@ -23,7 +23,7 @@ describe("Battle Classic Page Integration", () => {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",
       resources: "usable",
-      pretendToBeVisual: true,
+      pretendToBeVisual: true
     });
 
     window = dom.window;
@@ -36,13 +36,13 @@ describe("Battle Classic Page Integration", () => {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
-      clear: vi.fn(),
+      clear: vi.fn()
     };
 
     // Mock feature flags to ensure a consistent test environment
     window.__FF_OVERRIDES = {
       battleStateBadge: true,
-      showRoundSelectModal: true, // Ensure modal is shown for testing
+      showRoundSelectModal: true // Ensure modal is shown for testing
     };
   });
 

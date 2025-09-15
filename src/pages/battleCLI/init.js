@@ -1934,8 +1934,8 @@ export function subscribeEngine() {
     if (typeof engineFacade.on === "function") {
       engineFacade.on("timerTick", ({ remaining, phase }) => {
         if (phase === "round") {
-          const el = byId("cli-timer");
-          if (el) el.textContent = String(remaining);
+          const el = byId("cli-countdown");
+          if (el) el.textContent = `Time remaining: ${remaining}`;
         }
       });
       engineFacade.on("matchEnded", ({ outcome }) => {

@@ -2,18 +2,18 @@
 
 This file lists the Playwright specs that currently provide the least value for their cost. Use it to prioritize removal, consolidation, or refactor work.
 
-| Rank | File | Score (0–10) | Action | Intent | Relevance | Assertion | Robustness | Cost | Duration (ms) | Quick fix |
-|---:|---|:--:|---|:--:|:--:|:--:|:--:|:--:|:--:|---|
-| 1 | `battle-cli.spec.js` | 3 | REMOVE / MERGE | 1 | 1 | 1 | 0 | 0 | 60,151 | Drop waitForTimeout(500), switch CSS locators to getByRole/getByTestId, and split the flow into smaller specs to trim runtime.
-| 2 | `debug-settings-click.spec.js` | 4 | REMOVE / MERGE | 2 | 1 | 0 | 0 | 1 | 0 | Add semantic expects for the "Restore Defaults" button and replace waitForTimeout with auto‑waiting locators.
-| 3 | `debug-stat-loading.spec.js` | 4 | REMOVE / MERGE | 2 | 1 | 0 | 0 | 1 | 0 | Add assertions verifying stat list population and drop the 3s waitForTimeout in favor of expect‑based waits.
-| 4 | `orchestrator-debug.spec.js` | 4 | REMOVE / MERGE | 1 | 1 | 1 | 0 | 1 | 5,430 | Replace placeholder `expect(true).toBe(true)` with real checks and remove the 5s timeout.
-| 5 | `battle-classic/replay.spec.js` | 5 | REFACTOR | 1 | 1 | 1 | 0 | 2 | 1,475 | Swap waitForTimeout/waitForSelector for expect‑based waits and prefer role/test‑id selectors.
-| 6 | `win-target-sync.spec.js` | 5 | REFACTOR | 2 | 1 | 1 | 0 | 1 | 0 | Eliminate repeated waitForTimeout(500) calls, rely on auto‑wait, and stabilize locators for CI.
-| 7 | `static-pages.spec.js` | 6 | REFACTOR | 1 | 1 | 0 | 2 | 2 | 1,371 | Add assertions (e.g., `toHaveURL`, `toContainText`) so the test validates page content instead of only navigating.
-| 8 | `battle-classic/timer-clearing.spec.js` | 6 | REFACTOR | 2 | 1 | 1 | 0 | 2 | 2,585 | Replace timeouts and selectors with expect‑based waits; convert CSS selectors to `getByRole`/`getByTestId`.
-| 9 | `battle-classic/stat-selection.spec.js` | 6 | REFACTOR | 2 | 1 | 1 | 0 | 2 | 2,571 | Remove waitForTimeout/waitForSelector and assert selection via accessible locators.
-| 10 | `battle-classic/cooldown.spec.js` | 6 | REFACTOR | 2 | 1 | 1 | 0 | 2 | 2,389 | Use auto‑waiting expectations for cooldown transitions and replace ad‑hoc CSS selectors with semantic ones.
+| Rank | File                                    | Score (0–10) | Action         | Intent | Relevance | Assertion | Robustness | Cost | Duration (ms) | Quick fix                                                                                                                      |
+| ---: | --------------------------------------- | :----------: | -------------- | :----: | :-------: | :-------: | :--------: | :--: | :-----------: | ------------------------------------------------------------------------------------------------------------------------------ |
+|    1 | `battle-cli.spec.js`                    |      3       | REMOVE / MERGE |   1    |     1     |     1     |     0      |  0   |    60,151     | Drop waitForTimeout(500), switch CSS locators to getByRole/getByTestId, and split the flow into smaller specs to trim runtime. |
+|    2 | `debug-settings-click.spec.js`          |      4       | REMOVE / MERGE |   2    |     1     |     0     |     0      |  1   |       0       | Add semantic expects for the "Restore Defaults" button and replace waitForTimeout with auto‑waiting locators.                  |
+|    3 | `debug-stat-loading.spec.js`            |      4       | REMOVE / MERGE |   2    |     1     |     0     |     0      |  1   |       0       | Add assertions verifying stat list population and drop the 3s waitForTimeout in favor of expect‑based waits.                   |
+|    4 | `orchestrator-debug.spec.js`            |      4       | REMOVE / MERGE |   1    |     1     |     1     |     0      |  1   |     5,430     | Replace placeholder `expect(true).toBe(true)` with real checks and remove the 5s timeout.                                      |
+|    5 | `battle-classic/replay.spec.js`         |      5       | REFACTOR       |   1    |     1     |     1     |     0      |  2   |     1,475     | Swap waitForTimeout/waitForSelector for expect‑based waits and prefer role/test‑id selectors.                                  |
+|    6 | `win-target-sync.spec.js`               |      5       | REFACTOR       |   2    |     1     |     1     |     0      |  1   |       0       | Eliminate repeated waitForTimeout(500) calls, rely on auto‑wait, and stabilize locators for CI.                                |
+|    7 | `static-pages.spec.js`                  |      6       | REFACTOR       |   1    |     1     |     0     |     2      |  2   |     1,371     | Add assertions (e.g., `toHaveURL`, `toContainText`) so the test validates page content instead of only navigating.             |
+|    8 | `battle-classic/timer-clearing.spec.js` |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     2,585     | Replace timeouts and selectors with expect‑based waits; convert CSS selectors to `getByRole`/`getByTestId`.                    |
+|    9 | `battle-classic/stat-selection.spec.js` |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     2,571     | Remove waitForTimeout/waitForSelector and assert selection via accessible locators.                                            |
+|   10 | `battle-classic/cooldown.spec.js`       |      6       | REFACTOR       |   2    |     1     |     1     |     0      |  2   |     2,389     | Use auto‑waiting expectations for cooldown transitions and replace ad‑hoc CSS selectors with semantic ones.                    |
 
 ### Summary & repo-wide guidance
 

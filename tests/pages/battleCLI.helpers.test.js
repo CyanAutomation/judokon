@@ -1,78 +1,103 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { JSDOM } from "jsdom";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { init } from "../../src/pages/battleCLI/init.js";
 
-beforeEach(() => {
-  document.body.innerHTML = "";
-  vi.resetModules();
-  vi.clearAllMocks();
-  // prevent auto-init side effects during tests
-  // @ts-ignore
-  window.__TEST__ = true;
-});
+describe("Battle CLI Page Helpers", () => {
+  let dom;
+  let window;
+  let document;
+  let engineEmitter;
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-  // cleanup test flag
-  // @ts-ignore
-  delete window.__TEST__;
-});
+  beforeEach(async () => {
+    const htmlPath = join(process.cwd(), "src/pages/battleCLI.html");
+    const htmlContent = readFileSync(htmlPath, "utf-8");
 
-describe("battleCLI helper exports", () => {
-  it("setupFlags toggles verbose", async () => {
-    document.body.innerHTML = `
-      <div id="cli-root" data-round="0"></div>
-      <section id="cli-verbose-section" hidden></section>
-      <input id="verbose-toggle" type="checkbox" />
-      <div id="cli-shortcuts"><button id="cli-shortcuts-close"></button></div>
-      <div id="cli-verbose-log"></div>`;
-    const emitter = new EventTarget();
-    const setFlag = vi.fn();
-    vi.stubGlobal("location", new URL("http://localhost"));
-    vi.doMock("../../src/helpers/featureFlags.js", () => ({
-      initFeatureFlags: vi.fn(),
-      isEnabled: vi.fn(() => false),
-      setFlag,
-      featureFlagsEmitter: emitter
-    }));
-    vi.doMock("../../src/helpers/classicBattle/battleDebug.js", () => ({
-      getStateSnapshot: vi.fn(() => ({ state: "idle" }))
-    }));
-    vi.doMock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
-      updateBattleStateBadge: vi.fn(),
-      skipRoundCooldownIfEnabled: vi.fn()
-    }));
+    dom = new JSDOM(htmlContent, {
+      url: "http://localhost:3000/battleCLI.html",
+      runScripts: "dangerously",
+      resources: "usable",
+      pretendToBeVisual: true,
+    });
+
+    window = dom.window;
+    document = window.document;
+
+    global.window = window;
+    global.document = document;
+    global.navigator = window.navigator;
+    global.localStorage = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+
+    window.__FF_OVERRIDES = {
+      cliShortcuts: true,
+    };
+
+    engineEmitter = new EventTarget();
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+      on: (event, callback) => engineEmitter.addEventListener(event, (e) => callback(e.detail)),
+      createBattleEngine: vi.fn(),
       getPointsToWin: vi.fn(() => 5),
-      setPointsToWin: vi.fn()
+      setPointsToWin: vi.fn(),
     }));
-    vi.doMock("../../src/helpers/classicBattle/orchestratorHandlers.js", () => ({
-      setAutoContinue: vi.fn()
-    }));
-    const mod = await import("../../src/pages/index.js");
-    const { toggleVerbose } = await mod.setupFlags();
-    await toggleVerbose(true);
-    expect(setFlag).toHaveBeenCalledWith("cliVerbose", true);
-    expect(document.getElementById("cli-verbose-section").hidden).toBe(false);
+
+    await init();
   });
 
-  it("wireEvents attaches listeners", async () => {
-    const addWin = vi.spyOn(window, "addEventListener");
-    const addDoc = vi.spyOn(document, "addEventListener");
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      onBattleEvent: vi.fn(),
-      emitBattleEvent: vi.fn()
-    }));
-    const mod = await import("../../src/pages/index.js");
-    mod.wireEvents();
-    expect(addWin).toHaveBeenCalledWith("keydown", expect.any(Function));
-    expect(addDoc).toHaveBeenCalledWith("click", expect.any(Function));
+  afterEach(() => {
+    dom?.window?.close();
+    vi.clearAllMocks();
+    vi.resetModules();
   });
 
-  it("subscribeEngine wires engine events", async () => {
-    const on = vi.fn();
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({ on }));
-    const mod = await import("../../src/pages/index.js");
-    mod.subscribeEngine();
-    expect(on).toHaveBeenCalledWith("timerTick", expect.any(Function));
-    expect(on).toHaveBeenCalledWith("matchEnded", expect.any(Function));
+  it("toggles the verbose section when the checkbox is clicked", () => {
+    const verboseToggle = document.getElementById("verbose-toggle");
+    const verboseSection = document.getElementById("cli-verbose-section");
+    expect(verboseSection.hidden).toBe(true);
+
+    verboseToggle.click();
+
+    expect(verboseSection.hidden).toBe(false);
+
+    verboseToggle.click();
+
+    expect(verboseSection.hidden).toBe(true);
+  });
+
+  it("toggles the help section when the 'h' key is pressed", () => {
+    const shortcutsSection = document.getElementById("cli-shortcuts");
+    expect(shortcutsSection.hidden).toBe(true);
+
+    const keydownEvent = new window.KeyboardEvent("keydown", { key: "h" });
+    window.dispatchEvent(keydownEvent);
+
+    expect(shortcutsSection.hidden).toBe(false);
+
+    window.dispatchEvent(keydownEvent);
+
+    expect(shortcutsSection.hidden).toBe(true);
+  });
+
+  it("updates the timer display on a timerTick engine event", () => {
+    const countdownDisplay = document.getElementById("cli-countdown");
+    expect(countdownDisplay.textContent).toBe("");
+
+    engineEmitter.dispatchEvent(new CustomEvent("timerTick", { detail: { remaining: 5, phase: "round" } }));
+
+    expect(countdownDisplay.textContent).toBe("Time remaining: 5");
+  });
+
+  it("displays the match ended message on a matchEnded engine event", () => {
+    const roundMessage = document.getElementById("round-message");
+    expect(roundMessage.textContent).toBe("");
+
+    engineEmitter.dispatchEvent(new CustomEvent("matchEnded", { detail: { outcome: "playerWin" } }));
+
+    expect(roundMessage.textContent).toContain("Match over: playerWin");
   });
 });
