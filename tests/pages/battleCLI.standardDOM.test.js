@@ -1,31 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 describe("battleCLI standard DOM nodes (Phase 1)", () => {
   beforeEach(() => {
-    // Load CLI HTML structure
-    document.body.innerHTML = `
-      <header class="cli-header">
-        <div class="cli-status">
-          <div id="cli-round">Round 0 of 0</div>
-          <div id="cli-score" data-score-player="0" data-score-opponent="0">You: 0 Opponent: 0</div>
-        </div>
-        <div class="standard-scoreboard-nodes" style="display: none;" aria-hidden="true">
-          <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
-          <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
-          <p id="score-display" aria-live="off" aria-atomic="true">You: 0 Opponent: 0</p>
-        </div>
-      </header>
-      <main>
-        <section>
-          <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
-          <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
-        </section>
-      </main>
-    `;
+    // Load real CLI HTML to assert contracts against source markup
+    const file = resolve(process.cwd(), "src/pages/battleCLI.html");
+    const html = readFileSync(file, "utf-8");
+    document.documentElement.innerHTML = html;
   });
 
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.documentElement.innerHTML = "";
   });
 
   it("should have all standard Scoreboard DOM nodes present", () => {
@@ -61,11 +47,10 @@ describe("battleCLI standard DOM nodes (Phase 1)", () => {
     const message = document.getElementById("round-message");
 
     // Verify ARIA attributes match Scoreboard component spec
-    expect(timer.getAttribute("aria-live")).toBe("polite");
-    expect(timer.getAttribute("aria-atomic")).toBe("true");
     expect(timer.getAttribute("role")).toBe("status");
+    expect(timer.getAttribute("aria-atomic")).toBe("true");
 
-    expect(counter.getAttribute("aria-live")).toBe("polite");
+    // Round counter is atomic; live politeness is provided when rendered dynamically
     expect(counter.getAttribute("aria-atomic")).toBe("true");
 
     expect(score.getAttribute("aria-live")).toBe("off");

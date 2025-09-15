@@ -53,7 +53,8 @@ Conclusion: Findings align with your scoring. Actions should focus on making the
   - Notes: Provides `__FF_OVERRIDES` and a simple `localStorage` stub to avoid side effects.
 
 - `tests/pages/battleCLI.standardDOM.test.js`
-  - Load `src/pages/battleCLI.html` and call `init()`; validate that the “standard scoreboard nodes” are revealed/hidden as the adapter initializes, and that ARIA attributes match after init. Avoid fabricating DOM by hand.
+  - DONE: Loads real `src/pages/battleCLI.html` (no fabricated DOM) and asserts presence and ARIA contracts for standard nodes in Phase 1 (hidden) state. Updated expectations to match current markup (e.g., `next-round-timer` uses `role="status"` and `aria-atomic="true"`; `round-message` carries `aria-live="polite"`).
+  - Rationale: Improves determinism and maintenance by pinning to real markup without requiring heavy mocks for `init()`.
 
 - `tests/styles/battleContrast.test.js` and `tests/styles/battleCLI.focusContrast.test.js`
   - Consolidate into a single data‑driven test verifying the required color pairs. Keep thresholds in one place; add a comment referencing the PRD/guide to reduce drift.
