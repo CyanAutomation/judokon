@@ -48,7 +48,6 @@
     "@stryker-mutator/core": "^8.0.0",
     "@stryker-mutator/vitest-runner": "^8.0.0",
     "acorn": "^8.15.0",
-    "es-module-lexer": "^1.7.0",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
