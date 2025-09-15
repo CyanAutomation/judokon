@@ -224,6 +224,19 @@ function renderStatButtons(store) {
           opponentVal: 3,
           delayMs: delayOverride
         });
+        // Defensively ensure the scoreboard reflects the latest scores even
+        // when adapters are not yet bound in E2E. This mirrors the adapter
+        // behavior and keeps the UI deterministic for tests.
+        try {
+          if (result) {
+            const { updateScore } = await import("../helpers/setupScoreboard.js");
+            updateScore(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
+            const scoreEl = document.getElementById("score-display");
+            if (scoreEl) {
+              scoreEl.innerHTML = `<span data-side="player">You: ${Number(result.playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+            }
+          }
+        } catch {}
         try {
           const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
           if (isMatchEnded() || (result && result.matchEnded)) {
@@ -670,6 +683,10 @@ async function init() {
     // clicks Next and the cooldown is considered finished.
     try {
       onBattleEvent("countdownFinished", async () => {
+        try {
+          const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
+          if (typeof isMatchEnded === "function" && isMatchEnded()) return;
+        } catch {}
         await startRoundCycle(store);
       });
     } catch {}
