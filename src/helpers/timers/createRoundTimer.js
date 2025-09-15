@@ -8,7 +8,7 @@ import { stopTimer } from "../battleEngineFacade.js";
  * 2. Start underlying engine timer via `starter` with internal handlers.
  * 3. On each tick, emit `tick(remaining)`.
  * 4. On drift, emit `drift(remaining)` and retry up to 3 times; on failure call `onDriftFail` or expire.
- * 5. On expiration or manual stop, emit `expired` once.
+ * 5. On expiration, emit `expired` once. Manual stop does not emit `expired`.
  *
  * @param {{
  *   starter?: (
@@ -114,7 +114,10 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     try {
       stopTimer();
     } catch {}
-    emitExpired();
+    // Do not emit "expired" on manual stop. Expiration semantics should
+    // only fire when the countdown naturally reaches zero; emitting here
+    // causes duplicate resolution paths (e.g., awarding extra points or
+    // triggering cooldown) when a user actively selects a stat or skips.
   }
 
   return { start, stop, on, off };
