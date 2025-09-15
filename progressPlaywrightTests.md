@@ -5,9 +5,9 @@ This file lists the Playwright specs that currently provide the least value for 
 | Rank | File                                    | Score (0–10) | Action         | Intent | Relevance | Assertion | Robustness | Cost | Duration (ms) | Quick fix                                                                                                                                         |
 | ---: | --------------------------------------- | :----------: | -------------- | :----: | :-------: | :-------: | :--------: | :--: | :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 |    1 | `battle-cli.spec.js`                    |      3       | REMOVE / MERGE |   1    |     1     |     1     |     0      |  0   |    61,336     | Split CLI coverage into focused specs that drive the UI (start → play → restart), drop the instrumentation-heavy state polling, and adopt role/test-id locators. |
-|    2 | `debug-settings-click.spec.js`          |      4       | REMOVE  |   2    |     1     |     0     |     0      |  1   |     1,155     | Delete this diagnostic script         |
-|    3 | `debug-stat-loading.spec.js`            |      4       | REMOVE  |   2    |     1     |     0     |     0      |  1   |     1,711     | Remove the spec entirely.      |
-|    4 | `orchestrator-debug.spec.js`            |      4       | REMOVE  |   1    |     1     |     1     |     0      |  1   |     1,443     | Remove the debug harness .          |
+|    2 | `debug-settings-click.spec.js`          |      0       | REMOVED ✅      |   0    |     0     |     0     |     0      |  0   |         —     | Spec removed 2025-09-15; settings flows remain covered by `settings.spec.js`, so no user-facing coverage was lost.                                                 |
+|    3 | `debug-stat-loading.spec.js`            |      0       | REMOVED ✅      |   0    |     0     |     0     |     0      |  0   |         —     | Spec removed 2025-09-15; CLI stat loading remains covered by battle/classic CLI flows, so this diagnostic logger is no longer needed.                             |
+|    4 | `orchestrator-debug.spec.js`            |      4       | REMOVE / MERGE |   1    |     1     |     1     |     0      |  1   |     1,443     | Either remove the debug harness or turn it into a smoke test that proves the orchestrator boots (state badge, controls) without ending on `expect(true)`.          |
 |    5 | `battle-classic/replay.spec.js`         |      5       | REFACTOR       |   1    |     1     |     1     |     0      |  2   |     5,274     | Drive the replay flow through user-facing locators (add test IDs for Replay/scoreboard) and rely on `expect` waits instead of CSS queries plus dynamic imports.  |
 |    6 | `win-target-sync.spec.js`               |      5       | REFACTOR       |   2    |     1     |     1     |     0      |  1   |    19,014     | Collapse the four identical modal flows into one table-driven run, reuse a helper for the settings panel, and lean on locator expectations to trim the 19s cost.  |
 |    7 | `static-pages.spec.js`                  |      6       | REFACTOR       |   1    |     1     |     0     |     2      |  2   |     1,915     | Augment `verifyPageBasics` with page-specific assertions (headings, hero copy) and metadata so each static page proves its real content, not just nav visibility.  |
@@ -21,7 +21,7 @@ Durations reflect single local runs of `npx playwright test <spec> --reporter=js
 
 Common issues observed
 
-- The three `debug-*.spec.js` files are diagnostic scripts: they log telemetry without real assertions, so they never catch regressions. These should be removed.
+- The remaining `orchestrator-debug.spec.js` spec still behaves like a diagnostic script (log dumping, placeholder asserts) and provides no regression coverage.
 - `battle-cli.spec.js` depends on Test API instrumentation (`waitForBattleStateHelper` with 10s timeouts, manual fetch mocks), so it burns ~61s validating internals rather than user-visible behavior.
 - Classic battle specs lean on raw `#id` selectors and `page.evaluate` imports instead of the role/test-id locators encouraged by `design/codeStandards/evaluatingPlaywrightTests.md`.
 - None of these low-value specs carry Spec-ID/Linked-Req metadata, so the value evaluator cannot capture intent or requirement coverage.
@@ -35,6 +35,6 @@ Recommended fixes (apply repo-wide)
 
 Next steps
 
-1. Remove the `debug-*` specs once we've confirmed no user behavior depends on them.
+1. Retire or replace `orchestrator-debug.spec.js` once we've confirmed no user behavior depends on it.
 2. Plan the CLI/battle refactors: add the necessary test IDs, convert flows to UI-driven assertions, and break the monolithic CLI spec into focused files.
 3. Execute `npm run e2e:value` (or `npm run e2e:flake-scan`) and compare score/runtime deltas to verify the clean-up.
