@@ -24,43 +24,9 @@ test.describe("State badge and debug panel", () => {
 
       await page.goto("/src/pages/battleClassic.html");
 
-      // Check for console messages
-      const battleMessages = messages.filter((m) => m.includes("battleClassic"));
+      // Optional console diagnostics trimmed; rely on visible badge assertions below
       const errorMessages = messages.filter((m) => m.startsWith("error:"));
-      if (battleMessages.length > 0) {
-        console.log("Battle messages:", battleMessages);
-      }
-      if (errorMessages.length > 0) {
-        console.log("Error messages:", errorMessages);
-      }
-
-      // Wait for initialization to complete and check document state
-      const docState = await page.evaluate(() => ({
-        readyState: document.readyState,
-        hasScript: !!document.querySelector('script[src*="battleClassic.init.js"]')
-      }));
-      console.log("Document state:", docState);
-
-      // Debug initialization state
-      const debugInfo = await page.evaluate(() => {
-        const badge = document.getElementById("battle-state-badge");
-        return {
-          badge: {
-            exists: !!badge,
-            hidden: badge?.hidden,
-            hasHiddenAttr: badge?.hasAttribute("hidden"),
-            textContent: badge?.textContent,
-            style: badge?.style.display
-          },
-          featureFlags: {
-            overrides: window.__FF_OVERRIDES,
-            battleStateBadge: window.__FF_OVERRIDES?.battleStateBadge
-          },
-          initCalled: !!window.__initCalled
-        };
-      });
-      console.log("Debug info:", debugInfo);
-
+      if (errorMessages.length > 0) console.log("Error messages:", errorMessages);
       await expect(page.locator("#battle-state-badge")).toBeVisible();
       await expect(page.locator("#battle-state-badge")).toHaveText("Lobby");
     }, ["log", "warn", "error"]));
