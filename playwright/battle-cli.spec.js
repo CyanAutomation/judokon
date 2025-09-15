@@ -114,8 +114,10 @@ test.describe("Classic Battle CLI", () => {
               // console.log("Battle state didn't transition quickly, continuing test");
             });
         } else {
-          // Fallback: brief wait for DOM updates
-          await page.waitForTimeout(500);
+          // Fallback: wait for a stable UI sentinel instead of a fixed sleep
+          await page
+            .waitForSelector("#cli-header", { state: "visible", timeout: 2000 })
+            .catch(() => {});
         }
       } else {
         // console.log("No start button found, assuming auto-start should work");
