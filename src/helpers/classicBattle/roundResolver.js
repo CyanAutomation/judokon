@@ -226,24 +226,21 @@ export async function updateScoreboard(result) {
   } catch {}
   if (typeof sb.updateScore === "function") {
     sb.updateScore(result.playerScore, result.opponentScore);
-    // Also update the DOM directly for tests
+    // Also update the DOM directly to keep E2E deterministic when adapters
+    // or bindings are not yet active.
     try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        const scoreEl = document.querySelector("header #score-display");
-        if (scoreEl) {
-          scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
-        }
+      const scoreEl = document.querySelector("header #score-display");
+      if (scoreEl) {
+        scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
       }
     } catch {}
   }
 
-  // Force DOM update for tests regardless of scoreboard component
+  // Force DOM update regardless of environment to ensure visible consistency
   try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const scoreEl = document.querySelector("header #score-display");
-      if (scoreEl) {
-        scoreEl.textContent = `You: ${result.playerScore}\nOpponent: ${result.opponentScore}`;
-      }
+    const scoreEl = document.querySelector("header #score-display");
+    if (scoreEl) {
+      scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span> <span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
     }
   } catch {}
 
