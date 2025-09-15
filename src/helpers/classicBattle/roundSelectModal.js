@@ -294,13 +294,21 @@ function applyGameModePositioning(modal) {
 
   // Track resize/orientation while modal is mounted; clean up on close
   let resizeId = null;
+  let isActive = true;
   const raf =
     typeof requestAnimationFrame === "function" ? requestAnimationFrame : (cb) => setTimeout(cb, 0);
   const caf =
     typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : (id) => clearTimeout(id);
   const onResize = () => {
-    if (resizeId) caf(resizeId);
-    resizeId = raf(updateInset);
+    if (!isActive) return;
+    if (resizeId !== null) {
+      caf(resizeId);
+      resizeId = null;
+    }
+    resizeId = raf(() => {
+      resizeId = null;
+      updateInset();
+    });
   };
   try {
     window.addEventListener("resize", onResize);
@@ -308,10 +316,15 @@ function applyGameModePositioning(modal) {
   } catch {}
 
   const cleanup = () => {
+    if (!isActive) return;
+    isActive = false;
     try {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
-      if (resizeId) caf(resizeId);
+      if (resizeId !== null) {
+        caf(resizeId);
+        resizeId = null;
+      }
     } catch {}
     try {
       backdrop.removeEventListener("close", cleanup);
