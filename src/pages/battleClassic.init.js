@@ -32,6 +32,8 @@ import { removeBackdrops, enableNextRoundButton } from "../helpers/classicBattle
 let activeSelectionTimer = null;
 // Track the failsafe timeout so it can be cancelled when the timer resolves
 let failSafeTimerId = null;
+// Re-entrancy guard to avoid starting multiple round cycles concurrently
+let isStartingRoundCycle = false;
 
 /**
  * Stop the active selection timer and clear the timer display.
@@ -429,6 +431,13 @@ async function handleReplay(store) {
  * 3. Begin selection timer.
  */
 async function startRoundCycle(store) {
+  // Prevent duplicate cycle starts caused by repeated events or late timers
+  if (isStartingRoundCycle) return;
+  isStartingRoundCycle = true;
+  // Ensure any previous selection timers/fallbacks are fully stopped
+  try {
+    stopActiveSelectionTimer();
+  } catch {}
   updateRoundCounterFromEngine();
   try {
     renderStatButtons(store);
@@ -443,6 +452,7 @@ async function startRoundCycle(store) {
   try {
     await beginSelectionTimer(store);
   } catch {}
+  isStartingRoundCycle = false;
 }
 
 /**
@@ -648,6 +658,12 @@ async function init() {
       if (replayBtn)
         replayBtn.addEventListener("click", async () => {
           try {
+            // Stop any active selection timers and pending fallbacks
+            try {
+              stopActiveSelectionTimer();
+            } catch {}
+            // Clear any in-flight start cycle to avoid duplicate starts after replay
+            isStartingRoundCycle = false;
             await handleReplay(store);
           } catch (err) {
             console.debug("battleClassic: handleReplay failed", err);

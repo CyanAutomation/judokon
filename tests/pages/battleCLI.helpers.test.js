@@ -1,103 +1,97 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { JSDOM } from "jsdom";
-import { readFileSync } from "fs";
-import { join } from "path";
-import { init } from "../../src/pages/battleCLI/init.js";
+import { setupFlags, wireEvents, subscribeEngine } from "../../src/pages/battleCLI/init.js";
+import * as battleEngineFacade from "../../src/helpers/battleEngineFacade.js";
 
-describe("Battle CLI Page Helpers", () => {
-  let dom;
-  let window;
-  let document;
-  let engineEmitter;
-
-  beforeEach(async () => {
-    const htmlPath = join(process.cwd(), "src/pages/battleCLI.html");
-    const htmlContent = readFileSync(htmlPath, "utf-8");
-
-    dom = new JSDOM(htmlContent, {
-      url: "http://localhost:3000/battleCLI.html",
-      runScripts: "dangerously",
-      resources: "usable",
-      pretendToBeVisual: true,
-    });
-
-    window = dom.window;
-    document = window.document;
-
-    global.window = window;
-    global.document = document;
-    global.navigator = window.navigator;
-    global.localStorage = {
-      getItem: vi.fn(() => null),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-    };
-
-    window.__FF_OVERRIDES = {
-      cliShortcuts: true,
-    };
-
-    engineEmitter = new EventTarget();
-    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-      on: (event, callback) => engineEmitter.addEventListener(event, (e) => callback(e.detail)),
-      createBattleEngine: vi.fn(),
-      getPointsToWin: vi.fn(() => 5),
-      setPointsToWin: vi.fn(),
+describe("Battle CLI Helpers", () => {
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <input id="verbose-toggle" type="checkbox" />
+      <section id="cli-verbose-section" hidden></section>
+      <section id="cli-shortcuts" hidden><button id="cli-shortcuts-close"></button></section>
+      <div id="cli-countdown"></div>
+      <div id="round-message"></div>
+      <div id="cli-root"></div>
+    `;
+    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+      initFeatureFlags: vi.fn().mockResolvedValue(undefined),
+      isEnabled: vi.fn(() => true), // Enable cliShortcuts
+      setFlag: vi.fn().mockResolvedValue(undefined),
+      featureFlagsEmitter: new EventTarget(),
     }));
-
-    await init();
+    vi.doMock("../../src/pages/battleCLI/dom.js", () => ({
+      byId: (id) => document.getElementById(id),
+      updateRoundHeader: vi.fn(),
+      setRoundMessage: (msg) => {
+        document.getElementById("round-message").textContent = msg;
+      },
+    }));
   });
 
   afterEach(() => {
-    dom?.window?.close();
-    vi.clearAllMocks();
     vi.resetModules();
+    vi.clearAllMocks();
   });
 
-  it("toggles the verbose section when the checkbox is clicked", () => {
-    const verboseToggle = document.getElementById("verbose-toggle");
-    const verboseSection = document.getElementById("cli-verbose-section");
-    expect(verboseSection.hidden).toBe(true);
+  describe("setupFlags", () => {
+    it("toggles the verbose section when the checkbox is clicked", async () => {
+      vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+        getPointsToWin: vi.fn(),
+        setPointsToWin: vi.fn(),
+      }));
+      await setupFlags();
+      const verboseToggle = document.getElementById("verbose-toggle");
+      const verboseSection = document.getElementById("cli-verbose-section");
 
-    verboseToggle.click();
+      expect(verboseSection.hidden).toBe(true);
 
-    expect(verboseSection.hidden).toBe(false);
+      verboseToggle.click();
+      await new Promise(resolve => setTimeout(resolve, 0));
+      expect(verboseSection.hidden).toBe(false);
 
-    verboseToggle.click();
-
-    expect(verboseSection.hidden).toBe(true);
+      verboseToggle.click();
+      await new Promise(resolve => setTimeout(resolve, 0));
+      expect(verboseSection.hidden).toBe(true);
+    });
   });
 
-  it("toggles the help section when the 'h' key is pressed", () => {
-    const shortcutsSection = document.getElementById("cli-shortcuts");
-    expect(shortcutsSection.hidden).toBe(true);
+  describe("wireEvents", () => {
+    it("toggles the help section when the 'h' key is pressed", () => {
+      wireEvents();
+      const shortcutsSection = document.getElementById("cli-shortcuts");
+      expect(shortcutsSection.hidden).toBe(true);
 
-    const keydownEvent = new window.KeyboardEvent("keydown", { key: "h" });
-    window.dispatchEvent(keydownEvent);
+      const keydownEvent = new KeyboardEvent("keydown", { key: "h" });
+      window.dispatchEvent(keydownEvent);
 
-    expect(shortcutsSection.hidden).toBe(false);
-
-    window.dispatchEvent(keydownEvent);
-
-    expect(shortcutsSection.hidden).toBe(true);
+      expect(shortcutsSection.hidden).toBe(false);
+    });
   });
 
-  it("updates the timer display on a timerTick engine event", () => {
-    const countdownDisplay = document.getElementById("cli-countdown");
-    expect(countdownDisplay.textContent).toBe("");
+  describe("subscribeEngine", () => {
+    it("updates the timer display on a timerTick engine event", () => {
+      const onSpy = vi.spyOn(battleEngineFacade, "on");
+      subscribeEngine();
 
-    engineEmitter.dispatchEvent(new CustomEvent("timerTick", { detail: { remaining: 5, phase: "round" } }));
+      const timerTickCallback = onSpy.mock.calls.find(call => call[0] === 'timerTick')[1];
+      const countdownDisplay = document.getElementById("cli-countdown");
+      expect(countdownDisplay.textContent).toBe("");
 
-    expect(countdownDisplay.textContent).toBe("Time remaining: 5");
-  });
+      timerTickCallback({ remaining: 5, phase: "round" });
 
-  it("displays the match ended message on a matchEnded engine event", () => {
-    const roundMessage = document.getElementById("round-message");
-    expect(roundMessage.textContent).toBe("");
+      expect(countdownDisplay.textContent).toBe("Time remaining: 5");
+    });
 
-    engineEmitter.dispatchEvent(new CustomEvent("matchEnded", { detail: { outcome: "playerWin" } }));
+    it("displays the match ended message on a matchEnded engine event", () => {
+      const onSpy = vi.spyOn(battleEngineFacade, "on");
+      subscribeEngine();
 
-    expect(roundMessage.textContent).toContain("Match over: playerWin");
+      const matchEndedCallback = onSpy.mock.calls.find(call => call[0] === 'matchEnded')[1];
+      const roundMessage = document.getElementById("round-message");
+      expect(roundMessage.textContent).toBe("");
+
+      matchEndedCallback({ outcome: "playerWin" });
+
+      expect(roundMessage.textContent).toContain("Match over: playerWin");
+    });
   });
 });
