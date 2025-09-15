@@ -94,6 +94,27 @@ function initSettingsCollapse() {
   });
 }
 
+function loadBattleCLIModule() {
+  if (typeof window === "undefined") return null;
+
+  const existingPromise = window.__battleCLIinit?.loadPromise;
+  if (existingPromise) return existingPromise;
+
+  const cliRoot = byId("cli-root");
+  if (!cliRoot) return null;
+
+  const loadPromise = import("./battleCLI/init.js").catch((error) => {
+    console.error("Failed to load Classic Battle CLI module:", error);
+    return null;
+  });
+
+  try {
+    window.__battleCLIinit = Object.assign(window.__battleCLIinit || {}, { loadPromise });
+  } catch {}
+
+  return loadPromise;
+}
+
 function init() {
   renderSkeletonStats(5);
   initSettingsCollapse();
@@ -153,6 +174,8 @@ function init() {
       return true;
     };
   } catch {}
+
+  loadBattleCLIModule();
 }
 
 // Expose helpers as early as possible so tests can see them even if init hasn't run yet.
