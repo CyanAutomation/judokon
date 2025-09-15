@@ -58,5 +58,3 @@ These tests tend to: duplicate coverage, assert incidental DOM structure, or foc
     - [ ] The test is deterministic and robust, using helpers like `withMutedConsole` and fake timers where appropriate.
     ```
 3. Re-run the test suite and measure improvements in run time and flakiness.
-
-If you want, I can create a small PR that removes the truly redundant tests and opens issues for the refactors with suggested acceptance criteria.
