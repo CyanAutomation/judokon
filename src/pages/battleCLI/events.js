@@ -51,11 +51,25 @@ function handleArrowNav(e) {
  * @pseudocode
  * if key is 'escape': return false
  * if cliShortcuts disabled AND key != 'q': return false
+ * if active element is input/textarea/select: return false
  * return true
  */
 function shouldProcessKey(key) {
   if (key === "escape") return false;
   if (!isEnabled("cliShortcuts") && key !== "q") return false;
+
+  // Don't process keys when user is typing in form controls
+  const activeElement = document.activeElement;
+  if (
+    activeElement &&
+    (activeElement.tagName === "INPUT" ||
+      activeElement.tagName === "TEXTAREA" ||
+      activeElement.tagName === "SELECT" ||
+      activeElement.contentEditable === "true")
+  ) {
+    return false;
+  }
+
   return true;
 }
 
@@ -63,16 +77,35 @@ function shouldProcessKey(key) {
  * Route a key based on the current battle state.
  *
  * @param {string} key - Lowercased key value.
- * @returns {boolean} True when a handler consumed the key.
+ * @returns {boolean|'ignored'} True when handled, 'ignored' when state doesn't support the key, false when invalid.
  * @pseudocode
  * state = document.body?.dataset?.battleState || ''
+ * if state is 'waitingForMatchStart' and key is stat key: return 'ignored'
  * handler = stateHandlers[state]
- * return handleGlobalKey(key) OR handler(key)
+ * return handleGlobalKey(key) OR handler(key) OR (if no handler: 'ignored')
  */
 function routeKeyByState(key) {
   const state = document.body?.dataset?.battleState || "";
+
+  // Suppress "Invalid key" for stat keys when no battle is active
+  if (state === "waitingForMatchStart" && key >= "1" && key <= "5") {
+    return "ignored";
+  }
+
   const handler = stateHandlers[state];
-  return handleGlobalKey(key) || (handler ? handler(key) : false);
+  const globalHandled = handleGlobalKey(key);
+  if (globalHandled) return true;
+
+  if (handler) {
+    return handler(key);
+  }
+
+  // No handler for this state, but don't show "Invalid key" for common keys
+  if (state === "waitingForMatchStart" && key >= "0" && key <= "9") {
+    return "ignored";
+  }
+
+  return false;
 }
 
 /**
@@ -104,7 +137,7 @@ export function onKeyDown(e) {
   if (!shouldProcessKey(lower)) return;
   const handled = routeKeyByState(lower);
   const countdown = byId("cli-countdown");
-  if (!handled && lower !== "tab") {
+  if (handled === false && lower !== "tab") {
     if (countdown) countdown.textContent = "Invalid key, press H for help";
   } else if (countdown && countdown.textContent) {
     countdown.textContent = "";
