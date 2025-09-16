@@ -53,6 +53,7 @@ export function mockCreateRoundTimer(options = {}) {
     ticks: providedTicks,
     emitInitial = true,
     expire = true,
+    stopEmitsExpired = true,
     moduleId
   } = options;
 
@@ -87,7 +88,11 @@ export function mockCreateRoundTimer(options = {}) {
             setTimeout(() => emitExpired(handlers), delay);
           }
         }),
-        stop: vi.fn(() => emitExpired(handlers))
+        stop: vi.fn(() => {
+          if (stopEmitsExpired) {
+            emitExpired(handlers);
+          }
+        })
       };
     }
   });
