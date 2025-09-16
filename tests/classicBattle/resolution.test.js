@@ -1,57 +1,52 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import * as timerUtils from "../../src/helpers/timerUtils.js";
 import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
+import { getState as getScoreboardState } from "../../src/components/Scoreboard.js";
+import { waitFor } from "../waitFor.js";
+import { getScores } from "../../src/helpers/battleEngineFacade.js";
+import {
+  bootstrapClassicBattlePage,
+  mockRoundTimerDuration
+} from "../helpers/classicBattle/realDom.js";
+import { waitForBattleEventOnce } from "../helpers/classicBattle/battleEvents.js";
 
 describe("Classic Battle round resolution", () => {
-  test("score updates after auto-select on expiry", async () => {
+  test("auto-select on expiry resolves via battle state transitions", async () => {
     resetFallbackScores();
-    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
-      if (cat === "roundTimer") return 1;
-      return 3;
-    });
+    const timerSpy = mockRoundTimerDuration(1, 3);
+    const { cleanup } = await bootstrapClassicBattlePage();
     try {
-      const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-      const html = readFileSync(file, "utf-8");
-      document.documentElement.innerHTML = html;
+      await waitFor(() => document.getElementById("round-select-2") !== null);
+      const btn = /** @type {HTMLButtonElement|null} */ (document.getElementById("round-select-2"));
+      expect(btn).toBeTruthy();
+      const roundResolvedPromise = waitForBattleEventOnce("roundResolved");
+      const nextRoundReadyPromise = waitForBattleEventOnce("nextRoundTimerReady");
+      btn?.click();
 
-      const mod = await import("../../src/pages/battleClassic.init.js");
-      if (typeof mod.init === "function") mod.init();
-
-      const { onBattleEvent, offBattleEvent } = await import(
-        "../../src/helpers/classicBattle/battleEvents.js"
+      const roundResolvedEvent = await roundResolvedPromise;
+      const nextRoundReadyEvent = await nextRoundReadyPromise;
+      await waitFor(
+        () => {
+          const { player, opponent } = getScoreboardState().score;
+          return player === 1 && opponent === 0;
+        },
+        { timeout: 2000 }
       );
 
-      const roundResolvedPromise = new Promise((resolve) => {
-        const handler = (e) => {
-          offBattleEvent("nextRoundTimerReady", handler);
-          resolve(e);
-        };
-        onBattleEvent("nextRoundTimerReady", handler);
-      });
-
-      // Open modal and pick any option to start
-      const waitForBtn = () =>
-        new Promise((r) => {
-          const loop = () => {
-            const el = document.getElementById("round-select-2");
-            if (el) return r(el);
-            setTimeout(loop, 0);
-          };
-          loop();
-        });
-      const btn = await waitForBtn();
-
-      vi.useFakeTimers();
-      btn.click();
-      vi.advanceTimersByTime(1200);
-      await roundResolvedPromise;
-
-      const scoreEl = document.getElementById("score-display");
-      expect(scoreEl.textContent || "").toMatch(/You:\s*1/);
-      expect(scoreEl.textContent || "").toMatch(/Opponent:\s*0/);
+      const resolvedDetail = roundResolvedEvent?.detail || {};
+      const detailPlayerScore = Number(
+        resolvedDetail.playerScore ?? resolvedDetail.result?.playerScore
+      );
+      const detailOpponentScore = Number(
+        resolvedDetail.opponentScore ?? resolvedDetail.result?.opponentScore
+      );
+      expect(detailPlayerScore).toBe(1);
+      expect(detailOpponentScore).toBe(0);
+      const { playerScore: enginePlayerScore, opponentScore: engineOpponentScore } = getScores();
+      expect(enginePlayerScore).toBe(1);
+      expect(engineOpponentScore).toBe(0);
+      expect(nextRoundReadyEvent.timeStamp).toBeGreaterThan(roundResolvedEvent.timeStamp);
     } finally {
-      spy.mockRestore();
+      timerSpy.mockRestore();
+      cleanup();
     }
   });
 });
