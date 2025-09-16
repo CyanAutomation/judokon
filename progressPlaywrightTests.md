@@ -37,4 +37,18 @@ Next steps
 
 1. Remove the `debug-*` specs once we've confirmed no user behavior depends on them.
 2. Plan the CLI/battle refactors: add the necessary test IDs, convert flows to UI-driven assertions, and break the monolithic CLI spec into focused files.
-3. Execute `npm run e2e:value` (or `npm run e2e:flake-scan`) and compare score/runtime deltas to verify the clean-up.
+3. - Execute `npm run e2e:value` (or `npm run e2e:flake-scan`) and compare score/runtime deltas to verify the clean-up.
+
+## Agent Evaluation
+
+An independent verification of this audit was performed. The findings are **accurate and well-documented**.
+
+The investigation correctly identifies several critical anti-patterns that reduce test reliability and increase maintenance cost:
+- **Excessive Instrumentation**: Specs like `battle-cli.spec.js` rely on internal helper functions (`waitForBattleStateHelper`) and direct state manipulation, making them slow and brittle.
+- **Implementation-Detail Selectors**: The classic battle specs depend on `#id` selectors, which are prone to breaking during refactors.
+- **Bypassing User Interactions**: Tests frequently use `page.evaluate` with dynamic `import` statements to call internal application logic directly, failing to test the actual user-facing behavior.
+
+The proposed fixes are **strongly recommended**. Refactoring these tests to use user-facing locators (such as `role` and `data-testid` attributes) and Playwright's web-first assertions (`expect`) will produce faster, more robust, and more valuable tests that accurately reflect the user experience. The recommendations align with the project's documented standards in `GEMINI.md` and `design/codeStandards/evaluatingPlaywrightTests.md`.
+
+Proceeding with the "Next steps" is advised.
+
