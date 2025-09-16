@@ -26,6 +26,7 @@
 - **Expected Behavior (from PRD):** # Classic Battle CLI QA Report
 
 ## Table of Contents
+
 - [Issues Found](#issues-found)
   - [Issue 1: Unable to start a battle](#issue-1-unable-to-start-a-battle)
   - [Issue 2: Overlapping modal text in stat area](#issue-2-overlapping-modal-text-in-stat-area)
