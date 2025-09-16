@@ -226,6 +226,91 @@ export function startCooldown(_store, scheduler = realScheduler) {
     detectOrchestratorContext();
   logStartCooldown();
   const controls = createNextRoundControls();
+  if (orchestratedMode) {
+    /** @type {Array<() => void>} */
+    const orchestratedCleanup = [];
+    const detachOrchestratedListeners = () => {
+      while (orchestratedCleanup.length) {
+        const dispose = orchestratedCleanup.pop();
+        try {
+          dispose?.();
+        } catch {}
+      }
+    };
+    const resolveFromListener = () => {
+      const resolver = controls.resolveReady;
+      if (typeof resolver !== "function") {
+        detachOrchestratedListeners();
+        return;
+      }
+      detachOrchestratedListeners();
+      try {
+        resolver();
+      } catch {}
+    };
+    const registerOneShot = (type, predicate) => {
+      const handler = (event) => {
+        if (typeof controls.resolveReady !== "function") {
+          detachOrchestratedListeners();
+          return;
+        }
+        let shouldResolve = false;
+        try {
+          shouldResolve = predicate(event) === true;
+        } catch {
+          shouldResolve = false;
+        }
+        if (!shouldResolve) return;
+        resolveFromListener();
+      };
+      try {
+        onBattleEvent(type, handler);
+        orchestratedCleanup.push(() => {
+          try {
+            offBattleEvent(type, handler);
+          } catch {}
+        });
+      } catch {}
+    };
+    const machineOutOfCooldown = () => {
+      const state = getMachineState(orchestratorMachine);
+      return typeof state === "string" && state !== "cooldown";
+    };
+    registerOneShot("battleStateChange", (event) => {
+      const detail = event?.detail;
+      if (detail && typeof detail === "object") {
+        const from = detail.from ?? detail?.detail?.from ?? null;
+        const to = detail.to ?? detail?.detail?.to ?? null;
+        if (from === "cooldown" && to && to !== "cooldown") return true;
+        if (from === "cooldown" && !to) return machineOutOfCooldown();
+        if (!from && typeof to === "string" && to !== "cooldown") {
+          return machineOutOfCooldown();
+        }
+        return false;
+      }
+      if (typeof detail === "string") {
+        if (detail !== "cooldown") return machineOutOfCooldown();
+        return false;
+      }
+      if (detail === null || typeof detail === "undefined") {
+        return machineOutOfCooldown();
+      }
+      return false;
+    });
+    registerOneShot("nextRoundTimerReady", () => true);
+    registerOneShot("control.countdown.completed", () => true);
+    try {
+      const readyPromise = controls.ready;
+      if (readyPromise && typeof readyPromise.finally === "function") {
+        readyPromise.finally(() => {
+          detachOrchestratedListeners();
+        });
+      }
+    } catch {}
+    if (machineOutOfCooldown()) {
+      resolveFromListener();
+    }
+  }
   const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
   if (btn && !orchestratedMode) {
     markNextReady(btn);
