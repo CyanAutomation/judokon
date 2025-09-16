@@ -222,8 +222,12 @@ export function startCooldown(_store, scheduler = realScheduler) {
   if (!scheduler || typeof scheduler.setTimeout !== "function") {
     scheduler = realScheduler;
   }
-  const { orchestrated: orchestratedMode, machine: orchestratorMachine } =
-    detectOrchestratorContext();
+  const context = detectOrchestratorContext();
+  let orchestratedMode = context.orchestrated;
+  const orchestratorMachine = context.machine;
+  if (orchestratedMode && !orchestratorMachine) {
+    orchestratedMode = false;
+  }
   logStartCooldown();
   const controls = createNextRoundControls();
   if (orchestratedMode) {

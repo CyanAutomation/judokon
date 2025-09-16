@@ -60,6 +60,26 @@ describe("skip handler clears fallback timer", () => {
     resetSkipState();
   });
 
+  it("registers a skip handler when orchestrator machine is missing", async () => {
+    const debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => null);
+    const skipHandler = await import("../../../src/helpers/classicBattle/skipHandler.js");
+    const setSkipSpy = vi.spyOn(skipHandler, "setSkipHandler");
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    startCooldown({}, scheduler);
+    expect(setSkipSpy).toHaveBeenCalled();
+    const registrationCall = setSkipSpy.mock.calls.find(([arg]) => typeof arg === "function");
+    expect(typeof registrationCall?.[0]).toBe("function");
+    skipHandler.skipCurrentPhase();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    const FALLBACK_DELAY_MS = 20;
+    await vi.advanceTimersByTimeAsync(FALLBACK_DELAY_MS);
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
+  });
+
   it("fires ready once after skipping", async () => {
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
