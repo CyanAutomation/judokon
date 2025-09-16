@@ -169,7 +169,7 @@ For complete API documentation, event schemas, and component usage, see **[docs/
 
 ## 🔎 Using the Vector RAG System
 
-The project includes a high-performance vector RAG system with 16,000+ indexed chunks covering documentation, code standards, and game rules. Before scanning the repo for answers, use the [`queryRag`](./src/helpers/queryRag.js) helper:
+The project includes a high-performance vector RAG system with over 2,300 indexed chunks (2,328 currently) covering documentation, code standards, and game rules. Before scanning the repo for answers, use the [`queryRag`](./src/helpers/queryRag.js) helper:
 
 ```javascript
 import queryRag from "./src/helpers/queryRag.js";

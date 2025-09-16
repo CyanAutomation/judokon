@@ -6,7 +6,7 @@
 
 - **⚡ Speed:** 2-second queries vs 30+ seconds of code exploration
 - **🎯 Accuracy:** 62.5% success rate for finding correct sources
-- **🧠 Context:** Access to 16,000+ indexed chunks
+- **🧠 Context:** Access to over 2,300 indexed chunks (2,328 currently)
 - **📚 Coverage:** Design docs, PRDs, implementation patterns, and test examples
 
 ## ⚡ Quick Decision Tree
