@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Battle CLI - Restart", () => {
   test.beforeEach(async ({ page }) => {
-    page.on('console', msg => {
+    page.on("console", (msg) => {
       console.log(`PAGE CONSOLE: ${msg.type()}: ${msg.text()}`);
     });
   });

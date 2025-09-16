@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Battle CLI - Play", () => {
   test.beforeEach(async ({ page }) => {
-    page.on('console', msg => {
+    page.on("console", (msg) => {
       console.log(`PAGE CONSOLE: ${msg.type()}: ${msg.text()}`);
     });
   });
@@ -23,7 +23,14 @@ test.describe("Battle CLI - Play", () => {
 
     // Manually trigger round resolved for testing purposes due to application bug
     await page.evaluate(() => {
-      window.__test.handleRoundResolved({ detail: { result: { message: "Round Over", playerScore: 1, opponentScore: 0 }, stat: "speed", playerVal: 5, opponentVal: 3 } });
+      window.__test.handleRoundResolved({
+        detail: {
+          result: { message: "Round Over", playerScore: 1, opponentScore: 0 },
+          stat: "speed",
+          playerVal: 5,
+          opponentVal: 3
+        }
+      });
     });
 
     // Wait for the round message to show the result

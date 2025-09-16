@@ -42,9 +42,19 @@
         <!-- Battle status elements within header for backward compatibility -->
         <div class="battle-status-header">
           <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
-          <p id="next-round-timer" data-testid="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
-          <p id="round-counter" data-testid="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
-          <p id="score-display" data-testid="score-display" aria-live="polite" aria-atomic="true">You: 0 Opponent: 0</p>
+          <p
+            id="next-round-timer"
+            data-testid="next-round-timer"
+            aria-live="polite"
+            aria-atomic="true"
+            role="status"
+          ></p>
+          <p id="round-counter" data-testid="round-counter" aria-live="polite" aria-atomic="true">
+            Round 0
+          </p>
+          <p id="score-display" data-testid="score-display" aria-live="polite" aria-atomic="true">
+            You: 0 Opponent: 0
+          </p>
           <span id="battle-state-badge" data-format="plain" hidden></span>
         </div>
       </header>
@@ -69,8 +79,12 @@
 
           <!-- Controls section -->
           <section class="controls" aria-label="Round controls">
-            <button id="next-button" data-testid="next-button" data-role="next-round" disabled>Next</button>
-            <button id="replay-button" data-testid="replay-button" data-role="replay">Replay</button>
+            <button id="next-button" data-testid="next-button" data-role="next-round" disabled>
+              Next
+            </button>
+            <button id="replay-button" data-testid="replay-button" data-role="replay">
+              Replay
+            </button>
             <button id="quit-button" data-role="quit">Quit</button>
           </section>
         </div>
