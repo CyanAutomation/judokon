@@ -72,30 +72,30 @@ Implementation notes
 ### Next steps (status updated)
 
 1. **DONE:** Delete or archive the “Remove” tests after confirming no unique coverage is lost.
-    - `tests/integration/manualDomComparison.test.js`
-    - `tests/examples/testArchitectureDemo.test.js`
-    - `tests/classicBattle/opponent-message-handler.simplified.test.js`
+   - `tests/integration/manualDomComparison.test.js`
+   - `tests/examples/testArchitectureDemo.test.js`
+   - `tests/classicBattle/opponent-message-handler.simplified.test.js`
 2. **DONE:** Refactor items
-    - **DONE (validated):** `tests/integration/battleClassic.integration.test.js` — behavioral assertions against initialized page state.
-    - **DONE (validated):** `tests/pages/battleCLI.helpers.test.js` — focused behavioral tests for helpers with minimal mocking.
-    - **DONE (validated):** `tests/pages/battleCLI.cliShortcutsFlag.test.js`
-    - **DONE (validated):** `tests/classicBattle/page-scaffold.test.js`
-    - **DONE (validated):** `tests/pages/battleCLI.standardDOM.test.js`
-    - **DONE (validated):** `tests/styles/battleContrast.test.js`
-    - **DONE (validated):** `tests/styles/battleCLI.focusContrast.test.js`
+   - **DONE (validated):** `tests/integration/battleClassic.integration.test.js` — behavioral assertions against initialized page state.
+   - **DONE (validated):** `tests/pages/battleCLI.helpers.test.js` — focused behavioral tests for helpers with minimal mocking.
+   - **DONE (validated):** `tests/pages/battleCLI.cliShortcutsFlag.test.js`
+   - **DONE (validated):** `tests/classicBattle/page-scaffold.test.js`
+   - **DONE (validated):** `tests/pages/battleCLI.standardDOM.test.js`
+   - **DONE (validated):** `tests/styles/battleContrast.test.js`
+   - **DONE (validated):** `tests/styles/battleCLI.focusContrast.test.js`
 3. Create refactor tasks for each remaining test flagged “Refactor”. Use the following template for each:
 
-    **Refactor Test: `[Test File Path]`**
+   **Refactor Test: `[Test File Path]`**
 
-    **Current Problem:**
-    - [ ] The test currently focuses on implementation details (e.g., internal state, mock calls).
-    - [ ] The test has a high setup cost for its assertions.
-    - [ ] The assertions are weak (e.g., only checking for element existence).
+   **Current Problem:**
+   - [ ] The test currently focuses on implementation details (e.g., internal state, mock calls).
+   - [ ] The test has a high setup cost for its assertions.
+   - [ ] The assertions are weak (e.g., only checking for element existence).
 
-    **Acceptance Criteria:**
-    - [ ] The test is refactored to assert user-observable behavior (e.g., final DOM state, text content, emitted events).
-    - [ ] Mocks are minimized, and the test interacts with the component through its public API.
-    - [ ] The test is deterministic and robust, using helpers like `withMutedConsole` and fake timers where appropriate.
+   **Acceptance Criteria:**
+   - [ ] The test is refactored to assert user-observable behavior (e.g., final DOM state, text content, emitted events).
+   - [ ] Mocks are minimized, and the test interacts with the component through its public API.
+   - [ ] The test is deterministic and robust, using helpers like `withMutedConsole` and fake timers where appropriate.
 
 4. Re-run the test suite and measure improvements in run time and flakiness.
 

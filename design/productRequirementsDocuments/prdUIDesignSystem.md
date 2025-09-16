@@ -66,21 +66,21 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 
 **Rarity System Colors:**
 
-| Rarity | Background | Border | Judogi Color |
-|--------|------------|---------|---------------|
-| Common | #3C5AD6 | #3C5AD6 | White (#FFF) |
-| Epic | #C757DA | #C757DA | Blue (#3C7DC4) |
-| Legendary | #E4AB19 | #E4AB19 | Blue (#3C7DC4) |
+| Rarity    | Background | Border  | Judogi Color   |
+| --------- | ---------- | ------- | -------------- |
+| Common    | #3C5AD6    | #3C5AD6 | White (#FFF)   |
+| Epic      | #C757DA    | #C757DA | Blue (#3C7DC4) |
+| Legendary | #E4AB19    | #E4AB19 | Blue (#3C7DC4) |
 
 **Feature-Specific Colors:**
 
-| Feature/Mode | Color | Usage |
-|--------------|-------|--------|
-| Classic Battle | #E53935 | High-energy, competitive |
-| Team Battle | #8E24AA | Cooperative and strategic |
-| Update Judoka | #00897B | Constructive, calm |
-| Browse Judoka | #3949AB | Archival, structured |
-| Meditation | #F9A825 | Calm, reflective |
+| Feature/Mode   | Color   | Usage                     |
+| -------------- | ------- | ------------------------- |
+| Classic Battle | #E53935 | High-energy, competitive  |
+| Team Battle    | #8E24AA | Cooperative and strategic |
+| Update Judoka  | #00897B | Constructive, calm        |
+| Browse Judoka  | #3949AB | Archival, structured      |
+| Meditation     | #F9A825 | Calm, reflective          |
 
 **Theme Variations:**
 
@@ -105,13 +105,13 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 
 **Typography Scale:**
 
-| Element | Style | Usage |
-|---------|-------|--------|
-| Section Titles | ALL CAPS, Bold, Large | Main page headings with tracking |
-| Action Buttons | Uppercase, Bold | Primary CTA focus |
-| Judoka Surnames | Bold, Uppercase, Larger | E.g., "ONO" |
-| Judoka First Names | Light, Small caps | E.g., "Shohei" |
-| Supporting Info | Light, Small | Country, weight class details |
+| Element            | Style                   | Usage                            |
+| ------------------ | ----------------------- | -------------------------------- |
+| Section Titles     | ALL CAPS, Bold, Large   | Main page headings with tracking |
+| Action Buttons     | Uppercase, Bold         | Primary CTA focus                |
+| Judoka Surnames    | Bold, Uppercase, Larger | E.g., "ONO"                      |
+| Judoka First Names | Light, Small caps       | E.g., "Shohei"                   |
+| Supporting Info    | Light, Small            | Country, weight class details    |
 
 **Readability Standards:**
 
