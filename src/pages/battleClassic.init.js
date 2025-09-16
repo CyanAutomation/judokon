@@ -175,6 +175,7 @@ function renderStatButtons(store) {
     btn.type = "button";
     btn.textContent = String(stat);
     btn.setAttribute("data-stat", String(stat));
+    btn.setAttribute("data-testid", "stat-button");
     btn.addEventListener("click", async () => {
       if (btn.disabled) return;
       try {

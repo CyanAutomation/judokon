@@ -11,37 +11,25 @@ test.describe("Classic Battle cooldown + Next", () => {
     await page.goto("/src/pages/battleClassic.html");
 
     // Start the match via modal (pick medium/10)
-    await page.waitForSelector("#round-select-2", { state: "visible" });
-    await page.click("#round-select-2");
+    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
+    await page.getByRole("button", { name: "Medium" }).click();
 
-    // Next should become enabled and marked ready during cooldown
-    const next = page.locator("#next-button");
-    await expect(next).toHaveAttribute("data-next-ready", "true");
-    await expect(next).toBeEnabled();
+    // Before the first round, the counter is 1
+    await expect(page.getByTestId("round-counter")).toHaveText("Round 1");
 
-    // Grab controls and ready promise from the page context
-    const hadControls = await page.evaluate(async () => {
-      const mod = await import("/src/helpers/classicBattle/roundManager.js");
-      const controls = mod.getNextRoundControls?.();
-      return !!(controls && controls.ready);
-    });
-    expect(hadControls).toBeTruthy();
+    // Click a stat to complete the round
+    await expect(page.getByTestId("stat-button").first()).toBeVisible();
+    await page.getByTestId("stat-button").first().click();
 
-    // Click Next and ensure it resolves the ready promise
-    // We can't await a promise from the page directly; instead, mark a flag
-    const resolved = await page.evaluate(async () => {
-      const { getNextRoundControls } = await import("/src/helpers/classicBattle/roundManager.js");
-      const { onNextButtonClick } = await import("/src/helpers/classicBattle/timerService.js");
-      const controls = getNextRoundControls();
-      let done = false;
-      controls.ready.then(() => {
-        done = true;
-      });
-      await onNextButtonClick(new MouseEvent("click"), controls);
-      // Give the resolver a moment to flip the flag
-      await new Promise((r) => setTimeout(r, 10));
-      return done;
-    });
-    expect(resolved).toBeTruthy();
+    // Cooldown begins and Next becomes ready
+    const nextButton = page.getByTestId("next-button");
+    await expect(nextButton).toBeEnabled();
+    await expect(nextButton).toHaveAttribute("data-next-ready", "true");
+
+    // Click next button
+    await nextButton.click();
+
+    // Check that the round counter has advanced
+    await expect(page.getByTestId("round-counter")).toHaveText("Round 2");
   });
 });

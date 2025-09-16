@@ -1176,6 +1176,7 @@ export async function renderStatList(judoka) {
 
       // Mark as not skeleton after adding real content to prevent clearSkeletonStats from clearing it
       list.dataset.skeleton = "false";
+      list.setAttribute("aria-busy", "false");
 
       if (rows.length) setActiveStatRow(rows[0], { focus: false });
       ensureStatClickBinding(list);

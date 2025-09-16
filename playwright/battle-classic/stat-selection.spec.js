@@ -10,13 +10,13 @@ test.describe("Classic Battle stat selection", () => {
     await page.goto("/src/pages/battleClassic.html");
 
     // Start the match via modal
-    await page.waitForSelector("#round-select-2", { state: "visible" });
-    await page.click("#round-select-2");
+    await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
+    await page.getByRole("button", { name: "Medium" }).click();
 
     // Stat buttons should render and be enabled
-    const container = page.locator("#stat-buttons");
+    const container = page.getByTestId("stat-buttons");
     await expect(container).toHaveAttribute("data-buttons-ready", "true");
-    const buttons = page.locator("#stat-buttons button[data-stat]");
+    const buttons = page.getByTestId("stat-button");
     await expect(buttons.first()).toBeVisible();
     await expect(buttons.first()).toBeEnabled();
 
@@ -24,12 +24,13 @@ test.describe("Classic Battle stat selection", () => {
     await buttons.first().click();
 
     // Timer should be cleared or show 0s after stat selection
-    await expect(page.locator("#next-round-timer")).toHaveText(/^(|Time Left: 0s)$/);
-    await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
-    await expect(page.locator("#score-display")).toContainText(/Opponent:\s*0/);
+    await expect(page.getByTestId("next-round-timer")).toHaveText(/^(|Time Left: 0s)$/);
+    const score = page.getByTestId("score-display");
+    await expect(score).toContainText(/You:\s*1/);
+    await expect(score).toContainText(/Opponent:\s*0/);
 
     // Cooldown begins and Next becomes ready
-    const next = page.locator("#next-button");
+    const next = page.getByTestId("next-button");
     await expect(next).toBeEnabled();
     await expect(next).toHaveAttribute("data-next-ready", "true");
   });
