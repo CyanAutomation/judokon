@@ -2,9 +2,9 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+// Removed unused import
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Removed unused __dirname assignment
 
 /**
  * Playwright Test Value Evaluator
