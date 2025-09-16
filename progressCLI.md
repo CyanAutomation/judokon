@@ -55,14 +55,17 @@
 ### Phase 1: Battle Start Fix (Issue 1) ✅ COMPLETED
 
 **Actions Taken:**
+
 - Fixed battle initialization by ensuring proper event dispatching in `roundSelectModal.js`
 - Added missing `startRound`/`startCallback` invocation
 - Verified modal cleanup removes all leftover nodes
 
 **Files Modified:**
+
 - `src/pages/battleCLI/roundSelectModal.js`
 
 **Validation Results:**
+
 - ✅ Battle now starts correctly after selecting match length
 - ✅ Round counter updates to "Round 1 of N"
 - ✅ Timer begins counting down
@@ -71,14 +74,17 @@
 ### Phase 2: State-Aware Key Handling (Issues 3 & 7) ✅ COMPLETED
 
 **Actions Taken:**
+
 - Enhanced input focus detection in `shouldProcessKey()` function
 - Implemented state-aware key routing in `routeKeyByState()` function
 - Added silent ignoring of inappropriate keys instead of "Invalid key" messages
 
 **Files Modified:**
+
 - `src/pages/battleCLI/events.js`
 
 **Validation Results:**
+
 - ✅ No more confusing "Invalid key" messages during idle states
 - ✅ Seed input field no longer triggers global shortcuts
 - ✅ All existing functionality preserved
@@ -86,15 +92,18 @@
 ### Phase 3: Accessibility Improvements (Issue 6) ✅ COMPLETED
 
 **Actions Taken:**
+
 - Added `aria-live="polite"` to `#cli-countdown` element for timer announcements
 - Implemented focus management for stat selection keys (1-5)
 - Enhanced screen reader announcements with `aria-selected` attributes
 
 **Files Modified:**
+
 - `src/pages/battleCLI.html`
 - `src/pages/battleCLI/init.js`
 
 **Validation Results:**
+
 - ✅ Screen readers announce timer updates
 - ✅ Focus moves to stat list when using keyboard selection
 - ✅ ARIA selection attributes properly set
@@ -103,10 +112,12 @@
 ### Phase 4: UI Cleanup (Issues 2 & 4) 🔄 IN PROGRESS
 
 **Target Issues:**
+
 - Issue 2: Remove overlapping modal text in stat area
 - Issue 4: Fix scoreboard rendering issues and duplicates
 
 **Planned Actions:**
+
 - Clean up modal artifacts that persist in stat list
 - Consolidate duplicate scoreboard elements
 - Ensure proper DOM cleanup after modal closure
