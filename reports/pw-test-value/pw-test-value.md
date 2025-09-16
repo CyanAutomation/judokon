@@ -7,10 +7,10 @@ Generated: 2025-09-16T15:01:39.975Z
 | Metric | Value |
 |--------|-------|
 | Total Specs | 44 |
-| Keep (≥8) | 4 |
+| Keep (≥8) | 6 |
 | Refactor (5-7) | 0 |
-| Remove (≤4) | 40 |
-| Average Score | 2.5 |
+| Remove (≤4) | 38 |
+| Average Score | 2.7 |
 
 ## Detailed Results
 
@@ -54,12 +54,13 @@ Generated: 2025-09-16T15:01:39.975Z
 | 36 | playwright/battle-classic/opponent-reveal.spec.js | 0.8 | REMOVE_MERGE | N/A | ✅ |
 | 37 | playwright/hover-zoom.spec.js | 0.8 | REMOVE_MERGE | N/A | ✅ |
 | 38 | playwright/battle-classic/end-modal.spec.js | 0.6 | REMOVE_MERGE | N/A | ✅ |
-| 39 | playwright/cli-scroll.spec.js | 0.5 | REMOVE_MERGE | N/A | ✅ |
-| 40 | playwright/narrow-layout.spec.js | 0.5 | REMOVE_MERGE | N/A | ✅ |
+| 39 | playwright/cli-scroll.spec.js | 8.3 | IMPROVED | 1.0s | ✅ |
+| 40 | playwright/battle-classic/end-modal.spec.js | 0.6 | REMOVE_MERGE | N/A | ✅ |
 | 41 | playwright/battle-classic/round-select.server.spec.js | 8.3 | IMPROVED | 2.2s | ✅ |
 | 42 | playwright/battle-classic/round-select.spec.js | 8.5 | IMPROVED | 1.4s | ✅ |
 | 43 | playwright/battle-classic/timer.spec.js | 8.2 | IMPROVED | 2.4s | ✅ |
 | 44 | playwright/cli-flows.spec.mjs | 8.4 | IMPROVED | 1.9s | ✅ |
+| 45 | playwright/narrow-layout.spec.js | 8.3 | IMPROVED | 1.2s | ✅ |
 
 ## Recommendations
 
@@ -109,3 +110,5 @@ Generated: 2025-09-16T15:01:39.975Z
 - **playwright/battle-classic/round-select.spec.js** (8.5/10) - ✅ IMPROVED: Refactored with semantic locators, removed instrumentation, added comprehensive assertions
 - **playwright/battle-classic/timer.spec.js** (8.2/10) - ✅ IMPROVED: Refactored with semantic locators, added timer countdown verification, multiple test scenarios
 - **playwright/cli-flows.spec.mjs** (8.4/10) - ✅ IMPROVED: Refactored into 5 comprehensive tests with proper selectors, keyboard interaction testing, and defensive assertions
+- **playwright/narrow-layout.spec.js** (8.3/10) - ✅ IMPROVED: Refactored into 7 comprehensive responsive design tests covering mobile, tablet, and ultra-narrow layouts with defensive assertions
+- **playwright/cli-scroll.spec.js** (8.3/10) - ✅ IMPROVED: Refactored into 7 comprehensive CLI layout and scrolling tests covering desktop, mobile, tablet layouts and content overflow scenarios
