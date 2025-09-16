@@ -845,10 +845,18 @@ function selectStat(stat) {
   clearStoreTimer(store, "autoSelectId");
   const list = byId("cli-stats");
   list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
+  list?.querySelectorAll(".cli-stat").forEach((el) => el.setAttribute("aria-selected", "false"));
   const idx = STATS.indexOf(stat) + 1;
   if (list) list.dataset.selectedIndex = String(idx);
   const choiceEl = list?.querySelector(`[data-stat-index="${idx}"]`);
   choiceEl?.classList.add("selected");
+  choiceEl?.setAttribute("aria-selected", "true");
+
+  // Move focus to the stat list for accessibility
+  if (list && !list.contains(document.activeElement)) {
+    list.focus();
+  }
+
   try {
     if (store) {
       store.playerChoice = stat;
@@ -1073,6 +1081,7 @@ function buildStatRows(stats, judoka) {
       div.id = `cli-stat-${idx}`;
       div.setAttribute("role", "button");
       div.setAttribute("tabindex", "-1");
+      div.setAttribute("aria-selected", "false");
       div.dataset.statIndex = String(idx);
       const val = Number(judoka?.stats?.[key]);
       div.textContent = Number.isFinite(val) ? `[${idx}] ${s.name}: ${val}` : `[${idx}] ${s.name}`;
