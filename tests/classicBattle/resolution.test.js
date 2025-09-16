@@ -8,7 +8,7 @@ import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
 import { setTestMode } from "../../src/helpers/testModeUtils.js";
 import { createBattleEngine } from "../../src/helpers/battleEngineFacade.js";
 
-describe.configure({ environment: "jsdom" })("Classic Battle round resolution", () => {
+describe("Classic Battle round resolution", () => {
   test("score updates after auto-select on expiry", async () => {
     // Ensure deterministic test mode and engine state
     setTestMode({ enabled: true, seed: 1 });
@@ -22,6 +22,16 @@ describe.configure({ environment: "jsdom" })("Classic Battle round resolution", 
       const file = resolve(process.cwd(), "src/pages/battleClassic.html");
       const html = readFileSync(file, "utf-8");
       document.documentElement.innerHTML = html;
+
+      // Allow tests to opt-in to showing the round select modal even when
+      // Test Mode is enabled (mirrors Playwright behavior).
+      try {
+        if (typeof window !== "undefined") {
+          window.__FF_OVERRIDES = Object.assign(window.__FF_OVERRIDES || {}, {
+            showRoundSelectModal: true
+          });
+        }
+      } catch {}
 
       const mod = await import("../../src/pages/battleClassic.init.js");
       if (typeof mod.init === "function") mod.init();
@@ -39,13 +49,46 @@ describe.configure({ environment: "jsdom" })("Classic Battle round resolution", 
       });
 
       // Open modal and pick any option to start
-      const waitForBtn = () =>
-        new Promise((r) => {
-          const loop = () => {
-            const el = document.getElementById("round-select-2");
-            if (el) return r(el);
-            setTimeout(loop, 0);
+      // Wait for the button to appear, but guard against test teardown and long waits.
+      const waitForBtn = (timeout = 5000) =>
+        new Promise((resolve, reject) => {
+          const start = Date.now();
+          let timerId = null;
+
+          const clear = () => {
+            if (timerId !== null) {
+              clearTimeout(timerId);
+              timerId = null;
+            }
           };
+
+          const loop = () => {
+            try {
+              if (typeof document === "undefined") {
+                clear();
+                return reject(new Error("document is undefined (teardown detected)"));
+              }
+
+              const el = document.getElementById("round-select-2");
+              if (el) {
+                clear();
+                return resolve(el);
+              }
+
+              if (Date.now() - start > timeout) {
+                clear();
+                return reject(new Error("waitForBtn timed out waiting for #round-select-2"));
+              }
+
+              timerId = setTimeout(loop, 20);
+            } catch (err) {
+              // Defensive: if document lookup throws because environment was torn down,
+              // reject instead of letting an uncaught exception bubble up after teardown.
+              clear();
+              return reject(err);
+            }
+          };
+
           loop();
         });
       const btn = await waitForBtn();
@@ -60,9 +103,17 @@ describe.configure({ environment: "jsdom" })("Classic Battle round resolution", 
       expect(scoreEl.textContent || "").toMatch(/Opponent:\s*0/);
     } finally {
       spy.mockRestore();
-      // Ensure all timers are cleared to avoid async leaks
-      vi.runOnlyPendingTimers();
-      vi.useRealTimers();
+      // Defensive cleanup: only run pending timers / restore real timers if fake timers were active.
+      try {
+        vi.runOnlyPendingTimers();
+      } catch {
+        // Ignore: timers were not mocked or already restored.
+      }
+      try {
+        vi.useRealTimers();
+      } catch {
+        // Ignore: timers were not mocked.
+      }
     }
   }, 15000); // 15s timeout
 });

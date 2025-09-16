@@ -119,8 +119,14 @@ export async function initRoundSelectModal(onStart) {
     window.__FF_OVERRIDES &&
     window.__FF_OVERRIDES.showRoundSelectModal;
 
-  // Auto-start unless explicitly disabled in test environment
-  if (shouldAutostart() || isTestModeEnabled() || (IS_PLAYWRIGHT && !showModalInTest)) {
+  // Auto-start unless explicitly disabled by the test override. Tests
+  // may opt-in to seeing the modal even when Test Mode is enabled by
+  // setting `window.__FF_OVERRIDES.showRoundSelectModal = true`.
+  if (
+    shouldAutostart() ||
+    (isTestModeEnabled() && !showModalInTest) ||
+    (IS_PLAYWRIGHT && !showModalInTest)
+  ) {
     await startRound(DEFAULT_POINTS_TO_WIN, onStart, !IS_VITEST);
     return;
   }
