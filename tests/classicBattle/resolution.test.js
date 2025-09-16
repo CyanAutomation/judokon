@@ -8,7 +8,7 @@ import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
 import { setTestMode } from "../../src/helpers/testModeUtils.js";
 import { createBattleEngine } from "../../src/helpers/battleEngineFacade.js";
 
-describe.configure({ environment: "jsdom" })("Classic Battle round resolution", () => {
+describe("Classic Battle round resolution", () => {
   test("score updates after auto-select on expiry", async () => {
     // Ensure deterministic test mode and engine state
     setTestMode({ enabled: true, seed: 1 });
