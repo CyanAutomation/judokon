@@ -11,7 +11,7 @@ test.describe("Classic Battle replay", () => {
     await page.goto("/src/pages/battleClassic.html");
 
     // Start match and click first stat to end quickly
-    await page.getByRole('button', { name: 'Medium' }).click();
+    await page.getByRole("button", { name: "Medium" }).click();
     await page.getByTestId("stat-button").first().click();
     await expect(page.getByTestId("score-display")).toContainText(/You:\s*1/);
 

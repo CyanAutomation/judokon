@@ -15,7 +15,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
   const testCases = [
     { key: "1", points: "5", name: "Quick" },
     { key: "2", points: "10", name: "Medium" },
-    { key: "3", points: "15", name: "Long" },
+    { key: "3", points: "15", name: "Long" }
   ];
 
   test.beforeEach(async ({ page }) => {
