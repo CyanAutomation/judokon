@@ -8,6 +8,7 @@ describe("skip handler clears fallback timer", () => {
   let errorSpy;
   /** @type {ReturnType<typeof vi.spyOn>} */
   let warnSpy;
+  let timerMockRestore;
   beforeEach(async () => {
     vi.useFakeTimers();
     scheduler = createMockScheduler();
@@ -40,8 +41,12 @@ describe("skip handler clears fallback timer", () => {
       emitBattleEvent: vi.fn()
     }));
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
-    // No scheduled ticks; stop() should trigger expired
-    mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
+    timerMockRestore = mockCreateRoundTimer({
+      scheduled: false,
+      ticks: [],
+      expire: false,
+      stopEmitsExpired: false
+    });
     vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
       attachCooldownRenderer: vi.fn()
     }));
@@ -56,6 +61,8 @@ describe("skip handler clears fallback timer", () => {
     expect(warnSpy).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
     vi.restoreAllMocks();
+    timerMockRestore?.unmock?.();
+    timerMockRestore = null;
     const { resetSkipState } = await import("../../../src/helpers/classicBattle/skipHandler.js");
     resetSkipState();
   });

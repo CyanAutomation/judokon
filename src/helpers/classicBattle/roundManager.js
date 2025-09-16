@@ -714,6 +714,14 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
     } catch {}
     schedulerFallbackId = null;
     controls.timer?.stop();
+    if (!expired) {
+      expired = true;
+      try {
+        emitBattleEvent("cooldown.timer.expired");
+        emitBattleEvent("control.countdown.completed");
+      } catch {}
+      void handleNextRoundExpiration(controls, btn);
+    }
   });
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
   try {
