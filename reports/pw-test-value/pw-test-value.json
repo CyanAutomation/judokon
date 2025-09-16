@@ -1,0 +1,804 @@
+{
+  "timestamp": "2025-09-16T15:01:39.974Z",
+  "summary": {
+    "totalSpecs": 44,
+    "keepCount": 0,
+    "refactorCount": 0,
+    "removeCount": 44,
+    "averageScore": 1.7909090909090906
+  },
+  "results": [
+    {
+      "file": "playwright/settings.spec.js",
+      "score": 4.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 1,
+        "assertionQuality": 0.7,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 1.9000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/browse-judoka.spec.js",
+      "score": 3.9,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.7,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 2
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/meditation-screen.spec.js",
+      "score": 3.8,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 1,
+        "assertionQuality": 1,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 0.6000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/accessibility-zoom.spec.js",
+      "score": 3.4,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 1,
+        "costVsCoverage": 1.9000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/random-judoka.spec.js",
+      "score": 3.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.7,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 1.4
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/stat-selection.spec.js",
+      "score": 3.2,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 1,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 1.2
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/prd-reader.spec.js",
+      "score": 3.1,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 1.7
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/timer-clearing.spec.js",
+      "score": 2.9,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 1,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.9000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-cli-restart.spec.js",
+      "score": 2.7,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.7,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 0.3000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/cli-layout-assessment.spec.js",
+      "score": 2.7,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 1.5
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/round-select-keyboard.spec.js",
+      "score": 2.7,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 1.5
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-cli-start.spec.js",
+      "score": 2.4,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 1,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.4
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/pseudo-japanese-toggle.spec.js",
+      "score": 2.4,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 1,
+        "assertionQuality": 0.5,
+        "isolationAndRobustness": 0.2,
+        "costVsCoverage": 0.7
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/cooldown.spec.js",
+      "score": 2.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 1,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.8
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/card-inspector-accessibility.spec.js",
+      "score": 2.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.7,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 0.39999999999999997
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/homepage.spec.js",
+      "score": 2.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.2,
+        "costVsCoverage": 0.8999999999999999
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/static-pages.spec.js",
+      "score": 2.2,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.7,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.5
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-cli-play.spec.js",
+      "score": 2.1,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 0.2
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/win-target-sync.spec.js",
+      "score": 2,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 0.6000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/homepage-layout.spec.js",
+      "score": 1.8,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0.2,
+        "costVsCoverage": 1.1
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/round-counter.spec.js",
+      "score": 1.7,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.7
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/badge-debug.spec.js",
+      "score": 1.6,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.4
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/tooltip.spec.js",
+      "score": 1.6,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.7,
+        "costVsCoverage": 0.2
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/smoke.spec.js",
+      "score": 1.4,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.7
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-next-skip.non-orchestrated.spec.js",
+      "score": 1.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.10000000000000003
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/cli.spec.mjs",
+      "score": 1.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.6000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/countdown.spec.js",
+      "score": 1.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.8
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/bootstrap.spec.js",
+      "score": 1.2,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.5
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/cli.spec.js",
+      "score": 1.2,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.5
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/settings-collapse.spec.js",
+      "score": 1.2,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.7
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/quit-flow.spec.js",
+      "score": 1,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.5,
+        "costVsCoverage": 0.30000000000000004
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/replay.spec.js",
+      "score": 1,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0.5,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.5
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/navigation.spec.js",
+      "score": 1,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.5,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 5.551115123125783e-17
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/cli-flows-improved.spec.mjs",
+      "score": 0.9,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.39999999999999997
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/vector-search.spec.js",
+      "score": 0.9,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0.2,
+        "isolationAndRobustness": 0.2,
+        "costVsCoverage": 5.551115123125783e-17
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/opponent-reveal.spec.js",
+      "score": 0.8,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.3000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/hover-zoom.spec.js",
+      "score": 0.8,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0.2,
+        "costVsCoverage": 0.10000000000000003
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/end-modal.spec.js",
+      "score": 0.6,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.10000000000000003
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/cli-scroll.spec.js",
+      "score": 0.5,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0.5,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 5.551115123125783e-17
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/narrow-layout.spec.js",
+      "score": 0.5,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0.5,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 5.551115123125783e-17
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/round-select.server.spec.js",
+      "score": 0.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.30000000000000004
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/round-select.spec.js",
+      "score": 0.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.30000000000000004
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/battle-classic/timer.spec.js",
+      "score": 0.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.30000000000000004
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    },
+    {
+      "file": "playwright/cli-flows.spec.mjs",
+      "score": 0.3,
+      "classification": "REMOVE_MERGE",
+      "scores": {
+        "intentClarity": 0,
+        "behavioralRelevance": 0,
+        "assertionQuality": 0,
+        "isolationAndRobustness": 0,
+        "costVsCoverage": 0.3000000000000001
+      },
+      "metrics": {
+        "duration": 0,
+        "passed": 0,
+        "failed": 0,
+        "flakeRate": 0
+      }
+    }
+  ]
+}
