@@ -275,6 +275,9 @@ function attachListeners(machineRef) {
     // ignore: catalog event is informational
   }
   debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef);
+  if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+    globalThis.__classicBattleDebugExpose("getClassicBattleMachine", () => machineRef);
+  }
   if (typeof document !== "undefined") {
     visibilityHandler = () => {
       const engine = machineRef.context?.engine;

@@ -20,10 +20,18 @@ import { readDebugState } from "./debugHooks.js";
  */
 export async function dispatchBattleEvent(eventName, payload) {
   // Get machine from debug state to avoid circular dependency
-  const getMachine = readDebugState("getClassicBattleMachine");
+  const getMachine =
+    typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead
+      ? globalThis.__classicBattleDebugRead("getClassicBattleMachine")
+      : readDebugState("getClassicBattleMachine");
   const machine = typeof getMachine === "function" ? getMachine() : null;
 
-  if (!machine) return false;
+  if (!machine) {
+    console.error("dispatchBattleEvent: no machine available for", eventName);
+    return false;
+  }
+
+  console.log("dispatchBattleEvent: dispatching", eventName, "to machine");
 
   try {
     // PRD taxonomy: emit interrupt.requested with payload context
