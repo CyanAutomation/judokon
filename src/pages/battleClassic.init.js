@@ -310,11 +310,18 @@ async function beginSelectionTimer(store) {
         } catch (err) {
           console.debug("battleClassic: set autoSelected failed", err);
         }
+        let result;
         try {
-          await computeRoundResult(store, "speed", 5, 3);
+          result = await computeRoundResult(store, "speed", 5, 3);
         } catch (err) {
           console.debug("battleClassic: computeRoundResult (vitest) failed", err);
         }
+        try {
+          const scoreEl = document.getElementById("score-display");
+          if (scoreEl && result) {
+            scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+          }
+        } catch {}
         try {
           startCooldown(store);
         } catch (err) {
