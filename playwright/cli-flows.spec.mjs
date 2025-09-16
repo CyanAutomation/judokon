@@ -57,7 +57,7 @@ test.describe("CLI Keyboard Flows", () => {
       // Check if help panel exists
       const helpPanel = page.locator("#cli-shortcuts");
 
-      if (await helpPanel.count() > 0) {
+      if ((await helpPanel.count()) > 0) {
         // If help panel exists, test keyboard toggle
         const isInitiallyVisible = await helpPanel.isVisible();
 
@@ -88,7 +88,7 @@ test.describe("CLI Keyboard Flows", () => {
 
       // Check if modal container exists and is empty (expected for quit)
       const modalContainer = page.locator("#modal-container");
-      if (await modalContainer.count() > 0) {
+      if ((await modalContainer.count()) > 0) {
         // Modal container exists - verify it doesn't break the page
         await expect(modalContainer).toBeAttached();
       }
@@ -107,7 +107,7 @@ test.describe("CLI Keyboard Flows", () => {
         () => page.keyboard.press("2"),
         () => page.keyboard.press("h"),
         () => page.keyboard.press("q"),
-        () => page.keyboard.press("Enter"),
+        () => page.keyboard.press("Enter")
       ];
 
       for (const interaction of interactions) {
@@ -122,5 +122,3 @@ test.describe("CLI Keyboard Flows", () => {
     }, ["log", "warn", "error"]);
   });
 });
-
-
