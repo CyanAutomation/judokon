@@ -18,7 +18,7 @@ AI agents working with the JU-DO-KON! project lack unified workflows and optimiz
 - **Accuracy**: Maintain 62.5%+ success rate for finding correct sources through optimized queries
 - **Consistency**: Establish standardized workflows for common agent tasks and interactions
 - **Quality**: Ensure AI-generated content meets project standards for documentation and code
-- **Knowledge Leverage**: Enable full utilization of the 16,000+ indexed chunks in the vector database
+- **Knowledge Leverage**: Enable full utilization of over 2,300 indexed chunks (2,328 currently) in the vector database
 - **Workflow Optimization**: Provide clear decision trees and patterns for different query types
 
 ---

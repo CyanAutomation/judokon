@@ -4,7 +4,7 @@ This document provides comprehensive guidance on using the JU-DO-KON! vector RAG
 
 ## Overview
 
-Before scanning the repo for answers, call [`queryRag`](../src/helpers/queryRag.js) with a natural-language question to pull relevant context from the embeddings database containing 16,000+ indexed chunks covering documentation, code standards, and game rules.
+Before scanning the repo for answers, call [`queryRag`](../src/helpers/queryRag.js) with a natural-language question to pull relevant context from the embeddings database containing over 2,300 indexed chunks (2,328 currently) covering documentation, code standards, and game rules.
 
 ## Basic Usage
 
