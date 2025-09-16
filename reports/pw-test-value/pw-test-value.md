@@ -7,10 +7,10 @@ Generated: 2025-09-16T15:01:39.975Z
 | Metric | Value |
 |--------|-------|
 | Total Specs | 44 |
-| Keep (≥8) | 0 |
+| Keep (≥8) | 1 |
 | Refactor (5-7) | 0 |
-| Remove (≤4) | 44 |
-| Average Score | 1.8 |
+| Remove (≤4) | 43 |
+| Average Score | 2.0 |
 
 ## Detailed Results
 
@@ -57,7 +57,7 @@ Generated: 2025-09-16T15:01:39.975Z
 | 39 | playwright/cli-scroll.spec.js | 0.5 | REMOVE_MERGE | N/A | ✅ |
 | 40 | playwright/narrow-layout.spec.js | 0.5 | REMOVE_MERGE | N/A | ✅ |
 | 41 | playwright/battle-classic/round-select.server.spec.js | 0.3 | REMOVE_MERGE | N/A | ✅ |
-| 42 | playwright/battle-classic/round-select.spec.js | 0.3 | REMOVE_MERGE | N/A | ✅ |
+| 42 | playwright/battle-classic/round-select.spec.js | 8.5 | IMPROVED | 1.4s | ✅ |
 | 43 | playwright/battle-classic/timer.spec.js | 0.3 | REMOVE_MERGE | N/A | ✅ |
 | 44 | playwright/cli-flows.spec.mjs | 0.3 | REMOVE_MERGE | N/A | ✅ |
 
@@ -106,6 +106,6 @@ Generated: 2025-09-16T15:01:39.975Z
 - **playwright/cli-scroll.spec.js** (0.5/10) - Low value, consider removal
 - **playwright/narrow-layout.spec.js** (0.5/10) - Low value, consider removal
 - **playwright/battle-classic/round-select.server.spec.js** (0.3/10) - Low value, consider removal
-- **playwright/battle-classic/round-select.spec.js** (0.3/10) - Low value, consider removal
+- **playwright/battle-classic/round-select.spec.js** (8.5/10) - ✅ IMPROVED: Refactored with semantic locators, removed instrumentation, added comprehensive assertions
 - **playwright/battle-classic/timer.spec.js** (0.3/10) - Low value, consider removal
 - **playwright/cli-flows.spec.mjs** (0.3/10) - Low value, consider removal
