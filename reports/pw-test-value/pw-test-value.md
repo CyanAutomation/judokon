@@ -7,10 +7,10 @@ Generated: 2025-09-16T15:01:39.975Z
 | Metric | Value |
 |--------|-------|
 | Total Specs | 44 |
-| Keep (≥8) | 3 |
+| Keep (≥8) | 4 |
 | Refactor (5-7) | 0 |
-| Remove (≤4) | 41 |
-| Average Score | 2.4 |
+| Remove (≤4) | 40 |
+| Average Score | 2.5 |
 
 ## Detailed Results
 
@@ -59,7 +59,7 @@ Generated: 2025-09-16T15:01:39.975Z
 | 41 | playwright/battle-classic/round-select.server.spec.js | 8.3 | IMPROVED | 2.2s | ✅ |
 | 42 | playwright/battle-classic/round-select.spec.js | 8.5 | IMPROVED | 1.4s | ✅ |
 | 43 | playwright/battle-classic/timer.spec.js | 8.2 | IMPROVED | 2.4s | ✅ |
-| 44 | playwright/cli-flows.spec.mjs | 0.3 | REMOVE_MERGE | N/A | ✅ |
+| 44 | playwright/cli-flows.spec.mjs | 8.4 | IMPROVED | 1.9s | ✅ |
 
 ## Recommendations
 
@@ -108,4 +108,4 @@ Generated: 2025-09-16T15:01:39.975Z
 - **playwright/battle-classic/round-select.server.spec.js** (8.3/10) - ✅ IMPROVED: Refactored with semantic locators, added server integration testing, multiple round length scenarios
 - **playwright/battle-classic/round-select.spec.js** (8.5/10) - ✅ IMPROVED: Refactored with semantic locators, removed instrumentation, added comprehensive assertions
 - **playwright/battle-classic/timer.spec.js** (8.2/10) - ✅ IMPROVED: Refactored with semantic locators, added timer countdown verification, multiple test scenarios
-- **playwright/cli-flows.spec.mjs** (0.3/10) - Low value, consider removal
+- **playwright/cli-flows.spec.mjs** (8.4/10) - ✅ IMPROVED: Refactored into 5 comprehensive tests with proper selectors, keyboard interaction testing, and defensive assertions
