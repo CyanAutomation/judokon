@@ -1,4 +1,4 @@
-# Lowest-value Playwright specs
+# Lowest-val|    7 | `static-pages.spec.js`                  |      6       | REFACTOR      |   1    |     1     |     0      |  2   |     1,915 → 3,073     | Augmented with page-specific assertions (carousel, main, heading, table) so each static page proves its real content, not just nav visibility. Duration stable, improved robustness with multiple checks per page. |e Playwright specs
 
 This file lists the Playwright specs that currently provide the least value for their cost. Use it to prioritize removal, consolidation, or refactor work.
 
