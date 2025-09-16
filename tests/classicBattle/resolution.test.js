@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import * as timerUtils from "../../src/helpers/timerUtils.js";
+import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
 
 describe("Classic Battle round resolution", () => {
   test("score updates after auto-select on expiry", async () => {
+    resetFallbackScores();
     const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
       if (cat === "roundTimer") return 1;
       return 3;
