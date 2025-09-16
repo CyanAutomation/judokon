@@ -10,14 +10,24 @@
 | **Footer navigation accessible but breakable** | The bottom navigation bar is fully active during the match.  Clicking it mid‑match navigates away from the battle without any confirmation, even though the PRD indicates a confirmation step.                                                                                                                                                                                          | Players can accidentally leave a match without confirmation, causing progress loss.  The nav bar should be disabled or intercepted during battles.                                                                                                                                                                                                   |
 
 
-Improvement opportunities
-Fix the battle initialisation bug. The most pressing issue is that the battle engine doesn’t start. Investigate whether the client fails to load battleClassic.init.js, the judoka dataset, or dependencies. Add error handling around asynchronous imports and surface any fatal errors in the UI (e.g., display a snackbar with a retry button).
-Ensure keyboard support for match‑length selection. The modal’s instructions claim number and arrow keys work, but they currently don’t. Hook keyboard events properly and focus the first button when the modal opens.
-Improve click‑target spacing. The mis‑navigation suggests invisible clickable elements near the Quick button. Increase spacing and ensure the modal intercepts pointer events. Touch targets should be ≥ 44 px high as per the PRD.
-Disable or intercept footer navigation during battles. To prevent accidental exits, hide or disable the bottom nav bar once a match begins, or add a confirmation modal when navigation is attempted.
-Add accessible descriptions to stat buttons. The PRD specifies aria-describedby attributes for stat buttons explaining the meaning of each stat. These should be included in the dynamically created buttons to assist screen‑reader users.
-Provide visual feedback when selecting stats. When the core loop is operational, ensure that selected buttons highlight and the chosen stat is announced both visually and via the scoreboard. This will help young players understand cause and effect.
-Expose test hooks and deterministic mode. The PRD lists enableTestMode and battleStateProgress flags. Document how to enable these via query parameters or global overrides so QA testers can simulate deterministic outcomes and inspect state transitions without randomisation.
-Consider audio cues. Although optional, short sound effects for wins, losses and ties (with mute option) would enhance engagement for children.
-Optimise for low‑end devices. Use CSS transitions rather than heavy JavaScript for animations, limit the size of card images and compress assets to ensure the game runs smoothly on low‑spec devices. Use prefers-reduced-motion media query to disable animations for users who prefer less motion.
-Add robust error recovery. Implement user‑facing error screens for dataset load failures, timer drift (> 2 s), or other unexpected errors. Provide a “Retry” button to reload the match without requiring a full page refresh.
+## Improvement Opportunities
+
+### Critical Fixes
+- Fix the battle initialisation bug. Investigate whether the client fails to load `battleClassic.init.js`, the judoka dataset, or dependencies. Add error handling around asynchronous imports and surface any fatal errors in the UI (e.g., display a snackbar with a retry button).
+
+### Accessibility & Usability
+- Ensure keyboard support for match‑length selection. Hook keyboard events properly and focus the first button when the modal opens.
+- Improve click‑target spacing. Increase spacing and ensure the modal intercepts pointer events. Touch targets should be ≥ 44 px high as per the PRD.
+- Add accessible descriptions to stat buttons. Include `aria-describedby` attributes for stat buttons explaining the meaning of each stat.
+- Provide visual feedback when selecting stats. Ensure that selected buttons highlight and the chosen stat is announced both visually and via the scoreboard.
+- Consider audio cues. Although optional, short sound effects for wins, losses and ties (with mute option) would enhance engagement for children.
+
+### UI/UX & Responsiveness
+- Disable or intercept footer navigation during battles. Hide or disable the bottom nav bar once a match begins, or add a confirmation modal when navigation is attempted.
+
+### Testing & Debugging
+- Expose test hooks and deterministic mode. Document how to enable these via query parameters or global overrides so QA testers can simulate deterministic outcomes and inspect state transitions without randomisation.
+
+### Performance & Robustness
+- Optimise for low‑end devices. Use CSS transitions rather than heavy JavaScript for animations, limit the size of card images and compress assets. Use `prefers-reduced-motion` media query to disable animations for users who prefer less motion.
+- Add robust error recovery. Implement user‑facing error screens for dataset load failures, timer drift (> 2 s), or other unexpected errors. Provide a “Retry” button to reload the match without requiring a full page refresh.
