@@ -57,8 +57,6 @@ describe("skip handler clears fallback timer", () => {
 
   afterEach(async () => {
     expect(errorSpy).not.toHaveBeenCalled();
-    expect(warnSpy).toHaveBeenCalledWith("[test] skip: stop nextRoundTimer");
-    expect(warnSpy).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
     vi.restoreAllMocks();
     timerMockRestore?.unmock?.();
@@ -85,6 +83,8 @@ describe("skip handler clears fallback timer", () => {
     await vi.advanceTimersByTimeAsync(FALLBACK_DELAY_MS);
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
     debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
+    expect(warnSpy).toHaveBeenCalledWith("[test] skip: stop nextRoundTimer");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
   });
 
   it("fires ready once after skipping", async () => {
@@ -99,5 +99,24 @@ describe("skip handler clears fallback timer", () => {
     const FALLBACK_DELAY_MS = 20; // advance past fallback timeout (10ms) to ensure it would fire if uncleared
     await vi.advanceTimersByTimeAsync(FALLBACK_DELAY_MS);
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith("[test] skip: stop nextRoundTimer");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not dispatch ready from fallback timers after manual resolve", async () => {
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const controls = startCooldown({}, scheduler);
+    scheduler.tick(0);
+    await eventDispatcher.dispatchBattleEvent("ready");
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    const readyPromise = controls.ready;
+    controls.resolveReady?.();
+    await readyPromise;
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(50);
+    scheduler.tick(50);
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });

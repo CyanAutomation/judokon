@@ -673,6 +673,26 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   let fallbackId;
   /** @type {ReturnType<typeof setTimeout>|null|undefined} */
   let schedulerFallbackId;
+  const originalResolveReady =
+    typeof controls.resolveReady === "function" ? controls.resolveReady : null;
+  if (originalResolveReady) {
+    controls.resolveReady = function wrappedResolveReady(...args) {
+      if (fallbackId) {
+        clearTimeout(fallbackId);
+        fallbackId = null;
+      }
+      try {
+        if (schedulerFallbackId) {
+          scheduler.clearTimeout?.(schedulerFallbackId);
+        }
+      } catch {}
+      schedulerFallbackId = null;
+      if (!expired) {
+        expired = true;
+      }
+      return originalResolveReady.apply(this, args);
+    };
+  }
   const onExpired = () => {
     if (expired) return;
     expired = true;
