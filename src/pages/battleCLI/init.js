@@ -897,8 +897,9 @@ function startSelectionCountdown(seconds = 30) {
   };
   selectionFinishFn = finish;
   // Render initial
-  if (window.__battleCLIinit?.setCountdown) window.__battleCLIinit.setCountdown(remaining);
-  else {
+  if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
+    window.__battleCLIinit.setCountdown(remaining);
+  } else {
     el.dataset.remainingTime = String(remaining);
     el.textContent = `Time remaining: ${remaining}`;
   }
@@ -920,8 +921,9 @@ function startSelectionCountdown(seconds = 30) {
       if (selectionCancelled) return;
       remaining -= 1;
       if (remaining > 0) {
-        if (window.__battleCLIinit?.setCountdown) window.__battleCLIinit.setCountdown(remaining);
-        else {
+        if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
+          window.__battleCLIinit.setCountdown(remaining);
+        } else {
           el.dataset.remainingTime = String(remaining);
           el.textContent = `Time remaining: ${remaining}`;
         }

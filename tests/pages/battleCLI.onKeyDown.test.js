@@ -49,6 +49,18 @@ describe("battleCLI onKeyDown", () => {
   });
 
   afterEach(() => {
+    const selectionTimers = __test?.getSelectionTimers?.();
+    const cooldownTimers = __test?.getCooldownTimers?.();
+    for (const timer of [selectionTimers?.selectionTimer, cooldownTimers?.cooldownTimer]) {
+      if (timer !== null && timer !== undefined) {
+        clearTimeout(timer);
+      }
+    }
+    for (const interval of [selectionTimers?.selectionInterval, cooldownTimers?.cooldownInterval]) {
+      if (interval !== null && interval !== undefined) {
+        clearInterval(interval);
+      }
+    }
     document.body.innerHTML = "";
     document.body.className = "";
     delete document.body.dataset.battleState;
