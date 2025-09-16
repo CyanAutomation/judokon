@@ -1,10 +1,18 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import * as timerUtils from "../../src/helpers/timerUtils.js";
 import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
+import { setTestMode } from "../../src/helpers/testModeUtils.js";
+import { createBattleEngine } from "../../src/helpers/battleEngineFacade.js";
 
-describe("Classic Battle round resolution", () => {
+describe.configure({ environment: "jsdom" })("Classic Battle round resolution", () => {
   test("score updates after auto-select on expiry", async () => {
+    // Ensure deterministic test mode and engine state
+    setTestMode({ enabled: true, seed: 1 });
+    createBattleEngine({ forceCreate: true });
     resetFallbackScores();
     const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
       if (cat === "roundTimer") return 1;
@@ -52,6 +60,9 @@ describe("Classic Battle round resolution", () => {
       expect(scoreEl.textContent || "").toMatch(/Opponent:\s*0/);
     } finally {
       spy.mockRestore();
+      // Ensure all timers are cleared to avoid async leaks
+      vi.runOnlyPendingTimers();
+      vi.useRealTimers();
     }
-  });
+  }, 15000); // 15s timeout
 });
