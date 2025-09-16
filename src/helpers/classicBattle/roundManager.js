@@ -385,7 +385,13 @@ function setupOrchestratedReady(controls, machine) {
       cleanup();
     });
   }
-  addListener("nextRoundTimerReady", () => finalize());
+  for (const type of [
+    "cooldown.timer.expired",
+    "countdownFinished",
+    "control.countdown.completed"
+  ]) {
+    addListener(type, () => finalize());
+  }
   addListener("battleStateChange", (event) => {
     const next = event?.detail?.to ?? event?.detail;
     if (isOrchestratorReadyState(next)) finalize();
