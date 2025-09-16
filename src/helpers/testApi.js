@@ -125,7 +125,19 @@ const timerApi = {
     try {
       // Use existing battleCLI helper if available
       if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
-        window.__battleCLIinit.setCountdown(seconds);
+        const battleCLI = window.__battleCLIinit;
+        try {
+          battleCLI.__freezeUntil = 0;
+        } catch {}
+
+        try {
+          battleCLI.setCountdown(seconds);
+        } finally {
+          try {
+            battleCLI.__freezeUntil = 0;
+          } catch {}
+        }
+
         return;
       }
 
