@@ -1,4 +1,4 @@
-# Classic Battle CLI: Quality Assurance Report
+#  Issues found
 
 | ID    | Issue & steps to reproduce                                                                                                                                                                                                                                                                                                                                                                                        | Expected behaviour (from PRD)                                                                                                                                                                                                    | Actual behaviour                                                                                                                                                                                                                                                        |                                                                                                                         |                                                                                                                                                            |
 | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -204,6 +204,7 @@ The suggested fixes align with the JU-DO-KON agent guide:
 ## QA Report Evaluation
 
 ### Overall Assessment
+
 The QA report is comprehensive and accurately identifies critical issues with the Classic Battle CLI implementation. All 8 issues are valid and well-documented with clear reproduction steps, expected vs. actual behavior, and actionable improvement suggestions. The report demonstrates thorough testing and attention to user experience, accessibility, and technical implementation details.
 
 ### Issue-by-Issue Evaluation
@@ -244,17 +245,20 @@ The QA report is comprehensive and accurately identifies critical issues with th
 ### Suggested Improvements
 
 **High Priority:**
+
 - Add state-aware key filtering to prevent "Invalid key" during inappropriate states
 - Implement proper input focus detection to avoid interfering with form fields
 - Add `aria-live="polite"` to `#cli-countdown` for timer announcements
 - Fix verbose mode toggle synchronization
 
 **Medium Priority:**
+
 - Consolidate duplicate scoreboard elements
 - Improve modal cleanup to prevent text artifacts
 - Add focus management for stat selection keys
 
 **Low Priority:**
+
 - Add explicit "Start Match" fallback button
 - Enhance timer accessibility with `aria-atomic` and better announcements
 - Implement debouncing for rapid key presses
@@ -262,6 +266,7 @@ The QA report is comprehensive and accurately identifies critical issues with th
 ### Alignment with Project Guidelines
 
 The suggested fixes align with the JU-DO-KON agent guide:
+
 - Follows the 5-step workflow (context → task contract → implementation → validation → delivery)
 - Uses static imports where appropriate (no dynamic imports in hot paths)
 - Includes proper JSDoc with `@pseudocode` for complex functions
