@@ -3,9 +3,6 @@ import { test, expect } from "@playwright/test";
 test.describe("Classic Battle cooldown + Next", () => {
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
     await page.addInitScript(() => {
-      // Speed up timers during e2e: 1s round, 1s cooldown
-      window.__OVERRIDE_TIMERS = { roundTimer: 1 };
-      window.__NEXT_ROUND_COOLDOWN_MS = 1000;
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
     await page.goto("/src/pages/battleClassic.html");
