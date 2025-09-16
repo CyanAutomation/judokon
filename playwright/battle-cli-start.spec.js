@@ -5,8 +5,10 @@ test.describe("Battle CLI - Start", () => {
     await page.goto("/src/pages/battleCLI.html?autostart=1");
 
     // After loading, the stats should be visible and not busy
-    const statsContainer = page.locator("#cli-stats");
+    const statsContainer = page.getByRole("listbox", {
+      name: "Select a stat with number keys 1–5"
+    });
     await expect(statsContainer).toBeVisible();
-    await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
+    await expect(statsContainer).toHaveAttribute("aria-busy", "false");
   });
 });

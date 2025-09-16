@@ -3,8 +3,6 @@ import { test, expect } from "@playwright/test";
 test.describe("Classic Battle replay", () => {
   test("Replay resets scoreboard after match end", async ({ page }) => {
     await page.addInitScript(() => {
-      window.__OVERRIDE_TIMERS = { roundTimer: 1 };
-      window.__NEXT_ROUND_COOLDOWN_MS = 500;
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
       localStorage.setItem("battle.pointsToWin", "1");
     });

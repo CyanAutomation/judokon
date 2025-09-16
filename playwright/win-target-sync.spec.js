@@ -15,7 +15,8 @@ test.describe("Round Selection - Win Target Synchronization", () => {
   const testCases = [
     { key: "1", points: "5", name: "Quick" },
     { key: "2", points: "10", name: "Medium" },
-    { key: "3", points: "15", name: "Long" }
+    { key: "3", points: "15", name: "Long" },
+    { key: "1", points: "5", name: "Quick (sync check)" } // Additional case for sync
   ];
 
   test.beforeEach(async ({ page }) => {
@@ -23,12 +24,10 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await page.addInitScript(() => {
       localStorage.clear();
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      delete window.location.search;
-      window.__TEST_MODE_ENABLED = false;
     });
 
     await page.goto("/src/pages/battleCLI.html");
-    await expect(page.locator(".modal-backdrop")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(".modal-backdrop")).toBeVisible();
   });
 
   for (const { key, points, name } of testCases) {
@@ -47,19 +46,4 @@ test.describe("Round Selection - Win Target Synchronization", () => {
       await expect(header).toContainText(`Round 1 Target: ${points}`);
     });
   }
-
-  test("should maintain synchronization from modal to settings dropdown", async ({ page }) => {
-    // Start with Quick (5 points)
-    await page.keyboard.press("1");
-    await expect(page.locator(".modal-backdrop")).toBeHidden();
-    await expect(page.locator("#cli-stats")).toBeVisible();
-
-    await openSettingsPanel(page);
-
-    const dropdown = page.locator("#points-select");
-    await expect(dropdown).toHaveValue("5");
-
-    const header = page.locator("#cli-header");
-    await expect(header).toContainText("Round 1 Target: 5");
-  });
 });
