@@ -49,49 +49,9 @@ describe("Classic Battle round resolution", () => {
       });
 
       // Open modal and pick any option to start
-      // Wait for the button to appear, but guard against test teardown and long waits.
-      const waitForBtn = (timeout = 5000) =>
-        new Promise((resolve, reject) => {
-          const start = Date.now();
-          let timerId = null;
-
-          const clear = () => {
-            if (timerId !== null) {
-              clearTimeout(timerId);
-              timerId = null;
-            }
-          };
-
-          const loop = () => {
-            try {
-              if (typeof document === "undefined") {
-                clear();
-                return reject(new Error("document is undefined (teardown detected)"));
-              }
-
-              const el = document.getElementById("round-select-2");
-              if (el) {
-                clear();
-                return resolve(el);
-              }
-
-              if (Date.now() - start > timeout) {
-                clear();
-                return reject(new Error("waitForBtn timed out waiting for #round-select-2"));
-              }
-
-              timerId = setTimeout(loop, 20);
-            } catch (err) {
-              // Defensive: if document lookup throws because environment was torn down,
-              // reject instead of letting an uncaught exception bubble up after teardown.
-              clear();
-              return reject(err);
-            }
-          };
-
-          loop();
-        });
-      const btn = await waitForBtn();
+      // Use shared test utility to wait for DOM nodes safely
+      const waitForElement = (await import("../utils/waitForElement.js")).default;
+      const btn = await waitForElement("#round-select-2", { timeout: 5000, interval: 20 });
 
       vi.useFakeTimers();
       btn.click();
