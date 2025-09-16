@@ -146,7 +146,7 @@ npm run rag:validate
 
 ## 🧠 RAG (Retrieval-Augmented Generation) Policy
 
-This project contains a high-performance vector database with 16,000+ indexed chunks covering documentation, code standards, and game rules. RAG queries return results in ~2 seconds with 62.5% accuracy for finding correct sources.
+This project contains a high-performance vector database with over 2,300 indexed chunks (2,328 currently) covering documentation, code standards, and game rules. RAG queries return results in ~2 seconds with 62.5% accuracy for finding correct sources.
 
 **See also**: [Quick Reference Cards](#-quick-reference-cards) | [docs/rag-system.md](./docs/rag-system.md) for complete usage guide
 
