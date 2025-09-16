@@ -49,6 +49,7 @@ Next steps
 - **No errors or failures**
 
 **Performance improvements confirmed**:
+
 - `battle-cli-start.spec.js`: 725ms (vs original monolithic 61,336ms → **84x faster**)
 - Other specs show stable or improved durations with enhanced robustness
 

@@ -17,4 +17,3 @@ The script reads `queries.json` and reports:
 - **Recall@5** – Fraction of queries whose expected document appears in the top five results.
 
 Higher values indicate better retrieval accuracy.
-
