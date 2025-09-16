@@ -3,41 +3,49 @@
 ## Issues Found
 
 ### Issue 1: Unable to start a battle
+
 - **Description:** Navigate to the Classic Battle CLI page and choose a match length (Quick/Medium/Long) via the modal. After selecting “Quick” (either by clicking the button or pressing `1`), the modal closes but the game never advances to round 1. The “Round 0 of 0” header never updates and the stat cards remain empty.
 - **Expected Behavior (from PRD):** Selecting a round length should start the battle by dispatching the engine’s `startClicked` event. The header should show “Round 1 of N”, a timer should begin counting down and the player should be prompted to choose a stat.
 - **Actual Behavior:** The win‑target dropdown is updated (e.g., to 5 for “Quick”), but no timer appears and the stat list remains inactive. Clicking the yellow power icon or pressing `Enter/Space` does nothing. The game is effectively stuck at the pre‑start state and cannot be played.
 
 ### Issue 2: Overlapping modal text in stat area
+
 - **Description:** After choosing a match length, text from the round‑select modal (“First to 5 points wins.”) persists in the second stat column and overlaps the label “\[2] Speed”.
 - **Expected Behavior (from PRD):** Once the modal is closed, its elements should be removed from the DOM so that the stat list displays cleanly.
 - **Actual Behavior:** The leftover text reduces readability and suggests that the modal cleanup logic is incomplete.
 
 ### Issue 3: “Invalid key” error shown when it shouldn’t
+
 - **Description:** When the game is idle (no round started) or when editing the seed input, pressing any of the keys defined for game controls (e.g., `1`–`5`, `Enter`, `Space`) displays an “Invalid key, press H for help” warning. This also happens while entering digits into the seed field; typing “456” triggers the warning even though the user is focusing the text box.
 - **Expected Behavior (from PRD):** Input should be debounced per state: stat‑selection keys should be ignored silently before a round starts, and typing in form fields should not trigger global key‑handlers.
 - **Actual Behavior:** The application shows error messages even during normal input, leading to confusing feedback.
 
 ### Issue 4: Scoreboard rendering issues
+
 - **Description:** The header displays “Round 0 of 0” and duplicates of the round/score information (“Round 0”, “You: 0 Opponent: 0”) due to overlapping elements. On a mid‑sized screen the text overflows and is truncated by other elements.
 - **Expected Behavior (from PRD):** The PRD’s wireframe specifies a header that cleanly shows “Classic Battle – CLI Round X of Y You: N CPU: M”. Only one instance of each data point should be visible, and it should not overlap other UI components.
 - **Actual Behavior:** The scoreboard appears twice and misaligns with the grid; this suggests that redundant nodes or hidden scoreboard elements are being rendered incorrectly.
 
 ### Issue 5: Timer and stat values never appear
+
 - **Description:** Because the battle never starts, the countdown timer (`⏱ Timer: 07s`) and the numeric values for each stat (“Power 8”, etc.) are never rendered.
 - **Expected Behavior (from PRD):** Each round should display a 1 Hz countdown timer and the five stats with their numeric values, enabling players to choose a stat within the time limit.
 - **Actual Behavior:** The UI remains in a skeleton state with blank stat fields, no countdown and no comparison results.
 
 ### Issue 6: Accessibility shortcomings
+
 - **Description:** The only element with `aria-live` appears to be the round result message; the timer element (`#cli-countdown`) lacks an `aria-live` attribute, and the scoreboard uses `aria-live="off"`. Screen‑reader users therefore may not hear timer updates.
 - **Expected Behavior (from PRD):** The PRD requires that prompts, timers and outcomes be announced via ARIA live regions, with logical focus order and visible focus rings.
 - **Actual Behavior:** Timer updates are not exposed as live announcements. Additionally, pressing `1`–`5` does not move focus to the stat list (it only highlights the card via mouse).
 
 ### Issue 7: Seed entry still triggers global shortcuts
+
 - **Description:** When typing into the seed input, the global key listener treats each digit as a stat‑selection key and displays “Invalid key” warnings.
 - **Expected Behavior (from PRD):** When a form control has focus, keyboard input should be routed only to that control.
 - **Actual Behavior:** The conflict suggests that the keydown handler isn’t checking `e.target` or `e.isComposing` before acting.
 
 ### Issue 8: Verbose mode unavailable
+
 - **Description:** The PRD mentions a verbose log panel controlled by a feature flag `cliVerbose`. Ticking the “Verbose” checkbox does not display any log panel; there is no visible way to view engine events or timers.
 - **Expected Behavior (from PRD):** Activating verbose mode should show a scrollable log of events with timestamps and update it as the battle progresses.
 - **Actual Behavior:** The checkbox toggles state but has no apparent effect.
@@ -65,27 +73,35 @@ The QA report is comprehensive and accurately identifies critical issues with th
 ### Detailed Issue Analysis
 
 #### Issue 1: Unable to start a battle
+
 ✅ **Accurate** - Code analysis confirms the modal cleanup and `startRound` invocation appear correct, but the battle state may not transition properly. The `startRound` function in `roundSelectModal.js` does call `emitBattleEvent("startClicked")` and `dispatchBattleEvent("startClicked")`, but the engine may not be fully initialized or listening for these events.
 
 #### Issue 2: Overlapping modal text in stat area
+
 ✅ **Accurate** - The modal creation in `roundSelectModal.js` uses `document.createDocumentFragment()` and proper cleanup with `modal.destroy()`, but there may be residual text injection into `.cli-stat` elements that isn't being cleared. The `renderStatList` function in `init.js` does clear `#cli-stats` with `innerHTML = ""` but modal artifacts might persist outside this container.
 
 #### Issue 3: “Invalid key” error shown when it shouldn’t
+
 ✅ **Accurate** - The key handling in `events.js` routes keys through `routeKeyByState()`, which checks `document.body?.dataset?.battleState`. When the state is "waitingForMatchStart", there's no specific handler, so keys like '1'-'5' fall through to the global handler, which only handles 'h' and 'q'. This correctly results in "Invalid key" messages, but the UX could be improved by suppressing these during pre-start states.
 
 #### Issue 4: Scoreboard rendering issues
+
 ✅ **Accurate** - There are indeed duplicate scoreboard elements: one visible in `#cli-status` and another hidden in `#standard-scoreboard-nodes`. The visible one shows "Round 0 of 0" and score information, while the hidden one has `aria-live="off"`. This redundancy could cause confusion and the overflow issues mentioned are likely due to fixed-width elements in a responsive layout.
 
 #### Issue 5: Timer and stat values never appear
+
 ✅ **Accurate** - Since the battle doesn't start (Issue 1), the timer and stat rendering logic in `renderStatList` and timer management never executes. The countdown element `#cli-countdown` exists but remains empty.
 
 #### Issue 6: Accessibility shortcomings
+
 ✅ **Accurate** - The `#cli-countdown` element has `role="status"` but lacks `aria-live`, which would be needed for screen readers to announce timer updates. The `#round-message` correctly has `aria-live="polite"`, but the timer should have similar treatment. Focus management after key presses (1-5) highlights cards but doesn't move focus, which violates accessibility guidelines.
 
 #### Issue 7: Seed entry still triggers global shortcuts
+
 ✅ **Accurate** - The keydown handler in `events.js` doesn't check if the active element is an input field. The `shouldProcessKey` function only checks for 'escape' and feature flag status, but doesn't consider input focus. This allows global shortcuts to interfere with form input.
 
 #### Issue 8: Verbose mode unavailable
+
 ✅ **Partially Accurate** - The verbose infrastructure exists: `#cli-verbose-section` is present in HTML, the `cliVerbose` flag is implemented, and `setupFlags()` in `init.js` properly toggles visibility. However, the checkbox event binding and flag synchronization may have timing issues. Tests expect the section to become visible when the flag is enabled, but the user reports it doesn't work.
 
 ### Root Cause Analysis
