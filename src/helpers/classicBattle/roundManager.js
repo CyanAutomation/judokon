@@ -222,10 +222,12 @@ export function startCooldown(_store, scheduler = realScheduler) {
   if (!scheduler || typeof scheduler.setTimeout !== "function") {
     scheduler = realScheduler;
   }
+  const { orchestrated: orchestratedMode, machine: orchestratorMachine } =
+    detectOrchestratorContext();
   logStartCooldown();
   const controls = createNextRoundControls();
   const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
-  if (btn) {
+  if (btn && !orchestratedMode) {
     markNextReady(btn);
     try {
       emitBattleEvent("nextRoundTimerReady");
@@ -253,26 +255,30 @@ export function startCooldown(_store, scheduler = realScheduler) {
       durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000
     });
   } catch {}
-  wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
-  // Safety net: ensure readiness dispatch even if engine timers are mocked out
-  try {
-    let settled = false;
-    controls.ready?.then(() => (settled = true)).catch(() => {});
-    const ms = Math.max(0, Number(cooldownSeconds) || 0) * 1000 || 10;
-    scheduler.setTimeout(async () => {
-      if (!settled) {
-        try {
-          await dispatchBattleEvent("ready");
-        } catch {}
-        if (typeof controls.resolveReady === "function") {
+  if (orchestratedMode) {
+    setupOrchestratedReady(controls, orchestratorMachine);
+  } else {
+    wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
+    // Safety net: ensure readiness dispatch even if engine timers are mocked out
+    try {
+      let settled = false;
+      controls.ready?.then(() => (settled = true)).catch(() => {});
+      const ms = Math.max(0, Number(cooldownSeconds) || 0) * 1000 || 10;
+      scheduler.setTimeout(async () => {
+        if (!settled) {
           try {
-            emitBattleEvent("nextRoundTimerReady");
+            await dispatchBattleEvent("ready");
           } catch {}
-          controls.resolveReady();
+          if (typeof controls.resolveReady === "function") {
+            try {
+              emitBattleEvent("nextRoundTimerReady");
+            } catch {}
+            controls.resolveReady();
+          }
         }
-      }
-    }, ms);
-  } catch {}
+      }, ms);
+    } catch {}
+  }
   currentNextRound = controls;
   return controls;
 }
@@ -321,6 +327,139 @@ export function setupFallbackTimer(ms, cb) {
   } catch {
     return null;
   }
+}
+
+function detectOrchestratorContext() {
+  let orchestrated = false;
+  let machine = null;
+  try {
+    orchestrated = isOrchestrated();
+  } catch {}
+  try {
+    const getter = readDebugState("getClassicBattleMachine");
+    const candidate = typeof getter === "function" ? getter() : getter;
+    if (candidate) {
+      machine = candidate;
+      orchestrated = orchestrated || true;
+    }
+  } catch {}
+  return { orchestrated, machine };
+}
+
+function setupOrchestratedReady(controls, machine) {
+  /** @type {Array<() => void>} */
+  const cleanupFns = [];
+  const cleanup = () => {
+    while (cleanupFns.length) {
+      const dispose = cleanupFns.pop();
+      try {
+        dispose?.();
+      } catch {}
+    }
+  };
+  let resolved = false;
+  const finalize = () => {
+    if (resolved) return;
+    resolved = true;
+    cleanup();
+    const resolver = controls.resolveReady;
+    if (typeof resolver === "function") {
+      resolver();
+    }
+  };
+  const addListener = (type, handler) => {
+    const wrapped = (event) => {
+      if (resolved) return;
+      try {
+        handler(event);
+      } catch {}
+    };
+    try {
+      onBattleEvent(type, wrapped);
+      cleanupFns.push(() => offBattleEvent(type, wrapped));
+    } catch {}
+  };
+  if (controls.ready && typeof controls.ready.finally === "function") {
+    controls.ready.finally(() => {
+      resolved = true;
+      cleanup();
+    });
+  }
+  addListener("nextRoundTimerReady", () => finalize());
+  addListener("battleStateChange", (event) => {
+    const next = event?.detail?.to ?? event?.detail;
+    if (isOrchestratorReadyState(next)) finalize();
+  });
+  const checkImmediate = () => {
+    if (resolved) return;
+    if (isOrchestratorReadyState(readBattleStateDataset())) {
+      finalize();
+      return;
+    }
+    if (isOrchestratorReadyState(getMachineState(machine))) {
+      finalize();
+      return;
+    }
+    if (isNextButtonReady()) finalize();
+  };
+  checkImmediate();
+  if (!resolved) {
+    try {
+      const run = () => checkImmediate();
+      if (typeof queueMicrotask === "function") queueMicrotask(run);
+      else setTimeout(run, 0);
+    } catch {
+      try {
+        setTimeout(() => checkImmediate(), 0);
+      } catch {}
+    }
+  }
+}
+
+function isOrchestratorReadyState(state) {
+  return state === "roundStart" || state === "waitingForPlayerAction";
+}
+
+function readBattleStateDataset() {
+  try {
+    if (typeof document === "undefined" || !document.body) return null;
+    return document.body.dataset?.battleState || null;
+  } catch {
+    return null;
+  }
+}
+
+function getMachineState(machine) {
+  if (!machine || typeof machine !== "object") return null;
+  try {
+    const state = machine.getState?.();
+    if (typeof state === "string") return state;
+    if (state && typeof state === "object" && typeof state.value === "string") return state.value;
+  } catch {}
+  try {
+    if (typeof machine.state === "string") return machine.state;
+  } catch {}
+  try {
+    if (typeof machine.currentState === "string") return machine.currentState;
+  } catch {}
+  try {
+    const current = machine.current;
+    if (typeof current === "string") return current;
+    if (current && typeof current === "object" && typeof current.value === "string")
+      return current.value;
+  } catch {}
+  return null;
+}
+
+function isNextButtonReady() {
+  try {
+    if (typeof document === "undefined") return false;
+    const btn = document.getElementById("next-button");
+    if (!btn) return false;
+    if (btn.dataset?.nextReady === "true") return true;
+    if (btn.disabled === false) return true;
+  } catch {}
+  return false;
 }
 
 function logStartCooldown() {
