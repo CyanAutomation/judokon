@@ -7,10 +7,10 @@ Generated: 2025-09-16T15:01:39.975Z
 | Metric | Value |
 |--------|-------|
 | Total Specs | 44 |
-| Keep (≥8) | 6 |
+| Keep (≥8) | 7 |
 | Refactor (5-7) | 0 |
-| Remove (≤4) | 38 |
-| Average Score | 2.7 |
+| Remove (≤4) | 37 |
+| Average Score | 2.9 |
 
 ## Detailed Results
 
@@ -53,9 +53,9 @@ Generated: 2025-09-16T15:01:39.975Z
 | 35 | playwright/vector-search.spec.js | 0.9 | REMOVE_MERGE | N/A | ✅ |
 | 36 | playwright/battle-classic/opponent-reveal.spec.js | 0.8 | REMOVE_MERGE | N/A | ✅ |
 | 37 | playwright/hover-zoom.spec.js | 0.8 | REMOVE_MERGE | N/A | ✅ |
-| 38 | playwright/battle-classic/end-modal.spec.js | 0.6 | REMOVE_MERGE | N/A | ✅ |
+| 38 | playwright/battle-classic/end-modal.spec.js | 8.3 | IMPROVED | 44.4s | ✅ |
 | 39 | playwright/cli-scroll.spec.js | 8.3 | IMPROVED | 1.0s | ✅ |
-| 40 | playwright/battle-classic/end-modal.spec.js | 0.6 | REMOVE_MERGE | N/A | ✅ |
+| 40 | playwright/battle-classic/end-modal.spec.js | 8.3 | IMPROVED | 44.4s | ✅ |
 | 41 | playwright/battle-classic/round-select.server.spec.js | 8.3 | IMPROVED | 2.2s | ✅ |
 | 42 | playwright/battle-classic/round-select.spec.js | 8.5 | IMPROVED | 1.4s | ✅ |
 | 43 | playwright/battle-classic/timer.spec.js | 8.2 | IMPROVED | 2.4s | ✅ |
@@ -103,7 +103,7 @@ Generated: 2025-09-16T15:01:39.975Z
 - **playwright/vector-search.spec.js** (0.9/10) - Low value, consider removal
 - **playwright/battle-classic/opponent-reveal.spec.js** (0.8/10) - Low value, consider removal
 - **playwright/hover-zoom.spec.js** (0.8/10) - Low value, consider removal
-- **playwright/battle-classic/end-modal.spec.js** (0.6/10) - Low value, consider removal
+- **playwright/battle-classic/end-modal.spec.js** (8.3/10) - ✅ IMPROVED: Refactored into 8 comprehensive tests covering match completion, replay functionality, UI elements, and edge cases with defensive assertions
 - **playwright/cli-scroll.spec.js** (0.5/10) - Low value, consider removal
 - **playwright/narrow-layout.spec.js** (0.5/10) - Low value, consider removal
 - **playwright/battle-classic/round-select.server.spec.js** (8.3/10) - ✅ IMPROVED: Refactored with semantic locators, added server integration testing, multiple round length scenarios
