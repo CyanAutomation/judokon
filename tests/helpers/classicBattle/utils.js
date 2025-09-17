@@ -2,7 +2,7 @@ if (typeof console !== "undefined") {
   console.log("[TEST DEBUG] utils.js top-level loaded");
 }
 // [TEST DEBUG] top-level utils.js
-// eslint-disable-next-line no-console
+
 console.log("[TEST DEBUG] top-level utils.js");
 import { vi } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";

@@ -367,7 +367,8 @@ export function startCooldown(_store, scheduler) {
   // Patch: In Vitest, always call handleNextRoundExpiration with test button after timer setup
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const testBtn = typeof document !== "undefined" ? document.querySelector('[data-role="next-round"]') : null;
+      const testBtn =
+        typeof document !== "undefined" ? document.querySelector('[data-role="next-round"]') : null;
       if (testBtn) handleNextRoundExpiration({}, testBtn);
     }
   } catch {}
