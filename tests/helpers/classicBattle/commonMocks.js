@@ -1,6 +1,6 @@
 // [TEST DEBUG] top-level commonMocks.js
 // eslint-disable-next-line no-console
-console.log('[TEST DEBUG] top-level commonMocks.js');
+console.log("[TEST DEBUG] top-level commonMocks.js");
 import { vi } from "vitest";
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({

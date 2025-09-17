@@ -1,6 +1,6 @@
 // [TEST DEBUG] top-level waitForState.js
 // eslint-disable-next-line no-console
-console.log('[TEST DEBUG] top-level waitForState.js');
+console.log("[TEST DEBUG] top-level waitForState.js");
 import { onBattleEvent, offBattleEvent } from "../src/helpers/classicBattle/battleEvents.js";
 import { getStateSnapshot } from "../src/helpers/classicBattle/battleDebug.js";
 

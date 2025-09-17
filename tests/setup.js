@@ -1,6 +1,6 @@
 // [TEST DEBUG] top-level setup.js
 // eslint-disable-next-line no-console
-console.log('[TEST DEBUG] top-level setup.js');
+console.log("[TEST DEBUG] top-level setup.js");
 if (typeof CustomEvent === "undefined") {
   global.CustomEvent = class CustomEvent extends Event {
     constructor(type, eventInitDict) {
@@ -10,19 +10,19 @@ if (typeof CustomEvent === "undefined") {
   };
   // [TEST DEBUG] after CustomEvent polyfill
   // eslint-disable-next-line no-console
-  console.log('[TEST DEBUG] after CustomEvent polyfill');
+  console.log("[TEST DEBUG] after CustomEvent polyfill");
 }
 if (typeof global.requestAnimationFrame === "undefined") {
   global.requestAnimationFrame = (cb) => setTimeout(() => cb(0), 0);
   // [TEST DEBUG] after requestAnimationFrame polyfill
   // eslint-disable-next-line no-console
-  console.log('[TEST DEBUG] after requestAnimationFrame polyfill');
+  console.log("[TEST DEBUG] after requestAnimationFrame polyfill");
 }
 if (typeof global.cancelAnimationFrame === "undefined") {
   global.cancelAnimationFrame = (id) => clearTimeout(id);
   // [TEST DEBUG] after cancelAnimationFrame polyfill
   // eslint-disable-next-line no-console
-  console.log('[TEST DEBUG] after cancelAnimationFrame polyfill');
+  console.log("[TEST DEBUG] after cancelAnimationFrame polyfill");
 }
 import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
@@ -30,7 +30,7 @@ import { muteConsole, restoreConsole } from "./utils/console.js";
 
 // [TEST DEBUG] after imports
 // eslint-disable-next-line no-console
-console.log('[TEST DEBUG] after imports');
+console.log("[TEST DEBUG] after imports");
 
 // Early module-level mute: some modules emit test-oriented logs during import
 // time which run before `beforeEach` executes. When running under Vitest we
@@ -38,26 +38,23 @@ console.log('[TEST DEBUG] after imports');
 // For debugging local test runs set SHOW_TEST_LOGS=1 in the environment to
 // bypass muting and allow console/stdout to appear in the test run.
 try {
+  // PATCH: Bypass global mute and stdout/stderr patch for debugging
   const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
   const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
   if (IS_VITEST && !SHOW_LOGS) {
-    // mute console methods immediately
-    muteConsole(["warn", "error", "debug", "log"]);
-    // [TEST DEBUG] after muteConsole
+    // [TEST DEBUG] BYPASSING muteConsole and stdout patch
     // eslint-disable-next-line no-console
-    console.log('[TEST DEBUG] after muteConsole');
-    try {
-      if (process && process.stdout && process.stderr) {
-        // save originals at module scope so afterEach can restore them
-        __originalStdoutWrite = process.stdout.write;
-        __originalStderrWrite = process.stderr.write;
-        process.stdout.write = () => {};
-        process.stderr.write = () => {};
-        // [TEST DEBUG] after patching process.stdout/stderr
-        // eslint-disable-next-line no-console
-        console.log('[TEST DEBUG] after patching process.stdout/stderr');
-      }
-    } catch {}
+    console.log("[TEST DEBUG] BYPASSING muteConsole and stdout patch");
+    // muteConsole(["warn", "error", "debug", "log"]);
+    // try {
+    //   if (process && process.stdout && process.stderr) {
+    //     __originalStdoutWrite = process.stdout.write;
+    //     __originalStderrWrite = process.stderr.write;
+    //     process.stdout.write = () => {};
+    //     process.stderr.write = () => {};
+    //     console.log('[TEST DEBUG] after patching process.stdout/stderr');
+    //   }
+    // } catch {}
   }
 } catch {}
 
