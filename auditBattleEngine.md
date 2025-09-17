@@ -6,7 +6,8 @@ This document provides an audit of the JavaScript files within `src/helpers/clas
 
 - **TimerController fallback countdown**: The fallback countdown previously bypassed the injected scheduler, so mocked schedulers could not observe tick scheduling or cancellations. Routing both `setTimeout` and `clearTimeout` calls through the provided scheduler keeps fake timers deterministic and prevents regression tests from missing drift.
 - **Card selection + battle score documentation**: Filled in the remaining `@summary`/`@pseudocode` blocks for exported helpers in `src/helpers/classicBattle/cardSelection.js` and `src/helpers/battle/score.js`, aligning them with the expectations spelled out in `GEMINI.md`.
-- **Card selection data orchestration**: Extracted `loadJudokaData`, `loadGokyoLookup`, `selectOpponentJudoka`, and `renderOpponentPlaceholder` so `drawCards` now coordinates explicit helpers. The smaller helpers accept injected fetchers/containers, which keeps tests deterministic while shrinking the orchestration footprint.
+- **Card selection data orchestration**: Extracted `loadJudokaData`, `loadGokyoLookup`, `selectOpponentJudoka`, and `renderOpponentPlaceholder` so `drawCards` now coordinates explicit helpers. The smaller helpers accept injected fetchers/containers, which keeps tests deterministic while shrinking the orchestration footprint
+- **Round timer orchestration**: Broke `startTimer` into `resolveRoundTimerDuration`, `primeTimerDisplay`, `configureTimerCallbacks`, and `handleTimerExpiration`, enabling dependency injection for scoreboard/scheduler shims while reducing the orchestration function's complexity.
 
 ## General Observations
 
@@ -63,10 +64,12 @@ This document provides an audit of the JavaScript files within `src/helpers/clas
 
 ### `src/helpers/classicBattle/debugPanel.js`
 
-- `initDebugPanel` (approx. 40 lines): **High complexity**. Significant DOM manipulation (creating/replacing elements), event listeners, and localStorage interaction.
-  - **Suggestion**: Encapsulate debug panel logic within a dedicated class or module that manages its own DOM and state.
-- `setDebugPanelEnabled` (approx. 40 lines): **High complexity**. Similar to `initDebugPanel`, handles creation, removal, and state management of the debug panel.
-  - **Suggestion**: Consolidate common DOM manipulation patterns with `initDebugPanel` or the proposed `DebugPanel` class.
+- `ensureDebugPanelStructure` / `persistDebugPanelState` / `mountDebugPanel` (approx. 15 lines each): **Medium complexity**. Shared helpers centralize DOM creation, persistence wiring, and mounting logic for the debug panel.
+  - **Suggestion**: Consider a light-weight class or module namespace if additional responsibilities accumulate.
+- `initDebugPanel` (approx. 20 lines): **Medium complexity** after delegating the heavy DOM work to the shared helpers.
+  - **Suggestion**: Continue to lean on the helpers to keep initialization thin and testable.
+- `setDebugPanelEnabled` (approx. 20 lines): **Medium complexity** with the shared helpers handling structure/persistence/mounting.
+  - **Suggestion**: Ensure helper coverage in tests to guard against regressions when toggling the panel dynamically.
 
 ### `src/helpers/classicBattle/endModal.js`
 

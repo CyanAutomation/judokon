@@ -215,6 +215,254 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
 // the active controls for the Next-round cooldown (timer, resolveReady, ready).
 
 /**
+ * Resolve the round timer duration and provide a restore callback for temporary UI.
+ *
+ * @param {{showTemporaryMessage?: (msg: string) => () => void}} [scoreboardApi=scoreboard]
+ * - Scoreboard facade used to surface syncing state.
+ * @returns {Promise<{duration: number, synced: boolean, restore: () => void}>}
+ * @summary Resolve round timer duration with scoreboard fallbacks.
+ * @pseudocode
+ * 1. Default duration to 30 seconds and attempt to read the configured value.
+ * 2. If the value is unavailable, mark the timer as unsynced and show "Waiting…".
+ * 3. Return the resolved duration, synced flag, and a restore callback.
+ */
+export async function resolveRoundTimerDuration({ showTemporaryMessage } = scoreboard) {
+  let duration = 30;
+  let synced = true;
+
+  try {
+    const val = await getDefaultTimer("roundTimer");
+    if (typeof val === "number") {
+      duration = val;
+    } else {
+      synced = false;
+    }
+  } catch {
+    synced = false;
+  }
+
+  let restore = () => {};
+  if (!synced && typeof showTemporaryMessage === "function") {
+    try {
+      restore = showTemporaryMessage(t("ui.waiting"));
+    } catch {
+      restore = () => {};
+    }
+  }
+
+  return { duration, synced, restore };
+}
+
+/**
+ * Prime the scoreboard and DOM display with the starting timer value.
+ *
+ * @param {{
+ *   duration: number,
+ *   scoreboardApi?: { updateTimer?: (value: number) => void },
+ *   root?: Document | HTMLElement | null
+ * }} params - Configuration for priming the timer display.
+ * @returns {void}
+ * @summary Ensure the UI shows the starting timer value immediately.
+ * @pseudocode
+ * 1. If the duration is finite, update the scoreboard timer.
+ * 2. Update the DOM element `#next-round-timer` when present.
+ */
+export function primeTimerDisplay({ duration, scoreboardApi = scoreboard, root = typeof document !== "undefined" ? document : null } = {}) {
+  if (!Number.isFinite(duration)) return;
+
+  try {
+    scoreboardApi?.updateTimer?.(duration);
+  } catch {}
+
+  if (!root) return;
+
+  try {
+    const el = root.getElementById
+      ? root.getElementById("next-round-timer")
+      : root.querySelector("#next-round-timer");
+    if (el) {
+      el.textContent = `Time Left: ${duration}s`;
+    }
+  } catch {}
+}
+
+/**
+ * Configure tick, drift, and expiration callbacks on the provided timer.
+ *
+ * @param {{
+ *   on: (event: "tick" | "expired" | "drift", handler: Function) => void
+ * }} timer - Round timer controls from `createRoundTimer`.
+ * @param {{
+ *   onExpired: () => void | Promise<void>,
+ *   scoreboardApi?: {
+ *     updateTimer?: (value: number) => void,
+ *     showMessage?: (msg: string) => void
+ *   },
+ *   emitEvent?: typeof emitBattleEvent,
+ *   showSnack?: typeof showSnackbar,
+ *   translate?: typeof t,
+ *   documentRef?: Document | HTMLElement | null
+ * }} [options]
+ * @returns {{ tickHandler: (remaining: number) => void }}
+ * @summary Wire timer callbacks for tick updates, expiration, and drift fallbacks.
+ * @pseudocode
+ * 1. Register a scoreboard-updating tick handler and emit telemetry ticks.
+ * 2. Attach the provided expiration handler.
+ * 3. On drift, prefer snackbar when a round message exists; otherwise use scoreboard.
+ */
+export function configureTimerCallbacks(
+  timer,
+  {
+    onExpired,
+    scoreboardApi = scoreboard,
+    emitEvent = emitBattleEvent,
+    showSnack = showSnackbar,
+    translate = t,
+    documentRef = typeof document !== "undefined" ? document : null
+  } = {}
+) {
+  const tickHandler = (remaining) => {
+    try {
+      scoreboardApi?.updateTimer?.(remaining);
+    } catch {}
+  };
+
+  try {
+    timer?.on?.("tick", tickHandler);
+  } catch {}
+
+  timer?.on?.("tick", (remaining) => {
+    try {
+      emitEvent?.("round.timer.tick", {
+        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
+      });
+    } catch {}
+  });
+
+  if (typeof onExpired === "function") {
+    try {
+      timer.on("expired", onExpired);
+    } catch {}
+  }
+
+  timer?.on?.("drift", () => {
+    let msgEl = null;
+    const doc = documentRef;
+    try {
+      if (doc) {
+        msgEl = doc.getElementById
+          ? doc.getElementById("round-message")
+          : doc.querySelector("#round-message");
+      }
+    } catch {
+      msgEl = null;
+    }
+
+    const waiting = translate?.("ui.waiting");
+    if (msgEl && msgEl.textContent) {
+      try {
+        showSnack?.(waiting);
+      } catch {}
+    } else {
+      try {
+        scoreboardApi?.showMessage?.(waiting);
+      } catch {}
+    }
+  });
+
+  return { tickHandler };
+}
+
+/**
+ * Create the round timer expiration handler with auto-select coordination.
+ *
+ * @param {{
+ *   duration: number,
+ *   onExpiredSelect: (stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>,
+ *   store?: { selectionMade?: boolean } | null,
+ *   scoreboardApi?: { clearTimer?: () => void },
+ *   isFeatureEnabled?: (flag: string) => boolean,
+ *   autoSelect?: typeof autoSelectStat,
+ *   emitEvent?: typeof emitBattleEvent,
+ *   dispatchEvent?: typeof dispatchBattleEvent,
+ *   setSkip?: typeof setSkipHandler
+ * }} params - Dependencies required for expiration handling.
+ * @returns {() => Promise<void>}
+ * @summary Handle timer expiration with auto-select and timeout dispatch.
+ * @pseudocode
+ * 1. Clear the skip handler and scoreboard timer, then emit diagnostic events.
+ * 2. If a selection already exists, exit early.
+ * 3. Emit `roundTimeout`, optionally auto-select when enabled, and dispatch `timeout`.
+ * 4. When auto-select disabled, resolve via fallback stat selection.
+ */
+export function handleTimerExpiration({
+  duration,
+  onExpiredSelect,
+  store = null,
+  scoreboardApi = scoreboard,
+  isFeatureEnabled = isEnabled,
+  autoSelect = autoSelectStat,
+  emitEvent = emitBattleEvent,
+  dispatchEvent = dispatchBattleEvent,
+  setSkip = setSkipHandler
+}) {
+  return async () => {
+    logTimerOperation("expired", "selectionTimer", duration, {
+      store: store ? { selectionMade: store.selectionMade } : null
+    });
+
+    try {
+      setSkip?.(null);
+    } catch {}
+
+    try {
+      scoreboardApi?.clearTimer?.();
+    } catch {}
+
+    try {
+      emitEvent?.("round.timer.expired");
+    } catch {}
+
+    const alreadyPicked = !!(store && store.selectionMade);
+    try {
+      console.warn(`[test] onExpired: selectionMade=${alreadyPicked}`);
+    } catch {}
+
+    if (alreadyPicked) {
+      return;
+    }
+
+    try {
+      emitEvent?.("roundTimeout");
+    } catch {}
+
+    const featureCheck = typeof isFeatureEnabled === "function" ? isFeatureEnabled("autoSelect") : Boolean(isFeatureEnabled);
+    const selecting = featureCheck
+      ? (async () => {
+          try {
+            await autoSelect?.(
+              onExpiredSelect,
+              typeof process !== "undefined" && process.env && process.env.VITEST ? 0 : undefined
+            );
+          } catch {}
+        })()
+      : Promise.resolve();
+
+    try {
+      await dispatchEvent?.("timeout");
+    } catch {}
+
+    await selecting;
+
+    if (!featureCheck) {
+      try {
+        await onExpiredSelect("speed", { delayOpponentMessage: true });
+      } catch {}
+    }
+  };
+}
+
+/**
  * Start the round timer and auto-select a random stat on expiration.
  *
  * @pseudocode
@@ -233,11 +481,22 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
  * @param {{selectionMade?: boolean}|null} [store=null] - Battle state store.
  * @returns {Promise<ReturnType<typeof createRoundTimer>>} Resolves with timer controls.
  */
-export async function startTimer(onExpiredSelect, store = null) {
-  let duration = 30;
-  let synced = true;
+export async function startTimer(onExpiredSelect, store = null, dependencies = {}) {
+  const {
+    scoreboardApi = scoreboard,
+    root = typeof document !== "undefined" ? document : null,
+    emitEvent = emitBattleEvent,
+    dispatchEvent = dispatchBattleEvent,
+    setSkip = setSkipHandler,
+    featureCheck = isEnabled,
+    autoSelect = autoSelectStat,
+    showSnack = showSnackbar,
+    translate = t,
+    startRound = engineStartRound
+  } = dependencies;
 
-  // Debug logging for timer start
+  const { duration, synced, restore } = await resolveRoundTimerDuration(scoreboardApi);
+
   timerLogger.info("Starting selection timer", {
     initialDuration: duration,
     synced,
@@ -245,113 +504,37 @@ export async function startTimer(onExpiredSelect, store = null) {
     selectionMade: store?.selectionMade
   });
 
-  const onTick = (remaining) => {
-    scoreboard.updateTimer(remaining);
-  };
+  primeTimerDisplay({ duration, scoreboardApi, root });
 
-  const onExpired = async () => {
-    // Debug logging for timer expiry
-    logTimerOperation("expired", "selectionTimer", duration, {
-      store: store ? { selectionMade: store.selectionMade } : null
-    });
-
-    setSkipHandler(null);
-    scoreboard.clearTimer();
-    // PRD taxonomy: round timer expired
-    try {
-      emitBattleEvent("round.timer.expired");
-    } catch {}
-    // If a selection was already made, do not auto-select again.
-    const alreadyPicked = !!(store && store.selectionMade);
-    try {
-      console.warn(`[test] onExpired: selectionMade=${alreadyPicked}`);
-    } catch {}
-    if (alreadyPicked) {
-      return;
-    }
-    try {
-      emitBattleEvent("roundTimeout");
-    } catch {}
-    // Important: don't block auto-select behind the state transition.
-    // The roundDecision onEnter waits for a short window for playerChoice;
-    // if we await the dispatch first, the guard can interrupt before
-    // autoSelect runs. Start auto-select immediately and then await the
-    // timeout dispatch so both proceed concurrently. Even when auto-select
-    // is disabled, the timeout event must still be dispatched so the state
-    // machine can interrupt the round.
-    const selecting = isEnabled("autoSelect")
-      ? (async () => {
-          try {
-            await autoSelectStat(
-              onExpiredSelect,
-              typeof process !== "undefined" && process.env && process.env.VITEST ? 0 : undefined
-            );
-          } catch {}
-        })()
-      : Promise.resolve();
-    await dispatchBattleEvent("timeout");
-    await selecting;
-
-    // In non-orchestrated contexts (no FSM state on <body>), ensure the round
-    // actually resolves so cooldown can begin even when auto-select is disabled.
-    // This keeps the standalone Classic Battle page functional in E2E runs.
-    try {
-      if (!isEnabled("autoSelect")) {
-        // Pick a stable fallback stat and resolve via provided handler.
-        await onExpiredSelect("speed", { delayOpponentMessage: true });
-      }
-    } catch {}
-  };
-
-  try {
-    const val = await getDefaultTimer("roundTimer");
-    if (typeof val === "number") {
-      duration = val;
-    } else {
-      synced = false;
-    }
-  } catch {
-    synced = false;
-  }
-  const restore = !synced ? scoreboard.showTemporaryMessage(t("ui.waiting")) : () => {};
-
-  // Ensure the timer UI reflects the starting value immediately so tests and
-  // users see a countdown without waiting for the first tick callback.
-  try {
-    if (typeof duration === "number" && Number.isFinite(duration)) {
-      scoreboard.updateTimer(duration);
-      // Also update the DOM element directly to decouple from scoreboard init timing
-      try {
-        const el = document.getElementById("next-round-timer");
-        if (el) el.textContent = `Time Left: ${duration}s`;
-      } catch {}
-    }
-  } catch {}
+  const onExpired = handleTimerExpiration({
+    duration,
+    onExpiredSelect,
+    store,
+    scoreboardApi,
+    isFeatureEnabled: featureCheck,
+    autoSelect,
+    emitEvent,
+    dispatchEvent,
+    setSkip
+  });
 
   const timer = createRoundTimer({
-    starter: engineStartRound,
+    starter: startRound,
     onDriftFail: () => forceAutoSelectAndDispatch(onExpiredSelect)
   });
-  timer.on("tick", onTick);
-  // PRD taxonomy: round timer tick
-  timer.on("tick", (remaining) => {
-    try {
-      emitBattleEvent("round.timer.tick", {
-        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
-      });
-    } catch {}
-  });
-  timer.on("expired", onExpired);
-  timer.on("drift", () => {
-    const msgEl = document.getElementById("round-message");
-    if (msgEl && msgEl.textContent) {
-      showSnackbar(t("ui.waiting"));
-    } else {
-      scoreboard.showMessage(t("ui.waiting"));
-    }
+
+  configureTimerCallbacks(timer, {
+    onExpired,
+    scoreboardApi,
+    emitEvent,
+    showSnack,
+    translate,
+    documentRef: root
   });
 
-  setSkipHandler(() => timer.stop());
+  try {
+    setSkip?.(() => timer.stop());
+  } catch {}
 
   timer.start(duration);
   restore();
