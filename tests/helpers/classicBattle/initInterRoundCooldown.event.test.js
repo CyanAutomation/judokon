@@ -50,11 +50,16 @@ function createDisabledSpy(btn) {
 
 describe("initInterRoundCooldown", () => {
   let machine;
+  let scheduler;
   beforeEach(() => {
     emitBattleEvent.mockReset();
     document.body.innerHTML = '<button id="next-button" disabled></button>';
     machine = { dispatch: vi.fn(), getState: () => "cooldown" };
     vi.resetModules();
+    scheduler = {
+      setTimeout: (cb, ms) => setTimeout(cb, ms),
+      clearTimeout: (id) => clearTimeout(id)
+    };
   });
 
   afterEach(() => {
@@ -65,7 +70,7 @@ describe("initInterRoundCooldown", () => {
     const { initInterRoundCooldown } = await import(
       "../../../src/helpers/classicBattle/cooldowns.js"
     );
-    await initInterRoundCooldown(machine);
+    await initInterRoundCooldown(machine, { scheduler });
     const btn = document.getElementById("next-button");
     expect(btn.disabled).toBe(false);
     expect(btn.dataset.nextReady).toBe("true");
@@ -79,7 +84,7 @@ describe("initInterRoundCooldown", () => {
     const { initInterRoundCooldown } = await import(
       "../../../src/helpers/classicBattle/cooldowns.js"
     );
-    await initInterRoundCooldown(machine);
+    await initInterRoundCooldown(machine, { scheduler });
     const btn = document.getElementById("next-button");
     expect(btn.disabled).toBe(false);
     expect(btn.dataset.nextReady).toBe("true");
@@ -93,7 +98,7 @@ describe("initInterRoundCooldown", () => {
     );
     const btn = document.getElementById("next-button");
     const getDisabledSetCount = createDisabledSpy(btn);
-    await initInterRoundCooldown(machine);
+    await initInterRoundCooldown(machine, { scheduler });
     expect(getDisabledSetCount()).toBe(1);
     btn.dataset.nextReady = "";
     await vi.runAllTimersAsync();
@@ -108,7 +113,7 @@ describe("initInterRoundCooldown", () => {
     );
     const btn = document.getElementById("next-button");
     const getDisabledSetCount = createDisabledSpy(btn);
-    await initInterRoundCooldown(machine);
+    await initInterRoundCooldown(machine, { scheduler });
     await vi.runAllTimersAsync();
     expect(getDisabledSetCount()).toBe(1);
   });
