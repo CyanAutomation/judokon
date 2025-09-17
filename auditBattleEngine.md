@@ -5,6 +5,7 @@ This document provides an audit of the JavaScript files within `src/helpers/clas
 ## Remediation Log
 
 - **TimerController fallback countdown**: The fallback countdown previously bypassed the injected scheduler, so mocked schedulers could not observe tick scheduling or cancellations. Routing both `setTimeout` and `clearTimeout` calls through the provided scheduler keeps fake timers deterministic and prevents regression tests from missing drift.
+- **Card selection + battle score documentation**: Filled in the remaining `@summary`/`@pseudocode` blocks for exported helpers in `src/helpers/classicBattle/cardSelection.js` and `src/helpers/battle/score.js`, aligning them with the expectations spelled out in `GEMINI.md`.
 
 ## General Observations
 
