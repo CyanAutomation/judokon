@@ -675,7 +675,8 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
 
   // If the orchestrator is running, it owns the "Next" button readiness.
   // This path should only execute in non-orchestrated environments (e.g., unit tests).
-  const isOrchestratedFn = typeof options.isOrchestrated === "function" ? options.isOrchestrated : isOrchestrated;
+  const isOrchestratedFn =
+    typeof options.isOrchestrated === "function" ? options.isOrchestrated : isOrchestrated;
   const markReady = options.markReady || markNextReady;
   if (!isOrchestratedFn()) {
     try {
