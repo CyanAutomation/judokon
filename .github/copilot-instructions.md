@@ -47,7 +47,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 
 ---
 
-## 🗂️ Workflow Orderrministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository.
+## 🗂️ Workflow Orderrministic rules, workflows, and safety requirements for AI Agents operating in the JU-DO-KON! repository
 
 **Audience**: AI Agents only. Human readability is not the priority.
 
@@ -167,7 +167,7 @@ This project contains a high-performance vector database with over 2,300 indexed
 
 **High-Success Examples:**
 
-```
+```text
 ✅ "tooltip implementation data structure JSON format"
 ✅ "navigation bar button transition duration styling"
 ✅ "classic battle mode game timer phases scoreboard"
@@ -212,11 +212,11 @@ You **MUST** use RAG as your first step for questions related to:
 
 ### Workflow
 
-1.  **Receive user prompt.**
-2.  **Analyze the prompt.** If it matches any of the categories above, you **MUST** form a search query and call the RAG tool.
-3.  **Incorporate RAG results.** Directly use the retrieved context in your answer or plan.
-4.  **Cite your sources.** Reference the source documents from the RAG results (e.g., "According to `prdVectorDatabaseRAG.md`...").
-5.  **Fallback.** If the RAG search returns no relevant results, you may then proceed with other tools like `glob` or `search_file_content`.
+1. **Receive user prompt.**
+2. **Analyze the prompt.** If it matches any of the categories above, you **MUST** form a search query and call the RAG tool.
+3. **Incorporate RAG results.** Directly use the retrieved context in your answer or plan.
+4. **Cite your sources.** Reference the source documents from the RAG results (e.g., "According to `prdVectorDatabaseRAG.md`...").
+5. **Fallback.** If the RAG search returns no relevant results, you may then proceed with other tools like `glob` or `search_file_content`.
 
 ### Offline Usage (Agents)
 
@@ -251,7 +251,7 @@ const results = await queryRag("classic battle countdown snackbar", {
 > 1. The user is asking "How should I...", which falls under the "How-to" category in the RAG policy.
 > 2. I must use the RAG tool first. I will form a query.
 > 3. **Tool Call:** `query_rag_database(query="adding a new tooltip")`
-> 4. **Tool Output:** `[{ "source": "src/data/tooltips.json", "text": "Tooltips are defined in `tooltips.json` with an id and content.", "score": 0.91 }, ...]`
+> 4. **Tool Output:** `[{ "source": "src/data/tooltips.json", "text": "Tooltips are defined in`tooltips.json`with an id and content.", "score": 0.91 }, ...]`
 > 5. Now I can form my answer based on this high-confidence information. I will explain that tooltips are added to `src/data/tooltips.json` and describe the required format.
 
 ### Provenance

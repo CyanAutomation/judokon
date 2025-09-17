@@ -251,7 +251,7 @@ const results = await queryRag("classic battle countdown snackbar", {
 > 1. The user is asking "How should I...", which falls under the "How-to" category in the RAG policy.
 > 2. I must use the RAG tool first. I will form a query.
 > 3. **Tool Call:** `query_rag_database(query="adding a new tooltip")`
-> 4. **Tool Output:** `[{ "source": "src/data/tooltips.json", "text": "Tooltips are defined in `tooltips.json` with an id and content.", "score": 0.91 }, ...]`
+> 4. **Tool Output:** `[{ "source": "src/data/tooltips.json", "text": "Tooltips are defined in`tooltips.json`with an id and content.", "score": 0.91 }, ...]`
 > 5. Now I can form my answer based on this high-confidence information. I will explain that tooltips are added to `src/data/tooltips.json` and describe the required format.
 
 ### Provenance
