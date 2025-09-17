@@ -1,6 +1,4 @@
-# QA Report: `battleClassic.html` Review (revised)
-
-This document is an audited and updated QA report for `battleClassic.html` (Classic Battle). It verifies the original findings, corrects the diagnosis where necessary, and provides a prioritized remediation and verification plan. Apply the fixes in small steps and re-run the verification checklist after each change.
+<!-- Removed duplicate title block -->
 
 # QA Report: `battleClassic.html` Review (revised)
 
@@ -151,8 +149,37 @@ Files likely to change (small, focused edits):
 
 The original QA report was accurate: the game fails to progress because the engine/bootstrap sequence is not completing and errors are hidden. The priority is to make initialization resilient and observable, then restore the core UI flows so keyboard, accessibility, and navigation fixes can be validated. The patch plan above is intentionally small and testable; implement the bootstrap fixes first, verify, then apply the accessibility/nav changes.
 
+## Identified issues and reproduction
 
----
+Below are the primary issues observed during QA with concise reproduction steps and impact.
 
-Please review this revised report. If you want, I can implement the minimal bootstrap changes (small edits to `src/pages/battleClassic.init.js` and a helper) and open a PR with tests. Otherwise tell me which part you'd like to adjust or expand.
-## Identified Issues
+1. Battle never starts — stuck at "Waiting…"
+   - Repro steps:
+     1. Open `battleClassic.html`.
+     2. Select a match length (Quick / Medium / Long) via mouse or keyboard.
+     3. Modal closes; scoreboard shows "Waiting… Round 0" and the Next button is disabled; no cards or stat buttons render.
+   - Impact: blocks all verification of the core loop (stat selection, scoring, timers, AI behaviour).
+
+2. Clickable area mis-targets
+   - Repro steps: interact with the match-length modal; clicks near the bottom of a button sometimes trigger navigation to unexpected targets (observed earlier as a raw `judoka.json` load).
+   - Impact: accidental navigation and a fragile modal overlay/backdrop that may not fully capture pointer events.
+
+3. Keyboard selection does not work
+   - Repro steps: with the modal open, press `1`, `2`, `3`, or arrow keys — no selection occurs; only mouse click dismisses the modal.
+   - Impact: fails PRD accessibility requirements for keyboard navigation.
+
+4. Missing stat buttons and card visuals
+   - Repro steps: after modal close the `#stat-buttons` container is empty and `data-buttons-ready` is not set.
+   - Impact: players cannot choose stats; screen readers cannot describe choices.
+
+5. Scoreboard timer never displays
+   - Repro steps: observe `#next-round-timer` while a match is expected to start — it remains blank and no countdown runs.
+   - Impact: auto-select/timeouts cannot be tested.
+
+6. No opponent action feedback & Quit flow unreachable
+   - Repro steps: rounds never reach opponent choice or reveal; quit confirmation flow does not present.
+   - Impact: opponent behaviour and quit UX cannot be validated.
+
+7. Footer navigation accessible but breakable
+   - Repro steps: click bottom nav during a (supposed) match — navigation occurs without confirmation.
+   - Impact: players can accidentally leave a match; PRD requires confirmation.
