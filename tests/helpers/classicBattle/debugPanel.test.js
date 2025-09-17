@@ -32,7 +32,11 @@ vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
 }));
 vi.mock("../../../src/helpers/battle/index.js", () => ({ showResult: vi.fn() }));
 vi.mock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
-  handleStatSelection: vi.fn()
+  handleStatSelection: vi.fn(),
+  validateAndApplySelection: vi.fn(),
+  dispatchStatSelected: vi.fn(),
+  resolveWithFallback: vi.fn(),
+  syncResultDisplay: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
   getNextRoundControls: vi.fn(),

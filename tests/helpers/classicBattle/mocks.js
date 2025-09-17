@@ -60,7 +60,11 @@ export function mockRoundManager() {
 
 export function mockSelectionHandler() {
   vi.doMock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
-    handleStatSelection: vi.fn()
+    handleStatSelection: vi.fn(),
+    validateAndApplySelection: vi.fn(),
+    dispatchStatSelected: vi.fn(),
+    resolveWithFallback: vi.fn(),
+    syncResultDisplay: vi.fn()
   }));
 }
 

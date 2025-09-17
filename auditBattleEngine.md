@@ -165,6 +165,7 @@ This document provides an audit of the JavaScript files within `src/helpers/clas
   - **Suggestion**: Separate test-specific DOM cleanup into a test utility.
 - `handleStatSelection` (approx. 70 lines): **Very High complexity**. Very long function with many responsibilities: validation, store update, timer cleanup, event emission, orchestrator dispatch, fallback resolution, and UI updates. Exceeds the informal 50-line limit.
   - **Suggestion**: This function is a prime candidate for significant refactoring. Break down into `validateAndApplySelection`, `cleanupAndEmitSelection`, `resolveRoundViaOrchestratorOrDirectly`, `updateUIAfterResolution`.
+  - **2024-Refactor**: Extracted `validateAndApplySelection`, `dispatchStatSelected`, `resolveWithFallback`, and `syncResultDisplay` helpers so `handleStatSelection` now orchestrates the flow.
 
 ### `src/helpers/classicBattle/setupUIBindings.js`
 
