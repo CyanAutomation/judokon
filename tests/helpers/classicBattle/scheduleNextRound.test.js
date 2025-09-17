@@ -127,14 +127,12 @@ describe("classicBattle startCooldown", () => {
       setInterval: (...args) => setInterval(...args),
       clearInterval: (...args) => clearInterval(...args)
     };
-    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper, {
+    const machine = await orchestrator.initClassicBattleOrchestrator({
+      store,
+      startRoundWrapper,
       scheduler: fakeScheduler
     });
-    console.log("[TEST DEBUG] after initClassicBattleOrchestrator");
-
-    console.log("[TEST DEBUG] before getBattleStateMachine");
-    const machine = orchestrator.getBattleStateMachine();
-    console.log("[TEST DEBUG] after getBattleStateMachine", machine);
+    console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
     await battleMod.startRound(store);
 
@@ -215,7 +213,7 @@ describe("classicBattle startCooldown", () => {
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator");
 
     console.log("[TEST DEBUG] before getBattleStateMachine");
-    const machine = orchestrator.getBattleStateMachine();
+  const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
     console.log("[TEST DEBUG] after getBattleStateMachine", machine);
 
     await battleMod.startRound(store);
@@ -284,7 +282,7 @@ describe("classicBattle startCooldown", () => {
       await battleMod.startRound(store);
     });
     await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
-    const machine = orchestrator.getBattleStateMachine();
+  const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
 
     await battleMod.startRound(store);
     await machine.dispatch("roundOver");

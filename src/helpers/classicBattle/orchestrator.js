@@ -1,3 +1,27 @@
+/**
+ * Initialize the classic battle orchestrator (state machine) and attach listeners.
+ *
+ * @pseudocode
+ * 1. Create the state manager (state machine) with the provided context (including scheduler for tests).
+ * 2. Attach listeners for DOM, debug, and diagnostics.
+ * 3. Preload dependencies (timer utils, scoreboard adapter).
+ * 4. Store the machine reference for later access.
+ * 5. Return the machine instance.
+ *
+ * @param {object} [contextOverrides] - Optional context overrides (e.g., scheduler for tests).
+ * @returns {import("./stateManager.js").ClassicBattleStateManager} The initialized state machine.
+ */
+export async function initClassicBattleOrchestrator(contextOverrides = {}) {
+  if (typeof console !== "undefined") {
+    console.log("[TEST DEBUG] initClassicBattleOrchestrator called", contextOverrides);
+  }
+  // Create the state manager (state machine) with context overrides (e.g., scheduler for tests)
+  machine = await createStateManager({ ...contextOverrides });
+  attachListeners(machine);
+  // Preload non-critical dependencies (timer utils, scoreboard adapter)
+  preloadDependencies();
+  return machine;
+}
 if (typeof console !== "undefined") {
   console.log("[TEST DEBUG] orchestrator.js top-level loaded");
 }
