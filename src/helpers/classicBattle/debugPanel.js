@@ -6,6 +6,8 @@ import { safeCall } from "./safeCall.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { readDebugState } from "./debugHooks.js";
 
+const debugPanelToggleListeners = new WeakMap();
+
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
 }
@@ -26,6 +28,67 @@ function ensureDebugCopyButton(panel) {
     });
     summary.appendChild(btn);
   }
+}
+
+function ensureDebugPanelStructure(panel, { createIfMissing = false } = {}) {
+  let node = panel;
+  if (!node && !createIfMissing) return null;
+  if (!node) {
+    node = document.createElement("details");
+    node.id = "debug-panel";
+    node.className = "debug-panel";
+  }
+  if (node.tagName !== "DETAILS") {
+    const details = document.createElement("details");
+    details.id = node.id || "debug-panel";
+    details.className = node.className;
+    if (node.parentNode) {
+      node.replaceWith(details);
+    }
+    node = details;
+  }
+  let summary = node.querySelector("summary");
+  if (!summary) {
+    summary = document.createElement("summary");
+    node.prepend(summary);
+  }
+  summary.textContent = "Battle Debug";
+  let pre = node.querySelector("#debug-output");
+  if (!pre) {
+    pre = document.createElement("pre");
+    node.append(pre);
+  }
+  if (summary.nextElementSibling !== pre) {
+    node.insertBefore(pre, summary.nextSibling);
+  }
+  pre.id = "debug-output";
+  pre.setAttribute("role", "status");
+  pre.setAttribute("aria-live", "polite");
+  ensureDebugCopyButton(node);
+  return node;
+}
+
+function persistDebugPanelState(panel) {
+  if (!panel) return;
+  safeCall(() => {
+    const saved = localStorage.getItem("battleDebugOpen");
+    panel.open = saved ? saved === "true" : true;
+  });
+  if (!debugPanelToggleListeners.has(panel)) {
+    const handler = () => {
+      safeCall(() => localStorage.setItem("battleDebugOpen", String(panel.open)));
+    };
+    panel.addEventListener("toggle", handler);
+    debugPanelToggleListeners.set(panel, handler);
+  }
+}
+
+function mountDebugPanel(panel, battleArea) {
+  if (!panel) return;
+  if (battleArea && panel.nextElementSibling !== battleArea) {
+    battleArea.before(panel);
+  }
+  panel.classList.remove("hidden");
 }
 
 function getMachineDebugState() {
@@ -173,30 +236,10 @@ export function initDebugPanel() {
     typeof window !== "undefined" && window.__FF_OVERRIDES && window.__FF_OVERRIDES.enableTestMode;
 
   if ((isEnabled("enableTestMode") || overrideEnabled) && battleArea) {
-    if (debugPanel.tagName !== "DETAILS") {
-      const details = document.createElement("details");
-      details.id = "debug-panel";
-      details.className = debugPanel.className;
-      const summary = document.createElement("summary");
-      summary.textContent = "Battle Debug";
-      const pre = debugPanel.querySelector("#debug-output") || document.createElement("pre");
-      pre.id = "debug-output";
-      pre.setAttribute("role", "status");
-      pre.setAttribute("aria-live", "polite");
-      details.append(summary, pre);
-      debugPanel.replaceWith(details);
-    }
-    const panel = document.getElementById("debug-panel");
-    ensureDebugCopyButton(panel);
-    safeCall(() => {
-      const saved = localStorage.getItem("battleDebugOpen");
-      panel.open = saved ? saved === "true" : true;
-      panel.addEventListener("toggle", () => {
-        safeCall(() => localStorage.setItem("battleDebugOpen", String(panel.open)));
-      });
-    });
-    battleArea.before(panel);
-    panel.classList.remove("hidden");
+    const panel = ensureDebugPanelStructure(debugPanel);
+    if (!panel) return;
+    persistDebugPanelState(panel);
+    mountDebugPanel(panel, battleArea);
   } else {
     debugPanel.remove();
   }
@@ -219,43 +262,10 @@ export function setDebugPanelEnabled(enabled) {
   const battleArea = document.getElementById("battle-area");
   let panel = document.getElementById("debug-panel");
   if (enabled) {
-    if (!panel) {
-      panel = document.createElement("details");
-      panel.id = "debug-panel";
-      panel.className = "debug-panel";
-      const summary = document.createElement("summary");
-      summary.textContent = "Battle Debug";
-      const pre = document.createElement("pre");
-      pre.id = "debug-output";
-      pre.setAttribute("role", "status");
-      pre.setAttribute("aria-live", "polite");
-      panel.append(summary, pre);
-    } else if (panel.tagName !== "DETAILS") {
-      const details = document.createElement("details");
-      details.id = panel.id;
-      details.className = panel.className;
-      const summary = document.createElement("summary");
-      summary.textContent = "Battle Debug";
-      const pre = panel.querySelector("#debug-output") || document.createElement("pre");
-      pre.id = "debug-output";
-      pre.setAttribute("role", "status");
-      pre.setAttribute("aria-live", "polite");
-      details.append(summary, pre);
-      panel.replaceWith(details);
-      panel = details;
-    }
-    ensureDebugCopyButton(panel);
-    safeCall(() => {
-      const saved = localStorage.getItem("battleDebugOpen");
-      panel.open = saved ? saved === "true" : true;
-      panel.addEventListener("toggle", () => {
-        safeCall(() => localStorage.setItem("battleDebugOpen", String(panel.open)));
-      });
-    });
-    panel.classList.remove("hidden");
-    if (battleArea && panel.nextElementSibling !== battleArea) {
-      battleArea.before(panel);
-    }
+    panel = ensureDebugPanelStructure(panel, { createIfMissing: true });
+    if (!panel) return;
+    persistDebugPanelState(panel);
+    mountDebugPanel(panel, battleArea);
   } else if (panel) {
     panel.classList.add("hidden");
     panel.remove();

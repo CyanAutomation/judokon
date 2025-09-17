@@ -62,10 +62,12 @@ This document provides an audit of the JavaScript files within `src/helpers/clas
 
 ### `src/helpers/classicBattle/debugPanel.js`
 
-- `initDebugPanel` (approx. 40 lines): **High complexity**. Significant DOM manipulation (creating/replacing elements), event listeners, and localStorage interaction.
-  - **Suggestion**: Encapsulate debug panel logic within a dedicated class or module that manages its own DOM and state.
-- `setDebugPanelEnabled` (approx. 40 lines): **High complexity**. Similar to `initDebugPanel`, handles creation, removal, and state management of the debug panel.
-  - **Suggestion**: Consolidate common DOM manipulation patterns with `initDebugPanel` or the proposed `DebugPanel` class.
+- `ensureDebugPanelStructure` / `persistDebugPanelState` / `mountDebugPanel` (approx. 15 lines each): **Medium complexity**. Shared helpers centralize DOM creation, persistence wiring, and mounting logic for the debug panel.
+  - **Suggestion**: Consider a light-weight class or module namespace if additional responsibilities accumulate.
+- `initDebugPanel` (approx. 20 lines): **Medium complexity** after delegating the heavy DOM work to the shared helpers.
+  - **Suggestion**: Continue to lean on the helpers to keep initialization thin and testable.
+- `setDebugPanelEnabled` (approx. 20 lines): **Medium complexity** with the shared helpers handling structure/persistence/mounting.
+  - **Suggestion**: Ensure helper coverage in tests to guard against regressions when toggling the panel dynamically.
 
 ### `src/helpers/classicBattle/endModal.js`
 
