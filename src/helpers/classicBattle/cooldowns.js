@@ -87,6 +87,8 @@ export async function initInterRoundCooldown(machine) {
         document.getElementById("next-button") ||
         document.querySelector('[data-role="next-round"]');
       if (b) {
+        b.disabled = false;
+        b.dataset.nextReady = "true";
         b.setAttribute("data-next-ready", "true");
         b.removeAttribute("disabled");
       }
@@ -103,6 +105,8 @@ export async function initInterRoundCooldown(machine) {
   };
 
   const markReady = (btn) => {
+    btn.disabled = false;
+    btn.dataset.nextReady = "true";
     btn.setAttribute("data-next-ready", "true");
     btn.removeAttribute("disabled");
   };
