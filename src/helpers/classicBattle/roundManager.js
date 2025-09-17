@@ -224,10 +224,11 @@ let currentNextRound = null;
  * @param {typeof realScheduler} [scheduler=realScheduler] - Scheduler for timers.
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
  */
-export function startCooldown(_store, scheduler) {
+export function startCooldown(_store, scheduler, overrides = {}) {
   // Always use the injected scheduler if provided, else fall back to realScheduler
   const activeScheduler =
     scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
+  const bus = createEventBus(overrides.eventBus);
   const context = detectOrchestratorContext();
   let orchestratedMode = context.orchestrated;
   const orchestratorMachine = context.machine;
@@ -235,92 +236,7 @@ export function startCooldown(_store, scheduler) {
     orchestratedMode = false;
   }
   logStartCooldown();
-  const controls = createNextRoundControls();
-  if (orchestratedMode) {
-    /** @type {Array<() => void>} */
-    const orchestratedCleanup = [];
-    const detachOrchestratedListeners = () => {
-      while (orchestratedCleanup.length) {
-        const dispose = orchestratedCleanup.pop();
-        try {
-          dispose?.();
-        } catch {}
-      }
-    };
-    const resolveFromListener = () => {
-      const resolver = controls.resolveReady;
-      if (typeof resolver !== "function") {
-        detachOrchestratedListeners();
-        return;
-      }
-      detachOrchestratedListeners();
-      try {
-        resolver();
-      } catch {}
-    };
-    const registerOneShot = (type, predicate) => {
-      const handler = (event) => {
-        if (typeof controls.resolveReady !== "function") {
-          detachOrchestratedListeners();
-          return;
-        }
-        let shouldResolve = false;
-        try {
-          shouldResolve = predicate(event) === true;
-        } catch {
-          shouldResolve = false;
-        }
-        if (!shouldResolve) return;
-        resolveFromListener();
-      };
-      try {
-        onBattleEvent(type, handler);
-        orchestratedCleanup.push(() => {
-          try {
-            offBattleEvent(type, handler);
-          } catch {}
-        });
-      } catch {}
-    };
-    const machineOutOfCooldown = () => {
-      const state = getMachineState(orchestratorMachine);
-      return typeof state === "string" && state !== "cooldown";
-    };
-    registerOneShot("battleStateChange", (event) => {
-      const detail = event?.detail;
-      if (detail && typeof detail === "object") {
-        const from = detail.from ?? detail?.detail?.from ?? null;
-        const to = detail.to ?? detail?.detail?.to ?? null;
-        if (from === "cooldown" && to && to !== "cooldown") return true;
-        if (from === "cooldown" && !to) return machineOutOfCooldown();
-        if (!from && typeof to === "string" && to !== "cooldown") {
-          return machineOutOfCooldown();
-        }
-        return false;
-      }
-      if (typeof detail === "string") {
-        if (detail !== "cooldown") return machineOutOfCooldown();
-        return false;
-      }
-      if (detail === null || typeof detail === "undefined") {
-        return machineOutOfCooldown();
-      }
-      return false;
-    });
-    registerOneShot("nextRoundTimerReady", () => true);
-    registerOneShot("control.countdown.completed", () => true);
-    try {
-      const readyPromise = controls.ready;
-      if (readyPromise && typeof readyPromise.finally === "function") {
-        readyPromise.finally(() => {
-          detachOrchestratedListeners();
-        });
-      }
-    } catch {}
-    if (machineOutOfCooldown()) {
-      resolveFromListener();
-    }
-  }
+  const controls = createCooldownControls({ emit: bus.emit });
   const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
   const fallbackBtn =
     !btn && typeof document !== "undefined"
@@ -328,39 +244,41 @@ export function startCooldown(_store, scheduler) {
       : null;
   const readinessTarget = btn || fallbackBtn;
   if (readinessTarget && !orchestratedMode) {
-    markNextReady(readinessTarget);
-    try {
-      emitBattleEvent("nextRoundTimerReady");
-    } catch {}
-    // Re-assert enabled state and readiness on the next tick to guard against
-    // any late listeners that might replace/disable the button during round
-    // resolution → cooldown transitions.
-    try {
-      const scheduleReapply = (delay) => {
-        activeScheduler.setTimeout(() => {
-          if (typeof document === "undefined") return;
-          const target = btn
-            ? document.getElementById("next-button")
-            : document.querySelector('[data-role="next-round"]');
-          markNextReady(target);
-        }, delay);
-      };
-      scheduleReapply(0);
-      scheduleReapply(20);
-    } catch {}
+    setupNonOrchestratedReady(readinessTarget, activeScheduler, {
+      eventBus: bus,
+      markReady: overrides.markReady
+    });
   }
   const cooldownSeconds = computeNextRoundCooldown();
   // PRD taxonomy: announce countdown start
   try {
-    emitBattleEvent("control.countdown.started", {
+    bus.emit("control.countdown.started", {
       durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000
     });
   } catch {}
+  const helperOptions = {
+    eventBus: bus,
+    markReady: overrides.markReady,
+    scoreboard: overrides.scoreboard,
+    showSnackbar: overrides.showSnackbar,
+    setupFallbackTimer: overrides.setupFallbackTimer,
+    dispatchBattleEvent: overrides.dispatchBattleEvent,
+    createRoundTimer: overrides.createRoundTimer,
+    startEngineCooldown: overrides.startEngineCooldown,
+    updateDebugPanel: overrides.updateDebugPanel,
+    isOrchestrated: overrides.isOrchestrated,
+    getStateSnapshot: overrides.getStateSnapshot,
+    setSkipHandler: overrides.setSkipHandler
+  };
   if (orchestratedMode) {
-    setupOrchestratedReady(controls, orchestratorMachine, btn);
-    wireNextRoundTimer(controls, btn, cooldownSeconds, activeScheduler);
+    setupOrchestratedReady(controls, orchestratorMachine, btn, {
+      eventBus: bus,
+      scheduler: activeScheduler,
+      markReady: overrides.markReady
+    });
+    wireCooldownTimer(controls, btn, cooldownSeconds, activeScheduler, helperOptions);
   } else {
-    wireNextRoundTimer(controls, btn, cooldownSeconds, activeScheduler);
+    wireCooldownTimer(controls, btn, cooldownSeconds, activeScheduler, helperOptions);
   }
   currentNextRound = controls;
   return controls;
@@ -414,6 +332,26 @@ export function setupFallbackTimer(ms, cb, scheduler) {
   }
 }
 
+function createEventBus(eventBusOverrides) {
+  const overrides = eventBusOverrides || {};
+  let fallbackEmit = () => {};
+  let fallbackOn = () => {};
+  let fallbackOff = () => {};
+  try {
+    if (typeof emitBattleEvent === "function") fallbackEmit = emitBattleEvent;
+  } catch {}
+  try {
+    if (typeof onBattleEvent === "function") fallbackOn = onBattleEvent;
+  } catch {}
+  try {
+    if (typeof offBattleEvent === "function") fallbackOff = offBattleEvent;
+  } catch {}
+  const emit = typeof overrides.emit === "function" ? overrides.emit : fallbackEmit;
+  const on = typeof overrides.on === "function" ? overrides.on : fallbackOn;
+  const off = typeof overrides.off === "function" ? overrides.off : fallbackOff;
+  return { emit, on, off };
+}
+
 function detectOrchestratorContext() {
   let orchestrated = false;
   let machine = null;
@@ -431,7 +369,41 @@ function detectOrchestratorContext() {
   return { orchestrated, machine };
 }
 
-function setupOrchestratedReady(controls, machine, btn) {
+function setupNonOrchestratedReady(target, scheduler, { eventBus, markReady } = {}) {
+  if (!target) return;
+  const mark = markReady || markNextReady;
+  mark(target);
+  try {
+    eventBus?.emit?.("nextRoundTimerReady");
+  } catch {}
+  const reapply = () => {
+    if (typeof document === "undefined") return;
+    const nextBtn = document.getElementById("next-button");
+    if (nextBtn) {
+      mark(nextBtn);
+      return;
+    }
+    const fallback = document.querySelector('[data-role="next-round"]');
+    if (fallback) mark(fallback);
+  };
+  try {
+    scheduler.setTimeout(() => reapply(), 0);
+    scheduler.setTimeout(() => reapply(), 20);
+  } catch {
+    try {
+      setTimeout(() => reapply(), 0);
+      setTimeout(() => reapply(), 20);
+    } catch {}
+  }
+}
+
+function setupOrchestratedReady(controls, machine, btn, options = {}) {
+  const bus = createEventBus(options.eventBus);
+  const scheduler =
+    options.scheduler && typeof options.scheduler.setTimeout === "function"
+      ? options.scheduler
+      : realScheduler;
+  const markReady = options.markReady || markNextReady;
   /** @type {Array<() => void>} */
   const cleanupFns = [];
   const cleanup = () => {
@@ -447,7 +419,7 @@ function setupOrchestratedReady(controls, machine, btn) {
     if (resolved) return;
     resolved = true;
     cleanup();
-    if (btn) markNextReady(btn);
+    if (btn) markReady(btn);
     const resolver = controls.resolveReady;
     if (typeof resolver === "function") {
       resolver();
@@ -461,8 +433,12 @@ function setupOrchestratedReady(controls, machine, btn) {
       } catch {}
     };
     try {
-      onBattleEvent(type, wrapped);
-      cleanupFns.push(() => offBattleEvent(type, wrapped));
+      bus.on(type, wrapped);
+      cleanupFns.push(() => {
+        try {
+          bus.off(type, wrapped);
+        } catch {}
+      });
     } catch {}
   };
   if (controls.ready && typeof controls.ready.finally === "function") {
@@ -474,13 +450,41 @@ function setupOrchestratedReady(controls, machine, btn) {
   for (const type of [
     "cooldown.timer.expired",
     "countdownFinished",
-    "control.countdown.completed"
+    "control.countdown.completed",
+    "nextRoundTimerReady"
   ]) {
     addListener(type, () => finalize());
   }
+  const machineOutOfCooldown = () => {
+    const state = getMachineState(machine);
+    return typeof state === "string" && state !== "cooldown";
+  };
   addListener("battleStateChange", (event) => {
-    const next = event?.detail?.to ?? event?.detail;
-    if (isOrchestratorReadyState(next)) finalize();
+    const detail = event?.detail;
+    if (detail && typeof detail === "object") {
+      const from = detail.from ?? detail?.detail?.from ?? null;
+      const to = detail.to ?? detail?.detail?.to ?? null;
+      if (from === "cooldown" && to && to !== "cooldown") {
+        finalize();
+        return;
+      }
+      if (from === "cooldown" && !to && machineOutOfCooldown()) {
+        finalize();
+        return;
+      }
+      if (!from && typeof to === "string" && to !== "cooldown" && machineOutOfCooldown()) {
+        finalize();
+        return;
+      }
+      return;
+    }
+    if (typeof detail === "string") {
+      if (detail !== "cooldown" && machineOutOfCooldown()) finalize();
+      return;
+    }
+    if (detail === null || typeof detail === "undefined") {
+      if (machineOutOfCooldown()) finalize();
+    }
   });
   const checkImmediate = () => {
     if (resolved) return;
@@ -488,7 +492,7 @@ function setupOrchestratedReady(controls, machine, btn) {
       finalize();
       return;
     }
-    if (isOrchestratorReadyState(getMachineState(machine))) {
+    if (machineOutOfCooldown()) {
       finalize();
       return;
     }
@@ -499,7 +503,9 @@ function setupOrchestratedReady(controls, machine, btn) {
     try {
       const run = () => checkImmediate();
       if (typeof queueMicrotask === "function") queueMicrotask(run);
-      else setTimeout(run, 0);
+      else if (scheduler && typeof scheduler.setTimeout === "function") {
+        scheduler.setTimeout(run, 0);
+      } else setTimeout(run, 0);
     } catch {
       try {
         setTimeout(() => checkImmediate(), 0);
@@ -565,11 +571,14 @@ function logStartCooldown() {
   } catch {}
 }
 
-function createNextRoundControls() {
+function createCooldownControls({ emit } = {}) {
   const controls = { timer: null, resolveReady: null, ready: null };
+  const notify = typeof emit === "function" ? emit : emitBattleEvent;
   controls.ready = new Promise((resolve) => {
     controls.resolveReady = () => {
-      emitBattleEvent("nextRoundTimerReady");
+      try {
+        notify("nextRoundTimerReady");
+      } catch {}
       resolve();
       controls.resolveReady = null;
     };
@@ -606,7 +615,7 @@ function markNextReady(btn) {
   } catch {}
 }
 
-async function handleNextRoundExpiration(controls, btn) {
+async function handleNextRoundExpiration(controls, btn, options = {}) {
   // TEMP: Mark global for test to confirm callback execution
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   // Patch: In Vitest, also update [data-role="next-round"] for test DOM
@@ -630,15 +639,24 @@ async function handleNextRoundExpiration(controls, btn) {
     } catch {}
     console.log("[TEST DEBUG] handleNextRoundExpiration called, machineRef:", machineRef);
   }
-  setSkipHandler(null);
-  scoreboard.clearTimer();
+  const clearSkipHandler =
+    typeof options.setSkipHandler === "function" ? options.setSkipHandler : setSkipHandler;
+  try {
+    clearSkipHandler(null);
+  } catch {}
+  const scoreboardApi = options.scoreboard || scoreboard;
+  try {
+    scoreboardApi?.clearTimer?.();
+  } catch {}
   // Ensure we've reached the cooldown state before advancing. If the
   // machine already moved past cooldown (e.g. into roundStart or
   // waitingForPlayerAction) resolve immediately so the ready dispatch
   // still occurs.
+  const bus = createEventBus(options.eventBus);
+  const getSnapshot = options.getStateSnapshot || getStateSnapshot;
   await new Promise((resolve) => {
     try {
-      const state = getStateSnapshot().state;
+      const state = getSnapshot().state;
       if (!state || state === "cooldown" || isOrchestratorReadyState(state)) {
         resolve();
         return;
@@ -647,21 +665,23 @@ async function handleNextRoundExpiration(controls, btn) {
     const handler = (e) => {
       try {
         if (e.detail?.to === "cooldown") {
-          offBattleEvent("battleStateChange", handler);
+          bus.off("battleStateChange", handler);
           resolve();
         }
       } catch {}
     };
-    onBattleEvent("battleStateChange", handler);
+    bus.on("battleStateChange", handler);
   });
 
   // If the orchestrator is running, it owns the "Next" button readiness.
   // This path should only execute in non-orchestrated environments (e.g., unit tests).
-  if (!isOrchestrated()) {
+  const isOrchestratedFn = typeof options.isOrchestrated === "function" ? options.isOrchestrated : isOrchestrated;
+  const markReady = options.markReady || markNextReady;
+  if (!isOrchestratedFn()) {
     try {
       const liveBtn =
         typeof document !== "undefined" ? document.getElementById("next-button") : btn;
-      markNextReady(liveBtn || btn);
+      markReady(liveBtn || btn);
       try {
         console.warn("[test] roundManager: marked Next ready");
       } catch {}
@@ -670,7 +690,8 @@ async function handleNextRoundExpiration(controls, btn) {
 
   // Update debug panel for visibility.
   try {
-    updateDebugPanel();
+    const updatePanel = options.updateDebugPanel || updateDebugPanel;
+    updatePanel();
   } catch {}
 
   // Dispatch `ready` (fire-and-forget) before resolving the controls so
@@ -699,8 +720,12 @@ async function handleNextRoundExpiration(controls, btn) {
     }
     return false;
   };
+  const dispatchReady =
+    typeof options.dispatchBattleEvent === "function"
+      ? options.dispatchBattleEvent
+      : dispatchBattleEvent;
   try {
-    const readyResult = await dispatchBattleEvent("ready");
+    const readyResult = await dispatchReady("ready");
     if (readyResult === false) {
       dispatchReadyDirectly();
     }
@@ -712,19 +737,41 @@ async function handleNextRoundExpiration(controls, btn) {
   if (typeof resolveReadyFn === "function") {
     // Explicitly emit readiness event in addition to resolver for robustness.
     try {
-      emitBattleEvent("nextRoundTimerReady");
+      bus.emit("nextRoundTimerReady");
     } catch {}
     if (typeof resolveReadyFn === "function") resolveReadyFn();
   }
 }
 
-function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
-  const timer = createRoundTimer({ starter: engineStartCoolDown });
+function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides = {}) {
+  const bus = createEventBus(overrides.eventBus);
+  const timerFactory = overrides.createRoundTimer || createRoundTimer;
+  const startCooldown = overrides.startEngineCooldown || engineStartCoolDown;
+  const renderer = overrides.attachCooldownRenderer || attachCooldownRenderer;
+  const registerSkipHandler =
+    typeof overrides.setSkipHandler === "function" ? overrides.setSkipHandler : setSkipHandler;
+  const scoreboardApi = overrides.scoreboard || scoreboard;
+  const snackbarApi = overrides.showSnackbar || showSnackbar;
+  const fallbackScheduler = overrides.setupFallbackTimer || setupFallbackTimer;
+  const dispatchReady = overrides.dispatchBattleEvent || dispatchBattleEvent;
+  const markReady = overrides.markReady || markNextReady;
+  const expirationOptions = {
+    eventBus: bus,
+    setSkipHandler: registerSkipHandler,
+    scoreboard: scoreboardApi,
+    showSnackbar: snackbarApi,
+    dispatchBattleEvent: dispatchReady,
+    markReady,
+    updateDebugPanel: overrides.updateDebugPanel || updateDebugPanel,
+    isOrchestrated: overrides.isOrchestrated || isOrchestrated,
+    getStateSnapshot: overrides.getStateSnapshot || getStateSnapshot
+  };
+  const timer = timerFactory({ starter: startCooldown });
   // Delay initial snackbar render until first tick to avoid overshadowing
   // the short-lived "Opponent is choosing…" message.
   // Provide initial remaining to render immediately and avoid an early
   // off-by-one visual jump on the first engine tick.
-  attachCooldownRenderer(timer, cooldownSeconds);
+  renderer(timer, cooldownSeconds);
   let expired = false;
   /** @type {ReturnType<typeof setTimeout>|null|undefined} */
   let fallbackId;
@@ -755,16 +802,16 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
     expired = true;
     // PRD taxonomy: cooldown timer expired + countdown completed
     try {
-      emitBattleEvent("cooldown.timer.expired");
-      emitBattleEvent("control.countdown.completed");
+      bus.emit("cooldown.timer.expired");
+      bus.emit("control.countdown.completed");
     } catch {}
-    return handleNextRoundExpiration(controls, btn);
+    return handleNextRoundExpiration(controls, btn, expirationOptions);
   };
   timer.on("expired", onExpired);
   // PRD taxonomy: cooldown timer ticks
   timer.on("tick", (remaining) => {
     try {
-      emitBattleEvent("cooldown.timer.tick", {
+      bus.emit("cooldown.timer.tick", {
         remainingMs: Math.max(0, Number(remaining) || 0) * 1000
       });
     } catch {}
@@ -772,13 +819,18 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
   timer.on("drift", () => {
     const msgEl = typeof document !== "undefined" ? document.getElementById("round-message") : null;
     if (msgEl && msgEl.textContent) {
-      showSnackbar("Waiting…");
+      try {
+        if (typeof snackbarApi === "function") snackbarApi("Waiting…");
+        else showSnackbar("Waiting…");
+      } catch {}
     } else {
-      scoreboard.showMessage("Waiting…");
+      try {
+        scoreboardApi?.showMessage?.("Waiting…");
+      } catch {}
     }
   });
   controls.timer = timer;
-  setSkipHandler(() => {
+  registerSkipHandler(() => {
     try {
       console.warn("[test] skip: stop nextRoundTimer");
     } catch {}
@@ -794,10 +846,10 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
     if (!expired) {
       expired = true;
       try {
-        emitBattleEvent("cooldown.timer.expired");
-        emitBattleEvent("control.countdown.completed");
+        bus.emit("cooldown.timer.expired");
+        bus.emit("control.countdown.completed");
       } catch {}
-      void handleNextRoundExpiration(controls, btn);
+      void handleNextRoundExpiration(controls, btn, expirationOptions);
     }
   });
   scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
@@ -812,7 +864,7 @@ function wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler) {
     const ms = !Number.isFinite(secsNum) || secsNum <= 0 ? 10 : Math.max(0, secsNum * 1000);
     // Use both global and injected scheduler timeouts to maximize compatibility
     // with test environments that mock timers differently.
-    fallbackId = setupFallbackTimer(ms, onExpired);
+    fallbackId = fallbackScheduler(ms, onExpired);
     try {
       schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
     } catch {}
