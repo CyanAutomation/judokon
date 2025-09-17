@@ -1,6 +1,6 @@
-  if (typeof console !== "undefined") {
-    console.log("[TEST DEBUG] scheduleNextRoundFallback called");
-  }
+if (typeof console !== "undefined") {
+  console.log("[TEST DEBUG] scheduleNextRoundFallback called");
+}
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
