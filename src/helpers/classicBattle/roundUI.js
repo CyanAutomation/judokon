@@ -107,6 +107,190 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
   updateDebugPanel();
 }
 
+/**
+ * Handle a `roundStarted` battle event.
+ *
+ * @param {CustomEvent} event
+ * @param {{ applyRoundUI?: typeof applyRoundUI }} [deps]
+ * @pseudocode
+ * 1. Read `store` and `roundNumber` from the event detail.
+ * 2. When both are valid, call the injected `applyRoundUI` implementation.
+ * @returns {void}
+ */
+export function handleRoundStartedEvent(event, deps = {}) {
+  const { applyRoundUI: applyRoundUiFn = applyRoundUI } = deps;
+  const { store, roundNumber } = event?.detail || {};
+  if (store && typeof roundNumber === "number") {
+    applyRoundUiFn(store, roundNumber);
+  }
+}
+
+/**
+ * Handle a `statSelected` battle event.
+ *
+ * @param {CustomEvent} event
+ * @param {{ showSnackbar?: (message: string) => void }} [deps]
+ * @pseudocode
+ * 1. Pull `stat`, `store`, and `opts` from the event detail and bail when missing.
+ * 2. Add the `selected` class to the chosen button and show snackbar feedback when allowed.
+ * 3. Emit `statButtons:disable` to lock the stat buttons after selection.
+ * @returns {void}
+ */
+export function handleStatSelectedEvent(event, deps = {}) {
+  const { showSnackbar: showSnackbarFn = showSnackbar } = deps;
+  try {
+    if (!IS_VITEST) console.log("INFO: statSelected event handler");
+  } catch {}
+  const { stat, store, opts } = event?.detail || {};
+  if (!stat || !store || !store.statButtonEls) return;
+  const btn = store.statButtonEls[stat];
+  if (btn) {
+    try {
+      if (!IS_VITEST)
+        console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
+    } catch {}
+    btn.classList.add("selected");
+    if (!opts || !opts.delayOpponentMessage) {
+      try {
+        if (typeof showSnackbarFn === "function") {
+          showSnackbarFn(`You Picked: ${btn.textContent}`);
+        }
+      } catch {}
+    }
+  }
+  emitBattleEvent("statButtons:disable");
+}
+
+/**
+ * Handle a `roundResolved` battle event.
+ *
+ * @param {CustomEvent} event
+ * @param {object} [deps]
+ * @param {typeof scoreboard} [deps.scoreboard]
+ * @param {(result: object, onReplay: () => Promise<void>) => Promise<void>|void} [deps.showMatchSummary]
+ * @param {typeof handleReplay} [deps.handleReplay]
+ * @param {typeof isOrchestrated} [deps.isOrchestrated]
+ * @param {typeof computeNextRoundCooldown} [deps.computeNextRoundCooldown]
+ * @param {() => any} [deps.createRoundTimer]
+ * @param {(timer: any, secs: number) => void} [deps.attachCooldownRenderer]
+ * @param {typeof resetStatButtons} [deps.resetStatButtons]
+ * @param {typeof syncScoreDisplay} [deps.syncScoreDisplay]
+ * @param {typeof updateDebugPanel} [deps.updateDebugPanel]
+ * @pseudocode
+ * 1. Exit early when the event lacks a round result.
+ * 2. Surface the outcome message and update the score using the injected scoreboard API.
+ * 3. When the match ends, clear the round counter, show the summary modal, and emit `matchOver`.
+ * 4. Otherwise, compute the next-round cooldown and, if not orchestrated, configure and start the timer with injected helpers.
+ * 5. Reset stat buttons on the next paint tick and refresh the debug panel.
+ * @returns {Promise<void>}
+ */
+export async function handleRoundResolvedEvent(event, deps = {}) {
+  const {
+    scoreboard: scoreboardApi = scoreboard,
+    showMatchSummary = showMatchSummaryModal,
+    handleReplay: handleReplayFn = handleReplay,
+    isOrchestrated: isOrchestratedFn = isOrchestrated,
+    computeNextRoundCooldown: computeNextRoundCooldownFn = computeNextRoundCooldown,
+    createRoundTimer: createRoundTimerFn,
+    attachCooldownRenderer: attachCooldownRendererFn,
+    resetStatButtons: resetStatButtonsFn = resetStatButtons,
+    syncScoreDisplay: syncScoreDisplayFn = syncScoreDisplay,
+    updateDebugPanel: updateDebugPanelFn = updateDebugPanel
+  } = deps;
+  const { store, result } = event?.detail || {};
+  if (!result) return;
+  try {
+    if (!IS_VITEST) console.warn("[test] roundResolved event received");
+  } catch {}
+  try {
+    scoreboardApi?.showMessage?.(result.message || "", { outcome: true });
+  } catch {}
+  try {
+    if (typeof scoreboardApi?.updateScore === "function") {
+      scoreboardApi.updateScore(result.playerScore, result.opponentScore);
+    } else if (typeof syncScoreDisplayFn === "function") {
+      syncScoreDisplayFn();
+    }
+  } catch {}
+  if (result.matchEnded) {
+    try {
+      scoreboardApi?.clearRoundCounter?.();
+    } catch {}
+    try {
+      await showMatchSummary?.(result, async () => {
+        if (typeof handleReplayFn === "function") {
+          await handleReplayFn(store);
+        }
+      });
+    } catch {}
+    emitBattleEvent("matchOver");
+  } else {
+    try {
+      const orchestrated = (() => {
+        try {
+          return typeof isOrchestratedFn === "function" && isOrchestratedFn();
+        } catch {
+          return false;
+        }
+      })();
+      if (!orchestrated) {
+        const computeCooldown =
+          typeof computeNextRoundCooldownFn === "function"
+            ? computeNextRoundCooldownFn
+            : computeNextRoundCooldown;
+        const secs = Math.max(3, Number(computeCooldown()));
+        let timerFactory = typeof createRoundTimerFn === "function" ? createRoundTimerFn : undefined;
+        let renderer = typeof attachCooldownRendererFn === "function" ? attachCooldownRendererFn : undefined;
+        if (!timerFactory || !renderer) {
+          try {
+            const [timerMod, rendererMod] = await Promise.all([
+              timerFactory
+                ? Promise.resolve({ createRoundTimer: timerFactory })
+                : import("../timers/createRoundTimer.js"),
+              renderer
+                ? Promise.resolve({ attachCooldownRenderer: renderer })
+                : import("../CooldownRenderer.js")
+            ]);
+            timerFactory = timerFactory || timerMod.createRoundTimer;
+            renderer = renderer || rendererMod.attachCooldownRenderer;
+          } catch {}
+        }
+        const timer = typeof timerFactory === "function" ? timerFactory() : null;
+        if (timer) {
+          try {
+            if (typeof renderer === "function") {
+              renderer(timer, secs);
+            }
+          } catch {}
+          try {
+            if (typeof timer.start === "function") {
+              timer.start(secs);
+            }
+          } catch {}
+        }
+      }
+    } catch {}
+  }
+  try {
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        try {
+          if (typeof resetStatButtonsFn === "function") resetStatButtonsFn();
+        } catch {}
+      })
+    );
+  } catch {
+    setTimeout(() => {
+      try {
+        if (typeof resetStatButtonsFn === "function") resetStatButtonsFn();
+      } catch {}
+    }, 32);
+  }
+  try {
+    if (typeof updateDebugPanelFn === "function") updateDebugPanelFn();
+  } catch {}
+}
+
 // --- Event bindings ---
 
 /**
@@ -120,11 +304,8 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
  * @returns {void}
  */
 export function bindRoundStarted() {
-  onBattleEvent("roundStarted", (e) => {
-    const { store, roundNumber } = e.detail || {};
-    if (store && typeof roundNumber === "number") {
-      applyRoundUI(store, roundNumber);
-    }
+  onBattleEvent("roundStarted", (event) => {
+    handleRoundStartedEvent(event);
   });
 }
 
@@ -139,24 +320,8 @@ export function bindRoundStarted() {
  * @returns {void}
  */
 export function bindStatSelected() {
-  onBattleEvent("statSelected", (e) => {
-    try {
-      if (!IS_VITEST) console.log("INFO: statSelected event handler");
-    } catch {}
-    const { stat, store, opts } = e.detail || {};
-    if (!stat || !store || !store.statButtonEls) return;
-    const btn = store.statButtonEls[stat];
-    if (btn) {
-      try {
-        if (!IS_VITEST)
-          console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
-      } catch {}
-      btn.classList.add("selected");
-      if (!opts || !opts.delayOpponentMessage) {
-        showSnackbar(`You Picked: ${btn.textContent}`);
-      }
-    }
-    emitBattleEvent("statButtons:disable");
+  onBattleEvent("statSelected", (event) => {
+    handleStatSelectedEvent(event);
   });
 }
 
@@ -171,69 +336,8 @@ export function bindStatSelected() {
  * @returns {void}
  */
 export function bindRoundResolved() {
-  onBattleEvent("roundResolved", (e) => {
-    const { store, result } = e.detail || {};
-    if (!result) return;
-    try {
-      if (!IS_VITEST) console.warn("[test] roundResolved event received");
-    } catch {}
-    try {
-      scoreboard.showMessage(result.message || "", { outcome: true });
-    } catch {}
-    try {
-      if (typeof scoreboard.updateScore === "function") {
-        scoreboard.updateScore(result.playerScore, result.opponentScore);
-      } else {
-        syncScoreDisplay();
-      }
-    } catch {}
-    if (result.matchEnded) {
-      scoreboard.clearRoundCounter();
-      try {
-        showMatchSummaryModal?.(result, async () => {
-          await handleReplay(store);
-        });
-      } catch {}
-      emitBattleEvent("matchOver");
-    } else {
-      try {
-        const orchestrated = (() => {
-          try {
-            return typeof isOrchestrated === "function" && isOrchestrated();
-          } catch {
-            return false;
-          }
-        })();
-        if (!orchestrated) {
-          // Drive a JS-based countdown in non-orchestrated environments so the
-          // snackbar updates are anchored relative to this point in time.
-          const secs = Math.max(3, computeNextRoundCooldown());
-          Promise.all([import("../timers/createRoundTimer.js"), import("../CooldownRenderer.js")])
-            .then(([{ createRoundTimer }, { attachCooldownRenderer }]) => {
-              const timer = createRoundTimer();
-              attachCooldownRenderer(timer, secs);
-              timer.start(secs);
-            })
-            .catch(() => {});
-        }
-      } catch {}
-    }
-    try {
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          try {
-            if (typeof resetStatButtons === "function") resetStatButtons();
-          } catch {}
-        })
-      );
-    } catch {
-      setTimeout(() => {
-        try {
-          if (typeof resetStatButtons === "function") resetStatButtons();
-        } catch {}
-      }, 32);
-    }
-    updateDebugPanel();
+  onBattleEvent("roundResolved", (event) => {
+    handleRoundResolvedEvent(event).catch(() => {});
   });
 }
 
@@ -290,124 +394,49 @@ export function bindRoundUIEventHandlersDynamic() {
     if (set.has(target)) return;
     set.add(target);
   } catch {}
-  // Preload modules so handlers avoid hot-path dynamic imports while still
-  // honoring test-time mocks. These promises resolve once and are reused.
-  // Silences early rejections to prevent unhandled warnings without
-  // converting the promises to resolved placeholders.
-  const silence = (p) => {
-    p.catch(() => {});
-    return p;
+  const createPreloader = (loader) => {
+    const promise = Promise.resolve()
+      .then(loader)
+      .catch(() => undefined);
+    return () => promise;
   };
-  const scoreboardP = silence(import("../setupScoreboard.js"));
-  const showSnackbarP = silence(import("../showSnackbar.js"));
-  const computeNextRoundCooldownP = silence(import("../timers/computeNextRoundCooldown.js"));
-  const roundManagerP = silence(import("/src/helpers/classicBattle/roundManager.js"));
-  const uiHelpersP = silence(import("/src/helpers/classicBattle/uiHelpers.js"));
-  onBattleEvent("roundStarted", (e) => {
-    const { store, roundNumber } = e.detail || {};
-    if (store && typeof roundNumber === "number") {
-      applyRoundUI(store, roundNumber);
-    }
+  const loadScoreboard = createPreloader(() => import("../setupScoreboard.js"));
+  const loadShowSnackbar = createPreloader(() => import("../showSnackbar.js"));
+  const loadComputeNextRoundCooldown = createPreloader(() =>
+    import("../timers/computeNextRoundCooldown.js")
+  );
+  const loadRoundManager = createPreloader(() => import("/src/helpers/classicBattle/roundManager.js"));
+  const loadCooldownRenderer = createPreloader(() => import("../CooldownRenderer.js"));
+  const loadCreateRoundTimer = createPreloader(() => import("../timers/createRoundTimer.js"));
+  const loadUiHelpers = createPreloader(() => import("/src/helpers/classicBattle/uiHelpers.js"));
+  onBattleEvent("roundStarted", (event) => {
+    handleRoundStartedEvent(event);
   });
-  onBattleEvent("statSelected", async (e) => {
-    const { stat, store, opts } = e.detail || {};
-    if (!stat || !store || !store.statButtonEls) return;
-    const btn = store.statButtonEls[stat];
-    if (btn) {
-      try {
-        if (!IS_VITEST)
-          console.warn(`[test] addSelected: stat=${stat} label=${(btn.textContent || "").trim()}`);
-      } catch {}
-      btn.classList.add("selected");
-      if (!opts || !opts.delayOpponentMessage) {
-        try {
-          const { showSnackbar } = await showSnackbarP;
-          showSnackbar(`You Picked: ${btn.textContent}`);
-        } catch {}
-      }
-    }
-    emitBattleEvent("statButtons:disable");
+  onBattleEvent("statSelected", async (event) => {
+    const module = await loadShowSnackbar();
+    handleStatSelectedEvent(event, { showSnackbar: module?.showSnackbar });
   });
-  onBattleEvent("roundResolved", async (e) => {
-    const { store, result } = e.detail || {};
-    if (!result) return;
-    try {
-      if (!IS_VITEST) console.warn("[test] roundResolved event received (dynamic)");
-    } catch {}
-    try {
-      const scoreboard = await scoreboardP;
-      // Always surface the outcome message
-      scoreboard.showMessage(result.message || "", { outcome: true });
-      // Update the score display using the resolved values to avoid
-      // cross-module instance drift in tests. Fallback to full sync if needed.
-      if (typeof scoreboard.updateScore === "function") {
-        scoreboard.updateScore(result.playerScore, result.opponentScore);
-      } else {
-        try {
-          syncScoreDisplay();
-        } catch {}
-      }
-    } catch {}
-    if (result.matchEnded) {
-      try {
-        const scoreboard = await scoreboardP;
-        const roundManager = await roundManagerP;
-        scoreboard.clearRoundCounter?.();
-        try {
-          await showMatchSummaryModal?.(result, async () => {
-            if (typeof roundManager.handleReplay === "function") {
-              await roundManager.handleReplay(store);
-            }
-          });
-        } catch {}
-        emitBattleEvent("matchOver");
-      } catch {}
-    } else {
-      // Proactively run a JS-based countdown in non-orchestrated environments.
-      try {
-        const [
-          { computeNextRoundCooldown: cNRC },
-          { attachCooldownRenderer: aCR },
-          { createRoundTimer: cRT },
-          { isOrchestrated: iO }
-        ] = await Promise.all([
-          computeNextRoundCooldownP,
-          import("../CooldownRenderer.js"),
-          import("../timers/createRoundTimer.js"),
-          roundManagerP
-        ]);
-        const secs = Math.max(3, cNRC());
-        const timer = cRT();
-        aCR(timer, secs);
-        const orchestrated = (() => {
-          try {
-            return typeof iO === "function" && iO();
-          } catch {
-            return false;
-          }
-        })();
-        if (!orchestrated) timer.start(secs);
-      } catch {}
-    }
-    // Keep the selected stat highlighted for two frames to mirror the static path
-    try {
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          try {
-            if (typeof resetStatButtons === "function") resetStatButtons();
-          } catch {}
-        })
-      );
-    } catch {
-      setTimeout(() => {
-        try {
-          if (typeof resetStatButtons === "function") resetStatButtons();
-        } catch {}
-      }, 32);
-    }
-    try {
-      const { updateDebugPanel } = await uiHelpersP;
-      updateDebugPanel();
-    } catch {}
+  onBattleEvent("roundResolved", async (event) => {
+    const [scoreboardModule, roundManagerModule, cooldownModule, timerModule, rendererModule, uiHelpersModule] =
+      await Promise.all([
+        loadScoreboard(),
+        loadRoundManager(),
+        loadComputeNextRoundCooldown(),
+        loadCreateRoundTimer(),
+        loadCooldownRenderer(),
+        loadUiHelpers()
+      ]);
+    await handleRoundResolvedEvent(event, {
+      scoreboard: scoreboardModule || scoreboard,
+      showMatchSummary: showMatchSummaryModal,
+      handleReplay: roundManagerModule?.handleReplay,
+      isOrchestrated: roundManagerModule?.isOrchestrated,
+      computeNextRoundCooldown: cooldownModule?.computeNextRoundCooldown,
+      createRoundTimer: timerModule?.createRoundTimer,
+      attachCooldownRenderer: rendererModule?.attachCooldownRenderer,
+      resetStatButtons,
+      syncScoreDisplay,
+      updateDebugPanel: uiHelpersModule?.updateDebugPanel
+    });
   });
 }
