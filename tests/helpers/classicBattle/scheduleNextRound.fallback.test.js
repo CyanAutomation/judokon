@@ -71,6 +71,89 @@ describe("startCooldown fallback timer", () => {
   });
 });
 
+describe("startCooldown ready dispatch discipline", () => {
+  let scheduler;
+  /** @type {import('vitest').Mock} */
+  let dispatchSpy;
+
+  beforeEach(async () => {
+    vi.useFakeTimers();
+    scheduler = createMockScheduler();
+    document.body.innerHTML = "";
+    createTimerNodes();
+    vi.resetModules();
+    dispatchSpy = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
+      clearTimer: vi.fn(),
+      showMessage: vi.fn(),
+      showAutoSelect: vi.fn(),
+      showTemporaryMessage: vi.fn(() => () => {}),
+      updateTimer: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+      updateDebugPanel: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
+      setSkipHandler: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent: dispatchSpy
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+      onBattleEvent: vi.fn(),
+      offBattleEvent: vi.fn(),
+      emitBattleEvent: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
+      computeNextRoundCooldown: () => 1
+    }));
+    vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
+      attachCooldownRenderer: vi.fn()
+    }));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it("dispatches ready exactly once when round timer expires", async () => {
+    const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
+    mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
+    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const controls = startCooldown({}, scheduler);
+    scheduler.tick(0);
+    scheduler.tick(20);
+    await controls.ready;
+    await vi.runAllTimersAsync();
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+  });
+
+  it("dispatches ready exactly once when fallback timer fires", async () => {
+    const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
+    mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
+    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const controls = startCooldown({}, scheduler);
+    scheduler.tick(0);
+    scheduler.tick(20);
+    expect(dispatchSpy).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1000);
+    scheduler.tick(1000);
+    await controls.ready;
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    await vi.runAllTimersAsync();
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("handleNextRoundExpiration immediate readiness", () => {
   let expiredHandler;
   /** @type {import('vitest').Mock} */

@@ -322,8 +322,13 @@ export function startCooldown(_store, scheduler) {
     }
   }
   const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
-  if (btn && !orchestratedMode) {
-    markNextReady(btn);
+  const fallbackBtn =
+    !btn && typeof document !== "undefined"
+      ? document.querySelector('[data-role="next-round"]')
+      : null;
+  const readinessTarget = btn || fallbackBtn;
+  if (readinessTarget && !orchestratedMode) {
+    markNextReady(readinessTarget);
     try {
       emitBattleEvent("nextRoundTimerReady");
     } catch {}
@@ -331,24 +336,17 @@ export function startCooldown(_store, scheduler) {
     // any late listeners that might replace/disable the button during round
     // resolution → cooldown transitions.
     try {
-      activeScheduler.setTimeout(() => {
-        if (typeof document === "undefined") return;
-        const b = document.getElementById("next-button");
-        markNextReady(b);
-      }, 0);
-      activeScheduler.setTimeout(() => {
-        if (typeof document === "undefined") return;
-        const b = document.getElementById("next-button");
-        markNextReady(b);
-      }, 20);
-    } catch {}
-    // Patch: In Vitest, always call handleNextRoundExpiration to set test hooks
-    try {
-      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-        // Use the test's nextButton if available, else fallback
-        const testBtn = document.querySelector('[data-role="next-round"]') || btn;
-        handleNextRoundExpiration({}, testBtn);
-      }
+      const scheduleReapply = (delay) => {
+        activeScheduler.setTimeout(() => {
+          if (typeof document === "undefined") return;
+          const target = btn
+            ? document.getElementById("next-button")
+            : document.querySelector('[data-role="next-round"]');
+          markNextReady(target);
+        }, delay);
+      };
+      scheduleReapply(0);
+      scheduleReapply(20);
     } catch {}
   }
   const cooldownSeconds = computeNextRoundCooldown();
@@ -364,14 +362,6 @@ export function startCooldown(_store, scheduler) {
   } else {
     wireNextRoundTimer(controls, btn, cooldownSeconds, activeScheduler);
   }
-  // Patch: In Vitest, always call handleNextRoundExpiration with test button after timer setup
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const testBtn =
-        typeof document !== "undefined" ? document.querySelector('[data-role="next-round"]') : null;
-      if (testBtn) handleNextRoundExpiration({}, testBtn);
-    }
-  } catch {}
   currentNextRound = controls;
   return controls;
 }
