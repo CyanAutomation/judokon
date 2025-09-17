@@ -64,7 +64,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 1. **Default to RAG first** - Query `queryRag("your question")` for any "How/Why/What/Where" questions (15x faster than manual exploration)
 2. **Follow 5-step workflow** - Context → Task Contract → Implementation → Validation → Delivery
 3. **Core validation suite** - `npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast`
-4. **Critical rules** - No dynamic imports in hot paths, no unsilenced console in tests, include @pseudocode in JSDoc
+4. **Critical rules** - No dynamic imports in hot paths, no unsilenced console in tests, include `@pseudocode` in JSDoc
 5. **Key files** - `src/data/tooltips.json`, `src/data/judoka.json`, `src/config/settingsDefaults.js`
 6. **Quality standards** - Functions ≤50 lines, test happy+edge cases, maintain net-better repo state
 7. **Hot path protection** - Use static imports in `src/helpers/classicBattle*`, `battleEngineFacade.js`
@@ -353,7 +353,7 @@ Recommended alternatives:
 
 - Drive behavior through public APIs and helpers (e.g. click handlers, `setup*` helpers,
   orchestrator mocks) so tests exercise the same code the app runs in production.
-- Use user-focused testing helpers (Playwright `page.click`/`page.fill`, @testing-library's
+- Use user-focused testing helpers (Playwright `page.click`/`page.fill`, Testing Library's
   `userEvent` / `fireEvent`) to simulate interactions instead of directly mutating nodes.
 - In unit tests prefer querying and asserting observable state changes (DOM queries,
   emitted events, store/orchestrator calls) rather than checking implementation details.
