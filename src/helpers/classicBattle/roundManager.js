@@ -220,11 +220,10 @@ let currentNextRound = null;
  * @param {typeof realScheduler} [scheduler=realScheduler] - Scheduler for timers.
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
  */
-export function startCooldown(_store, scheduler = realScheduler) {
-  // Runtime guard in case imported default is undefined due to module graph quirks
-  if (!scheduler || typeof scheduler.setTimeout !== "function") {
-    scheduler = realScheduler;
-  }
+export function startCooldown(_store, scheduler) {
+  // Always use the injected scheduler if provided, else fall back to realScheduler
+  const activeScheduler =
+    scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
   const context = detectOrchestratorContext();
   let orchestratedMode = context.orchestrated;
   const orchestratorMachine = context.machine;
@@ -328,12 +327,12 @@ export function startCooldown(_store, scheduler = realScheduler) {
     // any late listeners that might replace/disable the button during round
     // resolution → cooldown transitions.
     try {
-      setTimeout(() => {
+      activeScheduler.setTimeout(() => {
         if (typeof document === "undefined") return;
         const b = document.getElementById("next-button");
         markNextReady(b);
       }, 0);
-      setTimeout(() => {
+      activeScheduler.setTimeout(() => {
         if (typeof document === "undefined") return;
         const b = document.getElementById("next-button");
         markNextReady(b);
@@ -349,9 +348,9 @@ export function startCooldown(_store, scheduler = realScheduler) {
   } catch {}
   if (orchestratedMode) {
     setupOrchestratedReady(controls, orchestratorMachine, btn);
-    wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
+    wireNextRoundTimer(controls, btn, cooldownSeconds, activeScheduler);
   } else {
-    wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
+    wireNextRoundTimer(controls, btn, cooldownSeconds, activeScheduler);
   }
   currentNextRound = controls;
   return controls;
@@ -395,9 +394,11 @@ export function getNextRoundControls() {
  * @param {Function} cb
  * @returns {ReturnType<typeof setTimeout>|null}
  */
-export function setupFallbackTimer(ms, cb) {
+export function setupFallbackTimer(ms, cb, scheduler) {
+  const activeScheduler =
+    scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
   try {
-    return setTimeout(cb, ms);
+    return activeScheduler.setTimeout(cb, ms);
   } catch {
     return null;
   }
