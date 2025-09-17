@@ -1,3 +1,6 @@
+  if (typeof console !== "undefined") {
+    console.log("[TEST DEBUG] scheduleNextRoundFallback called");
+  }
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
@@ -587,6 +590,17 @@ function markNextReady(btn) {
 async function handleNextRoundExpiration(controls, btn) {
   // TEMP: Mark global for test to confirm callback execution
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
+  if (typeof console !== "undefined") {
+    // Print the machine reference from the event dispatcher debug getter
+    let machineRef = null;
+    try {
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead) {
+        const getMachine = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
+        machineRef = typeof getMachine === "function" ? getMachine() : null;
+      }
+    } catch {}
+    console.log("[TEST DEBUG] handleNextRoundExpiration called, machineRef:", machineRef);
+  }
   setSkipHandler(null);
   scoreboard.clearTimer();
   // Ensure we've reached the cooldown state before advancing.

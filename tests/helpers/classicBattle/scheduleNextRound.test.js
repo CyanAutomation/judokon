@@ -22,7 +22,9 @@ let getRandomJudokaMock;
 let renderMock;
 let currentFlags;
 
-beforeEach(() => {
+  beforeEach(() => {
+    // eslint-disable-next-line no-console
+    console.log("[TEST DEBUG] beforeEach");
   ({
     timerSpy,
     fetchJsonMock,
@@ -80,6 +82,8 @@ describe("classicBattle startCooldown", () => {
   }
 
   it("auto-dispatches ready after 1s cooldown", async () => {
+  // eslint-disable-next-line no-console
+  console.log("[TEST DEBUG] Test started");
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -100,6 +104,9 @@ describe("classicBattle startCooldown", () => {
     });
     await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
     const machine = orchestrator.getBattleStateMachine();
+    // Debug: print machine object reference after orchestrator init
+    // eslint-disable-next-line no-console
+    console.log("[TEST DEBUG] Machine after orchestrator init:", machine);
 
     await battleMod.startRound(store);
 
@@ -110,14 +117,27 @@ describe("classicBattle startCooldown", () => {
     // Clear spy after manual continue call to only capture automatic ready call
     dispatchSpy.mockClear();
 
-    // Debug: log state before advancing timers
+    // Debug: log state and machine before advancing timers
     // eslint-disable-next-line no-console
-    console.log("[TEST DEBUG] Before timer advance, state:", machine.getState());
+    console.log(
+      "[TEST DEBUG] Before timer advance, state:",
+      machine.getState(),
+      "machine:",
+      machine
+    );
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
-    // Debug: log state after timer fires
+    // Debug: log when 'ready' is dispatched
     // eslint-disable-next-line no-console
-    console.log("[TEST DEBUG] After timer advance, state:", machine.getState());
+    console.log("[TEST DEBUG] After timers, should dispatch 'ready'");
+    // Debug: log state and machine after timer fires
+    // eslint-disable-next-line no-console
+    console.log(
+      "[TEST DEBUG] After timer advance, state:",
+      machine.getState(),
+      "machine:",
+      machine
+    );
     // Confirm fallback timer callback executed
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
     // Wait for the orchestrator to reach the expected state to avoid races
