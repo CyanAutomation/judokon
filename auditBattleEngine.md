@@ -2,6 +2,10 @@
 
 This document provides an audit of the JavaScript files within `src/helpers/classicBattle/`, identifying functions that are overly complex or hard to maintain, along with suggestions for improvement and a remediation plan. The assessment focuses on line count (functions >50 lines are a primary concern as per `GEMINI.md`), nesting depth, number of responsibilities, and overall readability.
 
+## Remediation Log
+
+* **TimerController fallback countdown**: The fallback countdown previously bypassed the injected scheduler, so mocked schedulers could not observe tick scheduling or cancellations. Routing both `setTimeout` and `clearTimeout` calls through the provided scheduler keeps fake timers deterministic and prevents regression tests from missing drift.
+
 ## General Observations
 
 * **Orchestration Functions**: Many functions named `init*`, `setup*`, `handle*`, `bind*` tend to be complex because they orchestrate multiple sub-tasks. While some complexity is expected for orchestration, they often exceed reasonable limits.
