@@ -130,25 +130,21 @@ Files likely to change (small, focused edits):
 ## Verification checklist (QA steps)
 
 1. Lint & tests (developer):
-
    - npx prettier . --check
    - npx eslint .
    - npm run check:jsdoc
    - npx vitest run
 
 2. Unit / integration tests to add/verify:
-
    - New test asserting `init()` resolves and `window.battleStore` and `window.__battleInitComplete` are present.
    - Test for `renderStatButtons` that `#stat-buttons` contains the expected number of buttons and `data-buttons-ready="true"` is set.
    - Modal keyboard test simulating Arrow keys and `1`/`2`/`3` keys.
 
 3. Playwright/E2E:
-
    - Re-run `playwright/battle-classic/end-modal.spec.js` and `playwright/battle-classic/*` smoke tests.
    - Confirm no `pageerror` console logs and the match progresses to at least one round.
 
 4. QA manual checks:
-
    - Open `battleClassic.html` locally, select match length using keyboard (`1`, arrow keys) and mouse.
    - Confirm `#stat-buttons` appear, timers show, opponent chooses and round resolves.
    - Try clicking footer nav mid-match and confirm confirmation or disabled nav.
