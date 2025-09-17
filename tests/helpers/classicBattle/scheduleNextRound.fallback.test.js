@@ -158,9 +158,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     const { __setStateSnapshot } = await import(
       "../../../src/helpers/classicBattle/battleDebug.js"
     );
-    const debugHooks = await import(
-      "../../../src/helpers/classicBattle/debugHooks.js"
-    );
+    const debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
     const machine = { dispatch: vi.fn() };
     __setStateSnapshot({ state: "cooldown" });
     debugHooks.exposeDebugState("getClassicBattleMachine", () => machine);
@@ -181,9 +179,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
             : originalGlobalRead;
         };
       }
-      const { startCooldown } = await import(
-        "../../../src/helpers/classicBattle/roundManager.js"
-      );
+      const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
       dispatchSpy.mockImplementation(() => {
         debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
         return false;
