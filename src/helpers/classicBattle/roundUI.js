@@ -7,7 +7,7 @@ import { handleStatSelectionTimeout } from "./autoSelectHandlers.js";
 
 import * as scoreboard from "../setupScoreboard.js";
 import { handleStatSelection } from "./selectionHandler.js";
-import { handleReplay, isOrchestrated } from "./roundManager.js";
+import * as roundManagerModule from "./roundManager.js";
 import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEvents.js";
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
@@ -188,8 +188,6 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   const {
     scoreboard: scoreboardApi = scoreboard,
     showMatchSummary = showMatchSummaryModal,
-    handleReplay: handleReplayFn = handleReplay,
-    isOrchestrated: isOrchestratedFn = isOrchestrated,
     computeNextRoundCooldown: computeNextRoundCooldownFn = computeNextRoundCooldown,
     createRoundTimer: createRoundTimerFn,
     attachCooldownRenderer: attachCooldownRendererFn,
@@ -197,6 +195,26 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     syncScoreDisplay: syncScoreDisplayFn = syncScoreDisplay,
     updateDebugPanel: updateDebugPanelFn = updateDebugPanel
   } = deps;
+  const handleReplayFn =
+    typeof deps.handleReplay === "function"
+      ? deps.handleReplay
+      : (() => {
+          try {
+            return roundManagerModule.handleReplay;
+          } catch {
+            return undefined;
+          }
+        })();
+  const isOrchestratedFn =
+    typeof deps.isOrchestrated === "function"
+      ? deps.isOrchestrated
+      : (() => {
+          try {
+            return roundManagerModule.isOrchestrated;
+          } catch {
+            return undefined;
+          }
+        })();
   const { store, result } = event?.detail || {};
   if (!result) return;
   try {
@@ -212,6 +230,34 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
       syncScoreDisplayFn();
     }
   } catch {}
+  const runReset = () => {
+    try {
+      if (typeof resetStatButtonsFn === "function") resetStatButtonsFn();
+    } catch {}
+  };
+  let preferTimeout = IS_VITEST;
+  if (!preferTimeout && typeof setTimeout === "function") {
+    try {
+      const timeoutSrc = Function.prototype.toString.call(setTimeout);
+      preferTimeout = !/\[native code\]/.test(timeoutSrc);
+    } catch {}
+  }
+  const scheduleReset = () => {
+    if (preferTimeout && typeof setTimeout === "function") {
+      setTimeout(runReset, 32);
+      return;
+    }
+    try {
+      requestAnimationFrame(() => requestAnimationFrame(runReset));
+    } catch {
+      if (typeof setTimeout === "function") {
+        setTimeout(runReset, 32);
+      } else {
+        runReset();
+      }
+    }
+  };
+  scheduleReset();
   if (result.matchEnded) {
     try {
       scoreboardApi?.clearRoundCounter?.();
@@ -272,21 +318,6 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
         }
       }
     } catch {}
-  }
-  try {
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        try {
-          if (typeof resetStatButtonsFn === "function") resetStatButtonsFn();
-        } catch {}
-      })
-    );
-  } catch {
-    setTimeout(() => {
-      try {
-        if (typeof resetStatButtonsFn === "function") resetStatButtonsFn();
-      } catch {}
-    }, 32);
   }
   try {
     if (typeof updateDebugPanelFn === "function") updateDebugPanelFn();

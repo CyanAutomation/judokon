@@ -24,8 +24,9 @@ import {
   resolveStatButtonsReady
 } from "./statButtons.js";
 import { guard } from "./guard.js";
-import { updateDebugPanel } from "./debugPanel.js";
-export { updateDebugPanel } from "./debugPanel.js";
+import { updateDebugPanel as updateDebugPanelImpl } from "./debugPanel.js";
+export { updateDebugPanelImpl as updateDebugPanel };
+
 import { runWhenIdle } from "./idleCallback.js";
 import { getStateSnapshot } from "./battleDebug.js";
 
@@ -868,7 +869,7 @@ export function resetBattleUI() {
   resetNextButton();
   resetQuitButton();
   clearScoreboardAndMessages();
-  updateDebugPanel();
+  updateDebugPanelImpl();
 }
 
 /**
