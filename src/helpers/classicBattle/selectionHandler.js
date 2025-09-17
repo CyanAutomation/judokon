@@ -221,48 +221,21 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
 }
 
 /**
- * @summary Handles the player's stat selection.
+ * Log, validate and apply the player's stat selection.
  *
  * @pseudocode
- * 1. Abort unless `validateSelectionState` allows the selection.
- * 2. Mark the selection and coerce stat values via `applySelectionToStore`.
- * 3. Halt timers with `cleanupTimers`.
- * 4. Emit the `statSelected` event via `emitSelectionEvent`.
- * 5. Dispatch `statSelected` and query `getBattleState`.
- * 6. If a state is returned, exit early; otherwise resolve via
- *    `resolveRoundDirect` and dispatch `roundResolved`.
+ * 1. Emit debug logging for Vitest.
+ * 2. Validate the selection via `validateSelectionState`.
+ * 3. Dispatch `roundResolved` when a duplicate selection occurs.
+ * 4. Apply the selection to the store and return coerced stat values.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @param {string} stat - Chosen stat key.
- * @param {{playerVal: number, opponentVal: number}} values - Precomputed stat values.
- * @returns {Promise<ReturnType<typeof resolveRound>>}
+ * @param {number|undefined} playerVal - Optional player value.
+ * @param {number|undefined} opponentVal - Optional opponent value.
+ * @returns {Promise<{playerVal: number, opponentVal: number}|null>} Values when valid, otherwise `null`.
  */
-/**
- * Handle the player's stat selection, emit selection events and resolve the round.
- *
- * This function coordinates validation, applying selection to the store,
- * stopping timers, emitting the `statSelected` event, and ensuring the round
- * is resolved either by the state machine or directly by calling the resolver.
- *
- * @pseudocode
- * 1. Validate that a selection is currently allowed via `validateSelectionState`.
- * 2. Apply selection to `store` and coerce stat values with `applySelectionToStore`.
- * 3. Call `cleanupTimers` to halt timers and clear pending timeouts.
- * 4. Emit `statSelected` with selection details and any testing options.
- * 5. Dispatch `statSelected` and detect whether an orchestrator will resolve.
- * 6. If an orchestrator exists but does not handle the round, install a
- *    fallback timer that resolves the round directly after the orchestrator's
- *    maximum delay window has passed.
- * 7. If the machine already resolved or the battle state forbids it, return
- *    early.
- * 8. Otherwise call `resolveRoundDirect` and dispatch `roundResolved`.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {string} stat - Chosen stat key.
- * @param {{playerVal?: number, opponentVal?: number}} values - Optional precomputed values.
- * @returns {Promise<ReturnType<typeof resolveRound>|void>} The resolved round result when handled locally.
- */
-export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+export async function validateAndApplySelection(store, stat, playerVal, opponentVal) {
   try {
     if (IS_VITEST)
       console.log("[DEBUG] handleStatSelection called", {
@@ -278,37 +251,74 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
       if (IS_VITEST)
         console.log("[test] handleStatSelection: validateSelectionState returned false");
     } catch {}
-    // For duplicate selections, still dispatch roundResolved to maintain test compatibility
     if (store.selectionMade) {
       try {
         await dispatchBattleEvent("roundResolved");
       } catch {}
     }
-    return;
+    return null;
   }
 
-  ({ playerVal, opponentVal } = applySelectionToStore(store, stat, playerVal, opponentVal));
+  return applySelectionToStore(store, stat, playerVal, opponentVal);
+}
+
+/**
+ * Emit selection events and dispatch `statSelected` to the orchestrator.
+ *
+ * @pseudocode
+ * 1. Halt timers by calling `cleanupTimers`.
+ * 2. Emit the `statSelected` battle event with selection metadata.
+ * 3. Dispatch `statSelected` to the orchestrator unless tests force direct resolution.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player stat value.
+ * @param {number} opponentVal - Opponent stat value.
+ * @param {Record<string, any>} opts - Optional configuration flags.
+ * @returns {Promise<boolean|undefined>} Result from `dispatchBattleEvent`.
+ */
+export async function dispatchStatSelected(store, stat, playerVal, opponentVal, opts = {}) {
   cleanupTimers(store);
   await emitSelectionEvent(store, stat, playerVal, opponentVal, opts);
 
-  let handledByOrchestrator;
   try {
-    // Check for test-specific flag to force direct resolution for score accumulation tests
     const forceDirectResolution =
       IS_VITEST && (opts.forceDirectResolution || store.forceDirectResolution);
     if (forceDirectResolution) {
-      handledByOrchestrator = false;
-    } else {
-      handledByOrchestrator = await dispatchBattleEvent("statSelected");
+      return false;
     }
+    return await dispatchBattleEvent("statSelected");
   } catch {
-    handledByOrchestrator = undefined;
+    return undefined;
   }
+}
 
+/**
+ * Prefer orchestrator resolution and install a fallback when required.
+ *
+ * @pseudocode
+ * 1. Detect whether the orchestrator is active via DOM dataset markers.
+ * 2. When active but not handling the event, install a deterministic fallback timer.
+ * 3. Bail out early if the orchestrator already handled resolution.
+ * 4. Skip direct resolution when the battle state machine is not in `roundDecision`.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player stat value.
+ * @param {number} opponentVal - Opponent stat value.
+ * @param {Record<string, any>} opts - Optional configuration flags.
+ * @param {boolean|undefined} handledByOrchestrator - Result from dispatching `statSelected`.
+ * @returns {Promise<boolean>} `true` when the round should stop processing locally.
+ */
+export async function resolveWithFallback(
+  store,
+  stat,
+  playerVal,
+  opponentVal,
+  opts,
+  handledByOrchestrator
+) {
   try {
-    // Prefer orchestrator-first resolution whenever the machine is active.
-    // If an orchestrator is present, avoid falling back to direct resolution
-    // unless explicitly forced by tests.
     const orchestrated =
       typeof document !== "undefined" &&
       !!(document.body && document.body.dataset && document.body.dataset.battleState);
@@ -340,7 +350,7 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
         try {
           console.log("[test] handleStatSelection: orchestrated path; scheduling fallback");
         } catch {}
-      return;
+      return true;
     }
 
     if (handledByOrchestrator === true) {
@@ -348,10 +358,12 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
         try {
           console.log("[test] handleStatSelection: handledByOrchestrator true");
         } catch {}
-      return;
+      return true;
     }
 
-    if (store.playerChoice === null) return;
+    if (store.playerChoice === null) {
+      return true;
+    }
 
     const current = typeof getBattleState === "function" ? getBattleState() : null;
     if (current && current !== "roundDecision") {
@@ -359,11 +371,30 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
         try {
           console.log("[test] handleStatSelection: machine in non-decision state", current);
         } catch {}
-      return;
+      return true;
     }
   } catch {}
 
-  // Show "Opponent is choosing..." snackbar only when using direct resolution
+  return false;
+}
+
+/**
+ * Resolve the round directly and synchronise DOM/test utilities.
+ *
+ * @pseudocode
+ * 1. Show the "opponent choosing" snackbar in Vitest environments.
+ * 2. Resolve the round deterministically via `resolveRoundDirect`.
+ * 3. Update DOM nodes for Vitest compatibility and scoreboard state.
+ * 4. Dispatch `roundResolved` for downstream listeners.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player stat value.
+ * @param {number} opponentVal - Opponent stat value.
+ * @param {Record<string, any>} opts - Optional configuration flags.
+ * @returns {Promise<ReturnType<typeof resolveRound>>} Resolution result.
+ */
+export async function syncResultDisplay(store, stat, playerVal, opponentVal, opts) {
   try {
     if (IS_VITEST) {
       showSnackbar(t("ui.opponentChoosing"));
@@ -372,7 +403,6 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
 
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
 
-  // Direct DOM updates for test compatibility
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       const messageEl = document.querySelector("header #round-message");
@@ -389,8 +419,6 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
     }
   } catch {}
 
-  // Robust scoreboard sync for E2E: reflect engine scores even when adapters
-  // are not yet bound, so Playwright assertions observe the update
   try {
     const { playerScore, opponentScore } = getScores();
     try {
@@ -407,5 +435,57 @@ export async function handleStatSelection(store, stat, { playerVal, opponentVal,
   try {
     await dispatchBattleEvent("roundResolved");
   } catch {}
+
   return result;
+}
+
+/**
+ * Handle the player's stat selection, emit selection events and resolve the round.
+ *
+ * This function coordinates validation, applying selection to the store,
+ * stopping timers, emitting the `statSelected` event, and ensuring the round
+ * is resolved either by the state machine or directly by calling the resolver.
+ *
+ * @pseudocode
+ * 1. Validate that a selection is currently allowed via `validateSelectionState`.
+ * 2. Apply selection to `store` and coerce stat values with `applySelectionToStore`.
+ * 3. Emit `statSelected` with selection details and any testing options.
+ * 4. Prefer orchestrator resolution and schedule deterministic fallback.
+ * 5. When no orchestrator handles the event, resolve directly and sync DOM.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {{playerVal?: number, opponentVal?: number}} values - Optional precomputed values.
+ * @returns {Promise<ReturnType<typeof resolveRound>|void>} The resolved round result when handled locally.
+ */
+export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
+  const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);
+  if (!values) {
+    return;
+  }
+
+  ({ playerVal, opponentVal } = values);
+
+  const handledByOrchestrator = await dispatchStatSelected(
+    store,
+    stat,
+    playerVal,
+    opponentVal,
+    opts
+  );
+
+  const handled = await resolveWithFallback(
+    store,
+    stat,
+    playerVal,
+    opponentVal,
+    opts,
+    handledByOrchestrator
+  );
+
+  if (handled) {
+    return;
+  }
+
+  return syncResultDisplay(store, stat, playerVal, opponentVal, opts);
 }

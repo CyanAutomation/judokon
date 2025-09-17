@@ -36,7 +36,11 @@ vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
   handleStatSelectionTimeout: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
-  handleStatSelection: vi.fn()
+  handleStatSelection: vi.fn(),
+  validateAndApplySelection: vi.fn(),
+  dispatchStatSelected: vi.fn(),
+  resolveWithFallback: vi.fn(),
+  syncResultDisplay: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
   getCardStatValue: () => 0
