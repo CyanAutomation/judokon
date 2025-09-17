@@ -200,7 +200,7 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
   let fallbackId = null;
 
   const clearFallback = () => {
-    if (fallbackId == null) return;
+    if (fallbackId === null) return;
     if (scheduler && typeof scheduler.clearTimeout === "function") {
       try {
         scheduler.clearTimeout(fallbackId);
