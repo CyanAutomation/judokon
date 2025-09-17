@@ -26,6 +26,7 @@ import {
 import { guard } from "./guard.js";
 import { updateDebugPanel as updateDebugPanelImpl } from "./debugPanel.js";
 export { updateDebugPanelImpl as updateDebugPanel };
+
 import { runWhenIdle } from "./idleCallback.js";
 import { getStateSnapshot } from "./battleDebug.js";
 
