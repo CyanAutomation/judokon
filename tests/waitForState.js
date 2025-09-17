@@ -21,6 +21,8 @@ export function waitForState(target, timeout = 10000) {
   return new Promise((resolve, reject) => {
     if (getStateSnapshot().state === target) return resolve();
     const handler = (e) => {
+      // eslint-disable-next-line no-console
+      console.log("[TEST DEBUG] waitForState handler:", e.detail);
       if (e.detail?.to === target) {
         offBattleEvent("battleStateChange", handler);
         resolve();

@@ -82,16 +82,13 @@ export async function createStateManager(
         }
         const from = current;
         current = target;
+        // [TEST DEBUG] log state transition attempt
         if (typeof console !== "undefined") {
-          console.log(
-            "[DEBUG] stateManager: transitioning",
-            "from=",
+          console.log("[TEST DEBUG] stateManager transition:", {
             from,
-            "to=",
-            target,
-            "event=",
-            eventName
-          );
+            to: target,
+            event: eventName
+          });
         }
         try {
           await onTransition?.({ from, to: target, event: eventName });

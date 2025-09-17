@@ -1,3 +1,12 @@
+// [TEST DEBUG] Instrument event dispatcher
+const _origDispatchEvent = globalThis.dispatchEvent;
+globalThis.dispatchEvent = function (event) {
+  if (event && event.type) {
+    // eslint-disable-next-line no-console
+    console.log("[TEST DEBUG] dispatchEvent:", event.type, event.detail);
+  }
+  return _origDispatchEvent.apply(this, arguments);
+};
 /**
  * Lightweight event bus for Classic Battle interactions.
  *

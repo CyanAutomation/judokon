@@ -443,6 +443,14 @@ export function disposeClassicBattleOrchestrator() {
  * @returns {import('./stateManager.js').ClassicBattleStateManager|null} Current machine instance or null.
  */
 export function getBattleStateMachine() {
+  if (typeof console !== "undefined") {
+    console.log(
+      "[TEST DEBUG] getBattleStateMachine called, machine:",
+      machine,
+      "dispatch:",
+      machine?.dispatch
+    );
+  }
   return machine;
 }
 
