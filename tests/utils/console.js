@@ -1,5 +1,5 @@
 // [TEST DEBUG] top-level console.js
-// eslint-disable-next-line no-console
+
 console.log("[TEST DEBUG] top-level console.js");
 // Capture originals once so we can restore accurately even if tests overwrite console methods
 const ORIGINAL = {

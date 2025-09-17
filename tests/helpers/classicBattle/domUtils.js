@@ -2,7 +2,7 @@ if (typeof console !== "undefined") {
   console.log("[TEST DEBUG] domUtils.js top-level loaded");
 }
 // [TEST DEBUG] top-level domUtils.js
-// eslint-disable-next-line no-console
+
 console.log("[TEST DEBUG] top-level domUtils.js");
 /**
  * Create a container element for snackbar messages.

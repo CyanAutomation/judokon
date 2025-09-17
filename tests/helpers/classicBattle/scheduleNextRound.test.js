@@ -213,7 +213,7 @@ describe("classicBattle startCooldown", () => {
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator");
 
     console.log("[TEST DEBUG] before getBattleStateMachine");
-  const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
+    const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
     console.log("[TEST DEBUG] after getBattleStateMachine", machine);
 
     await battleMod.startRound(store);
@@ -282,7 +282,7 @@ describe("classicBattle startCooldown", () => {
       await battleMod.startRound(store);
     });
     await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
-  const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
+    const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
 
     await battleMod.startRound(store);
     await machine.dispatch("roundOver");

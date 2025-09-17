@@ -2,7 +2,6 @@
 const _origDispatchEvent = globalThis.dispatchEvent;
 globalThis.dispatchEvent = function (event) {
   if (event && event.type) {
-    // eslint-disable-next-line no-console
     console.log("[TEST DEBUG] dispatchEvent:", event.type, event.detail);
   }
   return _origDispatchEvent.apply(this, arguments);
