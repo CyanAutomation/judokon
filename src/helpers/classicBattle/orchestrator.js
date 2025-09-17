@@ -1,33 +1,3 @@
-/**
- * Initialize the classic battle orchestrator (state machine) and attach listeners.
- *
- * @pseudocode
- * 1. Create the state manager (state machine) with the provided context (including scheduler for tests).
- * 2. Attach listeners for DOM, debug, and diagnostics.
- * 3. Preload dependencies (timer utils, scoreboard adapter).
- * 4. Store the machine reference for later access.
- * 5. Return the machine instance.
- *
- * @param {object} [contextOverrides] - Optional context overrides (e.g., scheduler for tests).
- * @returns {import("./stateManager.js").ClassicBattleStateManager} The initialized state machine.
- */
-export async function initClassicBattleOrchestrator(contextOverrides = {}) {
-  if (typeof console !== "undefined") {
-    console.log("[TEST DEBUG] initClassicBattleOrchestrator called", contextOverrides);
-  }
-  // Create the state manager (state machine) with context overrides (e.g., scheduler for tests)
-  machine = await createStateManager({ ...contextOverrides });
-  attachListeners(machine);
-  // Preload non-critical dependencies (timer utils, scoreboard adapter)
-  preloadDependencies();
-  return machine;
-}
-if (typeof console !== "undefined") {
-  console.log("[TEST DEBUG] orchestrator.js top-level loaded");
-}
-if (typeof console !== "undefined") {
-  console.log("[TEST DEBUG] orchestrator.js top-level loaded");
-}
 import {
   waitingForMatchStartEnter,
   matchStartEnter,
@@ -49,17 +19,170 @@ import { getStateSnapshot } from "./battleDebug.js";
 import * as debugHooks from "./debugHooks.js";
 import stateCatalog from "./stateCatalog.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
-import { logStateTransition, createComponentLogger } from "./debugLogger.js";
+import { logStateTransition } from "./debugLogger.js";
 import { preloadTimerUtils } from "/src/helpers/TimerController.js";
 import { initScoreboardAdapter } from "/src/helpers/classicBattle/scoreboardAdapter.js";
 import { createStateManager } from "/src/helpers/classicBattle/stateManager.js";
 import "./uiService.js";
 
-const orchestratorLogger = createComponentLogger("Orchestrator");
-
 let machine = null;
 let debugLogListener = null;
 let visibilityHandler = null;
+
+function isBattleStore(candidate) {
+  if (!candidate || typeof candidate !== "object") return false;
+  return (
+    Object.prototype.hasOwnProperty.call(candidate, "selectionMade") ||
+    Object.prototype.hasOwnProperty.call(candidate, "stallTimeoutMs") ||
+    Object.prototype.hasOwnProperty.call(candidate, "playerChoice")
+  );
+}
+
+function normalizeContextOverrides(contextOverrides) {
+  if (!contextOverrides || typeof contextOverrides !== "object") {
+    return {};
+  }
+  if (isBattleStore(contextOverrides) && !("store" in contextOverrides)) {
+    return { store: contextOverrides };
+  }
+  return { ...contextOverrides };
+}
+
+function normalizeDependencies(dependencies) {
+  if (!dependencies) return {};
+  if (typeof dependencies === "function") {
+    return { startRoundWrapper: dependencies };
+  }
+  return { ...dependencies };
+}
+
+function normalizeHooks(hooks) {
+  if (!hooks) return {};
+  if (typeof hooks === "function") {
+    return { onStateChange: hooks };
+  }
+  return hooks;
+}
+
+function applyResetGame(context, store, deps) {
+  if ("doResetGame" in context) return;
+  if (typeof deps.resetGame === "function" && store) {
+    context.doResetGame = () => deps.resetGame?.(context.store ?? store);
+    return;
+  }
+  if (store) {
+    context.doResetGame = () => resetGameLocal(context.store ?? store);
+    return;
+  }
+  if (typeof deps.resetGame === "function") {
+    context.doResetGame = deps.resetGame;
+  }
+}
+
+function selectStartRoundDependency(deps) {
+  if (typeof deps.doStartRound === "function") return deps.doStartRound;
+  if (typeof deps.startRound === "function") return deps.startRound;
+  return null;
+}
+
+function applyStartRound(context, store, deps) {
+  if ("doStartRound" in context) return;
+  const startRoundDep = selectStartRoundDependency(deps);
+  if (startRoundDep) {
+    context.doStartRound = (activeStore) =>
+      startRoundDep(activeStore ?? context.store ?? store);
+    return;
+  }
+  if (store) {
+    context.doStartRound = (activeStore) =>
+      startRoundLocal(activeStore ?? context.store ?? store);
+  }
+}
+
+function resolveMachineContext(overrides, deps) {
+  const store = overrides.store ?? deps.store ?? null;
+  const scheduler = overrides.scheduler ?? deps.scheduler ?? null;
+  const startRoundWrapper =
+    overrides.startRoundWrapper ?? deps.startRoundWrapper ?? null;
+
+  const context = { ...overrides };
+  if (!("store" in context)) context.store = store;
+  if (scheduler && !("scheduler" in context)) context.scheduler = scheduler;
+  if (!("engine" in context)) {
+    context.engine = overrides.engine ?? deps.engine ?? store?.engine ?? null;
+  }
+  if (startRoundWrapper && !("startRoundWrapper" in context)) {
+    context.startRoundWrapper = startRoundWrapper;
+  }
+
+  applyResetGame(context, store, deps);
+  applyStartRound(context, store, deps);
+
+  if (store && typeof store === "object") {
+    store.context = { ...(store.context || {}), ...context };
+  }
+
+  return { context };
+}
+
+function createTransitionHook(hookSet) {
+  return async ({ from, to, event }) => {
+    const detail = { from, to, event };
+    emitBattleEvent("battleStateChange", detail);
+    try {
+      await hookSet.onStateChange?.(detail);
+    } catch {}
+    emitDiagnostics(from, to, event);
+    emitReadiness(from, to, event);
+    emitStateChange(from, to);
+    mirrorTimerState();
+    emitResolution(event);
+  };
+}
+
+/**
+ * Initialize the classic battle orchestrator (state machine) and attach listeners.
+ *
+ * @pseudocode
+ * 1. Merge provided overrides and dependencies into the machine context.
+ * 2. Build the onEnter map and initialize the state manager with an onTransition hook.
+ * 3. Attach listeners, preload dependencies, and return the initialized machine.
+ *
+ * @param {object} [contextOverrides] - Optional context overrides (e.g., store, scheduler).
+ * @param {object|Function} [dependencies] - Optional dependency bag or `startRoundWrapper` function.
+ * @param {object|Function} [hooks] - Optional hooks such as `onStateChange`.
+ * @returns {Promise<import("./stateManager.js").ClassicBattleStateManager>} The initialized state machine.
+ */
+export async function initClassicBattleOrchestrator(
+  contextOverrides = {},
+  dependencies = {},
+  hooks = {}
+) {
+  if (machine) {
+    return machine;
+  }
+
+  const overrides = normalizeContextOverrides(contextOverrides);
+  const deps = normalizeDependencies(dependencies);
+  const hookSet = normalizeHooks(hooks);
+
+  const { context } = resolveMachineContext(overrides, deps);
+  const onEnterMap = createOnEnterMap();
+  const onTransition = createTransitionHook(hookSet);
+
+  try {
+    machine = { context };
+    const createdMachine = await createStateManager(onEnterMap, context, onTransition);
+    machine = createdMachine;
+  } catch (error) {
+    machine = null;
+    throw error;
+  }
+
+  attachListeners(machine);
+  preloadDependencies();
+  return machine;
+}
 
 // Map resolution events to PRD outcomes.
 // Identity mappings are listed explicitly so only recognized events emit taxonomy outcomes.
