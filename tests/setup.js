@@ -1,5 +1,5 @@
 // [TEST DEBUG] top-level setup.js
-// eslint-disable-next-line no-console
+
 console.log("[TEST DEBUG] top-level setup.js");
 if (typeof CustomEvent === "undefined") {
   global.CustomEvent = class CustomEvent extends Event {
@@ -9,19 +9,19 @@ if (typeof CustomEvent === "undefined") {
     }
   };
   // [TEST DEBUG] after CustomEvent polyfill
-  // eslint-disable-next-line no-console
+
   console.log("[TEST DEBUG] after CustomEvent polyfill");
 }
 if (typeof global.requestAnimationFrame === "undefined") {
   global.requestAnimationFrame = (cb) => setTimeout(() => cb(0), 0);
   // [TEST DEBUG] after requestAnimationFrame polyfill
-  // eslint-disable-next-line no-console
+
   console.log("[TEST DEBUG] after requestAnimationFrame polyfill");
 }
 if (typeof global.cancelAnimationFrame === "undefined") {
   global.cancelAnimationFrame = (id) => clearTimeout(id);
   // [TEST DEBUG] after cancelAnimationFrame polyfill
-  // eslint-disable-next-line no-console
+
   console.log("[TEST DEBUG] after cancelAnimationFrame polyfill");
 }
 import { expect, afterEach, beforeEach, vi } from "vitest";
@@ -29,7 +29,7 @@ import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
 
 // [TEST DEBUG] after imports
-// eslint-disable-next-line no-console
+
 console.log("[TEST DEBUG] after imports");
 
 // Early module-level mute: some modules emit test-oriented logs during import
@@ -43,7 +43,7 @@ try {
   const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
   if (IS_VITEST && !SHOW_LOGS) {
     // [TEST DEBUG] BYPASSING muteConsole and stdout patch
-    // eslint-disable-next-line no-console
+
     console.log("[TEST DEBUG] BYPASSING muteConsole and stdout patch");
     // muteConsole(["warn", "error", "debug", "log"]);
     // try {
