@@ -6,6 +6,7 @@ if (typeof console !== "undefined") {
 console.log("[TEST DEBUG] top-level utils.js");
 import { vi } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBattle/orchestrator.js";
 
 /**
  * @pseudocode
@@ -22,6 +23,7 @@ import { createBattleHeader, createBattleCardContainers } from "../../utils/test
  *   - expose timerSpy, mocks, and currentFlags
  */
 export function setupClassicBattleDom() {
+  disposeClassicBattleOrchestrator();
   vi.resetModules();
   document.body.innerHTML = "";
   const { playerCard, opponentCard } = createBattleCardContainers();
