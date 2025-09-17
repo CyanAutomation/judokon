@@ -29,9 +29,8 @@ export async function dispatchBattleEvent(eventName, payload) {
   if (!machine) {
     // Not having a machine is an expected state during early startup
     // (for example when the round selection modal runs before the
-    // orchestrator initializes). Use console.warn so tests that fail
-    // on console.error don't treat this as a hard failure.
-    console.warn("dispatchBattleEvent: no machine available for", eventName);
+    // orchestrator initializes). Return `false` to signal the skipped
+    // dispatch without emitting console noise in production.
     return false;
   }
 
