@@ -685,16 +685,37 @@ async function handleNextRoundExpiration(controls, btn) {
 
   // Dispatch `ready` (fire-and-forget) before resolving the controls so
   // tests awaiting `controls.ready` don't depend on orchestrator internals.
-  try {
-    void dispatchBattleEvent("ready");
-  } catch {
+  const dispatchReadyDirectly = () => {
+    let getter = null;
     try {
-      const getter = readDebugState("getClassicBattleMachine");
-      const machine = typeof getter === "function" ? getter() : getter;
-      if (machine?.dispatch) {
-        void machine.dispatch("ready");
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead) {
+        getter = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
       }
     } catch {}
+    if (!getter) {
+      try {
+        getter = readDebugState("getClassicBattleMachine");
+      } catch {}
+    }
+    const machine = typeof getter === "function" ? getter() : getter;
+    if (machine?.dispatch) {
+      try {
+        const result = machine.dispatch("ready");
+        if (result && typeof result.then === "function") {
+          result.catch(() => {});
+        }
+        return true;
+      } catch {}
+    }
+    return false;
+  };
+  try {
+    const readyResult = await dispatchBattleEvent("ready");
+    if (readyResult === false) {
+      dispatchReadyDirectly();
+    }
+  } catch {
+    dispatchReadyDirectly();
   }
 
   if (typeof controls.resolveReady === "function") {
