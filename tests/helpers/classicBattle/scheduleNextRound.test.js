@@ -1,3 +1,6 @@
+// [TEST DEBUG] top-level
+// eslint-disable-next-line no-console
+console.log('[TEST DEBUG] top-level');
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import "./commonMocks.js";
 import { setupClassicBattleDom } from "./utils.js";
