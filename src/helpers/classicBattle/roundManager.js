@@ -585,6 +585,8 @@ function markNextReady(btn) {
 }
 
 async function handleNextRoundExpiration(controls, btn) {
+  // TEMP: Mark global for test to confirm callback execution
+  if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   setSkipHandler(null);
   scoreboard.clearTimer();
   // Ensure we've reached the cooldown state before advancing.

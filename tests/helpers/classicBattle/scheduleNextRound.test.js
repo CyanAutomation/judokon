@@ -116,8 +116,8 @@ describe("classicBattle startCooldown", () => {
 
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
-    // Debug: check if fallback timer fired
-    expect(handleNextRoundExpirationSpy).toHaveBeenCalled();
+    // Confirm fallback timer callback executed
+    expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
     // Wait for the orchestrator to reach the expected state to avoid races
     await waitForState("waitingForPlayerAction");
 
