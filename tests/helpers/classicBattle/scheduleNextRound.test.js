@@ -80,6 +80,8 @@ describe("classicBattle startCooldown", () => {
     nextButton.disabled = true;
 
     mockBattleData();
+    const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
+    battleEngineMod.createBattleEngine();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
@@ -126,6 +128,8 @@ describe("classicBattle startCooldown", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
     mockBattleData();
+    const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
+    battleEngineMod.createBattleEngine();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
@@ -188,6 +192,8 @@ describe("classicBattle startCooldown", () => {
     nextButton.disabled = true;
 
     mockBattleData();
+    const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
+    battleEngineMod.createBattleEngine();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
