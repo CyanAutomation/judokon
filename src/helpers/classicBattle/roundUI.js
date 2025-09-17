@@ -239,8 +239,10 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
             ? computeNextRoundCooldownFn
             : computeNextRoundCooldown;
         const secs = Math.max(3, Number(computeCooldown()));
-        let timerFactory = typeof createRoundTimerFn === "function" ? createRoundTimerFn : undefined;
-        let renderer = typeof attachCooldownRendererFn === "function" ? attachCooldownRendererFn : undefined;
+        let timerFactory =
+          typeof createRoundTimerFn === "function" ? createRoundTimerFn : undefined;
+        let renderer =
+          typeof attachCooldownRendererFn === "function" ? attachCooldownRendererFn : undefined;
         if (!timerFactory || !renderer) {
           try {
             const [timerMod, rendererMod] = await Promise.all([
@@ -402,10 +404,12 @@ export function bindRoundUIEventHandlersDynamic() {
   };
   const loadScoreboard = createPreloader(() => import("../setupScoreboard.js"));
   const loadShowSnackbar = createPreloader(() => import("../showSnackbar.js"));
-  const loadComputeNextRoundCooldown = createPreloader(() =>
-    import("../timers/computeNextRoundCooldown.js")
+  const loadComputeNextRoundCooldown = createPreloader(
+    () => import("../timers/computeNextRoundCooldown.js")
   );
-  const loadRoundManager = createPreloader(() => import("/src/helpers/classicBattle/roundManager.js"));
+  const loadRoundManager = createPreloader(
+    () => import("/src/helpers/classicBattle/roundManager.js")
+  );
   const loadCooldownRenderer = createPreloader(() => import("../CooldownRenderer.js"));
   const loadCreateRoundTimer = createPreloader(() => import("../timers/createRoundTimer.js"));
   const loadUiHelpers = createPreloader(() => import("/src/helpers/classicBattle/uiHelpers.js"));
@@ -417,15 +421,21 @@ export function bindRoundUIEventHandlersDynamic() {
     handleStatSelectedEvent(event, { showSnackbar: module?.showSnackbar });
   });
   onBattleEvent("roundResolved", async (event) => {
-    const [scoreboardModule, roundManagerModule, cooldownModule, timerModule, rendererModule, uiHelpersModule] =
-      await Promise.all([
-        loadScoreboard(),
-        loadRoundManager(),
-        loadComputeNextRoundCooldown(),
-        loadCreateRoundTimer(),
-        loadCooldownRenderer(),
-        loadUiHelpers()
-      ]);
+    const [
+      scoreboardModule,
+      roundManagerModule,
+      cooldownModule,
+      timerModule,
+      rendererModule,
+      uiHelpersModule
+    ] = await Promise.all([
+      loadScoreboard(),
+      loadRoundManager(),
+      loadComputeNextRoundCooldown(),
+      loadCreateRoundTimer(),
+      loadCooldownRenderer(),
+      loadUiHelpers()
+    ]);
     await handleRoundResolvedEvent(event, {
       scoreboard: scoreboardModule || scoreboard,
       showMatchSummary: showMatchSummaryModal,

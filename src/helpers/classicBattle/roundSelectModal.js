@@ -282,9 +282,7 @@ class RoundSelectPositioner {
         ? requestAnimationFrame
         : (cb) => setTimeout(cb, 0);
     this.caf =
-      typeof cancelAnimationFrame === "function"
-        ? cancelAnimationFrame
-        : (id) => clearTimeout(id);
+      typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : (id) => clearTimeout(id);
 
     this.cleanup = this.cleanup.bind(this);
   }
@@ -340,7 +338,8 @@ class RoundSelectPositioner {
   }
 
   resolveHeaderInfo() {
-    const cliHeader = document.getElementById("cli-header") || document.querySelector(".cli-header");
+    const cliHeader =
+      document.getElementById("cli-header") || document.querySelector(".cli-header");
     const classicHeader =
       document.querySelector('header[role="banner"]') || document.querySelector("header");
     const isCliMode = Boolean(cliHeader);

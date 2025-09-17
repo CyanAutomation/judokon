@@ -80,11 +80,8 @@ export function resolveInterRoundCooldownDuration(compute) {
  */
 function getNextButton() {
   if (typeof document === "undefined") return null;
-  return (
-    /** @type {HTMLButtonElement|null} */ (
-      document.getElementById("next-button") ||
-      document.querySelector('[data-role="next-round"]')
-    )
+  return /** @type {HTMLButtonElement|null} */ (
+    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]')
   );
 }
 
@@ -127,7 +124,8 @@ export function prepareNextButtonForCooldown(machine, scheduler) {
   const button = getNextButton();
   if (button) {
     guard(() => markNextButtonReady(button));
-    const schedule = scheduler && typeof scheduler.setTimeout === "function" ? scheduler.setTimeout : setTimeout;
+    const schedule =
+      scheduler && typeof scheduler.setTimeout === "function" ? scheduler.setTimeout : setTimeout;
     const reapply = () => {
       const nextBtn = getNextButton();
       if (!nextBtn) return;
