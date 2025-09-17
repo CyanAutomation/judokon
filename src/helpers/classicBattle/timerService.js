@@ -267,7 +267,11 @@ export async function resolveRoundTimerDuration({ showTemporaryMessage } = score
  * 1. If the duration is finite, update the scoreboard timer.
  * 2. Update the DOM element `#next-round-timer` when present.
  */
-export function primeTimerDisplay({ duration, scoreboardApi = scoreboard, root = typeof document !== "undefined" ? document : null } = {}) {
+export function primeTimerDisplay({
+  duration,
+  scoreboardApi = scoreboard,
+  root = typeof document !== "undefined" ? document : null
+} = {}) {
   if (!Number.isFinite(duration)) return;
 
   try {
@@ -436,7 +440,10 @@ export function handleTimerExpiration({
       emitEvent?.("roundTimeout");
     } catch {}
 
-    const featureCheck = typeof isFeatureEnabled === "function" ? isFeatureEnabled("autoSelect") : Boolean(isFeatureEnabled);
+    const featureCheck =
+      typeof isFeatureEnabled === "function"
+        ? isFeatureEnabled("autoSelect")
+        : Boolean(isFeatureEnabled);
     const selecting = featureCheck
       ? (async () => {
           try {
