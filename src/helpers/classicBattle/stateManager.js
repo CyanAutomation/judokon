@@ -55,7 +55,17 @@ export async function createStateManager(
     context,
     getState: () => current,
     async dispatch(eventName, payload) {
-      console.log("stateManager: dispatch called with", eventName, payload);
+      if (typeof console !== "undefined") {
+        console.log(
+          "[DEBUG] stateManager: dispatch called with",
+          "event=",
+          eventName,
+          "payload=",
+          payload,
+          "current=",
+          current
+        );
+      }
       try {
         const state = byName.get(current);
         const trigger = state?.triggers?.find((t) => t.on === eventName);
@@ -72,6 +82,17 @@ export async function createStateManager(
         }
         const from = current;
         current = target;
+        if (typeof console !== "undefined") {
+          console.log(
+            "[DEBUG] stateManager: transitioning",
+            "from=",
+            from,
+            "to=",
+            target,
+            "event=",
+            eventName
+          );
+        }
         try {
           await onTransition?.({ from, to: target, event: eventName });
         } catch {}

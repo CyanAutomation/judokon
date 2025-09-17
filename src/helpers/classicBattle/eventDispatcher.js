@@ -35,7 +35,15 @@ export async function dispatchBattleEvent(eventName, payload) {
     return false;
   }
 
-  console.log("dispatchBattleEvent: dispatching", eventName, "to machine");
+  // DEBUG: Log all event dispatches
+  if (typeof console !== "undefined") {
+    console.log(
+      "[DEBUG] dispatchBattleEvent: dispatching",
+      eventName,
+      "to machine",
+      machine.getState?.()
+    );
+  }
 
   try {
     // PRD taxonomy: emit interrupt.requested with payload context

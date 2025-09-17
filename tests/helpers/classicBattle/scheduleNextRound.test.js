@@ -22,7 +22,6 @@ let getRandomJudokaMock;
 let renderMock;
 let currentFlags;
 
-let handleNextRoundExpirationSpy;
 beforeEach(() => {
   ({
     timerSpy,
@@ -39,19 +38,11 @@ beforeEach(() => {
     renderMock,
     currentFlags
   });
-  // Spy on handleNextRoundExpiration to confirm if fallback timer fires
-  import("../../../src/helpers/classicBattle/roundManager.js").then((mod) => {
-    handleNextRoundExpirationSpy = vi.spyOn(mod, "handleNextRoundExpiration");
-  });
 });
 
 afterEach(() => {
   timerSpy.clearAllTimers();
   vi.restoreAllMocks();
-  if (handleNextRoundExpirationSpy) {
-    handleNextRoundExpirationSpy.mockRestore();
-    handleNextRoundExpirationSpy = undefined;
-  }
 });
 
 describe("classicBattle startCooldown", () => {

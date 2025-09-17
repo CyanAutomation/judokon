@@ -392,6 +392,20 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   try {
     mirrorTimerState();
   } catch {}
+  // Expose the machine for test event dispatching (needed for dispatchBattleEvent)
+  try {
+    if (typeof globalThis !== "undefined") {
+      globalThis.__classicBattleDebugRead = (key) => {
+        if (key === "getClassicBattleMachine") return () => machine;
+        return undefined;
+      };
+    }
+    if (typeof require !== "undefined") {
+      // For Node/Vitest, also use debugHooks
+      const { exposeDebugState } = require("./debugHooks.js");
+      exposeDebugState("getClassicBattleMachine", () => machine);
+    }
+  } catch {}
   return machine;
 }
 
