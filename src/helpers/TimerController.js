@@ -108,16 +108,16 @@ export class TimerController {
               remaining -= 1;
               if (typeof t === "function") t(remaining);
               if (remaining <= 0) {
-                if (id) clearTimeout(id);
+                if (id) thisScheduler.clearTimeout(id);
                 id = 0;
                 if (typeof e === "function") e();
               } else {
-                id = setTimeout(tick, 1000);
+                id = thisScheduler.setTimeout(tick, 1000);
               }
             };
             return {
               start() {
-                if (id) clearTimeout(id);
+                if (id) thisScheduler.clearTimeout(id);
                 remaining = d;
                 paused = false;
                 if (typeof t === "function") t(remaining);
