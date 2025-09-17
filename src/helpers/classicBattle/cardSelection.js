@@ -86,17 +86,14 @@ function showLoadError(error) {
 }
 
 /**
- * Draw battle cards for the player and opponent.
+ * @summary Fetch and cache the judoka dataset needed for card selection.
  *
  * @pseudocode
- * 1. Load judoka and gokyo data when not cached.
- * 2. Filter out judoka marked `isHidden`.
- * 3. Render a random player card using `generateRandomCard` and store the result.
- * 4. Choose a random opponent judoka avoiding duplicates.
- * 5. If `JudokaCard.render` returns an HTMLElement, render a placeholder card for the opponent with obscured stats; otherwise log an error.
- * 6. Return the selected judoka objects.
+ * 1. If `judokaData` already exists, return it as an array (or an empty array when invalid).
+ * 2. Otherwise fetch `judoka.json`, cache the array, and return the data.
+ * 3. On failure, surface the load error to the UI and resolve with an empty array.
  *
- * @returns {Promise<{playerJudoka: object|null, opponentJudoka: object|null}>}
+ * @returns {Promise<object[]>}
  */
 async function ensureJudokaData() {
   if (judokaData) return Array.isArray(judokaData) ? judokaData : [];
@@ -183,14 +180,13 @@ async function renderOpponentPlaceholder(container, placeholder, enableInspector
 }
 
 /**
- * Draw and render player and opponent cards.
+ * @summary Load card data, generate the player card, select an opponent, and render an obscured placeholder.
  *
  * @pseudocode
  * 1. Ensure judoka and gokyo datasets are loaded (fetch if missing).
- * 2. Filter out hidden judoka and generate a random player card (skip
- *    rendering when no container exists).
- * 3. Pick an opponent that doesn't match the player where possible.
- * 4. Render an opponent placeholder card with obscured stats.
+ * 2. Filter out hidden judoka and generate a random player card (skip rendering when no container exists).
+ * 3. Pick an opponent that doesn't match the player when possible, falling back to the built-in placeholder.
+ * 4. Render an opponent placeholder card with obscured stats and preserve any debug panel.
  * 5. Return the selected player and opponent judoka objects.
  *
  * @returns {Promise<{playerJudoka: object|null, opponentJudoka: object|null}>}
@@ -266,30 +262,10 @@ export async function drawCards() {
 }
 
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Return the currently selected opponent judoka, if any.
+ * @summary Return the currently selected opponent judoka, if any.
  *
  * @pseudocode
- * 1. Return the module-scoped `opponentJudoka` variable.
+ * 1. Return the module-scoped `opponentJudoka` reference.
  *
  * @returns {object|null}
  */
@@ -298,22 +274,22 @@ export function getOpponentJudoka() {
 }
 
 /**
- * Clear the stored opponent judoka selection.
- *
- * @returns {void}
+ * @summary Forget the stored opponent judoka selection.
  *
  * @pseudocode
- * 1. Set `opponentJudoka` to `null` to forget the previous selection.
+ * 1. Assign `null` to `opponentJudoka` so the next draw starts fresh.
+ *
+ * @returns {void}
  */
 export function clearOpponentJudoka() {
   opponentJudoka = null;
 }
 
 /**
- * Get the in-memory gokyo lookup (may be null if not loaded).
+ * @summary Read the cached gokyo lookup without triggering a fetch.
  *
  * @pseudocode
- * 1. Return the module-scoped `gokyoLookup` value.
+ * 1. Return the module-scoped `gokyoLookup` value (may be `null` when not loaded).
  *
  * @returns {Object|null}
  */
@@ -322,12 +298,11 @@ export function getGokyoLookup() {
 }
 
 /**
- * Ensure the gokyo lookup is loaded and return it.
+ * @summary Ensure the gokyo lookup exists and return it.
  *
  * @pseudocode
- * 1. If `gokyoLookup` exists, return it.
- * 2. Otherwise call `ensureGokyoLookup()` which fetches and constructs the lookup.
- * 3. Return the (possibly empty) lookup object.
+ * 1. Invoke `ensureGokyoLookup()` to reuse the cached lookup or fetch and create it when missing.
+ * 2. Return the resulting lookup object (never `null`, possibly empty).
  *
  * @returns {Promise<Object>}
  */
@@ -336,10 +311,10 @@ export async function getOrLoadGokyoLookup() {
 }
 
 /**
- * Reset module state for tests.
+ * @summary Reset cached card-selection state so tests start from a clean slate.
  *
  * @pseudocode
- * 1. Clear cached `judokaData`, `gokyoLookup`, `opponentJudoka`, and `loadErrorModal`.
+ * 1. Set `judokaData`, `gokyoLookup`, `opponentJudoka`, and `loadErrorModal` to `null`.
  *
  * @returns {void}
  */
