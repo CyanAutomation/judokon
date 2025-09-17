@@ -223,6 +223,7 @@ export async function initRoundSelectModal(onStart) {
     modal.element.removeEventListener("keydown", handleKeyDown);
   };
 
+  const roundButtons = [];
   rounds.forEach((r) => {
     const btn = createButton(r.label, { id: `round-select-${r.id}` });
     btn.dataset.tooltipId = `ui.round${r.label}`;
@@ -237,6 +238,7 @@ export async function initRoundSelectModal(onStart) {
       })
     );
     btnWrap.appendChild(btn);
+    roundButtons.push(btn);
   });
 
   document.body.appendChild(modal.element);
@@ -251,6 +253,10 @@ export async function initRoundSelectModal(onStart) {
       console.error("Failed to initialize tooltips:", err);
     });
   modal.open();
+  // Focus the first round select button for accessibility
+  if (roundButtons.length > 0) {
+    roundButtons[0].focus();
+  }
   emitBattleEvent("roundOptionsReady");
   // Give a microtask tick so any asynchronous tooltip initialization
   // rejection is handled (tests expect console.error to run before
