@@ -104,10 +104,11 @@ describe("classicBattle startCooldown", () => {
       await battleMod.startRound(store);
     });
     await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
-    const machine = orchestrator.getBattleStateMachine();
-    // Debug: print machine object reference after orchestrator init
 
-    console.log("[TEST DEBUG] Machine after orchestrator init:", machine);
+  // Debug: log orchestrator and machine references before and after getBattleStateMachine
+  console.log("[TEST DEBUG] orchestrator before getBattleStateMachine:", orchestrator);
+  const machine = orchestrator.getBattleStateMachine();
+  console.log("[TEST DEBUG] Machine after orchestrator init:", machine);
 
     await battleMod.startRound(store);
 
