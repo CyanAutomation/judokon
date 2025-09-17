@@ -36,6 +36,9 @@ test("skips cooldown without orchestrator", async ({ page }) => {
   await nextButton.waitFor({ timeout: 3000 });
 
   await page.evaluate(async () => {
+    // Force non-orchestrated mode by clearing battle state
+    document.body.removeAttribute("data-battle-state");
+
     window.readyEvent = new Promise((resolve) => {
       globalThis.__classicBattleEventTarget.addEventListener(
         "nextRoundTimerReady",
@@ -45,7 +48,12 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     });
     const { startCooldown } = await import("/src/helpers/classicBattle/roundManager.js");
     const { onNextButtonClick } = await import("/src/helpers/classicBattle/timerService.js");
+    const { enableNextRoundButton } = await import("/src/helpers/classicBattle/uiHelpers.js");
+
     const controls = startCooldown({});
+
+    // For testing purposes, enable the button directly
+    enableNextRoundButton();
 
     // Find the actual next button in the real battle page
     const btn =

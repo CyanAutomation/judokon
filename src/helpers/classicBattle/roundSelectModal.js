@@ -63,7 +63,7 @@ async function startRound(value, onStart, emitEvents) {
       emitBattleEvent("startClicked");
       const dispatched = await dispatchBattleEvent("startClicked");
       if (!dispatched) {
-        console.error("Modal: dispatchBattleEvent failed for startClicked");
+        console.warn("Modal: dispatchBattleEvent failed for startClicked");
       }
     }
   } catch (err) {

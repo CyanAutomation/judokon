@@ -62,9 +62,7 @@ export async function initStartCooldown(machine) {
  * 4. Schedule fallback timer with same completion path.
  */
 export async function initInterRoundCooldown(machine) {
-  const { computeNextRoundCooldown } = await import(
-    "../timers/computeNextRoundCooldown.js"
-  );
+  const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
   const { createRoundTimer } = await import("../timers/createRoundTimer.js");
   const { startCoolDown } = await import("../battleEngineFacade.js");
   const duration = computeNextRoundCooldown();
@@ -89,15 +87,15 @@ export async function initInterRoundCooldown(machine) {
         document.getElementById("next-button") ||
         document.querySelector('[data-role="next-round"]');
       if (b) {
-        b.disabled = false;
-        b.dataset.nextReady = "true";
+        b.setAttribute("data-next-ready", "true");
+        b.removeAttribute("disabled");
       }
     });
     for (const evt of [
       "cooldown.timer.expired",
       "nextRoundTimerReady",
       "countdownFinished",
-      "control.countdown.completed",
+      "control.countdown.completed"
     ]) {
       guard(() => emitBattleEvent(evt));
     }
@@ -105,30 +103,24 @@ export async function initInterRoundCooldown(machine) {
   };
 
   const markReady = (btn) => {
-    btn.disabled = false;
-    btn.dataset.nextReady = "true";
+    btn.setAttribute("data-next-ready", "true");
+    btn.removeAttribute("disabled");
   };
 
   guard(() => emitBattleEvent("countdownStart", { duration }));
   guard(() =>
     emitBattleEvent("control.countdown.started", {
-      durationMs: duration * 1000,
+      durationMs: duration * 1000
     })
   );
 
   const btn =
-    document.getElementById("next-button") ||
-    document.querySelector('[data-role="next-round"]');
+    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
   if (btn) {
     markReady(btn);
     setTimeout(() => {
       const b = document.getElementById("next-button");
-      if (
-        b &&
-        b.dataset.nextReady !== "true" &&
-        machine?.getState?.() === "cooldown"
-      )
-        markReady(b);
+      if (b && b.dataset.nextReady !== "true" && machine?.getState?.() === "cooldown") markReady(b);
     }, 0);
   }
 
@@ -138,7 +130,7 @@ export async function initInterRoundCooldown(machine) {
   timer.on("tick", (r) =>
     guard(() =>
       emitBattleEvent("cooldown.timer.tick", {
-        remainingMs: Math.max(0, Number(r) || 0) * 1000,
+        remainingMs: Math.max(0, Number(r) || 0) * 1000
       })
     )
   );
@@ -146,8 +138,5 @@ export async function initInterRoundCooldown(machine) {
   setSkipHandler(finish);
 
   timer.start(duration);
-  fallbackId = setupFallbackTimer(
-    duration * 1000 + FALLBACK_TIMER_BUFFER_MS,
-    finish
-  );
+  fallbackId = setupFallbackTimer(duration * 1000 + FALLBACK_TIMER_BUFFER_MS, finish);
 }
