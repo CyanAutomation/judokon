@@ -1,3 +1,6 @@
+// [TEST DEBUG] top-level setup.js
+// eslint-disable-next-line no-console
+console.log('[TEST DEBUG] top-level setup.js');
 if (typeof CustomEvent === "undefined") {
   global.CustomEvent = class CustomEvent extends Event {
     constructor(type, eventInitDict) {
@@ -5,16 +8,29 @@ if (typeof CustomEvent === "undefined") {
       this.detail = eventInitDict?.detail;
     }
   };
+  // [TEST DEBUG] after CustomEvent polyfill
+  // eslint-disable-next-line no-console
+  console.log('[TEST DEBUG] after CustomEvent polyfill');
 }
 if (typeof global.requestAnimationFrame === "undefined") {
   global.requestAnimationFrame = (cb) => setTimeout(() => cb(0), 0);
+  // [TEST DEBUG] after requestAnimationFrame polyfill
+  // eslint-disable-next-line no-console
+  console.log('[TEST DEBUG] after requestAnimationFrame polyfill');
 }
 if (typeof global.cancelAnimationFrame === "undefined") {
   global.cancelAnimationFrame = (id) => clearTimeout(id);
+  // [TEST DEBUG] after cancelAnimationFrame polyfill
+  // eslint-disable-next-line no-console
+  console.log('[TEST DEBUG] after cancelAnimationFrame polyfill');
 }
 import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
+
+// [TEST DEBUG] after imports
+// eslint-disable-next-line no-console
+console.log('[TEST DEBUG] after imports');
 
 // Early module-level mute: some modules emit test-oriented logs during import
 // time which run before `beforeEach` executes. When running under Vitest we
@@ -27,6 +43,9 @@ try {
   if (IS_VITEST && !SHOW_LOGS) {
     // mute console methods immediately
     muteConsole(["warn", "error", "debug", "log"]);
+    // [TEST DEBUG] after muteConsole
+    // eslint-disable-next-line no-console
+    console.log('[TEST DEBUG] after muteConsole');
     try {
       if (process && process.stdout && process.stderr) {
         // save originals at module scope so afterEach can restore them
@@ -34,6 +53,9 @@ try {
         __originalStderrWrite = process.stderr.write;
         process.stdout.write = () => {};
         process.stderr.write = () => {};
+        // [TEST DEBUG] after patching process.stdout/stderr
+        // eslint-disable-next-line no-console
+        console.log('[TEST DEBUG] after patching process.stdout/stderr');
       }
     } catch {}
   }

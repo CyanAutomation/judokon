@@ -1,3 +1,6 @@
+// [TEST DEBUG] top-level mockSetup.js
+// eslint-disable-next-line no-console
+console.log('[TEST DEBUG] top-level mockSetup.js');
 import { vi } from "vitest";
 import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 

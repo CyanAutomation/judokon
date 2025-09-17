@@ -1,3 +1,6 @@
+// [TEST DEBUG] top-level testUtils.js
+// eslint-disable-next-line no-console
+console.log('[TEST DEBUG] top-level testUtils.js');
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
