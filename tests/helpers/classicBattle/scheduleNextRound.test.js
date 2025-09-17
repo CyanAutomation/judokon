@@ -54,10 +54,11 @@ afterEach(() => {
   timerSpy.clearAllTimers();
   vi.restoreAllMocks();
   // Reset the event bus to avoid event leakage between tests
-  const {
-    __resetBattleEventTarget
-  } = require("../../../src/helpers/classicBattle/battleEvents.js");
-  __resetBattleEventTarget();
+  return import("../../../src/helpers/classicBattle/battleEvents.js").then(
+    ({ __resetBattleEventTarget }) => {
+      __resetBattleEventTarget();
+    }
+  );
 });
 
 describe("classicBattle startCooldown", () => {
@@ -119,7 +120,16 @@ describe("classicBattle startCooldown", () => {
     });
 
     console.log("[TEST DEBUG] before initClassicBattleOrchestrator");
-    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
+    // Patch: inject fake scheduler for orchestrator
+    const fakeScheduler = {
+      setTimeout: (...args) => setTimeout(...args),
+      clearTimeout: (...args) => clearTimeout(...args),
+      setInterval: (...args) => setInterval(...args),
+      clearInterval: (...args) => clearInterval(...args)
+    };
+    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper, {
+      scheduler: fakeScheduler
+    });
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator");
 
     console.log("[TEST DEBUG] before getBattleStateMachine");
