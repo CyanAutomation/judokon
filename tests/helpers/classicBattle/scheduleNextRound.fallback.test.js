@@ -153,4 +153,52 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     await vi.runAllTimersAsync();
   });
+
+  it("falls back to machine dispatch when event dispatcher reports no machine", async () => {
+    const { __setStateSnapshot } = await import(
+      "../../../src/helpers/classicBattle/battleDebug.js"
+    );
+    const debugHooks = await import(
+      "../../../src/helpers/classicBattle/debugHooks.js"
+    );
+    const machine = { dispatch: vi.fn() };
+    __setStateSnapshot({ state: "cooldown" });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => machine);
+    const scheduler = {
+      setTimeout: vi.fn((fn, ms) => setTimeout(fn, ms)),
+      clearTimeout: vi.fn((id) => clearTimeout(id))
+    };
+    const originalGlobalRead =
+      typeof globalThis !== "undefined" ? globalThis.__classicBattleDebugRead : undefined;
+    try {
+      if (typeof globalThis !== "undefined") {
+        globalThis.__classicBattleDebugRead = (key) => {
+          if (key === "getClassicBattleMachine") {
+            return () => machine;
+          }
+          return typeof originalGlobalRead === "function"
+            ? originalGlobalRead(key)
+            : originalGlobalRead;
+        };
+      }
+      const { startCooldown } = await import(
+        "../../../src/helpers/classicBattle/roundManager.js"
+      );
+      dispatchSpy.mockImplementation(() => {
+        debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
+        return false;
+      });
+      const controls = startCooldown({}, scheduler);
+      expect(typeof expiredHandler).toBe("function");
+      await expiredHandler();
+      await controls.ready;
+      expect(machine.dispatch).toHaveBeenCalledWith("ready");
+      await vi.runAllTimersAsync();
+    } finally {
+      if (typeof globalThis !== "undefined") {
+        globalThis.__classicBattleDebugRead = originalGlobalRead;
+      }
+      debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
+    }
+  });
 });
