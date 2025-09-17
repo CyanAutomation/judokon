@@ -134,11 +134,11 @@ This document provides an audit of the JavaScript files within `src/helpers/clas
 - `handleReplay` (approx. 25 lines): Medium complexity due to conditional engine recreation, event bridging, UI reset, and scoreboard updates.
   - **Suggestion**: Separate engine management from UI reset and scoreboard updates.
 - `startCooldown` (approx. 60 lines): **Very High complexity**. Very long function with complex conditional logic for orchestrated mode, multiple event listeners, and nested functions for timer wiring. Exceeds the informal 50-line limit.
-  - **Suggestion**: This function needs significant refactoring. Break it down into `createCooldownControls`, `setupOrchestratedCooldown`, `setupNonOrchestratedCooldown`, `wireNextRoundTimer`.
+  - **2024-Refactor**: Extracted `createCooldownControls`, `setupNonOrchestratedReady`, and `wireCooldownTimer` helpers with dependency-injection friendly options to reduce inline branching.
 - `setupOrchestratedReady` (approx. 40 lines): **High complexity**. Manages cleanup functions, event listeners, and various readiness checks.
-  - **Suggestion**: Extract event listener registration and cleanup into a dedicated helper.
-- `wireNextRoundTimer` (approx. 50 lines): **High complexity**. Long function with complex timer setup, event listeners, and conditional fallback. Exceeds the informal 50-line limit.
-  - **Suggestion**: Decompose into `createAndAttachTimer`, `setupTimerEventHandlers`, `scheduleFallbackTimer`.
+  - **2024-Refactor**: Centralized listener registration and readiness checks via injectable event bus/scheduler parameters; remaining complexity stems from orchestrator edge cases.
+- `wireCooldownTimer` (approx. 50 lines): **High complexity**. Long function with complex timer setup, event listeners, and conditional fallback. Exceeds the informal 50-line limit.
+  - **2024-Refactor**: Renamed from `wireNextRoundTimer`, now accepts injected timer/rendering/scheduler/event bus dependencies to simplify `startCooldown` mocking.
 - `_resetForTest` (approx. 45 lines): **High complexity**. Resets many subsystems (skip state, selection, engine, scheduler), handles conditional engine recreation, and clears store state.
   - **Suggestion**: Break down into `resetSubsystems`, `resetStoreState`, `emitUIResetEvent`.
 
