@@ -8,6 +8,7 @@ This document provides an audit of the JavaScript files within `src/helpers/clas
 - **Card selection + battle score documentation**: Filled in the remaining `@summary`/`@pseudocode` blocks for exported helpers in `src/helpers/classicBattle/cardSelection.js` and `src/helpers/battle/score.js`, aligning them with the expectations spelled out in `GEMINI.md`.
 - **Card selection data orchestration**: Extracted `loadJudokaData`, `loadGokyoLookup`, `selectOpponentJudoka`, and `renderOpponentPlaceholder` so `drawCards` now coordinates explicit helpers. The smaller helpers accept injected fetchers/containers, which keeps tests deterministic while shrinking the orchestration footprint
 - **Round timer orchestration**: Broke `startTimer` into `resolveRoundTimerDuration`, `primeTimerDisplay`, `configureTimerCallbacks`, and `handleTimerExpiration`, enabling dependency injection for scoreboard/scheduler shims while reducing the orchestration function's complexity.
+- **Round select modal orchestration**: Split `initRoundSelectModal` into helpers that gate autostart/test mode, build the modal, wire buttons/keyboard, and manage tooltip lifecycle, with a new `RoundSelectPositioner` class encapsulating resize/orientation cleanup.
 
 ## General Observations
 

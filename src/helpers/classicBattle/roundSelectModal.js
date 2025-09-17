@@ -71,29 +71,414 @@ async function startRound(value, onStart, emitEvents) {
   }
 }
 
-async function handleRoundSelect({
-  value,
-  modal,
-  cleanupTooltips,
-  cleanupKeyboard,
-  onStart,
-  emitEvents
-}) {
+function resolveEnvironmentFlags() {
+  const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+  const isPlaywright =
+    typeof navigator !== "undefined" &&
+    (navigator.userAgent?.includes("Headless") || navigator.webdriver === true);
+
+  let showModalInTest = false;
+  if (typeof window !== "undefined") {
+    try {
+      showModalInTest = Boolean(window.__FF_OVERRIDES?.showRoundSelectModal);
+    } catch {}
+  }
+
+  return {
+    isVitest,
+    isPlaywright,
+    showModalInTest,
+    emitEvents: !isVitest
+  };
+}
+
+async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, showModalInTest }) {
+  const autoStartRequested = shouldAutostart();
+  const bypassForTests = !showModalInTest && (isTestModeEnabled() || isPlaywright);
+
+  if (autoStartRequested || bypassForTests) {
+    await startRound(DEFAULT_POINTS_TO_WIN, onStart, emitEvents);
+    return true;
+  }
+
+  return false;
+}
+
+async function handlePersistedSelection(onStart, emitEvents) {
+  try {
+    const storage = wrap(BATTLE_POINTS_TO_WIN);
+    const saved = storage.get();
+    const numeric = Number(saved);
+    if (POINTS_TO_WIN_OPTIONS.includes(numeric)) {
+      try {
+        logEvent("battle.start", { pointsToWin: numeric, source: "storage" });
+      } catch {}
+      await startRound(numeric, onStart, emitEvents);
+      return true;
+    }
+  } catch {}
+
+  return false;
+}
+
+function createRoundSelectModal() {
+  const title = document.createElement("h2");
+  title.id = "round-select-title";
+  title.textContent = t("modal.roundSelect.title");
+
+  const btnWrap = document.createElement("div");
+  btnWrap.className = "round-select-buttons";
+
+  const instructions = document.createElement("p");
+  instructions.className = "round-select-instructions";
+  instructions.textContent = "Use number keys (1-3) or arrow keys to select";
+
+  const frag = document.createDocumentFragment();
+  frag.append(title, instructions, btnWrap);
+
+  const modal = createModal(frag, { labelledBy: title });
+
+  return { modal, buttonContainer: btnWrap };
+}
+
+function createCleanupRegistry() {
+  return {
+    tooltips: () => {},
+    keyboard: () => {}
+  };
+}
+
+function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart }) {
+  const buttons = [];
+
+  rounds.forEach((round) => {
+    const button = createButton(round.label, { id: `round-select-${round.id}` });
+    button.dataset.tooltipId = `ui.round${round.label}`;
+    button.addEventListener("click", () => {
+      handleRoundSelect({
+        value: round.value,
+        modal,
+        cleanupRegistry,
+        onStart,
+        emitEvents: true
+      });
+    });
+    container.appendChild(button);
+    buttons.push(button);
+  });
+
+  return buttons;
+}
+
+function setupKeyboardNavigation(modalElement, buttons) {
+  const handleKeyDown = (event) => {
+    const currentFocus = document.activeElement;
+    const currentIndex = buttons.indexOf(currentFocus);
+
+    switch (event.key) {
+      case "1":
+        event.preventDefault();
+        buttons[0]?.click();
+        break;
+      case "2":
+        event.preventDefault();
+        buttons[1]?.click();
+        break;
+      case "3":
+        event.preventDefault();
+        buttons[2]?.click();
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        if (currentIndex > 0) {
+          buttons[currentIndex - 1].focus();
+        } else {
+          buttons[buttons.length - 1]?.focus();
+        }
+        break;
+      case "ArrowDown":
+        event.preventDefault();
+        if (currentIndex >= 0 && currentIndex < buttons.length - 1) {
+          buttons[currentIndex + 1].focus();
+        } else {
+          buttons[0]?.focus();
+        }
+        break;
+      case "Enter":
+        event.preventDefault();
+        if (currentFocus && buttons.includes(currentFocus)) {
+          currentFocus.click();
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  modalElement.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    modalElement.removeEventListener("keydown", handleKeyDown);
+  };
+}
+
+function setupTooltipLifecycle(modalElement) {
+  let cleanupFn = () => {};
+
+  const ready = initTooltips(modalElement)
+    .then((fn) => {
+      if (typeof fn === "function") {
+        cleanupFn = fn;
+      }
+    })
+    .catch((err) => {
+      console.error("Failed to initialize tooltips:", err);
+    });
+
+  return {
+    cleanup: () => {
+      try {
+        cleanupFn();
+      } catch {}
+    },
+    ready
+  };
+}
+
+async function handleRoundSelect({ value, modal, cleanupRegistry, onStart, emitEvents }) {
   persistRoundAndLog(value);
   modal.close();
   try {
     modal.element.dispatchEvent(new Event("close"));
   } catch {}
   try {
-    cleanupTooltips();
+    cleanupRegistry.tooltips();
   } catch {}
   try {
-    cleanupKeyboard();
+    cleanupRegistry.keyboard();
   } catch {}
   try {
     modal.destroy();
   } catch {}
   await startRound(value, onStart, emitEvents);
+}
+
+class RoundSelectPositioner {
+  constructor(modal) {
+    this.modal = modal;
+    this.backdrop = modal?.element ?? null;
+    this.datasetKey = "roundSelectModalActive";
+    this.activeProp = "__roundSelectPositioningActive";
+    this.closedProp = "__roundSelectPositioningClosed";
+    this.isActive = false;
+    this.headerRef = null;
+    this.resizeId = null;
+    this.originalClose = null;
+    this.originalDestroy = null;
+    this.originalDispatchEvent = null;
+    this.onResize = null;
+    this.raf =
+      typeof requestAnimationFrame === "function"
+        ? requestAnimationFrame
+        : (cb) => setTimeout(cb, 0);
+    this.caf =
+      typeof cancelAnimationFrame === "function"
+        ? cancelAnimationFrame
+        : (id) => clearTimeout(id);
+
+    this.cleanup = this.cleanup.bind(this);
+  }
+
+  apply() {
+    if (!this.backdrop || this.backdrop[this.closedProp]) {
+      return;
+    }
+
+    this.captureOriginalLifecycle();
+
+    const { header, skinClass } = this.resolveHeaderInfo();
+    this.applySkinClass(skinClass);
+    this.headerRef = header;
+
+    if (!this.headerRef) {
+      return;
+    }
+
+    this.markActive(true);
+    this.isActive = true;
+    this.updateInset();
+    this.attachListeners();
+    this.patchLifecycle();
+  }
+
+  markActive(value) {
+    if (!this.backdrop) {
+      return;
+    }
+    try {
+      this.backdrop.dataset[this.datasetKey] = value ? "true" : "false";
+    } catch {}
+    this.backdrop[this.activeProp] = value;
+    if (value) {
+      try {
+        delete this.backdrop[this.closedProp];
+      } catch {}
+    } else {
+      this.backdrop[this.closedProp] = true;
+    }
+  }
+
+  captureOriginalLifecycle() {
+    this.originalClose =
+      typeof this.modal?.close === "function" ? this.modal.close.bind(this.modal) : null;
+    this.originalDestroy =
+      typeof this.modal?.destroy === "function" ? this.modal.destroy.bind(this.modal) : null;
+    this.originalDispatchEvent =
+      typeof this.backdrop?.dispatchEvent === "function"
+        ? this.backdrop.dispatchEvent.bind(this.backdrop)
+        : null;
+  }
+
+  resolveHeaderInfo() {
+    const cliHeader = document.getElementById("cli-header") || document.querySelector(".cli-header");
+    const classicHeader =
+      document.querySelector('header[role="banner"]') || document.querySelector("header");
+    const isCliMode = Boolean(cliHeader);
+
+    return {
+      header: (isCliMode ? cliHeader : classicHeader) || null,
+      skinClass: isCliMode ? "cli-modal" : "classic-modal"
+    };
+  }
+
+  applySkinClass(className) {
+    if (!this.backdrop || !className) {
+      return;
+    }
+    try {
+      this.backdrop.classList.add(className);
+    } catch {}
+  }
+
+  attachListeners() {
+    this.onResize = () => {
+      if (!this.isActive) {
+        return;
+      }
+      if (this.resizeId !== null) {
+        try {
+          this.caf(this.resizeId);
+        } catch {}
+        this.resizeId = null;
+      }
+      this.resizeId = this.raf(() => {
+        this.resizeId = null;
+        this.updateInset();
+      });
+    };
+
+    try {
+      window.addEventListener("resize", this.onResize);
+      window.addEventListener("orientationchange", this.onResize);
+    } catch {}
+
+    try {
+      this.backdrop.addEventListener("close", this.cleanup);
+    } catch {}
+  }
+
+  updateInset() {
+    if (!this.isActive) {
+      return;
+    }
+    if (!this.backdrop?.[this.activeProp]) {
+      return;
+    }
+    if (this.backdrop.dataset?.[this.datasetKey] !== "true") {
+      return;
+    }
+    try {
+      const height = this.headerRef?.offsetHeight;
+      if (Number.isFinite(height) && height >= 0) {
+        this.backdrop.style.setProperty("--modal-inset-top", `${height}px`);
+        this.backdrop.classList.add("header-aware");
+      }
+    } catch {}
+  }
+
+  patchLifecycle() {
+    if (this.originalDispatchEvent) {
+      const dispatch = this.originalDispatchEvent;
+      this.backdrop.dispatchEvent = (event) => {
+        let result;
+        let error;
+        try {
+          result = dispatch(event);
+        } catch (err) {
+          error = err;
+        } finally {
+          if (event?.type === "close") {
+            this.cleanup();
+          }
+        }
+        if (error) {
+          throw error;
+        }
+        return result;
+      };
+    }
+
+    if (this.originalClose) {
+      const close = this.originalClose;
+      this.modal.close = (...args) => {
+        const result = close(...args);
+        this.cleanup();
+        return result;
+      };
+    }
+
+    if (this.originalDestroy) {
+      const destroy = this.originalDestroy;
+      this.modal.destroy = (...args) => {
+        this.cleanup();
+        return destroy(...args);
+      };
+    }
+  }
+
+  cleanup() {
+    if (!this.backdrop || this.backdrop[this.closedProp]) {
+      return;
+    }
+
+    this.isActive = false;
+    if (this.onResize) {
+      try {
+        window.removeEventListener("resize", this.onResize);
+        window.removeEventListener("orientationchange", this.onResize);
+      } catch {}
+    }
+
+    try {
+      this.backdrop.removeEventListener("close", this.cleanup);
+    } catch {}
+
+    if (this.resizeId !== null) {
+      try {
+        this.caf(this.resizeId);
+      } catch {}
+      this.resizeId = null;
+    }
+
+    if (this.originalDispatchEvent) {
+      try {
+        this.backdrop.dispatchEvent = this.originalDispatchEvent;
+      } catch {}
+    }
+
+    this.headerRef = null;
+    this.markActive(false);
+  }
 }
 
 /**
@@ -109,315 +494,45 @@ async function handleRoundSelect({
  * @returns {Promise<void>} Resolves when modal is initialized.
  */
 export async function initRoundSelectModal(onStart) {
-  const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+  const environment = resolveEnvironmentFlags();
 
-  // Detect Playwright test environment, but allow tests to opt-in to showing the modal
-  const IS_PLAYWRIGHT =
-    typeof navigator !== "undefined" &&
-    (navigator.userAgent?.includes("Headless") || navigator.webdriver === true);
-
-  // Check if test wants to see the modal (via feature flag override)
-  const showModalInTest =
-    typeof window !== "undefined" &&
-    window.__FF_OVERRIDES &&
-    window.__FF_OVERRIDES.showRoundSelectModal;
-
-  // Auto-start unless explicitly disabled by the test override. Tests
-  // may opt-in to seeing the modal even when Test Mode is enabled by
-  // setting `window.__FF_OVERRIDES.showRoundSelectModal = true`.
-  if (
-    shouldAutostart() ||
-    (isTestModeEnabled() && !showModalInTest) ||
-    (IS_PLAYWRIGHT && !showModalInTest)
-  ) {
-    await startRound(DEFAULT_POINTS_TO_WIN, onStart, !IS_VITEST);
+  if (await handleAutostartAndTestMode(onStart, environment)) {
     return;
   }
 
-  try {
-    // Use localStorage directly to match how tests set values via page.addInitScript
-    const storage = wrap(BATTLE_POINTS_TO_WIN);
-    const saved = storage.get();
-    if (POINTS_TO_WIN_OPTIONS.includes(Number(saved))) {
-      try {
-        logEvent("battle.start", { pointsToWin: Number(saved), source: "storage" });
-      } catch {}
-      await startRound(Number(saved), onStart, !IS_VITEST);
-      return;
-    }
-  } catch {}
+  if (await handlePersistedSelection(onStart, environment.emitEvents)) {
+    return;
+  }
 
-  const title = document.createElement("h2");
-  title.id = "round-select-title";
-  title.textContent = t("modal.roundSelect.title");
+  const { modal, buttonContainer } = createRoundSelectModal();
 
-  const btnWrap = document.createElement("div");
-  btnWrap.className = "round-select-buttons";
+  const positioner = new RoundSelectPositioner(modal);
+  positioner.apply();
 
-  // Add keyboard instructions
-  const instructions = document.createElement("p");
-  instructions.className = "round-select-instructions";
-  instructions.textContent = "Use number keys (1-3) or arrow keys to select";
-
-  const frag = document.createDocumentFragment();
-  frag.append(title, instructions, btnWrap);
-
-  const modal = createModal(frag, { labelledBy: title });
-
-  // Apply game-mode specific positioning and skinning before opening the modal.
-  // This ensures the dialog centers within the viewport area beneath the header/scoreboard
-  // and adopts page-appropriate styling without changing modal behavior.
-  applyGameModePositioning(modal);
-  const cleanup = {
-    tooltips: () => {}
-  };
-
-  // Add keyboard event handler for round selection
-  const handleKeyDown = (e) => {
-    const buttons = Array.from(btnWrap.querySelectorAll("button"));
-    const currentFocus = document.activeElement;
-    const currentIndex = buttons.indexOf(currentFocus);
-
-    switch (e.key) {
-      case "1":
-        e.preventDefault();
-        buttons[0]?.click();
-        break;
-      case "2":
-        e.preventDefault();
-        buttons[1]?.click();
-        break;
-      case "3":
-        e.preventDefault();
-        buttons[2]?.click();
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        if (currentIndex > 0) {
-          buttons[currentIndex - 1].focus();
-        } else {
-          buttons[buttons.length - 1].focus();
-        }
-        break;
-      case "ArrowDown":
-        e.preventDefault();
-        if (currentIndex < buttons.length - 1) {
-          buttons[currentIndex + 1].focus();
-        } else {
-          buttons[0].focus();
-        }
-        break;
-      case "Enter":
-        e.preventDefault();
-        if (currentFocus && buttons.includes(currentFocus)) {
-          currentFocus.click();
-        }
-        break;
-    }
-  };
-
-  // Attach keyboard handler to modal element
-  modal.element.addEventListener("keydown", handleKeyDown);
-
-  // Create cleanup function for keyboard handler
-  const cleanupKeyboard = () => {
-    modal.element.removeEventListener("keydown", handleKeyDown);
-  };
-
-  const roundButtons = [];
-  rounds.forEach((r) => {
-    const btn = createButton(r.label, { id: `round-select-${r.id}` });
-    btn.dataset.tooltipId = `ui.round${r.label}`;
-    btn.addEventListener("click", () =>
-      handleRoundSelect({
-        value: r.value,
-        modal,
-        cleanupTooltips: cleanup.tooltips,
-        cleanupKeyboard,
-        onStart,
-        emitEvents: true
-      })
-    );
-    btnWrap.appendChild(btn);
-    roundButtons.push(btn);
+  const cleanupRegistry = createCleanupRegistry();
+  const buttons = wireRoundSelectionButtons({
+    modal,
+    container: buttonContainer,
+    cleanupRegistry,
+    onStart
   });
 
-  document.body.appendChild(modal.element);
-  // Initialize tooltips asynchronously so modal presentation is not
-  // delayed by tooltip data or sanitizer setup. Attach a cleanup when
-  // the async init completes; failures are non-fatal for modal display.
-  initTooltips(modal.element)
-    .then((fn) => {
-      cleanup.tooltips = fn;
-    })
-    .catch((err) => {
-      console.error("Failed to initialize tooltips:", err);
-    });
+  const modalElement = modal.element;
+  document.body.appendChild(modalElement);
+
+  cleanupRegistry.keyboard = setupKeyboardNavigation(modalElement, buttons);
+
+  const tooltipLifecycle = setupTooltipLifecycle(modalElement);
+  cleanupRegistry.tooltips = tooltipLifecycle.cleanup;
+
   modal.open();
-  // Focus the first round select button for accessibility
-  if (roundButtons.length > 0) {
-    roundButtons[0].focus();
+  if (buttons.length > 0) {
+    try {
+      buttons[0].focus();
+    } catch {}
   }
+
   emitBattleEvent("roundOptionsReady");
-  // Give a microtask tick so any asynchronous tooltip initialization
-  // rejection is handled (tests expect console.error to run before
-  // this function returns) while still not awaiting tooltip setup.
+
   await Promise.resolve();
-}
-
-/**
- * Apply header-aware positioning and game mode skin to the round select modal.
- *
- * @pseudocode
- * 1. Detect game mode (CLI vs Classic) by presence of `#cli-header`/`.cli-header`.
- * 2. Find the header element and read its height.
- * 3. Set `--modal-inset-top` on the backdrop and add `header-aware` class.
- * 4. Add a mode-specific class: `cli-modal` or `classic-modal` on the backdrop.
- * 5. Track resize/orientation changes while open and update inset accordingly.
- *
- * @param {{ element: HTMLElement }} modal - Modal instance created by `createModal`.
- */
-function applyGameModePositioning(modal) {
-  const backdrop = modal?.element;
-  if (!backdrop) return;
-
-  const closedProp = "__roundSelectPositioningClosed";
-  if (backdrop[closedProp]) {
-    return;
-  }
-
-  const datasetKey = "roundSelectModalActive";
-  const activeProp = "__roundSelectPositioningActive";
-  const setActiveMarker = (value) => {
-    try {
-      backdrop.dataset[datasetKey] = value ? "true" : "false";
-    } catch {}
-  };
-  setActiveMarker(true);
-  backdrop[activeProp] = true;
-
-  const originalClose = typeof modal?.close === "function" ? modal.close.bind(modal) : null;
-  const originalDestroy = typeof modal?.destroy === "function" ? modal.destroy.bind(modal) : null;
-  const originalDispatchEvent =
-    typeof backdrop.dispatchEvent === "function" ? backdrop.dispatchEvent.bind(backdrop) : null;
-
-  const cliHeader = document.getElementById("cli-header") || document.querySelector(".cli-header");
-  const classicHeader =
-    document.querySelector('header[role="banner"]') || document.querySelector("header");
-  const isCliMode = Boolean(cliHeader);
-  const headerEl = (isCliMode ? cliHeader : classicHeader) || null;
-
-  // Add skin class first so themes can override dialog styles deterministically
-  try {
-    backdrop.classList.add(isCliMode ? "cli-modal" : "classic-modal");
-  } catch {}
-
-  if (!headerEl) return;
-
-  let headerRef = headerEl;
-
-  let isActive = true;
-  const updateInset = () => {
-    if (!isActive) return;
-    if (!backdrop[activeProp]) return;
-    if (backdrop.dataset?.[datasetKey] !== "true") return;
-    try {
-      const h = headerRef?.offsetHeight;
-      if (Number.isFinite(h) && h >= 0) {
-        backdrop.style.setProperty("--modal-inset-top", `${h}px`);
-        backdrop.classList.add("header-aware");
-      }
-    } catch {}
-  };
-
-  // Initial compute
-  updateInset();
-
-  // Track resize/orientation while modal is mounted; clean up on close
-  let resizeId = null;
-  const raf =
-    typeof requestAnimationFrame === "function" ? requestAnimationFrame : (cb) => setTimeout(cb, 0);
-  const caf =
-    typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : (id) => clearTimeout(id);
-  const onResize = () => {
-    if (!isActive) return;
-    if (resizeId !== null) {
-      caf(resizeId);
-      resizeId = null;
-    }
-    resizeId = raf(() => {
-      resizeId = null;
-      updateInset();
-    });
-  };
-  try {
-    window.addEventListener("resize", onResize);
-    window.addEventListener("orientationchange", onResize);
-  } catch {}
-
-  const cleanup = () => {
-    if (!isActive) return;
-    isActive = false;
-    setActiveMarker(false);
-    if (originalDispatchEvent) {
-      try {
-        backdrop.dispatchEvent = originalDispatchEvent;
-      } catch {}
-    }
-    try {
-      backdrop.removeEventListener("close", cleanup);
-    } catch {}
-    try {
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("orientationchange", onResize);
-    } catch {}
-    if (resizeId !== null) {
-      try {
-        caf(resizeId);
-      } catch {}
-      resizeId = null;
-    }
-    backdrop[activeProp] = false;
-    backdrop[closedProp] = true;
-    headerRef = null;
-  };
-
-  try {
-    backdrop.addEventListener("close", cleanup);
-  } catch {}
-
-  if (originalDispatchEvent) {
-    backdrop.dispatchEvent = (event) => {
-      let result;
-      let error;
-      try {
-        result = originalDispatchEvent(event);
-      } catch (err) {
-        error = err;
-      } finally {
-        if (event?.type === "close") {
-          cleanup();
-        }
-      }
-      if (error) {
-        throw error;
-      }
-      return result;
-    };
-  }
-
-  if (originalClose) {
-    modal.close = (...args) => {
-      const result = originalClose(...args);
-      cleanup();
-      return result;
-    };
-  }
-
-  if (originalDestroy) {
-    modal.destroy = (...args) => {
-      cleanup();
-      return originalDestroy(...args);
-    };
-  }
 }
