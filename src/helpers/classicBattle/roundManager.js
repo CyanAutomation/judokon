@@ -708,12 +708,13 @@ async function handleNextRoundExpiration(controls, btn) {
     dispatchReadyDirectly();
   }
 
-  if (typeof controls.resolveReady === "function") {
+  const resolveReadyFn = controls?.resolveReady;
+  if (typeof resolveReadyFn === "function") {
     // Explicitly emit readiness event in addition to resolver for robustness.
     try {
       emitBattleEvent("nextRoundTimerReady");
     } catch {}
-    controls.resolveReady();
+    if (typeof resolveReadyFn === "function") resolveReadyFn();
   }
 }
 
