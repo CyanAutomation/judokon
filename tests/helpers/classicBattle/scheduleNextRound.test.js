@@ -225,4 +225,12 @@ describe("classicBattle startCooldown", () => {
 
     setTestMode(false);
   }, 10000);
+
+  beforeEach(() => {
+    const mockMachine = {
+      getState: () => "cooldown",
+      dispatch: vi.fn().mockResolvedValue(true)
+    };
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => mockMachine);
+  });
 });
