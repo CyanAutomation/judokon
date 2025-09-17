@@ -51,48 +51,175 @@ export async function initStartCooldown(machine) {
 }
 
 /**
- * Initialize the inter-round cooldown timer.
+ * @summary Resolve the inter-round cooldown duration from the compute helper.
+ *
+ * @pseudocode
+ * 1. When `compute` is not a function → return `0`.
+ * 2. Invoke `compute()` and coerce to a number.
+ * 3. If the result is non-finite or negative → return `0`.
+ * 4. Otherwise return the numeric duration.
+ *
+ * @param {() => number} [compute]
+ * @returns {number}
+ */
+export function resolveInterRoundCooldownDuration(compute) {
+  if (typeof compute !== "function") return 0;
+  try {
+    const value = Number(compute());
+    if (!Number.isFinite(value) || value < 0) return 0;
+    return value;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Locate the Next button element used for advancing rounds.
+ *
+ * @returns {HTMLButtonElement|null}
+ */
+function getNextButton() {
+  if (typeof document === "undefined") return null;
+  return (
+    /** @type {HTMLButtonElement|null} */ (
+      document.getElementById("next-button") ||
+      document.querySelector('[data-role="next-round"]')
+    )
+  );
+}
+
+/**
+ * @summary Mark the provided Next button as ready for the next round.
+ *
+ * @pseudocode
+ * 1. Ignore falsy button references.
+ * 2. Clear the `disabled` state.
+ * 3. Set both property and attribute to `data-next-ready="true"`.
+ * 4. Remove the `disabled` attribute for defensive DOM shims.
+ *
+ * @param {HTMLButtonElement|null|undefined} btn
+ * @returns {void}
+ */
+export function markNextButtonReady(btn) {
+  if (!btn) return;
+  btn.disabled = false;
+  if (btn.dataset) btn.dataset.nextReady = "true";
+  btn.setAttribute("data-next-ready", "true");
+  btn.removeAttribute("disabled");
+}
+
+/**
+ * @summary Enable the Next button during cooldown and ensure readiness persists.
+ *
+ * @pseudocode
+ * 1. Locate the Next button.
+ * 2. Mark it ready immediately via `markNextButtonReady`.
+ * 3. Schedule a microtask/timeout using the provided scheduler to reapply readiness
+ *    if the button was toggled while the machine remains in `cooldown`.
+ * 4. Emit `nextRoundTimerReady` regardless of button presence.
+ * 5. Return the button reference (or `null` when absent).
  *
  * @param {object} machine State machine instance.
- * @returns {Promise<void>}
- * @pseudocode
- * 1. Compute cooldown duration and emit countdown start events.
- * 2. Enable the Next button and mark it ready.
- * 3. Start engine-backed timer; on expire → mark ready, emit events, dispatch `ready`.
- * 4. Schedule fallback timer with same completion path.
+ * @param {{setTimeout?: typeof setTimeout}} [scheduler]
+ * @returns {HTMLButtonElement|null}
  */
-export async function initInterRoundCooldown(machine) {
-  const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
-  const { createRoundTimer } = await import("../timers/createRoundTimer.js");
-  const { startCoolDown } = await import("../battleEngineFacade.js");
-  const duration = computeNextRoundCooldown();
+export function prepareNextButtonForCooldown(machine, scheduler) {
+  const button = getNextButton();
+  if (button) {
+    guard(() => markNextButtonReady(button));
+    const schedule = scheduler && typeof scheduler.setTimeout === "function" ? scheduler.setTimeout : setTimeout;
+    const reapply = () => {
+      const nextBtn = getNextButton();
+      if (!nextBtn) return;
+      let state = null;
+      try {
+        state = machine?.getState?.();
+      } catch {}
+      if (state && state !== "cooldown") return;
+      if (nextBtn.dataset?.nextReady === "true") return;
+      guard(() => markNextButtonReady(nextBtn));
+    };
+    try {
+      schedule(() => reapply(), 0);
+    } catch {
+      try {
+        setTimeout(() => reapply(), 0);
+      } catch {}
+    }
+  }
+  guard(() => emitBattleEvent("nextRoundTimerReady"));
+  return button;
+}
 
-  let expired = false;
-  let fallbackId;
+/**
+ * @summary Configure the round timer for the inter-round cooldown lifecycle.
+ *
+ * @pseudocode
+ * 1. Register `onExpired` and `onTick` handlers when provided.
+ * 2. Set the global skip handler to mirror the expiration callback.
+ * 3. Start the timer for the supplied duration.
+ *
+ * @param {object} options
+ * @param {{ on: Function, start: Function }} options.timer
+ * @param {number} options.duration Seconds to run the timer.
+ * @param {(remaining: number) => void} options.onTick
+ * @param {() => void} options.onExpired
+ * @returns {void}
+ */
+export function setupInterRoundTimer({ timer, duration, onTick, onExpired }) {
+  if (!timer) return;
+  if (typeof onExpired === "function") {
+    guard(() => timer.on("expired", onExpired));
+    setSkipHandler(onExpired);
+  }
+  if (typeof onTick === "function") {
+    guard(() => timer.on("tick", onTick));
+  }
+  guard(() => timer.start(duration));
+}
 
-  const timer = createRoundTimer({ starter: startCoolDown });
+/**
+ * @summary Create a completion handler that finalizes the cooldown flow.
+ *
+ * @pseudocode
+ * 1. Track the fallback timer id for later cancellation.
+ * 2. When invoked, guard against repeated execution.
+ * 3. Clear fallback timers and stop the engine timer.
+ * 4. Reset the skip handler and mark the Next button ready.
+ * 5. Emit completion events then dispatch `machine.dispatch("ready")` asynchronously.
+ *
+ * @param {object} options
+ * @param {object} options.machine State machine instance.
+ * @param {{ stop?: () => void }} options.timer Active round timer instance.
+ * @param {HTMLButtonElement|null} options.button Next button reference.
+ * @param {{clearTimeout?: typeof clearTimeout}} [options.scheduler]
+ * @returns {{ finish: () => void, trackFallback: (id: ReturnType<typeof setTimeout>|null|undefined) => void }}
+ */
+export function createCooldownCompletion({ machine, timer, button, scheduler }) {
+  let completed = false;
+  let fallbackId = null;
+
+  const clearFallback = () => {
+    if (fallbackId == null) return;
+    if (scheduler && typeof scheduler.clearTimeout === "function") {
+      try {
+        scheduler.clearTimeout(fallbackId);
+      } catch {}
+    }
+    try {
+      clearTimeout(fallbackId);
+    } catch {}
+    fallbackId = null;
+  };
 
   const finish = () => {
-    console.log("finish called. expired:", expired);
-    if (expired) return;
-    expired = true;
-    console.log("finish running. dispatching ready");
-
-    clearTimeout(fallbackId);
-    timer.stop();
-    setSkipHandler(null);
-
-    guard(() => {
-      const b =
-        document.getElementById("next-button") ||
-        document.querySelector('[data-role="next-round"]');
-      if (b) {
-        b.disabled = false;
-        b.dataset.nextReady = "true";
-        b.setAttribute("data-next-ready", "true");
-        b.removeAttribute("disabled");
-      }
-    });
+    if (completed) return;
+    completed = true;
+    clearFallback();
+    guard(() => timer?.stop?.());
+    guard(() => setSkipHandler(null));
+    const target = button || getNextButton();
+    guard(() => markNextButtonReady(target));
     for (const evt of [
       "cooldown.timer.expired",
       "nextRoundTimerReady",
@@ -101,15 +228,40 @@ export async function initInterRoundCooldown(machine) {
     ]) {
       guard(() => emitBattleEvent(evt));
     }
-    guardAsync(() => machine.dispatch("ready"));
+    guardAsync(() => machine?.dispatch?.("ready"));
   };
 
-  const markReady = (btn) => {
-    btn.disabled = false;
-    btn.dataset.nextReady = "true";
-    btn.setAttribute("data-next-ready", "true");
-    btn.removeAttribute("disabled");
+  return {
+    finish,
+    trackFallback(id) {
+      fallbackId = id ?? null;
+    }
   };
+}
+
+function scheduleCooldownFallback({ duration, finish, scheduler }) {
+  const ms = Math.max(0, Number(duration) || 0) * 1000 + FALLBACK_TIMER_BUFFER_MS;
+  return setupFallbackTimer(ms, finish, scheduler);
+}
+
+/**
+ * Initialize the inter-round cooldown timer.
+ *
+ * @param {object} machine State machine instance.
+ * @param {{ scheduler?: { setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout } }} [options]
+ * @returns {Promise<void>}
+ * @pseudocode
+ * 1. Compute cooldown duration and emit countdown start events.
+ * 2. Enable the Next button and mark it ready.
+ * 3. Start engine-backed timer; on expire → mark ready, emit events, dispatch `ready`.
+ * 4. Schedule fallback timer with same completion path.
+ */
+export async function initInterRoundCooldown(machine, options = {}) {
+  const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
+  const { createRoundTimer } = await import("../timers/createRoundTimer.js");
+  const { startCoolDown } = await import("../battleEngineFacade.js");
+
+  const duration = resolveInterRoundCooldownDuration(computeNextRoundCooldown);
 
   guard(() => emitBattleEvent("countdownStart", { duration }));
   guard(() =>
@@ -118,29 +270,32 @@ export async function initInterRoundCooldown(machine) {
     })
   );
 
-  const btn =
-    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
-  if (btn) {
-    markReady(btn);
-    setTimeout(() => {
-      const b = document.getElementById("next-button");
-      if (b && b.dataset.nextReady !== "true" && machine?.getState?.() === "cooldown") markReady(b);
-    }, 0);
-  }
+  const button = prepareNextButtonForCooldown(machine, options.scheduler);
 
-  guard(() => emitBattleEvent("nextRoundTimerReady"));
+  const timer = createRoundTimer({ starter: startCoolDown });
+  const completion = createCooldownCompletion({
+    machine,
+    timer,
+    button,
+    scheduler: options.scheduler
+  });
 
-  timer.on("expired", finish);
-  timer.on("tick", (r) =>
-    guard(() =>
-      emitBattleEvent("cooldown.timer.tick", {
-        remainingMs: Math.max(0, Number(r) || 0) * 1000
-      })
-    )
-  );
+  setupInterRoundTimer({
+    timer,
+    duration,
+    onExpired: completion.finish,
+    onTick: (remaining) =>
+      guard(() =>
+        emitBattleEvent("cooldown.timer.tick", {
+          remainingMs: Math.max(0, Number(remaining) || 0) * 1000
+        })
+      )
+  });
 
-  setSkipHandler(finish);
-
-  timer.start(duration);
-  fallbackId = setupFallbackTimer(duration * 1000 + FALLBACK_TIMER_BUFFER_MS, finish);
+  const fallbackId = scheduleCooldownFallback({
+    duration,
+    finish: completion.finish,
+    scheduler: options.scheduler
+  });
+  completion.trackFallback(fallbackId);
 }
