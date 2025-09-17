@@ -1,6 +1,9 @@
 if (typeof console !== "undefined") {
   console.log("[TEST DEBUG] orchestrator.js top-level loaded");
 }
+if (typeof console !== "undefined") {
+  console.log("[TEST DEBUG] orchestrator.js top-level loaded");
+}
 import {
   waitingForMatchStartEnter,
   matchStartEnter,

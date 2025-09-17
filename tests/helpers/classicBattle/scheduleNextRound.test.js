@@ -86,31 +86,40 @@ describe("classicBattle startCooldown", () => {
   }
 
   it("auto-dispatches ready after 1s cooldown", async () => {
-    console.log("[TEST DEBUG] Test started");
+    console.log("[TEST DEBUG] ENTER it: auto-dispatches ready after 1s cooldown");
+    console.log("[TEST DEBUG] Test started: auto-dispatches ready after 1s cooldown");
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
 
     mockBattleData();
+    console.log("[TEST DEBUG] before import battleEngineFacade.js");
     const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
+    console.log("[TEST DEBUG] after import battleEngineFacade.js");
     battleEngineMod.createBattleEngine();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
     // orchestrator is now statically imported at the top
+    console.log("[TEST DEBUG] before import eventDispatcher.js");
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    console.log("[TEST DEBUG] after import eventDispatcher.js");
     const dispatchSpy = vi.spyOn(eventDispatcher, "dispatchBattleEvent");
+    console.log("[TEST DEBUG] before import classicBattle.js");
     const battleMod = await import("../../../src/helpers/classicBattle.js");
+    console.log("[TEST DEBUG] after import classicBattle.js");
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
       await battleMod.startRound(store);
     });
-    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
 
-    // Debug: log orchestrator and machine references before and after getBattleStateMachine
-    console.log("[TEST DEBUG] orchestrator before getBattleStateMachine:", orchestrator);
+    console.log("[TEST DEBUG] before initClassicBattleOrchestrator");
+    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
+    console.log("[TEST DEBUG] after initClassicBattleOrchestrator");
+
+    console.log("[TEST DEBUG] before getBattleStateMachine");
     const machine = orchestrator.getBattleStateMachine();
-    console.log("[TEST DEBUG] Machine after orchestrator init:", machine);
+    console.log("[TEST DEBUG] after getBattleStateMachine", machine);
 
     await battleMod.startRound(store);
 
@@ -161,6 +170,12 @@ describe("classicBattle startCooldown", () => {
   });
 
   it("transitions roundOver → cooldown → roundStart without duplicates", async () => {
+    console.log(
+      "[TEST DEBUG] ENTER it: transitions roundOver → cooldown → roundStart without duplicates"
+    );
+    console.log(
+      "[TEST DEBUG] Test started: transitions roundOver → cooldown → roundStart without duplicates"
+    );
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -179,8 +194,14 @@ describe("classicBattle startCooldown", () => {
     const startRoundWrapper = vi.fn(async () => {
       await battleMod.startRound(store);
     });
+
+    console.log("[TEST DEBUG] before initClassicBattleOrchestrator");
     await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
+    console.log("[TEST DEBUG] after initClassicBattleOrchestrator");
+
+    console.log("[TEST DEBUG] before getBattleStateMachine");
     const machine = orchestrator.getBattleStateMachine();
+    console.log("[TEST DEBUG] after getBattleStateMachine", machine);
 
     await battleMod.startRound(store);
     expect(generateRandomCardMock).toHaveBeenCalledTimes(1);
