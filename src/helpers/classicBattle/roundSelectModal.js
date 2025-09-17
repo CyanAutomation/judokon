@@ -168,7 +168,7 @@ export async function initRoundSelectModal(onStart) {
   // This ensures the dialog centers within the viewport area beneath the header/scoreboard
   // and adopts page-appropriate styling without changing modal behavior.
   const cleanup = {
-    tooltips: () => {},
+    tooltips: () => {}
   };
 
   // Add keyboard event handler for round selection

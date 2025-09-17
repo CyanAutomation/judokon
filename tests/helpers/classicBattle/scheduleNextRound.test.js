@@ -22,17 +22,8 @@ let getRandomJudokaMock;
 let renderMock;
 let currentFlags;
 
-
-import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
-
+let handleNextRoundExpirationSpy;
 beforeEach(() => {
-  // Provide a mock state machine for eventDispatcher
-  const mockMachine = {
-    getState: () => "cooldown",
-    dispatch: vi.fn().mockResolvedValue(true)
-  };
-  debugHooks.exposeDebugState("getClassicBattleMachine", () => mockMachine);
-
   ({
     timerSpy,
     fetchJsonMock,
@@ -48,11 +39,19 @@ beforeEach(() => {
     renderMock,
     currentFlags
   });
+  // Spy on handleNextRoundExpiration to confirm if fallback timer fires
+  import("../../../src/helpers/classicBattle/roundManager.js").then((mod) => {
+    handleNextRoundExpirationSpy = vi.spyOn(mod, "handleNextRoundExpiration");
+  });
 });
 
 afterEach(() => {
   timerSpy.clearAllTimers();
   vi.restoreAllMocks();
+  if (handleNextRoundExpirationSpy) {
+    handleNextRoundExpirationSpy.mockRestore();
+    handleNextRoundExpirationSpy = undefined;
+  }
 });
 
 describe("classicBattle startCooldown", () => {
@@ -117,6 +116,8 @@ describe("classicBattle startCooldown", () => {
 
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
+    // Debug: check if fallback timer fired
+    expect(handleNextRoundExpirationSpy).toHaveBeenCalled();
     // Wait for the orchestrator to reach the expected state to avoid races
     await waitForState("waitingForPlayerAction");
 
@@ -235,5 +236,4 @@ describe("classicBattle startCooldown", () => {
 
     setTestMode(false);
   }, 10000);
-
 });
