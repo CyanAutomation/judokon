@@ -167,10 +167,9 @@ export async function initRoundSelectModal(onStart) {
   // Apply game-mode specific positioning and skinning before opening the modal.
   // This ensures the dialog centers within the viewport area beneath the header/scoreboard
   // and adopts page-appropriate styling without changing modal behavior.
-  try {
-    applyGameModePositioning(modal);
-  } catch {}
-  let cleanupTooltips = () => {};
+  const cleanup = {
+    tooltips: () => {},
+  };
 
   // Add keyboard event handler for round selection
   const handleKeyDown = (e) => {
@@ -231,7 +230,7 @@ export async function initRoundSelectModal(onStart) {
       handleRoundSelect({
         value: r.value,
         modal,
-        cleanupTooltips,
+        cleanupTooltips: cleanup.tooltips,
         cleanupKeyboard,
         onStart,
         emitEvents: true
@@ -246,7 +245,7 @@ export async function initRoundSelectModal(onStart) {
   // the async init completes; failures are non-fatal for modal display.
   initTooltips(modal.element)
     .then((fn) => {
-      cleanupTooltips = fn;
+      cleanup.tooltips = fn;
     })
     .catch((err) => {
       console.error("Failed to initialize tooltips:", err);

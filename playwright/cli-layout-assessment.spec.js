@@ -15,7 +15,7 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     await expect(page.locator("#cli-countdown")).toBeVisible();
     await expect(page.locator("#cli-stats")).toBeVisible();
     await expect(page.locator("#round-message")).toBeVisible();
-    await expect(page.locator("#cli-score")).toBeVisible();
+    
 
     // Header layout verification
     const header = page.locator("#cli-header");

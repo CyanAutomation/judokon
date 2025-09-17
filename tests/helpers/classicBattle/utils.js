@@ -28,6 +28,8 @@ export function setupClassicBattleDom() {
   document.body.append(container);
 
   const timerSpy = vi.useFakeTimers();
+  globalThis.requestAnimationFrame = vi.fn((cb) => cb());
+  globalThis.cancelAnimationFrame = vi.fn();
   const fetchJsonMock = vi.fn(async (url) => {
     if (String(url).includes("gameTimers.js")) {
       return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
