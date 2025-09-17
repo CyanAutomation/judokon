@@ -26,6 +26,7 @@ import { createStateManager } from "/src/helpers/classicBattle/stateManager.js";
 import "./uiService.js";
 
 let machine = null;
+let machineInitPromise = null;
 let debugLogListener = null;
 let visibilityHandler = null;
 
@@ -89,21 +90,18 @@ function applyStartRound(context, store, deps) {
   if ("doStartRound" in context) return;
   const startRoundDep = selectStartRoundDependency(deps);
   if (startRoundDep) {
-    context.doStartRound = (activeStore) =>
-      startRoundDep(activeStore ?? context.store ?? store);
+    context.doStartRound = (activeStore) => startRoundDep(activeStore ?? context.store ?? store);
     return;
   }
   if (store) {
-    context.doStartRound = (activeStore) =>
-      startRoundLocal(activeStore ?? context.store ?? store);
+    context.doStartRound = (activeStore) => startRoundLocal(activeStore ?? context.store ?? store);
   }
 }
 
 function resolveMachineContext(overrides, deps) {
   const store = overrides.store ?? deps.store ?? null;
   const scheduler = overrides.scheduler ?? deps.scheduler ?? null;
-  const startRoundWrapper =
-    overrides.startRoundWrapper ?? deps.startRoundWrapper ?? null;
+  const startRoundWrapper = overrides.startRoundWrapper ?? deps.startRoundWrapper ?? null;
 
   const context = { ...overrides };
   if (!("store" in context)) context.store = store;
@@ -162,26 +160,33 @@ export async function initClassicBattleOrchestrator(
     return machine;
   }
 
-  const overrides = normalizeContextOverrides(contextOverrides);
-  const deps = normalizeDependencies(dependencies);
-  const hookSet = normalizeHooks(hooks);
-
-  const { context } = resolveMachineContext(overrides, deps);
-  const onEnterMap = createOnEnterMap();
-  const onTransition = createTransitionHook(hookSet);
-
-  try {
-    machine = { context };
-    const createdMachine = await createStateManager(onEnterMap, context, onTransition);
-    machine = createdMachine;
-  } catch (error) {
-    machine = null;
-    throw error;
+  if (machineInitPromise) {
+    return machineInitPromise;
   }
+  machineInitPromise = (async () => {
+    const overrides = normalizeContextOverrides(contextOverrides);
+    const deps = normalizeDependencies(dependencies);
+    const hookSet = normalizeHooks(hooks);
 
-  attachListeners(machine);
-  preloadDependencies();
-  return machine;
+    const { context } = resolveMachineContext(overrides, deps);
+    const onEnterMap = createOnEnterMap();
+    const onTransition = createTransitionHook(hookSet);
+
+    try {
+      const createdMachine = await createStateManager(onEnterMap, context, onTransition);
+      machine = createdMachine;
+      attachListeners(machine);
+      preloadDependencies();
+      return machine;
+    } catch (error) {
+      machine = null;
+      throw error;
+    } finally {
+      machineInitPromise = null;
+    }
+  })();
+
+  return machineInitPromise;
 }
 
 // Map resolution events to PRD outcomes.
