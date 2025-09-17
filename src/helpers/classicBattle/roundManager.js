@@ -345,7 +345,8 @@ export function startCooldown(_store, scheduler = realScheduler) {
     });
   } catch {}
   if (orchestratedMode) {
-    setupOrchestratedReady(controls, orchestratorMachine);
+    setupOrchestratedReady(controls, orchestratorMachine, btn);
+    wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
   } else {
     wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
   }
@@ -416,7 +417,7 @@ function detectOrchestratorContext() {
   return { orchestrated, machine };
 }
 
-function setupOrchestratedReady(controls, machine) {
+function setupOrchestratedReady(controls, machine, btn) {
   /** @type {Array<() => void>} */
   const cleanupFns = [];
   const cleanup = () => {
@@ -432,6 +433,7 @@ function setupOrchestratedReady(controls, machine) {
     if (resolved) return;
     resolved = true;
     cleanup();
+    if (btn) markNextReady(btn);
     const resolver = controls.resolveReady;
     if (typeof resolver === "function") {
       resolver();
