@@ -925,3 +925,37 @@ try {
 } catch {
   bindUIHelperEventHandlers();
 }
+
+/**
+ * Show a fatal initialization error with a retry option.
+ *
+ * @param {Error|string} error - The error that occurred.
+ * @returns {void}
+ */
+export function showFatalInitError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  const container = document.getElementById("snackbar-container");
+  if (!container) return;
+
+  // Clear any existing snackbar
+  container.innerHTML = "";
+
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "snackbar error";
+  errorDiv.innerHTML = `
+    <span>Battle initialization failed: ${message}</span>
+    <button type="button" id="retry-init-button">Retry</button>
+  `;
+
+  container.appendChild(errorDiv);
+  requestAnimationFrame(() => errorDiv.classList.add("show"));
+
+  // Add retry handler
+  const retryBtn = errorDiv.querySelector("#retry-init-button");
+  if (retryBtn) {
+    retryBtn.addEventListener("click", () => {
+      // Reload the page to retry init
+      window.location.reload();
+    });
+  }
+}

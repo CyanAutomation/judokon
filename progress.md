@@ -75,6 +75,30 @@ Priority 5 — Prevent accidental navigation
 
 - Disable/hide footer nav once a match is in progress or intercept the navigation attempt and show a confirmation modal.
 
+## Completed Phase 1: Stabilize bootstrap error handling
+
+**Actions Taken:**
+
+- Added `showFatalInitError` helper function in `src/helpers/classicBattle/uiHelpers.js` to display persistent error messages with a "Retry" button that reloads the page.
+- Updated import in `src/pages/battleClassic.init.js` to include `showFatalInitError`.
+- Replaced silent `} catch {}` block around the main bootstrap sequence with proper error handling: `console.error("battleClassic: bootstrap failed", err); showFatalInitError(err);`.
+- Updated `init().catch` handlers to use `console.error` and `showFatalInitError` instead of silent `console.debug`.
+- Added deterministic test hook: set `window.__battleInitComplete = true` after successful initialization.
+
+**Output:**
+
+- Files modified: `src/pages/battleClassic.init.js`, `src/helpers/classicBattle/uiHelpers.js`.
+- Formatting: All files pass Prettier checks.
+- Linting: No new ESLint errors introduced.
+- Unit Tests: `tests/classicBattle/bootstrap.test.js` and `tests/integration/battleClassic.integration.test.js` both pass.
+- Playwright Tests: `playwright/battle-classic/bootstrap.spec.js` and `playwright/battle-classic/smoke.spec.js` both pass.
+- No regressions detected in the tested components.
+
+**Next Steps:**
+
+- Proceed to Phase 2: Add deterministic test hooks (already partially implemented with `window.__battleInitComplete`).
+- Or move to Phase 3: Fix modal accessibility if preferred.
+
 ## Minimal patch plan (dev-friendly steps)
 
 1. Add robust error handling in `src/pages/battleClassic.init.js`

@@ -26,7 +26,11 @@ import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSelectionPrompt } from "../helpers/classicBattle/snackbar.js";
-import { removeBackdrops, enableNextRoundButton } from "../helpers/classicBattle/uiHelpers.js";
+import {
+  removeBackdrops,
+  enableNextRoundButton,
+  showFatalInitError
+} from "../helpers/classicBattle/uiHelpers.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -733,7 +737,14 @@ async function init() {
       onBattleEvent("countdownFinished", startIfNotEnded);
       onBattleEvent("ready", startIfNotEnded);
     } catch {}
-  } catch {}
+    // Mark initialization as complete for test hooks
+    if (typeof window !== "undefined") {
+      window.__battleInitComplete = true;
+    }
+  } catch (err) {
+    console.error("battleClassic: bootstrap failed", err);
+    showFatalInitError(err);
+  }
 }
 
 // Simple synchronous badge initialization
@@ -758,11 +769,17 @@ function initBadgeSync() {
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () => {
     initBadgeSync();
-    init().catch((err) => console.debug("battleClassic: init failed", err));
+    init().catch((err) => {
+      console.error("battleClassic: init failed", err);
+      showFatalInitError(err);
+    });
   });
 } else {
   initBadgeSync();
-  init().catch((err) => console.debug("battleClassic: init failed", err));
+  init().catch((err) => {
+    console.error("battleClassic: init failed", err);
+    showFatalInitError(err);
+  });
 }
 
 /**
