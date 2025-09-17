@@ -22,7 +22,17 @@ let getRandomJudokaMock;
 let renderMock;
 let currentFlags;
 
+
+import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
+
 beforeEach(() => {
+  // Provide a mock state machine for eventDispatcher
+  const mockMachine = {
+    getState: () => "cooldown",
+    dispatch: vi.fn().mockResolvedValue(true)
+  };
+  debugHooks.exposeDebugState("getClassicBattleMachine", () => mockMachine);
+
   ({
     timerSpy,
     fetchJsonMock,
@@ -226,11 +236,4 @@ describe("classicBattle startCooldown", () => {
     setTestMode(false);
   }, 10000);
 
-  beforeEach(() => {
-    const mockMachine = {
-      getState: () => "cooldown",
-      dispatch: vi.fn().mockResolvedValue(true)
-    };
-    debugHooks.exposeDebugState("getClassicBattleMachine", () => mockMachine);
-  });
 });
