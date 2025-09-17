@@ -25,6 +25,7 @@ import {
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { updateDebugPanel } from "./debugPanel.js";
+export { updateDebugPanel } from "./debugPanel.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { getStateSnapshot } from "./battleDebug.js";
 

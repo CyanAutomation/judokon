@@ -38,8 +38,14 @@ export function attachCooldownRenderer(timer, initialRemaining) {
     }
   } catch {}
 
+  const normalizeRemaining = (value) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.max(0, numeric);
+  };
+
   const render = (remaining) => {
-    const clamped = Math.max(0, remaining);
+    const clamped = normalizeRemaining(remaining);
     const text = t("ui.nextRoundIn", { seconds: clamped });
     if (!rendered) {
       snackbar.showSnackbar(text);
@@ -53,15 +59,17 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   };
 
   const onTick = (remaining) => {
+    const normalized = normalizeRemaining(remaining);
     // If tests already show an initial value, skip the first visible update
-    // and only mark that the countdown started.
-    if (!started && rendered && lastRendered >= 0) {
+    // when the timer repeats the same number and only mark that the countdown
+    // started.
+    if (!started && rendered && lastRendered >= 0 && normalized === lastRendered) {
       started = true;
       emitBattleEvent("nextRoundCountdownStarted");
-      emitBattleEvent("nextRoundCountdownTick", { remaining: Math.max(0, remaining) });
+      emitBattleEvent("nextRoundCountdownTick", { remaining: normalized });
       return;
     }
-    const clamped = render(remaining);
+    const clamped = render(normalized);
     if (!started) {
       started = true;
       emitBattleEvent("nextRoundCountdownStarted");
@@ -73,25 +81,10 @@ export function attachCooldownRenderer(timer, initialRemaining) {
 
   timer.on("tick", onTick);
   timer.on("expired", onExpired);
-  if (typeof initialRemaining === "number") {
-    // If a transient opponent message is currently shown (for example
-    // "Opponent is choosing…"), avoid immediately replacing it with the
-    // cooldown snackbar and header timer. Defer the visible render until the
-    // first tick so short-lived messages are not overshadowed.
+  const initialValue = Number(initialRemaining);
+  if (Number.isFinite(initialValue)) {
     try {
-      const existing = typeof document !== "undefined" ? document.querySelector(".snackbar") : null;
-      const opponentMsg = typeof t === "function" ? t("ui.opponentChoosing") : null;
-      const shouldDefer =
-        existing &&
-        existing.textContent &&
-        opponentMsg &&
-        existing.textContent.includes(opponentMsg);
-      if (!shouldDefer) {
-        render(initialRemaining);
-      } else {
-        // Leave `rendered` false so the first tick will perform the render.
-        rendered = false;
-      }
+      render(initialValue);
     } catch {}
   }
   return () => {
