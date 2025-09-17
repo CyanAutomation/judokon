@@ -70,3 +70,87 @@ describe("startCooldown fallback timer", () => {
     expect(btn.disabled).toBe(false);
   });
 });
+
+describe("handleNextRoundExpiration immediate readiness", () => {
+  let expiredHandler;
+  /** @type {import('vitest').Mock} */
+  let dispatchSpy;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    expiredHandler = undefined;
+    dispatchSpy = undefined;
+    document.body.innerHTML = "";
+    createTimerNodes();
+    vi.resetModules();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
+      clearTimer: vi.fn(),
+      showMessage: vi.fn(),
+      showAutoSelect: vi.fn(),
+      showTemporaryMessage: vi.fn(() => () => {}),
+      updateTimer: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+      updateDebugPanel: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
+      setSkipHandler: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+      onBattleEvent: vi.fn(),
+      offBattleEvent: vi.fn(),
+      emitBattleEvent: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
+      computeNextRoundCooldown: () => 0
+    }));
+    vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
+      attachCooldownRenderer: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
+      dispatchSpy = vi.fn();
+      return { dispatchBattleEvent: dispatchSpy };
+    });
+    vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({
+      createRoundTimer: () => ({
+        on: vi.fn((event, handler) => {
+          if (event === "expired") expiredHandler = handler;
+        }),
+        off: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn()
+      })
+    }));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it("dispatches ready when state already progressed past cooldown", async () => {
+    const { __setStateSnapshot } = await import(
+      "../../../src/helpers/classicBattle/battleDebug.js"
+    );
+    __setStateSnapshot({ state: "cooldown" });
+    const scheduler = {
+      setTimeout: vi.fn((fn, ms) => setTimeout(fn, ms)),
+      clearTimeout: vi.fn((id) => clearTimeout(id))
+    };
+    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const controls = startCooldown({}, scheduler);
+    expect(typeof expiredHandler).toBe("function");
+    // Simulate orchestrator advancing before fallback fires.
+    __setStateSnapshot({ state: "waitingForPlayerAction" });
+    await expiredHandler();
+    await controls.ready;
+    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    await vi.runAllTimersAsync();
+  });
+});

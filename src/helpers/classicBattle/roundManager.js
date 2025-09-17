@@ -641,11 +641,14 @@ async function handleNextRoundExpiration(controls, btn) {
   }
   setSkipHandler(null);
   scoreboard.clearTimer();
-  // Ensure we've reached the cooldown state before advancing.
+  // Ensure we've reached the cooldown state before advancing. If the
+  // machine already moved past cooldown (e.g. into roundStart or
+  // waitingForPlayerAction) resolve immediately so the ready dispatch
+  // still occurs.
   await new Promise((resolve) => {
     try {
       const state = getStateSnapshot().state;
-      if (!state || state === "cooldown") {
+      if (!state || state === "cooldown" || isOrchestratorReadyState(state)) {
         resolve();
         return;
       }
