@@ -13,9 +13,11 @@ import { initStartCooldown } from "../cooldowns.js";
  */
 export async function cooldownEnter(machine, payload) {
   if (payload?.initial) {
-    return initStartCooldown(machine);
+    await initStartCooldown(machine);
+    return;
   }
-  startCooldown(machine.context.store);
+  // Patch: always pass scheduler from context if present
+  const { store, scheduler } = machine.context || {};
+  startCooldown(store, scheduler);
 }
-
 export default cooldownEnter;

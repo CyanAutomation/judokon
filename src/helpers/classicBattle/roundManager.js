@@ -183,6 +183,8 @@ export async function handleReplay(store) {
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
   store.playerChoice = null;
+  // Propagate scheduler from store.context if present
+  const scheduler = store?.context?.scheduler || store?.scheduler;
   const cards = await drawCards();
   store.currentPlayerJudoka = cards.playerJudoka || null;
   let roundNumber = 1;
@@ -197,6 +199,8 @@ export async function startRound(store, onRoundStart) {
     } catch {}
   }
   emitBattleEvent("roundStarted", { store, roundNumber });
+  // Attach scheduler to store for downstream use
+  if (scheduler) store.scheduler = scheduler;
   return { ...cards, roundNumber };
 }
 

@@ -362,12 +362,14 @@ function attachListeners(machineRef) {
  *   Optional callback invoked on every state change.
  * @returns {Promise<void>} Resolves when setup completes.
  */
-export async function initClassicBattleOrchestrator(store, startRoundWrapper, opts = {}) {
   await preloadDependencies();
-  const { resetGame: resetGameOpt, startRound: startRoundOpt, onStateChange } = opts;
+  const { resetGame: resetGameOpt, startRound: startRoundOpt, onStateChange, scheduler } = opts;
   const doResetGame = typeof resetGameOpt === "function" ? resetGameOpt : resetGameLocal;
   const doStartRound = typeof startRoundOpt === "function" ? startRoundOpt : startRoundLocal;
-  const context = { store, doResetGame, doStartRound, startRoundWrapper };
+  // Assign scheduler to store for downstream use
+  if (scheduler) store.scheduler = scheduler;
+  // Pass scheduler in context for downstream use
+  const context = { store, doResetGame, doStartRound, startRoundWrapper, scheduler };
   const onEnter = createOnEnterMap();
 
   const onTransition = ({ from, to, event }) => {
