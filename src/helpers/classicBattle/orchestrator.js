@@ -1,3 +1,6 @@
+if (typeof console !== "undefined") {
+  console.log("[TEST DEBUG] orchestrator.js top-level loaded");
+}
 import {
   waitingForMatchStartEnter,
   matchStartEnter,
@@ -387,6 +390,9 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   };
 
   machine = await createStateManager(onEnter, context, onTransition);
+  if (typeof console !== "undefined") {
+    console.log("[TEST DEBUG] initClassicBattleOrchestrator set machine:", machine);
+  }
   attachListeners(machine);
   // Prime timer state exposure for tests/diagnostics
   try {
@@ -444,12 +450,7 @@ export function disposeClassicBattleOrchestrator() {
  */
 export function getBattleStateMachine() {
   if (typeof console !== "undefined") {
-    console.log(
-      "[TEST DEBUG] getBattleStateMachine called, machine:",
-      machine,
-      "dispatch:",
-      machine?.dispatch
-    );
+    console.log("[TEST DEBUG] getBattleStateMachine TOP, machine:", machine);
   }
   return machine;
 }
