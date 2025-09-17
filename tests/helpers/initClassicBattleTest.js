@@ -1,5 +1,9 @@
 // Helper to (re)initialize Classic Battle bindings in tests.
 // Usage: await initClassicBattleTest({ afterMock: true }) immediately after vi.doMock(...)
+//
+// Test Hooks:
+// - afterMock: true - Resets bindings after mocks are applied
+// - Returns the battle module for further testing
 export async function initClassicBattleTest(opts = {}) {
   const battleMod = await import("../../src/helpers/classicBattle.js");
   const afterMock = !!opts.afterMock;

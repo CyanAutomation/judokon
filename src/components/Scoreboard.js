@@ -184,7 +184,24 @@ export class Scoreboard {
 export function initScoreboard(container, _controls) {
   void _controls;
   if (!container) {
-    defaultScoreboard = new Scoreboard();
+    // Try to find the elements by id even if container is null
+    const messageEl = document.getElementById("round-message");
+    const timerEl = document.getElementById("next-round-timer");
+    const roundCounterEl = document.getElementById("round-counter");
+    const scoreEl = document.getElementById("score-display");
+    if (messageEl || timerEl || roundCounterEl || scoreEl) {
+      const model = new ScoreboardModel();
+      const view = new ScoreboardView(model, {
+        rootEl: null,
+        messageEl,
+        timerEl,
+        roundCounterEl,
+        scoreEl
+      });
+      defaultScoreboard = new Scoreboard(model, view);
+    } else {
+      defaultScoreboard = new Scoreboard();
+    }
     return;
   }
   if (defaultScoreboard?.view) {

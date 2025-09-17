@@ -2,6 +2,14 @@
  * Integration test for the battleClassic page initialization.
  * This test loads the real HTML, runs the initialization script,
  * and asserts the page is in the correct initial state.
+ *
+ * Test Hooks Documentation:
+ * - `initClassicBattleTest({ afterMock: true })`: Helper to reset and ensure Classic Battle bindings after mocks.
+ *   Use immediately after vi.doMock() in unit tests.
+ * - `window.__FF_OVERRIDES`: Object for overriding feature flags and test behaviors.
+ *   Common overrides: { battleStateBadge: true, showRoundSelectModal: true, enableTestMode: true }
+ * - `window.battleStore`: The battle state store exposed after successful initialization.
+ * - `window.__battleInitComplete`: Boolean flag set to true after init completes successfully.
  */
 
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
@@ -84,5 +92,9 @@ describe("Battle Classic Page Integration", () => {
     // 4. Assert stat buttons are not yet rendered
     const statButtons = document.getElementById("stat-buttons");
     expect(statButtons.innerHTML).toBe("");
+
+    // 5. Assert initialization completed successfully
+    expect(window.battleStore).toBeDefined();
+    expect(window.__battleInitComplete).toBe(true);
   });
 });

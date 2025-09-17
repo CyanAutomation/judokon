@@ -10,6 +10,9 @@ test.describe("Classic Battle round select", () => {
     // Navigate to battle page - modal should appear automatically
     await page.goto("/src/pages/battleClassic.html");
 
+    // Wait for initialization to complete
+    await page.waitForFunction(() => window.__battleInitComplete === true);
+
     // Wait for round selection modal to appear
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("Select Match Length")).toBeVisible();
@@ -42,6 +45,9 @@ test.describe("Classic Battle round select", () => {
     });
 
     await page.goto("/src/pages/battleClassic.html");
+
+    // Wait for initialization to complete
+    await page.waitForFunction(() => window.__battleInitComplete === true);
 
     // Wait for modal
     await expect(page.getByRole("dialog")).toBeVisible();
