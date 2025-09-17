@@ -29,6 +29,7 @@ let currentFlags;
 
 beforeEach(() => {
   console.log("[TEST DEBUG] beforeEach");
+  console.log("[TEST DEBUG] before setupClassicBattleDom");
   ({
     timerSpy,
     fetchJsonMock,
@@ -37,6 +38,8 @@ beforeEach(() => {
     renderMock,
     currentFlags
   } = setupClassicBattleDom());
+  console.log("[TEST DEBUG] after setupClassicBattleDom");
+  console.log("[TEST DEBUG] before applyMockSetup");
   applyMockSetup({
     fetchJsonMock,
     generateRandomCardMock,
@@ -44,6 +47,7 @@ beforeEach(() => {
     renderMock,
     currentFlags
   });
+  console.log("[TEST DEBUG] after applyMockSetup");
 });
 
 afterEach(() => {
@@ -73,6 +77,7 @@ describe("classicBattle startCooldown", () => {
       },
       { name: "waitingForPlayerAction", triggers: [] }
     ];
+    console.log("[TEST DEBUG] ENTER mockBattleData");
     globalThis.__CLASSIC_BATTLE_STATES__ = minimal;
 
     fetchJsonMock.mockImplementation(async (url) => {

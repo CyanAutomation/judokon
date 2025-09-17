@@ -1,3 +1,6 @@
+if (typeof console !== "undefined") {
+  console.log("[TEST DEBUG] commonMocks.js top-level loaded");
+}
 // [TEST DEBUG] top-level commonMocks.js
 // eslint-disable-next-line no-console
 console.log("[TEST DEBUG] top-level commonMocks.js");

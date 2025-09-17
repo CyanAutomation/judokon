@@ -1,3 +1,6 @@
+if (typeof console !== "undefined") {
+  console.log("[TEST DEBUG] mockSetup.js top-level loaded");
+}
 // [TEST DEBUG] top-level mockSetup.js
 // eslint-disable-next-line no-console
 console.log("[TEST DEBUG] top-level mockSetup.js");
