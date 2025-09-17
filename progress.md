@@ -1,33 +1,158 @@
-# QA Report: `battleClassic.html` Review
+# QA Report: `battleClassic.html` Review (revised)
 
-This report details the findings from a Quality Assurance review of the `battleClassic.html` page. The primary objective was to assess the functionality, usability, and accessibility of the classic battle mode. Several critical issues were identified that prevent the game from starting or progressing, alongside various opportunities for improvement in user experience and adherence to product requirements.
+This document is an audited and updated QA report for `battleClassic.html` (Classic Battle). It verifies the original findings, corrects the diagnosis where necessary, and provides a prioritized remediation and verification plan. Apply the fixes in small steps and re-run the verification checklist after each change.
 
-## Identified Issues
+# QA Report: `battleClassic.html` Review (revised)
 
-| Issue                                          | Steps to reproduce                                                                                                                                                                                                                                                                                                                                                                        | Impact                                                                                                                                                                                                                                                                                                                                            |
-| :--------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Battle never starts – stuck at “Waiting…”**  | 1. Navigate to `battleClassic.html`.<br>2. Select any match length (Quick, Medium or Long). The modal closes and a blue label indicates the chosen win target.<br>3. Observe the scoreboard: it displays `“Waiting… Round 0”` and shows `“You: 0 Opponent: 0”`. No cards appear in the battle area and the **Next** button remains disabled; the game never progresses beyond this state. | This is a critical defect. The core loop (draw card → select stat → resolve round) cannot be exercised. It prevents verification of nearly all functional requirements (stat selection, scoring, AI difficulty, timers, end‑game conditions). It likely stems from a JavaScript error or missing resource (the engine appears not to initialise). |
-| **Clickable area mis‑targets**                 | When selecting the match length modal, clicking near the bottom of the **Quick button** sometimes navigates to an **unrelated page** (e.g., opens `judoka.json` via `raw.githubusercontent.com`). This happened on an earlier attempt when a click at `y≈530` mis‑fired and loaded a different page.                                                                                      | Unexpected navigation confuses players and suggests that UI elements may overlap or that there are invisible links capturing clicks. It also complicates keyboard/mouse targeting for children.                                                                                                                                                   |
-| **Keyboard selection does not work**           | The modal instructions state that **number keys (`1–3`)** or **arrow keys** can select an option. Pressing `“1”` or pressing arrow keys had no effect—only a mouse click dismissed the modal.                                                                                                                                                                                             | Inconsistent keyboard support reduces accessibility, especially for players who cannot use a mouse. The PRD lists keyboard navigation as an accessibility requirement.                                                                                                                                                                            |
-| **Missing stat buttons and card visuals**      | After closing the modal, neither the player’s nor opponent’s cards render. The `#stat-buttons` container remains empty and the `data-buttons-ready` attribute never switches to `true`.                                                                                                                                                                                                   | Without visible cards or stat buttons, players cannot choose stats. This also prevents screen readers from describing stats, so the accessibility of the stat selection cannot be judged.                                                                                                                                                         |
-| **Scoreboard timer never displays**            | The `#next-round-timer` region remains blank while the scoreboard header always says `“Waiting…”`. The 30 s stat selection timer is never shown, and the countdown/cool‑down flows cannot be evaluated.                                                                                                                                                                                   | Cannot verify auto‑select on timeout, timer pausing on tab change or drift detection.                                                                                                                                                                                                                                                             |
-| **No opponent action feedback**                | Since rounds never start, there is never an `“Opponent is choosing…”` message or reveal delay.                                                                                                                                                                                                                                                                                            | Opponent behaviour and AI difficulty settings cannot be validated.                                                                                                                                                                                                                                                                                |
-| **Quit flow unreachable**                      | The `“Quit”` button is displayed but since a match never actually begins, there is no confirmation modal nor return to home screen logic to test.                                                                                                                                                                                                                                         | The PRD requires a quit confirmation with no penalty, but this cannot be confirmed.                                                                                                                                                                                                                                                               |
-| **Footer navigation accessible but breakable** | The bottom navigation bar is fully active during the match. Clicking it mid‑match navigates away from the battle without any confirmation, even though the PRD indicates a confirmation step.                                                                                                                                                                                             | Players can accidentally leave a match without confirmation, causing progress loss. The nav bar should be disabled or intercepted during battles.                                                                                                                                                                                                 |
+This document is an audited and updated QA report for `battleClassic.html` (Classic Battle). It verifies the original findings, corrects the diagnosis where necessary, and provides a prioritized remediation and verification plan. Apply the fixes in small steps and re-run the verification checklist after each change.
 
-## Improvement Opportunities
+## Short summary
 
-1. **Fix the battle initialisation bug.** The most pressing issue is that the battle engine doesn’t start. **Investigate** whether the client fails to load `battleClassic.init.js`, the judoka dataset, or dependencies. **Add error handling** around asynchronous imports and **surface any fatal errors** in the UI (e.g., display a snackbar with a retry button).
-2. **Ensure keyboard support for match‑length selection.** The modal’s instructions claim number and arrow keys work, but they currently don’t. **Hook keyboard events properly** and **focus the first button** when the modal opens.
-3. **Improve click‑target spacing.** The mis‑navigation suggests invisible clickable elements near the Quick button. **Increase spacing** and **ensure the modal intercepts pointer events**. Touch targets should be ≥ 44 px high as per the PRD.
-4. **Disable or intercept footer navigation during battles.** To prevent accidental exits, **hide or disable the bottom nav bar** once a match begins, or **add a confirmation modal** when navigation is attempted.
-5. **Add accessible descriptions to stat buttons.** The PRD specifies `aria-describedby` attributes for stat buttons explaining the meaning of each stat. These should be **included in the dynamically created buttons** to assist screen‑reader users.
-6. **Provide visual feedback when selecting stats.** When the core loop is operational, **ensure that selected buttons highlight** and the chosen stat is announced both visually and via the scoreboard. This will help young players understand cause and effect.
-7. **Expose test hooks and deterministic mode.** The PRD lists `enableTestMode` and `battleStateProgress` flags. **Document how to enable these** via query parameters or global overrides so QA testers can simulate deterministic outcomes and inspect state transitions without randomisation.
-8. **Consider audio cues.** Although optional, short sound effects for wins, losses and ties (with mute option) would **enhance engagement** for children.
-9. **Optimise for low‑end devices.** **Use CSS transitions** rather than heavy JavaScript for animations, **limit the size of card images** and **compress assets** to ensure the game runs smoothly on low‑spec devices. **Use `prefers-reduced-motion` media query** to disable animations for users who prefer less motion.
-10. **Add robust error recovery.** **Implement user‑facing error screens** for dataset load failures, timer drift (> 2 s), or other unexpected errors. **Provide a “Retry” button** to reload the match without requiring a full page refresh.
+- Primary symptom: the Classic Battle flow does not progress after the match-length modal—scoreboard shows "Waiting… Round 0", no cards or stat buttons render, and the **Next** button stays disabled.
+- Root cause (most likely): engine/bootstrap failures during page init that are silently swallowed; cascading UI state that depends on a successfully exposed engine/store.
+- Immediate goal: stop swallowing init errors, surface them to QA/UI, add deterministic test hooks, and restore the core loop so UX/accessibility fixes can be validated.
+
+## Verified findings (accuracy and evidence)
+
+1. Battle never starts — stuck at "Waiting…"
+   - Accuracy: confirmed. The bootstrap sequence in `src/pages/battleClassic.init.js` calls `createBattleEngine()` and attaches adapters; if these steps fail the UI remains in a pre-init state.
+   - Evidence: tests and Playwright specs wait for `window.battleStore` and `#stat-buttons` population; when those are missing the tests time out.
+
+2. Clickable area mis-targets
+   - Accuracy: plausible and likely. The modal overlay / backdrop insertion or removal is fragile; if the overlay isn't positioned or sized properly underlying anchors (or previously injected debug links) may receive clicks.
+   - Evidence: intermittent navigation to raw `judoka.json` observed by QA; reproduce with devtools to confirm overlay bounds and event capture.
+
+3. Keyboard selection does not work
+   - Accuracy: confirmed in current pages. The modal is shown but focus and key handlers are not reliably wired or focusable elements are not focused on open.
+
+4. Missing stat buttons and card visuals
+   - Accuracy: confirmed. `#stat-buttons` stays empty because rendering depends on engine-provided stat metadata and the engine isn't available when bootstrap silently fails.
+
+5. Scoreboard timer never displays
+   - Accuracy: confirmed — timers are wired to the engine/adapter lifecycle; if init doesn't complete, timers never start.
+
+6. No opponent action feedback and Quit flow unreachable
+   - Accuracy: these are downstream symptoms of failed initialization.
+
+7. Footer navigation accessible but breakable
+   - Accuracy: confirmed. The nav bar remains active during battle; PRD requires interception or confirmation on navigation during match.
+
+Files examined (for cross-checking):
+
+- `src/pages/battleClassic.init.js` — entrypoint and bootstrap wiring
+- `src/helpers/battleEngineFacade.js` — engine creation and adapters
+- `src/helpers/classicBattle.js` — battle helpers and binding utilities
+- Playwright tests: `playwright/battle-classic/*` — expected init/test hooks
+- Tests/helpers: `tests/helpers/initClassicBattleTest.js`
+
+## Root-cause analysis (concise)
+
+1. Silent error handling: critical bootstrap steps are wrapped in `try/catch` blocks that swallow exceptions or only do a no-op. That prevents diagnostics and recovery.
+2. Tight coupling: multiple UI pieces (stat buttons, timer, scoreboard) assume the engine/store is ready at specific points without explicit handshake events.
+3. Modal/backdrop race: modal lifecycle and overlay insertion/removal are brittle and can leak pointer events to underlying elements.
+4. Tests make optimistic assumptions: many tests wait implicitly instead of asserting the engine/store readiness via a single deterministic hook (`window.battleStore` or an `init-complete` event).
+
+## Priority fixes (short list)
+
+Priority 1 — Stabilize bootstrap and surface fatal errors
+
+- Replace silent `catch {}` blocks around engine creation and event bridging with error logging and a visible UI recovery path (snackbar/error panel with "Retry").
+- Expose `window.battleStore` (or an explicit `window.__battleInitComplete = true`) only after successful initialization so tests and UI can reliably wait.
+
+Priority 2 — Make tests deterministic
+
+- Document and standardize test hooks: `initClassicBattleTest({ afterMock: true })` and `window.__FF_OVERRIDES` usage. Add a short integration test asserting `init()` succeeds and `window.battleStore` exists.
+
+Priority 3 — Fix modal accessibility & click-target issues
+
+- Ensure the match-length modal focuses the first button on open and handles `keydown` for Arrow keys and `1`/`2`/`3` number keys.
+- Ensure the modal overlay consumes pointer events (CSS `pointer-events` on overlay) and the overlay z-index is above all interactive content.
+
+Priority 4 — UI/accessibility improvements
+
+- Add `aria-describedby` to stat buttons created by `renderStatButtons`, and mark `data-buttons-ready="true"` only after DOM insertion and a short microtask tick.
+- Provide visible highlight feedback for stat selection and announce selection in scoreboard text for screen readers (aria-live region).
+
+Priority 5 — Prevent accidental navigation
+
+- Disable/hide footer nav once a match is in progress or intercept the navigation attempt and show a confirmation modal.
+
+## Minimal patch plan (dev-friendly steps)
+
+1. Add robust error handling in `src/pages/battleClassic.init.js`
+   - Surround `createBattleEngine()` and `bridgeEngineEvents()` with try/catch that calls a small helper `showFatalInitError(err)` and `console.error(...)` with context.
+   - `showFatalInitError` should show a persistent snackbar with a "Retry" action which re-runs the bootstrap (or reloads the page).
+
+2. Expose deterministic test hook after init
+   - After successful engine creation, set `window.battleStore = store` (if not already) and `window.__battleInitComplete = true` then dispatch `document.dispatchEvent(new Event('battle:init-complete'))`.
+
+3. Modal improvements
+   - Update `initRoundSelectModal` (or the modal module) to:
+     - Focus the first button on open.
+     - Add scoped keydown handlers for Arrow keys and number keys.
+     - Ensure overlay has `pointer-events: auto` and a z-index above page content.
+
+4. Stat buttons & aria
+   - Update `renderStatButtons` to set `aria-describedby` on each button and set `data-buttons-ready="true"` after DOM insertion and a requestAnimationFrame tick.
+
+5. Footer nav protection
+   - When match starts (after `battle:init-complete`), add a `data-battle-active="true"` attribute to the body and disable footer nav by CSS or intercept clicks to show confirmation.
+
+Files likely to change (small, focused edits):
+
+- `src/pages/battleClassic.init.js` (bootstrap/wiring)
+- `src/helpers/classicBattle/uiHelpers.js` (new helper for snackbar) OR add helper in the page module
+- `src/components/modalRoundSelect.js` (or wherever modal is implemented) — focus/key handling
+- `src/pages/battleClassic.init.js` — `renderStatButtons` accessibility additions
+
+## Verification checklist (QA steps)
+
+1. Lint & tests (developer):
+
+   - npx prettier . --check
+   - npx eslint .
+   - npm run check:jsdoc
+   - npx vitest run
+
+2. Unit / integration tests to add/verify:
+
+   - New test asserting `init()` resolves and `window.battleStore` and `window.__battleInitComplete` are present.
+   - Test for `renderStatButtons` that `#stat-buttons` contains the expected number of buttons and `data-buttons-ready="true"` is set.
+   - Modal keyboard test simulating Arrow keys and `1`/`2`/`3` keys.
+
+3. Playwright/E2E:
+
+   - Re-run `playwright/battle-classic/end-modal.spec.js` and `playwright/battle-classic/*` smoke tests.
+   - Confirm no `pageerror` console logs and the match progresses to at least one round.
+
+4. QA manual checks:
+
+   - Open `battleClassic.html` locally, select match length using keyboard (`1`, arrow keys) and mouse.
+   - Confirm `#stat-buttons` appear, timers show, opponent chooses and round resolves.
+   - Try clicking footer nav mid-match and confirm confirmation or disabled nav.
+
+## Risk assessment & rollback
+
+- Risk: surfacing errors may cause CI to fail on unrelated tests that previously hid faults. Mitigation: add the new error-handling as opt-in behind a feature flag initially (`window.__BATTLE_DEBUG_SHOW_ERRORS=true`).
+- Rollback: revert only the bootstrap error handling changes if regressions are found; keep tests that assert the previous behavior so regressions are caught.
+
+## Tasks & owners (suggested)
+
+- Developer (1 day): implement defensive init + `showFatalInitError` + test hook exposure — edit `src/pages/battleClassic.init.js`.
+- Developer (0.5 day): modal focus & keyboard handlers, aria updates for stat buttons.
+- QA (0.5 day): run E2E/playwright tests and manual accessibility checks.
+
+## Short-term mitigations for QA
+
+- While fixes are rolled, QA can set `window.__FF_OVERRIDES = { showRoundSelectModal: true }` in browser console (many Playwright tests use similar overrides) and run `initClassicBattleTest({ afterMock: true })` to ensure bindings are reset for deterministic runs.
+- Use `localStorage.setItem('battle.pointsToWin', '1')` to create short matches for faster validation.
 
 ## Conclusion
 
-This QA report highlights critical issues preventing the `battleClassic.html` page from functioning as intended, primarily related to game initialization and core loop progression. Addressing these issues, along with implementing the suggested improvements, will significantly enhance the user experience, accessibility, and overall stability of the classic battle mode.
+The original QA report was accurate: the game fails to progress because the engine/bootstrap sequence is not completing and errors are hidden. The priority is to make initialization resilient and observable, then restore the core UI flows so keyboard, accessibility, and navigation fixes can be validated. The patch plan above is intentionally small and testable; implement the bootstrap fixes first, verify, then apply the accessibility/nav changes.
+
+
+---
+
+Please review this revised report. If you want, I can implement the minimal bootstrap changes (small edits to `src/pages/battleClassic.init.js` and a helper) and open a PR with tests. Otherwise tell me which part you'd like to adjust or expand.
+## Identified Issues
