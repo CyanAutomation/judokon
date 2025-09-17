@@ -43,6 +43,11 @@ beforeEach(() => {
 afterEach(() => {
   timerSpy.clearAllTimers();
   vi.restoreAllMocks();
+  // Reset the event bus to avoid event leakage between tests
+  const {
+    __resetBattleEventTarget
+  } = require("../../../src/helpers/classicBattle/battleEvents.js");
+  __resetBattleEventTarget();
 });
 
 describe("classicBattle startCooldown", () => {
@@ -105,12 +110,22 @@ describe("classicBattle startCooldown", () => {
     // Clear spy after manual continue call to only capture automatic ready call
     dispatchSpy.mockClear();
 
+    // Debug: log state before advancing timers
+    // eslint-disable-next-line no-console
+    console.log("[TEST DEBUG] Before timer advance, state:", machine.getState());
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
+    // Debug: log state after timer fires
+    // eslint-disable-next-line no-console
+    console.log("[TEST DEBUG] After timer advance, state:", machine.getState());
     // Confirm fallback timer callback executed
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
     // Wait for the orchestrator to reach the expected state to avoid races
     await waitForState("waitingForPlayerAction");
+
+    // Debug: log state after waitForState
+    // eslint-disable-next-line no-console
+    console.log("[TEST DEBUG] After waitForState, state:", machine.getState());
 
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);

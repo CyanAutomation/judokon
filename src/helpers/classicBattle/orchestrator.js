@@ -392,11 +392,13 @@ export async function initClassicBattleOrchestrator(store, startRoundWrapper, op
   try {
     mirrorTimerState();
   } catch {}
-  // Expose the machine for test event dispatching (needed for dispatchBattleEvent)
+  // Always update the debug getter/global reference to the current machine
   try {
     if (typeof globalThis !== "undefined") {
+      const prev = globalThis.__classicBattleDebugRead;
       globalThis.__classicBattleDebugRead = (key) => {
         if (key === "getClassicBattleMachine") return () => machine;
+        if (typeof prev === "function") return prev(key);
         return undefined;
       };
     }
