@@ -1,4 +1,5 @@
-import { initStartCooldown, initInterRoundCooldown } from "../cooldowns.js";
+import { startCooldown } from "../roundManager.js";
+import { initStartCooldown } from "../cooldowns.js";
 
 /**
  * onEnter handler for `cooldown` state.
@@ -14,7 +15,7 @@ export async function cooldownEnter(machine, payload) {
   if (payload?.initial) {
     return initStartCooldown(machine);
   }
-  return initInterRoundCooldown(machine);
+  startCooldown(machine.context.store);
 }
 
 export default cooldownEnter;

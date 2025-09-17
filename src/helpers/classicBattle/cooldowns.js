@@ -75,8 +75,10 @@ export async function initInterRoundCooldown(machine) {
   const timer = createRoundTimer({ starter: startCoolDown });
 
   const finish = () => {
+    console.log("finish called. expired:", expired);
     if (expired) return;
     expired = true;
+    console.log("finish running. dispatching ready");
 
     clearTimeout(fallbackId);
     timer.stop();
