@@ -348,25 +348,6 @@ export function startCooldown(_store, scheduler = realScheduler) {
     setupOrchestratedReady(controls, orchestratorMachine);
   } else {
     wireNextRoundTimer(controls, btn, cooldownSeconds, scheduler);
-    // Safety net: ensure readiness dispatch even if engine timers are mocked out
-    try {
-      let settled = false;
-      controls.ready?.then(() => (settled = true)).catch(() => {});
-      const ms = Math.max(0, Number(cooldownSeconds) || 0) * 1000 || 10;
-      scheduler.setTimeout(async () => {
-        if (!settled) {
-          try {
-            await dispatchBattleEvent("ready");
-          } catch {}
-          if (typeof controls.resolveReady === "function") {
-            try {
-              emitBattleEvent("nextRoundTimerReady");
-            } catch {}
-            controls.resolveReady();
-          }
-        }
-      }, ms);
-    } catch {}
   }
   currentNextRound = controls;
   return controls;
