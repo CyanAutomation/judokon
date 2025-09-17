@@ -167,6 +167,7 @@ export async function initRoundSelectModal(onStart) {
   // Apply game-mode specific positioning and skinning before opening the modal.
   // This ensures the dialog centers within the viewport area beneath the header/scoreboard
   // and adopts page-appropriate styling without changing modal behavior.
+  applyGameModePositioning(modal);
   const cleanup = {
     tooltips: () => {}
   };

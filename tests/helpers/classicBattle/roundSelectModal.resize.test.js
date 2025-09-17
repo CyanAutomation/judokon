@@ -1,13 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+let modalInstance;
+let modalCloseSpy;
+
 function mockModalReturning(backdrop) {
+  modalCloseSpy = vi.fn();
+  modalInstance = {
+    element: backdrop,
+    open: vi.fn(),
+    close: modalCloseSpy,
+    destroy: vi.fn()
+  };
   vi.doMock("../../../src/components/Modal.js", () => ({
-    createModal: vi.fn(() => ({
-      element: backdrop,
-      open: vi.fn(),
-      close: vi.fn(),
-      destroy: vi.fn()
-    }))
+    createModal: vi.fn(() => modalInstance)
   }));
 }
 
@@ -18,10 +23,59 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     // Ensure RAF exists for debounced resize path
     global.requestAnimationFrame = (cb) => setTimeout(() => cb(0), 0);
     global.cancelAnimationFrame = (id) => clearTimeout(id);
+    modalInstance = null;
+    modalCloseSpy = null;
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("activates positioning once per lifecycle and cleans up via modal.close", async () => {
+    const header = document.createElement("header");
+    header.setAttribute("role", "banner");
+    Object.defineProperty(header, "offsetHeight", { value: 40, configurable: true });
+    document.body.appendChild(header);
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop";
+    mockModalReturning(backdrop);
+
+    const addSpy = vi.spyOn(window, "addEventListener");
+    const removeSpy = vi.spyOn(window, "removeEventListener");
+
+    vi.doMock("../../../src/helpers/tooltip.js", () => ({
+      initTooltips: () => Promise.resolve(() => {})
+    }));
+
+    const { initRoundSelectModal } = await import(
+      "../../../src/helpers/classicBattle/roundSelectModal.js"
+    );
+
+    await initRoundSelectModal(() => {});
+
+    expect(modalInstance).toBeTruthy();
+    expect(backdrop.dataset.roundSelectModalActive).toBe("true");
+
+    const resizeCall = addSpy.mock.calls.find(([event]) => event === "resize");
+    const orientationCall = addSpy.mock.calls.find(([event]) => event === "orientationchange");
+    expect(resizeCall?.[1]).toBeTypeOf("function");
+    expect(orientationCall?.[1]).toBeTypeOf("function");
+
+    const enhancedClose = modalInstance.close;
+    enhancedClose();
+
+    expect(modalCloseSpy).toHaveBeenCalledTimes(1);
+    expect(removeSpy).toHaveBeenCalledWith("resize", resizeCall?.[1]);
+    expect(removeSpy).toHaveBeenCalledWith("orientationchange", orientationCall?.[1]);
+    expect(backdrop.dataset.roundSelectModalActive).toBe("false");
+
+    // Subsequent close calls should not re-register listeners or flip the marker back on
+    enhancedClose();
+    expect(modalCloseSpy).toHaveBeenCalledTimes(2);
+    expect(backdrop.dataset.roundSelectModalActive).toBe("false");
+    expect(addSpy.mock.calls.filter(([event]) => event === "resize")).toHaveLength(1);
+    expect(addSpy.mock.calls.filter(([event]) => event === "orientationchange")).toHaveLength(1);
   });
 
   it("updates inset on resize and stops after close", async () => {
