@@ -3,6 +3,7 @@ import { setupFallbackTimer } from "./roundManager.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { guard, guardAsync } from "./guard.js";
+import { setSkipHandler } from "./skipHandler.js";
 
 /**
  * Additional buffer to ensure fallback timers fire after engine-backed timers.
@@ -61,56 +62,90 @@ export async function initStartCooldown(machine) {
  * 4. Schedule fallback timer with same completion path.
  */
 export async function initInterRoundCooldown(machine) {
-  const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
+  const { computeNextRoundCooldown } = await import(
+    "../timers/computeNextRoundCooldown.js"
+  );
   const { createRoundTimer } = await import("../timers/createRoundTimer.js");
   const { startCoolDown } = await import("../battleEngineFacade.js");
   const duration = computeNextRoundCooldown();
-  const markReady = (btn) => {
-    btn.disabled = false;
-    btn.dataset.nextReady = "true";
-  };
-  guard(() => emitBattleEvent("countdownStart", { duration }));
-  guard(() => emitBattleEvent("control.countdown.started", { durationMs: duration * 1000 }));
-  const btn =
-    document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
-  if (btn) {
-    markReady(btn);
-    setTimeout(() => {
-      const b = document.getElementById("next-button");
-      if (b && b.dataset.nextReady !== "true" && machine?.getState?.() === "cooldown") markReady(b);
-    }, 0);
-  }
-  guard(() => emitBattleEvent("nextRoundTimerReady"));
+
+  let expired = false;
+  let fallbackId;
+
   const timer = createRoundTimer({ starter: startCoolDown });
-  timer.on("expired", () => {
+
+  const finish = () => {
+    if (expired) return;
+    expired = true;
+
+    clearTimeout(fallbackId);
+    timer.stop();
+    setSkipHandler(null);
+
     guard(() => {
-      const b = document.getElementById("next-button");
-      if (b) b.dataset.nextReady = "true";
+      const b =
+        document.getElementById("next-button") ||
+        document.querySelector('[data-role="next-round"]');
+      if (b) {
+        b.disabled = false;
+        b.dataset.nextReady = "true";
+      }
     });
     for (const evt of [
       "cooldown.timer.expired",
       "nextRoundTimerReady",
       "countdownFinished",
-      "control.countdown.completed"
+      "control.countdown.completed",
     ]) {
       guard(() => emitBattleEvent(evt));
     }
     guardAsync(() => machine.dispatch("ready"));
-  });
+  };
+
+  const markReady = (btn) => {
+    btn.disabled = false;
+    btn.dataset.nextReady = "true";
+  };
+
+  guard(() => emitBattleEvent("countdownStart", { duration }));
+  guard(() =>
+    emitBattleEvent("control.countdown.started", {
+      durationMs: duration * 1000,
+    })
+  );
+
+  const btn =
+    document.getElementById("next-button") ||
+    document.querySelector('[data-role="next-round"]');
+  if (btn) {
+    markReady(btn);
+    setTimeout(() => {
+      const b = document.getElementById("next-button");
+      if (
+        b &&
+        b.dataset.nextReady !== "true" &&
+        machine?.getState?.() === "cooldown"
+      )
+        markReady(b);
+    }, 0);
+  }
+
+  guard(() => emitBattleEvent("nextRoundTimerReady"));
+
+  timer.on("expired", finish);
   timer.on("tick", (r) =>
     guard(() =>
-      emitBattleEvent("cooldown.timer.tick", { remainingMs: Math.max(0, Number(r) || 0) * 1000 })
+      emitBattleEvent("cooldown.timer.tick", {
+        remainingMs: Math.max(0, Number(r) || 0) * 1000,
+      })
     )
   );
+
+  setSkipHandler(finish);
+
   timer.start(duration);
-  setupFallbackTimer(duration * 1000 + FALLBACK_TIMER_BUFFER_MS, () => {
-    guard(() => {
-      const b = document.getElementById("next-button");
-      if (b) b.dataset.nextReady = "true";
-    });
-    for (const evt of ["nextRoundTimerReady", "countdownFinished"]) {
-      guard(() => emitBattleEvent(evt));
-    }
-    guardAsync(() => machine.dispatch("ready"));
-  });
+  fallbackId = setupFallbackTimer(
+    duration * 1000 + FALLBACK_TIMER_BUFFER_MS,
+    finish
+  );
 }

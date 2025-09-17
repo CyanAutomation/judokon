@@ -226,8 +226,10 @@ export function enableNextRoundButton() {
   const btn =
     document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
   if (!btn) return;
-  btn.disabled = false;
-  btn.dataset.nextReady = "true";
+  try {
+    btn.removeAttribute("disabled");
+    btn.setAttribute("data-next-ready", "true");
+  } catch {}
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       console.debug(

@@ -199,15 +199,6 @@ function bindUIServiceEventHandlers() {
       activeCountdown = { timer, onExpired };
       attachCooldownRenderer(timer, duration);
       timer.on("expired", onExpired);
-      setSkipHandler(() => {
-        try {
-          timer.off("expired", onExpired);
-        } catch {}
-        try {
-          timer.stop();
-        } catch {}
-        handleCountdownExpired();
-      });
       if (!activeCountdown) {
         // A pending skip consumed the countdown before it began
         return;

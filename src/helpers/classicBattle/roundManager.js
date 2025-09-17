@@ -566,8 +566,12 @@ function markNextReady(btn) {
   // Be permissive here: in unit tests, transitions can occur very quickly and
   // module isolation can yield differing state snapshots. Mark the Next button
   // as ready unconditionally to reflect that the cooldown has completed.
-  btn.dataset.nextReady = "true";
-  btn.disabled = false;
+  try {
+    // Use explicit attribute APIs to avoid relying on property reflection which
+    // can differ in some test harnesses / DOM shims.
+    btn.setAttribute("data-next-ready", "true");
+    btn.removeAttribute("disabled");
+  } catch {}
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       // Lightweight test-only trace to help diagnose flakiness across tests.

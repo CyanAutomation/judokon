@@ -103,11 +103,8 @@ describe("classicBattle startCooldown", () => {
     // Clear spy after manual continue call to only capture automatic ready call
     dispatchSpy.mockClear();
 
-    const controls = battleMod.startCooldown(store);
-
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
-    await controls.ready;
     // Wait for the orchestrator to reach the expected state to avoid races
     await waitForState("waitingForPlayerAction");
 
@@ -147,9 +144,7 @@ describe("classicBattle startCooldown", () => {
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
-    const controls = battleMod.startCooldown(store);
     document.querySelector('[data-role="next-round"]').click();
-    await controls.ready;
     // Ensure state progressed before assertions
     await waitForState("waitingForPlayerAction");
     await vi.runAllTimersAsync();
@@ -213,12 +208,10 @@ describe("classicBattle startCooldown", () => {
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
-    const controls = battleMod.startCooldown(store);
     expect(nextButton.dataset.nextReady).toBeUndefined();
 
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
-    await controls.ready;
 
     const btn = document.querySelector('[data-role="next-round"]');
     expect(btn?.dataset.nextReady).toBe("true");
