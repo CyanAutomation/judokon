@@ -55,6 +55,4 @@ test.describe("Homepage layout", () => {
       await expect(page.locator(".bottom-navbar .nav-toggle")).toHaveCount(0);
     });
   });
-
-  
 });

@@ -45,9 +45,13 @@ describe("TimerController fallback countdown", () => {
     const onExpired = vi.fn();
 
     try {
-      await controller.startRound((remaining) => {
-        ticks.push(remaining);
-      }, onExpired, 2);
+      await controller.startRound(
+        (remaining) => {
+          ticks.push(remaining);
+        },
+        onExpired,
+        2
+      );
 
       expect(scheduler.setTimeout).toHaveBeenCalledTimes(1);
       expect(scheduler.setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 1000);
