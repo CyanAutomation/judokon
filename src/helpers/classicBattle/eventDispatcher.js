@@ -20,11 +20,25 @@ import { readDebugState } from "./debugHooks.js";
  */
 export async function dispatchBattleEvent(eventName, payload) {
   // Get machine from debug state to avoid circular dependency
-  const getMachine =
-    typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead
+  let machineSource =
+    typeof globalThis !== "undefined" &&
+    typeof globalThis.__classicBattleDebugRead === "function"
       ? globalThis.__classicBattleDebugRead("getClassicBattleMachine")
-      : readDebugState("getClassicBattleMachine");
-  const machine = typeof getMachine === "function" ? getMachine() : null;
+      : undefined;
+
+  if (typeof machineSource !== "function") {
+    const fallback = readDebugState("getClassicBattleMachine");
+    if (typeof fallback === "function") {
+      machineSource = fallback;
+    } else if (!machineSource && fallback) {
+      machineSource = fallback;
+    }
+  }
+
+  const machine =
+    typeof machineSource === "function"
+      ? machineSource()
+      : machineSource || null;
 
   if (!machine) {
     // Not having a machine is an expected state during early startup
