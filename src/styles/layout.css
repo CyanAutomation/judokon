@@ -257,3 +257,8 @@ body {
     grid-column: 1;
   }
 }
+
+body[data-battle-active="true"] .bottom-navbar {
+  pointer-events: none;
+  opacity: 0.5;
+}

@@ -719,6 +719,10 @@ async function init() {
           const badge = document.getElementById("battle-state-badge");
           if (badge && !badge.hidden) badge.textContent = "Round";
         } catch {}
+        // Set data-battle-active attribute on body
+        try {
+          document.body.setAttribute("data-battle-active", "true");
+        } catch {}
         // Begin first round
         await startRoundCycle(store);
       });
