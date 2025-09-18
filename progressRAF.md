@@ -116,7 +116,8 @@ Refactor plan (actionable, incremental)
 
 Phase 1 — Quick fixes (small, low-risk edits)
 
-- Fix scoreboard flicker: do not set final innerHTML before starting the tween; update number nodes only. (1–3 lines change in updateScore logic).
+- **[DONE]** Fix scoreboard flicker: do not set final innerHTML before starting the tween; update number nodes only. (1–3 lines change in updateScore logic).
+  - **Outcome**: Implemented. Removed the line that sets the final `innerHTML` before the animation starts in `ScoreboardView.js`. This prevents a visual flicker where the final score is shown briefly before the animation begins. Ran relevant unit and Playwright tests, which all passed.
 - **[DONE]** Cancel scoreboard rAF in cleanup/destroy. (1–3 lines)
   - **Outcome**: Implemented. Added a `destroy` method to `ScoreboardView.js` to cancel the animation frame. Also updated the `Scoreboard.js` `destroy` method to call the view's `destroy` method. This prevents potential memory leaks and errors from orphaned animation frames. Ran relevant unit and Playwright tests, which all passed.
 - Clamp typewriter per-frame work to N characters (e.g., 6) or clamp `acc` to `speed * N`. (2–6 lines)

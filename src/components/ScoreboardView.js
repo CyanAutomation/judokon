@@ -128,7 +128,6 @@ export class ScoreboardView {
     const playerSpan = this.scoreEl.querySelector('span[data-side="player"]');
     const opponentSpan = this.scoreEl.querySelector('span[data-side="opponent"]');
     const endVals = { p: Number(player) || 0, o: Number(opponent) || 0 };
-    this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
     if (!playerSpan || !opponentSpan) return;
     const parse = (el) => {
       if (!el) return 0;
