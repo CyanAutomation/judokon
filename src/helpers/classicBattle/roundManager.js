@@ -575,10 +575,18 @@ function logStartCooldown() {
 }
 
 function createCooldownControls({ emit } = {}) {
-  const controls = { timer: null, resolveReady: null, ready: null };
+  const controls = {
+    timer: null,
+    resolveReady: null,
+    ready: null,
+    readyDispatched: false,
+    readyInFlight: false
+  };
   const notify = typeof emit === "function" ? emit : emitBattleEvent;
   controls.ready = new Promise((resolve) => {
     controls.resolveReady = () => {
+      controls.readyDispatched = true;
+      controls.readyInFlight = false;
       try {
         notify("nextRoundTimerReady");
       } catch {}
@@ -623,6 +631,10 @@ let readyDispatchedForCurrentCooldown = false;
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   // TEMP: Mark global for test to confirm callback execution
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
+  if (controls?.readyDispatched || controls?.readyInFlight) {
+    return;
+  }
+  if (controls) controls.readyInFlight = true;
   // Patch: In Vitest, also update [data-role="next-round"] for test DOM
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -818,6 +830,11 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       "flag =",
       readyDispatchedForCurrentCooldown
     );
+  }
+
+  if (controls) {
+    controls.readyDispatched = true;
+    controls.readyInFlight = false;
   }
 
   const resolveReadyFn = controls?.resolveReady;
