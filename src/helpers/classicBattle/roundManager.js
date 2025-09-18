@@ -18,6 +18,27 @@ import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
 
+const READY_TRACE_KEY = "nextRoundReadyTrace";
+
+function resetReadyTrace() {
+  try {
+    if (typeof window === "undefined") return;
+    exposeDebugState(READY_TRACE_KEY, []);
+    exposeDebugState("nextRoundReadyTraceLast", null);
+  } catch {}
+}
+
+function appendReadyTrace(event, details = {}) {
+  try {
+    if (typeof window === "undefined") return;
+    const entry = { event, at: Date.now(), ...details };
+    const existing = readDebugState(READY_TRACE_KEY);
+    const next = Array.isArray(existing) ? [...existing, entry] : [entry];
+    exposeDebugState(READY_TRACE_KEY, next);
+    exposeDebugState("nextRoundReadyTraceLast", entry);
+  } catch {}
+}
+
 /**
  * Detect whether the classic battle orchestrator is active.
  *
@@ -233,6 +254,7 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   // Reset the ready dispatch flag for the new cooldown period
   readyDispatchedForCurrentCooldown = false;
   resetDispatchHistory("ready");
+  resetReadyTrace();
   if (typeof globalThis !== "undefined") {
     globalThis.__startCooldownCount = (globalThis.__startCooldownCount || 0) + 1;
   }
@@ -240,6 +262,9 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   // Always use the injected scheduler if provided, else fall back to realScheduler
   const activeScheduler =
     scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
+  appendReadyTrace("startCooldown", {
+    scheduler: scheduler && typeof scheduler?.setTimeout === "function" ? "injected" : "default"
+  });
   const bus = createEventBus(overrides.eventBus);
   const context = detectOrchestratorContext();
   let orchestratedMode = context.orchestrated;
@@ -247,6 +272,10 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   if (orchestratedMode && !orchestratorMachine) {
     orchestratedMode = false;
   }
+  appendReadyTrace("cooldownContext", {
+    orchestrated: orchestratedMode,
+    hasMachine: !!orchestratorMachine
+  });
   logStartCooldown();
   const controls = createCooldownControls({ emit: bus.emit });
   const btn = typeof document !== "undefined" ? document.getElementById("next-button") : null;
@@ -262,6 +291,7 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     });
   }
   const cooldownSeconds = computeNextRoundCooldown();
+  appendReadyTrace("cooldownDurationResolved", { seconds: cooldownSeconds });
   // PRD taxonomy: announce countdown start
   try {
     bus.emit("control.countdown.started", {

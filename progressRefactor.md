@@ -8,20 +8,20 @@ followed by a proposed refactoring plan:
 Current Responsibilities & Complexities:
 
 1. Battle State Management: Tracks currentRound, currentPhase, judoka data,
-   selectedStat, etc. This state is extensive and intertwined with various
-   functions.
+    selectedStat, etc. This state is extensive and intertwined with various
+    functions.
 2. Game Flow Control: Manages the progression through battle phases (e.g.,
-   STAT_SELECTION, ROUND_RESOLUTION, BATTLE_ENDED), including starting and
-   ending rounds.
+    STAT_SELECTION, ROUND_RESOLUTION, BATTLE_ENDED), including starting and
+    ending rounds.
 3. UI Updates: Directly manipulates the DOM for round prompts, stat
-   selection, scoreboard, snackbars, and battle results. This couples game
-   logic with presentation.
+    selection, scoreboard, snackbars, and battle results. This couples game
+    logic with presentation.
 4. Event Handling: Subscribes to and dispatches numerous battle-related
-   events, with complex logic within each handler.
+    events, with complex logic within each handler.
 5. Timer Management: Handles multiple setTimeout and clearTimeout calls for
-   countdowns and auto-selection, which are scattered and hard to track.
+    countdowns and auto-selection, which are scattered and hard to track.
 6. Stat Selection Logic: Determines stat selection, handles user input, and
-   implements auto-selection.
+    implements auto-selection.
 7. Round Resolution Logic: Compares stats and determines the round winner.
 8. Sound Effects: Triggers various sound effects.
 
@@ -39,67 +39,156 @@ Key Issues:
 
   ***
 
-  Proposed Refactoring Plan for Simplification:
+  Assessment of Current Implementation Status:
 
-  The core idea is to apply the Single Responsibility Principle (SRP) and
-  separate concerns into distinct, testable modules.
-  1. Introduce a Battle State Machine (`battleStateMachine.js`):
-     - Purpose: Explicitly manage the battle's lifecycle and phases (e.g.,
-       IDLE, BATTLE_STARTING, ROUND_STARTED, STAT_SELECTION,
-       ROUND_RESOLUTION, BATTLE_ENDED).
-     - Responsibility: Define states, transitions, and actions for each
-       state. It would emit events when state changes occur.
-     - Benefit: Provides a clear, visual representation of the game flow,
-       making it easier to understand and debug.
+  Upon reviewing the actual codebase, it's clear that significant refactoring
+  work has already been completed or is in progress. The proposed modules
+  largely already exist:
 
-  2. Extract Battle UI Manager (`battleUIManager.js`):
-     - Purpose: Handle all UI-related updates and rendering.
-     - Responsibility: Subscribe to events from the battleStateMachine and
-       other game logic modules, then update the DOM accordingly (e.g.,
-       showSnackbar, updateRoundPrompt, updateStatSelectionUI,
-       updateScoreboard).
-     - Benefit: Decouples game logic from presentation, allowing independent
-       development and testing of UI.
+  ✅ **Already Implemented:**
+  - `battleStateMachine.js` - Exists and manages battle states/transitions
+  - `roundResolver.js` - Exists and handles round outcome determination
+  - `selectionHandler.js` - Exists and manages stat selection logic/timers
+  - `roundUI.js` - Exists and handles UI updates for rounds
+  - `orchestrator.js` - Exists and coordinates the battle flow
 
-  3. Encapsulate Stat Selection Logic (`statSelectionManager.js`):
-     - Purpose: Manage the entire stat selection process.
-     - Responsibility: Handle stat selection timers, user input for stat
-       choice, and auto-selection logic. It would emit a STAT_SELECTED event
-       upon completion.
-     - Benefit: Isolates a complex piece of logic, making it more manageable
-       and testable.
+  ⚠️ **Partially Implemented/Needs Refinement:**
+  - The modules exist but may need better integration and clearer boundaries
+  - Some responsibilities may still be duplicated between roundManager.js and the new modules
+  - Event handling and state transitions could be more explicitly defined
 
-  4. Create a Round Resolver (`roundResolver.js`):
-     - Purpose: Determine the outcome of a single round.
-     - Responsibility: Take selected stats and judoka data, compare them,
-       and return the round winner and result.
-     - Benefit: Pure function, easily testable, and separates the "what
-       happened" from the "how it happened."
+  🔍 **Accuracy Critique:**
+  - The proposal accurately identifies the problems with the monolithic structure
+  - However, it appears to be based on an older version of the codebase
+  - The file structure diagram matches the current implementation
+  - Benefits remain valid, but the implementation status needs updating
 
-  5. Refactor `roundManager.js` into an Orchestrator:
-     - Purpose: Coordinate the interactions between the new, specialized
-       modules.
-     - Responsibility: Initialize the state machine, UI manager, stat
-       selection manager, and event bus. It would subscribe to key events
-       from these modules and trigger the next steps in the battle flow.
-     - Benefit: Becomes much smaller, focusing solely on coordination rather
-       than implementation details.
+  ***
 
-  New File Structure (Example):
+  Updated Refactoring Plan for Simplification:
 
-  1 src/helpers/classicBattle/
-  2 ├── roundManager.js // Orchestrates the battle flow
-  3 ├── battleStateMachine.js // Manages battle states and
-  transitions
-  4 ├── battleUIManager.js // Handles all UI updates
-  5 ├── statSelectionManager.js // Manages stat selection and
-  timers
-  6 ├── roundResolver.js // Determines round outcomes
-  7 ├── eventBus.js // (Existing, but used more
-  effectively)
-  8 └── ... (other existing files)
+  Given that much of the refactoring has already been implemented, the focus
+  should shift to:
 
-  Overall Benefits:
+  1. **Complete the Separation of Concerns:**
+      - Audit roundManager.js for any remaining responsibilities that should be moved
+      - Ensure clean boundaries between orchestrator.js, roundManager.js, and other modules
+      - Remove any duplicate logic between the modules
+
+  2. **Strengthen the State Machine Integration:**
+      - Ensure battleStateMachine.js is fully integrated with orchestrator.js
+      - Verify all state transitions are properly handled and events emitted
+      - Add explicit state validation and error handling
+
+  3. **Refine Module Interfaces:**
+      - Standardize how modules communicate (events vs direct calls)
+      - Add proper error boundaries and fallback mechanisms
+      - Ensure each module has clear, testable public APIs
+
+  4. **Enhance Testing Infrastructure:**
+      - Add integration tests for module interactions
+      - Ensure unit tests can mock dependencies cleanly
+      - Add performance tests for the refactored architecture
+
+  5. **Update roundManager.js to Pure Orchestration:**
+      - Remove any remaining business logic
+      - Focus solely on coordinating module interactions
+      - Add comprehensive error handling and recovery
+
+  Current File Structure (Actual Implementation):
+
+  src/helpers/classicBattle/
+  ├── roundManager.js // Still contains some logic, needs further refactoring
+  ├── orchestrator.js // Main coordinator (already exists)
+  ├── battleStateMachine.js // State management (already exists)
+  ├── roundUI.js // UI updates (already exists)
+  ├── selectionHandler.js // Stat selection (already exists)
+  ├── roundResolver.js // Round outcomes (already exists)
+  ├── eventBus.js // Event coordination (already exists)
+  └── ... (other existing files)
+
+  ***
+
+  Opportunities for Improvement:
+
+  1. **Complete the Extraction:**
+      - Identify any remaining monolithic code in roundManager.js
+      - Move timer management to a dedicated timerService.js (partially exists)
+      - Extract sound effect handling to an audioService.js
+
+  2. **Improve Module Communication:**
+      - Standardize event naming conventions
+      - Add request/response patterns for complex interactions
+      - Implement proper error propagation between modules
+
+  3. **Add Missing Abstractions:**
+      - Create a configuration service for battle settings
+      - Add a validation layer for state transitions
+      - Implement a logging/monitoring service for debugging
+
+  4. **Performance Optimizations:**
+      - Add lazy loading for non-critical modules
+      - Implement proper cleanup for event listeners and timers
+      - Add memory leak prevention measures
+
+  5. **Developer Experience:**
+      - Add comprehensive JSDoc with @pseudocode for all public functions
+      - Create clear migration guides for any breaking changes
+      - Add runtime validation for module dependencies
+
+  ***
+
+  Implementation Priority:
+
+  **High Priority (Immediate):**
+  - Audit and remove duplicate logic between roundManager.js and new modules
+  - Strengthen error handling and recovery mechanisms
+  - Add integration tests for module interactions
+
+  **Medium Priority (Next Sprint):**
+  - Complete extraction of remaining responsibilities
+  - Standardize communication patterns
+  - Add performance monitoring
+
+  **Low Priority (Future):**
+  - Add advanced features like module hot-reloading for development
+  - Implement A/B testing framework for battle mechanics
+  - Add comprehensive end-to-end testing
+
+  ***
+
+  Success Metrics:
+
+  - Reduce roundManager.js from 1370 lines to <500 lines
+  - Achieve >90% test coverage for all new modules
+  - Maintain or improve performance benchmarks
+  - Zero regressions in existing functionality
+  - Improved developer onboarding time
+
+  ***
+
+  Risk Assessment:
+
+  **High Risk:**
+  - State transition logic changes could break battle flow
+  - Event handling changes could cause missed UI updates
+  - Timer management changes could affect game pacing
+
+  **Mitigation Strategies:**
+  - Implement comprehensive integration tests before changes
+  - Add feature flags for gradual rollout
+  - Maintain detailed change logs and rollback procedures
+  - Conduct thorough manual testing of battle scenarios
+
+  **Recommended Approach:**
+  - Start with non-critical extractions (sound effects, logging)
+  - Gradually move core logic while maintaining dual implementations
+  - Use A/B testing to validate changes don't affect user experience
+  - Have rollback plan ready for any critical issues
+
+  This updated plan acknowledges the existing progress while providing a clear
+  path forward to complete the refactoring and realize the full benefits of
+  modular architecture.  Overall Benefits:
 
 - Clearer Responsibilities: Each module has a single, well-defined purpose.
 - Improved Testability: Smaller, focused modules are easier to unit test.
@@ -108,7 +197,11 @@ Key Issues:
 - Easier Debugging: Issues can be quickly isolated to a specific module.
 - Enhanced Maintainability: The codebase becomes more modular and easier to
   understand for new developers.
+- Better Performance: Enables lazy loading and targeted optimizations.
+- Future-Proof: Easier to add new features or modify existing ones.
 
-  This plan provides a clear path to significantly simplify roundManager.js. it is
-  recommended starting with the battleStateMachine.js to establish the core flow,
-  then progressively extracting other concerns.
+  This updated plan acknowledges the existing progress while providing a clear
+  path forward to complete the refactoring and realize the full benefits of
+  modular architecture. The focus should be on completing the separation of
+  concerns, strengthening module integration, and adding comprehensive testing
+  rather than starting from scratch.
