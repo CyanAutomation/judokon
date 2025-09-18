@@ -1,7 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import "./commonMocks.js";
-import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
-import { createTimerNodes, createSnackbarContainer } from "./domUtils.js";
+import { createTimerNodes } from "./domUtils.js";
+import { setupClassicBattleHooks } from "./setupTestEnv.js";
+
+const readyDispatchTracker = vi.hoisted(() => ({ events: [] }));
+
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    dispatchBattleEvent: vi.fn(async (...args) => {
+      if (args[0] === "ready") {
+        readyDispatchTracker.events.push(args);
+      }
+      return actual.dispatchBattleEvent(...args);
+    })
+  };
+});
 
 vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   initRoundSelectModal: vi.fn(async (cb) => {
@@ -39,7 +54,6 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
 
 vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
   const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
-  // Immediate expiry (no ticks)
   mockCreateRoundTimer({
     scheduled: false,
     ticks: [],
@@ -50,59 +64,101 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
 });
 
 describe("timeout → interruptRound → cooldown auto-advance", () => {
-  let timers;
+  setupClassicBattleHooks();
 
   beforeEach(async () => {
-    vi.resetModules();
-    document.body.innerHTML = "";
-    const { playerCard, opponentCard } = createBattleCardContainers();
-    const header = createBattleHeader();
-    header.querySelector("#next-round-timer")?.remove();
-    document.body.append(playerCard, opponentCard, header);
+    readyDispatchTracker.events.length = 0;
     createTimerNodes();
-    createSnackbarContainer();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
-    timers = vi.useFakeTimers();
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
   });
 
   afterEach(() => {
-    timers.clearAllTimers();
-    timers.useRealTimers();
-    vi.resetModules();
-    vi.restoreAllMocks();
+    readyDispatchTracker.events.length = 0;
     delete window.__NEXT_ROUND_COOLDOWN_MS;
   });
 
   it("advances from cooldown after interrupt with 1s auto-advance", async () => {
-    // battleMod is already initialized in beforeEach - don't call initClassicBattleTest again
-
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
+    );
+    const { onBattleEvent, offBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
     );
     const store = { selectionMade: false, playerChoice: null };
     await initClassicBattleOrchestrator(store, undefined, {});
     const machine = getBattleStateMachine();
 
-    await machine.dispatch("matchStart");
-    await machine.dispatch("ready");
-    await machine.dispatch("ready");
-    await machine.dispatch("cardsRevealed");
+    const transitions = [];
+    const recordTransition = (event) => {
+      if (event?.detail) transitions.push(event.detail);
+    };
+    onBattleEvent("battleStateChange", recordTransition);
 
-    // Simulate the timeout → interrupt → cooldown flow directly
-    // instead of relying on complex promise coordination
-    await machine.dispatch("timeoutReached");
-    await machine.dispatch("interruptRound");
+    try {
+      await machine.dispatch("matchStart");
+      await machine.dispatch("ready");
+      await machine.dispatch("ready");
+      await machine.dispatch("cardsRevealed");
 
-    // Advance timers to trigger cooldown auto-advance
-    await vi.advanceTimersByTimeAsync(1000);
+      await machine.dispatch("interruptRound");
 
-    const { getStateSnapshot } = await import("../../../src/helpers/classicBattle/battleDebug.js");
-    const snapshot = getStateSnapshot();
+      const { dispatchBattleEvent } = await import(
+        "../../../src/helpers/classicBattle/eventDispatcher.js"
+      );
+      const readyCallsBeforeAdvance = dispatchBattleEvent.mock.calls.filter(
+        ([eventName]) => eventName === "ready"
+      );
+      expect(readyCallsBeforeAdvance).toHaveLength(0);
 
-    // After timeout → interrupt → cooldown → advance, we should be in the next round
-    // If auto-select is enabled, we may be in roundDecision; otherwise waitingForPlayerAction
-    expect(["roundStart", "waitingForPlayerAction", "roundDecision"]).toContain(snapshot?.state);
+      const transitionCheckpoint = transitions.length;
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
+        ([eventName]) => eventName === "ready"
+      );
+      const readyDispatchesDuringAdvance =
+        readyCallsAfterAdvance.length - readyCallsBeforeAdvance.length;
+      expect(readyDispatchesDuringAdvance).toBe(1);
+      expect(readyDispatchTracker.events.length).toBe(1);
+      expect(readyDispatchTracker.events[0]?.[0]).toBe("ready");
+
+      const interruptTransitions = transitions.slice(
+        Math.max(0, transitionCheckpoint - 2),
+        transitionCheckpoint
+      );
+      expect(interruptTransitions).toEqual([
+        expect.objectContaining({
+          from: "waitingForPlayerAction",
+          to: "interruptRound",
+          event: "interruptRound"
+        }),
+        expect.objectContaining({ from: "interruptRound", to: "cooldown", event: "restartRound" })
+      ]);
+
+      const recentTransitions = transitions.slice(transitionCheckpoint);
+      expect(recentTransitions).toEqual([
+        expect.objectContaining({ from: "cooldown", to: "roundStart", event: "ready" }),
+        expect.objectContaining({
+          from: "roundStart",
+          to: "waitingForPlayerAction",
+          event: "cardsRevealed"
+        })
+      ]);
+
+      const readyTransitionsAfterAdvance = recentTransitions.filter((t) => t.event === "ready");
+      expect(readyTransitionsAfterAdvance).toHaveLength(1);
+
+      const { getStateSnapshot } = await import(
+        "../../../src/helpers/classicBattle/battleDebug.js"
+      );
+      const snapshot = getStateSnapshot();
+
+      expect(snapshot?.state).toBe("waitingForPlayerAction");
+    } finally {
+      offBattleEvent("battleStateChange", recordTransition);
+    }
   }, 10000);
 });
