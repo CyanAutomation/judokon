@@ -934,6 +934,13 @@ try {
  *
  * @param {Error|string} error - The error that occurred.
  * @returns {void}
+ * @pseudocode
+ * 1. Extract error message from Error object or convert to string.
+ * 2. Get the snackbar container element from the DOM.
+ * 3. Clear any existing snackbar content.
+ * 4. Create a new error snackbar with the message and retry button.
+ * 5. Add click handler to retry button that reloads the page.
+ * 6. Show the snackbar with animation.
  */
 export function showFatalInitError(error) {
   const message = error instanceof Error ? error.message : String(error);

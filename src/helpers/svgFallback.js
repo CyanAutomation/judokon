@@ -91,6 +91,11 @@ export function applySvgFallback(fallbackSrc = DEFAULT_FALLBACK) {
  * Reset module state. Only intended for use in tests.
  *
  * @returns {void}
+ * @pseudocode
+ * 1. Iterate through all tracked images.
+ * 2. Remove error event listeners for each tracked image.
+ * 3. Clear the fallback state WeakMap.
+ * 4. Reset the tracked images Set.
  */
 export function __resetSvgFallbackStateForTests() {
   trackedImages.forEach((img) => {
@@ -114,6 +119,9 @@ export function __resetSvgFallbackStateForTests() {
  *
  * @param {HTMLImageElement} img
  * @returns {ReturnType<typeof createFallbackState> | undefined}
+ * @pseudocode
+ * 1. Look up the image in the fallback state WeakMap.
+ * 2. Return the fallback state object if found, undefined otherwise.
  */
 export function __getSvgFallbackStateForTests(img) {
   return fallbackState.get(img);

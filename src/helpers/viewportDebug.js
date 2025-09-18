@@ -9,6 +9,7 @@ import { recordDebugState } from "./debugState.js";
  * 3. Otherwise toggle the `simulate-viewport` class on `document.body`.
  *
  * @param {boolean} enabled - Whether to apply the simulated viewport width.
+ * @returns {void}
  */
 
 export function toggleViewportSimulation(enabled) {

@@ -7,6 +7,11 @@
  *
  * @param {Function} fn - Function to debounce.
  * @returns {Function} Debounced function.
+ * @pseudocode
+ * 1. Store the latest arguments and cancel any pending animation frame.
+ * 2. In test mode, execute immediately to avoid frame delays.
+ * 3. Otherwise, schedule the function to run on the next animation frame.
+ * 4. Clear the animation frame ID after execution.
  */
 export function rafDebounce(fn) {
   let rafId = null;
@@ -32,6 +37,10 @@ export function rafDebounce(fn) {
  *
  * @param {number} n - Number of frames to wait.
  * @param {Function} fn - Function to run.
+ * @returns {void}
+ * @pseudocode
+ * 1. If no frames to wait, execute the function immediately.
+ * 2. Otherwise, schedule recursive call for next frame with decremented counter.
  */
 export function runAfterFrames(n, fn) {
   if (n <= 0) {
@@ -46,6 +55,11 @@ export function runAfterFrames(n, fn) {
  *
  * @param {Function} workFn - Function that performs work and returns true if more work remains, false if done.
  * @param {number} budgetMs - Time budget in milliseconds per frame.
+ * @returns {void}
+ * @pseudocode
+ * 1. Record the start time for the current frame.
+ * 2. Execute work function repeatedly until it returns false or budget is exceeded.
+ * 3. If more work remains, schedule continuation on the next animation frame.
  */
 export function withFrameBudget(workFn, budgetMs = 5) {
   const start = performance.now();

@@ -169,6 +169,9 @@ export function stop() {
  * Pause the scheduler without clearing callbacks.
  *
  * @returns {void}
+ * @pseudocode
+ * 1. Set the paused flag to true.
+ * 2. This prevents any scheduled tasks from executing.
  */
 export function pause() {
   paused = true;
@@ -178,6 +181,9 @@ export function pause() {
  * Resume the scheduler.
  *
  * @returns {void}
+ * @pseudocode
+ * 1. Set the paused flag to false.
+ * 2. This allows scheduled tasks to execute again.
  */
 export function resume() {
   paused = false;
