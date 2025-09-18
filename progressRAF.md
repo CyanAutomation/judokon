@@ -7,7 +7,7 @@ Minor Animation Logic Bugs: A few rAF-driven animations exhibit correctness issu
 . Adjusting this logic (start animation from the previous displayed values instead of after setting final) is a low-effort fix that improves polish.
 Proper rAF Cancellation in Teardown: Most rAF loops are canceled on teardown (e.g. carousel scroll sync and modal positioning – good practice
 
-). However, one carousel init loop (_afterConnectedInit) is not canceled if the component is destroyed early
+). However, one carousel init loop (\_afterConnectedInit) is not canceled if the component is destroyed early
 
 . Ensuring all rAFs are canceled on unmount (and clearing any references) will prevent potential memory leaks (quick fix, low risk).
 Animation Timing & Jank: Generally animations use rAF timestamps and delta-time correctly, but one case (typewriter text effect) could accumulate a large backlog if the tab is inactive, then output many characters in one frame
@@ -17,7 +17,7 @@ Estimated Benefits: Consolidating rAF loops and pausing them when idle/hidden wi
 Findings by File & Location
 
 1. src/components/ScoreboardView.js (Score Tween Animation)
-Code: Uses a per-update rAF loop to animate score changes
+   Code: Uses a per-update rAF loop to animate score changes
 
 . It immediately sets the final score in the DOM, then parses the old values from cached DOM nodes and animates from old to new by repeatedly replacing innerHTML each frame.
 Issue: Correctness & Performance – The logic causes a flicker: the final score is rendered instantly (line 130) before the tween starts, so users might briefly see the end value jump in then count up from the old value
@@ -37,22 +37,20 @@ const startVals = { p: currentPlayerScoreText, o: currentOpponentScoreText };
 Regression Risk: Minimal – changes are confined to score display. Test by scoring a point: the score should smoothly count without showing the final value first. Check both increasing and no-change scenarios (the code already exits if values unchanged).
 Sources: Code in updateScore showing immediate set and rAF loop
 
-.
-2. src/components/ScoreboardView.js (Missing rAF Cancel on Unmount)
-Code: The scoreboard stores the rAF ID in this._scoreRaf and cancels any prior animation when starting a new one
+. 2. src/components/ScoreboardView.js (Missing rAF Cancel on Unmount)
+Code: The scoreboard stores the rAF ID in this.\_scoreRaf and cancels any prior animation when starting a new one
 
 . However, there’s no explicit cancellation if the component is disposed mid-animation.
 Issue: Maintainability – If the scoreboard element were removed or the game screen changed while an animation is active, the rAF loop would continue running (updating a now off-screen element). This is a minor memory leak and could throw an error if this.scoreEl becomes null.
 Severity: Low; Confidence: Medium (no evidence of user-facing bug, but it’s a best-practice lapse).
 Why it’s a problem: Uncanceled rAFs can attempt DOM updates on detached nodes or keep objects alive longer than necessary. In this case, the risk is low (scoreboard likely persists for the game duration), but it’s good hygiene to stop animations on teardown.
-Fix: On component unmount or navigation away (if applicable in this app), call cancelAnimationFrame(this._scoreRaf). For example, if there’s a destroy method or using window.addEventListener('unload'), ensure it invokes cancelAnimationFrame for any active_scoreRaf. Since _scoreAnimId guards against outdated loops, simply canceling is sufficient. Diff example:
+Fix: On component unmount or navigation away (if applicable in this app), call cancelAnimationFrame(this.\_scoreRaf). For example, if there’s a destroy method or using window.addEventListener('unload'), ensure it invokes cancelAnimationFrame for any active_scoreRaf. Since \_scoreAnimId guards against outdated loops, simply canceling is sufficient. Diff example:
 // in ScoreboardView destroy/cleanup:
-if (this._scoreRaf) cancelAnimationFrame(this._scoreRaf);
+if (this.\_scoreRaf) cancelAnimationFrame(this.\_scoreRaf);
 Testing: Simulate leaving the battle page during an ongoing score animation and confirm no errors occur and no lingering rAF activity (e.g., via console logs).
 Sources: Scoreboard rAF setup without a global teardown
 
-.
-3. src/helpers/typewriter.js (Typewriter Effect Loop)
+. 3. src/helpers/typewriter.js (Typewriter Effect Loop)
 Code: Implements a typewriter animation via rAF, adding one character at a time with a target delay (speed) between chars
 
 . It accumulates elapsed time (acc) and uses a while loop to catch up if frames are slow
@@ -63,18 +61,17 @@ Code: Implements a typewriter animation via rAF, adding one character at a time 
 Issue: Performance – The accumulator can lead to “leap frames”: if the tab is inactive or the browser throttles rAF, a large acc may build up and the loop will output many characters in one frame. This could result in a long task and visually insta-complete the text when the tab regains focus (defeating the gradual effect). No frame time clamp is applied to limit how much work happens in one tick.
 Severity: Low (occurs mainly when tab was hidden or extreme frame drops; normal usage is fine); Confidence: High (based on code logic).
 Why it’s a problem: A very large acc can make the while(acc >= speed) loop iterate dozens or hundreds of times in one callback, potentially causing a noticeable frame stutter and battery hit. It also means the user won’t see the effect if it skips ahead. Best practice is to clamp acc (e.g. treat any delta > certain threshold as a smaller jump) or insert yields.
-Fix: Clamp or chunk the accumulated time. For example, acc = Math.min(acc, speed*5) to never process more than 5 characters per frame. Alternatively, output a maximum N characters per rAF tick, then continue on the next frame (even if acc still >= speed). This ensures even if the tab was in the background for 5 seconds, the text appears quickly but not all at once in one frame.
+Fix: Clamp or chunk the accumulated time. For example, acc = Math.min(acc, speed\*5) to never process more than 5 characters per frame. Alternatively, output a maximum N characters per rAF tick, then continue on the next frame (even if acc still >= speed). This ensures even if the tab was in the background for 5 seconds, the text appears quickly but not all at once in one frame.
 // Pseudo-fix: limit loop iterations per frame
 let iterations = 0;
 while (acc >= speed && i < text.length && iterations < 5) {
-  ... output char ...
-  iterations++;
+... output char ...
+iterations++;
 }
 Regression risk: Low. The effect timing might change slightly (in extreme conditions), but the end result (completed text) is the same. Verify by enabling the typewriter effect and ensuring text still types out smoothly, including after switching tabs and back (should finish without massive jump).
 Sources: Typewriter rAF loop code
 
-.
-4. src/helpers/typewriter.js (Cancellation & Timestamp Use)
+. 4. src/helpers/typewriter.js (Cancellation & Timestamp Use)
 Code/Context: The typewriter uses the rAF timestamp (ts) and calculates delta time correctly, storing the last timestamp and updating acc each frame
 
 . It also cancels the animation if the target element is no longer in the DOM
@@ -86,8 +83,7 @@ Actionable fix: N/A (already handled above). Just note that this pattern is good
 . Retain these aspects in any refactor.
 Sources: Typewriter implementation
 
-.
-5. src/helpers/showSnackbar.js (Snackbar Fade-In)
+. 5. src/helpers/showSnackbar.js (Snackbar Fade-In)
 Code: After inserting the snackbar element into the DOM, it calls requestAnimationFrame(() => bar.classList.add("show"))
 
 . This triggers a CSS transition (the .show class presumably initiates a fade-in via CSS). Timers handle the fade-out and removal later.
@@ -98,71 +94,67 @@ Observation: The implementation is sound. One minor consistency note: it uses th
 Severity: N/A (no bug); Recommendation: Maintainability (Low). If test frameworks need control over rAF, you could introduce a scheduler.requestAnimationFrame shim or simply leave as is, given it’s trivial.
 Sources: Snackbar rAF usage
 
-.
-6. src/helpers/carousel/scrollSync.js (Scroll Event Coalescing)
+. 6. src/helpers/carousel/scrollSync.js (Scroll Event Coalescing)
 Code: On each scroll event, it immediately updates the carousel page index (syncPageFromScroll()), then cancels any pending rAF and schedules a new one to re-run the sync on the next frame
 
-. The _rafId stored on the controller is used to avoid piling up redundant calls.
+. The \_rafId stored on the controller is used to avoid piling up redundant calls.
 Issue: Performance & Logic – This effectively samples scroll position twice: once synchronously on event, again on the next frame. The intent is likely to capture final scroll position after momentum or to debounce rapid events. However, doing an immediate update on every event could be overkill if events fire at high rate (it may cause a flurry of ctrl.update() calls). A pure trailing-edge approach (update only in rAF) might suffice and reduce workload.
 Severity: Low (carousel scroll is user-driven and the operations are not heavy); Confidence: Medium.
 Why it’s a problem: The double invocation means ctrl.update() (which likely re-syncs nav buttons and markers) runs for every scroll tick plus once more after. This could cause minor layout thrash if those updates manipulate DOM (markers highlighting etc.) in quick succession. Ideally, one would coalesce to the last known scroll position per frame.
 Fix: Simplify to a typical rAF debounce: do not update state immediately, only schedule the rAF if not already scheduled. For example:
 const onScroll = () => {
-  if (ctrl._suppressScrollSync) return;
-  if (!ctrl._rafId) {
-    ctrl._rafId = requestAnimationFrame(() => {
-      ctrl._rafId = null;
-      if (!ctrl._suppressScrollSync) syncPageFromScroll();
-    });
-  }
+if (ctrl.\_suppressScrollSync) return;
+if (!ctrl.\_rafId) {
+ctrl.\_rafId = requestAnimationFrame(() => {
+ctrl.\_rafId = null;
+if (!ctrl.\_suppressScrollSync) syncPageFromScroll();
+});
+}
 };
 This way, during a burst of scroll events, syncPageFromScroll runs at most once per frame (using the last scrollLeft). You might call one sync after scrolling ends if needed (the rAF inherently does that). The immediate call could be dropped unless there’s a visual need for ultra-responsive paging (which markers already handle via their own scroll listener).
 Regression Risk: Low. The carousel should still track pages correctly. Test by doing a slow scroll vs a fling – page indices and active indicators should update correctly and only once per frame.
 Sources: Scroll sync implementation
 
-.
-7. src/helpers/carousel/controller.js (Unbounded rAF Polling)
-Code: In _afterConnectedInit, if the carousel container is not yet in the DOM, it uses requestAnimationFrame to call itself again (polling each frame)
+. 7. src/helpers/carousel/controller.js (Unbounded rAF Polling)
+Code: In \_afterConnectedInit, if the carousel container is not yet in the DOM, it uses requestAnimationFrame to call itself again (polling each frame)
 
-. There’s no limit or cancellation until the container connects. The controller’s destroy() cancels this._rafId (used for scroll sync) but not this polling rAF (since it isn’t stored)
+. There’s no limit or cancellation until the container connects. The controller’s destroy() cancels this.\_rafId (used for scroll sync) but not this polling rAF (since it isn’t stored)
 
 .
 Issue: Performance/Memory – If the carousel is never attached (or detaches before connecting), this creates a spin-wait that runs forever. Even if eventually attached, if the controller were destroyed during the polling, the orphaned rAF callback still references this and could execute on a destroyed object.
 Severity: Medium (unlikely in normal flow, but can lead to needless work or odd errors in edge cases/tests); Confidence: High.
 Why it’s a problem: Busy-waiting each frame can waste CPU if a component is in a long detached state. And not clearing it on destroy means a memory leak and potential attempt to access a nullified object property.
-Fix: Track this rAF similar to scroll sync’s _rafId. For example, reuse this._rafId or a separate _attachRafId to store the ID from requestAnimationFrame and cancel it in destroy(). E.g.:
+Fix: Track this rAF similar to scroll sync’s \_rafId. For example, reuse this.\_rafId or a separate \_attachRafId to store the ID from requestAnimationFrame and cancel it in destroy(). E.g.:
 if (!this.container.isConnected) {
-    this._rafId = requestAnimationFrame(this._afterConnectedInit.bind(this));
-    return;
+this.\_rafId = requestAnimationFrame(this.\_afterConnectedInit.bind(this));
+return;
 }
 // ...else container connected...
 Then in destroy():
-if (this._rafId) cancelAnimationFrame(this._rafId);
+if (this.\_rafId) cancelAnimationFrame(this.\_rafId);
 This ensures the loop stops. Additionally, consider a max retry count or switching to a MutationObserver for a more event-driven approach (complexity likely not needed; rAF is fine when properly managed).
-Testing: Create a carousel but do not append it to DOM, then destroy it. Verify that_afterConnectedInit doesn’t continue firing (perhaps by logging or by checking that this._rafId gets canceled). In normal cases, ensure the carousel still initializes markers when eventually connected.
+Testing: Create a carousel but do not append it to DOM, then destroy it. Verify that_afterConnectedInit doesn’t continue firing (perhaps by logging or by checking that this.\_rafId gets canceled). In normal cases, ensure the carousel still initializes markers when eventually connected.
 Sources: Carousel_afterConnectedInit code
 
- and absence of corresponding cancel in destroy
+and absence of corresponding cancel in destroy
 
-.
-8. src/helpers/carousel/controller.js (Visibility Pause – Missing)
+. 8. src/helpers/carousel/controller.js (Visibility Pause – Missing)
 Observation: The carousel controller (and other loops) do not listen to visibilitychange events. For example, if the user switches tab mid-carousel animation or during an auto-scroll, the rAF loops (scroll sync polling, etc.) keep running (albeit at throttled 1Hz). While browser throttling mitigates this, best practice is to explicitly pause. The codebase does implement pause logic for the timer (using pauseOnHidden via TimerController), but no general hook for rAF loops.
 Issue: Performance – Without explicit handling, background animations continue to tick, possibly causing unexpected catch-up behavior when returning (e.g., typewriter finishing instantly as noted, or the carousel’s second-tick callbacks for drift detection continuing in background). It’s not a user-visible bug but impacts efficiency.
 Severity: Low/Medium (depends on duration hidden; impact is cumulative CPU usage); Confidence: High.
 Why it’s important: Freezing game animations when not visible saves power and prevents unnecessary work. It also avoids any timing glitches when resuming (since everything can be cleanly resumed via a known state).
 Fix: Implement a global pause/resume for the main scheduler and any standalone loops. For example, use document.addEventListener('visibilitychange', ...):
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    scheduler.stop();  // stop the RAF loop
-    // pause others if needed (e.g., ScoreboardView could cancel its RAF)
-  } else {
-    scheduler.start();
-  }
+if (document.hidden) {
+scheduler.stop(); // stop the RAF loop
+// pause others if needed (e.g., ScoreboardView could cancel its RAF)
+} else {
+scheduler.start();
+}
 });
 For loops not on the central scheduler (scoreboard, etc.), you could integrate them with the scheduler or manually handle: e.g., do not start the scoreboard animation if document.hidden (or immediately complete it). Since rAF is anyway throttled, this is an optimization; the more robust solution is to hook into visibility events as above or via Page Lifecycle API.
 Testing: Run the game, start an animation (score change or typewriter), then hide the tab for a few seconds and return. Verify that either the animation was paused and resumes or at least doesn’t complete entirely off-screen. Monitor CPU usage in background before and after fix (should drop to near-zero if rAF loops are stopped).
-Sources: No explicit code to cite (absence of visibilitychange handling). Timer’s drift check partly accounts for hidden time via pauseOnHidden, but the general frame loop does not.
-9. src/helpers/classicBattle/roundUI.js (Double rAF usage)
+Sources: No explicit code to cite (absence of visibilitychange handling). Timer’s drift check partly accounts for hidden time via pauseOnHidden, but the general frame loop does not. 9. src/helpers/classicBattle/roundUI.js (Double rAF usage)
 Code: After a round is resolved, the code schedules a UI reset of stat button states using a double requestAnimationFrame: requestAnimationFrame(() => requestAnimationFrame(runReset))
 
 . If rAF isn’t available (e.g., in tests or unusual env), it falls back to setTimeout(runReset, 32).
@@ -173,8 +165,7 @@ Fix: Consider simplifying the timing: since a 2-frame delay is effectively ~30�
 Testing: Ensure that after a round ends, the stat button highlight is cleared only after a brief visible duration. Any change in method should preserve that user-visible timing. The test detection of fake timers (preferTimeout) should also be verified if this logic is touched – possibly by directly offering a test override hook.
 Sources: Double rAF scheduling in code
 
-.
-10. General Observation – Scheduler vs setTimeout Coordination
+. 10. General Observation – Scheduler vs setTimeout Coordination
 Context: The project uses a custom frame scheduler (src/utils/scheduler.js) for rAF-based callbacks and a timer scheduler (src/helpers/scheduler.js) for timeouts (to allow fake timers in tests). In most places, this abstraction works well (e.g., battleUI.resetStatButtons uses scheduler.onFrame to delay enabling buttons
 
 ). However, there is some inconsistency: e.g., showSnackbar uses both clearTimeout (global) and scheduler.clearTimeout on its timer IDs
@@ -207,12 +198,12 @@ Uses rAF timestamp (avoids Date.now drift): Pass. Animations use the time argume
 . This ensures timing is tied to frame time, not wall-clock, preventing drift.
 Delta-time and dt clamping: Partial. Scoreboard computes a normalized progress (k) and clamps it with Math.min(1, …)
 
- – good. Typewriter uses an accumulator to handle delta properly, but doesn’t clamp extreme values (could output a lot in one go). Minor clamping could be added (see Finding 3). No other long-running loops that need dt normalization were observed.
+– good. Typewriter uses an accumulator to handle delta properly, but doesn’t clamp extreme values (could output a lot in one go). Minor clamping could be added (see Finding 3). No other long-running loops that need dt normalization were observed.
 Batch DOM reads vs writes (no intermixing): Pass. The code generally separates reads and writes. E.g., carousel scroll handler reads scrollLeft and then toggles classes (writes) after
 
 . The scoreboard animation avoids reading layout during the loop (it only writes text). Typewriter reads no layout metrics at all, just writes text. Modal positioning reads a header height then writes a CSS variable, all within one rAF tick
 
- – a read-then-write (single pass) pattern, which is okay. We found no evidence of pathological read→write→read sequences in one frame.
+– a read-then-write (single pass) pattern, which is okay. We found no evidence of pathological read→write→read sequences in one frame.
 Avoids layout thrashing: Pass. No code does repeated forced reflow in a tight loop. Accesses like element.offsetWidth or getBoundingClientRect are present (carousel marker init
 
 ), but they aren’t followed by another layout read after a write in the same frame. The double rAF trick in roundUI is specifically to avoid thrashing the layout when removing highlights
@@ -234,11 +225,11 @@ Uses cancelAnimationFrame IDs safely: Pass. Everywhere an rAF is stored, the cod
 
 ; modal positioning cancels pending resize rAF on each new event and on cleanup
 
-. The use of _scoreAnimId in scoreboard is another safety to ignore outdated frames
+. The use of \_scoreAnimId in scoreboard is another safety to ignore outdated frames
 
 . These guards prevent conflicts and “double-running” frames.
 No recursive rAF re-entry causing stutter: Pass. We saw no evidence of rAF callbacks that synchronously trigger another rAF in a way that could pile up (except the deliberate double rAF in roundUI for delay, which is controlled). The rAF loops generally schedule the next frame at the end of the current one, which is the intended pattern. No heavy recursive calls were found.
-Deterministic animations (no uncontrolled globals): Pass. Animations rely on local state or props. E.g., scoreboard uses this._scoreAnimId to tie the loop to the latest call, avoiding interference from overlapping updates
+Deterministic animations (no uncontrolled globals): Pass. Animations rely on local state or props. E.g., scoreboard uses this.\_scoreAnimId to tie the loop to the latest call, avoiding interference from overlapping updates
 
 . No use of global mutable state was seen to drive animations, so outcomes should be deterministic given the same inputs.
 CSS/JS Animation coordination: Pass. The codebase avoids animating the same CSS property via both CSS and JS at the same time. CSS transitions are used for opacity fades (snackbar, round message) while JS handles discrete changes (score numbers, adding/removing classes). The snackbar uses rAF to add a class, then CSS handles the fade – no double-driving. The only potential overlap is if an element had an ongoing CSS transition and JS modifies it, but we didn’t find such a case. The approach is generally well-separated.
@@ -255,19 +246,19 @@ Use of GPU-friendly transforms: N/A or Pass. The codebase itself doesn’t expli
 Error handling in rAF loops: Pass. The custom scheduler catches errors in each callback to avoid breaking the loop
 
 . This is great for robustness – one animation error won’t halt others. Elsewhere, most rAF callbacks are simple enough not to need try/catch. (Minor note: swallowing errors completely, as the scheduler does, can hide issues; logging the error at least in dev mode would be helpful. But from a stability standpoint, it’s fine.) We didn’t encounter any rAF loop that could “die” silently without these guards.
-Memory safety (remove refs, stop loops on unload): Mostly Pass. Cleanup routines remove event listeners and cancel timers/frames (carousel destroy() clears listeners and cancels _rafId
+Memory safety (remove refs, stop loops on unload): Mostly Pass. Cleanup routines remove event listeners and cancel timers/frames (carousel destroy() clears listeners and cancels \_rafId
 
 , modal cleanup() removes its rAF and events
 
 ). The global scheduler.stop() clears all callbacks and stops the loop
 
- (used in tests/reset
+(used in tests/reset
 
 ). One gap: no explicit global call on page unload – but if the page is unloading, the JS context is gone anyway, so not a big issue. All in all, the code is mindful of cleaning up intervals/frames to prevent leaks, with a couple of exceptions already noted (carousel attach polling).
 Anti-Patterns Detected
 Multiple rAF Loops Competing: Instead of one coordinated game loop, we have disparate rAF schedules. For example, the ScoreboardView runs its own rAF tween
 
- while the global scheduler is likely also running for other UI updates, and a typewriter may be running concurrently
+while the global scheduler is likely also running for other UI updates, and a typewriter may be running concurrently
 
 . These could contend for the main thread and execute in an undefined order each frame. Example: The scoreboard’s requestAnimationFrame(step) might execute before or after the scheduler’s onFrame callbacks in a given frame, which could lead to subtle ordering issues if they ever interacted (currently they don’t directly conflict, but it’s not coordinated). Solution: Use a centralized rAF loop (the existing utils/scheduler) to schedule these updates in a known order or at least reduce overhead.
 Immediate DOM Mutation followed by rAF (potential flicker): In the scoreboard update, setting innerHTML to final content before starting the rAF interpolation is an anti-pattern. It causes a state where the DOM is at end state, then gets overwritten with intermediate states. The anti-pattern is doing a state mutation that you intend to animate, outside the animation loop. Solution: Initialize the animation from the current state and apply the final state at the end (or ensure the first rAF tick starts from the old value). This avoids visual jumps.
@@ -278,7 +269,7 @@ Using rAF for Non-visual Timing: The global scheduler’s onSecondTick is effect
 
 . While not egregious – this ensures second ticks pause when frames pause – it’s an unusual use of rAF for what could be done with a setInterval. It can be considered an anti-pattern if overused, but here it’s moderate and ties into animation loops. Recommendation: This is acceptable, but ensure such logic is lightweight and consider pausing it on hidden tabs (e.g., no need to fire “second ticks” when game isn’t visible).
 Mixing Scheduling Mechanisms: In showSnackbar, mixing direct setTimeout and a custom scheduler, and in roundUI mixing rAF with timeouts, are patterns that can lead to confusion. Ideally, one abstraction should handle delays. The anti-pattern is having multiple sources of truth for timing (the global event loop and a custom scheduler), which can lead to missed cancellations or duplicate calls. Solution: Standardize on one approach. For instance, always use the injected scheduler for testable code paths. This ensures that a timeout set is always cleared via the same scheduler’s clearTimeout, preventing scenarios where a fake timer might not be cleared by a real clearTimeout.
-Not Cancelling rAF on Component Removal: As noted, the carousel _afterConnectedInit loop continuing after destroy is an anti-pattern (continuing work after the object is logically dead). It’s essentially an event leak (though using rAF instead of event listeners). Solution: Always store rAF IDs and clear them when the component unmounts or the purpose is achieved. The code generally does this well except that case.
+Not Cancelling rAF on Component Removal: As noted, the carousel \_afterConnectedInit loop continuing after destroy is an anti-pattern (continuing work after the object is logically dead). It’s essentially an event leak (though using rAF instead of event listeners). Solution: Always store rAF IDs and clear them when the component unmounts or the purpose is achieved. The code generally does this well except that case.
 Large Jumps in Animation State on Resume: This relates to the typewriter not clamping acc. If the tab is backgrounded, when it resumes the animation might jump to completion, which is an anti-pattern from a UX perspective (animation not consistent). It’s caused by not guarding against large time deltas. Solution: Cap the delta or skip the animation if too much time passed (e.g., if user wasn’t watching, perhaps just show final state). This keeps animations feeling smooth and intentional.
 Legacy rAF Polyfill Approach: The RoundSelectModal’s constructor building this.raf and this.caf with a vendor check is fine (it falls back to setTimeout). But using setTimeout(cb, 0) as a rAF fallback is a bit of a known anti-pattern – typically one would use ~16ms to mimic ~60fps. However, since it’s only for tests or very old browsers, the impact is minor. Just note that 0ms timeout can fire faster than a frame, potentially causing more frequent calls than intended. It’s unlikely to matter here, but it’s a subtlety. Solution: If a truly consistent polyfill was needed, use setTimeout(cb, 16) for ~60fps. Again, this is minor and mostly theoretical since modern environments have rAF.
 (Most other identified issues are relatively small or already addressed in earlier sections.)
@@ -287,7 +278,7 @@ Phase 1: Quick Wins (Small Edits ≤ 10 lines each)
 Fix Scoreboard Flicker: Remove the immediate scoreEl.innerHTML assignment of final values in updateScore. Instead, start the rAF loop from the current displayed values. This 1–2 line removal will prevent the end-value flash
 
 . Impact: Smoother score updates; Test: Score changes animate without showing the final value beforehand.
-Cancel Carousel Attach rAF: Modify CarouselController._afterConnectedInit() to store the rAF ID and cancel it in destroy(). (~3 lines: assign to this._rafId and check in destroy). Impact: Prevent possible leak/jank if carousel is disposed early; Test: In a test, create and destroy a controller before attachment – ensure no _afterConnectedInit runs afterwards.
+Cancel Carousel Attach rAF: Modify CarouselController.\_afterConnectedInit() to store the rAF ID and cancel it in destroy(). (~3 lines: assign to this.\_rafId and check in destroy). Impact: Prevent possible leak/jank if carousel is disposed early; Test: In a test, create and destroy a controller before attachment – ensure no \_afterConnectedInit runs afterwards.
 Standardize Snackbar Timers: In showSnackbar, replace clearTimeout(fadeId) with scheduler.clearTimeout(fadeId) (since fadeId was set via scheduler.setTimeout). Likewise for removeId. This 2-line change ensures we’re always clearing via the same scheduler that created the timeout. Impact: More consistent behavior under test fakes; Test: Run snackbar unit tests with fake timers – ensure no warnings or leaks.
 Clamp Typewriter dt (if quick fix possible): Add a clamp in the while loop, e.g. iterations++ and break after, say, 5 chars per frame. This is <5 lines and will stop extreme cases. Impact: Avoid potential jank after long tab suspension; Test: Programmatically simulate a large acc (e.g., call step(ts) with a ts jump) and verify that not all remaining chars print in one go.
 Add Scheduler Auto-Start (optional): To guard against any scenario where scheduler.onFrame is called without start(), we could auto-start on first callback registration. For instance, in onFrame(cb), after adding to map, if not running, call start(). This is a defensive change (~2 lines) ensuring the frame loop runs when needed. Impact: Prevent dev errors where one forgets to start the loop; Test: Call scheduler.onFrame in isolation in a dev console and see that the callback begins firing next frame. (This is optional if we assume proper usage, but improves robustness.)
@@ -318,78 +309,78 @@ Proposed Utilities (Drop-in Helpers)
 To support the above refactors and future-proof the codebase, here are some utility functions tailored for our needs:
 rafDebounce(handler): Wraps an event handler so that it runs at most once per animation frame (uses the latest event data). Example usage:
 const onScroll = rafDebounce((event) => {
-  // use event data (e.g., event.target.scrollLeft)
-  syncPageFromScroll();
+// use event data (e.g., event.target.scrollLeft)
+syncPageFromScroll();
 });
 element.addEventListener('scroll', onScroll);
 Implementation:
 function rafDebounce(fn) {
-  let rafId = null, lastArgs;
-  return function(...args) {
-    lastArgs = args;
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(() => {
-      rafId = null;
-      fn.apply(this, lastArgs);
-    });
-  };
+let rafId = null, lastArgs;
+return function(...args) {
+lastArgs = args;
+if (rafId) cancelAnimationFrame(rafId);
+rafId = requestAnimationFrame(() => {
+rafId = null;
+fn.apply(this, lastArgs);
+});
+};
 }
 This ensures even if scroll/resize fires 100 times, fn runs only on the next frame with the last event’s args. This utility can replace the ad-hoc patterns in scrollSync and modal resize. It handles canceling prior queued frames automatically.
 createRafLoop({ update, render, onStop }): A small helper to manage a continuous rAF loop with control methods. Our current scheduler covers global needs, but if we want a dedicated loop (e.g., for a game tick), this utility helps.
 Usage:
 const gameLoop = createRafLoop({
-  update: (dt) => { /*update game state using dt */ },
-  render: () => { /* render DOM updates */ },
-  onStop: () => { /* cleanup or reset as needed*/ }
+update: (dt) => { /_update game state using dt _/ },
+render: () => { /_ render DOM updates _/ },
+onStop: () => { /_ cleanup or reset as needed_/ }
 });
 gameLoop.start();
 // ... later
 gameLoop.stop();
 Implementation: (pseudocode)
 function createRafLoop({ update, render, onStart, onStop }) {
-  let rafId, lastTime;
-  function frame(time) {
-    const dt = lastTime ? (time - lastTime) : 0;
-    lastTime = time;
-    if (update) update(dt);
-    if (render) render();
-    rafId = requestAnimationFrame(frame);
-  }
-  return {
-    start() {
-      if (rafId) cancelAnimationFrame(rafId);
-      if (onStart) onStart();
-      lastTime = 0;
-      rafId = requestAnimationFrame(frame);
-    },
-    stop() {
-      cancelAnimationFrame(rafId);
-      rafId = null;
-      if (onStop) onStop();
-    }
-  };
+let rafId, lastTime;
+function frame(time) {
+const dt = lastTime ? (time - lastTime) : 0;
+lastTime = time;
+if (update) update(dt);
+if (render) render();
+rafId = requestAnimationFrame(frame);
+}
+return {
+start() {
+if (rafId) cancelAnimationFrame(rafId);
+if (onStart) onStart();
+lastTime = 0;
+rafId = requestAnimationFrame(frame);
+},
+stop() {
+cancelAnimationFrame(rafId);
+rafId = null;
+if (onStop) onStop();
+}
+};
 }
 This loop uses dt for time-based updates and separates state updates from rendering if desired. In our app, we might not need a separate game loop (since the game is largely event-driven), but this is useful for future interactive features or if we decided to run all animations through one orchestrator.
 withFrameBudget(taskFn, budgetMs = 5): Helps to split a heavy task across multiple frames. If taskFn cannot complete within budgetMs, it should return a function or data to continue next frame. For example, if we had to process a huge JSON or a large array of updates in small chunks:
 function processItems(items) {
-  // ... do some items
-  if (remainingItems.length) {
-    return () => processItems(remainingItems); // return continuation
-  }
+// ... do some items
+if (remainingItems.length) {
+return () => processItems(remainingItems); // return continuation
+}
 }
 scheduler.onFrame(() => {
-  const cont = processItems(allItems);
-  if (cont) scheduler.onFrame(cont);
+const cont = processItems(allItems);
+if (cont) scheduler.onFrame(cont);
 });
 But manually doing that is cumbersome; withFrameBudget can automate it:
 Implementation (conceptual):
 function withFrameBudget(fn, budgetMs = 5) {
-  const start = performance.now();
-  let result;
-  do {
-    result = fn();
-  } while (!document.hidden && performance.now() - start < budgetMs && result === undefined);
-  return result;
+const start = performance.now();
+let result;
+do {
+result = fn();
+} while (!document.hidden && performance.now() - start < budgetMs && result === undefined);
+return result;
 }
 Here fn should return undefined while work remains and something truthy (or a special value) when done. This utility would call fn repeatedly in one frame until time is up. If fn returns a continuation (like a closure or index pointer) when it cannot finish, the rAF loop can call it next frame. This pattern might be overkill for our current state, but it’s useful to have ready if we encounter any slowness.
 measureFrame(fn): A debug utility to measure how long a given rAF callback takes, for profiling in dev mode. Example:
@@ -397,14 +388,14 @@ scheduler.onFrame(measureFrame(updateScoreAnimated));
 It would console.table or log the execution time of updateScoreAnimated and perhaps keep stats (average, max). Implementation would use performance.now() around the call. We could gate it behind a debug flag so it doesn’t always run. This helps identify if any frame callbacks exceed, say, 10ms, indicating a bottleneck to address.
 readThenWrite(readFn, writeFn): Utility to ensure a DOM read happens before the next style write, to avoid forced reflows. This essentially does:
 requestAnimationFrame(() => {
-  const data = readFn();
-  requestAnimationFrame(() => writeFn(data));
+const data = readFn();
+requestAnimationFrame(() => writeFn(data));
 });
 In practice, this introduces a one-frame delay between measurement and application. For example, if we needed to measure element sizes after layout and then apply some adjustments, we could wrap it in readThenWrite. Our code doesn’t currently need explicit separation because it’s simple, but if we had a complex scenario (like measuring multiple elements then setting styles on them), this utility could enforce the pattern easily.
 Usage:
 readThenWrite(
-  () => element.offsetHeight,
-  (h) => { element.style.height = h + 'px'; }
+() => element.offsetHeight,
+(h) => { element.style.height = h + 'px'; }
 );
 This guarantees the measurement is from one frame and the style change happens in the next, avoiding a layout recompute within the same frame.
 (This utility effectively mimics what batching frameworks do. It may not be necessary given the current code, but it’s good to have in our toolbox.)
@@ -423,9 +414,9 @@ Add a simple counter for dropped frames or long frames. E.g., in the scheduler�
 For example:
 let lastFrame = performance.now();
 scheduler.onFrame((t) => {
-  const frameTime = t - lastFrame;
-  lastFrame = t;
-  if (frameTime > 34) { console.warn('Jank frame:', frameTime); }
+const frameTime = t - lastFrame;
+lastFrame = t;
+if (frameTime > 34) { console.warn('Jank frame:', frameTime); }
 });
 This would warn if a frame was delayed (which might indicate a long task the previous frame).
 Track rAF callback execution time distribution. We could instrument each major callback (score update, etc.) with performance.now() before/after and log if > X ms. In test runs or using a special URL param (like ?perfDebug=1), we could output these metrics.
@@ -444,7 +435,7 @@ PR-Ready Diffs (Key Fixes)
 Below are some critical code changes in diff format, ready to apply:
 A. Scoreboard Flicker Fix (ScoreboardView.js):
 Remove immediate DOM update and start rAF from current values.
-  const endVals = { p: Number(player) || 0, o: Number(opponent) || 0 };
+const endVals = { p: Number(player) || 0, o: Number(opponent) || 0 };
 
 - this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
 - if (!playerSpan || !opponentSpan) return;
@@ -454,79 +445,79 @@ Remove immediate DOM update and start rAF from current values.
 - this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
 - return;
 - }
-   const parse = (el) => { … };
-   const startVals = { p: parse(playerSpan), o: parse(opponentSpan) };
-   if (startVals.p === endVals.p && startVals.o === endVals.o) return;
-   …
-   const step = (t) => {
-     if (id !== this._scoreAnimId) return;
-     … // compute k, curP, curO
-     this.scoreEl.innerHTML = `<span data-side="player">You: ${curP}</span>\n<span data-side="opponent">Opponent: ${curO}</span>`;
-     if (k < 1) {
-       this._scoreRaf = requestAnimationFrame(step);
-     }
-   };
-Explanation: We now skip setting the final HTML upfront unless we need to initialize it (no prior spans). The animation uses the playerSpan and opponentSpan that were already in the DOM as start values. This prevents the blink of the final value.
-B. Carousel AfterConnected Cancellation (CarouselController.destroy in controller.js):
-  destroy() {
-     for (const { target, event, handler } of this._listeners) {
-       target.removeEventListener(event, handler);
-     }
-     this._listeners = [];
-
-- if (this._rafId) cancelAnimationFrame(this._rafId);
-
-- if (this._rafId) cancelAnimationFrame(this._rafId);
-- // If an attach-init loop is still running, cancel it
-- if (typeof this._attachRafId === "number") cancelAnimationFrame(this._attachRafId);
-     clearTimeout(this._resizeTimer);
-     …
-And in_afterConnectedInit:
-   if (!this.container.isConnected) {
-
-- requestAnimationFrame(() => this._afterConnectedInit());
-
-- this._attachRafId = requestAnimationFrame(() => this._afterConnectedInit());
-     return;
-   }
-Explanation: We store the rAF ID used for polling in a new property (_attachRafId) and clear it on destroy. This prevents the loop from continuing post-destroy. (Alternatively, reuse_rafId for this dual purpose, but a separate variable makes it clear.)
-C. Visibility Pause (in a central place, e.g., main.js or the scheduler module):
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    import('./utils/scheduler.js').then(sched => sched.stop()).catch(()=>{});
-    // Additionally, pause any standalone animations if needed, e.g.:
-    // ScoreboardView.instance?.cancelAnimation(); (if we had a reference)
-  } else {
-    import('./utils/scheduler.js').then(sched => sched.start()).catch(()=>{});
+  const parse = (el) => { … };
+  const startVals = { p: parse(playerSpan), o: parse(opponentSpan) };
+  if (startVals.p === endVals.p && startVals.o === endVals.o) return;
+  …
+  const step = (t) => {
+  if (id !== this.\_scoreAnimId) return;
+  … // compute k, curP, curO
+  this.scoreEl.innerHTML = `<span data-side="player">You: ${curP}</span>\n<span data-side="opponent">Opponent: ${curO}</span>`;
+  if (k < 1) {
+  this.\_scoreRaf = requestAnimationFrame(step);
   }
-});
-(This assumes the scheduler is exported in a way we can call start/stop globally. In our code, we might integrate it differently. The above is a simplistic approach. We ensure not to double-start if already running, etc.)
-D. Debounce Utility Usage Example (Carousel scroll):
-In scrollSync.js:
+  };
+  Explanation: We now skip setting the final HTML upfront unless we need to initialize it (no prior spans). The animation uses the playerSpan and opponentSpan that were already in the DOM as start values. This prevents the blink of the final value.
+  B. Carousel AfterConnected Cancellation (CarouselController.destroy in controller.js):
+  destroy() {
+  for (const { target, event, handler } of this.\_listeners) {
+  target.removeEventListener(event, handler);
+  }
+  this.\_listeners = [];
+
+- if (this.\_rafId) cancelAnimationFrame(this.\_rafId);
+
+- if (this.\_rafId) cancelAnimationFrame(this.\_rafId);
+- // If an attach-init loop is still running, cancel it
+- if (typeof this.\_attachRafId === "number") cancelAnimationFrame(this.\_attachRafId);
+  clearTimeout(this.\_resizeTimer);
+  …
+  And in_afterConnectedInit:
+  if (!this.container.isConnected) {
+
+- requestAnimationFrame(() => this.\_afterConnectedInit());
+
+- this.\_attachRafId = requestAnimationFrame(() => this.\_afterConnectedInit());
+  return;
+  }
+  Explanation: We store the rAF ID used for polling in a new property (\_attachRafId) and clear it on destroy. This prevents the loop from continuing post-destroy. (Alternatively, reuse_rafId for this dual purpose, but a separate variable makes it clear.)
+  C. Visibility Pause (in a central place, e.g., main.js or the scheduler module):
+  document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+  import('./utils/scheduler.js').then(sched => sched.stop()).catch(()=>{});
+  // Additionally, pause any standalone animations if needed, e.g.:
+  // ScoreboardView.instance?.cancelAnimation(); (if we had a reference)
+  } else {
+  import('./utils/scheduler.js').then(sched => sched.start()).catch(()=>{});
+  }
+  });
+  (This assumes the scheduler is exported in a way we can call start/stop globally. In our code, we might integrate it differently. The above is a simplistic approach. We ensure not to double-start if already running, etc.)
+  D. Debounce Utility Usage Example (Carousel scroll):
+  In scrollSync.js:
 
 - ctrl.container.addEventListener("scroll", onScroll);
 
 - ctrl.container.addEventListener("scroll", onScroll);
-Actually, we would refactor onScroll entirely using rafDebounce:
-import { rafDebounce } from "../utils/rafUtils.js"; // new utility file
-// ...
-ctrl.container.addEventListener("scroll", rafDebounce(() => {
-  if (ctrl._suppressScrollSync) return;
+  Actually, we would refactor onScroll entirely using rafDebounce:
+  import { rafDebounce } from "../utils/rafUtils.js"; // new utility file
+  // ...
+  ctrl.container.addEventListener("scroll", rafDebounce(() => {
+  if (ctrl.\_suppressScrollSync) return;
   syncPageFromScroll();
   // We might not even need a trailing second call; removing it:
   // (The rafDebounce ensures this runs on the next frame)
-}));
-And remove the manual_rafId logic.
-Explanation: Using rafDebounce will automatically schedule one syncPageFromScroll per frame, using the latest scroll position. If multiple scroll events fire, they’ll be coalesced. The explicit cancel stored in _rafId becomes unnecessary (the utility handles it). This simplifies the code and ensures we don’t double-invoke.
-E. One-Shot scheduler frame helper: Instead of the pattern frameId = onFrame(() => { ...; cancel(frameId) }) repeated in battleUI, we could add to utils/scheduler.js:
-export function onNextFrame(cb) {
+  }));
+  And remove the manual_rafId logic.
+  Explanation: Using rafDebounce will automatically schedule one syncPageFromScroll per frame, using the latest scroll position. If multiple scroll events fire, they’ll be coalesced. The explicit cancel stored in \_rafId becomes unnecessary (the utility handles it). This simplifies the code and ensures we don’t double-invoke.
+  E. One-Shot scheduler frame helper: Instead of the pattern frameId = onFrame(() => { ...; cancel(frameId) }) repeated in battleUI, we could add to utils/scheduler.js:
+  export function onNextFrame(cb) {
   const id = onFrame(time => {
-    cb(time);
-    cancel(id);
+  cb(time);
+  cancel(id);
   });
   return id;
-}
-Then refactor resetStatButtons and showResult in battleUI.js to use onNextFrame for those one-off actions. E.g.:
+  }
+  Then refactor resetStatButtons and showResult in battleUI.js to use onNextFrame for those one-off actions. E.g.:
 
 - frameId = onFrame(() => {
 - el.style.opacity = 0;
@@ -536,18 +527,18 @@ Then refactor resetStatButtons and showResult in battleUI.js to use onNextFrame 
 - onNextFrame(() => {
 - el.style.opacity = 0;
 - });
-This removes the need for explicit cancel(frameId) calls in user code, reducing chances of error.
-(This diff is conceptual; actual file paths and imports would need adjusting.)
-Each of these diffs should be reviewed in isolation and tested. Most are straightforward. The larger consolidation (using scheduler for scoreboard, etc.) is not shown as a diff due to scope, but would involve changing the pattern of using requestAnimationFrame directly to using scheduler.onFrame. For example, scoreboard update might do:
-this._scoreAnimId = scheduler.onFrame(step);
-and inside step, if k>=1, do scheduler.cancel(this._scoreAnimId) instead of using cancelAnimationFrame. This way, the global loop drives it. We’d ensure scheduler.start() is running (perhaps triggered at game start).
-Open Questions & Assumptions
-Scheduler Start Trigger: We did not find an explicit call to scheduler.start() in the repository, yet features like TimerController rely on onSecondTick callbacks
+  This removes the need for explicit cancel(frameId) calls in user code, reducing chances of error.
+  (This diff is conceptual; actual file paths and imports would need adjusting.)
+  Each of these diffs should be reviewed in isolation and tested. Most are straightforward. The larger consolidation (using scheduler for scoreboard, etc.) is not shown as a diff due to scope, but would involve changing the pattern of using requestAnimationFrame directly to using scheduler.onFrame. For example, scoreboard update might do:
+  this.\_scoreAnimId = scheduler.onFrame(step);
+  and inside step, if k>=1, do scheduler.cancel(this.\_scoreAnimId) instead of using cancelAnimationFrame. This way, the global loop drives it. We’d ensure scheduler.start() is running (perhaps triggered at game start).
+  Open Questions & Assumptions
+  Scheduler Start Trigger: We did not find an explicit call to scheduler.start() in the repository, yet features like TimerController rely on onSecondTick callbacks
 
 . It’s possible that the act of using onFrame/onSecondTick is assumed to have been preceded by a scheduler.start() call in some init code (perhaps in a main or facade not included in our search results). If this is not being called, then those callbacks wouldn’t fire. We assume there is a startup call (or tests manually start it via battleEngineFacade or similar). This is an area to double-check. If it turns out the scheduler wasn’t started, that’s a bug – the quick fix is to auto-start on first use or call start() in a central init.
 Carousel Marker Updates: There is a slight overlap in carousel UI updates: the scroll event listener (in addScrollMarkers) updates the marker .active classes and counter text immediately on scroll
 
-, while the controller’s scrollSync also updates ctrl.currentPage and calls ctrl.update() which likely also updates markers (via _syncMarkers())
+, while the controller’s scrollSync also updates ctrl.currentPage and calls ctrl.update() which likely also updates markers (via \_syncMarkers())
 
 . We assume these are in sync, but there’s a possibility of conflict (e.g., the scroll event might update markers slightly ahead of the controller’s logic). Our debouncing change (Findings 6 and 9) might actually reduce redundant marker updates. We should verify that markers still behave correctly – specifically, that after a scroll, exactly one marker is active and corresponds to the page, and that no flicker occurs between the two update mechanisms. It might be that one of these is vestigial. If it becomes an issue, we could disable the immediate marker update and rely solely on the controller’s unified update (or vice versa).
 CSS Animations Not Reviewed: Our audit focused on JS. It assumes CSS animations (like .snackbar.show or .animate-card) are implemented in a performant way (using opacity or transform). We didn’t inspect the CSS, but if any CSS transitions animate layout properties (like height or top), they could cause jank. We assume those are done with transform/opacity, given the modern approach. If not, it would be worth adjusting the CSS to use GPU-friendly properties (e.g., translating a card off-screen instead of setting left from 100% to 0). Without the CSS file, this is an assumption.
