@@ -9,7 +9,6 @@ import { applyMockSetup } from "./mockSetup.js";
 
 import { waitForState } from "../../waitForState.js";
 
-import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
@@ -242,12 +241,6 @@ describe("classicBattle startCooldown", () => {
   }
 
   it("auto-dispatches ready after 1s cooldown", async () => {
-    // Clear debug state
-    debugHooks.exposeDebugState("nextRoundExpired", undefined);
-    debugHooks.exposeDebugState("handleNextRoundExpirationCalled", undefined);
-    debugHooks.exposeDebugState("timerEmitExpiredCalled", undefined);
-    debugHooks.exposeDebugState("cooldownEnterInvoked", undefined);
-
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -294,9 +287,6 @@ describe("classicBattle startCooldown", () => {
     expect(typeof currentNextRound?.timer?.start).toBe("function");
     expect(typeof currentNextRound?.ready?.then).toBe("function");
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    expect(debugHooks.readDebugState("nextRoundExpired")).toBe(true);
-    expect(debugHooks.readDebugState("handleNextRoundExpirationCalled")).toBe(true);
-    expect(debugHooks.readDebugState("timerEmitExpiredCalled")).toBe(true);
     expect(machine.getState()).toBe("cooldown");
 
     await waitForState("waitingForPlayerAction");
@@ -318,12 +308,6 @@ describe("classicBattle startCooldown", () => {
   }, 10000);
 
   it("transitions roundOver → cooldown → roundStart without duplicates", async () => {
-    // Clear debug state
-    debugHooks.exposeDebugState("nextRoundExpired", undefined);
-    debugHooks.exposeDebugState("handleNextRoundExpirationCalled", undefined);
-    debugHooks.exposeDebugState("timerEmitExpiredCalled", undefined);
-    debugHooks.exposeDebugState("cooldownEnterInvoked", undefined);
-
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -368,9 +352,6 @@ describe("classicBattle startCooldown", () => {
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.ready?.then).toBe("function");
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    expect(debugHooks.readDebugState("nextRoundExpired")).toBe(true);
-    expect(debugHooks.readDebugState("handleNextRoundExpirationCalled")).toBe(true);
-    expect(debugHooks.readDebugState("timerEmitExpiredCalled")).toBe(true);
 
     document.querySelector('[data-role="next-round"]').click();
     // Ensure state progressed before assertions

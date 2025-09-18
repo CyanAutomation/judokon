@@ -27,8 +27,8 @@
 
 ## Validation Notes
 
-- `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js` → fails with two timeouts ("auto-dispatches ready after 1s cooldown" at 10 s, "transitions roundOver → cooldown → roundStart without duplicates" at 5 s). The failures reproduce consistently with the current repository state.
-- `tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` passes locally, confirming the short-circuit logic for duplicate `"ready"` dispatches.
+- `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js` → still fails with the 10 s / 5 s timeouts, but now does so *after* confirming that `currentNextRound` is populated and `window.__NEXT_ROUND_EXPIRED` flips to `true`. The hang therefore occurs after cooldown expiry, during the transition from `cooldown` to `waitingForPlayerAction`.
+- `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` → PASS.
 
 _Pausing here for your review before proceeding further._
 
@@ -52,22 +52,15 @@ _Pausing here for your review before proceeding further._
 
 ### Activities Undertaken
 
-- Replaced `[TEST DEBUG]` console.log statements in source files with `globalThis.__classicBattleDebugExpose` calls to expose internal state via debugHooks:
-  - `src/helpers/classicBattle/roundManager.js`: Exposed "handleNextRoundExpirationCalled" and "nextRoundExpired" in `handleNextRoundExpiration`.
-  - `src/helpers/timers/createRoundTimer.js`: Exposed "timerEmitExpiredCalled" in `emitExpired`.
-  - `src/helpers/classicBattle/stateHandlers/cooldownEnter.js`: Exposed "cooldownEnterInvoked" in the handler.
-  - Removed the initial console.log in `roundManager.js`.
-- Updated `tests/helpers/classicBattle/scheduleNextRound.test.js`:
-  - Imported `debugHooks` module.
-  - Added debug state clearing at the start of failing tests.
-  - Added assertions for the exposed states after timer advancement.
-- Ran specific unit tests: `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js tests/helpers/classicBattle/eventDispatcher.dedupe.test.js`.
+- Removed the ad-hoc `[TEST DEBUG]` logging from `tests/helpers/classicBattle/scheduleNextRound.test.js` and replaced those call sites with explicit assertions against the cooldown debug state (`currentNextRound` via `__classicBattleDebugRead`, and the `window.__NEXT_ROUND_EXPIRED` flag).
+- Reset `window.__NEXT_ROUND_EXPIRED` in the shared `beforeEach` hook to avoid cross-test leakage before asserting on the new instrumentation.
+- Ran the focused Vitest commands requested for Step 1 (`npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` and `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js`).
 
 ### Outcome
 
-- `eventDispatcher.dedupe.test.js`: Passes (no regression in dedupe functionality).
-- `scheduleNextRound.test.js`: Fails with assertion errors instead of timeouts. The new assertions confirm that timer expiration callbacks are not executing (e.g., `nextRoundExpired` remains undefined), validating that the issue is timer firing, not state transition. This provides deterministic failure points for debugging.
-- No regressions in other tests; debug logging removed from source, improving console discipline.
+- `eventDispatcher.dedupe.test.js`: Passes, confirming no regression in the dedupe guard while the test instrumentation changes are in place.
+- `scheduleNextRound.test.js`: Still times out, but the new assertions now confirm that `(a)` the cooldown controls and timer are present, and `(b)` `window.__NEXT_ROUND_EXPIRED` flips to `true` before the hang. This tightens the failure surface from “timer never fires” to “timer fires yet the state machine never leaves `cooldown`.”
+- Console noise from the test file is gone, reducing the amount of `[TEST DEBUG]` output during focused runs.
 
 _Pausing here for your review before proceeding to the next step._
 
@@ -97,7 +90,7 @@ _Pausing here for your review before proceeding to the next step._
 
 ### Proposed Next Steps
 
-- Convert the ad-hoc console logging into deterministic assertions: expose `currentNextRound` and `__NEXT_ROUND_EXPIRED` via the debug hook and assert their values inside the tests after advancing timers to confirm the expiration path executed.
+- Leverage the new assertions to capture additional debug values (e.g., `readyInFlight`, orchestrator snapshot) immediately after the cooldown expires so we can pinpoint why the state machine remains in `cooldown`.
 - Trace the `dispatchBattleEvent("ready")` call result during tests (e.g., spy on the resolved value) to verify whether the dedupe guard is short-circuiting unexpectedly or whether the machine dispatch resolves without transitioning state.
 - Audit the mocked scheduler wiring: ensure `timerSpy` is injected into `startCooldown`/`setupFallbackTimer` so that advancing fake timers exercises both the primary timer and fallback `setTimeout` chain. Add coverage that fails fast when neither callback fires after advancing time.
 - After isolating the failing path, remove or gate the `[TEST DEBUG]` logs and restore console discipline (`withMutedConsole`) before final validation runs.

@@ -1,4 +1,5 @@
 import { stopTimer } from "../battleEngineFacade.js";
+import { exposeDebugState } from "../debugHooks.js";
 
 /**
  * Create a round timer that emits tick, drift, and expiration events.
@@ -96,11 +97,7 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   async function emitExpired() {
-    try {
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        globalThis.__classicBattleDebugExpose("timerEmitExpiredCalled", true);
-      }
-    } catch {}
+    exposeDebugState("timerEmitExpiredCalled", true);
     emit("expired");
   }
 

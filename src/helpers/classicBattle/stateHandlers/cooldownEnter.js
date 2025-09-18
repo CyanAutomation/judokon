@@ -1,5 +1,6 @@
 import { startCooldown } from "../roundManager.js";
 import { initStartCooldown } from "../cooldowns.js";
+import { exposeDebugState } from "../debugHooks.js";
 
 /**
  * onEnter handler for `cooldown` state.
@@ -12,11 +13,7 @@ import { initStartCooldown } from "../cooldowns.js";
  * 2. Otherwise schedule inter-round cooldown.
  */
 export async function cooldownEnter(machine, payload) {
-  try {
-    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-      globalThis.__classicBattleDebugExpose("cooldownEnterInvoked", true);
-    }
-  } catch {}
+  exposeDebugState("cooldownEnterInvoked", true);
   if (payload?.initial) {
     await initStartCooldown(machine);
     return;
