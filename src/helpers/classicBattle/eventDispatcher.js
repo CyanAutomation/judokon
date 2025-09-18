@@ -138,4 +138,3 @@ export async function dispatchBattleEvent(eventName, payload) {
     return false;
   }
 }
-
