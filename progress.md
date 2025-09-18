@@ -203,3 +203,47 @@ Below are the primary issues observed during QA with concise reproduction steps 
 7. Footer navigation accessible but breakable
    - Repro steps: click bottom nav during a (supposed) match — navigation occurs without confirmation.
    - Impact: players can accidentally leave a match; PRD requires confirmation.
+
+## Status update (as of 2025-09-18)
+
+This section summarizes which audit items from the `battleClassic.html` review have been addressed (Done) and which still require work (Outstanding). It also lists short next actions for the outstanding items to help prioritize follow-ups.
+
+Done
+
+- Stabilize bootstrap and surface fatal errors
+  - Changes implemented: `showFatalInitError` helper added and used in `src/pages/battleClassic.init.js`; silent `catch {}` blocks replaced with `console.error()` and UI surface hooks. `window.__battleInitComplete` is set on successful init. (See "Completed Phase 1" in this document.)
+  - Verification: unit and integration tests for bootstrap passed; Playwright smoke/bootstrap tests mentioned in the "Completed Phase 1" section passed in the reported runs.
+
+Outstanding (remaining work)
+
+- Deterministic test hooks and test coverage
+  - Status: partially done — `window.__battleInitComplete` exposed, but an explicit documented test helper and a short integration test asserting the presence of `window.battleStore` and the `battle:init-complete` event should be added/landed in the test suite.
+  - Next action: add/land `tests/classicBattle/init-complete.test.js` asserting `window.__battleInitComplete === true`, `window.battleStore` exists, and the `battle:init-complete` event fires.
+
+- Modal accessibility & click-target issues
+  - Status: not yet implemented in codebase (modal focus management, key handlers, and overlay pointer-event fixes remain to be done).
+  - Next action: update `src/components/modalRoundSelect.js` (or the module that implements the match-length modal) to:
+    - Focus the primary button on open.
+    - Add Arrow and number key handling.
+    - Ensure overlay uses `pointer-events: auto` and has a z-index above interactive content.
+
+- Stat buttons ARIA & readiness marker
+  - Status: not yet implemented.
+  - Next action: update `renderStatButtons` to add `aria-describedby` and set `data-buttons-ready="true"` after DOM insertion and a microtask tick (or requestAnimationFrame) and add a unit test to assert the behavior.
+
+- Scoreboard timer and opponent feedback
+  - Status: not fully verified after Phase 1 changes — timers rely on engine lifecycle and should start after the init-complete hook is confirmed working; opponent action feedback UI may require targeted fixes after the modal/stat fixes.
+  - Next action: after deterministic init hooks and stat rendering are verified, re-run Playwright E2E tests and add a small integration test that advances at least one round to validate timers and opponent feedback.
+
+- Footer navigation protection
+  - Status: not implemented.
+  - Next action: implement body attribute `data-battle-active="true"` when match starts and either disable footer nav via CSS or intercept clicks to show a confirmation dialog.
+
+Notes and follow-up
+
+- The most critical remaining step is to finish deterministic test hooks and modal accessibility fixes; these unblock the other items (stat rendering, timers, opponent feedback) and let QA re-run E2E checks reliably.
+- If you prefer, I can implement the modal focus/keyboard handling and the stat button ARIA changes next; tell me which to prioritize and I will start a focused change, run tests, and update this file again.
+
+Awaiting review
+
+- I've updated this file with the current state and proposed next actions. Please review and tell me which outstanding item you'd like me to implement next (suggestion: modal accessibility first), or if you want me to proceed with the deterministic test additions.
