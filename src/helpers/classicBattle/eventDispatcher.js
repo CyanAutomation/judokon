@@ -6,6 +6,16 @@ const recentDispatches = new Map();
 const machineIds = new WeakMap();
 let machineIdCounter = 0;
 
+function getTimestamp() {
+  try {
+    if (typeof process !== "undefined" && typeof process.hrtime === "function" && typeof process.hrtime.bigint === "function") {
+      const ns = process.hrtime.bigint();
+      return Number(ns / 1000000n);
+    }
+  } catch {}
+  return Date.now();
+}
+
 function getMachineId(machine) {
   if (machine && (typeof machine === "object" || typeof machine === "function")) {
     if (!machineIds.has(machine)) {
@@ -22,13 +32,21 @@ function getDispatchKey(eventName, machine) {
 }
 
 function registerDispatch(eventName, machine) {
+  if (eventName !== "ready") {
+    return { shouldSkip: false, key: null, timestamp: 0 };
+  }
   const key = getDispatchKey(eventName, machine);
   if (!key) {
     return { shouldSkip: false, key: null, timestamp: 0 };
   }
-  const now = Date.now();
+  const now = getTimestamp();
   const last = recentDispatches.get(key);
   if (typeof last === "number" && now - last < DEDUPE_WINDOW_MS) {
+    try {
+      if (typeof process !== "undefined" && process.env?.VITEST && typeof console !== "undefined") {
+        console.log("[TEST DEBUG] dedupe: skipping", eventName, now - last);
+      }
+    } catch {}
     return { shouldSkip: true, key, timestamp: last };
   }
   recentDispatches.set(key, now);
@@ -40,6 +58,18 @@ function registerDispatch(eventName, machine) {
     }, DEDUPE_WINDOW_MS);
   }
   return { shouldSkip: false, key, timestamp: now };
+}
+
+export function resetDispatchHistory(eventName) {
+  if (!eventName) {
+    recentDispatches.clear();
+    return;
+  }
+  for (const key of Array.from(recentDispatches.keys())) {
+    if (key.startsWith(`${eventName}:`)) {
+      recentDispatches.delete(key);
+    }
+  }
 }
 
 function resetDispatchKey(key, timestamp) {
@@ -101,6 +131,11 @@ export async function dispatchBattleEvent(eventName, payload) {
   }
 
   // DEBUG: Log all event dispatches
+  try {
+    if (typeof process !== "undefined" && process.env?.VITEST && typeof console !== "undefined") {
+      console.log("[TEST DEBUG] dispatchBattleEvent:", eventName);
+    }
+  } catch {}
   if (typeof console !== "undefined") {
     console.error(
       "[TEST DEBUG] dispatchBattleEvent: dispatching",

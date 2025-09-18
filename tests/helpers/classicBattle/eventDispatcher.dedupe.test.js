@@ -28,22 +28,22 @@ describe("dispatchBattleEvent dedupe", () => {
     delete globalThis.__classicBattleDebugRead;
   });
 
-  it("short-circuits concurrent duplicate dispatches", async () => {
+  it("short-circuits rapid duplicate dispatches", async () => {
     await withMutedConsole(async () => {
-      const firstPromise = dispatchBattleEvent("ready");
+      const firstResult = await dispatchBattleEvent("ready");
       expect(machine.dispatch).toHaveBeenCalledTimes(1);
+      expect(firstResult).toBe("dispatched");
 
-      const secondPromise = dispatchBattleEvent("ready");
+      const secondResult = await dispatchBattleEvent("ready");
       expect(machine.dispatch).toHaveBeenCalledTimes(1);
-      expect(secondPromise).toBe(firstPromise);
+      expect(secondResult).toBe(true);
 
+      vi.advanceTimersByTime(25);
       await vi.runAllTimersAsync();
-      await expect(firstPromise).resolves.toBe("dispatched");
-      await expect(secondPromise).resolves.toBe("dispatched");
 
-      const thirdPromise = dispatchBattleEvent("ready");
+      const thirdResult = await dispatchBattleEvent("ready");
       expect(machine.dispatch).toHaveBeenCalledTimes(2);
-      await expect(thirdPromise).resolves.toBe("dispatched");
+      expect(thirdResult).toBe("dispatched");
     });
   });
 });

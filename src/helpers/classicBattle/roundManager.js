@@ -13,7 +13,7 @@ import { showSnackbar } from "../showSnackbar.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
-import { dispatchBattleEvent } from "./eventDispatcher.js";
+import { dispatchBattleEvent, resetDispatchHistory } from "./eventDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { startCoolDown as engineStartCoolDown } from "../battleEngineFacade.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
@@ -227,6 +227,7 @@ let currentNextRound = null;
 export function startCooldown(_store, scheduler, overrides = {}) {
   // Reset the ready dispatch flag for the new cooldown period
   readyDispatchedForCurrentCooldown = false;
+  resetDispatchHistory("ready");
   // Always use the injected scheduler if provided, else fall back to realScheduler
   const activeScheduler =
     scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
