@@ -16,7 +16,7 @@ This directory contains unit tests for Classic Battle helpers.
 - `statButtons.state.test.js`: toggles stat buttons based on battle state.
 - `statSelection.test.js`: resolves round outcomes and match-end logic. Outcome message and score checks use a table-driven `describe.each`.
 - `statSelectionTiming.test.js`: stat selection timing behaviors (auto-select, countdown resets, stall recovery, pause/resume).
-- `stateTransitions.test.js`: validates `src/helpers/classicBattle/stateTable.js` transitions.
+- `stateTransitions.test.js`: validates `src/helpers/classicBattle/stateTable.js` transitions using the production `createStateManager` state table and hooks.
 - `timerService.drift.test.js`: falls back to messaging when timers drift.
 - `timerService.nextRound.test.js`: manages cooldown and Next button interaction.
 - `nextButton.countdownFinished.test.js`: emits `countdownFinished` on Next clicks, even without the button.
@@ -35,6 +35,7 @@ This directory contains unit tests for Classic Battle helpers.
 - Do not commit `it.skip`; use `test.todo` or remove obsolete tests instead.
 - Timer drift, state exposure, and Next button behavior belong in `timerService` tests; cooldown tests cover scheduling and ready dispatch.
 - Avoid duplicating coverage across suites. Interrupt behavior triggered by browser events (such as `pagehide`, global `error`, or `unhandledrejection`) is covered exclusively in `interruptHandlers.test.js`.
+- When verifying new state-machine behavior, extend `stateTransitions.test.js` or targeted suites such as `interruptFlow.test.js`. These suites already construct focused state tables via `createStateManager`, so ad-hoc temporary suites with simplified tables should be retired once the production tests cover the scenario.
 
 ### Usage
 
