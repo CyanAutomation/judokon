@@ -309,6 +309,9 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     wireCooldownTimer(controls, btn, cooldownSeconds, activeScheduler, helperOptions);
   }
   currentNextRound = controls;
+  try {
+    exposeDebugState("currentNextRound", controls);
+  } catch {}
   return controls;
 }
 
@@ -930,7 +933,12 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   });
   controls.timer = timer;
   try {
-    console.error("[TEST ERROR] wireCooldownTimer: controls.timer set?", !!controls.timer, "hasStart?", typeof controls.timer?.start === "function");
+    console.error(
+      "[TEST ERROR] wireCooldownTimer: controls.timer set?",
+      !!controls.timer,
+      "hasStart?",
+      typeof controls.timer?.start === "function"
+    );
   } catch {}
   registerSkipHandler(() => {
     try {
@@ -959,7 +967,10 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   try {
     controls.timer.start(cooldownSeconds);
     try {
-      console.error("[TEST ERROR] wireCooldownTimer: controls.timer.start called for", cooldownSeconds);
+      console.error(
+        "[TEST ERROR] wireCooldownTimer: controls.timer.start called for",
+        cooldownSeconds
+      );
     } catch {}
   } catch (err) {
     console.error("[TEST DEBUG] controls.timer.start error", err);
@@ -982,7 +993,12 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     try {
       schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
       try {
-        console.error("[TEST ERROR] wireCooldownTimer: schedulerFallbackId", schedulerFallbackId, "ms", ms);
+        console.error(
+          "[TEST ERROR] wireCooldownTimer: schedulerFallbackId",
+          schedulerFallbackId,
+          "ms",
+          ms
+        );
       } catch {}
     } catch {}
   } catch {}

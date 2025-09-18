@@ -68,27 +68,27 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     }
     let remaining = Math.ceil(total);
     emitTick(remaining);
-      let timeoutId = null;
-      const tick = () => {
-        try {
-          // Decrement remaining and emit tick/expired accordingly. Use a
-          // simple setTimeout chain to work reliably with fake timers.
-          remaining -= 1;
-          if (remaining > 0) {
-            emitTick(remaining);
-            timeoutId = setTimeout(tick, 1000);
-          } else {
-            timeoutId = null;
-            emitExpired();
-          }
-        } catch (e) {
-          try {
-            if (timeoutId) clearTimeout(timeoutId);
-          } catch {}
+    let timeoutId = null;
+    const tick = () => {
+      try {
+        // Decrement remaining and emit tick/expired accordingly. Use a
+        // simple setTimeout chain to work reliably with fake timers.
+        remaining -= 1;
+        if (remaining > 0) {
+          emitTick(remaining);
+          timeoutId = setTimeout(tick, 1000);
+        } else {
+          timeoutId = null;
+          emitExpired();
         }
-      };
-      // Start the tick loop after 1 second
-      timeoutId = setTimeout(tick, 1000);
+      } catch (e) {
+        try {
+          if (timeoutId) clearTimeout(timeoutId);
+        } catch {}
+      }
+    };
+    // Start the tick loop after 1 second
+    timeoutId = setTimeout(tick, 1000);
   }
 
   function emitTick(remaining) {
