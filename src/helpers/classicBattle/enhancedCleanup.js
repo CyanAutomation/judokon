@@ -89,6 +89,10 @@ class ResourceRegistry {
 /**
  * Create a new resource registry.
  *
+ * @pseudocode
+ * 1. Instantiate a new ResourceRegistry object.
+ * 2. Return the registry instance for tracking resources.
+ *
  * @returns {ResourceRegistry} New resource registry instance
  */
 export function createResourceRegistry() {
@@ -97,6 +101,12 @@ export function createResourceRegistry() {
 
 /**
  * Enhanced cleanup function that handles multiple resource types.
+ *
+ * @pseudocode
+ * 1. Return a cleanup function that will execute all provided cleanup functions.
+ * 2. When the returned function is called, iterate through all cleanup functions in reverse order.
+ * 3. Execute each cleanup function safely with error handling.
+ * 4. If a resource registry is provided and not disposed, clean up all registered resources.
  *
  * @param {Array<() => void>} cleanupFns - Array of cleanup functions
  * @param {ResourceRegistry} [registry] - Optional resource registry
