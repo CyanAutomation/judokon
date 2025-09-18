@@ -13,8 +13,9 @@ import { initStartCooldown } from "../cooldowns.js";
  */
 export async function cooldownEnter(machine, payload) {
   try {
-    if (typeof console !== "undefined")
-      console.log("[TEST DEBUG] cooldownEnter invoked, payload:", payload);
+    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+      globalThis.__classicBattleDebugExpose("cooldownEnterInvoked", true);
+    }
   } catch {}
   if (payload?.initial) {
     await initStartCooldown(machine);

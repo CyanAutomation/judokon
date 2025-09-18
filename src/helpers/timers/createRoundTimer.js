@@ -70,7 +70,6 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     emitTick(remaining);
     let timeoutId = null;
     const tick = () => {
-      console.log("[TEST DEBUG] createRoundTimer tick called");
       try {
         // Decrement remaining and emit tick/expired accordingly. Use a
         // simple setTimeout chain to work reliably with fake timers.
@@ -97,7 +96,11 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   async function emitExpired() {
-    console.log("[TEST DEBUG] createRoundTimer emitExpired called");
+    try {
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("timerEmitExpiredCalled", true);
+      }
+    } catch {}
     emit("expired");
   }
 

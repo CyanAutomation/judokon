@@ -1,6 +1,3 @@
-if (typeof console !== "undefined") {
-  console.log("[TEST DEBUG] scheduleNextRoundFallback called");
-}
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
@@ -659,6 +656,11 @@ let readyDispatchedForCurrentCooldown = false;
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   // TEMP: Mark global for test to confirm callback execution
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
+  try {
+    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+      globalThis.__classicBattleDebugExpose("nextRoundExpired", true);
+    }
+  } catch {}
   if (controls?.readyDispatched || controls?.readyInFlight) {
     return;
   }
@@ -682,7 +684,11 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         machineRef = typeof getMachine === "function" ? getMachine() : null;
       }
     } catch {}
-    console.log("[TEST DEBUG] handleNextRoundExpiration called, machineRef:", machineRef);
+    try {
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("handleNextRoundExpirationCalled", true);
+      }
+    } catch {}
   }
   const clearSkipHandler =
     typeof options.setSkipHandler === "function" ? options.setSkipHandler : setSkipHandler;
