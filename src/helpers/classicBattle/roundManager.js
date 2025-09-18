@@ -17,6 +17,7 @@ import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js"
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
+import { setupFallbackTimer } from "./timerService.js";
 
 const READY_TRACE_KEY = "nextRoundReadyTrace";
 
@@ -358,27 +359,6 @@ export function getNextRoundControls() {
     }
   } catch {}
   return null;
-}
-
-/**
- * Schedule a fallback timeout and return its id.
- *
- * @pseudocode
- * 1. Attempt to call `setTimeout(cb, ms)`.
- * 2. Return the timer id or `null` on failure.
- *
- * @param {number} ms
- * @param {Function} cb
- * @returns {ReturnType<typeof setTimeout>|null}
- */
-export function setupFallbackTimer(ms, cb, scheduler) {
-  const activeScheduler =
-    scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
-  try {
-    return activeScheduler.setTimeout(cb, ms);
-  } catch {
-    return null;
-  }
 }
 
 function createEventBus(eventBusOverrides) {

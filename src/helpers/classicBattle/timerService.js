@@ -21,6 +21,27 @@ import { safeGetSnapshot, isNextReady, resetReadiness } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
 
 /**
+ * Schedule a fallback timeout and return its id.
+ *
+ * @pseudocode
+ * 1. Attempt to call `setTimeout(cb, ms)`.
+ * 2. Return the timer id or `null` on failure.
+ *
+ * @param {number} ms
+ * @param {Function} cb
+ * @returns {ReturnType<typeof setTimeout>|null}
+ */
+export function setupFallbackTimer(ms, cb, scheduler) {
+  const activeScheduler =
+    scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
+  try {
+    return activeScheduler.setTimeout(cb, ms);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Accessor for the active Next-round cooldown controls.
  *
  * This is a re-export of `getNextRoundControls` from `roundManager.js`.
