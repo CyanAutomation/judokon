@@ -17,7 +17,7 @@ describe("Stat Buttons", () => {
       url: "http://localhost:3000/battleClassic.html",
       runScripts: "dangerously",
       resources: "usable",
-      pretendToBeVisual: true,
+      pretendToBeVisual: true
     });
 
     window = dom.window;
@@ -43,7 +43,7 @@ describe("Stat Buttons", () => {
     const statButtonsContainer = document.getElementById("stat-buttons");
 
     // Wait for the next frame where data-buttons-ready is set
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(statButtonsContainer.dataset.buttonsReady).toBe("true");
 
