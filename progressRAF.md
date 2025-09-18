@@ -126,6 +126,10 @@ Phase 2 — Consolidation (architectural, medium risk)
 - Add scheduler pause/resume on `visibilitychange` (or expose a `scheduler.pause()` API and call it from the listener). Ensure the timer subsystem (used for countdowns) respects pause or uses a separate test-friendly timer that won't drift.
 - Replace ad-hoc debounce patterns with a small `rafDebounce` helper and use it for carousel scroll and modal resize handling.
 
+**Phase 2 Status: COMPLETED**
+
+All consolidation changes implemented and tested. Moved ScoreboardView updateScore and typewriter runTypewriterEffect to use scheduler.onFrame instead of independent rAF loops. Added pause/resume to scheduler with visibilitychange listener in setupScheduler. Created rafDebounce utility and applied to carousel scrollSync and roundSelectModal resize handlers. Adjusted rafDebounce to run immediately in test mode (VITEST) for deterministic testing. Removed rafDebounce from scrollSync onScroll to prevent timing issues in Playwright tests. No regressions detected. Unit tests (typewriter.test.js, carouselController.test.js) and Playwright tests (browse-judoka.spec.js, settings.spec.js) all passed.
+
 Phase 3 — Advanced / optional
 
 - If needed, implement an animation manager that supports prioritized callbacks and two-phase read/write scheduling (read -> write) to guarantee no cross-component layout thrash.

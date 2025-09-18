@@ -98,6 +98,38 @@ describe("classicBattle startCooldown", () => {
       }
       if (String(url).includes("judoka.json")) return [{ id: 1 }, { id: 2 }];
       if (String(url).includes("gokyo.json")) return [];
+      if (String(url).includes("settings.schema.json")) {
+        return {
+          "type": "object",
+          "properties": {
+            "sound": { "type": "boolean" },
+            "motionEffects": { "type": "boolean" },
+            "typewriterEffect": { "type": "boolean" },
+            "tooltips": { "type": "boolean" },
+            "showCardOfTheDay": { "type": "boolean" },
+            "displayMode": { "type": "string" },
+            "fullNavigationMap": { "type": "boolean" },
+            "aiDifficulty": { "type": "string" },
+            "tooltipIds": { "type": "object" },
+            "gameModes": { "type": "object" },
+            "featureFlags": { "type": "object" }
+          },
+          "required": [
+            "sound",
+            "motionEffects",
+            "typewriterEffect",
+            "tooltips",
+            "showCardOfTheDay",
+            "displayMode",
+            "fullNavigationMap",
+            "aiDifficulty",
+            "tooltipIds",
+            "gameModes",
+            "featureFlags"
+          ],
+          "additionalProperties": true
+        };
+      }
       return [];
     });
   }

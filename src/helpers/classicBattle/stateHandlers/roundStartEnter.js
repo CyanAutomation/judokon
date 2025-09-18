@@ -33,20 +33,10 @@ function invokeRoundStart(ctx) {
  * @returns {Promise<void>}
  */
 export async function roundStartEnter(machine) {
-  const fallback = installRoundStartFallback(machine);
   try {
     await Promise.resolve(invokeRoundStart(machine.context));
-    guard(() => {
-      if (fallback) clearTimeout(fallback);
-    });
-    await guardAsync(async () => {
-      const state = machine.getState ? machine.getState() : null;
-      if (state === "roundStart") await machine.dispatch("cardsRevealed");
-    });
+    await machine.dispatch("cardsRevealed");
   } catch (err) {
-    guard(() => {
-      if (fallback) clearTimeout(fallback);
-    });
     await handleRoundError(machine, "roundStartError", err);
   }
 }

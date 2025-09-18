@@ -1,4 +1,9 @@
-import { start as startScheduler, stop as stopScheduler, pause, resume } from "../../utils/scheduler.js";
+import {
+  start as startScheduler,
+  stop as stopScheduler,
+  pause,
+  resume
+} from "../../utils/scheduler.js";
 
 /**
  * @summary Start the animation scheduler for the battle view.
