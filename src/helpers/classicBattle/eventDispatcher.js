@@ -1,6 +1,26 @@
 import { emitBattleEvent } from "./battleEvents.js";
 import { readDebugState } from "./debugHooks.js";
 
+const DEDUPE_WINDOW_MS = 20;
+const recentDispatches = new Map();
+
+function shouldShortCircuitDuplicate(eventName) {
+  if (typeof eventName !== "string" || !eventName) return false;
+  const now = Date.now();
+  const lastDispatchedAt = recentDispatches.get(eventName);
+  if (typeof lastDispatchedAt === "number" && now - lastDispatchedAt < DEDUPE_WINDOW_MS) {
+    return true;
+  }
+  recentDispatches.set(eventName, now);
+  setTimeout(() => {
+    const recorded = recentDispatches.get(eventName);
+    if (recorded === now) {
+      recentDispatches.delete(eventName);
+    }
+  }, DEDUPE_WINDOW_MS);
+  return false;
+}
+
 /**
  * Dispatch an event to the active battle machine.
  *
@@ -19,6 +39,9 @@ import { readDebugState } from "./debugHooks.js";
  * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export async function dispatchBattleEvent(eventName, payload) {
+  if (shouldShortCircuitDuplicate(eventName)) {
+    return true;
+  }
   // Get machine from debug state to avoid circular dependency
   let machineSource =
     typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
