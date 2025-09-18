@@ -18,6 +18,7 @@ import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { setupFallbackTimer } from "./timerService.js";
+import { createEventBus } from "./eventBusUtils.js";
 
 const READY_TRACE_KEY = "nextRoundReadyTrace";
 
@@ -359,26 +360,6 @@ export function getNextRoundControls() {
     }
   } catch {}
   return null;
-}
-
-function createEventBus(eventBusOverrides) {
-  const overrides = eventBusOverrides || {};
-  let fallbackEmit = () => {};
-  let fallbackOn = () => {};
-  let fallbackOff = () => {};
-  try {
-    if (typeof emitBattleEvent === "function") fallbackEmit = emitBattleEvent;
-  } catch {}
-  try {
-    if (typeof onBattleEvent === "function") fallbackOn = onBattleEvent;
-  } catch {}
-  try {
-    if (typeof offBattleEvent === "function") fallbackOff = offBattleEvent;
-  } catch {}
-  const emit = typeof overrides.emit === "function" ? overrides.emit : fallbackEmit;
-  const on = typeof overrides.on === "function" ? overrides.on : fallbackOn;
-  const off = typeof overrides.off === "function" ? overrides.off : fallbackOff;
-  return { emit, on, off };
 }
 
 function detectOrchestratorContext() {
