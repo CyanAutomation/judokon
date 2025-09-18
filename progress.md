@@ -97,3 +97,22 @@ _Pausing here for your review before proceeding to the next step._
 - Spy on `dispatchBattleEvent("ready")` to capture its resolved value and confirm whether the state machine rejects, resolves `false`, or simply never fulfills.
 - Audit the mocked scheduler wiring: ensure `timerSpy` is injected into `startCooldown`/`setupFallbackTimer` so that advancing fake timers exercises both the primary timer and fallback `setTimeout` chain. Add coverage that fails fast when neither callback fires after advancing time.
 - After isolating the failing path, remove or gate the `[TEST DEBUG]` logs and restore console discipline (`withMutedConsole`) before final validation runs.
+
+## Current Phase – Investigate Machine Getter Visibility
+
+### Activities Undertaken
+
+- Added debug exposures in `handleNextRoundExpiration` for raw machine getter result (`handleNextRoundMachineGetterResult`), including when override is provided.
+- Changed debug system from module-scoped object to global Map on `window` to ensure sharing across Vitest module contexts.
+- Added global flags (`window.__startCooldownInvoked`, `window.__debugExposed`) to verify function execution and debug exposure calls.
+- Updated test to import `startCooldown` at the top level instead of dynamically to ensure module sharing.
+- Ran focused test to check debug functionality.
+
+### Outcome
+
+- Debug system changed to use `window.__classicBattleDebugMap` Map for cross-module sharing.
+- Test updated to import `startCooldown` statically.
+- Test run shows `window.__startCooldownInvoked` is `undefined`, indicating `startCooldown` is not executed despite the test calling it.
+- This suggests an issue with the test setup, import, or execution environment preventing the function call.
+
+*Pausing here for your review before proceeding further.*
