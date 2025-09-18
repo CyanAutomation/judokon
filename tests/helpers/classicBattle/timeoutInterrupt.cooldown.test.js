@@ -132,12 +132,16 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       await vi.advanceTimersByTimeAsync(1000);
 
       try {
-        if (typeof process !== "undefined" && typeof globalThis !== "undefined") {
+        if (typeof globalThis !== "undefined") {
           const bag = globalThis.__CLASSIC_BATTLE_DEBUG || {};
           const keys = Object.keys(bag).join(",");
-          process.stdout.write("[TEST-BAG-KEYS] " + keys + "\n");
+          console.error("[TEST-BAG-KEYS] " + keys);
           try {
-            process.stdout.write("[TEST-FLAGS] __NEXT_ROUND_EXPIRED=" + Boolean(window.__NEXT_ROUND_EXPIRED) + " __startCooldownInvoked=" + Boolean(window.__startCooldownInvoked) + "\n");
+            console.error(
+              "[TEST-FLAGS] __NEXT_ROUND_EXPIRED=" + Boolean(window.__NEXT_ROUND_EXPIRED) +
+                " __startCooldownInvoked=" +
+                Boolean(window.__startCooldownInvoked)
+            );
           } catch {}
         }
       } catch {}

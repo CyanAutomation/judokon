@@ -249,11 +249,11 @@ describe("classicBattle startCooldown", () => {
   }
 
   it("auto-dispatches ready after 1s cooldown", async () => {
-    console.error("[TEST] Test started");
+    console.log("[TEST] Test started");
     document.getElementById("next-round-timer")?.remove();
-    console.error("[TEST] next-round-timer removed");
+    console.log("[TEST] next-round-timer removed");
     const { nextButton } = createTimerNodes();
-    console.error("[TEST] createTimerNodes called");
+    console.log("[TEST] createTimerNodes called");
     nextButton.disabled = true;
 
     mockBattleData();
@@ -270,11 +270,13 @@ describe("classicBattle startCooldown", () => {
       return await battleMod.startRound(store);
     });
 
+    console.error("[TEST] About to init orchestrator");
     await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
+    console.error("[TEST] Orchestrator initialized");
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
 

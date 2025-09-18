@@ -58,7 +58,12 @@ export function setupClassicBattleDom() {
   container.setAttribute("aria-live", "polite");
   document.body.append(container);
 
-  const timerSpy = vi.useFakeTimers();
+  const timerSpy = {
+    useFakeTimers: vi.fn(),
+    advanceTimersByTime: vi.fn(),
+    runAllTimersAsync: vi.fn(),
+    clearAllTimers: vi.fn()
+  };
   globalThis.requestAnimationFrame = vi.fn((cb) => cb());
   globalThis.cancelAnimationFrame = vi.fn();
   const fetchJsonMock = vi.fn(async (url) => {

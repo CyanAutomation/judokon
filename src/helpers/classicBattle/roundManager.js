@@ -671,13 +671,13 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   try {
     // Entry marker for diagnostics
-    if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
-      process.stdout.write(
+    try {
+      console.error(
         `[BAG-MARKER] handleNextRoundExpiration entry controls_readyInFlight=${Boolean(
           controls?.readyInFlight
-        )} controls_readyDispatched=${Boolean(controls?.readyDispatched)}\n`
+        )} controls_readyDispatched=${Boolean(controls?.readyDispatched)}`
       );
-    }
+    } catch {}
     if (typeof globalThis !== "undefined") {
       const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
       bag.handleNextRound_entry = {
@@ -727,16 +727,14 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         typeof process !== "undefined" &&
         process &&
         typeof process.stdout?.write === "function"
-      ) {
-        process.stdout.write("[BAG-MARKER] handleNextRoundEarlyExit: readyInFlight true\n");
-      }
-      if (typeof globalThis !== "undefined") {
-        const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-        bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
-        bag.handleNextRound_earlyExit.push({ reason: "inFlight", at: Date.now() });
-      }
-    } catch {}
-    return;
+      try {
+        console.error("[BAG-MARKER] handleNextRoundEarlyExit: readyInFlight true");
+        if (typeof globalThis !== "undefined") {
+          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+          bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
+          bag.handleNextRound_earlyExit.push({ reason: "inFlight", at: Date.now() });
+        }
+      } catch {}
   }
   if (controls) {
     controls.readyInFlight = true;
