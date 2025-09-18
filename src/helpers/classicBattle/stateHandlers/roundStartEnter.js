@@ -34,8 +34,7 @@ function invokeRoundStart(ctx) {
  */
 export async function roundStartEnter(machine) {
   try {
-    await Promise.resolve(invokeRoundStart(machine.context));
-    console.error("[TEST DEBUG] roundStartEnter: State before cardsRevealed dispatch:", machine.getState());
+    console.error("[TEST DEBUG] roundStartEnter: Directly dispatching cardsRevealed");
     await machine.dispatch("cardsRevealed");
   } catch (err) {
     await handleRoundError(machine, "roundStartError", err);

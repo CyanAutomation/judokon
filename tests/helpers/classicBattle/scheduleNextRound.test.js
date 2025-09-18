@@ -304,16 +304,18 @@ describe("classicBattle startCooldown", () => {
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
-      await battleMod.startRound(store);
+      // Simulate startRound completing immediately
+      return Promise.resolve({ playerJudoka: {}, opponentJudoka: {}, roundNumber: 1 });
     });
 
     console.log("[TEST DEBUG] before initClassicBattleOrchestrator");
-    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
-    console.log("[TEST DEBUG] after initClassicBattleOrchestrator");
-
-    console.log("[TEST DEBUG] before getBattleStateMachine");
-    const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
-    console.log("[TEST DEBUG] after getBattleStateMachine", machine);
+    await orchestrator.initClassicBattleOrchestrator({
+      store,
+      startRoundWrapper,
+      stateTable: globalThis.__CLASSIC_BATTLE_STATES__
+    });
+    const machine = orchestrator.getBattleStateMachine();
+    console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
     // Ensure machine is in roundOver state for the test
     await machine.dispatch("roundOver");
@@ -381,7 +383,8 @@ describe("classicBattle startCooldown", () => {
 
     // Set up orchestrator like other tests
     const startRoundWrapper = vi.fn(async () => {
-      await battleMod.startRound(store);
+      // Simulate startRound completing immediately
+      return Promise.resolve({ playerJudoka: {}, opponentJudoka: {}, roundNumber: 1 });
     });
     await orchestrator.initClassicBattleOrchestrator({
       store,
