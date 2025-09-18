@@ -156,6 +156,9 @@ export class Scoreboard {
   }
 
   destroy() {
+    if (this.view && typeof this.view.destroy === "function") {
+      this.view.destroy();
+    }
     try {
       import("../helpers/battleScoreboard.js")
         .then((m) => {
@@ -368,5 +371,8 @@ export const resetScoreboard = () => {
  * @returns {void}
  */
 export const destroy = () => {
+  if (defaultScoreboard) {
+    defaultScoreboard.destroy();
+  }
   resetScoreboard();
 };

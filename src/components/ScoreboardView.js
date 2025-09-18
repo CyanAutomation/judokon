@@ -195,4 +195,17 @@ export class ScoreboardView {
   showAutoSelect(stat) {
     this.showMessage(`Auto-selected ${stat}`);
   }
+
+  /**
+   * Clean up resources, cancelling any pending animation frames.
+   * @pseudocode
+   * 1. If a score animation frame is scheduled, cancel it.
+   * 2. Set the animation frame handle to null.
+   */
+  destroy() {
+    if (this._scoreRaf) {
+      cancelAnimationFrame(this._scoreRaf);
+      this._scoreRaf = null;
+    }
+  }
 }
