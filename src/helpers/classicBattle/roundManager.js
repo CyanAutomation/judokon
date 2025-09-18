@@ -807,18 +807,18 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   // Dispatch `ready` (fire-and-forget) before resolving the controls so
   // tests awaiting `controls.ready` don't depend on orchestrator internals.
   // Only dispatch if the machine is still in cooldown state and we haven't already dispatched for this cooldown.
-    const dispatchReadyDirectly = async () => {
-      if (machine?.dispatch) {
-        try {
-          const result = await machine.dispatch("ready");
-          if (result && typeof result.then === "function") {
-            result.catch(() => {});
-          }
-          return true;
-        } catch {}
-      }
-      return false;
-    };
+  const dispatchReadyDirectly = async () => {
+    if (machine?.dispatch) {
+      try {
+        const result = await machine.dispatch("ready");
+        if (result && typeof result.then === "function") {
+          result.catch(() => {});
+        }
+        return true;
+      } catch {}
+    }
+    return false;
+  };
 }
 
 function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides = {}) {

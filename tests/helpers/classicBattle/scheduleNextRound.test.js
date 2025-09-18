@@ -302,7 +302,9 @@ describe("classicBattle startCooldown", () => {
     console.log("[TEST DEBUG] After timer advance, state:", machine.getState());
     console.log("[TEST DEBUG] __NEXT_ROUND_EXPIRED:", window.__NEXT_ROUND_EXPIRED);
     try {
-      const dbg = globalThis.__classicBattleDebugRead && globalThis.__classicBattleDebugRead("getClassicBattleMachine");
+      const dbg =
+        globalThis.__classicBattleDebugRead &&
+        globalThis.__classicBattleDebugRead("getClassicBattleMachine");
       console.log("[TEST DEBUG] debug getter present:", typeof dbg, dbg ? dbg() : null);
     } catch (err) {
       console.log("[TEST DEBUG] debug getter error", err);
@@ -310,7 +312,7 @@ describe("classicBattle startCooldown", () => {
 
     // Confirm fallback timer callback executed
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    
+
     console.log("[TEST DEBUG] Before waitForState, state:", machine.getState());
     await waitForState("waitingForPlayerAction");
     console.log("[TEST DEBUG] After waitForState, state:", machine.getState());

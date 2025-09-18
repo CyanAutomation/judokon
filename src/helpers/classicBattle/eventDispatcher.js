@@ -8,7 +8,11 @@ let machineIdCounter = 0;
 
 function getTimestamp() {
   try {
-    if (typeof process !== "undefined" && typeof process.hrtime === "function" && typeof process.hrtime.bigint === "function") {
+    if (
+      typeof process !== "undefined" &&
+      typeof process.hrtime === "function" &&
+      typeof process.hrtime.bigint === "function"
+    ) {
       const ns = process.hrtime.bigint();
       return Number(ns / 1000000n);
     }
