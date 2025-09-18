@@ -52,10 +52,13 @@ export function runTypewriterEffect(element, finalHtml, speed = 200) {
     if (!last) last = ts;
     acc += ts - last;
     last = ts;
-    while (acc >= speed && i < text.length) {
+    let iterations = 0;
+    const MAX_PER_FRAME = 6;
+    while (acc >= speed && i < text.length && iterations < MAX_PER_FRAME) {
       element.textContent += text.charAt(i);
       i += 1;
       acc -= speed;
+      iterations++;
     }
     if (i < text.length) {
       frameId = requestAnimationFrame(step);

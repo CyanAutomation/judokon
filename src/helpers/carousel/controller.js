@@ -26,6 +26,7 @@ export class CarouselController {
     this.currentPage = 0;
     this.metrics = getPageMetrics(container);
     this._rafId = null;
+    this._attachRafId = null;
     this._resizeTimer = null;
     this._suppressScrollSync = false;
     this._listeners = [];
@@ -67,6 +68,7 @@ export class CarouselController {
     }
     this._listeners = [];
     if (this._rafId) cancelAnimationFrame(this._rafId);
+    if (this._attachRafId) cancelAnimationFrame(this._attachRafId);
     clearTimeout(this._resizeTimer);
     this.leftBtn?.remove();
     this.rightBtn?.remove();
@@ -106,7 +108,7 @@ export class CarouselController {
       this.setPage(this.currentPage);
     } else {
       // Poll once per frame until connected to the document
-      requestAnimationFrame(() => this._afterConnectedInit());
+      this._attachRafId = requestAnimationFrame(() => this._afterConnectedInit());
     }
   }
 

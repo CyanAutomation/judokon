@@ -14,18 +14,24 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn()
 }));
 
-let dispatchBattleEventSpy = vi.fn();
-let dispatchBattleEventCallThrough;
+const eventDispatcherMock = {
+  spy: vi.fn(),
+  callThrough: () => {
+    throw new Error("eventDispatcher mock not initialized");
+  },
+};
 
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
   const actual = await importOriginal();
-  dispatchBattleEventCallThrough = actual.dispatchBattleEvent;
-  dispatchBattleEventSpy.mockImplementation((...args) => dispatchBattleEventCallThrough(...args));
+  eventDispatcherMock.callThrough = actual.dispatchBattleEvent;
+  eventDispatcherMock.spy.mockImplementation((...args) => eventDispatcherMock.callThrough(...args));
   return {
     ...actual,
-    dispatchBattleEvent: dispatchBattleEventSpy
+    dispatchBattleEvent: eventDispatcherMock.spy,
   };
 });
+
+const dispatchBattleEventSpy = eventDispatcherMock.spy;
 
 async function resetRoundManager(store) {
   const { _resetForTest } = await import("../../../src/helpers/classicBattle/roundManager.js");
@@ -61,9 +67,6 @@ beforeEach(async () => {
     currentFlags
   });
   console.log("[TEST DEBUG] after applyMockSetup");
-  if (dispatchBattleEventCallThrough) {
-    dispatchBattleEventSpy.mockImplementation((...args) => dispatchBattleEventCallThrough(...args));
-  }
   dispatchBattleEventSpy.mockClear();
   orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
   console.log("[TEST DEBUG] orchestrator module loaded");

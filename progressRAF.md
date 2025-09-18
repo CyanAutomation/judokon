@@ -122,12 +122,18 @@ Phase 1 — Quick fixes (small, low-risk edits)
   - **Outcome**: Implemented. Removed the line that sets the final `innerHTML` before the animation starts in `ScoreboardView.js`. This prevents a visual flicker where the final score is shown briefly before the animation begins. Ran relevant unit and Playwright tests, which all passed.
 - **[DONE]** Cancel scoreboard rAF in cleanup/destroy. (1–3 lines)
   - **Outcome**: Implemented. Added a `destroy` method to `ScoreboardView.js` to cancel the animation frame. Also updated the `Scoreboard.js` `destroy` method to call the view's `destroy` method. This prevents potential memory leaks and errors from orphaned animation frames. Ran relevant unit and Playwright tests, which all passed.
-- Clamp typewriter per-frame work to N characters (e.g., 6) or clamp `acc` to `speed * N`. (2–6 lines)
-- Track and cancel the carousel attach polling rAF (`this._attachRafId`) and add a destroy-time cancel. (2–6 lines)
+- **[DONE]** Clamp typewriter per-frame work to N characters (e.g., 6) or clamp `acc` to `speed * N`. (2–6 lines)
+  - **Outcome**: Implemented. Added a MAX_PER_FRAME constant (6) and limited loop iterations per frame in `src/helpers/typewriter.js`. This prevents long tasks after long pauses (e.g., background tab). Ran relevant unit and Playwright tests, which all passed.
+- **[DONE]** Track and cancel the carousel attach polling rAF (`this._attachRafId`) and add a destroy-time cancel. (2–6 lines)
+  - **Outcome**: Implemented. Added `this._attachRafId` property, stored the rAF ID in `_afterConnectedInit`, and canceled it in `destroy()` in `src/helpers/carousel/controller.js`. This prevents orphaned polling loops. Ran relevant unit and Playwright tests, which all passed.
 - **[DONE]** Use `scheduler.clearTimeout` instead of global `clearTimeout` in `showSnackbar` for consistency if `fadeId` was created via the scheduler. (1–2 lines)
   - **Outcome**: Implemented. Replaced `clearTimeout` with `scheduler.clearTimeout` in `showSnackbar.js` for consistency with the existing timer handling. This ensures that the same scheduler is used for setting and clearing timeouts, which is important for testability with fake timers. Ran relevant unit and Playwright tests, which all passed.
 
 Testing after Phase 1: run unit tests, run small smoke tests: typewriter demo, scoreboard increment, add/destroy carousel without attaching.
+
+**Phase 1 Status: COMPLETED**
+
+All quick fixes implemented and tested. No regressions detected. Unit tests (typewriter.test.js, carouselController.test.js) and Playwright tests (browse-judoka.spec.js, settings.spec.js) all passed.
 
 Phase 2 — Consolidation (architectural, medium risk)
 
@@ -176,7 +182,6 @@ Next steps I can take if you want
 2. Implement the `rafDebounce` and `runAfterFrames` helpers and update call sites (carousel scroll sync, roundUI).
 3. Move scoreboard and typewriter loops to `scheduler.onFrame` and add `visibilitychange` pause/resume.
 
-
 ---
 
 Revision history
@@ -216,7 +221,6 @@ Actionable fix: N/A (already handled above). Just note that this pattern is good
 . Retain these aspects in any refactor.
 Sources: Typewriter implementation
 
- 
 Fix: Use the getScheduler() consistently. Since showSnackbar already obtains scheduler = getScheduler()
 
 , it should use scheduler.setTimeout/clearTimeout exclusively for those timers. Remove or avoid the direct window.setTimeout/clearTimeout usage to rely on the injected scheduler uniformly. For the rAF call, if needed for test determinism, one could provide a similar hook (e.g., a scheduler.requestAnimationFrame that by default just calls the real one). Given that UI animations are less often faked in tests, this is minor.
