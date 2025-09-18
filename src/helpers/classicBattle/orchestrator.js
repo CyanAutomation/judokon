@@ -22,6 +22,7 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { logStateTransition } from "./debugLogger.js";
 import { preloadTimerUtils } from "../TimerController.js";
 import { initScoreboardAdapter } from "./scoreboardAdapter.js";
+import { initPreloadServices } from "./preloadService.js";
 import { createStateManager } from "./stateManager.js";
 import "./uiService.js";
 
@@ -380,6 +381,9 @@ async function preloadDependencies() {
   } catch {}
   try {
     initScoreboardAdapter();
+  } catch {}
+  try {
+    initPreloadServices();
   } catch {}
 }
 

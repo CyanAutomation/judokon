@@ -8,7 +8,6 @@ import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import { showSnackbar } from "../showSnackbar.js";
-import { updateDebugPanel } from "./debugPanel.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent, resetDispatchHistory } from "./eventDispatcher.js";
@@ -19,6 +18,17 @@ import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { setupFallbackTimer } from "./timerService.js";
 import { createEventBus } from "./eventBusUtils.js";
+import { getDebugPanelLazy, getTimerModulesLazy } from "./preloadService.js";
+
+// Lazy-loaded debug panel updater
+let lazyUpdateDebugPanel = null;
+async function getLazyUpdateDebugPanel() {
+  if (!lazyUpdateDebugPanel) {
+    const debugPanel = await getDebugPanelLazy();
+    lazyUpdateDebugPanel = debugPanel.updateDebugPanel;
+  }
+  return lazyUpdateDebugPanel;
+}
 
 const READY_TRACE_KEY = "nextRoundReadyTrace";
 
@@ -951,7 +961,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
 
   // Update debug panel for visibility.
   try {
-    const updatePanel = options.updateDebugPanel || updateDebugPanel;
+    const updatePanel = options.updateDebugPanel || (await getLazyUpdateDebugPanel());
     updatePanel();
   } catch {}
 
