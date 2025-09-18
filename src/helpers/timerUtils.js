@@ -130,7 +130,7 @@ export function createCountdownTimer(
     // Hard fallback to ensure expiration even if the scheduler never ticks
     // in certain test environments.
     try {
-      hardTimeoutId = setTimeout(
+      hardTimeoutId = thisScheduler.setTimeout(
         async () => {
           if (subId !== null) {
             // Timer still running; stop and expire once.
@@ -153,7 +153,7 @@ export function createCountdownTimer(
       subId = null;
     }
     if (hardTimeoutId) {
-      clearTimeout(hardTimeoutId);
+      thisScheduler.clearTimeout(hardTimeoutId);
       hardTimeoutId = 0;
     }
     if (pauseOnHidden && typeof document !== "undefined") {

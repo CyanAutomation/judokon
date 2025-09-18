@@ -71,6 +71,12 @@ vi.mock("../../../src/components/JudokaCard.js", () => ({
   })),
 }));
 
+vi.mock("../../../src/helpers/timerService.js", () => ({
+  startTimer: vi.fn(async () => {
+    return Promise.resolve();
+  }),
+}));
+
 const dispatchBattleEventSpy = eventDispatcherMock.spy;
 
 async function resetRoundManager(store) {
