@@ -64,7 +64,6 @@ function appendReadyTrace(event, details = {}) {
 /**
  * Create a new battle state store.
  *
- * @pseudocode
  * 1. Initialize battle state values.
  * 2. Return the store.
  *
@@ -106,7 +105,6 @@ function getStartRound(store) {
  * test debug APIs).
  *
  * @summary Reset match state and UI, then begin a new round.
- * @pseudocode
  * 1. Create a fresh engine instance via `createBattleEngine()` and rebind engine events with `bridgeEngineEvents()`.
  * 2. Emit a `game:reset-ui` CustomEvent so UI components can teardown.
  * 3. Resolve the appropriate `startRound` function (possibly overridden) and call it.
@@ -159,7 +157,6 @@ export async function handleReplay(store) {
  * Initiates a new battle round, setting its state to active and recording the start time.
  * It also increments the round number and clears any events from previous rounds.
  * @param {number} roundNum - The number of the round to start.
- * @pseudocode
  * SET roundState to ACTIVE
  * SET roundNumber to roundNum
  * SET roundStartTime to current timestamp
@@ -202,7 +199,6 @@ let readyDispatchedForCurrentCooldown = false;
  * Schedule the cooldown before the next round and expose controls
  * for the Next button.
  *
- * @pseudocode
  * 1. Log the call for debug visibility.
  * 2. Reset Next button state and determine cooldown duration.
  * 3. Attach `CooldownRenderer` and start the timer with a fallback.
@@ -303,7 +299,6 @@ export function startCooldown(_store, scheduler, overrides = {}) {
 /**
  * Expose current cooldown controls for Next button helpers.
  *
- * @pseudocode
  * 1. Return the `currentNextRound` object containing timer and readiness resolver.
  * 2. When no cooldown is active, return `null`.
  *
@@ -332,7 +327,6 @@ export function getNextRoundControls() {
  *
  * @returns {object} Object containing orchestrated flag and machine reference.
  * @summary Check if orchestrator is running and get machine instance.
- * @pseudocode
  * 1. Check if orchestration is enabled via isOrchestrated().
  * 2. Try to get machine instance from debug state.
  * 3. Return object with orchestrated flag and machine reference.
@@ -535,7 +529,6 @@ function getMachineState(machine) {
  *
  * @returns {boolean} True if the Next button is ready, false otherwise.
  * @summary Determine if the Next button indicates readiness for next round.
- * @pseudocode
  * 1. Get the next-button element from DOM.
  * 2. Check if data-next-ready attribute is "true".
  * 3. Check if button is not disabled.
@@ -556,7 +549,6 @@ function isNextButtonReady() {
  * Log cooldown start event for debugging purposes.
  *
  * @summary Log startCooldown invocation with state snapshot for debugging.
- * @pseudocode
  * 1. Get current state snapshot.
  * 2. Increment startCooldown call count.
  * 3. Log warning with call count and current state (outside Vitest).
@@ -579,7 +571,6 @@ function logStartCooldown() {
  * @param {Function} [options.emit] - Custom emit function, defaults to emitBattleEvent.
  * @returns {object} Controls object with timer, resolveReady function, and ready promise.
  * @summary Create cooldown controls with promise-based readiness tracking.
- * @pseudocode
  * 1. Create controls object with timer, resolveReady, and ready promise.
  * 2. Set up resolveReady function that emits nextRoundTimerReady event.
  * 3. Track readiness state and prevent duplicate dispatches.
@@ -667,32 +658,10 @@ function markNextReady(btn) {
 
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
-  try {
-    // Entry marker for diagnostics
-    try {
-      console.error(
-        `[BAG-MARKER] handleNextRoundExpiration entry controls_readyInFlight=${Boolean(
-          controls?.readyInFlight
-        )} controls_readyDispatched=${Boolean(controls?.readyDispatched)}`
-      );
-    } catch {}
-    if (typeof globalThis !== "undefined") {
-      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-      bag.handleNextRound_entry = {
-        readyInFlight: !!controls?.readyInFlight,
-        readyDispatched: !!controls?.readyDispatched
-      };
-    }
-  } catch {}
+  // diagnostics removed (was writing to global debug bag / console)
   try {
     if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
       globalThis.__classicBattleDebugExpose("nextRoundExpired", true);
-    }
-  } catch {}
-  try {
-    if (typeof globalThis !== "undefined") {
-      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-      bag.handleNextRoundCallCount = (bag.handleNextRoundCallCount || 0) + 1;
     }
   } catch {}
   try {
@@ -937,29 +906,9 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         } catch {}
       };
       if (shouldResolve()) {
-        detach();
-        resolve();
-        return;
-      }
-      let toState = null;
-      try {
-        const detail = event?.detail;
-        if (detail && typeof detail === "object") {
-          toState = detail.to ?? detail?.detail?.to ?? null;
-        } else if (typeof detail === "string") {
-          toState = detail;
-        }
-      } catch {}
-      if (isCooldownSafeState(toState)) {
-        detach();
-        resolve();
-      }
-    };
-    try {
-      bus.on("battleStateChange", handler);
-    } catch {
-      resolve();
-    }
+        try {
+          // early exit: already in-flight; nothing to do
+        } catch {}
   });
   try {
     const machineStateAfter = (() => {
@@ -1178,15 +1127,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   if (dispatched) {
     readyDispatchedForCurrentCooldown = true;
   }
-  try {
-    // Emit final debug bag snapshot for this invocation
-    if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
-      try {
-        const bag = globalThis.__CLASSIC_BATTLE_DEBUG || {};
-        process.stdout.write(`[BAG-MARKER] handleNextRoundExit bag=${JSON.stringify(bag)}\n`);
-      } catch {}
-    }
-  } catch {}
+  // diagnostics removed
   try {
     exposeDebugState("handleNextRoundDispatchResult", dispatched);
     if (typeof globalThis !== "undefined") {
@@ -1387,7 +1328,6 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
  * teardown and reinitialize.
  *
  * @summary Reset match subsystems and UI for tests.
- * @pseudocode
  * 1. Reset skip and selection subsystems, recreate the engine via `createBattleEngine()`,
  *    and rebind engine events with `bridgeEngineEvents()`.
  * 2. Stop any schedulers and clear debug overrides on `window`.
@@ -1468,7 +1408,6 @@ export function _resetForTest(store) {
  *
  * Alias of `_resetForTest` used by orchestrator and other callers.
  *
- * @pseudocode
  * 1. Invoke `_resetForTest(store)` when asked to reset the active match.
  * @returns {void}
  */

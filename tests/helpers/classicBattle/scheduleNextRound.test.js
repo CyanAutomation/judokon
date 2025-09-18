@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Ensure fake timers are active before any scheduler/timer modules load.
-vi.useFakeTimers();
+// vi.useFakeTimers();
 import "./commonMocks.js";
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";

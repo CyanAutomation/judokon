@@ -218,17 +218,20 @@ Tell me which of these you'd like me to run next (I recommend verifying mock hoi
 ## Mock factory hoisting verification — action & outcome
 
 Action (planned via sequential thinking):
+
 1. Add a visible, non-console marker in the test's `vi.mock` factory for `eventDispatcher.js` to confirm that the mock factory runs (and is therefore hoisted) before the code under test is imported.
 2. Re-run the single failing test and capture stdout for the marker.
 3. Interpret the result and choose the next diagnostic step.
 
 What I changed:
+
 - Injected a small marker in `tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js` that writes to stdout:
   - `[MOCK-FACTORY-RAN] eventDispatcher mock factory`
   - `[MOCK-FACTORY-INFO] dispatchBattleEvent_name=...`
   - Also sets `globalThis.__CLASSIC_BATTLE_DEBUG.eventDispatcherMockFactoryRan = true`.
 
 Result (ran the single test):
+
 - Command: `npm test -- tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js --silent --reporter verbose`
 - Observed stdout at test startup:
   - [MOCK-FACTORY-RAN] eventDispatcher mock factory
@@ -239,6 +242,7 @@ Result (ran the single test):
 Conclusion: mock hoisting/order is not the root cause — the test's `vi.mock` did run and replaced `dispatchBattleEvent` in the module loader. The issue is therefore elsewhere (likely the runtime dispatch path, dedupe logic, or early exit in `handleNextRoundExpiration`).
 
 Recommended next diagnostic (I can implement):
+
 1. Instrument `handleNextRoundExpiration` to write a non-console marker into `globalThis.__CLASSIC_BATTLE_DEBUG` immediately before and after calling `dispatchViaOptions`, recording:
    - Whether `options.dispatchBattleEvent` is a function
    - `options.dispatchBattleEvent.name`

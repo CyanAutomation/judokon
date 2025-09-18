@@ -23,8 +23,8 @@ import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBa
  *   - expose timerSpy, mocks, and currentFlags
  */
 export function setupClassicBattleDom() {
-  // disposeClassicBattleOrchestrator();
-  // vi.resetModules();
+  disposeClassicBattleOrchestrator();
+  vi.resetModules();
   // Ensure the scheduler module used by timer utilities is mocked to use
   // the global timers so tests using fake timers behave deterministically.
   try {
@@ -58,12 +58,7 @@ export function setupClassicBattleDom() {
   container.setAttribute("aria-live", "polite");
   document.body.append(container);
 
-  const timerSpy = {
-    useFakeTimers: vi.fn(),
-    advanceTimersByTime: vi.fn(),
-    runAllTimersAsync: vi.fn(),
-    clearAllTimers: vi.fn()
-  };
+  const timerSpy = vi.useFakeTimers();
   globalThis.requestAnimationFrame = vi.fn((cb) => cb());
   globalThis.cancelAnimationFrame = vi.fn();
   const fetchJsonMock = vi.fn(async (url) => {
