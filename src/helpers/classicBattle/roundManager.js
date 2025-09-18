@@ -726,7 +726,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           try {
             exposeDebugState("handleNextRoundMachineGetterOverride", machine);
             if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-              globalThis.__classicBattleDebugExpose("handleNextRoundMachineGetterOverride", machine);
+              globalThis.__classicBattleDebugExpose(
+                "handleNextRoundMachineGetterOverride",
+                machine
+              );
             }
           } catch {}
           return machine;
