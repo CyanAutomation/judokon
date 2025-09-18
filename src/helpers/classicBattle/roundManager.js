@@ -893,7 +893,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     isOrchestrated: overrides.isOrchestrated || isOrchestrated,
     getStateSnapshot: overrides.getStateSnapshot || getStateSnapshot
   };
-  const timer = timerFactory({ starter: startCooldown });
+  const timer = timerFactory({ scheduler: activeScheduler, starter: startCooldown });
   // Delay initial snackbar render until first tick to avoid overshadowing
   // the short-lived "Opponent is choosing…" message.
   // Provide initial remaining to render immediately and avoid an early
