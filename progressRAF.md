@@ -116,6 +116,8 @@ Refactor plan (actionable, incremental)
 
 Phase 1 — Quick fixes (small, low-risk edits)
 
+- **[DONE]** Use Injected Scheduler in `showSnackbar`.
+  - **Outcome**: Implemented. Updated `src/helpers/scheduler.js` to include a `requestAnimationFrame` shim. Modified `src/helpers/showSnackbar.js` to use `scheduler.requestAnimationFrame` for improved test determinism. Ran relevant unit and Playwright tests, which all passed.
 - **[DONE]** Fix scoreboard flicker: do not set final innerHTML before starting the tween; update number nodes only. (1–3 lines change in updateScore logic).
   - **Outcome**: Implemented. Removed the line that sets the final `innerHTML` before the animation starts in `ScoreboardView.js`. This prevents a visual flicker where the final score is shown briefly before the animation begins. Ran relevant unit and Playwright tests, which all passed.
 - **[DONE]** Cancel scoreboard rAF in cleanup/destroy. (1–3 lines)

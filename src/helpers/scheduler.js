@@ -5,7 +5,9 @@
  */
 export const realScheduler = {
   setTimeout: (...args) => globalThis.setTimeout(...args),
-  clearTimeout: (...args) => globalThis.clearTimeout(...args)
+  clearTimeout: (...args) => globalThis.clearTimeout(...args),
+  requestAnimationFrame: (...args) => globalThis.requestAnimationFrame(...args),
+  cancelAnimationFrame: (...args) => globalThis.cancelAnimationFrame(...args),
 };
 
 let currentScheduler = realScheduler;

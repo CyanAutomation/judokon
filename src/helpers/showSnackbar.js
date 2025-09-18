@@ -75,8 +75,9 @@ export function showSnackbar(message) {
       document.body?.appendChild(container);
     }
   } catch {}
-  clearTimeout(fadeId);
-  clearTimeout(removeId);
+  const scheduler = getScheduler();
+  scheduler.clearTimeout(fadeId);
+  scheduler.clearTimeout(removeId);
   const container = document.getElementById("snackbar-container");
   if (!container) {
     resetState();
@@ -88,7 +89,7 @@ export function showSnackbar(message) {
   container.replaceChildren(bar);
   // Use a one-shot animation frame to toggle the class without
   // registering a persistent scheduler callback.
-  requestAnimationFrame(() => bar?.classList.add("show"));
+  scheduler.requestAnimationFrame(() => bar?.classList.add("show"));
   resetTimers();
 }
 
