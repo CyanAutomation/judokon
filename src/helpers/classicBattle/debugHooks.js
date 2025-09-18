@@ -1,6 +1,3 @@
-const debugState =
-  (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugStore) || {};
-
 /**
  * Store a debug value for tests or diagnostics.
  *
@@ -9,19 +6,17 @@ const debugState =
  *
  * @pseudocode
  * 1. Take a `key` and a `value`.
- * 2. Store the `value` in the module-scoped `debugState` object using the `key`.
+ * 2. Store the `value` in the global debug map using the `key`.
  * @returns {void}
  */
 export function exposeDebugState(key, value) {
-  debugState[key] = value;
-  try {
-    if (typeof globalThis !== "undefined") {
-      if (!globalThis.__classicBattleDebugStore) globalThis.__classicBattleDebugStore = debugState;
-      try {
-        globalThis.__classicBattleDebugStore[key] = value;
-      } catch {}
+  if (typeof globalThis !== "undefined") {
+    if (!globalThis.__classicBattleDebugMap) {
+      globalThis.__classicBattleDebugMap = new Map();
     }
-  } catch {}
+    globalThis.__classicBattleDebugMap.set(key, value);
+    globalThis.__debugExposed = true;
+  }
 }
 
 /**
@@ -31,17 +26,14 @@ export function exposeDebugState(key, value) {
  * @returns {*} The stored value or `undefined` when not present.
  *
  * @pseudocode
- * 1. Return the value associated with `key` from the `debugState` map.
+ * 1. Return the value associated with `key` from the global debug map.
  * 2. Do not throw; missing keys return `undefined` to make tests simpler.
  */
 export function readDebugState(key) {
-  if (Object.prototype.hasOwnProperty.call(debugState, key)) return debugState[key];
-  try {
-    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugStore) {
-      return globalThis.__classicBattleDebugStore[key];
-    }
-  } catch {}
-  return debugState[key];
+  if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugMap) {
+    return globalThis.__classicBattleDebugMap.get(key);
+  }
+  return undefined;
 }
 
 // Expose hooks on global for modules that cannot reliably share ESM bindings in tests.
