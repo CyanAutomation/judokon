@@ -42,11 +42,6 @@ function registerDispatch(eventName, machine) {
   const now = getTimestamp();
   const last = recentDispatches.get(key);
   if (typeof last === "number" && now - last < DEDUPE_WINDOW_MS) {
-    try {
-      if (typeof process !== "undefined" && process.env?.VITEST && typeof console !== "undefined") {
-        console.log("[TEST DEBUG] dedupe: skipping", eventName, now - last);
-      }
-    } catch {}
     return { shouldSkip: true, key, timestamp: last };
   }
   recentDispatches.set(key, now);
@@ -131,11 +126,6 @@ export async function dispatchBattleEvent(eventName, payload) {
   }
 
   // DEBUG: Log all event dispatches
-  try {
-    if (typeof process !== "undefined" && process.env?.VITEST && typeof console !== "undefined") {
-      console.log("[TEST DEBUG] dispatchBattleEvent:", eventName);
-    }
-  } catch {}
   if (typeof console !== "undefined") {
     console.error(
       "[TEST DEBUG] dispatchBattleEvent: dispatching",
