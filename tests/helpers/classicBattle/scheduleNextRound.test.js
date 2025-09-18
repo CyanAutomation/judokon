@@ -376,6 +376,7 @@ describe("classicBattle startCooldown", () => {
     expect(machine.getState()).toBe("cooldown");
 
     // Manually trigger cooldownEnter since automatic onEnter may not work in test
+    console.error("[TEST] cooldownEnter is defined:", typeof cooldownEnter);
     console.error("[TEST] About to call cooldownEnter");
     await cooldownEnter(machine);
     console.error("[TEST] cooldownEnter called");
