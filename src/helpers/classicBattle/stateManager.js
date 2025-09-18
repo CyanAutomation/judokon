@@ -2,6 +2,44 @@ import { CLASSIC_BATTLE_STATES } from "./stateTable.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
+ * Validates a state transition agai        console.warn(
+          `Invalid onEnter handler for state '${stateName}': expected function, got ${typeof fn}`
+        );st the state table.
+ *
+ * @param {string} fromState - The current state name.
+ * @param {string} toState - The target state name.
+ * @param {string} eventName - The event that triggered the transition.
+ * @param {Array} stateTable - The state table to validate against.
+ * @returns {boolean} True if the transition is valid, false otherwise.
+ */
+function validateStateTransition(fromState, toState, eventName, stateTable) {
+  const fromStateDef = stateTable.find((s) => s.name === fromState);
+  if (!fromStateDef) {
+    console.error(`State validation error: Unknown fromState '${fromState}'`);
+    return false;
+  }
+
+  const toStateDef = stateTable.find((s) => s.name === toState);
+  if (!toStateDef) {
+    console.error(`State validation error: Unknown toState '${toState}'`);
+    return false;
+  }
+
+  // Check if the event is allowed from the current state
+  const validTrigger = fromStateDef.triggers?.find(
+    (t) => t.on === eventName && t.target === toState
+  );
+  if (!validTrigger) {
+    console.warn(
+      `State validation warning: Event '${eventName}' may not be valid from '${fromState}' to '${toState}'`
+    );
+    // Don't fail validation for unknown events, just warn
+  }
+
+  return true;
+}
+
+/**
  * @typedef {object} ClassicBattleStateManager
  * @property {object} context
  * @property {() => string} getState
@@ -92,6 +130,13 @@ export async function createStateManager(
         );
         current = target;
         console.error("[TEST DEBUG] stateManager: After current update, current:", current);
+        // Validate the state transition
+        if (!validateStateTransition(from, target, eventName, stateTable)) {
+          console.error(
+            `State transition validation failed: ${from} -> ${target} via ${eventName}`
+          );
+          return false;
+        }
         // [TEST DEBUG] log state transition attempt
         if (typeof console !== "undefined") {
           console.error("[TEST DEBUG] stateManager transition:", {
@@ -118,8 +163,19 @@ export async function createStateManager(
       try {
         await fn(machine, payload);
       } catch (err) {
-        if (!IS_VITEST) console.debug("State onEnter error", stateName, err);
+        const errorMsg = `State onEnter error in '${stateName}': ${err.message || err}`;
+        if (!IS_VITEST) {
+          console.error(errorMsg, err);
+        } else {
+          console.debug(errorMsg, err);
+        }
+        // Don't re-throw errors in onEnter handlers to prevent state machine deadlock
+        // Log the error and continue with the transition
       }
+    } else if (fn !== undefined) {
+      console.warn(
+        `Invalid onEnter handler for state '${stateName}': expected function, got ${typeof fn}`
+      );
     }
   }
 
