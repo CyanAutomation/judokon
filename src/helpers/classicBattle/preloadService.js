@@ -142,39 +142,6 @@ export function getCachedModule(cacheKey) {
 }
 
 /**
- * Register an object for weak reference tracking to prevent memory leaks.
- *
- * @pseudocode
- * 1. Validate that the object is a non-null object.
- * 2. Store the object in WeakMap with cleanup function and timestamp.
- * 3. This enables automatic cleanup when objects are garbage collected.
- *
- * @param {object} obj - Object to track
- * @param {Function} [cleanupFn] - Optional cleanup function
- */
-export function registerWeakReference(obj, cleanupFn) {
-  if (typeof obj === "object" && obj !== null) {
-    weakRefs.set(obj, { cleanupFn, timestamp: Date.now() });
-  }
-}
-
-/**
- * Register a cleanup function for memory management.
- *
- * @pseudocode
- * 1. Validate that the cleanup function is actually a function.
- * 2. Add the cleanup function to the cleanup registry Set.
- * 3. This ensures cleanup functions can be called during memory cleanup.
- *
- * @param {Function} cleanupFn - Cleanup function to register
- */
-export function registerCleanup(cleanupFn) {
-  if (typeof cleanupFn === "function") {
-    cleanupRegistry.add(cleanupFn);
-  }
-}
-
-/**
  * Perform memory cleanup by clearing weak references and running cleanup functions.
  *
  * @pseudocode
@@ -183,6 +150,8 @@ export function registerCleanup(cleanupFn) {
  * 3. Record current memory usage after cleanup.
  * 4. Clear the cleanup registry to prevent duplicate execution.
  * 5. This helps manage memory usage and prevent leaks.
+ *
+ * @returns {void}
  */
 export function performMemoryCleanup() {
   // Note: WeakMap doesn't allow iteration, so we can't clean up old entries
@@ -208,6 +177,8 @@ export function performMemoryCleanup() {
  * 1. Schedule module preload to run during browser idle time.
  * 2. Preload the battle engine facade module with cache key "battleEngine".
  * 3. This ensures the heavy battle engine is ready when needed without blocking initial load.
+ *
+ * @returns {void}
  */
 export function preloadBattleEngine() {
   runWhenIdle(() => preloadModule("../battleEngineFacade.js", "battleEngine"));
@@ -223,6 +194,8 @@ export function preloadBattleEngine() {
  * 1. Schedule module preload to run during browser idle time.
  * 2. Preload the scoreboard setup module with cache key "scoreboard".
  * 3. This ensures scoreboard functionality is ready when battles start.
+ *
+ * @returns {void}
  */
 export function preloadScoreboard() {
   runWhenIdle(() => preloadModule("../setupScoreboard.js", "scoreboard"));
@@ -238,6 +211,8 @@ export function preloadScoreboard() {
  * 1. Schedule module preload to run during browser idle time.
  * 2. Preload the cooldown renderer module with cache key "cooldownRenderer".
  * 3. This ensures cooldown UI is ready when battle cooldowns occur.
+ *
+ * @returns {void}
  */
 export function preloadCooldownRenderer() {
   runWhenIdle(() => preloadModule("../CooldownRenderer.js", "cooldownRenderer"));
@@ -252,6 +227,8 @@ export function preloadCooldownRenderer() {
  * 1. Schedule module preload to run during browser idle time.
  * 2. Preload the debug panel module with cache key "debugPanel".
  * 3. This ensures debug functionality is available when needed for development.
+ *
+ * @returns {void}
  */
 export function preloadDebugPanel() {
   runWhenIdle(() => preloadModule("./debugPanel.js", "debugPanel"));
@@ -267,6 +244,8 @@ export function preloadDebugPanel() {
  * 2. Preload multiple timer-related modules in parallel.
  * 3. Cache computeNextRoundCooldown and createRoundTimer modules.
  * 4. This ensures timer functionality is ready when rounds begin.
+ *
+ * @returns {void}
  */
 export function preloadTimerModules() {
   runWhenIdle(async () => {
@@ -289,6 +268,8 @@ export function preloadTimerModules() {
  * 3. Start preloading all heavy modules during idle time.
  * 4. Preload battle engine, scoreboard, cooldown renderer, debug panel, and timer modules.
  * 5. This ensures all heavy modules are ready when needed without blocking initial load.
+ *
+ * @returns {void}
  */
 export function initPreloadServices() {
   // Initialize performance monitoring
@@ -414,6 +395,8 @@ export async function getTimerModulesLazy() {
  * 2. Clear the cached modules Map to free memory.
  * 3. Clear the preload promises Map to reset preload state.
  * 4. This ensures a clean state for testing or memory management.
+ *
+ * @returns {void}
  */
 export function clearPreloadCache() {
   // Perform memory cleanup before clearing cache
