@@ -98,7 +98,6 @@ export class TimerController {
       timerUtils && "createCountdownTimer" in timerUtils
         ? timerUtils.createCountdownTimer
         : (d, { onTick: t, onExpired: e } = {}) => {
-            console.log("[dedupe] fallback timer", d);
             // Fallback for tests that partially mock `timerUtils` without
             // `createCountdownTimer`.
             let remaining = d;

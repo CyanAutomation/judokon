@@ -893,7 +893,15 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     isOrchestrated: overrides.isOrchestrated || isOrchestrated,
     getStateSnapshot: overrides.getStateSnapshot || getStateSnapshot
   };
-  const timer = timerFactory({ scheduler: activeScheduler, starter: startCooldown });
+  const startEngineCooldownWithScheduler = (engine, onTick, onExpired, dur, onDrift) => {
+    // Temporarily inject the activeScheduler into the engine for this call
+    const originalScheduler = engine.scheduler;
+    engine.scheduler = activeScheduler;
+    const result = startCooldown(engine, onTick, onExpired, dur, onDrift);
+    engine.scheduler = originalScheduler; // Restore original scheduler
+    return result;
+  };
+  const timer = timerFactory({ starter: startEngineCooldownWithScheduler });
   // Delay initial snackbar render until first tick to avoid overshadowing
   // the short-lived "Opponent is choosing…" message.
   // Provide initial remaining to render immediately and avoid an early
