@@ -895,10 +895,10 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   };
   const startEngineCooldownWithScheduler = (engine, onTick, onExpired, dur, onDrift) => {
     // Temporarily inject the activeScheduler into the engine for this call
-    const originalScheduler = engine.scheduler;
-    engine.scheduler = activeScheduler;
+    const originalTimer = engine.timer;
+    engine.timer = new originalTimer.constructor(activeScheduler);
     const result = startCooldown(engine, onTick, onExpired, dur, onDrift);
-    engine.scheduler = originalScheduler; // Restore original scheduler
+    engine.timer = originalTimer; // Restore original timer
     return result;
   };
   const timer = timerFactory({ starter: startEngineCooldownWithScheduler });
