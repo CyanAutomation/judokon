@@ -909,6 +909,11 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         try {
           // early exit: already in-flight; nothing to do
         } catch {}
+      }
+      detach();
+      resolve();
+    };
+    bus.on("battleStateChange", handler);
   });
   try {
     const machineStateAfter = (() => {
