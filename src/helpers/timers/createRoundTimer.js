@@ -68,34 +68,27 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     }
     let remaining = Math.ceil(total);
     emitTick(remaining);
-    const startedAt = Date.now();
-    if (typeof console !== "undefined") {
-      try {
-        console.log("[TEST DEBUG] createRoundTimer.start fallback: total=", total, "remaining=", remaining, "startedAt=", startedAt);
-      } catch {}
-    }
-    const intervalId = setInterval(() => {
-      if (typeof console !== "undefined") {
+      let timeoutId = null;
+      const tick = () => {
         try {
-          console.log("[TEST DEBUG] createRoundTimer.interval tick: Date.now=", Date.now());
-        } catch {}
-      }
-      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-      const expected = Math.max(0, total - elapsed);
-      // Basic drift detection: if internal remaining lags expected by >2s, signal drift
-      if (remaining - expected > 2) {
-        handleDrift(remaining).catch(() => {});
-        clearInterval(intervalId);
-        return;
-      }
-      remaining -= 1;
-      if (remaining > 0) {
-        emitTick(remaining);
-      } else {
-        clearInterval(intervalId);
-        emitExpired();
-      }
-    }, 1000);
+          // Decrement remaining and emit tick/expired accordingly. Use a
+          // simple setTimeout chain to work reliably with fake timers.
+          remaining -= 1;
+          if (remaining > 0) {
+            emitTick(remaining);
+            timeoutId = setTimeout(tick, 1000);
+          } else {
+            timeoutId = null;
+            emitExpired();
+          }
+        } catch (e) {
+          try {
+            if (timeoutId) clearTimeout(timeoutId);
+          } catch {}
+        }
+      };
+      // Start the tick loop after 1 second
+      timeoutId = setTimeout(tick, 1000);
   }
 
   function emitTick(remaining) {

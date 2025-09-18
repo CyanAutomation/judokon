@@ -240,7 +240,10 @@ let currentNextRound = null;
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
   try {
-    console.error("[TEST ERROR] startCooldown invoked, scheduler present:", !!scheduler?.setTimeout);
+    console.error(
+      "[TEST ERROR] startCooldown invoked, scheduler present:",
+      !!scheduler?.setTimeout
+    );
   } catch {}
   // Reset the ready dispatch flag for the new cooldown period
   readyDispatchedForCurrentCooldown = false;
@@ -926,6 +929,9 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     }
   });
   controls.timer = timer;
+  try {
+    console.error("[TEST ERROR] wireCooldownTimer: controls.timer set?", !!controls.timer, "hasStart?", typeof controls.timer?.start === "function");
+  } catch {}
   registerSkipHandler(() => {
     try {
       console.warn("[test] skip: stop nextRoundTimer");
@@ -952,6 +958,9 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   // consistently observe timer ticks/expiration when advancing timers.
   try {
     controls.timer.start(cooldownSeconds);
+    try {
+      console.error("[TEST ERROR] wireCooldownTimer: controls.timer.start called for", cooldownSeconds);
+    } catch {}
   } catch (err) {
     console.error("[TEST DEBUG] controls.timer.start error", err);
   }
@@ -968,7 +977,13 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     // with test environments that mock timers differently.
     fallbackId = fallbackScheduler(ms, onExpired);
     try {
+      console.error("[TEST ERROR] wireCooldownTimer: fallbackId", fallbackId, "ms", ms);
+    } catch {}
+    try {
       schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
+      try {
+        console.error("[TEST ERROR] wireCooldownTimer: schedulerFallbackId", schedulerFallbackId, "ms", ms);
+      } catch {}
     } catch {}
   } catch {}
 }
