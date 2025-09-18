@@ -249,8 +249,11 @@ describe("classicBattle startCooldown", () => {
   }
 
   it("auto-dispatches ready after 1s cooldown", async () => {
+    console.error("[TEST] Test started");
     document.getElementById("next-round-timer")?.remove();
+    console.error("[TEST] next-round-timer removed");
     const { nextButton } = createTimerNodes();
+    console.error("[TEST] createTimerNodes called");
     nextButton.disabled = true;
 
     mockBattleData();

@@ -133,7 +133,12 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
 
       try {
         if (typeof process !== "undefined" && typeof globalThis !== "undefined") {
-          process.stdout.write("[TEST-BAG] " + JSON.stringify(globalThis.__CLASSIC_BATTLE_DEBUG || {}) + "\n");
+          const bag = globalThis.__CLASSIC_BATTLE_DEBUG || {};
+          const keys = Object.keys(bag).join(",");
+          process.stdout.write("[TEST-BAG-KEYS] " + keys + "\n");
+          try {
+            process.stdout.write("[TEST-FLAGS] __NEXT_ROUND_EXPIRED=" + Boolean(window.__NEXT_ROUND_EXPIRED) + " __startCooldownInvoked=" + Boolean(window.__startCooldownInvoked) + "\n");
+          } catch {}
         }
       } catch {}
 
