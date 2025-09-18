@@ -266,6 +266,7 @@ describe("classicBattle startCooldown", () => {
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     console.log("[TEST DEBUG] after import classicBattle.js");
     const store = battleMod.createBattleStore();
+    console.log("[TEST DEBUG] after createBattleStore");
     await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
       // Call the real startRound to ensure card generation and proper state transitions

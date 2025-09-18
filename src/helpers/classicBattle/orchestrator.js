@@ -20,9 +20,9 @@ import * as debugHooks from "./debugHooks.js";
 import stateCatalog from "./stateCatalog.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { logStateTransition } from "./debugLogger.js";
-import { preloadTimerUtils } from "/src/helpers/TimerController.js";
-import { initScoreboardAdapter } from "/src/helpers/classicBattle/scoreboardAdapter.js";
-import { createStateManager } from "/src/helpers/classicBattle/stateManager.js";
+import { preloadTimerUtils } from "../TimerController.js";
+import { initScoreboardAdapter } from "./scoreboardAdapter.js";
+import { createStateManager } from "./stateManager.js";
 import "./uiService.js";
 
 let machine = null;
