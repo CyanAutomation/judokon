@@ -9,6 +9,7 @@ import { applyMockSetup } from "./mockSetup.js";
 
 import { waitForState } from "../../waitForState.js";
 import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
+import { startCooldown } from "../../../src/helpers/classicBattle/roundManager.js";
 
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
@@ -287,6 +288,7 @@ describe("classicBattle startCooldown", () => {
     await vi.runAllTimersAsync();
     const debugRead = globalThis.__classicBattleDebugRead;
     expect(typeof debugRead).toBe("function");
+    expect(debugRead("startCooldownCalled")).toBe(true);
 
     const currentNextRound = debugRead("currentNextRound");
     expect(currentNextRound).toBeTruthy();

@@ -660,17 +660,19 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   try {
     exposeDebugState("handleNextRoundExpirationCalled", true);
   } catch {}
-  if (controls?.readyDispatched || controls?.readyInFlight) {
+  if (controls?.readyInFlight) {
     try {
       exposeDebugState("handleNextRoundEarlyExit", {
         readyDispatched: !!controls?.readyDispatched,
-        readyInFlight: !!controls?.readyInFlight
+        readyInFlight: !!controls?.readyInFlight,
+        reason: "inFlight"
       });
       if (typeof globalThis !== "undefined") {
         const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
         bag.handleNextRoundEarlyExit = {
           readyDispatched: !!controls?.readyDispatched,
-          readyInFlight: !!controls?.readyInFlight
+          readyInFlight: !!controls?.readyInFlight,
+          reason: "inFlight"
         };
         if (typeof globalThis.__classicBattleDebugExpose === "function") {
           globalThis.__classicBattleDebugExpose(
@@ -682,7 +684,24 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     } catch {}
     return;
   }
-  if (controls) controls.readyInFlight = true;
+  if (controls) {
+    controls.readyInFlight = true;
+    try {
+      exposeDebugState("handleNextRoundEarlyExit", {
+        readyDispatched: !!controls?.readyDispatched,
+        readyInFlight: !!controls?.readyInFlight,
+        reason: controls?.readyDispatched ? "preDispatched" : "enter"
+      });
+      if (typeof globalThis !== "undefined") {
+        const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+        bag.handleNextRoundEarlyExit = {
+          readyDispatched: !!controls?.readyDispatched,
+          readyInFlight: !!controls?.readyInFlight,
+          reason: controls?.readyDispatched ? "preDispatched" : "enter"
+        };
+      }
+    } catch {}
+  }
   try {
     exposeDebugState("currentNextRoundReadyInFlight", !!controls?.readyInFlight);
   } catch {}
@@ -937,6 +956,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   // tests awaiting `controls.ready` don't depend on orchestrator internals.
   // Only dispatch if the machine is still in cooldown state and we haven't already dispatched for this cooldown.
   const dispatchReadyDirectly = async () => {
+    const machine = machineReader();
     if (machine?.dispatch) {
       try {
         const result = await machine.dispatch("ready");
@@ -948,6 +968,58 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     }
     return false;
   };
+  const dispatchViaOptions = async () => {
+    if (typeof options.dispatchBattleEvent === "function") {
+      try {
+        const result = await options.dispatchBattleEvent("ready");
+        if (result && typeof result.then === "function") {
+          await result;
+          return true;
+        }
+        return result !== false;
+      } catch {}
+    }
+    return false;
+  };
+
+  let dispatched = false;
+  try {
+    dispatched = await dispatchReadyDirectly();
+  } catch {}
+  if (!dispatched) {
+    try {
+      dispatched = await dispatchViaOptions();
+    } catch {}
+  }
+  if (!dispatched) {
+    try {
+      const machine = machineReader();
+      if (machine?.dispatch) {
+        await machine.dispatch("ready");
+        dispatched = true;
+      }
+    } catch {}
+  }
+  if (dispatched) {
+    readyDispatchedForCurrentCooldown = true;
+  }
+  try {
+    exposeDebugState("handleNextRoundDispatchResult", dispatched);
+    if (typeof globalThis !== "undefined") {
+      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+      bag.handleNextRoundDispatchResult = dispatched;
+    }
+  } catch {}
+  if (controls) {
+    controls.readyInFlight = false;
+    if (!controls.readyDispatched && dispatched && typeof controls.resolveReady === "function") {
+      controls.resolveReady();
+    }
+    if (dispatched) {
+      controls.readyDispatched = true;
+    }
+  }
+  return dispatched;
 }
 
 function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides = {}) {
