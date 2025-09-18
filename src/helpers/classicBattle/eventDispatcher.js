@@ -4,21 +4,32 @@ import { readDebugState } from "./debugHooks.js";
 const DEDUPE_WINDOW_MS = 20;
 const recentDispatches = new Map();
 
-function shouldShortCircuitDuplicate(eventName) {
+function hasRecentDispatch(eventName) {
   if (typeof eventName !== "string" || !eventName) return false;
-  const now = Date.now();
-  const lastDispatchedAt = recentDispatches.get(eventName);
-  if (typeof lastDispatchedAt === "number" && now - lastDispatchedAt < DEDUPE_WINDOW_MS) {
-    return true;
-  }
-  recentDispatches.set(eventName, now);
+  const recorded = recentDispatches.get(eventName);
+  if (typeof recorded !== "number") return false;
+  return Date.now() - recorded < DEDUPE_WINDOW_MS;
+}
+
+function rememberDispatch(eventName) {
+  if (typeof eventName !== "string" || !eventName) return null;
+  const timestamp = Date.now();
+  recentDispatches.set(eventName, timestamp);
   setTimeout(() => {
-    const recorded = recentDispatches.get(eventName);
-    if (recorded === now) {
+    const current = recentDispatches.get(eventName);
+    if (current === timestamp) {
       recentDispatches.delete(eventName);
     }
   }, DEDUPE_WINDOW_MS);
-  return false;
+  return timestamp;
+}
+
+function clearDispatchRecord(eventName, timestamp) {
+  if (typeof eventName !== "string" || typeof timestamp !== "number") return;
+  const current = recentDispatches.get(eventName);
+  if (current === timestamp) {
+    recentDispatches.delete(eventName);
+  }
 }
 
 /**
@@ -39,9 +50,6 @@ function shouldShortCircuitDuplicate(eventName) {
  * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export async function dispatchBattleEvent(eventName, payload) {
-  if (shouldShortCircuitDuplicate(eventName)) {
-    return true;
-  }
   // Get machine from debug state to avoid circular dependency
   let machineSource =
     typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
@@ -69,6 +77,12 @@ export async function dispatchBattleEvent(eventName, payload) {
     return false;
   }
 
+  if (hasRecentDispatch(eventName)) {
+    return true;
+  }
+
+  const dispatchTimestamp = rememberDispatch(eventName);
+
   // DEBUG: Log all event dispatches
   if (typeof console !== "undefined") {
     console.error(
@@ -90,8 +104,13 @@ export async function dispatchBattleEvent(eventName, payload) {
         // ignore: interrupt diagnostics are optional
       }
     }
-    return await machine.dispatch(eventName, payload);
+    const result = await machine.dispatch(eventName, payload);
+    if (result === false) {
+      clearDispatchRecord(eventName, dispatchTimestamp);
+    }
+    return result;
   } catch (error) {
+    clearDispatchRecord(eventName, dispatchTimestamp);
     // ignore: dispatch failures only trigger debug updates
     try {
       console.error("Error dispatching battle event:", eventName, error);
