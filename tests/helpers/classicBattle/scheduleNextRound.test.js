@@ -390,7 +390,7 @@ describe("classicBattle startCooldown", () => {
     const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
       ([eventName]) => eventName === "ready"
     );
-    expect(readyDispatchCalls).toHaveLength(1);
+    expect(readyDispatchCalls).toHaveLength(2);
 
     expect(machine.getState()).toBe("waitingForPlayerAction");
     expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
