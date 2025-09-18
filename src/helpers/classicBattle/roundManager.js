@@ -1029,7 +1029,6 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
 }
 
 function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides = {}) {
-  console.log("[dedupe] wireCooldownTimer", cooldownSeconds);
   const bus = createEventBus(overrides.eventBus);
   const timerFactory = overrides.createRoundTimer || createRoundTimer;
   let startCooldown = overrides.startEngineCooldown || requireEngine().startCoolDown;
