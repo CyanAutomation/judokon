@@ -8,7 +8,11 @@ let machineIdCounter = 0;
 
 function getTimestamp() {
   try {
-    if (typeof process !== "undefined" && typeof process.hrtime === "function" && typeof process.hrtime.bigint === "function") {
+    if (
+      typeof process !== "undefined" &&
+      typeof process.hrtime === "function" &&
+      typeof process.hrtime.bigint === "function"
+    ) {
       const ns = process.hrtime.bigint();
       return Number(ns / 1000000n);
     }
@@ -120,6 +124,34 @@ export async function dispatchBattleEvent(eventName, payload) {
     }
   }
 
+  // Expose raw getter diagnostics so tests can assert visibility across ESM/module boundaries
+  try {
+    const globalGetter = typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
+      ? globalThis.__classicBattleDebugRead("getClassicBattleMachine")
+      : undefined;
+    try {
+      exposeDebugState("dispatch_globalGetterType", typeof globalGetter);
+    } catch {}
+  } catch {}
+  try {
+    exposeDebugState("dispatch_machineSourceType", typeof machineSource);
+  } catch {}
+  try {
+    if (typeof machineSource === "function") {
+      let invoked = null;
+      try {
+        invoked = machineSource();
+      } catch {}
+      try {
+        exposeDebugState("dispatch_machineSourceInvokedType", typeof invoked);
+      } catch {}
+    } else {
+      try {
+        exposeDebugState("dispatch_machineSourceInvokedType", typeof machineSource);
+      } catch {}
+    }
+  } catch {}
+
   const machine = typeof machineSource === "function" ? machineSource() : machineSource || null;
   try {
     exposeDebugState("dispatchMachineAvailable", !!machine);
@@ -148,7 +180,10 @@ export async function dispatchBattleEvent(eventName, payload) {
 
   // DEBUG: Log all event dispatches
   try {
-    exposeDebugState("dispatchMachineStateBefore", typeof machine.getState === "function" ? machine.getState() : (machine.state ?? null));
+    exposeDebugState(
+      "dispatchMachineStateBefore",
+      typeof machine.getState === "function" ? machine.getState() : (machine.state ?? null)
+    );
   } catch {}
 
   try {
@@ -171,7 +206,10 @@ export async function dispatchBattleEvent(eventName, payload) {
       exposeDebugState("dispatchBattleEventResult", result);
     } catch {}
     try {
-      exposeDebugState("dispatchMachineStateAfter", typeof machine.getState === "function" ? machine.getState() : (machine.state ?? null));
+      exposeDebugState(
+        "dispatchMachineStateAfter",
+        typeof machine.getState === "function" ? machine.getState() : (machine.state ?? null)
+      );
     } catch {}
     if (result === false) {
       resetDispatchKey(dispatchKey, timestamp);

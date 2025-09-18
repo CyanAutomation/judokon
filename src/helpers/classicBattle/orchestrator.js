@@ -446,6 +446,17 @@ function attachListeners(machineRef) {
   if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
     globalThis.__classicBattleDebugExpose("getClassicBattleMachine", () => machineRef);
   }
+  try {
+    // Record when the orchestrator exposed the getter so tests can correlate timing
+    try {
+      debugHooks.exposeDebugState("orchestrator_getter_exposed_at", Date.now());
+    } catch {}
+    try {
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("orchestrator_getter_exposed_at", Date.now());
+      }
+    } catch {}
+  } catch {}
   if (typeof document !== "undefined") {
     visibilityHandler = () => {
       const engine = machineRef.context?.engine;

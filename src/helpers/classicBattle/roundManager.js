@@ -662,9 +662,31 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     }
   } catch {}
   try {
+    if (typeof globalThis !== "undefined") {
+      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+      bag.handleNextRoundCallCount = (bag.handleNextRoundCallCount || 0) + 1;
+    }
+  } catch {}
+  try {
     exposeDebugState("handleNextRoundExpirationCalled", true);
   } catch {}
   if (controls?.readyDispatched || controls?.readyInFlight) {
+    try {
+      exposeDebugState("handleNextRoundEarlyExit", {
+        readyDispatched: !!controls?.readyDispatched,
+        readyInFlight: !!controls?.readyInFlight
+      });
+      if (typeof globalThis !== "undefined") {
+        const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+        bag.handleNextRoundEarlyExit = {
+          readyDispatched: !!controls?.readyDispatched,
+          readyInFlight: !!controls?.readyInFlight
+        };
+        if (typeof globalThis.__classicBattleDebugExpose === "function") {
+          globalThis.__classicBattleDebugExpose("handleNextRoundEarlyExit", bag.handleNextRoundEarlyExit);
+        }
+      }
+    } catch {}
     return;
   }
   if (controls) controls.readyInFlight = true;
@@ -733,6 +755,16 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           sourceReadDebug: typeof getter,
           hasGlobal: typeof globalThis !== "undefined" && !!globalThis.__classicBattleDebugRead
         });
+        if (typeof globalThis !== "undefined") {
+          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+          bag.handleNextRoundMachineGetter = {
+            sourceReadDebug: typeof getter,
+            hasGlobal: typeof globalThis.__classicBattleDebugRead === "function"
+          };
+          if (typeof globalThis.__classicBattleDebugExpose === "function") {
+            globalThis.__classicBattleDebugExpose("handleNextRoundMachineGetter", bag.handleNextRoundMachineGetter);
+          }
+        }
       } catch {}
       if (typeof getter === "function") {
         try {
@@ -757,6 +789,13 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     } catch {
       try {
         exposeDebugState("handleNextRoundMachineReadError", true);
+        if (typeof globalThis !== "undefined") {
+          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+          bag.handleNextRoundMachineReadError = true;
+          if (typeof globalThis.__classicBattleDebugExpose === "function") {
+            globalThis.__classicBattleDebugExpose("handleNextRoundMachineReadError", true);
+          }
+        }
       } catch {}
       return null;
     }
@@ -779,6 +818,13 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       }
     })();
     exposeDebugState("handleNextRoundMachineState", machineState ?? null);
+    if (typeof globalThis !== "undefined") {
+      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+      bag.handleNextRoundMachineState = machineState ?? null;
+      if (typeof globalThis.__classicBattleDebugExpose === "function") {
+        globalThis.__classicBattleDebugExpose("handleNextRoundMachineState", machineState ?? null);
+      }
+    }
   } catch {}
   try {
     const snapshotState = (() => {
@@ -789,6 +835,13 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       }
     })();
     exposeDebugState("handleNextRoundSnapshotState", snapshotState);
+    if (typeof globalThis !== "undefined") {
+      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+      bag.handleNextRoundSnapshotState = snapshotState;
+      if (typeof globalThis.__classicBattleDebugExpose === "function") {
+        globalThis.__classicBattleDebugExpose("handleNextRoundSnapshotState", snapshotState);
+      }
+    }
   } catch {}
   await new Promise((resolve) => {
     if (shouldResolve()) {
@@ -835,6 +888,16 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       }
     })();
     exposeDebugState("handleNextRoundMachineStateAfterWait", machineStateAfter ?? null);
+    if (typeof globalThis !== "undefined") {
+      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+      bag.handleNextRoundMachineStateAfterWait = machineStateAfter ?? null;
+      if (typeof globalThis.__classicBattleDebugExpose === "function") {
+        globalThis.__classicBattleDebugExpose(
+          "handleNextRoundMachineStateAfterWait",
+          machineStateAfter ?? null
+        );
+      }
+    }
   } catch {}
 
   // If the orchestrator is running, it owns the "Next" button readiness.

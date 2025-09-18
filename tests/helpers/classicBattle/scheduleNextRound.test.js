@@ -294,7 +294,10 @@ describe("classicBattle startCooldown", () => {
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
     const getterInfo = debugRead("handleNextRoundMachineGetter");
     if (!getterInfo || getterInfo.sourceReadDebug !== "function") {
-      throw new Error(`handleNextRoundMachineGetter:${JSON.stringify(getterInfo)}`);
+      const bag = typeof globalThis !== "undefined" ? globalThis.__CLASSIC_BATTLE_DEBUG : undefined;
+      throw new Error(
+        `handleNextRoundMachineGetter:${JSON.stringify(getterInfo)} bag:${JSON.stringify(bag)}`
+      );
     }
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
@@ -369,7 +372,10 @@ describe("classicBattle startCooldown", () => {
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
     const getterInfo = debugRead("handleNextRoundMachineGetter");
     if (!getterInfo || getterInfo.sourceReadDebug !== "function") {
-      throw new Error(`handleNextRoundMachineGetter:${JSON.stringify(getterInfo)}`);
+      const bag = typeof globalThis !== "undefined" ? globalThis.__CLASSIC_BATTLE_DEBUG : undefined;
+      throw new Error(
+        `handleNextRoundMachineGetter:${JSON.stringify(getterInfo)} bag:${JSON.stringify(bag)}`
+      );
     }
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
