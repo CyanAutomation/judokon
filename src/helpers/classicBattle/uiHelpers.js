@@ -31,6 +31,7 @@ import { updateDebugPanel as updateDebugPanelImpl } from "./debugPanel.js";
  * Re-export of updateDebugPanel from debugPanel.js
  *
  * @see ./debugPanel.js
+ * @returns {void}
  * @pseudocode
  * 1. This is a re-export - see original function documentation.
  */

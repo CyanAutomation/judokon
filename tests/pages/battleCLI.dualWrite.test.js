@@ -62,7 +62,6 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
         </section>
       </main>
     `;
-
   });
 
   afterEach(async () => {

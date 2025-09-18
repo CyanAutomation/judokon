@@ -50,6 +50,7 @@ import { initBattleScoreboardAdapter } from "../../helpers/battleScoreboard.js";
  * Re-export of syncWinTargetDropdown from winTargetSync.js
  *
  * @see ../../helpers/classicBattle/winTargetSync.js
+ * @returns {void}
  * @pseudocode
  * 1. This is a re-export - see original function documentation.
  */
