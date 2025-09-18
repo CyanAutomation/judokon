@@ -17,22 +17,26 @@ export function createScoreboard(container = document.createElement("div")) {
   messageEl.setAttribute("aria-live", "polite");
   messageEl.setAttribute("aria-atomic", "true");
   messageEl.setAttribute("role", "status");
+  messageEl.setAttribute("data-testid", "round-message");
 
   const timerEl = document.createElement("p");
   timerEl.id = "next-round-timer";
   timerEl.setAttribute("aria-live", "polite");
   timerEl.setAttribute("aria-atomic", "true");
   timerEl.setAttribute("role", "status");
+  timerEl.setAttribute("data-testid", "next-round-timer");
 
   const roundCounterEl = document.createElement("p");
   roundCounterEl.id = "round-counter";
   roundCounterEl.setAttribute("aria-live", "polite");
   roundCounterEl.setAttribute("aria-atomic", "true");
+  roundCounterEl.setAttribute("data-testid", "round-counter");
 
   const scoreEl = document.createElement("p");
   scoreEl.id = "score-display";
   scoreEl.setAttribute("aria-live", "off");
   scoreEl.setAttribute("aria-atomic", "true");
+  scoreEl.setAttribute("data-testid", "score-display");
 
   container.append(messageEl, timerEl, roundCounterEl, scoreEl);
   return container;
