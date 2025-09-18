@@ -15,6 +15,12 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn()
 }));
 
+vi.mock("../../../src/config/constants.js", () => ({
+  BATTLE_EVENTS: {},
+  ROUND_DURATION_SECONDS: 1,
+  STAT_SELECTION_DURATION_SECONDS: 1
+}));
+
 vi.mock("../../../src/helpers/dataUtils.js", async (importOriginal) => {
   const actual = await importOriginal();
   return {
@@ -286,6 +292,10 @@ describe("classicBattle startCooldown", () => {
     expect(typeof currentNextRound?.timer?.start).toBe("function");
     expect(typeof currentNextRound?.ready?.then).toBe("function");
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
+    const getterInfo = debugRead("handleNextRoundMachineGetter");
+    if (!getterInfo || getterInfo.sourceReadDebug !== "function") {
+      throw new Error(`handleNextRoundMachineGetter:${JSON.stringify(getterInfo)}`);
+    }
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
     expect(["cooldown", null]).toContain(machineStateBefore);
@@ -357,6 +367,10 @@ describe("classicBattle startCooldown", () => {
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.ready?.then).toBe("function");
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
+    const getterInfo = debugRead("handleNextRoundMachineGetter");
+    if (!getterInfo || getterInfo.sourceReadDebug !== "function") {
+      throw new Error(`handleNextRoundMachineGetter:${JSON.stringify(getterInfo)}`);
+    }
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
     expect(["cooldown", null]).toContain(machineStateBefore);
