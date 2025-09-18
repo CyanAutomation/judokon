@@ -154,7 +154,8 @@ export class TimerController {
       },
       pauseOnHidden,
       onSecondTick: this.onSecondTick,
-      cancel: this.cancel
+      cancel: this.cancel,
+      scheduler: thisScheduler
     });
     this.currentTimer.start();
 

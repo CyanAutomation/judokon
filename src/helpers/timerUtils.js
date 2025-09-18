@@ -4,6 +4,7 @@ import {
   cancel as cancelSchedule,
   stop as stopScheduler
 } from "../utils/scheduler.js";
+import { realScheduler } from "./scheduler.js";
 
 /**
  * Retrieve the default timer value for a category.
@@ -71,13 +72,22 @@ export function _resetForTest() {
  */
 export function createCountdownTimer(
   duration,
-  { onTick, onExpired, pauseOnHidden, onSecondTick = scheduleSecond, cancel = cancelSchedule } = {}
+  {
+    onTick,
+    onExpired,
+    pauseOnHidden,
+    onSecondTick = scheduleSecond,
+    cancel = cancelSchedule,
+    scheduler = realScheduler
+  } = {}
 ) {
   let remaining = duration;
   let subId = null;
   let cancelFn = cancel;
   let paused = false;
   let hardTimeoutId = 0;
+  const activeScheduler = scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
+  const clearFromScheduler = scheduler && typeof scheduler.clearTimeout === "function" ? scheduler.clearTimeout.bind(scheduler) : realScheduler.clearTimeout.bind(realScheduler);
 
   async function tick() {
     if (paused) return;
@@ -130,7 +140,7 @@ export function createCountdownTimer(
     // Hard fallback to ensure expiration even if the scheduler never ticks
     // in certain test environments.
     try {
-      hardTimeoutId = thisScheduler.setTimeout(
+      hardTimeoutId = activeScheduler.setTimeout(
         async () => {
           if (subId !== null) {
             // Timer still running; stop and expire once.
@@ -153,7 +163,7 @@ export function createCountdownTimer(
       subId = null;
     }
     if (hardTimeoutId) {
-      thisScheduler.clearTimeout(hardTimeoutId);
+      clearFromScheduler(hardTimeoutId);
       hardTimeoutId = 0;
     }
     if (pauseOnHidden && typeof document !== "undefined") {
