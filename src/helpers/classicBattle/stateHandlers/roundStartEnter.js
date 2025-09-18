@@ -1,6 +1,6 @@
 import { setupFallbackTimer } from "../roundManager.js";
 import { isTestModeEnabled } from "../../testModeUtils.js";
-import { guard, guardAsync } from "../guard.js";
+import { guardAsync } from "../guard.js";
 import { handleRoundError } from "../handleRoundError.js";
 
 function installRoundStartFallback(machine) {
@@ -33,10 +33,15 @@ function invokeRoundStart(ctx) {
  * @returns {Promise<void>}
  */
 export async function roundStartEnter(machine) {
+  const fallback = installRoundStartFallback(machine);
   try {
-    console.error("[TEST DEBUG] roundStartEnter: Directly dispatching cardsRevealed");
-    await machine.dispatch("cardsRevealed");
+    await invokeRoundStart(machine.context);
+    if (fallback) clearTimeout(fallback);
+    if (machine.getState() === "roundStart") {
+      await machine.dispatch("cardsRevealed");
+    }
   } catch (err) {
+    if (fallback) clearTimeout(fallback);
     await handleRoundError(machine, "roundStartError", err);
   }
 }
