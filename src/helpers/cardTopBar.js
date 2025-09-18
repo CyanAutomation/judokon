@@ -93,12 +93,20 @@ export function createNameContainer(firstname, surname) {
   const firstnameSpan = document.createElement("span");
   firstnameSpan.className = "firstname";
   // Use textContent to safely insert text without interpreting HTML
-  firstnameSpan.textContent = firstname;
+  const safeFirstname = firstname ?? "";
+  firstnameSpan.textContent = safeFirstname;
 
   const surnameSpan = document.createElement("span");
   surnameSpan.className = "surname";
   // Use textContent to safely insert text without interpreting HTML
-  surnameSpan.textContent = surname;
+  const safeSurname = surname ?? "";
+  surnameSpan.textContent = safeSurname;
+
+  const labelParts = [safeFirstname, safeSurname]
+    .map((value) => `${value ?? ""}`.trim())
+    .filter(Boolean);
+  const ariaLabel = labelParts.length > 0 ? labelParts.join(" ") : "Unknown judoka";
+  nameContainer.setAttribute("aria-label", ariaLabel);
 
   nameContainer.appendChild(firstnameSpan);
   nameContainer.appendChild(surnameSpan);
@@ -141,11 +149,15 @@ export function createFlagImage(finalFlagUrl, countryName) {
 
   const safeCountryName = countryName ? countryName : "Unknown";
   // Set alt attribute directly; the browser will handle any necessary escaping
-  flagImg.setAttribute("alt", `${safeCountryName} flag`);
+  const altText = `${safeCountryName} flag`;
+  flagImg.setAttribute("alt", altText);
+  flagImg.setAttribute("aria-label", altText);
 
   flagImg.setAttribute("loading", "lazy");
 
   flagImg.setAttribute("onerror", `this.src='${PLACEHOLDER_FLAG_URL}'`);
+
+  flagContainer.setAttribute("aria-label", altText);
 
   flagContainer.appendChild(flagImg);
 
