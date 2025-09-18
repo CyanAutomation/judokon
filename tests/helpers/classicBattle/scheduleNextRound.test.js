@@ -83,6 +83,17 @@ vi.mock("../../../src/helpers/selectionHandler.js", () => ({
   }),
 }));
 
+vi.mock("../../../src/helpers/cardStatUtils.js", () => ({
+  getCardStatValue: vi.fn(() => 1), // Return a dummy value
+}));
+
+vi.mock("../../../src/helpers/battleEvents.js", () => ({
+  emitBattleEvent: vi.fn(() => {}), // Return a dummy function
+  onBattleEvent: vi.fn(() => {}),
+  offBattleEvent: vi.fn(() => {}),
+  __resetBattleEventTarget: vi.fn(() => {}),
+}));
+
 const dispatchBattleEventSpy = eventDispatcherMock.spy;
 
 async function resetRoundManager(store) {
