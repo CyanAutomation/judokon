@@ -268,6 +268,7 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     updateDebugPanel: overrides.updateDebugPanel,
     isOrchestrated: overrides.isOrchestrated,
     getStateSnapshot: overrides.getStateSnapshot,
+    getClassicBattleMachine: overrides.getClassicBattleMachine,
     setSkipHandler: overrides.setSkipHandler
   };
   if (orchestratedMode) {
@@ -654,23 +655,94 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   // still occurs.
   const bus = createEventBus(options.eventBus);
   const getSnapshot = options.getStateSnapshot || getStateSnapshot;
-  await new Promise((resolve) => {
+  const machineReader = (() => {
+    if (typeof options.getClassicBattleMachine === "function") {
+      return () => {
+        try {
+          return options.getClassicBattleMachine();
+        } catch {
+          return null;
+        }
+      };
+    }
+    return () => {
+      let getter = null;
+      try {
+        getter = readDebugState("getClassicBattleMachine");
+      } catch {}
+      if (!getter) {
+        try {
+          if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead) {
+            getter = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
+          }
+        } catch {}
+      }
+      if (typeof getter === "function") {
+        try {
+          return getter();
+        } catch {
+          return null;
+        }
+      }
+      return getter || null;
+    };
+  })();
+  const isCooldownSafeState = (state) => {
+    if (!state) return true;
+    if (typeof state !== "string") return false;
+    if (state === "cooldown" || state === "roundOver") return true;
+    return isOrchestratorReadyState(state);
+  };
+  const readMachineState = () => {
     try {
-      const state = getSnapshot().state;
-      if (!state || state === "cooldown" || isOrchestratorReadyState(state)) {
+      return getMachineState(machineReader());
+    } catch {
+      return null;
+    }
+  };
+  const shouldResolve = () => {
+    try {
+      const snapshotState = getSnapshot()?.state;
+      if (isCooldownSafeState(snapshotState)) return true;
+    } catch {}
+    const machineState = readMachineState();
+    return isCooldownSafeState(machineState);
+  };
+  await new Promise((resolve) => {
+    if (shouldResolve()) {
+      resolve();
+      return;
+    }
+    const handler = (event) => {
+      const detach = () => {
+        try {
+          bus.off("battleStateChange", handler);
+        } catch {}
+      };
+      if (shouldResolve()) {
+        detach();
         resolve();
         return;
       }
-    } catch {}
-    const handler = (e) => {
+      let toState = null;
       try {
-        if (e.detail?.to === "cooldown") {
-          bus.off("battleStateChange", handler);
-          resolve();
+        const detail = event?.detail;
+        if (detail && typeof detail === "object") {
+          toState = detail.to ?? detail?.detail?.to ?? null;
+        } else if (typeof detail === "string") {
+          toState = detail;
         }
       } catch {}
+      if (isCooldownSafeState(toState)) {
+        detach();
+        resolve();
+      }
     };
-    bus.on("battleStateChange", handler);
+    try {
+      bus.on("battleStateChange", handler);
+    } catch {
+      resolve();
+    }
   });
 
   // If the orchestrator is running, it owns the "Next" button readiness.
