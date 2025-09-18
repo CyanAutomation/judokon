@@ -31,6 +31,19 @@ function getTimestamp() {
   return Date.now();
 }
 
+/**
+ * Get a unique identifier for a machine instance.
+ *
+ * @pseudocode
+ * 1. Check if machine is a valid object or function.
+ * 2. If machine is not in the WeakMap, assign it a new incremental ID.
+ * 3. Return the cached ID for the machine.
+ * 4. Return "global" as fallback for invalid machines.
+ * 5. This ensures consistent identification across deduplication operations.
+ *
+ * @param {any} machine - The machine instance to identify
+ * @returns {string|number} Unique identifier for the machine
+ */
 function getMachineId(machine) {
   if (machine && (typeof machine === "object" || typeof machine === "function")) {
     if (!machineIds.has(machine)) {
@@ -41,6 +54,20 @@ function getMachineId(machine) {
   return "global";
 }
 
+/**
+ * Generate a unique key for event deduplication tracking.
+ *
+ * @pseudocode
+ * 1. Validate that eventName is a non-empty string.
+ * 2. Return null if eventName is invalid.
+ * 3. Combine eventName with machine ID using colon separator.
+ * 4. Return the composite key for deduplication tracking.
+ * 5. This creates unique keys per event type and machine instance.
+ *
+ * @param {string} eventName - The event name to track
+ * @param {any} machine - The machine instance for context
+ * @returns {string|null} Composite key for deduplication or null if invalid
+ */
 function getDispatchKey(eventName, machine) {
   if (typeof eventName !== "string" || !eventName) return null;
   return `${eventName}:${getMachineId(machine)}`;
