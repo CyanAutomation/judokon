@@ -264,13 +264,8 @@ describe("classicBattle startCooldown", () => {
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
-      // Simulate startRound completing immediately without calling real startRound
-      // to avoid interfering with the cooldown timer dispatch test
-      const machine = orchestrator.getBattleStateMachine();
-      if (machine) {
-        machine.dispatch("cardsRevealed");
-      }
-      return Promise.resolve({ playerJudoka: {}, opponentJudoka: {}, roundNumber: 1 });
+      // Call the real startRound to ensure card generation and proper state transitions
+      return await battleMod.startRound(store);
     });
 
     console.log("[TEST DEBUG] before initClassicBattleOrchestrator");
