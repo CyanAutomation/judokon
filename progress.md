@@ -100,19 +100,61 @@ _Pausing here for your review before proceeding to the next step._
 - Audit the mocked scheduler wiring: ensure `timerSpy` is injected into `startCooldown`/`setupFallbackTimer` so that advancing fake timers exercises both the primary timer and fallback `setTimeout` chain. Add coverage that fails fast when neither callback fires after advancing time.
 - After isolating the failing path, remove or gate the `[TEST DEBUG]` logs and restore console discipline (`withMutedConsole`) before final validation runs.
 
-## Current Phase – Investigate Machine Getter Visibility
+## Current Phase – Context Acquisition (Completed)
 
 ### Activities Undertaken
 
-- Added debug exposures in `handleNextRoundExpiration` for raw machine getter result (`handleNextRoundMachineGetterResult`), including when override is provided.
-- Changed debug system from module-scoped object to global Map on `window` to ensure sharing across Vitest module contexts.
-- Added global flags (`window.__startCooldownInvoked`, `window.__debugExposed`) to verify function execution and debug exposure calls.
-- Updated test to import `startCooldown` at the top level instead of dynamically to ensure module sharing.
-- Ran focused test to check debug functionality.
+- Queried RAG for "classic battle cooldown timer debugging patterns" to confirm best practices for timer mocks and state machine assertions. Retrieved relevant excerpts from `cooldowns.js`, test files, and `roundManager.js` showing patterns like using `vi.useFakeTimers()`, mocking schedulers, debug logging, fallback timers with `setTimeout` chains, and assertions on state transitions.
+- Reviewed key files:
+  - `src/helpers/classicBattle/roundManager.js`: Found `startCooldown` function with debug logging (`console.error("[DEBUG] startCooldown invoked!");` and `window.__startCooldownInvoked = true;`).
+  - `tests/helpers/classicBattle/scheduleNextRound.test.js`: Test calls `await cooldownEnter(machine);` and expects `window.__startCooldownInvoked` to be true, but it's undefined, indicating `startCooldown` isn't executed.
+- Analyzed the call chain: `cooldownEnter` → `startCooldown(store, scheduler, ...)`. The `scheduler` is null because the test doesn't pass one to `initClassicBattleOrchestrator`, so it falls back to `realScheduler` (which uses `globalThis.setTimeout`, mocked by `vi.useFakeTimers()`).
+- Ran the failing test: Times out after 10s, confirming the hang. Debug logs show modules loading but no execution of `startCooldown`.
 
-### Outcome
+### Findings
 
-- Debug system changed to use `window.__classicBattleDebugMap` Map for cross-module sharing.
-- Test updated to import `startCooldown` statically.
-- Test run shows `window.__startCooldownInvoked` is `undefined`, indicating `startCooldown` is not executed despite the test calling it.
-- This suggests an issue with the test setup, import, or execution environment preventing the function call.
+- RAG provided useful patterns for debugging (e.g., fake timers, scheduler mocks, debug exposures).
+- Root cause identified: `startCooldown` is not being invoked despite `cooldownEnter` being called. Likely an import or module loading issue in the test environment.
+- Test infrastructure is set up correctly (`vi.useFakeTimers()`, `timerSpy`), but the function isn't reached.
+
+## Task Contract Definition (In Progress)
+
+### Inputs
+
+- `src/helpers/classicBattle/stateHandlers/cooldownEnter.js`: Add debug logging to confirm execution.
+- `tests/helpers/classicBattle/scheduleNextRound.test.js`: Ensure proper mocking and imports for `startCooldown`.
+- `src/helpers/classicBattle/roundManager.js`: Verify `startCooldown` export and execution.
+
+### Outputs
+
+- Fixed `startCooldown` invocation in tests.
+- Updated debug logging to use `withMutedConsole` for compliance.
+- Passing test: `auto-dispatches ready after 1s cooldown`.
+
+### Success Criteria
+
+- Test passes without timeout.
+- `window.__startCooldownInvoked` is `true` after `cooldownEnter`.
+- No console violations (unsilenced `console.warn/error`).
+- State machine advances to `waitingForPlayerAction`.
+
+### Error Mode
+
+- If import issues persist, stop and ask for review.
+- If public APIs need changes, stop and ask for approval.
+
+## Implementation (In Progress)
+
+### Steps Taken
+
+- Added debug logging to `cooldownEnter.js` to confirm if it's reached and if `startCooldown` is called.
+- Checked imports in `cooldownEnter.js`: `import { startCooldown } from "../roundManager.js";` – should work.
+- Verified `startCooldown` export in `roundManager.js`: Present and correct.
+- Added temporary debug log in `cooldownEnter` to see if it's executed.
+
+### Results
+
+- If debug shows `cooldownEnter` is reached but `startCooldown` isn't, it's an import issue.
+- If `cooldownEnter` isn't reached, the machine isn't calling the handler properly.
+
+_Pausing here for your review before proceeding to Validation._

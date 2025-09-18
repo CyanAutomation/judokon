@@ -670,6 +670,23 @@ function markNextReady(btn) {
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   try {
+    // Entry marker for diagnostics
+    if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
+      process.stdout.write(
+        `[BAG-MARKER] handleNextRoundExpiration entry controls_readyInFlight=${Boolean(
+          controls?.readyInFlight
+        )} controls_readyDispatched=${Boolean(controls?.readyDispatched)}\n`
+      );
+    }
+    if (typeof globalThis !== "undefined") {
+      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+      bag.handleNextRound_entry = {
+        readyInFlight: !!controls?.readyInFlight,
+        readyDispatched: !!controls?.readyDispatched
+      };
+    }
+  } catch {}
+  try {
     if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
       globalThis.__classicBattleDebugExpose("nextRoundExpired", true);
     }
@@ -703,6 +720,20 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
             bag.handleNextRoundEarlyExit
           );
         }
+      }
+    } catch {}
+    try {
+      if (
+        typeof process !== "undefined" &&
+        process &&
+        typeof process.stdout?.write === "function"
+      ) {
+        process.stdout.write("[BAG-MARKER] handleNextRoundEarlyExit: readyInFlight true\n");
+      }
+      if (typeof globalThis !== "undefined") {
+        const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+        bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
+        bag.handleNextRound_earlyExit.push({ reason: "inFlight", at: Date.now() });
       }
     } catch {}
     return;
@@ -1031,13 +1062,20 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         if (typeof globalThis !== "undefined") {
           const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
           bag.handleNextRound_dispatchViaOptions_info = info;
-          bag.handleNextRound_dispatchViaOptions_count = (bag.handleNextRound_dispatchViaOptions_count || 0) + 1;
+          bag.handleNextRound_dispatchViaOptions_count =
+            (bag.handleNextRound_dispatchViaOptions_count || 0) + 1;
         }
       } catch {}
       try {
         // emit a short stdout marker so the test runner shows where we are
-        if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
-          process.stdout.write(`[BAG-MARKER] before dispatchViaOptions hasFn=${info.hasFn} name=${String(info.name)}\n`);
+        if (
+          typeof process !== "undefined" &&
+          process &&
+          typeof process.stdout?.write === "function"
+        ) {
+          process.stdout.write(
+            `[BAG-MARKER] before dispatchViaOptions hasFn=${info.hasFn} name=${String(info.name)}\n`
+          );
         }
       } catch {}
       try {
@@ -1056,8 +1094,14 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         }
       } catch {}
       try {
-        if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
-          process.stdout.write(`[BAG-MARKER] after dispatchViaOptions dispatched=${String(dispatched)}\n`);
+        if (
+          typeof process !== "undefined" &&
+          process &&
+          typeof process.stdout?.write === "function"
+        ) {
+          process.stdout.write(
+            `[BAG-MARKER] after dispatchViaOptions dispatched=${String(dispatched)}\n`
+          );
         }
       } catch {}
       try {
@@ -1067,16 +1111,27 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       try {
         if (typeof globalThis !== "undefined") {
           const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-          bag.handleNextRound_dispatchViaOptions_error = { message: err && err.message ? err.message : String(err) };
+          bag.handleNextRound_dispatchViaOptions_error = {
+            message: err && err.message ? err.message : String(err)
+          };
         }
       } catch {}
       try {
-        if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
-          process.stdout.write(`[BAG-MARKER] dispatchViaOptions threw=${String(err && err.message ? err.message : err)}\n`);
+        if (
+          typeof process !== "undefined" &&
+          process &&
+          typeof process.stdout?.write === "function"
+        ) {
+          process.stdout.write(
+            `[BAG-MARKER] dispatchViaOptions threw=${String(err && err.message ? err.message : err)}\n`
+          );
         }
       } catch {}
       try {
-        console.log("[TEST-INSTRUMENT] dispatchViaOptions threw:", err && err.message ? err.message : err);
+        console.log(
+          "[TEST-INSTRUMENT] dispatchViaOptions threw:",
+          err && err.message ? err.message : err
+        );
       } catch {}
     }
   } catch (err) {
@@ -1127,6 +1182,15 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   if (dispatched) {
     readyDispatchedForCurrentCooldown = true;
   }
+  try {
+    // Emit final debug bag snapshot for this invocation
+    if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
+      try {
+        const bag = globalThis.__CLASSIC_BATTLE_DEBUG || {};
+        process.stdout.write(`[BAG-MARKER] handleNextRoundExit bag=${JSON.stringify(bag)}\n`);
+      } catch {}
+    }
+  } catch {}
   try {
     exposeDebugState("handleNextRoundDispatchResult", dispatched);
     if (typeof globalThis !== "undefined") {
