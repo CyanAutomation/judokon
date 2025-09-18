@@ -12,6 +12,15 @@ import { runWhenIdle } from "./idleCallback.js";
 let cachedModules = new Map();
 let preloadPromises = new Map();
 
+// Performance monitoring
+let performanceMetrics = {
+  preloadStartTime: null,
+  moduleLoadTimes: new Map(),
+  cacheHits: 0,
+  cacheMisses: 0,
+  memoryUsage: []
+};
+
 /**
  * Preload a module during idle time and cache the result.
  *
@@ -21,13 +30,21 @@ let preloadPromises = new Map();
  */
 async function preloadModule(modulePath, cacheKey) {
   if (cachedModules.has(cacheKey) || preloadPromises.has(cacheKey)) {
+    performanceMetrics.cacheHits++;
+    recordMemoryUsage();
     return preloadPromises.get(cacheKey);
   }
+
+  performanceMetrics.cacheMisses++;
+  const startTime = Date.now();
 
   const preloadPromise = (async () => {
     try {
       const module = await import(modulePath);
+      const loadTime = Date.now() - startTime;
+      performanceMetrics.moduleLoadTimes.set(cacheKey, loadTime);
       cachedModules.set(cacheKey, module);
+      recordMemoryUsage();
     } catch (error) {
       // Silently fail - preloading is best-effort
       console.warn(`Failed to preload ${modulePath}:`, error);
@@ -39,13 +56,67 @@ async function preloadModule(modulePath, cacheKey) {
 }
 
 /**
- * Get a cached module if available.
+ * Get performance metrics for lazy loading.
  *
- * @param {string} cacheKey - Key of the cached module
- * @returns {object|null} The cached module or null if not loaded
+ * @returns {object} Performance metrics
  */
-export function getCachedModule(cacheKey) {
-  return cachedModules.get(cacheKey) || null;
+export function getPerformanceMetrics() {
+  return {
+    ...performanceMetrics,
+    cacheHitRate:
+      performanceMetrics.cacheHits /
+        (performanceMetrics.cacheHits + performanceMetrics.cacheMisses) || 0,
+    averageLoadTime:
+      Array.from(performanceMetrics.moduleLoadTimes.values()).reduce((sum, time) => sum + time, 0) /
+        performanceMetrics.moduleLoadTimes.size || 0
+  };
+}
+
+/**
+ * Record memory usage for monitoring.
+ */
+function recordMemoryUsage() {
+  if (typeof performance !== "undefined" && performance.memory) {
+    performanceMetrics.memoryUsage.push({
+      timestamp: Date.now(),
+      used: performance.memory.usedJSHeapSize,
+      total: performance.memory.totalJSHeapSize,
+      limit: performance.memory.jsHeapSizeLimit
+    });
+
+    // Keep only last 100 measurements
+    if (performanceMetrics.memoryUsage.length > 100) {
+      performanceMetrics.memoryUsage.shift();
+    }
+  }
+}
+
+/**
+ * Register a cleanup function for memory management.
+ *
+ * @param {Function} cleanupFn - Cleanup function to register
+ */
+export function registerCleanup(cleanupFn) {
+  if (typeof cleanupFn === "function") {
+    cleanupRegistry.add(cleanupFn);
+  }
+}
+
+/**
+ * Perform memory cleanup by clearing weak references and running cleanup functions.
+ */
+export function performMemoryCleanup() {
+  // Note: WeakMap doesn't allow iteration, so we can't clean up old entries
+  // But we can run registered cleanup functions and record memory usage
+  for (const cleanupFn of cleanupRegistry) {
+    try {
+      cleanupFn();
+    } catch (error) {
+      console.warn("Failed to run cleanup function:", error);
+    }
+  }
+  recordMemoryUsage();
+  cleanupRegistry.clear();
 }
 
 /**
@@ -108,6 +179,10 @@ export function preloadTimerModules() {
  * preloading heavy modules during idle periods.
  */
 export function initPreloadServices() {
+  // Initialize performance monitoring
+  performanceMetrics.preloadStartTime = Date.now();
+  recordMemoryUsage();
+
   // Start preloading heavy modules during idle time
   preloadBattleEngine();
   preloadScoreboard();
@@ -192,6 +267,9 @@ export async function getTimerModulesLazy() {
  * Clear all cached modules (useful for testing or memory cleanup).
  */
 export function clearPreloadCache() {
+  // Perform memory cleanup before clearing cache
+  performMemoryCleanup();
+
   cachedModules.clear();
   preloadPromises.clear();
 }

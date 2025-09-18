@@ -19,6 +19,7 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { setupFallbackTimer } from "./timerService.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy, getTimerModulesLazy } from "./preloadService.js";
+import { createResourceRegistry, createEnhancedCleanup, timerCleanup, eventCleanup } from "./enhancedCleanup.js";
 
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
@@ -426,14 +427,8 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
   const markReady = options.markReady || markNextReady;
   /** @type {Array<() => void>} */
   const cleanupFns = [];
-  const cleanup = () => {
-    while (cleanupFns.length) {
-      const dispose = cleanupFns.pop();
-      try {
-        dispose?.();
-      } catch {}
-    }
-  };
+  const registry = createResourceRegistry();
+  const cleanup = createEnhancedCleanup(cleanupFns, registry);
   let resolved = false;
   const finalize = () => {
     if (resolved) return;
@@ -459,6 +454,8 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
           bus.off(type, wrapped);
         } catch {}
       });
+      // Also register with enhanced cleanup registry
+      eventCleanup.registerListener(registry, bus, type, wrapped, `event-${type}`);
     } catch {}
   };
   if (controls.ready && typeof controls.ready.finally === "function") {
