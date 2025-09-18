@@ -237,8 +237,9 @@ Outstanding (remaining work)
   - Verification: Unit tests for timer (1 passed), opponent delay (1 passed), and Playwright timer tests (2 passed) confirm timer displays correctly and opponent feedback works. All classic battle unit tests (19 passed) and Playwright tests (35 passed) show no regressions.
 
 - Footer navigation protection
-  - Status: not implemented.
-  - Next action: implement body attribute `data-battle-active="true"` when match starts and either disable footer nav via CSS or intercept clicks to show a confirmation dialog.
+  - Status: Done — the footer navigation is now disabled during a match.
+  - Changes implemented: Added `data-battle-active="true"` to the `body` element when a match starts in `src/pages/battleClassic.init.js`. Added a CSS rule in `src/styles/layout.css` to disable pointer events and reduce the opacity of the footer when the `data-battle-active` attribute is present.
+  - Verification: A new unit test was created to verify that the `data-battle-active` attribute is set correctly. A new Playwright test was created to verify that the footer navigation is disabled during a match. Both tests passed, and no regressions were found in other relevant tests.
 
 Notes and follow-up
 
