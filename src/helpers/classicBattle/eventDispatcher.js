@@ -24,30 +24,17 @@ function getDispatchKey(eventName, machine) {
 function trackInFlightDispatch(key, promise) {
   if (!key) return;
   inFlightDispatches.set(key, promise);
-  promise
-    .then((result) => {
-      if (result === false && inFlightDispatches.get(key) === promise) {
-        inFlightDispatches.delete(key);
-      }
-      return result;
-    })
-    .catch((error) => {
-      if (inFlightDispatches.get(key) === promise) {
-        inFlightDispatches.delete(key);
-      }
-      throw error;
-    })
-    .finally(() => {
-      if (typeof setTimeout === "function") {
-        setTimeout(() => {
-          if (inFlightDispatches.get(key) === promise) {
-            inFlightDispatches.delete(key);
-          }
-        }, DEDUPE_WINDOW_MS);
-      } else if (inFlightDispatches.get(key) === promise) {
-        inFlightDispatches.delete(key);
-      }
-    });
+  const clear = () => {
+    if (inFlightDispatches.get(key) === promise) {
+      inFlightDispatches.delete(key);
+    }
+  };
+  promise.then(clear, clear);
+  if (typeof setTimeout === "function") {
+    setTimeout(() => {
+      clear();
+    }, DEDUPE_WINDOW_MS);
+  }
 }
 
 /**
