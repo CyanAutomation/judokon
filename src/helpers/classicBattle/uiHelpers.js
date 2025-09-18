@@ -56,6 +56,16 @@ export let syncScoreDisplay = () => {
     if (el && !el.textContent) el.textContent = INITIAL_SCOREBOARD_TEXT;
   } catch {}
 };
+
+/**
+ * Preload UI service module during idle time.
+ *
+ * @pseudocode
+ * 1. Import uiService module asynchronously during idle time.
+ * 2. Update syncScoreDisplay function with module implementation if available.
+ * 3. Fall back to local implementation if module export is missing.
+ * 4. Handle import errors gracefully without affecting main functionality.
+ */
 function preloadUiService() {
   // Preload optional module during idle; keep hot path clean
   import("./uiService.js")

@@ -352,6 +352,12 @@ export async function getCooldownRendererLazy() {
 /**
  * Get lazy-loaded debug panel if available, otherwise load synchronously.
  *
+ * @pseudocode
+ * 1. Check if debug panel is already cached from preload.
+ * 2. Return cached module immediately if available.
+ * 3. If not cached, perform synchronous import of debug panel.
+ * 4. Return the loaded module for immediate use.
+ *
  * @returns {Promise<object>} The debug panel module
  */
 export async function getDebugPanelLazy() {
@@ -363,6 +369,13 @@ export async function getDebugPanelLazy() {
 
 /**
  * Get lazy-loaded timer modules if available, otherwise load synchronously.
+ *
+ * @pseudocode
+ * 1. Check cache for both timer modules (computeCooldown and createRoundTimer).
+ * 2. Return cached modules immediately if both are available.
+ * 3. Load any missing modules synchronously using Promise.all.
+ * 4. Return object containing both timer modules.
+ * 5. This ensures both timer modules are available when needed.
  *
  * @returns {Promise<object>} Object containing timer modules
  */
@@ -387,6 +400,12 @@ export async function getTimerModulesLazy() {
 
 /**
  * Clear all cached modules (useful for testing or memory cleanup).
+ *
+ * @pseudocode
+ * 1. Perform memory cleanup to run registered cleanup functions.
+ * 2. Clear the cached modules Map to free memory.
+ * 3. Clear the preload promises Map to reset preload state.
+ * 4. This ensures a clean state for testing or memory management.
  */
 export function clearPreloadCache() {
   // Perform memory cleanup before clearing cache
