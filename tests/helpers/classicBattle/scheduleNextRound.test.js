@@ -77,6 +77,12 @@ vi.mock("../../../src/helpers/timerService.js", () => ({
   }),
 }));
 
+vi.mock("../../../src/helpers/selectionHandler.js", () => ({
+  handleStatSelection: vi.fn(async () => {
+    return Promise.resolve();
+  }),
+}));
+
 const dispatchBattleEventSpy = eventDispatcherMock.spy;
 
 async function resetRoundManager(store) {
