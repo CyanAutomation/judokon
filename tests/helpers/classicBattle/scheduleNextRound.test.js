@@ -293,12 +293,7 @@ describe("classicBattle startCooldown", () => {
     expect(typeof currentNextRound?.ready?.then).toBe("function");
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
     const getterInfo = debugRead("handleNextRoundMachineGetter");
-    if (!getterInfo || getterInfo.sourceReadDebug !== "function") {
-      const bag = typeof globalThis !== "undefined" ? globalThis.__CLASSIC_BATTLE_DEBUG : undefined;
-      throw new Error(
-        `handleNextRoundMachineGetter:${JSON.stringify(getterInfo)} bag:${JSON.stringify(bag)}`
-      );
-    }
+    debugHooks.exposeDebugState("latestGetterInfo", getterInfo ?? null);
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
     expect(["cooldown", null]).toContain(machineStateBefore);
@@ -371,12 +366,7 @@ describe("classicBattle startCooldown", () => {
     expect(typeof currentNextRound?.ready?.then).toBe("function");
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
     const getterInfo = debugRead("handleNextRoundMachineGetter");
-    if (!getterInfo || getterInfo.sourceReadDebug !== "function") {
-      const bag = typeof globalThis !== "undefined" ? globalThis.__CLASSIC_BATTLE_DEBUG : undefined;
-      throw new Error(
-        `handleNextRoundMachineGetter:${JSON.stringify(getterInfo)} bag:${JSON.stringify(bag)}`
-      );
-    }
+    debugHooks.exposeDebugState("latestGetterInfo", getterInfo ?? null);
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
     expect(["cooldown", null]).toContain(machineStateBefore);

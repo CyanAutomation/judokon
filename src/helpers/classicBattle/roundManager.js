@@ -19,14 +19,21 @@ if (typeof globalThis !== "undefined") {
 }
 if (typeof process !== "undefined" && !globalThis.__loggedStartCooldown) {
   globalThis.__loggedStartCooldown = true;
-  process.on("exit", () => {
-    if (typeof globalThis.__startCooldownCount === "number") {
-      console.log(`[dedupe] startCooldownCount ${globalThis.__startCooldownCount}`);
-    }
-  });
-}
-import { createRoundTimer } from "../timers/createRoundTimer.js";
-import { startCoolDown as engineStartCoolDown } from "../battleEngineFacade.js";
+    try {
+      exposeDebugState("handleNextRoundMachineState", machineState ?? null);
+    } catch {}
+    try {
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("handleNextRoundMachineState", machineState ?? null);
+      }
+    } catch {}
+    try {
+      // Record when we performed the read so tests can check ordering
+      exposeDebugState("handleNextRoundMachineState_readAt", Date.now());
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("handleNextRoundMachineState_readAt", Date.now());
+      }
+    } catch {}
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
@@ -38,14 +45,20 @@ import { getStateSnapshot } from "./battleDebug.js";
  * 1. Read `document.body.dataset.battleState` inside a try/catch.
  * 2. Return `true` when the attribute exists, otherwise `false`.
  *
- * @returns {boolean} True if orchestration appears active.
- */
-export function isOrchestrated() {
-  try {
-    return !!document.body.dataset.battleState;
-  } catch {
-    return false;
-  }
+    try {
+      exposeDebugState("handleNextRoundSnapshotState", snapshotState);
+    } catch {}
+    try {
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("handleNextRoundSnapshotState", snapshotState);
+      }
+    } catch {}
+    try {
+      exposeDebugState("handleNextRoundSnapshotState_readAt", Date.now());
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("handleNextRoundSnapshotState_readAt", Date.now());
+      }
+    } catch {}
 }
 
 /**
@@ -55,14 +68,20 @@ export function isOrchestrated() {
  * 1. Initialize battle state values.
  * 2. Return the store.
  *
- * @returns {{quitModal: ReturnType<import("../../components/Modal.js").createModal>|null, statTimeoutId: ReturnType<typeof setTimeout>|null, autoSelectId: ReturnType<typeof setTimeout>|null, compareRaf: number, selectionMade: boolean, stallTimeoutMs: number, playerChoice: string|null, playerCardEl: HTMLElement|null, opponentCardEl: HTMLElement|null, statButtonEls: Record<string, HTMLButtonElement>|null, currentPlayerJudoka: object|null}}
- */
-export function createBattleStore() {
-  return {
-    quitModal: null,
-    statTimeoutId: null,
-    autoSelectId: null,
-    compareRaf: 0,
+    try {
+      exposeDebugState("handleNextRoundMachineStateAfterWait", machineStateAfter ?? null);
+    } catch {}
+    try {
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("handleNextRoundMachineStateAfterWait", machineStateAfter ?? null);
+      }
+    } catch {}
+    try {
+      exposeDebugState("handleNextRoundMachineStateAfterWait_readAt", Date.now());
+      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+        globalThis.__classicBattleDebugExpose("handleNextRoundMachineStateAfterWait_readAt", Date.now());
+      }
+    } catch {}
     selectionMade: false,
     stallTimeoutMs: 35000,
     playerChoice: null,
