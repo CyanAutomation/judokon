@@ -54,6 +54,16 @@ export class ClassicBattleController extends EventTarget {
     );
   }
 
+  /**
+   * Emit feature flags change event to listeners.
+   *
+   * @private
+   * @summary Emit feature flags change event with current flag checker.
+   * @pseudocode
+   * 1. Dispatch a `featureFlagsChange` event with the `isEnabled` function as detail.
+   *
+   * @returns {void}
+   */
   #emitFeatureFlags() {
     this.dispatchEvent(new CustomEvent("featureFlagsChange", { detail: { isEnabled } }));
   }

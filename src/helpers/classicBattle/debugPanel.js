@@ -8,10 +8,32 @@ import { readDebugState } from "./debugHooks.js";
 
 const debugPanelToggleListeners = new WeakMap();
 
+/**
+ * Get the debug output element from the DOM.
+ *
+ * @returns {HTMLElement|null} The debug output element or null if not found.
+ * @summary Locate the debug output <pre> element for displaying debug state.
+ * @pseudocode
+ * 1. Query the DOM for element with id "debug-output".
+ * 2. Return the element or null if not found.
+ */
 function getDebugOutputEl() {
   return document.getElementById("debug-output");
 }
 
+/**
+ * Ensure a copy button exists in the debug panel summary.
+ *
+ * @param {HTMLElement} panel - The debug panel element.
+ * @summary Add a copy button to the debug panel for copying debug output.
+ * @pseudocode
+ * 1. Check if panel and summary elements exist.
+ * 2. Look for existing copy button, create one if missing.
+ * 3. Add click handler to copy debug output to clipboard.
+ * 4. Append the button to the summary element.
+ *
+ * @returns {void}
+ */
 function ensureDebugCopyButton(panel) {
   if (!panel) return;
   const summary = panel.querySelector("summary");
@@ -30,6 +52,22 @@ function ensureDebugCopyButton(panel) {
   }
 }
 
+/**
+ * Ensure the debug panel has the correct DOM structure.
+ *
+ * @param {HTMLElement} panel - The debug panel element to structure.
+ * @param {object} [options] - Configuration options.
+ * @param {boolean} [options.createIfMissing=false] - Whether to create panel if missing.
+ * @summary Ensure debug panel is a proper <details> element with summary and pre elements.
+ * @pseudocode
+ * 1. Return null if panel is missing and createIfMissing is false.
+ * 2. Create a new <details> element if panel doesn't exist.
+ * 3. Convert existing element to <details> if it's not already.
+ * 4. Ensure <summary> and <pre> elements exist with proper attributes.
+ * 5. Add copy button and return the structured panel.
+ *
+ * @returns {HTMLElement|null} The structured debug panel or null.
+ */
 function ensureDebugPanelStructure(panel, { createIfMissing = false } = {}) {
   let node = panel;
   if (!node && !createIfMissing) return null;
@@ -68,6 +106,19 @@ function ensureDebugPanelStructure(panel, { createIfMissing = false } = {}) {
   return node;
 }
 
+/**
+ * Persist the debug panel's open/closed state to localStorage.
+ *
+ * @param {HTMLElement} panel - The debug panel element.
+ * @summary Save and restore debug panel toggle state across page reloads.
+ * @pseudocode
+ * 1. Restore open state from localStorage if available.
+ * 2. Add toggle event listener if not already present.
+ * 3. Save state to localStorage whenever panel is toggled.
+ * 4. Use WeakMap to track listeners and avoid duplicates.
+ *
+ * @returns {void}
+ */
 function persistDebugPanelState(panel) {
   if (!panel) return;
   safeCall(() => {

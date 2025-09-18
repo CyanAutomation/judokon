@@ -62,6 +62,19 @@ export async function initStartCooldown(machine) {
  * @param {() => number} [compute]
  * @returns {number}
  */
+/**
+ * Resolve the inter-round cooldown duration from a computation function.
+ *
+ * @param {() => number} compute - Function that computes the cooldown duration.
+ * @summary Safely compute and validate inter-round cooldown duration.
+ * @pseudocode
+ * 1. Check if compute is a valid function.
+ * 2. Execute the computation and convert to number.
+ * 3. Validate the result is a finite, non-negative number.
+ * 4. Return 0 for invalid results.
+ *
+ * @returns {number} The cooldown duration in seconds, or 0 if invalid.
+ */
 export function resolveInterRoundCooldownDuration(compute) {
   if (typeof compute !== "function") return 0;
   try {
@@ -237,6 +250,21 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
   };
 }
 
+/**
+ * Schedule a fallback timer for cooldown completion.
+ *
+ * @param {object} options - Configuration options.
+ * @param {number} options.duration - Duration in seconds.
+ * @param {() => void} options.finish - Completion callback.
+ * @param {object} [options.scheduler] - Optional scheduler with setTimeout.
+ * @summary Schedule a fallback timer that fires after the main cooldown timer.
+ * @pseudocode
+ * 1. Convert duration to milliseconds and add buffer time.
+ * 2. Use provided scheduler or fallback to setupFallbackTimer.
+ * 3. Schedule the finish callback to execute after the calculated delay.
+ *
+ * @returns {ReturnType<typeof setTimeout>|null} The timer ID, or null if scheduling fails.
+ */
 function scheduleCooldownFallback({ duration, finish, scheduler }) {
   const ms = Math.max(0, Number(duration) || 0) * 1000 + FALLBACK_TIMER_BUFFER_MS;
   return setupFallbackTimer(ms, finish, scheduler);

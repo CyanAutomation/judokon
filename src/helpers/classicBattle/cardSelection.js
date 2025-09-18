@@ -17,6 +17,18 @@ let gokyoLookup = null;
 let opponentJudoka = null;
 let loadErrorModal = null;
 
+/**
+ * Display QA information messages during test mode.
+ *
+ * @param {string} text - The message to display.
+ * @summary Show temporary QA debug messages when test mode is enabled.
+ * @pseudocode
+ * 1. Check if test mode is enabled via feature flag.
+ * 2. If enabled, show a temporary message with QA prefix.
+ * 3. Clear the message after 1.2 seconds to avoid interfering with round messages.
+ *
+ * @returns {void}
+ */
 function qaInfo(text) {
   try {
     if (isEnabled("enableTestMode")) {
@@ -27,6 +39,19 @@ function qaInfo(text) {
   } catch {}
 }
 
+/**
+ * Display load error messages and provide retry functionality.
+ *
+ * @param {Error} error - The error that occurred during loading.
+ * @summary Handle data loading errors with user-friendly messages and retry options.
+ * @pseudocode
+ * 1. Extract and sanitize the error message.
+ * 2. Try to show the message via scoreboard, fallback to direct DOM manipulation.
+ * 3. Create or update an error modal with retry button.
+ * 4. Handle retry by attempting to redraw cards or reloading the page.
+ *
+ * @returns {void}
+ */
 function showLoadError(error) {
   let msg = error?.message || "Unable to load data.";
   if (msg.includes("Cannot access uninitialized variable")) {
