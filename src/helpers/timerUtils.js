@@ -86,14 +86,17 @@ export function createCountdownTimer(
   let cancelFn = cancel;
   let paused = false;
   let hardTimeoutId = 0;
-  const activeScheduler = scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
-  const clearFromScheduler = scheduler && typeof scheduler.clearTimeout === "function" ? scheduler.clearTimeout.bind(scheduler) : realScheduler.clearTimeout.bind(realScheduler);
+  const activeScheduler =
+    scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
+  const clearFromScheduler =
+    scheduler && typeof scheduler.clearTimeout === "function"
+      ? scheduler.clearTimeout.bind(scheduler)
+      : realScheduler.clearTimeout.bind(realScheduler);
 
   async function tick() {
     if (paused) return;
     remaining -= 1;
     if (typeof onTick === "function") onTick(remaining);
-    console.log("[dedupe] scheduler", typeof activeScheduler.setTimeout);
     if (remaining <= 0) {
       stop();
       if (typeof onExpired === "function") await onExpired();
