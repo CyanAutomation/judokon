@@ -1331,21 +1331,20 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     const ms = !Number.isFinite(secsNum) || secsNum <= 0 ? 0 : Math.max(0, secsNum * 1000);
     // Use both global and injected scheduler timeouts to maximize compatibility
     // with test environments that mock timers differently.
-    fallbackId = fallbackScheduler(ms, onExpired);
-    // try {
-    //   console.error("[TEST ERROR] wireCooldownTimer: fallbackId", fallbackId, "ms", ms);
-    // } catch {}
-    try {
-      schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
-      // try {
-      //   console.error(
-      //     "[TEST ERROR] wireCooldownTimer: schedulerFallbackId",
-      //     schedulerFallbackId,
-      //     "ms",
-      //     ms
-      //   );
-      // } catch {}
-    } catch {}
+    // Prefer the injected scheduler when available to avoid duplicate
+    // scheduling across both the injected scheduler and the global
+    // fallback (which can cause double-expiry in tests that use both
+    // a mock scheduler and fake timers). Use fallbackScheduler only when
+    // no scheduler was provided.
+    if (scheduler && typeof scheduler.setTimeout === "function") {
+      try {
+        schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
+      } catch {}
+    } else {
+      try {
+        fallbackId = fallbackScheduler(ms, onExpired);
+      } catch {}
+    }
   } catch {}
 }
 
