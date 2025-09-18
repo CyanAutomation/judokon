@@ -2,6 +2,8 @@
 
 console.log("[TEST DEBUG] top-level");
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+// Ensure fake timers are active before any scheduler/timer modules load.
+vi.useFakeTimers();
 import "./commonMocks.js";
 import { setupClassicBattleDom } from "./utils.js";
 import { createTimerNodes } from "./domUtils.js";
@@ -117,12 +119,14 @@ vi.mock("../../../src/helpers/cardStatUtils.js", () => ({
   getCardStatValue: vi.fn(() => 1) // Return a dummy value
 }));
 
-vi.mock("../../../src/helpers/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn(() => {}), // Return a dummy function
-  onBattleEvent: vi.fn(() => {}),
-  offBattleEvent: vi.fn(() => {}),
-  __resetBattleEventTarget: vi.fn(() => {})
-}));
+vi.mock("../../../src/helpers/battleEvents.js", async (importOriginal) => {
+  // Use the real implementation so tests relying on the shared EventTarget
+  // (onBattleEvent/offBattleEvent/emitBattleEvent) function correctly.
+  const actual = await importOriginal();
+  return {
+    ...actual
+  };
+});
 
 const dispatchBattleEventSpy = eventDispatcherMock.spy;
 
