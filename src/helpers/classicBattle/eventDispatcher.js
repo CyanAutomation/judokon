@@ -6,6 +6,17 @@ const recentDispatches = new Map();
 const machineIds = new WeakMap();
 let machineIdCounter = 0;
 
+/**
+ * Get a high-resolution timestamp for deduplication tracking.
+ *
+ * @pseudocode
+ * 1. Try to use Node.js high-resolution time (process.hrtime.bigint) if available.
+ * 2. Convert nanoseconds to milliseconds for consistency.
+ * 3. Fall back to Date.now() if high-resolution time is not available.
+ * 4. Return the timestamp as a number for deduplication comparisons.
+ *
+ * @returns {number} Current timestamp in milliseconds
+ */
 function getTimestamp() {
   try {
     if (
@@ -69,6 +80,17 @@ function registerDispatch(eventName, machine) {
   return { shouldSkip: false, key, timestamp: now };
 }
 
+/**
+ * Reset the dispatch history for deduplication tracking.
+ *
+ * @pseudocode
+ * 1. If no specific event name is provided, clear all dispatch history.
+ * 2. If an event name is provided, iterate through all tracked dispatches.
+ * 3. Remove any dispatch records that match the specified event name pattern.
+ * 4. This allows the next dispatch of the same event to proceed without deduplication.
+ *
+ * @param {string} [eventName] - Optional event name to reset, clears all if not specified
+ */
 export function resetDispatchHistory(eventName) {
   process.stdout.write(`[dedupe] reset ${eventName}
 `);
@@ -83,6 +105,18 @@ export function resetDispatchHistory(eventName) {
   }
 }
 
+/**
+ * Reset a specific dispatch key if it matches the given timestamp.
+ *
+ * @pseudocode
+ * 1. Return early if no key is provided.
+ * 2. Get the current timestamp for the key from recentDispatches.
+ * 3. If the current timestamp matches the provided timestamp, delete the key.
+ * 4. This allows precise control over deduplication reset for specific dispatches.
+ *
+ * @param {string} key - The dispatch key to potentially reset
+ * @param {number} timestamp - The timestamp to match for reset
+ */
 function resetDispatchKey(key, timestamp) {
   if (!key) return;
   const current = recentDispatches.get(key);
