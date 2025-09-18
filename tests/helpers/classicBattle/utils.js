@@ -24,41 +24,8 @@ import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBa
  */
 export function setupClassicBattleDom() {
   disposeClassicBattleOrchestrator();
-  vi.resetModules();
-  // Ensure the scheduler module used by timer utilities is mocked to use
-  // the global timers so tests using fake timers behave deterministically.
-  try {
-    vi.doMock("../../../src/utils/scheduler.js", () => ({
-      onFrame: (cb) => {
-        const id = globalThis.setTimeout(() => cb(performance.now()), 16);
-        return id;
-      },
-      onSecondTick: (cb) => {
-        const id = globalThis.setInterval(() => cb(performance.now()), 1000);
-        return id;
-      },
-      cancel: (id) => {
-        try {
-          globalThis.clearTimeout(id);
-        } catch {}
-        try {
-          globalThis.clearInterval(id);
-        } catch {}
-      },
-      stop: () => {}
-    }));
-  } catch {}
-  document.body.innerHTML = "";
-  const { playerCard, opponentCard } = createBattleCardContainers();
-  const header = createBattleHeader();
-  document.body.append(playerCard, opponentCard, header);
-  const container = document.createElement("div");
-  container.id = "snackbar-container";
-  container.setAttribute("role", "status");
-  container.setAttribute("aria-live", "polite");
-  document.body.append(container);
-
   const timerSpy = vi.useFakeTimers();
+  vi.resetModules();
   globalThis.requestAnimationFrame = vi.fn((cb) => cb());
   globalThis.cancelAnimationFrame = vi.fn();
   const fetchJsonMock = vi.fn(async (url) => {
