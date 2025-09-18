@@ -12,29 +12,6 @@ import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent, resetDispatchHistory } from "./eventDispatcher.js";
 
-if (typeof globalThis !== "undefined") {
-  if (typeof globalThis.__startCooldownCount !== "number") {
-    globalThis.__startCooldownCount = 0;
-  }
-}
-if (typeof process !== "undefined" && !globalThis.__loggedStartCooldown) {
-  globalThis.__loggedStartCooldown = true;
-  try {
-    exposeDebugState("handleNextRoundMachineState", machineState ?? null);
-  } catch {}
-  try {
-    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-      globalThis.__classicBattleDebugExpose("handleNextRoundMachineState", machineState ?? null);
-    }
-  } catch {}
-  try {
-    // Record when we performed the read so tests can check ordering
-    exposeDebugState("handleNextRoundMachineState_readAt", Date.now());
-    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-      globalThis.__classicBattleDebugExpose("handleNextRoundMachineState_readAt", Date.now());
-    }
-  } catch {}
-}
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
