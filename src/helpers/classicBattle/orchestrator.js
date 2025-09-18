@@ -177,7 +177,12 @@ export async function initClassicBattleOrchestrator(
     const onTransition = createTransitionHook(hookSet);
 
     try {
-      const createdMachine = await createStateManager(onEnterMap, context, onTransition, context.stateTable);
+      const createdMachine = await createStateManager(
+        onEnterMap,
+        context,
+        onTransition,
+        context.stateTable
+      );
       machine = createdMachine;
       attachListeners(machine);
       preloadDependencies();
