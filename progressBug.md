@@ -186,3 +186,31 @@ I added lightweight instrumentation inside `handleNextRoundExpiration` to help d
 3. As a minimal workaround (to make the test pass while we diagnose), add a defensive call to `options.dispatchBattleEvent("ready")` earlier in the path (ensuring it is awaited) so the mocked function is invoked and the test records the call. This is a temporary measure and I would revert it once we resolve the root cause.
 
 Tell me which of the three immediate next actions you'd like me to perform (I recommend #2 to verify module specifier/mocking mismatch first). I can proceed and update this file after each run.
+
+## Module specifier confirmation
+
+I confirmed the exact module specifiers used and resolved them to absolute paths to ensure the test's mock targets the same module instance that `roundManager.js` imports at runtime.
+
+- Test `vi.mock` specifier (from `tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js`):
+  - "../../../src/helpers/classicBattle/eventDispatcher.js"
+  - Resolved absolute path: /workspaces/judokon/src/helpers/classicBattle/eventDispatcher.js
+
+- `roundManager.js` import (from `src/helpers/classicBattle/roundManager.js`):
+  - `import { dispatchBattleEvent, resetDispatchHistory } from "./eventDispatcher.js";`
+  - Resolved absolute path: /workspaces/judokon/src/helpers/classicBattle/eventDispatcher.js
+
+Conclusion: both the test mock and the runtime import resolve to the exact same file path. That indicates the mock should replace the module instance used by `roundManager.js` under normal Vitest hoisting rules.
+
+Given they resolve to the same file, the most likely remaining causes are one (or more) of the following:
+
+1. Mock registration/import ordering: the mock must be hoisted/applied before the module under test is imported. The failing test appears to register the `vi.mock(...)` at the top of the test file, which should be hoisted, but other cross-file mocks or setup may interfere.
+2. The `handleNextRoundExpiration` dispatch path may not be executing the `dispatchViaOptions` call in this run (e.g., early exit conditions, `controls.readyInFlight` short-circuit, or the orchestrator path being taken). Instrumentation added earlier didn't show console logs in test stdout, so the code path may differ or console output may be suppressed.
+3. The `dispatchBattleEvent` implementation contains deduplication logic that may short-circuit the public API call (or return early because no machine is available), so the mock's wrapper may call the real function which then returns `false` or short-circuits in a way that the test doesn't count.
+
+Recommended next steps (I can implement any of these):
+
+- Verify mock hoisting/order by adding a visible marker when the mock factory runs (e.g., push to a `vi.hoisted` tracker or set a property on `globalThis.__CLASSIC_BATTLE_DEBUG`), then re-run the single test to confirm the mock executed before imports.
+- Add a non-console runtime marker inside `handleNextRoundExpiration` (write to `globalThis.__CLASSIC_BATTLE_DEBUG.__instrumentMarkers`) immediately before calling `dispatchViaOptions`. Re-run the failing test and inspect the debug bag after the test to confirm the code path executed and what function object was present.
+- Temporarily bypass dedupe by resetting dispatch history immediately before the expiration call (e.g., call `resetDispatchHistory('ready')` in `handleNextRoundExpiration`) to see if the mock is then observed. This is diagnostic only.
+
+Tell me which of these you'd like me to run next (I recommend verifying mock hoisting first). I can implement the change, run the single test, and update this file with the results.

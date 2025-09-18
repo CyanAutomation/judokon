@@ -658,7 +658,7 @@ function markNextReady(btn) {
       );
     }
   } catch {}
-}
+  console.log("markNextReady called with btn:", btn.id, "disabled after:", btn.disabled);
 
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
