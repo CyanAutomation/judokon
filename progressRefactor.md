@@ -8,20 +8,20 @@ followed by a proposed refactoring plan:
 Current Responsibilities & Complexities:
 
 1. Battle State Management: Tracks currentRound, currentPhase, judoka data,
-    selectedStat, etc. This state is extensive and intertwined with various
-    functions.
+   selectedStat, etc. This state is extensive and intertwined with various
+   functions.
 2. Game Flow Control: Manages the progression through battle phases (e.g.,
-    STAT_SELECTION, ROUND_RESOLUTION, BATTLE_ENDED), including starting and
-    ending rounds.
+   STAT_SELECTION, ROUND_RESOLUTION, BATTLE_ENDED), including starting and
+   ending rounds.
 3. UI Updates: Directly manipulates the DOM for round prompts, stat
-    selection, scoreboard, snackbars, and battle results. This couples game
-    logic with presentation.
+   selection, scoreboard, snackbars, and battle results. This couples game
+   logic with presentation.
 4. Event Handling: Subscribes to and dispatches numerous battle-related
-    events, with complex logic within each handler.
+   events, with complex logic within each handler.
 5. Timer Management: Handles multiple setTimeout and clearTimeout calls for
-    countdowns and auto-selection, which are scattered and hard to track.
+   countdowns and auto-selection, which are scattered and hard to track.
 6. Stat Selection Logic: Determines stat selection, handles user input, and
-    implements auto-selection.
+   implements auto-selection.
 7. Round Resolution Logic: Compares stats and determines the round winner.
 8. Sound Effects: Triggers various sound effects.
 
@@ -69,31 +69,30 @@ Key Issues:
 
   Given that much of the refactoring has already been implemented, the focus
   should shift to:
-
   1. **Complete the Separation of Concerns:**
-      - Audit roundManager.js for any remaining responsibilities that should be moved
-      - Ensure clean boundaries between orchestrator.js, roundManager.js, and other modules
-      - Remove any duplicate logic between the modules
+     - Audit roundManager.js for any remaining responsibilities that should be moved
+     - Ensure clean boundaries between orchestrator.js, roundManager.js, and other modules
+     - Remove any duplicate logic between the modules
 
   2. **Strengthen the State Machine Integration:**
-      - Ensure battleStateMachine.js is fully integrated with orchestrator.js
-      - Verify all state transitions are properly handled and events emitted
-      - Add explicit state validation and error handling
+     - Ensure battleStateMachine.js is fully integrated with orchestrator.js
+     - Verify all state transitions are properly handled and events emitted
+     - Add explicit state validation and error handling
 
   3. **Refine Module Interfaces:**
-      - Standardize how modules communicate (events vs direct calls)
-      - Add proper error boundaries and fallback mechanisms
-      - Ensure each module has clear, testable public APIs
+     - Standardize how modules communicate (events vs direct calls)
+     - Add proper error boundaries and fallback mechanisms
+     - Ensure each module has clear, testable public APIs
 
   4. **Enhance Testing Infrastructure:**
-      - Add integration tests for module interactions
-      - Ensure unit tests can mock dependencies cleanly
-      - Add performance tests for the refactored architecture
+     - Add integration tests for module interactions
+     - Ensure unit tests can mock dependencies cleanly
+     - Add performance tests for the refactored architecture
 
   5. **Update roundManager.js to Pure Orchestration:**
-      - Remove any remaining business logic
-      - Focus solely on coordinating module interactions
-      - Add comprehensive error handling and recovery
+     - Remove any remaining business logic
+     - Focus solely on coordinating module interactions
+     - Add comprehensive error handling and recovery
 
   Current File Structure (Actual Implementation):
 
@@ -174,31 +173,30 @@ Key Issues:
   - Ready to proceed to Phase 3: Optimize Performance
   - Consider adding performance monitoring for state transitions
   - Monitor for any edge cases in state validation that may need refinement
-
   1. **Complete the Extraction:**
-      - Identify any remaining monolithic code in roundManager.js
-      - Move timer management to a dedicated timerService.js (partially exists)
-      - Extract sound effect handling to an audioService.js
+     - Identify any remaining monolithic code in roundManager.js
+     - Move timer management to a dedicated timerService.js (partially exists)
+     - Extract sound effect handling to an audioService.js
 
   2. **Improve Module Communication:**
-      - Standardize event naming conventions
-      - Add request/response patterns for complex interactions
-      - Implement proper error propagation between modules
+     - Standardize event naming conventions
+     - Add request/response patterns for complex interactions
+     - Implement proper error propagation between modules
 
   3. **Add Missing Abstractions:**
-      - Create a configuration service for battle settings
-      - Add a validation layer for state transitions
-      - Implement a logging/monitoring service for debugging
+     - Create a configuration service for battle settings
+     - Add a validation layer for state transitions
+     - Implement a logging/monitoring service for debugging
 
   4. **Performance Optimizations:**
-      - Add lazy loading for non-critical modules
-      - Implement proper cleanup for event listeners and timers
-      - Add memory leak prevention measures
+     - Add lazy loading for non-critical modules
+     - Implement proper cleanup for event listeners and timers
+     - Add memory leak prevention measures
 
   5. **Developer Experience:**
-      - Add comprehensive JSDoc with @pseudocode for all public functions
-      - Create clear migration guides for any breaking changes
-      - Add runtime validation for module dependencies
+     - Add comprehensive JSDoc with @pseudocode for all public functions
+     - Create clear migration guides for any breaking changes
+     - Add runtime validation for module dependencies
 
   ***
 
@@ -222,7 +220,6 @@ Key Issues:
   ***
 
   Success Metrics:
-
   - Reduce roundManager.js from 1370 lines to <500 lines
   - Achieve >90% test coverage for all new modules
   - Maintain or improve performance benchmarks
@@ -252,7 +249,7 @@ Key Issues:
 
   This updated plan acknowledges the existing progress while providing a clear
   path forward to complete the refactoring and realize the full benefits of
-  modular architecture.  Overall Benefits:
+  modular architecture. Overall Benefits:
 
 - Clearer Responsibilities: Each module has a single, well-defined purpose.
 - Improved Testability: Smaller, focused modules are easier to unit test.
