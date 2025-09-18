@@ -82,7 +82,7 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
           timeoutId = null;
           emitExpired();
         }
-      } catch (e) {
+      } catch {
         try {
           if (timeoutId) clearTimeout(timeoutId);
         } catch {}

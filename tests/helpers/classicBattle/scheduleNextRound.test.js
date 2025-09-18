@@ -9,7 +9,7 @@ import { applyMockSetup } from "./mockSetup.js";
 
 import { waitForState } from "../../waitForState.js";
 import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
-import { startCooldown } from "../../../src/helpers/classicBattle/roundManager.js";
+// import { startCooldown } from "../../../src/helpers/classicBattle/roundManager.js";
 import { cooldownEnter } from "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js";
 
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
@@ -89,7 +89,7 @@ vi.mock("../../../src/helpers/dataUtils.js", async (importOriginal) => {
 });
 
 vi.mock("../../../src/components/StatsPanel.js", () => ({
-  createStatsPanel: vi.fn(async (stats, options) => {
+  createStatsPanel: vi.fn(async () => {
     // Return a simple mock HTML element
     const div = document.createElement("div");
     div.className = "mock-stats-panel";

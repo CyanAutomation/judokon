@@ -59,7 +59,7 @@ test.describe("CLI Keyboard Flows", () => {
 
       if ((await helpPanel.count()) > 0) {
         // If help panel exists, test keyboard toggle
-        const isInitiallyVisible = await helpPanel.isVisible();
+        // const isInitiallyVisible = await helpPanel.isVisible();
 
         // Press 'h' to potentially toggle help
         await page.keyboard.press("h");

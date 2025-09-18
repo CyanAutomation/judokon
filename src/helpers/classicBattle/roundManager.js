@@ -18,13 +18,8 @@ import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { setupFallbackTimer } from "./timerService.js";
 import { createEventBus } from "./eventBusUtils.js";
-import { getDebugPanelLazy, getTimerModulesLazy } from "./preloadService.js";
-import {
-  createResourceRegistry,
-  createEnhancedCleanup,
-  timerCleanup,
-  eventCleanup
-} from "./enhancedCleanup.js";
+import { getDebugPanelLazy } from "./preloadService.js";
+import { createResourceRegistry, createEnhancedCleanup, eventCleanup } from "./enhancedCleanup.js";
 import { updateDebugPanel } from "./debugPanel.js";
 
 // Lazy-loaded debug panel updater
@@ -719,10 +714,7 @@ function markNextReady(btn) {
   } catch {}
 }
 
-let readyDispatchedForCurrentCooldown = false;
-
 async function handleNextRoundExpiration(controls, btn, options = {}) {
-  // TEMP: Mark global for test to confirm callback execution
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   try {
     if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
@@ -795,11 +787,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   } catch {}
   if (typeof console !== "undefined") {
     // Print the machine reference from the event dispatcher debug getter
-    let machineRef = null;
     try {
       if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead) {
-        const getMachine = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
-        machineRef = typeof getMachine === "function" ? getMachine() : null;
+        // const getMachine = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
+        // machineRef = typeof getMachine === "function" ? getMachine() : null;
       }
     } catch {}
   }

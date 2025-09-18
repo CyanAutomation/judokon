@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { createStateManager } from "../src/helpers/classicBattle/stateManager.js";
 
 describe("State Transition Debug", () => {

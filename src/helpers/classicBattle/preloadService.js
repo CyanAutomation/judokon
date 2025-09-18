@@ -21,7 +21,7 @@ export function registerCleanup(cleanupFn) {
 }
 
 // WeakMap for storing weak references to prevent memory leaks
-const weakRefs = new WeakMap();
+// const weakRefs = new WeakMap();
 let cleanupRegistry = new Set();
 
 // Performance monitoring
