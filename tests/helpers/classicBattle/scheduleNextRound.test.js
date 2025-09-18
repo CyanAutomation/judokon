@@ -9,7 +9,6 @@ import { applyMockSetup } from "./mockSetup.js";
 // Note: battleEvents is imported where needed inside tests; avoid unused named import here.
 
 import { waitForState } from "../../waitForState.js";
-import * as orchestrator from "../../../src/helpers/classicBattle/orchestrator.js";
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn()
@@ -26,8 +25,9 @@ let generateRandomCardMock;
 let getRandomJudokaMock;
 let renderMock;
 let currentFlags;
+let orchestrator;
 
-beforeEach(() => {
+beforeEach(async () => {
   console.log("[TEST DEBUG] beforeEach");
   console.log("[TEST DEBUG] before setupClassicBattleDom");
   ({
@@ -48,6 +48,8 @@ beforeEach(() => {
     currentFlags
   });
   console.log("[TEST DEBUG] after applyMockSetup");
+  orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+  console.log("[TEST DEBUG] orchestrator module loaded");
 });
 
 afterEach(() => {
@@ -105,11 +107,13 @@ describe("classicBattle startCooldown", () => {
     battleEngineMod.createBattleEngine();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
-    // orchestrator is now statically imported at the top
-    console.log("[TEST DEBUG] before import eventDispatcher.js");
-    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
-    console.log("[TEST DEBUG] after import eventDispatcher.js");
-    const dispatchSpy = vi.spyOn(eventDispatcher, "dispatchBattleEvent");
+    // Attach spy to the orchestrator re-export so we observe the same reference
+    // used by production modules (roundManager/timerService).
+    console.log("[TEST DEBUG] before spy dispatchBattleEvent");
+    const originalDispatch = orchestrator.dispatchBattleEvent;
+    const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
+    dispatchSpy.mockImplementation((...args) => originalDispatch(...args));
+    console.log("[TEST DEBUG] after spy dispatchBattleEvent");
     console.log("[TEST DEBUG] before import classicBattle.js");
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     console.log("[TEST DEBUG] after import classicBattle.js");
@@ -173,6 +177,7 @@ describe("classicBattle startCooldown", () => {
 
     console.log("[TEST DEBUG] After waitForState, state:", machine.getState());
 
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
@@ -201,7 +206,7 @@ describe("classicBattle startCooldown", () => {
     battleEngineMod.createBattleEngine();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    // orchestrator is now statically imported at the top
+    // orchestrator module is loaded in beforeEach
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
@@ -271,7 +276,7 @@ describe("classicBattle startCooldown", () => {
     battleEngineMod.createBattleEngine();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    // orchestrator is now statically imported at the top
+    // orchestrator module is loaded in beforeEach
     const { setTestMode } = await import("../../../src/helpers/testModeUtils.js");
     setTestMode(true);
     const store = battleMod.createBattleStore();
