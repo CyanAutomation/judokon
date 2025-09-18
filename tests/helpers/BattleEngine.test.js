@@ -86,31 +86,28 @@ describe("BattleEngine timer pause/resume and drift correction", () => {
   });
 });
 
-describe(
-  "helpers index contract: compareStats/determineOutcome/applyOutcome coordinate BattleEngine scoring",
-  () => {
-    it("compares stats, derives round outcomes, and mutates engine scores using default classic battle settings", () => {
-      const engine = new BattleEngine();
+describe("helpers index contract: compareStats/determineOutcome/applyOutcome coordinate BattleEngine scoring", () => {
+  it("compares stats, derives round outcomes, and mutates engine scores using default classic battle settings", () => {
+    const engine = new BattleEngine();
 
-      const statsSummary = compareStats(12, 8);
-      expect(statsSummary).toEqual({ delta: 4, winner: "player" });
+    const statsSummary = compareStats(12, 8);
+    expect(statsSummary).toEqual({ delta: 4, winner: "player" });
 
-      const roundOutcome = determineOutcome(12, 8);
-      expect(roundOutcome).toEqual({ delta: 4, outcome: "winPlayer" });
+    const roundOutcome = determineOutcome(12, 8);
+    expect(roundOutcome).toEqual({ delta: 4, outcome: "winPlayer" });
 
-      applyOutcome(engine, roundOutcome);
-      expect(engine.playerScore).toBe(1);
-      expect(engine.opponentScore).toBe(0);
+    applyOutcome(engine, roundOutcome);
+    expect(engine.playerScore).toBe(1);
+    expect(engine.opponentScore).toBe(0);
 
-      expect(engine.pointsToWin).toBe(CLASSIC_BATTLE_POINTS_TO_WIN);
-      expect(engine.maxRounds).toBe(CLASSIC_BATTLE_MAX_ROUNDS);
+    expect(engine.pointsToWin).toBe(CLASSIC_BATTLE_POINTS_TO_WIN);
+    expect(engine.maxRounds).toBe(CLASSIC_BATTLE_MAX_ROUNDS);
 
-      expect(compareStats).toHaveLength(2);
-      expect(determineOutcome).toHaveLength(2);
-      expect(applyOutcome).toHaveLength(2);
-    });
-  }
-);
+    expect(compareStats).toHaveLength(2);
+    expect(determineOutcome).toHaveLength(2);
+    expect(applyOutcome).toHaveLength(2);
+  });
+});
 
 describe("engineTimer helpers", () => {
   it("starts round and emits ticks", async () => {
