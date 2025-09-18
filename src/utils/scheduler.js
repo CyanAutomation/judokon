@@ -116,11 +116,7 @@ export function onSecondTick(cb) {
  *
  * @param {number} id - Identifier returned by `onFrame` or `onSecondTick`.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Remove a scheduled callback by id.
  *
