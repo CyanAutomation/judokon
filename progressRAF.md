@@ -135,6 +135,10 @@ Phase 3 — Advanced / optional
 - If needed, implement an animation manager that supports prioritized callbacks and two-phase read/write scheduling (read -> write) to guarantee no cross-component layout thrash.
 - Add a `withFrameBudget` helper for any heavy synchronous work that might appear on the frame loop.
 
+**Phase 3 Status: COMPLETED**
+
+Implemented `runAfterFrames` and `withFrameBudget` helpers in `src/utils/rafUtils.js`. Updated `src/helpers/classicBattle/roundUI.js` to use `runAfterFrames(2, runReset)` instead of double rAF for clearer intent. Assessed that an animation manager with priorities and two-phase scheduling is not currently needed, as there are no cross-component layout thrash issues in the codebase. No regressions detected. Unit tests (typewriter.test.js, carouselController.test.js) and Playwright tests (battle-cli-start.spec.js, battle-cli-restart.spec.js) all passed.
+
 ## Utilities to add (small helpers)
 
 - `rafDebounce(fn)` — schedule the latest invocation once per frame, cancel prior rAF handles.

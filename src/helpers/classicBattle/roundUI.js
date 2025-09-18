@@ -15,6 +15,7 @@ import { showSnackbar, updateSnackbar as _updateSnackbar } from "../showSnackbar
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { runWhenIdle } from "./idleCallback.js";
+import { runAfterFrames } from "../../utils/rafUtils.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 let showMatchSummaryModal = null;
 // Reference to avoid unused-import lint complaint when the function is re-exported
@@ -248,7 +249,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
       return;
     }
     try {
-      requestAnimationFrame(() => requestAnimationFrame(runReset));
+      runAfterFrames(2, runReset);
     } catch {
       if (typeof setTimeout === "function") {
         setTimeout(runReset, 32);

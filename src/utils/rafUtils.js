@@ -26,3 +26,34 @@ export function rafDebounce(fn) {
     }
   };
 }
+
+/**
+ * Run a function after a specified number of animation frames.
+ *
+ * @param {number} n - Number of frames to wait.
+ * @param {Function} fn - Function to run.
+ */
+export function runAfterFrames(n, fn) {
+  if (n <= 0) {
+    fn();
+    return;
+  }
+  requestAnimationFrame(() => runAfterFrames(n - 1, fn));
+}
+
+/**
+ * Run a work function with a time budget per frame, yielding to the next frame if budget is exceeded.
+ *
+ * @param {Function} workFn - Function that performs work and returns true if more work remains, false if done.
+ * @param {number} budgetMs - Time budget in milliseconds per frame.
+ */
+export function withFrameBudget(workFn, budgetMs = 5) {
+  const start = performance.now();
+  while (workFn() && performance.now() - start < budgetMs) {
+    // Continue work within budget
+  }
+  if (workFn()) {
+    // More work remains, schedule next frame
+    requestAnimationFrame(() => withFrameBudget(workFn, budgetMs));
+  }
+}

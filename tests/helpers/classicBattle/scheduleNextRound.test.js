@@ -16,6 +16,61 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn()
 }));
 
+vi.mock("../../../src/helpers/dataUtils.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    importJsonModule: vi.fn(async (spec) => {
+      if (spec.includes("countryCodeMapping.json")) {
+        return {
+          "vu": { "country": "Vanuatu", "code": "vu", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "pt": { "country": "Portugal", "code": "pt", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "fr": { "country": "France", "code": "fr", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "jp": { "country": "Japan", "code": "jp", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "br": { "country": "Brazil", "code": "br", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "us": { "country": "United States", "code": "us", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "de": { "country": "Germany", "code": "de", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "ru": { "country": "Russia", "code": "ru", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "kr": { "country": "South Korea", "code": "kr", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "gb": { "country": "United Kingdom", "code": "gb", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "ca": { "country": "Canada", "code": "ca", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "it": { "country": "Italy", "code": "it", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "es": { "country": "Spain", "code": "es", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "nl": { "country": "Netherlands", "code": "nl", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "cn": { "country": "China", "code": "cn", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "mn": { "country": "Mongolia", "code": "mn", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "ge": { "country": "Georgia", "code": "ge", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "bt": { "country": "Bhutan", "code": "bt", "lastUpdated": "2025-04-23T10:00:00Z", "active": true },
+          "jm": { "country": "Jamaica", "code": "jm", "lastUpdated": "2025-04-23T10:00:00Z", "active": true }
+        };
+      }
+      // Fallback to actual import for other JSON modules
+      return actual.importJsonModule(spec);
+    }),
+  };
+});
+
+vi.mock("../../../src/components/StatsPanel.js", () => ({
+  createStatsPanel: vi.fn(async (stats, options) => {
+    // Return a simple mock HTML element
+    const div = document.createElement("div");
+    div.className = "mock-stats-panel";
+    div.textContent = "Mock Stats Panel";
+    return div;
+  }),
+}));
+
+vi.mock("../../../src/components/JudokaCard.js", () => ({
+  JudokaCard: vi.fn(() => ({
+    render: vi.fn(async () => {
+      const div = document.createElement("div");
+      div.className = "mock-judoka-card";
+      div.textContent = "Mock Judoka Card";
+      return div;
+    }),
+  })),
+}));
+
 const dispatchBattleEventSpy = eventDispatcherMock.spy;
 
 async function resetRoundManager(store) {
