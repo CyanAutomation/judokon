@@ -40,6 +40,9 @@ export async function createStateManager(
   onTransition,
   stateTable = CLASSIC_BATTLE_STATES
 ) {
+  if (typeof console !== "undefined") {
+    console.log("[TEST DEBUG] createStateManager: stateTable", stateTable);
+  }
   const byName = new Map();
   let initial = null;
   for (const s of Array.isArray(stateTable) ? stateTable : []) {
@@ -57,7 +60,7 @@ export async function createStateManager(
     async dispatch(eventName, payload) {
       if (typeof console !== "undefined") {
         console.log(
-          "[DEBUG] stateManager: dispatch called with",
+          "[TEST DEBUG] stateManager: dispatch called with",
           "event=",
           eventName,
           "payload=",

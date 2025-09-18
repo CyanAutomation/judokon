@@ -156,10 +156,29 @@ export function cancel(id) {
 export function stop() {
   if (!running) return;
   running = false;
+  paused = false;
   cancelAnimationFrame(rafId);
   rafId = 0;
   frameCallbacks.clear();
   secondCallbacks.clear();
   lastSecond = undefined;
   currentTime = 0;
+}
+
+/**
+ * Pause the scheduler without clearing callbacks.
+ *
+ * @returns {void}
+ */
+export function pause() {
+  paused = true;
+}
+
+/**
+ * Resume the scheduler.
+ *
+ * @returns {void}
+ */
+export function resume() {
+  paused = false;
 }
