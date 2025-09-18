@@ -220,4 +220,34 @@ describe("timerService next round handling", () => {
     setTestMode(false);
     vi.restoreAllMocks();
   });
+
+  it("resolves ready when orchestrator is already past cooldown after module reset", async () => {
+    const debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
+    const machine = {
+      getState: vi.fn(() => "roundOver"),
+      dispatch: vi.fn()
+    };
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => machine);
+    document.body.dataset.battleState = "roundOver";
+    const getStateSnapshot = vi.fn(() => ({ state: "roundDecision" }));
+    const setupFallbackTimer = vi.fn((_ms, cb) => {
+      cb();
+      return null;
+    });
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
+    try {
+      const controls = roundMod.startCooldown({}, scheduler, {
+        getStateSnapshot,
+        setupFallbackTimer
+      });
+      await expect(controls.ready).resolves.toBeUndefined();
+      expect(setupFallbackTimer).toHaveBeenCalled();
+      expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+      expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+      expect(getStateSnapshot).toHaveBeenCalled();
+    } finally {
+      debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
+      delete document.body.dataset.battleState;
+    }
+  });
 });
