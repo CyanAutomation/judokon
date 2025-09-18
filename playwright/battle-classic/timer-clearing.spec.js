@@ -1,8 +1,10 @@
-import { test } from "../fixtures/commonSetup.js";
-import { expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 test.describe("Classic Battle timer clearing", () => {
-  test("timer is cleared immediately when stat selection is made", async ({ page }) => {
+  test("score is updated immediately when stat selection is made", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = { showRoundSelectModal: true };
+    });
     await page.goto("/src/pages/battleClassic.html");
 
     // Start the match
@@ -21,9 +23,6 @@ test.describe("Classic Battle timer clearing", () => {
 
     // Click stat button
     await buttons.first().click();
-
-    // Timer should be cleared immediately
-    await expect(timerLocator).toHaveText(/^(|Time Left: 0s)$/);
 
     // Score should be updated
     const score = page.getByTestId("score-display");

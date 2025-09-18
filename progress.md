@@ -24,3 +24,11 @@
 - Manual test execution not run in this review; paths above should be exercised once the dispatch guard is restored to confirm the original flake.
 
 _Pausing here for your review before proceeding further._
+
+## Phase 1 – Dispatch Dedupe Hardening
+- Updated `src/helpers/classicBattle/eventDispatcher.js` to share in-flight dispatch promises per machine/event so concurrent callers reuse the same result.
+- Added `tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` to validate the guard and refreshed `scheduleNextRound` expectations to focus on state-machine dispatch counts.
+- Unit tests: `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js tests/helpers/classicBattle/scheduleNextRound.test.js` (fails – current build times out in `scheduleNextRound` while new guard active).
+- Playwright tests pending; blocking on stabilizing the unit flow.
+- Outcome: partial. Dedupe refactor implemented but causes orchestrator cooldown tests to hang; need to adjust cleanup so new rounds can re-dispatch `ready`.
+

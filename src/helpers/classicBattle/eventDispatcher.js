@@ -95,47 +95,51 @@ export async function dispatchBattleEvent(eventName, payload) {
     return false;
   }
 
-  if (hasRecentDispatch(eventName)) {
-    return true;
+  const dispatchKey = getDispatchKey(eventName, machine);
+  if (dispatchKey) {
+    const existingPromise = inFlightDispatches.get(dispatchKey);
+    if (existingPromise) {
+      return existingPromise;
+    }
   }
 
-  const dispatchTimestamp = rememberDispatch(eventName);
-
-  // DEBUG: Log all event dispatches
-  if (typeof console !== "undefined") {
-    console.error(
-      "[TEST DEBUG] dispatchBattleEvent: dispatching",
-      eventName,
-      "to machine",
-      machine.getState?.()
-    );
-  }
-
-  try {
-    // PRD taxonomy: emit interrupt.requested with payload context
-    if (eventName === "interrupt") {
-      try {
-        const scope =
-          payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
-        emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
-      } catch {
-        // ignore: interrupt diagnostics are optional
-      }
+  const dispatchPromise = (async () => {
+    // DEBUG: Log all event dispatches
+    if (typeof console !== "undefined") {
+      console.error(
+        "[TEST DEBUG] dispatchBattleEvent: dispatching",
+        eventName,
+        "to machine",
+        machine.getState?.()
+      );
     }
-    const result = await machine.dispatch(eventName, payload);
-    if (result === false) {
-      clearDispatchRecord(eventName, dispatchTimestamp);
-    }
-    return result;
-  } catch (error) {
-    clearDispatchRecord(eventName, dispatchTimestamp);
-    // ignore: dispatch failures only trigger debug updates
+
     try {
-      console.error("Error dispatching battle event:", eventName, error);
-      emitBattleEvent("debugPanelUpdate");
-    } catch {
-      // ignore: debug updates are best effort
+      // PRD taxonomy: emit interrupt.requested with payload context
+      if (eventName === "interrupt") {
+        try {
+          const scope =
+            payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
+          emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
+        } catch {
+          // ignore: interrupt diagnostics are optional
+        }
+      }
+      return await machine.dispatch(eventName, payload);
+    } catch (error) {
+      // ignore: dispatch failures only trigger debug updates
+      try {
+        console.error("Error dispatching battle event:", eventName, error);
+        emitBattleEvent("debugPanelUpdate");
+      } catch {
+        // ignore: debug updates are best effort
+      }
+      return false;
     }
-    return false;
-  }
+  })();
+
+  trackInFlightDispatch(dispatchKey, dispatchPromise);
+
+  return dispatchPromise;
 }
+
