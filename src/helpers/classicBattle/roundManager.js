@@ -223,6 +223,7 @@ let currentNextRound = null;
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
+  if (typeof window !== "undefined") window.__startCooldownInvoked = true;
   try {
     console.error(
       "[TEST ERROR] startCooldown invoked, scheduler present:",
