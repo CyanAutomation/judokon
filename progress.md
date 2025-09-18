@@ -28,6 +28,7 @@
 ## Validation Notes
 
 - `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js` → still fails with the 10 s / 5 s timeouts, but now does so *after* confirming that `currentNextRound` is populated and `window.__NEXT_ROUND_EXPIRED` flips to `true`. The hang therefore occurs after cooldown expiry, during the transition from `cooldown` to `waitingForPlayerAction`.
+- Debug exposures show `currentNextRoundReadyInFlight === true` while `handleNextRoundMachineState` often reports `null`, implying the orchestrator machine getter is unavailable when the cooldown expires. This provides a concrete lead for the next investigation.
 - `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` → PASS.
 
 *Pausing here for your review before proceeding further.*
@@ -54,12 +55,14 @@
 
 - Removed the ad-hoc `[TEST DEBUG]` logging from `tests/helpers/classicBattle/scheduleNextRound.test.js` and replaced those call sites with explicit assertions against the cooldown debug state (`currentNextRound` via `__classicBattleDebugRead`, and the `window.__NEXT_ROUND_EXPIRED` flag).
 - Reset `window.__NEXT_ROUND_EXPIRED` in the shared `beforeEach` hook to avoid cross-test leakage before asserting on the new instrumentation.
-- Ran the focused Vitest commands requested for Step 1 (`npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` and `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js`).
+- Added new debug exposures in `src/helpers/classicBattle/roundManager.js` (`handleNextRoundMachineState`, `handleNextRoundSnapshotState`, `handleNextRoundMachineStateAfterWait`, and `currentNextRoundReadyInFlight`) so tests can read the orchestrator state at cooldown expiry without relying on console output.
+- Updated the failing unit tests to assert those new debug values immediately after advancing the timers, capturing whether the state machine is readable and whether the cooldown controls remain flagged as in-flight.
+- Ran the focused Vitest commands requested for this phase (`npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` and `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js`).
 
 ### Outcome
 
 - `eventDispatcher.dedupe.test.js`: Passes, confirming no regression in the dedupe guard while the test instrumentation changes are in place.
-- `scheduleNextRound.test.js`: Still times out, but the new assertions now confirm that `(a)` the cooldown controls and timer are present, and `(b)` `window.__NEXT_ROUND_EXPIRED` flips to `true` before the hang. This tightens the failure surface from “timer never fires” to “timer fires yet the state machine never leaves `cooldown`.”
+- `scheduleNextRound.test.js`: Still times out, but we now assert that `currentNextRound` exists, `currentNextRoundReadyInFlight` is `true`, and `window.__NEXT_ROUND_EXPIRED` flips before the hang. The initial attempt to assert `handleNextRoundMachineState === "cooldown"` failed because the debug getter returned `undefined`; coercing this to `null` revealed that the orchestrator machine reference is missing at the moment the cooldown resolves. This narrows the remaining issue to "machine snapshot unavailable during cooldown completion" rather than timer expiry.
 - Console noise from the test file is gone, reducing the amount of `[TEST DEBUG]` output during focused runs.
 
 *Pausing here for your review before proceeding to the next step.*
@@ -90,7 +93,7 @@
 
 ### Proposed Next Steps
 
-- Leverage the new assertions to capture additional debug values (e.g., `readyInFlight`, orchestrator snapshot) immediately after the cooldown expires so we can pinpoint why the state machine remains in `cooldown`.
-- Trace the `dispatchBattleEvent("ready")` call result during tests (e.g., spy on the resolved value) to verify whether the dedupe guard is short-circuiting unexpectedly or whether the machine dispatch resolves without transitioning state.
+- Use the new debug exposures to trace why `handleNextRoundMachineState` resolves to `null`—inspect how `getClassicBattleMachine` is exported under the Vitest module graph and whether `readDebugState("getClassicBattleMachine")` is returning stale data.
+- Spy on `dispatchBattleEvent("ready")` to capture its resolved value and confirm whether the state machine rejects, resolves `false`, or simply never fulfills.
 - Audit the mocked scheduler wiring: ensure `timerSpy` is injected into `startCooldown`/`setupFallbackTimer` so that advancing fake timers exercises both the primary timer and fallback `setTimeout` chain. Add coverage that fails fast when neither callback fires after advancing time.
 - After isolating the failing path, remove or gate the `[TEST DEBUG]` logs and restore console discipline (`withMutedConsole`) before final validation runs.
