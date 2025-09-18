@@ -309,6 +309,18 @@ describe("classicBattle startCooldown", () => {
     } catch (err) {
       console.log("[TEST DEBUG] debug getter error", err);
     }
+    // Enhanced debug: inspect currentNextRound and timer status
+    try {
+      const currentNextRound = globalThis.__classicBattleDebugRead &&
+        globalThis.__classicBattleDebugRead("currentNextRound");
+      console.log("[TEST DEBUG] currentNextRound:", currentNextRound);
+      if (currentNextRound && currentNextRound.timer) {
+        console.log("[TEST DEBUG] timer has start:", typeof currentNextRound.timer.start);
+        console.log("[TEST DEBUG] timer has on:", typeof currentNextRound.timer.on);
+      }
+    } catch (err) {
+      console.log("[TEST DEBUG] currentNextRound debug error", err);
+    }
 
     // Confirm fallback timer callback executed
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
