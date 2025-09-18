@@ -8,6 +8,7 @@ import { applyMockSetup } from "./mockSetup.js";
 // Note: battleEvents is imported where needed inside tests; avoid unused named import here.
 
 import { waitForState } from "../../waitForState.js";
+import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 

@@ -27,8 +27,8 @@
 
 ## Validation Notes
 
-- `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js` → still fails with the 10 s / 5 s timeouts, but now does so *after* confirming that `currentNextRound` is populated and `window.__NEXT_ROUND_EXPIRED` flips to `true`. The hang therefore occurs after cooldown expiry, during the transition from `cooldown` to `waitingForPlayerAction`.
-- Debug exposures show `currentNextRoundReadyInFlight === true` while `handleNextRoundMachineState` often reports `null`, implying the orchestrator machine getter is unavailable when the cooldown expires. This provides a concrete lead for the next investigation.
+- `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js --testNamePattern "auto-dispatches"` → fails fast with `handleNextRoundMachineGetter:undefined bag:{"handleNextRoundCallCount":1,"handleNextRoundEarlyExit":{"readyDispatched":true,"readyInFlight":false}}`, showing the fallback exits immediately because `controls.readyDispatched` is already `true`.
+- `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` → PASS.
 - `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` → PASS.
 
 *Pausing here for your review before proceeding further.*
@@ -55,14 +55,14 @@
 
 - Removed the ad-hoc `[TEST DEBUG]` logging from `tests/helpers/classicBattle/scheduleNextRound.test.js` and replaced those call sites with explicit assertions against the cooldown debug state (`currentNextRound` via `__classicBattleDebugRead`, and the `window.__NEXT_ROUND_EXPIRED` flag).
 - Reset `window.__NEXT_ROUND_EXPIRED` in the shared `beforeEach` hook to avoid cross-test leakage before asserting on the new instrumentation.
-- Added new debug exposures in `src/helpers/classicBattle/roundManager.js` (`handleNextRoundMachineState`, `handleNextRoundSnapshotState`, `handleNextRoundMachineStateAfterWait`, and `currentNextRoundReadyInFlight`) so tests can read the orchestrator state at cooldown expiry without relying on console output.
+- Added new debug exposures in `src/helpers/classicBattle/roundManager.js` (`handleNextRoundMachineState`, `handleNextRoundSnapshotState`, `handleNextRoundMachineStateAfterWait`, `handleNextRoundMachineGetter`, `handleNextRoundMachineReadError`, and `handleNextRoundEarlyExit`) so tests can read the orchestrator state at cooldown expiry without relying on console output.
 - Updated the failing unit tests to assert those new debug values immediately after advancing the timers, capturing whether the state machine is readable and whether the cooldown controls remain flagged as in-flight.
 - Ran the focused Vitest commands requested for this phase (`npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` and `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js`).
 
 ### Outcome
 
 - `eventDispatcher.dedupe.test.js`: Passes, confirming no regression in the dedupe guard while the test instrumentation changes are in place.
-- `scheduleNextRound.test.js`: Still times out, but we now assert that `currentNextRound` exists, `currentNextRoundReadyInFlight` is `true`, and `window.__NEXT_ROUND_EXPIRED` flips before the hang. The initial attempt to assert `handleNextRoundMachineState === "cooldown"` failed because the debug getter returned `undefined`; coercing this to `null` revealed that the orchestrator machine reference is missing at the moment the cooldown resolves. This narrows the remaining issue to "machine snapshot unavailable during cooldown completion" rather than timer expiry.
+- `scheduleNextRound.test.js`: Still fails, but the new debug bag now shows `handleNextRoundEarlyExit = { readyDispatched: true, readyInFlight: false }`. The fallback timer exits before dispatching because the controls already consider `ready` handled, pinpointing the stall to premature `readyDispatched` state changes.
 - Console noise from the test file is gone, reducing the amount of `[TEST DEBUG]` output during focused runs.
 
 *Pausing here for your review before proceeding to the next step.*

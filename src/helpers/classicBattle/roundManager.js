@@ -19,21 +19,22 @@ if (typeof globalThis !== "undefined") {
 }
 if (typeof process !== "undefined" && !globalThis.__loggedStartCooldown) {
   globalThis.__loggedStartCooldown = true;
-    try {
-      exposeDebugState("handleNextRoundMachineState", machineState ?? null);
-    } catch {}
-    try {
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        globalThis.__classicBattleDebugExpose("handleNextRoundMachineState", machineState ?? null);
-      }
-    } catch {}
-    try {
-      // Record when we performed the read so tests can check ordering
-      exposeDebugState("handleNextRoundMachineState_readAt", Date.now());
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        globalThis.__classicBattleDebugExpose("handleNextRoundMachineState_readAt", Date.now());
-      }
-    } catch {}
+  try {
+    exposeDebugState("handleNextRoundMachineState", machineState ?? null);
+  } catch {}
+  try {
+    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+      globalThis.__classicBattleDebugExpose("handleNextRoundMachineState", machineState ?? null);
+    }
+  } catch {}
+  try {
+    // Record when we performed the read so tests can check ordering
+    exposeDebugState("handleNextRoundMachineState_readAt", Date.now());
+    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+      globalThis.__classicBattleDebugExpose("handleNextRoundMachineState_readAt", Date.now());
+    }
+  } catch {}
+}
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
@@ -702,7 +703,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           readyInFlight: !!controls?.readyInFlight
         };
         if (typeof globalThis.__classicBattleDebugExpose === "function") {
-          globalThis.__classicBattleDebugExpose("handleNextRoundEarlyExit", bag.handleNextRoundEarlyExit);
+          globalThis.__classicBattleDebugExpose(
+            "handleNextRoundEarlyExit",
+            bag.handleNextRoundEarlyExit
+          );
         }
       }
     } catch {}
@@ -781,7 +785,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
             hasGlobal: typeof globalThis.__classicBattleDebugRead === "function"
           };
           if (typeof globalThis.__classicBattleDebugExpose === "function") {
-            globalThis.__classicBattleDebugExpose("handleNextRoundMachineGetter", bag.handleNextRoundMachineGetter);
+            globalThis.__classicBattleDebugExpose(
+              "handleNextRoundMachineGetter",
+              bag.handleNextRoundMachineGetter
+            );
           }
         }
       } catch {}

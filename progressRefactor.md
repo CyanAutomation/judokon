@@ -27,14 +27,14 @@ This roundManager.js file is indeed quite complex, acting as a central hub
 
   Key Issues:
 
-   * Monolithic: High coupling, making changes risky and understanding
+* Monolithic: High coupling, making changes risky and understanding
      difficult.
-   * Intertwined Concerns: Game logic, UI logic, and event handling are deeply
+* Intertwined Concerns: Game logic, UI logic, and event handling are deeply
      mixed.
-   * Implicit State Machine: The currentPhase and conditional logic
+* Implicit State Machine: The currentPhase and conditional logic
      effectively form a state machine, but it's not explicit or easily
      manageable.
-   * Difficult to Test: Unit testing specific game logic is hard due to UI
+* Difficult to Test: Unit testing specific game logic is hard due to UI
      dependencies and global state.
 
   ---
@@ -90,24 +90,24 @@ This roundManager.js file is indeed quite complex, acting as a central hub
 
    1 src/helpers/classicBattle/
    2 ├── roundManager.js             // Orchestrates the battle flow
-   3 ├── battleStateMachine.js       // Manages battle states and 
+   3 ├── battleStateMachine.js       // Manages battle states and
      transitions
    4 ├── battleUIManager.js          // Handles all UI updates
-   5 ├── statSelectionManager.js     // Manages stat selection and 
+   5 ├── statSelectionManager.js     // Manages stat selection and
      timers
    6 ├── roundResolver.js            // Determines round outcomes
-   7 ├── eventBus.js                 // (Existing, but used more 
+   7 ├── eventBus.js                 // (Existing, but used more
      effectively)
    8 └── ... (other existing files)
 
   Overall Benefits:
 
-   * Clearer Responsibilities: Each module has a single, well-defined purpose.
-   * Improved Testability: Smaller, focused modules are easier to unit test.
-   * Reduced Coupling: Changes in one area (e.g., UI) are less likely to
+* Clearer Responsibilities: Each module has a single, well-defined purpose.
+* Improved Testability: Smaller, focused modules are easier to unit test.
+* Reduced Coupling: Changes in one area (e.g., UI) are less likely to
      impact others (e.g., game logic).
-   * Easier Debugging: Issues can be quickly isolated to a specific module.
-   * Enhanced Maintainability: The codebase becomes more modular and easier to
+* Easier Debugging: Issues can be quickly isolated to a specific module.
+* Enhanced Maintainability: The codebase becomes more modular and easier to
      understand for new developers.
 
   This plan provides a clear path to significantly simplify roundManager.js. I
