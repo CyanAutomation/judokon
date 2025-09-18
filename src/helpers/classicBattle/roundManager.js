@@ -807,64 +807,43 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   // Dispatch `ready` (fire-and-forget) before resolving the controls so
   // tests awaiting `controls.ready` don't depend on orchestrator internals.
   // Only dispatch if the machine is still in cooldown state and we haven't already dispatched for this cooldown.
-  // Temporarily unconditionally dispatch ready for debugging
   const machine = machineReader();
-  if (machine?.dispatch) {
+  const currentState = readMachineState();
+  process.stdout.write(
+    `[TEST DEBUG] handleNextRoundExpiration: currentState = ${currentState}, readyDispatchedForCurrentCooldown = ${readyDispatchedForCurrentCooldown}\n`
+  );
+  if (currentState === "cooldown" && !readyDispatchedForCurrentCooldown) {
+    readyDispatchedForCurrentCooldown = true;
+    process.stdout.write(`[TEST DEBUG] handleNextRoundExpiration: dispatching ready\n`);
+    const dispatchReadyDirectly = () => {
+      if (machine?.dispatch) {
+        try {
+          const result = machine.dispatch("ready");
+          if (result && typeof result.then === "function") {
+            result.catch(() => {});
+          }
+          return true;
+        } catch {}
+      }
+      return false;
+    };
+    const dispatchReady =
+      typeof options.dispatchBattleEvent === "function"
+        ? options.dispatchBattleEvent
+        : dispatchBattleEvent;
     try {
-      machine.dispatch("ready");
-      process.stdout.write(`[TEST DEBUG] handleNextRoundExpiration: UNCONDITIONALLY dispatched ready\n`);
-    } catch (e) {
-      process.stdout.write(`[TEST DEBUG] handleNextRoundExpiration: Error unconditionally dispatching ready: ${e.message}\n`);
+      const readyResult = await dispatchReady("ready");
+      if (readyResult === false) {
+        dispatchReadyDirectly();
+      }
+    } catch {
+      dispatchReadyDirectly();
     }
+  } else {
+    process.stdout.write(
+      `[TEST DEBUG] handleNextRoundExpiration: NOT dispatching ready - state = ${currentState}, flag = ${readyDispatchedForCurrentCooldown}\n`
+    );
   }
-
-  // Original logic follows (commented out for now)
-  // const machine = machineReader();
-  // const currentState = readMachineState();
-  // console.log(
-  //   "[TEST DEBUG] handleNextRoundExpiration: currentState =",
-  //   currentState,
-  //   "readyDispatchedForCurrentCooldown =",
-  //   readyDispatchedForCurrentCooldown
-  // );
-  // process.stdout.write(
-  //   `[TEST DEBUG] handleNextRoundExpiration: currentState = ${currentState}, readyDispatchedForCurrentCooldown = ${readyDispatchedForCurrentCooldown}\n`
-  // );
-  // if (currentState === "cooldown" && !readyDispatchedForCurrentCooldown) {
-  //   readyDispatchedForCurrentCooldown = true;
-  //   console.log("[TEST DEBUG] handleNextRoundExpiration: dispatching ready");
-  //   const dispatchReadyDirectly = () => {
-  //     if (machine?.dispatch) {
-  //       try {
-  //         const result = machine.dispatch("ready");
-  //         if (result && typeof result.then === "function") {
-  //           result.catch(() => {});
-  //         }
-  //         return true;
-  //       } catch {}
-  //     }
-  //     return false;
-  //   };
-  //   const dispatchReady =
-  //     typeof options.dispatchBattleEvent === "function"
-  //       ? options.dispatchBattleEvent
-  //       : dispatchBattleEvent;
-  //   try {
-  //     const readyResult = await dispatchReady("ready");
-  //     if (readyResult === false) {
-  //       dispatchReadyDirectly();
-  //     }
-  //   } catch {
-  //     dispatchReadyDirectly();
-  //   }
-  // } else {
-  //   console.log(
-  //     "[TEST DEBUG] handleNextRoundExpiration: NOT dispatching ready - state =",
-  //     currentState,
-  //     "flag =",
-  //     readyDispatchedForCurrentCooldown
-  //   );
-  // }
 
   if (controls) {
     controls.readyDispatched = true;
