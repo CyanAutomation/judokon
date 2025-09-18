@@ -240,9 +240,11 @@ function renderStatButtons(store) {
         try {
           const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
           if (isMatchEnded() || (result && result.matchEnded)) {
-                      showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
-                    }        } catch (err) {
-                  console.debug("battleClassic: checking match end failed", err);        }
+            showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
+          }
+        } catch (err) {
+          console.debug("battleClassic: checking match end failed", err);
+        }
       } catch (err) {
         console.debug("battleClassic: stat selection handler failed", err);
       }

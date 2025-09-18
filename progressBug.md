@@ -37,11 +37,11 @@ The failure occurs in `handleNextRoundExpiration` function in `roundManager.js`.
 // Current implementation tries direct dispatch first
 let dispatched = false;
 try {
-  dispatched = await dispatchReadyDirectly();  // ✅ Succeeds, bypasses mock
+  dispatched = await dispatchReadyDirectly(); // ✅ Succeeds, bypasses mock
 } catch {}
 if (!dispatched) {
   try {
-    dispatched = await dispatchViaOptions();   // ❌ Never reached
+    dispatched = await dispatchViaOptions(); // ❌ Never reached
   } catch {}
 }
 ```
@@ -60,7 +60,7 @@ The test expects `dispatchBattleEvent` to be used because:
 // Fixed implementation - public API first
 let dispatched = false;
 try {
-  dispatched = await dispatchViaOptions();    // ✅ Public API first
+  dispatched = await dispatchViaOptions(); // ✅ Public API first
 } catch {}
 if (!dispatched) {
   try {
