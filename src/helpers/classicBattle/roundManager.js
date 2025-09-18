@@ -19,6 +19,7 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { setupFallbackTimer } from "./timerService.js";
 import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy, getTimerModulesLazy } from "./preloadService.js";
+import { updateDebugPanel } from "./debugPanel.js";
 import { createResourceRegistry, createEnhancedCleanup, timerCleanup, eventCleanup } from "./enhancedCleanup.js";
 
 // Lazy-loaded debug panel updater
