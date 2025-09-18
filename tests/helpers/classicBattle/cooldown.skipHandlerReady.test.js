@@ -41,6 +41,35 @@ describe("skip handler clears fallback timer", () => {
       offBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => {
+      const makeTimer = (onTick, onExpired, duration) => {
+        onTick(duration);
+        if (duration <= 0) {
+          onExpired();
+          return;
+        }
+        for (let i = 1; i <= duration; i++) {
+          setTimeout(() => {
+            const remaining = duration - i;
+            onTick(remaining);
+            if (remaining <= 0) onExpired();
+          }, i * 1000);
+        }
+      };
+      const mockEngine = {
+        startRound: makeTimer,
+        startCoolDown: makeTimer,
+        stopTimer: vi.fn(),
+        STATS: ["a", "b"]
+      };
+      return {
+        requireEngine: () => mockEngine,
+        startRound: makeTimer,
+        startCoolDown: makeTimer,
+        stopTimer: vi.fn(),
+        STATS: ["a", "b"]
+      };
+    });
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     timerMockRestore = mockCreateRoundTimer({
       scheduled: false,

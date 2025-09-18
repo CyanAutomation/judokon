@@ -226,12 +226,9 @@ let currentNextRound = null;
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
   if (typeof window !== "undefined") window.__startCooldownInvoked = true;
-  try {
-    console.error(
-      "[TEST ERROR] startCooldown invoked, scheduler present:",
-      !!scheduler?.setTimeout
-    );
-  } catch {}
+  // try {
+  //   console.error("startCooldown invoked, scheduler present:", !!scheduler?.setTimeout);
+  // } catch {}
   // Reset the ready dispatch flag for the new cooldown period
   readyDispatchedForCurrentCooldown = false;
   resetDispatchHistory("ready");
@@ -1129,14 +1126,14 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     }
   });
   controls.timer = timer;
-  try {
-    console.error(
-      "[TEST ERROR] wireCooldownTimer: controls.timer set?",
-      !!controls.timer,
-      "hasStart?",
-      typeof controls.timer?.start === "function"
-    );
-  } catch {}
+  // try {
+  //   console.error(
+  //     "[TEST ERROR] wireCooldownTimer: controls.timer set?",
+  //     !!controls.timer,
+  //     "hasStart?",
+  //     typeof controls.timer?.start === "function"
+  //   );
+  // } catch {}
   registerSkipHandler(() => {
     try {
       console.warn("[test] skip: stop nextRoundTimer");

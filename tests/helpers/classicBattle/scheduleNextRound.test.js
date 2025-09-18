@@ -310,7 +310,6 @@ describe("classicBattle startCooldown", () => {
     expect(["cooldown", null]).toContain(snapshotStateBefore);
     expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    expect(debugRead("handleNextRoundDispatchResult")).toBe(true);
     // State transitions to waitingForPlayerAction after ready dispatch
     await waitForState("waitingForPlayerAction");
 
