@@ -303,6 +303,7 @@ describe("classicBattle startCooldown", () => {
 
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
+    expect(window.__cooldownEnterInvoked).toBe(true);
     expect(window.__startCooldownInvoked).toBe(true);
     const debugRead = globalThis.__classicBattleDebugRead;
     expect(typeof debugRead).toBe("function");

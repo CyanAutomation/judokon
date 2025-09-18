@@ -28,20 +28,13 @@ export function setupClassicBattleDom() {
   // vi.resetModules(); // Commented out to prevent fake timer interference
   globalThis.requestAnimationFrame = vi.fn((cb) => cb());
   globalThis.cancelAnimationFrame = vi.fn();
-  // Don't mock globalThis.setTimeout/clearTimeout - let fake timers handle them
-  // globalThis.setTimeout = vi.fn((cb, delay) => setTimeout(cb, delay));
-  // globalThis.clearTimeout = vi.fn((id) => clearTimeout(id));
-
-  // Create a scheduler that uses fake timers
-  const fakeScheduler = {
-    setTimeout: (cb, delay) => {
-      const id = setTimeout(cb, delay);
-      return id;
-    },
-    clearTimeout: (id) => {
-      clearTimeout(id);
-    }
-  };
+  // Mock globalThis.setTimeout/clearTimeout to use fake timers
+  globalThis.setTimeout = vi.fn((cb, delay) => {
+    return setTimeout(cb, delay);
+  });
+  globalThis.clearTimeout = vi.fn((id) => {
+    clearTimeout(id);
+  });
   const fetchJsonMock = vi.fn(async (url) => {
     if (String(url).includes("gameTimers.js")) {
       return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
@@ -66,7 +59,6 @@ export function setupClassicBattleDom() {
     generateRandomCardMock,
     getRandomJudokaMock,
     renderMock,
-    currentFlags,
-    fakeScheduler
+    currentFlags
   };
 }
