@@ -1,10 +1,10 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 export const eventDispatcherMock = {
   spy: vi.fn(),
   callThrough: () => {
     throw new Error("eventDispatcher mock not initialized");
-  },
+  }
 };
 
 vi.mock("../../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
@@ -13,6 +13,6 @@ vi.mock("../../../../src/helpers/classicBattle/eventDispatcher.js", async (impor
   eventDispatcherMock.spy.mockImplementation((...args) => eventDispatcherMock.callThrough(...args));
   return {
     ...actual,
-    dispatchBattleEvent: eventDispatcherMock.spy,
+    dispatchBattleEvent: eventDispatcherMock.spy
   };
 });
