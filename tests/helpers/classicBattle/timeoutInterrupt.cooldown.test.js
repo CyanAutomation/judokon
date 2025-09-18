@@ -4,6 +4,7 @@ import { createTimerNodes } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
 const readyDispatchTracker = vi.hoisted(() => ({ events: [] }));
+let timersControl = null;
 
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
   const actual = await importOriginal();
@@ -82,6 +83,9 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
   setupClassicBattleHooks();
 
   beforeEach(async () => {
+    // Ensure fake timers are active so vi.advanceTimersByTimeAsync works
+    // (many other tests in this suite call vi.useFakeTimers()).
+    timersControl = vi.useFakeTimers();
     readyDispatchTracker.events.length = 0;
     createTimerNodes();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
@@ -92,6 +96,9 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
   afterEach(() => {
     readyDispatchTracker.events.length = 0;
     delete window.__NEXT_ROUND_COOLDOWN_MS;
+    try {
+      timersControl?.useRealTimers?.();
+    } catch {}
   });
 
   it("advances from cooldown after interrupt with 1s auto-advance", async () => {

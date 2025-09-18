@@ -37,8 +37,6 @@ async function getLazyUpdateDebugPanel() {
  *
  * @see ./timerService.js
  * @returns {ReturnType<typeof setTimeout>|null}
- * @pseudocode
- * 1. This is a re-export - see original function documentation.
  */
 export { setupFallbackTimer } from "./timerService.js";
 
