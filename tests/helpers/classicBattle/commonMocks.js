@@ -12,16 +12,16 @@ vi.mock("../../../src/helpers/motionUtils.js", () => ({
 
 vi.mock("../../../src/utils/scheduler.js", () => ({
   onFrame: (cb) => {
-    const id = setTimeout(() => cb(performance.now()), 16);
+    const id = globalThis.setTimeout(() => cb(performance.now()), 16);
     return id;
   },
   onSecondTick: (cb) => {
-    const id = setInterval(() => cb(performance.now()), 1000);
+    const id = globalThis.setInterval(() => cb(performance.now()), 1000);
     return id;
   },
   cancel: vi.fn((id) => {
-    clearTimeout(id);
-    clearInterval(id);
+    globalThis.clearTimeout(id);
+    globalThis.clearInterval(id);
   }),
   start: vi.fn(),
   stop: vi.fn()
