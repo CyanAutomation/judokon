@@ -3,10 +3,31 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 describe("timeout → interruptRound → cooldown auto-advance - minimal", () => {
   /** @type {import('vitest').FakeTimers} */
   let timers;
+  /** @type {typeof globalThis.requestAnimationFrame | undefined} */
+  let originalRaf;
+  /** @type {typeof globalThis.cancelAnimationFrame | undefined} */
+  let originalCancelRaf;
+  let stubbedRaf = false;
+  let stubbedCancel = false;
 
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+
+    originalRaf = globalThis.requestAnimationFrame;
+    originalCancelRaf = globalThis.cancelAnimationFrame;
+    if (typeof originalRaf !== "function") {
+      stubbedRaf = true;
+      globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 16);
+    } else {
+      stubbedRaf = false;
+    }
+    if (typeof originalCancelRaf !== "function") {
+      stubbedCancel = true;
+      globalThis.cancelAnimationFrame = (id) => clearTimeout(Number(id));
+    } else {
+      stubbedCancel = false;
+    }
 
     if (typeof document !== "undefined") {
       document.body.innerHTML = "";
@@ -27,6 +48,25 @@ describe("timeout → interruptRound → cooldown auto-advance - minimal", () =>
     timers?.clearAllTimers();
     timers?.useRealTimers();
     timers = undefined;
+
+    if (stubbedRaf) {
+      if (typeof originalRaf === "function") {
+        globalThis.requestAnimationFrame = originalRaf;
+      } else {
+        delete globalThis.requestAnimationFrame;
+      }
+    }
+    if (stubbedCancel) {
+      if (typeof originalCancelRaf === "function") {
+        globalThis.cancelAnimationFrame = originalCancelRaf;
+      } else {
+        delete globalThis.cancelAnimationFrame;
+      }
+    }
+    originalRaf = undefined;
+    originalCancelRaf = undefined;
+    stubbedRaf = false;
+    stubbedCancel = false;
 
     if (typeof document !== "undefined") {
       document.body.innerHTML = "";
@@ -50,21 +90,35 @@ describe("timeout → interruptRound → cooldown auto-advance - minimal", () =>
     expect(store.autoSelectId).toBeNull();
   });
 
-  it("resolves timeout/countdown promises when timers advance", async () => {
+  it("can get promises without hanging", async () => {
     const battleMod = await initBattle();
     const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
+
+    if (typeof document !== "undefined") {
+      const container = document.createElement("div");
+      container.id = "snackbar-container";
+      document.body.appendChild(container);
+    }
 
     const countdownPromise = battleMod.getCountdownStartedPromise();
     const timeoutPromise = battleMod.getRoundTimeoutPromise();
 
-    setTimeout(() => emitBattleEvent("nextRoundCountdownStarted"), 250);
-    setTimeout(() => emitBattleEvent("roundTimeout"), 500);
+    const initialCountdownRef = typeof window !== "undefined" ? window.countdownStartedPromise : undefined;
+    const initialTimeoutRef = typeof window !== "undefined" ? window.roundTimeoutPromise : undefined;
 
-    await vi.advanceTimersByTimeAsync(600);
-    await Promise.all([countdownPromise, timeoutPromise]);
+    setTimeout(() => emitBattleEvent("countdownStart", { duration: 1 }), 10);
+    setTimeout(() => emitBattleEvent("roundTimeout"), 400);
 
-    await expect(countdownPromise).resolves.toBeUndefined();
-    await expect(timeoutPromise).resolves.toBeUndefined();
+    await vi.advanceTimersByTimeAsync(1200);
+    const [countdownResult, timeoutResult] = await Promise.all([countdownPromise, timeoutPromise]);
+
+    expect(countdownResult).toBeUndefined();
+    expect(timeoutResult).toBeUndefined();
+
+    if (typeof document !== "undefined") {
+      const snackbarText = document.querySelector(".snackbar")?.textContent?.trim() ?? "";
+      expect(snackbarText).toMatch(/Next round in: \d+s/);
+    }
 
     if (typeof window !== "undefined") {
       const resolveEvents = window.__promiseEvents?.filter(
@@ -73,6 +127,8 @@ describe("timeout → interruptRound → cooldown auto-advance - minimal", () =>
           (event.key === "countdownStartedPromise" || event.key === "roundTimeoutPromise")
       );
       expect(resolveEvents?.length).toBeGreaterThanOrEqual(2);
+      expect(window.countdownStartedPromise).not.toBe(initialCountdownRef);
+      expect(window.roundTimeoutPromise).not.toBe(initialTimeoutRef);
     }
   });
 });
