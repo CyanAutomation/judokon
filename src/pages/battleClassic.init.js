@@ -182,6 +182,7 @@ function renderStatButtons(store) {
     btn.setAttribute("data-testid", "stat-button");
     btn.setAttribute("aria-describedby", "round-message");
     btn.addEventListener("click", async () => {
+      console.error("[DEBUG] Stat button click handler invoked!");
       if (btn.disabled) return;
       try {
         // Proactively clear the visible timer and nudge the scoreboard so

@@ -63,7 +63,6 @@ function appendReadyTrace(event, details = {}) {
   } catch {}
 }
 
-
 /**
  * Create a new battle state store.
  *
@@ -100,7 +99,6 @@ function getStartRound(store) {
   if (api?.startRoundOverride) return api.startRoundOverride;
   return () => startRound(store);
 }
-
 
 /**
  * Restart the current match by resetting engine state and UI then starting a round.
@@ -217,6 +215,7 @@ let readyDispatchedForCurrentCooldown = false;
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
+  console.error("[DEBUG] startCooldown invoked!");
   if (typeof window !== "undefined") window.__startCooldownInvoked = true;
   // try {
   //   console.error("startCooldown invoked, scheduler present:", !!scheduler?.setTimeout);
@@ -658,8 +657,14 @@ function markNextReady(btn) {
       );
     }
   } catch {}
-  console.error("[DEBUG] markNextReady called with btn:", btn.id, "disabled after:", btn.disabled, "data-next-ready after:", btn.dataset.nextReady);
-
+  console.error(
+    "[DEBUG] markNextReady called with btn:",
+    btn.id,
+    "disabled after:",
+    btn.disabled,
+    "data-next-ready after:",
+    btn.dataset.nextReady
+  );
 }
 
 async function handleNextRoundExpiration(controls, btn, options = {}) {
@@ -1009,7 +1014,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       // Basic introspection of the options.dispatchBattleEvent function
       const info = {
         hasFn: typeof options?.dispatchBattleEvent === "function",
-        name: typeof options?.dispatchBattleEvent === "function" ? options.dispatchBattleEvent.name : null,
+        name:
+          typeof options?.dispatchBattleEvent === "function"
+            ? options.dispatchBattleEvent.name
+            : null,
         toStringLen:
           typeof options?.dispatchBattleEvent === "function" && options.dispatchBattleEvent.toString
             ? options.dispatchBattleEvent.toString().length
@@ -1031,7 +1039,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     } catch {}
   } catch (err) {
     try {
-      console.log("[TEST-INSTRUMENT] dispatchViaOptions threw:", err && err.message ? err.message : err);
+      console.log(
+        "[TEST-INSTRUMENT] dispatchViaOptions threw:",
+        err && err.message ? err.message : err
+      );
     } catch {}
   }
   if (!dispatched) {
@@ -1055,7 +1066,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       } catch {}
     } catch (err) {
       try {
-        console.error("[TEST-INSTRUMENT] dispatchReadyDirectly threw:", err && err.message ? err.message : err);
+        console.error(
+          "[TEST-INSTRUMENT] dispatchReadyDirectly threw:",
+          err && err.message ? err.message : err
+        );
       } catch {}
     }
   }
@@ -1263,7 +1277,6 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   } catch {}
 }
 
-
 /**
  * Reset internal timers, flags and debug overrides for tests and runtime.
  *
@@ -1347,7 +1360,6 @@ export function _resetForTest(store) {
     } catch {}
   }
 }
-
 
 /**
  * Reset the Classic Battle match state and UI.
