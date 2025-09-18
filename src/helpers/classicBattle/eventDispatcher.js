@@ -121,14 +121,18 @@ export async function dispatchBattleEvent(eventName, payload) {
   }
 
   const machine = typeof machineSource === "function" ? machineSource() : machineSource || null;
-  console.error("[TEST DEBUG] eventDispatcher: Retrieved machine", machine);
+  try {
+    exposeDebugState("dispatchMachineAvailable", !!machine);
+  } catch {}
 
   if (!machine) {
     // Not having a machine is an expected state during early startup
     // (for example when the round selection modal runs before the
     // orchestrator initializes). Return `false` to signal the skipped
     // dispatch without emitting console noise in production.
-    console.error("[TEST DEBUG] dispatchBattleEvent: No machine available for event", eventName);
+    try {
+      exposeDebugState("dispatchBattleEventNoMachine", eventName);
+    } catch {}
     return false;
   }
 
@@ -143,14 +147,9 @@ export async function dispatchBattleEvent(eventName, payload) {
   }
 
   // DEBUG: Log all event dispatches
-  if (typeof console !== "undefined") {
-    console.error(
-      "[TEST DEBUG] dispatchBattleEvent: dispatching",
-      eventName,
-      "to machine",
-      machine.getState?.()
-    );
-  }
+  try {
+    exposeDebugState("dispatchMachineStateBefore", typeof machine.getState === "function" ? machine.getState() : (machine.state ?? null));
+  } catch {}
 
   try {
     exposeDebugState("dispatchBattleEventInvoked", eventName);
@@ -170,6 +169,9 @@ export async function dispatchBattleEvent(eventName, payload) {
     const result = await machine.dispatch(eventName, payload);
     try {
       exposeDebugState("dispatchBattleEventResult", result);
+    } catch {}
+    try {
+      exposeDebugState("dispatchMachineStateAfter", typeof machine.getState === "function" ? machine.getState() : (machine.state ?? null));
     } catch {}
     if (result === false) {
       resetDispatchKey(dispatchKey, timestamp);
