@@ -285,6 +285,12 @@ describe("classicBattle startCooldown", () => {
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.timer?.start).toBe("function");
     expect(typeof currentNextRound?.ready?.then).toBe("function");
+    expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
+    const machineStateBefore = debugRead("handleNextRoundMachineState");
+    const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
+    expect(["cooldown", null]).toContain(machineStateBefore);
+    expect(["cooldown", null]).toContain(snapshotStateBefore);
+    expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
     expect(machine.getState()).toBe("cooldown");
 
@@ -350,6 +356,12 @@ describe("classicBattle startCooldown", () => {
     const currentNextRound = debugRead("currentNextRound");
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.ready?.then).toBe("function");
+    expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
+    const machineStateBefore = debugRead("handleNextRoundMachineState");
+    const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
+    expect(["cooldown", null]).toContain(machineStateBefore);
+    expect(["cooldown", null]).toContain(snapshotStateBefore);
+    expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
 
     document.querySelector('[data-role="next-round"]').click();

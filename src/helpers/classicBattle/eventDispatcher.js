@@ -1,5 +1,5 @@
 import { emitBattleEvent } from "./battleEvents.js";
-import { readDebugState } from "./debugHooks.js";
+import { readDebugState, exposeDebugState } from "./debugHooks.js";
 
 const DEDUPE_WINDOW_MS = 20;
 const recentDispatches = new Map();
@@ -42,10 +42,16 @@ function registerDispatch(eventName, machine) {
   const now = getTimestamp();
   const last = recentDispatches.get(key);
   if (typeof last === "number" && now - last < DEDUPE_WINDOW_MS) {
+    try {
+      exposeDebugState("dispatchReadySkipped", now - last);
+    } catch {}
     process.stdout.write(`[dedupe] skip ${eventName} ${now - last} ${key}
 `);
     return { shouldSkip: true, key, timestamp: last };
   }
+  try {
+    exposeDebugState("dispatchReadyTracked", now);
+  } catch {}
   process.stdout.write(`[dedupe] track ${eventName} ${now} ${key}
 `);
   recentDispatches.set(key, now);
