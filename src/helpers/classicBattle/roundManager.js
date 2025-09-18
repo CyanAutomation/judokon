@@ -256,6 +256,9 @@ export async function startRound(store, onRoundStart) {
  */
 let currentNextRound = null;
 
+// Track whether the "ready" event has been dispatched for the current cooldown window.
+let readyDispatchedForCurrentCooldown = false;
+
 /**
  * Schedule the cooldown before the next round and expose controls
  * for the Next button.
