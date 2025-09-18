@@ -320,8 +320,8 @@ describe("classicBattle startCooldown", () => {
     expect(getterInfo?.sourceReadDebug).toBe("function");
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
-    expect(["cooldown", null]).toContain(machineStateBefore);
-    expect(["cooldown", null]).toContain(snapshotStateBefore);
+    expect(["roundStart", null]).toContain(machineStateBefore);
+    expect(["roundStart", null]).toContain(snapshotStateBefore);
     expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
     // State transitions to waitingForPlayerAction after ready dispatch
@@ -398,8 +398,8 @@ describe("classicBattle startCooldown", () => {
     expect(getterInfo?.sourceReadDebug).toBe("function");
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
-    expect(["cooldown", null]).toContain(machineStateBefore);
-    expect(["cooldown", null]).toContain(snapshotStateBefore);
+    expect(["roundStart", null]).toContain(machineStateBefore);
+    expect(["roundStart", null]).toContain(snapshotStateBefore);
     expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
 
