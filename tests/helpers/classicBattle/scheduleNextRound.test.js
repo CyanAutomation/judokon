@@ -181,21 +181,8 @@ describe("classicBattle startCooldown", () => {
     // Provide a minimal machine table directly via the test-only override so
     // the embedded state table uses this deterministic set.
     const minimal = [
-      {
-        name: "waitingForMatchStart",
-        type: "initial",
-        triggers: [{ on: "continue", target: "cooldown" }]
-      },
-      {
-        name: "roundOver",
-        triggers: [{ on: "continue", target: "cooldown" }]
-      },
       { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] },
-      {
-        name: "roundStart",
-        triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }]
-      },
-      { name: "waitingForPlayerAction", triggers: [] }
+      { name: "roundStart", triggers: [] }
     ];
     console.log("[TEST DEBUG] ENTER mockBattleData");
     globalThis.__CLASSIC_BATTLE_STATES__ = minimal;

@@ -154,7 +154,6 @@ export async function dispatchBattleEvent(eventName, payload) {
         // ignore: interrupt diagnostics are optional
       }
     }
-    process.stdout.write(`[TEST DEBUG] eventDispatcher: About to dispatch ${eventName} to machine\n`);
     const result = await machine.dispatch(eventName, payload);
     if (result === false) {
       resetDispatchKey(dispatchKey, timestamp);
