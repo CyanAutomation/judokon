@@ -7,7 +7,7 @@ import {
   performMemoryCleanup,
   registerWeakReference,
   registerCleanup
-} from "../preloadService.js";
+} from "../../../src/helpers/classicBattle/preloadService.js";
 
 describe("Preload Service", () => {
   beforeEach(() => {

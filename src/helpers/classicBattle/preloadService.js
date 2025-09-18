@@ -12,6 +12,10 @@ import { runWhenIdle } from "./idleCallback.js";
 let cachedModules = new Map();
 let preloadPromises = new Map();
 
+// WeakMap for storing weak references to prevent memory leaks
+const weakRefs = new WeakMap();
+let cleanupRegistry = new Set();
+
 // Performance monitoring
 let performanceMetrics = {
   preloadStartTime: null,
@@ -88,6 +92,28 @@ function recordMemoryUsage() {
     if (performanceMetrics.memoryUsage.length > 100) {
       performanceMetrics.memoryUsage.shift();
     }
+  }
+}
+
+/**
+ * Get a cached module if available.
+ *
+ * @param {string} cacheKey - Key of the cached module
+ * @returns {object|null} The cached module or null if not loaded
+ */
+export function getCachedModule(cacheKey) {
+  return cachedModules.get(cacheKey) || null;
+}
+
+/**
+ * Register an object for weak reference tracking to prevent memory leaks.
+ *
+ * @param {object} obj - Object to track
+ * @param {Function} [cleanupFn] - Optional cleanup function
+ */
+export function registerWeakReference(obj, cleanupFn) {
+  if (typeof obj === "object" && obj !== null) {
+    weakRefs.set(obj, { cleanupFn, timestamp: Date.now() });
   }
 }
 

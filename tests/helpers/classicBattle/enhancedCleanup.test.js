@@ -7,7 +7,7 @@ import {
   domCleanup,
   moduleCleanup,
   memoryCleanup
-} from "../../src/helpers/classicBattle/enhancedCleanup.js";
+} from "../../../src/helpers/classicBattle/enhancedCleanup.js";
 
 describe("Enhanced Cleanup Utilities", () => {
   describe("Resource Registry", () => {
@@ -186,9 +186,7 @@ describe("Enhanced Cleanup Utilities", () => {
     it("should handle elements without parent", () => {
       mockElement.parentNode = null;
 
-      expect(() =>
-        domCleanup.registerElement(registry, mockElement, "elementId")
-      ).not.toThrow();
+      expect(() => domCleanup.registerElement(registry, mockElement, "elementId")).not.toThrow();
     });
   });
 
@@ -216,9 +214,7 @@ describe("Enhanced Cleanup Utilities", () => {
         throw new Error("Clear failed");
       });
 
-      expect(() =>
-        moduleCleanup.registerCache(registry, mockCache, "cacheId")
-      ).not.toThrow();
+      expect(() => moduleCleanup.registerCache(registry, mockCache, "cacheId")).not.toThrow();
     });
   });
 
@@ -268,5 +264,4 @@ describe("Enhanced Cleanup Utilities", () => {
       expect(obj.test).toBeNull();
     });
   });
-});</content>
-<parameter name="filePath">/workspaces/judokon/tests/helpers/classicBattle/enhancedCleanup.test.js
+});
