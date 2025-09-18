@@ -8,20 +8,20 @@ followed by a proposed refactoring plan:
 Current Responsibilities & Complexities:
 
 1. Battle State Management: Tracks currentRound, currentPhase, judoka data,
-    selectedStat, etc. This state is extensive and intertwined with various
-    functions.
+   selectedStat, etc. This state is extensive and intertwined with various
+   functions.
 2. Game Flow Control: Manages the progression through battle phases (e.g.,
-    STAT_SELECTION, ROUND_RESOLUTION, BATTLE_ENDED), including starting and
-    ending rounds.
+   STAT_SELECTION, ROUND_RESOLUTION, BATTLE_ENDED), including starting and
+   ending rounds.
 3. UI Updates: Directly manipulates the DOM for round prompts, stat
-    selection, scoreboard, snackbars, and battle results. This couples game
-    logic with presentation.
+   selection, scoreboard, snackbars, and battle results. This couples game
+   logic with presentation.
 4. Event Handling: Subscribes to and dispatches numerous battle-related
-    events, with complex logic within each handler.
+   events, with complex logic within each handler.
 5. Timer Management: Handles multiple setTimeout and clearTimeout calls for
-    countdowns and auto-selection, which are scattered and hard to track.
+   countdowns and auto-selection, which are scattered and hard to track.
 6. Stat Selection Logic: Determines stat selection, handles user input, and
-    implements auto-selection.
+   implements auto-selection.
 7. Round Resolution Logic: Compares stats and determines the round winner.
 8. Sound Effects: Triggers various sound effects.
 
@@ -44,46 +44,46 @@ Key Issues:
   The core idea is to apply the Single Responsibility Principle (SRP) and
   separate concerns into distinct, testable modules.
   1. Introduce a Battle State Machine (`battleStateMachine.js`):
-      - Purpose: Explicitly manage the battle's lifecycle and phases (e.g.,
-        IDLE, BATTLE_STARTING, ROUND_STARTED, STAT_SELECTION,
-        ROUND_RESOLUTION, BATTLE_ENDED).
-      - Responsibility: Define states, transitions, and actions for each
-        state. It would emit events when state changes occur.
-      - Benefit: Provides a clear, visual representation of the game flow,
-        making it easier to understand and debug.
+     - Purpose: Explicitly manage the battle's lifecycle and phases (e.g.,
+       IDLE, BATTLE_STARTING, ROUND_STARTED, STAT_SELECTION,
+       ROUND_RESOLUTION, BATTLE_ENDED).
+     - Responsibility: Define states, transitions, and actions for each
+       state. It would emit events when state changes occur.
+     - Benefit: Provides a clear, visual representation of the game flow,
+       making it easier to understand and debug.
 
   2. Extract Battle UI Manager (`battleUIManager.js`):
-      - Purpose: Handle all UI-related updates and rendering.
-      - Responsibility: Subscribe to events from the battleStateMachine and
-        other game logic modules, then update the DOM accordingly (e.g.,
-        showSnackbar, updateRoundPrompt, updateStatSelectionUI,
-        updateScoreboard).
-      - Benefit: Decouples game logic from presentation, allowing independent
-        development and testing of UI.
+     - Purpose: Handle all UI-related updates and rendering.
+     - Responsibility: Subscribe to events from the battleStateMachine and
+       other game logic modules, then update the DOM accordingly (e.g.,
+       showSnackbar, updateRoundPrompt, updateStatSelectionUI,
+       updateScoreboard).
+     - Benefit: Decouples game logic from presentation, allowing independent
+       development and testing of UI.
 
   3. Encapsulate Stat Selection Logic (`statSelectionManager.js`):
-      - Purpose: Manage the entire stat selection process.
-      - Responsibility: Handle stat selection timers, user input for stat
-        choice, and auto-selection logic. It would emit a STAT_SELECTED event
-        upon completion.
-      - Benefit: Isolates a complex piece of logic, making it more manageable
-        and testable.
+     - Purpose: Manage the entire stat selection process.
+     - Responsibility: Handle stat selection timers, user input for stat
+       choice, and auto-selection logic. It would emit a STAT_SELECTED event
+       upon completion.
+     - Benefit: Isolates a complex piece of logic, making it more manageable
+       and testable.
 
   4. Create a Round Resolver (`roundResolver.js`):
-      - Purpose: Determine the outcome of a single round.
-      - Responsibility: Take selected stats and judoka data, compare them,
-        and return the round winner and result.
-      - Benefit: Pure function, easily testable, and separates the "what
-        happened" from the "how it happened."
+     - Purpose: Determine the outcome of a single round.
+     - Responsibility: Take selected stats and judoka data, compare them,
+       and return the round winner and result.
+     - Benefit: Pure function, easily testable, and separates the "what
+       happened" from the "how it happened."
 
   5. Refactor `roundManager.js` into an Orchestrator:
-      - Purpose: Coordinate the interactions between the new, specialized
-        modules.
-      - Responsibility: Initialize the state machine, UI manager, stat
-        selection manager, and event bus. It would subscribe to key events
-        from these modules and trigger the next steps in the battle flow.
-      - Benefit: Becomes much smaller, focusing solely on coordination rather
-        than implementation details.
+     - Purpose: Coordinate the interactions between the new, specialized
+       modules.
+     - Responsibility: Initialize the state machine, UI manager, stat
+       selection manager, and event bus. It would subscribe to key events
+       from these modules and trigger the next steps in the battle flow.
+     - Benefit: Becomes much smaller, focusing solely on coordination rather
+       than implementation details.
 
   New File Structure (Example):
 
