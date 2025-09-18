@@ -197,7 +197,11 @@ describe("classicBattle startCooldown", () => {
         name: "roundOver",
         triggers: [{ on: "continue", target: "cooldown" }]
       },
-      { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] },
+      {
+        name: "cooldown",
+        onEnter: cooldownEnter,
+        triggers: [{ on: "ready", target: "roundStart" }]
+      },
       {
         name: "roundStart",
         triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }]

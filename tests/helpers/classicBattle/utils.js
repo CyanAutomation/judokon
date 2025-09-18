@@ -25,7 +25,7 @@ import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBa
 export function setupClassicBattleDom() {
   disposeClassicBattleOrchestrator();
   const timerSpy = vi.useFakeTimers();
-  vi.resetModules();
+  // vi.resetModules(); // Commented out to prevent fake timer interference
   globalThis.requestAnimationFrame = vi.fn((cb) => cb());
   globalThis.cancelAnimationFrame = vi.fn();
   const fetchJsonMock = vi.fn(async (url) => {
