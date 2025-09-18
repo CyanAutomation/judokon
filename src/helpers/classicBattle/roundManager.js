@@ -628,9 +628,16 @@ function createCooldownControls({ emit } = {}) {
     readyDispatched: false,
     readyInFlight: false
   };
+  appendReadyTrace("controlsCreated", {
+    hasEmitter: typeof emit === "function"
+  });
   const notify = typeof emit === "function" ? emit : emitBattleEvent;
   controls.ready = new Promise((resolve) => {
     controls.resolveReady = () => {
+      appendReadyTrace("resolveReadyInvoked", {
+        readyDispatched: controls.readyDispatched,
+        readyInFlight: controls.readyInFlight
+      });
       controls.readyDispatched = true;
       controls.readyInFlight = false;
       try {
@@ -638,6 +645,7 @@ function createCooldownControls({ emit } = {}) {
       } catch {}
       resolve();
       controls.resolveReady = null;
+      appendReadyTrace("resolveReadySettled", { readyDispatched: true });
     };
   });
   return controls;
