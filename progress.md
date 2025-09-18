@@ -217,8 +217,9 @@ Done
 Outstanding (remaining work)
 
 - Deterministic test hooks and test coverage
-  - Status: partially done — `window.__battleInitComplete` exposed, but an explicit documented test helper and a short integration test asserting the presence of `window.battleStore` and the `battle:init-complete` event should be added/landed in the test suite.
-  - Next action: add/land `tests/classicBattle/init-complete.test.js` asserting `window.__battleInitComplete === true`, `window.battleStore` exists, and the `battle:init-complete` event fires.
+  - Status: Done — added `document.dispatchEvent(new Event("battle:init-complete"))` in `src/pages/battleClassic.init.js` and created comprehensive test file.
+  - Changes implemented: Added event dispatch after setting `window.__battleInitComplete = true`. Created `tests/classicBattle/init-complete.test.js` with 4 tests asserting the flag, store exposure, and event firing.
+  - Verification: New unit tests (4 passed), related bootstrap/integration tests (3 passed), and Playwright bootstrap/smoke tests (2 passed) confirm no regressions.
 
 - Modal accessibility & click-target issues
   - Status: Done — focus management, keyboard handlers, and overlay pointer-events were already implemented or fixed.

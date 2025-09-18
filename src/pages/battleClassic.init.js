@@ -740,6 +740,10 @@ async function init() {
     // Mark initialization as complete for test hooks
     if (typeof window !== "undefined") {
       window.__battleInitComplete = true;
+      // Dispatch event for deterministic test hooks
+      try {
+        document.dispatchEvent(new Event("battle:init-complete"));
+      } catch {}
     }
   } catch (err) {
     console.error("battleClassic: bootstrap failed", err);
