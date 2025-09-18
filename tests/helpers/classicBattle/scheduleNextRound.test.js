@@ -280,7 +280,7 @@ describe("classicBattle startCooldown", () => {
     await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
-      scheduler: fakeScheduler,
+
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
     const machine = orchestrator.getBattleStateMachine();

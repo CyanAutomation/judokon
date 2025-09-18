@@ -93,6 +93,7 @@ export function createCountdownTimer(
     if (paused) return;
     remaining -= 1;
     if (typeof onTick === "function") onTick(remaining);
+    console.log("[dedupe] scheduler", typeof activeScheduler.setTimeout);
     if (remaining <= 0) {
       stop();
       if (typeof onExpired === "function") await onExpired();
