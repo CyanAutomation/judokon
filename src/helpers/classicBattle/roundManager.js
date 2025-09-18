@@ -1180,7 +1180,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     // - When duration is valid → schedule at exact duration (ms) so advancing
     //   fake timers by the whole-second value triggers expiration without
     //   requiring additional padding.
-    const ms = !Number.isFinite(secsNum) || secsNum <= 0 ? 10 : Math.max(0, secsNum * 1000);
+    const ms = !Number.isFinite(secsNum) || secsNum <= 0 ? 0 : Math.max(0, secsNum * 1000);
     // Use both global and injected scheduler timeouts to maximize compatibility
     // with test environments that mock timers differently.
     fallbackId = fallbackScheduler(ms, onExpired);

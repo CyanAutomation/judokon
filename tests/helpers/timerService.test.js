@@ -50,6 +50,10 @@ describe("timerService", () => {
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => {
       const makeTimer = (onTick, onExpired, duration) => {
         onTick(duration);
+        if (duration <= 0) {
+          onExpired();
+          return;
+        }
         for (let i = 1; i <= duration; i++) {
           scheduler.setTimeout(() => {
             const remaining = duration - i;
