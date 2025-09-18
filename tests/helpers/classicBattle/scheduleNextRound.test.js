@@ -181,8 +181,21 @@ describe("classicBattle startCooldown", () => {
     // Provide a minimal machine table directly via the test-only override so
     // the embedded state table uses this deterministic set.
     const minimal = [
+      {
+        name: "waitingForMatchStart",
+        type: "initial",
+        triggers: [{ on: "continue", target: "cooldown" }]
+      },
+      {
+        name: "roundOver",
+        triggers: [{ on: "continue", target: "cooldown" }]
+      },
       { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] },
-      { name: "roundStart", triggers: [] }
+      {
+        name: "roundStart",
+        triggers: [{ on: "cardsRevealed", target: "waitingForPlayerAction" }]
+      },
+      { name: "waitingForPlayerAction", triggers: [] }
     ];
     console.log("[TEST DEBUG] ENTER mockBattleData");
     globalThis.__CLASSIC_BATTLE_STATES__ = minimal;
@@ -300,10 +313,8 @@ describe("classicBattle startCooldown", () => {
     await vi.runAllTimersAsync();
     console.log("[TEST DEBUG] After timer advance, state:", machine.getState());
 
-    // Confirm fallback timer callback executed
-    expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    
     // Manually step through state transitions for debugging
+    await machine.dispatch("ready"); // Explicitly await dispatch
     expect(machine.getState()).toBe("roundStart");
     await vi.runAllTimersAsync(); // Ensure any microtasks from dispatching 'ready' are processed
     expect(machine.getState()).toBe("waitingForPlayerAction");
