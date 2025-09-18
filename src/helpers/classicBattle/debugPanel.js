@@ -134,6 +134,19 @@ function persistDebugPanelState(panel) {
   }
 }
 
+/**
+ * Mount the debug panel in the correct position relative to battle area.
+ *
+ * @param {HTMLElement} panel - The debug panel element to mount.
+ * @param {HTMLElement} battleArea - The battle area element.
+ * @summary Position and show the debug panel in the DOM.
+ * @pseudocode
+ * 1. Check if panel exists.
+ * 2. Position panel before battle area if not already positioned.
+ * 3. Remove hidden class to make panel visible.
+ *
+ * @returns {void}
+ */
 function mountDebugPanel(panel, battleArea) {
   if (!panel) return;
   if (battleArea && panel.nextElementSibling !== battleArea) {
@@ -142,6 +155,20 @@ function mountDebugPanel(panel, battleArea) {
   panel.classList.remove("hidden");
 }
 
+/**
+ * Collect debug state information from the battle state machine.
+ *
+ * @returns {object} Object containing machine state, previous state, last event, and diagnostics.
+ * @summary Gather comprehensive debug information from the battle state machine.
+ * @pseudocode
+ * 1. Initialize empty state object.
+ * 2. Safely collect state snapshot from battle debug utilities.
+ * 3. Add machine state, previous state, last event, and event log.
+ * 4. Include additional debug state values like round decision timing.
+ * 5. Add machine diagnostics and return the collected state.
+ *
+ * @returns {object}
+ */
 function getMachineDebugState() {
   const state = {};
   safeCall(() => {
@@ -161,6 +188,20 @@ function getMachineDebugState() {
   return state;
 }
 
+/**
+ * Get a snapshot of the battle store state.
+ *
+ * @param {Window} win - The window object containing the battle store.
+ * @returns {object} Object containing store state information.
+ * @summary Extract relevant battle store state for debugging.
+ * @pseudocode
+ * 1. Initialize empty output object.
+ * 2. Safely access the battle store from the window object.
+ * 3. Extract key store properties like selection state and player choice.
+ * 4. Return the collected store snapshot.
+ *
+ * @returns {object}
+ */
 function getStoreSnapshot(win) {
   const out = {};
   safeCall(() => {
@@ -175,6 +216,22 @@ function getStoreSnapshot(win) {
   return out;
 }
 
+/**
+ * Collect build and runtime information for debugging.
+ *
+ * @param {Window} win - The window object containing build information.
+ * @returns {object} Object containing build tag, round debug info, and DOM state.
+ * @summary Gather build version and runtime diagnostic information.
+ * @pseudocode
+ * 1. Initialize empty info object.
+ * 2. Safely collect build tag from window object.
+ * 3. Add round debug information from debug state.
+ * 4. Include event debug array if available.
+ * 5. Add DOM information about opponent card element.
+ * 6. Return the collected build information.
+ *
+ * @returns {object}
+ */
 function getBuildInfo(win) {
   const info = {};
   safeCall(() => {
