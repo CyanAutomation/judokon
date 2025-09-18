@@ -50,6 +50,16 @@ export function safeGetSnapshot() {
  * @pseudocode
  * 1. Return `btn?.dataset.nextReady === "true"`.
  */
+/**
+ * Check if the Next button is flagged ready.
+ *
+ * @param {HTMLButtonElement|null} btn Button to inspect.
+ * @returns {boolean} True when `data-next-ready="true"`.
+ * @summary Determine readiness via dataset flag.
+ * @pseudocode
+ * 1. Check if button exists and has data-next-ready attribute set to "true".
+ * 2. Return boolean indicating if the button is ready for next action.
+ */
 export function isNextReady(btn) {
   return btn?.dataset.nextReady === "true";
 }
