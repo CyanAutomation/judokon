@@ -467,6 +467,17 @@ function showRetryModal(retryFn) {
  * @param {() => Promise<void>} retryFn - Function invoked when retrying.
  * @returns {() => void} Cleanup function.
  */
+/**
+ * Register an error handler for round start failures.
+ *
+ * @param {Function} retryFn - Function to call when retrying the failed round start.
+ * @returns {Function} Cleanup function to remove the event listener.
+ * @summary Handle round start errors with user-friendly messaging and retry option.
+ * @pseudocode
+ * 1. Create an error handler that shows a scoreboard message and retry modal.
+ * 2. Add the handler to the 'round-start-error' event.
+ * 3. Return a cleanup function to remove the event listener.
+ */
 export function registerRoundStartErrorHandler(retryFn) {
   const onError = () => {
     scoreboard.showMessage("Round start error. Please retry.");

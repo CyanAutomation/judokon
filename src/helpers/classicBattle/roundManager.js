@@ -626,6 +626,19 @@ function logStartCooldown() {
   } catch {}
 }
 
+/**
+ * Create controls object for managing cooldown state and readiness.
+ *
+ * @param {object} [options] - Configuration options.
+ * @param {Function} [options.emit] - Custom emit function, defaults to emitBattleEvent.
+ * @returns {object} Controls object with timer, resolveReady function, and ready promise.
+ * @summary Create cooldown controls with promise-based readiness tracking.
+ * @pseudocode
+ * 1. Create controls object with timer, resolveReady, and ready promise.
+ * 2. Set up resolveReady function that emits nextRoundTimerReady event.
+ * 3. Track readiness state and prevent duplicate dispatches.
+ * 4. Return controls object for managing cooldown lifecycle.
+ */
 function createCooldownControls({ emit } = {}) {
   const controls = {
     timer: null,

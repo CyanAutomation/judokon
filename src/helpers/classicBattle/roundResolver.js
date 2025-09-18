@@ -288,6 +288,23 @@ export async function updateScoreboard(result) {
  * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result.
  * @returns {ReturnType<typeof evaluateRound>}
  */
+/**
+ * Emit round resolution events with detailed result data.
+ *
+ * @param {object} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @param {object} result - Round evaluation result.
+ * @summary Emit round resolution events for UI updates and debugging.
+ * @pseudocode
+ * 1. Emit roundResolved event with complete round data.
+ * 2. Emit round.evaluated event with normalized data structure.
+ * 3. Emit display.score.update event for scoreboard synchronization.
+ * 4. Update DOM directly for test environments.
+ *
+ * @returns {void}
+ */
 export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
   emitBattleEvent("roundResolved", { store, stat, playerVal, opponentVal, result });
   try {
@@ -356,6 +373,22 @@ export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
  * @param {number} opponentVal - Opponent stat value.
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
+/**
+ * Compute the complete round result from stat selection to event emission.
+ *
+ * @param {object} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {Promise<object>} Complete round result with evaluation, events, and UI updates.
+ * @summary Execute full round resolution pipeline from evaluation to event emission.
+ * @pseudocode
+ * 1. Evaluate the round outcome using player and opponent stat values.
+ * 2. Dispatch outcome events for UI and state machine updates.
+ * 3. Update scoreboard with new scores.
+ * 4. Emit round resolution events with complete result data.
+ * 5. Return the final result object.
+ */
 export async function computeRoundResult(store, stat, playerVal, opponentVal) {
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -384,6 +417,16 @@ export async function computeRoundResult(store, stat, playerVal, opponentVal) {
  * 3. Swallow any errors from dispatching.
  *
  * @returns {Promise<void>}
+ */
+/**
+ * Ensure the state machine is in round decision state before evaluation.
+ *
+ * @returns {Promise<void>} Promise that resolves when state is ready for evaluation.
+ * @summary Ensure state machine is ready to evaluate round results.
+ * @pseudocode
+ * 1. Check if current battle state is 'roundDecision'.
+ * 2. If not in round decision state, dispatch 'evaluate' event.
+ * 3. Handle any errors from event dispatching gracefully.
  */
 export async function ensureRoundDecisionState() {
   try {
@@ -437,6 +480,22 @@ export async function delayAndRevealOpponent(delayMs, sleep, stat) {
  * @param {number} opponentVal - Opponent's stat value.
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
  */
+/**
+ * Finalize round result with cleanup and debug state updates.
+ *
+ * @param {object} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @returns {Promise<object>} Final round result after cleanup.
+ * @summary Complete round resolution with guard cleanup and debug updates.
+ * @pseudocode
+ * 1. Compute the round result using evaluation pipeline.
+ * 2. Clear any pending round decision guards.
+ * 3. Update debug state with resolution timestamp.
+ * 4. Log debug information about the result.
+ * 5. Return the final result.
+ */
 export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
   const result = await computeRoundResult(store, stat, playerVal, opponentVal);
   try {
@@ -470,6 +529,29 @@ export async function finalizeRoundResult(store, stat, playerVal, opponentVal) {
  * @param {{delayMs?: number, sleep?: (ms: number) => Promise<void>}} [opts]
  * - Optional overrides for testing.
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ */
+/**
+ * Resolve a battle round with stat comparison and outcome determination.
+ *
+ * @param {object} store - Battle state store.
+ * @param {string} stat - Chosen stat key.
+ * @param {number} playerVal - Player's stat value.
+ * @param {number} opponentVal - Opponent's stat value.
+ * @param {object} [opts={}] - Optional configuration overrides.
+ * @param {number} [opts.delayMs] - Custom delay before revealing opponent stat.
+ * @param {Function} [opts.sleep] - Custom sleep function for testing.
+ * @returns {Promise<object>} Round resolution result.
+ * @summary Main round resolution entry point with validation, timing, and cleanup.
+ * @pseudocode
+ * 1. Prevent concurrent resolution attempts using isResolving flag.
+ * 2. Determine if running in headless mode for timing adjustments.
+ * 3. Extract timing configuration with defaults.
+ * 4. Validate that a stat was provided.
+ * 5. Ensure round decision state is properly initialized.
+ * 6. Apply delay and reveal opponent stat with animation.
+ * 7. Finalize the round result with cleanup and debug updates.
+ * 8. Reset the isResolving flag in finally block.
+ * 9. Return the complete resolution result.
  */
 export async function resolveRound(store, stat, playerVal, opponentVal, opts = {}) {
   if (isResolving) return;
