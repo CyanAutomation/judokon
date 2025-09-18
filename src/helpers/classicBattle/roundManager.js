@@ -191,40 +191,14 @@ export async function handleReplay(store) {
 }
 
 /**
- * Start a new round by drawing cards and starting timers.
- *
+ * Initiates a new battle round, setting its state to active and recording the start time.
+ * It also increments the round number and clears any events from previous rounds.
+ * @param {number} roundNum - The number of the round to start.
  * @pseudocode
- * 1. Reset selection flags on the store and clear any previous player choice.
- * 2. Draw player and opponent cards.
- * 3. Compute the current round number via `battleEngine.getRoundsPlayed() + 1`.
- * 4. If provided, invoke `onRoundStart` with the store and round number.
- * 5. Dispatch a `roundStarted` event with the store and round number.
- * 6. Return the drawn cards and round number.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart]
- *        Optional callback to apply UI updates immediately.
- */
-/**
- * Draw new cards and start a round.
- *
- * Resets per-round store flags, draws player/opponent cards from the engine,
- * computes the next round number and emits a `roundStarted` event. An
- * optional `onRoundStart` callback may be invoked synchronously to update UI
- * state immediately.
- *
- * @pseudocode
- * 1. Clear `store.selectionMade` and `store.playerChoice`.
- * 2. Await `drawCards()` to get player and opponent cards.
- * 3. Store the player's judoka on `store.currentPlayerJudoka`.
- * 4. Compute `roundNumber` from the engine's rounds played count.
- * 5. If supplied, call `onRoundStart(store, roundNumber)`.
- * 6. Emit `roundStarted` with the store and round number.
- * 7. Return `{...cards, roundNumber}` to callers.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart]
- * @returns {Promise<{playerCard: any, opponentCard: any, roundNumber: number}>}
+ * SET roundState to ACTIVE
+ * SET roundNumber to roundNum
+ * SET roundStartTime to current timestamp
+ * CLEAR roundEvents
  */
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
@@ -1059,11 +1033,11 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
 
   let dispatched = false;
   try {
-    dispatched = await dispatchReadyDirectly();
+    dispatched = await dispatchViaOptions();
   } catch {}
   if (!dispatched) {
     try {
-      dispatched = await dispatchViaOptions();
+      dispatched = await dispatchReadyDirectly();
     } catch {}
   }
   if (!dispatched) {
@@ -1270,33 +1244,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   } catch {}
 }
 
-/**
- * Reset internal state for tests.
- *
- * Clears timers, selection flags, and any previous player choice.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
+
 /**
  * Reset internal timers, flags and debug overrides for tests and runtime.
  *
@@ -1381,40 +1329,7 @@ export function _resetForTest(store) {
   }
 }
 
-/**
- * Reset the Classic Battle match state and UI.
- *
- * Alias of `_resetForTest` for production use. Clears timers, engine state,
- * store timeouts, and emits a `game:reset-ui` event to allow the UI to
- * teardown/reinitialize. Used by the classic battle orchestrator when
- * entering the lobby (`waitingForMatchStart`).
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Production alias for `_resetForTest` used by orchestrator and other callers.
- *
- * @pseudocode
- * 1. Invoke `_resetForTest(store)` when asked to reset the active match.
- */
+
 /**
  * Reset the Classic Battle match state and UI.
  *
