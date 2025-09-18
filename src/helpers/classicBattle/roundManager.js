@@ -815,6 +815,9 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     "readyDispatchedForCurrentCooldown =",
     readyDispatchedForCurrentCooldown
   );
+  process.stdout.write(
+    `[TEST DEBUG] handleNextRoundExpiration: currentState = ${currentState}, readyDispatchedForCurrentCooldown = ${readyDispatchedForCurrentCooldown}\n`
+  );
   if (currentState === "cooldown" && !readyDispatchedForCurrentCooldown) {
     readyDispatchedForCurrentCooldown = true;
     console.log("[TEST DEBUG] handleNextRoundExpiration: dispatching ready");
