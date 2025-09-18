@@ -13,6 +13,14 @@ const debugState = {};
  */
 export function exposeDebugState(key, value) {
   debugState[key] = value;
+  try {
+    if (typeof globalThis !== "undefined") {
+      if (!globalThis.__classicBattleDebugStore) globalThis.__classicBattleDebugStore = debugState;
+      try {
+        globalThis.__classicBattleDebugStore[key] = value;
+      } catch {}
+    }
+  } catch {}
 }
 
 /**
@@ -26,6 +34,12 @@ export function exposeDebugState(key, value) {
  * 2. Do not throw; missing keys return `undefined` to make tests simpler.
  */
 export function readDebugState(key) {
+  if (Object.prototype.hasOwnProperty.call(debugState, key)) return debugState[key];
+  try {
+    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugStore) {
+      return globalThis.__classicBattleDebugStore[key];
+    }
+  } catch {}
   return debugState[key];
 }
 
