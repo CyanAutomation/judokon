@@ -15,10 +15,10 @@ vi.mock("../../../src/utils/scheduler.js", () => ({
     const id = globalThis.setTimeout(() => cb(performance.now()), 16);
     return id;
   },
-  onSecondTick: (cb) => {
-    const id = globalThis.setInterval(() => cb(performance.now()), 1000);
+  onSecondTick: vi.fn((cb) => {
+    const id = globalThis.setTimeout(() => cb(performance.now()), 1000);
     return id;
-  },
+  }),
   cancel: vi.fn((id) => {
     globalThis.clearTimeout(id);
     globalThis.clearInterval(id);
