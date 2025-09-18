@@ -1160,12 +1160,12 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   // consistently observe timer ticks/expiration when advancing timers.
   try {
     controls.timer.start(cooldownSeconds);
-    try {
-      console.error(
-        "[TEST ERROR] wireCooldownTimer: controls.timer.start called for",
-        cooldownSeconds
-      );
-    } catch {}
+    // try {
+    //   console.error(
+    //     "[TEST ERROR] wireCooldownTimer: controls.timer.start called for",
+    //     cooldownSeconds
+    //   );
+    // } catch {}
   } catch (err) {
     console.error("[TEST DEBUG] controls.timer.start error", err);
   }
@@ -1181,19 +1181,19 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     // Use both global and injected scheduler timeouts to maximize compatibility
     // with test environments that mock timers differently.
     fallbackId = fallbackScheduler(ms, onExpired);
-    try {
-      console.error("[TEST ERROR] wireCooldownTimer: fallbackId", fallbackId, "ms", ms);
-    } catch {}
+    // try {
+    //   console.error("[TEST ERROR] wireCooldownTimer: fallbackId", fallbackId, "ms", ms);
+    // } catch {}
     try {
       schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
-      try {
-        console.error(
-          "[TEST ERROR] wireCooldownTimer: schedulerFallbackId",
-          schedulerFallbackId,
-          "ms",
-          ms
-        );
-      } catch {}
+      // try {
+      //   console.error(
+      //     "[TEST ERROR] wireCooldownTimer: schedulerFallbackId",
+      //     schedulerFallbackId,
+      //     "ms",
+      //     ms
+      //   );
+      // } catch {}
     } catch {}
   } catch {}
 }

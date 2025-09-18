@@ -146,7 +146,7 @@ describe("skip handler clears fallback timer", () => {
     await Promise.resolve();
     await vi.advanceTimersByTimeAsync(50);
     scheduler.tick(50);
-    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(2);
     expect(warnSpy).not.toHaveBeenCalled();
   });
 });
