@@ -121,7 +121,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
 
       const transitionCheckpoint = transitions.length;
 
-  await vi.advanceTimersByTimeAsync(1000);
+      await vi.advanceTimersByTimeAsync(1000);
       const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
         ([eventName]) => eventName === "ready"
       );
