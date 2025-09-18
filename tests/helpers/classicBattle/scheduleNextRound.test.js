@@ -271,11 +271,9 @@ describe("classicBattle startCooldown", () => {
     });
 
     console.log("[TEST DEBUG] before initClassicBattleOrchestrator");
-    // Patch: inject fake scheduler for orchestrator
     await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
-
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
     const machine = orchestrator.getBattleStateMachine();
@@ -283,48 +281,35 @@ describe("classicBattle startCooldown", () => {
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
     // Ensure machine is in roundOver state for the test
+    console.log("[TEST DEBUG] Before dispatch roundOver, state:", machine.getState());
     await machine.dispatch("roundOver");
+    console.log("[TEST DEBUG] After dispatch roundOver, state:", machine.getState());
     expect(machine.getState()).toBe("roundOver");
 
+    console.log("[TEST DEBUG] Before dispatch continue, state:", machine.getState());
     await machine.dispatch("continue");
+    console.log("[TEST DEBUG] After dispatch continue, state:", machine.getState());
     expect(machine.getState()).toBe("cooldown");
 
     // Clear spy after manual continue call to only capture automatic ready call
     dispatchBattleEventSpy.mockClear();
 
-    // Debug: log state and machine before advancing timers
-
-    console.log(
-      "[TEST DEBUG] Before timer advance, state:",
-      machine.getState(),
-      "machine:",
-      machine
-    );
+    console.log("[TEST DEBUG] Before timer advance, state:", machine.getState());
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
-    // Debug: log when 'ready' is dispatched
+    console.log("[TEST DEBUG] After timer advance, state:", machine.getState());
 
-    console.log("[TEST DEBUG] After timers, should dispatch 'ready'");
-    // Debug: log state and machine after timer fires
-
-    console.log(
-      "[TEST DEBUG] After timer advance, state:",
-      machine.getState(),
-      "machine:",
-      machine
-    );
     // Confirm fallback timer callback executed
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    // Wait for the orchestrator to reach the expected state to avoid races
+    
+    console.log("[TEST DEBUG] Before waitForState, state:", machine.getState());
     await waitForState("waitingForPlayerAction");
-
-    // Debug: log state after waitForState
+    console.log("[TEST DEBUG] After waitForState, state:", machine.getState());
 
     const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
       ([eventName]) => eventName === "ready"
     );
     expect(readyDispatchCalls).toHaveLength(1);
-    console.log("[TEST DEBUG] After waitForState, state:", machine.getState());
 
     const readyCalls = dispatchBattleEventSpy.mock.calls.filter(([event]) => event === "ready");
     expect(readyCalls.length).toBeGreaterThan(0);
