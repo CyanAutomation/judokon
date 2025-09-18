@@ -1,4 +1,4 @@
-This roundManager.js file is indeed quite complex, acting as a central hub
+This roundManager.js file is quite complex, acting as a central hub
 for battle state, UI updates, event handling, and timer management. This
 monolithic structure makes it hard to maintain, debug, and test.
 
@@ -109,6 +109,6 @@ Key Issues:
 - Enhanced Maintainability: The codebase becomes more modular and easier to
   understand for new developers.
 
-  This plan provides a clear path to significantly simplify roundManager.js. I
-  recommend starting with the battleStateMachine.js to establish the core flow,
+  This plan provides a clear path to significantly simplify roundManager.js. it is
+  recommended starting with the battleStateMachine.js to establish the core flow,
   then progressively extracting other concerns.
