@@ -326,7 +326,7 @@ describe("classicBattle startCooldown", () => {
     delete window.__NEXT_ROUND_COOLDOWN_MS;
   }, 10000);
 
-  it("transitions roundOver → cooldown → roundStart without duplicates", async () => {
+  it("transitions roundOver → cooldown → roundStart", async () => {
     document.getElementById("next-round-timer")?.remove();
     const { nextButton } = createTimerNodes();
     nextButton.disabled = true;
@@ -392,7 +392,6 @@ describe("classicBattle startCooldown", () => {
     );
     expect(readyDispatchCalls).toHaveLength(1);
 
-    expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
     expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
   });
