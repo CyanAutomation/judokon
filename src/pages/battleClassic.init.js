@@ -180,6 +180,7 @@ function renderStatButtons(store) {
     btn.textContent = String(stat);
     btn.setAttribute("data-stat", String(stat));
     btn.setAttribute("data-testid", "stat-button");
+    btn.setAttribute("aria-describedby", "round-message");
     btn.addEventListener("click", async () => {
       if (btn.disabled) return;
       try {
@@ -189,7 +190,7 @@ function renderStatButtons(store) {
         // bound in this simplified page.
         try {
           stopActiveSelectionTimer();
-        } catch {}
+        } catch {} // Ignore errors if timer is not active
         try {
           const el = document.getElementById("score-display");
           if (el) {
@@ -198,7 +199,7 @@ function renderStatButtons(store) {
               el.innerHTML = `<span data-side=\"player\">You: 1</span>\n<span data-side=\"opponent\">Opponent: 0</span>`;
             }
           }
-        } catch {}
+        } catch {} // Ignore errors if score display is not found
         const delayOverride =
           typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
             ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
@@ -259,7 +260,7 @@ function renderStatButtons(store) {
               scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
             }
           }
-        } catch {}
+        } catch {} // Ignore errors if score update fails
         try {
           const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
           if (isMatchEnded() || (result && result.matchEnded)) {
@@ -277,6 +278,9 @@ function renderStatButtons(store) {
     });
     container.appendChild(btn);
   }
+  requestAnimationFrame(() => {
+    container.dataset.buttonsReady = "true";
+  });
   try {
     const buttons = container.querySelectorAll("button[data-stat]");
     setStatButtonsEnabled(
@@ -286,7 +290,7 @@ function renderStatButtons(store) {
       () => resolveStatButtonsReady(),
       () => {}
     );
-  } catch {}
+  } catch {} // Ignore errors if setting stat buttons enabled fails
 }
 
 /**
@@ -798,4 +802,4 @@ if (document.readyState === "loading") {
  *
  * @returns {void}
  */
-export { init, initBattleStateBadge };
+export { init, initBattleStateBadge, renderStatButtons };
