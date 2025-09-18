@@ -7,6 +7,10 @@ import {
   BattleEngine
 } from "../../src/helpers/index.js";
 import {
+  CLASSIC_BATTLE_POINTS_TO_WIN,
+  CLASSIC_BATTLE_MAX_ROUNDS
+} from "../../src/helpers/constants.js";
+import {
   startRoundTimer,
   pauseTimer as pauseEngineTimer,
   resumeTimer as resumeEngineTimer
@@ -82,14 +86,31 @@ describe("BattleEngine timer pause/resume and drift correction", () => {
   });
 });
 
-describe("helpers index exports", () => {
-  it("exposes public API", () => {
-    expect(typeof compareStats).toBe("function");
-    expect(typeof determineOutcome).toBe("function");
-    expect(typeof applyOutcome).toBe("function");
-    expect(typeof BattleEngine).toBe("function");
-  });
-});
+describe(
+  "helpers index contract: compareStats/determineOutcome/applyOutcome coordinate BattleEngine scoring",
+  () => {
+    it("compares stats, derives round outcomes, and mutates engine scores using default classic battle settings", () => {
+      const engine = new BattleEngine();
+
+      const statsSummary = compareStats(12, 8);
+      expect(statsSummary).toEqual({ delta: 4, winner: "player" });
+
+      const roundOutcome = determineOutcome(12, 8);
+      expect(roundOutcome).toEqual({ delta: 4, outcome: "winPlayer" });
+
+      applyOutcome(engine, roundOutcome);
+      expect(engine.playerScore).toBe(1);
+      expect(engine.opponentScore).toBe(0);
+
+      expect(engine.pointsToWin).toBe(CLASSIC_BATTLE_POINTS_TO_WIN);
+      expect(engine.maxRounds).toBe(CLASSIC_BATTLE_MAX_ROUNDS);
+
+      expect(compareStats).toHaveLength(2);
+      expect(determineOutcome).toHaveLength(2);
+      expect(applyOutcome).toHaveLength(2);
+    });
+  }
+);
 
 describe("engineTimer helpers", () => {
   it("starts round and emits ticks", async () => {

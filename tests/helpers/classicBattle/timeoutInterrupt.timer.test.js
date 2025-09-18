@@ -4,6 +4,8 @@ const countdownTimers = [];
 const countdownTickEvents = [];
 const pendingTickResolvers = [];
 const activeCountdownTimeouts = new Set();
+let timersControl = null;
+let battleMod = null;
 
 function waitForNextCountdownTick() {
   return new Promise((resolve) => {
@@ -91,17 +93,23 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
 });
 
 beforeEach(async () => {
-  vi.useFakeTimers();
+  timersControl = vi.useFakeTimers();
   resetCountdownState();
   vi.resetModules();
   vi.clearAllMocks();
 
   // Import battleMod after mocks
   const { initClassicBattleTest } = await import("./initClassicBattle.js");
-  await initClassicBattleTest({ afterMock: true });
+  battleMod = await initClassicBattleTest({ afterMock: true });
 });
 
 afterEach(() => {
+  try {
+    timersControl?.clearAllTimers?.();
+  } catch {}
+  timersControl?.useRealTimers?.();
+  timersControl = null;
+  battleMod = null;
   vi.useRealTimers();
 });
 
@@ -128,12 +136,28 @@ describe("timer behavior with mocks", () => {
     expect(activeCountdownTimeouts.size).toBe(0);
   });
 
-  it("can start orchestrator without hanging", async () => {
-    const { initClassicBattleOrchestrator } = await import(
+  it("binds orchestrator state and readiness hooks", async () => {
+    const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
     const store = { selectionMade: false, playerChoice: null };
-    await initClassicBattleOrchestrator(store, undefined, {});
-    expect(true).toBe(true);
+    const machine = await initClassicBattleOrchestrator(store, undefined, {});
+
+    expect(machine).toBeDefined();
+    expect(machine.getState()).toBe("waitingForMatchStart");
+    expect(getBattleStateMachine()).toBe(machine);
+
+    expect(store.context?.store).toBe(store);
+    expect(typeof store.context?.doResetGame).toBe("function");
+    expect(typeof store.context?.doStartRound).toBe("function");
+
+    expect(document.body.dataset.battleState).toBe(machine.getState());
+    expect(typeof window.getBattleStateSnapshot).toBe("function");
+    expect(window.getBattleStateSnapshot()?.state).toBe(machine.getState());
+
+    const countdownPromise = battleMod?.getCountdownStartedPromise();
+    expect(countdownPromise).toBeInstanceOf(Promise);
+    expect(window.countdownStartedPromise).toBe(countdownPromise);
+    expect(window.roundPromptPromise).toBeInstanceOf(Promise);
   }, 5000);
 });
