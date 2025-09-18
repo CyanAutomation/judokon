@@ -96,6 +96,19 @@ export function evaluateRoundData(playerVal, opponentVal) {
  * @param {number} opponentVal - Opponent's stat value.
  * @returns {{message: string, matchEnded: boolean, playerScore: number, opponentScore: number, outcome: string, playerVal: number, opponentVal: number}}
  */
+/**
+ * Evaluate a round with the given stat values.
+ *
+ * @pseudocode
+ * 1. Call evaluateRoundData with player and opponent values.
+ * 2. Return the evaluation result with outcome and scores.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store
+ * @param {string} stat - Chosen stat key
+ * @param {number} playerVal - Player stat value
+ * @param {number} opponentVal - Opponent stat value
+ * @returns {object} Round evaluation result
+ */
 export function evaluateRound(store, stat, playerVal, opponentVal) {
   return evaluateRoundData(playerVal, opponentVal);
 }
@@ -177,6 +190,19 @@ export function evaluateOutcome(store, stat, playerVal, opponentVal) {
  *
  * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result.
  * @returns {Promise<ReturnType<typeof evaluateRound>>}
+ */
+/**
+ * Dispatch outcome events based on round result.
+ *
+ * @pseudocode
+ * 1. Determine outcome event type based on result (winPlayer, winOpponent, or draw).
+ * 2. Dispatch the appropriate outcome event to the battle machine.
+ * 3. If match ended, dispatch matchPointReached event.
+ * 4. Otherwise, dispatch continue event for next round.
+ * 5. Return the original result.
+ *
+ * @param {ReturnType<typeof evaluateRound>} result - Round evaluation result
+ * @returns {Promise<ReturnType<typeof evaluateRound>>} The original result
  */
 export async function dispatchOutcomeEvents(result) {
   const outcomeEvent =

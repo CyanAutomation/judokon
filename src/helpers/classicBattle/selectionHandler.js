@@ -86,6 +86,19 @@ export async function resolveRoundDirect(store, stat, playerVal, opponentVal, op
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {boolean} `true` if the selection is allowed.
  */
+/**
+ * Validate that stat selection is allowed in the current battle state.
+ *
+ * @pseudocode
+ * 1. Check if selection has already been made to prevent duplicates.
+ * 2. If duplicate, emit input.ignored event and return false.
+ * 3. Check current battle state to ensure it's valid for selection.
+ * 4. If in invalid state, log warning and emit input.ignored event.
+ * 5. Return true if selection is allowed, false otherwise.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store
+ * @returns {boolean} True if selection is allowed, false otherwise
+ */
 function validateSelectionState(store) {
   if (store.selectionMade) {
     try {
@@ -234,6 +247,22 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
  * @param {number|undefined} playerVal - Optional player value.
  * @param {number|undefined} opponentVal - Optional opponent value.
  * @returns {Promise<{playerVal: number, opponentVal: number}|null>} Values when valid, otherwise `null`.
+ */
+/**
+ * Validate the selection state and apply the selection to the store.
+ *
+ * @pseudocode
+ * 1. Log debug information if in test environment.
+ * 2. Validate that selection is allowed in current state.
+ * 3. If validation fails and selection was already made, dispatch roundResolved.
+ * 4. If validation fails, return null to indicate failure.
+ * 5. If validation passes, apply selection to store and return values.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store
+ * @param {string} stat - Chosen stat key
+ * @param {number} playerVal - Player stat value
+ * @param {number} opponentVal - Opponent stat value
+ * @returns {Promise<{playerVal: number, opponentVal: number}|null>} Selection values or null if invalid
  */
 export async function validateAndApplySelection(store, stat, playerVal, opponentVal) {
   try {
@@ -457,6 +486,24 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
  * @param {string} stat - Chosen stat key.
  * @param {{playerVal?: number, opponentVal?: number}} values - Optional precomputed values.
  * @returns {Promise<ReturnType<typeof resolveRound>|void>} The resolved round result when handled locally.
+ */
+/**
+ * Handle the complete stat selection flow from validation to resolution.
+ *
+ * @pseudocode
+ * 1. Validate selection state and apply selection to store.
+ * 2. If validation fails, return early.
+ * 3. Dispatch statSelected event to orchestrator.
+ * 4. Resolve round with fallback mechanisms if needed.
+ * 5. If already handled, return early.
+ * 6. Synchronize result display for DOM and test utilities.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store
+ * @param {string} stat - Chosen stat key
+ * @param {object} options - Selection options
+ * @param {number} [options.playerVal] - Player stat value
+ * @param {number} [options.opponentVal] - Opponent stat value
+ * @returns {Promise<void>}
  */
 export async function handleStatSelection(store, stat, { playerVal, opponentVal, ...opts } = {}) {
   const values = await validateAndApplySelection(store, stat, playerVal, opponentVal);

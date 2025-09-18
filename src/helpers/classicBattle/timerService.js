@@ -59,6 +59,17 @@ export { getNextRoundControls } from "./roundManager.js";
 // Track timeout for cooldown warning to avoid duplicates.
 let cooldownWarningTimeoutId = null;
 
+/**
+ * Get the round counter element from the DOM root.
+ *
+ * @pseudocode
+ * 1. Try to get element by ID using getElementById if available.
+ * 2. Fall back to querySelector if getElementById is not available.
+ * 3. Return the element or null if not found or on error.
+ *
+ * @param {Document|Element} root - DOM root to search in
+ * @returns {Element|null} Round counter element or null
+ */
 function getRoundCounterElement(root) {
   try {
     return root.getElementById
@@ -69,6 +80,18 @@ function getRoundCounterElement(root) {
   }
 }
 
+/**
+ * Read the currently displayed round number from the DOM.
+ *
+ * @pseudocode
+ * 1. Get the round counter element from the root.
+ * 2. Extract round number from element text using regex.
+ * 3. Parse the extracted number and validate it's finite.
+ * 4. Return the round number or null if not found/invalid.
+ *
+ * @param {Document|Element} root - DOM root to search in
+ * @returns {number|null} Current round number or null
+ */
 function readDisplayedRound(root) {
   const el = getRoundCounterElement(root);
   if (!el) return null;
@@ -78,6 +101,17 @@ function readDisplayedRound(root) {
   return Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Write the round number to the round counter element.
+ *
+ * @pseudocode
+ * 1. Get the round counter element from the root.
+ * 2. Validate that element exists and value is a finite number.
+ * 3. Update element text content with formatted round number.
+ *
+ * @param {Document|Element} root - DOM root to search in
+ * @param {number} value - Round number to display
+ */
 function writeRoundCounter(root, value) {
   const el = getRoundCounterElement(root);
   if (!el || !Number.isFinite(value)) return;
@@ -114,6 +148,21 @@ const ADVANCE_TRANSITIONS = {
  *
  * @param {HTMLButtonElement} btn - Next button element.
  * @param {(() => void)|null} resolveReady - Resolver for the ready promise.
+ * @returns {Promise<void>}
+ */
+/**
+ * Advance to the next round when the cooldown is ready.
+ *
+ * @pseudocode
+ * 1. Disable the next button and remove ready state.
+ * 2. Get current state snapshot to determine transition needs.
+ * 3. If not in cooldown state, dispatch transition event first.
+ * 4. Dispatch ready event to advance the round.
+ * 5. Call resolveReady callback if provided.
+ * 6. Clear the skip handler.
+ *
+ * @param {HTMLButtonElement} btn - Next button element
+ * @param {Function} resolveReady - Callback to resolve ready state
  * @returns {Promise<void>}
  */
 export async function advanceWhenReady(btn, resolveReady) {
