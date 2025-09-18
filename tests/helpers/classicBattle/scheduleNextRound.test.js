@@ -14,6 +14,19 @@ vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn()
 }));
 
+let dispatchBattleEventSpy = vi.fn();
+let dispatchBattleEventCallThrough;
+
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  dispatchBattleEventCallThrough = actual.dispatchBattleEvent;
+  dispatchBattleEventSpy.mockImplementation((...args) => dispatchBattleEventCallThrough(...args));
+  return {
+    ...actual,
+    dispatchBattleEvent: dispatchBattleEventSpy
+  };
+});
+
 async function resetRoundManager(store) {
   const { _resetForTest } = await import("../../../src/helpers/classicBattle/roundManager.js");
   _resetForTest(store);
@@ -48,6 +61,12 @@ beforeEach(async () => {
     currentFlags
   });
   console.log("[TEST DEBUG] after applyMockSetup");
+  if (dispatchBattleEventCallThrough) {
+    dispatchBattleEventSpy.mockImplementation((...args) =>
+      dispatchBattleEventCallThrough(...args)
+    );
+  }
+  dispatchBattleEventSpy.mockClear();
   orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
   console.log("[TEST DEBUG] orchestrator module loaded");
 });
@@ -107,13 +126,8 @@ describe("classicBattle startCooldown", () => {
     battleEngineMod.createBattleEngine();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
-    // Attach spy to the orchestrator re-export so we observe the same reference
-    // used by production modules (roundManager/timerService).
-    console.log("[TEST DEBUG] before spy dispatchBattleEvent");
-    const originalDispatch = orchestrator.dispatchBattleEvent;
-    const dispatchSpy = vi.spyOn(orchestrator, "dispatchBattleEvent");
-    dispatchSpy.mockImplementation((...args) => originalDispatch(...args));
-    console.log("[TEST DEBUG] after spy dispatchBattleEvent");
+    // Attach spy at the eventDispatcher source so all modules share the wrapped reference.
+    console.log("[TEST DEBUG] eventDispatcher spy ready");
     console.log("[TEST DEBUG] before import classicBattle.js");
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     console.log("[TEST DEBUG] after import classicBattle.js");
@@ -145,7 +159,7 @@ describe("classicBattle startCooldown", () => {
     expect(machine.getState()).toBe("cooldown");
 
     // Clear spy after manual continue call to only capture automatic ready call
-    dispatchSpy.mockClear();
+    dispatchBattleEventSpy.mockClear();
 
     // Debug: log state and machine before advancing timers
 
@@ -177,8 +191,8 @@ describe("classicBattle startCooldown", () => {
 
     console.log("[TEST DEBUG] After waitForState, state:", machine.getState());
 
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(dispatchBattleEventSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchBattleEventSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
     const btn = document.querySelector('[data-role="next-round"]');
