@@ -272,6 +272,17 @@ export { roundModificationEnter } from "./stateHandlers/roundModificationEnter.j
  * @param {string} state - State name.
  * @returns {Function|undefined} Handler function or undefined.
  */
+/**
+ * Look up the onEnter handler for a state.
+ *
+ * @param {string} state - State name.
+ * @returns {Function|undefined} Handler function or undefined.
+ * @summary Get the onEnter handler function for a specific battle state.
+ * @pseudocode
+ * 1. Look up the state in stateHandlers.
+ * 2. Return the onEnter handler if it exists.
+ * 3. Return undefined if no handler is found.
+ */
 export function getOnEnterHandler(state) {
   return stateHandlers[state]?.onEnter;
 }
