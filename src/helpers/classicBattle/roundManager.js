@@ -809,12 +809,8 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   // Only dispatch if the machine is still in cooldown state and we haven't already dispatched for this cooldown.
   const machine = machineReader();
   const currentState = readMachineState();
-  process.stdout.write(
-    `[TEST DEBUG] handleNextRoundExpiration: currentState = ${currentState}, readyDispatchedForCurrentCooldown = ${readyDispatchedForCurrentCooldown}\n`
-  );
   if (currentState === "cooldown" && !readyDispatchedForCurrentCooldown) {
     readyDispatchedForCurrentCooldown = true;
-    process.stdout.write(`[TEST DEBUG] handleNextRoundExpiration: dispatching ready\n`);
     const dispatchReadyDirectly = () => {
       if (machine?.dispatch) {
         try {
@@ -840,9 +836,6 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       dispatchReadyDirectly();
     }
   } else {
-    process.stdout.write(
-      `[TEST DEBUG] handleNextRoundExpiration: NOT dispatching ready - state = ${currentState}, flag = ${readyDispatchedForCurrentCooldown}\n`
-    );
   }
 
   if (controls) {

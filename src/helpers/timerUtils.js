@@ -140,9 +140,6 @@ export function createCountdownTimer(
     // Hard fallback to ensure expiration even if the scheduler never ticks
     // in certain test environments.
     try {
-      if (typeof globalThis !== "undefined") {
-        globalThis.__hardTimeoutScheduled = (globalThis.__hardTimeoutScheduled || 0) + 1;
-      }
       hardTimeoutId = activeScheduler.setTimeout(
         async () => {
           if (subId !== null) {
@@ -156,7 +153,7 @@ export function createCountdownTimer(
       );
     } catch (error) {
       if (typeof console !== "undefined") {
-        console.error("[dedupe] hard timeout error", error);
+        console.error("Timer fallback failed", error);
       }
     }
     if (pauseOnHidden && typeof document !== "undefined") {
