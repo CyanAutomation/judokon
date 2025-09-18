@@ -1,4 +1,5 @@
-const debugState = {};
+const debugState =
+  (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugStore) || {};
 
 /**
  * Store a debug value for tests or diagnostics.

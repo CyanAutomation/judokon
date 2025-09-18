@@ -296,6 +296,9 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   try {
     exposeDebugState("currentNextRound", controls);
   } catch {}
+  try {
+    exposeDebugState("startCooldownCalled", true);
+  } catch {}
   return controls;
 }
 
