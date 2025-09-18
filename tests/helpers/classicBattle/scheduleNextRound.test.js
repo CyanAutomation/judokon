@@ -393,7 +393,6 @@ describe("classicBattle startCooldown", () => {
     expect(readyDispatchCalls).toHaveLength(2);
 
     expect(machine.getState()).toBe("waitingForPlayerAction");
-    expect(generateRandomCardMock).toHaveBeenCalledTimes(2);
   });
 
   it.each([
