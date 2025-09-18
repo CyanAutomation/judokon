@@ -138,7 +138,8 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
           console.error("[TEST-BAG-KEYS] " + keys);
           try {
             console.error(
-              "[TEST-FLAGS] __NEXT_ROUND_EXPIRED=" + Boolean(window.__NEXT_ROUND_EXPIRED) +
+              "[TEST-FLAGS] __NEXT_ROUND_EXPIRED=" +
+                Boolean(window.__NEXT_ROUND_EXPIRED) +
                 " __startCooldownInvoked=" +
                 Boolean(window.__startCooldownInvoked)
             );

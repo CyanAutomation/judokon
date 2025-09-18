@@ -23,8 +23,8 @@ import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBa
  *   - expose timerSpy, mocks, and currentFlags
  */
 export function setupClassicBattleDom() {
-  disposeClassicBattleOrchestrator();
-  vi.resetModules();
+  // disposeClassicBattleOrchestrator();
+  // vi.resetModules();
   // Ensure the scheduler module used by timer utilities is mocked to use
   // the global timers so tests using fake timers behave deterministically.
   try {

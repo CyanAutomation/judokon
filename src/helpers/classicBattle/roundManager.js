@@ -707,6 +707,8 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         readyInFlight: !!controls?.readyInFlight,
         reason: "inFlight"
       });
+    } catch {}
+    try {
       if (typeof globalThis !== "undefined") {
         const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
         bag.handleNextRoundEarlyExit = {
@@ -715,26 +717,24 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           reason: "inFlight"
         };
         if (typeof globalThis.__classicBattleDebugExpose === "function") {
-          globalThis.__classicBattleDebugExpose(
-            "handleNextRoundEarlyExit",
-            bag.handleNextRoundEarlyExit
-          );
+          try {
+            globalThis.__classicBattleDebugExpose(
+              "handleNextRoundEarlyExit",
+              bag.handleNextRoundEarlyExit
+            );
+          } catch {}
         }
       }
     } catch {}
     try {
-      if (
-        typeof process !== "undefined" &&
-        process &&
-        typeof process.stdout?.write === "function"
-      try {
-        console.error("[BAG-MARKER] handleNextRoundEarlyExit: readyInFlight true");
-        if (typeof globalThis !== "undefined") {
-          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-          bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
-          bag.handleNextRound_earlyExit.push({ reason: "inFlight", at: Date.now() });
-        }
-      } catch {}
+      console.error("[BAG-MARKER] handleNextRoundEarlyExit: readyInFlight true");
+      if (typeof globalThis !== "undefined") {
+        const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+        bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
+        bag.handleNextRound_earlyExit.push({ reason: "inFlight", at: Date.now() });
+      }
+    } catch {}
+    return;
   }
   if (controls) {
     controls.readyInFlight = true;
