@@ -225,6 +225,8 @@ let currentNextRound = null;
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
+  // Reset the ready dispatch flag for the new cooldown period
+  readyDispatchedForCurrentCooldown = false;
   // Always use the injected scheduler if provided, else fall back to realScheduler
   const activeScheduler =
     scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
@@ -774,8 +776,15 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   // Only dispatch if the machine is still in cooldown state and we haven't already dispatched for this cooldown.
   const machine = machineReader();
   const currentState = readMachineState();
+  console.log(
+    "[TEST DEBUG] handleNextRoundExpiration: currentState =",
+    currentState,
+    "readyDispatchedForCurrentCooldown =",
+    readyDispatchedForCurrentCooldown
+  );
   if (currentState === "cooldown" && !readyDispatchedForCurrentCooldown) {
     readyDispatchedForCurrentCooldown = true;
+    console.log("[TEST DEBUG] handleNextRoundExpiration: dispatching ready");
     const dispatchReadyDirectly = () => {
       if (machine?.dispatch) {
         try {
@@ -800,6 +809,13 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     } catch {
       dispatchReadyDirectly();
     }
+  } else {
+    console.log(
+      "[TEST DEBUG] handleNextRoundExpiration: NOT dispatching ready - state =",
+      currentState,
+      "flag =",
+      readyDispatchedForCurrentCooldown
+    );
   }
 
   const resolveReadyFn = controls?.resolveReady;
