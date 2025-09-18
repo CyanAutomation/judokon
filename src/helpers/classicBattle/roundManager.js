@@ -616,6 +616,8 @@ function markNextReady(btn) {
   } catch {}
 }
 
+let readyDispatchedForCurrentCooldown = false;
+
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   // TEMP: Mark global for test to confirm callback execution
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
