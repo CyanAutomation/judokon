@@ -397,6 +397,30 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
     if (typeof resolver === "function") {
       resolver();
     }
+    // If we are finalizing because the orchestrator is already past
+    // cooldown, ensure we still notify the orchestrator by dispatching
+    // a "ready" event. Prefer an explicit dispatchBattleEvent override
+    // when provided (used in tests), otherwise call the machine dispatch
+    // if available. Do this in a fire-and-forget fashion and mark the
+    // ready dispatch flag so downstream logic knows we've dispatched.
+    try {
+      let dispatched = false;
+      if (options && typeof options.dispatchBattleEvent === "function") {
+        try {
+          const res = options.dispatchBattleEvent("ready");
+          // If it returns a promise, don't await it here; tests use spies.
+          dispatched = true;
+        } catch {}
+      }
+      if (!dispatched && machine && typeof machine.dispatch === "function") {
+        try {
+          // call but don't await; machine.dispatch in tests is a spy
+          machine.dispatch("ready");
+          dispatched = true;
+        } catch {}
+      }
+      if (dispatched) readyDispatchedForCurrentCooldown = true;
+    } catch {}
   };
   const addListener = (type, handler) => {
     const wrapped = (event) => {

@@ -24,7 +24,10 @@ export async function cooldownEnter(machine, payload) {
   const { store, scheduler } = machine.context || {};
   const context = { orchestrated: true }; // Assume orchestrated in test
   console.log("[DEBUG] About to call startCooldown");
-  await startCooldown(store, scheduler, { isOrchestrated: () => context.orchestrated });
+  await startCooldown(store, scheduler, {
+    isOrchestrated: () => context.orchestrated,
+    getClassicBattleMachine: () => machine
+  });
   console.log("[DEBUG] startCooldown called successfully");
 }
 export default cooldownEnter;
