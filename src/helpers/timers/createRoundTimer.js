@@ -96,6 +96,7 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   async function emitExpired() {
+    console.log("[TEST DEBUG] createRoundTimer emitExpired called");
     emit("expired");
   }
 

@@ -311,7 +311,8 @@ describe("classicBattle startCooldown", () => {
     }
     // Enhanced debug: inspect currentNextRound and timer status
     try {
-      const currentNextRound = globalThis.__classicBattleDebugRead &&
+      const currentNextRound =
+        globalThis.__classicBattleDebugRead &&
         globalThis.__classicBattleDebugRead("currentNextRound");
       console.log("[TEST DEBUG] currentNextRound:", currentNextRound);
       if (currentNextRound && currentNextRound.timer) {
