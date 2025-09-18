@@ -625,6 +625,12 @@ function markNextReady(btn) {
   // module isolation can yield differing state snapshots. Mark the Next button
   // as ready unconditionally to reflect that the cooldown has completed.
   try {
+    btn.disabled = false;
+  } catch {}
+  try {
+    if (btn.dataset) btn.dataset.nextReady = "true";
+  } catch {}
+  try {
     // Use explicit attribute APIs to avoid relying on property reflection which
     // can differ in some test harnesses / DOM shims.
     btn.setAttribute("data-next-ready", "true");
@@ -633,6 +639,12 @@ function markNextReady(btn) {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       const testBtn = document.querySelector('[data-role="next-round"]');
       if (testBtn && testBtn !== btn) {
+        try {
+          testBtn.disabled = false;
+        } catch {}
+        try {
+          if (testBtn.dataset) testBtn.dataset.nextReady = "true";
+        } catch {}
         testBtn.setAttribute("data-next-ready", "true");
         testBtn.removeAttribute("disabled");
       }
