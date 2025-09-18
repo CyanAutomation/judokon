@@ -49,6 +49,17 @@ export async function guardAsync(fn) {
  * return () => clearTimeout(id)
  * ```
  */
+/**
+ * Schedule a guard callback with a timeout.
+ *
+ * @param {number} timeoutMs - Delay before invoking the guard.
+ * @param {() => void} onTimeout - Callback executed on timeout.
+ * @returns {() => void} cancel function to clear the guard.
+ * @pseudocode
+ * 1. Set a timeout to execute onTimeout after timeoutMs milliseconds.
+ * 2. Return a cancel function that clears the timeout when called.
+ * 3. This allows scheduling guarded operations with cleanup capability.
+ */
 export function scheduleGuard(timeoutMs, onTimeout) {
   const id = setTimeout(onTimeout, timeoutMs);
   return () => clearTimeout(id);

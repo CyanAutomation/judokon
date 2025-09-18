@@ -51,6 +51,23 @@ export async function forceAutoSelectAndDispatch(onExpiredSelect) {
  *       ii. Trigger `autoSelectStat(onSelect)` shortly after.
  * 2. Store the timeout id on `store.autoSelectId`.
  */
+/**
+ * Schedule a stalled-selection prompt and optional auto-select.
+ *
+ * @param {{autoSelectId: ReturnType<typeof setTimeout> | null}} store Battle state store.
+ * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => void} onSelect Stat selection callback.
+ * @param {number} [timeoutMs=5000] Delay before prompting.
+ * @returns {void}
+ * @summary Prompt for stalled stat selection and queue auto-select when enabled.
+ * @pseudocode
+ * 1. After `timeoutMs`, if no selection made:
+ *    a. Show stalled snackbar and optionally scoreboard message.
+ *    b. Emit `statSelectionStalled`.
+ *    c. If auto-select enabled:
+ *       i. Announce next-round countdown after a short delay.
+ *       ii. Auto-select a stat after countdown announcement.
+ * 2. Store timeout ID in `store.autoSelectId` for cleanup.
+ */
 export function handleStatSelectionTimeout(store, onSelect, timeoutMs = 5000) {
   const scheduler = getScheduler();
   store.autoSelectId = scheduler.setTimeout(() => {

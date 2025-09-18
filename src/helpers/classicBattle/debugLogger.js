@@ -385,6 +385,20 @@ export const debugLogger = new BattleDebugLogger({
  * 1. Use `debugLogger.log` with category STATE and INFO level.
  * 2. Include from/to/trigger and extra context.
  */
+/**
+ * Log state machine transitions
+ *
+ * @param {string} from - Source state
+ * @param {string} to - Target state
+ * @param {string} trigger - Transition trigger
+ * @param {object} context - Additional context
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. Call `debugLogger.log` with STATE category and INFO level.
+ * 2. Format transition message with from, to, and trigger.
+ * 3. Attach transition details and context for debugging.
+ */
 export function logStateTransition(from, to, trigger, context = {}) {
   debugLogger.log(
     DEBUG_CATEGORIES.STATE,
