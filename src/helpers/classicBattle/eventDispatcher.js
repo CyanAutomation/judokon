@@ -2,7 +2,7 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { readDebugState } from "./debugHooks.js";
 
 const DEDUPE_WINDOW_MS = 20;
-const inFlightDispatches = new Map();
+const recentDispatches = new Map();
 const machineIds = new WeakMap();
 let machineIdCounter = 0;
 
@@ -21,19 +21,32 @@ function getDispatchKey(eventName, machine) {
   return `${eventName}:${getMachineId(machine)}`;
 }
 
-function trackInFlightDispatch(key, promise) {
-  if (!key) return;
-  inFlightDispatches.set(key, promise);
-  const clear = () => {
-    if (inFlightDispatches.get(key) === promise) {
-      inFlightDispatches.delete(key);
-    }
-  };
-  promise.then(clear, clear);
+function registerDispatch(eventName, machine) {
+  const key = getDispatchKey(eventName, machine);
+  if (!key) {
+    return { shouldSkip: false, key: null, timestamp: 0 };
+  }
+  const now = Date.now();
+  const last = recentDispatches.get(key);
+  if (typeof last === "number" && now - last < DEDUPE_WINDOW_MS) {
+    return { shouldSkip: true, key, timestamp: last };
+  }
+  recentDispatches.set(key, now);
   if (typeof setTimeout === "function") {
     setTimeout(() => {
-      clear();
+      if (recentDispatches.get(key) === now) {
+        recentDispatches.delete(key);
+      }
     }, DEDUPE_WINDOW_MS);
+  }
+  return { shouldSkip: false, key, timestamp: now };
+}
+
+function resetDispatchKey(key, timestamp) {
+  if (!key) return;
+  const current = recentDispatches.get(key);
+  if (current === timestamp) {
+    recentDispatches.delete(key);
   }
 }
 
@@ -82,51 +95,47 @@ export async function dispatchBattleEvent(eventName, payload) {
     return false;
   }
 
-  const dispatchKey = getDispatchKey(eventName, machine);
-  if (dispatchKey) {
-    const existingPromise = inFlightDispatches.get(dispatchKey);
-    if (existingPromise) {
-      return existingPromise;
-    }
+  const { shouldSkip, key: dispatchKey, timestamp } = registerDispatch(eventName, machine);
+  if (shouldSkip) {
+    return true;
   }
 
-  const dispatchPromise = (async () => {
-    // DEBUG: Log all event dispatches
-    if (typeof console !== "undefined") {
-      console.error(
-        "[TEST DEBUG] dispatchBattleEvent: dispatching",
-        eventName,
-        "to machine",
-        machine.getState?.()
-      );
-    }
+  // DEBUG: Log all event dispatches
+  if (typeof console !== "undefined") {
+    console.error(
+      "[TEST DEBUG] dispatchBattleEvent: dispatching",
+      eventName,
+      "to machine",
+      machine.getState?.()
+    );
+  }
 
-    try {
-      // PRD taxonomy: emit interrupt.requested with payload context
-      if (eventName === "interrupt") {
-        try {
-          const scope =
-            payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
-          emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
-        } catch {
-          // ignore: interrupt diagnostics are optional
-        }
-      }
-      return await machine.dispatch(eventName, payload);
-    } catch (error) {
-      // ignore: dispatch failures only trigger debug updates
+  try {
+    // PRD taxonomy: emit interrupt.requested with payload context
+    if (eventName === "interrupt") {
       try {
-        console.error("Error dispatching battle event:", eventName, error);
-        emitBattleEvent("debugPanelUpdate");
+        const scope =
+          payload?.scope || (machine?.getState?.() === "matchStart" ? "match" : "round");
+        emitBattleEvent("interrupt.requested", { scope, reason: payload?.reason });
       } catch {
-        // ignore: debug updates are best effort
+        // ignore: interrupt diagnostics are optional
       }
-      return false;
     }
-  })();
-
-  trackInFlightDispatch(dispatchKey, dispatchPromise);
-
-  return dispatchPromise;
+    const result = await machine.dispatch(eventName, payload);
+    if (result === false) {
+      resetDispatchKey(dispatchKey, timestamp);
+    }
+    return result;
+  } catch (error) {
+    resetDispatchKey(dispatchKey, timestamp);
+    // ignore: dispatch failures only trigger debug updates
+    try {
+      console.error("Error dispatching battle event:", eventName, error);
+      emitBattleEvent("debugPanelUpdate");
+    } catch {
+      // ignore: debug updates are best effort
+    }
+    return false;
+  }
 }
 
