@@ -1,6 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.useFakeTimers();
+const countdownTimers = [];
+const countdownTickEvents = [];
+const pendingTickResolvers = [];
+const activeCountdownTimeouts = new Set();
+
+function waitForNextCountdownTick() {
+  return new Promise((resolve) => {
+    pendingTickResolvers.push(resolve);
+  });
+}
+
+function recordCountdownTick(event) {
+  countdownTickEvents.push(event);
+  while (pendingTickResolvers.length) {
+    const resolve = pendingTickResolvers.shift();
+    resolve(event);
+  }
+}
+
+function resetCountdownState() {
+  countdownTimers.length = 0;
+  countdownTickEvents.length = 0;
+  pendingTickResolvers.length = 0;
+  activeCountdownTimeouts.clear();
+}
 
 // Mock timer modules the same way as the original test
 vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
@@ -10,22 +34,46 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
     getDefaultTimer: vi.fn(async () => 1),
     createCountdownTimer: vi.fn(() => {
       let tickHandler = null;
-      return {
+      let timeoutId = null;
+      const controls = {
         on: vi.fn((event, handler) => {
           if (event === "tick") {
             tickHandler = handler;
           }
         }),
         start: vi.fn(() => {
-          if (tickHandler) {
-            // Schedule countdown tick to fire when fake timers advance
-            setTimeout(() => tickHandler(1), 1000);
+          if (timeoutId !== null) {
+            clearTimeout(timeoutId);
+            activeCountdownTimeouts.delete(timeoutId);
+          }
+          timeoutId = setTimeout(() => {
+            activeCountdownTimeouts.delete(timeoutId);
+            timeoutId = null;
+            if (tickHandler) {
+              tickHandler(0);
+            }
+            recordCountdownTick({ timer: controls, remaining: 0 });
+          }, 1000);
+          activeCountdownTimeouts.add(timeoutId);
+        }),
+        stop: vi.fn(() => {
+          if (timeoutId !== null) {
+            clearTimeout(timeoutId);
+            activeCountdownTimeouts.delete(timeoutId);
+            timeoutId = null;
           }
         }),
-        stop: vi.fn(),
-        pause: vi.fn(),
+        pause: vi.fn(() => {
+          if (timeoutId !== null) {
+            clearTimeout(timeoutId);
+            activeCountdownTimeouts.delete(timeoutId);
+            timeoutId = null;
+          }
+        }),
         resume: vi.fn()
       };
+      countdownTimers.push(controls);
+      return controls;
     })
   };
 });
@@ -43,6 +91,8 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
 });
 
 beforeEach(async () => {
+  vi.useFakeTimers();
+  resetCountdownState();
   vi.resetModules();
   vi.clearAllMocks();
 
@@ -51,10 +101,31 @@ beforeEach(async () => {
   await initClassicBattleTest({ afterMock: true });
 });
 
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 describe("timer behavior with mocks", () => {
   it("can advance timers without hanging", async () => {
-    await vi.advanceTimersByTimeAsync(100);
-    expect(true).toBe(true);
+    const timerUtils = await import("../../../src/helpers/timerUtils.js");
+    const tickSpy = vi.fn();
+    const timer = timerUtils.createCountdownTimer(1);
+    timer.on("tick", tickSpy);
+
+    expect(countdownTimers.length).toBeGreaterThan(0);
+
+    const tickPromise = waitForNextCountdownTick();
+
+    timer.start();
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    const { timer: tickedTimer } = await tickPromise;
+
+    expect(tickSpy).toHaveBeenCalledTimes(1);
+    expect(tickedTimer).toBe(timer);
+    expect(countdownTickEvents.length).toBeGreaterThan(0);
+    expect(activeCountdownTimeouts.size).toBe(0);
   });
 
   it("can start orchestrator without hanging", async () => {
