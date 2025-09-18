@@ -282,6 +282,16 @@ describe("classicBattle startCooldown", () => {
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
     const machineGetStateSpy = vi.spyOn(machine, "getState");
+
+    // Mock readDebugState to return the correct machine instance
+    const debugHooksModule = await import("../../../src/helpers/classicBattle/debugHooks.js");
+    vi.spyOn(debugHooksModule, "readDebugState").mockImplementation((key) => {
+      if (key === "getClassicBattleMachine") {
+        return () => machine;
+      }
+      return undefined;
+    });
+
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
     // Ensure machine is in roundOver state for the test
