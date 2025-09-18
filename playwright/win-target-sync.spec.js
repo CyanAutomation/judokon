@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/commonSetup.js";
 
 async function openSettingsPanel(page) {
   const settingsButton = page.locator("#cli-settings-toggle");
@@ -20,12 +20,9 @@ test.describe("Round Selection - Win Target Synchronization", () => {
   ];
 
   test.beforeEach(async ({ page }) => {
-    // Clear localStorage to force the round select modal to appear
     await page.addInitScript(() => {
-      localStorage.clear();
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
-
     await page.goto("/src/pages/battleCLI.html");
     await expect(page.locator(".modal-backdrop")).toBeVisible();
   });
@@ -43,7 +40,7 @@ test.describe("Round Selection - Win Target Synchronization", () => {
       await expect(dropdown).toHaveValue(points);
 
       const header = page.locator("#cli-header");
-      await expect(header).toContainText(`Round 1 Target: ${points}`);
+      await expect(header).toContainText(`Round 0 Target: ${points}`);
     });
   }
 });

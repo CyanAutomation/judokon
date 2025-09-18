@@ -4,7 +4,6 @@ import {
   NAV_RANDOM_JUDOKA,
   NAV_CLASSIC_BATTLE
 } from "./fixtures/navigationChecks.js";
-import { expect } from "@playwright/test";
 
 const pages = [
   {
@@ -37,17 +36,7 @@ test.describe("Static pages", () => {
   for (const { url, name, assertions } of pages) {
     test(`${name} page loads and has correct content`, async ({ page }) => {
       await page.goto(url);
-      await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
-
-      for (const assertion of assertions) {
-        if (assertion.type === "heading") {
-          await expect(page.getByRole("heading", { name: assertion.text })).toBeVisible();
-        } else if (assertion.type === "locator") {
-          await expect(page.locator(assertion.selector)).toHaveCount(1);
-        } else if (assertion.type === "text") {
-          await expect(page.getByText(assertion.text)).toBeVisible();
-        }
-      }
+      await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE], assertions);
     });
   }
 });

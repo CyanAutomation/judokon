@@ -2,34 +2,52 @@ import { emitBattleEvent } from "./battleEvents.js";
 import { readDebugState } from "./debugHooks.js";
 
 const DEDUPE_WINDOW_MS = 20;
-const recentDispatches = new Map();
+const inFlightDispatches = new Map();
+const machineIds = new WeakMap();
+let machineIdCounter = 0;
 
-function hasRecentDispatch(eventName) {
-  if (typeof eventName !== "string" || !eventName) return false;
-  const recorded = recentDispatches.get(eventName);
-  if (typeof recorded !== "number") return false;
-  return Date.now() - recorded < DEDUPE_WINDOW_MS;
-}
-
-function rememberDispatch(eventName) {
-  if (typeof eventName !== "string" || !eventName) return null;
-  const timestamp = Date.now();
-  recentDispatches.set(eventName, timestamp);
-  setTimeout(() => {
-    const current = recentDispatches.get(eventName);
-    if (current === timestamp) {
-      recentDispatches.delete(eventName);
+function getMachineId(machine) {
+  if (machine && (typeof machine === "object" || typeof machine === "function")) {
+    if (!machineIds.has(machine)) {
+      machineIds.set(machine, ++machineIdCounter);
     }
-  }, DEDUPE_WINDOW_MS);
-  return timestamp;
+    return machineIds.get(machine);
+  }
+  return "global";
 }
 
-function clearDispatchRecord(eventName, timestamp) {
-  if (typeof eventName !== "string" || typeof timestamp !== "number") return;
-  const current = recentDispatches.get(eventName);
-  if (current === timestamp) {
-    recentDispatches.delete(eventName);
-  }
+function getDispatchKey(eventName, machine) {
+  if (typeof eventName !== "string" || !eventName) return null;
+  return `${eventName}:${getMachineId(machine)}`;
+}
+
+function trackInFlightDispatch(key, promise) {
+  if (!key) return;
+  inFlightDispatches.set(key, promise);
+  promise
+    .then((result) => {
+      if (result === false && inFlightDispatches.get(key) === promise) {
+        inFlightDispatches.delete(key);
+      }
+      return result;
+    })
+    .catch((error) => {
+      if (inFlightDispatches.get(key) === promise) {
+        inFlightDispatches.delete(key);
+      }
+      throw error;
+    })
+    .finally(() => {
+      if (typeof setTimeout === "function") {
+        setTimeout(() => {
+          if (inFlightDispatches.get(key) === promise) {
+            inFlightDispatches.delete(key);
+          }
+        }, DEDUPE_WINDOW_MS);
+      } else if (inFlightDispatches.get(key) === promise) {
+        inFlightDispatches.delete(key);
+      }
+    });
 }
 
 /**

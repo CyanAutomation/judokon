@@ -1,10 +1,8 @@
-import { test, expect } from "@playwright/test";
+import { test } from "../fixtures/commonSetup.js";
+import { expect } from "@playwright/test";
 
 test.describe("Classic Battle timer clearing", () => {
   test("timer is cleared immediately when stat selection is made", async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-    });
     await page.goto("/src/pages/battleClassic.html");
 
     // Start the match
