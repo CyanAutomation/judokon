@@ -266,6 +266,7 @@ describe("classicBattle startCooldown", () => {
     const startRoundWrapper = vi.fn(async () => {
       // Simulate startRound completing immediately without calling real startRound
       // to avoid interfering with the cooldown timer dispatch test
+      dispatchBattleEventSpy("cardsRevealed");
       return Promise.resolve({ playerJudoka: {}, opponentJudoka: {}, roundNumber: 1 });
     });
 
