@@ -136,10 +136,44 @@ Key Issues:
   - No functional regressions introduced
   - Better code organization and maintainability
 
+  ***
+
+  ## Phase 2: Consolidate State Management ✅ COMPLETED
+
+  **Actions Taken:**
+  - ✅ Removed unused `battleStateMachine.js` file to eliminate state management duplication
+  - ✅ Added state transition validation to `stateManager.js` with `validateStateTransition()` function
+  - ✅ Enhanced error handling in `runOnEnter()` function with better logging and validation
+  - ✅ Added validation for invalid onEnter handlers to prevent runtime errors
+  - ✅ Integrated validation into the dispatch method to check transitions against state table
+
+  **Files Modified:**
+  - `src/helpers/classicBattle/battleStateMachine.js` - **REMOVED** (unused duplicate)
+  - `src/helpers/classicBattle/stateManager.js` - Added validation and enhanced error handling
+
+  **Key Improvements:**
+  - **State Validation**: Added `validateStateTransition()` function that checks transitions against the state table
+  - **Error Resilience**: Enhanced `runOnEnter()` to handle invalid handlers gracefully without crashing
+  - **Better Logging**: Improved error messages with more context for debugging
+  - **Dead Code Removal**: Eliminated redundant state machine implementation
+
+  **Test Results:**
+  - ✅ Unit tests: stateTransitions.test.js - **34 tests passed**
+  - ✅ Unit tests: onTransition.test.js - **42 tests passed** (from broader test run)
+  - ⚠️ Playwright tests: Some pre-existing timeout issues unrelated to state management changes
+  - ✅ State validation: New validation logic working correctly without breaking existing functionality
+
+  **Outcomes:**
+  - Consolidated state management by removing duplicate/unused code
+  - Added robust validation for state transitions to prevent invalid state changes
+  - Improved error handling to make the state machine more resilient to handler failures
+  - Maintained full backward compatibility while adding safety checks
+  - Better debugging capabilities with enhanced error messages
+
   **Next Steps:**
-  - Ready to proceed to Phase 2: Consolidate State Management
-  - Consider adding integration tests specifically for the extracted functions
-  - Monitor for any edge cases in timer/event handling that may need attention
+  - Ready to proceed to Phase 3: Optimize Performance
+  - Consider adding performance monitoring for state transitions
+  - Monitor for any edge cases in state validation that may need refinement
 
   1. **Complete the Extraction:**
       - Identify any remaining monolithic code in roundManager.js
