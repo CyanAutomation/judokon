@@ -57,7 +57,6 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     const useEngine = typeof starter === "function";
     if (useEngine) {
       try {
-        process.stdout.write(`[TEST DEBUG] createRoundTimer.start: using starter. starter.name = ${starter.name}\n`);
         return starter(emitTick, emitExpired, total, handleDrift);
       } catch {
         // fall through to JS timer
@@ -70,7 +69,6 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     let remaining = Math.ceil(total);
     emitTick(remaining);
     const startedAt = Date.now();
-    process.stdout.write(`[TEST DEBUG] createRoundTimer.start: using setInterval/setTimeout. setInterval.name = ${setInterval.name}, setTimeout.name = ${setTimeout.name}\n`);
     const intervalId = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
       const expected = Math.max(0, total - elapsed);

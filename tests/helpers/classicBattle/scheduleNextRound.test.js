@@ -306,9 +306,10 @@ describe("classicBattle startCooldown", () => {
     // Confirm fallback timer callback executed
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
     
-    console.log("[TEST DEBUG] Before waitForState, state:", machine.getState());
-    await waitForState("waitingForPlayerAction");
-    console.log("[TEST DEBUG] After waitForState, state:", machine.getState());
+    // Manually step through state transitions for debugging
+    expect(machine.getState()).toBe("roundStart");
+    await vi.runAllTimersAsync(); // Ensure any microtasks from dispatching 'ready' are processed
+    expect(machine.getState()).toBe("waitingForPlayerAction");
 
     const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
       ([eventName]) => eventName === "ready"
