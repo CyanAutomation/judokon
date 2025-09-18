@@ -39,9 +39,9 @@ _Pausing here for your review before proceeding further._
 - Outcome: partial. Dedupe refactor implemented but causes orchestrator cooldown tests to hang; need to adjust cleanup so new rounds can re-dispatch `ready`.
 
 ## Phase 2 – Ready Dispatch Cleanup
+
 - Confirmed existing dedupe guards run inside `dispatchBattleEvent` and added `resetDispatchHistory("ready")` call during `startCooldown` to clear state between cooldown cycles.
 - Hardened the unit coverage in `eventDispatcher.dedupe.test.js` to assert that immediate duplicate calls short-circuit while subsequent cycles still dispatch.
 - Unit tests: `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js tests/helpers/classicBattle/scheduleNextRound.test.js` (partial; `scheduleNextRound` fixture timed out waiting for cooldown events).
 - Playwright check: `npx playwright test battle-next-skip.non-orchestrated.spec.js` (failed: container denied binding to port 5000).
 - Outcome: partial. Deduplication state now resets per cooldown, but the classic battle orchestration tests still hang in this environment; investigation required to unblock timer-driven flows.
-
