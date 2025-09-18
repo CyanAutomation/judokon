@@ -31,6 +31,8 @@ async function getLazyUpdateDebugPanel() {
   return lazyUpdateDebugPanel;
 }
 
+export { setupFallbackTimer } from "./timerService.js";
+
 const READY_TRACE_KEY = "nextRoundReadyTrace";
 
 function resetReadyTrace() {

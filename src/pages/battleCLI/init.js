@@ -46,6 +46,7 @@ import { exposeTestAPI } from "../../helpers/testApi.js";
 // Phase 2: Shared Scoreboard imports for dual-write
 import { setupScoreboard } from "../../helpers/setupScoreboard.js";
 import { initBattleScoreboardAdapter } from "../../helpers/battleScoreboard.js";
+export { syncWinTargetDropdown } from "../../helpers/classicBattle/winTargetSync.js";
 // Phase 4: Removed redundant scoreboardShowMessage, updateScore, updateTimer, updateRoundCounter imports
 // These are now handled by the shared Scoreboard adapter
 import state, { resolveEscapeHandled, getEscapeHandledPromise } from "./state.js";
@@ -1236,29 +1237,6 @@ function renderHiddenPlayerStats(judoka) {
  *    c. If confirmed: save, apply, and reset without starting.
  *    d. Otherwise revert to previous value.
  */
-/**
- * Update the win target dropdown to reflect the current engine value.
- *
- * @pseudocode
- * 1. Get the current points to win from the engine
- * 2. Find the points-select dropdown element
- * 3. Update its value to match the engine setting
- * 4. Update the round header to show the new target
- *
- * @returns {void}
- */
-export function syncWinTargetDropdown() {
-  try {
-    const select = byId("points-select");
-    const currentTarget = engineFacade.getPointsToWin?.();
-    if (select && currentTarget) {
-      select.value = String(currentTarget);
-      const round = Number(byId("cli-root")?.dataset.round || 0);
-      updateRoundHeader(round, currentTarget);
-    }
-  } catch {}
-}
-
 /**
  * Restore, persist, and handle changes to the points-to-win selector.
  *
