@@ -728,6 +728,12 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           }
         } catch {}
       }
+      try {
+        exposeDebugState("handleNextRoundMachineGetter", {
+          sourceReadDebug: typeof getter,
+          hasGlobal: typeof globalThis !== "undefined" && !!globalThis.__classicBattleDebugRead
+        });
+      } catch {}
       if (typeof getter === "function") {
         try {
           return getter();
@@ -749,6 +755,9 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     try {
       return getMachineState(machineReader());
     } catch {
+      try {
+        exposeDebugState("handleNextRoundMachineReadError", true);
+      } catch {}
       return null;
     }
   };
