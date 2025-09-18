@@ -25,6 +25,15 @@ import {
 } from "./statButtons.js";
 import { guard } from "./guard.js";
 import { updateDebugPanel as updateDebugPanelImpl } from "./debugPanel.js";
+/**
+ * Re-export of updateDebugPanel from debugPanel.js
+/**
+ * Re-export of updateDebugPanel from debugPanel.js
+ *
+ * @see ./debugPanel.js
+ * @pseudocode
+ * 1. This is a re-export - see original function documentation.
+ */
 export { updateDebugPanelImpl as updateDebugPanel };
 
 import { runWhenIdle } from "./idleCallback.js";

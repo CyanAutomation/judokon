@@ -46,6 +46,13 @@ import { exposeTestAPI } from "../../helpers/testApi.js";
 // Phase 2: Shared Scoreboard imports for dual-write
 import { setupScoreboard } from "../../helpers/setupScoreboard.js";
 import { initBattleScoreboardAdapter } from "../../helpers/battleScoreboard.js";
+/**
+ * Re-export of syncWinTargetDropdown from winTargetSync.js
+ *
+ * @see ../../helpers/classicBattle/winTargetSync.js
+ * @pseudocode
+ * 1. This is a re-export - see original function documentation.
+ */
 export { syncWinTargetDropdown } from "../../helpers/classicBattle/winTargetSync.js";
 // Phase 4: Removed redundant scoreboardShowMessage, updateScore, updateTimer, updateRoundCounter imports
 // These are now handled by the shared Scoreboard adapter
