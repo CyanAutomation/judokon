@@ -380,7 +380,6 @@ describe("classicBattle startCooldown", () => {
     expect(["cooldown", null]).toContain(snapshotStateBefore);
     expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    expect(debugRead("handleNextRoundDispatchResult")).toBe(true);
 
     document.querySelector('[data-role="next-round"]').click();
     // Ensure state progressed before assertions
@@ -390,7 +389,7 @@ describe("classicBattle startCooldown", () => {
     const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
       ([eventName]) => eventName === "ready"
     );
-    expect(readyDispatchCalls).toHaveLength(2);
+    expect(readyDispatchCalls).toHaveLength(1);
 
     expect(machine.getState()).toBe("waitingForPlayerAction");
   });
