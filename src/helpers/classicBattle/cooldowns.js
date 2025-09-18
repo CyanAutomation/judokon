@@ -115,7 +115,14 @@ export function markNextButtonReady(btn) {
   btn.disabled = false;
   if (btn.dataset) btn.dataset.nextReady = "true";
   btn.setAttribute("data-next-ready", "true");
-  console.error("[DEBUG] markNextButtonReady called with btn:", btn.id, "disabled after:", btn.disabled, "data-next-ready after:", btn.dataset.nextReady);
+  console.error(
+    "[DEBUG] markNextButtonReady called with btn:",
+    btn.id,
+    "disabled after:",
+    btn.disabled,
+    "data-next-ready after:",
+    btn.dataset.nextReady
+  );
 }
 
 /**
@@ -287,7 +294,6 @@ import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { startCoolDown } from "../battleEngineFacade.js";
 
 export async function initInterRoundCooldown(machine, options = {}) {
-
   const duration = resolveInterRoundCooldownDuration(computeNextRoundCooldown);
 
   guard(() => emitBattleEvent("countdownStart", { duration }));
