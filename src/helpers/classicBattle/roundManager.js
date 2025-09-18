@@ -811,10 +811,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   const currentState = readMachineState();
   if (currentState === "cooldown" && !readyDispatchedForCurrentCooldown) {
     readyDispatchedForCurrentCooldown = true;
-    const dispatchReadyDirectly = () => {
+    const dispatchReadyDirectly = async () => {
       if (machine?.dispatch) {
         try {
-          const result = machine.dispatch("ready");
+          const result = await machine.dispatch("ready");
           if (result && typeof result.then === "function") {
             result.catch(() => {});
           }
