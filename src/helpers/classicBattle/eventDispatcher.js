@@ -73,6 +73,21 @@ function getDispatchKey(eventName, machine) {
   return `${eventName}:${getMachineId(machine)}`;
 }
 
+/**
+ * Register an event dispatch and check for deduplication.
+ *
+ * @pseudocode
+ * 1. Skip deduplication for all events except "ready".
+ * 2. Generate a dispatch key for the event and machine.
+ * 3. Check if this event was dispatched recently within the deduplication window.
+ * 4. If within window, return shouldSkip=true to prevent duplicate dispatch.
+ * 5. If not within window, track the current dispatch and schedule cleanup.
+ * 6. Return dispatch metadata for tracking and potential reset.
+ *
+ * @param {string} eventName - The event name being dispatched
+ * @param {any} machine - The machine instance dispatching the event
+ * @returns {object} Dispatch registration result with shouldSkip, key, and timestamp
+ */
 function registerDispatch(eventName, machine) {
   if (eventName !== "ready") {
     return { shouldSkip: false, key: null, timestamp: 0 };

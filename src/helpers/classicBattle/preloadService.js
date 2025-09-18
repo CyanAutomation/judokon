@@ -64,6 +64,17 @@ async function preloadModule(modulePath, cacheKey) {
  *
  * @returns {object} Performance metrics
  */
+/**
+ * Get performance metrics for preload service monitoring.
+ *
+ * @pseudocode
+ * 1. Return a copy of performance metrics object.
+ * 2. Calculate cache hit rate as hits divided by total requests.
+ * 3. Calculate average load time across all cached modules.
+ * 4. Return metrics with computed values for monitoring.
+ *
+ * @returns {object} Performance metrics including hit rate and average load time
+ */
 export function getPerformanceMetrics() {
   return {
     ...performanceMetrics,
@@ -78,6 +89,12 @@ export function getPerformanceMetrics() {
 
 /**
  * Record memory usage for monitoring.
+ *
+ * @pseudocode
+ * 1. Check if performance.memory API is available.
+ * 2. Create memory snapshot with timestamp and heap sizes.
+ * 3. Push snapshot to performance metrics memory usage array.
+ * 4. This enables tracking memory usage over time for optimization.
  */
 function recordMemoryUsage() {
   if (typeof performance !== "undefined" && performance.memory) {
@@ -101,12 +118,28 @@ function recordMemoryUsage() {
  * @param {string} cacheKey - Key of the cached module
  * @returns {object|null} The cached module or null if not loaded
  */
+/**
+ * Get a cached module by its cache key.
+ *
+ * @pseudocode
+ * 1. Look up the module in the cachedModules Map using the cache key.
+ * 2. Return the cached module if found, otherwise return null.
+ * 3. This provides fast access to preloaded modules without re-importing.
+ *
+ * @param {string} cacheKey - The key used to cache the module
+ * @returns {object|null} The cached module or null if not found
+ */
 export function getCachedModule(cacheKey) {
   return cachedModules.get(cacheKey) || null;
 }
 
 /**
  * Register an object for weak reference tracking to prevent memory leaks.
+ *
+ * @pseudocode
+ * 1. Validate that the object is a non-null object.
+ * 2. Store the object in WeakMap with cleanup function and timestamp.
+ * 3. This enables automatic cleanup when objects are garbage collected.
  *
  * @param {object} obj - Object to track
  * @param {Function} [cleanupFn] - Optional cleanup function
@@ -120,6 +153,11 @@ export function registerWeakReference(obj, cleanupFn) {
 /**
  * Register a cleanup function for memory management.
  *
+ * @pseudocode
+ * 1. Validate that the cleanup function is actually a function.
+ * 2. Add the cleanup function to the cleanup registry Set.
+ * 3. This ensures cleanup functions can be called during memory cleanup.
+ *
  * @param {Function} cleanupFn - Cleanup function to register
  */
 export function registerCleanup(cleanupFn) {
@@ -130,6 +168,13 @@ export function registerCleanup(cleanupFn) {
 
 /**
  * Perform memory cleanup by clearing weak references and running cleanup functions.
+ *
+ * @pseudocode
+ * 1. Iterate through all registered cleanup functions.
+ * 2. Execute each cleanup function with error handling.
+ * 3. Record current memory usage after cleanup.
+ * 4. Clear the cleanup registry to prevent duplicate execution.
+ * 5. This helps manage memory usage and prevent leaks.
  */
 export function performMemoryCleanup() {
   // Note: WeakMap doesn't allow iteration, so we can't clean up old entries
@@ -150,6 +195,11 @@ export function performMemoryCleanup() {
  *
  * The battle engine is heavy and only needed when battles start,
  * so we preload it during idle periods.
+ *
+ * @pseudocode
+ * 1. Schedule module preload to run during browser idle time.
+ * 2. Preload the battle engine facade module with cache key "battleEngine".
+ * 3. This ensures the heavy battle engine is ready when needed without blocking initial load.
  */
 export function preloadBattleEngine() {
   runWhenIdle(() => preloadModule("../battleEngineFacade.js", "battleEngine"));
@@ -160,6 +210,11 @@ export function preloadBattleEngine() {
  *
  * Scoreboard setup involves DOM manipulation and is only needed
  * when battles are active.
+ *
+ * @pseudocode
+ * 1. Schedule module preload to run during browser idle time.
+ * 2. Preload the scoreboard setup module with cache key "scoreboard".
+ * 3. This ensures scoreboard functionality is ready when battles start.
  */
 export function preloadScoreboard() {
   runWhenIdle(() => preloadModule("../setupScoreboard.js", "scoreboard"));
@@ -170,6 +225,11 @@ export function preloadScoreboard() {
  *
  * Cooldown rendering involves UI updates and snackbar management,
  * only needed during active battle cooldowns.
+ *
+ * @pseudocode
+ * 1. Schedule module preload to run during browser idle time.
+ * 2. Preload the cooldown renderer module with cache key "cooldownRenderer".
+ * 3. This ensures cooldown UI is ready when battle cooldowns occur.
  */
 export function preloadCooldownRenderer() {
   runWhenIdle(() => preloadModule("../CooldownRenderer.js", "cooldownRenderer"));
@@ -179,6 +239,11 @@ export function preloadCooldownRenderer() {
  * Preload debug panel during idle time.
  *
  * Debug functionality is only needed in development/debugging scenarios.
+ *
+ * @pseudocode
+ * 1. Schedule module preload to run during browser idle time.
+ * 2. Preload the debug panel module with cache key "debugPanel".
+ * 3. This ensures debug functionality is available when needed for development.
  */
 export function preloadDebugPanel() {
   runWhenIdle(() => preloadModule("./debugPanel.js", "debugPanel"));
@@ -188,6 +253,12 @@ export function preloadDebugPanel() {
  * Preload timer computation modules during idle time.
  *
  * Timer computations are only needed when rounds start.
+ *
+ * @pseudocode
+ * 1. Schedule module preload to run during browser idle time.
+ * 2. Preload multiple timer-related modules in parallel.
+ * 3. Cache computeNextRoundCooldown and createRoundTimer modules.
+ * 4. This ensures timer functionality is ready when rounds begin.
  */
 export function preloadTimerModules() {
   runWhenIdle(async () => {
@@ -203,6 +274,13 @@ export function preloadTimerModules() {
  *
  * This should be called during application startup to begin
  * preloading heavy modules during idle periods.
+ *
+ * @pseudocode
+ * 1. Initialize performance monitoring by recording start time.
+ * 2. Record initial memory usage for baseline metrics.
+ * 3. Start preloading all heavy modules during idle time.
+ * 4. Preload battle engine, scoreboard, cooldown renderer, debug panel, and timer modules.
+ * 5. This ensures all heavy modules are ready when needed without blocking initial load.
  */
 export function initPreloadServices() {
   // Initialize performance monitoring
@@ -220,6 +298,12 @@ export function initPreloadServices() {
 /**
  * Get lazy-loaded battle engine if available, otherwise load synchronously.
  *
+ * @pseudocode
+ * 1. Check if battle engine is already cached from preload.
+ * 2. Return cached module immediately if available.
+ * 3. If not cached, perform synchronous import of battle engine facade.
+ * 4. Return the loaded module for immediate use.
+ *
  * @returns {Promise<object>} The battle engine facade module
  */
 export async function getBattleEngineLazy() {
@@ -232,6 +316,12 @@ export async function getBattleEngineLazy() {
 /**
  * Get lazy-loaded scoreboard if available, otherwise load synchronously.
  *
+ * @pseudocode
+ * 1. Check if scoreboard module is already cached from preload.
+ * 2. Return cached module immediately if available.
+ * 3. If not cached, perform synchronous import of scoreboard setup.
+ * 4. Return the loaded module for immediate use.
+ *
  * @returns {Promise<object>} The scoreboard module
  */
 export async function getScoreboardLazy() {
@@ -243,6 +333,12 @@ export async function getScoreboardLazy() {
 
 /**
  * Get lazy-loaded cooldown renderer if available, otherwise load synchronously.
+ *
+ * @pseudocode
+ * 1. Check if cooldown renderer is already cached from preload.
+ * 2. Return cached module immediately if available.
+ * 3. If not cached, perform synchronous import of cooldown renderer.
+ * 4. Return the loaded module for immediate use.
  *
  * @returns {Promise<object>} The cooldown renderer module
  */
