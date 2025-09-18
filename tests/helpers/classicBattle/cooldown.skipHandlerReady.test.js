@@ -33,7 +33,8 @@ describe("skip handler clears fallback timer", () => {
       updateDebugPanel: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-      dispatchBattleEvent: vi.fn().mockResolvedValue(undefined)
+      dispatchBattleEvent: vi.fn().mockResolvedValue(undefined),
+      resetDispatchHistory: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
       onBattleEvent: vi.fn(),

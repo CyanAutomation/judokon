@@ -26,6 +26,10 @@ describe("startCooldown fallback timer", () => {
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
     }));
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent: vi.fn().mockResolvedValue(undefined),
+      resetDispatchHistory: vi.fn()
+    }));
     vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
       setSkipHandler: vi.fn()
     }));
@@ -36,6 +40,35 @@ describe("startCooldown fallback timer", () => {
       onBattleEvent: vi.fn(),
       emitBattleEvent: vi.fn()
     }));
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => {
+      const makeTimer = (onTick, onExpired, duration) => {
+        onTick(duration);
+        if (duration <= 0) {
+          onExpired();
+          return;
+        }
+        for (let i = 1; i <= duration; i++) {
+          scheduler.setTimeout(() => {
+            const remaining = duration - i;
+            onTick(remaining);
+            if (remaining <= 0) onExpired();
+          }, i * 1000);
+        }
+      };
+      const mockEngine = {
+        startRound: makeTimer,
+        startCoolDown: makeTimer,
+        stopTimer: vi.fn(),
+        STATS: ["a", "b"]
+      };
+      return {
+        requireEngine: () => mockEngine,
+        startRound: makeTimer,
+        startCoolDown: makeTimer,
+        stopTimer: vi.fn(),
+        STATS: ["a", "b"]
+      };
+    });
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
     vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
@@ -98,9 +131,6 @@ describe("startCooldown ready dispatch discipline", () => {
     }));
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
-      setSkipHandler: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
       dispatchBattleEvent: dispatchSpy
@@ -182,6 +212,10 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
     }));
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
+      dispatchSpy = vi.fn();
+      return { dispatchBattleEvent: dispatchSpy };
+    });
     vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
       setSkipHandler: vi.fn()
     }));
@@ -196,10 +230,6 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
       attachCooldownRenderer: vi.fn()
     }));
-    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
-      dispatchSpy = vi.fn();
-      return { dispatchBattleEvent: dispatchSpy };
-    });
     vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({
       createRoundTimer: () => ({
         on: vi.fn((event, handler) => {
