@@ -145,7 +145,6 @@ export class TimerController {
     // tests can inject a mock scheduler or the test helpers can replace timers.
     const thisScheduler = this.scheduler || realScheduler;
 
-    console.log("[dedupe] using countdown timer", !!(timerUtils && "createCountdownTimer" in timerUtils));
     this.currentTimer = createTimer(duration, {
       onTick: (r) => {
         this.remaining = r;
