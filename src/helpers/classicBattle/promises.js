@@ -92,6 +92,17 @@ export let roundResolvedPromise;
  *
  * @returns {void}
  */
+/**
+ * Reset all battle promise instances for testing or reinitialization.
+ *
+ * @summary Reinitialize all battle event promises to fresh instances.
+ * @pseudocode
+ * 1. Create new promise instances for all battle events.
+ * 2. Update module-level exports with fresh promises.
+ * 3. Set up event listeners for each promise type.
+ *
+ * @returns {void}
+ */
 export function resetBattlePromises() {
   roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
   roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
@@ -120,6 +131,19 @@ try {
 // Return the latest promise instance for each awaitable, using the window-scoped
 // reference maintained by setupPromise(). This avoids races where a module-level
 // Promise was already resolved before the test started awaiting it.
+/**
+ * Get the latest promise instance for a key, avoiding race conditions.
+ *
+ * @param {string} key - The promise key.
+ * @param {Promise} fallback - Fallback promise if window-scoped promise unavailable.
+ * @returns {Promise} The latest promise instance or resolved promise if already resolved.
+ * @summary Return the most current promise instance to avoid race conditions in tests.
+ * @pseudocode
+ * 1. Check if the promise has already been resolved via window marker.
+ * 2. Return resolved promise immediately if already resolved.
+ * 3. Return window-scoped promise if available.
+ * 4. Fall back to module-level promise.
+ */
 function latest(key, fallback) {
   if (typeof window !== "undefined") {
     if (window[`__resolved_${key}`]) return Promise.resolve();

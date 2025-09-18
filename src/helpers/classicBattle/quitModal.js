@@ -8,6 +8,21 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { getBattleState } from "./eventBus.js";
 import { t } from "../i18n.js";
 
+/**
+ * Create a quit confirmation modal with cancel and confirm buttons.
+ *
+ * @param {object} store - Battle store containing modal state.
+ * @param {Function} onConfirm - Callback function to execute on confirmation.
+ * @returns {object} The created modal instance.
+ * @summary Create and configure a modal for quit confirmation.
+ * @pseudocode
+ * 1. Create modal title, description, and action buttons.
+ * 2. Set up cancel button to close modal.
+ * 3. Set up confirm button to execute onConfirm callback.
+ * 4. Create modal with proper accessibility attributes.
+ * 5. Handle confirmation with error handling and state machine updates.
+ * 6. Navigate to home page after modal cleanup.
+ */
 function createQuitConfirmation(store, onConfirm) {
   const title = document.createElement("h2");
   title.id = "quit-modal-title";

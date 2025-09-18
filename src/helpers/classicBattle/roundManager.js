@@ -381,6 +381,16 @@ export function getNextRoundControls() {
   return null;
 }
 
+/**
+ * Detect whether the classic battle orchestrator is active and get machine reference.
+ *
+ * @returns {object} Object containing orchestrated flag and machine reference.
+ * @summary Check if orchestrator is running and get machine instance.
+ * @pseudocode
+ * 1. Check if orchestration is enabled via isOrchestrated().
+ * 2. Try to get machine instance from debug state.
+ * 3. Return object with orchestrated flag and machine reference.
+ */
 function detectOrchestratorContext() {
   let orchestrated = false;
   let machine = null;
@@ -574,6 +584,17 @@ function getMachineState(machine) {
   return null;
 }
 
+/**
+ * Check if the Next button is in a ready state.
+ *
+ * @returns {boolean} True if the Next button is ready, false otherwise.
+ * @summary Determine if the Next button indicates readiness for next round.
+ * @pseudocode
+ * 1. Get the next-button element from DOM.
+ * 2. Check if data-next-ready attribute is "true".
+ * 3. Check if button is not disabled.
+ * 4. Return true if either condition is met.
+ */
 function isNextButtonReady() {
   try {
     if (typeof document === "undefined") return false;
@@ -585,6 +606,15 @@ function isNextButtonReady() {
   return false;
 }
 
+/**
+ * Log cooldown start event for debugging purposes.
+ *
+ * @summary Log startCooldown invocation with state snapshot for debugging.
+ * @pseudocode
+ * 1. Get current state snapshot.
+ * 2. Increment startCooldown call count.
+ * 3. Log warning with call count and current state (outside Vitest).
+ */
 function logStartCooldown() {
   try {
     const { state: s } = getStateSnapshot();
