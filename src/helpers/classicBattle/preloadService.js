@@ -3,14 +3,22 @@ import { runWhenIdle } from "./idleCallback.js";
 /**
  * Preload service for lazy loading heavy modules during idle time.
  *
- * This service manages the lazy loading of non-critical modules that are
- * used in battle flows but don't need to be loaded immediately on startup.
- * Modules are loaded during browser idle periods to minimize impact on
- * initial page load performance.
+ * This se/**
+ * Register a cleanup function for memory management.
+ *
+ * @pseudocode
+ * 1. Validate that the cleanup function is actually a function.
+ * 2. Add the cleanup function to the cleanup registry Set.
+ * 3. This ensures cleanup functions can be called during memory cleanup.
+ *
+ * @param {Function} cleanupFn - Cleanup function to register
+ * @returns {void}
  */
-
-let cachedModules = new Map();
-let preloadPromises = new Map();
+export function registerCleanup(cleanupFn) {
+  if (typeof cleanupFn === "function") {
+    cleanupRegistry.add(cleanupFn);
+  }
+}
 
 // WeakMap for storing weak references to prevent memory leaks
 const weakRefs = new WeakMap();

@@ -132,6 +132,7 @@ function registerDispatch(eventName, machine) {
  * 4. This allows the next dispatch of the same event to proceed without deduplication.
  *
  * @param {string} [eventName] - Optional event name to reset, clears all if not specified
+ * @returns {void}
  */
 export function resetDispatchHistory(eventName) {
   process.stdout.write(`[dedupe] reset ${eventName}
