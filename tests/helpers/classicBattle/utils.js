@@ -59,9 +59,6 @@ export function setupClassicBattleDom() {
   try {
     if (typeof document !== "undefined" && document.body) {
       // Header (round-message, next-round-timer, score-display)
-      const { createBattleHeader, createBattleCardContainers } = await import(
-        "../../utils/testUtils.js"
-      );
       // Only append if not already present
       if (!document.querySelector("header #round-message")) {
         const header = createBattleHeader();
@@ -94,7 +91,7 @@ export function setupClassicBattleDom() {
         document.body.appendChild(div);
       }
     }
-  } catch (e) {
+  } catch {
     // Be liberal in what we accept in tests; swallow DOM setup errors
     // so mocking issues don't break unrelated tests.
   }
