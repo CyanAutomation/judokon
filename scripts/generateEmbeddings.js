@@ -29,7 +29,7 @@
  *      analysis.
  * 6. Stream each output object directly to `client_embeddings.json` using
  *    `fs.createWriteStream`.
- *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (9.8 MB).
+ *    - Track bytes written and abort if the total exceeds MAX_OUTPUT_SIZE (24.8 MB).
  * 7. After writing the file, record the total count, average vector length,
  *    and output size in `client_embeddings.meta.json`.
  */
@@ -204,7 +204,7 @@ function createSparseVector(text) {
 
 let codeGraphs = { modules: {} };
 
-const MAX_OUTPUT_SIZE = 9.8 * 1024 * 1024;
+const MAX_OUTPUT_SIZE = 24.8 * 1024 * 1024;
 
 const DATA_FIELD_ALLOWLIST = {
   "battleRounds.js": ["label", "description", "category"],
