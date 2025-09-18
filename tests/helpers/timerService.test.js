@@ -58,7 +58,14 @@ describe("timerService", () => {
           }, i * 1000);
         }
       };
+      const mockEngine = {
+        startRound: makeTimer,
+        startCoolDown: makeTimer,
+        stopTimer: vi.fn(),
+        STATS: ["a", "b"]
+      };
       return {
+        requireEngine: () => mockEngine,
         startRound: makeTimer,
         startCoolDown: makeTimer,
         stopTimer: vi.fn(),

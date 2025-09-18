@@ -1356,3 +1356,16 @@ export function _resetForTest(store) {
  * @returns {void}
  */
 export const resetGame = _resetForTest;
+
+/**
+ * Detect whether the classic battle orchestrator is active.
+ *
+ * @returns {boolean} True if the orchestrator is active, false otherwise.
+ */
+function isOrchestrated() {
+  try {
+    return !!document.body.dataset.battleState;
+  } catch {
+    return false;
+  }
+}
