@@ -242,6 +242,13 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   if (orchestratedMode && !orchestratorMachine) {
     orchestratedMode = false;
   }
+  if (typeof window !== "undefined") {
+    window.__startCooldownDebug = {
+      invoked: true,
+      orchestratedMode: orchestratedMode,
+      readinessTargetId: (btn || fallbackBtn)?.id
+    };
+  }
   appendReadyTrace("cooldownContext", {
     orchestrated: orchestratedMode,
     hasMachine: !!orchestratorMachine
@@ -1001,13 +1008,61 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   };
 
   let dispatched = false;
+  // Instrumentation for tests: log which dispatch path is used and the function identity
   try {
+    try {
+      // Basic introspection of the options.dispatchBattleEvent function
+      const info = {
+        hasFn: typeof options?.dispatchBattleEvent === "function",
+        name: typeof options?.dispatchBattleEvent === "function" ? options.dispatchBattleEvent.name : null,
+        toStringLen:
+          typeof options?.dispatchBattleEvent === "function" && options.dispatchBattleEvent.toString
+            ? options.dispatchBattleEvent.toString().length
+            : 0
+      };
+      try {
+        exposeDebugState("handleNextRound_dispatchViaOptions_info", info);
+      } catch {}
+      try {
+        console.error("[TEST-INSTRUMENT] dispatchViaOptions info:", info);
+      } catch {}
+    } catch {}
     dispatched = await dispatchViaOptions();
-  } catch {}
+    try {
+      try {
+        exposeDebugState("handleNextRound_dispatchViaOptions_result", dispatched);
+      } catch {}
+      console.error("[TEST-INSTRUMENT] dispatchViaOptions returned:", dispatched);
+    } catch {}
+  } catch (err) {
+    try {
+      console.log("[TEST-INSTRUMENT] dispatchViaOptions threw:", err && err.message ? err.message : err);
+    } catch {}
+  }
   if (!dispatched) {
     try {
+      try {
+        const m = machineReader?.();
+        const info2 = { machineExists: !!m, hasDispatch: typeof m?.dispatch === "function" };
+        try {
+          exposeDebugState("handleNextRound_dispatchReadyDirectly_info", info2);
+        } catch {}
+        try {
+          console.error("[TEST-INSTRUMENT] dispatchReadyDirectly info:", info2);
+        } catch {}
+      } catch {}
       dispatched = await dispatchReadyDirectly();
-    } catch {}
+      try {
+        try {
+          exposeDebugState("handleNextRound_dispatchReadyDirectly_result", dispatched);
+        } catch {}
+        console.error("[TEST-INSTRUMENT] dispatchReadyDirectly returned:", dispatched);
+      } catch {}
+    } catch (err) {
+      try {
+        console.error("[TEST-INSTRUMENT] dispatchReadyDirectly threw:", err && err.message ? err.message : err);
+      } catch {}
+    }
   }
   if (!dispatched) {
     try {

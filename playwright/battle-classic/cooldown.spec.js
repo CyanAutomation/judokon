@@ -18,6 +18,9 @@ test.describe("Classic Battle cooldown + Next", () => {
     await expect(page.getByTestId("stat-button").first()).toBeVisible();
     await page.getByTestId("stat-button").first().click();
 
+    const debugInfo = await page.evaluate(() => window.__startCooldownDebug);
+    console.log("__startCooldownDebug:", debugInfo);
+
     // Cooldown begins and Next becomes ready
     const nextButton = page.getByTestId("next-button");
     await expect(nextButton).toBeEnabled();
