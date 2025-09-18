@@ -102,6 +102,7 @@ function resolveMachineContext(overrides, deps) {
   const store = overrides.store ?? deps.store ?? null;
   const scheduler = overrides.scheduler ?? deps.scheduler ?? null;
   const startRoundWrapper = overrides.startRoundWrapper ?? deps.startRoundWrapper ?? null;
+  const stateTable = overrides.stateTable ?? deps.stateTable ?? null;
 
   const context = { ...overrides };
   if (!("store" in context)) context.store = store;
@@ -111,6 +112,9 @@ function resolveMachineContext(overrides, deps) {
   }
   if (startRoundWrapper && !("startRoundWrapper" in context)) {
     context.startRoundWrapper = startRoundWrapper;
+  }
+  if (stateTable && !("stateTable" in context)) {
+    context.stateTable = stateTable;
   }
 
   applyResetGame(context, store, deps);
@@ -173,7 +177,7 @@ export async function initClassicBattleOrchestrator(
     const onTransition = createTransitionHook(hookSet);
 
     try {
-      const createdMachine = await createStateManager(onEnterMap, context, onTransition);
+      const createdMachine = await createStateManager(onEnterMap, context, onTransition, context.stateTable);
       machine = createdMachine;
       attachListeners(machine);
       preloadDependencies();

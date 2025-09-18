@@ -1,4 +1,5 @@
 import { shouldReduceMotionSync } from "../helpers/motionUtils.js";
+import { onFrame, cancel } from "../utils/scheduler.js";
 export class ScoreboardView {
   constructor(model, { rootEl, messageEl, timerEl, roundCounterEl, scoreEl } = {}) {
     this.model = model;
@@ -138,24 +139,21 @@ export class ScoreboardView {
     if (startVals.p === endVals.p && startVals.o === endVals.o) return;
     const duration = 400;
     const id = ++this._scoreAnimId;
-    const t0 =
-      typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    const t0 = t;
     const step = (t) => {
       if (id !== this._scoreAnimId) return;
-      const now = typeof performance !== "undefined" && performance.now ? t : Date.now();
+      const now = t;
       const k = Math.min(1, (now - t0) / duration);
       const curP = Math.round(startVals.p + (endVals.p - startVals.p) * k);
       const curO = Math.round(startVals.o + (endVals.o - startVals.o) * k);
       this.scoreEl.innerHTML = `<span data-side="player">You: ${curP}</span>\n<span data-side="opponent">Opponent: ${curO}</span>`;
-      if (k < 1) {
-        this._scoreRaf = requestAnimationFrame(step);
+      if (k >= 1) {
+        cancel(this._scoreRaf);
+        this._scoreRaf = null;
       }
     };
-    if (this._scoreRaf)
-      try {
-        cancelAnimationFrame(this._scoreRaf);
-      } catch {}
-    this._scoreRaf = requestAnimationFrame(step);
+    if (this._scoreRaf) cancel(this._scoreRaf);
+    this._scoreRaf = onFrame(step);
   }
 
   /**
@@ -203,7 +201,7 @@ export class ScoreboardView {
    */
   destroy() {
     if (this._scoreRaf) {
-      cancelAnimationFrame(this._scoreRaf);
+      cancel(this._scoreRaf);
       this._scoreRaf = null;
     }
   }

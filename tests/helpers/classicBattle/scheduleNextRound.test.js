@@ -10,26 +10,11 @@ import { applyMockSetup } from "./mockSetup.js";
 
 import { waitForState } from "../../waitForState.js";
 
+import { eventDispatcherMock } from './mocks/eventDispatcher.js';
+
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
   attachCooldownRenderer: vi.fn()
 }));
-
-const eventDispatcherMock = {
-  spy: vi.fn(),
-  callThrough: () => {
-    throw new Error("eventDispatcher mock not initialized");
-  },
-};
-
-vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
-  const actual = await importOriginal();
-  eventDispatcherMock.callThrough = actual.dispatchBattleEvent;
-  eventDispatcherMock.spy.mockImplementation((...args) => eventDispatcherMock.callThrough(...args));
-  return {
-    ...actual,
-    dispatchBattleEvent: eventDispatcherMock.spy,
-  };
-});
 
 const dispatchBattleEventSpy = eventDispatcherMock.spy;
 
@@ -149,7 +134,8 @@ describe("classicBattle startCooldown", () => {
     const machine = await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
-      scheduler: fakeScheduler
+      scheduler: fakeScheduler,
+      stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
@@ -301,8 +287,16 @@ describe("classicBattle startCooldown", () => {
     const startRoundWrapper = vi.fn(async () => {
       await battleMod.startRound(store);
     });
-    await orchestrator.initClassicBattleOrchestrator(store, startRoundWrapper);
-    const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
+    await orchestrator.initClassicBattleOrchestrator({
+      store,
+      startRoundWrapper,
+      stateTable: globalThis.__CLASSIC_BATTLE_STATES__
+    });
+    const machine = await orchestrator.initClassicBattleOrchestrator({
+      store,
+      startRoundWrapper,
+      stateTable: globalThis.__CLASSIC_BATTLE_STATES__
+    });
 
     await battleMod.startRound(store);
     await machine.dispatch("roundOver");

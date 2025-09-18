@@ -15,6 +15,7 @@ let nextId = 0;
 const frameCallbacks = new Map();
 const secondCallbacks = new Map();
 let running = false;
+let paused = false;
 let lastSecond;
 let currentTime = 0;
 let rafId = 0;
@@ -47,23 +48,25 @@ export function start() {
   running = true;
   const loop = (time) => {
     currentTime = time;
-    frameCallbacks.forEach((cb) => {
-      try {
-        cb(currentTime);
-      } catch {
-        // ignore callback errors to keep the scheduler running
-      }
-    });
-    const sec = Math.floor(currentTime / 1000);
-    if (sec !== lastSecond) {
-      lastSecond = sec;
-      secondCallbacks.forEach((cb) => {
+    if (!paused) {
+      frameCallbacks.forEach((cb) => {
         try {
-          cb(time);
+          cb(currentTime);
         } catch {
           // ignore callback errors to keep the scheduler running
         }
       });
+      const sec = Math.floor(currentTime / 1000);
+      if (sec !== lastSecond) {
+        lastSecond = sec;
+        secondCallbacks.forEach((cb) => {
+          try {
+            cb(time);
+          } catch {
+            // ignore callback errors to keep the scheduler running
+          }
+        });
+      }
     }
     rafId = requestAnimationFrame(loop);
   };

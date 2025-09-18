@@ -9,6 +9,7 @@
  */
 
 import { getSetting } from "./settingsCache.js";
+import { onFrame, cancel } from "../utils/scheduler.js";
 /**
  * Determine whether the typewriter effect should run.
  *
@@ -46,7 +47,7 @@ export function runTypewriterEffect(element, finalHtml, speed = 200) {
   let frameId = 0;
   const step = (ts) => {
     if (!element.isConnected) {
-      cancelAnimationFrame(frameId);
+      cancel(frameId);
       return;
     }
     if (!last) last = ts;
@@ -60,12 +61,10 @@ export function runTypewriterEffect(element, finalHtml, speed = 200) {
       acc -= speed;
       iterations++;
     }
-    if (i < text.length) {
-      frameId = requestAnimationFrame(step);
-    } else {
+    if (i >= text.length) {
       element.innerHTML = finalHtml;
-      cancelAnimationFrame(frameId);
+      cancel(frameId);
     }
   };
-  frameId = requestAnimationFrame(step);
+  frameId = onFrame(step);
 }
