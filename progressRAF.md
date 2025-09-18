@@ -96,9 +96,9 @@ Findings (verified)
 
 10) Scheduler vs timer mix: use the injected scheduler consistently
 
-   - What: some code mixes global `setTimeout/clearTimeout` with the injected scheduler's `setTimeout/clearTimeout` and sometimes uses global rAF for one-shot cases.
-   - Why: mixing can make tests with fake timers flaky and confuses cancellation semantics.
-   - Fix: prefer `getScheduler()` (or the project's scheduler abstraction) for timeouts and, where needed, provide a `scheduler.requestAnimationFrame` shim that forwards to `window.requestAnimationFrame` by default. This makes testing deterministic and centralizes cancellation.
+- What: some code mixes global `setTimeout/clearTimeout` with the injected scheduler's `setTimeout/clearTimeout` and sometimes uses global rAF for one-shot cases.
+- Why: mixing can make tests with fake timers flaky and confuses cancellation semantics.
+- Fix: prefer `getScheduler()` (or the project's scheduler abstraction) for timeouts and, where needed, provide a `scheduler.requestAnimationFrame` shim that forwards to `window.requestAnimationFrame` by default. This makes testing deterministic and centralizes cancellation.
 
 Best-practice checklist (verified)
 -------------------------------
