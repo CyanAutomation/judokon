@@ -134,6 +134,9 @@ export async function dispatchBattleEvent(eventName, payload) {
 
   const { shouldSkip, key: dispatchKey, timestamp } = registerDispatch(eventName, machine);
   if (shouldSkip) {
+    try {
+      exposeDebugState("dispatchBattleEventSkipped", { event: eventName, key: dispatchKey });
+    } catch {}
     process.stdout.write(`[dedupe] short-circuit ${eventName} ${dispatchKey}
 `);
     return true;
@@ -150,6 +153,10 @@ export async function dispatchBattleEvent(eventName, payload) {
   }
 
   try {
+    exposeDebugState("dispatchBattleEventInvoked", eventName);
+  } catch {}
+
+  try {
     // PRD taxonomy: emit interrupt.requested with payload context
     if (eventName === "interrupt") {
       try {
@@ -161,6 +168,9 @@ export async function dispatchBattleEvent(eventName, payload) {
       }
     }
     const result = await machine.dispatch(eventName, payload);
+    try {
+      exposeDebugState("dispatchBattleEventResult", result);
+    } catch {}
     if (result === false) {
       resetDispatchKey(dispatchKey, timestamp);
     }
