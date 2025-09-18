@@ -300,6 +300,13 @@ describe("classicBattle startCooldown", () => {
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
     console.log("[TEST DEBUG] After timer advance, state:", machine.getState());
+    console.log("[TEST DEBUG] __NEXT_ROUND_EXPIRED:", window.__NEXT_ROUND_EXPIRED);
+    try {
+      const dbg = globalThis.__classicBattleDebugRead && globalThis.__classicBattleDebugRead("getClassicBattleMachine");
+      console.log("[TEST DEBUG] debug getter present:", typeof dbg, dbg ? dbg() : null);
+    } catch (err) {
+      console.log("[TEST DEBUG] debug getter error", err);
+    }
 
     // Confirm fallback timer callback executed
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);

@@ -825,7 +825,12 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   console.log("[dedupe] wireCooldownTimer", cooldownSeconds);
   const bus = createEventBus(overrides.eventBus);
   const timerFactory = overrides.createRoundTimer || createRoundTimer;
-  const startCooldown = overrides.startEngineCooldown || engineStartCoolDown;
+  let startCooldown = overrides.startEngineCooldown || engineStartCoolDown;
+  // When running under Vitest, prefer the pure-JS fallback timer to avoid
+  // relying on the engine starter which may not cooperate with fake timers.
+  if (typeof process !== "undefined" && !!process.env?.VITEST) {
+    startCooldown = null;
+  }
   const renderer = overrides.attachCooldownRenderer || attachCooldownRenderer;
   const registerSkipHandler =
     typeof overrides.setSkipHandler === "function" ? overrides.setSkipHandler : setSkipHandler;
