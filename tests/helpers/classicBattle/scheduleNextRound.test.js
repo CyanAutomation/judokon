@@ -325,7 +325,9 @@ describe("classicBattle startCooldown", () => {
 
     // Debug: log state after waitForState
 
-    const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
+    const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
+      ([eventName]) => eventName === "ready"
+    );
     expect(readyDispatchCalls).toHaveLength(1);
     console.log("[TEST DEBUG] After waitForState, state:", machine.getState());
 
@@ -392,7 +394,9 @@ describe("classicBattle startCooldown", () => {
     await waitForState("waitingForPlayerAction");
     await vi.runAllTimersAsync();
 
-    const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
+    const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
+      ([eventName]) => eventName === "ready"
+    );
     expect(readyDispatchCalls).toHaveLength(1);
 
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
