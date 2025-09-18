@@ -271,12 +271,6 @@ describe("classicBattle startCooldown", () => {
 
     console.log("[TEST DEBUG] before initClassicBattleOrchestrator");
     // Patch: inject fake scheduler for orchestrator
-    const fakeScheduler = {
-      setTimeout: (...args) => setTimeout(...args),
-      clearTimeout: (...args) => clearTimeout(...args),
-      setInterval: (...args) => setInterval(...args),
-      clearInterval: (...args) => clearInterval(...args)
-    };
     await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
