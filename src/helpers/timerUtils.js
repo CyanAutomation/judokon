@@ -88,10 +88,10 @@ export function createCountdownTimer(
   let hardTimeoutId = 0;
   const activeScheduler =
     scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
-  const clearFromScheduler =
+  const clearTimeoutFn =
     scheduler && typeof scheduler.clearTimeout === "function"
-      ? scheduler.clearTimeout.bind(scheduler)
-      : realScheduler.clearTimeout.bind(realScheduler);
+      ? scheduler.clearTimeout
+      : realScheduler.clearTimeout;
 
   async function tick() {
     if (paused) return;
@@ -174,7 +174,11 @@ export function createCountdownTimer(
       subId = null;
     }
     if (hardTimeoutId) {
-      clearFromScheduler(hardTimeoutId);
+      try {
+        clearTimeoutFn.call(activeScheduler, hardTimeoutId);
+      } catch {
+        clearTimeoutFn(hardTimeoutId);
+      }
       hardTimeoutId = 0;
     }
     if (pauseOnHidden && typeof document !== "undefined") {
