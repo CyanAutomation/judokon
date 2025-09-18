@@ -13,6 +13,8 @@ import { exposeDebugState } from "../debugHooks.js";
  * 2. Otherwise schedule inter-round cooldown.
  */
 export async function cooldownEnter(machine, payload) {
+  console.error("[DEBUG] cooldownEnter invoked!");
+  if (typeof window !== "undefined") window.__cooldownEnterInvoked = true;
   exposeDebugState("cooldownEnterInvoked", true);
   if (payload?.initial) {
     await initStartCooldown(machine);
@@ -21,6 +23,8 @@ export async function cooldownEnter(machine, payload) {
   // Patch: always pass scheduler from context if present
   const { store, scheduler } = machine.context || {};
   const context = { orchestrated: true }; // Assume orchestrated in test
+  console.error("[DEBUG] About to call startCooldown");
   await startCooldown(store, scheduler, { isOrchestrated: () => context.orchestrated });
+  console.error("[DEBUG] startCooldown called successfully");
 }
 export default cooldownEnter;

@@ -279,11 +279,15 @@ describe("classicBattle startCooldown", () => {
     await machine.dispatch("roundOver");
     expect(machine.getState()).toBe("roundOver");
 
+    console.error("[TEST] About to dispatch continue");
     await machine.dispatch("continue");
+    console.error("[TEST] continue dispatched");
     expect(machine.getState()).toBe("cooldown");
 
     // Manually trigger cooldownEnter since test state table lacks onEnter
+    console.error("[TEST] About to call cooldownEnter");
     await cooldownEnter(machine);
+    console.error("[TEST] cooldownEnter called");
 
     // Clear spy after manual continue call to only capture automatic ready call
     dispatchBattleEventSpy.mockClear();

@@ -131,6 +131,12 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
 
       await vi.advanceTimersByTimeAsync(1000);
 
+      try {
+        if (typeof process !== "undefined" && typeof globalThis !== "undefined") {
+          process.stdout.write("[TEST-BAG] " + JSON.stringify(globalThis.__CLASSIC_BATTLE_DEBUG || {}) + "\n");
+        }
+      } catch {}
+
       const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
         ([eventName]) => eventName === "ready"
       );
