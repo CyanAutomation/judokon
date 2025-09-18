@@ -46,20 +46,10 @@ import { getStateSnapshot } from "./battleDebug.js";
  * 1. Initialize battle state values.
  * 2. Return the store.
  *
-    try {
-      exposeDebugState("handleNextRoundMachineStateAfterWait", machineStateAfter ?? null);
-    } catch {}
-    try {
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        globalThis.__classicBattleDebugExpose("handleNextRoundMachineStateAfterWait", machineStateAfter ?? null);
-      }
-    } catch {}
-    try {
-      exposeDebugState("handleNextRoundMachineStateAfterWait_readAt", Date.now());
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        globalThis.__classicBattleDebugExpose("handleNextRoundMachineStateAfterWait_readAt", Date.now());
-      }
-    } catch {}
+ * @returns {object} The battle state store.
+ */
+export function createBattleStore() {
+  return {
     selectionMade: false,
     stallTimeoutMs: 35000,
     playerChoice: null,
