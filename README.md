@@ -28,6 +28,7 @@ When you open `src/pages/battleJudoka.html`, a modal prompts you to choose the m
 For debugging or automated tests, append `?autostart=1` to `battleJudoka.html` to skip the modal and begin a default-length match immediately.
 
 Note on Next button behavior:
+
 - The `Next` button advances only during the inter-round cooldown. Clicking it cancels any remaining cooldown and immediately starts the next round, regardless of the `skipRoundCooldown` setting.
 - It remains disabled while choosing a stat to avoid skipping the cooldown logic accidentally. The cooldown enables `Next` (or auto-advances in test mode); do not expect `Next` to be ready during stat selection.
 
@@ -132,6 +133,7 @@ For the complete command reference and troubleshooting, see [docs/validation-com
 For contributor-specific guidance, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 **Quick validation (essential checks):**
+
 ```bash
 npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
 ```
@@ -141,6 +143,7 @@ This suite includes a DOM regression test (`tests/pages/battleJudoka.dom.test.js
 ### Classic Battle CLI
 
 The project includes a terminal-style UI (`src/pages/battleCLI.html`) that reuses the Classic Battle engine with text-first controls:
+
 - **Number keys [1–5]**: Select stats  
 - **Enter/Space**: Advance rounds
 - **Q**: Quit, **H**: Help panel
@@ -177,6 +180,7 @@ const matches = await queryRag("How does the battle engine work?");
 ```
 
 **Command line usage:**
+
 ```bash
 npm run rag:query "How does the battle engine work?"
 ```
@@ -216,6 +220,7 @@ npm run test:style      # Style tests (on demand)
 ```
 
 **Key features:**
+
 - DOM regression testing for required UI elements
 - Stable readiness patterns for Playwright (`window.battleReadyPromise`)
 - Screenshot testing with update capabilities
@@ -243,7 +248,6 @@ When the `enableTestMode` feature flag is active, a debug panel appears above th
 
 Enable the `statHotkeys` feature flag to map number keys 1–5 to stat buttons for quicker selection. Disabled by default.
 Invalid numeric keys now trigger a hint: "Use 1-5, press H for help".
-
 
 Screenshot suites store their baseline images in `playwright/*-snapshots/`. To skip running these comparison tests locally, set the `SKIP_SCREENSHOTS` environment variable:
 
@@ -287,6 +291,6 @@ This project is licensed under the GNU General Public License v3.0. See [LICENSE
 
 ---
 
-## 🙌 Thanks for Exploring JU-DO-KON!
+## 🙌 Thanks for Exploring JU-DO-KON
 
 Whether you're a contributor, player, tester, or agent—thank you for helping build something fun, strategic, and kid-friendly. We’re excited to have you on the tatami!
