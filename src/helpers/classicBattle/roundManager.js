@@ -195,6 +195,23 @@ let currentNextRound = null;
 // Track whether the "ready" event has been dispatched for the current cooldown window.
 let readyDispatchedForCurrentCooldown = false;
 
+/**
+ * Dispatch the cooldown "ready" event through available event bus dispatchers.
+ *
+ * Prioritizes an injected dispatcher when present so orchestrated environments
+ * can observe the event before falling back to the global dispatcher. Treats a
+ * resolved value of `false` as an explicit refusal so direct dispatch fallback
+ * can proceed when orchestration declines the event.
+ *
+ * @param {object} [options={}] - Possible override hooks for dispatching
+ * @param {Function} [options.dispatchBattleEvent] - Injected dispatcher helper
+ * @returns {Promise<boolean>} True when any dispatcher handles the event
+ * @pseudocode
+ * 1. Collect injected dispatcher then the global dispatcher when distinct.
+ * 2. Invoke each dispatcher with the "ready" event and await any promise.
+ * 3. Treat a resolved value of `false` as failure; otherwise report success.
+ * 4. Return false if every dispatcher declines or throws.
+ */
 async function dispatchReadyViaBus(options = {}) {
   const dispatchers = [];
   const candidate = options.dispatchBattleEvent;
@@ -207,11 +224,11 @@ async function dispatchReadyViaBus(options = {}) {
   for (const dispatcher of dispatchers) {
     try {
       const result = dispatcher("ready");
-      if (result && typeof result.then === "function") {
-        await result;
-        return true;
+      let resolved = result;
+      if (resolved && typeof resolved.then === "function") {
+        resolved = await resolved;
       }
-      if (result !== false) {
+      if (resolved !== false) {
         return true;
       }
     } catch {}
@@ -1283,6 +1300,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     }
   };
   const onExpired = async () => {
+    // Handle retries when the timer already expired but ready wasn't emitted.
     if (expired) {
       if (readyDispatchedForCurrentCooldown) {
         return;
@@ -1293,6 +1311,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
         alreadyDispatchedReady
       });
     }
+    // Standard expiration path for the active cooldown.
     expired = true;
     // PRD taxonomy: cooldown timer expired + countdown completed
     try {
