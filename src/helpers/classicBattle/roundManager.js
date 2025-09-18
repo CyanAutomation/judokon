@@ -259,6 +259,30 @@ let currentNextRound = null;
 // Track whether the "ready" event has been dispatched for the current cooldown window.
 let readyDispatchedForCurrentCooldown = false;
 
+async function dispatchReadyViaBus(options = {}) {
+  const dispatchers = [];
+  const candidate = options.dispatchBattleEvent;
+  if (typeof candidate === "function") {
+    dispatchers.push(candidate);
+  }
+  if (typeof dispatchBattleEvent === "function" && dispatchBattleEvent !== candidate) {
+    dispatchers.push(dispatchBattleEvent);
+  }
+  for (const dispatcher of dispatchers) {
+    try {
+      const result = dispatcher("ready");
+      if (result && typeof result.then === "function") {
+        await result;
+        return true;
+      }
+      if (result !== false) {
+        return true;
+      }
+    } catch {}
+  }
+  return false;
+}
+
 /**
  * Schedule the cooldown before the next round and expose controls
  * for the Next button.
@@ -285,7 +309,6 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   if (typeof globalThis !== "undefined") {
     globalThis.__startCooldownCount = (globalThis.__startCooldownCount || 0) + 1;
   }
-  console.log("[dedupe] startCooldown reset ready");
   // Always use the injected scheduler if provided, else fall back to realScheduler
   const activeScheduler =
     scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
@@ -1015,9 +1038,6 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       const liveBtn =
         typeof document !== "undefined" ? document.getElementById("next-button") : btn;
       markReady(liveBtn || btn);
-      try {
-        console.warn("[test] roundManager: marked Next ready");
-      } catch {}
     } catch {}
   }
 
@@ -1043,27 +1063,15 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     }
     return false;
   };
-  const dispatchViaOptions = async () => {
-    if (typeof options.dispatchBattleEvent === "function") {
-      try {
-        const result = await options.dispatchBattleEvent("ready");
-        if (result && typeof result.then === "function") {
-          await result;
-          return true;
-        }
-        return result !== false;
-      } catch {}
-    }
-    return false;
-  };
-
-  let dispatched = false;
-  try {
-    dispatched = await dispatchReadyDirectly();
-  } catch {}
+  let dispatched = options?.alreadyDispatchedReady === true;
   if (!dispatched) {
     try {
-      dispatched = await dispatchViaOptions();
+      dispatched = await dispatchReadyViaBus(options);
+    } catch {}
+  }
+  if (!dispatched) {
+    try {
+      dispatched = await dispatchReadyDirectly();
     } catch {}
   }
   if (!dispatched) {
@@ -1164,16 +1172,35 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       return originalResolveReady.apply(this, args);
     };
   }
-  const onExpired = () => {
-    console.log("[dedupe] onExpired fired");
-    if (expired) return;
+  const attemptBusDispatch = async () => {
+    try {
+      return await dispatchReadyViaBus(expirationOptions);
+    } catch {
+      return false;
+    }
+  };
+  const onExpired = async () => {
+    if (expired) {
+      if (readyDispatchedForCurrentCooldown) {
+        return;
+      }
+      const alreadyDispatchedReady = await attemptBusDispatch();
+      return handleNextRoundExpiration(controls, btn, {
+        ...expirationOptions,
+        alreadyDispatchedReady
+      });
+    }
     expired = true;
     // PRD taxonomy: cooldown timer expired + countdown completed
     try {
       bus.emit("cooldown.timer.expired");
       bus.emit("control.countdown.completed");
     } catch {}
-    return handleNextRoundExpiration(controls, btn, expirationOptions);
+    const alreadyDispatchedReady = await attemptBusDispatch();
+    return handleNextRoundExpiration(controls, btn, {
+      ...expirationOptions,
+      alreadyDispatchedReady
+    });
   };
   timer.on("expired", onExpired);
   // PRD taxonomy: cooldown timer ticks
