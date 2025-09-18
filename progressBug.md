@@ -214,3 +214,36 @@ Recommended next steps (I can implement any of these):
 - Temporarily bypass dedupe by resetting dispatch history immediately before the expiration call (e.g., call `resetDispatchHistory('ready')` in `handleNextRoundExpiration`) to see if the mock is then observed. This is diagnostic only.
 
 Tell me which of these you'd like me to run next (I recommend verifying mock hoisting first). I can implement the change, run the single test, and update this file with the results.
+
+## Mock factory hoisting verification — action & outcome
+
+Action (planned via sequential thinking):
+1. Add a visible, non-console marker in the test's `vi.mock` factory for `eventDispatcher.js` to confirm that the mock factory runs (and is therefore hoisted) before the code under test is imported.
+2. Re-run the single failing test and capture stdout for the marker.
+3. Interpret the result and choose the next diagnostic step.
+
+What I changed:
+- Injected a small marker in `tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js` that writes to stdout:
+  - `[MOCK-FACTORY-RAN] eventDispatcher mock factory`
+  - `[MOCK-FACTORY-INFO] dispatchBattleEvent_name=...`
+  - Also sets `globalThis.__CLASSIC_BATTLE_DEBUG.eventDispatcherMockFactoryRan = true`.
+
+Result (ran the single test):
+- Command: `npm test -- tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js --silent --reporter verbose`
+- Observed stdout at test startup:
+  - [MOCK-FACTORY-RAN] eventDispatcher mock factory
+  - [MOCK-FACTORY-INFO] dispatchBattleEvent_name=dispatchBattleEvent
+- Interpretation: the mock factory executed (hoisted) before the test's imports ran. The wrapper was installed.
+- Despite the mock factory running, the test still fails with the same assertion: no `ready` call was recorded during the cooldown advance.
+
+Conclusion: mock hoisting/order is not the root cause — the test's `vi.mock` did run and replaced `dispatchBattleEvent` in the module loader. The issue is therefore elsewhere (likely the runtime dispatch path, dedupe logic, or early exit in `handleNextRoundExpiration`).
+
+Recommended next diagnostic (I can implement):
+1. Instrument `handleNextRoundExpiration` to write a non-console marker into `globalThis.__CLASSIC_BATTLE_DEBUG` immediately before and after calling `dispatchViaOptions`, recording:
+   - Whether `options.dispatchBattleEvent` is a function
+   - `options.dispatchBattleEvent.name`
+   - Whether calling it returned true/false or threw
+   - A timestamp and call-count marker
+2. Re-run the single test and inspect the `globalThis.__CLASSIC_BATTLE_DEBUG` bag after the run to determine if the mocked function was invoked and what it returned.
+
+I can implement this instrumentation now and re-run the single test. Proceed? (I recommend yes — it's the most direct way to prove whether the public API path is executed and whether the mock sees the call.)

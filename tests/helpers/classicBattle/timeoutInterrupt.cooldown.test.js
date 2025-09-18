@@ -7,6 +7,21 @@ const readyDispatchTracker = vi.hoisted(() => ({ events: [] }));
 
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
   const actual = await importOriginal();
+  try {
+    // Visible, non-console marker for test runs to confirm mock factory execution order
+    if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
+      process.stdout.write("[MOCK-FACTORY-RAN] eventDispatcher mock factory\n");
+      try {
+        process.stdout.write(
+          `[MOCK-FACTORY-INFO] dispatchBattleEvent_name=${typeof actual.dispatchBattleEvent === "function" ? actual.dispatchBattleEvent.name : String(typeof actual.dispatchBattleEvent)}\n`
+        );
+      } catch {}
+    }
+    if (typeof globalThis !== "undefined") {
+      globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {};
+      globalThis.__CLASSIC_BATTLE_DEBUG.eventDispatcherMockFactoryRan = true;
+    }
+  } catch {}
   return {
     ...actual,
     dispatchBattleEvent: vi.fn(async (...args) => {

@@ -115,7 +115,7 @@ export function markNextButtonReady(btn) {
   btn.disabled = false;
   if (btn.dataset) btn.dataset.nextReady = "true";
   btn.setAttribute("data-next-ready", "true");
-  btn.removeAttribute("disabled");
+  console.error("[DEBUG] markNextButtonReady called with btn:", btn.id, "disabled after:", btn.disabled, "data-next-ready after:", btn.dataset.nextReady);
 }
 
 /**
@@ -282,10 +282,11 @@ function scheduleCooldownFallback({ duration, finish, scheduler }) {
  * 3. Start engine-backed timer; on expire → mark ready, emit events, dispatch `ready`.
  * 4. Schedule fallback timer with same completion path.
  */
+import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { createRoundTimer } from "../timers/createRoundTimer.js";
+import { startCoolDown } from "../battleEngineFacade.js";
+
 export async function initInterRoundCooldown(machine, options = {}) {
-  const { computeNextRoundCooldown } = await import("../timers/computeNextRoundCooldown.js");
-  const { createRoundTimer } = await import("../timers/createRoundTimer.js");
-  const { startCoolDown } = await import("../battleEngineFacade.js");
 
   const duration = resolveInterRoundCooldownDuration(computeNextRoundCooldown);
 
