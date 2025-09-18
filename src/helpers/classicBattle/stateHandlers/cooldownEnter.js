@@ -12,6 +12,9 @@ import { initStartCooldown } from "../cooldowns.js";
  * 2. Otherwise schedule inter-round cooldown.
  */
 export async function cooldownEnter(machine, payload) {
+  try {
+    if (typeof console !== "undefined") console.log("[TEST DEBUG] cooldownEnter invoked, payload:", payload);
+  } catch {}
   if (payload?.initial) {
     await initStartCooldown(machine);
     return;

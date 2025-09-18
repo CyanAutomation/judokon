@@ -239,6 +239,9 @@ let currentNextRound = null;
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
+  try {
+    console.error("[TEST ERROR] startCooldown invoked, scheduler present:", !!scheduler?.setTimeout);
+  } catch {}
   // Reset the ready dispatch flag for the new cooldown period
   readyDispatchedForCurrentCooldown = false;
   resetDispatchHistory("ready");
@@ -807,18 +810,18 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   // Dispatch `ready` (fire-and-forget) before resolving the controls so
   // tests awaiting `controls.ready` don't depend on orchestrator internals.
   // Only dispatch if the machine is still in cooldown state and we haven't already dispatched for this cooldown.
-    const dispatchReadyDirectly = async () => {
-      if (machine?.dispatch) {
-        try {
-          const result = await machine.dispatch("ready");
-          if (result && typeof result.then === "function") {
-            result.catch(() => {});
-          }
-          return true;
-        } catch {}
-      }
-      return false;
-    };
+  const dispatchReadyDirectly = async () => {
+    if (machine?.dispatch) {
+      try {
+        const result = await machine.dispatch("ready");
+        if (result && typeof result.then === "function") {
+          result.catch(() => {});
+        }
+        return true;
+      } catch {}
+    }
+    return false;
+  };
 }
 
 function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides = {}) {
@@ -945,7 +948,13 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       void handleNextRoundExpiration(controls, btn, expirationOptions);
     }
   });
-  scheduler.setTimeout(() => controls.timer.start(cooldownSeconds), 0);
+  // Start the timer immediately to ensure test environments with fake timers
+  // consistently observe timer ticks/expiration when advancing timers.
+  try {
+    controls.timer.start(cooldownSeconds);
+  } catch (err) {
+    console.error("[TEST DEBUG] controls.timer.start error", err);
+  }
   try {
     const secsNum = Number(cooldownSeconds);
     // Fallback behavior:

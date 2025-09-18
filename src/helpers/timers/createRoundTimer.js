@@ -69,7 +69,17 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     let remaining = Math.ceil(total);
     emitTick(remaining);
     const startedAt = Date.now();
+    if (typeof console !== "undefined") {
+      try {
+        console.log("[TEST DEBUG] createRoundTimer.start fallback: total=", total, "remaining=", remaining, "startedAt=", startedAt);
+      } catch {}
+    }
     const intervalId = setInterval(() => {
+      if (typeof console !== "undefined") {
+        try {
+          console.log("[TEST DEBUG] createRoundTimer.interval tick: Date.now=", Date.now());
+        } catch {}
+      }
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
       const expected = Math.max(0, total - elapsed);
       // Basic drift detection: if internal remaining lags expected by >2s, signal drift
