@@ -31,7 +31,7 @@
 - `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` → PASS.
 - `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` → PASS.
 
-*Pausing here for your review before proceeding further.*
+_Pausing here for your review before proceeding further._
 
 ## Phase 1 – Dispatch Dedupe Hardening
 
@@ -65,7 +65,7 @@
 - `scheduleNextRound.test.js`: Still fails, but the new debug bag now shows `handleNextRoundEarlyExit = { readyDispatched: true, readyInFlight: false }`. The fallback timer exits before dispatching because the controls already consider `ready` handled, pinpointing the stall to premature `readyDispatched` state changes.
 - Console noise from the test file is gone, reducing the amount of `[TEST DEBUG]` output during focused runs.
 
-*Pausing here for your review before proceeding to the next step.*
+_Pausing here for your review before proceeding to the next step._
 
 ## Current Iteration – Timer Debugging and Fallback Adjustments
 
