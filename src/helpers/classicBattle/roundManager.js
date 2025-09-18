@@ -209,7 +209,7 @@ let readyDispatchedForCurrentCooldown = false;
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
-  console.error("[DEBUG] startCooldown invoked!");
+  console.debug("[DEBUG] startCooldown invoked!");
   if (typeof window !== "undefined") window.__startCooldownInvoked = true;
   // try {
   //   console.error("startCooldown invoked, scheduler present:", !!scheduler?.setTimeout);
@@ -670,7 +670,7 @@ function markNextReady(btn) {
       );
     }
   } catch {}
-  console.error(
+  console.debug(
     "[DEBUG] markNextReady called with btn:",
     btn.id,
     "disabled after:",
@@ -1053,7 +1053,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         }
       } catch {}
       try {
-        console.error("[TEST-INSTRUMENT] dispatchViaOptions info:", info);
+        console.debug("[TEST-INSTRUMENT] dispatchViaOptions info:", info);
       } catch {}
     } catch {}
     try {
@@ -1079,7 +1079,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         }
       } catch {}
       try {
-        console.error("[TEST-INSTRUMENT] dispatchViaOptions returned:", dispatched);
+        console.debug("[TEST-INSTRUMENT] dispatchViaOptions returned:", dispatched);
       } catch {}
     } catch (err) {
       try {
@@ -1125,7 +1125,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           exposeDebugState("handleNextRound_dispatchReadyDirectly_info", info2);
         } catch {}
         try {
-          console.error("[TEST-INSTRUMENT] dispatchReadyDirectly info:", info2);
+          console.debug("[TEST-INSTRUMENT] dispatchReadyDirectly info:", info2);
         } catch {}
       } catch {}
       dispatched = await dispatchReadyDirectly();
@@ -1133,7 +1133,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         try {
           exposeDebugState("handleNextRound_dispatchReadyDirectly_result", dispatched);
         } catch {}
-        console.error("[TEST-INSTRUMENT] dispatchReadyDirectly returned:", dispatched);
+        console.debug("[TEST-INSTRUMENT] dispatchReadyDirectly returned:", dispatched);
       } catch {}
     } catch (err) {
       try {
