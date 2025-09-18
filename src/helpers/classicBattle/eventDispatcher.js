@@ -126,9 +126,10 @@ export async function dispatchBattleEvent(eventName, payload) {
 
   // Expose raw getter diagnostics so tests can assert visibility across ESM/module boundaries
   try {
-    const globalGetter = typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
-      ? globalThis.__classicBattleDebugRead("getClassicBattleMachine")
-      : undefined;
+    const globalGetter =
+      typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
+        ? globalThis.__classicBattleDebugRead("getClassicBattleMachine")
+        : undefined;
     try {
       exposeDebugState("dispatch_globalGetterType", typeof globalGetter);
     } catch {}

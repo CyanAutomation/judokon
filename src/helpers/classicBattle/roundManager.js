@@ -683,7 +683,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           readyInFlight: !!controls?.readyInFlight
         };
         if (typeof globalThis.__classicBattleDebugExpose === "function") {
-          globalThis.__classicBattleDebugExpose("handleNextRoundEarlyExit", bag.handleNextRoundEarlyExit);
+          globalThis.__classicBattleDebugExpose(
+            "handleNextRoundEarlyExit",
+            bag.handleNextRoundEarlyExit
+          );
         }
       }
     } catch {}
@@ -762,7 +765,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
             hasGlobal: typeof globalThis.__classicBattleDebugRead === "function"
           };
           if (typeof globalThis.__classicBattleDebugExpose === "function") {
-            globalThis.__classicBattleDebugExpose("handleNextRoundMachineGetter", bag.handleNextRoundMachineGetter);
+            globalThis.__classicBattleDebugExpose(
+              "handleNextRoundMachineGetter",
+              bag.handleNextRoundMachineGetter
+            );
           }
         }
       } catch {}

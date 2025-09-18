@@ -86,8 +86,12 @@ export function createCountdownTimer(
   let cancelFn = cancel;
   let paused = false;
   let hardTimeoutId = 0;
-  const activeScheduler = scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
-  const clearTimeoutFn = scheduler && typeof scheduler.clearTimeout === "function" ? scheduler.clearTimeout : realScheduler.clearTimeout;
+  const activeScheduler =
+    scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
+  const clearTimeoutFn =
+    scheduler && typeof scheduler.clearTimeout === "function"
+      ? scheduler.clearTimeout
+      : realScheduler.clearTimeout;
 
   async function tick() {
     if (paused) return;

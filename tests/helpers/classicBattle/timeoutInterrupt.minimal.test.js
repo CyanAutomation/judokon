@@ -103,8 +103,10 @@ describe("timeout → interruptRound → cooldown auto-advance - minimal", () =>
     const countdownPromise = battleMod.getCountdownStartedPromise();
     const timeoutPromise = battleMod.getRoundTimeoutPromise();
 
-    const initialCountdownRef = typeof window !== "undefined" ? window.countdownStartedPromise : undefined;
-    const initialTimeoutRef = typeof window !== "undefined" ? window.roundTimeoutPromise : undefined;
+    const initialCountdownRef =
+      typeof window !== "undefined" ? window.countdownStartedPromise : undefined;
+    const initialTimeoutRef =
+      typeof window !== "undefined" ? window.roundTimeoutPromise : undefined;
 
     setTimeout(() => emitBattleEvent("countdownStart", { duration: 1 }), 10);
     setTimeout(() => emitBattleEvent("roundTimeout"), 400);
