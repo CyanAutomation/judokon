@@ -722,7 +722,14 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     if (typeof options.getClassicBattleMachine === "function") {
       return () => {
         try {
-          return options.getClassicBattleMachine();
+          const machine = options.getClassicBattleMachine();
+          try {
+            exposeDebugState("handleNextRoundMachineGetterOverride", machine);
+            if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+              globalThis.__classicBattleDebugExpose("handleNextRoundMachineGetterOverride", machine);
+            }
+          } catch {}
+          return machine;
         } catch {
           return null;
         }
@@ -759,15 +766,23 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           }
         }
       } catch {}
+      let result = null;
       if (typeof getter === "function") {
         try {
-          return getter();
+          result = getter();
         } catch {
-          return null;
+          result = null;
         }
+      } else if (getter && typeof getter === "object") {
+        result = getter;
       }
-      if (getter && typeof getter === "object") return getter;
-      return null;
+      try {
+        exposeDebugState("handleNextRoundMachineGetterResult", result);
+        if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
+          globalThis.__classicBattleDebugExpose("handleNextRoundMachineGetterResult", result);
+        }
+      } catch {}
+      return result;
     };
   })();
   const isCooldownSafeState = (state) => {
