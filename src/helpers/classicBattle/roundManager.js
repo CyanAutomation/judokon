@@ -771,10 +771,11 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
 
   // Dispatch `ready` (fire-and-forget) before resolving the controls so
   // tests awaiting `controls.ready` don't depend on orchestrator internals.
-  // Only dispatch if the machine is still in cooldown state to avoid duplicates.
+  // Only dispatch if the machine is still in cooldown state and we haven't already dispatched for this cooldown.
   const machine = machineReader();
   const currentState = readMachineState();
-  if (currentState === "cooldown") {
+  if (currentState === "cooldown" && !readyDispatchedForCurrentCooldown) {
+    readyDispatchedForCurrentCooldown = true;
     const dispatchReadyDirectly = () => {
       if (machine?.dispatch) {
         try {
