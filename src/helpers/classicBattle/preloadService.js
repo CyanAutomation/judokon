@@ -2,6 +2,21 @@ import { runWhenIdle } from "./idleCallback.js";
 
 const cachedModules = new Map();
 const preloadPromises = new Map();
+const cleanupRegistry = new Set();
+
+const supportsWeakRef = typeof WeakRef === "function";
+const supportsFinalizationRegistry = typeof FinalizationRegistry === "function";
+
+const weakReferenceRegistry = new Set();
+const pendingFinalizationRecords = new Set();
+
+const finalizationRegistry =
+  supportsWeakRef && supportsFinalizationRegistry
+    ? new FinalizationRegistry((record) => {
+        pendingFinalizationRecords.add(record);
+        scheduleCleanupTask(() => cleanupWeakReferenceRecord(record));
+      })
+    : null;
 
 /**
  * Preload service for lazy loading heavy modules during idle time.
@@ -23,9 +38,95 @@ export function registerCleanup(cleanupFn) {
   }
 }
 
-// WeakMap for storing weak references to prevent memory leaks
-// const weakRefs = new WeakMap();
-let cleanupRegistry = new Set();
+/**
+ * Schedule a cleanup task in a microtask-safe way.
+ *
+ * @param {Function} task - Task to schedule
+ * @returns {void}
+ */
+function scheduleCleanupTask(task) {
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(task);
+    return;
+  }
+
+  Promise.resolve()
+    .then(task)
+    .catch(() => {
+      /* no-op */
+    });
+}
+
+/**
+ * Execute cleanup logic for a weak reference record.
+ *
+ * @param {object} record - Internal weak reference record
+ * @returns {void}
+ */
+function cleanupWeakReferenceRecord(record) {
+  if (!record) {
+    return;
+  }
+
+  if (record.cleaned) {
+    pendingFinalizationRecords.delete(record);
+    weakReferenceRegistry.delete(record);
+    return;
+  }
+
+  record.cleaned = true;
+
+  try {
+    record.cleanupFn();
+  } catch (error) {
+    console.warn("Failed to run weak reference cleanup:", error);
+  }
+
+  if (finalizationRegistry && record.token) {
+    finalizationRegistry.unregister(record.token);
+  }
+
+  record.weakRef = null;
+  record.token = null;
+
+  pendingFinalizationRecords.delete(record);
+  weakReferenceRegistry.delete(record);
+}
+
+/**
+ * Register a cleanup callback tied to a weak reference target.
+ *
+ * @pseudocode
+ * 1. Verify the target is an object/function and cleanupFn is a function.
+ * 2. Create an internal record with bookkeeping flags and weak reference if supported.
+ * 3. Register the record with the FinalizationRegistry when available.
+ * 4. Store the record so performMemoryCleanup can execute the cleanup manually.
+ *
+ * @param {object|Function} target - Target associated with the weak reference
+ * @param {Function} cleanupFn - Callback to invoke on cleanup
+ * @returns {void}
+ */
+export function registerWeakReference(target, cleanupFn) {
+  const isObjectTarget =
+    (typeof target === "object" && target !== null) || typeof target === "function";
+
+  if (!isObjectTarget || typeof cleanupFn !== "function") {
+    return;
+  }
+
+  const record = {
+    cleanupFn,
+    cleaned: false,
+    weakRef: supportsWeakRef ? new WeakRef(target) : null,
+    token: finalizationRegistry ? {} : null
+  };
+
+  if (finalizationRegistry) {
+    finalizationRegistry.register(target, record, record.token);
+  }
+
+  weakReferenceRegistry.add(record);
+}
 
 // Performance monitoring
 let performanceMetrics = {
@@ -148,17 +249,16 @@ export function getCachedModule(cacheKey) {
  * Perform memory cleanup by clearing weak references and running cleanup functions.
  *
  * @pseudocode
- * 1. Iterate through all registered cleanup functions.
- * 2. Execute each cleanup function with error handling.
- * 3. Record current memory usage after cleanup.
- * 4. Clear the cleanup registry to prevent duplicate execution.
- * 5. This helps manage memory usage and prevent leaks.
+ * 1. Iterate through all registered cleanup functions and execute them safely.
+ * 2. Run any pending finalization callbacks queued by the FinalizationRegistry.
+ * 3. Execute cleanup for all tracked weak reference records as a fallback.
+ * 4. Record current memory usage after cleanup completes.
+ * 5. Clear registries to prevent duplicate executions and release references.
  *
  * @returns {void}
  */
 export function performMemoryCleanup() {
-  // Note: WeakMap doesn't allow iteration, so we can't clean up old entries
-  // But we can run registered cleanup functions and record memory usage
+  // Process explicit cleanup callbacks first
   for (const cleanupFn of cleanupRegistry) {
     try {
       cleanupFn();
@@ -166,8 +266,19 @@ export function performMemoryCleanup() {
       console.warn("Failed to run cleanup function:", error);
     }
   }
-  recordMemoryUsage();
   cleanupRegistry.clear();
+
+  for (const record of pendingFinalizationRecords) {
+    cleanupWeakReferenceRecord(record);
+  }
+  pendingFinalizationRecords.clear();
+
+  for (const record of weakReferenceRegistry) {
+    cleanupWeakReferenceRecord(record);
+  }
+  weakReferenceRegistry.clear();
+
+  recordMemoryUsage();
 }
 
 /**
