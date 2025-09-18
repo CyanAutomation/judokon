@@ -38,9 +38,7 @@ describe("Stat Buttons", () => {
 
   it("should have aria-describedby and data-buttons-ready attributes", async () => {
     const store = {};
-    // We need to import STATS from the facade to pass to renderStatButtons
-    const { STATS } = await import("../../src/helpers/battleEngineFacade.js");
-    renderStatButtons(store, STATS);
+    renderStatButtons(store);
 
     const statButtonsContainer = document.getElementById("stat-buttons");
 
