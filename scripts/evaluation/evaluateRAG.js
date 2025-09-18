@@ -25,43 +25,65 @@ async function getEmbeddingsBundleInfo() {
   }
 }
 
-export async function evaluate(baseline = null) {
+export async function evaluate(baseline = null, options = {}) {
+  const {
+    queries: providedQueries = null,
+    logger = console,
+    hrtime = hrtimeMs,
+    queryFn = queryRag,
+    getBundleInfo = getEmbeddingsBundleInfo
+  } = options;
+
   const queriesPath = path.join(rootDir, "scripts/evaluation/queries.json");
-  const queries = JSON.parse(await readFile(queriesPath, "utf8"));
+  const queries = providedQueries ?? JSON.parse(await readFile(queriesPath, "utf8"));
+
+  const log = typeof logger?.log === "function" ? logger.log.bind(logger) : console.log;
+  const error = typeof logger?.error === "function" ? logger.error.bind(logger) : console.error;
 
   let mrr5 = 0;
   let recall3 = 0;
   let recall5 = 0;
 
   const latencies = [];
+  const perQuery = [];
   for (const { query, expected_source } of queries) {
     // Use the centralized queryRag function
-    const t0 = hrtimeMs();
-    const results = await queryRag(query);
-    const t1 = hrtimeMs();
-    latencies.push(t1 - t0);
+    const t0 = hrtime();
+    const results = await queryFn(query);
+    const t1 = hrtime();
+    const latency = Math.max(0, t1 - t0);
+    latencies.push(latency);
 
     let rank = 0;
-    for (let i = 0; i < results.length; i++) {
+    const matches = Array.isArray(results) ? results : [];
+    for (let i = 0; i < matches.length; i++) {
       // queryRag returns matches with a 'source' property
-      if (results[i].source.startsWith(expected_source)) {
+      if (matches[i].source?.startsWith(expected_source)) {
         rank = i + 1;
         break;
       }
     }
 
     // --- START: Added logging for detailed analysis ---
-    console.log(`\n--- Query: "${query}" ---`);
-    console.log(`Expected Source: "${expected_source}"`);
-    console.log(`Rank Found: ${rank > 0 ? rank : "Not Found"}`);
-    console.log("Top Results:");
-    results.slice(0, 3).forEach((result, index) => {
-      console.log(`  ${index + 1}. Source: "${result.source}", Score: ${result.score.toFixed(4)}`);
+    log(`\n--- Query: "${query}" ---`);
+    log(`Expected Source: "${expected_source}"`);
+    log(`Rank Found: ${rank > 0 ? rank : "Not Found"}`);
+    log("Top Results:");
+    matches.slice(0, 3).forEach((result, index) => {
+      log(`  ${index + 1}. Source: "${result.source}", Score: ${result.score.toFixed(4)}`);
     });
-    if (results.length === 0) {
-      console.log("  (No results returned)");
+    if (matches.length === 0) {
+      log("  (No results returned)");
     }
     // --- END: Added logging for detailed analysis ---
+
+    perQuery.push({
+      query,
+      expectedSource: expected_source,
+      rank,
+      latencyMs: latency,
+      matches
+    });
 
     if (rank > 0) {
       if (rank <= 5) {
@@ -83,15 +105,15 @@ export async function evaluate(baseline = null) {
   const p95 =
     latencies.slice().sort((a, b) => a - b)[Math.floor(0.95 * (latencies.length - 1))] || 0;
 
-  const bundle = await getEmbeddingsBundleInfo();
+  const bundle = await getBundleInfo();
 
-  console.log(`\n--- Aggregate Metrics ---`);
-  console.log(`MRR@5: ${mrr5Val.toFixed(4)}`);
-  console.log(`Recall@3: ${recall3Val.toFixed(4)}`);
-  console.log(`Recall@5: ${recall5Val.toFixed(4)}`);
-  console.log(`Latency avg (ms): ${avg.toFixed(1)}`);
-  console.log(`Latency p95 (ms): ${p95.toFixed(1)}`);
-  console.log(
+  log(`\n--- Aggregate Metrics ---`);
+  log(`MRR@5: ${mrr5Val.toFixed(4)}`);
+  log(`Recall@3: ${recall3Val.toFixed(4)}`);
+  log(`Recall@5: ${recall5Val.toFixed(4)}`);
+  log(`Latency avg (ms): ${avg.toFixed(1)}`);
+  log(`Latency p95 (ms): ${p95.toFixed(1)}`);
+  log(
     `Embeddings bundle: ${bundle.exists ? bundle.sizeMB.toFixed(2) + " MB" : "not found"} (${bundle.path})`
   );
 
@@ -123,9 +145,32 @@ export async function evaluate(baseline = null) {
     coverageOK;
 
   if (!pass) {
-    console.error("RAG evaluation failed thresholds.");
+    error("RAG evaluation failed thresholds.");
     process.exitCode = 1;
   }
+
+  const summary = {
+    pass,
+    metrics: {
+      mrr5: mrr5Val,
+      recall3: recall3Val,
+      recall5: recall5Val,
+      avgLatencyMs: avg,
+      p95LatencyMs: p95
+    },
+    floors,
+    baseline: baseline ?? null,
+    bundle,
+    queries: perQuery.map(({ query, expectedSource, rank, latencyMs, matches }) => ({
+      query,
+      expectedSource,
+      rank,
+      latencyMs,
+      matches: matches.map(({ source, score }) => ({ source, score }))
+    }))
+  };
+
+  return summary;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

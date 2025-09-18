@@ -1,98 +1,83 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { loadQuote } from "../../src/helpers/quoteBuilder.js";
 import { formatFableStory } from "../../src/helpers/quotes/quoteRenderer.js";
+import * as quoteService from "../../src/helpers/quotes/quoteService.js";
 import { mount, clearBody } from "./domUtils.js";
 
-const originalFetch = global.fetch;
+const SETTINGS_KEY = "settings";
+
+function persistTypewriterPreference() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ typewriterEffect: false }));
+}
+
+function setupQuoteDom() {
+  const dom = mount(`
+    <div id="quote" class="hidden"></div>
+    <div id="quote-loader"></div>
+    <button id="language-toggle" class="hidden"></button>
+    <div id="language-announcement"></div>
+  `);
+  return {
+    ...dom,
+    quote: dom.query("#quote"),
+    loader: dom.query("#quote-loader"),
+    toggle: dom.query("#language-toggle"),
+    announcement: dom.query("#language-announcement")
+  };
+}
+
+function stubRandomQuote(result) {
+  return vi.spyOn(quoteService, "displayRandomQuote").mockResolvedValue(result);
+}
 
 afterEach(() => {
   vi.restoreAllMocks();
-  global.fetch = originalFetch;
   clearBody();
   localStorage.clear();
 });
 
 describe("loadQuote", () => {
-  it("formats fable story with HTML", async () => {
-    const {
-      container,
-      query,
-      cleanup: localCleanup
-    } = mount(
-      `<div id="quote" class="hidden"></div>
-       <div id="quote-loader"></div>
-       <button id="language-toggle" class="hidden"></button>
-       <div id="language-announcement"></div>`
-    );
-    localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
-
-    const storyData = [{ id: 1, story: "Line1\nLine2\n\nLine3" }];
-    const metaData = [{ id: 1, title: "A" }];
-    global.fetch = vi.fn((url) => {
-      if (url.includes("aesopsFables.json")) {
-        return Promise.resolve({ ok: true, json: async () => storyData });
-      }
-      return Promise.resolve({ ok: true, json: async () => metaData });
-    });
-    vi.spyOn(Math, "random").mockReturnValue(0);
+  it("reveals quote content and language controls once a fable is loaded", async () => {
+    const { container, quote, loader, toggle, announcement, cleanup } = setupQuoteDom();
+    persistTypewriterPreference();
+    stubRandomQuote({ id: 1, title: "Aesop", story: "Line1\nLine2" });
 
     await loadQuote({ root: container });
 
-    const contentHtml = query("#quote-content").innerHTML;
-    expect(contentHtml).toBe("<p>Line1<br>Line2</p><br><p>Line3</p><br>");
-    localCleanup();
+    expect(loader.classList.contains("hidden")).toBe(true);
+    expect(quote.classList.contains("hidden")).toBe(false);
+    expect(toggle.classList.contains("hidden")).toBe(false);
+    expect(toggle.getAttribute("aria-live")).toBe("polite");
+    expect(document.activeElement).toBe(toggle);
+    expect(announcement.textContent).toBe("language toggle available");
+    cleanup();
   });
 
-  it("renders fallback message when fetch fails", async () => {
-    const {
-      container,
-      query,
-      cleanup: localCleanup
-    } = mount(`<div id="quote"></div><div id="quote-loader"></div>`);
-    localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
-
+  it("renders fallback message and announces availability when service returns null", async () => {
+    const { container, quote, loader, toggle, announcement, cleanup } = setupQuoteDom();
+    persistTypewriterPreference();
+    stubRandomQuote(null);
+    const readyListener = vi.fn();
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    global.fetch = vi.fn().mockRejectedValue(new Error("fail"));
+    window.addEventListener("quote:ready", readyListener);
 
     await loadQuote({ root: container });
 
-    expect(query("#quote").innerHTML).toBe(
-      "<p>Take a breath. Even a still pond reflects the sky.</p>"
-    );
-    localCleanup();
-    consoleErrorSpy.mockRestore();
-  });
-
-  it("handles empty or invalid quote data gracefully", async () => {
-    const {
-      container,
-      query,
-      cleanup: localCleanup
-    } = mount(`<div id="quote"></div><div id="quote-loader"></div>`);
-    localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
-
-    // Empty array
-    global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [] }));
-    await loadQuote({ root: container });
-    expect(query("#quote").textContent).toContain("Take a breath");
-
-    // Invalid data
-    global.fetch = vi.fn(() => Promise.resolve({ ok: true, json: async () => [{}] }));
-    await loadQuote({ root: container });
-    expect(query("#quote").textContent).toContain("Take a breath");
-    localCleanup();
+    expect(quote.innerHTML).toBe("<p>Take a breath. Even a still pond reflects the sky.</p>");
+    expect(loader.classList.contains("hidden")).toBe(true);
+    expect(toggle.classList.contains("hidden")).toBe(false);
+    expect(announcement.textContent).toBe("language toggle available");
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    expect(readyListener).toHaveBeenCalledTimes(1);
+    window.removeEventListener("quote:ready", readyListener);
+    cleanup();
   });
 
   it("does not throw if DOM elements are missing", async () => {
-    localStorage.setItem("settings", JSON.stringify({ typewriterEffect: false }));
-    global.fetch = vi.fn((url) => {
-      if (url.includes("aesopsFables.json")) {
-        return Promise.resolve({ ok: true, json: async () => [{ id: 1, story: "B" }] });
-      }
-      return Promise.resolve({ ok: true, json: async () => [{ id: 1, title: "A" }] });
-    });
-    await loadQuote({ root: document });
-    // Should not throw even if #quote, #quote-loader, or #language-toggle are missing
+    persistTypewriterPreference();
+    stubRandomQuote({ id: 2, title: "Hidden", story: "Story" });
+
+    await expect(loadQuote({ root: document })).resolves.toBeUndefined();
   });
 });
 
@@ -100,5 +85,20 @@ describe("formatFableStory", () => {
   it("returns empty string for null or undefined", () => {
     expect(formatFableStory(null)).toBe("");
     expect(formatFableStory(undefined)).toBe("");
+  });
+
+  it("converts multi-paragraph markdown-like content into paragraph blocks", () => {
+    const story = `Remember:\n- *Listen* first\n- **Act** wisely\n\nStay calm.\nKeep focus.`;
+
+    expect(formatFableStory(story)).toBe(
+      "<p>Remember:<br>- *Listen* first<br>- **Act** wisely</p><br>" +
+        "<p>Stay calm.<br>Keep focus.</p><br>"
+    );
+  });
+
+  it("normalizes escaped newline characters before formatting", () => {
+    const story = "Line one\\nLine two\\n\\n*Closing*";
+
+    expect(formatFableStory(story)).toBe("<p>Line one<br>Line two</p><br><p>*Closing*</p><br>");
   });
 });
