@@ -227,8 +227,9 @@ Outstanding (remaining work)
   - Verification: Unit tests for roundSelectModal (6 tests passed) and Playwright round-select.spec.js (2 tests passed) confirm no regressions.
 
 - Stat buttons ARIA & readiness marker
-  - Status: not yet implemented.
-  - Next action: update `renderStatButtons` to add `aria-describedby` and set `data-buttons-ready="true"` after DOM insertion and a microtask tick (or requestAnimationFrame) and add a unit test to assert the behavior.
+  - Status: Done — `renderStatButtons` now adds `aria-describedby` to each button and sets `data-buttons-ready="true"` on the container after rendering.
+  - Changes implemented: Modified `src/pages/battleClassic.init.js` to add `aria-describedby="round-message"` to stat buttons and used `requestAnimationFrame` to set `data-buttons-ready="true"`. Created `tests/classicBattle/statButtons.test.js` to verify the new attributes.
+  - Verification: New unit test for stat buttons (1 passed) and relevant Playwright tests (`bootstrap.spec.js`, `smoke.spec.js`) passed, confirming no regressions.
 
 - Scoreboard timer and opponent feedback
   - Status: Done — added data-testid attributes to scoreboard elements and verified timer display and opponent feedback functionality.
