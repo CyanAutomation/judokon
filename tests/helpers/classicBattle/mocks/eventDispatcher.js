@@ -10,7 +10,10 @@ export const eventDispatcherMock = {
 vi.mock("../../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
   const actual = await importOriginal();
   eventDispatcherMock.callThrough = actual.dispatchBattleEvent;
-  eventDispatcherMock.spy.mockImplementation((...args) => eventDispatcherMock.callThrough(...args));
+  eventDispatcherMock.spy.mockImplementation((...args) => {
+    console.log("[dedupe spy] dispatchBattleEvent", args[0]);
+    return eventDispatcherMock.callThrough(...args);
+  });
   return {
     ...actual,
     dispatchBattleEvent: eventDispatcherMock.spy

@@ -14,6 +14,20 @@ import { updateDebugPanel } from "./debugPanel.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent, resetDispatchHistory } from "./eventDispatcher.js";
+
+if (typeof globalThis !== "undefined") {
+  if (typeof globalThis.__startCooldownCount !== "number") {
+    globalThis.__startCooldownCount = 0;
+  }
+}
+if (typeof process !== "undefined" && !globalThis.__loggedStartCooldown) {
+  globalThis.__loggedStartCooldown = true;
+  process.on("exit", () => {
+    if (typeof globalThis.__startCooldownCount === "number") {
+      console.log(`[dedupe] startCooldownCount ${globalThis.__startCooldownCount}`);
+    }
+  });
+}
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { startCoolDown as engineStartCoolDown } from "../battleEngineFacade.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
@@ -228,6 +242,10 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   // Reset the ready dispatch flag for the new cooldown period
   readyDispatchedForCurrentCooldown = false;
   resetDispatchHistory("ready");
+  if (typeof globalThis !== "undefined") {
+    globalThis.__startCooldownCount = (globalThis.__startCooldownCount || 0) + 1;
+  }
+  console.log("[dedupe] startCooldown reset ready");
   // Always use the injected scheduler if provided, else fall back to realScheduler
   const activeScheduler =
     scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
@@ -849,6 +867,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
 }
 
 function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides = {}) {
+  console.log("[dedupe] wireCooldownTimer", cooldownSeconds);
   const bus = createEventBus(overrides.eventBus);
   const timerFactory = overrides.createRoundTimer || createRoundTimer;
   const startCooldown = overrides.startEngineCooldown || engineStartCoolDown;
@@ -903,6 +922,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     };
   }
   const onExpired = () => {
+    console.log("[dedupe] onExpired fired");
     if (expired) return;
     expired = true;
     // PRD taxonomy: cooldown timer expired + countdown completed

@@ -42,8 +42,12 @@ function registerDispatch(eventName, machine) {
   const now = getTimestamp();
   const last = recentDispatches.get(key);
   if (typeof last === "number" && now - last < DEDUPE_WINDOW_MS) {
+    process.stdout.write(`[dedupe] skip ${eventName} ${now - last} ${key}
+`);
     return { shouldSkip: true, key, timestamp: last };
   }
+  process.stdout.write(`[dedupe] track ${eventName} ${now} ${key}
+`);
   recentDispatches.set(key, now);
   if (typeof setTimeout === "function") {
     setTimeout(() => {
@@ -56,6 +60,8 @@ function registerDispatch(eventName, machine) {
 }
 
 export function resetDispatchHistory(eventName) {
+  process.stdout.write(`[dedupe] reset ${eventName}
+`);
   if (!eventName) {
     recentDispatches.clear();
     return;
@@ -122,6 +128,8 @@ export async function dispatchBattleEvent(eventName, payload) {
 
   const { shouldSkip, key: dispatchKey, timestamp } = registerDispatch(eventName, machine);
   if (shouldSkip) {
+    process.stdout.write(`[dedupe] short-circuit ${eventName} ${dispatchKey}
+`);
     return true;
   }
 
