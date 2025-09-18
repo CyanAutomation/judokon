@@ -1,9 +1,40 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
+const SCOREBOARD_MODULE_PATH = "../../src/components/Scoreboard.js";
+const DOM_MODULE_PATH = "../../src/pages/battleCLI/dom.js";
+
+function createDeferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+async function tick() {
+  await Promise.resolve();
+  await vi.advanceTimersByTimeAsync(0);
+}
+
 describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   let mockSharedScoreboard;
 
+  async function importDomWithScoreboard(scoreboardModule) {
+    const deferred = createDeferred();
+    vi.doMock(SCOREBOARD_MODULE_PATH, () => deferred.promise);
+    const modulePromise = import(DOM_MODULE_PATH);
+    const exports = scoreboardModule ?? mockSharedScoreboard;
+    deferred.resolve({ __esModule: true, ...exports });
+    await tick();
+    const module = await modulePromise;
+    await tick();
+    return module;
+  }
+
   beforeEach(() => {
+    vi.useFakeTimers();
     // Mock the shared Scoreboard component functions
     mockSharedScoreboard = {
       showMessage: vi.fn(),
@@ -32,32 +63,32 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
       </main>
     `;
 
-    // Mock the dynamic import for shared Scoreboard helpers
-    vi.doMock("../../src/components/Scoreboard.js", () => mockSharedScoreboard);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     document.body.innerHTML = "";
+    vi.useRealTimers();
     vi.clearAllMocks();
+    vi.doUnmock(SCOREBOARD_MODULE_PATH);
+    vi.resetModules();
+    const scoreboardModule = await import(SCOREBOARD_MODULE_PATH);
+    expect(vi.isMockFunction(scoreboardModule.showMessage)).toBe(false);
+    expect(vi.isMockFunction(scoreboardModule.updateScore)).toBe(false);
+    expect(vi.isMockFunction(scoreboardModule.updateRoundCounter)).toBe(false);
     vi.resetModules();
   });
 
   it("should update both CLI and standard elements when setting round message", async () => {
-    // Import the module after mocking
-    const { setRoundMessage } = await import("../../src/pages/battleCLI/dom.js");
+    const { setRoundMessage } = await importDomWithScoreboard();
 
     const testMessage = "Player wins this round!";
     setRoundMessage(testMessage);
 
+    expect(mockSharedScoreboard.showMessage).toHaveBeenCalledWith(testMessage, { outcome: false });
+
     // Verify CLI element updated
     const cliMessage = document.getElementById("round-message");
     expect(cliMessage.textContent).toBe(testMessage);
-
-    // Allow time for async import
-    await new Promise((resolve) => setTimeout(resolve, 10));
-
-    // Note: Due to async nature of dynamic import, we can't easily test the shared component call
-    // This test verifies the CLI element works and the structure is in place
   });
 
   it("should update both CLI and standard elements when updating score", async () => {
@@ -66,9 +97,11 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
       getScores: () => ({ playerScore: 2, opponentScore: 1 })
     }));
 
-    const { updateScoreLine } = await import("../../src/pages/battleCLI/dom.js");
+    const { updateScoreLine } = await importDomWithScoreboard();
 
     updateScoreLine();
+
+    expect(mockSharedScoreboard.updateScore).toHaveBeenCalledWith(2, 1);
 
     // Verify CLI element updated
     const cliScore = document.getElementById("cli-score");
@@ -78,9 +111,11 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   });
 
   it("should update both CLI and standard elements when updating round header", async () => {
-    const { updateRoundHeader } = await import("../../src/pages/battleCLI/dom.js");
+    const { updateRoundHeader } = await importDomWithScoreboard();
 
     updateRoundHeader(3, 5);
+
+    expect(mockSharedScoreboard.updateRoundCounter).toHaveBeenCalledWith(3);
 
     // Verify CLI element updated
     const cliRound = document.getElementById("cli-round");
@@ -107,12 +142,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   });
 
   it("should gracefully handle missing shared scoreboard helpers", async () => {
-    // Test graceful fallback when shared component methods are not available
-    vi.doMock("../../src/components/Scoreboard.js", () => ({
-      // Return empty object - no showMessage, updateScore, updateRoundCounter methods
-    }));
-
-    const { setRoundMessage } = await import("../../src/pages/battleCLI/dom.js");
+    const { setRoundMessage } = await importDomWithScoreboard({});
 
     // Should not throw error even if shared component methods are missing
     expect(() => setRoundMessage("Test message")).not.toThrow();
@@ -120,5 +150,6 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     // CLI element should still be updated
     const cliMessage = document.getElementById("round-message");
     expect(cliMessage.textContent).toBe("Test message");
+    expect(mockSharedScoreboard.showMessage).not.toHaveBeenCalled();
   });
 });
