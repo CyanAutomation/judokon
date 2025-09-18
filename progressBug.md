@@ -159,3 +159,30 @@ The test output indicates that `dispatchBattleEvent`'s mock did not record a "re
 4. Run only the affected test again after adding instrumentation. If it shows the function is not the mocked version, adjust the mock registration (or use `vi.doMock` with the exact module id used by the code path).
 
 If you want, I can implement steps 1–3 (add debug logs and re-run the single test) and iterate until the test passes. I recommend starting by printing the function identity and a small marker from inside `handleNextRoundExpiration` right before calling `dispatchViaOptions`.
+
+## Instrumentation attempt (what I did next)
+
+I added lightweight instrumentation inside `handleNextRoundExpiration` to help diagnose why the mocked `dispatchBattleEvent` wasn't being observed:
+
+- Added `exposeDebugState` and `console.error` diagnostics before/after calling `dispatchViaOptions` and `dispatchReadyDirectly`.
+- Re-ran the single failing test after adding the instrumentation.
+
+### Instrumentation run result
+
+- The test was re-run (`npm test -- tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js`).
+- The result: the same failing assertion (no "ready" dispatch observed). The instrumentation did not produce visible logs in the test output (no `[TEST-INSTRUMENT]` lines were observed).
+
+### Interpretation
+
+- The instrumentation did not appear in the test stdout. Possible reasons:
+  - The instrumented code path was not executed (i.e. `handleNextRoundExpiration` may not have been invoked in this run).
+  - The test harness suppresses / redirects certain console output such that our new console.error calls didn't appear.
+  - The `exposeDebugState` values are recorded in the debug bag but are not printed by the harness; they can be inspected if we read the bag later or expose them via the test harness.
+
+### Immediate next actions I can take now
+
+1. Add a fast-path test-only side-effect that writes a visible marker into a global debug bag (e.g., `globalThis.__CLASSIC_BATTLE_DEBUG.__instrumentMarkers`) and then re-run the single test to see if the bag is populated. This avoids relying on console output.
+2. Confirm the exact module specifier used by the test's `vi.mock` for `eventDispatcher.js` and ensure `roundManager.js` resolves to the same module path (there can be multiple equivalent import specifiers that result in separate module instances under ESM mocking rules).
+3. As a minimal workaround (to make the test pass while we diagnose), add a defensive call to `options.dispatchBattleEvent("ready")` earlier in the path (ensuring it is awaited) so the mocked function is invoked and the test records the call. This is a temporary measure and I would revert it once we resolve the root cause.
+
+Tell me which of the three immediate next actions you'd like me to perform (I recommend #2 to verify module specifier/mocking mismatch first). I can proceed and update this file after each run.
