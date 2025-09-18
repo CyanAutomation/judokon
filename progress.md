@@ -30,7 +30,7 @@
 - `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js` → still fails with the 10 s / 5 s timeouts, but now does so *after* confirming that `currentNextRound` is populated and `window.__NEXT_ROUND_EXPIRED` flips to `true`. The hang therefore occurs after cooldown expiry, during the transition from `cooldown` to `waitingForPlayerAction`.
 - `npx vitest run tests/helpers/classicBattle/eventDispatcher.dedupe.test.js` → PASS.
 
-_Pausing here for your review before proceeding further._
+*Pausing here for your review before proceeding further.*
 
 ## Phase 1 – Dispatch Dedupe Hardening
 
@@ -62,7 +62,7 @@ _Pausing here for your review before proceeding further._
 - `scheduleNextRound.test.js`: Still times out, but the new assertions now confirm that `(a)` the cooldown controls and timer are present, and `(b)` `window.__NEXT_ROUND_EXPIRED` flips to `true` before the hang. This tightens the failure surface from “timer never fires” to “timer fires yet the state machine never leaves `cooldown`.”
 - Console noise from the test file is gone, reducing the amount of `[TEST DEBUG]` output during focused runs.
 
-_Pausing here for your review before proceeding to the next step._
+*Pausing here for your review before proceeding to the next step.*
 
 ## Current Iteration – Timer Debugging and Fallback Adjustments
 

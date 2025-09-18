@@ -1,5 +1,5 @@
 import { stopTimer } from "../battleEngineFacade.js";
-import { exposeDebugState } from "../debugHooks.js";
+import { exposeDebugState } from "../classicBattle/debugHooks.js";
 
 /**
  * Create a round timer that emits tick, drift, and expiration events.

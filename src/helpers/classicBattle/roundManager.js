@@ -661,10 +661,16 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       globalThis.__classicBattleDebugExpose("nextRoundExpired", true);
     }
   } catch {}
+  try {
+    exposeDebugState("handleNextRoundExpirationCalled", true);
+  } catch {}
   if (controls?.readyDispatched || controls?.readyInFlight) {
     return;
   }
   if (controls) controls.readyInFlight = true;
+  try {
+    exposeDebugState("currentNextRoundReadyInFlight", !!controls?.readyInFlight);
+  } catch {}
   // Patch: In Vitest, also update [data-role="next-round"] for test DOM
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
@@ -682,11 +688,6 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead) {
         const getMachine = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
         machineRef = typeof getMachine === "function" ? getMachine() : null;
-      }
-    } catch {}
-    try {
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        globalThis.__classicBattleDebugExpose("handleNextRoundExpirationCalled", true);
       }
     } catch {}
   }
@@ -760,6 +761,19 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     } catch {}
     return false;
   };
+  try {
+    exposeDebugState("handleNextRoundMachineState", readMachineState() ?? null);
+  } catch {}
+  try {
+    const snapshotState = (() => {
+      try {
+        return getSnapshot()?.state ?? null;
+      } catch {
+        return null;
+      }
+    })();
+    exposeDebugState("handleNextRoundSnapshotState", snapshotState);
+  } catch {}
   await new Promise((resolve) => {
     if (shouldResolve()) {
       resolve();
@@ -796,6 +810,9 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       resolve();
     }
   });
+  try {
+    exposeDebugState("handleNextRoundMachineStateAfterWait", readMachineState() ?? null);
+  } catch {}
 
   // If the orchestrator is running, it owns the "Next" button readiness.
   // This path should only execute in non-orchestrated environments (e.g., unit tests).
