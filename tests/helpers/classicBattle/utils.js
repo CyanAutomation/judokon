@@ -24,8 +24,8 @@ import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBa
  */
 export function setupClassicBattleDom() {
   disposeClassicBattleOrchestrator();
+  vi.resetModules();
   const timerSpy = vi.useFakeTimers();
-  // vi.resetModules(); // Commented out to prevent fake timer interference
   globalThis.requestAnimationFrame = vi.fn((cb) => cb());
   globalThis.cancelAnimationFrame = vi.fn();
   // Let Vitest's fake timers handle setTimeout/clearTimeout automatically
