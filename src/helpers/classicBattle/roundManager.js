@@ -688,7 +688,8 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           return null;
         }
       }
-      return getter || null;
+      if (getter && typeof getter === "object") return getter;
+      return null;
     };
   })();
   const isCooldownSafeState = (state) => {
@@ -705,12 +706,13 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     }
   };
   const shouldResolve = () => {
+    const machineState = readMachineState();
+    if (isCooldownSafeState(machineState)) return true;
     try {
       const snapshotState = getSnapshot()?.state;
       if (isCooldownSafeState(snapshotState)) return true;
     } catch {}
-    const machineState = readMachineState();
-    return isCooldownSafeState(machineState);
+    return false;
   };
   await new Promise((resolve) => {
     if (shouldResolve()) {

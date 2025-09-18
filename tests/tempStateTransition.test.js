@@ -16,7 +16,7 @@ describe("State Transition Debug", () => {
     {
       name: "cooldown",
       triggers: []
-    },
+    }
   ];
 
   beforeEach(async () => {

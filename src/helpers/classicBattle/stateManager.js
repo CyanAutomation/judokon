@@ -84,7 +84,12 @@ export async function createStateManager(
           return false;
         }
         const from = current;
-        console.error("[TEST DEBUG] stateManager: Before current update, target:", target, "current:", current);
+        console.error(
+          "[TEST DEBUG] stateManager: Before current update, target:",
+          target,
+          "current:",
+          current
+        );
         current = target;
         console.error("[TEST DEBUG] stateManager: After current update, current:", current);
         // [TEST DEBUG] log state transition attempt
