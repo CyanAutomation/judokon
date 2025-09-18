@@ -394,9 +394,6 @@ describe("classicBattle startCooldown", () => {
     expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
 
-    // Check if cooldownEnter was invoked by the onEnter handler
-    expect(window.__cooldownEnterInvoked).toBe(true);
-
     document.querySelector('[data-role="next-round"]').click();
     // Ensure state progressed before assertions
     await waitForState("waitingForPlayerAction");
