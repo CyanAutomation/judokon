@@ -1027,16 +1027,58 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         exposeDebugState("handleNextRound_dispatchViaOptions_info", info);
       } catch {}
       try {
+        // record info into shared debug bag for test inspection
+        if (typeof globalThis !== "undefined") {
+          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+          bag.handleNextRound_dispatchViaOptions_info = info;
+          bag.handleNextRound_dispatchViaOptions_count = (bag.handleNextRound_dispatchViaOptions_count || 0) + 1;
+        }
+      } catch {}
+      try {
+        // emit a short stdout marker so the test runner shows where we are
+        if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
+          process.stdout.write(`[BAG-MARKER] before dispatchViaOptions hasFn=${info.hasFn} name=${String(info.name)}\n`);
+        }
+      } catch {}
+      try {
         console.error("[TEST-INSTRUMENT] dispatchViaOptions info:", info);
       } catch {}
     } catch {}
-    dispatched = await dispatchViaOptions();
     try {
+      dispatched = await dispatchViaOptions();
       try {
         exposeDebugState("handleNextRound_dispatchViaOptions_result", dispatched);
       } catch {}
-      console.error("[TEST-INSTRUMENT] dispatchViaOptions returned:", dispatched);
-    } catch {}
+      try {
+        if (typeof globalThis !== "undefined") {
+          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+          bag.handleNextRound_dispatchViaOptions_result = { dispatched };
+        }
+      } catch {}
+      try {
+        if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
+          process.stdout.write(`[BAG-MARKER] after dispatchViaOptions dispatched=${String(dispatched)}\n`);
+        }
+      } catch {}
+      try {
+        console.error("[TEST-INSTRUMENT] dispatchViaOptions returned:", dispatched);
+      } catch {}
+    } catch (err) {
+      try {
+        if (typeof globalThis !== "undefined") {
+          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+          bag.handleNextRound_dispatchViaOptions_error = { message: err && err.message ? err.message : String(err) };
+        }
+      } catch {}
+      try {
+        if (typeof process !== "undefined" && process && typeof process.stdout?.write === "function") {
+          process.stdout.write(`[BAG-MARKER] dispatchViaOptions threw=${String(err && err.message ? err.message : err)}\n`);
+        }
+      } catch {}
+      try {
+        console.log("[TEST-INSTRUMENT] dispatchViaOptions threw:", err && err.message ? err.message : err);
+      } catch {}
+    }
   } catch (err) {
     try {
       console.log(
