@@ -374,6 +374,7 @@ describe("classicBattle startCooldown", () => {
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
     const machine = orchestrator.getBattleStateMachine();
+    const machineDispatchSpy = vi.spyOn(machine, "dispatch");
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
     // Ensure machine is in roundOver state for the test
@@ -390,6 +391,9 @@ describe("classicBattle startCooldown", () => {
     // Ensure state progressed before assertions
     await waitForState("waitingForPlayerAction");
     await vi.runAllTimersAsync();
+
+    const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
+    expect(readyDispatchCalls).toHaveLength(1);
 
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
