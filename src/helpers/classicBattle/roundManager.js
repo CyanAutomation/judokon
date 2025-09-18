@@ -762,7 +762,14 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     return false;
   };
   try {
-    exposeDebugState("handleNextRoundMachineState", readMachineState() ?? null);
+    const machineState = (() => {
+      try {
+        return readMachineState();
+      } catch {
+        return null;
+      }
+    })();
+    exposeDebugState("handleNextRoundMachineState", machineState ?? null);
   } catch {}
   try {
     const snapshotState = (() => {
@@ -811,7 +818,14 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     }
   });
   try {
-    exposeDebugState("handleNextRoundMachineStateAfterWait", readMachineState() ?? null);
+    const machineStateAfter = (() => {
+      try {
+        return readMachineState();
+      } catch {
+        return null;
+      }
+    })();
+    exposeDebugState("handleNextRoundMachineStateAfterWait", machineStateAfter ?? null);
   } catch {}
 
   // If the orchestrator is running, it owns the "Next" button readiness.
