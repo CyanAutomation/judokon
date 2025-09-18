@@ -5,7 +5,7 @@ import * as battleEngine from "../battleEngineFacade.js";
 import { bridgeEngineEvents } from "./engineBridge.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState, setSkipHandler } from "./skipHandler.js";
-import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { emitBattleEvent } from "./battleEvents.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { updateDebugPanel } from "./debugPanel.js";
