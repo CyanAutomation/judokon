@@ -113,10 +113,7 @@ describe("loadNavigationItems", () => {
       validateWithSchema,
       importJsonModule
     }));
-    const getItem = vi
-      .fn()
-      .mockReturnValueOnce(null)
-      .mockReturnValue(fetchedGameModes);
+    const getItem = vi.fn().mockReturnValueOnce(null).mockReturnValue(fetchedGameModes);
     const setItem = vi.fn();
     const removeItem = vi.fn();
     vi.doMock("../../src/helpers/storage.js", () => ({
@@ -130,7 +127,10 @@ describe("loadNavigationItems", () => {
     try {
       const mod = await import("../../src/helpers/gameModeUtils.js");
       const firstResult = await mod.loadNavigationItems();
-      expect(consoleError).toHaveBeenCalledWith("Failed to load navigationItems from cache:", cacheError);
+      expect(consoleError).toHaveBeenCalledWith(
+        "Failed to load navigationItems from cache:",
+        cacheError
+      );
       expect(firstResult.map((item) => item.id)).toEqual(navFallback.map((item) => item.id));
       const fallbackNames = navFallback.map((item) => {
         const mode = fetchedGameModes.find((gm) => gm.id === item.gameModeId);

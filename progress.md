@@ -43,8 +43,8 @@ _Pausing here for your review before proceeding further._
 
 ## Phase 3 – Debug System Refactor and Execution Tracing
 
-- Refactored debug system to use global window.__classicBattleDebugMap Map for cross-module sharing in Vitest environment.
-- Added global flags (window.__startCooldownInvoked, window.__debugExposed) and debug exposures in roundManager.js and eventDispatcher.js for execution verification.
+- Refactored debug system to use global window.\_\_classicBattleDebugMap Map for cross-module sharing in Vitest environment.
+- Added global flags (window.**startCooldownInvoked, window.**debugExposed) and debug exposures in roundManager.js and eventDispatcher.js for execution verification.
 - Fixed missing imports: added createRoundTimer to roundManager.js, exported requireEngine from battleEngineFacade.js, updated engineStartCoolDown to use requireEngine().startCoolDown.
 - Modified cooldownEnter to pass isOrchestrated override as function.
 - Updated test to call cooldownEnter instead of startCooldown directly.
@@ -116,4 +116,3 @@ _Pausing here for your review before proceeding to the next step._
 - Test updated to import `startCooldown` statically.
 - Test run shows `window.__startCooldownInvoked` is `undefined`, indicating `startCooldown` is not executed despite the test calling it.
 - This suggests an issue with the test setup, import, or execution environment preventing the function call.
-
