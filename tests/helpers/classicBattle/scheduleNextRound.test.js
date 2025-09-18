@@ -148,7 +148,7 @@ describe("classicBattle startCooldown", () => {
     await machine.dispatch("roundOver");
     expect(machine.getState()).toBe("roundOver");
 
-    await orchestrator.dispatchBattleEvent("continue");
+    await machine.dispatch("continue");
     expect(machine.getState()).toBe("cooldown");
 
     // Clear spy after manual continue call to only capture automatic ready call
@@ -232,8 +232,11 @@ describe("classicBattle startCooldown", () => {
     await machine.dispatch("roundOver");
     expect(machine.getState()).toBe("roundOver");
 
-    await orchestrator.dispatchBattleEvent("continue");
+    await machine.dispatch("continue");
     expect(machine.getState()).toBe("cooldown");
+
+    timerSpy.advanceTimersByTime(1000);
+    await vi.runAllTimersAsync();
 
     document.querySelector('[data-role="next-round"]').click();
     // Ensure state progressed before assertions
@@ -304,7 +307,7 @@ describe("classicBattle startCooldown", () => {
     await machine.dispatch("roundOver");
     expect(machine.getState()).toBe("roundOver");
 
-    await orchestrator.dispatchBattleEvent("continue");
+    await machine.dispatch("continue");
     expect(machine.getState()).toBe("cooldown");
 
     expect(nextButton.dataset.nextReady).toBeUndefined();

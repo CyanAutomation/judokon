@@ -18,6 +18,6 @@ export async function cooldownEnter(machine, payload) {
   }
   // Patch: always pass scheduler from context if present
   const { store, scheduler } = machine.context || {};
-  startCooldown(store, scheduler);
+  await startCooldown(store, scheduler);
 }
 export default cooldownEnter;

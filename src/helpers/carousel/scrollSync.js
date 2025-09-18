@@ -1,5 +1,4 @@
 import { getPageMetrics } from "./metrics.js";
-import { rafDebounce } from "../../utils/rafUtils.js";
 
 /**
  * @typedef {import('./controller.js').CarouselController} CarouselController
@@ -34,10 +33,10 @@ export function wireScrollSync(ctrl) {
     ctrl.update();
   };
 
-  const onScroll = rafDebounce(() => {
+  const onScroll = () => {
     if (ctrl._suppressScrollSync) return;
     syncPageFromScroll();
-  });
+  };
   ctrl.container.addEventListener("scroll", onScroll);
   ctrl._listeners.push({ target: ctrl.container, event: "scroll", handler: onScroll });
 }
