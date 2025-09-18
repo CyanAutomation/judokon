@@ -156,8 +156,7 @@ beforeEach(async () => {
     generateRandomCardMock,
     getRandomJudokaMock,
     renderMock,
-    currentFlags,
-    fakeScheduler
+    currentFlags
   } = setupClassicBattleDom());
   applyMockSetup({
     fetchJsonMock,
@@ -363,8 +362,7 @@ describe("classicBattle startCooldown", () => {
     await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
-      stateTable: globalThis.__CLASSIC_BATTLE_STATES__,
-      scheduler: fakeScheduler
+      stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
