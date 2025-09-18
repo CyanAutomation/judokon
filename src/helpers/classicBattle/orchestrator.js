@@ -31,6 +31,17 @@ let machineInitPromise = null;
 let debugLogListener = null;
 let visibilityHandler = null;
 
+/**
+ * Check if an object appears to be a battle store.
+ *
+ * @param {any} candidate - Object to check.
+ * @returns {boolean} True if the object has battle store properties.
+ * @summary Determine if an object is a battle store by checking for key properties.
+ * @pseudocode
+ * 1. Check if candidate is an object.
+ * 2. Verify it has battle store properties like selectionMade, stallTimeoutMs, or playerChoice.
+ * 3. Return true if it appears to be a battle store, false otherwise.
+ */
 function isBattleStore(candidate) {
   if (!candidate || typeof candidate !== "object") return false;
   return (
@@ -40,6 +51,17 @@ function isBattleStore(candidate) {
   );
 }
 
+/**
+ * Normalize context overrides to ensure consistent structure.
+ *
+ * @param {any} contextOverrides - Raw context overrides.
+ * @returns {object} Normalized context overrides.
+ * @summary Convert various override formats into a consistent object structure.
+ * @pseudocode
+ * 1. Check if contextOverrides is a valid object.
+ * 2. If it's a battle store object, wrap it in a store property.
+ * 3. Return the normalized overrides object.
+ */
 function normalizeContextOverrides(contextOverrides) {
   if (!contextOverrides || typeof contextOverrides !== "object") {
     return {};
@@ -50,6 +72,17 @@ function normalizeContextOverrides(contextOverrides) {
   return { ...contextOverrides };
 }
 
+/**
+ * Normalize dependencies to ensure consistent structure.
+ *
+ * @param {any} dependencies - Raw dependencies.
+ * @returns {object} Normalized dependencies.
+ * @summary Convert various dependency formats into a consistent object structure.
+ * @pseudocode
+ * 1. Check if dependencies is provided.
+ * 2. If it's a function, treat it as a startRoundWrapper.
+ * 3. Return the normalized dependencies object.
+ */
 function normalizeDependencies(dependencies) {
   if (!dependencies) return {};
   if (typeof dependencies === "function") {
@@ -58,6 +91,17 @@ function normalizeDependencies(dependencies) {
   return { ...dependencies };
 }
 
+/**
+ * Normalize hooks to ensure consistent structure.
+ *
+ * @param {any} hooks - Raw hooks.
+ * @returns {object} Normalized hooks.
+ * @summary Convert various hook formats into a consistent object structure.
+ * @pseudocode
+ * 1. Check if hooks is provided.
+ * 2. If it's a function, treat it as an onStateChange hook.
+ * 3. Return the normalized hooks object.
+ */
 function normalizeHooks(hooks) {
   if (!hooks) return {};
   if (typeof hooks === "function") {
@@ -66,6 +110,19 @@ function normalizeHooks(hooks) {
   return hooks;
 }
 
+/**
+ * Apply reset game functionality to the context.
+ *
+ * @param {object} context - Machine context object.
+ * @param {object} store - Battle store.
+ * @param {object} deps - Dependencies.
+ * @summary Set up the doResetGame function in the context.
+ * @pseudocode
+ * 1. Check if doResetGame is already in context.
+ * 2. Try to use deps.resetGame if available.
+ * 3. Fall back to resetGameLocal with the store.
+ * 4. Use deps.resetGame as last resort.
+ */
 function applyResetGame(context, store, deps) {
   if ("doResetGame" in context) return;
   if (typeof deps.resetGame === "function" && store) {
@@ -81,12 +138,36 @@ function applyResetGame(context, store, deps) {
   }
 }
 
+/**
+ * Select the appropriate start round dependency function.
+ *
+ * @param {object} deps - Dependencies object.
+ * @returns {Function|null} The selected start round function or null.
+ * @summary Choose the correct start round function from dependencies.
+ * @pseudocode
+ * 1. Check for doStartRound in dependencies first.
+ * 2. Fall back to startRound if available.
+ * 3. Return null if no suitable function found.
+ */
 function selectStartRoundDependency(deps) {
   if (typeof deps.doStartRound === "function") return deps.doStartRound;
   if (typeof deps.startRound === "function") return deps.startRound;
   return null;
 }
 
+/**
+ * Apply start round functionality to the context.
+ *
+ * @param {object} context - Machine context object.
+ * @param {object} store - Battle store.
+ * @param {object} deps - Dependencies.
+ * @summary Set up the doStartRound function in the context.
+ * @pseudocode
+ * 1. Check if doStartRound is already in context.
+ * 2. Select the appropriate start round dependency.
+ * 3. Create a wrapper function that calls the dependency with the correct store.
+ * 4. Fall back to startRoundLocal if no dependency found.
+ */
 function applyStartRound(context, store, deps) {
   if ("doStartRound" in context) return;
   const startRoundDep = selectStartRoundDependency(deps);
@@ -99,6 +180,20 @@ function applyStartRound(context, store, deps) {
   }
 }
 
+/**
+ * Resolve the complete machine context from overrides and dependencies.
+ *
+ * @param {object} overrides - Context overrides.
+ * @param {object} deps - Dependencies.
+ * @returns {object} Object containing the resolved context.
+ * @summary Build the complete machine context by merging overrides and dependencies.
+ * @pseudocode
+ * 1. Extract store, scheduler, and other key components from overrides and deps.
+ * 2. Build the context object with all necessary properties.
+ * 3. Apply reset game and start round functionality.
+ * 4. Update the store's context if available.
+ * 5. Return the resolved context.
+ */
 function resolveMachineContext(overrides, deps) {
   const store = overrides.store ?? deps.store ?? null;
   const scheduler = overrides.scheduler ?? deps.scheduler ?? null;
@@ -128,6 +223,19 @@ function resolveMachineContext(overrides, deps) {
   return { context };
 }
 
+/**
+ * Create a transition hook that handles state changes.
+ *
+ * @param {object} hookSet - Set of hooks to execute.
+ * @returns {Function} The transition hook function.
+ * @summary Create a function that executes on every state transition.
+ * @pseudocode
+ * 1. Return an async function that receives transition details.
+ * 2. Emit battle state change event with transition details.
+ * 3. Execute the onStateChange hook if provided.
+ * 4. Emit diagnostic, readiness, and state change events.
+ * 5. Mirror timer state and emit resolution events.
+ */
 function createTransitionHook(hookSet) {
   return async ({ from, to, event }) => {
     const detail = { from, to, event };

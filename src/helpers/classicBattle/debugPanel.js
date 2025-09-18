@@ -276,6 +276,20 @@ export function collectDebugState() {
   };
 }
 
+/**
+ * Add diagnostic information about the state machine to the debug state.
+ *
+ * @param {object} state - The debug state object to augment.
+ * @summary Add machine readiness and trigger information to debug state.
+ * @pseudocode
+ * 1. Retrieve the machine getter function from debug state.
+ * 2. Call the getter to obtain the machine instance.
+ * 3. Check if machine has required methods and get current state.
+ * 4. Look up state definition and extract trigger information.
+ * 5. Add machine readiness flag and trigger array to state object.
+ *
+ * @returns {void}
+ */
 function addMachineDiagnostics(state) {
   safeCall(() => {
     const getMachine = readDebugState("getClassicBattleMachine");
