@@ -240,12 +240,13 @@ describe("timerService next round handling", () => {
     try {
       const controls = roundMod.startCooldown({}, scheduler, {
         getStateSnapshot,
-        setupFallbackTimer
+        setupFallbackTimer,
+        dispatchBattleEvent
       });
       await expect(controls.ready).resolves.toBeUndefined();
       expect(setupFallbackTimer).toHaveBeenCalled();
-      expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
-      expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+      expect(machine.dispatch).toHaveBeenCalledWith("ready");
+      expect(machine.dispatch).toHaveBeenCalledTimes(1);
       expect(getStateSnapshot).toHaveBeenCalled();
     } finally {
       debugHooks.exposeDebugState("getClassicBattleMachine", undefined);

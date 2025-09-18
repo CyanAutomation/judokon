@@ -54,6 +54,7 @@ export function createBattleStore() {
   return {
     selectionMade: false,
     stallTimeoutMs: 35000,
+    autoSelectId: null,
     playerChoice: null,
     playerCardEl: null,
     opponentCardEl: null,
