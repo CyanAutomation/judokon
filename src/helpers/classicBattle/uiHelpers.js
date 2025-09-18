@@ -621,6 +621,16 @@ export function resetQuitButton() {
  * @returns {void}
  */
 
+/**
+ * Clear scoreboard messages/timers and synchronize the scoreboard display.
+ *
+ * @pseudocode
+ * 1. Call `scoreboard.clearMessage()` and `scoreboard.clearTimer()` to remove transient state.
+ * 2. Clear `#round-result` text if present.
+ * 3. Call `syncScoreDisplay()` to ensure the scoreboard shows initial text when empty.
+ *
+ * @returns {void}
+ */
 export function clearScoreboardAndMessages() {
   try {
     scoreboard.clearMessage();
@@ -637,17 +647,6 @@ export function clearScoreboardAndMessages() {
     syncScoreDisplay();
   } catch {}
 }
-
-/**
- * Clear scoreboard messages/timers and synchronize the scoreboard display.
- *
- * @pseudocode
- * 1. Call `scoreboard.clearMessage()` and `scoreboard.clearTimer()` to remove transient state.
- * 2. Clear `#round-result` text if present.
- * 3. Call `syncScoreDisplay()` to ensure the scoreboard shows initial text when empty.
- *
- * @returns {void}
- */
 
 /**
  * Initializes the stat selection buttons, wiring up click handlers and hotkeys.
@@ -811,25 +810,6 @@ export function updateBattleStateBadge(state) {
  * 1. If `enable` is false and a badge exists, remove it and return.
  * 2. If enabling and no badge exists, create the badge element and append it to header/right area.
  * 3. Populate the badge text using the current state snapshot.
- *
- * @param {boolean} enable - True to show the badge, false to remove it.
- * @returns {void}
- */
-
-/**
- * Toggle visibility of the battle state badge based on feature flag.
- *
- * @pseudocode
- * 1. If disabled, remove existing badge and exit.
- * 2. Ensure badge element exists under scoreboard or header.
- * 3. Update text content with current state when available.
- */
-/**
- * Toggle insertion and visibility of the battle state badge based on a flag.
- *
- * @pseudocode
- * 1. If enabling, create the badge element and append to header/right area.
- * 2. If disabling, remove the badge.
  *
  * @param {boolean} enable - True to show the badge, false to remove it.
  * @returns {void}
