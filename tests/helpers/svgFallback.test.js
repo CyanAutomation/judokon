@@ -1,11 +1,26 @@
-import { describe, it, expect } from "vitest";
-import { applySvgFallback, DEFAULT_FALLBACK } from "../../src/helpers/svgFallback.js";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import {
+  applySvgFallback,
+  DEFAULT_FALLBACK,
+  __getSvgFallbackStateForTests,
+  __resetSvgFallbackStateForTests
+} from "../../src/helpers/svgFallback.js";
+
+const appendImage = (src) => {
+  const img = document.createElement("img");
+  img.src = src;
+  document.body.appendChild(img);
+  return img;
+};
+
+afterEach(() => {
+  document.body.innerHTML = "";
+  __resetSvgFallbackStateForTests();
+});
 
 describe("applySvgFallback", () => {
   it("replaces broken SVG source with fallback", () => {
-    const img = document.createElement("img");
-    img.src = "logo.svg";
-    document.body.appendChild(img);
+    const img = appendImage("logo.svg");
 
     applySvgFallback("fallback.png");
     img.dispatchEvent(new Event("error"));
@@ -15,9 +30,7 @@ describe("applySvgFallback", () => {
   });
 
   it("ignores non-SVG images", () => {
-    const img = document.createElement("img");
-    img.src = "logo.png";
-    document.body.appendChild(img);
+    const img = appendImage("logo.png");
 
     applySvgFallback("fallback.png");
     img.dispatchEvent(new Event("error"));
@@ -30,9 +43,7 @@ describe("applySvgFallback", () => {
   });
 
   it("uses default fallback path when none provided", () => {
-    const img = document.createElement("img");
-    img.src = "logo.svg";
-    document.body.appendChild(img);
+    const img = appendImage("logo.svg");
 
     applySvgFallback();
     img.dispatchEvent(new Event("error"));
@@ -43,12 +54,50 @@ describe("applySvgFallback", () => {
   });
 
   it("does not add svg-fallback class to non-SVG images", () => {
-    const img = document.createElement("img");
-    img.src = "logo.jpg";
-    document.body.appendChild(img);
+    const img = appendImage("logo.jpg");
 
     applySvgFallback("fallback.png");
     img.dispatchEvent(new Event("error"));
+
+    expect(img.classList.contains("svg-fallback")).toBe(false);
+  });
+
+  it("preserves existing onerror handler", () => {
+    const img = appendImage("logo.svg");
+    const existingHandler = vi.fn();
+    img.onerror = existingHandler;
+
+    applySvgFallback("fallback.png");
+    img.dispatchEvent(new Event("error"));
+
+    expect(existingHandler).toHaveBeenCalledTimes(1);
+    expect(img.classList.contains("svg-fallback")).toBe(true);
+  });
+
+  it("reuses the same listeners when invoked repeatedly", () => {
+    const img = appendImage("logo.svg");
+
+    applySvgFallback("fallback-one.png");
+    const initialState = __getSvgFallbackStateForTests(img);
+
+    applySvgFallback("fallback-two.png");
+    const updatedState = __getSvgFallbackStateForTests(img);
+
+    expect(initialState).toBeDefined();
+    expect(updatedState).toBe(initialState);
+    expect(updatedState?.fallbackSrc).toBe("fallback-two.png");
+  });
+
+  it("removes svg-fallback class when the image subsequently loads", () => {
+    const img = appendImage("logo.svg");
+
+    applySvgFallback("fallback.png");
+    img.dispatchEvent(new Event("error"));
+
+    expect(img.classList.contains("svg-fallback")).toBe(true);
+
+    img.src = "fixed-logo.svg";
+    img.dispatchEvent(new Event("load"));
 
     expect(img.classList.contains("svg-fallback")).toBe(false);
   });
