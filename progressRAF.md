@@ -178,7 +178,6 @@ Next steps I can take if you want
 2. Implement the `rafDebounce` and `runAfterFrames` helpers and update call sites (carousel scroll sync, roundUI).
 3. Move scoreboard and typewriter loops to `scheduler.onFrame` and add `visibilitychange` pause/resume.
 
-If you'd like, tell me which phase (1 or 2) you'd like me to start implementing and I'll proceed with changes and tests.
 
 ---
 
