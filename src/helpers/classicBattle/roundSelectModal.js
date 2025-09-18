@@ -12,7 +12,7 @@ import { rafDebounce } from "../../utils/rafUtils.js";
 import { logEvent } from "../telemetry.js";
 import { t } from "../i18n.js";
 import rounds from "../../data/battleRounds.js";
-import { syncWinTargetDropdown } from "../../pages/battleCLI/init.js";
+import { syncWinTargetDropdown } from "./winTargetSync.js";
 
 /**
  * Check if the URL requests an automatic start.

@@ -20,6 +20,8 @@ import { getStateSnapshot } from "./battleDebug.js";
 import { setupFallbackTimer } from "./timerService.js";
 import { createEventBus } from "./eventBusUtils.js";
 
+export { setupFallbackTimer } from "./timerService.js";
+
 const READY_TRACE_KEY = "nextRoundReadyTrace";
 
 function resetReadyTrace() {
