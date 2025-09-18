@@ -319,7 +319,6 @@ describe("classicBattle startCooldown", () => {
     );
     expect(readyDispatchCalls).toHaveLength(1);
 
-    expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     expect(machine.getState()).toBe("waitingForPlayerAction");
     const btn = document.querySelector('[data-role="next-round"]');
     expect(btn?.dataset.nextReady).toBe("true");

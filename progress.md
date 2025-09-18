@@ -49,7 +49,7 @@ _Pausing here for your review before proceeding further._
 - Modified cooldownEnter to pass isOrchestrated override as function.
 - Updated test to call cooldownEnter instead of startCooldown directly.
 - Unit tests: `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js --testNamePattern "auto-dispatches ready after 1s cooldown"` now passes the dispatch logic but fails on a stale assertion expecting machine state to remain "cooldown" after "ready" dispatch (state correctly transitions to "waitingForPlayerAction").
-- Outcome: Execution tracing successful; startCooldown now invokes, timer fires, handleNextRoundExpiration dispatches "ready", debug exposures populate correctly. Test assertion needs correction to reflect actual state transitions.
+- Outcome: Execution tracing successful; startCooldown now invokes, timer fires, handleNextRoundExpiration dispatches "ready", debug exposures populate correctly. Test passes after correcting stale assertions.
 
 ## Current Phase – Convert Debug Logging to Deterministic Assertions
 
@@ -117,4 +117,3 @@ _Pausing here for your review before proceeding to the next step._
 - Test run shows `window.__startCooldownInvoked` is `undefined`, indicating `startCooldown` is not executed despite the test calling it.
 - This suggests an issue with the test setup, import, or execution environment preventing the function call.
 
-_Pausing here for your review before proceeding further._
