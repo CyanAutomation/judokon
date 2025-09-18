@@ -288,6 +288,7 @@ describe("classicBattle startCooldown", () => {
     await vi.runAllTimersAsync();
     const debugRead = globalThis.__classicBattleDebugRead;
     expect(typeof debugRead).toBe("function");
+    expect(globalThis.__debugExposed).toBe(true);
     expect(debugRead("startCooldownCalled")).toBe(true);
 
     const currentNextRound = debugRead("currentNextRound");
@@ -297,12 +298,14 @@ describe("classicBattle startCooldown", () => {
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
     const getterInfo = debugRead("handleNextRoundMachineGetter");
     debugHooks.exposeDebugState("latestGetterInfo", getterInfo ?? null);
+    expect(getterInfo?.sourceReadDebug).toBe("function");
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
     expect(["cooldown", null]).toContain(machineStateBefore);
     expect(["cooldown", null]).toContain(snapshotStateBefore);
     expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
+    expect(debugRead("handleNextRoundDispatchResult")).toBe(true);
     expect(machine.getState()).toBe("cooldown");
 
     await waitForState("waitingForPlayerAction");
@@ -370,12 +373,14 @@ describe("classicBattle startCooldown", () => {
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
     const getterInfo = debugRead("handleNextRoundMachineGetter");
     debugHooks.exposeDebugState("latestGetterInfo", getterInfo ?? null);
+    expect(getterInfo?.sourceReadDebug).toBe("function");
     const machineStateBefore = debugRead("handleNextRoundMachineState");
     const snapshotStateBefore = debugRead("handleNextRoundSnapshotState");
     expect(["cooldown", null]).toContain(machineStateBefore);
     expect(["cooldown", null]).toContain(snapshotStateBefore);
     expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
+    expect(debugRead("handleNextRoundDispatchResult")).toBe(true);
 
     document.querySelector('[data-role="next-round"]').click();
     // Ensure state progressed before assertions
