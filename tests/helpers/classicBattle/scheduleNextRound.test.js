@@ -281,17 +281,6 @@ describe("classicBattle startCooldown", () => {
     });
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
-    const machineGetStateSpy = vi.spyOn(machine, "getState");
-
-    // Mock readDebugState to return the correct machine instance
-    const debugHooksModule = await import("../../../src/helpers/classicBattle/debugHooks.js");
-    vi.spyOn(debugHooksModule, "readDebugState").mockImplementation((key) => {
-      if (key === "getClassicBattleMachine") {
-        return () => machine;
-      }
-      return undefined;
-    });
-
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
     // Ensure machine is in roundOver state for the test
@@ -313,11 +302,12 @@ describe("classicBattle startCooldown", () => {
     await vi.runAllTimersAsync();
     console.log("[TEST DEBUG] After timer advance, state:", machine.getState());
 
-    // Manually step through state transitions for debugging
-    await machine.dispatch("ready"); // Explicitly await dispatch
-    expect(machine.getState()).toBe("roundStart");
-    await vi.runAllTimersAsync(); // Ensure any microtasks from dispatching 'ready' are processed
-    expect(machine.getState()).toBe("waitingForPlayerAction");
+    // Confirm fallback timer callback executed
+    expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
+    
+    console.log("[TEST DEBUG] Before waitForState, state:", machine.getState());
+    await waitForState("waitingForPlayerAction");
+    console.log("[TEST DEBUG] After waitForState, state:", machine.getState());
 
     const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
       ([eventName]) => eventName === "ready"
