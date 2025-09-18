@@ -769,41 +769,34 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
 
   // Dispatch `ready` (fire-and-forget) before resolving the controls so
   // tests awaiting `controls.ready` don't depend on orchestrator internals.
-  const dispatchReadyDirectly = () => {
-    let getter = null;
-    try {
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead) {
-        getter = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
+  // Only dispatch if the machine is still in cooldown state to avoid duplicates.
+  const machine = machineReader();
+  const currentState = readMachineState();
+  if (currentState === "cooldown") {
+    const dispatchReadyDirectly = () => {
+      if (machine?.dispatch) {
+        try {
+          const result = machine.dispatch("ready");
+          if (result && typeof result.then === "function") {
+            result.catch(() => {});
+          }
+          return true;
+        } catch {}
       }
-    } catch {}
-    if (!getter) {
-      try {
-        getter = readDebugState("getClassicBattleMachine");
-      } catch {}
-    }
-    const machine = typeof getter === "function" ? getter() : getter;
-    if (machine?.dispatch) {
-      try {
-        const result = machine.dispatch("ready");
-        if (result && typeof result.then === "function") {
-          result.catch(() => {});
-        }
-        return true;
-      } catch {}
-    }
-    return false;
-  };
-  const dispatchReady =
-    typeof options.dispatchBattleEvent === "function"
-      ? options.dispatchBattleEvent
-      : dispatchBattleEvent;
-  try {
-    const readyResult = await dispatchReady("ready");
-    if (readyResult === false) {
+      return false;
+    };
+    const dispatchReady =
+      typeof options.dispatchBattleEvent === "function"
+        ? options.dispatchBattleEvent
+        : dispatchBattleEvent;
+    try {
+      const readyResult = await dispatchReady("ready");
+      if (readyResult === false) {
+        dispatchReadyDirectly();
+      }
+    } catch {
       dispatchReadyDirectly();
     }
-  } catch {
-    dispatchReadyDirectly();
   }
 
   const resolveReadyFn = controls?.resolveReady;

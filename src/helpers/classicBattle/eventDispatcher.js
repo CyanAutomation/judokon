@@ -1,11 +1,6 @@
 import { emitBattleEvent } from "./battleEvents.js";
 import { readDebugState } from "./debugHooks.js";
 
-// Short-lived dedupe window (ms) to avoid duplicate rapid dispatches in
-// test environments where multiple timers or fallback paths may race.
-const _recentDispatches = new Map();
-const DEDUPE_WINDOW_MS = 20;
-
 /**
  * Dispatch an event to the active battle machine.
  *
@@ -24,22 +19,6 @@ const DEDUPE_WINDOW_MS = 20;
  * @returns {Promise<any>|void} Result of the dispatch when available.
  */
 export async function dispatchBattleEvent(eventName, payload) {
-  try {
-    const last = _recentDispatches.get(eventName) || 0;
-    const now = Date.now();
-    if (now - last < DEDUPE_WINDOW_MS) {
-      // Already dispatched very recently — treat as a successful no-op so
-      // callers don't fall back to alternate dispatch paths which would
-      // otherwise cause duplicate transitions.
-      return true;
-    }
-    _recentDispatches.set(eventName, now);
-    // Clear old entries asynchronously to avoid unbounded growth.
-    setTimeout(() => {
-      const t = _recentDispatches.get(eventName) || 0;
-      if (Date.now() - t >= DEDUPE_WINDOW_MS) _recentDispatches.delete(eventName);
-    }, DEDUPE_WINDOW_MS * 2);
-  } catch {}
   // Get machine from debug state to avoid circular dependency
   let machineSource =
     typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
