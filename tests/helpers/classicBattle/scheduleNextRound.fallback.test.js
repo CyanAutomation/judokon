@@ -133,7 +133,8 @@ describe("startCooldown ready dispatch discipline", () => {
       updateDebugPanel: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-      dispatchBattleEvent: dispatchSpy
+      dispatchBattleEvent: dispatchSpy,
+      resetDispatchHistory: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
       onBattleEvent: vi.fn(),
@@ -214,7 +215,10 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     }));
     vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
       dispatchSpy = vi.fn();
-      return { dispatchBattleEvent: dispatchSpy };
+      return {
+        dispatchBattleEvent: dispatchSpy,
+        resetDispatchHistory: vi.fn()
+      };
     });
     vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
       setSkipHandler: vi.fn()
