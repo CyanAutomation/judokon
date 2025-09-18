@@ -63,28 +63,6 @@ function appendReadyTrace(event, details = {}) {
   } catch {}
 }
 
-/**
- * Detect whether the classic battle orchestrator is active.
- *
- * @pseudocode
- * 1. Read `document.body.dataset.battleState` inside a try/catch.
- * 2. Return `true` when the attribute exists, otherwise `false`.
- *
-    try {
-      exposeDebugState("handleNextRoundSnapshotState", snapshotState);
-    } catch {}
-    try {
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        globalThis.__classicBattleDebugExpose("handleNextRoundSnapshotState", snapshotState);
-      }
-    } catch {}
-    try {
-      exposeDebugState("handleNextRoundSnapshotState_readAt", Date.now());
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-        globalThis.__classicBattleDebugExpose("handleNextRoundSnapshotState_readAt", Date.now());
-      }
-    } catch {}
-}
 
 /**
  * Create a new battle state store.
@@ -123,16 +101,7 @@ function getStartRound(store) {
   return () => startRound(store);
 }
 
-/**
- * Reset match state and start a new game.
- *
- * @pseudocode
- * 1. Reset engine scores and flags.
- * 2. Close any open modals and clear the scoreboard message.
- * 3. Call the start round function to begin a new match.
- *
- * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
- */
+
 /**
  * Restart the current match by resetting engine state and UI then starting a round.
  *
