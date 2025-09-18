@@ -1,5 +1,6 @@
 import { drawCards, _resetForTest as resetSelection } from "./cardSelection.js";
 import { createBattleEngine } from "../battleEngineFacade.js";
+import { requireEngine } from "../battleEngineFacade.js";
 import * as battleEngine from "../battleEngineFacade.js";
 import { bridgeEngineEvents } from "./engineBridge.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
@@ -13,6 +14,7 @@ import { realScheduler } from "../scheduler.js";
 import { dispatchBattleEvent, resetDispatchHistory } from "./eventDispatcher.js";
 
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { getStateSnapshot } from "./battleDebug.js";
 
@@ -1030,7 +1032,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   console.log("[dedupe] wireCooldownTimer", cooldownSeconds);
   const bus = createEventBus(overrides.eventBus);
   const timerFactory = overrides.createRoundTimer || createRoundTimer;
-  let startCooldown = overrides.startEngineCooldown || engineStartCoolDown;
+  let startCooldown = overrides.startEngineCooldown || requireEngine().startCoolDown;
   // When running under Vitest, prefer the pure-JS fallback timer to avoid
   // relying on the engine starter which may not cooperate with fake timers.
   if (typeof process !== "undefined" && !!process.env?.VITEST) {

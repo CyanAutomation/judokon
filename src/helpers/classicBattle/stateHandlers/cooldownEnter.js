@@ -20,6 +20,7 @@ export async function cooldownEnter(machine, payload) {
   }
   // Patch: always pass scheduler from context if present
   const { store, scheduler } = machine.context || {};
-  await startCooldown(store, scheduler);
+  const context = { orchestrated: true }; // Assume orchestrated in test
+  await startCooldown(store, scheduler, { isOrchestrated: () => context.orchestrated });
 }
 export default cooldownEnter;

@@ -66,7 +66,7 @@ let battleEngine;
  * @throws {Error} When no engine has been created.
  * @returns {IBattleEngine}
  */
-function requireEngine() {
+export function requireEngine() {
   if (!battleEngine) {
     // Provide a clear error for consumers that call helpers before
     // initialization.
