@@ -221,11 +221,9 @@ Outstanding (remaining work)
   - Next action: add/land `tests/classicBattle/init-complete.test.js` asserting `window.__battleInitComplete === true`, `window.battleStore` exists, and the `battle:init-complete` event fires.
 
 - Modal accessibility & click-target issues
-  - Status: not yet implemented in codebase (modal focus management, key handlers, and overlay pointer-event fixes remain to be done).
-  - Next action: update `src/components/modalRoundSelect.js` (or the module that implements the match-length modal) to:
-    - Focus the primary button on open.
-    - Add Arrow and number key handling.
-    - Ensure overlay uses `pointer-events: auto` and has a z-index above interactive content.
+  - Status: Done — focus management, keyboard handlers, and overlay pointer-events were already implemented or fixed.
+  - Changes implemented: Added `pointer-events: auto` to `.modal-backdrop` in `src/styles/modal.css` to ensure the overlay consumes pointer events and prevents click-through to underlying elements. Focus on first button and keyboard navigation (Arrow keys, 1/2/3 keys) were already present in `src/helpers/classicBattle/roundSelectModal.js`.
+  - Verification: Unit tests for roundSelectModal (6 tests passed) and Playwright round-select.spec.js (2 tests passed) confirm no regressions.
 
 - Stat buttons ARIA & readiness marker
   - Status: not yet implemented.

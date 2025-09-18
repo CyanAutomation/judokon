@@ -8,6 +8,7 @@
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
+  pointer-events: auto;
 }
 
 /* Optional helper that adds a small gap under the header area */
