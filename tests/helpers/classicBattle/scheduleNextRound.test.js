@@ -62,9 +62,7 @@ beforeEach(async () => {
   });
   console.log("[TEST DEBUG] after applyMockSetup");
   if (dispatchBattleEventCallThrough) {
-    dispatchBattleEventSpy.mockImplementation((...args) =>
-      dispatchBattleEventCallThrough(...args)
-    );
+    dispatchBattleEventSpy.mockImplementation((...args) => dispatchBattleEventCallThrough(...args));
   }
   dispatchBattleEventSpy.mockClear();
   orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
