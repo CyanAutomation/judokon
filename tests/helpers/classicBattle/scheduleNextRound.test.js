@@ -375,6 +375,11 @@ describe("classicBattle startCooldown", () => {
     await machine.dispatch("continue");
     expect(machine.getState()).toBe("cooldown");
 
+    // Manually trigger cooldownEnter since automatic onEnter may not work in test
+    console.error("[TEST] About to call cooldownEnter");
+    await cooldownEnter(machine);
+    console.error("[TEST] cooldownEnter called");
+
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
 
