@@ -121,7 +121,8 @@ Phase 1 — Quick fixes (small, low-risk edits)
   - **Outcome**: Implemented. Added a `destroy` method to `ScoreboardView.js` to cancel the animation frame. Also updated the `Scoreboard.js` `destroy` method to call the view's `destroy` method. This prevents potential memory leaks and errors from orphaned animation frames. Ran relevant unit and Playwright tests, which all passed.
 - Clamp typewriter per-frame work to N characters (e.g., 6) or clamp `acc` to `speed * N`. (2–6 lines)
 - Track and cancel the carousel attach polling rAF (`this._attachRafId`) and add a destroy-time cancel. (2–6 lines)
-- Use `scheduler.clearTimeout` instead of global `clearTimeout` in `showSnackbar` for consistency if `fadeId` was created via the scheduler. (1–2 lines)
+- **[DONE]** Use `scheduler.clearTimeout` instead of global `clearTimeout` in `showSnackbar` for consistency if `fadeId` was created via the scheduler. (1–2 lines)
+  - **Outcome**: Implemented. Replaced `clearTimeout` with `scheduler.clearTimeout` in `showSnackbar.js` for consistency with the existing timer handling. This ensures that the same scheduler is used for setting and clearing timeouts, which is important for testability with fake timers. Ran relevant unit and Playwright tests, which all passed.
 
 Testing after Phase 1: run unit tests, run small smoke tests: typewriter demo, scoreboard increment, add/destroy carousel without attaching.
 
@@ -150,12 +151,6 @@ Quality gates and testing guidance
 1. Lint and run unit tests after each small change (Phase 1). Prefer small PRs with one fix each to keep reviews focused.
 2. For visibility/pausing changes, smoke-test the app by starting long animations and backgrounding/unbackgrounding the tab; measure CPU in DevTools if needed.
 3. For scheduler consolidation, run integration/Playwright tests (UI flows) to verify animation timing and test suites that rely on fake timers.
-
-Commit strategy
----------------
-
-- Make Phase 1 fixes in separate commits, each commit containing a single concern and tests where applicable.
-- Phase 2 can be implemented on a feature branch; keep Phase 1 fixes merged to main first.
 
 Notes and clarifications
 -----------------------
