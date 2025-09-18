@@ -28,13 +28,13 @@ export function setupClassicBattleDom() {
   // vi.resetModules(); // Commented out to prevent fake timer interference
   globalThis.requestAnimationFrame = vi.fn((cb) => cb());
   globalThis.cancelAnimationFrame = vi.fn();
-  // Mock globalThis.setTimeout/clearTimeout to use fake timers
-  globalThis.setTimeout = vi.fn((cb, delay) => {
-    return setTimeout(cb, delay);
-  });
-  globalThis.clearTimeout = vi.fn((id) => {
-    clearTimeout(id);
-  });
+  // Let Vitest's fake timers handle setTimeout/clearTimeout automatically
+  // globalThis.setTimeout = vi.fn((cb, delay) => {
+  //   return setTimeout(cb, delay);
+  // });
+  // globalThis.clearTimeout = vi.fn((id) => {
+  //   clearTimeout(id);
+  // });
   const fetchJsonMock = vi.fn(async (url) => {
     if (String(url).includes("gameTimers.js")) {
       return [{ id: 1, value: 30, default: true, category: "roundTimer" }];
