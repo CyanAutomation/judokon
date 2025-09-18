@@ -1,3 +1,190 @@
+# Audit Report: requestAnimationFrame (rAF)
+
+This document audits rAF usage across the codebase, verifies findings, and provides concrete, low-risk fixes and a phased refactor plan. I reviewed the original observations for technical accuracy and clarified recommendations where necessary.
+
+Summary
+-------
+
+- Multiple independent rAF loops are used (scoreboard, typewriter, carousel polling, a global scheduler). This is functional but increases the number of callbacks per frame and makes ordering ambiguous. Recommendation: prefer the existing central scheduler for one-off animations or subscribe to it where practical.
+- No global visibility handling for rAF: several loops run (throttled) while the page is hidden. Recommendation: pause non-essential loops on `document.visibilitychange` (or integrate with the scheduler's pause/resume).
+- A small number of logic bugs and anti-patterns were identified (scoreboard sets final DOM too early, carousel attach polling not tracked/cancelled, typewriter can process too many characters after long pauses). These are straightforward to fix.
+
+Estimated benefit: less main-thread work when idle or backgrounded, fewer visual glitches, simpler testing (by using the injected scheduler), and easier maintenance. Changes are low-risk if applied incrementally and tested.
+
+Findings (verified)
+-------------------
+
+1) `src/components/ScoreboardView.js` — Score tween flicker and DOM thrash
+
+   - What the code does: starts a rAF interpolation to animate numeric score changes. However, it first writes the final HTML into the score container and then runs an animation that repeatedly updates the element's HTML/text each frame.
+   - Why it's a problem: writing the final state before animating produces a visible jump (the DOM briefly shows the end value, then animates from the old value), and replacing large innerHTML each frame forces more DOM work than updating the minimal text nodes.
+   - Fix (recommended): Do not set final HTML upfront. Capture current numeric values (from cached state or the DOM), animate only the numeric text nodes, and only set any final wrapper or structural HTML after the animation completes. If possible, update only the textContent of the number nodes (not innerHTML) to minimize reflow.
+
+   Example (conceptual):
+
+   - Before (anti-pattern):
+     this.scoreEl.innerHTML = `<span ...>${end.player}</span> ...`;
+     // then animate per frame by writing innerHTML
+
+   - After (recommended):
+     const start = { p: parseInt(playerNode.textContent), o: parseInt(opponentNode.textContent) };
+     // animate: each frame set playerNode.textContent = interpolatedValue
+     // when done, ensure structure/aria attributes are correct
+
+   - Risk: minimal. Test increases/decreases, and the no-change early-exit path.
+
+2) `src/components/ScoreboardView.js` — missing cancel on teardown
+
+   - What: the scoreboard stores the rAF handle (e.g. `this._scoreRaf`) but there's no explicit cancel in a destroy/unmount handler.
+   - Why: an active rAF may keep running after the component is removed, referencing detached nodes or preventing GC.
+   - Fix: cancelAnimationFrame(this._scoreRaf) in the component's cleanup/destroy/unmount path. Also set the id to null and guard animation callbacks with a monotonic animation id to ignore stale frames.
+
+3) `src/helpers/typewriter.js` — accumulator can process too much work after long pauses
+
+   - What: the typewriter accumulates delta time and uses a while-loop to catch up, emitting one char per `speed` ms. If `acc` grows large (background tab), the loop can emit many chars in a single frame.
+   - Why: large, single-frame work causes a visible insta-complete and can create a long task that impacts UX and battery.
+   - Fix (low-risk): clamp work per frame. Two safe options:
+     - Clamp `acc = Math.min(acc, speed * MAX_ITER_PER_FRAME)` before the while loop, or
+     - Limit loop iterations to MAX_ITER_PER_FRAME (e.g., 4–8 characters) and break to continue on the next frame even if `acc` remains >= `speed`.
+
+   Example:
+
+   let iterations = 0;
+   const MAX_PER_FRAME = 6;
+   while (acc >= speed && i < text.length && iterations < MAX_PER_FRAME) {
+     // append char
+     iterations++;
+   }
+
+   - Risk: very low. The visible typing will finish slightly later if the tab was suspended for a long time, but won't cause a long task.
+
+4) `src/helpers/typewriter.js` — good use of rAF timestamp and cancellation
+
+   - Verified: the implementation uses the rAF timestamp (ts) and cancels when the element is removed. Keep this pattern.
+
+5) `src/helpers/showSnackbar.js` — one-shot rAF to trigger CSS transition
+
+   - Verified: using a single rAF to add a class after insertion is correct to force a paint before transition.
+   - Minor recommendation: use the injected scheduler for test determinism if tests require controlling rAF. Otherwise, document the one-shot use and leave as global rAF.
+
+6) `src/helpers/carousel/scrollSync.js` — immediate update + scheduled rAF (double sample)
+
+   - What: on scroll, code calls `syncPageFromScroll()` synchronously, cancels any pending frame, then schedules another frame to re-run the sync.
+   - Why: double-sampling each scroll event is unnecessary in many cases and can double the work. A trailing-edge rAF debounce that only schedules the sync (and uses the last scrollLeft) is simpler and lighter.
+   - Fix: use a `rafDebounce` pattern: on scroll, store last known scrollLeft and if no `_rafId` scheduled, `requestAnimationFrame` a single handler that reads the latest value and updates.
+
+7) `src/helpers/carousel/controller.js` — unbounded attach-polling rAF
+
+   - What: if a container isn't connected, the controller calls `requestAnimationFrame` recursively to poll until the element attaches. The rAF id is not stored in the controller's usual `_rafId` and isn't canceled on destroy.
+   - Why: this creates a spin-wait and a potential leak if the controller is destroyed before attach.
+   - Fix: store the handle (e.g. `this._attachRafId = requestAnimationFrame(...)`) and cancel it in `destroy()` via `cancelAnimationFrame(this._attachRafId)`. Better: prefer `MutationObserver` if available to watch for attachment (more event-driven). A retry cap is also reasonable.
+
+8) Visibility / pause handling (global)
+
+   - Observation: many rAF-driven loops don't explicitly listen for `visibilitychange`. Browsers throttle rAF in background tabs, but adding an explicit pause/resume reduces work and avoids catch-up artifacts.
+   - Fix: implement a pause hook in the scheduler or add a global `document.addEventListener('visibilitychange', ...)` that does:
+
+     if (document.hidden) scheduler.pause(); else scheduler.resume();
+
+     For subsystems that run their own rAF, either make them respect `scheduler.isPaused()` or register them with the central scheduler so pause is automatic.
+
+9) `src/helpers/classicBattle/roundUI.js` — double rAF for a delay
+
+   - What: code uses `requestAnimationFrame(() => requestAnimationFrame(runReset))` to delay ~2 frames, falling back to `setTimeout(runReset, 32)` when rAF isn't available.
+   - Why: double-rAF is a known trick to wait for the next next paint. It's valid but slightly opaque and frame-rate dependent.
+   - Fix / recommendation: encapsulate intent into a helper (e.g. `runAfterFrames(fn, n = 2)` or `nextFrames(2, fn)`) or use `setTimeout(fn, 33)` for a clearer fixed-delay. If tests use fake timers, ensure the helper cooperates with the injected scheduler.
+
+10) Scheduler vs timer mix: use the injected scheduler consistently
+
+   - What: some code mixes global `setTimeout/clearTimeout` with the injected scheduler's `setTimeout/clearTimeout` and sometimes uses global rAF for one-shot cases.
+   - Why: mixing can make tests with fake timers flaky and confuses cancellation semantics.
+   - Fix: prefer `getScheduler()` (or the project's scheduler abstraction) for timeouts and, where needed, provide a `scheduler.requestAnimationFrame` shim that forwards to `window.requestAnimationFrame` by default. This makes testing deterministic and centralizes cancellation.
+
+Best-practice checklist (verified)
+-------------------------------
+
+- Single rAF loop per subsystem: FAIL (multiple loops exist). Short-term: migrate one-off animations to the central scheduler when practical.
+- Cancels rAF on teardown/unmount: MOSTLY PASS, with a few gaps (carousel attach polling, scoreboard missing destroy cancel).
+- Uses rAF timestamp: PASS.
+- Delta-time clamping: PARTIAL — scoreboard clamps k to 1; typewriter needs a clamp/limit per frame.
+- Batch DOM reads vs writes: PASS.
+- Pauses animations when tab hidden: FAIL — add scheduler pause/resume.
+- Avoids heavy non-visual work in rAF: PASS (minor exception: secondTick logic is acceptable).
+
+Refactor plan (actionable, incremental)
+--------------------------------------
+
+Phase 1 — Quick fixes (small, low-risk edits)
+
+- Fix scoreboard flicker: do not set final innerHTML before starting the tween; update number nodes only. (1–3 lines change in updateScore logic).
+- Cancel scoreboard rAF in cleanup/destroy. (1–3 lines)
+- Clamp typewriter per-frame work to N characters (e.g., 6) or clamp `acc` to `speed * N`. (2–6 lines)
+- Track and cancel the carousel attach polling rAF (`this._attachRafId`) and add a destroy-time cancel. (2–6 lines)
+- Use `scheduler.clearTimeout` instead of global `clearTimeout` in `showSnackbar` for consistency if `fadeId` was created via the scheduler. (1–2 lines)
+
+Testing after Phase 1: run unit tests, run small smoke tests: typewriter demo, scoreboard increment, add/destroy carousel without attaching.
+
+Phase 2 — Consolidation (architectural, medium risk)
+
+- Move one-off animation loops (scoreboard tween, typewriter) to the central frame scheduler (e.g., `scheduler.onFrame`) so only the scheduler calls rAF. The existing scheduler already offers onFrame semantics and cancellation. This reduces the number of rAF handles and makes ordering predictable.
+- Add scheduler pause/resume on `visibilitychange` (or expose a `scheduler.pause()` API and call it from the listener). Ensure the timer subsystem (used for countdowns) respects pause or uses a separate test-friendly timer that won't drift.
+- Replace ad-hoc debounce patterns with a small `rafDebounce` helper and use it for carousel scroll and modal resize handling.
+
+Phase 3 — Advanced / optional
+
+- If needed, implement an animation manager that supports prioritized callbacks and two-phase read/write scheduling (read -> write) to guarantee no cross-component layout thrash.
+- Add a `withFrameBudget` helper for any heavy synchronous work that might appear on the frame loop.
+
+Utilities to add (small helpers)
+--------------------------------
+
+- `rafDebounce(fn)` — schedule the latest invocation once per frame, cancel prior rAF handles.
+- `runAfterFrames(n, fn)` — run `fn` after n rAF frames (useful to replace double-rAF idiom and to make intent explicit).
+- `scheduler.requestAnimationFrame` shim — forwards to global rAF by default but can be mocked in tests.
+- `withFrameBudget(fn, budgetMs = 5)` — optional helper to chunk heavy tasks across frames.
+
+Quality gates and testing guidance
+---------------------------------
+
+1. Lint and run unit tests after each small change (Phase 1). Prefer small PRs with one fix each to keep reviews focused.
+2. For visibility/pausing changes, smoke-test the app by starting long animations and backgrounding/unbackgrounding the tab; measure CPU in DevTools if needed.
+3. For scheduler consolidation, run integration/Playwright tests (UI flows) to verify animation timing and test suites that rely on fake timers.
+
+Commit strategy
+---------------
+
+- Make Phase 1 fixes in separate commits, each commit containing a single concern and tests where applicable.
+- Phase 2 can be implemented on a feature branch; keep Phase 1 fixes merged to main first.
+
+Notes and clarifications
+-----------------------
+
+- Where I recommended using the injected scheduler, do so only when the scheduler meets the testability requirements of that code path; for trivial one-shot rAFs that tests don't need to control, using global `requestAnimationFrame` is acceptable if documented.
+- The double-rAF trick is valid functionally; my recommendation is to encapsulate it to make the intent explicit rather than removing it unilaterally.
+- Using a `MutationObserver` instead of rAF polling for element attachment is typically better, but for rare short-lived cases, a tracked, cancelable rAF loop is simpler and low-risk.
+
+Delivery checklist (map to requirements)
+--------------------------------------
+
+- Reviewed original `progressRAF.md` and verified technical claims: DONE.
+- Corrected and clarified fixes and examples: DONE.
+- Added precise, incremental Phase 1 fixes that are low-risk and testable: DONE.
+
+Next steps I can take if you want
+--------------------------------
+
+1. Implement Phase 1 fixes directly (I can create focused diffs/PRs for scoreboard, typewriter, and carousel polling). I will run unit tests and smoke-tests for each change.
+2. Implement the `rafDebounce` and `runAfterFrames` helpers and update call sites (carousel scroll sync, roundUI).
+3. Move scoreboard and typewriter loops to `scheduler.onFrame` and add `visibilitychange` pause/resume.
+
+If you'd like, tell me which phase (1 or 2) you'd like me to start implementing and I'll proceed with changes and tests.
+
+---
+
+Revision history
+----------------
+
+- 2025-09-18: Reviewed and reformatted original audit; verified findings; clarified fixes and phased plan.
 # Audit Report: Request Animation Frame
 
 Multiple Uncoordinated rAF Loops: The code uses several independent requestAnimationFrame loops (scoreboard animation, typewriter effect, carousel polling, etc.) instead of a unified scheduler. This can lead to inconsistent update ordering and minor inefficiencies. A quick win is to consolidate or better coordinate these loops (e.g. use the central scheduler for one-off animations) – improving frame stability and reducing redundant rAF calls.

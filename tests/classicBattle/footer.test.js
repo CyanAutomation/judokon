@@ -37,7 +37,7 @@ describe("Footer Navigation", () => {
   it("should set data-battle-active on the body when the match starts", async () => {
     await init();
     const modal = document.querySelector(".modal-backdrop");
-    const quickButton = modal.querySelector("button[data-rounds='1']");
+    const quickButton = modal.querySelector("button#round-select-1");
     quickButton.click();
 
     await new Promise(resolve => setTimeout(resolve, 0));
