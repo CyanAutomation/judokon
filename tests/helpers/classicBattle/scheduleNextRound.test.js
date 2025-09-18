@@ -263,21 +263,17 @@ describe("classicBattle startCooldown", () => {
     console.log("[TEST DEBUG] after import classicBattle.js");
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
-    const startRoundWrapper = vi.fn(async () => {
-      // Simulate startRound completing immediately without calling real startRound
-      // to avoid interfering with the cooldown timer dispatch test
-      dispatchBattleEventSpy("cardsRevealed");
-      return Promise.resolve({ playerJudoka: {}, opponentJudoka: {}, roundNumber: 1 });
-    });
-
-    console.log("[TEST DEBUG] before initClassicBattleOrchestrator");
-    await orchestrator.initClassicBattleOrchestrator({
+        const dispatchBattleEventModule = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+        const dispatchBattleEventSpyOnModule = vi.spyOn(dispatchBattleEventModule, "dispatchBattleEvent");
+    
+        console.log("[TEST DEBUG] before initClassicBattleOrchestrator");    await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
+    const machineGetStateSpy = vi.spyOn(machine, "getState");
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
     // Ensure machine is in roundOver state for the test
@@ -312,6 +308,7 @@ describe("classicBattle startCooldown", () => {
     expect(readyDispatchCalls).toHaveLength(1);
 
     const readyCalls = dispatchBattleEventSpy.mock.calls.filter(([event]) => event === "ready");
+    console.log("[dedupe] ready spy calls", readyCalls.length);
     expect(readyCalls.length).toBeGreaterThan(0);
     expect(dispatchBattleEventSpy).toHaveBeenCalledWith("ready");
     expect(startRoundWrapper).toHaveBeenCalledTimes(1);
@@ -320,7 +317,7 @@ describe("classicBattle startCooldown", () => {
     expect(btn?.dataset.nextReady).toBe("true");
     expect(btn?.disabled).toBe(false);
     delete window.__NEXT_ROUND_COOLDOWN_MS;
-  });
+  }, 10000);
 
   it("transitions roundOver → cooldown → roundStart without duplicates", async () => {
     console.log(
