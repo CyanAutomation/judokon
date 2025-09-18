@@ -1,5 +1,8 @@
 import { runWhenIdle } from "./idleCallback.js";
 
+const cachedModules = new Map();
+const preloadPromises = new Map();
+
 /**
  * Preload service for lazy loading heavy modules during idle time.
  *
