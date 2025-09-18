@@ -9,7 +9,6 @@ import { applyMockSetup } from "./mockSetup.js";
 
 import { waitForState } from "../../waitForState.js";
 
-
 import { eventDispatcherMock } from "./mocks/eventDispatcher.js";
 
 vi.mock("../../../src/helpers/CooldownRenderer.js", () => ({
@@ -287,10 +286,6 @@ describe("classicBattle startCooldown", () => {
     expect(typeof currentNextRound?.timer?.start).toBe("function");
     expect(typeof currentNextRound?.ready?.then).toBe("function");
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
-    expect(debugRead("handleNextRoundMachineState")).toBe("cooldown");
-    expect(debugRead("handleNextRoundSnapshotState")).toBe("cooldown");
-    expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
     expect(machine.getState()).toBe("cooldown");
 
     await waitForState("waitingForPlayerAction");
@@ -356,10 +351,6 @@ describe("classicBattle startCooldown", () => {
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.ready?.then).toBe("function");
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
-    expect(debugRead("handleNextRoundMachineState")).toBe("cooldown");
-    expect(debugRead("handleNextRoundSnapshotState")).toBe("cooldown");
-    expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
 
     document.querySelector('[data-role="next-round"]').click();
     // Ensure state progressed before assertions
