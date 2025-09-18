@@ -8,6 +8,7 @@ import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { wrap } from "../storage.js";
 import { POINTS_TO_WIN_OPTIONS, DEFAULT_POINTS_TO_WIN } from "../../config/battleDefaults.js";
 import { BATTLE_POINTS_TO_WIN } from "../../config/storageKeys.js";
+import { rafDebounce } from "../../utils/rafUtils.js";
 import { logEvent } from "../telemetry.js";
 import { t } from "../i18n.js";
 import rounds from "../../data/battleRounds.js";
@@ -272,7 +273,6 @@ class RoundSelectPositioner {
     this.closedProp = "__roundSelectPositioningClosed";
     this.isActive = false;
     this.headerRef = null;
-    this.resizeId = null;
     this.originalClose = null;
     this.originalDestroy = null;
     this.originalDispatchEvent = null;
@@ -360,21 +360,12 @@ class RoundSelectPositioner {
   }
 
   attachListeners() {
-    this.onResize = () => {
+    this.onResize = rafDebounce(() => {
       if (!this.isActive) {
         return;
       }
-      if (this.resizeId !== null) {
-        try {
-          this.caf(this.resizeId);
-        } catch {}
-        this.resizeId = null;
-      }
-      this.resizeId = this.raf(() => {
-        this.resizeId = null;
-        this.updateInset();
-      });
-    };
+      this.updateInset();
+    });
 
     try {
       window.addEventListener("resize", this.onResize);
@@ -461,13 +452,6 @@ class RoundSelectPositioner {
     try {
       this.backdrop.removeEventListener("close", this.cleanup);
     } catch {}
-
-    if (this.resizeId !== null) {
-      try {
-        this.caf(this.resizeId);
-      } catch {}
-      this.resizeId = null;
-    }
 
     if (this.originalDispatchEvent) {
       try {

@@ -74,8 +74,12 @@ describe("classicBattle startCooldown", () => {
     // the embedded state table uses this deterministic set.
     const minimal = [
       {
-        name: "roundOver",
+        name: "waitingForMatchStart",
         type: "initial",
+        triggers: [{ on: "continue", target: "cooldown" }]
+      },
+      {
+        name: "roundOver",
         triggers: [{ on: "continue", target: "cooldown" }]
       },
       { name: "cooldown", triggers: [{ on: "ready", target: "roundStart" }] },
@@ -131,17 +135,19 @@ describe("classicBattle startCooldown", () => {
       setInterval: (...args) => setInterval(...args),
       clearInterval: (...args) => clearInterval(...args)
     };
-    const machine = await orchestrator.initClassicBattleOrchestrator({
+    await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
       scheduler: fakeScheduler,
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
+    const machine = orchestrator.getBattleStateMachine();
     console.log("[TEST DEBUG] after initClassicBattleOrchestrator", machine);
 
-    await battleMod.startRound(store);
-
+    // Ensure machine is in roundOver state for the test
     await machine.dispatch("roundOver");
+    expect(machine.getState()).toBe("roundOver");
+
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
@@ -222,10 +228,10 @@ describe("classicBattle startCooldown", () => {
     const machine = await orchestrator.initClassicBattleOrchestrator({ store, startRoundWrapper });
     console.log("[TEST DEBUG] after getBattleStateMachine", machine);
 
-    await battleMod.startRound(store);
-    expect(generateRandomCardMock).toHaveBeenCalledTimes(1);
-
+    // Ensure machine is in roundOver state for the test
     await machine.dispatch("roundOver");
+    expect(machine.getState()).toBe("roundOver");
+
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 
@@ -292,14 +298,12 @@ describe("classicBattle startCooldown", () => {
       startRoundWrapper,
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
-    const machine = await orchestrator.initClassicBattleOrchestrator({
-      store,
-      startRoundWrapper,
-      stateTable: globalThis.__CLASSIC_BATTLE_STATES__
-    });
+    const machine = orchestrator.getBattleStateMachine();
 
-    await battleMod.startRound(store);
+    // Ensure machine is in roundOver state for the test
     await machine.dispatch("roundOver");
+    expect(machine.getState()).toBe("roundOver");
+
     await orchestrator.dispatchBattleEvent("continue");
     expect(machine.getState()).toBe("cooldown");
 

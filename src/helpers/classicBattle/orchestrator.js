@@ -437,6 +437,7 @@ function attachListeners(machineRef) {
     // ignore: catalog event is informational
   }
   debugHooks.exposeDebugState("getClassicBattleMachine", () => machineRef);
+  console.error("[TEST DEBUG] orchestrator: Exposing machineRef", machineRef);
   if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
     globalThis.__classicBattleDebugExpose("getClassicBattleMachine", () => machineRef);
   }

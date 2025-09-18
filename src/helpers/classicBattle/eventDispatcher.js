@@ -35,19 +35,21 @@ export async function dispatchBattleEvent(eventName, payload) {
   }
 
   const machine = typeof machineSource === "function" ? machineSource() : machineSource || null;
+  console.error("[TEST DEBUG] eventDispatcher: Retrieved machine", machine);
 
   if (!machine) {
     // Not having a machine is an expected state during early startup
     // (for example when the round selection modal runs before the
     // orchestrator initializes). Return `false` to signal the skipped
     // dispatch without emitting console noise in production.
+    console.error("[TEST DEBUG] dispatchBattleEvent: No machine available for event", eventName);
     return false;
   }
 
   // DEBUG: Log all event dispatches
   if (typeof console !== "undefined") {
-    console.log(
-      "[DEBUG] dispatchBattleEvent: dispatching",
+    console.error(
+      "[TEST DEBUG] dispatchBattleEvent: dispatching",
       eventName,
       "to machine",
       machine.getState?.()

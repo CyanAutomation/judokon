@@ -41,7 +41,7 @@ export async function createStateManager(
   stateTable = CLASSIC_BATTLE_STATES
 ) {
   if (typeof console !== "undefined") {
-    console.log("[TEST DEBUG] createStateManager: stateTable", stateTable);
+    console.error("[TEST DEBUG] createStateManager: stateTable", stateTable);
   }
   const byName = new Map();
   let initial = null;
@@ -59,7 +59,7 @@ export async function createStateManager(
     getState: () => current,
     async dispatch(eventName, payload) {
       if (typeof console !== "undefined") {
-        console.log(
+        console.error(
           "[TEST DEBUG] stateManager: dispatch called with",
           "event=",
           eventName,
@@ -84,10 +84,12 @@ export async function createStateManager(
           return false;
         }
         const from = current;
+        console.error("[TEST DEBUG] stateManager: Before current update, target:", target, "current:", current);
         current = target;
+        console.error("[TEST DEBUG] stateManager: After current update, current:", current);
         // [TEST DEBUG] log state transition attempt
         if (typeof console !== "undefined") {
-          console.log("[TEST DEBUG] stateManager transition:", {
+          console.error("[TEST DEBUG] stateManager transition:", {
             from,
             to: target,
             event: eventName
