@@ -242,13 +242,6 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   if (orchestratedMode && !orchestratorMachine) {
     orchestratedMode = false;
   }
-  if (typeof window !== "undefined") {
-    window.__startCooldownDebug = {
-      invoked: true,
-      orchestratedMode: orchestratedMode,
-      readinessTargetId: (btn || fallbackBtn)?.id
-    };
-  }
   appendReadyTrace("cooldownContext", {
     orchestrated: orchestratedMode,
     hasMachine: !!orchestratorMachine
