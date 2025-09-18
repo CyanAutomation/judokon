@@ -10,12 +10,12 @@
  * @returns {void}
  */
 export function exposeDebugState(key, value) {
-  if (typeof globalThis !== "undefined") {
-    if (!globalThis.__classicBattleDebugMap) {
-      globalThis.__classicBattleDebugMap = new Map();
+  if (typeof window !== "undefined") {
+    if (!window.__classicBattleDebugMap) {
+      window.__classicBattleDebugMap = new Map();
     }
-    globalThis.__classicBattleDebugMap.set(key, value);
-    globalThis.__debugExposed = true;
+    window.__classicBattleDebugMap.set(key, value);
+    window.__debugExposed = true;
   }
 }
 
@@ -30,17 +30,17 @@ export function exposeDebugState(key, value) {
  * 2. Do not throw; missing keys return `undefined` to make tests simpler.
  */
 export function readDebugState(key) {
-  if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugMap) {
-    return globalThis.__classicBattleDebugMap.get(key);
+  if (typeof window !== "undefined" && window.__classicBattleDebugMap) {
+    return window.__classicBattleDebugMap.get(key);
   }
   return undefined;
 }
 
 // Expose hooks on global for modules that cannot reliably share ESM bindings in tests.
 try {
-  if (typeof globalThis !== "undefined") {
-    globalThis.__classicBattleDebugExpose = exposeDebugState;
-    globalThis.__classicBattleDebugRead = readDebugState;
+  if (typeof window !== "undefined") {
+    window.__classicBattleDebugExpose = exposeDebugState;
+    window.__classicBattleDebugRead = readDebugState;
   }
 } catch {}
 
