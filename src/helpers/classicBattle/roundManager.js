@@ -706,24 +706,7 @@ function markNextReady(btn) {
   );
 }
 
-/**
- * Handle the expiration of the next round cooldown timer.
- *
- * @param {object} controls - Cooldown controls object
- * @param {HTMLButtonElement|null|undefined} btn - Next button element
- * @param {object} [options={}] - Configuration options
- * @returns {Promise<boolean>} True if ready event was successfully dispatched
- * @pseudocode
- * 1. Set up telemetry emitter for debugging and instrumentation
- * 2. Check if ready dispatch is already in flight, exit early if so
- * 3. Create machine reader and state inspector for cooldown detection
- * 4. Wait for machine to reach cooldown state before proceeding
- * 5. Update UI elements to indicate readiness
- * 6. Execute dispatch strategies in sequence until one succeeds
- * 7. Update controls state and return dispatch result
- */
-async function handleNextRoundExpiration(controls, btn, options = {}) {
-  if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
+function createExpirationTelemetryContext() {
   const debugExpose =
     typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugExpose === "function"
       ? globalThis.__classicBattleDebugExpose.bind(globalThis)
@@ -737,14 +720,17 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       return null;
     }
   };
-  const { emit: emitTelemetry, getDebugBag } = createExpirationTelemetryEmitter({
+  const { emit, getDebugBag } = createExpirationTelemetryEmitter({
     exposeDebugState,
     debugExpose,
     getDebugBag: debugBagFactory
   });
-  emitTelemetry("nextRoundExpired", true);
-  emitTelemetry("handleNextRoundExpirationCalled", true);
+  emit("nextRoundExpired", true);
+  emit("handleNextRoundExpirationCalled", true);
+  return { emitTelemetry: emit, getDebugBag };
+}
 
+function guardReadyInFlight(controls, emitTelemetry, getDebugBag) {
   if (controls?.readyInFlight) {
     const snapshot = {
       readyDispatched: !!controls?.readyDispatched,
@@ -757,9 +743,8 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
       bag.handleNextRound_earlyExit.push({ reason: "inFlight", at: Date.now() });
     }
-    return;
+    return true;
   }
-
   if (controls) {
     controls.readyInFlight = true;
     emitTelemetry("handleNextRoundEarlyExit", {
@@ -769,7 +754,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     });
   }
   emitTelemetry("currentNextRoundReadyInFlight", !!controls?.readyInFlight);
+  return false;
+}
 
+function prepareCooldownContext(options, emitTelemetry) {
   const clearSkipHandler =
     typeof options.setSkipHandler === "function" ? options.setSkipHandler : setSkipHandler;
   try {
@@ -791,14 +779,12 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         ? globalThis.__classicBattleDebugRead
         : undefined
   });
-
   const isCooldownSafeState = (state) => {
     if (!state) return true;
     if (typeof state !== "string") return false;
     if (state === "cooldown" || state === "roundOver") return true;
     return isOrchestratorReadyState(state);
   };
-
   const inspector = createMachineStateInspector({
     machineReader,
     getSnapshot,
@@ -806,13 +792,62 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     isCooldownState: isCooldownSafeState,
     emitTelemetry
   });
-
-  await inspector.waitForCooldown(bus);
-
   const markReady = options.markReady || markNextReady;
   const orchestrated =
     typeof options.isOrchestrated === "function" ? options.isOrchestrated : isOrchestrated;
+  return { bus, inspector, machineReader, markReady, orchestrated };
+}
 
+function createReadyDispatchStrategies({ options, machineReader, emitTelemetry, getDebugBag }) {
+  const busStrategyOptions =
+    typeof options.dispatchBattleEvent === "function"
+      ? { dispatchBattleEvent: options.dispatchBattleEvent }
+      : {};
+  return [
+    () =>
+      dispatchReadyWithOptions({
+        dispatchBattleEvent: options.dispatchBattleEvent,
+        emitTelemetry,
+        getDebugBag
+      }),
+    () => dispatchReadyViaBus(busStrategyOptions),
+    () => dispatchReadyDirectly({ machineReader, emitTelemetry })
+  ];
+}
+
+function finalizeReadyControls(controls, dispatched) {
+  if (!controls) return;
+  controls.readyInFlight = false;
+  if (!controls.readyDispatched && dispatched && typeof controls.resolveReady === "function") {
+    controls.resolveReady();
+  }
+  if (dispatched) {
+    controls.readyDispatched = true;
+  }
+}
+
+/**
+ * Handle the expiration of the next round cooldown timer.
+ *
+ * @param {object} controls - Cooldown controls object
+ * @param {HTMLButtonElement|null|undefined} btn - Next button element
+ * @param {object} [options={}] - Configuration options
+ * @returns {Promise<boolean>} True if ready event was successfully dispatched
+ * @pseudocode
+ * 1. Prepare telemetry emitters and guard concurrent ready dispatch
+ * 2. Establish machine inspector context and wait for cooldown
+ * 3. Update UI affordances for readiness and refresh debug state
+ * 4. Execute dispatch strategies and finalize control flags
+ */
+async function handleNextRoundExpiration(controls, btn, options = {}) {
+  if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
+  const { emitTelemetry, getDebugBag } = createExpirationTelemetryContext();
+  if (guardReadyInFlight(controls, emitTelemetry, getDebugBag)) return;
+  const { bus, inspector, machineReader, markReady, orchestrated } = prepareCooldownContext(
+    options,
+    emitTelemetry
+  );
+  await inspector.waitForCooldown(bus);
   await updateExpirationUi({
     isOrchestrated: orchestrated,
     markReady,
@@ -823,42 +858,22 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       if (typeof updatePanel === "function") updatePanel();
     }
   });
-
-  const busStrategyOptions =
-    typeof options.dispatchBattleEvent === "function"
-      ? { dispatchBattleEvent: options.dispatchBattleEvent }
-      : {};
-  const strategies = [
-    () =>
-      dispatchReadyWithOptions({
-        dispatchBattleEvent: options.dispatchBattleEvent,
-        emitTelemetry,
-        getDebugBag
-      }),
-    () => dispatchReadyViaBus(busStrategyOptions),
-    () => dispatchReadyDirectly({ machineReader, emitTelemetry })
-  ];
-
+  const strategies = createReadyDispatchStrategies({
+    options,
+    bus,
+    machineReader,
+    emitTelemetry,
+    getDebugBag
+  });
   const dispatched = await runReadyDispatchStrategies({
     alreadyDispatchedReady: options?.alreadyDispatchedReady === true,
     strategies,
     emitTelemetry
   });
-
   if (dispatched) {
     readyDispatchedForCurrentCooldown = true;
   }
-
-  if (controls) {
-    controls.readyInFlight = false;
-    if (!controls.readyDispatched && dispatched && typeof controls.resolveReady === "function") {
-      controls.resolveReady();
-    }
-    if (dispatched) {
-      controls.readyDispatched = true;
-    }
-  }
-
+  finalizeReadyControls(controls, dispatched);
   return dispatched;
 }
 

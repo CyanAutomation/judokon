@@ -27,7 +27,9 @@ import { dispatchBattleEvent } from "../../../../src/helpers/classicBattle/event
 const getMockedDispatch = () => {
   const mock = /** @type {ReturnType<typeof vi.fn>} */ (dispatchBattleEvent);
   if (!mock?.mock) {
-    throw new Error("dispatchBattleEvent is not properly mocked");
+    throw new Error(
+      "dispatchBattleEvent is not properly mocked. Ensure vi.mock() is called before importing the module."
+    );
   }
   return mock;
 };
