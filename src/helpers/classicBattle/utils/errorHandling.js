@@ -37,8 +37,8 @@ function pushDebugEntry(entry, context) {
   const key = context?.debugKey || ERROR_HISTORY_KEY;
   try {
     const existing = readDebugState(key);
-    const history = Array.isArray(existing) ? existing.slice(-ERROR_HISTORY_LIMIT + 1) : [];
-    history.push(entry);
+    const baseHistory = Array.isArray(existing) ? existing : [];
+    const history = baseHistory.concat(entry).slice(-ERROR_HISTORY_LIMIT);
     exposeDebugState(key, history);
   } catch (debugError) {
     if (!IS_PRODUCTION) {
@@ -52,8 +52,7 @@ function pushDebugEntry(entry, context) {
   if (typeof globalThis !== "undefined") {
     const bagKey = "__CLASSIC_BATTLE_ERROR_LOG";
     const existingLog = Array.isArray(globalThis[bagKey]) ? globalThis[bagKey] : [];
-    const trimmed = existingLog.slice(-ERROR_HISTORY_LIMIT + 1);
-    trimmed.push(entry);
+    const trimmed = existingLog.concat(entry).slice(-ERROR_HISTORY_LIMIT);
     globalThis[bagKey] = trimmed;
   }
 }
