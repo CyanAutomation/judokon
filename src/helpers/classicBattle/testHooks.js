@@ -5,6 +5,52 @@ import { stopTimer } from "../battleEngineFacade.js";
 let __uiBound = false;
 let __promisesBound = false;
 
+const readStatFromCard = (card, stat, getCardStatValue) => {
+  if (!card || typeof getCardStatValue !== "function") return NaN;
+
+  const dataHost =
+    typeof card.hasAttribute === "function" && card.hasAttribute("data-card-json")
+      ? card
+      : card.querySelector?.("[data-card-json]");
+
+  const rawJson = dataHost?.getAttribute?.("data-card-json");
+  if (rawJson) {
+    try {
+      const parsed = JSON.parse(rawJson);
+      const value = Number(parsed?.stats?.[stat]);
+      if (Number.isFinite(value)) return value;
+    } catch {}
+  }
+
+  const domVal = getCardStatValue(card, stat);
+  return Number.isFinite(domVal) ? domVal : NaN;
+};
+
+const deriveSelectionValues = (stat, getCardStatValue, getOpponentJudoka) => {
+  const values = {};
+  const playerCard = document.getElementById("player-card");
+  const opponentCard = document.getElementById("opponent-card");
+
+  const playerVal = readStatFromCard(playerCard, stat, getCardStatValue);
+  if (Number.isFinite(playerVal)) {
+    values.playerVal = playerVal;
+  }
+
+  let opponentVal = readStatFromCard(opponentCard, stat, getCardStatValue);
+  if (!Number.isFinite(opponentVal) && typeof getOpponentJudoka === "function") {
+    try {
+      const opp = getOpponentJudoka();
+      const cached = Number(opp?.stats?.[stat]);
+      if (Number.isFinite(cached)) opponentVal = cached;
+    } catch {}
+  }
+  if (Number.isFinite(opponentVal)) {
+    values.opponentVal = opponentVal;
+  }
+
+  return values;
+};
+
 /**
  * Ensure Classic Battle UI listeners and test promises are registered.
  *
@@ -92,40 +138,9 @@ export async function triggerRoundTimeoutNow(store) {
   const { autoSelectStat } = await import("/src/helpers/classicBattle/autoSelectStat.js");
 
   const onExpiredSelect = async (stat, opts) => {
-    const playerCard = document.getElementById("player-card");
-    const opponentCard = document.getElementById("opponent-card");
-    const readStatFromCard = (card) => {
-      if (!card) return NaN;
-      try {
-        const dataHost = card.hasAttribute("data-card-json")
-          ? card
-          : card.querySelector("[data-card-json]");
-        const rawJson = dataHost?.getAttribute("data-card-json");
-        if (rawJson) {
-          try {
-            const parsed = JSON.parse(rawJson);
-            const value = parsed?.stats?.[stat];
-            const numeric = Number(value);
-            if (Number.isFinite(numeric)) return numeric;
-          } catch {}
-        }
-      } catch {}
-      const domVal = getCardStatValue(card, stat);
-      return Number.isFinite(domVal) ? domVal : NaN;
-    };
-    const playerFromCard = readStatFromCard(playerCard);
-    const playerVal = Number.isFinite(playerFromCard) ? playerFromCard : 0;
-    let opponentVal = readStatFromCard(opponentCard);
-    if (!Number.isFinite(opponentVal)) {
-      try {
-        const opp = getOpponentJudoka();
-        const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-        if (Number.isFinite(raw)) opponentVal = raw;
-      } catch {}
-    }
+    const selectionValues = deriveSelectionValues(stat, getCardStatValue, getOpponentJudoka);
     return handleStatSelection(store, stat, {
-      playerVal,
-      opponentVal,
+      ...selectionValues,
       forceDirectResolution: true,
       ...opts
     });
@@ -170,16 +185,8 @@ export async function triggerStallPromptNow(store) {
   );
 
   const onSelect = (stat, opts) => {
-    const playerCard = document.getElementById("player-card");
-    const opponentCard = document.getElementById("opponent-card");
-    const playerVal = getCardStatValue(playerCard, stat);
-    let opponentVal = getCardStatValue(opponentCard, stat);
-    try {
-      const opp = getOpponentJudoka();
-      const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-      opponentVal = Number.isFinite(raw) ? raw : opponentVal;
-    } catch {}
-    return handleStatSelection(store, stat, { playerVal, opponentVal, ...opts });
+    const selectionValues = deriveSelectionValues(stat, getCardStatValue, getOpponentJudoka);
+    return handleStatSelection(store, stat, { ...selectionValues, ...opts });
   };
   handleStatSelectionTimeout(store, onSelect, 0);
   // Surface the stall prompt immediately in tests to avoid waiting on timers.
