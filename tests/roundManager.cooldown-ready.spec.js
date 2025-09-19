@@ -4,6 +4,12 @@ import {
   startCooldown,
   _resetForTest
 } from "../src/helpers/classicBattle/roundManager.js";
+import {
+  detectOrchestratorContext,
+  initializeCooldownTelemetry,
+  resolveActiveScheduler
+} from "../src/helpers/classicBattle/cooldownOrchestrator.js";
+import { exposeDebugState } from "../src/helpers/classicBattle/debugHooks.js";
 
 beforeEach(() => {
   // Ensure clean DOM and test env
@@ -16,6 +22,32 @@ afterEach(() => {
   try {
     _resetForTest();
   } catch {}
+  if (window.__classicBattleDebugMap) {
+    window.__classicBattleDebugMap.clear();
+  }
+});
+
+test("cooldown orchestrator telemetry primes debug counters", () => {
+  window.__startCooldownInvoked = false;
+  globalThis.__startCooldownCount = 0;
+  initializeCooldownTelemetry({ schedulerProvided: true });
+  expect(window.__startCooldownInvoked).toBe(true);
+  expect(globalThis.__startCooldownCount).toBe(1);
+});
+
+test("resolveActiveScheduler prefers injected scheduler", () => {
+  const customScheduler = { setTimeout: vi.fn(), clearTimeout: vi.fn() };
+  expect(resolveActiveScheduler(customScheduler)).toBe(customScheduler);
+  const fallback = resolveActiveScheduler(null);
+  expect(typeof fallback.setTimeout).toBe("function");
+});
+
+test("detectOrchestratorContext reports debug machine", () => {
+  const machine = { id: "orchestrator" };
+  exposeDebugState("getClassicBattleMachine", () => machine);
+  const result = detectOrchestratorContext(() => false);
+  expect(result.machine).toBe(machine);
+  expect(result.orchestrated).toBe(true);
 });
 
 test("roundManager - cooldown expiry: observe ready dispatch count (baseline)", async () => {
