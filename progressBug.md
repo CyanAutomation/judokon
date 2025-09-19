@@ -17,15 +17,19 @@ This document captures the investigation and mitigation work performed to diagno
 
 1. Reproduced the failing test locally with verbose logs to confirm the stack trace and the blocking await location.
 2. Read and audited the key modules:
-	- `tests/setup.js` (global harness)
-	- `src/helpers/classicBattle.js`
-	- `src/helpers/classicBattle/testHooks.js`
-	- `src/helpers/classicBattle/promises.js`, `roundUI.js`, and `uiHelpers.js` (to understand what get bound)
+
+- `tests/setup.js` (global harness)
+- `src/helpers/classicBattle.js`
+- `src/helpers/classicBattle/testHooks.js`
+- `src/helpers/classicBattle/promises.js`, `roundUI.js`, and `uiHelpers.js` (to understand what get bound)
+
 3. Added temporary debug logs in `tests/setup.js` to confirm dynamic import and ensure calls were reached (then removed transient logs from production code).
 4. Iteratively modified `tests/setup.js` to avoid awaiting the heavy/racy initialization in the global `beforeEach`:
-	- Tried force-ensuring bindings and explicit resets.
-	- Tried deferring import with `setTimeout(..., 0)` to avoid tick-order races.
-	- Final pragmatic change: switched to a fire-and-forget dynamic import inside the global `beforeEach` and invoked `__resetClassicBattleBindings()` followed by `__ensureClassicBattleBindings({ force: true })` without awaiting. This guarantees the global hook does not block while still preloading bindings in the background.
+
+- Tried force-ensuring bindings and explicit resets.
+- Tried deferring import with `setTimeout(..., 0)` to avoid tick-order races.
+- Final pragmatic change: switched to a fire-and-forget dynamic import inside the global `beforeEach` and invoked `__resetClassicBattleBindings()` followed by `__ensureClassicBattleBindings({ force: true })` without awaiting. This guarantees the global hook does not block while still preloading bindings in the background.
+
 5. Removed temporary debug statements added to source modules during diagnosis.
 
 Files touched: primarily `tests/setup.js` (global harness). Temporary debug additions to `src/helpers/classicBattle/testHooks.js` and `src/helpers/classicBattle.js` were removed.
@@ -57,12 +61,16 @@ npx vitest
 ## Medium-term / recommended fixes (less-risk, more robust)
 
 1. Add a tiny synchronous test-only initializer exported from `src/helpers/classicBattle/testHooks.js`, for example `initializeTestBindingsLight()`:
-	- Purpose: set minimal deterministic module-level state and attach the minimal promises/event target synchronously, so global `beforeEach` can call it without async awaits and without races with `vi.resetModules()`.
-	- Populate only what tests truly need in common (avoid importing heavy modules or starting timers).
-	- Use `/* @test-only */` JSDoc or a clearly-named export so production code doesn't rely on it.
+
+- Purpose: set minimal deterministic module-level state and attach the minimal promises/event target synchronously, so global `beforeEach` can call it without async awaits and without races with `vi.resetModules()`.
+- Populate only what tests truly need in common (avoid importing heavy modules or starting timers).
+- Use `/* @test-only */` JSDoc or a clearly-named export so production code doesn't rely on it.
+
 2. Refactor tests that call `vi.resetModules()` widely:
-	- Replace full module resets with targeted stubs/mocks where possible.
-	- When `vi.resetModules()` is required, ensure the test calls the test-hooks `__ensureClassicBattleBindings()` (or the lightweight initializer) in its own `beforeEach` to get deterministic state.
+
+- Replace full module resets with targeted stubs/mocks where possible.
+- When `vi.resetModules()` is required, ensure the test calls the test-hooks `__ensureClassicBattleBindings()` (or the lightweight initializer) in its own `beforeEach` to get deterministic state.
+
 3. Add unit/integration tests that explicitly exercise the promise reset/resolve flows in `promises.js` to prevent regressions. Include a happy-path and 1-2 edge cases (no-event, repeated reset) per the repo test-quality standards.
 
 ## Concrete next steps (what I can do next)
@@ -71,8 +79,10 @@ I can proceed with one or more of the following; pick which you want me to do ne
 
 1. Implement the synchronous lightweight initializer (`initializeTestBindingsLight()`) in `src/helpers/classicBattle/testHooks.js` and wire `tests/setup.js` to call it synchronously. Then run the test suite and iterate on any remaining failures.
 2. Investigate the remaining per-test timeouts one-by-one:
-	- Run failing tests in isolation with extended timeouts and full logs.
-	- Instrument the exact promise/resolver paths (e.g., `window.__resolveStatButtonsReady`) to ensure they get called.
+
+- Run failing tests in isolation with extended timeouts and full logs.
+- Instrument the exact promise/resolver paths (e.g., `window.__resolveStatButtonsReady`) to ensure they get called.
+
 3. Create small targeted tests for `promises.js` to assert that reset/resolve semantics work as expected (happy path + reset edge-case).
 4. Audit tests that call `vi.resetModules()` and provide a short patch to convert a small set to targeted mocks instead; propose a plan for broader follow-up.
 
@@ -92,4 +102,3 @@ If you want me to proceed immediately, say which option (1–4) to start with an
 ---
 
 File last updated: automated agent update. Awaiting review.
-
