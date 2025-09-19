@@ -10,6 +10,7 @@ import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEve
 import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
+import { setupScoreboard } from "../helpers/setupScoreboard.js";
 import {
   createBattleEngine,
   STATS,
@@ -18,9 +19,6 @@ import {
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer } from "../helpers/classicBattle/timerService.js";
-import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
-import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
-import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";

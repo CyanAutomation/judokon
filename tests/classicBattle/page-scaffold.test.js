@@ -148,9 +148,10 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
   const initStatButtons = vi.fn((store) => {
     const container = document.getElementById("stat-buttons");
     if (!container) throw new Error("initStatButtons missing container");
-    const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
-    console.log("[debug] initStatButtons buttons", buttons.length);
     const handlers = new Map();
+
+    const getButtons = () => Array.from(container.querySelectorAll("button[data-stat]"));
+    window.__mockButtons = getButtons();
 
     const ensureReadyPromise = () => {
       window.statButtonsReadyPromise = new Promise((resolve) => {
@@ -441,6 +442,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         statControls.enable();
         await (window.statButtonsReadyPromise ?? Promise.resolve());
         const buttons = container.querySelectorAll("button[data-stat]");
+        console.log("[debug] same element", window.__mockButtons?.[0] === buttons[0]);
         expect(buttons.length).toBeGreaterThan(0);
         buttons.forEach((b) => expect(b.disabled).toBe(false));
 
