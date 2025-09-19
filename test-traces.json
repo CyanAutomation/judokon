@@ -1,52 +1,79 @@
 {
-  "traceA": [
-    {
-      "event": "startCooldown",
-      "at": 1758317699336,
-      "scheduler": "default"
-    },
-    {
-      "event": "controlsCreated",
-      "at": 1758317699337,
-      "hasEmitter": true
-    },
-    {
-      "event": "cooldownContext",
-      "at": 1758317699337,
-      "orchestrated": true,
-      "hasMachine": false
-    },
-    {
-      "event": "cooldownDurationResolved",
-      "at": 1758317699400,
-      "seconds": 3
-    },
-    {
-      "event": "handleNextRoundExpiration.start",
-      "at": 1758317699406
-    },
-    {
-      "event": "handleNextRoundExpiration.dispatched",
-      "at": 1758317699408,
-      "dispatched": true
-    },
-    {
-      "event": "resolveReadyInvoked",
-      "at": 1758317699408,
-      "readyDispatched": false,
-      "readyInFlight": false
-    },
-    {
-      "event": "resolveReadySettled",
-      "at": 1758317699409,
-      "readyDispatched": true
-    },
-    {
-      "event": "handleNextRoundExpiration.end",
-      "at": 1758317699409,
-      "dispatched": true
-    }
-  ],
-  "traceB": [],
-  "traceDelayed": []
+  "tracesFile": {
+    "traceA": [
+      {
+        "event": "startCooldown",
+        "at": 1758317699336,
+        "scheduler": "default"
+      },
+      {
+        "event": "controlsCreated",
+        "at": 1758317699337,
+        "hasEmitter": true
+      },
+      {
+        "event": "cooldownContext",
+        "at": 1758317699337,
+        "orchestrated": true,
+        "hasMachine": false
+      },
+      {
+        "event": "cooldownDurationResolved",
+        "at": 1758317699400,
+        "seconds": 3
+      },
+      {
+        "event": "handleNextRoundExpiration.start",
+        "at": 1758317699406
+      },
+      {
+        "event": "handleNextRoundExpiration.dispatched",
+        "at": 1758317699408,
+        "dispatched": true
+      },
+      {
+        "event": "resolveReadyInvoked",
+        "at": 1758317699408,
+        "readyDispatched": false,
+        "readyInFlight": false
+      },
+      {
+        "event": "resolveReadySettled",
+        "at": 1758317699409,
+        "readyDispatched": true
+      },
+      {
+        "event": "handleNextRoundExpiration.end",
+        "at": 1758317699409,
+        "dispatched": true
+      }
+    ],
+    "traceB": [],
+    "traceDelayed": []
+  },
+  "debug": {
+    "trace": [
+      {
+        "event": "startCooldown",
+        "at": 1758318116738,
+        "scheduler": "default"
+      },
+      {
+        "event": "controlsCreated",
+        "at": 1758318116739,
+        "hasEmitter": true
+      },
+      {
+        "event": "cooldownContext",
+        "at": 1758318116739,
+        "orchestrated": false,
+        "hasMachine": false
+      },
+      {
+        "event": "cooldownDurationResolved",
+        "at": 1758318116741,
+        "seconds": 3
+      }
+    ]
+  }
 }
