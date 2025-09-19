@@ -170,7 +170,6 @@ The test fails due to an infinite recursive loop between the animation scheduler
   * Phase 1 – Specification: Define the mock API (enqueue, flushNext, flushAll, cancel) and concurrency guarantees, including integration points with Vitest fake timers.
   * Phase 2 – Implementation: Build the utility with an internal queue and instrumentation counters, plus snapshot-based unit tests that assert ordering and cancellation semantics.
   * Phase 3 – Integration: Replace brittle inline mocks with the utility, updating tests to use explicit flush calls and verifying no regressions in scheduling-sensitive suites.
-  * Phase 4 – Maintenance: Provide documentation, example usage, and lint checks to discourage reintroduction of synchronous `cb()` mocks.
 
 * Standardize the use of fake timers in tests to avoid global API mocking.
   * Phase 0 – Assessment: Audit the suite for places replacing `setTimeout`, `requestAnimationFrame`, or scheduler internals manually; record incompatibilities with fake timers.
@@ -178,13 +177,11 @@ The test fails due to an infinite recursive loop between the animation scheduler
   * Phase 2 – Migration: Update critical classic battle and scheduler tests to adopt the playbook, ensuring helper utilities also assume fake timers by default.
 
 * Enhance the scheduler module with test-friendly hooks for deterministic control.
-  * Phase 0 – Requirement Gathering: Collaborate with gameplay engineers to list the scheduler behaviors tests need to orchestrate (pause, resume, inject callbacks).
   * Phase 1 – API Design: Propose optional hooks such as `withTestController` or dependency injection for the timing source, and review with maintainers for backward compatibility.
   * Phase 2 – Implementation: Introduce the hooks guarded by internal flags, update scheduler docs, and ensure production codepaths remain unaffected through regression tests.
   * Phase 3 – Test Adoption: Retrofit existing scheduler-focused tests to use the hooks, eliminating reliance on private internals or monkey-patching.
 
 * Add safeguards in the scheduler to detect and prevent infinite loops during testing.
-  * Phase 0 – Failure Analysis: Catalogue historical infinite-loop incidents and document the call patterns that triggered them.
   * Phase 1 – Safeguard Design: Define detection heuristics (max synchronous frame depth, loop duration thresholds) and decide on developer-facing warnings vs. hard failures.
   * Phase 2 – Implementation: Add guarded counters or watchdog timers within the scheduler, ensuring they can be toggled or relaxed for stress tests.
   * Phase 3 – Verification: Create targeted tests that intentionally trigger the safeguards to confirm they surface actionable diagnostics without false positives.

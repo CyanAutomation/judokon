@@ -81,7 +81,6 @@ vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
 vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
   handleStatSelection: vi.fn(async () => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-    console.log("[debug] handleStatSelection invoked");
     emitBattleEvent("roundResolved");
     return {
       playerScore: 1,
@@ -145,109 +144,43 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
   const showFatalInitError = vi.fn();
   const setupNextButton = vi.fn();
 
-  const initStatButtons = vi.fn((store) => {
+  const initStatButtons = vi.fn(() => {
     const container = document.getElementById("stat-buttons");
-    if (!container) throw new Error("initStatButtons missing container");
-    const handlers = new Map();
-    const selectionModulePromise = import("../../src/helpers/classicBattle/selectionHandler.js");
+    const buttons = container ? Array.from(container.querySelectorAll("button")) : [];
 
-    const ensureButtonsExist = () => {
-      if (!container.querySelector("button")) {
-        const fallback = document.createElement("button");
-        fallback.type = "button";
-        fallback.dataset.stat = fallback.dataset.stat || "power";
-        container.appendChild(fallback);
-      }
-    };
-
-    const getButtons = () => {
-      ensureButtonsExist();
-      const statButtons = container.querySelectorAll("button[data-stat]");
-      if (statButtons.length > 0) return Array.from(statButtons);
-      return Array.from(container.querySelectorAll("button"));
-    };
-    window.__mockButtons = getButtons();
-
-    const ensureReadyPromise = () => {
-      window.statButtonsReadyPromise = new Promise((resolve) => {
+    const createReadyPromise = () =>
+      new Promise((resolve) => {
         window.__resolveStatButtonsReady = resolve;
       });
-    };
 
-    const resolveReady = () => {
+    const signalReady = () => {
       if (typeof window.__resolveStatButtonsReady === "function") {
         window.__resolveStatButtonsReady();
+        window.__resolveStatButtonsReady = undefined;
       } else {
         window.statButtonsReadyPromise = Promise.resolve();
       }
-      window.__resolveStatButtonsReady = undefined;
-    };
-
-    const setButtonState = (isDisabled) => {
-      const buttons = getButtons();
-      buttons.forEach((btn) => {
-        btn.type = btn.type || "button";
-        if (!btn.hasAttribute("data-testid")) {
-          btn.setAttribute("data-testid", "stat-button");
-        }
-        if (!btn.hasAttribute("aria-describedby")) {
-          btn.setAttribute("aria-describedby", "round-message");
-        }
-        btn.disabled = isDisabled;
-        btn.tabIndex = isDisabled ? -1 : 0;
-        btn.classList.toggle("disabled", isDisabled);
-        if (!isDisabled) {
-          btn.classList.remove("selected");
-        }
-      });
-      if (container) {
-        container.dataset.buttonsReady = isDisabled ? "false" : "true";
-      }
-    };
-
-    const attachHandlers = () => {
-      const buttons = getButtons();
-      window.__mockButtons = buttons;
-      buttons.forEach((btn) => {
-        if (handlers.has(btn)) return;
-        const handler = async (event) => {
-          if (btn.disabled) return;
-          event?.preventDefault?.();
-          const { handleStatSelection } = await selectionModulePromise;
-          const stat = btn.dataset.stat || "";
-          await handleStatSelection(store, stat, {
-            playerVal: undefined,
-            opponentVal: undefined
-          });
-          disable();
-        };
-        btn.addEventListener("click", handler);
-        btn.onclick = handler;
-        btn.click = () => handler(new Event("click"));
-        handlers.set(btn, handler);
-        if (!window.__statButtonHandlers) {
-          window.__statButtonHandlers = new Map();
-        }
-        window.__statButtonHandlers.set(btn, handler);
-      });
-      window.__handlerCount = handlers.size;
     };
 
     const disable = vi.fn(() => {
-      setButtonState(true);
-      ensureReadyPromise();
+      buttons.forEach((btn) => {
+        btn.disabled = true;
+        btn.tabIndex = -1;
+      });
+      if (container) container.dataset.buttonsReady = "false";
+      window.statButtonsReadyPromise = createReadyPromise();
     });
 
     const enable = vi.fn(() => {
-      attachHandlers();
-      setButtonState(false);
-      resolveReady();
+      buttons.forEach((btn) => {
+        btn.disabled = false;
+        btn.tabIndex = 0;
+      });
+      if (container) container.dataset.buttonsReady = "true";
+      signalReady();
     });
 
-    ensureReadyPromise();
-    attachHandlers();
-    setButtonState(true);
-
+    disable();
     return { enable, disable };
   });
 
@@ -445,7 +378,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       setupNextButton();
       const statControls = initStatButtons(store);
       expect(initStatButtons).toHaveBeenCalled();
-      console.log("[debug] initBattle statControls", !!statControls);
       await battleMod.startRound(store, battleMod.applyRoundUI);
       return { container: statContainer, statControls };
     }
@@ -462,10 +394,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         const { container, statControls } = await initBattle();
         statControls.enable();
         await (window.statButtonsReadyPromise ?? Promise.resolve());
-        expect(window.__handlerCount ?? 0).toBeGreaterThan(0);
         const buttons = container.querySelectorAll("button[data-stat]");
-        expect(container.querySelectorAll("button").length).toBeGreaterThan(0);
-        console.log("[debug] same element", window.__mockButtons?.[0] === buttons[0]);
         expect(buttons.length).toBeGreaterThan(0);
         buttons.forEach((b) => expect(b.disabled).toBe(false));
 
@@ -477,7 +406,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         const { handleStatSelection } = await import(
           "../../src/helpers/classicBattle/selectionHandler.js"
         );
-        window.__statButtonHandlers?.get(buttons[0])?.();
         expect(handleStatSelection).toHaveBeenCalled();
         await timerSpy.runAllTimersAsync();
         await resolved;
