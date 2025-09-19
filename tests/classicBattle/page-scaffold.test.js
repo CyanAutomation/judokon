@@ -149,6 +149,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     const container = document.getElementById("stat-buttons");
     if (!container) throw new Error("initStatButtons missing container");
     const handlers = new Map();
+    const selectionModulePromise = import("../../src/helpers/classicBattle/selectionHandler.js");
 
     const getButtons = () => Array.from(container.querySelectorAll("button[data-stat]"));
     window.__mockButtons = getButtons();
@@ -198,19 +199,16 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
         const handler = async (event) => {
           if (btn.disabled) return;
           event?.preventDefault?.();
-          try {
-            const { handleStatSelection } = await import(
-              "../../src/helpers/classicBattle/selectionHandler.js"
-            );
-            const stat = btn.dataset.stat || "";
-            await handleStatSelection(store, stat, {
-              playerVal: undefined,
-              opponentVal: undefined
-            });
-            disable();
-          } catch {}
+          const { handleStatSelection } = await selectionModulePromise;
+          const stat = btn.dataset.stat || "";
+          await handleStatSelection(store, stat, {
+            playerVal: undefined,
+            opponentVal: undefined
+          });
+          disable();
         };
         btn.addEventListener("click", handler);
+        btn.onclick = handler;
         handlers.set(btn, handler);
       });
     };

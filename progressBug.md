@@ -112,15 +112,12 @@ The test times out because a promise that waits for the `round.resolved` event n
   * Phase 0 – Baseline: Determine the critical listeners that must always be wired (stat button clicks, round events) and capture their expected registration timing.
   * Phase 1 – Utility Support: Extend test helpers to expose assertions like `expectListenerAttached` or `getRegisteredHandlers` without peeking into private internals.
   * Phase 2 – Test Updates: Amend existing tests to assert listener presence immediately after setup and post-cleanup to detect leaks.
-  * Phase 3 – Automation: Introduce a lint-time rule or Vitest custom matcher that warns when listener assertions are skipped for eligible scenarios.
-  * Phase 4 – Monitoring: Feed listener-metrics into CI reports, and periodically sample runtime telemetry to confirm tests mirror production wiring.
 
 * Review and refactor tests that rely on deep mocking to use integration-style testing where possible.
   * Phase 0 – Candidate Selection: Rank tests by mock depth and failure frequency, prioritising those that stub more than two layers of dependency.
   * Phase 1 – Scenario Mapping: For each candidate, outline the user journey it attempts to verify and identify the minimal set of modules that can remain real.
   * Phase 2 – Refactor: Replace deep mocks with integration-friendly scaffolding (real DOM factories, real orchestrators) while keeping deterministic control via fake timers and controlled data fixtures.
   * Phase 3 – Regression Sweep: Run extended CI flake detection, capture before/after stability metrics, and ensure test duration remains acceptable.
-  * Phase 4 – Documentation: Add a migration log describing the refactors, highlighting patterns for future rewrites and tagging TODOs for remaining deep mocks.
 
 ---
 
