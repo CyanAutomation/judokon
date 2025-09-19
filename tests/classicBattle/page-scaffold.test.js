@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeEach, afterEach, describe, test, expect, vi } from "vitest";
+import * as scheduler from "../../src/utils/scheduler.js";
 
 const engineMock = vi.hoisted(() => ({
   listeners: new Map(),
@@ -10,6 +11,15 @@ const engineMock = vi.hoisted(() => ({
 const modalMock = vi.hoisted(() => ({
   onStart: null
 }));
+
+vi.mock("../../src/helpers/classicBattle/battleEvents.js", async () => {
+  const { SimpleEmitter } = await import("../../src/helpers/events/SimpleEmitter.js");
+  const battleEvents = new SimpleEmitter();
+  return {
+    emitBattleEvent: (event, data) => battleEvents.emit(event, data),
+    battleEvents
+  };
+});
 
 vi.mock("../../src/helpers/battleEngineFacade.js", () => {
   return {
@@ -370,7 +380,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       const button = container.querySelector("button[data-stat]");
       expect(button).toBeTruthy();
 
-      const scheduler = await import("../../src/utils/scheduler.js");
       if (typeof scheduler.start === "function") {
         scheduler.start();
         if (typeof scheduler.onFrame === "function") {
