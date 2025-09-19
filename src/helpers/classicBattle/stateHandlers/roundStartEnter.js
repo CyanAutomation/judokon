@@ -1,4 +1,4 @@
-import { setupFallbackTimer } from "../roundManager.js";
+import { setupFallbackTimer } from "../setupFallbackTimer.js";
 import { isTestModeEnabled } from "../../testModeUtils.js";
 import { guardAsync } from "../guard.js";
 import { handleRoundError } from "../handleRoundError.js";

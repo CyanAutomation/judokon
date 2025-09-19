@@ -13,33 +13,24 @@ import { logTimerOperation, createComponentLogger } from "./debugLogger.js";
 const timerLogger = createComponentLogger("TimerService");
 
 import { realScheduler } from "../scheduler.js";
+/**
+ * @summary Re-export shared fallback timer scheduling helper.
+ *
+ * @pseudocode
+ * 1. Forward `setupFallbackTimer` from the dedicated helper module.
+ * 2. Preserve existing timerService imports for callers relying on the re-export.
+ */
+export { setupFallbackTimer } from "./setupFallbackTimer.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { getNextRoundControls } from "./roundManager.js";
+import {
+  hasReadyBeenDispatchedForCurrentCooldown,
+  setReadyDispatchedForCurrentCooldown
+} from "./roundReadyState.js";
 import { guard } from "./guard.js";
 import { safeGetSnapshot, isNextReady, resetReadiness } from "./timerUtils.js";
 import { forceAutoSelectAndDispatch } from "./autoSelectHandlers.js";
-
-/**
- * Schedule a fallback timeout and return its id.
- *
- * @pseudocode
- * 1. Attempt to call `setTimeout(cb, ms)`.
- * 2. Return the timer id or `null` on failure.
- *
- * @param {number} ms
- * @param {Function} cb
- * @returns {ReturnType<typeof setTimeout>|null}
- */
-export function setupFallbackTimer(ms, cb, scheduler) {
-  const activeScheduler =
-    scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
-  try {
-    return activeScheduler.setTimeout(cb, ms);
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Accessor for the active Next-round cooldown controls.
@@ -175,6 +166,12 @@ export async function advanceWhenReady(btn, resolveReady) {
       await dispatchBattleEvent(t.event, t.payload);
     } catch {}
   }
+  if (hasReadyBeenDispatchedForCurrentCooldown()) {
+    if (typeof resolveReady === "function") resolveReady();
+    setSkipHandler(null);
+    return;
+  }
+  setReadyDispatchedForCurrentCooldown(true);
   await dispatchBattleEvent("ready");
   if (typeof resolveReady === "function") resolveReady();
   setSkipHandler(null);
@@ -202,6 +199,11 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
     // Clear existing handler before advancing so the next round's handler
     // installed during `ready` remains intact.
     setSkipHandler(null);
+    if (hasReadyBeenDispatchedForCurrentCooldown()) {
+      if (typeof resolveReady === "function") resolveReady();
+      return;
+    }
+    setReadyDispatchedForCurrentCooldown(true);
     await dispatchBattleEvent("ready");
     if (typeof resolveReady === "function") resolveReady();
     return;
@@ -211,6 +213,11 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   const { state } = safeGetSnapshot();
   if (state === "cooldown" || !state) {
     setSkipHandler(null);
+    if (hasReadyBeenDispatchedForCurrentCooldown()) {
+      if (typeof resolveReady === "function") resolveReady();
+      return;
+    }
+    setReadyDispatchedForCurrentCooldown(true);
     await dispatchBattleEvent("ready");
     if (typeof resolveReady === "function") resolveReady();
   }
