@@ -74,14 +74,6 @@ function safeRound(operation, fn, options = {}) {
   });
 }
 
-function normalizeMachineState(candidate) {
-  if (typeof candidate === "string") return candidate;
-  if (candidate && typeof candidate === "object" && typeof candidate.value === "string") {
-    return candidate.value;
-  }
-  return null;
-}
-
 function resetReadyTrace() {
   if (typeof window === "undefined") return;
   safeRound(
@@ -154,21 +146,11 @@ function getStartRound(store) {
  * test debug APIs).
  *
  * @summary Reset match state and UI, then begin a new round.
-<<<<<<< HEAD
  *
  * @pseudocode
  * 1. Ensure a battle engine exists by probing `battleEngine.getScores()` and calling `createBattleEngine()` when needed, then rebind events with `bridgeEngineEvents()`.
  * 2. Dispatch `game:reset-ui` and zero the scoreboard so UI surfaces show a fresh match state.
  * 3. Resolve the `startRound` implementation (allowing debug overrides), await its result, then reaffirm zeroed scores before returning.
-=======
- * @pseudocode
- * 1. Attempt to reuse an existing engine instance; create one when missing.
- * 2. Bridge engine events and notify listeners that the UI should reset.
- * 3. Emit a scoreboard reset, start a new round, and normalize the score view.
- * 1. Create a fresh engine instance via `createBattleEngine()` and rebind engine events with `bridgeEngineEvents()`.
- * 2. Emit a `game:reset-ui` CustomEvent so UI components can teardown.
- * 3. Resolve the appropriate `startRound` function (possibly overridden) and call it.
->>>>>>> 9fe756b544bab0ec8fe330bfa28f6e762c0bdae0
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
@@ -196,15 +178,7 @@ export async function handleReplay(store) {
       createBattleEngine();
     }
   };
-  safeRound("handleReplay.ensureEngine", () => ensureEngine(), {
-    fallback: () =>
-      safeRound(
-        "handleReplay.ensureEngine.createFallback",
-        () => {
-          createBattleEngine();
-        },
-        { suppressInProduction: true }
-      ),
+  safeRound("handleReplay.ensureEngine", ensureEngine, {
     suppressInProduction: true
   });
   bridgeEngineEvents();
@@ -232,7 +206,6 @@ export async function handleReplay(store) {
 }
 
 /**
-<<<<<<< HEAD
  * @summary Prepare and announce the next battle round.
  *
  * @pseudocode
@@ -245,20 +218,6 @@ export async function handleReplay(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store to mutate with round data.
  * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart] - Callback invoked once the round is ready.
  * @returns {Promise<ReturnType<typeof drawCards> & { roundNumber: number }>} Drawn card data augmented with the round number.
-=======
- * Initiates a new battle round, setting its state to active and recording the start time.
- * It also increments the round number and clears any events from previous rounds.
- * @param {number} roundNum - The number of the round to start.
- * SET roundState to ACTIVE
- * SET roundNumber to roundNum
- * SET roundStartTime to current timestamp
- * CLEAR roundEvents
- * @pseudocode
- * 1. Reset store selection state and draw fresh cards.
- * 2. Query the engine for rounds played to determine the next round number.
- * 3. Invoke any provided round-start hook and emit battle events.
- * @returns {Promise<{ roundNumber: number, playerJudoka: any, opponentJudoka: any }>} next round payload
->>>>>>> 9fe756b544bab0ec8fe330bfa28f6e762c0bdae0
  */
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
@@ -712,13 +671,8 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
       } else setTimeout(run, 0);
     };
     safeRound("setupOrchestratedReady.deferCheck", () => scheduleCheck(), {
-      fallback: () =>
-        safeRound(
-          "setupOrchestratedReady.deferCheckFallback",
-          () => setTimeout(() => checkImmediate(), 0),
-          { suppressInProduction: true }
-        ),
-      suppressInProduction: true
+      suppressInProduction: true,
+      fallback: () => setTimeout(() => checkImmediate(), 0)
     });
   }
 }
@@ -740,6 +694,13 @@ function readBattleStateDataset() {
 
 function getMachineState(machine) {
   if (!machine || typeof machine !== "object") return null;
+  const normalizeMachineState = (candidate) => {
+    if (typeof candidate === "string") return candidate;
+    if (candidate && typeof candidate === "object" && typeof candidate.value === "string") {
+      return candidate.value;
+    }
+    return null;
+  };
   const state = safeRound("getMachineState.getState", () => machine.getState?.(), {
     suppressInProduction: true,
     defaultValue: null
@@ -1054,11 +1015,11 @@ function finalizeReadyControls(controls, dispatched) {
  * 4. Execute dispatch strategies and finalize control flags
  */
 async function handleNextRoundExpiration(controls, btn, options = {}) {
-  try {
-    appendReadyTrace("handleNextRoundExpiration.start", {});
-  } catch {
-    // noop: suppressed error recorded by safeRound where applicable
-  }
+  safeRound(
+    "handleNextRoundExpiration.traceStart",
+    () => appendReadyTrace("handleNextRoundExpiration.start", {}),
+    { suppressInProduction: true }
+  );
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   const { emitTelemetry, getDebugBag } = createExpirationTelemetryContext();
   if (guardReadyInFlight(controls, emitTelemetry, getDebugBag)) return;
@@ -1091,18 +1052,18 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   });
   if (dispatched) {
     readyDispatchedForCurrentCooldown = true;
-    try {
-      appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true });
-    } catch {
-      // noop: suppressed error recorded by safeRound where applicable
-    }
+    safeRound(
+      "handleNextRoundExpiration.traceDispatched",
+      () => appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true }),
+      { suppressInProduction: true }
+    );
   }
   finalizeReadyControls(controls, dispatched);
-  try {
-    appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched });
-  } catch {
-    // noop: suppressed error recorded by safeRound where applicable
-  }
+  safeRound(
+    "handleNextRoundExpiration.traceEnd",
+    () => appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched }),
+    { suppressInProduction: true }
+  );
   return dispatched;
 }
 
@@ -1350,15 +1311,8 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
  * teardown and reinitialize.
  *
  * @summary Reset match subsystems and UI for tests.
-<<<<<<< HEAD
  *
  * @pseudocode
-=======
- * @pseudocode
- * 1. Reset skip/selection state and ensure the engine is available.
- * 2. Rebind engine listeners, stop schedulers, and clear debug overrides.
- * 3. Clean store timers, cancel pending RAFs, and emit reset events.
->>>>>>> 9fe756b544bab0ec8fe330bfa28f6e762c0bdae0
  * 1. Reset skip and selection subsystems, recreate the engine via `createBattleEngine()`,
  *    and rebind engine events with `bridgeEngineEvents()`.
  * 2. Stop any schedulers and clear debug overrides on `window`.
@@ -1396,7 +1350,8 @@ export function _resetForTest(store) {
   } else {
     // In production, always create a fresh engine
     safeRound("_resetForTest.createEngine", () => createBattleEngine(), {
-      suppressInProduction: true
+      suppressInProduction: true,
+      rethrow: true
     });
   }
   bridgeEngineEvents();
@@ -1467,16 +1422,10 @@ export function _resetForTest(store) {
  *
  * Alias of `_resetForTest` used by orchestrator and other callers.
  *
-<<<<<<< HEAD
  * @pseudocode
  * 1. Delegate to `_resetForTest(store)` to perform the full reset workflow.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store forwarded to `_resetForTest`.
-=======
- * 1. Invoke `_resetForTest(store)` when asked to reset the active match.
- * @pseudocode
- * 1. Delegate directly to `_resetForTest`.
->>>>>>> 9fe756b544bab0ec8fe330bfa28f6e762c0bdae0
  * @returns {void}
  */
 export const resetGame = _resetForTest;
