@@ -7,7 +7,8 @@ const repoRoot = path.resolve(__dirname, "..");
 const sourcePath = path.join(repoRoot, "AGENTS.md");
 const targets = [
   path.join(repoRoot, "GEMINI.md"),
-  path.join(repoRoot, ".github", "copilot-instructions.md")
+  path.join(repoRoot, ".github", "copilot-instructions.md"),
+  path.join(repoRoot, ".amazonq", "rules", "AgentQ.md")
 ];
 
 async function main() {
