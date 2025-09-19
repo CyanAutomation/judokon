@@ -39,11 +39,11 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 
 **Opportunities for Improvement:**
 
-- Centralize round state management to avoid conflicts between different events.
+* Centralize round state management to avoid conflicts between different events.
 
-- Use a single source of truth for the current round number, perhaps in a store or state manager.
+* Use a single source of truth for the current round number, perhaps in a store or state manager.
 
-- Improve test isolation by mocking at the appropriate level to avoid race conditions.
+* Improve test isolation by mocking at the appropriate level to avoid race conditions.
 
 ---
 
