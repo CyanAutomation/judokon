@@ -40,10 +40,22 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 **Opportunities for Improvement:**
 
 * Centralize round state management to avoid conflicts between different events.
+  * Phase 0 – Discovery (Week 0–1): Catalog every emitter/consumer of `display.round.*`, `roundEnded`, and related events; document the data each handler relies on and where side effects occur.
+  * Phase 1 – Design (Week 1–2): Draft an event flow diagram and propose a single coordinator (e.g., `roundStateController`) that owns state transitions, including round incrementing and UI messaging.
+  * Phase 2 – Implementation (Week 2–3): Introduce the coordinator module, relocate round progression logic into it, and update `roundEnded`/`round.start` handlers to delegate to the coordinator while preserving existing side effects.
+  * Phase 3 – Validation (Week 3–4): Add integration tests that simulate overlapping events to confirm the coordinator enforces ordering; instrument logging or tracing (via Sentry spans) so future regressions surface quickly.
 
 * Use a single source of truth for the current round number, perhaps in a store or state manager.
+  * Phase 0 – Requirements (Week 0–1): Identify every consumer of the round number (UI, analytics, orchestration) and document their update cadence and precision requirements.
+  * Phase 1 – Store Definition (Week 1–2): Define the API and lifecycle for the shared store (e.g., a lightweight observable or battle session state), including change notifications, read-only selectors, and reset semantics.
+  * Phase 2 – Migration (Week 2–3): Replace direct reads/writes scattered through handlers with store interactions, ensure the scoreboard and tests access the derived state, and add guards to prevent out-of-band mutations.
+  * Phase 3 – Hardening (Week 3–4): Create diagnostics around the store (dev-time assertions, log traces) and extend tests to cover concurrent update scenarios and round rollback cases.
 
 * Improve test isolation by mocking at the appropriate level to avoid race conditions.
+  * Phase 0 – Audit (Week 0–1): Review existing classic battle tests for direct DOM manipulation or mixed-layer mocks; document hotspots that frequently fail or time out.
+  * Phase 1 – Harness Enhancements (Week 1–2): Expand shared test utilities to provide higher-level event simulation helpers (e.g., `emitRoundStart`, `clickStatButton`) that encapsulate realistic wiring and console muting.
+  * Phase 2 – Test Refactor (Week 2–3): Incrementally migrate flaky tests to the enhanced helpers, ensuring each refactor keeps identical expectations but removes brittle mocking; align all tests on fake timers instead of synchronous `requestAnimationFrame` shims.
+  * Phase 3 – Continuous Verification (Week 3–4): Add CI checks (or Vitest snapshots) that detect forbidden mocking patterns, and schedule quarterly reviews to retire redundant mocks.
 
 ---
 
