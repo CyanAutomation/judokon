@@ -455,6 +455,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       await battleMod.startRound(store, battleMod.applyRoundUI);
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
       expect(startTimer).toHaveBeenCalled();
+      expect(typeof startTimer.mock.calls.at(-1)?.[0]).toBe("function");
       return { container: statContainer, statControls };
     }
 
