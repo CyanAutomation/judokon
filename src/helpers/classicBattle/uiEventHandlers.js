@@ -58,7 +58,7 @@ export function bindUIHelperEventHandlersDynamic() {
     } catch {}
   });
 
-  onBattleEvent("round.ended", async (e) => {
+  onBattleEvent("roundResolved", async (e) => {
     clearTimeout(opponentSnackbarId);
     const { store, stat, playerVal, opponentVal, result } = e.detail || {};
     if (!result) return;

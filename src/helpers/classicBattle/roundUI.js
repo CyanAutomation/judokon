@@ -369,8 +369,8 @@ export function bindStatSelected() {
  *
  * @returns {void}
  */
-export function bindRoundEnded() {
-  onBattleEvent("round.ended", (event) => {
+export function bindRoundResolved() {
+  onBattleEvent("roundResolved", (event) => {
     handleRoundResolvedEvent(event).catch(() => {});
   });
 }
@@ -388,7 +388,7 @@ export function bindRoundEnded() {
 export function bindRoundUIEventHandlers() {
   bindRoundStarted();
   bindStatSelected();
-  bindRoundEnded();
+  bindRoundResolved();
 }
 
 // Bind once on module load for production/runtime usage. Guard against

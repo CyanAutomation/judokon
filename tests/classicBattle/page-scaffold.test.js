@@ -148,6 +148,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
   const initStatButtons = vi.fn((store) => {
     const container = document.getElementById("stat-buttons");
     const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
+    console.log("[debug] initStatButtons buttons", buttons.length);
     const handlers = new Map();
 
     const ensureReadyPromise = () => {
