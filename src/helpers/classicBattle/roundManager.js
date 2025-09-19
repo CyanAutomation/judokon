@@ -1125,7 +1125,9 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       alreadyDispatchedReady
     })
       .then((result) => {
-        finalizePromise = null;
+        if (result !== false) {
+          finalizePromise = null;
+        }
         return result;
       })
       .catch((error) => {
