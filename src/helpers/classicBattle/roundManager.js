@@ -447,7 +447,7 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
       let dispatched = false;
       if (options && typeof options.dispatchBattleEvent === "function") {
         try {
-          const res = options.dispatchBattleEvent("ready");
+          options.dispatchBattleEvent("ready");
           // If it returns a promise, don't await it here; tests use spies.
           dispatched = true;
         } catch {}
@@ -963,7 +963,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       resolve();
       return;
     }
-    const handler = (event) => {
+    const handler = () => {
       const detach = () => {
         try {
           bus.off("battleStateChange", handler);
@@ -1036,43 +1036,18 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     return false;
   };
 
-  let dispatched = options?.alreadyDispatchedReady === true;
-  if (!dispatched) {
-    try {
-      dispatched = await dispatchReadyViaBus(options);
-    } catch {}
-  }
-  if (!dispatched) {
-    try {
-      dispatched = await dispatchReadyDirectly();
-
   const dispatchViaOptions = async () => {
-    if (typeof options.dispatchBattleEvent === "function") {
-      try {
-        const result = await options.dispatchBattleEvent("ready");
-        if (result && typeof result.then === "function") {
-          await result;
-          return true;
-        }
-        return result !== false;
-      } catch {}
+    if (typeof options.dispatchBattleEvent !== "function") {
+      return false;
     }
-    return false;
-  };
-
-  let dispatched = false;
-  // Instrumentation for tests: log which dispatch path is used and the function identity
-  try {
+    let dispatchedViaOptions = false;
     try {
       // Basic introspection of the options.dispatchBattleEvent function
       const info = {
-        hasFn: typeof options?.dispatchBattleEvent === "function",
-        name:
-          typeof options?.dispatchBattleEvent === "function"
-            ? options.dispatchBattleEvent.name
-            : null,
+        hasFn: true,
+        name: options.dispatchBattleEvent.name || null,
         toStringLen:
-          typeof options?.dispatchBattleEvent === "function" && options.dispatchBattleEvent.toString
+          typeof options.dispatchBattleEvent.toString === "function"
             ? options.dispatchBattleEvent.toString().length
             : 0
       };
@@ -1080,7 +1055,6 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         exposeDebugState("handleNextRound_dispatchViaOptions_info", info);
       } catch {}
       try {
-        // record info into shared debug bag for test inspection
         if (typeof globalThis !== "undefined") {
           const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
           bag.handleNextRound_dispatchViaOptions_info = info;
@@ -1089,7 +1063,6 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         }
       } catch {}
       try {
-        // emit a short stdout marker so the test runner shows where we are
         if (
           typeof process !== "undefined" &&
           process &&
@@ -1104,37 +1077,26 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         console.debug("[TEST-INSTRUMENT] dispatchViaOptions info:", info);
       } catch {}
     } catch {}
+
+    let error = null;
     try {
-      dispatched = await dispatchViaOptions();
-      try {
-        exposeDebugState("handleNextRound_dispatchViaOptions_result", dispatched);
-      } catch {}
-      try {
-        if (typeof globalThis !== "undefined") {
-          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-          bag.handleNextRound_dispatchViaOptions_result = { dispatched };
-        }
-      } catch {}
-      try {
-        if (
-          typeof process !== "undefined" &&
-          process &&
-          typeof process.stdout?.write === "function"
-        ) {
-          process.stdout.write(
-            `[BAG-MARKER] after dispatchViaOptions dispatched=${String(dispatched)}\n`
-          );
-        }
-      } catch {}
-      try {
-        console.debug("[TEST-INSTRUMENT] dispatchViaOptions returned:", dispatched);
-      } catch {}
+      const result = options.dispatchBattleEvent("ready");
+      let resolved = result;
+      if (resolved && typeof resolved.then === "function") {
+        resolved = await resolved;
+      }
+      dispatchedViaOptions = resolved !== false;
     } catch (err) {
+      error = err;
+      dispatchedViaOptions = false;
+    }
+
+    if (error) {
       try {
         if (typeof globalThis !== "undefined") {
           const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
           bag.handleNextRound_dispatchViaOptions_error = {
-            message: err && err.message ? err.message : String(err)
+            message: error && error.message ? error.message : String(error)
           };
         }
       } catch {}
@@ -1145,45 +1107,71 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           typeof process.stdout?.write === "function"
         ) {
           process.stdout.write(
-            `[BAG-MARKER] dispatchViaOptions threw=${String(err && err.message ? err.message : err)}\n`
+            `[BAG-MARKER] dispatchViaOptions threw=${String(
+              error && error.message ? error.message : error
+            )}\n`
           );
         }
       } catch {}
       try {
         console.log(
           "[TEST-INSTRUMENT] dispatchViaOptions threw:",
-          err && err.message ? err.message : err
+          error && error.message ? error.message : error
         );
       } catch {}
+    } else {
+      try {
+        exposeDebugState("handleNextRound_dispatchViaOptions_result", dispatchedViaOptions);
+      } catch {}
+      try {
+        if (typeof globalThis !== "undefined") {
+          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+          bag.handleNextRound_dispatchViaOptions_result = { dispatched: dispatchedViaOptions };
+        }
+      } catch {}
+      try {
+        if (
+          typeof process !== "undefined" &&
+          process &&
+          typeof process.stdout?.write === "function"
+        ) {
+          process.stdout.write(
+            `[BAG-MARKER] after dispatchViaOptions dispatched=${String(dispatchedViaOptions)}\n`
+          );
+        }
+      } catch {}
+      try {
+        console.debug("[TEST-INSTRUMENT] dispatchViaOptions returned:", dispatchedViaOptions);
+      } catch {}
     }
-  } catch (err) {
-    try {
-      console.log(
-        "[TEST-INSTRUMENT] dispatchViaOptions threw:",
-        err && err.message ? err.message : err
-      );
 
-    } catch {}
-  }
-  if (!dispatched) {
+    return dispatchedViaOptions;
+  };
+
+  const dispatchReadyFallback = async () => {
     try {
+      const info = (() => {
+        try {
+          const m = machineReader?.();
+          return { machineExists: !!m, hasDispatch: typeof m?.dispatch === "function" };
+        } catch {
+          return { machineExists: false, hasDispatch: false };
+        }
+      })();
       try {
-        const m = machineReader?.();
-        const info2 = { machineExists: !!m, hasDispatch: typeof m?.dispatch === "function" };
-        try {
-          exposeDebugState("handleNextRound_dispatchReadyDirectly_info", info2);
-        } catch {}
-        try {
-          console.debug("[TEST-INSTRUMENT] dispatchReadyDirectly info:", info2);
-        } catch {}
+        exposeDebugState("handleNextRound_dispatchReadyDirectly_info", info);
       } catch {}
-      dispatched = await dispatchReadyDirectly();
       try {
-        try {
-          exposeDebugState("handleNextRound_dispatchReadyDirectly_result", dispatched);
-        } catch {}
-        console.debug("[TEST-INSTRUMENT] dispatchReadyDirectly returned:", dispatched);
+        console.debug("[TEST-INSTRUMENT] dispatchReadyDirectly info:", info);
       } catch {}
+      const dispatchedDirect = await dispatchReadyDirectly();
+      try {
+        exposeDebugState("handleNextRound_dispatchReadyDirectly_result", dispatchedDirect);
+      } catch {}
+      try {
+        console.debug("[TEST-INSTRUMENT] dispatchReadyDirectly returned:", dispatchedDirect);
+      } catch {}
+      return dispatchedDirect;
     } catch (err) {
       try {
         console.error(
@@ -1191,7 +1179,27 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
           err && err.message ? err.message : err
         );
       } catch {}
+      return false;
     }
+  };
+
+  let dispatched = options?.alreadyDispatchedReady === true;
+  if (!dispatched) {
+    try {
+      dispatched = await dispatchViaOptions();
+    } catch {}
+  }
+  if (!dispatched) {
+    const busOptions =
+      typeof options.dispatchBattleEvent === "function"
+        ? { ...options, dispatchBattleEvent: undefined }
+        : options;
+    try {
+      dispatched = await dispatchReadyViaBus(busOptions);
+    } catch {}
+  }
+  if (!dispatched) {
+    dispatched = await dispatchReadyFallback();
   }
   if (!dispatched) {
     try {
@@ -1303,6 +1311,9 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     // Handle retries when the timer already expired but ready wasn't emitted.
     if (expired) {
       if (readyDispatchedForCurrentCooldown) {
+        // A prior retry already succeeded. Bail out so we do not signal
+        // another ready event while cleanup from the previous attempt is
+        // still unwinding.
         return;
       }
       const alreadyDispatchedReady = await attemptBusDispatch();
