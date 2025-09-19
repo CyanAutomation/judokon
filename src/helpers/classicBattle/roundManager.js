@@ -940,7 +940,8 @@ function createReadyDispatchStrategies({
     busStrategyOptions.eventBus = bus;
   }
   const hasCustomDispatcher =
-    typeof options.dispatchBattleEvent === "function" && options.dispatchBattleEvent !== dispatchBattleEvent;
+    typeof options.dispatchBattleEvent === "function" &&
+    options.dispatchBattleEvent !== dispatchBattleEvent;
   const strategies = [];
   if (hasCustomDispatcher) {
     strategies.push(() => {
@@ -1110,7 +1111,9 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       if (!expired) {
         expired = true;
       }
-      return originalResolveReady.apply(this, args);
+      const finalizeResult = finalizeExpiration();
+      const originalResult = originalResolveReady.apply(this, args);
+      return finalizeResult ?? originalResult;
     };
   }
   let finalizePromise = null;
