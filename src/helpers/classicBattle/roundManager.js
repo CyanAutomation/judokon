@@ -120,9 +120,11 @@ function getStartRound(store) {
  * test debug APIs).
  *
  * @summary Reset match state and UI, then begin a new round.
- * 1. Create a fresh engine instance via `createBattleEngine()` and rebind engine events with `bridgeEngineEvents()`.
- * 2. Emit a `game:reset-ui` CustomEvent so UI components can teardown.
- * 3. Resolve the appropriate `startRound` function (possibly overridden) and call it.
+ *
+ * @pseudocode
+ * 1. Ensure a battle engine exists by probing `battleEngine.getScores()` and calling `createBattleEngine()` when needed, then rebind events with `bridgeEngineEvents()`.
+ * 2. Dispatch `game:reset-ui` and zero the scoreboard so UI surfaces show a fresh match state.
+ * 3. Resolve the `startRound` implementation (allowing debug overrides), await its result, then reaffirm zeroed scores before returning.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
@@ -169,13 +171,18 @@ export async function handleReplay(store) {
 }
 
 /**
- * Initiates a new battle round, setting its state to active and recording the start time.
- * It also increments the round number and clears any events from previous rounds.
- * @param {number} roundNum - The number of the round to start.
- * SET roundState to ACTIVE
- * SET roundNumber to roundNum
- * SET roundStartTime to current timestamp
- * CLEAR roundEvents
+ * @summary Prepare and announce the next battle round.
+ *
+ * @pseudocode
+ * 1. Clear selection state on the store to prepare for a new choice.
+ * 2. Await `drawCards()` to populate round card data and persist the active player judoka.
+ * 3. Derive the upcoming round number from the battle engine, falling back to one when unavailable.
+ * 4. Invoke the optional `onRoundStart` callback and emit the `roundStarted` battle event with metadata.
+ * 5. Store any provided scheduler reference for downstream helpers and return the drawn card payload with the round number.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store to mutate with round data.
+ * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart] - Callback invoked once the round is ready.
+ * @returns {Promise<ReturnType<typeof drawCards> & { roundNumber: number }>} Drawn card data augmented with the round number.
  */
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
@@ -228,13 +235,13 @@ let readyDispatchedForCurrentCooldown = false;
  * 4. Return false if every dispatcher declines or throws.
  */
 /**
- * Schedule the cooldown before the next round and expose controls
- * for the Next button.
+ * @summary Schedule the cooldown before the next round and expose controls for the Next button.
  *
- * 1. Log the call for debug visibility.
- * 2. Reset Next button state and determine cooldown duration.
- * 3. Attach `CooldownRenderer` and start the timer with a fallback.
- * 4. Resolve the ready promise when the cooldown expires.
+ * @pseudocode
+ * 1. Reset readiness tracking, determine the active scheduler, and capture orchestration context for telemetry.
+ * 2. Build the event bus and cooldown controls, wiring DOM readiness handlers when the UI is not orchestrated.
+ * 3. Compute the cooldown duration, emit countdown events, and configure helpers and timers for orchestrated or default flows.
+ * 4. Persist the resulting controls for later retrieval and surface them through debug state before returning.
  *
  * @param {ReturnType<typeof createBattleStore>} _store - Battle state store.
  * @param {typeof realScheduler} [scheduler=realScheduler] - Scheduler for timers.
@@ -328,10 +335,12 @@ export function startCooldown(_store, scheduler, overrides = {}) {
 }
 
 /**
- * Expose current cooldown controls for Next button helpers.
+ * @summary Expose the active cooldown controls for Next button helpers.
  *
- * 1. Return the `currentNextRound` object containing timer and readiness resolver.
- * 2. When no cooldown is active, return `null`.
+ * @pseudocode
+ * 1. Return the cached `currentNextRound` controls when a cooldown is active.
+ * 2. When controls are missing, inspect the Next button to fabricate resolved controls if it already signals readiness.
+ * 3. Otherwise return `null` to indicate no cooldown is running.
  *
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
  */
@@ -1120,6 +1129,8 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
  * teardown and reinitialize.
  *
  * @summary Reset match subsystems and UI for tests.
+ *
+ * @pseudocode
  * 1. Reset skip and selection subsystems, recreate the engine via `createBattleEngine()`,
  *    and rebind engine events with `bridgeEngineEvents()`.
  * 2. Stop any schedulers and clear debug overrides on `window`.
@@ -1196,11 +1207,14 @@ export function _resetForTest(store) {
 }
 
 /**
- * Reset the Classic Battle match state and UI.
+ * @summary Reset the Classic Battle match state and UI via the shared test helper.
  *
  * Alias of `_resetForTest` used by orchestrator and other callers.
  *
- * 1. Invoke `_resetForTest(store)` when asked to reset the active match.
+ * @pseudocode
+ * 1. Delegate to `_resetForTest(store)` to perform the full reset workflow.
+ *
+ * @param {ReturnType<typeof createBattleStore>} store - Battle state store forwarded to `_resetForTest`.
  * @returns {void}
  */
 export const resetGame = _resetForTest;
