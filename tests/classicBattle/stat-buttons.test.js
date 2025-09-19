@@ -3,6 +3,7 @@ import "../helpers/classicBattle/commonMocks.js";
 import { setupClassicBattleHooks } from "../helpers/classicBattle/setupTestEnv.js";
 import * as timerUtils from "../../src/helpers/timerUtils.js";
 import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
+import { resetStatButtons } from "../../src/helpers/battle/battleUI.js";
 
 describe("Classic Battle stat buttons", () => {
   const getEnv = setupClassicBattleHooks();
@@ -30,9 +31,7 @@ describe("Classic Battle stat buttons", () => {
     setupNextButton();
     const statControls = initStatButtons(store);
     await battleMod.startRound(store, battleMod.applyRoundUI);
-    statControls.enable();
-    await window.statButtonsReadyPromise;
-    return statContainer;
+    return { container: statContainer, statControls };
   }
 
   test("render enabled after start; clicking resolves and starts cooldown", async () => {
@@ -44,7 +43,9 @@ describe("Classic Battle stat buttons", () => {
       return 3;
     });
     try {
-      const container = await initBattle();
+      const { container, statControls } = await initBattle();
+      statControls.enable();
+      await (window.statButtonsReadyPromise ?? Promise.resolve());
       const buttons = container.querySelectorAll("button[data-stat]");
       expect(buttons.length).toBeGreaterThan(0);
       buttons.forEach((b) => expect(b.disabled).toBe(false));
@@ -69,6 +70,37 @@ describe("Classic Battle stat buttons", () => {
       expect(next.getAttribute("data-next-ready")).toBe("true");
     } finally {
       spy.mockRestore();
+    }
+  });
+
+  test("stat buttons re-enable when scheduler loop is idle", async () => {
+    resetFallbackScores();
+    const { statControls, container } = await initBattle();
+    const button = container.querySelector("button[data-stat]");
+    expect(button).toBeTruthy();
+
+    const scheduler = await import("../../src/utils/scheduler.js");
+    if (typeof scheduler.stop === "function") {
+      scheduler.stop();
+    }
+
+    statControls.enable();
+    await (window.statButtonsReadyPromise ?? Promise.resolve());
+    expect(button.disabled).toBe(false);
+
+    const originalRAF = globalThis.requestAnimationFrame;
+    const originalCancelRAF = globalThis.cancelAnimationFrame;
+    globalThis.requestAnimationFrame = undefined;
+    globalThis.cancelAnimationFrame = undefined;
+
+    try {
+      resetStatButtons();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(button.disabled).toBe(false);
+    } finally {
+      globalThis.requestAnimationFrame = originalRAF;
+      globalThis.cancelAnimationFrame = originalCancelRAF;
     }
   });
 });
