@@ -137,14 +137,19 @@ const ADVANCE_TRANSITIONS = {
  *
  * @param {(() => void)|null} resolveReady - Resolver passed from cooldown controls.
  * @returns {Promise<boolean>} True when the helper dispatched "ready".
- */
 async function dispatchReadyOnce(resolveReady) {
   if (hasReadyBeenDispatchedForCurrentCooldown()) {
     if (typeof resolveReady === "function") resolveReady();
     return false;
   }
   setReadyDispatchedForCurrentCooldown(true);
-  await dispatchBattleEvent("ready");
+  try {
+    await dispatchBattleEvent("ready");
+  } catch (error) {
+    // Reset the flag if dispatch fails to allow retry
+    setReadyDispatchedForCurrentCooldown(false);
+    throw error;
+  }
   if (typeof resolveReady === "function") resolveReady();
   return true;
 }
