@@ -450,7 +450,12 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
           dispatched = true;
         } catch {}
       }
-      if (dispatched) readyDispatchedForCurrentCooldown = true;
+      if (dispatched) {
+        readyDispatchedForCurrentCooldown = true;
+        try {
+          appendReadyTrace("finalize.dispatched", { dispatched: true });
+        } catch {}
+      }
     } catch {}
   };
   const addListener = (type, handler) => {
@@ -854,6 +859,9 @@ function finalizeReadyControls(controls, dispatched) {
  * 4. Execute dispatch strategies and finalize control flags
  */
 async function handleNextRoundExpiration(controls, btn, options = {}) {
+  try {
+    appendReadyTrace("handleNextRoundExpiration.start", {});
+  } catch {}
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   const { emitTelemetry, getDebugBag } = createExpirationTelemetryContext();
   if (guardReadyInFlight(controls, emitTelemetry, getDebugBag)) return;
@@ -886,8 +894,14 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   });
   if (dispatched) {
     readyDispatchedForCurrentCooldown = true;
+    try {
+      appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true });
+    } catch {}
   }
   finalizeReadyControls(controls, dispatched);
+  try {
+    appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched });
+  } catch {}
   return dispatched;
 }
 
@@ -960,7 +974,14 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   }
   const attemptBusDispatch = async () => {
     try {
-      return await dispatchReadyViaBus(expirationOptions);
+      try {
+        appendReadyTrace("dispatchReadyViaBus.start", {});
+      } catch {}
+      const res = await dispatchReadyViaBus(expirationOptions);
+      try {
+        appendReadyTrace("dispatchReadyViaBus.end", { result: !!res });
+      } catch {}
+      return res;
     } catch {
       return false;
     }
