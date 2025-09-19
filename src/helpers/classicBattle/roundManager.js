@@ -563,7 +563,7 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
   const registry = createResourceRegistry();
   const cleanup = createEnhancedCleanup(cleanupFns, registry);
   let resolved = false;
-  const finalize = () => {
+  const finalize = async () => {
     if (resolved) return;
     resolved = true;
     cleanup();
@@ -572,34 +572,52 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
     if (typeof resolver === "function") {
       resolver();
     }
-    // If we are finalizing because the orchestrator is already past
-    // cooldown, ensure we still notify the orchestrator by dispatching
-    // a "ready" event. Prefer an explicit dispatchBattleEvent override
-    // when provided (used in tests), otherwise call the machine dispatch
-    // if available. Do this in a fire-and-forget fashion and mark the
-    // ready dispatch flag so downstream logic knows we've dispatched.
-    let dispatched = false;
-    if (options && typeof options.dispatchBattleEvent === "function") {
-      safeRound(
-        "setupOrchestratedReady.finalize.dispatchOverride",
-        () => {
-          options.dispatchBattleEvent("ready");
-          dispatched = true;
-        },
-        { suppressInProduction: true }
-      );
+    // When finalizing because the orchestrator is already past cooldown we
+    // should notify orchestration *through the centralized dispatcher* so
+    // dedupe and retry semantics remain consistent. Prefer an explicit
+    // dispatchBattleEvent override when present (used in tests). If no
+    // override exists, fall back to the shared `dispatchReadyViaBus` which
+    // routes through the dispatcher chain. Only set the readyDispatched flag
+    // after a successful dispatch to preserve retry behavior on failure.
+    try {
+      let dispatched = false;
+      if (options && typeof options.dispatchBattleEvent === "function") {
+        // Call the injected dispatcher and await if it returns a promise.
+        const res = safeRound(
+          "setupOrchestratedReady.finalize.dispatchOverride",
+          () => options.dispatchBattleEvent("ready"),
+          { suppressInProduction: true, defaultValue: false }
+        );
+        // If the injected dispatcher returned a promise, await it to decide success.
+        if (res && typeof res.then === "function") {
+          try {
+            const awaited = await res;
+            dispatched = awaited !== false;
+          } catch {
+            dispatched = false;
+          }
+        } else {
+          dispatched = res !== false;
+        }
+      }
+
+      if (!dispatched) {
+        // Use the centralized bus strategy to attempt dispatch. This avoids
+        // calling machine.dispatch directly and keeps dedupe logic in one
+        // place.
+        const resBus = await safeRound(
+          "setupOrchestratedReady.finalize.dispatchViaBus",
+          () => dispatchReadyViaBus({ eventBus: options?.eventBus }),
+          { suppressInProduction: true, defaultValue: false }
+        );
+        dispatched = !!resBus;
+      }
+
+      if (dispatched) readyDispatchedForCurrentCooldown = true;
+    } catch {
+      // swallow errors — finalize must not throw. Errors are recorded by
+      // the safeRound wrappers used above where applicable.
     }
-    if (!dispatched && machine && typeof machine.dispatch === "function") {
-      safeRound(
-        "setupOrchestratedReady.finalize.machineDispatch",
-        () => {
-          machine.dispatch("ready");
-          dispatched = true;
-        },
-        { suppressInProduction: true }
-      );
-    }
-    if (dispatched) readyDispatchedForCurrentCooldown = true;
   };
   const addListener = (type, handler) => {
     const wrapped = (event) => {
@@ -1038,7 +1056,9 @@ function finalizeReadyControls(controls, dispatched) {
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   try {
     appendReadyTrace("handleNextRoundExpiration.start", {});
-  } catch {}
+  } catch {
+    // noop: suppressed error recorded by safeRound where applicable
+  }
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   const { emitTelemetry, getDebugBag } = createExpirationTelemetryContext();
   if (guardReadyInFlight(controls, emitTelemetry, getDebugBag)) return;
@@ -1073,12 +1093,16 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     readyDispatchedForCurrentCooldown = true;
     try {
       appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true });
-    } catch {}
+    } catch {
+      // noop: suppressed error recorded by safeRound where applicable
+    }
   }
   finalizeReadyControls(controls, dispatched);
   try {
     appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched });
-  } catch {}
+  } catch {
+    // noop: suppressed error recorded by safeRound where applicable
+  }
   return dispatched;
 }
 

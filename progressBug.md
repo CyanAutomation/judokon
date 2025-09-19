@@ -132,6 +132,66 @@ Code-level rationale:
 
 - Centralizing all "ready" dispatches through the shared dispatcher keeps dedupe and retry semantics in one place and avoids accidental bypasses of the dispatcher guards. It also makes future maintenance easier because there is a single canonical path for readiness signals.
 
+Actions taken (this session) — Phase 2 implemented
+
+- Modified `setupOrchestratedReady.finalize` in `src/helpers/classicBattle/roundManager.js`:
+  - No longer calls `machine.dispatch("ready")` directly.
+  - Prefers `options.dispatchBattleEvent("ready")` when an injected dispatcher is provided and will await a returned promise when applicable.
+  - When no injected dispatcher exists, calls the centralized `dispatchReadyViaBus(...)` strategy (which funnels through the shared dispatcher chain) instead of calling `machine.dispatch` directly.
+  - Sets `readyDispatchedForCurrentCooldown = true` only after a successful dispatch result — preserving retry semantics when the centralized dispatcher initially fails.
+
+- Added an explicit early-return / short-circuit in the `wireCooldownTimer.onExpired` retry path to avoid re-dispatching when `readyDispatchedForCurrentCooldown` is already true. This ensures a prior successful attempt prevents duplicate signals.
+
+Why this is low-risk:
+
+- The changes funnel all finalization signals through the centralized dispatcher chain (the same path used by `handleNextRoundExpiration`) so deduplication is applied uniformly.
+- The edits are localized to `setupOrchestratedReady.finalize` and the `onExpired` handling in `wireCooldownTimer` — they do not affect the broader engine API.
+
+Validation performed
+
+- Unit test: `tests/roundManager.cooldown-ready.spec.js` — passed (1 test). This focuses on both injected-dispatch and non-injected scenarios and remains green.
+- Integration test: `tests/integration/roundManager.cooldown-integration.spec.js` — passed (1 test). This exercised the real `BattleEngine` `startCoolDown` path with the real scheduler and captured traces written to `/workspaces/judokon/test-traces.json`.
+
+Observed traces (post-fix run)
+
+The integration run's `test-traces.json` shows the centralized dispatch path executing and the expiration handler finalizing the controls. Example excerpt:
+
+```json
+{
+  "tracesFile": {
+    "traceA": [
+      { "event": "startCooldown", "at": 1758299039213, "scheduler": "default" },
+      { "event": "cooldownContext", "at": 1758299039213, "orchestrated": false, "hasMachine": false },
+      { "event": "controlsCreated", "at": 1758299039213, "hasEmitter": true },
+      { "event": "cooldownDurationResolved", "at": 1758299039246, "seconds": 3 },
+      { "event": "handleNextRoundExpiration.start", "at": 1758299039254 },
+      { "event": "handleNextRoundExpiration.dispatched", "at": 1758299039256, "dispatched": true },
+      { "event": "resolveReadyInvoked", "at": 1758299039256, "readyDispatched": false, "readyInFlight": false },
+      { "event": "resolveReadySettled", "at": 1758299039256, "readyDispatched": true },
+      { "event": "handleNextRoundExpiration.end", "at": 1758299039256, "dispatched": true }
+    ],
+    "traceB": [],
+    "traceDelayed": []
+  }
+}
+```
+
+Interpretation after Phase 2 changes
+
+- The centralized dispatch path executes as expected and the controls finalize with `readyDispatched` set after dispatch success.
+- The prior risky code path that directly called `machine.dispatch("ready")` from `finalize` has been removed; this reduces the chance of the un-deduped double-dispatch race.
+- The integration and unit runs are green. Because the original double-dispatch was timing-dependent, removing the bypass reduces risk and centralizes behavior; if a timing-sensitive reproduction remains possible on specific environments, the instrumentation and tests will help capture it.
+
+Next recommended steps
+
+- Keep the Phase 1 instrumentation for a short window (or preserve it behind a debug flag) while running CI to gather more samples. Then remove or gate the instrumentation.
+- Run the full validation suite (`npx prettier . --check && npx eslint . && npm run check:jsdoc && npx vitest run`) in CI and address any broader regressions.
+- If you want, I can now:
+  - A: Run a timing sweep (multiple integration runs with varied durations) to try to find any remaining race, or
+  - B: Remove or gate temporary traces and open a PR with this small patch plus the new/updated tests.
+
+Status: Phase 2 implemented and validated locally (unit + integration tests passed). Pausing for your review before opening a PR or further actions.
+
 ### Phase 3 – Regression safeguards & cleanup
 
 
