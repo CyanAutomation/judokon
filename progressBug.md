@@ -27,7 +27,7 @@ Actions taken (this session):
   - Scenario A: an injected `dispatchBattleEvent` override is provided (expect `machine.dispatch` not to be called).
   - Scenario B: no injected dispatcher; a global getter (`__classicBattleDebugRead`) is provided so the centralized dispatcher can locate the machine (expect duplicate dispatch in the original report).
 - Ran the single test file with Vitest. Command executed:
-Ran the single test file with Vitest. Command executed:
+  Ran the single test file with Vitest. Command executed:
 
   npx vitest run tests/roundManager.cooldown-ready.spec.js --run
 
@@ -49,7 +49,12 @@ Traces produced and saved:
     { "event": "dispatchReadyViaBus.end", "at": 1758296539790, "result": true },
     { "event": "handleNextRoundExpiration.start", "at": 1758296539791 },
     { "event": "handleNextRoundExpiration.dispatched", "at": 1758296539792, "dispatched": true },
-    { "event": "resolveReadyInvoked", "at": 1758296539792, "readyDispatched": false, "readyInFlight": false },
+    {
+      "event": "resolveReadyInvoked",
+      "at": 1758296539792,
+      "readyDispatched": false,
+      "readyInFlight": false
+    },
     { "event": "resolveReadySettled", "at": 1758296539793, "readyDispatched": true },
     { "event": "handleNextRoundExpiration.end", "at": 1758296539793, "dispatched": true }
   ],
@@ -93,14 +98,24 @@ Integration test (real engine & scheduler) — actions taken & outcome
   "tracesFile": {
     "traceA": [
       { "event": "startCooldown", "at": 1758296539762, "scheduler": "default" },
-      { "event": "cooldownContext", "at": 1758296539763, "orchestrated": false, "hasMachine": false },
+      {
+        "event": "cooldownContext",
+        "at": 1758296539763,
+        "orchestrated": false,
+        "hasMachine": false
+      },
       { "event": "controlsCreated", "at": 1758296539763, "hasEmitter": true },
       { "event": "cooldownDurationResolved", "at": 1758296539784, "seconds": 3 },
       { "event": "dispatchReadyViaBus.start", "at": 1758296539790 },
       { "event": "dispatchReadyViaBus.end", "at": 1758296539790, "result": true },
       { "event": "handleNextRoundExpiration.start", "at": 1758296539791 },
       { "event": "handleNextRoundExpiration.dispatched", "at": 1758296539792, "dispatched": true },
-      { "event": "resolveReadyInvoked", "at": 1758296539792, "readyDispatched": false, "readyInFlight": false },
+      {
+        "event": "resolveReadyInvoked",
+        "at": 1758296539792,
+        "readyDispatched": false,
+        "readyInFlight": false
+      },
       { "event": "resolveReadySettled", "at": 1758296539793, "readyDispatched": true },
       { "event": "handleNextRoundExpiration.end", "at": 1758296539793, "dispatched": true }
     ],
@@ -120,13 +135,13 @@ Integration test (real engine & scheduler) — actions taken & outcome
 
 Suggested code changes (small, targeted):
 
-1) In `setupOrchestratedReady` (`roundManager.js`) — change `finalize` so it does not call `machine.dispatch("ready")` directly. Instead:
+1. In `setupOrchestratedReady` (`roundManager.js`) — change `finalize` so it does not call `machine.dispatch("ready")` directly. Instead:
    - If `options.dispatchBattleEvent` is provided, call `await options.dispatchBattleEvent("ready")` (or call it synchronously if the API is sync).
    - Otherwise, delegate to the existing `handleNextRoundExpiration` path which already funnels to the shared dispatcher.
 
-2) In the `wireCooldownTimer.onExpired` handler (`roundManager.js`) — before calling `dispatchReadyViaBus`, short-circuit when `readyDispatchedForCurrentCooldown` is already `true` (meaning an initial dispatch has already happened). This prevents the second dispatch while preserving retry semantics.
+2. In the `wireCooldownTimer.onExpired` handler (`roundManager.js`) — before calling `dispatchReadyViaBus`, short-circuit when `readyDispatchedForCurrentCooldown` is already `true` (meaning an initial dispatch has already happened). This prevents the second dispatch while preserving retry semantics.
 
-3) Ensure `readyDispatchedForCurrentCooldown` is set only after the centralized dispatch path completes successfully (or after the dispatcher has accepted the event), so that retries will still occur when the centralized dispatch initially fails.
+3. Ensure `readyDispatchedForCurrentCooldown` is set only after the centralized dispatch path completes successfully (or after the dispatcher has accepted the event), so that retries will still occur when the centralized dispatch initially fails.
 
 Code-level rationale:
 
@@ -161,12 +176,22 @@ The integration run's `test-traces.json` shows the centralized dispatch path exe
   "tracesFile": {
     "traceA": [
       { "event": "startCooldown", "at": 1758299039213, "scheduler": "default" },
-      { "event": "cooldownContext", "at": 1758299039213, "orchestrated": false, "hasMachine": false },
+      {
+        "event": "cooldownContext",
+        "at": 1758299039213,
+        "orchestrated": false,
+        "hasMachine": false
+      },
       { "event": "controlsCreated", "at": 1758299039213, "hasEmitter": true },
       { "event": "cooldownDurationResolved", "at": 1758299039246, "seconds": 3 },
       { "event": "handleNextRoundExpiration.start", "at": 1758299039254 },
       { "event": "handleNextRoundExpiration.dispatched", "at": 1758299039256, "dispatched": true },
-      { "event": "resolveReadyInvoked", "at": 1758299039256, "readyDispatched": false, "readyInFlight": false },
+      {
+        "event": "resolveReadyInvoked",
+        "at": 1758299039256,
+        "readyDispatched": false,
+        "readyInFlight": false
+      },
       { "event": "resolveReadySettled", "at": 1758299039256, "readyDispatched": true },
       { "event": "handleNextRoundExpiration.end", "at": 1758299039256, "dispatched": true }
     ],
@@ -193,7 +218,6 @@ Next recommended steps
 Status: Phase 2 implemented and validated locally (unit + integration tests passed). Pausing for your review before opening a PR or further actions.
 
 ### Phase 3 – Regression safeguards & cleanup
-
 
 - Remove any temporary logging once validated and keep the new unit test as a permanent guard.
 - Re-run the full suite (`npm run check:jsdoc`, `npx prettier . --check`, `npx eslint .`, `npx vitest run`, `npx playwright test`, `npm run check:contrast`) to confirm no collateral regressions.
