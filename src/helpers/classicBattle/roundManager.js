@@ -1075,20 +1075,26 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     }
     return startCooldown.call(engineInstance, onTick, onExpired, dur, onDrift);
   };
-  const startEngineCooldownWithScheduler = (onTick, onExpired, dur, onDrift) => {
+  const startEngineCooldownWithScheduler = (...args) => {
     if (typeof startCooldown !== "function") return null;
-    let engineInstance;
-    try {
-      engineInstance = requireEngine();
-    } catch {
-      return null;
+    const [maybeEngine, onTick, onExpired, dur, onDrift] =
+      args.length >= 5 || (args.length > 0 && typeof args[0] !== "function")
+        ? args
+        : [null, ...args];
+    let engineInstance = maybeEngine || null;
+    if (!engineInstance) {
+      try {
+        engineInstance = requireEngine();
+      } catch {
+        return null;
+      }
     }
     const originalTimer = engineInstance?.timer;
     const TimerCtor = originalTimer?.constructor;
     if (typeof TimerCtor !== "function") {
       return callEngineStart(engineInstance, onTick, onExpired, dur, onDrift);
     }
-    const timerOptions = {};
+    const timerOptions = { ...(typeof originalTimer === "object" && originalTimer ? originalTimer : {}) };
     if (scheduler) timerOptions.scheduler = scheduler;
     if (typeof originalTimer.onSecondTick === "function") {
       timerOptions.onSecondTick = originalTimer.onSecondTick;
@@ -1097,6 +1103,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       timerOptions.cancel = originalTimer.cancel;
     }
     let temporaryTimer;
+    let startedSuccessfully = false;
     try {
       temporaryTimer = new TimerCtor(timerOptions);
     } catch {
@@ -1105,9 +1112,21 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     const restoreTimer = originalTimer;
     engineInstance.timer = temporaryTimer;
     try {
-      return callEngineStart(engineInstance, onTick, onExpired, dur, onDrift);
+      const result = callEngineStart(engineInstance, onTick, onExpired, dur, onDrift);
+      startedSuccessfully = true;
+      return result;
     } finally {
+      if (restoreTimer && temporaryTimer && typeof restoreTimer === "object") {
+        try {
+          Object.assign(restoreTimer, temporaryTimer);
+        } catch {}
+      }
       engineInstance.timer = restoreTimer;
+      if (!startedSuccessfully && temporaryTimer && typeof temporaryTimer.stop === "function") {
+        try {
+          temporaryTimer.stop();
+        } catch {}
+      }
     }
   };
   const timer = timerFactory({ starter: startEngineCooldownWithScheduler });
