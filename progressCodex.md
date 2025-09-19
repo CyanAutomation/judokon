@@ -39,3 +39,11 @@
 ### Step 2: Implement telemetry fix
 - Added `handleNextRoundMachineGetter` emission in the override branch so `sourceReadDebug` is recorded as `"function"`.
 - Override path now also emits the result telemetry to mirror the fallback path.
+
+### Step 3: Validation
+- `npx vitest run tests/helpers/classicBattle/scheduleNextRound.test.js` ➜ PASS (5 tests).
+- No additional linting run yet per scope; target test confirms fix.
+
+### Step 4: Summary
+- Override telemetry now mirrors fallback path, restoring `sourceReadDebug` for debug readers.
+- Targeted unit test passes; ready for broader validation or review as needed.
