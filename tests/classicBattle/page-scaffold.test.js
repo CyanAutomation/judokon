@@ -196,7 +196,10 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
               "../../src/helpers/classicBattle/selectionHandler.js"
             );
             const stat = btn.dataset.stat || "";
-            await handleStatSelection(store, stat, { playerVal: undefined, opponentVal: undefined });
+            await handleStatSelection(store, stat, {
+              playerVal: undefined,
+              opponentVal: undefined
+            });
             disable();
           } catch {}
         };
