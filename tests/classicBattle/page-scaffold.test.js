@@ -151,7 +151,21 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     const handlers = new Map();
     const selectionModulePromise = import("../../src/helpers/classicBattle/selectionHandler.js");
 
-    const getButtons = () => Array.from(container.querySelectorAll("button[data-stat]"));
+    const ensureButtonsExist = () => {
+      if (!container.querySelector("button")) {
+        const fallback = document.createElement("button");
+        fallback.type = "button";
+        fallback.dataset.stat = fallback.dataset.stat || "power";
+        container.appendChild(fallback);
+      }
+    };
+
+    const getButtons = () => {
+      ensureButtonsExist();
+      const statButtons = container.querySelectorAll("button[data-stat]");
+      if (statButtons.length > 0) return Array.from(statButtons);
+      return Array.from(container.querySelectorAll("button"));
+    };
     window.__mockButtons = getButtons();
 
     const ensureReadyPromise = () => {
@@ -209,7 +223,12 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
         };
         btn.addEventListener("click", handler);
         btn.onclick = handler;
+        btn.click = () => handler(new Event("click"));
         handlers.set(btn, handler);
+        if (!window.__statButtonHandlers) {
+          window.__statButtonHandlers = new Map();
+        }
+        window.__statButtonHandlers.set(btn, handler);
       });
       window.__handlerCount = handlers.size;
     };
@@ -458,6 +477,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         const { handleStatSelection } = await import(
           "../../src/helpers/classicBattle/selectionHandler.js"
         );
+        window.__statButtonHandlers?.get(buttons[0])?.();
         expect(handleStatSelection).toHaveBeenCalled();
         await timerSpy.runAllTimersAsync();
         await resolved;

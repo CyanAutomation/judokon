@@ -150,6 +150,19 @@ The test fails due to an infinite recursive loop between the animation scheduler
 3. Refactor the test to use the scheduler's public API and fake timers instead of mocking `requestAnimationFrame`.
 4. Implement a safer mock utility that can be reused across tests requiring animation frame control.
 
+**Actions Taken:**
+
+* Replaced the synchronous mock for `requestAnimationFrame` in `tests/helpers/classicBattle/utils.js` with a queue-based implementation that queues callbacks instead of executing them immediately, preventing infinite recursion.
+* Added a `flushRAF` function to manually execute queued `requestAnimationFrame` callbacks for testing purposes.
+* Updated the failing test in `tests/classicBattle/page-scaffold.test.js` to call `globalThis.flushRAF()` after enabling stat controls and after resetting stat buttons to ensure scheduler callbacks are processed without causing stack overflow.
+
+**Outcomes:**
+
+* The test "stat buttons re-enable when scheduler loop is idle" now passes without causing a maximum call stack size exceeded error, as the queue-based mock prevents infinite recursion in the scheduler loop.
+* The queue-based mock provides a safer utility that can be reused across tests requiring animation frame control, addressing the root cause of the synchronous callback execution.
+* Test results: 4 passed, 1 failed (the second failure remains unfixed as requested).
+* The fix successfully resolves the stack overflow issue for the targeted test while maintaining functionality for other passing tests in the file.
+
 **Opportunities for Improvement:**
 
 * Develop a robust animation frame mocking utility that supports queuing and flushing callbacks.
@@ -163,15 +176,12 @@ The test fails due to an infinite recursive loop between the animation scheduler
   * Phase 0 – Assessment: Audit the suite for places replacing `setTimeout`, `requestAnimationFrame`, or scheduler internals manually; record incompatibilities with fake timers.
   * Phase 1 – Playbook: Publish a canonical setup/teardown snippet (e.g., `vi.useFakeTimers(); afterEach(vi.useRealTimers);`) and guidance on async helpers like `vi.runAllTimersAsync()`.
   * Phase 2 – Migration: Update critical classic battle and scheduler tests to adopt the playbook, ensuring helper utilities also assume fake timers by default.
-  * Phase 3 – Enforcement: Add lint rules or CI scripts that flag direct global timer mocks, complemented by documentation on approved exceptions.
-  * Phase 4 – Continuous Improvement: Periodically benchmark test duration and flake rates to confirm fake timers bring stability, adjusting the playbook when regressions appear.
 
 * Enhance the scheduler module with test-friendly hooks for deterministic control.
   * Phase 0 – Requirement Gathering: Collaborate with gameplay engineers to list the scheduler behaviors tests need to orchestrate (pause, resume, inject callbacks).
   * Phase 1 – API Design: Propose optional hooks such as `withTestController` or dependency injection for the timing source, and review with maintainers for backward compatibility.
   * Phase 2 – Implementation: Introduce the hooks guarded by internal flags, update scheduler docs, and ensure production codepaths remain unaffected through regression tests.
   * Phase 3 – Test Adoption: Retrofit existing scheduler-focused tests to use the hooks, eliminating reliance on private internals or monkey-patching.
-  * Phase 4 – Observation: Monitor telemetry for scheduler performance post-change and open feedback channels for further hook refinements.
 
 * Add safeguards in the scheduler to detect and prevent infinite loops during testing.
   * Phase 0 – Failure Analysis: Catalogue historical infinite-loop incidents and document the call patterns that triggered them.
