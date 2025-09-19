@@ -1246,18 +1246,39 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     () => {
       const secsNum = Number(cooldownSeconds);
       const ms = Number.isFinite(secsNum) ? Math.max(0, secsNum * 1000) : 0;
-      safeRound(
-        "wireCooldownTimer.scheduleFallbackTimer",
-        () => {
-          fallbackId = fallbackScheduler(ms, onExpired);
-        },
-        { suppressInProduction: true }
-      );
-      if (scheduler && typeof scheduler.setTimeout === "function") {
+      const scheduleFallbackTimer = () => {
+        fallbackId = fallbackScheduler(ms, () => {
+          safeRound(
+            "wireCooldownTimer.fallback.clearSchedulerTimeout",
+            () => {
+              if (schedulerFallbackId && typeof scheduler?.clearTimeout === "function") {
+                scheduler.clearTimeout(schedulerFallbackId);
+              }
+              schedulerFallbackId = null;
+            },
+            { suppressInProduction: true }
+          );
+          onExpired();
+        });
+      };
+      const hasCustomScheduler = scheduler && typeof scheduler.setTimeout === "function";
+      if (hasCustomScheduler) {
         safeRound(
           "wireCooldownTimer.scheduleInjected",
           () => {
-            schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
+            schedulerFallbackId = scheduler.setTimeout(() => {
+              safeRound(
+                "wireCooldownTimer.scheduler.clearFallbackTimer",
+                () => {
+                  if (fallbackId) {
+                    clearTimeout(fallbackId);
+                    fallbackId = null;
+                  }
+                },
+                { suppressInProduction: true }
+              );
+              onExpired();
+            }, ms);
           },
           {
             fallback: () =>
@@ -1265,7 +1286,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
                 "wireCooldownTimer.scheduleFallbackTimer.recover",
                 () => {
                   if (!fallbackId) {
-                    fallbackId = fallbackScheduler(ms, onExpired);
+                    scheduleFallbackTimer();
                   }
                 },
                 { suppressInProduction: true }
@@ -1274,6 +1295,17 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
           }
         );
       }
+      safeRound(
+        hasCustomScheduler
+          ? "wireCooldownTimer.scheduleFallbackTimer.withScheduler"
+          : "wireCooldownTimer.scheduleFallbackTimer",
+        () => {
+          if (!fallbackId) {
+            scheduleFallbackTimer();
+          }
+        },
+        { suppressInProduction: true }
+      );
     },
     { suppressInProduction: true }
   );
