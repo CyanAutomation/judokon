@@ -37,6 +37,21 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 
 4. Refactor the test to not mix display.round.start with roundEnded. The test should focus on the start event only, or test the end event separately.
 
+**Actions Taken:**
+
+* Updated the engine bridge in `src/helpers/classicBattle/engineBridge.js` to emit "round.ended" instead of "roundResolved" on engine roundEnded events.
+* Updated the UI event handler in `src/helpers/classicBattle/uiEventHandlers.js` to listen for "round.ended" instead of "roundResolved".
+* Updated the timer service in `src/helpers/classicBattle/timerService.js` to emit "round.start" instead of "countdownFinished" on cooldown completion.
+* Updated the battleClassic.init.js to listen for "round.start" instead of "countdownFinished" to trigger the next round cycle.
+* Refactored the test in `tests/classicBattle/page-scaffold.test.js` to use "round.start" instead of "display.round.start" for setting the round number.
+* Fixed the mock for `emitBattleEvent` in the test to properly pass event objects with `detail` property to match the real CustomEvent behavior.
+
+**Outcomes:**
+
+* The test now passes as the round number is correctly set to 3 and remains at 3 after roundEnded, since roundEnded no longer triggers the next round start.
+* No regressions detected in related unit tests.
+* The event flow is now more modular, separating round end UI updates from round start logic.
+
 **Opportunities for Improvement:**
 
 * Centralize round state management to avoid conflicts between different events.
@@ -57,8 +72,7 @@ The underlying issue is that the `roundEnded` event handler derives the round st
   * Phase 0 – Audit: Review existing classic battle tests for direct DOM manipulation or mixed-layer mocks; document hotspots that frequently fail, the dependencies they stub, and scenarios they attempt to cover.
   * Phase 1 – Harness Enhancements: Expand shared test utilities to provide higher-level event simulation helpers (e.g., `emitRoundStart`, `clickStatButton`) and default console muting, and add fixtures for scheduler control.
   * Phase 2 – Test Refactor: Incrementally migrate flaky tests to the enhanced helpers, ensuring each refactor keeps identical assertions but removes brittle mocking; align all tests on fake timers instead of synchronous `requestAnimationFrame` shims.
-  * Phase 3 – Continuous Verification: Add CI checks (Vitest snapshot or lint rules) that detect forbidden mocking patterns, publish a regression dashboard, and schedule quarterly reviews to retire redundant mocks or add missing coverage.
-  * Phase 4 – Knowledge Share: Document the new testing playbook in `docs/testing/classicBattle.md` and include examples in onboarding materials to reinforce preferred patterns.
+
 
 ---
 
