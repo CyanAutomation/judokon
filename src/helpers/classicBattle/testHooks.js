@@ -94,13 +94,35 @@ export async function triggerRoundTimeoutNow(store) {
   const onExpiredSelect = async (stat, opts) => {
     const playerCard = document.getElementById("player-card");
     const opponentCard = document.getElementById("opponent-card");
-    const playerVal = getCardStatValue(playerCard, stat);
-    let opponentVal = getCardStatValue(opponentCard, stat);
-    try {
-      const opp = getOpponentJudoka();
-      const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
-      opponentVal = Number.isFinite(raw) ? raw : opponentVal;
-    } catch {}
+    const readStatFromCard = (card) => {
+      if (!card) return NaN;
+      try {
+        const dataHost = card.hasAttribute("data-card-json")
+          ? card
+          : card.querySelector("[data-card-json]");
+        const rawJson = dataHost?.getAttribute("data-card-json");
+        if (rawJson) {
+          try {
+            const parsed = JSON.parse(rawJson);
+            const value = parsed?.stats?.[stat];
+            const numeric = Number(value);
+            if (Number.isFinite(numeric)) return numeric;
+          } catch {}
+        }
+      } catch {}
+      const domVal = getCardStatValue(card, stat);
+      return Number.isFinite(domVal) ? domVal : NaN;
+    };
+    const playerFromCard = readStatFromCard(playerCard);
+    const playerVal = Number.isFinite(playerFromCard) ? playerFromCard : 0;
+    let opponentVal = readStatFromCard(opponentCard);
+    if (!Number.isFinite(opponentVal)) {
+      try {
+        const opp = getOpponentJudoka();
+        const raw = opp && opp.stats ? Number(opp.stats[stat]) : NaN;
+        if (Number.isFinite(raw)) opponentVal = raw;
+      } catch {}
+    }
     return handleStatSelection(store, stat, {
       playerVal,
       opponentVal,
