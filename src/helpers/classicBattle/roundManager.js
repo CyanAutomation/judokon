@@ -531,16 +531,10 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
     if (typeof resolver === "function") {
       resolver();
     }
-    // When finalizing because the orchestrator is already past cooldown we
-    // should notify orchestration *through the centralized dispatcher* so
-    // dedupe and retry semantics remain consistent. Prefer an explicit
-    // dispatchBattleEvent override when present (used in tests). If no
-    // override exists, fall back to the shared `dispatchReadyViaBus` which
-    // routes through the dispatcher chain. Only set the readyDispatched flag
-    // after a successful dispatch to preserve retry behavior on failure.
     // Dispatch of the "ready" event is now handled centrally by
-    // `handleNextRoundExpiration`. Finalize is responsible for cleanup
-    // and resolving the pending controls only.
+    // `handleNextRoundExpiration` to prevent duplicate dispatches and
+    // ensure consistent retry behavior across all cooldown expiration paths.
+    // Finalize is responsible for cleanup and resolving the pending controls only.
   };
   const addListener = (type, handler) => {
     const wrapped = (event) => {
@@ -940,11 +934,13 @@ function createReadyDispatchStrategies({
     busStrategyOptions.eventBus = bus;
   }
   const hasCustomDispatcher =
-    typeof options.dispatchBattleEvent === "function" && options.dispatchBattleEvent !== dispatchBattleEvent;
+    typeof options.dispatchBattleEvent === "function" &&
+    options.dispatchBattleEvent !== dispatchBattleEvent;
   const strategies = [];
+  const shouldShortCircuitReadyDispatch = () => readyDispatchedForCurrentCooldown === true;
   if (hasCustomDispatcher) {
     strategies.push(() => {
-      if (readyDispatchedForCurrentCooldown) return true;
+      if (shouldShortCircuitReadyDispatch()) return true;
       return dispatchReadyWithOptions({
         dispatchBattleEvent: options.dispatchBattleEvent,
         emitTelemetry,
@@ -957,7 +953,7 @@ function createReadyDispatchStrategies({
     busStrategyOptions.dispatchBattleEvent = options.dispatchBattleEvent;
   }
   strategies.push(() => {
-    if (readyDispatchedForCurrentCooldown) return true;
+    if (shouldShortCircuitReadyDispatch()) return true;
     return dispatchReadyViaBus(busStrategyOptions);
   });
   strategies.push(() => dispatchReadyDirectly({ machineReader, emitTelemetry }));
@@ -1123,9 +1119,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       alreadyDispatchedReady
     })
       .then((result) => {
-        if (!result) {
-          finalizePromise = null;
-        }
+        finalizePromise = null;
         return result;
       })
       .catch((error) => {
