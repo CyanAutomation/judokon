@@ -15,18 +15,24 @@ export function createExpirationTelemetryEmitter(targets = {}) {
   const emit = (key, value) => {
     try {
       if (typeof exposeDebugState === "function") exposeDebugState(key, value);
-    } catch {}
+    } catch (error) {
+      console.debug("Failed to expose debug state:", error);
+    }
     if (typeof getDebugBag === "function") {
       try {
         const bag = getDebugBag();
         if (bag && typeof bag === "object") {
           bag[key] = value;
         }
-      } catch {}
+      } catch (error) {
+        console.debug("Failed to update debug bag:", error);
+      }
     }
     try {
       if (typeof debugExpose === "function") debugExpose(key, value);
-    } catch {}
+    } catch (error) {
+      console.debug("Failed to call debugExpose:", error);
+    }
   };
   const safeGetDebugBag = () => {
     if (typeof getDebugBag !== "function") return null;
@@ -143,14 +149,25 @@ export function createMachineStateInspector(params) {
       return;
     }
     await new Promise((resolve) => {
-      const handler = () => {
-        if (!shouldResolve()) return;
-        try {
-          eventBus?.off?.("battleStateChange", handler);
-        } catch {}
+      let settled = false;
+      const cleanup = (handler) => {
+        if (settled) return;
+        settled = true;
+        if (handler) {
+          try {
+            eventBus?.off?.("battleStateChange", handler);
+          } catch {}
+        }
         resolve();
       };
+      const handler = () => {
+        if (!shouldResolve()) return;
+        cleanup(handler);
+      };
       eventBus?.on?.("battleStateChange", handler);
+      if (shouldResolve()) {
+        cleanup(handler);
+      }
     });
     emitTelemetry?.("handleNextRoundMachineStateAfterWait", safeGetState() ?? null);
   };
@@ -308,14 +325,11 @@ export async function updateExpirationUi(params) {
   const orchestrated = typeof isOrchestrated === "function" && isOrchestrated();
   if (!orchestrated) {
     let target = button || null;
-    try {
-      if (!target && documentRef) {
+    if (!target && documentRef) {
+      try {
         target = documentRef.getElementById?.("next-button") || null;
-      } else if (documentRef) {
-        const liveBtn = documentRef.getElementById?.("next-button");
-        if (liveBtn) target = liveBtn;
-      }
-    } catch {}
+      } catch {}
+    }
     try {
       markReady?.(target);
     } catch {}
