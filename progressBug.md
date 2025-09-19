@@ -79,6 +79,22 @@ The test times out because a promise that waits for the `round.resolved` event n
 * **Fix:** The mock for `../../src/helpers/classicBattle/uiHelpers.js` needs to be improved. Instead of just being a `vi.fn()`, the mocked `initStatButtons` should simulate the real function's behavior by actually attaching a click listener to the buttons that calls the mocked `handleStatSelection`.
 * **Alternative Fix:** Avoid mocking `uiHelpers.js` altogether in this test if possible, and instead rely on the real implementation to integrate the components. If the module must be mocked due to other dependencies, the mock must be made more realistic for the behavior under test.
 
+**Evaluation:** The analysis is accurate. The root cause is the inadequate mock for `initStatButtons`, which fails to attach click event listeners to the stat buttons, preventing the test from triggering `handleStatSelection` and emitting the `round.resolved` event.
+
+**Proposed Fix Plan:**
+
+1. Improve the mock for `initStatButtons` to attach click event listeners to the buttons that call the mocked `handleStatSelection` function.
+2. Ensure the mock simulates the real behavior of enabling buttons and attaching handlers.
+3. If mocking remains complex, consider using the real `initStatButtons` and mocking only the necessary dependencies to avoid over-mocking.
+4. Update the test to verify that click handlers are properly attached and functional.
+
+**Opportunities for Improvement:**
+
+* Enhance test mocking utilities to provide realistic simulations of DOM interactions.
+* Implement shared mock helpers for common UI components to ensure consistency across tests.
+* Add validation in tests to check that event listeners are attached correctly.
+* Review and refactor tests that rely on deep mocking to use integration-style testing where possible.
+
 ---
 
 ### 3. Failure: Maximum Call Stack Size Exceeded
