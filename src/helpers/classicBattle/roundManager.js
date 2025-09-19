@@ -1066,13 +1066,49 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     isOrchestrated: overrides.isOrchestrated || isOrchestrated,
     getStateSnapshot: overrides.getStateSnapshot || getStateSnapshot
   };
-  const startEngineCooldownWithScheduler = (engine, onTick, onExpired, dur, onDrift) => {
-    // Temporarily inject the activeScheduler into the engine for this call
-    const originalTimer = engine.timer;
-    engine.timer = new originalTimer.constructor(activeScheduler);
-    const result = startCooldown(engine, onTick, onExpired, dur, onDrift);
-    engine.timer = originalTimer; // Restore original timer
-    return result;
+  const expectsEngineArgument =
+    typeof overrides.startEngineCooldown === "function" &&
+    overrides.startEngineCooldown.length >= 5;
+  const callEngineStart = (engineInstance, onTick, onExpired, dur, onDrift) => {
+    if (expectsEngineArgument) {
+      return startCooldown(engineInstance, onTick, onExpired, dur, onDrift);
+    }
+    return startCooldown.call(engineInstance, onTick, onExpired, dur, onDrift);
+  };
+  const startEngineCooldownWithScheduler = (onTick, onExpired, dur, onDrift) => {
+    if (typeof startCooldown !== "function") return null;
+    let engineInstance;
+    try {
+      engineInstance = requireEngine();
+    } catch {
+      return null;
+    }
+    const originalTimer = engineInstance?.timer;
+    const TimerCtor = originalTimer?.constructor;
+    if (typeof TimerCtor !== "function") {
+      return callEngineStart(engineInstance, onTick, onExpired, dur, onDrift);
+    }
+    const timerOptions = {};
+    if (scheduler) timerOptions.scheduler = scheduler;
+    if (typeof originalTimer.onSecondTick === "function") {
+      timerOptions.onSecondTick = originalTimer.onSecondTick;
+    }
+    if (typeof originalTimer.cancel === "function") {
+      timerOptions.cancel = originalTimer.cancel;
+    }
+    let temporaryTimer;
+    try {
+      temporaryTimer = new TimerCtor(timerOptions);
+    } catch {
+      return callEngineStart(engineInstance, onTick, onExpired, dur, onDrift);
+    }
+    const restoreTimer = originalTimer;
+    engineInstance.timer = temporaryTimer;
+    try {
+      return callEngineStart(engineInstance, onTick, onExpired, dur, onDrift);
+    } finally {
+      engineInstance.timer = restoreTimer;
+    }
   };
   const timer = timerFactory({ starter: startEngineCooldownWithScheduler });
   // Delay initial snackbar render until first tick to avoid overshadowing
