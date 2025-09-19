@@ -114,7 +114,7 @@ export function resetBattlePromises() {
     "statSelectionStalledPromise",
     "statSelectionStalled"
   )();
-  roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
+  roundResolvedPromise = setupPromise("roundResolvedPromise", "round.ended")();
 }
 
 // Initialize on module load once per worker to avoid accumulating listeners

@@ -81,7 +81,7 @@ vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
 vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
   handleStatSelection: vi.fn(async () => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-    emitBattleEvent("round.resolved");
+    emitBattleEvent("roundResolved");
     return {
       playerScore: 1,
       opponentScore: 0,

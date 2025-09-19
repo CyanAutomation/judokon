@@ -10,6 +10,17 @@ import { startTimer } from "../helpers/classicBattle/timerService.js";
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
 import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
+          const outcome = String(result?.outcome || "");
+          const winner =
+            outcome === "matchWinPlayer"
+              ? "player"
+              : outcome === "matchWinOpponent"
+              ? "opponent"
+              : "none";
+          const scores = {
+            player: Number(result?.playerScore) || 0,
+            opponent: Number(result?.opponentScore) || 0
+          };icBattle/roundResolver.js";
 import { onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
 import {
@@ -583,7 +594,7 @@ async function init() {
     }
     // Show modal when a round resolves with matchEnded=true (covers direct-resolve path)
     try {
-      onBattleEvent("roundResolved", (e) => {
+      onBattleEvent("round.ended", (e) => {
         try {
           const result = e?.detail?.result;
           if (!result || !result.matchEnded) return;

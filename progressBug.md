@@ -63,7 +63,6 @@ The underlying issue is that the `roundEnded` event handler derives the round st
   * Phase 1 – Store Definition: Define the API and lifecycle for the shared store (e.g., a lightweight observable or battle session state), including change notifications, read-only selectors, reset semantics, and serialization for replays or debugging.
   * Phase 2 – Migration: Replace direct reads/writes scattered through handlers with store interactions, ensure the scoreboard, snackbar, and tests consume selectors, and add guards to prevent out-of-band mutations or stale snapshots.
   * Phase 3 – Hardening: Create diagnostics around the store (dev-time assertions, debug log traces, Sentry breadcrumbs) and extend tests to cover concurrent update scenarios, round rollback cases, and state restoration after disconnects.
-  * Phase 4 – Adoption & Enablement: Publish usage examples in `docs/battle-state.md`, run a short enablement session for maintainers, and archive legacy helpers to prevent reintroduction of duplicate sources of truth.
 
 * Improve test isolation by mocking at the appropriate level to avoid race conditions.
   * Phase 0 – Audit: Review existing classic battle tests for direct DOM manipulation or mixed-layer mocks; document hotspots that frequently fail, the dependencies they stub, and scenarios they attempt to cover.
