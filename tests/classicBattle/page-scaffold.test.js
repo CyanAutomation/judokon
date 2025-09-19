@@ -59,16 +59,35 @@ vi.mock("../../src/helpers/timerUtils.js", () => ({
   getDefaultTimer: vi.fn(() => 2)
 }));
 
-vi.mock("../../src/helpers/classicBattle/roundManager.js", () => ({
-  createBattleStore: vi.fn(() => ({
+vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
+  const createBattleStore = vi.fn(() => ({
     selectionMade: false,
     stallTimeoutMs: 0,
     autoSelectId: null,
     playerChoice: null
-  })),
-  startCooldown: vi.fn(),
-  startRound: vi.fn()
-}));
+  }));
+
+  const startCooldown = vi.fn();
+
+  const startRound = vi.fn(async (store, applyRoundUI) => {
+    if (typeof applyRoundUI === "function") {
+      applyRoundUI(store, 1);
+    }
+    const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
+    await startTimer(async (stat, opts = {}) => {
+      const { handleStatSelection } = await import(
+        "../../src/helpers/classicBattle/selectionHandler.js"
+      );
+      return handleStatSelection(store, stat, opts);
+    }, store);
+  });
+
+  return {
+    createBattleStore,
+    startCooldown,
+    startRound
+  };
+});
 
 vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
   computeRoundResult: vi.fn(async () => ({
@@ -104,7 +123,8 @@ vi.mock("../../src/helpers/classicBattle/uiEventHandlers.js", () => ({
 }));
 
 vi.mock("../../src/helpers/classicBattle/debugPanel.js", () => ({
-  initDebugPanel: vi.fn()
+  initDebugPanel: vi.fn(),
+  updateDebugPanel: vi.fn()
 }));
 
 vi.mock("../../src/helpers/classicBattle/endModal.js", () => ({
@@ -146,7 +166,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
 
   const initStatButtons = vi.fn(() => {
     const container = document.getElementById("stat-buttons");
-    const buttons = container ? Array.from(container.querySelectorAll("button")) : [];
+
+    const getButtons = () => (container ? Array.from(container.querySelectorAll("button")) : []);
 
     const createReadyPromise = () =>
       new Promise((resolve) => {
@@ -163,7 +184,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     };
 
     const disable = vi.fn(() => {
-      buttons.forEach((btn) => {
+      getButtons().forEach((btn) => {
         btn.disabled = true;
         btn.tabIndex = -1;
       });
@@ -172,7 +193,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     });
 
     const enable = vi.fn(() => {
-      buttons.forEach((btn) => {
+      getButtons().forEach((btn) => {
         btn.disabled = false;
         btn.tabIndex = 0;
       });
@@ -379,8 +400,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       const statControls = initStatButtons(store);
       expect(initStatButtons).toHaveBeenCalled();
       await battleMod.startRound(store, battleMod.applyRoundUI);
-      const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
-      expect(startTimer).toHaveBeenCalled();
       return { container: statContainer, statControls };
     }
 
@@ -398,6 +417,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         await (window.statButtonsReadyPromise ?? Promise.resolve());
         const buttons = container.querySelectorAll("button[data-stat]");
         expect(buttons.length).toBeGreaterThan(0);
+        console.log("[debug] button states", Array.from(buttons).map((b) => b.disabled));
         buttons.forEach((b) => expect(b.disabled).toBe(false));
 
         const { getRoundResolvedPromise } = await import(

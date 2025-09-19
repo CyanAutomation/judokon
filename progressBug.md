@@ -47,22 +47,7 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 * No regressions detected in other tests in the same file; the other two failing tests remain as expected.
 * The event flow remains unchanged, but the test mock is now more accurate to the real CustomEvent behavior.
 
-**Opportunities for Improvement:**
-
-* Centralize round state management to avoid conflicts between different events.
-  * Phase 0 – Discovery: Catalog every emitter/consumer of `display.round.*`, `roundEnded`, and related events; capture the data each handler reads/writes, the order in which events fire, and the feature flags guarding them.
-  * Phase 1 – Implementation: Introduce the coordinator module behind a feature flag, relocate round progression logic into it, and adapt `roundEnded`/`round.start` handlers to delegate while preserving existing side effects and telemetry.
-
-* Use a single source of truth for the current round number, perhaps in a store or state manager.
-  * Phase 0 – Requirements: Identify every consumer of the round number (UI, analytics, orchestration) and document their update cadence, precision requirements, and failure modes when state desynchronises.
-  * Phase 1 – Store Definition: Define the API and lifecycle for the shared store (e.g., a lightweight observable or battle session state), including change notifications, read-only selectors, reset semantics, and serialization for replays or debugging.
-  * Phase 2 – Migration: Replace direct reads/writes scattered through handlers with store interactions, ensure the scoreboard, snackbar, and tests consume selectors, and add guards to prevent out-of-band mutations or stale snapshots.
-  * Phase 3 – Hardening: Create diagnostics around the store (dev-time assertions, debug log traces, Sentry breadcrumbs) and extend tests to cover concurrent update scenarios, round rollback cases, and state restoration after disconnects.
-
-* Improve test isolation by mocking at the appropriate level to avoid race conditions.
-  * Phase 0 – Audit: Review existing classic battle tests for direct DOM manipulation or mixed-layer mocks; document hotspots that frequently fail, the dependencies they stub, and scenarios they attempt to cover.
-  * Phase 1 – Harness Enhancements: Expand shared test utilities to provide higher-level event simulation helpers (e.g., `emitRoundStart`, `clickStatButton`) and default console muting, and add fixtures for scheduler control.
-  * Phase 2 – Test Refactor: Incrementally migrate flaky tests to the enhanced helpers, ensuring each refactor keeps identical assertions but removes brittle mocking; align all tests on fake timers instead of synchronous `requestAnimationFrame` shims.
+See consolidated "Opportunities for improvement" section at the end of this document.
 
 ---
 
@@ -95,29 +80,7 @@ The test times out because a promise that waits for the `round.resolved` event n
 3. If mocking remains complex, consider using the real `initStatButtons` and mocking only the necessary dependencies to avoid over-mocking.
 4. Update the test to verify that click handlers are properly attached and functional.
 
-**Opportunities for Improvement:**
-
-* Enhance test mocking utilities to provide realistic simulations of DOM interactions.
-  * Phase 0 – Inventory: List every bespoke DOM mock in the test suite and classify the interaction patterns they attempt to simulate.
-  * Phase 1 – API Design: Specify a unified mocking surface (e.g., `createInteractiveButtonMock`) that mirrors production semantics, including event propagation and disabled states.
-  * Phase 2 – Implementation: Build the utilities with thorough unit coverage, providing escape hatches for atypical interactions and instrumentation hooks for assertions.
-  * Phase 3 – Adoption: Replace ad-hoc mocks in priority tests, gathering feedback on gaps; iterate until the majority of DOM interaction tests rely on the shared utilities.
-
-* Implement shared mock helpers for common UI components to ensure consistency across tests.
-  * Phase 0 – Requirements: Identify high-traffic UI components (scoreboard, snackbar, stat buttons) and map the behaviors tests need to orchestrate.
-  * Phase 1 – Template Creation: Scaffold helper factories or fixture builders encapsulating lifecycle hooks, default props, and teardown mechanics.
-  * Phase 2 – Integrate the new helpers into a representative suite (classic battle smoke tests) and validate reductions in boilerplate and flake rate.
-
-* Add validation in tests to check that event listeners are attached correctly.
-  * Phase 0 – Baseline: Determine the critical listeners that must always be wired (stat button clicks, round events) and capture their expected registration timing.
-  * Phase 1 – Utility Support: Extend test helpers to expose assertions like `expectListenerAttached` or `getRegisteredHandlers` without peeking into private internals.
-  * Phase 2 – Test Updates: Amend existing tests to assert listener presence immediately after setup and post-cleanup to detect leaks.
-
-* Review and refactor tests that rely on deep mocking to use integration-style testing where possible.
-  * Phase 0 – Candidate Selection: Rank tests by mock depth and failure frequency, prioritising those that stub more than two layers of dependency.
-  * Phase 1 – Scenario Mapping: For each candidate, outline the user journey it attempts to verify and identify the minimal set of modules that can remain real.
-  * Phase 2 – Refactor: Replace deep mocks with integration-friendly scaffolding (real DOM factories, real orchestrators) while keeping deterministic control via fake timers and controlled data fixtures.
-  * Phase 3 – Regression Sweep: Run extended CI flake detection, capture before/after stability metrics, and ensure test duration remains acceptable.
+See consolidated "Opportunities for improvement" section at the end of this document.
 
 ---
 
@@ -185,3 +148,57 @@ The test fails due to an infinite recursive loop between the animation scheduler
   * Phase 1 – Safeguard Design: Define detection heuristics (max synchronous frame depth, loop duration thresholds) and decide on developer-facing warnings vs. hard failures.
   * Phase 2 – Implementation: Add guarded counters or watchdog timers within the scheduler, ensuring they can be toggled or relaxed for stress tests.
   * Phase 3 – Verification: Create targeted tests that intentionally trigger the safeguards to confirm they surface actionable diagnostics without false positives.
+
+---
+
+## Consolidated Opportunities for Improvement (scored & ranked)
+
+Below are all opportunities for improvement from the three failure analyses consolidated into a single list. Each item has a short summary, an estimated implementation complexity score (1 = very small, 5 = very large), and a rationale. Items are ranked from least complex to most complex.
+
+1) Improve shared test mocking utilities (score: 1)
+  - Summary: Create small helper factories for common UI components (stat buttons, snackbar) and realistic DOM-interaction mocks (attach handlers, disabled state, aria attributes).
+  - Why low complexity: Mostly test-only code, limited impact surface, quick wins by extracting and reusing patterns already present in tests.
+
+2) Add a queue-based animation frame mock helper (score: 1)
+  - Summary: Extract the queue-based RAF mock implemented in tests/helpers/classicBattle/utils.js into a reusable helper with `enqueue`, `flushNext`, `flushAll`, and `cancel` APIs.
+  - Why low complexity: Implemented already in-line; packaging and small tests required.
+
+3) Publish a fake-timers playbook & canonical test setup (score: 2)
+  - Summary: Document and add a standard setup/teardown pattern (e.g., `vi.useFakeTimers()` and `afterEach(vi.useRealTimers)`) and recommended async helper usage like `vi.runAllTimersAsync()`.
+  - Why moderate: Documentation + small infra changes and updating CI snippets; low code risk.
+
+4) Shared mock helpers for high-traffic UI components (score: 2)
+  - Summary: Build robust factories for complex interactive components (scoreboard, stat buttons, modals) that tests can opt into.
+  - Why moderate: Adds test utilities but requires cross-repo QA to ensure helpers cover required behaviors.
+
+5) Add test assertions / utilities to verify event listener wiring (score: 2)
+  - Summary: Provide helpers like `expectListenerAttached` or `getRegisteredHandlers` to make tests assert listeners are present after initialization.
+  - Why moderate: Small test harness code with limited surface area; improves test reliability.
+
+6) Replace brittle inline mocks with integration-style refactors for priority tests (score: 3)
+  - Summary: For the flakiest tests, remove deep mocking and move to integration-focused tests that use real modules + deterministic fakes (timers, fixtures).
+  - Why higher complexity: Requires test rewrites and coordination; improves long-term stability.
+
+7) Centralize round state management / single source of truth (score: 4)
+  - Summary: Introduce a small battle-session store (observable or light state manager) for canonical round number management consumed by UI, orchestrator, and analytics.
+  - Why high complexity: Cross-cutting change touching runtime code, event flows, and many consumers — requires feature-flagged rollout and migration tests.
+
+8) Scheduler test-friendly hooks & deterministic control (score: 4)
+  - Summary: Add optional hooks to the scheduler (e.g., inject timing source, `withTestController`) so tests can deterministically control frames and pause/resume behavior without mocking globals.
+  - Why high complexity: Modifies production scheduler API and needs careful backwards compatibility and test migration.
+
+9) Add scheduler safeguards to detect/prevent infinite loops (score: 5)
+  - Summary: Implement watchdog counters or max synchronous frame depth heuristics in the scheduler to surface actionable diagnostics or fail safely in tests.
+  - Why highest complexity: Changes runtime scheduler behavior; requires careful design to avoid false positives and ensure production performance remains unaffected.
+
+Notes on ranking & scoring:
+- Scores are implementation complexity estimates that factor engineering effort, risk to production code, and cross-team coordination.
+- Short-term wins: items 1–3 are quick to implement and will reduce flakiness rapidly.
+- Medium-term: items 4–6 require more coordination but substantially improve test health.
+- Long-term: items 7–9 touch production code and APIs and should be done behind feature flags with thorough validation.
+
+Suggested next steps:
+- Implement items 1 and 2 this sprint (pack the RAF helper and shared mocks into `tests/utils/`), and update the handful of failing tests to use them.
+- Publish the fake-timer playbook and update CI docs.
+- Schedule a design spike for the centralized round store and scheduler hooks (item 7 and 8) to produce a migration plan.
+
