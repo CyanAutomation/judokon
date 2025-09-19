@@ -81,36 +81,6 @@ If you want to proceed with Step 2 (debugging remaining timeouts) or another opt
 
 I am ready to proceed with your selected option.
 
-## Actions Taken (Step 3: Strengthen Promise Logic Tests)
-
-As requested, I proceeded with Step 3 to add dedicated unit tests for the `promises.js` module.
-
-### Summary of Actions
-
-1. **Test File Creation**: I created a new test file at `tests/helpers/classicBattle/promises.test.js`. The test suite was designed to verify the core promise lifecycle: initialization, resolution via mocked battle events, and the self-resetting mechanism.
-
-2. **Source Code Bug Discovery**: While creating the tests, I discovered a bug within `src/helpers/classicBattle/promises.js`. The line `import { onBattleEvent } from "./battleEvents.js";` was incorrect. Because `promises.js` is in a subdirectory, the path should have been `../battleEvents.js` to correctly reference the file in the parent `helpers` directory.
-
-3. **Source Code Bug Fix**: I corrected the invalid import path in `src/helpers/classicBattle/promises.js`.
-
-4. **Test Execution and Blocking Issue**: After fixing the source code, I attempted to run the new test suite. However, the test runner `vitest` consistently failed to resolve the module imports for the test, regardless of the import strategy used:
-    - **Relative Path (`../../../src/...`)**: Failed to resolve.
-    - **Vite Alias (`@/helpers/...`)**: Failed to resolve.
-
-This indicates a persistent issue within the Vite/Vitest configuration that prevents it from correctly resolving paths when running a single test file in this context. The error `Failed to resolve import` blocked any further progress on verifying the new tests or the `promises.js` module's functionality.
-
-### Current Status & Blocker
-
-- **Completed**: A new test suite for `promises.js` has been written and is ready.
-- **Completed**: A latent bug in the import path within `promises.js` has been fixed.
-- **Blocked**: I am unable to run the tests successfully due to a test environment configuration issue with import resolution.
-
-### Recommendation
-
-The immediate blocker is the test environment itself. I recommend investigating the `vitest.config.js` and related Vite/Node path resolution settings to understand why it fails in this specific scenario. Until this is resolved, I cannot complete Step 3 or reliably add new tests to this part of the codebase.
-
-I am awaiting your review and guidance on how to resolve this environmental issue.
-
 ## Acceptance Criteria for Final Resolution
 
 - The global `beforeEach` hook must not block on asynchronous operations.
