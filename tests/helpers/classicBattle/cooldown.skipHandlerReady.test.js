@@ -141,8 +141,11 @@ describe("skip handler clears fallback timer", () => {
     await eventDispatcher.dispatchBattleEvent("ready");
     expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
     const readyPromise = controls.ready;
-    controls.resolveReady?.();
+    const resolvePromise = controls.resolveReady?.();
+    await resolvePromise;
     await readyPromise;
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(2);
+    expect(eventDispatcher.dispatchBattleEvent).toHaveBeenNthCalledWith(2, "ready");
     await Promise.resolve();
     await vi.advanceTimersByTimeAsync(50);
     scheduler.tick(50);
