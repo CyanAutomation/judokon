@@ -40,22 +40,25 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 **Opportunities for Improvement:**
 
 * Centralize round state management to avoid conflicts between different events.
-  * Phase 0 – Discovery: Catalog every emitter/consumer of `display.round.*`, `roundEnded`, and related events; document the data each handler relies on and where side effects occur.
-  * Phase 1 – Design: Draft an event flow diagram and propose a single coordinator (e.g., `roundStateController`) that owns state transitions, including round incrementing and UI messaging.
-  * Phase 2 – Implementation: Introduce the coordinator module, relocate round progression logic into it, and update `roundEnded`/`round.start` handlers to delegate to the coordinator while preserving existing side effects.
-  * Phase 3 – Validation: Add integration tests that simulate overlapping events to confirm the coordinator enforces ordering; instrument logging or tracing (via Sentry spans) so future regressions surface quickly.
+  * Phase 0 – Discovery: Catalog every emitter/consumer of `display.round.*`, `roundEnded`, and related events; capture the data each handler reads/writes, the order in which events fire, and the feature flags guarding them.
+  * Phase 1 – Design: Draft an event flow diagram and propose a single coordinator (for example `roundStateController`) that owns state transitions; review the design with gameplay and UI stakeholders, and agree on acceptance criteria for hand-off signals.
+  * Phase 2 – Implementation: Introduce the coordinator module behind a feature flag, relocate round progression logic into it, and adapt `roundEnded`/`round.start` handlers to delegate while preserving existing side effects and telemetry.
+  * Phase 3 – Validation: Add integration tests that simulate overlapping events (back-to-back resolves, manual overrides) to confirm ordering guarantees; instrument tracing via Sentry spans so future regressions surface quickly.
+  * Phase 4 – Rollout & Monitoring: Remove the feature flag once soak tests pass, update developer documentation for new entry points, and schedule a post-launch review to evaluate error metrics and follow-up defects.
 
 * Use a single source of truth for the current round number, perhaps in a store or state manager.
-  * Phase 0 – Requirements: Identify every consumer of the round number (UI, analytics, orchestration) and document their update cadence and precision requirements.
-  * Phase 1 – Store Definition: Define the API and lifecycle for the shared store (e.g., a lightweight observable or battle session state), including change notifications, read-only selectors, and reset semantics.
-  * Phase 2 – Migration: Replace direct reads/writes scattered through handlers with store interactions, ensure the scoreboard and tests access the derived state, and add guards to prevent out-of-band mutations.
-  * Phase 3 – Hardening: Create diagnostics around the store (dev-time assertions, log traces) and extend tests to cover concurrent update scenarios and round rollback cases.
+  * Phase 0 – Requirements: Identify every consumer of the round number (UI, analytics, orchestration) and document their update cadence, precision requirements, and failure modes when state desynchronises.
+  * Phase 1 – Store Definition: Define the API and lifecycle for the shared store (e.g., a lightweight observable or battle session state), including change notifications, read-only selectors, reset semantics, and serialization for replays or debugging.
+  * Phase 2 – Migration: Replace direct reads/writes scattered through handlers with store interactions, ensure the scoreboard, snackbar, and tests consume selectors, and add guards to prevent out-of-band mutations or stale snapshots.
+  * Phase 3 – Hardening: Create diagnostics around the store (dev-time assertions, debug log traces, Sentry breadcrumbs) and extend tests to cover concurrent update scenarios, round rollback cases, and state restoration after disconnects.
+  * Phase 4 – Adoption & Enablement: Publish usage examples in `docs/battle-state.md`, run a short enablement session for maintainers, and archive legacy helpers to prevent reintroduction of duplicate sources of truth.
 
 * Improve test isolation by mocking at the appropriate level to avoid race conditions.
-  * Phase 0 – Audit: Review existing classic battle tests for direct DOM manipulation or mixed-layer mocks; document hotspots that frequently fail or time out.
-  * Phase 1 – Harness Enhancements: Expand shared test utilities to provide higher-level event simulation helpers (e.g., `emitRoundStart`, `clickStatButton`) that encapsulate realistic wiring and console muting.
-  * Phase 2 – Test Refactor: Incrementally migrate flaky tests to the enhanced helpers, ensuring each refactor keeps identical expectations but removes brittle mocking; align all tests on fake timers instead of synchronous `requestAnimationFrame` shims.
-  * Phase 3 – Continuous Verification: Add CI checks (or Vitest snapshots) that detect forbidden mocking patterns, and schedule quarterly reviews to retire redundant mocks.
+  * Phase 0 – Audit: Review existing classic battle tests for direct DOM manipulation or mixed-layer mocks; document hotspots that frequently fail, the dependencies they stub, and scenarios they attempt to cover.
+  * Phase 1 – Harness Enhancements: Expand shared test utilities to provide higher-level event simulation helpers (e.g., `emitRoundStart`, `clickStatButton`) and default console muting, and add fixtures for scheduler control.
+  * Phase 2 – Test Refactor: Incrementally migrate flaky tests to the enhanced helpers, ensuring each refactor keeps identical assertions but removes brittle mocking; align all tests on fake timers instead of synchronous `requestAnimationFrame` shims.
+  * Phase 3 – Continuous Verification: Add CI checks (Vitest snapshot or lint rules) that detect forbidden mocking patterns, publish a regression dashboard, and schedule quarterly reviews to retire redundant mocks or add missing coverage.
+  * Phase 4 – Knowledge Share: Document the new testing playbook in `docs/testing/classicBattle.md` and include examples in onboarding materials to reinforce preferred patterns.
 
 ---
 
@@ -91,9 +94,32 @@ The test times out because a promise that waits for the `round.resolved` event n
 **Opportunities for Improvement:**
 
 * Enhance test mocking utilities to provide realistic simulations of DOM interactions.
+  * Phase 0 – Inventory: List every bespoke DOM mock in the test suite and classify the interaction patterns they attempt to simulate.
+  * Phase 1 – API Design: Specify a unified mocking surface (e.g., `createInteractiveButtonMock`) that mirrors production semantics, including event propagation and disabled states.
+  * Phase 2 – Implementation: Build the utilities with thorough unit coverage, providing escape hatches for atypical interactions and instrumentation hooks for assertions.
+  * Phase 3 – Adoption: Replace ad-hoc mocks in priority tests, gathering feedback on gaps; iterate until the majority of DOM interaction tests rely on the shared utilities.
+  * Phase 4 – Governance: Add lint rules or codemods that flag regression to hand-rolled mocks, and document contribution guidelines for extending the utilities safely.
+
 * Implement shared mock helpers for common UI components to ensure consistency across tests.
+  * Phase 0 – Requirements: Identify high-traffic UI components (scoreboard, snackbar, stat buttons) and map the behaviors tests need to orchestrate.
+  * Phase 1 – Template Creation: Scaffold helper factories or fixture builders encapsulating lifecycle hooks, default props, and teardown mechanics.
+  * Phase 2 – Pilot: Integrate the new helpers into a representative suite (classic battle smoke tests) and validate reductions in boilerplate and flake rate.
+  * Phase 3 – Rollout: Update the remaining suites incrementally, tracking adoption metrics and ensuring the helpers stay in sync with production props.
+  * Phase 4 – Maintenance: Establish an owner rotation for the helper catalog, automate API diff checks against live components, and add change logs so consumers know when behavior shifts.
+
 * Add validation in tests to check that event listeners are attached correctly.
+  * Phase 0 – Baseline: Determine the critical listeners that must always be wired (stat button clicks, round events) and capture their expected registration timing.
+  * Phase 1 – Utility Support: Extend test helpers to expose assertions like `expectListenerAttached` or `getRegisteredHandlers` without peeking into private internals.
+  * Phase 2 – Test Updates: Amend existing tests to assert listener presence immediately after setup and post-cleanup to detect leaks.
+  * Phase 3 – Automation: Introduce a lint-time rule or Vitest custom matcher that warns when listener assertions are skipped for eligible scenarios.
+  * Phase 4 – Monitoring: Feed listener-metrics into CI reports, and periodically sample runtime telemetry to confirm tests mirror production wiring.
+
 * Review and refactor tests that rely on deep mocking to use integration-style testing where possible.
+  * Phase 0 – Candidate Selection: Rank tests by mock depth and failure frequency, prioritising those that stub more than two layers of dependency.
+  * Phase 1 – Scenario Mapping: For each candidate, outline the user journey it attempts to verify and identify the minimal set of modules that can remain real.
+  * Phase 2 – Refactor: Replace deep mocks with integration-friendly scaffolding (real DOM factories, real orchestrators) while keeping deterministic control via fake timers and controlled data fixtures.
+  * Phase 3 – Regression Sweep: Run extended CI flake detection, capture before/after stability metrics, and ensure test duration remains acceptable.
+  * Phase 4 – Documentation: Add a migration log describing the refactors, highlighting patterns for future rewrites and tagging TODOs for remaining deep mocks.
 
 ---
 
@@ -129,6 +155,29 @@ The test fails due to an infinite recursive loop between the animation scheduler
 **Opportunities for Improvement:**
 
 * Develop a robust animation frame mocking utility that supports queuing and flushing callbacks.
+  * Phase 0 – Research: Examine existing `requestAnimationFrame` usage across the app and document timing expectations (burst callbacks, idle frames, cancellation).
+  * Phase 1 – Specification: Define the mock API (enqueue, flushNext, flushAll, cancel) and concurrency guarantees, including integration points with Vitest fake timers.
+  * Phase 2 – Implementation: Build the utility with an internal queue and instrumentation counters, plus snapshot-based unit tests that assert ordering and cancellation semantics.
+  * Phase 3 – Integration: Replace brittle inline mocks with the utility, updating tests to use explicit flush calls and verifying no regressions in scheduling-sensitive suites.
+  * Phase 4 – Maintenance: Provide documentation, example usage, and lint checks to discourage reintroduction of synchronous `cb()` mocks.
+
 * Standardize the use of fake timers in tests to avoid global API mocking.
+  * Phase 0 – Assessment: Audit the suite for places replacing `setTimeout`, `requestAnimationFrame`, or scheduler internals manually; record incompatibilities with fake timers.
+  * Phase 1 – Playbook: Publish a canonical setup/teardown snippet (e.g., `vi.useFakeTimers(); afterEach(vi.useRealTimers);`) and guidance on async helpers like `vi.runAllTimersAsync()`.
+  * Phase 2 – Migration: Update critical classic battle and scheduler tests to adopt the playbook, ensuring helper utilities also assume fake timers by default.
+  * Phase 3 – Enforcement: Add lint rules or CI scripts that flag direct global timer mocks, complemented by documentation on approved exceptions.
+  * Phase 4 – Continuous Improvement: Periodically benchmark test duration and flake rates to confirm fake timers bring stability, adjusting the playbook when regressions appear.
+
 * Enhance the scheduler module with test-friendly hooks for deterministic control.
+  * Phase 0 – Requirement Gathering: Collaborate with gameplay engineers to list the scheduler behaviors tests need to orchestrate (pause, resume, inject callbacks).
+  * Phase 1 – API Design: Propose optional hooks such as `withTestController` or dependency injection for the timing source, and review with maintainers for backward compatibility.
+  * Phase 2 – Implementation: Introduce the hooks guarded by internal flags, update scheduler docs, and ensure production codepaths remain unaffected through regression tests.
+  * Phase 3 – Test Adoption: Retrofit existing scheduler-focused tests to use the hooks, eliminating reliance on private internals or monkey-patching.
+  * Phase 4 – Observation: Monitor telemetry for scheduler performance post-change and open feedback channels for further hook refinements.
+
 * Add safeguards in the scheduler to detect and prevent infinite loops during testing.
+  * Phase 0 – Failure Analysis: Catalogue historical infinite-loop incidents and document the call patterns that triggered them.
+  * Phase 1 – Safeguard Design: Define detection heuristics (max synchronous frame depth, loop duration thresholds) and decide on developer-facing warnings vs. hard failures.
+  * Phase 2 – Implementation: Add guarded counters or watchdog timers within the scheduler, ensuring they can be toggled or relaxed for stress tests.
+  * Phase 3 – Verification: Create targeted tests that intentionally trigger the safeguards to confirm they surface actionable diagnostics without false positives.
+  * Phase 4 – Rollout: Enable safeguards by default in test environments, publish troubleshooting guides, and integrate alerts into CI to catch regressions early.
