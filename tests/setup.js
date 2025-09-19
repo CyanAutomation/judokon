@@ -154,9 +154,27 @@ beforeEach(async () => {
   try {
     // Preload classic battle bindings so event listeners/promises are registered
     // Tests that don't use classic battle will simply ignore this.
+    console.log("[TEST DEBUG] before import ../src/helpers/classicBattle.js");
     const mod = await import("../src/helpers/classicBattle.js");
-    if (mod && typeof mod.__ensureClassicBattleBindings === "function") {
-      await mod.__ensureClassicBattleBindings();
+    console.log("[TEST DEBUG] after import ../src/helpers/classicBattle.js", {
+      hasEnsure: !!(mod && typeof mod.__ensureClassicBattleBindings === "function")
+    });
+    if (mod) {
+      try {
+        if (typeof mod.__resetClassicBattleBindings === "function") {
+          // Clear module-level bind markers so a subsequent forced bind will
+          // recreate promises and dynamic handlers cleanly. This makes the
+          // global beforeEach robust when tests call `vi.resetModules()`.
+          try {
+            mod.__resetClassicBattleBindings();
+          } catch {}
+        }
+      } catch {}
+      if (typeof mod.__ensureClassicBattleBindings === "function") {
+        console.log("[TEST DEBUG] before __ensureClassicBattleBindings call (force)");
+        await mod.__ensureClassicBattleBindings({ force: true });
+        console.log("[TEST DEBUG] after __ensureClassicBattleBindings call (force)");
+      }
     }
     // Ensure a fresh BattleEngine instance for each test to avoid shared state
     try {

@@ -1,3 +1,4 @@
+console.log("[TEST DEBUG] evaluating src/helpers/classicBattle.js");
 export * from "./classicBattle/roundManager.js";
 export * from "./classicBattle/selectionHandler.js";
 export * from "./classicBattle/roundResolver.js";

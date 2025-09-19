@@ -12,7 +12,7 @@
 | 10   | `playwright/battle-classic/timer.spec.js`              | 5     | REFACTOR     | 2      | 1         | 1         | 0          | 1    | 449          | 0       | Swap the two `waitForTimeout` polls for expectations tied to the countdown element or test API hooks so the timer is asserted deterministically without idle delays.\:codex-file-citation                                                                                 |
 
 Common problems
-Many CLI specs bypass real behavior by calling internal helpers like window.**test or **battleCLIinit, so they never prove the user flow works end-to-end.
+Many CLI specs bypass real behavior by calling internal helpers like window.**test or**battleCLIinit, so they never prove the user flow works end-to-end.
 Heavy use of page.waitForTimeout introduces brittle timing and multi-second runtimes without asserting the actual events that should unblock the flow.
 Several tests assert only generic visibility or placeholder truths (expect(true).toBe(true)), so real regressions could slip by unnoticed.
 Two CLI specs (battle-cli-play and battle-cli-restart) didn’t appear in the latest Playwright JSON report, suggesting they’re excluded from the executed suite and lack runtime signal entirely.

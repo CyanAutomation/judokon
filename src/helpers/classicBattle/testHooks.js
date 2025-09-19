@@ -1,3 +1,4 @@
+console.log("[TEST DEBUG] evaluating testHooks.js");
 import { emitBattleEvent, __resetBattleEventTarget } from "./battleEvents.js";
 import { stopTimer } from "../battleEngineFacade.js";
 
