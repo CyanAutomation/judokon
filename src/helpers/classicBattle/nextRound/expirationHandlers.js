@@ -12,11 +12,18 @@ import { readDebugState as globalReadDebugState } from "../debugHooks.js";
  */
 export function createExpirationTelemetryEmitter(targets = {}) {
   const { exposeDebugState, debugExpose, getDebugBag } = targets;
+  const logDebug = (message, error) => {
+    try {
+      if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+        console.debug(message, error);
+      }
+    } catch {}
+  };
   const emit = (key, value) => {
     try {
       if (typeof exposeDebugState === "function") exposeDebugState(key, value);
     } catch (error) {
-      console.debug("Failed to expose debug state:", error);
+      logDebug("Failed to expose debug state:", error);
     }
     if (typeof getDebugBag === "function") {
       try {
@@ -25,13 +32,13 @@ export function createExpirationTelemetryEmitter(targets = {}) {
           bag[key] = value;
         }
       } catch (error) {
-        console.debug("Failed to update debug bag:", error);
+        logDebug("Failed to update debug bag:", error);
       }
     }
     try {
       if (typeof debugExpose === "function") debugExpose(key, value);
     } catch (error) {
-      console.debug("Failed to call debugExpose:", error);
+      logDebug("Failed to call debugExpose:", error);
     }
   };
   const safeGetDebugBag = () => {
@@ -149,6 +156,10 @@ export function createMachineStateInspector(params) {
       return;
     }
     await new Promise((resolve) => {
+      if (shouldResolve()) {
+        resolve();
+        return;
+      }
       let settled = false;
       const cleanup = (handler) => {
         if (settled) return;
@@ -164,9 +175,13 @@ export function createMachineStateInspector(params) {
         if (!shouldResolve()) return;
         cleanup(handler);
       };
-      eventBus?.on?.("battleStateChange", handler);
+      let subscribed = false;
+      try {
+        eventBus?.on?.("battleStateChange", handler);
+        subscribed = true;
+      } catch {}
       if (shouldResolve()) {
-        cleanup(handler);
+        cleanup(subscribed ? handler : undefined);
       }
     });
     emitTelemetry?.("handleNextRoundMachineStateAfterWait", safeGetState() ?? null);
@@ -325,9 +340,12 @@ export async function updateExpirationUi(params) {
   const orchestrated = typeof isOrchestrated === "function" && isOrchestrated();
   if (!orchestrated) {
     let target = button || null;
-    if (!target && documentRef) {
+    if (documentRef) {
       try {
-        target = documentRef.getElementById?.("next-button") || null;
+        const liveButton = documentRef.getElementById?.("next-button") || null;
+        if (liveButton) {
+          target = liveButton;
+        }
       } catch {}
     }
     try {
