@@ -187,9 +187,16 @@ export function createMachineStateInspector(params) {
     if (isCooldownState(snapshot)) return true;
     return false;
   };
+  const emitPostWaitStates = () => {
+    const latestMachineState = safeGetState() ?? null;
+    const latestSnapshotState = safeGetSnapshot();
+    emitTelemetry?.("handleNextRoundMachineStateAfterWait", latestMachineState);
+    emitTelemetry?.("handleNextRoundSnapshotStateAfterWait", latestSnapshotState);
+  };
+  };
   const waitForCooldown = async (eventBus) => {
     if (shouldResolve()) {
-      emitTelemetry?.("handleNextRoundMachineStateAfterWait", safeGetState() ?? null);
+      emitPostWaitStates();
       return;
     }
     await new Promise((resolve) => {
@@ -221,7 +228,7 @@ export function createMachineStateInspector(params) {
         cleanup(subscribed ? handler : undefined);
       }
     });
-    emitTelemetry?.("handleNextRoundMachineStateAfterWait", safeGetState() ?? null);
+    emitPostWaitStates();
   };
   return { machineState, snapshotState, shouldResolve, waitForCooldown };
 }
