@@ -29,6 +29,7 @@ function scheduleImmediate(callback) {
     let cancelled = false;
     globalThis.queueMicrotask(() => {
       if (cancelled) return;
+      cancelled = true;
       callback();
     });
     return () => {
@@ -52,6 +53,7 @@ function scheduleImmediate(callback) {
       cancelled = true;
     };
   }
+  if (typeof globalThis?.setTimeout === "function") {
     const timeoutId = globalThis.setTimeout(() => {
       callback();
     }, 0);
