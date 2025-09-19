@@ -169,6 +169,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     };
 
     const setButtonState = (isDisabled) => {
+      const buttons = getButtons();
       buttons.forEach((btn) => {
         btn.type = btn.type || "button";
         if (!btn.hasAttribute("data-testid")) {
@@ -190,6 +191,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     };
 
     const attachHandlers = () => {
+      const buttons = getButtons();
+      window.__mockButtons = buttons;
       buttons.forEach((btn) => {
         if (handlers.has(btn)) return;
         const handler = async (event) => {
@@ -451,6 +454,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         );
         const resolved = getRoundResolvedPromise();
         buttons[0].click();
+        const { handleStatSelection } = await import(
+          "../../src/helpers/classicBattle/selectionHandler.js"
+        );
+        expect(handleStatSelection).toHaveBeenCalled();
         await timerSpy.runAllTimersAsync();
         await resolved;
 
