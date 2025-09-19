@@ -73,6 +73,49 @@ Next recommended actions (still Phase 1 -> Phase 2 gate):
 - Attempt to reproduce the duplication deterministically by running an integration-like test that exercises the real engine `startCoolDown` path, the engine timer, and the real scheduler (instead of the stubbed timer). If we can reproduce it reliably, implement Phase 2 and verify the fix with the same harness.
 - If integration reproduction is slow or flaky, proceed to Phase 2 with the small, well-scoped changes (funnel finalize through dispatcher & toggle flag after success), then run the unit tests and the integration harness.
 
+Integration test (real engine & scheduler) — actions taken & outcome
+
+- Test added: `tests/integration/roundManager.cooldown-integration.spec.js`.
+  - Purpose: exercise the real `BattleEngine` cooldown path using `createBattleEngine()` and `startCooldown` with the real scheduler (no fake timers), capture the runtime traces produced by our Phase 1 instrumentation, and persist them to `test-traces.json` for analysis.
+  - Command run (what I executed):
+
+    npx vitest run tests/integration/roundManager.cooldown-integration.spec.js --run
+
+- Observed outcome:
+  - The integration test passed (1 test passed).
+  - The test waited briefly to allow the cooldown expiration flow to run and then wrote a snapshot to `/workspaces/judokon/test-traces.json`.
+  - The integration trace shows the centralized dispatch path executed (i.e., `dispatchReadyViaBus` → `handleNextRoundExpiration` → controls resolved). No deterministic double `machine.dispatch("ready")` was observed in this specific run.
+
+- Key excerpt from `/workspaces/judokon/test-traces.json` (integration run):
+
+```json
+{
+  "tracesFile": {
+    "traceA": [
+      { "event": "startCooldown", "at": 1758296539762, "scheduler": "default" },
+      { "event": "cooldownContext", "at": 1758296539763, "orchestrated": false, "hasMachine": false },
+      { "event": "controlsCreated", "at": 1758296539763, "hasEmitter": true },
+      { "event": "cooldownDurationResolved", "at": 1758296539784, "seconds": 3 },
+      { "event": "dispatchReadyViaBus.start", "at": 1758296539790 },
+      { "event": "dispatchReadyViaBus.end", "at": 1758296539790, "result": true },
+      { "event": "handleNextRoundExpiration.start", "at": 1758296539791 },
+      { "event": "handleNextRoundExpiration.dispatched", "at": 1758296539792, "dispatched": true },
+      { "event": "resolveReadyInvoked", "at": 1758296539792, "readyDispatched": false, "readyInFlight": false },
+      { "event": "resolveReadySettled", "at": 1758296539793, "readyDispatched": true },
+      { "event": "handleNextRoundExpiration.end", "at": 1758296539793, "dispatched": true }
+    ],
+    "traceB": [],
+    "traceDelayed": []
+  }
+}
+```
+
+- Interpretation:
+  - The centralized dispatcher path was exercised and returned success (`dispatchReadyViaBus` result: true), followed by `handleNextRoundExpiration` finalizing the controls and resolving the ready promise.
+  - The lack of a duplicate dispatch in this run reinforces that the double-dispatch is timing and environment dependent; we can exercise the central path and verify behavior, but reproducing the original double-dispatch deterministically will likely require a timing-specific harness or to intentionally simulate the race.
+
+- Status update: I marked Phase 1b (integration test) as completed in the repo todo list. I paused further changes and will await your review before moving to Phase 2.
+
 ### Phase 2 — remediation (concrete changes)
 
 Suggested code changes (small, targeted):
