@@ -20,9 +20,11 @@ import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
           const scores = {
             player: Number(result?.playerScore) || 0,
             opponent: Number(result?.opponentScore) || 0
-          };icBattle/roundResolver.js";
-import { onNextButtonClick } from "../helpers/classicBattle/timerService.js";
-import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
+          };
+        } catch {}
+      });
+    } catch {}
+  };
 import {
   setStatButtonsEnabled,
   resolveStatButtonsReady

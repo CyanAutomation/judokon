@@ -284,5 +284,5 @@ export function initializeTestBindingsLight() {
     "statSelectionStalledPromise",
     "statSelectionStalled"
   )();
-  window.roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
+  window.roundResolvedPromise = setupPromise("roundResolvedPromise", "round.ended")();
 }
