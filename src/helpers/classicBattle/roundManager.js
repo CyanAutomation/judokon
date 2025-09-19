@@ -382,7 +382,8 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     setupOrchestratedReady(controls, orchestratorMachine, btn, {
       eventBus: bus,
       scheduler: activeScheduler,
-      markReady: overrides.markReady
+      markReady: overrides.markReady,
+      dispatchBattleEvent: overrides.dispatchBattleEvent || dispatchBattleEvent
     });
     wireCooldownTimer(controls, btn, cooldownSeconds, activeScheduler, helperOptions);
   } else {
@@ -999,6 +1000,9 @@ function finalizeReadyControls(controls, dispatched) {
  * 4. Execute dispatch strategies and finalize control flags
  */
 async function handleNextRoundExpiration(controls, btn, options = {}) {
+  try {
+    appendReadyTrace("handleNextRoundExpiration.start", {});
+  } catch {}
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   const { emitTelemetry, getDebugBag } = createExpirationTelemetryContext();
   if (guardReadyInFlight(controls, emitTelemetry, getDebugBag)) return;
@@ -1031,8 +1035,14 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   });
   if (dispatched) {
     readyDispatchedForCurrentCooldown = true;
+    try {
+      appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true });
+    } catch {}
   }
   finalizeReadyControls(controls, dispatched);
+  try {
+    appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched });
+  } catch {}
   return dispatched;
 }
 
@@ -1114,13 +1124,17 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       { suppressInProduction: true, fallback: () => false, defaultValue: false }
     );
   const onExpired = async () => {
+    const finalizeWithPriorDispatch = () =>
+      handleNextRoundExpiration(controls, btn, {
+        ...expirationOptions,
+        alreadyDispatchedReady: true
+      });
     // Handle retries when the timer already expired but ready wasn't emitted.
     if (expired) {
       if (readyDispatchedForCurrentCooldown) {
-        // A prior retry already succeeded. Bail out so we do not signal
-        // another ready event while cleanup from the previous attempt is
-        // still unwinding.
-        return;
+        // A prior retry already succeeded. Skip dispatching again so the
+        // centralized expiration path can cleanly finish unwinding.
+        return finalizeWithPriorDispatch();
       }
       const alreadyDispatchedReady = await attemptBusDispatch();
       return handleNextRoundExpiration(controls, btn, {

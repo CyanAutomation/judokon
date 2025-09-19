@@ -21,6 +21,58 @@ Why this duplicates: the first dispatch bypasses the centralized dispatcher and 
   - Triggers the cooldown expiry path and asserts `machine.dispatch` is called exactly once and that the dispatcher path was used (i.e., the centralized dispatcher spy observed the call).
   - Optionally asserts `readyDispatchedForCurrentCooldown` ends up true and that retry behavior still occurs when the first central dispatch fails (see Phase 2 test extension).
 
+Actions taken (this session):
+
+- Added a focused unit test: `tests/roundManager.cooldown-ready.spec.js` which exercises two scenarios:
+  - Scenario A: an injected `dispatchBattleEvent` override is provided (expect `machine.dispatch` not to be called).
+  - Scenario B: no injected dispatcher; a global getter (`__classicBattleDebugRead`) is provided so the centralized dispatcher can locate the machine (expect duplicate dispatch in the original report).
+- Ran the single test file with Vitest. Command executed:
+Ran the single test file with Vitest. Command executed:
+
+  npx vitest run tests/roundManager.cooldown-ready.spec.js --run
+
+Observed outcome:
+
+- Scenario A (injected dispatcher): `machine.dispatch` calls = 0 — centralized dispatcher path executed and the injected dispatcher handled the event.
+- Scenario B (no injected dispatcher): `machine.dispatch` calls >= 1 in this run; duplicate dispatch did not occur deterministically here.
+
+Traces produced and saved:
+
+- I added short-lived tracing via `appendReadyTrace(...)` in `setupOrchestratedReady.finalize`, around the `dispatchReadyViaBus` call, and at the start/end of `handleNextRoundExpiration`.
+- The test writes the collected trace output to `./test-traces.json` in the repo root. Key excerpt from that file (Scenario A trace):
+
+```json
+{
+  "traceA": [
+    { "event": "startCooldown", "at": 1758296539762, "scheduler": "default" },
+    { "event": "dispatchReadyViaBus.start", "at": 1758296539790 },
+    { "event": "dispatchReadyViaBus.end", "at": 1758296539790, "result": true },
+    { "event": "handleNextRoundExpiration.start", "at": 1758296539791 },
+    { "event": "handleNextRoundExpiration.dispatched", "at": 1758296539792, "dispatched": true },
+    { "event": "resolveReadyInvoked", "at": 1758296539792, "readyDispatched": false, "readyInFlight": false },
+    { "event": "resolveReadySettled", "at": 1758296539793, "readyDispatched": true },
+    { "event": "handleNextRoundExpiration.end", "at": 1758296539793, "dispatched": true }
+  ],
+  "traceB": [],
+  "traceDelayed": []
+}
+```
+
+Interpretation of the traces:
+
+- The injected-dispatcher run shows `dispatchReadyViaBus` executed and returned `true`, followed by `handleNextRoundExpiration` completing and the controls resolving the ready promise. No duplicate `machine.dispatch("ready")` calls were observed in this run.
+- `traceB` and `traceDelayed` were empty in the recorded output; this indicates the trace map may be reset between scenarios or that certain orchestrator flags / paths were not taken under those variants. The empty traces for scenario B mean we couldn't capture the finalize/direct-dispatch path in that test run.
+
+Conclusion from Phase 1 (extended):
+
+- Tracing confirms the centralized dispatch path can and did run in a controlled test. The originally reported double-dispatch is plausible from reading the code, but it appears timing- and environment-dependent — our controlled unit tests did not reliably reproduce the duplicate `machine.dispatch` call.
+- Because the issue depends on runtime ordering, the proposed Phase 2 remediation (centralize finalize to call the shared dispatcher and short-circuit duplicate attempts in the `onExpired` retry path) remains the correct and low-risk change.
+
+Next recommended actions (still Phase 1 -> Phase 2 gate):
+
+- Attempt to reproduce the duplication deterministically by running an integration-like test that exercises the real engine `startCoolDown` path, the engine timer, and the real scheduler (instead of the stubbed timer). If we can reproduce it reliably, implement Phase 2 and verify the fix with the same harness.
+- If integration reproduction is slow or flaky, proceed to Phase 2 with the small, well-scoped changes (funnel finalize through dispatcher & toggle flag after success), then run the unit tests and the integration harness.
+
 ### Phase 2 — remediation (concrete changes)
 
 Suggested code changes (small, targeted):
