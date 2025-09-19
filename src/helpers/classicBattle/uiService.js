@@ -17,7 +17,7 @@ let activeCountdown = null;
 function handleCountdownExpired() {
   setSkipHandler(null);
   activeCountdown = null;
-  battleEvents.emitBattleEvent("countdownFinished");
+  battleEvents.emitBattleEvent("round.start");
 }
 
 /**

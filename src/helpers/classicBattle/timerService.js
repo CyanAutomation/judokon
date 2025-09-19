@@ -238,7 +238,7 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls(), options = {}) {
   if (skipRoundCooldownIfEnabled()) return;
-  emitBattleEvent("countdownFinished");
+  emitBattleEvent("round.start");
   const { timer = null, resolveReady = null } = controls || {};
   const root = options.root || document;
   const displayedRoundBefore = readDisplayedRound(root);

@@ -16,7 +16,7 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", async () => {
   const { SimpleEmitter } = await import("../../src/helpers/events/SimpleEmitter.js");
   const battleEvents = new SimpleEmitter();
   return {
-    emitBattleEvent: (event, data) => battleEvents.emit(event, data),
+    emitBattleEvent: (event, data) => battleEvents.emit(event, { type: event, detail: data }),
     onBattleEvent: (event, handler) => battleEvents.on(event, handler),
     offBattleEvent: (event, handler) => battleEvents.off(event, handler),
     battleEvents
@@ -138,16 +138,99 @@ vi.mock("src/utils/scheduler.js", () => ({
   cancel: vi.fn()
 }));
 
-vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
-  removeBackdrops: vi.fn(),
-  enableNextRoundButton: vi.fn(),
-  showFatalInitError: vi.fn(),
-  setupNextButton: vi.fn(),
-  initStatButtons: vi.fn(() => ({
-    enable: vi.fn(),
-    disable: vi.fn()
-  }))
-}));
+vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
+  const removeBackdrops = vi.fn();
+  const enableNextRoundButton = vi.fn();
+  const showFatalInitError = vi.fn();
+  const setupNextButton = vi.fn();
+
+  const initStatButtons = vi.fn((store) => {
+    const container = document.getElementById("stat-buttons");
+    const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
+    const handlers = new Map();
+
+    const ensureReadyPromise = () => {
+      window.statButtonsReadyPromise = new Promise((resolve) => {
+        window.__resolveStatButtonsReady = resolve;
+      });
+    };
+
+    const resolveReady = () => {
+      if (typeof window.__resolveStatButtonsReady === "function") {
+        window.__resolveStatButtonsReady();
+      } else {
+        window.statButtonsReadyPromise = Promise.resolve();
+      }
+      window.__resolveStatButtonsReady = undefined;
+    };
+
+    const setButtonState = (isDisabled) => {
+      buttons.forEach((btn) => {
+        btn.type = btn.type || "button";
+        if (!btn.hasAttribute("data-testid")) {
+          btn.setAttribute("data-testid", "stat-button");
+        }
+        if (!btn.hasAttribute("aria-describedby")) {
+          btn.setAttribute("aria-describedby", "round-message");
+        }
+        btn.disabled = isDisabled;
+        btn.tabIndex = isDisabled ? -1 : 0;
+        btn.classList.toggle("disabled", isDisabled);
+        if (!isDisabled) {
+          btn.classList.remove("selected");
+        }
+      });
+      if (container) {
+        container.dataset.buttonsReady = isDisabled ? "false" : "true";
+      }
+    };
+
+    const attachHandlers = () => {
+      buttons.forEach((btn) => {
+        if (handlers.has(btn)) return;
+        const handler = async (event) => {
+          if (btn.disabled) return;
+          event?.preventDefault?.();
+          try {
+            const { handleStatSelection } = await import(
+              "../../src/helpers/classicBattle/selectionHandler.js"
+            );
+            const stat = btn.dataset.stat || "";
+            await handleStatSelection(store, stat, { playerVal: undefined, opponentVal: undefined });
+            disable();
+          } catch {}
+        };
+        btn.addEventListener("click", handler);
+        handlers.set(btn, handler);
+      });
+    };
+
+    const disable = vi.fn(() => {
+      setButtonState(true);
+      ensureReadyPromise();
+    });
+
+    const enable = vi.fn(() => {
+      attachHandlers();
+      setButtonState(false);
+      resolveReady();
+    });
+
+    ensureReadyPromise();
+    attachHandlers();
+    setButtonState(true);
+
+    return { enable, disable };
+  });
+
+  return {
+    removeBackdrops,
+    enableNextRoundButton,
+    showFatalInitError,
+    setupNextButton,
+    initStatButtons
+  };
+});
 
 let originalRAF;
 let originalCAF;

@@ -715,7 +715,7 @@ async function init() {
         } catch {}
         await startRoundCycle(store);
       };
-      onBattleEvent("countdownFinished", startIfNotEnded);
+      onBattleEvent("round.start", startIfNotEnded);
       onBattleEvent("ready", startIfNotEnded);
     } catch {}
     // Mark initialization as complete for test hooks

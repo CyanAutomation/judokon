@@ -56,10 +56,7 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 
 * Centralize round state management to avoid conflicts between different events.
   * Phase 0 – Discovery: Catalog every emitter/consumer of `display.round.*`, `roundEnded`, and related events; capture the data each handler reads/writes, the order in which events fire, and the feature flags guarding them.
-  * Phase 1 – Design: Draft an event flow diagram and propose a single coordinator (for example `roundStateController`) that owns state transitions; review the design with gameplay and UI stakeholders, and agree on acceptance criteria for hand-off signals.
-  * Phase 2 – Implementation: Introduce the coordinator module behind a feature flag, relocate round progression logic into it, and adapt `roundEnded`/`round.start` handlers to delegate while preserving existing side effects and telemetry.
-  * Phase 3 – Validation: Add integration tests that simulate overlapping events (back-to-back resolves, manual overrides) to confirm ordering guarantees; instrument tracing via Sentry spans so future regressions surface quickly.
-  * Phase 4 – Rollout & Monitoring: Remove the feature flag once soak tests pass, update developer documentation for new entry points, and schedule a post-launch review to evaluate error metrics and follow-up defects.
+  * Phase 1 – Implementation: Introduce the coordinator module behind a feature flag, relocate round progression logic into it, and adapt `roundEnded`/`round.start` handlers to delegate while preserving existing side effects and telemetry.
 
 * Use a single source of truth for the current round number, perhaps in a store or state manager.
   * Phase 0 – Requirements: Identify every consumer of the round number (UI, analytics, orchestration) and document their update cadence, precision requirements, and failure modes when state desynchronises.
