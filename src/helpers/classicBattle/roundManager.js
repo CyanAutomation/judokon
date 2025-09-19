@@ -706,6 +706,22 @@ function markNextReady(btn) {
   );
 }
 
+/**
+ * Handle the expiration of the next round cooldown timer.
+ *
+ * @param {object} controls - Cooldown controls object
+ * @param {HTMLButtonElement|null|undefined} btn - Next button element
+ * @param {object} [options={}] - Configuration options
+ * @returns {Promise<boolean>} True if ready event was successfully dispatched
+ * @pseudocode
+ * 1. Set up telemetry emitter for debugging and instrumentation
+ * 2. Check if ready dispatch is already in flight, exit early if so
+ * 3. Create machine reader and state inspector for cooldown detection
+ * 4. Wait for machine to reach cooldown state before proceeding
+ * 5. Update UI elements to indicate readiness
+ * 6. Execute dispatch strategies in sequence until one succeeds
+ * 7. Update controls state and return dispatch result
+ */
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   const debugExpose =
@@ -810,8 +826,8 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
 
   const busStrategyOptions =
     typeof options.dispatchBattleEvent === "function"
-      ? {}
-      : { dispatchBattleEvent: options.dispatchBattleEvent };
+      ? { dispatchBattleEvent: options.dispatchBattleEvent }
+      : {};
   const strategies = [
     () =>
       dispatchReadyWithOptions({
