@@ -1,4 +1,3 @@
-
 // Capture originals once so we can restore accurately even if tests overwrite console methods
 const ORIGINAL = {
   log: console.log,
