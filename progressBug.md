@@ -25,6 +25,26 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 * **Fix:** Refactor the `roundEnded` event handler. It should not be responsible for calculating and displaying the next round number. The round progression logic should be centralized. A single source of truth should exist for the current round number. The handler should likely focus only on things that happen *at the end* of a round, like updating scores. The start of a *new* round should be a separate, distinct event.
 * **Testing:** The test itself should be refactored to avoid mixing direct UI manipulation events (`display.round.start`) with engine state events (`roundEnded`) in a way that creates ambiguity. Tests should be more focused on a single behavior.
 
+**Evaluation:** The analysis is accurate. The root cause is the race condition between display.round.start and roundEnded events, where roundEnded triggers the next round start, overwriting the round number set by display.round.start.
+
+**Proposed Fix Plan:**
+
+1. Refactor the roundEnded event handler to not automatically start the next round. Instead, have roundEnded focus on end-of-round actions like updating scores.
+
+2. Introduce a new event, e.g., "round.start", that is responsible for starting a new round and updating the round counter.
+
+3. Update the event flow so that roundResolved emits roundEnded for UI updates, and then the cooldown completion emits round.start.
+
+4. Refactor the test to not mix display.round.start with roundEnded. The test should focus on the start event only, or test the end event separately.
+
+**Opportunities for Improvement:**
+
+- Centralize round state management to avoid conflicts between different events.
+
+- Use a single source of truth for the current round number, perhaps in a store or state manager.
+
+- Improve test isolation by mocking at the appropriate level to avoid race conditions.
+
 ---
 
 ### 2. Failure: Test Timeout
