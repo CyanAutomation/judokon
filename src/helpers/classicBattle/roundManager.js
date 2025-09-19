@@ -7,7 +7,7 @@ import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent } from "./battleEvents.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import * as scoreboard from "../setupScoreboard.js";
-import { dispatchBattleEvent, resetDispatchHistory } from "./eventDispatcher.js";
+import { dispatchBattleEvent } from "./eventDispatcher.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { createEventBus } from "./eventBusUtils.js";
@@ -43,6 +43,7 @@ import {
 } from "./cooldownOrchestrator.js";
 import {
   hasReadyBeenDispatchedForCurrentCooldown,
+  resetReadyDispatchState,
   setReadyDispatchedForCurrentCooldown
 } from "./roundReadyState.js";
 
@@ -249,8 +250,7 @@ let currentNextRound = null;
  * 3. Start timers, expose debug state, and return the cooldown controls.
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
-  setReadyDispatchedForCurrentCooldown(false);
-  resetDispatchHistory("ready");
+  resetReadyDispatchState();
   const activeScheduler = resolveActiveScheduler(scheduler);
   const schedulerProvided = scheduler && typeof scheduler?.setTimeout === "function";
   initializeCooldownTelemetry({ schedulerProvided });
@@ -490,6 +490,20 @@ function prepareCooldownContext(options, emitTelemetry) {
   return { bus, inspector, machineReader, markReady, orchestrated };
 }
 
+/**
+ * @summary Compose ready dispatch strategies with deterministic machine prioritization.
+ *
+ * @pseudocode
+ * 1. Detect whether a custom dispatcher exists and configure bus dispatch options.
+ * 2. Create a guarded helper for the machine strategy so it is registered once.
+ * 3. When orchestrated, register the machine first so orchestration observes the event before fallbacks.
+ * 4. Append custom dispatcher and bus strategies, then add the machine strategy again if not already present so manual flows
+ *    still dispatch through the machine when earlier strategies short circuit.
+ * 5. Return the assembled strategy list for `runReadyDispatchStrategies`.
+ *
+ * @param {object} params - Strategy construction context.
+ * @returns {Array<() => Promise<boolean>|boolean>} Ordered strategy list.
+ */
 function createReadyDispatchStrategies({
   options,
   bus,
@@ -512,6 +526,13 @@ function createReadyDispatchStrategies({
   };
   const strategies = [];
   let machineStrategyAdded = false;
+  // Machine dispatch must appear exactly once in the strategy list while
+  // retaining its priority before and after bus dispatch. We achieve this by
+  // adding the function lazily: orchestrated flows register it first so the
+  // orchestrator machine sees the event before any fallbacks, and non-
+  // orchestrated flows add it after the bus strategy to guarantee the machine
+  // still runs when earlier strategies short circuit. The guard prevents
+  // duplicate registrations when both branches attempt to add it.
   const addMachineStrategy = () => {
     if (machineStrategyAdded) return;
     strategies.push(machineStrategy);

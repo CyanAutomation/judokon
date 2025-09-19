@@ -19,6 +19,9 @@ import { realScheduler } from "../scheduler.js";
  * @pseudocode
  * 1. Forward `setupFallbackTimer` from the dedicated helper module.
  * 2. Preserve existing timerService imports for callers relying on the re-export.
+ *
+ * @returns {typeof import("./setupFallbackTimer.js").setupFallbackTimer}
+ * Reference to the fallback timer helper.
  */
 export { setupFallbackTimer } from "./setupFallbackTimer.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
@@ -125,6 +128,28 @@ const ADVANCE_TRANSITIONS = {
 // Skip handler utilities moved to skipHandler.js
 
 /**
+ * @summary Dispatch the cooldown "ready" event at most once per cycle.
+ *
+ * @pseudocode
+ * 1. If the current cooldown already dispatched "ready", resolve the promise and exit.
+ * 2. Otherwise mark the readiness flag, dispatch the event, and resolve the promise.
+ * 3. Return whether the call performed a new dispatch for callers needing flow control.
+ *
+ * @param {(() => void)|null} resolveReady - Resolver passed from cooldown controls.
+ * @returns {Promise<boolean>} True when the helper dispatched "ready".
+ */
+async function dispatchReadyOnce(resolveReady) {
+  if (hasReadyBeenDispatchedForCurrentCooldown()) {
+    if (typeof resolveReady === "function") resolveReady();
+    return false;
+  }
+  setReadyDispatchedForCurrentCooldown(true);
+  await dispatchBattleEvent("ready");
+  if (typeof resolveReady === "function") resolveReady();
+  return true;
+}
+
+/**
  * Advance to the next round when the Next button is marked ready.
  *
  * This helper disables the Next button, ensures the battle state machine
@@ -166,15 +191,9 @@ export async function advanceWhenReady(btn, resolveReady) {
       await dispatchBattleEvent(t.event, t.payload);
     } catch {}
   }
-  if (hasReadyBeenDispatchedForCurrentCooldown()) {
-    if (typeof resolveReady === "function") resolveReady();
-    setSkipHandler(null);
-    return;
-  }
-  setReadyDispatchedForCurrentCooldown(true);
-  await dispatchBattleEvent("ready");
-  if (typeof resolveReady === "function") resolveReady();
+  const dispatched = await dispatchReadyOnce(resolveReady);
   setSkipHandler(null);
+  if (!dispatched) return;
 }
 
 /**
@@ -199,13 +218,7 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
     // Clear existing handler before advancing so the next round's handler
     // installed during `ready` remains intact.
     setSkipHandler(null);
-    if (hasReadyBeenDispatchedForCurrentCooldown()) {
-      if (typeof resolveReady === "function") resolveReady();
-      return;
-    }
-    setReadyDispatchedForCurrentCooldown(true);
-    await dispatchBattleEvent("ready");
-    if (typeof resolveReady === "function") resolveReady();
+    await dispatchReadyOnce(resolveReady);
     return;
   }
   // No active timer controls: if we're in cooldown (or state is unknown in
@@ -213,13 +226,7 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
   const { state } = safeGetSnapshot();
   if (state === "cooldown" || !state) {
     setSkipHandler(null);
-    if (hasReadyBeenDispatchedForCurrentCooldown()) {
-      if (typeof resolveReady === "function") resolveReady();
-      return;
-    }
-    setReadyDispatchedForCurrentCooldown(true);
-    await dispatchBattleEvent("ready");
-    if (typeof resolveReady === "function") resolveReady();
+    await dispatchReadyOnce(resolveReady);
   }
 }
 
