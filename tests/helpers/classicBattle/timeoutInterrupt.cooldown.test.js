@@ -128,6 +128,11 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       const readyDispatchesDuringAdvance =
         readyCallsAfterAdvance.length - readyCallsBeforeAdvance.length;
       expect(readyDispatchesDuringAdvance).toBe(1);
+      await vi.runOnlyPendingTimersAsync();
+      const readyCallsAfterFlushing = dispatchBattleEvent.mock.calls.filter(
+        ([eventName]) => eventName === "ready"
+      );
+      expect(readyCallsAfterFlushing.length).toBe(readyCallsAfterAdvance.length);
       expect(readyDispatchTracker.events.length).toBe(1);
       expect(readyDispatchTracker.events[0]?.[0]).toBe("ready");
 

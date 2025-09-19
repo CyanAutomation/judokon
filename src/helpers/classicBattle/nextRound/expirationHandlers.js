@@ -241,12 +241,14 @@ export function createMachineStateInspector(params) {
  *
  * @param {object} [options]
  * @param {(type: string) => any} [options.dispatchBattleEvent]
+ * @param {boolean} [options.skipCandidate]
  * @returns {Promise<boolean>}
  */
 export async function dispatchReadyViaBus(options = {}) {
   const dispatchers = [];
   const candidate = options.dispatchBattleEvent;
-  if (typeof candidate === "function") {
+  const skipCandidate = options.skipCandidate === true;
+  if (!skipCandidate && typeof candidate === "function") {
     dispatchers.push(candidate);
   }
   if (typeof globalDispatchBattleEvent === "function" && globalDispatchBattleEvent !== candidate) {
