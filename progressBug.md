@@ -155,50 +155,61 @@ The test fails due to an infinite recursive loop between the animation scheduler
 
 Below are all opportunities for improvement from the three failure analyses consolidated into a single list. Each item has a short summary, an estimated implementation complexity score (1 = very small, 5 = very large), and a rationale. Items are ranked from least complex to most complex.
 
-1) Improve shared test mocking utilities (score: 1)
-  - Summary: Create small helper factories for common UI components (stat buttons, snackbar) and realistic DOM-interaction mocks (attach handlers, disabled state, aria attributes).
-  - Why low complexity: Mostly test-only code, limited impact surface, quick wins by extracting and reusing patterns already present in tests.
+1. Improve shared test mocking utilities (score: 1)
 
-2) Add a queue-based animation frame mock helper (score: 1)
-  - Summary: Extract the queue-based RAF mock implemented in tests/helpers/classicBattle/utils.js into a reusable helper with `enqueue`, `flushNext`, `flushAll`, and `cancel` APIs.
-  - Why low complexity: Implemented already in-line; packaging and small tests required.
+* Summary: Create small helper factories for common UI components (stat buttons, snackbar) and realistic DOM-interaction mocks (attach handlers, disabled state, aria attributes).
+* Why low complexity: Mostly test-only code, limited impact surface, quick wins by extracting and reusing patterns already present in tests.
 
-3) Publish a fake-timers playbook & canonical test setup (score: 2)
-  - Summary: Document and add a standard setup/teardown pattern (e.g., `vi.useFakeTimers()` and `afterEach(vi.useRealTimers)`) and recommended async helper usage like `vi.runAllTimersAsync()`.
-  - Why moderate: Documentation + small infra changes and updating CI snippets; low code risk.
+2. Add a queue-based animation frame mock helper (score: 1)
 
-4) Shared mock helpers for high-traffic UI components (score: 2)
-  - Summary: Build robust factories for complex interactive components (scoreboard, stat buttons, modals) that tests can opt into.
-  - Why moderate: Adds test utilities but requires cross-repo QA to ensure helpers cover required behaviors.
+* Summary: Extract the queue-based RAF mock implemented in `tests/helpers/classicBattle/utils.js` into a reusable helper with `enqueue`, `flushNext`, `flushAll`, and `cancel` APIs.
+* Why low complexity: Implemented already in-line; packaging and small tests required.
 
-5) Add test assertions / utilities to verify event listener wiring (score: 2)
-  - Summary: Provide helpers like `expectListenerAttached` or `getRegisteredHandlers` to make tests assert listeners are present after initialization.
-  - Why moderate: Small test harness code with limited surface area; improves test reliability.
+3. Publish a fake-timers playbook & canonical test setup (score: 2)
 
-6) Replace brittle inline mocks with integration-style refactors for priority tests (score: 3)
-  - Summary: For the flakiest tests, remove deep mocking and move to integration-focused tests that use real modules + deterministic fakes (timers, fixtures).
-  - Why higher complexity: Requires test rewrites and coordination; improves long-term stability.
+* Summary: Document and add a standard setup/teardown pattern (e.g., `vi.useFakeTimers()` and `afterEach(vi.useRealTimers)`) and recommended async helper usage like `vi.runAllTimersAsync()`.
+* Why moderate: Documentation + small infra changes and updating CI snippets; low code risk.
 
-7) Centralize round state management / single source of truth (score: 4)
-  - Summary: Introduce a small battle-session store (observable or light state manager) for canonical round number management consumed by UI, orchestrator, and analytics.
-  - Why high complexity: Cross-cutting change touching runtime code, event flows, and many consumers — requires feature-flagged rollout and migration tests.
+4. Shared mock helpers for high-traffic UI components (score: 2)
 
-8) Scheduler test-friendly hooks & deterministic control (score: 4)
-  - Summary: Add optional hooks to the scheduler (e.g., inject timing source, `withTestController`) so tests can deterministically control frames and pause/resume behavior without mocking globals.
-  - Why high complexity: Modifies production scheduler API and needs careful backwards compatibility and test migration.
+* Summary: Build robust factories for complex interactive components (scoreboard, stat buttons, modals) that tests can opt into.
+* Why moderate: Adds test utilities but requires cross-repo QA to ensure helpers cover required behaviors.
 
-9) Add scheduler safeguards to detect/prevent infinite loops (score: 5)
-  - Summary: Implement watchdog counters or max synchronous frame depth heuristics in the scheduler to surface actionable diagnostics or fail safely in tests.
-  - Why highest complexity: Changes runtime scheduler behavior; requires careful design to avoid false positives and ensure production performance remains unaffected.
+5. Add test assertions / utilities to verify event listener wiring (score: 2)
+
+* Summary: Provide helpers like `expectListenerAttached` or `getRegisteredHandlers` to make tests assert listeners are present after initialization.
+* Why moderate: Small test harness code with limited surface area; improves test reliability.
+
+6. Replace brittle inline mocks with integration-style refactors for priority tests (score: 3)
+
+* Summary: For the flakiest tests, remove deep mocking and move to integration-focused tests that use real modules + deterministic fakes (timers, fixtures).
+* Why higher complexity: Requires test rewrites and coordination; improves long-term stability.
+
+7. Centralize round state management / single source of truth (score: 4)
+
+* Summary: Introduce a small battle-session store (observable or light state manager) for canonical round number management consumed by UI, orchestrator, and analytics.
+* Why high complexity: Cross-cutting change touching runtime code, event flows, and many consumers — requires feature-flagged rollout and migration tests.
+
+8. Scheduler test-friendly hooks & deterministic control (score: 4)
+
+* Summary: Add optional hooks to the scheduler (e.g., inject timing source, `withTestController`) so tests can deterministically control frames and pause/resume behavior without mocking globals.
+* Why high complexity: Modifies production scheduler API and needs careful backwards compatibility and test migration.
+
+9. Add scheduler safeguards to detect/prevent infinite loops (score: 5)
+
+* Summary: Implement watchdog counters or max synchronous frame depth heuristics in the scheduler to surface actionable diagnostics or fail safely in tests.
+* Why highest complexity: Changes runtime scheduler behavior; requires careful design to avoid false positives and ensure production performance remains unaffected.
 
 Notes on ranking & scoring:
-- Scores are implementation complexity estimates that factor engineering effort, risk to production code, and cross-team coordination.
-- Short-term wins: items 1–3 are quick to implement and will reduce flakiness rapidly.
-- Medium-term: items 4–6 require more coordination but substantially improve test health.
-- Long-term: items 7–9 touch production code and APIs and should be done behind feature flags with thorough validation.
+
+* Scores are implementation complexity estimates that factor engineering effort, risk to production code, and cross-team coordination.
+* Short-term wins: items 1–3 are quick to implement and will reduce flakiness rapidly.
+* Medium-term: items 4–6 require more coordination but substantially improve test health.
+* Long-term: items 7–9 touch production code and APIs and should be done behind feature flags with thorough validation.
 
 Suggested next steps:
-- Implement items 1 and 2 this sprint (pack the RAF helper and shared mocks into `tests/utils/`), and update the handful of failing tests to use them.
-- Publish the fake-timer playbook and update CI docs.
-- Schedule a design spike for the centralized round store and scheduler hooks (item 7 and 8) to produce a migration plan.
+
+* Implement items 1 and 2 this sprint (pack the RAF helper and shared mocks into `tests/utils/`), and update the handful of failing tests to use them.
+* Publish the fake-timer playbook and update CI docs.
+* Schedule a design spike for the centralized round store and scheduler hooks (item 7 and 8) to produce a migration plan.
 

@@ -417,6 +417,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         await (window.statButtonsReadyPromise ?? Promise.resolve());
         const buttons = container.querySelectorAll("button[data-stat]");
         expect(buttons.length).toBeGreaterThan(0);
+        console.log("[debug] container", container.innerHTML);
         console.log("[debug] button states", Array.from(buttons).map((b) => b.disabled));
         buttons.forEach((b) => expect(b.disabled).toBe(false));
 
