@@ -116,3 +116,19 @@ The test fails due to an infinite recursive loop between the animation scheduler
 
 * **Fix:** The mock for `requestAnimationFrame` in `tests/helpers/classicBattle/utils.js` is too simplistic and dangerous. It should not call the callback immediately. A better approach would be to use Vitest's fake timers to control the animation frames in a deterministic way, or to create a more sophisticated mock that allows manual flushing of frames.
 * **Testing:** The test `stat buttons re-enable when scheduler loop is idle` is complex. It should be reviewed to see if its goal can be achieved without such heavy-handed mocking of global functions like `requestAnimationFrame`. It might be possible to test the desired behavior by interacting with the scheduler's public API (`start`, `stop`, `onFrame`) and using fake timers to advance time, rather than replacing the underlying browser mechanism.
+
+**Evaluation:** The analysis is accurate. The root cause is the synchronous mock for `requestAnimationFrame` that causes the scheduler's loop to recurse infinitely without yielding control.
+
+**Proposed Fix Plan:**
+
+1. Replace the synchronous mock for `requestAnimationFrame` with a queue-based mock that allows manual flushing of pending frames.
+2. Use Vitest's fake timers to control time progression and avoid replacing global browser APIs.
+3. Refactor the test to use the scheduler's public API and fake timers instead of mocking `requestAnimationFrame`.
+4. Implement a safer mock utility that can be reused across tests requiring animation frame control.
+
+**Opportunities for Improvement:**
+
+* Develop a robust animation frame mocking utility that supports queuing and flushing callbacks.
+* Standardize the use of fake timers in tests to avoid global API mocking.
+* Enhance the scheduler module with test-friendly hooks for deterministic control.
+* Add safeguards in the scheduler to detect and prevent infinite loops during testing.
