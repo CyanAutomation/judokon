@@ -5,6 +5,26 @@ import * as timerUtils from "../../src/helpers/timerUtils.js";
 import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
 import { resetStatButtons } from "../../src/helpers/battle/battleUI.js";
 
+function stubGlobal(name, value) {
+  const original = globalThis[name];
+  globalThis[name] = value;
+  return () => {
+    globalThis[name] = original;
+  };
+}
+
+async function flushImmediateTasks() {
+  if (typeof globalThis.queueMicrotask === "function") {
+    await new Promise((resolve) => {
+      globalThis.queueMicrotask(resolve);
+    });
+    return;
+  }
+  await new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+}
+
 describe("Classic Battle stat buttons", () => {
   const getEnv = setupClassicBattleHooks();
 
@@ -80,6 +100,16 @@ describe("Classic Battle stat buttons", () => {
     expect(button).toBeTruthy();
 
     const scheduler = await import("../../src/utils/scheduler.js");
+    if (typeof scheduler.start === "function") {
+      scheduler.start();
+      if (typeof scheduler.onFrame === "function") {
+        const frameToken = scheduler.onFrame(() => {});
+        expect(frameToken).not.toBeUndefined();
+        if (typeof scheduler.cancel === "function" && typeof frameToken === "number") {
+          scheduler.cancel(frameToken);
+        }
+      }
+    }
     if (typeof scheduler.stop === "function") {
       scheduler.stop();
     }
@@ -88,19 +118,16 @@ describe("Classic Battle stat buttons", () => {
     await (window.statButtonsReadyPromise ?? Promise.resolve());
     expect(button.disabled).toBe(false);
 
-    const originalRAF = globalThis.requestAnimationFrame;
-    const originalCancelRAF = globalThis.cancelAnimationFrame;
-    globalThis.requestAnimationFrame = undefined;
-    globalThis.cancelAnimationFrame = undefined;
+    const restoreRAF = stubGlobal("requestAnimationFrame", undefined);
+    const restoreCancelRAF = stubGlobal("cancelAnimationFrame", undefined);
 
     try {
       resetStatButtons();
-      await Promise.resolve();
-      await Promise.resolve();
+      await flushImmediateTasks();
       expect(button.disabled).toBe(false);
     } finally {
-      globalThis.requestAnimationFrame = originalRAF;
-      globalThis.cancelAnimationFrame = originalCancelRAF;
+      restoreRAF();
+      restoreCancelRAF();
     }
   });
 });

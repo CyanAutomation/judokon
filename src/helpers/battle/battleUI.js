@@ -29,9 +29,23 @@ function scheduleImmediate(callback) {
     let cancelled = false;
     globalThis.queueMicrotask(() => {
       if (cancelled) return;
-      cancelled = true;
       callback();
     });
+    return () => {
+      cancelled = true;
+    };
+  }
+  if (typeof globalThis?.Promise === "function") {
+    let cancelled = false;
+    globalThis.Promise.resolve()
+      .then(() => {
+        if (cancelled) return;
+        callback();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        callback();
+      });
     return () => {
       cancelled = true;
     };
@@ -46,6 +60,13 @@ function scheduleImmediate(callback) {
       } catch {}
     };
   }
+  try {
+    if (!IS_VITEST) {
+      console.warn(
+        "resetStatButtons fallback executed synchronously; async scheduling unavailable"
+      );
+    }
+  } catch {}
   callback();
   return () => {};
 }
@@ -120,13 +141,15 @@ export function resetStatButtons(
       enableButton();
       return;
     }
+    // Guard against multiple invocations when both the scheduler callback and
+    // the fallback race to re-enable the button.
     let didRun = false;
     const runEnableOnce = () => {
       if (didRun) return;
       didRun = true;
       enableButton();
     };
-    let cancelFallback = scheduleImmediate(runEnableOnce);
+    let cancelFallback;
     const runAndCancelFallback = () => {
       if (typeof cancelFallback === "function") {
         try {
@@ -137,7 +160,7 @@ export function resetStatButtons(
       runEnableOnce();
     };
     if (typeof onFrame !== "function") {
-      runAndCancelFallback();
+      runEnableOnce();
       return;
     }
     let frameId;
@@ -149,12 +172,14 @@ export function resetStatButtons(
         }
       });
     } catch {
-      runAndCancelFallback();
+      runEnableOnce();
       return;
     }
     if (typeof frameId !== "number" || Number.isNaN(frameId)) {
-      runAndCancelFallback();
+      runEnableOnce();
+      return;
     }
+    cancelFallback = scheduleImmediate(runEnableOnce);
   });
 }
 
