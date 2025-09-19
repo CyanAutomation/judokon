@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+// Import battleEvents at the top to ensure it's in the module cache
+import "../../../src/helpers/classicBattle/battleEvents.js";
 
 describe("uiHelpers element assertions", () => {
   beforeEach(() => {
-    vi.resetModules();
+    // vi.resetModules(); // Removed to avoid clearing module cache
     document.body.innerHTML = "";
   });
 

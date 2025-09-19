@@ -28,6 +28,8 @@ import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
 import { initializeTestBindingsLight } from "../src/helpers/classicBattle/testHooks.js";
+// Import battleEvents to ensure it's loaded before vi.resetModules() clears it
+import "../src/helpers/classicBattle/battleEvents.js";
 
 // [TEST DEBUG] after imports
 

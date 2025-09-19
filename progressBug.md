@@ -15,10 +15,10 @@ This created a race condition: a test-level `vi.resetModules()` could reset modu
 
 ## Actions Taken
 
-1.  **Diagnosis**: Reproduced the failure locally and used verbose logging to confirm the blocking `await` in `tests/setup.js`.
-2.  **Audit**: Reviewed key modules, including `tests/setup.js`, `src/helpers/classicBattle.js`, and its dependencies (`testHooks.js`, `promises.js`, `roundUI.js`, `uiHelpers.js`).
-3.  **Mitigation**: Modified `tests/setup.js` to resolve the blocking behavior. The final solution uses a "fire-and-forget" dynamic import in the global `beforeEach`. It invokes `__resetClassicBattleBindings()` and `__ensureClassicBattleBindings({ force: true })` without an `await`, which prevents the hook from blocking while still preloading the necessary bindings.
-4.  **Cleanup**: Removed all temporary debugging logs from the source code.
+1. **Diagnosis**: Reproduced the failure locally and used verbose logging to confirm the blocking `await` in `tests/setup.js`.
+2. **Audit**: Reviewed key modules, including `tests/setup.js`, `src/helpers/classicBattle.js`, and its dependencies (`testHooks.js`, `promises.js`, `roundUI.js`, `uiHelpers.js`).
+3. **Mitigation**: Modified `tests/setup.js` to resolve the blocking behavior. The final solution uses a "fire-and-forget" dynamic import in the global `beforeEach`. It invokes `__resetClassicBattleBindings()` and `__ensureClassicBattleBindings({ force: true })` without an `await`, which prevents the hook from blocking while still preloading the necessary bindings.
+4. **Cleanup**: Removed all temporary debugging logs from the source code.
 
 ## Verification and Current Status
 
@@ -31,7 +31,7 @@ The repository is now in a more stable state, but further action is needed to el
 
 To fully resolve the remaining issues and improve test architecture, I propose the following actions. Please advise which option you'd like me to pursue.
 
-1.  **Implement Definitive Fix (Recommended)**: ## Implementation of Step 1: Synchronous Initializer
+1. **Implement Definitive Fix (Recommended)**: ## Implementation of Step 1: Synchronous Initializer
 
 ### Changes Made
 
@@ -85,25 +85,25 @@ I am ready to proceed with your selected option.
 
 As requested, I proceeded with Step 3 to add dedicated unit tests for the `promises.js` module.
 
-### Summary of Actions:
+### Summary of Actions
 
-1.  **Test File Creation**: I created a new test file at `tests/helpers/classicBattle/promises.test.js`. The test suite was designed to verify the core promise lifecycle: initialization, resolution via mocked battle events, and the self-resetting mechanism.
+1. **Test File Creation**: I created a new test file at `tests/helpers/classicBattle/promises.test.js`. The test suite was designed to verify the core promise lifecycle: initialization, resolution via mocked battle events, and the self-resetting mechanism.
 
-2.  **Source Code Bug Discovery**: While creating the tests, I discovered a bug within `src/helpers/classicBattle/promises.js`. The line `import { onBattleEvent } from "./battleEvents.js";` was incorrect. Because `promises.js` is in a subdirectory, the path should have been `../battleEvents.js` to correctly reference the file in the parent `helpers` directory.
+2. **Source Code Bug Discovery**: While creating the tests, I discovered a bug within `src/helpers/classicBattle/promises.js`. The line `import { onBattleEvent } from "./battleEvents.js";` was incorrect. Because `promises.js` is in a subdirectory, the path should have been `../battleEvents.js` to correctly reference the file in the parent `helpers` directory.
 
-3.  **Source Code Bug Fix**: I corrected the invalid import path in `src/helpers/classicBattle/promises.js`.
+3. **Source Code Bug Fix**: I corrected the invalid import path in `src/helpers/classicBattle/promises.js`.
 
-4.  **Test Execution and Blocking Issue**: After fixing the source code, I attempted to run the new test suite. However, the test runner `vitest` consistently failed to resolve the module imports for the test, regardless of the import strategy used:
-    *   **Relative Path (`../../../src/...`)**: Failed to resolve.
-    *   **Vite Alias (`@/helpers/...`)**: Failed to resolve.
+4. **Test Execution and Blocking Issue**: After fixing the source code, I attempted to run the new test suite. However, the test runner `vitest` consistently failed to resolve the module imports for the test, regardless of the import strategy used:
+    - **Relative Path (`../../../src/...`)**: Failed to resolve.
+    - **Vite Alias (`@/helpers/...`)**: Failed to resolve.
 
 This indicates a persistent issue within the Vite/Vitest configuration that prevents it from correctly resolving paths when running a single test file in this context. The error `Failed to resolve import` blocked any further progress on verifying the new tests or the `promises.js` module's functionality.
 
 ### Current Status & Blocker
 
--   **Completed**: A new test suite for `promises.js` has been written and is ready.
--   **Completed**: A latent bug in the import path within `promises.js` has been fixed.
--   **Blocked**: I am unable to run the tests successfully due to a test environment configuration issue with import resolution.
+- **Completed**: A new test suite for `promises.js` has been written and is ready.
+- **Completed**: A latent bug in the import path within `promises.js` has been fixed.
+- **Blocked**: I am unable to run the tests successfully due to a test environment configuration issue with import resolution.
 
 ### Recommendation
 
