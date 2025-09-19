@@ -311,7 +311,8 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     setupOrchestratedReady(controls, orchestratorMachine, btn, {
       eventBus: bus,
       scheduler: activeScheduler,
-      markReady: overrides.markReady
+      markReady: overrides.markReady,
+      dispatchBattleEvent: overrides.dispatchBattleEvent || dispatchBattleEvent
     });
     wireCooldownTimer(controls, btn, cooldownSeconds, activeScheduler, helperOptions);
   } else {
@@ -428,29 +429,14 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
     if (typeof resolver === "function") {
       resolver();
     }
-    // If we are finalizing because the orchestrator is already past
-    // cooldown, ensure we still notify the orchestrator by dispatching
-    // a "ready" event. Prefer an explicit dispatchBattleEvent override
-    // when provided (used in tests), otherwise call the machine dispatch
-    // if available. Do this in a fire-and-forget fashion and mark the
-    // ready dispatch flag so downstream logic knows we've dispatched.
+    // If we are finalizing because the orchestrator is already past cooldown,
+    // notify interested listeners through the shared dispatcher when
+    // available. Avoid direct machine dispatches here so readiness always
+    // flows through the centralized expiration handlers.
     try {
-      let dispatched = false;
-      if (options && typeof options.dispatchBattleEvent === "function") {
-        try {
-          options.dispatchBattleEvent("ready");
-          // If it returns a promise, don't await it here; tests use spies.
-          dispatched = true;
-        } catch {}
+      if (typeof options.dispatchBattleEvent === "function") {
+        options.dispatchBattleEvent("ready");
       }
-      if (!dispatched && machine && typeof machine.dispatch === "function") {
-        try {
-          // call but don't await; machine.dispatch in tests is a spy
-          machine.dispatch("ready");
-          dispatched = true;
-        } catch {}
-      }
-      if (dispatched) readyDispatchedForCurrentCooldown = true;
     } catch {}
   };
   const addListener = (type, handler) => {
@@ -966,13 +952,17 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     }
   };
   const onExpired = async () => {
+    const finalizeWithPriorDispatch = () =>
+      handleNextRoundExpiration(controls, btn, {
+        ...expirationOptions,
+        alreadyDispatchedReady: true
+      });
     // Handle retries when the timer already expired but ready wasn't emitted.
     if (expired) {
       if (readyDispatchedForCurrentCooldown) {
-        // A prior retry already succeeded. Bail out so we do not signal
-        // another ready event while cleanup from the previous attempt is
-        // still unwinding.
-        return;
+        // A prior retry already succeeded. Skip dispatching again so the
+        // centralized expiration path can cleanly finish unwinding.
+        return finalizeWithPriorDispatch();
       }
       const alreadyDispatchedReady = await attemptBusDispatch();
       return handleNextRoundExpiration(controls, btn, {
@@ -987,6 +977,9 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       bus.emit("cooldown.timer.expired");
       bus.emit("control.countdown.completed");
     } catch {}
+    if (readyDispatchedForCurrentCooldown) {
+      return finalizeWithPriorDispatch();
+    }
     const alreadyDispatchedReady = await attemptBusDispatch();
     return handleNextRoundExpiration(controls, btn, {
       ...expirationOptions,
