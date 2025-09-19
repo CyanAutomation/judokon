@@ -17,6 +17,8 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", async () => {
   const battleEvents = new SimpleEmitter();
   return {
     emitBattleEvent: (event, data) => battleEvents.emit(event, data),
+    onBattleEvent: (event, handler) => battleEvents.on(event, handler),
+    offBattleEvent: (event, handler) => battleEvents.off(event, handler),
     battleEvents
   };
 });
