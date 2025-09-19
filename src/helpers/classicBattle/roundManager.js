@@ -43,7 +43,11 @@ async function getLazyUpdateDebugPanel() {
 }
 
 /**
- * Re-export of setupFallbackTimer from timerService.js
+ * @summary Re-export the fallback timer helper so round management modules share timer setup logic.
+ *
+ * @pseudocode
+ * 1. Import `setupFallbackTimer` from the timer service module.
+ * 2. Re-export the helper for external consumers.
  *
  * @see ./timerService.js
  * @returns {ReturnType<typeof setTimeout>|null}
@@ -72,10 +76,11 @@ function appendReadyTrace(event, details = {}) {
 }
 
 /**
- * Create a new battle state store.
+ * @summary Construct the state container used by classic battle round orchestration helpers.
  *
- * 1. Initialize battle state values.
- * 2. Return the store.
+ * @pseudocode
+ * 1. Initialize battle state values with default placeholders.
+ * 2. Return the populated store object.
  *
  * @returns {object} The battle state store.
  */
@@ -798,11 +803,20 @@ function prepareCooldownContext(options, emitTelemetry) {
   return { bus, inspector, machineReader, markReady, orchestrated };
 }
 
-function createReadyDispatchStrategies({ options, machineReader, emitTelemetry, getDebugBag }) {
-  const busStrategyOptions =
-    typeof options.dispatchBattleEvent === "function"
-      ? { dispatchBattleEvent: options.dispatchBattleEvent }
-      : {};
+function createReadyDispatchStrategies({
+  options,
+  bus,
+  machineReader,
+  emitTelemetry,
+  getDebugBag
+}) {
+  const busStrategyOptions = {};
+  if (bus) {
+    busStrategyOptions.eventBus = bus;
+  }
+  if (typeof options.dispatchBattleEvent === "function") {
+    busStrategyOptions.dispatchBattleEvent = options.dispatchBattleEvent;
+  }
   return [
     () =>
       dispatchReadyWithOptions({

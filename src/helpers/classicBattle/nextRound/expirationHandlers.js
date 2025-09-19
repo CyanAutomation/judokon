@@ -4,6 +4,17 @@ import { readDebugState as globalReadDebugState } from "../debugHooks.js";
 /**
  * Create a telemetry emitter for next-round expiration instrumentation.
  *
+ * @summary Builds a defensive telemetry helper that fans out debug values to
+ * configured instrumentation hooks and shared bags.
+ *
+ * @pseudocode
+ * 1. Destructure the optional debug targets and create a safe console logger.
+ * 2. Define `emit` to call `exposeDebugState`, update a debug bag, and invoke
+ *    `debugExpose`, swallowing failures.
+ * 3. Define `safeGetDebugBag` to return the bag object when available or null
+ *    on errors.
+ * 4. Return both helpers so callers can publish telemetry and inspect the bag.
+ *
  * @param {object} [targets]
  * @param {(key: string, value: any) => void} [targets.exposeDebugState]
  * @param {(key: string, value: any) => void} [targets.debugExpose]
@@ -17,7 +28,9 @@ export function createExpirationTelemetryEmitter(targets = {}) {
       if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
         console.debug(message, error);
       }
-    } catch {}
+    } catch {
+      // Silently ignore environment check failures
+    }
   };
   const emit = (key, value) => {
     try {
@@ -55,6 +68,17 @@ export function createExpirationTelemetryEmitter(targets = {}) {
 
 /**
  * Create a machine reader that surfaces orchestrator state for expiration logic.
+ *
+ * @summary Produces a getter that returns the classic battle state machine from
+ * caller overrides, debug hooks, or global readers while emitting telemetry.
+ *
+ * @pseudocode
+ * 1. If an explicit `getClassicBattleMachine` option exists, wrap it with
+ *    telemetry and return early.
+ * 2. Otherwise read a getter via provided `readDebugState` or the global debug
+ *    reader fallback.
+ * 3. Emit telemetry describing the getter source and the resolved machine.
+ * 4. Invoke and normalize the getter result, returning the machine or null.
  *
  * @param {object} [options]
  * @param {() => any} [options.getClassicBattleMachine]
@@ -111,6 +135,19 @@ export function createMachineReader(options = {}, dependencies = {}) {
 
 /**
  * Build helpers that read machine state and await cooldown readiness.
+ *
+ * @summary Generates inspectors that capture machine and snapshot states and
+ * provide async waiting until cooldown states are reached.
+ *
+ * @pseudocode
+ * 1. Create guarded accessors that read the machine state and snapshot, logging
+ *    telemetry when reads fail.
+ * 2. Capture initial state values and emit telemetry for the machine and
+ *    snapshot.
+ * 3. Implement `shouldResolve` to check whether either state represents a
+ *    cooldown condition.
+ * 4. Implement `waitForCooldown` that subscribes to the event bus, resolves
+ *    once cooldown is observed, and emits final telemetry.
  *
  * @param {object} params
  * @param {() => any} params.machineReader
@@ -192,6 +229,16 @@ export function createMachineStateInspector(params) {
 /**
  * Dispatch the ready event via available battle event dispatchers.
  *
+ * @summary Attempts to trigger the "ready" event using provided and global
+ * dispatchers until one succeeds.
+ *
+ * @pseudocode
+ * 1. Collect the candidate dispatcher from options and include the global
+ *    dispatcher when distinct.
+ * 2. Invoke each dispatcher with the "ready" event, awaiting promises.
+ * 3. Return `true` as soon as a dispatcher resolves without returning `false`.
+ * 4. If all attempts fail, return `false`.
+ *
  * @param {object} [options]
  * @param {(type: string) => any} [options.dispatchBattleEvent]
  * @returns {Promise<boolean>}
@@ -219,6 +266,17 @@ export async function dispatchReadyViaBus(options = {}) {
 
 /**
  * Attempt to dispatch the ready event with a provided dispatcher.
+ *
+ * @summary Uses a caller-supplied dispatcher to fire "ready" while recording
+ * telemetry and debug bag details.
+ *
+ * @pseudocode
+ * 1. Exit early when the dispatcher is not callable.
+ * 2. Capture metadata about the dispatcher and persist it to telemetry and the
+ *    debug bag.
+ * 3. Invoke the dispatcher with "ready", interpreting any result other than
+ *    `false` as success.
+ * 4. On errors, emit telemetry, update the debug bag, and return `false`.
  *
  * @param {object} params
  * @param {(type: string) => any} params.dispatchBattleEvent
@@ -266,6 +324,17 @@ export async function dispatchReadyWithOptions(params) {
 /**
  * Directly dispatch the ready event via the state machine when available.
  *
+ * @summary Reads the machine from the provided reader and calls its
+ * `dispatch("ready")` method when possible, reporting telemetry along the way.
+ *
+ * @pseudocode
+ * 1. Attempt to read the machine defensively and record whether it exists and
+ *    has a dispatch method.
+ * 2. If dispatch is unavailable, return `false` immediately.
+ * 3. Invoke `dispatch("ready")`, awaiting promise results and emitting success
+ *    telemetry.
+ * 4. Catch failures, emit error telemetry, and return `false`.
+ *
  * @param {object} params
  * @param {() => any} params.machineReader
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
@@ -298,6 +367,17 @@ export async function dispatchReadyDirectly(params) {
 /**
  * Sequentially execute dispatch strategies until one succeeds.
  *
+ * @summary Coordinates multiple dispatch strategies, short-circuiting on the
+ * first successful attempt while logging telemetry.
+ *
+ * @pseudocode
+ * 1. If a previous step already dispatched "ready", emit success telemetry and
+ *    return `true`.
+ * 2. Iterate through each strategy function, awaiting its result.
+ * 3. Emit success telemetry and return `true` the moment a strategy resolves
+ *    truthy.
+ * 4. After all strategies fail, emit failure telemetry and return `false`.
+ *
  * @param {object} params
  * @param {boolean} [params.alreadyDispatchedReady]
  * @param {Array<() => Promise<boolean>|boolean>} [params.strategies]
@@ -326,6 +406,15 @@ export async function runReadyDispatchStrategies(params = {}) {
 
 /**
  * Update DOM/UI affordances after the cooldown expires.
+ *
+ * @summary Refreshes the next-round button and optional debug panel when the
+ * cooldown completes.
+ *
+ * @pseudocode
+ * 1. Determine whether orchestration handles readiness; if not, find the live
+ *    button element.
+ * 2. Call `markReady` with the resolved button reference, ignoring failures.
+ * 3. When provided, await `updateDebugPanel` to refresh debugging UI.
  *
  * @param {object} params
  * @param {() => boolean} params.isOrchestrated

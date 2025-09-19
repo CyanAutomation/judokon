@@ -4,6 +4,9 @@ import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { guard, guardAsync } from "./guard.js";
 import { setSkipHandler } from "./skipHandler.js";
+import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { createRoundTimer } from "../timers/createRoundTimer.js";
+import { startCoolDown } from "../battleEngineFacade.js";
 
 /**
  * Additional buffer to ensure fallback timers fire after engine-backed timers.
@@ -278,7 +281,7 @@ function scheduleCooldownFallback({ duration, finish, scheduler }) {
 }
 
 /**
- * Initialize the inter-round cooldown timer.
+ * @summary Orchestrate the inter-round cooldown timer and fallback completion flow.
  *
  * @param {object} machine State machine instance.
  * @param {{ scheduler?: { setTimeout?: typeof setTimeout, clearTimeout?: typeof clearTimeout } }} [options]
@@ -289,10 +292,6 @@ function scheduleCooldownFallback({ duration, finish, scheduler }) {
  * 3. Start engine-backed timer; on expire → mark ready, emit events, dispatch `ready`.
  * 4. Schedule fallback timer with same completion path.
  */
-import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
-import { createRoundTimer } from "../timers/createRoundTimer.js";
-import { startCoolDown } from "../battleEngineFacade.js";
-
 export async function initInterRoundCooldown(machine, options = {}) {
   const duration = resolveInterRoundCooldownDuration(computeNextRoundCooldown);
 
