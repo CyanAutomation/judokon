@@ -1245,7 +1245,14 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     "wireCooldownTimer.scheduleFallbacks",
     () => {
       const secsNum = Number(cooldownSeconds);
-      const ms = !Number.isFinite(secsNum) || secsNum <= 0 ? 10 : Math.max(0, secsNum * 1000);
+      const ms = Number.isFinite(secsNum) ? Math.max(0, secsNum * 1000) : 0;
+      safeRound(
+        "wireCooldownTimer.scheduleFallbackTimer",
+        () => {
+          fallbackId = fallbackScheduler(ms, onExpired);
+        },
+        { suppressInProduction: true }
+      );
       if (scheduler && typeof scheduler.setTimeout === "function") {
         safeRound(
           "wireCooldownTimer.scheduleInjected",
@@ -1255,22 +1262,16 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
           {
             fallback: () =>
               safeRound(
-                "wireCooldownTimer.scheduleFallbackTimer",
+                "wireCooldownTimer.scheduleFallbackTimer.recover",
                 () => {
-                  fallbackId = fallbackScheduler(ms, onExpired);
+                  if (!fallbackId) {
+                    fallbackId = fallbackScheduler(ms, onExpired);
+                  }
                 },
                 { suppressInProduction: true }
               ),
             suppressInProduction: true
           }
-        );
-      } else {
-        safeRound(
-          "wireCooldownTimer.scheduleFallbackTimer",
-          () => {
-            fallbackId = fallbackScheduler(ms, onExpired);
-          },
-          { suppressInProduction: true }
         );
       }
     },
