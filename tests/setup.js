@@ -1,6 +1,3 @@
-// [TEST DEBUG] top-level setup.js
-
-console.log("[TEST DEBUG] top-level setup.js");
 if (typeof CustomEvent === "undefined") {
   global.CustomEvent = class CustomEvent extends Event {
     constructor(type, eventInitDict) {
@@ -8,21 +5,12 @@ if (typeof CustomEvent === "undefined") {
       this.detail = eventInitDict?.detail;
     }
   };
-  // [TEST DEBUG] after CustomEvent polyfill
-
-  console.log("[TEST DEBUG] after CustomEvent polyfill");
 }
 if (typeof global.requestAnimationFrame === "undefined") {
   global.requestAnimationFrame = (cb) => setTimeout(() => cb(0), 0);
-  // [TEST DEBUG] after requestAnimationFrame polyfill
-
-  console.log("[TEST DEBUG] after requestAnimationFrame polyfill");
 }
 if (typeof global.cancelAnimationFrame === "undefined") {
   global.cancelAnimationFrame = (id) => clearTimeout(id);
-  // [TEST DEBUG] after cancelAnimationFrame polyfill
-
-  console.log("[TEST DEBUG] after cancelAnimationFrame polyfill");
 }
 import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
@@ -30,10 +18,6 @@ import { muteConsole, restoreConsole } from "./utils/console.js";
 import { initializeTestBindingsLight } from "../src/helpers/classicBattle/testHooks.js";
 // Import battleEvents to ensure it's loaded before vi.resetModules() clears it
 import "../src/helpers/classicBattle/battleEvents.js";
-
-// [TEST DEBUG] after imports
-
-console.log("[TEST DEBUG] after imports");
 
 // Early module-level mute: some modules emit test-oriented logs during import
 // time which run before `beforeEach` executes. When running under Vitest we
@@ -45,19 +29,15 @@ try {
   const IS_VITEST = typeof process !== "undefined" && process.env && process.env.VITEST;
   const SHOW_LOGS = typeof process !== "undefined" && process.env && process.env.SHOW_TEST_LOGS;
   if (IS_VITEST && !SHOW_LOGS) {
-    // [TEST DEBUG] BYPASSING muteConsole and stdout patch
-
-    console.log("[TEST DEBUG] BYPASSING muteConsole and stdout patch");
-    // muteConsole(["warn", "error", "debug", "log"]);
-    // try {
-    //   if (process && process.stdout && process.stderr) {
-    //     __originalStdoutWrite = process.stdout.write;
-    //     __originalStderrWrite = process.stderr.write;
-    //     process.stdout.write = () => {};
-    //     process.stderr.write = () => {};
-    //     console.log('[TEST DEBUG] after patching process.stdout/stderr');
-    //   }
-    // } catch {}
+    muteConsole(["warn", "error", "debug", "log"]);
+    try {
+      if (process && process.stdout && process.stderr) {
+        __originalStdoutWrite = process.stdout.write;
+        __originalStderrWrite = process.stderr.write;
+        process.stdout.write = () => {};
+        process.stderr.write = () => {};
+      }
+    } catch {}
   }
 } catch {}
 
