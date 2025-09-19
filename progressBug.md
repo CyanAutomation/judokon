@@ -82,6 +82,10 @@ The test times out because a promise that waits for the `round.resolved` event n
 
 See consolidated "Opportunities for improvement" section at the end of this document.
 
+**Actions (2025-XX-XX):**
+
+- Prototyped richer mocks for `roundManager` and `timerService` to route stat-button clicks through `handleStatSelection`, but the Vitest scenario still times out because the synthetic click never reaches the mocked handler. No code committed; additional refinement is needed before rerunning the suite.
+
 ---
 
 ### 3. Failure: Maximum Call Stack Size Exceeded
