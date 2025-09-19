@@ -40,17 +40,18 @@ function scheduleImmediate(callback) {
     globalThis.Promise.resolve()
       .then(() => {
         if (cancelled) return;
+        cancelled = true;
         callback();
       })
       .catch(() => {
         if (cancelled) return;
+        cancelled = true;
         callback();
       });
     return () => {
       cancelled = true;
     };
   }
-  if (typeof globalThis?.setTimeout === "function") {
     const timeoutId = globalThis.setTimeout(() => {
       callback();
     }, 0);
