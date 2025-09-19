@@ -57,16 +57,19 @@ To fully resolve the remaining issues and improve test architecture, I propose t
 Ran the previously failing test file: `tests/helpers/classicBattle/uiHelpers.missingElements.test.js`
 
 **Results**:
+
 - ✅ **All 4 tests passed** (previously 2 failed due to hook timeout).
 - ✅ **No hook-timeout errors** (the original 10s timeout is eliminated).
 - ✅ **Test execution time**: 566ms total for 4 tests (fast and deterministic).
 - ✅ **No console errors or warnings** related to the fix.
 
 **Before Fix**:
+
 - Error: Hook timed out in 10000ms ... beforeEach(async () => { ... })
 - 2 tests failed, 2 passed.
 
 **After Fix**:
+
 - All tests pass without timeouts.
 - Global `beforeEach` is now non-blocking and race-condition-free.
 
