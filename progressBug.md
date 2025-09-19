@@ -108,14 +108,11 @@ The test times out because a promise that waits for the `round.resolved` event n
   * Phase 1 – API Design: Specify a unified mocking surface (e.g., `createInteractiveButtonMock`) that mirrors production semantics, including event propagation and disabled states.
   * Phase 2 – Implementation: Build the utilities with thorough unit coverage, providing escape hatches for atypical interactions and instrumentation hooks for assertions.
   * Phase 3 – Adoption: Replace ad-hoc mocks in priority tests, gathering feedback on gaps; iterate until the majority of DOM interaction tests rely on the shared utilities.
-  * Phase 4 – Governance: Add lint rules or codemods that flag regression to hand-rolled mocks, and document contribution guidelines for extending the utilities safely.
 
 * Implement shared mock helpers for common UI components to ensure consistency across tests.
   * Phase 0 – Requirements: Identify high-traffic UI components (scoreboard, snackbar, stat buttons) and map the behaviors tests need to orchestrate.
   * Phase 1 – Template Creation: Scaffold helper factories or fixture builders encapsulating lifecycle hooks, default props, and teardown mechanics.
-  * Phase 2 – Pilot: Integrate the new helpers into a representative suite (classic battle smoke tests) and validate reductions in boilerplate and flake rate.
-  * Phase 3 – Rollout: Update the remaining suites incrementally, tracking adoption metrics and ensuring the helpers stay in sync with production props.
-  * Phase 4 – Maintenance: Establish an owner rotation for the helper catalog, automate API diff checks against live components, and add change logs so consumers know when behavior shifts.
+  * Phase 2 – Integrate the new helpers into a representative suite (classic battle smoke tests) and validate reductions in boilerplate and flake rate.
 
 * Add validation in tests to check that event listeners are attached correctly.
   * Phase 0 – Baseline: Determine the critical listeners that must always be wired (stat button clicks, round events) and capture their expected registration timing.

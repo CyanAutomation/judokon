@@ -1,4 +1,14 @@
-import { setupScoreboard, updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
+import { import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
+import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
+import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
+import {
+  setStatButtonsEnabled,
+  resolveStatButtonsReady
+} from "../helpers/classicBattle/statButtons.js";
+import { quitMatch } from "../helpers/classicBattle/quitModal.js";
+import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
+import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
+import { showEndModal } from "../helpers/classicBattle/endModal.js";pdateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
 import {
   createBattleEngine,
   STATS,
@@ -596,7 +606,7 @@ async function init() {
     }
     // Show modal when a round resolves with matchEnded=true (covers direct-resolve path)
     try {
-      onBattleEvent("round.ended", (e) => {
+      onBattleEvent("roundResolved", (e) => {
         try {
           const result = e?.detail?.result;
           if (!result || !result.matchEnded) return;

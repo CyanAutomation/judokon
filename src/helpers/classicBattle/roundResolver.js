@@ -306,7 +306,7 @@ export async function updateScoreboard(result) {
  * @returns {void}
  */
 export function emitRoundResolved(store, stat, playerVal, opponentVal, result) {
-  emitBattleEvent("round.ended", { store, stat, playerVal, opponentVal, result });
+  emitBattleEvent("roundResolved", { store, stat, playerVal, opponentVal, result });
   try {
     emitBattleEvent("round.evaluated", {
       statKey: stat,
