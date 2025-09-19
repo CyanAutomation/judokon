@@ -8,7 +8,8 @@ import {
 import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
 import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
-import { showEndModal } from "../helpers/classicBattle/endModal.js";pdateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
+import { showEndModal } from "../helpers/classicBattle/endModal.js";
+import { updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
 import {
   createBattleEngine,
   STATS,

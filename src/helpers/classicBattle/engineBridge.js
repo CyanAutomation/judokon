@@ -20,7 +20,7 @@ export function bridgeEngineEvents() {
     if (typeof onEngine !== "function") return;
     // Legacy bridge → classic events
     onEngine("roundEnded", (detail) => {
-      emitBattleEvent("round.ended", detail);
+      emitBattleEvent("roundResolved", detail);
       // Also emit display.score.update for scoreboard
       try {
         const player = Number(detail?.playerScore) || 0;
