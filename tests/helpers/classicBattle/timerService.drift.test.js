@@ -82,4 +82,70 @@ describe("timerService drift handling", () => {
     // In Vitest, fallback timer is used instead of engine
     expect(startCoolDown).toHaveBeenCalledTimes(0);
   });
+
+  it("uses injected scheduler when starting engine cooldown", async () => {
+    vi.resetModules();
+    const originalVitest = process.env.VITEST;
+    delete process.env.VITEST;
+    const scheduler = createMockScheduler();
+    const { TimerController } = await import("../../../src/helpers/TimerController.js");
+    const baseTimer = new TimerController();
+    let capturedScheduler = null;
+    const engine = {
+      timer: baseTimer,
+      startCoolDown: vi.fn(function () {
+        capturedScheduler = this.timer?.scheduler ?? null;
+        return "started";
+      }),
+      emit: vi.fn(),
+      matchEnded: false
+    };
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
+      return { ...actual, requireEngine: () => engine };
+    });
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
+      showMessage: vi.fn(),
+      showTemporaryMessage: () => () => {},
+      showAutoSelect: vi.fn(),
+      clearTimer: vi.fn(),
+      updateTimer: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
+      enableNextRoundButton: vi.fn(),
+      disableNextRoundButton: vi.fn(),
+      syncScoreDisplay: vi.fn(),
+      skipRoundCooldownIfEnabled: vi.fn(() => false)
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
+      updateDebugPanel: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
+      dispatchBattleEvent: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
+      computeNextRoundCooldown: () => 1
+    }));
+
+    document.body.innerHTML = "";
+    createTimerNodes();
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
+    try {
+      roundMod.startCooldown({}, scheduler);
+      expect(engine.startCoolDown).toHaveBeenCalledTimes(1);
+      expect(capturedScheduler).toBe(scheduler);
+      expect(engine.timer).toBe(baseTimer);
+    } finally {
+      if (originalVitest === undefined) {
+        delete process.env.VITEST;
+      } else {
+        process.env.VITEST = originalVitest;
+      }
+      vi.restoreAllMocks();
+    }
+  });
 });
