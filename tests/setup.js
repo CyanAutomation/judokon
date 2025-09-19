@@ -27,6 +27,7 @@ if (typeof global.cancelAnimationFrame === "undefined") {
 import { expect, afterEach, beforeEach, vi } from "vitest";
 import { resetDom } from "./utils/testUtils.js";
 import { muteConsole, restoreConsole } from "./utils/console.js";
+import { initializeTestBindingsLight } from "../src/helpers/classicBattle/testHooks.js";
 
 // [TEST DEBUG] after imports
 
@@ -152,26 +153,10 @@ beforeEach(async () => {
     }
   } catch {}
   try {
-    // Preload classic battle bindings without blocking test setup. Use
-    // fire-and-forget so `beforeEach` cannot be delayed by long-running
-    // dynamic initialization (which some tests reset via vi.resetModules()).
-    import("../src/helpers/classicBattle.js")
-      .then((mod) => {
-        try {
-          if (typeof mod.__resetClassicBattleBindings === "function") {
-            try {
-              mod.__resetClassicBattleBindings();
-            } catch {}
-          }
-        } catch {}
-        if (typeof mod.__ensureClassicBattleBindings === "function") {
-          try {
-            // Fire-and-forget: don't await here to avoid blocking beforeEach.
-            mod.__ensureClassicBattleBindings({ force: true }).catch(() => {});
-          } catch {}
-        }
-      })
-      .catch(() => {});
+    // Initialize classic battle bindings synchronously to avoid race conditions
+    // with vi.resetModules() in per-test hooks. This sets up the minimal state
+    // needed by tests without async imports.
+    initializeTestBindingsLight();
     // Ensure a fresh BattleEngine instance for each test to avoid shared state
     try {
       const facade = await import("../src/helpers/battleEngineFacade.js");

@@ -206,3 +206,74 @@ export async function triggerStallPromptNow(store) {
     emitBattleEvent("statSelectionStalled");
   } catch {}
 }
+
+/**
+ * Lightweight synchronous initializer for test bindings.
+ *
+ * Sets up the minimal essential state needed by tests without async imports.
+ * This includes the global event target and test promises, avoiding race
+ * conditions with vi.resetModules() in the global test harness.
+ *
+ * @test-only This function is intended for test setup only.
+ * @pseudocode
+ * 1. Ensure the global event target exists by creating it if needed.
+ * 2. Reset battle promises to create fresh test synchronization promises.
+ * 3. (No async operations; this is synchronous.)
+ *
+ * @returns {void}
+ */
+export function initializeTestBindingsLight() {
+  // Inline event target setup (from battleEvents.js)
+  const EVENT_TARGET_KEY = "__classicBattleEventTarget";
+  if (!globalThis[EVENT_TARGET_KEY]) {
+    const t = new EventTarget();
+    globalThis[EVENT_TARGET_KEY] = t;
+    // Skip Node.js tuning for simplicity in tests
+  }
+
+  // Inline promise setup (from promises.js)
+  function setupPromise(key, eventName) {
+    let resolve;
+    function reset() {
+      const p = new Promise((r) => {
+        resolve = r;
+      });
+      try {
+        if (typeof window !== "undefined") {
+          window[key] = p;
+          window[`__resolved_${key}`] = p;
+          try {
+            window.__promiseEvents = window.__promiseEvents || [];
+            window.__promiseEvents.push({ type: "promise-reset", key, ts: Date.now() });
+          } catch {}
+        }
+      } catch {}
+      return p;
+    }
+    let promise = reset();
+    // Add event listener to the global target
+    const target = globalThis[EVENT_TARGET_KEY];
+    target.addEventListener(eventName, () => {
+      try {
+        try {
+          window.__promiseEvents = window.__promiseEvents || [];
+          window.__promiseEvents.push({ type: "promise-resolve", key, ts: Date.now() });
+        } catch {}
+        if (typeof window !== "undefined") window[`__resolved_${key}`] = true;
+        resolve();
+      } catch {}
+      promise = reset();
+    });
+    return () => promise;
+  }
+
+  // Reset promises
+  window.roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
+  window.roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
+  window.nextRoundTimerReadyPromise = setupPromise("nextRoundTimerReadyPromise", "nextRoundTimerReady")();
+  window.matchOverPromise = setupPromise("matchOverPromise", "matchOver")();
+  window.countdownStartedPromise = setupPromise("countdownStartedPromise", "nextRoundCountdownStarted")();
+  window.roundTimeoutPromise = setupPromise("roundTimeoutPromise", "roundTimeout")();
+  window.statSelectionStalledPromise = setupPromise("statSelectionStalledPromise", "statSelectionStalled")();
+  window.roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
+}
