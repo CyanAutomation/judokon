@@ -1,5 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
-import { setupFallbackTimer } from "./roundManager.js";
+import { setupFallbackTimer } from "./setupFallbackTimer.js";
 import { isTestModeEnabled } from "../testModeUtils.js";
 import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./battleEvents.js";
 import { guard, guardAsync } from "./guard.js";

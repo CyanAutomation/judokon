@@ -99,6 +99,20 @@ describe("timerService next round handling", () => {
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
   });
 
+  it("double clicking Next during cooldown emits a single ready", async () => {
+    const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
+    const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
+    const { nextButton } = createTimerNodes();
+    const controls = roundMod.startCooldown({}, scheduler);
+    nextButton.addEventListener("click", (e) => timerMod.onNextButtonClick(e, controls));
+    scheduler.tick(100);
+    nextButton.click();
+    nextButton.click();
+    await controls.ready;
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
+  });
+
   it("preserves skip handler after manual skip", async () => {
     const timerMod = await import("../../../src/helpers/classicBattle/timerService.js");
     const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");

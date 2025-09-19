@@ -41,6 +41,10 @@ import {
   setupOrchestratedReady,
   startTimerWithDiagnostics
 } from "./cooldownOrchestrator.js";
+import {
+  hasReadyBeenDispatchedForCurrentCooldown,
+  setReadyDispatchedForCurrentCooldown
+} from "./roundReadyState.js";
 
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
@@ -51,18 +55,6 @@ async function getLazyUpdateDebugPanel() {
   }
   return lazyUpdateDebugPanel;
 }
-
-/**
- * @summary Re-export the fallback timer helper so round management modules share timer setup logic.
- *
- * @pseudocode
- * 1. Import `setupFallbackTimer` from the timer service module.
- * 2. Re-export the helper for external consumers.
- *
- * @see ./timerService.js
- * @returns {ReturnType<typeof setTimeout>|null}
- */
-export { setupFallbackTimer } from "./timerService.js";
 
 /**
  * @summary Construct the state container used by classic battle round orchestration helpers.
@@ -216,9 +208,6 @@ export async function startRound(store, onRoundStart) {
  */
 let currentNextRound = null;
 
-// Track whether the "ready" event has been dispatched for the current cooldown window.
-let readyDispatchedForCurrentCooldown = false;
-
 /**
  * Dispatch the cooldown "ready" event through available event bus dispatchers.
  *
@@ -260,7 +249,7 @@ let readyDispatchedForCurrentCooldown = false;
  * 3. Start timers, expose debug state, and return the cooldown controls.
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
-  readyDispatchedForCurrentCooldown = false;
+  setReadyDispatchedForCurrentCooldown(false);
   resetDispatchHistory("ready");
   const activeScheduler = resolveActiveScheduler(scheduler);
   const schedulerProvided = scheduler && typeof scheduler?.setTimeout === "function";
@@ -328,7 +317,7 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     timerOverrides,
     bus
   );
-  const getReadyDispatched = () => readyDispatchedForCurrentCooldown === true;
+  const getReadyDispatched = () => hasReadyBeenDispatchedForCurrentCooldown();
   const onExpired = createExpirationDispatcher({
     controls,
     btn,
@@ -506,7 +495,8 @@ function createReadyDispatchStrategies({
   bus,
   machineReader,
   emitTelemetry,
-  getDebugBag
+  getDebugBag,
+  orchestrated
 }) {
   const busStrategyOptions = {};
   if (bus) {
@@ -515,8 +505,21 @@ function createReadyDispatchStrategies({
   const hasCustomDispatcher =
     typeof options.dispatchBattleEvent === "function" &&
     options.dispatchBattleEvent !== dispatchBattleEvent;
+  const shouldShortCircuitReadyDispatch = () => hasReadyBeenDispatchedForCurrentCooldown();
+  const machineStrategy = () => {
+    if (shouldShortCircuitReadyDispatch()) return true;
+    return dispatchReadyDirectly({ machineReader, emitTelemetry });
+  };
   const strategies = [];
-  const shouldShortCircuitReadyDispatch = () => readyDispatchedForCurrentCooldown === true;
+  let machineStrategyAdded = false;
+  const addMachineStrategy = () => {
+    if (machineStrategyAdded) return;
+    strategies.push(machineStrategy);
+    machineStrategyAdded = true;
+  };
+  if (orchestrated) {
+    addMachineStrategy();
+  }
   if (hasCustomDispatcher) {
     strategies.push(() => {
       if (shouldShortCircuitReadyDispatch()) return true;
@@ -535,7 +538,7 @@ function createReadyDispatchStrategies({
     if (shouldShortCircuitReadyDispatch()) return true;
     return dispatchReadyViaBus(busStrategyOptions);
   });
-  strategies.push(() => dispatchReadyDirectly({ machineReader, emitTelemetry }));
+  addMachineStrategy();
   return strategies;
 }
 
@@ -592,16 +595,17 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     bus,
     machineReader,
     emitTelemetry,
-    getDebugBag
+    getDebugBag,
+    orchestrated
   });
   const dispatched = await runReadyDispatchStrategies({
     alreadyDispatchedReady:
-      options?.alreadyDispatchedReady === true || readyDispatchedForCurrentCooldown === true,
+      options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown(),
     strategies,
     emitTelemetry
   });
   if (dispatched) {
-    readyDispatchedForCurrentCooldown = true;
+    setReadyDispatchedForCurrentCooldown(true);
     safeRound(
       "handleNextRoundExpiration.traceDispatched",
       () => appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true }),

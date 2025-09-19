@@ -9,7 +9,7 @@ import * as scoreboard from "../setupScoreboard.js";
 import { realScheduler } from "../scheduler.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
-import { setupFallbackTimer } from "./timerService.js";
+import { setupFallbackTimer } from "./setupFallbackTimer.js";
 import { createResourceRegistry, createEnhancedCleanup, eventCleanup } from "./enhancedCleanup.js";
 import { getStateSnapshot } from "./battleDebug.js";
 import { updateDebugPanel } from "./debugPanel.js";
