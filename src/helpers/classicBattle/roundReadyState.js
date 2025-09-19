@@ -1,3 +1,5 @@
+import { resetDispatchHistory } from "./eventDispatcher.js";
+
 /**
  * @summary Track whether the current cooldown already dispatched the "ready" event.
  *
@@ -31,4 +33,18 @@ export function setReadyDispatchedForCurrentCooldown(dispatched) {
  */
 export function hasReadyBeenDispatchedForCurrentCooldown() {
   return readyDispatchedForCurrentCooldown === true;
+}
+
+/**
+ * @summary Reset the readiness dispatch tracking for the upcoming cooldown cycle.
+ *
+ * @pseudocode
+ * 1. Clear the module-level readiness flag so collaborators start from a clean slate.
+ * 2. Reset the shared event dispatcher history for the "ready" event to align dedupe state.
+ *
+ * @returns {void}
+ */
+export function resetReadyDispatchState() {
+  setReadyDispatchedForCurrentCooldown(false);
+  resetDispatchHistory("ready");
 }
