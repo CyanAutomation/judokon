@@ -73,6 +73,49 @@ Next recommended actions (still Phase 1 -> Phase 2 gate):
 - Attempt to reproduce the duplication deterministically by running an integration-like test that exercises the real engine `startCoolDown` path, the engine timer, and the real scheduler (instead of the stubbed timer). If we can reproduce it reliably, implement Phase 2 and verify the fix with the same harness.
 - If integration reproduction is slow or flaky, proceed to Phase 2 with the small, well-scoped changes (funnel finalize through dispatcher & toggle flag after success), then run the unit tests and the integration harness.
 
+Integration test (real engine & scheduler) — actions taken & outcome
+
+- Test added: `tests/integration/roundManager.cooldown-integration.spec.js`.
+  - Purpose: exercise the real `BattleEngine` cooldown path using `createBattleEngine()` and `startCooldown` with the real scheduler (no fake timers), capture the runtime traces produced by our Phase 1 instrumentation, and persist them to `test-traces.json` for analysis.
+  - Command run (what I executed):
+
+    npx vitest run tests/integration/roundManager.cooldown-integration.spec.js --run
+
+- Observed outcome:
+  - The integration test passed (1 test passed).
+  - The test waited briefly to allow the cooldown expiration flow to run and then wrote a snapshot to `/workspaces/judokon/test-traces.json`.
+  - The integration trace shows the centralized dispatch path executed (i.e., `dispatchReadyViaBus` → `handleNextRoundExpiration` → controls resolved). No deterministic double `machine.dispatch("ready")` was observed in this specific run.
+
+- Key excerpt from `/workspaces/judokon/test-traces.json` (integration run):
+
+```json
+{
+  "tracesFile": {
+    "traceA": [
+      { "event": "startCooldown", "at": 1758296539762, "scheduler": "default" },
+      { "event": "cooldownContext", "at": 1758296539763, "orchestrated": false, "hasMachine": false },
+      { "event": "controlsCreated", "at": 1758296539763, "hasEmitter": true },
+      { "event": "cooldownDurationResolved", "at": 1758296539784, "seconds": 3 },
+      { "event": "dispatchReadyViaBus.start", "at": 1758296539790 },
+      { "event": "dispatchReadyViaBus.end", "at": 1758296539790, "result": true },
+      { "event": "handleNextRoundExpiration.start", "at": 1758296539791 },
+      { "event": "handleNextRoundExpiration.dispatched", "at": 1758296539792, "dispatched": true },
+      { "event": "resolveReadyInvoked", "at": 1758296539792, "readyDispatched": false, "readyInFlight": false },
+      { "event": "resolveReadySettled", "at": 1758296539793, "readyDispatched": true },
+      { "event": "handleNextRoundExpiration.end", "at": 1758296539793, "dispatched": true }
+    ],
+    "traceB": [],
+    "traceDelayed": []
+  }
+}
+```
+
+- Interpretation:
+  - The centralized dispatcher path was exercised and returned success (`dispatchReadyViaBus` result: true), followed by `handleNextRoundExpiration` finalizing the controls and resolving the ready promise.
+  - The lack of a duplicate dispatch in this run reinforces that the double-dispatch is timing and environment dependent; we can exercise the central path and verify behavior, but reproducing the original double-dispatch deterministically will likely require a timing-specific harness or to intentionally simulate the race.
+
+- Status update: I marked Phase 1b (integration test) as completed in the repo todo list. I paused further changes and will await your review before moving to Phase 2.
+
 ### Phase 2 — remediation (concrete changes)
 
 Suggested code changes (small, targeted):
@@ -88,6 +131,66 @@ Suggested code changes (small, targeted):
 Code-level rationale:
 
 - Centralizing all "ready" dispatches through the shared dispatcher keeps dedupe and retry semantics in one place and avoids accidental bypasses of the dispatcher guards. It also makes future maintenance easier because there is a single canonical path for readiness signals.
+
+Actions taken (this session) — Phase 2 implemented
+
+- Modified `setupOrchestratedReady.finalize` in `src/helpers/classicBattle/roundManager.js`:
+  - No longer calls `machine.dispatch("ready")` directly.
+  - Prefers `options.dispatchBattleEvent("ready")` when an injected dispatcher is provided and will await a returned promise when applicable.
+  - When no injected dispatcher exists, calls the centralized `dispatchReadyViaBus(...)` strategy (which funnels through the shared dispatcher chain) instead of calling `machine.dispatch` directly.
+  - Sets `readyDispatchedForCurrentCooldown = true` only after a successful dispatch result — preserving retry semantics when the centralized dispatcher initially fails.
+
+- Added an explicit early-return / short-circuit in the `wireCooldownTimer.onExpired` retry path to avoid re-dispatching when `readyDispatchedForCurrentCooldown` is already true. This ensures a prior successful attempt prevents duplicate signals.
+
+Why this is low-risk:
+
+- The changes funnel all finalization signals through the centralized dispatcher chain (the same path used by `handleNextRoundExpiration`) so deduplication is applied uniformly.
+- The edits are localized to `setupOrchestratedReady.finalize` and the `onExpired` handling in `wireCooldownTimer` — they do not affect the broader engine API.
+
+Validation performed
+
+- Unit test: `tests/roundManager.cooldown-ready.spec.js` — passed (1 test). This focuses on both injected-dispatch and non-injected scenarios and remains green.
+- Integration test: `tests/integration/roundManager.cooldown-integration.spec.js` — passed (1 test). This exercised the real `BattleEngine` `startCoolDown` path with the real scheduler and captured traces written to `/workspaces/judokon/test-traces.json`.
+
+Observed traces (post-fix run)
+
+The integration run's `test-traces.json` shows the centralized dispatch path executing and the expiration handler finalizing the controls. Example excerpt:
+
+```json
+{
+  "tracesFile": {
+    "traceA": [
+      { "event": "startCooldown", "at": 1758299039213, "scheduler": "default" },
+      { "event": "cooldownContext", "at": 1758299039213, "orchestrated": false, "hasMachine": false },
+      { "event": "controlsCreated", "at": 1758299039213, "hasEmitter": true },
+      { "event": "cooldownDurationResolved", "at": 1758299039246, "seconds": 3 },
+      { "event": "handleNextRoundExpiration.start", "at": 1758299039254 },
+      { "event": "handleNextRoundExpiration.dispatched", "at": 1758299039256, "dispatched": true },
+      { "event": "resolveReadyInvoked", "at": 1758299039256, "readyDispatched": false, "readyInFlight": false },
+      { "event": "resolveReadySettled", "at": 1758299039256, "readyDispatched": true },
+      { "event": "handleNextRoundExpiration.end", "at": 1758299039256, "dispatched": true }
+    ],
+    "traceB": [],
+    "traceDelayed": []
+  }
+}
+```
+
+Interpretation after Phase 2 changes
+
+- The centralized dispatch path executes as expected and the controls finalize with `readyDispatched` set after dispatch success.
+- The prior risky code path that directly called `machine.dispatch("ready")` from `finalize` has been removed; this reduces the chance of the un-deduped double-dispatch race.
+- The integration and unit runs are green. Because the original double-dispatch was timing-dependent, removing the bypass reduces risk and centralizes behavior; if a timing-sensitive reproduction remains possible on specific environments, the instrumentation and tests will help capture it.
+
+Next recommended steps
+
+- Keep the Phase 1 instrumentation for a short window (or preserve it behind a debug flag) while running CI to gather more samples. Then remove or gate the instrumentation.
+- Run the full validation suite (`npx prettier . --check && npx eslint . && npm run check:jsdoc && npx vitest run`) in CI and address any broader regressions.
+- If you want, I can now:
+  - A: Run a timing sweep (multiple integration runs with varied durations) to try to find any remaining race, or
+  - B: Remove or gate temporary traces and open a PR with this small patch plus the new/updated tests.
+
+Status: Phase 2 implemented and validated locally (unit + integration tests passed). Pausing for your review before opening a PR or further actions.
 
 ### Phase 3 – Regression safeguards & cleanup
 
