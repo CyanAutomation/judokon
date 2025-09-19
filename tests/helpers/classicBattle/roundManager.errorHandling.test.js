@@ -135,13 +135,15 @@ describe("roundManager error handling integration", () => {
     }
 
     const entries = readDebugState("classicBattleErrors") || [];
-    expect(entries.length).toBeLessThanOrEqual(25);
+    expect(entries.length).toBe(25);
+    expect(entries.at(0)?.operation).toBe("limit-15");
     expect(entries.at(-1)?.operation).toBe("limit-39");
 
     if (typeof globalThis !== "undefined") {
       const bag = globalThis.__CLASSIC_BATTLE_ERROR_LOG;
       expect(Array.isArray(bag)).toBe(true);
       expect(bag.length).toBe(entries.length);
+      expect(bag.at(0)?.operation).toBe("limit-15");
       expect(bag.at(-1)?.operation).toBe("limit-39");
     }
   });
