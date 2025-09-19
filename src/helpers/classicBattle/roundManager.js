@@ -1113,7 +1113,11 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       }
       const finalizeResult = finalizeExpiration();
       const originalResult = originalResolveReady.apply(this, args);
-      return finalizeResult ?? originalResult;
+      // Ensure we await the finalize result if it's a promise
+      if (finalizeResult && typeof finalizeResult.then === 'function') {
+        return finalizeResult.then(() => originalResult);
+      }
+      return originalResult;
     };
   }
   let finalizePromise = null;
