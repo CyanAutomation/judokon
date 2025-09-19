@@ -211,6 +211,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
         btn.onclick = handler;
         handlers.set(btn, handler);
       });
+      window.__handlerCount = handlers.size;
     };
 
     const disable = vi.fn(() => {
@@ -442,7 +443,9 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         const { container, statControls } = await initBattle();
         statControls.enable();
         await (window.statButtonsReadyPromise ?? Promise.resolve());
+        expect(window.__handlerCount ?? 0).toBeGreaterThan(0);
         const buttons = container.querySelectorAll("button[data-stat]");
+        expect(container.querySelectorAll("button").length).toBeGreaterThan(0);
         console.log("[debug] same element", window.__mockButtons?.[0] === buttons[0]);
         expect(buttons.length).toBeGreaterThan(0);
         buttons.forEach((b) => expect(b.disabled).toBe(false));
@@ -495,6 +498,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       }
 
       statControls.enable();
+      // Flush any queued RAF callbacks to process scheduler updates
+      if (typeof globalThis.flushRAF === "function") {
+        globalThis.flushRAF();
+      }
       await (window.statButtonsReadyPromise ?? Promise.resolve());
       expect(button.disabled).toBe(false);
 
@@ -503,6 +510,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
       try {
         resetStatButtons();
+        // Flush RAF again after reset
+        if (typeof globalThis.flushRAF === "function") {
+          globalThis.flushRAF();
+        }
         await flushImmediateTasks();
         expect(button.disabled).toBe(false);
       } finally {

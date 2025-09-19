@@ -178,4 +178,3 @@ The test fails due to an infinite recursive loop between the animation scheduler
   * Phase 1 – Safeguard Design: Define detection heuristics (max synchronous frame depth, loop duration thresholds) and decide on developer-facing warnings vs. hard failures.
   * Phase 2 – Implementation: Add guarded counters or watchdog timers within the scheduler, ensuring they can be toggled or relaxed for stress tests.
   * Phase 3 – Verification: Create targeted tests that intentionally trigger the safeguards to confirm they surface actionable diagnostics without false positives.
-  * Phase 4 – Rollout: Enable safeguards by default in test environments, publish troubleshooting guides, and integrate alerts into CI to catch regressions early.

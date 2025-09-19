@@ -26,8 +26,30 @@ export function setupClassicBattleDom() {
   disposeClassicBattleOrchestrator();
   // vi.resetModules(); // Temporarily disabled to fix test timeouts
   const timerSpy = vi.useFakeTimers();
-  globalThis.requestAnimationFrame = vi.fn((cb) => cb());
-  globalThis.cancelAnimationFrame = vi.fn();
+
+  // Queue-based mock for requestAnimationFrame to prevent infinite recursion
+  const rafQueue = [];
+  let rafIdCounter = 0;
+  globalThis.requestAnimationFrame = vi.fn((cb) => {
+    const id = ++rafIdCounter;
+    rafQueue.push({ id, cb });
+    return id;
+  });
+  globalThis.cancelAnimationFrame = vi.fn((id) => {
+    const index = rafQueue.findIndex((item) => item.id === id);
+    if (index > -1) {
+      rafQueue.splice(index, 1);
+    }
+  });
+
+  // Function to flush queued RAF callbacks
+  globalThis.flushRAF = () => {
+    while (rafQueue.length > 0) {
+      const { cb } = rafQueue.shift();
+      cb(performance.now());
+    }
+  };
+
   // Let Vitest's fake timers handle setTimeout/clearTimeout automatically
   // globalThis.setTimeout = vi.fn((cb, delay) => {
   //   return setTimeout(cb, delay);
