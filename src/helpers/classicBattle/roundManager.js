@@ -21,6 +21,16 @@ import { createEventBus } from "./eventBusUtils.js";
 import { getDebugPanelLazy } from "./preloadService.js";
 import { createResourceRegistry, createEnhancedCleanup, eventCleanup } from "./enhancedCleanup.js";
 import { updateDebugPanel } from "./debugPanel.js";
+import {
+  createExpirationTelemetryEmitter,
+  createMachineReader,
+  createMachineStateInspector,
+  dispatchReadyDirectly,
+  dispatchReadyViaBus,
+  dispatchReadyWithOptions,
+  runReadyDispatchStrategies,
+  updateExpirationUi
+} from "./nextRound/expirationHandlers.js";
 
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
@@ -212,30 +222,6 @@ let readyDispatchedForCurrentCooldown = false;
  * 3. Treat a resolved value of `false` as failure; otherwise report success.
  * 4. Return false if every dispatcher declines or throws.
  */
-async function dispatchReadyViaBus(options = {}) {
-  const dispatchers = [];
-  const candidate = options.dispatchBattleEvent;
-  if (typeof candidate === "function") {
-    dispatchers.push(candidate);
-  }
-  if (typeof dispatchBattleEvent === "function" && dispatchBattleEvent !== candidate) {
-    dispatchers.push(dispatchBattleEvent);
-  }
-  for (const dispatcher of dispatchers) {
-    try {
-      const result = dispatcher("ready");
-      let resolved = result;
-      if (resolved && typeof resolved.then === "function") {
-        resolved = await resolved;
-      }
-      if (resolved !== false) {
-        return true;
-      }
-    } catch {}
-  }
-  return false;
-}
-
 /**
  * Schedule the cooldown before the next round and expose controls
  * for the Next button.
@@ -722,505 +708,131 @@ function markNextReady(btn) {
 
 async function handleNextRoundExpiration(controls, btn, options = {}) {
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
-  // diagnostics removed (was writing to global debug bag / console)
-  try {
-    if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-      globalThis.__classicBattleDebugExpose("nextRoundExpired", true);
+  const debugExpose =
+    typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugExpose === "function"
+      ? globalThis.__classicBattleDebugExpose.bind(globalThis)
+      : undefined;
+  const debugBagFactory = () => {
+    if (typeof globalThis === "undefined") return null;
+    try {
+      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
+      return bag;
+    } catch {
+      return null;
     }
-  } catch {}
-  try {
-    exposeDebugState("handleNextRoundExpirationCalled", true);
-  } catch {}
+  };
+  const { emit: emitTelemetry, getDebugBag } = createExpirationTelemetryEmitter({
+    exposeDebugState,
+    debugExpose,
+    getDebugBag: debugBagFactory
+  });
+  emitTelemetry("nextRoundExpired", true);
+  emitTelemetry("handleNextRoundExpirationCalled", true);
+
   if (controls?.readyInFlight) {
-    try {
-      exposeDebugState("handleNextRoundEarlyExit", {
-        readyDispatched: !!controls?.readyDispatched,
-        readyInFlight: !!controls?.readyInFlight,
-        reason: "inFlight"
-      });
-    } catch {}
-    try {
-      if (typeof globalThis !== "undefined") {
-        const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-        bag.handleNextRoundEarlyExit = {
-          readyDispatched: !!controls?.readyDispatched,
-          readyInFlight: !!controls?.readyInFlight,
-          reason: "inFlight"
-        };
-        if (typeof globalThis.__classicBattleDebugExpose === "function") {
-          try {
-            globalThis.__classicBattleDebugExpose(
-              "handleNextRoundEarlyExit",
-              bag.handleNextRoundEarlyExit
-            );
-          } catch {}
-        }
-      }
-    } catch {}
-    try {
-      console.error("[BAG-MARKER] handleNextRoundEarlyExit: readyInFlight true");
-      if (typeof globalThis !== "undefined") {
-        const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-        bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
-        bag.handleNextRound_earlyExit.push({ reason: "inFlight", at: Date.now() });
-      }
-    } catch {}
+    const snapshot = {
+      readyDispatched: !!controls?.readyDispatched,
+      readyInFlight: !!controls?.readyInFlight,
+      reason: "inFlight"
+    };
+    emitTelemetry("handleNextRoundEarlyExit", snapshot);
+    const bag = getDebugBag();
+    if (bag) {
+      bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
+      bag.handleNextRound_earlyExit.push({ reason: "inFlight", at: Date.now() });
+    }
     return;
   }
+
   if (controls) {
     controls.readyInFlight = true;
-    try {
-      exposeDebugState("handleNextRoundEarlyExit", {
-        readyDispatched: !!controls?.readyDispatched,
-        readyInFlight: !!controls?.readyInFlight,
-        reason: controls?.readyDispatched ? "preDispatched" : "enter"
-      });
-      if (typeof globalThis !== "undefined") {
-        const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-        bag.handleNextRoundEarlyExit = {
-          readyDispatched: !!controls?.readyDispatched,
-          readyInFlight: !!controls?.readyInFlight,
-          reason: controls?.readyDispatched ? "preDispatched" : "enter"
-        };
-      }
-    } catch {}
+    emitTelemetry("handleNextRoundEarlyExit", {
+      readyDispatched: !!controls?.readyDispatched,
+      readyInFlight: !!controls?.readyInFlight,
+      reason: controls?.readyDispatched ? "preDispatched" : "enter"
+    });
   }
-  try {
-    exposeDebugState("currentNextRoundReadyInFlight", !!controls?.readyInFlight);
-  } catch {}
-  // Patch: In Vitest, also update [data-role="next-round"] for test DOM
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const testBtn = document.querySelector('[data-role="next-round"]');
-      if (testBtn && testBtn !== btn) {
-        testBtn.setAttribute("data-next-ready", "true");
-        testBtn.removeAttribute("disabled");
-      }
-    }
-  } catch {}
-  if (typeof console !== "undefined") {
-    // Print the machine reference from the event dispatcher debug getter
-    try {
-      if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead) {
-        // const getMachine = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
-        // machineRef = typeof getMachine === "function" ? getMachine() : null;
-      }
-    } catch {}
-  }
+  emitTelemetry("currentNextRoundReadyInFlight", !!controls?.readyInFlight);
+
   const clearSkipHandler =
     typeof options.setSkipHandler === "function" ? options.setSkipHandler : setSkipHandler;
   try {
     clearSkipHandler(null);
   } catch {}
+
   const scoreboardApi = options.scoreboard || scoreboard;
   try {
     scoreboardApi?.clearTimer?.();
   } catch {}
-  // Ensure we've reached the cooldown state before advancing. If the
-  // machine already moved past cooldown (e.g. into roundStart or
-  // waitingForPlayerAction) resolve immediately so the ready dispatch
-  // still occurs.
+
   const bus = createEventBus(options.eventBus);
   const getSnapshot = options.getStateSnapshot || getStateSnapshot;
-  const machineReader = (() => {
-    if (typeof options.getClassicBattleMachine === "function") {
-      return () => {
-        try {
-          const machine = options.getClassicBattleMachine();
-          try {
-            exposeDebugState("handleNextRoundMachineGetterOverride", machine);
-            if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-              globalThis.__classicBattleDebugExpose(
-                "handleNextRoundMachineGetterOverride",
-                machine
-              );
-            }
-          } catch {}
-          return machine;
-        } catch {
-          return null;
-        }
-      };
-    }
-    return () => {
-      let getter = null;
-      try {
-        getter = readDebugState("getClassicBattleMachine");
-      } catch {}
-      if (!getter) {
-        try {
-          if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugRead) {
-            getter = globalThis.__classicBattleDebugRead("getClassicBattleMachine");
-          }
-        } catch {}
-      }
-      try {
-        exposeDebugState("handleNextRoundMachineGetter", {
-          sourceReadDebug: typeof getter,
-          hasGlobal: typeof globalThis !== "undefined" && !!globalThis.__classicBattleDebugRead
-        });
-        if (typeof globalThis !== "undefined") {
-          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-          bag.handleNextRoundMachineGetter = {
-            sourceReadDebug: typeof getter,
-            hasGlobal: typeof globalThis.__classicBattleDebugRead === "function"
-          };
-          if (typeof globalThis.__classicBattleDebugExpose === "function") {
-            globalThis.__classicBattleDebugExpose(
-              "handleNextRoundMachineGetter",
-              bag.handleNextRoundMachineGetter
-            );
-          }
-        }
-      } catch {}
-      let result = null;
-      if (typeof getter === "function") {
-        try {
-          result = getter();
-        } catch {
-          result = null;
-        }
-      } else if (getter && typeof getter === "object") {
-        result = getter;
-      }
-      try {
-        exposeDebugState("handleNextRoundMachineGetterResult", result);
-        if (typeof globalThis !== "undefined" && globalThis.__classicBattleDebugExpose) {
-          globalThis.__classicBattleDebugExpose("handleNextRoundMachineGetterResult", result);
-        }
-      } catch {}
-      return result;
-    };
-  })();
+  const machineReader = createMachineReader(options, {
+    emitTelemetry,
+    readDebugState,
+    debugRead:
+      typeof globalThis !== "undefined" && typeof globalThis.__classicBattleDebugRead === "function"
+        ? globalThis.__classicBattleDebugRead
+        : undefined
+  });
+
   const isCooldownSafeState = (state) => {
     if (!state) return true;
     if (typeof state !== "string") return false;
     if (state === "cooldown" || state === "roundOver") return true;
     return isOrchestratorReadyState(state);
   };
-  const readMachineState = () => {
-    try {
-      return getMachineState(machineReader());
-    } catch {
-      try {
-        exposeDebugState("handleNextRoundMachineReadError", true);
-        if (typeof globalThis !== "undefined") {
-          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-          bag.handleNextRoundMachineReadError = true;
-          if (typeof globalThis.__classicBattleDebugExpose === "function") {
-            globalThis.__classicBattleDebugExpose("handleNextRoundMachineReadError", true);
-          }
-        }
-      } catch {}
-      return null;
-    }
-  };
-  const shouldResolve = () => {
-    const machineState = readMachineState();
-    if (isCooldownSafeState(machineState)) return true;
-    try {
-      const snapshotState = getSnapshot()?.state;
-      if (isCooldownSafeState(snapshotState)) return true;
-    } catch {}
-    return false;
-  };
-  try {
-    const machineState = (() => {
-      try {
-        return readMachineState();
-      } catch {
-        return null;
-      }
-    })();
-    exposeDebugState("handleNextRoundMachineState", machineState ?? null);
-    if (typeof globalThis !== "undefined") {
-      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-      bag.handleNextRoundMachineState = machineState ?? null;
-      if (typeof globalThis.__classicBattleDebugExpose === "function") {
-        globalThis.__classicBattleDebugExpose("handleNextRoundMachineState", machineState ?? null);
-      }
-    }
-  } catch {}
-  try {
-    const snapshotState = (() => {
-      try {
-        return getSnapshot()?.state ?? null;
-      } catch {
-        return null;
-      }
-    })();
-    exposeDebugState("handleNextRoundSnapshotState", snapshotState);
-    if (typeof globalThis !== "undefined") {
-      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-      bag.handleNextRoundSnapshotState = snapshotState;
-      if (typeof globalThis.__classicBattleDebugExpose === "function") {
-        globalThis.__classicBattleDebugExpose("handleNextRoundSnapshotState", snapshotState);
-      }
-    }
-  } catch {}
-  await new Promise((resolve) => {
-    if (shouldResolve()) {
-      resolve();
-      return;
-    }
-    const handler = () => {
-      const detach = () => {
-        try {
-          bus.off("battleStateChange", handler);
-        } catch {}
-      };
-      if (shouldResolve()) {
-        try {
-          // early exit: already in-flight; nothing to do
-        } catch {}
-      }
-      detach();
-      resolve();
-    };
-    bus.on("battleStateChange", handler);
+
+  const inspector = createMachineStateInspector({
+    machineReader,
+    getSnapshot,
+    getMachineState,
+    isCooldownState: isCooldownSafeState,
+    emitTelemetry
   });
-  try {
-    const machineStateAfter = (() => {
-      try {
-        return readMachineState();
-      } catch {
-        return null;
-      }
-    })();
-    exposeDebugState("handleNextRoundMachineStateAfterWait", machineStateAfter ?? null);
-    if (typeof globalThis !== "undefined") {
-      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-      bag.handleNextRoundMachineStateAfterWait = machineStateAfter ?? null;
-      if (typeof globalThis.__classicBattleDebugExpose === "function") {
-        globalThis.__classicBattleDebugExpose(
-          "handleNextRoundMachineStateAfterWait",
-          machineStateAfter ?? null
-        );
-      }
-    }
-  } catch {}
 
-  // If the orchestrator is running, it owns the "Next" button readiness.
-  // This path should only execute in non-orchestrated environments (e.g., unit tests).
-  const isOrchestratedFn =
-    typeof options.isOrchestrated === "function" ? options.isOrchestrated : isOrchestrated;
+  await inspector.waitForCooldown(bus);
+
   const markReady = options.markReady || markNextReady;
-  if (!isOrchestratedFn()) {
-    try {
-      const liveBtn =
-        typeof document !== "undefined" ? document.getElementById("next-button") : btn;
-      markReady(liveBtn || btn);
-    } catch {}
-  }
+  const orchestrated =
+    typeof options.isOrchestrated === "function" ? options.isOrchestrated : isOrchestrated;
 
-  // Update debug panel for visibility.
-  try {
-    const updatePanel = options.updateDebugPanel || (await getLazyUpdateDebugPanel());
-    updatePanel();
-  } catch {}
-
-  // Dispatch `ready` (fire-and-forget) before resolving the controls so
-  // tests awaiting `controls.ready` don't depend on orchestrator internals.
-  // Only dispatch if the machine is still in cooldown state and we haven't already dispatched for this cooldown.
-  const dispatchReadyDirectly = async () => {
-    const machine = machineReader();
-    if (machine?.dispatch) {
-      try {
-        const result = await machine.dispatch("ready");
-        if (result && typeof result.then === "function") {
-          result.catch(() => {});
-        }
-        return true;
-      } catch {}
+  await updateExpirationUi({
+    isOrchestrated: orchestrated,
+    markReady,
+    button: btn,
+    documentRef: typeof document !== "undefined" ? document : null,
+    updateDebugPanel: async () => {
+      const updatePanel = options.updateDebugPanel || (await getLazyUpdateDebugPanel());
+      if (typeof updatePanel === "function") updatePanel();
     }
-    return false;
-  };
+  });
 
-  const dispatchViaOptions = async () => {
-    if (typeof options.dispatchBattleEvent !== "function") {
-      return false;
-    }
-    let dispatchedViaOptions = false;
-    try {
-      // Basic introspection of the options.dispatchBattleEvent function
-      const info = {
-        hasFn: true,
-        name: options.dispatchBattleEvent.name || null,
-        toStringLen:
-          typeof options.dispatchBattleEvent.toString === "function"
-            ? options.dispatchBattleEvent.toString().length
-            : 0
-      };
-      try {
-        exposeDebugState("handleNextRound_dispatchViaOptions_info", info);
-      } catch {}
-      try {
-        if (typeof globalThis !== "undefined") {
-          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-          bag.handleNextRound_dispatchViaOptions_info = info;
-          bag.handleNextRound_dispatchViaOptions_count =
-            (bag.handleNextRound_dispatchViaOptions_count || 0) + 1;
-        }
-      } catch {}
-      try {
-        if (
-          typeof process !== "undefined" &&
-          process &&
-          typeof process.stdout?.write === "function"
-        ) {
-          process.stdout.write(
-            `[BAG-MARKER] before dispatchViaOptions hasFn=${info.hasFn} name=${String(info.name)}\n`
-          );
-        }
-      } catch {}
-      try {
-        console.debug("[TEST-INSTRUMENT] dispatchViaOptions info:", info);
-      } catch {}
-    } catch {}
+  const busStrategyOptions =
+    typeof options.dispatchBattleEvent === "function"
+      ? {}
+      : { dispatchBattleEvent: options.dispatchBattleEvent };
+  const strategies = [
+    () =>
+      dispatchReadyWithOptions({
+        dispatchBattleEvent: options.dispatchBattleEvent,
+        emitTelemetry,
+        getDebugBag
+      }),
+    () => dispatchReadyViaBus(busStrategyOptions),
+    () => dispatchReadyDirectly({ machineReader, emitTelemetry })
+  ];
 
-    let error = null;
-    try {
-      const result = options.dispatchBattleEvent("ready");
-      let resolved = result;
-      if (resolved && typeof resolved.then === "function") {
-        resolved = await resolved;
-      }
-      dispatchedViaOptions = resolved !== false;
-    } catch (err) {
-      error = err;
-      dispatchedViaOptions = false;
-    }
+  const dispatched = await runReadyDispatchStrategies({
+    alreadyDispatchedReady: options?.alreadyDispatchedReady === true,
+    strategies,
+    emitTelemetry
+  });
 
-    if (error) {
-      try {
-        if (typeof globalThis !== "undefined") {
-          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-          bag.handleNextRound_dispatchViaOptions_error = {
-            message: error && error.message ? error.message : String(error)
-          };
-        }
-      } catch {}
-      try {
-        if (
-          typeof process !== "undefined" &&
-          process &&
-          typeof process.stdout?.write === "function"
-        ) {
-          process.stdout.write(
-            `[BAG-MARKER] dispatchViaOptions threw=${String(
-              error && error.message ? error.message : error
-            )}\n`
-          );
-        }
-      } catch {}
-      try {
-        console.log(
-          "[TEST-INSTRUMENT] dispatchViaOptions threw:",
-          error && error.message ? error.message : error
-        );
-      } catch {}
-    } else {
-      try {
-        exposeDebugState("handleNextRound_dispatchViaOptions_result", dispatchedViaOptions);
-      } catch {}
-      try {
-        if (typeof globalThis !== "undefined") {
-          const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-          bag.handleNextRound_dispatchViaOptions_result = { dispatched: dispatchedViaOptions };
-        }
-      } catch {}
-      try {
-        if (
-          typeof process !== "undefined" &&
-          process &&
-          typeof process.stdout?.write === "function"
-        ) {
-          process.stdout.write(
-            `[BAG-MARKER] after dispatchViaOptions dispatched=${String(dispatchedViaOptions)}\n`
-          );
-        }
-      } catch {}
-      try {
-        console.debug("[TEST-INSTRUMENT] dispatchViaOptions returned:", dispatchedViaOptions);
-      } catch {}
-    }
-
-    return dispatchedViaOptions;
-  };
-
-  const dispatchReadyFallback = async () => {
-    try {
-      const info = (() => {
-        try {
-          const m = machineReader?.();
-          return { machineExists: !!m, hasDispatch: typeof m?.dispatch === "function" };
-        } catch {
-          return { machineExists: false, hasDispatch: false };
-        }
-      })();
-      try {
-        exposeDebugState("handleNextRound_dispatchReadyDirectly_info", info);
-      } catch {}
-      try {
-        console.debug("[TEST-INSTRUMENT] dispatchReadyDirectly info:", info);
-      } catch {}
-      const dispatchedDirect = await dispatchReadyDirectly();
-      try {
-        exposeDebugState("handleNextRound_dispatchReadyDirectly_result", dispatchedDirect);
-      } catch {}
-      try {
-        console.debug("[TEST-INSTRUMENT] dispatchReadyDirectly returned:", dispatchedDirect);
-      } catch {}
-      return dispatchedDirect;
-    } catch (err) {
-      try {
-        console.error(
-          "[TEST-INSTRUMENT] dispatchReadyDirectly threw:",
-          err && err.message ? err.message : err
-        );
-      } catch {}
-      return false;
-    }
-  };
-
-  let dispatched = options?.alreadyDispatchedReady === true;
-  if (!dispatched) {
-    try {
-      dispatched = await dispatchViaOptions();
-    } catch {}
-  }
-  if (!dispatched) {
-    const busOptions =
-      typeof options.dispatchBattleEvent === "function"
-        ? { ...options, dispatchBattleEvent: undefined }
-        : options;
-    try {
-      dispatched = await dispatchReadyViaBus(busOptions);
-    } catch {}
-  }
-  if (!dispatched) {
-    dispatched = await dispatchReadyFallback();
-  }
-  if (!dispatched) {
-    try {
-      const machine = machineReader();
-      if (machine?.dispatch) {
-        await machine.dispatch("ready");
-        dispatched = true;
-      }
-    } catch {}
-  }
   if (dispatched) {
     readyDispatchedForCurrentCooldown = true;
   }
-  // diagnostics removed
-  try {
-    exposeDebugState("handleNextRoundDispatchResult", dispatched);
-    if (typeof globalThis !== "undefined") {
-      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-      bag.handleNextRoundDispatchResult = dispatched;
-    }
-  } catch {}
+
   if (controls) {
     controls.readyInFlight = false;
     if (!controls.readyDispatched && dispatched && typeof controls.resolveReady === "function") {
@@ -1230,6 +842,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       controls.readyDispatched = true;
     }
   }
+
   return dispatched;
 }
 
