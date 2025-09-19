@@ -1,4 +1,4 @@
-import { import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
+import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
 import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import {
@@ -18,31 +18,8 @@ import {
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer } from "../helpers/classicBattle/timerService.js";
-import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
 import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
-          const outcome = String(result?.outcome || "");
-          const winner =
-            outcome === "matchWinPlayer"
-              ? "player"
-              : outcome === "matchWinOpponent"
-              ? "opponent"
-              : "none";
-          const scores = {
-            player: Number(result?.playerScore) || 0,
-            opponent: Number(result?.opponentScore) || 0
-          };
-        } catch {}
-      });
-    } catch {}
-  };
-import {
-  setStatButtonsEnabled,
-  resolveStatButtonsReady
-} from "../helpers/classicBattle/statButtons.js";
-import { quitMatch } from "../helpers/classicBattle/quitModal.js";
-import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
-import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";

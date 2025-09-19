@@ -147,6 +147,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
 
   const initStatButtons = vi.fn((store) => {
     const container = document.getElementById("stat-buttons");
+    if (!container) throw new Error("initStatButtons missing container");
     const buttons = container ? Array.from(container.querySelectorAll("button[data-stat]")) : [];
     console.log("[debug] initStatButtons buttons", buttons.length);
     const handlers = new Map();
@@ -421,6 +422,8 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       );
       setupNextButton();
       const statControls = initStatButtons(store);
+      expect(initStatButtons).toHaveBeenCalled();
+      console.log("[debug] initBattle statControls", !!statControls);
       await battleMod.startRound(store, battleMod.applyRoundUI);
       return { container: statContainer, statControls };
     }
