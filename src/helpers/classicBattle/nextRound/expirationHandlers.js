@@ -193,7 +193,6 @@ export function createMachineStateInspector(params) {
     emitTelemetry?.("handleNextRoundMachineStateAfterWait", latestMachineState);
     emitTelemetry?.("handleNextRoundSnapshotStateAfterWait", latestSnapshotState);
   };
-  };
   const waitForCooldown = async (eventBus) => {
     if (shouldResolve()) {
       emitPostWaitStates();
