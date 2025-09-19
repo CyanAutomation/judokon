@@ -74,14 +74,6 @@ function safeRound(operation, fn, options = {}) {
   });
 }
 
-function normalizeMachineState(candidate) {
-  if (typeof candidate === "string") return candidate;
-  if (candidate && typeof candidate === "object" && typeof candidate.value === "string") {
-    return candidate.value;
-  }
-  return null;
-}
-
 function resetReadyTrace() {
   if (typeof window === "undefined") return;
   safeRound(
@@ -188,15 +180,7 @@ export async function handleReplay(store) {
       createBattleEngine();
     }
   };
-  safeRound("handleReplay.ensureEngine", () => ensureEngine(), {
-    fallback: () =>
-      safeRound(
-        "handleReplay.ensureEngine.createFallback",
-        () => {
-          createBattleEngine();
-        },
-        { suppressInProduction: true }
-      ),
+  safeRound("handleReplay.ensureEngine", ensureEngine, {
     suppressInProduction: true
   });
   bridgeEngineEvents();
@@ -658,13 +642,8 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
       } else setTimeout(run, 0);
     };
     safeRound("setupOrchestratedReady.deferCheck", () => scheduleCheck(), {
-      fallback: () =>
-        safeRound(
-          "setupOrchestratedReady.deferCheckFallback",
-          () => setTimeout(() => checkImmediate(), 0),
-          { suppressInProduction: true }
-        ),
-      suppressInProduction: true
+      suppressInProduction: true,
+      fallback: () => setTimeout(() => checkImmediate(), 0)
     });
   }
 }
@@ -686,6 +665,13 @@ function readBattleStateDataset() {
 
 function getMachineState(machine) {
   if (!machine || typeof machine !== "object") return null;
+  const normalizeMachineState = (candidate) => {
+    if (typeof candidate === "string") return candidate;
+    if (candidate && typeof candidate === "object" && typeof candidate.value === "string") {
+      return candidate.value;
+    }
+    return null;
+  };
   const state = safeRound("getMachineState.getState", () => machine.getState?.(), {
     suppressInProduction: true,
     defaultValue: null
@@ -1000,9 +986,11 @@ function finalizeReadyControls(controls, dispatched) {
  * 4. Execute dispatch strategies and finalize control flags
  */
 async function handleNextRoundExpiration(controls, btn, options = {}) {
-  try {
-    appendReadyTrace("handleNextRoundExpiration.start", {});
-  } catch {}
+  safeRound(
+    "handleNextRoundExpiration.traceStart",
+    () => appendReadyTrace("handleNextRoundExpiration.start", {}),
+    { suppressInProduction: true }
+  );
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   const { emitTelemetry, getDebugBag } = createExpirationTelemetryContext();
   if (guardReadyInFlight(controls, emitTelemetry, getDebugBag)) return;
@@ -1035,14 +1023,18 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   });
   if (dispatched) {
     readyDispatchedForCurrentCooldown = true;
-    try {
-      appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true });
-    } catch {}
+    safeRound(
+      "handleNextRoundExpiration.traceDispatched",
+      () => appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true }),
+      { suppressInProduction: true }
+    );
   }
   finalizeReadyControls(controls, dispatched);
-  try {
-    appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched });
-  } catch {}
+  safeRound(
+    "handleNextRoundExpiration.traceEnd",
+    () => appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched }),
+    { suppressInProduction: true }
+  );
   return dispatched;
 }
 
@@ -1331,7 +1323,8 @@ export function _resetForTest(store) {
   } else {
     // In production, always create a fresh engine
     safeRound("_resetForTest.createEngine", () => createBattleEngine(), {
-      suppressInProduction: true
+      suppressInProduction: true,
+      rethrow: true
     });
   }
   bridgeEngineEvents();

@@ -47,7 +47,10 @@ export default defineConfig([
     }
   },
   {
-    files: ["src/helpers/classicBattle/roundManager.js"],
+    // Enforce no-empty catch blocks for the round manager and utilities; remaining
+    // classic battle modules will be migrated incrementally to avoid destabilizing
+    // legacy scaffolding that still relies on empty catch placeholders.
+    files: ["src/helpers/classicBattle/roundManager.js", "src/helpers/classicBattle/utils/**/*.js"],
     rules: {
       "no-empty": ["error", { allowEmptyCatch: false }]
     }

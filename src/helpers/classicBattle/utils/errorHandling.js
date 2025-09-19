@@ -5,7 +5,7 @@ const DEFAULT_SCOPE = "classicBattle";
 const ERROR_HISTORY_KEY = "classicBattleErrors";
 const ERROR_HISTORY_LIMIT = 25;
 const ENV = typeof process !== "undefined" && process.env ? process.env : {};
-const IS_PRODUCTION = ENV.NODE_ENV === "production";
+const IS_PRODUCTION = String(ENV.NODE_ENV || "").toLowerCase() === "production";
 
 function isPromiseLike(value) {
   return !!value && typeof value === "object" && typeof value.then === "function";
@@ -51,9 +51,10 @@ function pushDebugEntry(entry, context) {
   }
   if (typeof globalThis !== "undefined") {
     const bagKey = "__CLASSIC_BATTLE_ERROR_LOG";
-    const bag = Array.isArray(globalThis[bagKey]) ? globalThis[bagKey] : [];
-    bag.push(entry);
-    globalThis[bagKey] = bag.slice(-ERROR_HISTORY_LIMIT);
+    const existingLog = Array.isArray(globalThis[bagKey]) ? globalThis[bagKey] : [];
+    const trimmed = existingLog.slice(-ERROR_HISTORY_LIMIT + 1);
+    trimmed.push(entry);
+    globalThis[bagKey] = trimmed;
   }
 }
 
