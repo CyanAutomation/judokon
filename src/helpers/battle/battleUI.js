@@ -14,6 +14,42 @@ import { isEnabled } from "../featureFlags.js";
 
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
+function scheduleImmediate(callback) {
+  if (typeof globalThis?.requestAnimationFrame === "function") {
+    const rafId = globalThis.requestAnimationFrame(() => {
+      callback();
+    });
+    return () => {
+      try {
+        globalThis.cancelAnimationFrame?.(rafId);
+      } catch {}
+    };
+  }
+  if (typeof globalThis?.queueMicrotask === "function") {
+    let cancelled = false;
+    globalThis.queueMicrotask(() => {
+      if (cancelled) return;
+      cancelled = true;
+      callback();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }
+  if (typeof globalThis?.setTimeout === "function") {
+    const timeoutId = globalThis.setTimeout(() => {
+      callback();
+    }, 0);
+    return () => {
+      try {
+        globalThis.clearTimeout?.(timeoutId);
+      } catch {}
+    };
+  }
+  callback();
+  return () => {};
+}
+
 /**
  * Return the stat button elements used in the Classic Battle UI.
  *
@@ -75,16 +111,49 @@ export function resetStatButtons(
     btn.style.removeProperty("background-color");
     btn.disabled = true;
     void btn.offsetWidth;
-    let frameId = 0;
-    if (isEnabled("enableTestMode")) {
+    const enableButton = () => {
       btn.disabled = false;
-    } else {
+      btn.style.backgroundColor = "";
+      btn.blur();
+    };
+    if (isEnabled("enableTestMode")) {
+      enableButton();
+      return;
+    }
+    let didRun = false;
+    const runEnableOnce = () => {
+      if (didRun) return;
+      didRun = true;
+      enableButton();
+    };
+    let cancelFallback = scheduleImmediate(runEnableOnce);
+    const runAndCancelFallback = () => {
+      if (typeof cancelFallback === "function") {
+        try {
+          cancelFallback();
+        } catch {}
+        cancelFallback = undefined;
+      }
+      runEnableOnce();
+    };
+    if (typeof onFrame !== "function") {
+      runAndCancelFallback();
+      return;
+    }
+    let frameId;
+    try {
       frameId = onFrame(() => {
-        btn.disabled = false;
-        btn.style.backgroundColor = "";
-        btn.blur();
-        cancel(frameId);
+        runAndCancelFallback();
+        if (typeof cancel === "function" && typeof frameId === "number" && !Number.isNaN(frameId)) {
+          cancel(frameId);
+        }
       });
+    } catch {
+      runAndCancelFallback();
+      return;
+    }
+    if (typeof frameId !== "number" || Number.isNaN(frameId)) {
+      runAndCancelFallback();
     }
   });
 }
