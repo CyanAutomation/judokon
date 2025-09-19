@@ -44,10 +44,56 @@ vi.mock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
   })
 }));
 
-vi.mock("../../src/helpers/classicBattle/timerService.js", () => ({
-  startTimer: vi.fn(async () => ({ start: vi.fn(), stop: vi.fn() })),
-  onNextButtonClick: vi.fn()
-}));
+vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
+  let resolveReady;
+  const resetReadyPromise = () =>
+    new Promise((resolve) => {
+      resolveReady = resolve;
+    });
+  let readyPromise = resetReadyPromise();
+
+  const attachButtonHandlers = (onSelect) => {
+    const container = document.getElementById("stat-buttons");
+    if (!container) return;
+    const buttons = Array.from(
+      container.querySelectorAll("button[data-stat], button:not([data-ignore])")
+    );
+    const nextButton = document.getElementById("next-button");
+    if (nextButton) {
+      nextButton.disabled = true;
+      nextButton.removeAttribute("data-next-ready");
+    }
+    const handleSelection = async (btn) => {
+      await onSelect(btn.dataset.stat || "power", {});
+      if (nextButton) {
+        nextButton.disabled = false;
+        nextButton.setAttribute("data-next-ready", "true");
+      }
+      resolveReady?.();
+    };
+    buttons.forEach((btn) => {
+      const listener = () => {
+        handleSelection(btn);
+      };
+      btn.addEventListener("click", listener, { once: true });
+      btn.click = listener;
+    });
+  };
+
+  const startTimer = vi.fn(async (onSelect) => {
+    readyPromise = resetReadyPromise();
+    attachButtonHandlers(onSelect);
+    return { start: vi.fn(), stop: vi.fn() };
+  });
+
+  const getNextRoundControls = vi.fn(() => ({ ready: readyPromise }));
+
+  return {
+    startTimer,
+    onNextButtonClick: vi.fn(),
+    getNextRoundControls
+  };
+});
 
 vi.mock("../../src/helpers/timerUtils.js", () => ({
   createCountdownTimer: vi.fn((_, hooks = {}) => ({
@@ -70,9 +116,12 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
   const startCooldown = vi.fn();
 
   const startRound = vi.fn(async (store, applyRoundUI) => {
-    if (typeof applyRoundUI === "function") {
-      applyRoundUI(store, 1);
-    }
+    const container = document.getElementById("stat-buttons");
+    const buttons = container ? Array.from(container.querySelectorAll("button")) : [];
+    buttons.forEach((btn) => {
+      btn.disabled = false;
+      btn.removeAttribute("disabled");
+    });
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
     await startTimer(async (stat, opts = {}) => {
       const { handleStatSelection } = await import(
@@ -80,6 +129,7 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
       );
       return handleStatSelection(store, stat, opts);
     }, store);
+    window.__statControls?.enable?.();
   });
 
   return {
@@ -196,13 +246,16 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
       getButtons().forEach((btn) => {
         btn.disabled = false;
         btn.tabIndex = 0;
+        btn.removeAttribute("disabled");
       });
       if (container) container.dataset.buttonsReady = "true";
       signalReady();
     });
 
     disable();
-    return { enable, disable };
+    const controls = { enable, disable };
+    window.__statControls = controls;
+    return controls;
   });
 
   return {
@@ -400,6 +453,8 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       const statControls = initStatButtons(store);
       expect(initStatButtons).toHaveBeenCalled();
       await battleMod.startRound(store, battleMod.applyRoundUI);
+      const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
+      expect(startTimer).toHaveBeenCalled();
       return { container: statContainer, statControls };
     }
 
@@ -417,8 +472,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         await (window.statButtonsReadyPromise ?? Promise.resolve());
         const buttons = container.querySelectorAll("button[data-stat]");
         expect(buttons.length).toBeGreaterThan(0);
-        console.log("[debug] container", container.innerHTML);
-        console.log("[debug] button states", Array.from(buttons).map((b) => b.disabled));
         buttons.forEach((b) => expect(b.disabled).toBe(false));
 
         const { getRoundResolvedPromise } = await import(

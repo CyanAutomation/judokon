@@ -212,4 +212,3 @@ Suggested next steps:
 * Implement items 1 and 2 this sprint (pack the RAF helper and shared mocks into `tests/utils/`), and update the handful of failing tests to use them.
 * Publish the fake-timer playbook and update CI docs.
 * Schedule a design spike for the centralized round store and scheduler hooks (item 7 and 8) to produce a migration plan.
-
