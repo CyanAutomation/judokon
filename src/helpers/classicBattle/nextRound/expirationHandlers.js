@@ -95,13 +95,20 @@ export function createMachineReader(options = {}, dependencies = {}) {
   const globalReader = typeof debugRead === "function" ? debugRead : undefined;
   if (typeof getClassicBattleMachine === "function") {
     return () => {
+      let machine = null;
       try {
-        const machine = getClassicBattleMachine();
-        emitTelemetry?.("handleNextRoundMachineGetterOverride", machine);
-        return machine;
+        machine = getClassicBattleMachine();
       } catch {
-        return null;
+        machine = null;
       }
+      emitTelemetry?.("handleNextRoundMachineGetter", {
+        sourceReadDebug: typeof getClassicBattleMachine,
+        hasGlobal: typeof globalReader === "function",
+        override: true
+      });
+      emitTelemetry?.("handleNextRoundMachineGetterOverride", machine);
+      emitTelemetry?.("handleNextRoundMachineGetterResult", machine);
+      return machine;
     };
   }
   return () => {

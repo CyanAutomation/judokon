@@ -13,3 +13,29 @@
 1. Update `createMachineReader()` (or its override branch) so it still records `handleNextRoundMachineGetter` telemetry with a `sourceReadDebug` value when an explicit getter override is provided.
 2. Ensure the telemetry payload mirrors the previous structure (`{ sourceReadDebug: "function", hasGlobal: ... }`) to satisfy the test expectations.
 3. Re-run `tests/helpers/classicBattle/scheduleNextRound.test.js` to confirm the assertion passes and verify no regressions in the broader suite as needed.
+
+## Task Contract
+{
+  "inputs": [
+    "src/helpers/classicBattle/nextRound/expirationHandlers.js",
+    "tests/helpers/classicBattle/scheduleNextRound.test.js"
+  ],
+  "outputs": [
+    "src/helpers/classicBattle/nextRound/expirationHandlers.js",
+    "progressCodex.md"
+  ],
+  "success": [
+    "eslint: PASS",
+    "vitest: targeted tests PASS",
+    "no_unsilenced_console"
+  ],
+  "errorMode": "ask_on_public_api_change"
+}
+
+### Step 1: Context prep
+- Confirmed failing assertion relies on telemetry emitted from `createMachineReader()`.
+- Ready to modify override branch to emit the expected payload before returning.
+
+### Step 2: Implement telemetry fix
+- Added `handleNextRoundMachineGetter` emission in the override branch so `sourceReadDebug` is recorded as `"function"`.
+- Override path now also emits the result telemetry to mirror the fallback path.
