@@ -21,6 +21,31 @@ Why this duplicates: the first dispatch bypasses the centralized dispatcher and 
   - Triggers the cooldown expiry path and asserts `machine.dispatch` is called exactly once and that the dispatcher path was used (i.e., the centralized dispatcher spy observed the call).
   - Optionally asserts `readyDispatchedForCurrentCooldown` ends up true and that retry behavior still occurs when the first central dispatch fails (see Phase 2 test extension).
 
+Actions taken (this session):
+
+- Added a focused unit test: `tests/roundManager.cooldown-ready.spec.js` which exercises two scenarios:
+  - Scenario A: an injected `dispatchBattleEvent` override is provided (expect `machine.dispatch` not to be called).
+  - Scenario B: no injected dispatcher; a global getter (`__classicBattleDebugRead`) is provided so the centralized dispatcher can locate the machine (expect duplicate dispatch in the original report).
+- Ran the single test file with Vitest. Command executed:
+
+  npx vitest run tests/roundManager.cooldown-ready.spec.js --run
+
+Observed outcome:
+
+- Scenario A: `machine.dispatch` calls = 0 (injected dispatcher path observed).
+- Scenario B: `machine.dispatch` calls = 1 (only one direct dispatch observed in this run, not the double dispatch described in the initial report).
+
+Interpretation:
+
+- The test reproduces an orchestrated path where an injected dispatcher is used (A).
+- The hypothesised double-dispatch (finalize -> direct machine.dispatch, then centralized dispatcher -> machine.dispatch again) did not occur deterministically in this environment; we observed a single `machine.dispatch` call for scenario B. This suggests the duplication may be timing-dependent or happens under different integration conditions (different scheduler, real engine timer, or specific engine `startCooldown` behavior).
+
+Next steps (Phase 1 follow-ups):
+
+- Add temporary runtime tracing (we already have `appendReadyTrace`) in both `finalize` and `dispatchReadyViaBus` to capture exact ordering and whether the centralized dispatcher path executed machine.dispatch in the same tick.
+- Extend the Vitest test to vary timing: run with real-ish timer behavior, with injected engine `startCoolDown` path, and with both injected and missing `dispatchBattleEvent` to map conditions that produce the duplicate dispatch.
+- If duplication can be reproduced reliably, proceed to Phase 2 code edits and re-run the tests.
+
 ### Phase 2 — remediation (concrete changes)
 
 Suggested code changes (small, targeted):
