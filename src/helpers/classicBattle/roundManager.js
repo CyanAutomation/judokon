@@ -1094,7 +1094,9 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     if (typeof TimerCtor !== "function") {
       return callEngineStart(engineInstance, onTick, onExpired, dur, onDrift);
     }
-    const timerOptions = { ...(typeof originalTimer === "object" && originalTimer ? originalTimer : {}) };
+    const timerOptions = {
+      ...(typeof originalTimer === "object" && originalTimer ? originalTimer : {})
+    };
     if (scheduler) timerOptions.scheduler = scheduler;
     if (typeof originalTimer.onSecondTick === "function") {
       timerOptions.onSecondTick = originalTimer.onSecondTick;
@@ -1119,13 +1121,17 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       if (restoreTimer && temporaryTimer && typeof restoreTimer === "object") {
         try {
           Object.assign(restoreTimer, temporaryTimer);
-        } catch {}
+        } catch {
+          // Ignore assignment failures because some timer implementations expose read-only properties in certain environments.
+        }
       }
       engineInstance.timer = restoreTimer;
       if (!startedSuccessfully && temporaryTimer && typeof temporaryTimer.stop === "function") {
         try {
           temporaryTimer.stop();
-        } catch {}
+        } catch {
+          // Ignore stop failures when timers do not allow manual cancellation in specific runtimes.
+        }
       }
     }
   };
