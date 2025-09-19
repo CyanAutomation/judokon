@@ -147,8 +147,8 @@ vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
   }))
 }));
 
-vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
-  handleStatSelection: vi.fn(async () => {
+vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => {
+  const handleStatSelection = vi.fn(async (...args) => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("roundResolved");
     return {
@@ -156,8 +156,12 @@ vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => ({
       opponentScore: 0,
       matchEnded: false
     };
-  })
-}));
+  });
+  if (typeof window !== "undefined") {
+    window.__selectionHandlerMock = handleStatSelection;
+  }
+  return { handleStatSelection };
+});
 
 vi.mock("../../src/helpers/classicBattle/statButtons.js", () => ({
   setStatButtonsEnabled: vi.fn(),
@@ -214,45 +218,155 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
   const showFatalInitError = vi.fn();
   const setupNextButton = vi.fn();
 
-  const initStatButtons = vi.fn(() => {
-    const container = document.getElementById("stat-buttons");
+  const initStatButtons = vi.fn((store) => {
+    const buttons = Array.from(
+      document.querySelectorAll(
+        "#stat-buttons button[data-stat], #stat-buttons button:not([data-ignore])"
+      )
+    );
+    let containers =
+      buttons.length > 0
+        ? Array.from(
+            new Set(
+              buttons
+                .map((btn) => btn.closest("#stat-buttons"))
+                .filter((el) => el instanceof HTMLElement)
+            )
+          )
+        : Array.from(document.querySelectorAll("#stat-buttons"));
 
-    const getButtons = () => (container ? Array.from(container.querySelectorAll("button")) : []);
+    const targetContainer = containers[0] ?? null;
+    if (targetContainer) {
+      document.querySelectorAll("#stat-buttons").forEach((el) => {
+        if (el !== targetContainer) {
+          el.remove();
+        }
+      });
+      containers = [targetContainer];
+    }
 
-    const createReadyPromise = () =>
-      new Promise((resolve) => {
+    if (containers.length === 0 || buttons.length === 0) {
+      const enable = vi.fn(() => {
+        window.statButtonsReadyPromise = Promise.resolve();
+      });
+      const disable = vi.fn(() => {
+        window.statButtonsReadyPromise = Promise.resolve();
+      });
+      const controls = { enable, disable };
+      window.__statControls = controls;
+      window.statButtonsReadyPromise = Promise.resolve();
+      window.__resolveStatButtonsReady = undefined;
+      return controls;
+    }
+
+    let resolveReady;
+    const setPendingReadyPromise = () => {
+      window.statButtonsReadyPromise = new Promise((resolve) => {
+        resolveReady = resolve;
         window.__resolveStatButtonsReady = resolve;
       });
+    };
 
-    const signalReady = () => {
-      if (typeof window.__resolveStatButtonsReady === "function") {
-        window.__resolveStatButtonsReady();
+    const resolveReadyPromise = () => {
+      if (typeof resolveReady === "function") {
+        const resolver = resolveReady;
+        resolveReady = undefined;
         window.__resolveStatButtonsReady = undefined;
-      } else {
+        resolver();
+      } else if (!window.statButtonsReadyPromise) {
         window.statButtonsReadyPromise = Promise.resolve();
       }
     };
 
     const disable = vi.fn(() => {
-      getButtons().forEach((btn) => {
+      buttons.forEach((btn) => {
         btn.disabled = true;
         btn.tabIndex = -1;
       });
-      if (container) container.dataset.buttonsReady = "false";
-      window.statButtonsReadyPromise = createReadyPromise();
+      containers.forEach((el) => {
+        el.dataset.buttonsReady = "false";
+      });
+      setPendingReadyPromise();
     });
 
     const enable = vi.fn(() => {
-      getButtons().forEach((btn) => {
+      buttons.forEach((btn) => {
         btn.disabled = false;
         btn.tabIndex = 0;
         btn.removeAttribute("disabled");
       });
-      if (container) container.dataset.buttonsReady = "true";
-      signalReady();
+      containers.forEach((el) => {
+        el.dataset.buttonsReady = "true";
+      });
+      resolveReadyPromise();
     });
 
+    const nativeClick = typeof HTMLElement !== "undefined" ? HTMLElement.prototype.click : undefined;
+
+    const attachHandlers = () => {
+      buttons.forEach((btn) => {
+        let assignedClick;
+        let runningFromProxy = false;
+
+        const runSelection = async (event) => {
+          event?.preventDefault?.();
+          const stat = btn.dataset.stat || btn.getAttribute("data-stat") || "power";
+          let handler = window.__selectionHandlerMock;
+          if (!handler) {
+            const mod = await import("../../src/helpers/classicBattle/selectionHandler.js");
+            handler = mod.handleStatSelection;
+            window.__selectionHandlerMock = handler;
+          }
+          await handler(store, stat, {});
+          const { emitBattleEvent } = await import(
+            "../../src/helpers/classicBattle/battleEvents.js"
+          );
+          emitBattleEvent("roundResolved", { stat });
+          disable();
+        };
+
+        const proxyClick = async (event) => {
+          runningFromProxy = true;
+          try {
+            await runSelection(event);
+            if (assignedClick) {
+              return assignedClick(event);
+            }
+            if (nativeClick) {
+              return nativeClick.call(btn);
+            }
+            return undefined;
+          } finally {
+            runningFromProxy = false;
+          }
+        };
+
+        btn.addEventListener("click", (event) => {
+          if (!runningFromProxy) {
+            void runSelection(event);
+          }
+        });
+
+        Object.defineProperty(btn, "click", {
+          configurable: true,
+          enumerable: false,
+          get() {
+            return proxyClick;
+          },
+          set(value) {
+            if (typeof value === "function") {
+              assignedClick = value.bind(btn);
+            } else {
+              assignedClick = undefined;
+            }
+          }
+        });
+      });
+    };
+
+    attachHandlers();
     disable();
+
     const controls = { enable, disable };
     window.__statControls = controls;
     return controls;
