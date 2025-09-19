@@ -316,7 +316,13 @@ let readyDispatchedForCurrentCooldown = false;
  */
 /**
  * @summary Schedule the cooldown before the next round and expose controls for the Next button.
+ * @summary Schedule the cooldown before the next round and expose controls for the Next button.
  *
+ * @pseudocode
+ * 1. Reset readiness tracking, determine the active scheduler, and capture orchestration context for telemetry.
+ * 2. Build the event bus and cooldown controls, wiring DOM readiness handlers when the UI is not orchestrated.
+ * 3. Compute the cooldown duration, emit countdown events, and configure helpers and timers for orchestrated or default flows.
+ * 4. Persist the resulting controls for later retrieval and surface them through debug state before returning.
  * @pseudocode
  * 1. Reset readiness tracking, determine the active scheduler, and capture orchestration context for telemetry.
  * 2. Build the event bus and cooldown controls, wiring DOM readiness handlers when the UI is not orchestrated.
@@ -428,7 +434,12 @@ export function startCooldown(_store, scheduler, overrides = {}) {
 
 /**
  * @summary Expose the active cooldown controls for Next button helpers.
+ * @summary Expose the active cooldown controls for Next button helpers.
  *
+ * @pseudocode
+ * 1. Return the cached `currentNextRound` controls when a cooldown is active.
+ * 2. When controls are missing, inspect the Next button to fabricate resolved controls if it already signals readiness.
+ * 3. Otherwise return `null` to indicate no cooldown is running.
  * @pseudocode
  * 1. Return the cached `currentNextRound` controls when a cooldown is active.
  * 2. When controls are missing, inspect the Next button to fabricate resolved controls if it already signals readiness.
@@ -1427,6 +1438,7 @@ export function _resetForTest(store) {
 }
 
 /**
+ * @summary Reset the Classic Battle match state and UI via the shared test helper.
  * @summary Reset the Classic Battle match state and UI via the shared test helper.
  *
  * Alias of `_resetForTest` used by orchestrator and other callers.
