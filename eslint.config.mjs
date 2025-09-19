@@ -46,6 +46,12 @@ export default defineConfig([
       }
     }
   },
+  {
+    files: ["src/helpers/classicBattle/roundManager.js"],
+    rules: {
+      "no-empty": ["error", { allowEmptyCatch: false }]
+    }
+  },
   // YAML support (GitHub Actions, config files)
   // Use plugin-provided flat configs for sensible defaults
   ymlPlugin.configs["flat/standard"],

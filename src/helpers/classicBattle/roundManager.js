@@ -31,6 +31,7 @@ import {
   runReadyDispatchStrategies,
   updateExpirationUi
 } from "./nextRound/expirationHandlers.js";
+import { safeInvoke } from "./utils/errorHandling.js";
 
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
@@ -56,23 +57,56 @@ export { setupFallbackTimer } from "./timerService.js";
 
 const READY_TRACE_KEY = "nextRoundReadyTrace";
 
+// Error handling policy: avoid silent catch blocks in this module. Always use
+// `safeRound()` (or `safeInvoke`) so diagnostics flow through the shared
+// logging channel.
+const ERROR_SCOPE = "classicBattle.roundManager";
+
+function createErrorContext(operation, context = {}) {
+  return { scope: ERROR_SCOPE, operation, ...context };
+}
+
+function safeRound(operation, fn, options = {}) {
+  const { context, ...rest } = options;
+  return safeInvoke(fn, {
+    ...rest,
+    context: createErrorContext(operation, context)
+  });
+}
+
+function normalizeMachineState(candidate) {
+  if (typeof candidate === "string") return candidate;
+  if (candidate && typeof candidate === "object" && typeof candidate.value === "string") {
+    return candidate.value;
+  }
+  return null;
+}
+
 function resetReadyTrace() {
-  try {
-    if (typeof window === "undefined") return;
-    exposeDebugState(READY_TRACE_KEY, []);
-    exposeDebugState("nextRoundReadyTraceLast", null);
-  } catch {}
+  if (typeof window === "undefined") return;
+  safeRound(
+    "resetReadyTrace",
+    () => {
+      exposeDebugState(READY_TRACE_KEY, []);
+      exposeDebugState("nextRoundReadyTraceLast", null);
+    },
+    { suppressInProduction: true }
+  );
 }
 
 function appendReadyTrace(event, details = {}) {
-  try {
-    if (typeof window === "undefined") return;
-    const entry = { event, at: Date.now(), ...details };
-    const existing = readDebugState(READY_TRACE_KEY);
-    const next = Array.isArray(existing) ? [...existing, entry] : [entry];
-    exposeDebugState(READY_TRACE_KEY, next);
-    exposeDebugState("nextRoundReadyTraceLast", entry);
-  } catch {}
+  if (typeof window === "undefined") return;
+  safeRound(
+    "appendReadyTrace",
+    () => {
+      const entry = { event, at: Date.now(), ...details };
+      const existing = readDebugState(READY_TRACE_KEY);
+      const next = Array.isArray(existing) ? [...existing, entry] : [entry];
+      exposeDebugState(READY_TRACE_KEY, next);
+      exposeDebugState("nextRoundReadyTraceLast", entry);
+    },
+    { suppressInProduction: true }
+  );
 }
 
 /**
@@ -120,11 +154,21 @@ function getStartRound(store) {
  * test debug APIs).
  *
  * @summary Reset match state and UI, then begin a new round.
+<<<<<<< HEAD
  *
  * @pseudocode
  * 1. Ensure a battle engine exists by probing `battleEngine.getScores()` and calling `createBattleEngine()` when needed, then rebind events with `bridgeEngineEvents()`.
  * 2. Dispatch `game:reset-ui` and zero the scoreboard so UI surfaces show a fresh match state.
  * 3. Resolve the `startRound` implementation (allowing debug overrides), await its result, then reaffirm zeroed scores before returning.
+=======
+ * @pseudocode
+ * 1. Attempt to reuse an existing engine instance; create one when missing.
+ * 2. Bridge engine events and notify listeners that the UI should reset.
+ * 3. Emit a scoreboard reset, start a new round, and normalize the score view.
+ * 1. Create a fresh engine instance via `createBattleEngine()` and rebind engine events with `bridgeEngineEvents()`.
+ * 2. Emit a `game:reset-ui` CustomEvent so UI components can teardown.
+ * 3. Resolve the appropriate `startRound` function (possibly overridden) and call it.
+>>>>>>> 9fe756b544bab0ec8fe330bfa28f6e762c0bdae0
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
@@ -133,44 +177,62 @@ export async function handleReplay(store) {
   // Only create a new engine when one does not already exist. Tests call
   // `_resetForTest` frequently; unconditionally recreating the engine here
   // resets match-level scores and causes cumulative score tests to fail.
-  try {
-    // `battleEngine` is the imported facade namespace; calling a thin
-    // accessor like `getScores()` will throw when no engine exists.
+  const ensureEngine = () => {
     if (typeof battleEngine.getScores === "function") {
-      try {
-        battleEngine.getScores();
-      } catch {
-        // Engine missing -> create one
-        createBattleEngine();
-      }
+      safeRound(
+        "handleReplay.ensureEngine.check",
+        () => {
+          battleEngine.getScores();
+        },
+        {
+          fallback: () => {
+            createBattleEngine();
+            return null;
+          },
+          suppressInProduction: true
+        }
+      );
     } else {
-      // Fallback: if accessor missing, conservatively create an engine.
       createBattleEngine();
     }
-  } catch {
-    try {
-      createBattleEngine();
-    } catch {}
-  }
+  };
+  safeRound("handleReplay.ensureEngine", () => ensureEngine(), {
+    fallback: () =>
+      safeRound(
+        "handleReplay.ensureEngine.createFallback",
+        () => {
+          createBattleEngine();
+        },
+        { suppressInProduction: true }
+      ),
+    suppressInProduction: true
+  });
   bridgeEngineEvents();
-  window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
+  if (typeof window !== "undefined") {
+    safeRound(
+      "handleReplay.dispatchResetEvent",
+      () => window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } })),
+      { suppressInProduction: true }
+    );
+  }
   // Explicitly reset displayed scores to 0 after recreating the engine so
   // the scoreboard model reflects the fresh match state immediately.
-  try {
-    emitBattleEvent("display.score.update", { player: 0, opponent: 0 });
-  } catch {}
-  try {
-    scoreboard.updateScore(0, 0);
-  } catch {}
+  safeRound(
+    "handleReplay.emitScoreReset",
+    () => emitBattleEvent("display.score.update", { player: 0, opponent: 0 }),
+    { suppressInProduction: true }
+  );
+  const updateScoreboard = (operation) =>
+    safeRound(operation, () => scoreboard.updateScore(0, 0), { suppressInProduction: true });
+  updateScoreboard("handleReplay.scoreboardInitialReset");
   const startRoundFn = getStartRound(store);
   const res = await startRoundFn();
-  try {
-    scoreboard.updateScore(0, 0);
-  } catch {}
+  updateScoreboard("handleReplay.scoreboardPostStart");
   return res;
 }
 
 /**
+<<<<<<< HEAD
  * @summary Prepare and announce the next battle round.
  *
  * @pseudocode
@@ -183,6 +245,20 @@ export async function handleReplay(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store to mutate with round data.
  * @param {(store: ReturnType<typeof createBattleStore>, roundNumber: number) => void} [onRoundStart] - Callback invoked once the round is ready.
  * @returns {Promise<ReturnType<typeof drawCards> & { roundNumber: number }>} Drawn card data augmented with the round number.
+=======
+ * Initiates a new battle round, setting its state to active and recording the start time.
+ * It also increments the round number and clears any events from previous rounds.
+ * @param {number} roundNum - The number of the round to start.
+ * SET roundState to ACTIVE
+ * SET roundNumber to roundNum
+ * SET roundStartTime to current timestamp
+ * CLEAR roundEvents
+ * @pseudocode
+ * 1. Reset store selection state and draw fresh cards.
+ * 2. Query the engine for rounds played to determine the next round number.
+ * 3. Invoke any provided round-start hook and emit battle events.
+ * @returns {Promise<{ roundNumber: number, playerJudoka: any, opponentJudoka: any }>} next round payload
+>>>>>>> 9fe756b544bab0ec8fe330bfa28f6e762c0bdae0
  */
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
@@ -192,15 +268,19 @@ export async function startRound(store, onRoundStart) {
   const cards = await drawCards();
   store.currentPlayerJudoka = cards.playerJudoka || null;
   let roundNumber = 1;
-  try {
-    const fn = battleEngine.getRoundsPlayed;
-    const played = typeof fn === "function" ? Number(fn()) : 0;
-    if (Number.isFinite(played)) roundNumber = played + 1;
-  } catch {}
+  safeRound(
+    "startRound.resolveRoundNumber",
+    () => {
+      const fn = battleEngine.getRoundsPlayed;
+      const played = typeof fn === "function" ? Number(fn()) : 0;
+      if (Number.isFinite(played)) roundNumber = played + 1;
+    },
+    { suppressInProduction: true }
+  );
   if (typeof onRoundStart === "function") {
-    try {
-      onRoundStart(store, roundNumber);
-    } catch {}
+    safeRound("startRound.onRoundStart", () => onRoundStart(store, roundNumber), {
+      suppressInProduction: true
+    });
   }
   emitBattleEvent("roundStarted", { store, roundNumber });
   // Attach scheduler to store for downstream use
@@ -246,6 +326,10 @@ let readyDispatchedForCurrentCooldown = false;
  * @param {ReturnType<typeof createBattleStore>} _store - Battle state store.
  * @param {typeof realScheduler} [scheduler=realScheduler] - Scheduler for timers.
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}}
+ * @pseudocode
+ * 1. Reset cooldown diagnostics and build event bus/controls.
+ * 2. Wire orchestrated or standard ready handlers based on context.
+ * 3. Start timers, expose debug state, and return the cooldown controls.
  */
 export function startCooldown(_store, scheduler, overrides = {}) {
   console.debug("[DEBUG] startCooldown invoked!");
@@ -294,11 +378,14 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   const cooldownSeconds = computeNextRoundCooldown();
   appendReadyTrace("cooldownDurationResolved", { seconds: cooldownSeconds });
   // PRD taxonomy: announce countdown start
-  try {
-    bus.emit("control.countdown.started", {
-      durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000
-    });
-  } catch {}
+  safeRound(
+    "startCooldown.emitCountdownStarted",
+    () =>
+      bus.emit("control.countdown.started", {
+        durationMs: Math.max(0, Number(cooldownSeconds) || 0) * 1000
+      }),
+    { suppressInProduction: true }
+  );
   const helperOptions = {
     eventBus: bus,
     markReady: overrides.markReady,
@@ -318,19 +405,24 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     setupOrchestratedReady(controls, orchestratorMachine, btn, {
       eventBus: bus,
       scheduler: activeScheduler,
-      markReady: overrides.markReady
+      markReady: overrides.markReady,
+      dispatchBattleEvent: overrides.dispatchBattleEvent || dispatchBattleEvent
     });
     wireCooldownTimer(controls, btn, cooldownSeconds, activeScheduler, helperOptions);
   } else {
     wireCooldownTimer(controls, btn, cooldownSeconds, activeScheduler, helperOptions);
   }
   currentNextRound = controls;
-  try {
-    exposeDebugState("currentNextRound", controls);
-  } catch {}
-  try {
-    exposeDebugState("startCooldownCalled", true);
-  } catch {}
+  safeRound(
+    "startCooldown.exposeCurrentNextRound",
+    () => exposeDebugState("currentNextRound", controls),
+    { suppressInProduction: true }
+  );
+  safeRound(
+    "startCooldown.flagStartCooldownCalled",
+    () => exposeDebugState("startCooldownCalled", true),
+    { suppressInProduction: true }
+  );
   return controls;
 }
 
@@ -343,22 +435,31 @@ export function startCooldown(_store, scheduler, overrides = {}) {
  * 3. Otherwise return `null` to indicate no cooldown is running.
  *
  * @returns {{timer: ReturnType<typeof createRoundTimer>|null, resolveReady: (()=>void)|null, ready: Promise<void>|null}|null}
+ * @pseudocode
+ * 1. Return existing cooldown controls when present.
+ * 2. Otherwise inspect the DOM for a ready button state and fabricate controls when needed.
  */
 export function getNextRoundControls() {
   if (currentNextRound) return currentNextRound;
   // Fabricate controls when the button already indicates readiness. This keeps
   // E2E deterministic even when adapters are not bound and allows callers to
   // observe a resolved `ready` signal consistent with the UI state.
-  try {
-    const btn =
-      typeof document !== "undefined"
-        ? document.getElementById("next-button") ||
-          document.querySelector('[data-role="next-round"]')
-        : null;
-    if (btn && (btn.getAttribute("data-next-ready") === "true" || btn.disabled === false)) {
-      return { timer: null, resolveReady: () => {}, ready: Promise.resolve() };
-    }
-  } catch {}
+  const fabricated = safeRound(
+    "getNextRoundControls.inspectDom",
+    () => {
+      const btn =
+        typeof document !== "undefined"
+          ? document.getElementById("next-button") ||
+            document.querySelector('[data-role="next-round"]')
+          : null;
+      if (btn && (btn.getAttribute("data-next-ready") === "true" || btn.disabled === false)) {
+        return { timer: null, resolveReady: () => {}, ready: Promise.resolve() };
+      }
+      return null;
+    },
+    { suppressInProduction: true, defaultValue: null }
+  );
+  if (fabricated) return fabricated;
   return null;
 }
 
@@ -374,17 +475,25 @@ export function getNextRoundControls() {
 function detectOrchestratorContext() {
   let orchestrated = false;
   let machine = null;
-  try {
-    orchestrated = isOrchestrated();
-  } catch {}
-  try {
-    const getter = readDebugState("getClassicBattleMachine");
-    const candidate = typeof getter === "function" ? getter() : getter;
-    if (candidate) {
-      machine = candidate;
-      orchestrated = orchestrated || true;
-    }
-  } catch {}
+  safeRound(
+    "detectOrchestratorContext.isOrchestrated",
+    () => {
+      orchestrated = isOrchestrated();
+    },
+    { suppressInProduction: true }
+  );
+  safeRound(
+    "detectOrchestratorContext.readMachine",
+    () => {
+      const getter = readDebugState("getClassicBattleMachine");
+      const candidate = typeof getter === "function" ? getter() : getter;
+      if (candidate) {
+        machine = candidate;
+        orchestrated = orchestrated || true;
+      }
+    },
+    { suppressInProduction: true }
+  );
   return { orchestrated, machine };
 }
 
@@ -392,9 +501,9 @@ function setupNonOrchestratedReady(target, scheduler, { eventBus, markReady } = 
   if (!target) return;
   const mark = markReady || markNextReady;
   mark(target);
-  try {
-    eventBus?.emit?.("nextRoundTimerReady");
-  } catch {}
+  safeRound("setupNonOrchestratedReady.emitReady", () => eventBus?.emit?.("nextRoundTimerReady"), {
+    suppressInProduction: true
+  });
   const reapply = () => {
     if (typeof document === "undefined") return;
     const nextBtn = document.getElementById("next-button");
@@ -405,14 +514,29 @@ function setupNonOrchestratedReady(target, scheduler, { eventBus, markReady } = 
     const fallback = document.querySelector('[data-role="next-round"]');
     if (fallback) mark(fallback);
   };
-  try {
-    scheduler.setTimeout(() => reapply(), 0);
-    scheduler.setTimeout(() => reapply(), 20);
-  } catch {
-    try {
-      setTimeout(() => reapply(), 0);
-      setTimeout(() => reapply(), 20);
-    } catch {}
+  const scheduleGlobal = () => {
+    setTimeout(() => reapply(), 0);
+    setTimeout(() => reapply(), 20);
+  };
+  if (scheduler && typeof scheduler.setTimeout === "function") {
+    safeRound(
+      "setupNonOrchestratedReady.schedulerTimeout",
+      () => {
+        scheduler.setTimeout(() => reapply(), 0);
+        scheduler.setTimeout(() => reapply(), 20);
+      },
+      {
+        fallback: () =>
+          safeRound("setupNonOrchestratedReady.globalTimeoutFallback", () => scheduleGlobal(), {
+            suppressInProduction: true
+          }),
+        suppressInProduction: true
+      }
+    );
+  } else {
+    safeRound("setupNonOrchestratedReady.globalTimeout", () => scheduleGlobal(), {
+      suppressInProduction: true
+    });
   }
 }
 
@@ -443,47 +567,54 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
     // when provided (used in tests), otherwise call the machine dispatch
     // if available. Do this in a fire-and-forget fashion and mark the
     // ready dispatch flag so downstream logic knows we've dispatched.
-    try {
-      let dispatched = false;
-      if (options && typeof options.dispatchBattleEvent === "function") {
-        try {
+    let dispatched = false;
+    if (options && typeof options.dispatchBattleEvent === "function") {
+      safeRound(
+        "setupOrchestratedReady.finalize.dispatchOverride",
+        () => {
           options.dispatchBattleEvent("ready");
-          // If it returns a promise, don't await it here; tests use spies.
           dispatched = true;
-        } catch {}
-      }
-      if (!dispatched && machine && typeof machine.dispatch === "function") {
-        try {
-          // call but don't await; machine.dispatch in tests is a spy
+        },
+        { suppressInProduction: true }
+      );
+    }
+    if (!dispatched && machine && typeof machine.dispatch === "function") {
+      safeRound(
+        "setupOrchestratedReady.finalize.machineDispatch",
+        () => {
           machine.dispatch("ready");
           dispatched = true;
-        } catch {}
-      }
-      if (dispatched) {
-        readyDispatchedForCurrentCooldown = true;
-        try {
-          appendReadyTrace("finalize.dispatched", { dispatched: true });
-        } catch {}
-      }
-    } catch {}
+        },
+        { suppressInProduction: true }
+      );
+    }
+    if (dispatched) readyDispatchedForCurrentCooldown = true;
   };
   const addListener = (type, handler) => {
     const wrapped = (event) => {
       if (resolved) return;
-      try {
-        handler(event);
-      } catch {}
-    };
-    try {
-      bus.on(type, wrapped);
-      cleanupFns.push(() => {
-        try {
-          bus.off(type, wrapped);
-        } catch {}
+      safeRound(`setupOrchestratedReady.listener.${type}`, () => handler(event), {
+        suppressInProduction: true
       });
-      // Also register with enhanced cleanup registry
-      eventCleanup.registerListener(registry, bus, type, wrapped, `event-${type}`);
-    } catch {}
+    };
+    safeRound(
+      `setupOrchestratedReady.bus.on.${type}`,
+      () => {
+        bus.on(type, wrapped);
+        cleanupFns.push(() =>
+          safeRound(`setupOrchestratedReady.bus.off.${type}`, () => bus.off(type, wrapped), {
+            suppressInProduction: true
+          })
+        );
+        // Also register with enhanced cleanup registry
+        safeRound(
+          `setupOrchestratedReady.registerListener.${type}`,
+          () => eventCleanup.registerListener(registry, bus, type, wrapped, `event-${type}`),
+          { suppressInProduction: true }
+        );
+      },
+      { suppressInProduction: true }
+    );
   };
   if (controls.ready && typeof controls.ready.finally === "function") {
     controls.ready.finally(() => {
@@ -544,17 +675,22 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
   };
   checkImmediate();
   if (!resolved) {
-    try {
+    const scheduleCheck = () => {
       const run = () => checkImmediate();
       if (typeof queueMicrotask === "function") queueMicrotask(run);
       else if (scheduler && typeof scheduler.setTimeout === "function") {
         scheduler.setTimeout(run, 0);
       } else setTimeout(run, 0);
-    } catch {
-      try {
-        setTimeout(() => checkImmediate(), 0);
-      } catch {}
-    }
+    };
+    safeRound("setupOrchestratedReady.deferCheck", () => scheduleCheck(), {
+      fallback: () =>
+        safeRound(
+          "setupOrchestratedReady.deferCheckFallback",
+          () => setTimeout(() => checkImmediate(), 0),
+          { suppressInProduction: true }
+        ),
+      suppressInProduction: true
+    });
   }
 }
 
@@ -563,34 +699,44 @@ function isOrchestratorReadyState(state) {
 }
 
 function readBattleStateDataset() {
-  try {
-    if (typeof document === "undefined" || !document.body) return null;
-    return document.body.dataset?.battleState || null;
-  } catch {
-    return null;
-  }
+  return safeRound(
+    "readBattleStateDataset",
+    () => {
+      if (typeof document === "undefined" || !document.body) return null;
+      return document.body.dataset?.battleState || null;
+    },
+    { suppressInProduction: true, defaultValue: null }
+  );
 }
 
 function getMachineState(machine) {
   if (!machine || typeof machine !== "object") return null;
-  try {
-    const state = machine.getState?.();
-    if (typeof state === "string") return state;
-    if (state && typeof state === "object" && typeof state.value === "string") return state.value;
-  } catch {}
-  try {
-    if (typeof machine.state === "string") return machine.state;
-  } catch {}
-  try {
-    if (typeof machine.currentState === "string") return machine.currentState;
-  } catch {}
-  try {
-    const current = machine.current;
-    if (typeof current === "string") return current;
-    if (current && typeof current === "object" && typeof current.value === "string")
-      return current.value;
-  } catch {}
-  return null;
+  const state = safeRound("getMachineState.getState", () => machine.getState?.(), {
+    suppressInProduction: true,
+    defaultValue: null
+  });
+  const normalizedState = normalizeMachineState(state);
+  if (normalizedState) return normalizedState;
+
+  const directState = safeRound("getMachineState.state", () => machine.state, {
+    suppressInProduction: true,
+    defaultValue: null
+  });
+  const normalizedDirect = normalizeMachineState(directState);
+  if (normalizedDirect) return normalizedDirect;
+
+  const currentState = safeRound("getMachineState.currentState", () => machine.currentState, {
+    suppressInProduction: true,
+    defaultValue: null
+  });
+  const normalizedCurrent = normalizeMachineState(currentState);
+  if (normalizedCurrent) return normalizedCurrent;
+
+  const current = safeRound("getMachineState.current", () => machine.current, {
+    suppressInProduction: true,
+    defaultValue: null
+  });
+  return normalizeMachineState(current);
 }
 
 /**
@@ -604,14 +750,18 @@ function getMachineState(machine) {
  * 4. Return true if either condition is met.
  */
 function isNextButtonReady() {
-  try {
-    if (typeof document === "undefined") return false;
-    const btn = document.getElementById("next-button");
-    if (!btn) return false;
-    if (btn.dataset?.nextReady === "true") return true;
-    if (btn.disabled === false) return true;
-  } catch {}
-  return false;
+  return safeRound(
+    "isNextButtonReady",
+    () => {
+      if (typeof document === "undefined") return false;
+      const btn = document.getElementById("next-button");
+      if (!btn) return false;
+      if (btn.dataset?.nextReady === "true") return true;
+      if (btn.disabled === false) return true;
+      return false;
+    },
+    { suppressInProduction: true, defaultValue: false }
+  );
 }
 
 /**
@@ -623,14 +773,18 @@ function isNextButtonReady() {
  * 3. Log warning with call count and current state (outside Vitest).
  */
 function logStartCooldown() {
-  try {
-    const { state: s } = getStateSnapshot();
-    const count = (readDebugState("startCooldownCount") || 0) + 1;
-    exposeDebugState("startCooldownCount", count);
-    if (!(typeof process !== "undefined" && process.env?.VITEST)) {
-      console.warn(`[test] startCooldown call#${count}: state=${s}`);
-    }
-  } catch {}
+  safeRound(
+    "logStartCooldown",
+    () => {
+      const { state: s } = getStateSnapshot();
+      const count = (readDebugState("startCooldownCount") || 0) + 1;
+      exposeDebugState("startCooldownCount", count);
+      if (!(typeof process !== "undefined" && process.env?.VITEST)) {
+        console.warn(`[test] startCooldown call#${count}: state=${s}`);
+      }
+    },
+    { suppressInProduction: true }
+  );
 }
 
 /**
@@ -665,9 +819,9 @@ function createCooldownControls({ emit } = {}) {
       });
       controls.readyDispatched = true;
       controls.readyInFlight = false;
-      try {
-        notify("nextRoundTimerReady");
-      } catch {}
+      safeRound("createCooldownControls.notifyReady", () => notify("nextRoundTimerReady"), {
+        suppressInProduction: true
+      });
       resolve();
       controls.resolveReady = null;
       appendReadyTrace("resolveReadySettled", { readyDispatched: true });
@@ -681,40 +835,44 @@ function markNextReady(btn) {
   // Be permissive here: in unit tests, transitions can occur very quickly and
   // module isolation can yield differing state snapshots. Mark the Next button
   // as ready unconditionally to reflect that the cooldown has completed.
-  try {
-    btn.disabled = false;
-  } catch {}
-  try {
-    if (btn.dataset) btn.dataset.nextReady = "true";
-  } catch {}
-  try {
-    // Use explicit attribute APIs to avoid relying on property reflection which
-    // can differ in some test harnesses / DOM shims.
-    btn.setAttribute("data-next-ready", "true");
-    btn.removeAttribute("disabled");
-    // Patch: In Vitest, also update [data-role="next-round"] for test DOM
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      const testBtn = document.querySelector('[data-role="next-round"]');
-      if (testBtn && testBtn !== btn) {
-        try {
+  safeRound(
+    "markNextReady.enableButton",
+    () => {
+      btn.disabled = false;
+      if (btn.dataset) btn.dataset.nextReady = "true";
+    },
+    { suppressInProduction: true }
+  );
+  safeRound(
+    "markNextReady.updateAttributes",
+    () => {
+      btn.setAttribute("data-next-ready", "true");
+      btn.removeAttribute("disabled");
+      // Patch: In Vitest, also update [data-role="next-round"] for test DOM
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        const testBtn = document.querySelector('[data-role="next-round"]');
+        if (testBtn && testBtn !== btn) {
           testBtn.disabled = false;
-        } catch {}
-        try {
           if (testBtn.dataset) testBtn.dataset.nextReady = "true";
-        } catch {}
-        testBtn.setAttribute("data-next-ready", "true");
-        testBtn.removeAttribute("disabled");
+          testBtn.setAttribute("data-next-ready", "true");
+          testBtn.removeAttribute("disabled");
+        }
       }
-    }
-  } catch {}
-  try {
-    if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-      // Lightweight test-only trace to help diagnose flakiness across tests.
-      console.debug(
-        `[test] markNextReady: disabled=${btn.disabled} dataset=${btn.dataset.nextReady}`
-      );
-    }
-  } catch {}
+    },
+    { suppressInProduction: true }
+  );
+  safeRound(
+    "markNextReady.debugLog",
+    () => {
+      if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+        // Lightweight test-only trace to help diagnose flakiness across tests.
+        console.debug(
+          `[test] markNextReady: disabled=${btn.disabled} dataset=${btn.dataset.nextReady}`
+        );
+      }
+    },
+    { suppressInProduction: true }
+  );
   console.debug(
     "[DEBUG] markNextReady called with btn:",
     btn.id,
@@ -732,12 +890,11 @@ function createExpirationTelemetryContext() {
       : undefined;
   const debugBagFactory = () => {
     if (typeof globalThis === "undefined") return null;
-    try {
-      const bag = (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {});
-      return bag;
-    } catch {
-      return null;
-    }
+    return safeRound(
+      "createExpirationTelemetryContext.debugBagFactory",
+      () => (globalThis.__CLASSIC_BATTLE_DEBUG = globalThis.__CLASSIC_BATTLE_DEBUG || {}),
+      { suppressInProduction: true, defaultValue: null }
+    );
   };
   const { emit, getDebugBag } = createExpirationTelemetryEmitter({
     exposeDebugState,
@@ -779,14 +936,14 @@ function guardReadyInFlight(controls, emitTelemetry, getDebugBag) {
 function prepareCooldownContext(options, emitTelemetry) {
   const clearSkipHandler =
     typeof options.setSkipHandler === "function" ? options.setSkipHandler : setSkipHandler;
-  try {
-    clearSkipHandler(null);
-  } catch {}
+  safeRound("prepareCooldownContext.clearSkipHandler", () => clearSkipHandler(null), {
+    suppressInProduction: true
+  });
 
   const scoreboardApi = options.scoreboard || scoreboard;
-  try {
-    scoreboardApi?.clearTimer?.();
-  } catch {}
+  safeRound("prepareCooldownContext.clearTimer", () => scoreboardApi?.clearTimer?.(), {
+    suppressInProduction: true
+  });
 
   const bus = createEventBus(options.eventBus);
   const getSnapshot = options.getStateSnapshot || getStateSnapshot;
@@ -969,11 +1126,15 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
         clearTimeout(fallbackId);
         fallbackId = null;
       }
-      try {
-        if (schedulerFallbackId) {
-          scheduler.clearTimeout?.(schedulerFallbackId);
-        }
-      } catch {}
+      safeRound(
+        "wireCooldownTimer.resolveReady.clearSchedulerFallback",
+        () => {
+          if (schedulerFallbackId) {
+            scheduler.clearTimeout?.(schedulerFallbackId);
+          }
+        },
+        { suppressInProduction: true }
+      );
       schedulerFallbackId = null;
       if (!expired) {
         expired = true;
@@ -981,28 +1142,24 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       return originalResolveReady.apply(this, args);
     };
   }
-  const attemptBusDispatch = async () => {
-    try {
-      try {
-        appendReadyTrace("dispatchReadyViaBus.start", {});
-      } catch {}
-      const res = await dispatchReadyViaBus(expirationOptions);
-      try {
-        appendReadyTrace("dispatchReadyViaBus.end", { result: !!res });
-      } catch {}
-      return res;
-    } catch {
-      return false;
-    }
-  };
+  const attemptBusDispatch = () =>
+    safeRound(
+      "wireCooldownTimer.attemptBusDispatch",
+      () => dispatchReadyViaBus(expirationOptions),
+      { suppressInProduction: true, fallback: () => false, defaultValue: false }
+    );
   const onExpired = async () => {
+    const finalizeWithPriorDispatch = () =>
+      handleNextRoundExpiration(controls, btn, {
+        ...expirationOptions,
+        alreadyDispatchedReady: true
+      });
     // Handle retries when the timer already expired but ready wasn't emitted.
     if (expired) {
       if (readyDispatchedForCurrentCooldown) {
-        // A prior retry already succeeded. Bail out so we do not signal
-        // another ready event while cleanup from the previous attempt is
-        // still unwinding.
-        return;
+        // A prior retry already succeeded. Skip dispatching again so the
+        // centralized expiration path can cleanly finish unwinding.
+        return finalizeWithPriorDispatch();
       }
       const alreadyDispatchedReady = await attemptBusDispatch();
       return handleNextRoundExpiration(controls, btn, {
@@ -1013,10 +1170,14 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
     // Standard expiration path for the active cooldown.
     expired = true;
     // PRD taxonomy: cooldown timer expired + countdown completed
-    try {
-      bus.emit("cooldown.timer.expired");
-      bus.emit("control.countdown.completed");
-    } catch {}
+    safeRound(
+      "wireCooldownTimer.onExpired.emitCompletion",
+      () => {
+        bus.emit("cooldown.timer.expired");
+        bus.emit("control.countdown.completed");
+      },
+      { suppressInProduction: true }
+    );
     const alreadyDispatchedReady = await attemptBusDispatch();
     return handleNextRoundExpiration(controls, btn, {
       ...expirationOptions,
@@ -1026,23 +1187,32 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   timer.on("expired", onExpired);
   // PRD taxonomy: cooldown timer ticks
   timer.on("tick", (remaining) => {
-    try {
-      bus.emit("cooldown.timer.tick", {
-        remainingMs: Math.max(0, Number(remaining) || 0) * 1000
-      });
-    } catch {}
+    safeRound(
+      "wireCooldownTimer.tick.emit",
+      () =>
+        bus.emit("cooldown.timer.tick", {
+          remainingMs: Math.max(0, Number(remaining) || 0) * 1000
+        }),
+      { suppressInProduction: true }
+    );
   });
   timer.on("drift", () => {
     const msgEl = typeof document !== "undefined" ? document.getElementById("round-message") : null;
     if (msgEl && msgEl.textContent) {
-      try {
-        if (typeof snackbarApi === "function") snackbarApi("Waiting…");
-        else showSnackbar("Waiting…");
-      } catch {}
+      safeRound(
+        "wireCooldownTimer.drift.snackbar",
+        () => {
+          if (typeof snackbarApi === "function") snackbarApi("Waiting…");
+          else showSnackbar("Waiting…");
+        },
+        { suppressInProduction: true }
+      );
     } else {
-      try {
-        scoreboardApi?.showMessage?.("Waiting…");
-      } catch {}
+      safeRound(
+        "wireCooldownTimer.drift.scoreboard",
+        () => scoreboardApi?.showMessage?.("Waiting…"),
+        { suppressInProduction: true }
+      );
     }
   });
   controls.timer = timer;
@@ -1055,70 +1225,86 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
   //   );
   // } catch {}
   registerSkipHandler(() => {
-    try {
-      console.warn("[test] skip: stop nextRoundTimer");
-    } catch {}
+    safeRound(
+      "wireCooldownTimer.skip.warn",
+      () => console.warn("[test] skip: stop nextRoundTimer"),
+      { suppressInProduction: true }
+    );
     clearTimeout(fallbackId);
     fallbackId = null;
-    try {
-      if (schedulerFallbackId) {
-        scheduler.clearTimeout?.(schedulerFallbackId);
-      }
-    } catch {}
+    safeRound(
+      "wireCooldownTimer.skip.clearSchedulerFallback",
+      () => {
+        if (schedulerFallbackId) {
+          scheduler.clearTimeout?.(schedulerFallbackId);
+        }
+      },
+      { suppressInProduction: true }
+    );
     schedulerFallbackId = null;
     controls.timer?.stop();
     if (!expired) {
       expired = true;
-      try {
-        bus.emit("cooldown.timer.expired");
-        bus.emit("control.countdown.completed");
-      } catch {}
+      safeRound(
+        "wireCooldownTimer.skip.emitCompletion",
+        () => {
+          bus.emit("cooldown.timer.expired");
+          bus.emit("control.countdown.completed");
+        },
+        { suppressInProduction: true }
+      );
       void handleNextRoundExpiration(controls, btn, expirationOptions);
     }
   });
   // Start the timer immediately to ensure test environments with fake timers
   // consistently observe timer ticks/expiration when advancing timers.
-  try {
-    controls.timer.start(cooldownSeconds);
-    // try {
-    //   console.error(
-    //     "[TEST ERROR] wireCooldownTimer: controls.timer.start called for",
-    //     cooldownSeconds
-    //   );
-    // } catch {}
-  } catch (err) {
-    console.error("[TEST DEBUG] controls.timer.start error", err);
-  }
-  try {
-    const secsNum = Number(cooldownSeconds);
-    // Fallback behavior:
-    // - When duration is non-positive or invalid → resolve quickly (10ms) to
-    //   satisfy tests that mock timers and rely on a minimal delay.
-    // - When duration is valid → schedule at exact duration (ms) so advancing
-    //   fake timers by the whole-second value triggers expiration without
-    //   requiring additional padding.
-    // Use a short positive fallback when the computed seconds are non-positive
-    // to avoid immediate expiry (0ms) which can race with scheduler ticks in
-    // tests. The small delay (10ms) gives a deterministic window for manual
-    // intervention in unit tests.
-    const ms = !Number.isFinite(secsNum) || secsNum <= 0 ? 10 : Math.max(0, secsNum * 1000);
-    // Use both global and injected scheduler timeouts to maximize compatibility
-    // with test environments that mock timers differently.
-    // Prefer the injected scheduler when available to avoid duplicate
-    // scheduling across both the injected scheduler and the global
-    // fallback (which can cause double-expiry in tests that use both
-    // a mock scheduler and fake timers). Use fallbackScheduler only when
-    // no scheduler was provided.
-    if (scheduler && typeof scheduler.setTimeout === "function") {
-      try {
-        schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
-      } catch {}
-    } else {
-      try {
-        fallbackId = fallbackScheduler(ms, onExpired);
-      } catch {}
+  safeRound(
+    "wireCooldownTimer.startTimer",
+    () => {
+      controls.timer.start(cooldownSeconds);
+    },
+    {
+      suppressInProduction: true,
+      fallback: (error) => {
+        console.error("[TEST DEBUG] controls.timer.start error", error);
+      }
     }
-  } catch {}
+  );
+  safeRound(
+    "wireCooldownTimer.scheduleFallbacks",
+    () => {
+      const secsNum = Number(cooldownSeconds);
+      const ms = !Number.isFinite(secsNum) || secsNum <= 0 ? 10 : Math.max(0, secsNum * 1000);
+      if (scheduler && typeof scheduler.setTimeout === "function") {
+        safeRound(
+          "wireCooldownTimer.scheduleInjected",
+          () => {
+            schedulerFallbackId = scheduler.setTimeout(() => onExpired(), ms);
+          },
+          {
+            fallback: () =>
+              safeRound(
+                "wireCooldownTimer.scheduleFallbackTimer",
+                () => {
+                  fallbackId = fallbackScheduler(ms, onExpired);
+                },
+                { suppressInProduction: true }
+              ),
+            suppressInProduction: true
+          }
+        );
+      } else {
+        safeRound(
+          "wireCooldownTimer.scheduleFallbackTimer",
+          () => {
+            fallbackId = fallbackScheduler(ms, onExpired);
+          },
+          { suppressInProduction: true }
+        );
+      }
+    },
+    { suppressInProduction: true }
+  );
 }
 
 /**
@@ -1129,8 +1315,15 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
  * teardown and reinitialize.
  *
  * @summary Reset match subsystems and UI for tests.
+<<<<<<< HEAD
  *
  * @pseudocode
+=======
+ * @pseudocode
+ * 1. Reset skip/selection state and ensure the engine is available.
+ * 2. Rebind engine listeners, stop schedulers, and clear debug overrides.
+ * 3. Clean store timers, cancel pending RAFs, and emit reset events.
+>>>>>>> 9fe756b544bab0ec8fe330bfa28f6e762c0bdae0
  * 1. Reset skip and selection subsystems, recreate the engine via `createBattleEngine()`,
  *    and rebind engine events with `bridgeEngineEvents()`.
  * 2. Stop any schedulers and clear debug overrides on `window`.
@@ -1148,33 +1341,48 @@ export function _resetForTest(store) {
   // Only create new engine if none exists
   const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST;
   if (isVitest) {
-    try {
-      // Test if engine exists and is functional
-      battleEngine.getScores();
-      // Engine exists, don't recreate it to preserve scores
-    } catch {
-      // Engine doesn't exist or is broken, create a new one
-      createBattleEngine();
-    }
+    safeRound(
+      "_resetForTest.ensureEngine",
+      () => {
+        battleEngine.getScores();
+      },
+      {
+        fallback: () =>
+          safeRound(
+            "_resetForTest.createEngineForVitest",
+            () => {
+              createBattleEngine();
+            },
+            { suppressInProduction: true }
+          ),
+        suppressInProduction: true
+      }
+    );
   } else {
     // In production, always create a fresh engine
-    createBattleEngine();
+    safeRound("_resetForTest.createEngine", () => createBattleEngine(), {
+      suppressInProduction: true
+    });
   }
   bridgeEngineEvents();
   // In certain test environments, module mocking can cause `bridgeEngineEvents`
   // to bind using a different facade instance than the one the test spies on.
   // As a safety net, rebind via the locally imported facade when it's a mock.
-  try {
-    const maybeMock = /** @type {any} */ (battleEngine).on;
-    if (typeof maybeMock === "function" && typeof maybeMock.mock === "object") {
-      maybeMock("roundEnded", (detail) => {
-        emitBattleEvent("roundResolved", detail);
-      });
-      maybeMock("matchEnded", (detail) => {
-        emitBattleEvent("matchOver", detail);
-      });
-    }
-  } catch {}
+  safeRound(
+    "_resetForTest.rebindMockListeners",
+    () => {
+      const maybeMock = /** @type {any} */ (battleEngine).on;
+      if (typeof maybeMock === "function" && typeof maybeMock.mock === "object") {
+        maybeMock("roundEnded", (detail) => {
+          emitBattleEvent("roundResolved", detail);
+        });
+        maybeMock("matchEnded", (detail) => {
+          emitBattleEvent("matchOver", detail);
+        });
+      }
+    },
+    { suppressInProduction: true }
+  );
   stopScheduler();
   if (typeof window !== "undefined") {
     const api = readDebugState("classicBattleDebugAPI");
@@ -1182,27 +1390,39 @@ export function _resetForTest(store) {
     else delete window.startRoundOverride;
   }
   if (store && typeof store === "object") {
-    try {
-      clearTimeout(store.statTimeoutId);
-      clearTimeout(store.autoSelectId);
-    } catch {}
+    safeRound(
+      "_resetForTest.clearStoreTimeouts",
+      () => {
+        clearTimeout(store.statTimeoutId);
+        clearTimeout(store.autoSelectId);
+      },
+      { suppressInProduction: true }
+    );
     store.statTimeoutId = null;
     store.autoSelectId = null;
     store.selectionMade = false;
     // Reset any prior player stat selection
     store.playerChoice = null;
-    try {
-      cancelFrame(store.compareRaf);
-    } catch {}
+    safeRound("_resetForTest.cancelCompareRaf", () => cancelFrame(store.compareRaf), {
+      suppressInProduction: true
+    });
     store.compareRaf = 0;
-    try {
-      window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } }));
-    } catch {}
+    if (typeof window !== "undefined") {
+      safeRound(
+        "_resetForTest.dispatchStoreReset",
+        () => window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store } })),
+        { suppressInProduction: true }
+      );
+    }
   } else {
     // Best-effort notify UI without a concrete store instance
-    try {
-      window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store: null } }));
-    } catch {}
+    if (typeof window !== "undefined") {
+      safeRound(
+        "_resetForTest.dispatchNullReset",
+        () => window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store: null } })),
+        { suppressInProduction: true }
+      );
+    }
   }
 }
 
@@ -1211,10 +1431,16 @@ export function _resetForTest(store) {
  *
  * Alias of `_resetForTest` used by orchestrator and other callers.
  *
+<<<<<<< HEAD
  * @pseudocode
  * 1. Delegate to `_resetForTest(store)` to perform the full reset workflow.
  *
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store forwarded to `_resetForTest`.
+=======
+ * 1. Invoke `_resetForTest(store)` when asked to reset the active match.
+ * @pseudocode
+ * 1. Delegate directly to `_resetForTest`.
+>>>>>>> 9fe756b544bab0ec8fe330bfa28f6e762c0bdae0
  * @returns {void}
  */
 export const resetGame = _resetForTest;
@@ -1225,9 +1451,8 @@ export const resetGame = _resetForTest;
  * @returns {boolean} True if the orchestrator is active, false otherwise.
  */
 function isOrchestrated() {
-  try {
-    return !!document.body.dataset.battleState;
-  } catch {
-    return false;
-  }
+  return safeRound("isOrchestrated", () => !!document.body.dataset.battleState, {
+    suppressInProduction: true,
+    defaultValue: false
+  });
 }
