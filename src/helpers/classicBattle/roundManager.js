@@ -538,45 +538,9 @@ function setupOrchestratedReady(controls, machine, btn, options = {}) {
     // override exists, fall back to the shared `dispatchReadyViaBus` which
     // routes through the dispatcher chain. Only set the readyDispatched flag
     // after a successful dispatch to preserve retry behavior on failure.
-    try {
-      let dispatched = false;
-      if (options && typeof options.dispatchBattleEvent === "function") {
-        // Call the injected dispatcher and await if it returns a promise.
-        const res = safeRound(
-          "setupOrchestratedReady.finalize.dispatchOverride",
-          () => options.dispatchBattleEvent("ready"),
-          { suppressInProduction: true, defaultValue: false }
-        );
-        // If the injected dispatcher returned a promise, await it to decide success.
-        if (res && typeof res.then === "function") {
-          try {
-            const awaited = await res;
-            dispatched = awaited !== false;
-          } catch {
-            dispatched = false;
-          }
-        } else {
-          dispatched = res !== false;
-        }
-      }
-
-      if (!dispatched) {
-        // Use the centralized bus strategy to attempt dispatch. This avoids
-        // calling machine.dispatch directly and keeps dedupe logic in one
-        // place.
-        const resBus = await safeRound(
-          "setupOrchestratedReady.finalize.dispatchViaBus",
-          () => dispatchReadyViaBus({ eventBus: options?.eventBus }),
-          { suppressInProduction: true, defaultValue: false }
-        );
-        dispatched = !!resBus;
-      }
-
-      if (dispatched) readyDispatchedForCurrentCooldown = true;
-    } catch {
-      // swallow errors — finalize must not throw. Errors are recorded by
-      // the safeRound wrappers used above where applicable.
-    }
+    // Dispatch of the "ready" event is now handled centrally by
+    // `handleNextRoundExpiration`. Finalize is responsible for cleanup
+    // and resolving the pending controls only.
   };
   const addListener = (type, handler) => {
     const wrapped = (event) => {
@@ -975,19 +939,29 @@ function createReadyDispatchStrategies({
   if (bus) {
     busStrategyOptions.eventBus = bus;
   }
-  if (typeof options.dispatchBattleEvent === "function") {
-    busStrategyOptions.dispatchBattleEvent = options.dispatchBattleEvent;
-  }
-  return [
-    () =>
-      dispatchReadyWithOptions({
+  const hasCustomDispatcher =
+    typeof options.dispatchBattleEvent === "function" && options.dispatchBattleEvent !== dispatchBattleEvent;
+  const strategies = [];
+  if (hasCustomDispatcher) {
+    strategies.push(() => {
+      if (readyDispatchedForCurrentCooldown) return true;
+      return dispatchReadyWithOptions({
         dispatchBattleEvent: options.dispatchBattleEvent,
         emitTelemetry,
         getDebugBag
-      }),
-    () => dispatchReadyViaBus(busStrategyOptions),
-    () => dispatchReadyDirectly({ machineReader, emitTelemetry })
-  ];
+      });
+    });
+    busStrategyOptions.dispatchBattleEvent = options.dispatchBattleEvent;
+    busStrategyOptions.skipCandidate = true;
+  } else if (typeof options.dispatchBattleEvent === "function") {
+    busStrategyOptions.dispatchBattleEvent = options.dispatchBattleEvent;
+  }
+  strategies.push(() => {
+    if (readyDispatchedForCurrentCooldown) return true;
+    return dispatchReadyViaBus(busStrategyOptions);
+  });
+  strategies.push(() => dispatchReadyDirectly({ machineReader, emitTelemetry }));
+  return strategies;
 }
 
 function finalizeReadyControls(controls, dispatched) {
@@ -1046,7 +1020,8 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     getDebugBag
   });
   const dispatched = await runReadyDispatchStrategies({
-    alreadyDispatchedReady: options?.alreadyDispatchedReady === true,
+    alreadyDispatchedReady:
+      options?.alreadyDispatchedReady === true || readyDispatchedForCurrentCooldown === true,
     strategies,
     emitTelemetry
   });
@@ -1138,30 +1113,32 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       return originalResolveReady.apply(this, args);
     };
   }
-  const attemptBusDispatch = () =>
-    safeRound(
-      "wireCooldownTimer.attemptBusDispatch",
-      () => dispatchReadyViaBus(expirationOptions),
-      { suppressInProduction: true, fallback: () => false, defaultValue: false }
-    );
-  const onExpired = async () => {
-    const finalizeWithPriorDispatch = () =>
-      handleNextRoundExpiration(controls, btn, {
-        ...expirationOptions,
-        alreadyDispatchedReady: true
+  let finalizePromise = null;
+  const finalizeExpiration = (alreadyDispatchedReady = readyDispatchedForCurrentCooldown) => {
+    if (finalizePromise) {
+      return finalizePromise;
+    }
+    const runPromise = handleNextRoundExpiration(controls, btn, {
+      ...expirationOptions,
+      alreadyDispatchedReady
+    })
+      .then((result) => {
+        if (!result) {
+          finalizePromise = null;
+        }
+        return result;
+      })
+      .catch((error) => {
+        finalizePromise = null;
+        throw error;
       });
+    finalizePromise = runPromise;
+    return runPromise;
+  };
+  const onExpired = async () => {
     // Handle retries when the timer already expired but ready wasn't emitted.
     if (expired) {
-      if (readyDispatchedForCurrentCooldown) {
-        // A prior retry already succeeded. Skip dispatching again so the
-        // centralized expiration path can cleanly finish unwinding.
-        return finalizeWithPriorDispatch();
-      }
-      const alreadyDispatchedReady = await attemptBusDispatch();
-      return handleNextRoundExpiration(controls, btn, {
-        ...expirationOptions,
-        alreadyDispatchedReady
-      });
+      return finalizeExpiration();
     }
     // Standard expiration path for the active cooldown.
     expired = true;
@@ -1174,11 +1151,7 @@ function wireCooldownTimer(controls, btn, cooldownSeconds, scheduler, overrides 
       },
       { suppressInProduction: true }
     );
-    const alreadyDispatchedReady = await attemptBusDispatch();
-    return handleNextRoundExpiration(controls, btn, {
-      ...expirationOptions,
-      alreadyDispatchedReady
-    });
+    return finalizeExpiration();
   };
   timer.on("expired", onExpired);
   // PRD taxonomy: cooldown timer ticks
