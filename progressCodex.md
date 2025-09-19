@@ -15,21 +15,22 @@
 3. Re-run `tests/helpers/classicBattle/scheduleNextRound.test.js` to confirm the assertion passes and verify no regressions in the broader suite as needed.
 
 ## Task Contract
+
 {
-  "inputs": [
-    "src/helpers/classicBattle/nextRound/expirationHandlers.js",
-    "tests/helpers/classicBattle/scheduleNextRound.test.js"
-  ],
-  "outputs": [
-    "src/helpers/classicBattle/nextRound/expirationHandlers.js",
-    "progressCodex.md"
-  ],
-  "success": [
-    "eslint: PASS",
-    "vitest: targeted tests PASS",
-    "no_unsilenced_console"
-  ],
-  "errorMode": "ask_on_public_api_change"
+"inputs": [
+"src/helpers/classicBattle/nextRound/expirationHandlers.js",
+"tests/helpers/classicBattle/scheduleNextRound.test.js"
+],
+"outputs": [
+"src/helpers/classicBattle/nextRound/expirationHandlers.js",
+"progressCodex.md"
+],
+"success": [
+"eslint: PASS",
+"vitest: targeted tests PASS",
+"no_unsilenced_console"
+],
+"errorMode": "ask_on_public_api_change"
 }
 
 ### Step 1: Context prep
