@@ -1,50 +1,50 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { dispatchBattleEvent } from '@/helpers/battleEvents.js';
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
+import { dispatchBattleEvent } from "../../../src/helpers/battleEvents.js";
 
 // Mock the underlying event system
-vi.mock('@/helpers/battleEvents.js', () => ({
+vi.mock("../../../src/helpers/battleEvents.js", () => ({
   onBattleEvent: vi.fn(),
-  dispatchBattleEvent: vi.fn(),
+  dispatchBattleEvent: vi.fn()
 }));
 
 // Dynamically import the module to be tested after mocks are in place
 let promises;
 
-describe('Battle Promises', () => {
+describe("Battle Promises", () => {
   let onBattleEvent;
 
   beforeEach(async () => {
     // Reset mocks and window state before each test
     vi.resetModules();
-    onBattleEvent = (await import('@/helpers/battleEvents.js')).onBattleEvent;
+    onBattleEvent = (await import("../../../src/helpers/battleEvents.js")).onBattleEvent;
 
     // Clear any global state on the window object
-    Object.keys(window).forEach(key => {
-      if (key.includes('Promise') || key.startsWith('__')) {
+    Object.keys(window).forEach((key) => {
+      if (key.includes("Promise") || key.startsWith("__")) {
         delete window[key];
       }
     });
 
     // Import the module under test
-    promises = await import('@/helpers/classicBattle/promises.js');
+    promises = await import("../../../src/helpers/classicBattle/promises.js");
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should initialize all promises on module load', () => {
+  it("should initialize all promises on module load", () => {
     expect(promises.roundPromptPromise).toBeInstanceOf(Promise);
     expect(promises.getRoundPromptPromise()).toBeInstanceOf(Promise);
-    expect(onBattleEvent).toHaveBeenCalledWith('roundPrompt', expect.any(Function));
-    expect(onBattleEvent).toHaveBeenCalledWith('roundResolved', expect.any(Function));
-    expect(onBattleEvent).toHaveBeenCalledWith('nextRoundCountdownStarted', expect.any(Function));
+    expect(onBattleEvent).toHaveBeenCalledWith("roundPrompt", expect.any(Function));
+    expect(onBattleEvent).toHaveBeenCalledWith("roundResolved", expect.any(Function));
+    expect(onBattleEvent).toHaveBeenCalledWith("nextRoundCountdownStarted", expect.any(Function));
   });
 
   it('getRoundPromptPromise resolves when the "roundPrompt" event is dispatched', async () => {
     let eventCallback;
     onBattleEvent.mockImplementation((eventName, callback) => {
-      if (eventName === 'roundPrompt') {
+      if (eventName === "roundPrompt") {
         eventCallback = callback;
       }
     });
@@ -70,10 +70,10 @@ describe('Battle Promises', () => {
     expect(hasResolved).toBe(true);
   });
 
-  it('promise is replaced with a new one after resolution', async () => {
+  it("promise is replaced with a new one after resolution", async () => {
     let eventCallback;
     onBattleEvent.mockImplementation((eventName, callback) => {
-      if (eventName === 'roundResolved') {
+      if (eventName === "roundResolved") {
         eventCallback = callback;
       }
     });
@@ -87,19 +87,19 @@ describe('Battle Promises', () => {
 
     // The new promise should be a different instance and should be pending
     expect(secondPromise).not.toBe(firstPromise);
-    const p = Promise.race([secondPromise, Promise.resolve('pending')]);
-    expect(await p).toBe('pending');
+    const p = Promise.race([secondPromise, Promise.resolve("pending")]);
+    expect(await p).toBe("pending");
   });
 
-  it('resetBattlePromises creates new promise instances', async () => {
+  it("resetBattlePromises creates new promise instances", async () => {
     const firstPromise = promises.getRoundPromptPromise();
     promises.resetBattlePromises();
     const secondPromise = promises.getRoundPromptPromise();
     expect(secondPromise).not.toBe(firstPromise);
   });
 
-  it('getters return an already-resolved promise if the window.__resolved_ flag is set', async () => {
-    const key = 'roundTimeoutPromise';
+  it("getters return an already-resolved promise if the window.__resolved_ flag is set", async () => {
+    const key = "roundTimeoutPromise";
     window[`__resolved_${key}`] = true;
 
     const promise = promises.getRoundTimeoutPromise();
@@ -113,9 +113,9 @@ describe('Battle Promises', () => {
     expect(hasResolved).toBe(true);
   });
 
-  it('getters return the instance from the window object if available', () => {
-    const key = 'statSelectionStalledPromise';
-    const fakePromise = Promise.resolve('fake');
+  it("getters return the instance from the window object if available", () => {
+    const key = "statSelectionStalledPromise";
+    const fakePromise = Promise.resolve("fake");
     window[key] = fakePromise;
 
     const retrievedPromise = promises.getStatSelectionStalledPromise();

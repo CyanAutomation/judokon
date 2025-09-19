@@ -270,10 +270,19 @@ export function initializeTestBindingsLight() {
   // Reset promises
   window.roundOptionsReadyPromise = setupPromise("roundOptionsReadyPromise", "roundOptionsReady")();
   window.roundPromptPromise = setupPromise("roundPromptPromise", "roundPrompt")();
-  window.nextRoundTimerReadyPromise = setupPromise("nextRoundTimerReadyPromise", "nextRoundTimerReady")();
+  window.nextRoundTimerReadyPromise = setupPromise(
+    "nextRoundTimerReadyPromise",
+    "nextRoundTimerReady"
+  )();
   window.matchOverPromise = setupPromise("matchOverPromise", "matchOver")();
-  window.countdownStartedPromise = setupPromise("countdownStartedPromise", "nextRoundCountdownStarted")();
+  window.countdownStartedPromise = setupPromise(
+    "countdownStartedPromise",
+    "nextRoundCountdownStarted"
+  )();
   window.roundTimeoutPromise = setupPromise("roundTimeoutPromise", "roundTimeout")();
-  window.statSelectionStalledPromise = setupPromise("statSelectionStalledPromise", "statSelectionStalled")();
+  window.statSelectionStalledPromise = setupPromise(
+    "statSelectionStalledPromise",
+    "statSelectionStalled"
+  )();
   window.roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
 }

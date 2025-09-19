@@ -1,4 +1,4 @@
-import { onBattleEvent } from "./battleEvents.js";
+import { onBattleEvent } from "../battleEvents.js";
 
 /**
  * Create a self-resetting promise tied to a battle event.

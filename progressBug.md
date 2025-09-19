@@ -77,10 +77,7 @@ Ran the previously failing test file: `tests/helpers/classicBattle/uiHelpers.mis
 
 The root cause (race condition between global preload and `vi.resetModules()`) has been resolved. The remaining intermittent per-test timeouts (if any) are separate issues and can be addressed individually. The test harness is now stable and ready for further debugging of any remaining test-level failures.
 
-If you want to proceed with Step 2 (debugging remaining timeouts) or another option, let me know!. This is the most robust long-term solution.
-2.  **Debug Remaining Timeouts**: Systematically investigate the remaining per-test timeouts by running failing tests in isolation with extended timeouts and verbose logging to pinpoint the exact promise or resolver that is failing.
-3.  **Strengthen Promise Logic Tests**: Add dedicated unit tests for the `promises.js` module. This will verify its reset/resolve behavior and prevent future regressions.
-4.  **Audit `vi.resetModules()` Usage**: Analyze tests that rely on `vi.resetModules()` and refactor a small, representative subset to use targeted mocks instead. This would serve as a template for reducing test coupling across the suite.
+If you want to proceed with Step 2 (debugging remaining timeouts) or another option, let me know!. This is the most robust long-term solution. 2. **Debug Remaining Timeouts**: Systematically investigate the remaining per-test timeouts by running failing tests in isolation with extended timeouts and verbose logging to pinpoint the exact promise or resolver that is failing. 3. **Strengthen Promise Logic Tests**: Add dedicated unit tests for the `promises.js` module. This will verify its reset/resolve behavior and prevent future regressions. 4. **Audit `vi.resetModules()` Usage**: Analyze tests that rely on `vi.resetModules()` and refactor a small, representative subset to use targeted mocks instead. This would serve as a template for reducing test coupling across the suite.
 
 I am ready to proceed with your selected option.
 
