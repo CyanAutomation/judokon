@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
-import selectors from "../../helpers/selectors";
+import selectors from "../helpers/selectors.js";
+import { readScoreboardRound } from "../helpers/roundCounter.js";
 
 test.describe("Classic Battle Opponent Reveal", () => {
   test.describe("Basic Opponent Reveal Functionality", () => {
@@ -99,18 +100,19 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
       const roundCounter = page.locator("#round-counter");
-      const readRoundNumber = async () => {
-        const text = await roundCounter.textContent();
-        const match = text ? text.match(/(\d+)/) : null;
-        return match ? Number(match[1]) : 0;
-      };
+      const readRoundNumber = () => readScoreboardRound(roundCounter);
 
       const beforeNext = await readRoundNumber();
+      expect(
+        beforeNext,
+        "Round counter should show a valid number before advancing."
+      ).not.toBeNull();
+      const beforeNextNumber = /** @type {number} */ (beforeNext);
 
       // Click next round
       await nextButton.click();
 
-      await expect.poll(readRoundNumber).toBeGreaterThanOrEqual(beforeNext);
+      await expect.poll(readRoundNumber).toBeGreaterThanOrEqual(beforeNextNumber);
 
       // Verify round progression
       await expect(roundCounter).toContainText(/Round 2/);
