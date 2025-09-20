@@ -209,3 +209,15 @@ Next recommended step: Continue with the next mapped item in `reports/prd-mappin
 - No functional changes were made to `prdBattleCLI.md` beyond preserving manual edits; only source documents were removed.
 
 Next recommended step: Continue with the next mapped item from `reports/prd-mapping-report.json`.
+
+### Recent agent action — removed merged source files
+
+- Deleted the following source files which had already been assimilated into PRDs to avoid duplication:
+	- `docs/battle-cli.md`
+	- `docs/battleCLI.md`
+	- `docs/round-selection.md`
+	- `design/battleMarkup.md`
+
+- Updated PRDs retain the authoritative content; the repo now references PRDs under `design/productRequirementsDocuments/` as the source of truth for these topics.
+
+Validation: After the deletions I will run formatting and JSDoc checks to ensure no regressions (prettier/eslint/jsdoc). If you'd prefer these deletions staged on a branch for review, tell me and I'll revert the deletions locally and create a feature branch instead.

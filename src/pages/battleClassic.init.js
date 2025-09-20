@@ -35,6 +35,7 @@ import {
   showFatalInitError
 } from "../helpers/classicBattle/uiHelpers.js";
 import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
+import setupScheduler from "../helpers/classicBattle/setupScheduler.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -1013,6 +1014,12 @@ async function init() {
     removeBackdrops();
   } catch (err) {
     console.debug("battleClassic: removeBackdrops failed during init", err);
+  }
+
+  try {
+    setupScheduler();
+  } catch (err) {
+    console.debug("battleClassic: setupScheduler failed", err);
   }
 
   // Mark that init was called for debugging

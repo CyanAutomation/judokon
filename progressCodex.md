@@ -51,6 +51,7 @@ The following improvements are recommended to address the issues above. They are
 ### 1. Implement a Central State Machine
 
 A robust state machine is critical. It will resolve the majority of the functional bugs by design.
+
 - **Action:** Ensure the UI correctly binds to the battle engine’s state transitions: `init` → `selection` → `opponentChoose` → `resolution` → `cooldown` → `nextRound` → `end`.
 - **Fixes:** #1, #4, #5, #6, #7, #10
 
