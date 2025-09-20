@@ -1,0 +1,74 @@
+[
+  {
+    "source": "docs/TestValuePolicy.md",
+    "mappedTo": null
+  },
+  {
+    "source": "docs/battle-cli.md",
+    "mappedTo": "prdBattleCLI.md"
+  },
+  {
+    "source": "docs/battleCLI.md",
+    "mappedTo": "prdBattleCLI.md"
+  },
+  {
+    "source": "docs/components.md",
+    "mappedTo": null
+  },
+  {
+    "source": "docs/product-docs.md",
+    "mappedTo": null
+  },
+  {
+    "source": "docs/rag-system.md",
+    "mappedTo": null
+  },
+  {
+    "source": "docs/round-selection.md",
+    "mappedTo": "prdRoundSelection.md"
+  },
+  {
+    "source": "docs/roundUI.md",
+    "mappedTo": null
+  },
+  {
+    "source": "docs/testing-guide.md",
+    "mappedTo": null
+  },
+  {
+    "source": "docs/testing-modes.md",
+    "mappedTo": null
+  },
+  {
+    "source": "docs/validation-commands.md",
+    "mappedTo": null
+  },
+  {
+    "source": "docs/vector-search.md",
+    "mappedTo": null
+  },
+  {
+    "source": "design/architecture.md",
+    "mappedTo": "prdArchitecture.md"
+  },
+  {
+    "source": "design/battleCLI-legacy-alignment.md",
+    "mappedTo": null
+  },
+  {
+    "source": "design/battleMarkup.md",
+    "mappedTo": "prdBattleMarkup.md"
+  },
+  {
+    "source": "design/eventNamingAudit.md",
+    "mappedTo": null
+  },
+  {
+    "source": "design/retroThemeContrast.md",
+    "mappedTo": null
+  },
+  {
+    "source": "design/stateHandlerAudit.md",
+    "mappedTo": null
+  }
+]
