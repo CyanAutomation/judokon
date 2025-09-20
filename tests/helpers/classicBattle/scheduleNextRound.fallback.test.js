@@ -489,17 +489,14 @@ describe("handleNextRoundExpiration orchestrated propagation", () => {
     vi.restoreAllMocks();
   });
 
-  it("dispatches via bus when machine propagation is enabled in orchestrated mode", async () => {
+  it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
     expect(controls).toBeTruthy();
     expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
     await runtime.onExpired();
     expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
     expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
-    expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ alreadyDispatched: true })
-    );
+    expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
     expect(machine.dispatch).toHaveBeenCalledTimes(1);
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
