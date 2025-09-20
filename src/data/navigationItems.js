@@ -8,7 +8,7 @@
 const navigationItems = [
   {
     id: 1,
-    url: "battleJudoka.html",
+    url: "battleClassic.html",
     category: "mainMenu",
     order: 20,
     isHidden: false,

@@ -9,7 +9,7 @@ import {
 } from "./fixtures/navigationChecks.js";
 
 const links = [
-  { id: NAV_CLASSIC_BATTLE, url: "/src/pages/battleJudoka.html" },
+  { id: NAV_CLASSIC_BATTLE, url: "/src/pages/battleClassic.html" },
   { id: NAV_BROWSE_JUDOKA, url: "/src/pages/browseJudoka.html" },
   { id: NAV_UPDATE_JUDOKA, url: "/src/pages/updateJudoka.html" },
   { id: NAV_MEDITATION, url: "/src/pages/meditation.html" },
