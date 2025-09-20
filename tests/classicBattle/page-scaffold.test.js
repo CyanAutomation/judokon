@@ -78,10 +78,8 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
       : [];
     const uniqueButtons = tracked.length > 0 ? tracked : buttons;
     const timerButtonRegistry =
-      typeof window.__timerButtonListeners === "object" &&
-      window.__timerButtonListeners !== null &&
-      window.__timerButtonListeners.listeners instanceof WeakMap &&
-      window.__timerButtonListeners.activeButtons instanceof Set
+      window.__timerButtonListeners?.listeners instanceof WeakMap &&
+      window.__timerButtonListeners?.activeButtons instanceof Set
         ? window.__timerButtonListeners
         : {
             listeners: new WeakMap(),
@@ -96,32 +94,42 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
     activeButtons.clear();
 
     const processedButtons = new Set();
-    uniqueButtons.forEach((btn) => {
-      if (!(btn instanceof HTMLElement)) return;
+    for (const btn of uniqueButtons) {
+      if (!(btn instanceof HTMLElement)) continue;
+
+      // Track processed buttons so we only attach a single listener per element while
+      // still allowing `activeButtons` to reflect every instance encountered.
       if (processedButtons.has(btn)) {
         activeButtons.add(btn);
-        previousButtons.delete(btn);
-        return;
+        continue;
       }
+
       processedButtons.add(btn);
-      previousButtons.delete(btn);
+
       const existingListener = buttonListenerRegistry.get(btn);
       if (existingListener) {
         btn.removeEventListener("click", existingListener);
       }
+
+      previousButtons.delete(btn);
+
       const listener = () => {
-        void handleSelection(btn).finally(() => {
-          buttonListenerRegistry.delete(btn);
-          activeButtons.delete(btn);
+        const selectionPromise = handleSelection(btn);
+        void selectionPromise.finally(() => {
+          if (buttonListenerRegistry.get(btn) === listener) {
+            buttonListenerRegistry.delete(btn);
+            activeButtons.delete(btn);
+          }
         });
       };
+
       buttonListenerRegistry.set(btn, listener);
       activeButtons.add(btn);
       btn.addEventListener("click", listener, { once: true });
-    });
+    }
 
     for (const staleButton of previousButtons) {
-      if (!(staleButton instanceof HTMLElement) || processedButtons.has(staleButton)) continue;
+      if (!(staleButton instanceof HTMLElement)) continue;
       const listener = buttonListenerRegistry.get(staleButton);
       if (listener) {
         staleButton.removeEventListener("click", listener);
