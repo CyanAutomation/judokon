@@ -172,11 +172,15 @@ function bindUIServiceEventHandlers() {
 
   onBattleEvent("countdownStart", (e) => {
     // If the skip flag is enabled, immediately finish the countdown
-    if (
+    let skipHandled = false;
+    const skipEnabled =
       uiHelpers.skipRoundCooldownIfEnabled?.({
-        onSkip: handleCountdownExpired
-      })
-    ) {
+        onSkip: () => {
+          handleCountdownExpired();
+          skipHandled = true;
+        }
+      }) ?? false;
+    if (skipEnabled && skipHandled) {
       return;
     }
     const { duration, onFinished } = e.detail || {};

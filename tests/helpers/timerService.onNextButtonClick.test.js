@@ -99,7 +99,7 @@ describe("onNextButtonClick", () => {
     expect(resolveReady2).toHaveBeenCalledTimes(1);
   });
 
-  it("still dispatches ready when skip flag is active", async () => {
+  it("dispatches countdown events and ready when skip flag is active", async () => {
     let resolveReady;
     let uiHelpers;
     await runWithFakeTimers(async () => {
@@ -123,6 +123,7 @@ describe("onNextButtonClick", () => {
     expect(uiHelpers.skipRoundCooldownIfEnabled).toHaveBeenCalledWith(
       expect.objectContaining({ onSkip: expect.any(Function) })
     );
+    expect(events.emitBattleEvent).toHaveBeenCalledTimes(2);
     expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
     expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start");
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");

@@ -1602,14 +1602,15 @@ function handleStatSelectionStalled() {
 }
 
 function handleCountdownStart(e) {
-  if (
-    skipRoundCooldownIfEnabled({
-      onSkip: () => {
-        emitBattleEvent("countdownFinished");
-        emitBattleEvent("round.start");
-      }
-    })
-  ) {
+  let skipHandled = false;
+  const skipEnabled = skipRoundCooldownIfEnabled({
+    onSkip: () => {
+      emitBattleEvent("countdownFinished");
+      emitBattleEvent("round.start");
+      skipHandled = true;
+    }
+  });
+  if (skipEnabled && skipHandled) {
     return;
   }
   const ds = typeof document !== "undefined" ? document.body?.dataset : undefined;

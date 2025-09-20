@@ -56,7 +56,11 @@ export function skipRoundCooldownIfEnabled(options = {}) {
   if (!enabled) return false;
   const { onSkip } = options || {};
   if (typeof onSkip === "function") {
-    guard(() => onSkip());
+    try {
+      onSkip();
+    } catch (error) {
+      console.warn("Error executing onSkip callback:", error);
+    }
   }
   return true;
 }

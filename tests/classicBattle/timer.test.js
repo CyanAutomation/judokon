@@ -69,14 +69,18 @@ describe("Classic Battle round timer", () => {
       timers.useRealTimers();
     }
   });
-  
-  test("Next button dispatches ready when skip flag is active", async () => {
+
+  test("Next button dispatches countdown events and ready when skip flag is active", async () => {
+    vi.resetModules();
     const timers = vi.useFakeTimers();
     const previousOverrides = typeof window !== "undefined" ? window.__FF_OVERRIDES : undefined;
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES = { ...(previousOverrides || {}), skipRoundCooldown: true };
     }
+    const skipCallbackSpy = vi.fn();
     let readySpy;
+    let emitSpy;
+    let skipFlagSpy;
     try {
       const { createBattleHeader } = await import("../utils/testUtils.js");
       const header = createBattleHeader();
@@ -86,6 +90,25 @@ describe("Classic Battle round timer", () => {
 
       const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
       readySpy = vi.spyOn(dispatcher, "dispatchBattleEvent").mockResolvedValue();
+
+      const events = await import("../../src/helpers/classicBattle/battleEvents.js");
+      emitSpy = vi.spyOn(events, "emitBattleEvent").mockImplementation(() => {});
+
+      const uiHelpers = await import("../../src/helpers/classicBattle/uiHelpers.js");
+      const actualSkip = uiHelpers.skipRoundCooldownIfEnabled;
+      skipFlagSpy = vi
+        .spyOn(uiHelpers, "skipRoundCooldownIfEnabled")
+        .mockImplementation((options = {}) => {
+          const opts = { ...options };
+          if (typeof opts.onSkip === "function") {
+            const original = opts.onSkip;
+            opts.onSkip = () => {
+              original();
+              skipCallbackSpy();
+            };
+          }
+          return actualSkip(opts);
+        });
 
       const { __setStateSnapshot } = await import("../../src/helpers/classicBattle/battleDebug.js");
       __setStateSnapshot({ state: "cooldown" });
@@ -100,10 +123,19 @@ describe("Classic Battle round timer", () => {
         { root: document }
       );
 
+      expect(skipFlagSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ onSkip: expect.any(Function) })
+      );
+      expect(skipCallbackSpy).toHaveBeenCalledTimes(1);
+      expect(emitSpy).toHaveBeenCalledTimes(2);
+      expect(emitSpy).toHaveBeenNthCalledWith(1, "countdownFinished");
+      expect(emitSpy).toHaveBeenNthCalledWith(2, "round.start");
       expect(readySpy).toHaveBeenCalledWith("ready");
       expect(resolveReady).toHaveBeenCalledTimes(1);
       expect(nextButton.disabled).toBe(true);
     } finally {
+      if (skipFlagSpy) skipFlagSpy.mockRestore();
+      if (emitSpy) emitSpy.mockRestore();
       if (readySpy) readySpy.mockRestore();
       if (typeof window !== "undefined") {
         if (previousOverrides) {
@@ -114,6 +146,8 @@ describe("Classic Battle round timer", () => {
       }
       document.body.innerHTML = "";
       timers.useRealTimers();
+    }
+  });
 
   test("retries ready dispatch when initial attempt is refused", async () => {
     const timers = vi.useFakeTimers();

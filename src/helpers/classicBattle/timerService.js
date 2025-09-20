@@ -257,14 +257,22 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  * @returns {Promise<void>}
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls(), options = {}) {
-  const skipHintConsumed = skipRoundCooldownIfEnabled({
-    onSkip: () => setSkipHandler(null)
+  let skipHandled = false;
+  const skipHintEnabled = skipRoundCooldownIfEnabled({
+    onSkip: () => {
+      setSkipHandler(null);
+      emitBattleEvent("countdownFinished");
+      emitBattleEvent("round.start");
+      skipHandled = true;
+    }
   });
-  if (skipHintConsumed) {
+  if (skipHintEnabled && skipHandled) {
     timerLogger.debug("skipRoundCooldown hint consumed during Next click");
   }
-  emitBattleEvent("countdownFinished");
-  emitBattleEvent("round.start");
+  if (!skipHandled) {
+    emitBattleEvent("countdownFinished");
+    emitBattleEvent("round.start");
+  }
   const { timer = null, resolveReady = null } = controls || {};
   const root = options.root || document;
   const displayedRoundBefore = readDisplayedRound(root);
