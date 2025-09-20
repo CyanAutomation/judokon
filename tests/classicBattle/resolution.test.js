@@ -46,10 +46,10 @@ describe("Classic Battle round resolution", () => {
       const waitForElement = (await import("../utils/waitForElement.js")).default;
       const btn = await waitForElement("#round-select-2", { timeout: 5000, interval: 20 });
 
-  vi.useFakeTimers();
-  btn.click();
-  // If tests use the queued RAF mock, flush any enqueued frames so scheduled work runs.
-  if (typeof globalThis.flushRAF === "function") globalThis.flushRAF();
+      vi.useFakeTimers();
+      btn.click();
+      // If tests use the queued RAF mock, flush any enqueued frames so scheduled work runs.
+      if (typeof globalThis.flushRAF === "function") globalThis.flushRAF();
       vi.runAllTimers();
       // Ensure any pending fake timers and RAF callbacks run
       try {
