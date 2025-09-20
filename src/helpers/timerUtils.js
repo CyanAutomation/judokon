@@ -158,6 +158,7 @@ export function createCountdownTimer(
             manualIntervalId = globalThis.setInterval(() => {
               void invokeTickSafely();
             }, 1000);
+            void invokeTickSafely();
           }
         }, 1100);
       } catch {}

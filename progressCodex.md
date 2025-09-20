@@ -24,6 +24,7 @@ The recommendations section outlines a clear path forward, prioritizing a full s
 - **Action:** Added a scheduler-independent fallback in `createCountdownTimer()` (`src/helpers/timerUtils.js`) that spins up a `setInterval` countdown when RAF-driven ticks never arrive, so the selection timer still updates and expires on time in lightweight builds.
 - **Outcome:** The selection timer now decrements in the UI and the existing expiration handler fires, restoring automatic stat selection on timeout (QA items #3 and #5).
 - **Notes:** Local Vitest + Playwright runs confirm per-second updates and timeout auto-selection across multiple round lengths.
+- **Regression status:** Targeted suites remained green after the timer fallback change; awaiting manual QA confirmation before proceeding.
 - **Validation:**
   - `npx vitest run tests/classicBattle/init-complete.test.js`
   - `npx vitest run tests/classicBattle/timer.test.js`
