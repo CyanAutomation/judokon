@@ -1862,12 +1862,13 @@ export async function setupFlags() {
         target = getter();
         hasStoredTarget = true;
       }
-    } catch {
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('Failed to get points to win:', error);
+      }
       hasStoredTarget = false;
       target = undefined;
     }
-
-    verboseEnabled = !!enable;
     await setFlag("cliVerbose", enable);
 
     try {
