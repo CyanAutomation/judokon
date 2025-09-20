@@ -23,7 +23,7 @@ globalThis.dispatchEvent = function (event) {
  */
 import { logEventEmit, createComponentLogger } from "./debugLogger.js";
 import { setMaxListenersIfNode } from "../nodeEventsShim.js";
-import { emitEventWithAliases } from "./eventAliases.js";
+import { emitBattleEventWithAliases as emitBattleEventWithAliasesCore } from "./eventAliases.js";
 
 const eventLogger = createComponentLogger("BattleEvents");
 const EVENT_TARGET_KEY = "__classicBattleEventTarget";
@@ -134,8 +134,7 @@ export function emitBattleEventWithAliases(type, detail, options = {}) {
   try {
     // Debug logging for aliased event emission
     eventLogger.event(`Emitting with aliases: ${type}`, detail, { options });
-    const target = getTarget();
-    emitEventWithAliases(target, type, detail, options);
+    emitBattleEventWithAliasesCore(type, detail, options);
   } catch (error) {
     console.error(`[battleEvents] Failed to emit aliased event "${type}":`, error);
     emitBattleEvent(type, detail);

@@ -1,3 +1,5 @@
+import { getBattleEventTarget } from "./battleEvents.js";
+
 /**
  * Event Alias System for Backward-Compatible Event Migration
  *
@@ -63,6 +65,43 @@ for (const [newName, oldNames] of Object.entries(EVENT_ALIASES)) {
   for (const oldName of oldNames) {
     REVERSE_EVENT_ALIASES[oldName] = newName;
   }
+}
+
+function shouldWarnDeprecated(warnDeprecated) {
+  if (warnDeprecated === false) return false;
+  const isDev = typeof process !== "undefined" && process.env?.NODE_ENV === "development";
+  const isVitest = typeof process !== "undefined" && Boolean(process.env?.VITEST);
+  return isDev || isVitest;
+}
+
+/**
+ * Emit battle events while supporting legacy aliases.
+ *
+ * @param {string} eventName - Event name, new or deprecated.
+ * @param {any} payload - Event payload data.
+ * @param {object} options - Emission options.
+ * @param {boolean} [options.skipAliases] - Skip emitting alias events.
+ * @param {boolean} [options.warnDeprecated] - Disable deprecation warnings when false.
+ * @returns {void}
+ *
+ * @pseudocode
+ * 1. Resolve the shared battle event target.
+ * 2. Map deprecated names to standardized names and warn when needed.
+ * 3. Delegate to `emitEventWithAliases` to fan out to aliases.
+ */
+export function emitBattleEventWithAliases(eventName, payload, options = {}) {
+  const target = getBattleEventTarget();
+  const standardizedName = REVERSE_EVENT_ALIASES[eventName];
+
+  if (standardizedName) {
+    if (shouldWarnDeprecated(options.warnDeprecated)) {
+      console.warn(`⚠️ Deprecated event name '${eventName}' used. Update to '${standardizedName}'`);
+    }
+    emitEventWithAliases(target, standardizedName, payload, options);
+    return;
+  }
+
+  emitEventWithAliases(target, eventName, payload, options);
 }
 
 /**
