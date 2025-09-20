@@ -105,13 +105,14 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
       }
 
       processedButtons.add(btn);
+      processedButtons.add(btn);
+
+      previousButtons.delete(btn);
 
       const existingListener = buttonListenerRegistry.get(btn);
       if (existingListener) {
         btn.removeEventListener("click", existingListener);
       }
-
-      previousButtons.delete(btn);
 
       const listener = () => {
         const selectionPromise = handleSelection(btn);
