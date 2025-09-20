@@ -77,34 +77,59 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
       ? window.__statControls.buttons.filter((btn) => btn instanceof HTMLElement)
       : [];
     const uniqueButtons = tracked.length > 0 ? tracked : buttons;
-    const listenerStore =
-      window.__timerButtonListeners instanceof Map
+    const timerButtonRegistry =
+      typeof window.__timerButtonListeners === "object" &&
+      window.__timerButtonListeners !== null &&
+      window.__timerButtonListeners.listeners instanceof WeakMap &&
+      window.__timerButtonListeners.activeButtons instanceof Set
         ? window.__timerButtonListeners
-        : new Map();
-    if (!(window.__timerButtonListeners instanceof Map)) {
-      window.__timerButtonListeners = listenerStore;
+        : {
+            listeners: new WeakMap(),
+            activeButtons: new Set()
+          };
+    if (window.__timerButtonListeners !== timerButtonRegistry) {
+      window.__timerButtonListeners = timerButtonRegistry;
     }
+
+    const { listeners: buttonListenerRegistry, activeButtons } =
+      timerButtonRegistry;
+    const previousButtons = new Set(activeButtons);
+    activeButtons.clear();
 
     const processedButtons = new Set();
     uniqueButtons.forEach((btn) => {
-      if (!(btn instanceof HTMLElement) || processedButtons.has(btn)) return;
+      if (!(btn instanceof HTMLElement)) return;
+      if (processedButtons.has(btn)) {
+        activeButtons.add(btn);
+        previousButtons.delete(btn);
+        return;
+      }
       processedButtons.add(btn);
-      const existingListener = listenerStore.get(btn);
+      previousButtons.delete(btn);
+      const existingListener = buttonListenerRegistry.get(btn);
       if (existingListener) {
         btn.removeEventListener("click", existingListener);
       }
       const listener = () => {
-        listenerStore.delete(btn);
-        void handleSelection(btn);
+        void handleSelection(btn).finally(() => {
+          buttonListenerRegistry.delete(btn);
+          activeButtons.delete(btn);
+        });
       };
-      listenerStore.set(btn, listener);
+      buttonListenerRegistry.set(btn, listener);
+      activeButtons.add(btn);
       btn.addEventListener("click", listener, { once: true });
     });
 
-    for (const [btn, listener] of listenerStore.entries()) {
-      if (processedButtons.has(btn)) continue;
-      btn.removeEventListener("click", listener);
-      listenerStore.delete(btn);
+    for (const staleButton of previousButtons) {
+      if (!(staleButton instanceof HTMLElement) || processedButtons.has(staleButton))
+        continue;
+      const listener = buttonListenerRegistry.get(staleButton);
+      if (listener) {
+        staleButton.removeEventListener("click", listener);
+        buttonListenerRegistry.delete(staleButton);
+      }
+      activeButtons.delete(staleButton);
     }
   };
 
