@@ -31,12 +31,12 @@ export function installRAFMock() {
     // are appended and will be run in subsequent flushAll calls.
     while (rafQueue.length > 0) {
       const { cb } = rafQueue.shift();
-        try {
-          cb(performance.now());
-        } catch {
-          // swallow to keep test harness stable; tests should surface errors
-          // via their own assertions.
-        }
+      try {
+        cb(performance.now());
+      } catch {
+        // swallow to keep test harness stable; tests should surface errors
+        // via their own assertions.
+      }
     }
   };
 

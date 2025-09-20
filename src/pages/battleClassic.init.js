@@ -818,8 +818,8 @@ async function beginSelectionTimer(store) {
         }
         let result;
         try {
-        const { playerVal, opponentVal } = resolveStatValues(store, "speed");
-        result = await computeRoundResult(store, "speed", playerVal, opponentVal);
+          const { playerVal, opponentVal } = resolveStatValues(store, "speed");
+          result = await computeRoundResult(store, "speed", playerVal, opponentVal);
         } catch (err) {
           console.debug("battleClassic: computeRoundResult (vitest) failed", err);
         }

@@ -35,7 +35,6 @@ export function setupClassicBattleDom() {
   // Install shared queue-based RAF mock helper
   const rafMock = installRAFMock();
 
-
   // Let Vitest's fake timers handle setTimeout/clearTimeout automatically
   // globalThis.setTimeout = vi.fn((cb, delay) => {
   //   return setTimeout(cb, delay);
