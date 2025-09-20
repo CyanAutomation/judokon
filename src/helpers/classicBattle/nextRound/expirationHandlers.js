@@ -437,7 +437,11 @@ export async function dispatchReadyDirectly(params) {
           return recordSuccess(true);
         }
         const machineStateBeforeDispatch = readMachineState();
-        if (machineStateBeforeDispatch && machineStateBeforeDispatch !== "cooldown" && machineStateBeforeDispatch !== "roundOver") {
+        if (
+          machineStateBeforeDispatch &&
+          machineStateBeforeDispatch !== "cooldown" &&
+          machineStateBeforeDispatch !== "roundOver"
+        ) {
           return recordSuccess(true);
         }
         try {
