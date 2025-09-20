@@ -94,30 +94,30 @@ Status: planning completed. Execution is paused awaiting your approval. No files
 
 Planned activities (non-destructive, low-risk):
 
-1) Generate canonical PRD index
+1. Generate canonical PRD index
 
 - Command: `node scripts/generatePrdIndex.js` then `npm run sync:agents`
 - Expected artifacts: machine-readable index (e.g., `design/productRequirementsDocuments/prdIndex.json`) and agent sync report.
 - Acceptance: scripts exit 0; index lists PRDs and unmapped docs.
 - Fallback: if script fails, produce a minimal map via targeted grep queries.
 
-2) Review index and produce mapping report
+2. Review index and produce mapping report
 
 - Produce `reports/prd-mapping-report.json` and `.csv` with columns: source path, mapped PRD, status (mapped/unmapped/duplicate), suggested action, owner.
 
-3) Create stub redirect files (non-destructive)
+3. Create stub redirect files (non-destructive)
 
 - For each duplicate/mapped doc create a short stub that points to the authoritative PRD and includes last-updated + owner metadata. Prefer committing to a feature branch for review.
 
-4) Add 'Authoritative' header + 'See also' to PRDs
+4. Add 'Authoritative' header + 'See also' to PRDs
 
 - Add a short header block to PRDs stating authority, canonical path, owner, and links to implementation appendices in `design/`.
 
-5) Run validation and smoke checks
+5. Run validation and smoke checks
 
 - Commands: `npm run validate:data` (if available), `npx prettier . --check`, `npx eslint .`, `npm run rag:validate` (if present), and a markdown-link-check on changed files.
 
-6) Produce Phase-1 report and open PR
+6. Produce Phase-1 report and open PR
 
 - Commit the index, reports, stub files, and PRD header edits to a feature branch and open a PR with a short migration plan for Phase 2.
 
@@ -213,10 +213,10 @@ Next recommended step: Continue with the next mapped item from `reports/prd-mapp
 ### Recent agent action — removed merged source files
 
 - Deleted the following source files which had already been assimilated into PRDs to avoid duplication:
-	- `docs/battle-cli.md`
-	- `docs/battleCLI.md`
-	- `docs/round-selection.md`
-	- `design/battleMarkup.md`
+  - `docs/battle-cli.md`
+  - `docs/battleCLI.md`
+  - `docs/round-selection.md`
+  - `design/battleMarkup.md`
 
 - Updated PRDs retain the authoritative content; the repo now references PRDs under `design/productRequirementsDocuments/` as the source of truth for these topics.
 
