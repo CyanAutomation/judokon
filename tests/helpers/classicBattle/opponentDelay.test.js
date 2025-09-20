@@ -60,7 +60,9 @@ beforeEach(() => {
   vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => ({
     startCooldown,
     setupFallbackTimer: vi.fn((ms, cb) => setTimeout(cb, ms)),
-    createBattleStore: () => ({})
+    createBattleStore: () => ({}),
+    handleReplay: vi.fn().mockResolvedValue(undefined),
+    isOrchestrated: vi.fn(() => false)
   }));
   vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
     startTimer: vi.fn()
