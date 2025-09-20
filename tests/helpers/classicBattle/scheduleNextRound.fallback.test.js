@@ -401,7 +401,9 @@ describe("handleNextRoundExpiration orchestrated propagation", () => {
       STATS: []
     }));
     vi.doMock("../../../src/helpers/classicBattle/nextRound/expirationHandlers.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/classicBattle/nextRound/expirationHandlers.js");
+      const actual = await vi.importActual(
+        "../../../src/helpers/classicBattle/nextRound/expirationHandlers.js"
+      );
       return {
         ...actual,
         dispatchReadyViaBus: vi.fn(async (options = {}) => {
@@ -411,7 +413,9 @@ describe("handleNextRoundExpiration orchestrated propagation", () => {
       };
     });
     vi.doMock("../../../src/helpers/classicBattle/cooldownOrchestrator.js", async () => {
-      const actual = await vi.importActual("../../../src/helpers/classicBattle/cooldownOrchestrator.js");
+      const actual = await vi.importActual(
+        "../../../src/helpers/classicBattle/cooldownOrchestrator.js"
+      );
       return {
         ...actual,
         createExpirationDispatcher: vi.fn((params) => {
