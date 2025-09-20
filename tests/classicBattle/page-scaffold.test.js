@@ -70,13 +70,21 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
         nextButton.setAttribute("data-next-ready", "true");
       }
       resolveReady?.();
+      window.__statControls?.disable?.();
     };
-    buttons.forEach((btn) => {
+
+    const tracked = Array.isArray(window.__statControls?.buttons)
+      ? window.__statControls.buttons.filter((btn) => btn instanceof HTMLElement)
+      : [];
+    const uniqueButtons = tracked.length > 0 ? tracked : buttons;
+    const seen = new Set();
+    uniqueButtons.forEach((btn) => {
+      if (!(btn instanceof HTMLElement) || seen.has(btn)) return;
+      seen.add(btn);
       const listener = () => {
-        handleSelection(btn);
+        void handleSelection(btn);
       };
       btn.addEventListener("click", listener, { once: true });
-      btn.click = listener;
     });
   };
 
@@ -122,12 +130,19 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
       btn.disabled = false;
       btn.removeAttribute("disabled");
     });
+    if (!window.__selectionHandlerMock) {
+      const mod = await import("../../src/helpers/classicBattle/selectionHandler.js");
+      window.__selectionHandlerMock = mod.handleStatSelection;
+    }
     const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
     await startTimer(async (stat, opts = {}) => {
-      const { handleStatSelection } = await import(
-        "../../src/helpers/classicBattle/selectionHandler.js"
-      );
-      return handleStatSelection(store, stat, opts);
+      let handler = window.__selectionHandlerMock;
+      if (!handler) {
+        const mod = await import("../../src/helpers/classicBattle/selectionHandler.js");
+        handler = mod.handleStatSelection;
+        window.__selectionHandlerMock = handler;
+      }
+      return handler(store, stat, opts);
     }, store);
     window.__statControls?.enable?.();
   });
@@ -218,56 +233,46 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
   const showFatalInitError = vi.fn();
   const setupNextButton = vi.fn();
 
-  const initStatButtons = vi.fn((store) => {
-    const buttons = Array.from(
-      document.querySelectorAll(
-        "#stat-buttons button[data-stat], #stat-buttons button:not([data-ignore])"
-      )
-    );
-    let containers =
-      buttons.length > 0
-        ? Array.from(
-            new Set(
-              buttons
-                .map((btn) => btn.closest("#stat-buttons"))
-                .filter((el) => el instanceof HTMLElement)
-            )
-          )
-        : Array.from(document.querySelectorAll("#stat-buttons"));
+  const STAT_BUTTON_SELECTOR =
+    "#stat-buttons button[data-stat], #stat-buttons button:not([data-ignore])";
 
-    const targetContainer = containers[0] ?? null;
-    if (targetContainer) {
-      document.querySelectorAll("#stat-buttons").forEach((el) => {
-        if (el !== targetContainer) {
-          el.remove();
-        }
-      });
-      containers = [targetContainer];
+  const findStatButtons = () => Array.from(document.querySelectorAll(STAT_BUTTON_SELECTOR));
+
+  const findStatContainers = (buttons) => {
+    if (buttons.length === 0) {
+      return Array.from(document.querySelectorAll("#stat-buttons"));
     }
+    const unique = new Set();
+    buttons.forEach((btn) => {
+      const container = btn.closest("#stat-buttons");
+      if (container instanceof HTMLElement) {
+        unique.add(container);
+      }
+    });
+    return Array.from(unique);
+  };
 
-    if (containers.length === 0 || buttons.length === 0) {
-      const enable = vi.fn(() => {
-        window.statButtonsReadyPromise = Promise.resolve();
-      });
-      const disable = vi.fn(() => {
-        window.statButtonsReadyPromise = Promise.resolve();
-      });
-      const controls = { enable, disable };
-      window.__statControls = controls;
-      window.statButtonsReadyPromise = Promise.resolve();
-      window.__resolveStatButtonsReady = undefined;
-      return controls;
-    }
+  const selectPrimaryContainer = (containers) => {
+    if (containers.length <= 1) return containers;
+    const [primary] = containers;
+    document.querySelectorAll("#stat-buttons").forEach((el) => {
+      if (el !== primary) el.remove();
+    });
+    return [primary];
+  };
 
+  const createReadyState = (containers) => {
     let resolveReady;
-    const setPendingReadyPromise = () => {
+    const setPending = () => {
       window.statButtonsReadyPromise = new Promise((resolve) => {
         resolveReady = resolve;
         window.__resolveStatButtonsReady = resolve;
       });
+      containers.forEach((el) => {
+        el.dataset.buttonsReady = "false";
+      });
     };
-
-    const resolveReadyPromise = () => {
+    const resolve = () => {
       if (typeof resolveReady === "function") {
         const resolver = resolveReady;
         resolveReady = undefined;
@@ -276,98 +281,69 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
       } else if (!window.statButtonsReadyPromise) {
         window.statButtonsReadyPromise = Promise.resolve();
       }
-    };
-
-    const disable = vi.fn(() => {
-      buttons.forEach((btn) => {
-        btn.disabled = true;
-        btn.tabIndex = -1;
-      });
-      containers.forEach((el) => {
-        el.dataset.buttonsReady = "false";
-      });
-      setPendingReadyPromise();
-    });
-
-    const enable = vi.fn(() => {
-      buttons.forEach((btn) => {
-        btn.disabled = false;
-        btn.tabIndex = 0;
-        btn.removeAttribute("disabled");
-      });
       containers.forEach((el) => {
         el.dataset.buttonsReady = "true";
       });
-      resolveReadyPromise();
+    };
+    return { setPending, resolve };
+  };
+
+  const setButtonsDisabled = (buttons, disabled) => {
+    buttons.forEach((btn) => {
+      btn.disabled = disabled;
+      btn.tabIndex = disabled ? -1 : 0;
+      if (!disabled) {
+        btn.removeAttribute("disabled");
+      }
+    });
+  };
+
+  /**
+   * Initialize the stat button controls for the Classic Battle mock environment.
+   *
+   * @pseudocode
+   * 1. Query active stat buttons and their containers, pruning duplicate containers.
+   * 2. When no buttons exist, expose resolved readiness controls and exit early.
+   * 3. Create enable/disable controls that toggle button state and manage the readiness promise.
+   * 4. Expose the controls globally so timer service helpers can react to selections.
+   * 5. Start in the disabled state to match production initialization.
+   *
+   * @returns {{ enable: () => void, disable: () => void }} Mock stat button controls.
+   */
+  const initStatButtons = vi.fn((store) => {
+    void store;
+    const buttons = findStatButtons();
+    const containers = selectPrimaryContainer(findStatContainers(buttons));
+
+    if (containers.length === 0 || buttons.length === 0) {
+      const enable = vi.fn(() => {
+        window.statButtonsReadyPromise = Promise.resolve();
+      });
+      const disable = vi.fn(() => {
+        window.statButtonsReadyPromise = Promise.resolve();
+      });
+      const controls = { enable, disable, buttons: [] };
+      window.__statControls = controls;
+      window.statButtonsReadyPromise = Promise.resolve();
+      window.__resolveStatButtonsReady = undefined;
+      return controls;
+    }
+
+    const readyState = createReadyState(containers);
+
+    const disable = vi.fn(() => {
+      setButtonsDisabled(buttons, true);
+      readyState.setPending();
     });
 
-    const nativeClick = typeof HTMLElement !== "undefined" ? HTMLElement.prototype.click : undefined;
+    const enable = vi.fn(() => {
+      setButtonsDisabled(buttons, false);
+      readyState.resolve();
+    });
 
-    const attachHandlers = () => {
-      buttons.forEach((btn) => {
-        let assignedClick;
-        let runningFromProxy = false;
-
-        const runSelection = async (event) => {
-          event?.preventDefault?.();
-          const stat = btn.dataset.stat || btn.getAttribute("data-stat") || "power";
-          let handler = window.__selectionHandlerMock;
-          if (!handler) {
-            const mod = await import("../../src/helpers/classicBattle/selectionHandler.js");
-            handler = mod.handleStatSelection;
-            window.__selectionHandlerMock = handler;
-          }
-          await handler(store, stat, {});
-          const { emitBattleEvent } = await import(
-            "../../src/helpers/classicBattle/battleEvents.js"
-          );
-          emitBattleEvent("roundResolved", { stat });
-          disable();
-        };
-
-        const proxyClick = async (event) => {
-          runningFromProxy = true;
-          try {
-            await runSelection(event);
-            if (assignedClick) {
-              return assignedClick(event);
-            }
-            if (nativeClick) {
-              return nativeClick.call(btn);
-            }
-            return undefined;
-          } finally {
-            runningFromProxy = false;
-          }
-        };
-
-        btn.addEventListener("click", (event) => {
-          if (!runningFromProxy) {
-            void runSelection(event);
-          }
-        });
-
-        Object.defineProperty(btn, "click", {
-          configurable: true,
-          enumerable: false,
-          get() {
-            return proxyClick;
-          },
-          set(value) {
-            if (typeof value === "function") {
-              assignedClick = value.bind(btn);
-            } else {
-              assignedClick = undefined;
-            }
-          }
-        });
-      });
-    };
-
-    attachHandlers();
     disable();
 
-    const controls = { enable, disable };
+    const controls = { enable, disable, buttons: [...buttons] };
     window.__statControls = controls;
     return controls;
   });
@@ -438,6 +414,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     modalMock.onStart = null;
     vi.resetModules();
     vi.clearAllMocks();
+    delete window.__selectionHandlerMock;
+    delete window.__statControls;
+    delete window.__resolveStatButtonsReady;
+    delete window.statButtonsReadyPromise;
   });
 
   test("initializes scoreboard regions and default content", async () => {
