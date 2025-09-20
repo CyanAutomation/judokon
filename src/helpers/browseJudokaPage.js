@@ -10,6 +10,10 @@ import { setupButtonEffects } from "./buttonEffects.js";
 import { setupCountryToggle } from "./browse/setupCountryToggle.js";
 import { setupCountryFilter } from "./browse/setupCountryFilter.js";
 import { addHoverZoomMarkers } from "./setupHoverZoom.js";
+import {
+  resetBrowseTestHooks,
+  updateBrowseTestHooksContext
+} from "./browse/testHooks.js";
 
 let resolveBrowseReady;
 export const browseJudokaReadyPromise =
@@ -59,6 +63,7 @@ export function setupLayoutToggle(layoutBtn, panel) {
  * @returns {Promise<void>} A promise that resolves when the page setup is complete.
  */
 export async function setupBrowseJudokaPage() {
+  resetBrowseTestHooks();
   const carouselContainer = document.getElementById("carousel-container");
   if (!carouselContainer) {
     console.error("Carousel container not found. Cannot set up browse Judoka page.");
@@ -132,6 +137,7 @@ export async function setupBrowseJudokaPage() {
 
     setupButtonEffects();
     addHoverZoomMarkers();
+    updateBrowseTestHooksContext({ container: containerEl || null, gokyoData });
   }
 
   async function init() {
