@@ -210,14 +210,26 @@ function bindUIServiceEventHandlers() {
   });
 }
 
-// Bind per EventTarget instance; if tests reset the bus, we rebind.
-try {
-  const KEY = "__classicBattleUIServiceBoundTarget";
-  const current = getBattleEventTarget();
-  if (globalThis[KEY] !== current) {
+/**
+ * Bind UI service handlers once per battle event target.
+ *
+ * Mirrors the previous module-level binding behavior but defers execution
+ * until explicitly invoked so tests can control when listeners register.
+ *
+ * @returns {void}
+ */
+export function bindUIServiceEventHandlersOnce() {
+  let shouldBind = true;
+  try {
+    const KEY = "__cbUiServiceBoundTargets";
+    const target = getBattleEventTarget();
+    if (target) {
+      const set = (globalThis[KEY] ||= new WeakSet());
+      if (set.has(target)) shouldBind = false;
+      else set.add(target);
+    }
+  } catch {}
+  if (shouldBind) {
     bindUIServiceEventHandlers();
-    globalThis[KEY] = current;
   }
-} catch {
-  bindUIServiceEventHandlers();
 }

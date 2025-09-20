@@ -21,6 +21,7 @@ let showMatchSummaryModal = null;
 // Reference to avoid unused-import lint complaint when the function is re-exported
 // or only used in other environments.
 void _updateSnackbar;
+let hasScheduledUiServicePreload = false;
 function preloadUiService() {
   import("/src/helpers/classicBattle/uiService.js")
     .then((m) => {
@@ -28,7 +29,17 @@ function preloadUiService() {
     })
     .catch(() => {});
 }
-runWhenIdle(preloadUiService);
+function scheduleUiServicePreload() {
+  if (hasScheduledUiServicePreload) return;
+  hasScheduledUiServicePreload = true;
+  try {
+    runWhenIdle(preloadUiService);
+  } catch {
+    try {
+      preloadUiService();
+    } catch {}
+  }
+}
 
 /**
  * Apply UI updates for a newly started round.
@@ -391,16 +402,31 @@ export function bindRoundUIEventHandlers() {
   bindRoundResolved();
 }
 
-// Bind once on module load for production/runtime usage. Guard against
-// duplicate bindings when tests reset modules across files.
-try {
-  const FLAG = "__classicBattleRoundUIBound";
-  if (!globalThis[FLAG]) {
+/**
+ * Bind round UI handlers once per battle event target.
+ *
+ * Guards against duplicate bindings across repeated module imports by tracking
+ * the active battle event target in a WeakSet. When the same target is
+ * encountered again the function exits early, mirroring the previous module-
+ * level behavior without performing work eagerly on import.
+ *
+ * @returns {void}
+ */
+export function bindRoundUIEventHandlersOnce() {
+  scheduleUiServicePreload();
+  let shouldBind = true;
+  try {
+    const KEY = "__cbRoundUIStaticBoundTargets";
+    const target = getBattleEventTarget();
+    if (target) {
+      const set = (globalThis[KEY] ||= new WeakSet());
+      if (set.has(target)) shouldBind = false;
+      else set.add(target);
+    }
+  } catch {}
+  if (shouldBind) {
     bindRoundUIEventHandlers();
-    globalThis[FLAG] = true;
   }
-} catch {
-  bindRoundUIEventHandlers();
 }
 
 // Test-friendly variant: dynamically import dependencies within handlers so
@@ -420,6 +446,7 @@ try {
  * @returns {void}
  */
 export function bindRoundUIEventHandlersDynamic() {
+  scheduleUiServicePreload();
   // Guard against rebinding on the same EventTarget instance
   try {
     const KEY = "__cbRoundUIDynamicBoundTargets";

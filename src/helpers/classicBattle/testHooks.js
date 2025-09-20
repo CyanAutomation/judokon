@@ -71,8 +71,36 @@ export async function ensureBindings(opts = {}) {
   const force = !!opts.force;
   // Bind round UI listeners once per worker to avoid duplicate handlers.
   if (!__uiBound) {
-    await import("/src/helpers/classicBattle/roundUI.js");
+    const ui = await import("/src/helpers/classicBattle/roundUI.js");
+    if (typeof ui.bindRoundUIEventHandlersOnce === "function") {
+      ui.bindRoundUIEventHandlersOnce();
+    } else if (typeof ui.bindRoundUIEventHandlers === "function") {
+      ui.bindRoundUIEventHandlers();
+    }
+    let uiService;
+    try {
+      uiService = await import("/src/helpers/classicBattle/uiService.js");
+      if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
+        uiService.bindUIServiceEventHandlersOnce();
+      }
+    } catch {}
     __uiBound = true;
+    if (force) {
+      try {
+        __resetBattleEventTarget();
+      } catch {}
+      if (typeof ui.bindRoundUIEventHandlersDynamic === "function")
+        ui.bindRoundUIEventHandlersDynamic();
+      try {
+        uiService = uiService || (await import("/src/helpers/classicBattle/uiService.js"));
+        if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
+          uiService.bindUIServiceEventHandlersOnce();
+        }
+      } catch {}
+      const eventHandlers = await import("/src/helpers/classicBattle/uiEventHandlers.js");
+      if (typeof eventHandlers.bindUIHelperEventHandlersDynamic === "function")
+        eventHandlers.bindUIHelperEventHandlersDynamic();
+    }
   } else if (force) {
     // Reset the event bus and bind dynamic handlers to honor vi.mocks.
     try {
@@ -81,6 +109,12 @@ export async function ensureBindings(opts = {}) {
     const ui = await import("/src/helpers/classicBattle/roundUI.js");
     if (typeof ui.bindRoundUIEventHandlersDynamic === "function")
       ui.bindRoundUIEventHandlersDynamic();
+    try {
+      const uiService = await import("/src/helpers/classicBattle/uiService.js");
+      if (typeof uiService.bindUIServiceEventHandlersOnce === "function") {
+        uiService.bindUIServiceEventHandlersOnce();
+      }
+    } catch {}
     const eventHandlers = await import("/src/helpers/classicBattle/uiEventHandlers.js");
     if (typeof eventHandlers.bindUIHelperEventHandlersDynamic === "function")
       eventHandlers.bindUIHelperEventHandlersDynamic();
