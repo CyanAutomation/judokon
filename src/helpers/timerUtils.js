@@ -86,6 +86,8 @@ export function createCountdownTimer(
   let cancelFn = cancel;
   let paused = false;
   let hardTimeoutId = 0;
+  let manualIntervalId = 0;
+  let manualCheckId = 0;
   const activeScheduler =
     scheduler && typeof scheduler.setTimeout === "function" ? scheduler : realScheduler;
   const clearTimeoutFn =
@@ -121,25 +123,44 @@ export function createCountdownTimer(
       return;
     }
     if (typeof onTick === "function") onTick(remaining);
-    subId = onSecondTick(async () => {
+    let schedulerTicked = false;
+    const cancelManualInterval = () => {
+      if (manualIntervalId) {
+        try {
+          clearInterval(manualIntervalId);
+        } catch {}
+        manualIntervalId = 0;
+      }
+    };
+    const invokeTickSafely = async () => {
       try {
         await tick();
       } catch (err) {
         console.error("Error in countdown timer tick:", err);
       }
+    };
+    subId = onSecondTick(async () => {
+      schedulerTicked = true;
+      cancelManualInterval();
+      await invokeTickSafely();
     });
     if (subId === undefined || subId === null) {
       const intervalId = setInterval(async () => {
-        try {
-          await tick();
-        } catch (err) {
-          console.error("Error in countdown timer tick:", err);
-        }
+        await invokeTickSafely();
       }, 1000);
       subId = intervalId;
       cancelFn = (id) => clearInterval(id);
     } else {
       cancelFn = cancel;
+      try {
+        manualCheckId = activeScheduler.setTimeout(() => {
+          if (!schedulerTicked && manualIntervalId === 0) {
+            manualIntervalId = globalThis.setInterval(() => {
+              void invokeTickSafely();
+            }, 1000);
+          }
+        }, 1100);
+      } catch {}
     }
     // Hard fallback to ensure expiration even if the scheduler never ticks
     // in certain test environments.
@@ -169,6 +190,20 @@ export function createCountdownTimer(
     if (subId !== null) {
       cancelFn(subId);
       subId = null;
+    }
+    if (manualIntervalId) {
+      try {
+        clearInterval(manualIntervalId);
+      } catch {}
+      manualIntervalId = 0;
+    }
+    if (manualCheckId) {
+      try {
+        clearTimeoutFn.call(activeScheduler, manualCheckId);
+      } catch {
+        clearTimeoutFn(manualCheckId);
+      }
+      manualCheckId = 0;
     }
     if (hardTimeoutId) {
       try {
