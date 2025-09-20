@@ -1,13 +1,6 @@
+import { isConsoleMocked, shouldShowTestLogs } from "../testLogGate.js";
+
 // [TEST DEBUG] Instrument event dispatcher
-const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
-const isConsoleMocked = (method) => {
-  const viInstance = globalThis?.vi;
-  return (
-    typeof viInstance?.isMockFunction === "function" &&
-    typeof method === "function" &&
-    viInstance.isMockFunction(method)
-  );
-};
 const _origDispatchEvent = globalThis.dispatchEvent;
 globalThis.dispatchEvent = function (event) {
   if (

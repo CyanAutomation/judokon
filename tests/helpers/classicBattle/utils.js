@@ -1,12 +1,8 @@
-const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
-const isConsoleMocked = (method) => {
-  const viInstance = globalThis?.vi;
-  return (
-    typeof viInstance?.isMockFunction === "function" &&
-    typeof method === "function" &&
-    viInstance.isMockFunction(method)
-  );
-};
+import { isConsoleMocked, shouldShowTestLogs } from "../../../src/helpers/testLogGate.js";
+import { vi } from "vitest";
+import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
+import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBattle/orchestrator.js";
+
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
   if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
@@ -15,12 +11,6 @@ const debugLog = (...args) => {
 };
 
 debugLog("[TEST DEBUG] utils.js top-level loaded");
-// [TEST DEBUG] top-level utils.js
-
-debugLog("[TEST DEBUG] top-level utils.js");
-import { vi } from "vitest";
-import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
-import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBattle/orchestrator.js";
 
 /**
  * @pseudocode

@@ -1,12 +1,5 @@
-const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
-const isConsoleMocked = (method) => {
-  const viInstance = globalThis?.vi;
-  return (
-    typeof viInstance?.isMockFunction === "function" &&
-    typeof method === "function" &&
-    viInstance.isMockFunction(method)
-  );
-};
+import { isConsoleMocked, shouldShowTestLogs } from "../../../src/helpers/testLogGate.js";
+
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
   if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
@@ -15,9 +8,6 @@ const debugLog = (...args) => {
 };
 
 debugLog("[TEST DEBUG] domUtils.js top-level loaded");
-// [TEST DEBUG] top-level domUtils.js
-
-debugLog("[TEST DEBUG] top-level domUtils.js");
 /**
  * Create a container element for snackbar messages.
  *

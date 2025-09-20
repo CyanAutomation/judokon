@@ -1,12 +1,7 @@
-const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
-const isConsoleMocked = (method) => {
-  const viInstance = globalThis?.vi;
-  return (
-    typeof viInstance?.isMockFunction === "function" &&
-    typeof method === "function" &&
-    viInstance.isMockFunction(method)
-  );
-};
+import { isConsoleMocked, shouldShowTestLogs } from "../../../src/helpers/testLogGate.js";
+import { vi } from "vitest";
+import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
+
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
   if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
@@ -15,11 +10,6 @@ const debugLog = (...args) => {
 };
 
 debugLog("[TEST DEBUG] mockSetup.js top-level loaded");
-// [TEST DEBUG] top-level mockSetup.js
-
-debugLog("[TEST DEBUG] top-level mockSetup.js");
-import { vi } from "vitest";
-import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 
 const mocks = {
   fetchJsonMock: undefined,

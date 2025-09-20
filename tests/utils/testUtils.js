@@ -1,14 +1,10 @@
 // [TEST DEBUG] top-level testUtils.js
 
-const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
-const isConsoleMocked = (method) => {
-  const viInstance = globalThis?.vi;
-  return (
-    typeof viInstance?.isMockFunction === "function" &&
-    typeof method === "function" &&
-    viInstance.isMockFunction(method)
-  );
-};
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
+import { isConsoleMocked, shouldShowTestLogs } from "../../src/helpers/testLogGate.js";
+
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
   if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
@@ -17,9 +13,6 @@ const debugLog = (...args) => {
 };
 
 debugLog("[TEST DEBUG] top-level testUtils.js");
-import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
-import path from "path";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const judokaFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/judoka.json")));
 const gokyoFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/gokyo.json")));
