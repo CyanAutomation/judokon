@@ -38,7 +38,10 @@ import {
   disableNextRoundButton,
   showFatalInitError
 } from "../helpers/classicBattle/uiHelpers.js";
-import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
+import {
+  handleStatSelection,
+  getPlayerAndOpponentValues
+} from "../helpers/classicBattle/selectionHandler.js";
 import setupScheduler from "../helpers/classicBattle/setupScheduler.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
@@ -60,6 +63,28 @@ const POST_SELECTION_READY_DELAY_MS = 48;
 const OPPONENT_MESSAGE_BUFFER_MS = 150;
 
 const COOLDOWN_FLAG = "__uiCooldownStarted";
+
+function resolveStatValues(store, stat) {
+  const playerStats = store?.currentPlayerJudoka?.stats;
+  const opponentStats = store?.currentOpponentJudoka?.stats;
+
+  let playerVal = Number(playerStats?.[stat]);
+  let opponentVal = Number(opponentStats?.[stat]);
+
+  const needsPlayerFallback = !Number.isFinite(playerVal);
+  const needsOpponentFallback = !Number.isFinite(opponentVal);
+
+  if (needsPlayerFallback || needsOpponentFallback) {
+    const fallback = getPlayerAndOpponentValues(stat);
+    if (needsPlayerFallback) playerVal = Number(fallback.playerVal);
+    if (needsOpponentFallback) opponentVal = Number(fallback.opponentVal);
+  }
+
+  return {
+    playerVal: Number.isFinite(playerVal) ? playerVal : 0,
+    opponentVal: Number.isFinite(opponentVal) ? opponentVal : 0
+  };
+}
 
 function resetCooldownFlag(store) {
   if (!store || typeof store !== "object") return;
@@ -696,11 +721,12 @@ async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");
   if (!btn || btn.disabled) return;
   const delayOverride = prepareUiBeforeSelection();
+  const { playerVal, opponentVal } = resolveStatValues(store, stat);
   let result;
   try {
     result = await handleStatSelection(store, String(stat), {
-      playerVal: 5,
-      opponentVal: 3,
+      playerVal,
+      opponentVal,
       delayMs: delayOverride
     });
   } catch (err) {
@@ -792,7 +818,8 @@ async function beginSelectionTimer(store) {
         }
         let result;
         try {
-          result = await computeRoundResult(store, "speed", 5, 3);
+        const { playerVal, opponentVal } = resolveStatValues(store, "speed");
+        result = await computeRoundResult(store, "speed", playerVal, opponentVal);
         } catch (err) {
           console.debug("battleClassic: computeRoundResult (vitest) failed", err);
         }
@@ -822,7 +849,13 @@ async function beginSelectionTimer(store) {
       console.debug("battleClassic: set autoSelected (timer) failed", err);
     }
     try {
-      const result = await computeRoundResult(store, String(stat || "speed"), 5, 3);
+      const { playerVal, opponentVal } = resolveStatValues(store, String(stat || "speed"));
+      const result = await computeRoundResult(
+        store,
+        String(stat || "speed"),
+        playerVal,
+        opponentVal
+      );
       // Defensive direct DOM update to satisfy E2E in case adapter binding fails
       try {
         const scoreEl = document.getElementById("score-display");
@@ -855,7 +888,8 @@ async function beginSelectionTimer(store) {
         const needsScore = scoreEl && /You:\s*0\s*Opponent:\s*0/.test(scoreEl.textContent || "");
         const notReady = btn && (btn.disabled || btn.getAttribute("data-next-ready") !== "true");
         if (needsScore || notReady) {
-          const result = await computeRoundResult(store, "speed", 5, 3);
+          const { playerVal, opponentVal } = resolveStatValues(store, "speed");
+          const result = await computeRoundResult(store, "speed", playerVal, opponentVal);
           try {
             if (scoreEl && result) {
               scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
