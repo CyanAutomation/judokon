@@ -237,6 +237,31 @@ This appendix integrates the implementation and usage guidance from `docs/battle
 - Testing guidance: `docs/testing-guide.md`
 - Architecture overview: `design/architecture.md`
 
+### Appendix: CLI Module Structure (from docs/battleCLI.md)
+
+This section captures developer-facing module structure and helpers from the former `docs/battleCLI.md` to ensure implementation notes remain with the authoritative PRD.
+
+- `src/pages/battleCLI/state.js` — centralizes mutable flags and Escape key promise.
+- `src/pages/battleCLI/events.js` — keyboard handling delegates to helpers: `handleArrowNav(e)`, `shouldProcessKey(key)`, `routeKeyByState(key)`.
+- Stat list helpers: `loadStatDefs()`, `buildStatRows(stats, judoka)`, `renderHelpMapping(stats)`, `ensureStatClickBinding(list)`.
+- Public entry points exposed via `src/pages/index.js` (e.g., `import { battleCLI, onKeyDown } from "src/pages/index.js"`).
+
+#### Layout & Accessibility Notes
+
+- `#cli-stats` uses CSS Grid with responsive columns; `.cli-stat` ensures ≥44px height.
+- `#cli-root`, `#cli-countdown`, and `#snackbar-container` are stable anchors for tests and automation.
+- Playwright validation exists (`playwright/cli-layout-assessment.spec.js`) and should be kept in sync with the PRD.
+
+#### Headless & Test Modes
+
+- Headless mode helpers: `setHeadlessMode(true)` to remove waits; `setTestMode(true)` to use deterministic RNG and fast simulations.
+- `getEscapeHandledPromise()` resolves for Escape handling to simplify async tests.
+
+#### Battle State Helpers
+
+- `handleBattleState` delegates UI updates and uses helpers like `updateUiForState(state)`, `ensureNextRoundButton()`, and `logStateChange(from,to)` to append verbose log entries.
+
+
 ---
 
 ## Dependencies
