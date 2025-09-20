@@ -240,7 +240,13 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
     guard(() => timer?.stop?.());
     guard(() => setSkipHandler(null));
     const target = button || getNextButton();
-    guard(() => markNextButtonReady(target));
+    const isTargetReady =
+      !!target &&
+      target.disabled === false &&
+      (target.dataset?.nextReady === "true" || target.getAttribute("data-next-ready") === "true");
+    if (!isTargetReady) {
+      guard(() => markNextButtonReady(target));
+    }
     for (const evt of [
       "cooldown.timer.expired",
       "nextRoundTimerReady",
