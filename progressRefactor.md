@@ -54,9 +54,6 @@ Rationale: PRDs are the discoverable canonical source and include acceptance cri
 
 ## Planned approach — phased, discrete steps
 
-Phase 0 — Confirm scope (this PR)
-- Deliverable: this `progressRefactor.md` with mapping and proposed plan. You review and confirm which items to create vs assimilate.
-
 Phase 1 — Low-risk assimilation (quick wins)
 - For each doc flagged above (event naming, state handler, battle markup, testing modes, validation commands):
 	- Create PRD supplement entries or extend existing PRDs with a new section "Implementation notes / audit" and link to original doc.
@@ -64,9 +61,9 @@ Phase 1 — Low-risk assimilation (quick wins)
 	- Create machine-readable artifacts where useful (e.g., `design/dataSchemas/events/*.json` for schemas; `design/dataSchemas/battleMarkup.generated.js` already exists).
 - Success criteria: PRDs updated, CI and Prettier pass, no behavior changes.
 
-Phase 2 — New PRDs and consolidation (if approved)
+Phase 2 — New PRDs and consolidation
 - Create any missing PRDs (e.g., `prdPublicAPIs.md` or `prdEventNamingMigration.md`) with the standard PRD template.
-- Migrate significant content from `docs/` into PRDs (copy with attribution) and mark original doc as archived or redirect to PRD.
+- Migrate significant content from `docs/` into PRDs and remove the original doc.
 - Success criteria: New PRDs created, index updated (`prdIndex.json`) and reviewers assigned.
 
 Phase 3 — Test & automation
@@ -86,11 +83,3 @@ Phase 5 — Governance & ongoing maintenance
 
 - Risk: Breaking links or CI if tests depend on docs in place. Mitigation: Phase 1 only adds references; Phase 4 removes content only after PRD consumers point to PRD and tests pass.
 - Risk: PRDs become large. Mitigation: keep PRD sections focused; move large implementation guides to `design/implementation/` and link them from PRD with a summary.
-
-## Suggested immediate next actions (pick one)
-
-1. "Minimal": I will implement Phase 1 for the high-value items (eventNamingAudit → `prdEventContracts.md`, stateHandlerAudit → `prdStateHandler.md`, battleMarkup → `prdBattleMarkup.md`, testing-modes → `prdTestMode.md`) and add links to the original docs. This is low-risk and makes PRDs authoritative quickly.
-2. "Full consolidation": I will implement Phases 1–3 (create any missing PRDs, move docs into PRDs, add generated artifacts and minimal consumer tests). This is more work but finishes the job end-to-end.
-
-Please tell me which immediate action you prefer (1 or 2). Once you confirm, I'll begin Phase 1 and apply the agreed changes. I'll pause here awaiting your review and choice.
-
