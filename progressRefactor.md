@@ -171,3 +171,10 @@ Next recommended steps (Phase 1 completion):
 3. Approve PRD header updates (authoritative header + owner metadata) for mapped PRDs; I can make a small batch to review the style.
 
 I will pause here for your review and instructions on how to proceed with stubs and PRD header edits.
+
+### Phase 1 — Integrations performed
+
+- Integrated `docs/battle-cli.md` into `design/productRequirementsDocuments/prdBattleCLI.md` as an Appendix and expanded the PRD's Acceptance Criteria to explicitly include CLI-specific testable items (keyboard mapping, timer behavior, test hooks, persistence key, and bootstrap helpers).
+- The PRD was updated in-place; no deletion of the original `docs/battle-cli.md` file was performed.
+
+Next: Please confirm if you want me to proceed with the next file mapping (I will follow the same pattern: merge the docs file into the mapped PRD under an Appendix, ensure acceptance criteria are explicit per `design/codeStandards/prdRulesForAgents.md`, and commit changes non-destructively). If yes, tell me which source file to merge next or I can proceed in the order from `reports/prd-mapping-report.json` (recommended).

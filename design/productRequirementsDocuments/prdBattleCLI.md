@@ -181,7 +181,61 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 
 ## Acceptance Criteria (BDD-style)
 
-(unchanged from original, covering Engine Parity, Keyboard, Timer, Outcome & Score, Accessibility, Determinism, Error Handling.)
+- Engine parity: The CLI reuses the Classic Battle engine/state machine without forking. Automated parity tests pass (unit/integration).
+- Keyboard controls: Numeric keys `1–5` select stats; `Enter`/`Space` advances rounds; `H` opens help within 1s; `Q` quits with confirmation; `Esc` closes help. Tests verify each mapping.
+- Pointer/touch parity: Stat rows are clickable/tappable with targets ≥44px; taps register the same selection flow as keyboard.
+- Timer behavior: Countdown updates at 1 Hz; expiry triggers auto-select if `autoSelect` is enabled and mirrors engine behavior.
+- Outcome & score: Win/Loss/Draw states render correctly and scores update immediately after round resolution.
+- Accessibility: Screen reader announcements exist for prompts/timers/outcomes using `aria-live` regions; logical focus order is preserved; WCAG 2.1 AA checks pass in CI.
+- Test hooks: Stable selectors exist (`#cli-root`, `#cli-countdown`, `#cli-score`, `#snackbar-container`, `data-round`, `data-remaining-time`) and are used by Playwright tests.
+- Determinism: `?seed=` param produces repeatable runs; invalid seeds fall back to a deterministic default and are logged.
+- Settings persistence: Win target persists under `localStorage` key `battleCLI.pointsToWin` and restores on startup.
+- Observability: Verbose log mode shows timestamped transitions and can be toggled via `cliVerbose` feature flag; logs are silenced in CI.
+- Bootstrap helpers: Startup helpers (`autostartBattle()`, `renderStatList()`, `restorePointsToWin()`) are present and covered by unit tests.
+- Error handling: Invalid inputs are ignored with a short hint; JSON load failures show a readable error and default fallback.
+
+## Appendix: CLI Usage & Developer Notes
+
+This appendix integrates the implementation and usage guidance from `docs/battle-cli.md` to keep developer-facing details with the PRD. The appendix is implementation-adjacent and does not change the PRD's functional requirements.
+
+### Controls
+
+- Number keys `1–5`: select stats
+- `Enter`/`Space`: advance rounds
+- `Q`: quit match (confirmation required)
+- `H`: toggle help panel (must open within 1s)
+- `Esc`: close help or dismiss dialogs
+
+### Interactive / Display Elements
+
+- Stats: selectable via keyboard and clickable/tappable rows (≥44px).
+- State badge: `#battle-state-badge` reflects the current machine state for visibility and tests.
+- Bottom line / Snackbar: Status line renders in `#snackbar-container` for short messages and countdown hints.
+- Win target: Header selector (5/10/15) persisted to `localStorage` at `battleCLI.pointsToWin`.
+- Verbose log: Optional header toggle to enable an event/state transition log for debugging.
+
+### Bootstrap Helpers (developer)
+
+- `autostartBattle()` — initializes and wires up the battle engine for the CLI surface.
+- `renderStatList()` — renders numeric-key-mapped stat rows and attaches input handlers.
+- `restorePointsToWin()` — restores persisted win target from `localStorage`.
+
+### Testing notes
+
+- CLI-specific Playwright tests live in `playwright/battle-cli.spec.js` and exercise keyboard selection flow, state badge updates, verbose log behaviour, and keyboard-only playthroughs.
+- Visual regression and accessibility checks should include the CLI view to confirm touch targets, contrast, and announcements.
+
+### Implementation details
+
+- The CLI reuses the core Classic Battle engine and state machine without behavioral changes.
+- Stable data-attributes and IDs are added for tests (see Test Hooks acceptance criterion).
+- Styling is additive; the `src/styles/cli-immersive.css` stylesheet contains terminal-specific styles.
+
+### Related docs
+
+- Battle Engine Events API: `docs/components.md` (engine events and handlers)
+- Testing guidance: `docs/testing-guide.md`
+- Architecture overview: `design/architecture.md`
 
 ---
 
