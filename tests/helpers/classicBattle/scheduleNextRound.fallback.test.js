@@ -315,3 +315,142 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     }
   });
 });
+
+describe("handleNextRoundExpiration orchestrated propagation", () => {
+  /** @type {import('vitest').Mock | undefined} */
+  let dispatchReadyViaBusSpy;
+  /** @type {import('vitest').Mock | undefined} */
+  let globalDispatchSpy;
+  /** @type {any} */
+  let controls;
+  let runtime;
+  let machine;
+  let scoreboardMock;
+  let eventBus;
+
+  beforeEach(async () => {
+    document.body.innerHTML = '<button id="next-button" data-role="next-round"></button>';
+    vi.resetModules();
+    dispatchReadyViaBusSpy = vi.fn(async () => true);
+    globalDispatchSpy = vi.fn(async () => true);
+    machine = { dispatch: vi.fn(() => true), getState: () => "cooldown" };
+    scoreboardMock = {
+      clearTimer: vi.fn(),
+      showMessage: vi.fn(),
+      showAutoSelect: vi.fn(),
+      showTemporaryMessage: vi.fn(() => () => {}),
+      updateTimer: vi.fn()
+    };
+    const handlers = new Map();
+    eventBus = {
+      emit: vi.fn((type, detail) => {
+        const listeners = handlers.get(type);
+        if (!listeners) return;
+        for (const listener of listeners) {
+          listener(detail);
+        }
+      }),
+      on: vi.fn((type, listener) => {
+        if (!handlers.has(type)) {
+          handlers.set(type, new Set());
+        }
+        handlers.get(type)?.add(listener);
+      }),
+      off: vi.fn((type, listener) => {
+        handlers.get(type)?.delete(listener);
+      })
+    };
+
+    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent: globalDispatchSpy,
+      resetDispatchHistory: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
+      setSkipHandler: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
+      onBattleEvent: vi.fn(),
+      offBattleEvent: vi.fn(),
+      emitBattleEvent: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/debugHooks.js", () => ({
+      readDebugState: vi.fn(() => undefined),
+      exposeDebugState: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/preloadService.js", () => ({
+      getDebugPanelLazy: vi.fn(async () => ({ updateDebugPanel: vi.fn() }))
+    }));
+    vi.doMock("../../../src/helpers/setupScoreboard.js", () => scoreboardMock);
+    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
+      showSnackbar: vi.fn(),
+      updateSnackbar: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
+      attachCooldownRenderer: vi.fn()
+    }));
+    vi.doMock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
+      computeNextRoundCooldown: () => 0
+    }));
+    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
+      requireEngine: () => ({ startCoolDown: vi.fn() }),
+      startCoolDown: vi.fn(),
+      startRound: vi.fn(),
+      getScores: vi.fn(() => ({})),
+      createBattleEngine: vi.fn(),
+      stopTimer: vi.fn(),
+      STATS: []
+    }));
+    vi.doMock("../../../src/helpers/classicBattle/nextRound/expirationHandlers.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/classicBattle/nextRound/expirationHandlers.js");
+      return {
+        ...actual,
+        dispatchReadyViaBus: vi.fn(async (options = {}) => {
+          const result = await dispatchReadyViaBusSpy?.(options);
+          return result ?? true;
+        })
+      };
+    });
+    vi.doMock("../../../src/helpers/classicBattle/cooldownOrchestrator.js", async () => {
+      const actual = await vi.importActual("../../../src/helpers/classicBattle/cooldownOrchestrator.js");
+      return {
+        ...actual,
+        createExpirationDispatcher: vi.fn((params) => {
+          runtime = params.runtime;
+          return actual.createExpirationDispatcher(params);
+        })
+      };
+    });
+
+    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
+    controls = startCooldown({}, null, {
+      createRoundTimer: () => ({
+        on: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn()
+      }),
+      eventBus,
+      markReady: vi.fn(),
+      isOrchestrated: () => true,
+      getClassicBattleMachine: () => machine,
+      getStateSnapshot: () => ({ state: "cooldown" }),
+      scoreboard: scoreboardMock,
+      showSnackbar: vi.fn(),
+      setSkipHandler: vi.fn(),
+      updateDebugPanel: vi.fn()
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("dispatches via bus after machine requests propagation", async () => {
+    expect(controls).toBeTruthy();
+    expect(typeof runtime?.onExpired).toBe("function");
+    dispatchReadyViaBusSpy?.mockClear();
+    await runtime.onExpired();
+    expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
+    expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
+    expect(machine.dispatch).not.toHaveBeenCalled();
+  });
+});
