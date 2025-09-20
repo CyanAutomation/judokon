@@ -497,12 +497,13 @@ export async function dispatchReadyDirectly(params) {
   if (typeof globalDispatchBattleEvent === "function") {
     try {
       const result = await globalDispatchBattleEvent("ready");
-              if (result !== false) {
-                dedupeTracked = true;
-                if (!shouldInvokeMachineAfterShared()) {
-                  // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
-                  return recordSuccess(true);
-                }        const machineStateBeforeDispatch = readMachineState();
+      if (result !== false) {
+        dedupeTracked = true;
+        if (!shouldInvokeMachineAfterShared()) {
+          // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
+          return recordSuccess(true);
+        }
+        const machineStateBeforeDispatch = readMachineState();
         if (
           machineStateBeforeDispatch &&
           machineStateBeforeDispatch !== "cooldown" &&
