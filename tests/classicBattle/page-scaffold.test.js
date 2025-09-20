@@ -314,6 +314,46 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     void store;
     const buttons = findStatButtons();
     const containers = selectPrimaryContainer(findStatContainers(buttons));
+    const nativeClick =
+      typeof HTMLElement !== "undefined" ? HTMLElement.prototype.click : undefined;
+
+    const attachHandlers = () => {
+      buttons.forEach((btn) => {
+        let assignedClick;
+        let runningFromProxy = false;
+
+        const runSelection = async (event) => {
+          event?.preventDefault?.();
+          const stat = btn.dataset.stat || btn.getAttribute("data-stat") || "power";
+          let handler = window.__selectionHandlerMock;
+          if (!handler) {
+            const mod = await import("../../src/helpers/classicBattle/selectionHandler.js");
+            handler = mod.handleStatSelection;
+            window.__selectionHandlerMock = handler;
+          }
+          await handler(store, stat, {});
+          const { emitBattleEvent } = await import(
+            "../../src/helpers/classicBattle/battleEvents.js"
+          );
+          emitBattleEvent("roundResolved", { stat });
+          disable();
+        };
+
+        const proxyClick = async (event) => {
+          runningFromProxy = true;
+          try {
+            await runSelection(event);
+            if (assignedClick) {
+              return assignedClick(event);
+            }
+            if (nativeClick) {
+              return nativeClick.call(btn);
+            }
+            return undefined;
+          } finally {
+            runningFromProxy = false;
+          }
+        };
 
     if (containers.length === 0 || buttons.length === 0) {
       const enable = vi.fn(() => {
