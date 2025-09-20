@@ -17,9 +17,20 @@ The recommendations section outlines a clear path forward, prioritizing a full s
   - `npx vitest run tests/classicBattle/timer.test.js`
   - `npx vitest run tests/classicBattle/page-scaffold.test.js`
   - `npx playwright test battle-classic/round-select.spec.js`
-  - `npx playwright test battle-classic/timer.spec.js`
+- `npx playwright test battle-classic/timer.spec.js`
 
-Pending your review before starting Phase 2.
+## Phase 2 – Timer & Auto-Select Stabilization (2025-09-20)
+
+- **Action:** Added a DOM-level fallback in `configureTimerCallbacks()` (`src/helpers/classicBattle/timerService.js`) so the `#next-round-timer` element receives per-second updates even when the scoreboard adapter is inactive.
+- **Outcome:** The selection timer now decrements in the UI and the existing expiration handler fires, restoring automatic stat selection on timeout (QA items #3 and #5).
+- **Validation:**
+  - `npx vitest run tests/classicBattle/init-complete.test.js`
+  - `npx vitest run tests/classicBattle/timer.test.js`
+  - `npx vitest run tests/classicBattle/autoSelectHandlers.test.js`
+  - `npx playwright test battle-classic/timer.spec.js`
+  - `npx playwright test battle-classic/stat-selection.spec.js`
+
+Pending your review before starting Phase 3.
 
 ## 2. Issues Found
 

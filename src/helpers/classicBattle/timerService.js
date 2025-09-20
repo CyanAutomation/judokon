@@ -467,6 +467,21 @@ export function configureTimerCallbacks(
     try {
       scoreboardApi?.updateTimer?.(remaining);
     } catch {}
+    if (documentRef) {
+      try {
+        const el = documentRef.getElementById
+          ? documentRef.getElementById("next-round-timer")
+          : documentRef.querySelector("#next-round-timer");
+        if (el) {
+          if (typeof remaining === "number") {
+            const clamped = Math.max(0, Number.isFinite(remaining) ? remaining : 0);
+            el.textContent = `Time Left: ${clamped}s`;
+          } else {
+            el.textContent = "";
+          }
+        }
+      } catch {}
+    }
   };
 
   try {
