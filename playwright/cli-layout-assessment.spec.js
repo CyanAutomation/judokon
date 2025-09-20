@@ -31,12 +31,16 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     const stats = page.locator(".cli-stat");
     const statCount = await stats.count();
 
-    if (statCount > 0) {
-      // Test first stat row height
-      const firstStat = stats.first();
+    expect(statCount, "Expected at least one CLI stat to be rendered").toBeGreaterThan(0);
+
+    // Test first stat row height
+    const firstStat = stats.first();
+    await expect(firstStat).toBeVisible();
+    await expect(async () => {
       const statBox = await firstStat.boundingBox();
+      expect(statBox, "Bounding box should be available once stat is visible").not.toBeNull();
       expect(statBox.height).toBeGreaterThanOrEqual(44);
-    }
+    }).toPass();
 
     // Container should be visible and meet minimum height
     const statsContainer = page.locator("#cli-stats");
