@@ -256,6 +256,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   let frameSchedulingSucceeded = false;
   let timeoutId = null;
   try {
+  try {
     runAfterFrames(2, () => {
       if (timeoutId !== null) {
         try {
@@ -266,6 +267,9 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
       runResetOnce();
     });
     frameSchedulingSucceeded = true;
+  } catch {
+    frameSchedulingSucceeded = false;
+  }
   } catch {
     frameSchedulingSucceeded = false;
   }
