@@ -31,6 +31,7 @@ import { showSelectionPrompt, getOpponentDelay } from "../helpers/classicBattle/
 import {
   removeBackdrops,
   enableNextRoundButton,
+  disableNextRoundButton,
   showFatalInitError
 } from "../helpers/classicBattle/uiHelpers.js";
 import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
@@ -724,6 +725,11 @@ function renderStatButtons(store) {
   const container = document.getElementById("stat-buttons");
   if (!container) return;
   resetCooldownFlag(store);
+  try {
+    disableNextRoundButton();
+  } catch (err) {
+    console.debug("battleClassic: disableNextRoundButton before selection failed", err);
+  }
   container.innerHTML = "";
   for (const stat of STATS) {
     const btn = document.createElement("button");

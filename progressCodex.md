@@ -8,6 +8,19 @@ This report details 16 critical, high, and medium-severity issues discovered dur
 
 The recommendations section outlines a clear path forward, prioritizing a full state machine implementation to resolve the majority of the functional bugs, followed by UI and accessibility enhancements.
 
+## Phase 1 – Round Entry Controls (2025-09-20)
+
+- **Action:** Re-disabled the `Next` button whenever `renderStatButtons` prepares a new round so that players cannot advance before making a stat selection. Implemented via `disableNextRoundButton()` in `src/pages/battleClassic.init.js`.
+- **Outcome:** The round flow now keeps `Next` disabled until a selection resolves or the timer auto-selects; this closes QA item #10 (Next button always enabled).
+- **Validation:**
+  - `npx vitest run tests/classicBattle/init-complete.test.js`
+  - `npx vitest run tests/classicBattle/timer.test.js`
+  - `npx vitest run tests/classicBattle/page-scaffold.test.js`
+  - `npx playwright test battle-classic/round-select.spec.js`
+  - `npx playwright test battle-classic/timer.spec.js`
+
+Pending your review before starting Phase 2.
+
 ## 2. Issues Found
 
 The following table details the identified issues, ranked by severity.
