@@ -200,13 +200,18 @@ function ensureLobbyBadge() {
 /**
  * Read the round number currently shown on the scoreboard.
  *
+ * @pseudocode
+ * 1. Get the round-counter element from DOM.
+ * 2. Extract text content and match against round number pattern.
+ * 3. Parse and validate the number, returning null if invalid.
+ *
  * @returns {number|null} Parsed round number or `null` when unavailable.
  */
 function getVisibleRoundNumber() {
   try {
     const el = document.getElementById("round-counter");
     if (!el) return null;
-    const match = String(el.textContent || "").match(/(\d+)/);
+    const match = String(el.textContent || "").match(/Round\s+(\d+)/i);
     if (!match) return null;
     const parsed = Number(match[1]);
     return Number.isFinite(parsed) ? parsed : null;
@@ -225,30 +230,47 @@ function getVisibleRoundNumber() {
  */
 function updateRoundCounterFromEngine() {
   const visibleRound = getVisibleRoundNumber();
+
   try {
-    const played = Number(getRoundsPlayed?.() || 0);
-    const engineRound = Number.isFinite(played) ? played + 1 : NaN;
-    let nextRound = Number.isFinite(engineRound) ? engineRound : NaN;
-
-    if (Number.isFinite(visibleRound)) {
-      if (!Number.isFinite(nextRound) || nextRound < visibleRound) {
-        nextRound = visibleRound;
-      }
-    }
-
-    if (!Number.isFinite(nextRound) || nextRound < 1) {
-      nextRound = Number.isFinite(visibleRound) && visibleRound >= 1 ? visibleRound : 1;
-    }
-
+    const engineRound = calculateEngineRound();
+    const nextRound = determineNextRound(engineRound, visibleRound);
     updateRoundCounter(nextRound);
   } catch (err) {
     console.debug("battleClassic: getRoundsPlayed failed", err);
-    try {
-      const fallback = Number.isFinite(visibleRound) && visibleRound >= 1 ? visibleRound : 1;
-      updateRoundCounter(fallback);
-    } catch (err2) {
-      console.debug("battleClassic: updateRoundCounter fallback failed", err2);
-    }
+    handleRoundCounterFallback(visibleRound);
+  }
+}
+
+function calculateEngineRound() {
+  const played = Number(getRoundsPlayed?.() || 0);
+  return Number.isFinite(played) ? played + 1 : NaN;
+}
+
+function determineNextRound(engineRound, visibleRound) {
+  const hasEngineRound = Number.isFinite(engineRound) && engineRound >= 1;
+  const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
+
+  if (hasEngineRound && hasVisibleRound) {
+    return Math.max(engineRound, visibleRound);
+  }
+
+  if (hasEngineRound) {
+    return engineRound;
+  }
+
+  if (hasVisibleRound) {
+    return visibleRound;
+  }
+
+  return 1;
+}
+
+function handleRoundCounterFallback(visibleRound) {
+  try {
+    const fallback = Number.isFinite(visibleRound) && visibleRound >= 1 ? visibleRound : 1;
+    updateRoundCounter(fallback);
+  } catch (err2) {
+    console.debug("battleClassic: updateRoundCounter fallback failed", err2);
   }
 }
 

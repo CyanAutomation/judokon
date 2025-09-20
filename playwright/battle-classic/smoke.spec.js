@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import selectors from "../../helpers/selectors";
+import selectors from "../helpers/selectors.js";
 
 test.describe("Classic Battle page scaffold", () => {
   test("loads without console errors and has scoreboard nodes", async ({ page }) => {
