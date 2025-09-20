@@ -199,19 +199,54 @@ function ensureLobbyBadge() {
 }
 
 /**
+ * Read the round number currently shown on the scoreboard.
+ *
+ * @returns {number|null} Parsed round number or `null` when unavailable.
+ */
+function getVisibleRoundNumber() {
+  try {
+    const el = document.getElementById("round-counter");
+    if (!el) return null;
+    const match = String(el.textContent || "").match(/(\d+)/);
+    if (!match) return null;
+    const parsed = Number(match[1]);
+    return Number.isFinite(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Update the round counter from engine state.
  *
  * @pseudocode
- * 1. Read `getRoundsPlayed()`; set counter to `played + 1` (fallback 1).
+ * 1. Read `getRoundsPlayed()` and compute `played + 1` when possible.
+ * 2. Compare with the currently visible round and never decrease it.
+ * 3. Fall back to the visible round (or 1) when engine data is unavailable.
  */
 function updateRoundCounterFromEngine() {
+  const visibleRound = getVisibleRoundNumber();
   try {
     const played = Number(getRoundsPlayed?.() || 0);
-    updateRoundCounter(Number.isFinite(played) ? played + 1 : 1);
+    const engineRound = Number.isFinite(played) ? played + 1 : NaN;
+    let nextRound = Number.isFinite(engineRound) ? engineRound : NaN;
+
+    if (Number.isFinite(visibleRound)) {
+      if (!Number.isFinite(nextRound) || nextRound < visibleRound) {
+        nextRound = visibleRound;
+      }
+    }
+
+    if (!Number.isFinite(nextRound) || nextRound < 1) {
+      nextRound = Number.isFinite(visibleRound) && visibleRound >= 1 ? visibleRound : 1;
+    }
+
+    updateRoundCounter(nextRound);
   } catch (err) {
     console.debug("battleClassic: getRoundsPlayed failed", err);
     try {
-      updateRoundCounter(1);
+      const fallback = Number.isFinite(visibleRound) && visibleRound >= 1 ? visibleRound : 1;
+      updateRoundCounter(fallback);
     } catch (err2) {
       console.debug("battleClassic: updateRoundCounter fallback failed", err2);
     }

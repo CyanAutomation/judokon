@@ -96,11 +96,22 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await expect(nextButton).toBeEnabled();
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
+      const roundCounter = page.locator("#round-counter");
+      const readRoundNumber = async () => {
+        const text = await roundCounter.textContent();
+        const match = text ? text.match(/(\d+)/) : null;
+        return match ? Number(match[1]) : 0;
+      };
+
+      const beforeNext = await readRoundNumber();
+
       // Click next round
       await nextButton.click();
 
+      await expect.poll(readRoundNumber).toBeGreaterThanOrEqual(beforeNext);
+
       // Verify round progression
-      await expect(page.locator("#round-counter")).toContainText(/Round 2/);
+      await expect(roundCounter).toContainText(/Round 2/);
 
       // Second round should work the same way
       const secondStat = page.locator("#stat-buttons button[data-stat]").nth(1);
