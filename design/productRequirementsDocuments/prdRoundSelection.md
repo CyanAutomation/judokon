@@ -28,6 +28,11 @@ Acceptance Criteria:
 - Modal displays when no saved preference and `?autostart` is not set.
 - Selecting an option stores preference in localStorage and starts the match.
 
+Notes: Implementation guidance from `docs/round-selection.md`:
+
+- On page load, `initRoundSelectModal` checks for `?autostart=1` or a saved selection and starts a match immediately if found.
+- If modal fails to load, log the error and surface a fallback **Start Match** button that begins a match with default settings.
+
 P1 - Autostart Behavior: `?autostart=1` bypasses modal and starts a default-length match.
 
 Acceptance Criteria:
