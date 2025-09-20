@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const resetSpy = vi.fn(() => {
   document
@@ -45,24 +45,64 @@ vi.mock("../../../src/helpers/showSnackbar.js", () => ({
   updateSnackbar: vi.fn()
 }));
 
+beforeEach(() => {
+  resetSpy.mockClear();
+  document.body.innerHTML = "";
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 describe("roundResolved stat button reset", () => {
   it("keeps .selected for one frame before clearing", async () => {
     vi.useFakeTimers();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     document.body.innerHTML =
       '<div id="stat-buttons"><button data-stat="power" class="selected"></button></div>';
-    await import("../../../src/helpers/classicBattle/roundUI.js");
-    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
     const btn = document.querySelector("#stat-buttons button");
-    emitBattleEvent("roundResolved", { store: {}, result: { matchEnded: false } });
+    await roundUI.handleRoundResolvedEvent({
+      detail: { store: {}, result: { matchEnded: false } }
+    });
     expect(btn.classList.contains("selected")).toBe(true);
     await vi.advanceTimersByTimeAsync(16);
     expect(btn.classList.contains("selected")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(16);
+    await vi.runOnlyPendingTimersAsync();
     expect(resetSpy).toHaveBeenCalledOnce();
     expect(btn.classList.contains("selected")).toBe(false);
     warn.mockRestore();
-    vi.useRealTimers();
+  });
+
+  it("falls back to timeout when animation frames do not flush", async () => {
+    vi.useFakeTimers();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const callbacks = [];
+    const raf = vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      callbacks.push(cb);
+      return callbacks.length;
+    });
+    document.body.innerHTML =
+      '<div id="stat-buttons"><button data-stat="power" class="selected"></button></div>';
+    const roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
+    const btn = document.querySelector("#stat-buttons button");
+    await roundUI.handleRoundResolvedEvent({
+      detail: { store: {}, result: { matchEnded: false } }
+    });
+    expect(btn.classList.contains("selected")).toBe(true);
+    expect(resetSpy).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(32);
+    await vi.runOnlyPendingTimersAsync();
+    expect(resetSpy).toHaveBeenCalledOnce();
+    expect(btn.classList.contains("selected")).toBe(false);
+    while (callbacks.length) {
+      const cb = callbacks.shift();
+      cb?.(0);
+    }
+    expect(resetSpy).toHaveBeenCalledOnce();
+    raf.mockRestore();
+    warn.mockRestore();
   });
 });
