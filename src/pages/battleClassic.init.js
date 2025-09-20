@@ -1256,6 +1256,10 @@ async function init() {
       };
       onBattleEvent("round.start", startIfNotEnded);
       onBattleEvent("ready", startIfNotEnded);
+      onBattleEvent("roundStarted", async () => {
+        if (isStartingRoundCycle) return;
+        await startRoundCycle(store, { skipStartRound: true });
+      });
     } catch {}
     // Mark initialization as complete for test hooks
     if (typeof window !== "undefined") {

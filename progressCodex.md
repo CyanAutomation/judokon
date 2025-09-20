@@ -34,6 +34,18 @@ The recommendations section outlines a clear path forward, prioritizing a full s
 
 Pending your review before starting Phase 3.
 
+## Phase 3 – Card Rendering & Scoreboard Sync (2025-09-20)
+
+- **Action:** Routed every round cycle through `startRound()` before wiring stat buttons/timers, added a `roundStarted` listener for replay flows, and restored replay bootstrap so already-drawn cards aren't recreated. (`src/pages/battleClassic.init.js`)
+- **Outcome:** Player/opponent cards now draw at the start of each round and the scoreboard advances consistently after subsequent selections (addresses QA items #2 and #4).
+- **Validation:**
+  - `npx vitest run tests/classicBattle/page-scaffold.test.js`
+  - `npx vitest run tests/classicBattle/bootstrap.test.js`
+  - `npx playwright test battle-classic/stat-selection.spec.js`
+  - `npx playwright test battle-classic/opponent-reveal.spec.js`
+
+Pending your review before starting Phase 4.
+
 ## 2. Issues Found
 
 The following table details the identified issues, ranked by severity.
