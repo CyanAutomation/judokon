@@ -137,6 +137,7 @@ const ADVANCE_TRANSITIONS = {
  *
  * @param {(() => void)|null} resolveReady - Resolver passed from cooldown controls.
  * @returns {Promise<boolean>} True when the helper dispatched "ready".
+ */
 async function dispatchReadyOnce(resolveReady) {
   if (hasReadyBeenDispatchedForCurrentCooldown()) {
     if (typeof resolveReady === "function") resolveReady();
@@ -154,23 +155,6 @@ async function dispatchReadyOnce(resolveReady) {
   return true;
 }
 
-/**
- * Advance to the next round when the Next button is marked ready.
- *
- * This helper disables the Next button, ensures the battle state machine
- * reaches the `cooldown` state if necessary, dispatches the `ready` event,
- * and resolves the ready promise used by tests.
- *
- * @pseudocode
- * 1. Disable the Next button and clear the `data-next-ready` attribute.
- * 2. If the machine is not in `cooldown`, dispatch an `interrupt` to reach it.
- * 3. Dispatch `ready` to advance to the next round and call `resolveReady`.
- * 4. Clear any skip handler to prevent late skips affecting the new round.
- *
- * @param {HTMLButtonElement} btn - Next button element.
- * @param {(() => void)|null} resolveReady - Resolver for the ready promise.
- * @returns {Promise<void>}
- */
 /**
  * Advance to the next round when the cooldown is ready.
  *
