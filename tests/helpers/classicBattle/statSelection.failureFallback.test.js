@@ -26,7 +26,6 @@ describe("classicBattle stat selection failure recovery", () => {
 
     // Install queued RAF mock and allow tests to flush synchronously when needed
     const raf = installRAFMock();
-    originalRequestAnimationFrame = raf.restore; // restore function reference
     global.__statSelectionRafRestore = raf.restore;
 
     originalLocalStorage = globalThis.localStorage;

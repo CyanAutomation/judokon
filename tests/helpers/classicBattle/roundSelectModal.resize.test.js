@@ -21,9 +21,9 @@ describe("roundSelectModal responsive inset and cleanup", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.resetModules();
-  // Install queued RAF mock for deterministic control
-  const raf = installRAFMock();
-  global.__roundSelectRafRestore = raf.restore;
+    // Install queued RAF mock for deterministic control
+    const raf = installRAFMock();
+    global.__roundSelectRafRestore = raf.restore;
     modalInstance = null;
     modalCloseSpy = null;
   });
