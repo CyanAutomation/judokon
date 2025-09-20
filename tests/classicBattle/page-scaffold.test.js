@@ -121,7 +121,9 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
     });
 
     for (const staleButton of previousButtons) {
-      if (!(staleButton instanceof HTMLElement) || processedButtons.has(staleButton)) continue;
+      if (!(staleButton instanceof HTMLElement) || processedButtons.has(staleButton)) {
+        continue;
+      }
       const listener = buttonListenerRegistry.get(staleButton);
       if (listener) {
         staleButton.removeEventListener("click", listener);
@@ -193,7 +195,9 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
   return {
     createBattleStore,
     startCooldown,
-    startRound
+    startRound,
+    handleReplay: vi.fn(),
+    isOrchestrated: vi.fn(() => false)
   };
 });
 
@@ -347,100 +351,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     event?.stopPropagation?.();
   };
 
-  const installOnclickTracker = (btn, { getAssignedClick, setAssignedClick }) => {
-    const cleanupStack = [];
-
-    const descriptor = {
-      configurable: true,
-      enumerable: true,
-      get() {
-        return getAssignedClick();
-      },
-      set(value) {
-        setAssignedClick(value);
-      }
-    };
-
-    const applyOwnDescriptor = () => {
-      Object.defineProperty(btn, "onclick", descriptor);
-      cleanupStack.push(() => {
-        try {
-          delete btn.onclick;
-        } catch {}
-      });
-      return true;
-    };
-
-    const applyLegacyAccessors = () => {
-      const canDefine =
-        typeof btn.__defineGetter__ === "function" && typeof btn.__defineSetter__ === "function";
-      if (!canDefine) return false;
-
-      const originalGetter = btn.__lookupGetter__?.("onclick");
-      const originalSetter = btn.__lookupSetter__?.("onclick");
-
-      btn.__defineGetter__("onclick", () => {
-        if (typeof originalGetter === "function") {
-          try {
-            return originalGetter.call(btn);
-          } catch {}
-        }
-        return getAssignedClick();
-      });
-
-      btn.__defineSetter__("onclick", (value) => {
-        setAssignedClick(value);
-        return value;
-      });
-
-      cleanupStack.push(() => {
-        if (originalGetter) {
-          try {
-            btn.__defineGetter__("onclick", originalGetter);
-          } catch {}
-        } else {
-          try {
-            delete btn.onclick;
-          } catch {}
-        }
-
-        if (originalSetter) {
-          try {
-            btn.__defineSetter__("onclick", originalSetter);
-          } catch {}
-        }
-      });
-
-      return true;
-    };
-
-    let descriptorApplied = false;
-    try {
-      descriptorApplied = applyOwnDescriptor();
-    } catch {
-      descriptorApplied = false;
-    }
-
-    if (!descriptorApplied) {
-      descriptorApplied = applyLegacyAccessors();
-    }
-
-    if (!descriptorApplied) {
-      const existing = typeof btn.onclick === "function" ? btn.onclick : null;
-      setAssignedClick(existing);
-      try {
-        btn.onclick = null;
-      } catch {}
-      cleanupStack.push(() => {
-        const handler = getAssignedClick();
-        if (handler) {
-          try {
-            btn.onclick = handler;
-          } catch {}
-        }
-      });
-    }
-
+  const createCleanupHandler = (cleanupStack) => {
     return () => {
       const cleanupFns = cleanupStack.splice(0).reverse();
       cleanupFns.forEach((fn) => {
@@ -451,130 +362,277 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     };
   };
 
+  const tryModernDescriptor = (btn, { getAssignedClick, setAssignedClick }, cleanupStack) => {
+    try {
+      const descriptor = {
+        configurable: true,
+        enumerable: true,
+        get: () => getAssignedClick(),
+        set: (value) => {
+          setAssignedClick(value);
+        }
+      };
+
+      Object.defineProperty(btn, "onclick", descriptor);
+      cleanupStack.push(() => {
+        try {
+          delete btn.onclick;
+        } catch {}
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const restoreLegacyAccessors = (btn, originalGetter, originalSetter) => {
+    if (originalGetter) {
+      try {
+        btn.__defineGetter__("onclick", originalGetter);
+      } catch {}
+    } else {
+      try {
+        delete btn.onclick;
+      } catch {}
+    }
+
+    if (originalSetter) {
+      try {
+        btn.__defineSetter__("onclick", originalSetter);
+      } catch {}
+    }
+  };
+
+  const tryLegacyAccessors = (btn, { getAssignedClick, setAssignedClick }, cleanupStack) => {
+    if (typeof btn.__defineGetter__ !== "function" || typeof btn.__defineSetter__ !== "function") {
+      return false;
+    }
+
+    const originalGetter = btn.__lookupGetter__?.("onclick");
+    const originalSetter = btn.__lookupSetter__?.("onclick");
+
+    btn.__defineGetter__("onclick", () => {
+      if (typeof originalGetter === "function") {
+        try {
+          return originalGetter.call(btn);
+        } catch {}
+      }
+      return getAssignedClick();
+    });
+
+    btn.__defineSetter__("onclick", (value) => {
+      setAssignedClick(value);
+      return value;
+    });
+
+    cleanupStack.push(() => {
+      restoreLegacyAccessors(btn, originalGetter, originalSetter);
+    });
+    return true;
+  };
+
+  const handleDirectAssignment = (btn, { getAssignedClick, setAssignedClick }, cleanupStack) => {
+    const existing = typeof btn.onclick === "function" ? btn.onclick : null;
+    setAssignedClick(existing);
+    try {
+      btn.onclick = null;
+    } catch {}
+
+    cleanupStack.push(() => {
+      const handler = getAssignedClick();
+      if (handler) {
+        try {
+          btn.onclick = handler;
+        } catch {}
+      }
+    });
+
+    return createCleanupHandler(cleanupStack);
+  };
+
+  const installOnclickTracker = (btn, { getAssignedClick, setAssignedClick }) => {
+    const cleanupStack = [];
+
+    if (tryModernDescriptor(btn, { getAssignedClick, setAssignedClick }, cleanupStack)) {
+      return createCleanupHandler(cleanupStack);
+    }
+
+    if (tryLegacyAccessors(btn, { getAssignedClick, setAssignedClick }, cleanupStack)) {
+      return createCleanupHandler(cleanupStack);
+    }
+
+    return handleDirectAssignment(btn, { getAssignedClick, setAssignedClick }, cleanupStack);
+  };
+
+  const cleanupDetachFns = (fns) => {
+    fns.forEach((fn) => {
+      try {
+        fn();
+      } catch {}
+    });
+  };
+
+  const initializeOnclickState = (btn) => {
+    let assignedClick = typeof btn.onclick === "function" ? btn.onclick : null;
+
+    const getAssignedClick = () => assignedClick;
+    const setAssignedClick = (value) => {
+      assignedClick = typeof value === "function" ? value : null;
+    };
+
+    const restoreOnclick = installOnclickTracker(btn, {
+      getAssignedClick,
+      setAssignedClick
+    });
+
+    if (assignedClick) {
+      try {
+        btn.onclick = null;
+      } catch {}
+      setAssignedClick(assignedClick);
+    }
+
+    return { getAssignedClick, setAssignedClick, restoreOnclick };
+  };
+
+  const createRunSelection = (btn, { store, disableRef }) => {
+    return async (event) => {
+      event?.preventDefault?.();
+      const stat = btn.dataset.stat || btn.getAttribute("data-stat") || "power";
+      let handler = window.__selectionHandlerMock;
+      if (!handler) {
+        const mod = await import("../../src/helpers/classicBattle/selectionHandler.js");
+        handler = mod.handleStatSelection;
+        window.__selectionHandlerMock = handler;
+      }
+      await handler(store, stat, {});
+      const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+      emitBattleEvent("roundResolved", { stat });
+      setTimeout(() => {
+        disableRef.current?.();
+      }, 0);
+    };
+  };
+
+  const createProxyClick = (btn, { runSelection, getAssignedClick, nativeClick, proxyState }) => {
+    return async (event) => {
+      proxyState.running = true;
+      try {
+        await runSelection(event);
+        const currentClick = getAssignedClick();
+        if (currentClick) {
+          return currentClick.call(btn, event);
+        }
+        if (nativeClick) {
+          return nativeClick.call(btn);
+        }
+        return undefined;
+      } finally {
+        proxyState.running = false;
+      }
+    };
+  };
+
+  const createButtonListener = (
+    btn,
+    { proxyClick, getAssignedClick, setAssignedClick, proxyState }
+  ) => {
+    return (event) => {
+      if (proxyState.running || btn.disabled) {
+        if (btn.disabled) {
+          preventDisabledEvent(event);
+        }
+        return;
+      }
+
+      const currentOnclick = btn.onclick;
+      if (typeof currentOnclick === "function" && currentOnclick !== getAssignedClick()) {
+        setAssignedClick(currentOnclick);
+        try {
+          btn.onclick = null;
+        } catch {}
+      }
+
+      void proxyClick(event);
+    };
+  };
+
+  const registerSingleButton = (state, btn, { store, nativeClick, disableRef }) => {
+    if (!(btn instanceof HTMLElement) || state.pendingDetach) return;
+
+    const onclickState = initializeOnclickState(btn);
+    const runSelection = createRunSelection(btn, { store, disableRef });
+    const proxyState = { running: false };
+    const proxyClick = createProxyClick(btn, {
+      runSelection,
+      getAssignedClick: onclickState.getAssignedClick,
+      nativeClick,
+      proxyState
+    });
+    const listener = createButtonListener(btn, {
+      proxyClick,
+      getAssignedClick: onclickState.getAssignedClick,
+      setAssignedClick: onclickState.setAssignedClick,
+      proxyState
+    });
+
+    btn.addEventListener("click", listener);
+
+    state.detachFns.push(() => {
+      btn.removeEventListener("click", listener);
+      onclickState.restoreOnclick();
+      const handler = onclickState.getAssignedClick();
+      if (handler) {
+        try {
+          btn.onclick = handler;
+        } catch {}
+      }
+    });
+  };
+
+  const createAttachState = () => ({
+    detachFns: [],
+    pendingDetach: false
+  });
+
+  const registerAllButtons = (state, buttons, deps) => {
+    buttons.forEach((btn) => {
+      if (state.pendingDetach) return;
+      if (btn instanceof HTMLElement) {
+        registerSingleButton(state, btn, deps);
+      }
+    });
+  };
+
+  const createDetachHandler = (state) => {
+    return () => {
+      const queued = state.detachFns.splice(0);
+      cleanupDetachFns(queued);
+    };
+  };
+
   const createButtonLifecycle = ({ buttons, store, nativeClick, disableRef }) => {
     let detachHandlers = null;
     let attachState = null;
 
-    const runDetachFns = (fns) => {
-      fns.forEach((fn) => {
-        try {
-          fn();
-        } catch {}
-      });
-    };
-
-    const registerButton = (state, btn) => {
-      if (!(btn instanceof HTMLElement) || state.pendingDetach) return;
-
-      let assignedClick = typeof btn.onclick === "function" ? btn.onclick : null;
-      let runningFromProxy = false;
-
-      const getAssignedClick = () => assignedClick;
-      const setAssignedClick = (value) => {
-        assignedClick = typeof value === "function" ? value : null;
-      };
-
-      const restoreOnclick = installOnclickTracker(btn, {
-        getAssignedClick,
-        setAssignedClick
-      });
-
-      if (assignedClick) {
-        try {
-          btn.onclick = null;
-        } catch {}
-        setAssignedClick(assignedClick);
-      }
-
-      const runSelection = async (event) => {
-        event?.preventDefault?.();
-        const stat = btn.dataset.stat || btn.getAttribute("data-stat") || "power";
-        let handler = window.__selectionHandlerMock;
-        if (!handler) {
-          const mod = await import("../../src/helpers/classicBattle/selectionHandler.js");
-          handler = mod.handleStatSelection;
-          window.__selectionHandlerMock = handler;
-        }
-        await handler(store, stat, {});
-        const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-        emitBattleEvent("roundResolved", { stat });
-        disableRef.current?.();
-      };
-
-      const proxyClick = async (event) => {
-        if (btn.disabled) {
-          preventDisabledEvent(event);
-          return;
-        }
-        runningFromProxy = true;
-        try {
-          await runSelection(event);
-          const currentClick = getAssignedClick();
-          if (currentClick) {
-            return currentClick.call(btn, event);
-          }
-          if (nativeClick) {
-            return nativeClick.call(btn);
-          }
-          return undefined;
-        } finally {
-          runningFromProxy = false;
-        }
-      };
-
-      const listener = (event) => {
-        if (runningFromProxy) return;
-        if (btn.disabled) {
-          preventDisabledEvent(event);
-          return;
-        }
-        if (typeof btn.onclick === "function" && btn.onclick !== getAssignedClick()) {
-          setAssignedClick(btn.onclick);
-          try {
-            btn.onclick = null;
-          } catch {}
-        }
-        void proxyClick(event);
-      };
-
-      btn.addEventListener("click", listener, true);
-
-      state.detachFns.push(() => {
-        btn.removeEventListener("click", listener, true);
-        restoreOnclick();
-        const handler = getAssignedClick();
-        if (handler) {
-          try {
-            btn.onclick = handler;
-          } catch {}
-        }
-      });
-    };
-
     const attach = () => {
       if (detachHandlers || attachState) return;
 
-      const state = {
-        detachFns: [],
-        pendingDetach: false
-      };
+      const state = createAttachState();
       attachState = state;
 
-      buttons.forEach((btn) => registerButton(state, btn));
+      registerAllButtons(state, buttons, { store, nativeClick, disableRef });
 
       attachState = null;
 
       if (state.pendingDetach) {
-        runDetachFns(state.detachFns.splice(0));
+        cleanupDetachFns(state.detachFns);
+        state.detachFns.length = 0;
         detachHandlers = null;
         return;
       }
 
-      detachHandlers = () => {
-        const queued = state.detachFns.splice(0);
-        runDetachFns(queued);
-        detachHandlers = null;
-      };
+      detachHandlers = createDetachHandler(state);
     };
 
     const detach = () => {
@@ -665,7 +723,9 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     enableNextRoundButton,
     showFatalInitError,
     setupNextButton,
-    initStatButtons
+    initStatButtons,
+    syncScoreDisplay: vi.fn(),
+    updateDebugPanel: vi.fn()
   };
 });
 
