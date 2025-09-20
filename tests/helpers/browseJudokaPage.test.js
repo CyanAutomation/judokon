@@ -152,7 +152,6 @@ describe("browseJudokaPage helpers", () => {
   });
 
   it("shows a spinner during load and removes it after rendering", async () => {
-
     const fetchResolvers = [];
     const fetchJson = vi.fn(() => new Promise((resolve) => fetchResolvers.push(resolve)));
 
@@ -227,18 +226,21 @@ describe("browseJudokaPage helpers", () => {
 
     fetchResolvers[0]([{ id: 1, country: "JP" }]);
     fetchResolvers[1]([]);
-  await pagePromise;
-  // Ensure any queued RAF callbacks run (existing tests used immediate RAF)
-  if (typeof globalThis.flushRAF === "function") globalThis.flushRAF();
+    await pagePromise;
 
-  expect(carousel.querySelector(".loading-spinner")).toBeNull();
+    // Ensure any queued RAF callbacks run (existing tests used immediate RAF)
+    if (typeof globalThis.flushRAF === "function") {
+      globalThis.flushRAF();
+    }
+
+    expect(carousel.querySelector(".loading-spinner")).toBeNull();
     expect(remove).toHaveBeenCalled();
     expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel, false);
     delete globalThis.__forceSpinner__;
   });
 
   it("renders a fallback card when judoka data fails to load", async () => {
-    global.requestAnimationFrame = (cb) => cb();
+    // Use queued RAF mock installed in beforeEach; we'll flush after setup if needed
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const fetchJson = vi.fn((url) => {
@@ -312,6 +314,10 @@ describe("browseJudokaPage helpers", () => {
     document.body.append(carousel, list, toggleBtn, layoutBtn, panel, clear);
 
     await setupBrowseJudokaPage();
+
+    if (typeof globalThis.flushRAF === "function") {
+      globalThis.flushRAF();
+    }
 
     expect(buildCardCarousel).toHaveBeenCalledWith(
       [{ id: 0, firstname: "Fallback", surname: "Judoka" }],

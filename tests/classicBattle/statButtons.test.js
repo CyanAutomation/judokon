@@ -1,4 +1,5 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
+import installRAFMock from "../helpers/rafMock.js";
 import { JSDOM } from "jsdom";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -26,14 +27,19 @@ describe("Stat Buttons", () => {
     global.window = window;
     global.document = document;
 
-    // Mock requestAnimationFrame for immediate execution
-    global.requestAnimationFrame = (cb) => cb();
+  // Install queued RAF mock for deterministic control in tests
+  const raf = installRAFMock();
+  // make sure teardown can restore
+  global.__statButtonsRafRestore = raf.restore;
   });
 
   afterEach(() => {
     dom?.window?.close();
     vi.clearAllMocks();
     vi.resetModules();
+    try {
+      global.__statButtonsRafRestore?.();
+    } catch {}
   });
 
   it("should have aria-describedby and data-buttons-ready attributes", async () => {
