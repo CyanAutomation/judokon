@@ -401,12 +401,9 @@ export async function dispatchReadyDirectly(params) {
           return recordSuccess(true);
         } catch (error) {
           machineError = error;
-          emitTelemetry?.(
-            "handleNextRound_dispatchReadyDirectly_machineErrorAfterShared",
-            {
-              message: error?.message ?? String(error)
-            }
-          );
+          emitTelemetry?.("handleNextRound_dispatchReadyDirectly_machineErrorAfterShared", {
+            message: error?.message ?? String(error)
+          });
         }
       }
     } catch (error) {
