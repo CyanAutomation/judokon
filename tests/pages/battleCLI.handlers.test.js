@@ -2,10 +2,26 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import statNamesData from "../../src/data/statNames.js";
 
 let cleanupSetAutoContinue;
+let cleanupBattleStateListener;
 
 async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   const emitter = new EventTarget();
-  const emitBattleEvent = vi.fn();
+  const battleBus = new EventTarget();
+  const onBattleEvent = vi.fn((type, handler) => {
+    try {
+      battleBus.addEventListener(type, handler);
+    } catch {}
+  });
+  const offBattleEvent = vi.fn((type, handler) => {
+    try {
+      battleBus.removeEventListener(type, handler);
+    } catch {}
+  });
+  const emitBattleEvent = vi.fn((type, detail) => {
+    try {
+      battleBus.dispatchEvent(new CustomEvent(type, { detail }));
+    } catch {}
+  });
   const updateBattleStateBadge = vi.fn();
   const resetGame = vi.fn();
   const mockDispatch = vi.fn();
@@ -20,7 +36,8 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
     updateBattleStateBadge
   }));
   vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-    onBattleEvent: vi.fn(),
+    onBattleEvent,
+    offBattleEvent,
     emitBattleEvent
   }));
   vi.doMock("../../src/helpers/classicBattle/roundManager.js", () => ({
@@ -71,7 +88,26 @@ async function setupHandlers(options) {
   const result = await loadHandlers(options);
   cleanupSetAutoContinue = result.setAutoContinue;
   await result.handlers.renderStatList();
-  return result;
+  try {
+    result.handlers.installEventBindings?.();
+  } catch {}
+  const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+  const { domStateListener } = await import(
+    "../../src/helpers/classicBattle/stateTransitionListeners.js"
+  );
+  try {
+    battleEvents.onBattleEvent("battleStateChange", domStateListener);
+    cleanupBattleStateListener = () => {
+      try {
+        battleEvents.offBattleEvent("battleStateChange", domStateListener);
+      } catch {}
+      cleanupBattleStateListener = undefined;
+    };
+  } catch {}
+  const transitionToBattleState = (to, detail = {}) => {
+    result.emitBattleEvent("battleStateChange", { ...detail, to });
+  };
+  return { ...result, transitionToBattleState };
 }
 
 describe("battleCLI event handlers", () => {
@@ -87,6 +123,9 @@ describe("battleCLI event handlers", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     delete window.__TEST__;
+    if (typeof cleanupBattleStateListener === "function") {
+      cleanupBattleStateListener();
+    }
     vi.resetModules();
     vi.clearAllMocks();
     vi.doUnmock("../../src/helpers/featureFlags.js");
@@ -340,23 +379,19 @@ describe("battleCLI event handlers", () => {
   });
 
   it("advances round over on background click", async () => {
-    const { handlers, mockDispatch } = await setupHandlers();
-    document.body.dataset.battleState = "roundOver";
+    const { handlers, mockDispatch, transitionToBattleState } = await setupHandlers();
+    transitionToBattleState("roundOver");
     handlers.onClickAdvance({ target: document.body });
     expect(mockDispatch).toHaveBeenCalledWith("continue");
   });
 
   it("clears cooldown timers and dispatches ready", async () => {
-    const { handlers, mockDispatch } = await setupHandlers();
-    document.body.dataset.battleState = "cooldown";
+    const { handlers, mockDispatch, transitionToBattleState } = await setupHandlers();
+    transitionToBattleState("cooldown");
     handlers.setCooldownTimers(
       setTimeout(() => {}, 0),
       setInterval(() => {}, 100)
     );
-    const bar = document.createElement("div");
-    bar.className = "snackbar";
-    bar.textContent = "Next round in: 3";
-    document.getElementById("snackbar-container").appendChild(bar);
     handlers.onClickAdvance({ target: document.body });
     expect(mockDispatch).toHaveBeenCalledWith("ready");
     expect(handlers.getCooldownTimers()).toEqual({
@@ -367,8 +402,8 @@ describe("battleCLI event handlers", () => {
   });
 
   it("ignores clicks on stat elements", async () => {
-    const { handlers, mockDispatch } = await setupHandlers();
-    document.body.dataset.battleState = "roundOver";
+    const { handlers, mockDispatch, transitionToBattleState } = await setupHandlers();
+    transitionToBattleState("roundOver");
     const stat = document.createElement("div");
     stat.className = "cli-stat";
     document.getElementById("cli-stats").appendChild(stat);
