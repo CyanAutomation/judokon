@@ -190,6 +190,19 @@ describe("dispatchReadyViaBus", () => {
     expect(result).toBe(true);
     expect(mocked).toHaveBeenCalledWith("ready");
   });
+
+  it("skips dispatchers when already dispatched", async () => {
+    const dispatcher = vi.fn(() => true);
+    const mocked = getMockedDispatch();
+    mocked.mockClear();
+    const result = await dispatchReadyViaBus({
+      dispatchBattleEvent: dispatcher,
+      alreadyDispatched: true
+    });
+    expect(result).toBe(true);
+    expect(dispatcher).not.toHaveBeenCalled();
+    expect(mocked).not.toHaveBeenCalled();
+  });
 });
 
 describe("dispatchReadyDirectly", () => {
@@ -204,7 +217,7 @@ describe("dispatchReadyDirectly", () => {
     });
     expect(result).toEqual({ dispatched: true, dedupeTracked: true });
     expect(mocked).toHaveBeenCalledWith("ready");
-    expect(dispatch).not.toHaveBeenCalled();
+    expect(dispatch).toHaveBeenCalledWith("ready");
     expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
   });
 

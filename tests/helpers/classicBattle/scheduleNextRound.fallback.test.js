@@ -453,8 +453,13 @@ describe("handleNextRoundExpiration orchestrated propagation", () => {
     expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
     await runtime.onExpired();
+    expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
     expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).not.toHaveBeenCalled();
+    expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ alreadyDispatched: true })
+    );
+    expect(machine.dispatch).toHaveBeenCalledTimes(1);
+    expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 });
