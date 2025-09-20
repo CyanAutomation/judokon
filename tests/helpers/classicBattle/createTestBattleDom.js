@@ -1,6 +1,6 @@
-import { vi } from "vitest";
 import { setupClassicBattleDom } from "./utils.js";
 import { domStateListener } from "../../../src/helpers/classicBattle/stateTransitionListeners.js";
+import * as battleEvents from "../../../src/helpers/classicBattle/battleEvents.js";
 
 /**
  * @summary Build a Classic Battle DOM harness with state synchronization.
@@ -11,29 +11,24 @@ import { domStateListener } from "../../../src/helpers/classicBattle/stateTransi
  *   getRandomJudokaMock: import("vitest").Mock,
  *   renderMock: import("vitest").Mock,
  *   currentFlags: Record<string, any>,
- *   dispatchBattleState: (detail: {from?: string|null, to: string|null, event?: string|null}) => {
- *     from?: string|null,
- *     to: string|null,
- *     event?: string|null
- *   },
+ *   dispatchBattleState: (detail: {from?: string|null, to: string|null, event?: string|null}) => void,
  *   cleanup: () => void
  * }>} Harness helpers for Classic Battle tests.
  * @pseudocode
  * create harness
  *   - run setupClassicBattleDom to prepare core nodes and mocks
- *   - import the real battleEvents module with vi.importActual
- *   - reset the event target for isolation and register domStateListener
+ *   - ensure the shared battleEvents target is reset for isolation
+ *   - register domStateListener on the refreshed event target
  * expose helpers
  *   - dispatchBattleState(detail): dispatch CustomEvent via shared target
  *   - cleanup(): remove domStateListener listener
  */
 export async function createTestBattleDom() {
   const env = setupClassicBattleDom();
-  const battleEvents = await vi.importActual("../../../src/helpers/classicBattle/battleEvents.js");
-
-  if (typeof battleEvents.__resetBattleEventTarget === "function") {
-    battleEvents.__resetBattleEventTarget();
+  if (typeof battleEvents.__resetBattleEventTarget !== "function") {
+    throw new Error("__resetBattleEventTarget is required for test isolation but not available");
   }
+  battleEvents.__resetBattleEventTarget();
 
   const target = battleEvents.getBattleEventTarget();
   battleEvents.onBattleEvent("battleStateChange", domStateListener);
@@ -45,7 +40,6 @@ export async function createTestBattleDom() {
       event: detail?.event ?? null
     };
     target.dispatchEvent(new CustomEvent("battleStateChange", { detail: eventDetail }));
-    return eventDetail;
   };
 
   const cleanup = () => {

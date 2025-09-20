@@ -4,9 +4,10 @@ import { createTestBattleDom } from "./classicBattle/createTestBattleDom.js";
 let debugHooks;
 
 let store;
-let cleanupBattleDom;
+let cleanupBattleDom = null;
 beforeEach(async () => {
   vi.resetModules();
+  cleanupBattleDom = null;
   debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
   store = {};
   vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
@@ -16,22 +17,28 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
-  if (cleanupBattleDom) {
-    cleanupBattleDom();
-    cleanupBattleDom = undefined;
+  let cleanupError;
+  if (typeof cleanupBattleDom === "function") {
+    try {
+      cleanupBattleDom();
+    } catch (error) {
+      cleanupError = error;
+    } finally {
+      cleanupBattleDom = null;
+    }
+  } else {
+    cleanupBattleDom = null;
   }
   vi.useRealTimers();
   vi.restoreAllMocks();
+  if (cleanupError) {
+    throw cleanupError;
+  }
 });
 
 describe("computeAndDispatchOutcome", () => {
   it("dispatches outcome and continue events", async () => {
     vi.useFakeTimers();
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: vi.fn(),
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn()
-    }));
     vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
       getOpponentJudoka: vi.fn(() => ({ stats: { strength: 3 } }))
     }));
@@ -43,6 +50,7 @@ describe("computeAndDispatchOutcome", () => {
 
     const { cleanup, dispatchBattleState } = await createTestBattleDom();
     cleanupBattleDom = cleanup;
+    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
     dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
     debugHooks.exposeDebugState("roundDebug", {});
 
@@ -58,11 +66,6 @@ describe("computeAndDispatchOutcome", () => {
 
   it("waits for user input when autoContinue is disabled", async () => {
     vi.useFakeTimers();
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: vi.fn(),
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn()
-    }));
     vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
       getOpponentJudoka: vi.fn(() => ({ stats: { strength: 3 } }))
     }));
@@ -75,6 +78,7 @@ describe("computeAndDispatchOutcome", () => {
 
     const { cleanup, dispatchBattleState } = await createTestBattleDom();
     cleanupBattleDom = cleanup;
+    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
     dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
     debugHooks.exposeDebugState("roundDebug", {});
 
@@ -89,11 +93,6 @@ describe("computeAndDispatchOutcome", () => {
   });
 
   it("dispatches interrupt when no outcome is produced", async () => {
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: vi.fn(),
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn()
-    }));
     vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
       getOpponentJudoka: vi.fn(() => ({ stats: { strength: 5 } }))
     }));
@@ -105,6 +104,7 @@ describe("computeAndDispatchOutcome", () => {
 
     const { cleanup, dispatchBattleState } = await createTestBattleDom();
     cleanupBattleDom = cleanup;
+    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
     dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
     debugHooks.exposeDebugState("roundDebug", {});
 
