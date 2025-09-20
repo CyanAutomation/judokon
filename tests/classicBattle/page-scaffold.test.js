@@ -362,10 +362,21 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     const nativeClick =
       typeof HTMLElement !== "undefined" ? HTMLElement.prototype.click : undefined;
 
+    let detachHandlers = null;
+
     const attachHandlers = () => {
+      if (detachHandlers) return;
+      const detachFns = [];
+
       buttons.forEach((btn) => {
-        let assignedClick;
+        if (!(btn instanceof HTMLElement)) return;
+
+        let assignedClick = typeof btn.onclick === "function" ? btn.onclick : null;
         let runningFromProxy = false;
+
+        const setAssignedClick = (value) => {
+          assignedClick = typeof value === "function" ? value : null;
+        };
 
         const runSelection = async (event) => {
           event?.preventDefault?.();
@@ -385,11 +396,12 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
         };
 
         const proxyClick = async (event) => {
+          if (btn.disabled) return undefined;
           runningFromProxy = true;
           try {
             await runSelection(event);
             if (assignedClick) {
-              return assignedClick(event);
+              return assignedClick.call(btn, event);
             }
             if (nativeClick) {
               return nativeClick.call(btn);
@@ -399,6 +411,54 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
             runningFromProxy = false;
           }
         };
+
+        const listener = (event) => {
+          if (runningFromProxy) return;
+          void proxyClick(event);
+        };
+
+        const descriptor = {
+          configurable: true,
+          enumerable: true,
+          get() {
+            return assignedClick;
+          },
+          set(value) {
+            setAssignedClick(value);
+          }
+        };
+
+        try {
+          Object.defineProperty(btn, "onclick", descriptor);
+        } catch {
+          setAssignedClick(btn.onclick);
+        }
+
+        btn.addEventListener("click", listener);
+
+        detachFns.push(() => {
+          btn.removeEventListener("click", listener);
+          try {
+            delete btn.onclick;
+          } catch {}
+          if (assignedClick) {
+            try {
+              btn.onclick = assignedClick;
+            } catch {}
+          }
+        });
+      });
+
+      detachHandlers = () => {
+        while (detachFns.length > 0) {
+          const fn = detachFns.pop();
+          try {
+            fn();
+          } catch {}
+        }
+        detachHandlers = null;
+      };
+    };
 
     if (containers.length === 0 || buttons.length === 0) {
       const enable = vi.fn(() => {
@@ -419,9 +479,11 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     const disable = vi.fn(() => {
       setButtonsDisabled(buttons, true);
       readyState.setPending();
+      detachHandlers?.();
     });
 
     const enable = vi.fn(() => {
+      attachHandlers();
       setButtonsDisabled(buttons, false);
       readyState.resolve();
     });
