@@ -261,7 +261,6 @@ This section captures developer-facing module structure and helpers from the for
 
 - `handleBattleState` delegates UI updates and uses helpers like `updateUiForState(state)`, `ensureNextRoundButton()`, and `logStateChange(from,to)` to append verbose log entries.
 
-
 ---
 
 ## Dependencies
