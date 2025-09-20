@@ -250,7 +250,9 @@ async function applySelectionResult(store, result) {
   } else {
     try {
       showSnackbar("");
-    } catch {}
+    } catch (err) {
+      console.debug("battleClassic: failed to clear snackbar on match end", err);
+    }
   }
   return matchEnded;
 }
@@ -700,15 +702,16 @@ async function handleStatButtonClick(store, stat, btn) {
     return;
   }
 
-  let matchEnded = false;
+  let shouldStartCooldown = true;
   try {
-    matchEnded = await applySelectionResult(store, result);
+    const matchEnded = await applySelectionResult(store, result);
+    shouldStartCooldown = !matchEnded;
   } catch (err) {
     handleStatSelectionError(store, err);
-    return;
+    shouldStartCooldown = false;
+  } finally {
+    finalizeSelectionReady(store, { shouldStartCooldown });
   }
-
-  finalizeSelectionReady(store, { shouldStartCooldown: !Boolean(matchEnded) });
 }
 
 /**
