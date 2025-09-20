@@ -247,29 +247,24 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
       if (typeof resetStatButtonsFn === "function") resetStatButtonsFn();
     } catch {}
   };
-  let preferTimeout = IS_VITEST;
-  if (!preferTimeout && typeof setTimeout === "function") {
-    try {
-      const timeoutSrc = Function.prototype.toString.call(setTimeout);
-      preferTimeout = !/\[native code\]/.test(timeoutSrc);
-    } catch {}
-  }
-  const scheduleReset = () => {
-    if (preferTimeout && typeof setTimeout === "function") {
-      setTimeout(runReset, 32);
-      return;
-    }
-    try {
-      runAfterFrames(2, runReset);
-    } catch {
-      if (typeof setTimeout === "function") {
-        setTimeout(runReset, 32);
-      } else {
-        runReset();
-      }
-    }
+  let didReset = false;
+  const runResetOnce = () => {
+    if (didReset) return;
+    didReset = true;
+    runReset();
   };
-  scheduleReset();
+  let usedFrames = false;
+  try {
+    runAfterFrames(2, runResetOnce);
+    usedFrames = true;
+  } catch {
+    usedFrames = false;
+  }
+  if (typeof setTimeout === "function") {
+    setTimeout(runResetOnce, 32);
+  } else if (!usedFrames) {
+    runResetOnce();
+  }
   if (result.matchEnded) {
     try {
       scoreboardApi?.clearRoundCounter?.();
