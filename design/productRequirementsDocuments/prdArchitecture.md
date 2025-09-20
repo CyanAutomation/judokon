@@ -68,12 +68,12 @@ Versioning recommendation: use `major.minor` for contracts (e.g., event v1 → v
 
 ## Non-Functional Requirements (NFR) Summary
 
-| Area | Target |
-|------|--------|
-| Determinism (testMode) | Engine decisions reproducible with seeded RNG |
-| Selection latency | UI selection handlers respond within 16ms JS main-thread budget (no blocking) |
-| Vector search | Local dev response <250ms; production targets differ by infra |
-| Accessibility | Keyboard navigation for primary flows, ARIA labels for key controls |
+| Area                   | Target                                                                        |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| Determinism (testMode) | Engine decisions reproducible with seeded RNG                                 |
+| Selection latency      | UI selection handlers respond within 16ms JS main-thread budget (no blocking) |
+| Vector search          | Local dev response <250ms; production targets differ by infra                 |
+| Accessibility          | Keyboard navigation for primary flows, ARIA labels for key controls           |
 
 ## User Stories
 

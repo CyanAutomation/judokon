@@ -47,11 +47,11 @@ Acceptance Criteria:
 
 ## Event Inventory (starter)
 
-| Event name | Emitter | Primary consumers | Payload schema (path) | Owner |
-|------------|---------|-------------------|-----------------------|-------|
-| `battle:round-start` | Battle Engine | UI, CLI, tests | `design/dataSchemas/events/battle.round-start.schema.json` | Battle Engine |
-| `battle:stat-selected` | UI / CLI | Battle Engine, tests | `design/dataSchemas/events/battle.stat-selected.schema.json` | Classic Battle UI |
-| `battle:round-resolved` | Battle Engine | UI, scoreboard, tests | `design/dataSchemas/events/battle.round-resolved.schema.json` | Battle Engine |
+| Event name              | Emitter       | Primary consumers     | Payload schema (path)                                         | Owner             |
+| ----------------------- | ------------- | --------------------- | ------------------------------------------------------------- | ----------------- |
+| `battle:round-start`    | Battle Engine | UI, CLI, tests        | `design/dataSchemas/events/battle.round-start.schema.json`    | Battle Engine     |
+| `battle:stat-selected`  | UI / CLI      | Battle Engine, tests  | `design/dataSchemas/events/battle.stat-selected.schema.json`  | Classic Battle UI |
+| `battle:round-resolved` | Battle Engine | UI, scoreboard, tests | `design/dataSchemas/events/battle.round-resolved.schema.json` | Battle Engine     |
 
 Owners must keep this table current. Add new events with a short rationale and acceptance tests.
 
@@ -125,14 +125,14 @@ Process:
 Provide lightweight consumer tests that validate event payloads in CI. Example (Node/Jest pseudo-code):
 
 ```js
-import Ajv from 'ajv';
-import roundStartSchema from '../../design/dataSchemas/events/battle.round-start.schema.json';
+import Ajv from "ajv";
+import roundStartSchema from "../../design/dataSchemas/events/battle.round-start.schema.json";
 
-test('round-start event matches schema', () => {
- const ajv = new Ajv();
- const validate = ajv.compile(roundStartSchema);
- const sample = { roundNumber: 1, playerIds: ['p1','p2'] };
- expect(validate(sample)).toBe(true);
+test("round-start event matches schema", () => {
+  const ajv = new Ajv();
+  const validate = ajv.compile(roundStartSchema);
+  const sample = { roundNumber: 1, playerIds: ["p1", "p2"] };
+  expect(validate(sample)).toBe(true);
 });
 ```
 

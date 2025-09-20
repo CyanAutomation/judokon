@@ -68,16 +68,15 @@ Acceptance Criteria:
 We recommend using a lightweight runtime validator (AJV) during development and CI to catch schema regressions early. Example usage (pseudo-code):
 
 ```js
-import Ajv from 'ajv';
-import judokaSchema from '../../design/dataSchemas/judoka.schema.json';
+import Ajv from "ajv";
+import judokaSchema from "../../design/dataSchemas/judoka.schema.json";
 
 const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(judokaSchema);
 
 function validateJudoka(payload) {
-
   const ok = validate(payload);
-  if (!ok) throw new Error('Invalid judoka payload: ' + ajv.errorsText(validate.errors));
+  if (!ok) throw new Error("Invalid judoka payload: " + ajv.errorsText(validate.errors));
 }
 ```
 
