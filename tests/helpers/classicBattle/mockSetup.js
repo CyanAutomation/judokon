@@ -1,9 +1,23 @@
-if (typeof console !== "undefined") {
-  console.log("[TEST DEBUG] mockSetup.js top-level loaded");
-}
+const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
+const isConsoleMocked = (method) => {
+  const viInstance = globalThis?.vi;
+  return (
+    typeof viInstance?.isMockFunction === "function" &&
+    typeof method === "function" &&
+    viInstance.isMockFunction(method)
+  );
+};
+const debugLog = (...args) => {
+  if (typeof console === "undefined") return;
+  if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
+    console.log(...args);
+  }
+};
+
+debugLog("[TEST DEBUG] mockSetup.js top-level loaded");
 // [TEST DEBUG] top-level mockSetup.js
 
-console.log("[TEST DEBUG] top-level mockSetup.js");
+debugLog("[TEST DEBUG] top-level mockSetup.js");
 import { vi } from "vitest";
 import defaultSettings from "../../../src/data/settings.json" with { type: "json" };
 

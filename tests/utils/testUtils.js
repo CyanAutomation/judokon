@@ -1,6 +1,22 @@
 // [TEST DEBUG] top-level testUtils.js
 
-console.log("[TEST DEBUG] top-level testUtils.js");
+const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
+const isConsoleMocked = (method) => {
+  const viInstance = globalThis?.vi;
+  return (
+    typeof viInstance?.isMockFunction === "function" &&
+    typeof method === "function" &&
+    viInstance.isMockFunction(method)
+  );
+};
+const debugLog = (...args) => {
+  if (typeof console === "undefined") return;
+  if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
+    console.log(...args);
+  }
+};
+
+debugLog("[TEST DEBUG] top-level testUtils.js");
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";

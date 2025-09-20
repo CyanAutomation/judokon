@@ -12,11 +12,29 @@ import { recordDebugState } from "./debugState.js";
  * @returns {void}
  */
 
+const shouldShowDebugLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
+const isConsoleMocked = (method) => {
+  const viInstance = globalThis?.vi;
+  return (
+    typeof viInstance?.isMockFunction === "function" &&
+    typeof method === "function" &&
+    viInstance.isMockFunction(method)
+  );
+};
+
 export function toggleTooltipOverlayDebug(enabled) {
   const nextState = Boolean(enabled);
   recordDebugState("tooltipOverlayDebug", nextState);
   if (typeof document === "undefined" || !document.body) {
-    console.info("[tooltipOverlayDebug] Document unavailable; recorded desired state:", nextState);
+    if (
+      typeof console !== "undefined" &&
+      (shouldShowDebugLogs() || isConsoleMocked(console.info))
+    ) {
+      console.info(
+        "[tooltipOverlayDebug] Document unavailable; recorded desired state:",
+        nextState
+      );
+    }
     return;
   }
   document.body.classList.toggle("tooltip-overlay-debug", nextState);

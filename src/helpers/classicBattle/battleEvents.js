@@ -1,7 +1,21 @@
 // [TEST DEBUG] Instrument event dispatcher
+const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
+const isConsoleMocked = (method) => {
+  const viInstance = globalThis?.vi;
+  return (
+    typeof viInstance?.isMockFunction === "function" &&
+    typeof method === "function" &&
+    viInstance.isMockFunction(method)
+  );
+};
 const _origDispatchEvent = globalThis.dispatchEvent;
 globalThis.dispatchEvent = function (event) {
-  if (event && event.type) {
+  if (
+    typeof console !== "undefined" &&
+    event &&
+    event.type &&
+    (shouldShowTestLogs() || isConsoleMocked(console.log))
+  ) {
     console.log("[TEST DEBUG] dispatchEvent:", event.type, event.detail);
   }
   return _origDispatchEvent.apply(this, arguments);

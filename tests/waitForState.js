@@ -1,9 +1,23 @@
-if (typeof console !== "undefined") {
-  console.log("[TEST DEBUG] waitForState.js top-level loaded");
-}
+const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
+const isConsoleMocked = (method) => {
+  const viInstance = globalThis?.vi;
+  return (
+    typeof viInstance?.isMockFunction === "function" &&
+    typeof method === "function" &&
+    viInstance.isMockFunction(method)
+  );
+};
+const debugLog = (...args) => {
+  if (typeof console === "undefined") return;
+  if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
+    console.log(...args);
+  }
+};
+
+debugLog("[TEST DEBUG] waitForState.js top-level loaded");
 // [TEST DEBUG] top-level waitForState.js
 
-console.log("[TEST DEBUG] top-level waitForState.js");
+debugLog("[TEST DEBUG] top-level waitForState.js");
 import { onBattleEvent, offBattleEvent } from "../src/helpers/classicBattle/battleEvents.js";
 import { getStateSnapshot } from "../src/helpers/classicBattle/battleDebug.js";
 
@@ -24,7 +38,7 @@ export function waitForState(target, timeout = 10000) {
   return new Promise((resolve, reject) => {
     if (getStateSnapshot().state === target) return resolve();
     const handler = (e) => {
-      console.log("[TEST DEBUG] waitForState handler:", e.detail);
+      debugLog("[TEST DEBUG] waitForState handler:", e.detail);
       if (e.detail?.to === target) {
         offBattleEvent("battleStateChange", handler);
         resolve();
