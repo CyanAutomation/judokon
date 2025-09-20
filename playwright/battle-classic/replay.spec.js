@@ -1,4 +1,5 @@
 import { test, expect } from "../fixtures/commonSetup.js";
+import selectors from "../../playwright/helpers/selectors";
 
 test.describe("Classic Battle replay", () => {
   test("Replay resets scoreboard after match end", async ({ page }) => {
@@ -18,11 +19,11 @@ test.describe("Classic Battle replay", () => {
 
     // Start match
     await page.click("#round-select-2");
-    await page.getByTestId("stat-button").first().click();
-    await expect(page.getByTestId("score-display")).toContainText(/You:\s*1/);
+    await page.locator(selectors.statButton(0)).first().click();
+    await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*1/);
 
     // Click Replay and assert round counter resets
     await page.getByTestId("replay-button").click();
-    await expect(page.getByTestId("round-counter")).toHaveText("Round 1");
+    await expect(page.locator(selectors.roundCounter())).toHaveText("Round 1");
   });
 });
