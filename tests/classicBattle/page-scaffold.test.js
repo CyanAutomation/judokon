@@ -176,6 +176,8 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
   }));
 
   const startCooldown = vi.fn();
+  const handleReplay = vi.fn();
+  const isOrchestrated = vi.fn(() => false);
 
   const startRound = vi.fn(async (store, applyRoundUI) => {
     const container = document.getElementById("stat-buttons");
@@ -288,6 +290,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
   const enableNextRoundButton = vi.fn();
   const showFatalInitError = vi.fn();
   const setupNextButton = vi.fn();
+  const syncScoreDisplay = vi.fn();
+  const updateDebugPanel = vi.fn();
 
   const STAT_BUTTON_SELECTOR =
     "#stat-buttons button[data-stat], #stat-buttons button:not([data-ignore])";
