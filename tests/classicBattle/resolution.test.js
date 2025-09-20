@@ -48,6 +48,7 @@ describe("Classic Battle round resolution", () => {
 
       vi.useFakeTimers();
       btn.click();
+      await Promise.resolve();
       // If tests use the queued RAF mock, flush any enqueued frames so scheduled work runs.
       if (typeof globalThis.flushRAF === "function") globalThis.flushRAF();
       vi.runAllTimers();
