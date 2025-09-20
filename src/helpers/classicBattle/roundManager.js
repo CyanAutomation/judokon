@@ -571,8 +571,12 @@ function evaluateMachineReadyPropagation({
   shouldPropagateAfterMachine,
   markMachineHandled
 }) {
+  if (state.dedupeTracked) {
+    markMachineHandled?.();
+    return { propagate: false, requiresPropagation: false };
+  }
   const propagate = state.dispatched && shouldPropagateAfterMachine();
-  const requiresPropagation = state.dispatched && propagate && !state.dedupeTracked;
+  const requiresPropagation = state.dispatched && propagate;
   if (state.dispatched && !propagate) {
     markMachineHandled?.();
   }

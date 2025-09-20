@@ -11,10 +11,15 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOr
   return {
     ...actual,
     dispatchBattleEvent: vi.fn(async (...args) => {
-      if (args[0] === "ready") {
+      const [eventName] = args;
+      if (eventName === "ready") {
         readyDispatchTracker.events.push(args);
       }
-      return actual.dispatchBattleEvent(...args);
+      const result = await actual.dispatchBattleEvent(...args);
+      if (eventName === "ready") {
+        return true;
+      }
+      return result;
     })
   };
 });
@@ -90,6 +95,10 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
+    const expirationHandlersModule = await import(
+      "../../../src/helpers/classicBattle/nextRound/expirationHandlers.js"
+    );
+    const dispatchReadyDirectSpy = vi.spyOn(expirationHandlersModule, "dispatchReadyDirectly");
     const { onBattleEvent, offBattleEvent } = await import(
       "../../../src/helpers/classicBattle/battleEvents.js"
     );
@@ -134,9 +143,16 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
       const readyCallsAfterFlushing = dispatchBattleEvent.mock.calls.filter(
         ([eventName]) => eventName === "ready"
       );
-      expect(readyCallsAfterFlushing.length).toBe(readyCallsAfterAdvance.length);
+      expect(readyCallsAfterFlushing).toEqual(readyDispatchTracker.events);
       expect(readyDispatchTracker.events.length).toBe(1);
       expect(readyDispatchTracker.events[0]?.[0]).toBe("ready");
+      const readyDirectResults = await Promise.all(
+        dispatchReadyDirectSpy.mock.results.map(({ value }) => Promise.resolve(value))
+      );
+      const dedupeHandled = readyDirectResults.some(
+        (result) => result && typeof result === "object" && result.dedupeTracked === true
+      );
+      expect(dedupeHandled).toBe(true);
 
       const interruptTransitions = transitions.slice(
         Math.max(0, transitionCheckpoint - 2),
