@@ -331,10 +331,12 @@ describe("classicBattle startCooldown", () => {
     // State transitions to waitingForPlayerAction after ready dispatch
     await waitForState("waitingForPlayerAction");
 
-    const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
-      ([eventName]) => eventName === "ready"
-    );
-    expect(readyDispatchCalls).toHaveLength(1);
+    const getReadyDispatchCalls = () =>
+      machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
+    expect(getReadyDispatchCalls()).toHaveLength(1);
+
+    await vi.runAllTimersAsync();
+    expect(getReadyDispatchCalls()).toHaveLength(1);
 
     expect(machine.getState()).toBe("waitingForPlayerAction");
     const btn = document.querySelector('[data-role="next-round"]');
@@ -416,10 +418,12 @@ describe("classicBattle startCooldown", () => {
     await waitForState("waitingForPlayerAction");
     await vi.runAllTimersAsync();
 
-    const readyDispatchCalls = machineDispatchSpy.mock.calls.filter(
-      ([eventName]) => eventName === "ready"
-    );
-    expect(readyDispatchCalls).toHaveLength(1);
+    const getReadyDispatchCalls = () =>
+      machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
+    expect(getReadyDispatchCalls()).toHaveLength(1);
+
+    await vi.runAllTimersAsync();
+    expect(getReadyDispatchCalls()).toHaveLength(1);
 
     expect(machine.getState()).toBe("waitingForPlayerAction");
   });

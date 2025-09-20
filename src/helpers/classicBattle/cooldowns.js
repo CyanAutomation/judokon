@@ -7,6 +7,10 @@ import { setSkipHandler } from "./skipHandler.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { startCoolDown } from "../battleEngineFacade.js";
+import {
+  hasReadyBeenDispatchedForCurrentCooldown,
+  setReadyDispatchedForCurrentCooldown
+} from "./roundReadyState.js";
 
 /**
  * Additional buffer to ensure fallback timers fire after engine-backed timers.
@@ -237,6 +241,12 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
     if (!isButtonAlreadyReady) {
       guard(() => markNextButtonReady(target));
     }
+    const canDispatchViaMachine = typeof machine?.dispatch === "function";
+    const shouldDispatchViaMachine =
+      canDispatchViaMachine && !hasReadyBeenDispatchedForCurrentCooldown();
+    if (shouldDispatchViaMachine) {
+      setReadyDispatchedForCurrentCooldown(true);
+    }
     for (const evt of [
       "cooldown.timer.expired",
       "nextRoundTimerReady",
@@ -245,7 +255,16 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
     ]) {
       guard(() => emitBattleEvent(evt));
     }
-    guardAsync(() => machine?.dispatch?.("ready"));
+    if (shouldDispatchViaMachine) {
+      guardAsync(async () => {
+        try {
+          await machine.dispatch("ready");
+        } catch (error) {
+          setReadyDispatchedForCurrentCooldown(false);
+          throw error;
+        }
+      });
+    }
   };
 
   return {
