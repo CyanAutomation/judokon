@@ -25,10 +25,11 @@ async function loadHandlers(scores) {
     initClassicBattleOrchestrator: vi.fn()
   }));
   vi.doMock("../../src/helpers/BattleEngine.js", () => ({ STATS: ["speed"] }));
+  const getScores = vi.fn(() => scores);
   vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
     setPointsToWin: vi.fn(),
     getPointsToWin: vi.fn(),
-    getScores: vi.fn(() => scores)
+    getScores
   }));
   vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson: vi.fn().mockResolvedValue([]) }));
   vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
@@ -37,7 +38,7 @@ async function loadHandlers(scores) {
   }));
   window.__TEST__ = true;
   const { battleCLI } = await import("../../src/pages/index.js");
-  return battleCLI;
+  return { handlers: battleCLI, getScoresMock: getScores };
 }
 
 describe("battleCLI scoreboard", () => {
@@ -59,7 +60,7 @@ describe("battleCLI scoreboard", () => {
   });
 
   it("updates after player win", async () => {
-    const handlers = await loadHandlers({ playerScore: 1, opponentScore: 0 });
+    const { handlers } = await loadHandlers({ playerScore: 1, opponentScore: 0 });
     handlers.ensureCliDomForTest({ reset: true });
     handlers.handleRoundResolved({ detail: { result: { message: "Win" } } });
     const el = document.getElementById("cli-score");
@@ -68,12 +69,14 @@ describe("battleCLI scoreboard", () => {
   });
 
   it("updates after player loss", async () => {
-    const handlers = await loadHandlers({ playerScore: 0, opponentScore: 1 });
+    const { handlers, getScoresMock } = await loadHandlers({
+      playerScore: 0,
+      opponentScore: 1
+    });
     handlers.ensureCliDomForTest({ reset: true });
-    const scoreEl = document.getElementById("cli-score");
-    scoreEl.dataset.scorePlayer = "2";
-    scoreEl.dataset.scoreOpponent = "2";
-    scoreEl.textContent = "You: 2 Opponent: 2";
+    getScoresMock.mockReturnValueOnce({ playerScore: 2, opponentScore: 2 });
+    getScoresMock.mockReturnValue({ playerScore: 0, opponentScore: 1 });
+    handlers.handleRoundResolved({ detail: { result: { message: "Loss" } } });
     handlers.handleRoundResolved({ detail: { result: { message: "Loss" } } });
     const el = document.getElementById("cli-score");
     expect(el.dataset.scorePlayer).toBe("0");
@@ -81,12 +84,14 @@ describe("battleCLI scoreboard", () => {
   });
 
   it("updates after draw", async () => {
-    const handlers = await loadHandlers({ playerScore: 0, opponentScore: 0 });
+    const { handlers, getScoresMock } = await loadHandlers({
+      playerScore: 0,
+      opponentScore: 0
+    });
     handlers.ensureCliDomForTest({ reset: true });
-    const scoreEl = document.getElementById("cli-score");
-    scoreEl.dataset.scorePlayer = "5";
-    scoreEl.dataset.scoreOpponent = "6";
-    scoreEl.textContent = "You: 5 Opponent: 6";
+    getScoresMock.mockReturnValueOnce({ playerScore: 5, opponentScore: 6 });
+    getScoresMock.mockReturnValue({ playerScore: 0, opponentScore: 0 });
+    handlers.handleRoundResolved({ detail: { result: { message: "Draw" } } });
     handlers.handleRoundResolved({ detail: { result: { message: "Draw" } } });
     const el = document.getElementById("cli-score");
     expect(el.dataset.scorePlayer).toBe("0");

@@ -38,6 +38,10 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     battleCLI.ensureCliDomForTest({ reset: true });
   }
 
+  // Tests call `ensureCliDom()` after their Scoreboard mocks are registered. Importing the
+  // CLI DOM earlier (e.g., within `beforeEach`) would eagerly load the real Scoreboard module
+  // before `vi.doMock` can intercept it, breaking the dual-write assertions.
+
   beforeEach(async () => {
     window.__TEST__ = true;
     vi.useFakeTimers();

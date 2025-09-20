@@ -40,27 +40,39 @@ export async function loadBattleCLI(options = {}) {
   }
 
   const emitter = new EventTarget();
+  const flagState = {
+    cliVerbose: verbose,
+    cliShortcuts,
+    autoSelect,
+    skipRoundCooldown: false
+  };
+  const initFeatureFlags = vi.fn().mockResolvedValue({
+    featureFlags: {
+      cliVerbose: { enabled: flagState.cliVerbose },
+      cliShortcuts: { enabled: flagState.cliShortcuts },
+      autoSelect: { enabled: flagState.autoSelect }
+    }
+  });
+  const isEnabled = vi.fn((flag) => {
+    if (flag in flagState) {
+      return flagState[flag];
+    }
+    return false;
+  });
+  const setFlag = vi.fn((flag, value) => {
+    if (flag in flagState) {
+      flagState[flag] = value;
+    }
+    emitter.dispatchEvent(
+      new CustomEvent("change", {
+        detail: { flag, value }
+      })
+    );
+  });
   vi.doMock("../../../src/helpers/featureFlags.js", () => ({
-    initFeatureFlags: vi.fn().mockResolvedValue({
-      featureFlags: {
-        cliVerbose: { enabled: verbose },
-        cliShortcuts: { enabled: cliShortcuts },
-        autoSelect: { enabled: autoSelect }
-      }
-    }),
-    isEnabled: vi.fn((flag) => {
-      switch (flag) {
-        case "cliVerbose":
-          return verbose;
-        case "cliShortcuts":
-          return cliShortcuts;
-        case "autoSelect":
-          return autoSelect;
-        default:
-          return false;
-      }
-    }),
-    setFlag: vi.fn(),
+    initFeatureFlags,
+    isEnabled,
+    setFlag,
     featureFlagsEmitter: emitter
   }));
   vi.doMock("../../../src/helpers/classicBattle/roundManager.js", () => ({

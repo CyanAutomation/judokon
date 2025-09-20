@@ -72,6 +72,24 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   vi.doMock("../../src/helpers/classicBattle/debugHooks.js", () => ({
     readDebugState: vi.fn(() => () => ({ dispatch: mockDispatch }))
   }));
+  vi.doMock("../../src/helpers/timers/createRoundTimer.js", () => ({
+    createRoundTimer: vi.fn(() => {
+      const listeners = {
+        tick: new Set(),
+        expired: new Set(),
+        drift: new Set()
+      };
+      return {
+        start: vi.fn(),
+        stop: vi.fn(),
+        on: vi.fn((event, handler) => {
+          listeners[event]?.add(handler);
+          return () => listeners[event]?.delete(handler);
+        }),
+        off: vi.fn((event, handler) => listeners[event]?.delete(handler))
+      };
+    })
+  }));
   window.__TEST__ = true;
   const { battleCLI } = await import("../../src/pages/index.js");
   return {
@@ -132,6 +150,7 @@ describe("battleCLI event handlers", () => {
     vi.doUnmock("../../src/helpers/classicBattle/autoSelectStat.js");
     vi.doUnmock("../../src/helpers/classicBattle/orchestratorHandlers.js");
     vi.doUnmock("../../src/helpers/classicBattle/debugHooks.js");
+    vi.doUnmock("../../src/helpers/timers/createRoundTimer.js");
     if (typeof cleanupSetAutoContinue === "function") {
       cleanupSetAutoContinue(true);
       cleanupSetAutoContinue = undefined;
@@ -178,13 +197,7 @@ describe("battleCLI event handlers", () => {
   it("captures remaining selection time when paused", async () => {
     vi.useFakeTimers();
     const { handlers } = await setupHandlers();
-    const countdown = document.getElementById("cli-countdown");
-    countdown.dataset.remainingTime = "5";
-    countdown.setAttribute("data-remaining-time", "5");
-    handlers.setSelectionTimers(
-      setTimeout(() => {}, 5000),
-      setInterval(() => {}, 1000)
-    );
+    handlers.startSelectionCountdown(5);
     handlers.pauseTimers();
     const { selection, cooldown } = handlers.getPausedTimes();
     expect(selection).toBe(5);
@@ -214,13 +227,7 @@ describe("battleCLI event handlers", () => {
   it("preserves remaining time when paused twice", async () => {
     vi.useFakeTimers();
     const { handlers } = await setupHandlers();
-    const countdown = document.getElementById("cli-countdown");
-    countdown.dataset.remainingTime = "5";
-    countdown.setAttribute("data-remaining-time", "5");
-    handlers.setSelectionTimers(
-      setTimeout(() => {}, 5000),
-      setInterval(() => {}, 1000)
-    );
+    handlers.startSelectionCountdown(5);
     handlers.handleCountdownStart({ detail: { duration: 7 } });
     const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
       handlers.getCooldownTimers();
