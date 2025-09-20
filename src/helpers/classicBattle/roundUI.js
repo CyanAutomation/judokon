@@ -253,16 +253,32 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     didReset = true;
     runReset();
   };
-  let usedFrames = false;
+  let frameSchedulingSucceeded = false;
+  let timeoutId = null;
   try {
-    runAfterFrames(2, runResetOnce);
-    usedFrames = true;
+  try {
+    runAfterFrames(2, () => {
+      if (timeoutId !== null) {
+        try {
+          if (typeof clearTimeout === "function") clearTimeout(timeoutId);
+        } catch {}
+        timeoutId = null;
+      }
+      runResetOnce();
+    });
+    frameSchedulingSucceeded = true;
   } catch {
-    usedFrames = false;
+    frameSchedulingSucceeded = false;
+  }
+  } catch {
+    frameSchedulingSucceeded = false;
   }
   if (typeof setTimeout === "function") {
-    setTimeout(runResetOnce, 32);
-  } else if (!usedFrames) {
+    timeoutId = setTimeout(() => {
+      timeoutId = null;
+      runResetOnce();
+    }, 32);
+  } else if (!frameSchedulingSucceeded) {
     runResetOnce();
   }
   if (result.matchEnded) {
