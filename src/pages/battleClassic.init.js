@@ -1200,6 +1200,12 @@ async function init() {
           } catch (err) {
             console.debug("battleClassic: resetting score after replay failed", err);
           }
+
+          try {
+            await startRoundCycle(store, { skipStartRound: true });
+          } catch (err) {
+            console.debug("battleClassic: startRoundCycle after replay failed", err);
+          }
         });
     } catch (err) {
       console.debug("battleClassic: wiring replay button failed", err);
