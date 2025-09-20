@@ -109,6 +109,13 @@ function readDisplayedRound(root) {
 function writeRoundCounter(root, value) {
   const el = getRoundCounterElement(root);
   if (!el || !Number.isFinite(value)) return;
+  try {
+    const highest = Number((globalThis.__highestDisplayedRound ?? el.dataset?.highestRound) || 0);
+    const priorContext = globalThis.__previousRoundCounterContext;
+    if (priorContext === "regular" && Number.isFinite(highest) && highest >= 1 && value > highest) {
+      return;
+    }
+  } catch {}
   el.textContent = `Round ${value}`;
 }
 

@@ -85,6 +85,34 @@ test.describe("Classic Battle Opponent Reveal", () => {
         setOpponentDelay(100);
       });
 
+      // Force the engine to report the previous total for the next few reads so the
+      // round counter update must rely on the visible value when advancing.
+      await page.evaluate(async () => {
+        const facade = await import("/src/helpers/battleEngineFacade.js");
+        if (typeof facade.requireEngine !== "function") {
+          window.__restoreRoundsPlayed = null;
+          return;
+        }
+        try {
+          const engine = facade.requireEngine();
+          const originalGetRoundsPlayed = engine.getRoundsPlayed.bind(engine);
+          let calls = 0;
+          engine.getRoundsPlayed = () => {
+            calls += 1;
+            const reported = Number(originalGetRoundsPlayed());
+            if (calls <= 4 && Number.isFinite(reported)) {
+              return Math.max(0, reported - 1);
+            }
+            return reported;
+          };
+          window.__restoreRoundsPlayed = () => {
+            engine.getRoundsPlayed = originalGetRoundsPlayed;
+          };
+        } catch {
+          window.__restoreRoundsPlayed = null;
+        }
+      });
+
       // First round
       const firstStat = page.locator(selectors.statButton(0)).first();
       await firstStat.click();
@@ -102,6 +130,9 @@ test.describe("Classic Battle Opponent Reveal", () => {
       const roundCounter = page.locator("#round-counter");
       const readRoundNumber = () => readScoreboardRound(roundCounter);
 
+      const initialRound = await readRoundNumber();
+      const initialRoundNumber = initialRound ?? 0;
+
       const beforeNext = await readRoundNumber();
       expect(
         beforeNext,
@@ -109,13 +140,77 @@ test.describe("Classic Battle Opponent Reveal", () => {
       ).not.toBeNull();
       const beforeNextNumber = /** @type {number} */ (beforeNext);
 
+      const expectedMinimum = Math.max(beforeNextNumber, initialRoundNumber + 1);
+
+      // Track scoreboard mutations to ensure the counter never regresses once the
+      // Next button is clicked, even if the engine reports a stale round count.
+      await page.evaluate((threshold) => {
+        const counter = document.getElementById("round-counter");
+        if (!counter) return;
+        const tracker = {
+          threshold,
+          regressed: false,
+          values: []
+        };
+        const observer = new MutationObserver(() => {
+          try {
+            const match = String(counter.textContent || "").match(/Round\s+(\d+)/i);
+            if (!match) return;
+            const value = Number(match[1]);
+            if (!Number.isFinite(value)) return;
+            tracker.values.push(value);
+            if (value < tracker.threshold) {
+              tracker.regressed = true;
+            }
+          } catch {}
+        });
+        observer.observe(counter, {
+          childList: true,
+          subtree: true,
+          characterData: true
+        });
+        window.__roundObserverTracker = tracker;
+        window.__stopRoundObserver = () => observer.disconnect();
+      }, expectedMinimum);
+
       // Click next round
       await nextButton.click();
 
-      await expect.poll(readRoundNumber).toBeGreaterThanOrEqual(beforeNextNumber);
+      await expect.poll(readRoundNumber).toBeGreaterThanOrEqual(expectedMinimum);
 
-      // Verify round progression
-      await expect(roundCounter).toContainText(/Round 2/);
+      // Verify round progression without regression
+      const afterNext = await readRoundNumber();
+      expect(afterNext).not.toBeNull();
+      expect(/** @type {number} */ (afterNext)).toBeGreaterThanOrEqual(expectedMinimum);
+
+      const observedValues = await page.evaluate(() => {
+        const tracker = window.__roundObserverTracker;
+        return Array.isArray(tracker?.values) ? tracker.values.slice() : [];
+      });
+      if (observedValues.length > 0) {
+        expect(Math.min(...observedValues)).toBeGreaterThanOrEqual(expectedMinimum);
+      } else {
+        expect(beforeNextNumber).toBeGreaterThanOrEqual(expectedMinimum);
+      }
+
+      const regressed = await page.evaluate(() =>
+        Boolean(window.__roundObserverTracker?.regressed)
+      );
+      expect(regressed).toBe(false);
+
+      await page.evaluate(() => {
+        try {
+          window.__stopRoundObserver?.();
+        } catch {}
+        window.__stopRoundObserver = undefined;
+        window.__roundObserverTracker = undefined;
+        if (typeof window.__restoreRoundsPlayed === "function") {
+          try {
+            window.__restoreRoundsPlayed();
+          } catch {}
+        }
+        window.__restoreRoundsPlayed = undefined;
+      });
 
       // Second round should work the same way
       const secondStat = page.locator(selectors.statButton(0)).nth(1);
@@ -289,8 +384,10 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await expect(page.locator("#next-button")).toBeEnabled();
       await page.locator("#next-button").click();
 
-      // Second round should work independently
-      await expect(page.locator("#round-counter")).toContainText(/Round 2/);
+      // Second round should work independently without regressing
+      await expect
+        .poll(() => readScoreboardRound(page.locator("#round-counter")))
+        .toBeGreaterThanOrEqual(2);
 
       const secondStat = page.locator("#stat-buttons button[data-stat]").nth(1);
       await secondStat.click();

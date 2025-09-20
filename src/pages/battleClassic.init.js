@@ -225,19 +225,71 @@ function getVisibleRoundNumber() {
  *
  * @pseudocode
  * 1. Read `getRoundsPlayed()` and compute `played + 1` when possible.
- * 2. Compare with the currently visible round and never decrease it.
- * 3. Fall back to the visible round (or 1) when engine data is unavailable.
+ * 2. Track the highest round shown so far and never render a lower value.
+ * 3. When `expectAdvance` is true and the engine still reports the prior total,
+ *    increment from the visible round so early `round.start` signals progress.
+ * 4. Fall back to the last known round (or 1) when engine data is unavailable.
  */
-function updateRoundCounterFromEngine() {
+let highestDisplayedRound = 0;
+let lastForcedTargetRound = null;
+let lastRoundCounterUpdateContext = "init";
+
+function updateRoundCounterFromEngine(options = {}) {
+  const { expectAdvance = false } = options;
   const visibleRound = getVisibleRoundNumber();
+  const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
+
+  if (hasVisibleRound) {
+    highestDisplayedRound = Math.max(highestDisplayedRound, Number(visibleRound));
+  }
+
+  const priorContext = lastRoundCounterUpdateContext;
 
   try {
     const engineRound = calculateEngineRound();
-    const nextRound = determineNextRound(engineRound, visibleRound);
+    const hasEngineRound = Number.isFinite(engineRound) && engineRound >= 1;
+    const hasHighestRound = Number.isFinite(highestDisplayedRound) && highestDisplayedRound >= 1;
+    const baselineRound = Math.max(
+      hasHighestRound ? highestDisplayedRound : 1,
+      hasVisibleRound ? Number(visibleRound) : 1
+    );
+
+    let nextRound = hasEngineRound ? engineRound : baselineRound;
+
+    const shouldForceAdvance =
+      expectAdvance &&
+      hasVisibleRound &&
+      (!hasEngineRound || engineRound < Number(visibleRound)) &&
+      (lastForcedTargetRound === null || Number(visibleRound) < lastForcedTargetRound);
+
+    if (shouldForceAdvance) {
+      const forcedTarget = Math.max(Number(visibleRound) + 1, baselineRound);
+      nextRound = Math.max(nextRound, forcedTarget);
+    } else {
+      nextRound = Math.max(nextRound, baselineRound);
+    }
+
     updateRoundCounter(nextRound);
+    highestDisplayedRound = Math.max(highestDisplayedRound, nextRound);
+
+    if (shouldForceAdvance) {
+      lastForcedTargetRound = nextRound;
+    } else if (!expectAdvance || (hasEngineRound && engineRound >= nextRound)) {
+      lastForcedTargetRound = null;
+    }
+
+    lastRoundCounterUpdateContext = expectAdvance ? "advance" : "regular";
+    if (typeof window !== "undefined") {
+      try {
+        window.__highestDisplayedRound = highestDisplayedRound;
+        window.__lastRoundCounterContext = lastRoundCounterUpdateContext;
+        window.__previousRoundCounterContext = priorContext;
+      } catch {}
+    }
   } catch (err) {
     console.debug("battleClassic: getRoundsPlayed failed", err);
     handleRoundCounterFallback(visibleRound);
+    lastRoundCounterUpdateContext = "fallback";
   }
 }
 
@@ -246,29 +298,24 @@ function calculateEngineRound() {
   return Number.isFinite(played) ? played + 1 : NaN;
 }
 
-function determineNextRound(engineRound, visibleRound) {
-  const hasEngineRound = Number.isFinite(engineRound) && engineRound >= 1;
-  const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
-
-  if (hasEngineRound && hasVisibleRound) {
-    return Math.max(engineRound, visibleRound);
-  }
-
-  if (hasEngineRound) {
-    return engineRound;
-  }
-
-  if (hasVisibleRound) {
-    return visibleRound;
-  }
-
-  return 1;
-}
-
 function handleRoundCounterFallback(visibleRound) {
   try {
-    const fallback = Number.isFinite(visibleRound) && visibleRound >= 1 ? visibleRound : 1;
+    const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
+    const baseline =
+      Number.isFinite(highestDisplayedRound) && highestDisplayedRound >= 1
+        ? highestDisplayedRound
+        : 1;
+    const fallback = hasVisibleRound ? Math.max(Number(visibleRound), baseline) : baseline;
     updateRoundCounter(fallback);
+    highestDisplayedRound = Math.max(highestDisplayedRound, fallback);
+    lastForcedTargetRound = null;
+    if (typeof window !== "undefined") {
+      try {
+        window.__highestDisplayedRound = highestDisplayedRound;
+        window.__lastRoundCounterContext = "fallback";
+        window.__previousRoundCounterContext = lastRoundCounterUpdateContext;
+      } catch {}
+    }
   } catch (err2) {
     console.debug("battleClassic: updateRoundCounter fallback failed", err2);
   }
@@ -289,7 +336,9 @@ function renderStatButtons(store) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = String(stat);
+    btn.classList.add("stat-button");
     btn.setAttribute("data-stat", String(stat));
+    btn.setAttribute("data-player", "0");
     btn.setAttribute("data-testid", "stat-button");
     btn.setAttribute("aria-describedby", "round-message");
     btn.addEventListener("click", async () => {
@@ -723,7 +772,7 @@ async function startRoundCycle(store) {
   try {
     stopActiveSelectionTimer();
   } catch {}
-  updateRoundCounterFromEngine();
+  updateRoundCounterFromEngine({ expectAdvance: true });
   try {
     renderStatButtons(store);
   } catch (err) {
