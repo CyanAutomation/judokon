@@ -476,13 +476,15 @@ describe("classicBattle startCooldown", () => {
 
     await vi.runAllTimersAsync();
     await Promise.resolve();
-
     const events = emitSpy.mock.calls.map(([eventName]) => eventName);
     const countdownIndex = events.lastIndexOf("countdownFinished");
     const roundStartIndex = events.lastIndexOf("round.start");
     expect(countdownIndex).toBeGreaterThan(-1);
     expect(roundStartIndex).toBeGreaterThan(-1);
     expect(countdownIndex).toBeLessThan(roundStartIndex);
+    // Verify both events were actually emitted
+    expect(events).toContain("countdownFinished");
+    expect(events).toContain("round.start");
     expect(onFinished).toHaveBeenCalled();
   });
 
