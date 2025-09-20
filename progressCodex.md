@@ -49,11 +49,13 @@ The following table details the identified issues, ranked by severity.
 The following improvements are recommended to address the issues above. They are ordered by priority, starting with foundational changes.
 
 ### 1. Implement a Central State Machine
+
 A robust state machine is critical. It will resolve the majority of the functional bugs by design.
 - **Action:** Ensure the UI correctly binds to the battle engine’s state transitions: `init` → `selection` → `opponentChoose` → `resolution` → `cooldown` → `nextRound` → `end`.
 - **Fixes:** #1, #4, #5, #6, #7, #10
 
 ### 2. Correct Core Gameplay Loop
+
 - **Action (Timers):** Use `setInterval` or `requestAnimationFrame` to create a reliable, pausable timer for the 30-second selection window.
 - **Fixes:** #3, #5
 - **Action (State Reset):** Ensure the `replay` action fully resets the game state, including round number, scores, and card decks.
@@ -62,6 +64,7 @@ A robust state machine is critical. It will resolve the majority of the function
 - **Fixes:** #6, #10
 
 ### 3. Render UI Components Correctly
+
 - **Action (Judoka Cards):** Implement and render the card components to show judoka portraits and stats. The opponent’s card should be revealed after the player’s selection.
 - **Fixes:** #2
 - **Action (Tooltips):** Replace the literal `\n` with `<br>` or by rendering separate block elements so that tooltips format correctly.
@@ -70,6 +73,7 @@ A robust state machine is critical. It will resolve the majority of the function
 - **Fixes:** #8
 
 ### 4. Improve Accessibility (A11y)
+
 - **Action (ARIA):** Implement `aria-live="polite"` on the scoreboard and `aria-describedby` on stat buttons to provide screen reader support. Add `alt` text for card images.
 - **Fixes:** #12
 - **Action (Focus Management):** Trap focus within modals to prevent interaction with background elements.
@@ -80,6 +84,7 @@ A robust state machine is critical. It will resolve the majority of the function
 - **Fixes:** (Not explicitly in a bug, but a best practice)
 
 ### 5. Repair Navigation and Add Features
+
 - **Action (Navigation):** Correct the bottom navigation link to point to `battleClassic.html`. Add a header link to return to the main menu.
 - **Fixes:** #9
 - **Action (AI Difficulty):** Add a UI control to select AI difficulty (Easy/Medium/Hard) and adjust the opponent's logic accordingly.
