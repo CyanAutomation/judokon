@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import installRAFMock from "../rafMock.js";
 
 describe("classicBattle stat selection failure recovery", () => {
   const ROUND_MANAGER_PATH = "../../../src/helpers/classicBattle/roundManager.js";
@@ -6,7 +7,6 @@ describe("classicBattle stat selection failure recovery", () => {
   let renderStatButtons;
   let startCooldownMock;
   let handleStatSelectionMock;
-  let originalRequestAnimationFrame;
   let originalLocalStorage;
 
   beforeEach(async () => {
@@ -24,13 +24,10 @@ describe("classicBattle stat selection failure recovery", () => {
       getPlayerAndOpponentValues: vi.fn(() => ({ playerVal: 5, opponentVal: 3 }))
     }));
 
-    originalRequestAnimationFrame = globalThis.requestAnimationFrame;
-    globalThis.requestAnimationFrame = (cb) => {
-      if (typeof cb === "function") {
-        cb();
-      }
-      return 1;
-    };
+    // Install queued RAF mock and allow tests to flush synchronously when needed
+    const raf = installRAFMock();
+    originalRequestAnimationFrame = raf.restore; // restore function reference
+    global.__statSelectionRafRestore = raf.restore;
 
     originalLocalStorage = globalThis.localStorage;
     globalThis.localStorage = {
@@ -44,11 +41,9 @@ describe("classicBattle stat selection failure recovery", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
-    if (originalRequestAnimationFrame) {
-      globalThis.requestAnimationFrame = originalRequestAnimationFrame;
-    } else {
-      delete globalThis.requestAnimationFrame;
-    }
+    try {
+      global.__statSelectionRafRestore?.();
+    } catch {}
     if (originalLocalStorage) {
       globalThis.localStorage = originalLocalStorage;
     } else {

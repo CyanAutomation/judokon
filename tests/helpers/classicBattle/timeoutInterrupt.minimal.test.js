@@ -1,33 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import installRAFMock from "../rafMock.js";
 
 describe("timeout → interruptRound → cooldown auto-advance - minimal", () => {
   /** @type {import('vitest').FakeTimers} */
   let timers;
-  /** @type {typeof globalThis.requestAnimationFrame | undefined} */
-  let originalRaf;
-  /** @type {typeof globalThis.cancelAnimationFrame | undefined} */
-  let originalCancelRaf;
-  let stubbedRaf = false;
-  let stubbedCancel = false;
 
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
 
-    originalRaf = globalThis.requestAnimationFrame;
-    originalCancelRaf = globalThis.cancelAnimationFrame;
-    if (typeof originalRaf !== "function") {
-      stubbedRaf = true;
-      globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 16);
-    } else {
-      stubbedRaf = false;
-    }
-    if (typeof originalCancelRaf !== "function") {
-      stubbedCancel = true;
-      globalThis.cancelAnimationFrame = (id) => clearTimeout(Number(id));
-    } else {
-      stubbedCancel = false;
-    }
+    // Install shared RAF mock for deterministic frame control
+    const raf = installRAFMock();
+    global.__timeoutInterruptRafRestore = raf.restore;
+    stubbedRaf = true;
+    stubbedCancel = true;
 
     if (typeof document !== "undefined") {
       document.body.innerHTML = "";
@@ -49,20 +35,9 @@ describe("timeout → interruptRound → cooldown auto-advance - minimal", () =>
     timers?.useRealTimers();
     timers = undefined;
 
-    if (stubbedRaf) {
-      if (typeof originalRaf === "function") {
-        globalThis.requestAnimationFrame = originalRaf;
-      } else {
-        delete globalThis.requestAnimationFrame;
-      }
-    }
-    if (stubbedCancel) {
-      if (typeof originalCancelRaf === "function") {
-        globalThis.cancelAnimationFrame = originalCancelRaf;
-      } else {
-        delete globalThis.cancelAnimationFrame;
-      }
-    }
+    try {
+      global.__timeoutInterruptRafRestore?.();
+    } catch {}
     originalRaf = undefined;
     originalCancelRaf = undefined;
     stubbedRaf = false;
