@@ -1,9 +1,18 @@
 // [TEST DEBUG] top-level testUtils.js
 
-console.log("[TEST DEBUG] top-level testUtils.js");
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
+import { isConsoleMocked, shouldShowTestLogs } from "../../src/helpers/testLogGate.js";
+
+const debugLog = (...args) => {
+  if (typeof console === "undefined") return;
+  if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
+    console.log(...args);
+  }
+};
+
+debugLog("[TEST DEBUG] top-level testUtils.js");
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const judokaFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/judoka.json")));
 const gokyoFixture = JSON.parse(readFileSync(path.join(__dirname, "../fixtures/gokyo.json")));

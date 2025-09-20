@@ -91,17 +91,18 @@ const mergeTestCardData = (base, overrides = {}) => {
     ...base.stats,
     ...(statOverrides && typeof statOverrides === "object" ? statOverrides : {})
   };
+
+  return {
+    ...base,
+    ...cardOverrides,
+    stats: mergedStats
+  };
+};
+
 const renderStatsCardForTest = async (target, base, overrides) => {
   if (!target) return null;
   if (!__createStatsPanelPromise) {
     // Preload during module initialization instead of lazy loading
-    __createStatsPanelPromise = import("/src/components/StatsPanel.js").then(
-      (mod) => mod.createStatsPanel
-    );
-  }
-  const createStatsPanel = await __createStatsPanelPromise;
-  if (!target) return null;
-  if (!__createStatsPanelPromise) {
     __createStatsPanelPromise = import("/src/components/StatsPanel.js").then(
       (mod) => mod.createStatsPanel
     );
@@ -113,20 +114,20 @@ const renderStatsCardForTest = async (target, base, overrides) => {
   const rarityClass = String(cardData.rarity || "common").toLowerCase();
   const statsPanel = await createStatsPanel(cardData.stats, { type: rarityClass });
 
-  const card = document.createElement("div");
-  card.className = `judoka-card ${rarityClass}`.trim();
-  try {
-    container.dataset.cardJson = JSON.stringify(cardData);
-  } catch (error) {
-    console.warn("Failed to serialize card", error);
-    container.dataset.cardJson = JSON.stringify({ id: cardData.id, stats: cardData.stats });
-  }
+  const container = document.createElement("div");
   container.className = "card-container";
   try {
     container.dataset.cardJson = JSON.stringify(cardData);
-  } catch {}
-  container.appendChild(card);
+  } catch (error) {
+    console.warn("Failed to serialize test card data", error);
+    container.dataset.cardJson = JSON.stringify({ id: cardData.id, stats: cardData.stats });
+  }
 
+  const card = document.createElement("div");
+  card.className = `judoka-card ${rarityClass}`.trim();
+  card.appendChild(statsPanel);
+
+  container.appendChild(card);
   target.replaceChildren(container);
 
   return cardData;

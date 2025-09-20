@@ -1,12 +1,16 @@
-if (typeof console !== "undefined") {
-  console.log("[TEST DEBUG] utils.js top-level loaded");
-}
-// [TEST DEBUG] top-level utils.js
-
-console.log("[TEST DEBUG] top-level utils.js");
+import { isConsoleMocked, shouldShowTestLogs } from "../../../src/helpers/testLogGate.js";
 import { vi } from "vitest";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBattle/orchestrator.js";
+
+const debugLog = (...args) => {
+  if (typeof console === "undefined") return;
+  if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
+    console.log(...args);
+  }
+};
+
+debugLog("[TEST DEBUG] utils.js top-level loaded");
 
 /**
  * @pseudocode

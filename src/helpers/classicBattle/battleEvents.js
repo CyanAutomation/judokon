@@ -1,7 +1,14 @@
+import { isConsoleMocked, shouldShowTestLogs } from "../testLogGate.js";
+
 // [TEST DEBUG] Instrument event dispatcher
 const _origDispatchEvent = globalThis.dispatchEvent;
 globalThis.dispatchEvent = function (event) {
-  if (event && event.type) {
+  if (
+    typeof console !== "undefined" &&
+    event &&
+    event.type &&
+    (shouldShowTestLogs() || isConsoleMocked(console.log))
+  ) {
     console.log("[TEST DEBUG] dispatchEvent:", event.type, event.detail);
   }
   return _origDispatchEvent.apply(this, arguments);
