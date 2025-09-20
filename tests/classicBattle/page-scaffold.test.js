@@ -77,15 +77,35 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => {
       ? window.__statControls.buttons.filter((btn) => btn instanceof HTMLElement)
       : [];
     const uniqueButtons = tracked.length > 0 ? tracked : buttons;
-    const seen = new Set();
+    const listenerStore =
+      window.__timerButtonListeners instanceof Map
+        ? window.__timerButtonListeners
+        : new Map();
+    if (!(window.__timerButtonListeners instanceof Map)) {
+      window.__timerButtonListeners = listenerStore;
+    }
+
+    const processedButtons = new Set();
     uniqueButtons.forEach((btn) => {
-      if (!(btn instanceof HTMLElement) || seen.has(btn)) return;
-      seen.add(btn);
+      if (!(btn instanceof HTMLElement) || processedButtons.has(btn)) return;
+      processedButtons.add(btn);
+      const existingListener = listenerStore.get(btn);
+      if (existingListener) {
+        btn.removeEventListener("click", existingListener);
+      }
       const listener = () => {
+        listenerStore.delete(btn);
         void handleSelection(btn);
       };
+      listenerStore.set(btn, listener);
       btn.addEventListener("click", listener, { once: true });
     });
+
+    for (const [btn, listener] of listenerStore.entries()) {
+      if (processedButtons.has(btn)) continue;
+      btn.removeEventListener("click", listener);
+      listenerStore.delete(btn);
+    }
   };
 
   const startTimer = vi.fn(async (onSelect) => {
@@ -458,6 +478,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     delete window.__statControls;
     delete window.__resolveStatButtonsReady;
     delete window.statButtonsReadyPromise;
+    delete window.__timerButtonListeners;
   });
 
   test("initializes scoreboard regions and default content", async () => {
