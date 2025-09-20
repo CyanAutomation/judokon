@@ -9,6 +9,7 @@ import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { startCoolDown } from "../battleEngineFacade.js";
 import {
   hasReadyBeenDispatchedForCurrentCooldown,
+  resetReadyDispatchState,
   setReadyDispatchedForCurrentCooldown
 } from "./roundReadyState.js";
 
@@ -241,9 +242,11 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
     if (!isButtonAlreadyReady) {
       guard(() => markNextButtonReady(target));
     }
-    const canDispatchViaMachine = typeof machine?.dispatch === "function";
-    const shouldDispatchViaMachine =
-      canDispatchViaMachine && !hasReadyBeenDispatchedForCurrentCooldown();
+    const shouldDispatchReady = () => {
+      const canDispatchViaMachine = typeof machine?.dispatch === "function";
+      return canDispatchViaMachine && !hasReadyBeenDispatchedForCurrentCooldown();
+    };
+    const shouldDispatchViaMachine = shouldDispatchReady();
     if (shouldDispatchViaMachine) {
       setReadyDispatchedForCurrentCooldown(true);
     }
@@ -261,6 +264,16 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
           await machine.dispatch("ready");
         } catch (error) {
           setReadyDispatchedForCurrentCooldown(false);
+          guard(() =>
+            emitBattleEvent("cooldown.dispatch.failed", {
+              error:
+                error instanceof Error
+                  ? error.message
+                  : typeof error === "string"
+                    ? error
+                    : String(error)
+            })
+          );
           throw error;
         }
       });
@@ -308,6 +321,7 @@ function scheduleCooldownFallback({ duration, finish, scheduler }) {
  * 4. Schedule fallback timer with same completion path.
  */
 export async function initInterRoundCooldown(machine, options = {}) {
+  resetReadyDispatchState();
   const duration = resolveInterRoundCooldownDuration(computeNextRoundCooldown);
 
   guard(() => emitBattleEvent("countdownStart", { duration }));

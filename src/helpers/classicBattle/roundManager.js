@@ -490,6 +490,36 @@ function prepareCooldownContext(options, emitTelemetry) {
   return { bus, inspector, machineReader, markReady, orchestrated };
 }
 
+function handleReadyDispatchEarlyExit({ context, controls, emitTelemetry, getDebugBag }) {
+  const readyAlreadyDispatched =
+    context?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown();
+  if (!readyAlreadyDispatched) return false;
+
+  setReadyDispatchedForCurrentCooldown(true);
+  const readyInFlight =
+    (typeof context?.readyInFlight === "boolean" ? context.readyInFlight : undefined) ??
+    (typeof controls?.readyInFlight === "boolean" ? controls.readyInFlight : undefined) ??
+    false;
+
+  emitTelemetry?.("handleNextRoundEarlyExit", {
+    readyDispatched: true,
+    readyInFlight,
+    reason: "alreadyDispatched"
+  });
+
+  const bag = typeof getDebugBag === "function" ? getDebugBag() : null;
+  if (bag) {
+    bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
+    bag.handleNextRound_earlyExit.push({ reason: "alreadyDispatched", at: Date.now() });
+  }
+
+  if (controls) {
+    finalizeReadyControls(controls, true);
+  }
+
+  return true;
+}
+
 /**
  * @summary Compose ready dispatch strategies with deterministic machine prioritization.
  *
@@ -513,19 +543,13 @@ function createReadyDispatchStrategies({
   getDebugBag,
   orchestrated
 }) {
-  const readyAlreadyDispatched =
-    options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown();
-  if (readyAlreadyDispatched) {
-    setReadyDispatchedForCurrentCooldown(true);
-    emitTelemetry?.("handleNextRoundEarlyExit", {
-      readyDispatched: true,
-      reason: "alreadyDispatched"
-    });
-    const bag = typeof getDebugBag === "function" ? getDebugBag() : null;
-    if (bag) {
-      bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
-      bag.handleNextRound_earlyExit.push({ reason: "alreadyDispatched", at: Date.now() });
-    }
+  if (
+    handleReadyDispatchEarlyExit({
+      context: options,
+      emitTelemetry,
+      getDebugBag
+    })
+  ) {
     return [];
   }
   const busStrategyOptions = {};
@@ -651,21 +675,14 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   );
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   const { emitTelemetry, getDebugBag } = createExpirationTelemetryContext();
-  const readinessAlreadyDispatched =
-    options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown();
-  if (readinessAlreadyDispatched) {
-    setReadyDispatchedForCurrentCooldown(true);
-    emitTelemetry("handleNextRoundEarlyExit", {
-      readyDispatched: true,
-      readyInFlight: !!controls?.readyInFlight,
-      reason: "alreadyDispatched"
-    });
-    const bag = getDebugBag();
-    if (bag) {
-      bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
-      bag.handleNextRound_earlyExit.push({ reason: "alreadyDispatched", at: Date.now() });
-    }
-    finalizeReadyControls(controls, true);
+  if (
+    handleReadyDispatchEarlyExit({
+      context: options,
+      controls,
+      emitTelemetry,
+      getDebugBag
+    })
+  ) {
     safeRound(
       "handleNextRoundExpiration.traceAlreadyDispatched",
       () => appendReadyTrace("handleNextRoundExpiration.alreadyDispatched", { dispatched: true }),

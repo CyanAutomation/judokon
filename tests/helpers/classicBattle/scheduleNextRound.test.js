@@ -335,6 +335,7 @@ describe("classicBattle startCooldown", () => {
       machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
+    // Advance timers to ensure no additional ready dispatches occur after cooldown completion
     await vi.runAllTimersAsync();
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
