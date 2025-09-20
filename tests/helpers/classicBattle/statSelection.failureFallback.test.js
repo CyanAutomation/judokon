@@ -21,7 +21,7 @@ describe("classicBattle stat selection failure recovery", () => {
 
     vi.doMock(SELECTION_HANDLER_PATH, () => ({
       handleStatSelection: handleStatSelectionMock,
-      getPlayerAndOpponentValues: vi.fn(() => ({ playerVal: 5, opponentVal: 3 })),
+      getPlayerAndOpponentValues: vi.fn(() => ({ playerVal: 5, opponentVal: 3 }))
     }));
 
     originalRequestAnimationFrame = globalThis.requestAnimationFrame;

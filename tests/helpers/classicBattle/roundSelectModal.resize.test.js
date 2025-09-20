@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import installRAFMock from "../rafMock.js";
 
 let modalInstance;
 let modalCloseSpy;
@@ -20,14 +21,17 @@ describe("roundSelectModal responsive inset and cleanup", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.resetModules();
-    // Ensure RAF exists for debounced resize path
-    global.requestAnimationFrame = (cb) => setTimeout(() => cb(0), 0);
-    global.cancelAnimationFrame = (id) => clearTimeout(id);
+  // Install queued RAF mock for deterministic control
+  const raf = installRAFMock();
+  global.__roundSelectRafRestore = raf.restore;
     modalInstance = null;
     modalCloseSpy = null;
   });
 
   afterEach(() => {
+    try {
+      global.__roundSelectRafRestore?.();
+    } catch {}
     vi.restoreAllMocks();
   });
 

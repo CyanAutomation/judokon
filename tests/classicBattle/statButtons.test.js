@@ -27,10 +27,10 @@ describe("Stat Buttons", () => {
     global.window = window;
     global.document = document;
 
-  // Install queued RAF mock for deterministic control in tests
-  const raf = installRAFMock();
-  // make sure teardown can restore
-  global.__statButtonsRafRestore = raf.restore;
+    // Install queued RAF mock for deterministic control in tests
+    const raf = installRAFMock();
+    // make sure teardown can restore
+    global.__statButtonsRafRestore = raf.restore;
   });
 
   afterEach(() => {
