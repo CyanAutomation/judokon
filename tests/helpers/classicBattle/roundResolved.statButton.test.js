@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { withMutedConsole } from "../../utils/console.js";
 
 const resetSpy = vi.fn(() => {
   document
@@ -45,9 +46,10 @@ vi.mock("../../../src/helpers/showSnackbar.js", () => ({
   updateSnackbar: vi.fn()
 }));
 
-beforeEach(() => {
+beforeEach(async () => {
   resetSpy.mockClear();
   document.body.innerHTML = "";
+  await vi.resetModules();
 });
 
 afterEach(() => {
@@ -55,54 +57,65 @@ afterEach(() => {
 });
 
 describe("roundResolved stat button reset", () => {
-  it("keeps .selected for one frame before clearing", async () => {
+  it("clears stat selection via animation frame reset before timeout fallback", async () => {
     vi.useFakeTimers();
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const rafUtils = await import("../../../src/utils/rafUtils.js");
+    const frameDelayMs = 1;
+    const runAfterFramesSpy = vi
+      .spyOn(rafUtils, "runAfterFrames")
+      .mockImplementation((frames, cb) => {
+        if (frames <= 0) {
+          cb();
+          return;
+        }
+        setTimeout(() => rafUtils.runAfterFrames(frames - 1, cb), frameDelayMs);
+      });
     document.body.innerHTML =
       '<div id="stat-buttons"><button data-stat="power" class="selected"></button></div>';
-    const roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
+    const { handleRoundResolvedEvent } = await import(
+      "../../../src/helpers/classicBattle/roundUI.js"
+    );
     const btn = document.querySelector("#stat-buttons button");
-    await roundUI.handleRoundResolvedEvent({
-      detail: { store: {}, result: { matchEnded: false } }
-    });
-    expect(btn.classList.contains("selected")).toBe(true);
-    await vi.advanceTimersByTimeAsync(16);
+    await withMutedConsole(() =>
+      handleRoundResolvedEvent({
+        detail: { store: {}, result: { matchEnded: false } }
+      })
+    );
     expect(btn.classList.contains("selected")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(16);
-    await vi.runOnlyPendingTimersAsync();
+    await vi.advanceTimersByTimeAsync(frameDelayMs);
+    expect(btn.classList.contains("selected")).toBe(true);
+    expect(resetSpy).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(frameDelayMs);
     expect(resetSpy).toHaveBeenCalledOnce();
     expect(btn.classList.contains("selected")).toBe(false);
-    warn.mockRestore();
+    await vi.advanceTimersByTimeAsync(32);
+    expect(resetSpy).toHaveBeenCalledOnce();
+    runAfterFramesSpy.mockRestore();
   });
 
-  it("falls back to timeout when animation frames do not flush", async () => {
+  it("falls back to timeout when animation frames are unavailable", async () => {
     vi.useFakeTimers();
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const callbacks = [];
-    const raf = vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
-      callbacks.push(cb);
-      return callbacks.length;
+    const rafUtils = await import("../../../src/utils/rafUtils.js");
+    const runAfterFramesSpy = vi.spyOn(rafUtils, "runAfterFrames").mockImplementation(() => {
+      throw new Error("Animation frames unavailable");
     });
     document.body.innerHTML =
       '<div id="stat-buttons"><button data-stat="power" class="selected"></button></div>';
-    const roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
+    const { handleRoundResolvedEvent } = await import(
+      "../../../src/helpers/classicBattle/roundUI.js"
+    );
     const btn = document.querySelector("#stat-buttons button");
-    await roundUI.handleRoundResolvedEvent({
-      detail: { store: {}, result: { matchEnded: false } }
-    });
+    await withMutedConsole(() =>
+      handleRoundResolvedEvent({
+        detail: { store: {}, result: { matchEnded: false } }
+      })
+    );
     expect(btn.classList.contains("selected")).toBe(true);
     expect(resetSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(32);
-    await vi.runOnlyPendingTimersAsync();
     expect(resetSpy).toHaveBeenCalledOnce();
     expect(btn.classList.contains("selected")).toBe(false);
-    while (callbacks.length) {
-      const cb = callbacks.shift();
-      cb?.(0);
-    }
-    expect(resetSpy).toHaveBeenCalledOnce();
-    raf.mockRestore();
-    warn.mockRestore();
+    runAfterFramesSpy.mockRestore();
   });
 });
