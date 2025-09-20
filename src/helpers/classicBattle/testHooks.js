@@ -136,11 +136,11 @@ const renderStatsCardForTest = async (target, base, overrides) => {
  * Render simplified Classic Battle cards with deterministic stat values for tests.
  *
  * @pseudocode
- * 1. Locate the player and opponent card containers in the DOM.
- * 2. Use `createStatsPanel` to render stat lists for each side with the provided overrides.
- * 3. Replace the existing card markup with the generated panels and return the merged card data.
- *
- * @param {{
+ * @param {object} [config] - Configuration object with player and opponent overrides.
+ * @param {object} [config.player] - Player card overrides including stats.
+ * @param {object} [config.opponent] - Opponent card overrides including stats.
+ * @param {object} [config.player.stats] - Player stat overrides (power, speed, technique, etc.).
+ * @param {object} [config.opponent.stats] - Opponent stat overrides (power, speed, technique, etc.).
  *   player?: { stats?: Partial<Record<string, number>> } & Record<string, unknown>,
  *   opponent?: { stats?: Partial<Record<string, number>> } & Record<string, unknown>
  * }} [config] - Stat overrides and optional card metadata for each side.
