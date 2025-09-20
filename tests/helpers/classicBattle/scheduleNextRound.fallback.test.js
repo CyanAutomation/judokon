@@ -448,7 +448,7 @@ describe("handleNextRoundExpiration orchestrated propagation", () => {
     vi.restoreAllMocks();
   });
 
-  it("dispatches via bus after machine requests propagation", async () => {
+  it("dispatches via bus when machine propagation is enabled in orchestrated mode", async () => {
     expect(controls).toBeTruthy();
     expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();

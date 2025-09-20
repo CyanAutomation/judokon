@@ -585,8 +585,8 @@ function createReadyDispatchStrategies({
             dedupeTracked: rawResult.dedupeTracked === true
           }
         : { dispatched: rawResult === true, dedupeTracked: false };
-    const propagate = normalizedResult.dispatched && shouldPropagateAfterMachine();
-    if (normalizedResult.dispatched && !propagate) {
+    const propagate = normalizedResult.dispatched === true && shouldPropagateAfterMachine();
+    if (normalizedResult.dispatched === true && !propagate) {
       setReadyDispatchedForCurrentCooldown(true);
     }
     const end =
