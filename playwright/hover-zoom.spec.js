@@ -6,9 +6,16 @@ async function callBrowseHook(page, name, ...args) {
     name
   );
   return page.evaluate(
-    ([hookName, params]) => window.__testHooks?.browse?.[hookName]?.(...params),
+    ([hookName, params]) => {
+      try {
+        return window.__testHooks?.browse?.[hookName]?.(...params);
+      } catch (error) {
+        throw new Error(`Test hook '${hookName}' failed: ${error.message}`);
+      }
+    },
     [name, args]
   );
+}
 }
 
 async function resetBrowseHooks(page) {
