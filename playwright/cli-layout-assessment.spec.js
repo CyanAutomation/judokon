@@ -36,9 +36,11 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     // Test first stat row height
     const firstStat = stats.first();
     await expect(firstStat).toBeVisible();
-    const statBox = await firstStat.boundingBox();
-    expect(statBox, "Bounding box should be available once stat is visible").not.toBeNull();
-    expect(statBox.height).toBeGreaterThanOrEqual(44);
+    await expect(async () => {
+      const statBox = await firstStat.boundingBox();
+      expect(statBox, "Bounding box should be available once stat is visible").not.toBeNull();
+      expect(statBox.height).toBeGreaterThanOrEqual(44);
+    }).toPass();
 
     // Container should be visible and meet minimum height
     const statsContainer = page.locator("#cli-stats");
