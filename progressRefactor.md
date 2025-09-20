@@ -55,27 +55,32 @@ Rationale: PRDs are the discoverable canonical source and include acceptance cri
 ## Planned approach — phased, discrete steps
 
 Phase 1 — Low-risk assimilation (quick wins)
+
 - For each doc flagged above (event naming, state handler, battle markup, testing modes, validation commands):
-	- Create PRD supplement entries or extend existing PRDs with a new section "Implementation notes / audit" and link to original doc.
-	- Add acceptance criteria and owner for each inserted section.
-	- Create machine-readable artifacts where useful (e.g., `design/dataSchemas/events/*.json` for schemas; `design/dataSchemas/battleMarkup.generated.js` already exists).
+- Create PRD supplement entries or extend existing PRDs with a new section "Implementation notes / audit" and link to original doc.
+- Add acceptance criteria and owner for each inserted section.
+- Create machine-readable artifacts where useful (e.g., `design/dataSchemas/events/*.json` for schemas; `design/dataSchemas/battleMarkup.generated.js` already exists).
 - Success criteria: PRDs updated, CI and Prettier pass, no behavior changes.
 
 Phase 2 — New PRDs and consolidation
+
 - Create any missing PRDs (e.g., `prdPublicAPIs.md` or `prdEventNamingMigration.md`) with the standard PRD template.
 - Migrate significant content from `docs/` into PRDs and remove the original doc.
 - Success criteria: New PRDs created, index updated (`prdIndex.json`) and reviewers assigned.
 
 Phase 3 — Test & automation
+
 - Add small consumer tests where PRDs added schema/artifacts (e.g., AJV-based schema validation tests under `tests/` referencing `design/dataSchemas/events/*.json`).
 - Add a generation script to build `design/dataSchemas/battleMarkup.generated.js` from the canonical JSON and include it in `package.json` (e.g., `npm run generate:markup`).
 - Success criteria: Tests that validate schemas and helpers run in CI; generated artifact pipeline in place.
 
 Phase 4 — Cleanup and deprecation
+
 - Remove or archive duplicate docs from `docs/` if their content is fully absorbed into PRDs. Keep short redirect doc with a pointer back to PRD. Update links across the repo (README, docs, tests).
 - Add a short changelog entry listing the moves.
 
 Phase 5 — Governance & ongoing maintenance
+
 - Add a small checklist in `prdCodeStandards.md` requiring new PRDs or PRD updates when design/docs content is added.
 - Add owners to PRDs that currently have placeholders so future changes are gated and traceable.
 
