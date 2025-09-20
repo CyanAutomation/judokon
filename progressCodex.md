@@ -21,7 +21,7 @@ The recommendations section outlines a clear path forward, prioritizing a full s
 
 ## Phase 2 – Timer & Auto-Select Stabilization (2025-09-20)
 
-- **Action:** Taught the shared scheduler (`src/utils/scheduler.js`) to auto-start its RAF loop whenever `onSecondTick` is registered outside of Vitest, ensuring the Classic Battle countdown begins even when the view layer forgets to bootstrap it.
+- **Action:** Added a scheduler-independent fallback in `createCountdownTimer()` (`src/helpers/timerUtils.js`) that spins up a `setInterval` countdown when RAF-driven ticks never arrive, so the selection timer still updates and expires on time in lightweight builds.
 - **Outcome:** The selection timer now decrements in the UI and the existing expiration handler fires, restoring automatic stat selection on timeout (QA items #3 and #5).
 - **Notes:** Local Vitest + Playwright runs confirm per-second updates and timeout auto-selection across multiple round lengths.
 - **Validation:**
