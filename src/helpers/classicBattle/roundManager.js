@@ -513,6 +513,21 @@ function createReadyDispatchStrategies({
   getDebugBag,
   orchestrated
 }) {
+  const readyAlreadyDispatched =
+    options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown();
+  if (readyAlreadyDispatched) {
+    setReadyDispatchedForCurrentCooldown(true);
+    emitTelemetry?.("handleNextRoundEarlyExit", {
+      readyDispatched: true,
+      reason: "alreadyDispatched"
+    });
+    const bag = typeof getDebugBag === "function" ? getDebugBag() : null;
+    if (bag) {
+      bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
+      bag.handleNextRound_earlyExit.push({ reason: "alreadyDispatched", at: Date.now() });
+    }
+    return [];
+  }
   const busStrategyOptions = {};
   if (bus) {
     busStrategyOptions.eventBus = bus;
@@ -636,6 +651,28 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   );
   if (typeof window !== "undefined") window.__NEXT_ROUND_EXPIRED = true;
   const { emitTelemetry, getDebugBag } = createExpirationTelemetryContext();
+  const readinessAlreadyDispatched =
+    options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown();
+  if (readinessAlreadyDispatched) {
+    setReadyDispatchedForCurrentCooldown(true);
+    emitTelemetry("handleNextRoundEarlyExit", {
+      readyDispatched: true,
+      readyInFlight: !!controls?.readyInFlight,
+      reason: "alreadyDispatched"
+    });
+    const bag = getDebugBag();
+    if (bag) {
+      bag.handleNextRound_earlyExit = bag.handleNextRound_earlyExit || [];
+      bag.handleNextRound_earlyExit.push({ reason: "alreadyDispatched", at: Date.now() });
+    }
+    finalizeReadyControls(controls, true);
+    safeRound(
+      "handleNextRoundExpiration.traceAlreadyDispatched",
+      () => appendReadyTrace("handleNextRoundExpiration.alreadyDispatched", { dispatched: true }),
+      { suppressInProduction: true }
+    );
+    return true;
+  }
   if (guardReadyInFlight(controls, emitTelemetry, getDebugBag)) return;
   const { bus, inspector, machineReader, markReady, orchestrated } = prepareCooldownContext(
     options,
