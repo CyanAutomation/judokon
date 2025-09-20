@@ -9,6 +9,17 @@ This file is a short audit, mapping, and phased plan. After you review, I'll imp
 - I compared `docs/` and `design/technical` against `design/productRequirementsDocuments/`.
 - Most high-level topics in `docs/` already have a matching PRD (or a related PRD exists). Several technical/operational docs in `docs/technical` and `design/` should be assimilated into their corresponding PRDs (for discoverability and governance). A few topics are missing an explicit PRD and should be created.
 
+# Goal
+
+Produce a small, actionable plan to make `design/productRequirementsDocuments/` the single source of truth by comparing the existing `docs/` and top-level `design/` documents to the PRDs, flagging missing PRDs and documents that should be assimilated into PRDs.
+
+This file is a short audit, mapping, and phased plan. After you review, I'll implement the changes you approve (create missing PRDs or merge docs into PRDs).
+
+## Quick summary (high level)
+
+- I compared `docs/` and `design/technical` against `design/productRequirementsDocuments/`.
+- Most high-level topics in `docs/` already have a matching PRD (or a related PRD exists). Several technical/operational docs in `docs/technical` and `design/` should be assimilated into their corresponding PRDs (for discoverability and governance). A few topics are missing an explicit PRD and should be created.
+
 ## Inventory & mapping (docs -> PRD)
 
 The following maps the main files I checked to existing PRDs (exact matches or recommended home):
@@ -54,32 +65,41 @@ Rationale: PRDs are the discoverable canonical source and include acceptance cri
 
 ## Planned approach — phased, discrete steps
 
-Phase 0 — Confirm scope (this PR)
-- Deliverable: this `progressRefactor.md` with mapping and proposed plan. You review and confirm which items to create vs assimilate.
+### Phase 1 — Low-risk assimilation (quick wins)
 
-Phase 1 — Low-risk assimilation (quick wins)
 - For each doc flagged above (event naming, state handler, battle markup, testing modes, validation commands):
-	- Create PRD supplement entries or extend existing PRDs with a new section "Implementation notes / audit" and link to original doc.
-	- Add acceptance criteria and owner for each inserted section.
-	- Create machine-readable artifacts where useful (e.g., `design/dataSchemas/events/*.json` for schemas; `design/dataSchemas/battleMarkup.generated.js` already exists).
-- Success criteria: PRDs updated, CI and Prettier pass, no behavior changes.
 
-Phase 2 — New PRDs and consolidation (if approved)
+  - Create PRD supplement entries or extend existing PRDs with a new section "Implementation notes / audit" and link to original doc.
+  - Add acceptance criteria and owner for each inserted section.
+  - Create machine-readable artifacts where useful (e.g., `design/dataSchemas/events/*.json` for schemas; `design/dataSchemas/battleMarkup.generated.js` already exists).
+  - Success criteria: PRDs updated, CI and Prettier pass, no behavior changes.
+
+### Phase 2 — New PRDs and consolidation
+
 - Create any missing PRDs (e.g., `prdPublicAPIs.md` or `prdEventNamingMigration.md`) with the standard PRD template.
-- Migrate significant content from `docs/` into PRDs (copy with attribution) and mark original doc as archived or redirect to PRD.
+
+- Migrate significant content from `docs/` into PRDs and mark original doc as archived or redirect to PRD.
+
 - Success criteria: New PRDs created, index updated (`prdIndex.json`) and reviewers assigned.
 
-Phase 3 — Test & automation
+### Phase 3 — Test & automation
+
 - Add small consumer tests where PRDs added schema/artifacts (e.g., AJV-based schema validation tests under `tests/` referencing `design/dataSchemas/events/*.json`).
+
 - Add a generation script to build `design/dataSchemas/battleMarkup.generated.js` from the canonical JSON and include it in `package.json` (e.g., `npm run generate:markup`).
+
 - Success criteria: Tests that validate schemas and helpers run in CI; generated artifact pipeline in place.
 
-Phase 4 — Cleanup and deprecation
+### Phase 4 — Cleanup and deprecation
+
 - Remove or archive duplicate docs from `docs/` if their content is fully absorbed into PRDs. Keep short redirect doc with a pointer back to PRD. Update links across the repo (README, docs, tests).
+
 - Add a short changelog entry listing the moves.
 
-Phase 5 — Governance & ongoing maintenance
+### Phase 5 — Governance & ongoing maintenance
+
 - Add a small checklist in `prdCodeStandards.md` requiring new PRDs or PRD updates when design/docs content is added.
+
 - Add owners to PRDs that currently have placeholders so future changes are gated and traceable.
 
 ## Risks and mitigations
@@ -93,4 +113,3 @@ Phase 5 — Governance & ongoing maintenance
 2. "Full consolidation": I will implement Phases 1–3 (create any missing PRDs, move docs into PRDs, add generated artifacts and minimal consumer tests). This is more work but finishes the job end-to-end.
 
 Please tell me which immediate action you prefer (1 or 2). Once you confirm, I'll begin Phase 1 and apply the agreed changes. I'll pause here awaiting your review and choice.
-
