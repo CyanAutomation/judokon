@@ -91,14 +91,15 @@ const mergeTestCardData = (base, overrides = {}) => {
     ...base.stats,
     ...(statOverrides && typeof statOverrides === "object" ? statOverrides : {})
   };
-  return {
-    ...base,
-    ...cardOverrides,
-    stats: mergedStats
-  };
-};
-
 const renderStatsCardForTest = async (target, base, overrides) => {
+  if (!target) return null;
+  if (!__createStatsPanelPromise) {
+    // Preload during module initialization instead of lazy loading
+    __createStatsPanelPromise = import("/src/components/StatsPanel.js").then(
+      (mod) => mod.createStatsPanel
+    );
+  }
+  const createStatsPanel = await __createStatsPanelPromise;
   if (!target) return null;
   if (!__createStatsPanelPromise) {
     __createStatsPanelPromise = import("/src/components/StatsPanel.js").then(
