@@ -1,9 +1,13 @@
-if (typeof console !== "undefined") {
-  console.log("[TEST DEBUG] domUtils.js top-level loaded");
-}
-// [TEST DEBUG] top-level domUtils.js
+import { isConsoleMocked, shouldShowTestLogs } from "../../../src/helpers/testLogGate.js";
 
-console.log("[TEST DEBUG] top-level domUtils.js");
+const debugLog = (...args) => {
+  if (typeof console === "undefined") return;
+  if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
+    console.log(...args);
+  }
+};
+
+debugLog("[TEST DEBUG] domUtils.js top-level loaded");
 /**
  * Create a container element for snackbar messages.
  *

@@ -1,5 +1,31 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 
+async function callBrowseHook(page, name, ...args) {
+  await page.waitForFunction(
+    (hookName) => typeof window.__testHooks?.browse?.[hookName] === "function",
+    name
+  );
+  return page.evaluate(
+    ([hookName, params]) => {
+      try {
+        return window.__testHooks?.browse?.[hookName]?.(...params);
+      } catch (error) {
+        throw new Error(`Test hook '${hookName}' failed: ${error.message}`);
+      }
+    },
+    [name, args]
+  );
+}
+}
+
+async function resetBrowseHooks(page) {
+  await page.evaluate(() => window.__testHooks?.browse?.reset?.());
+}
+
+test.afterEach(async ({ page }) => {
+  await resetBrowseHooks(page);
+});
+
 test.describe("Hover Zoom Functionality", () => {
   test.describe("Basic Hover Interactions", () => {
     test("judoka card enlarges on hover", async ({ page }) => {
@@ -45,9 +71,7 @@ test.describe("Hover Zoom Functionality", () => {
       await page.waitForSelector(".judoka-card", { timeout: 10000 });
 
       // Disable animations for deterministic testing
-      await page.evaluate(() => {
-        document.body.setAttribute("data-test-disable-animations", "true");
-      });
+      await callBrowseHook(page, "disableHoverAnimations");
 
       const cards = page.locator(".judoka-card");
 
@@ -131,12 +155,9 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("handles test disable animations attribute", async ({ page }) => {
-      await page.addInitScript(() => {
-        document.body.setAttribute("data-test-disable-animations", "true");
-      });
-
       await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
       await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await callBrowseHook(page, "disableHoverAnimations");
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -247,12 +268,22 @@ test.describe("Hover Zoom Functionality", () => {
       await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
       await page.waitForSelector(".judoka-card", { timeout: 10000 });
 
-      // Add a new card dynamically
-      await page.evaluate(() => {
-        const newCard = document.createElement("div");
-        newCard.className = "judoka-card";
-        newCard.textContent = "Dynamic Card";
-        document.querySelector(".card-carousel")?.appendChild(newCard);
+      // Add a new card dynamically via the production card factory
+      await callBrowseHook(page, "addCard", {
+        firstname: "Dynamic",
+        surname: "Card",
+        country: "Testland",
+        countryCode: "jp",
+        stats: {
+          power: 1,
+          speed: 1,
+          technique: 1,
+          kumikata: 1,
+          newaza: 1
+        },
+        weightClass: "60kg",
+        signatureMoveId: 1,
+        rarity: "common"
       });
 
       const dynamicCard = page.locator(".judoka-card").last();
@@ -261,8 +292,8 @@ test.describe("Hover Zoom Functionality", () => {
       await expect(dynamicCard).toBeVisible();
 
       // The dynamic card won't have hover zoom markers since they were added after initialization
-      // This is expected behavior - we just verify the card exists and is visible
-      await expect(dynamicCard).toHaveText("Dynamic Card");
+      // This is expected behavior - we just verify the card exists and exposes the expected aria label
+      await expect(dynamicCard).toHaveAttribute("aria-label", /Dynamic Card/);
     });
 
     test("handles missing DOM elements gracefully", async ({ page }) => {

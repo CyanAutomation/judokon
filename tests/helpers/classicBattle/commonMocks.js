@@ -1,10 +1,14 @@
-if (typeof console !== "undefined") {
-  console.log("[TEST DEBUG] commonMocks.js top-level loaded");
-}
-// [TEST DEBUG] top-level commonMocks.js
-
-console.log("[TEST DEBUG] top-level commonMocks.js");
+import { isConsoleMocked, shouldShowTestLogs } from "../../../src/helpers/testLogGate.js";
 import { vi } from "vitest";
+
+const debugLog = (...args) => {
+  if (typeof console === "undefined") return;
+  if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
+    console.log(...args);
+  }
+};
+
+debugLog("[TEST DEBUG] commonMocks.js top-level loaded");
 
 vi.mock("../../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
