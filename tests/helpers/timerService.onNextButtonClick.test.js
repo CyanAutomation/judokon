@@ -52,7 +52,8 @@ describe("onNextButtonClick", () => {
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
-    expect(events.emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
+    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
+    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start");
     expect(events.emitBattleEvent).toHaveBeenCalledBefore(dispatcher.dispatchBattleEvent);
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(resolveReady).toHaveBeenCalledTimes(1);
@@ -73,7 +74,8 @@ describe("onNextButtonClick", () => {
     const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
     expect(stop).toHaveBeenCalledTimes(1);
-    expect(events.emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
+    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
+    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start");
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
   });
 
@@ -91,7 +93,8 @@ describe("onNextButtonClick", () => {
     });
     const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
-    expect(events.emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
+    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
+    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start");
     expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(resolveReady2).toHaveBeenCalledTimes(1);
   });
