@@ -150,7 +150,7 @@ async function dispatchReadyOnce(resolveReady) {
   setReadyDispatchedForCurrentCooldown(true);
   let dispatchSucceeded = true;
   /** @type {unknown} */
-  let dispatchError;
+  let dispatchError = null;
 
   try {
     const result = await dispatchBattleEvent("ready");
@@ -160,16 +160,16 @@ async function dispatchReadyOnce(resolveReady) {
   } catch (error) {
     dispatchSucceeded = false;
     dispatchError = error;
-  } finally {
-    if (!dispatchSucceeded) {
-      setReadyDispatchedForCurrentCooldown(false);
-    }
-    if (shouldResolve) {
-      guard(() => resolveReady());
-    }
   }
 
-  if (dispatchError) {
+  if (!dispatchSucceeded) {
+    setReadyDispatchedForCurrentCooldown(false);
+  }
+  if (shouldResolve) {
+    guard(() => resolveReady());
+  }
+
+  if (dispatchError !== null) {
     throw dispatchError;
   }
 
