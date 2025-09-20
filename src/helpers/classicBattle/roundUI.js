@@ -256,20 +256,16 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   let frameSchedulingSucceeded = false;
   let timeoutId = null;
   try {
-    try {
-      runAfterFrames(2, () => {
-        if (timeoutId !== null) {
-          try {
-            if (typeof clearTimeout === "function") clearTimeout(timeoutId);
-          } catch {}
-          timeoutId = null;
-        }
-        runResetOnce();
-      });
-      frameSchedulingSucceeded = true;
-    } catch {
-      frameSchedulingSucceeded = false;
-    }
+    runAfterFrames(2, () => {
+      if (timeoutId !== null) {
+        try {
+          if (typeof clearTimeout === "function") clearTimeout(timeoutId);
+        } catch {}
+        timeoutId = null;
+      }
+      runResetOnce();
+    });
+    frameSchedulingSucceeded = true;
   } catch {
     frameSchedulingSucceeded = false;
   }
