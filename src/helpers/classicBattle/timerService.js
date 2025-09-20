@@ -148,6 +148,7 @@ async function dispatchReadyOnce(resolveReady) {
     const result = await dispatchBattleEvent("ready");
     if (result === false) {
       setReadyDispatchedForCurrentCooldown(false);
+      if (typeof resolveReady === "function") resolveReady();
       return false;
     }
   } catch (error) {
@@ -175,8 +176,12 @@ async function dispatchReadyOnce(resolveReady) {
  * @returns {Promise<void>}
  */
 export async function advanceWhenReady(btn, resolveReady) {
+  const dataset = btn.dataset || (btn.dataset = {});
+  const wasDisabled = btn.disabled === true;
+  const hadNextReady = Object.prototype.hasOwnProperty.call(dataset, "nextReady");
+  const previousNextReady = dataset.nextReady;
   btn.disabled = true;
-  delete btn.dataset.nextReady;
+  delete dataset.nextReady;
   const { state } = safeGetSnapshot();
   const t = state && state !== "cooldown" ? ADVANCE_TRANSITIONS[state] : null;
   if (t) {
@@ -185,8 +190,16 @@ export async function advanceWhenReady(btn, resolveReady) {
     } catch {}
   }
   const dispatched = await dispatchReadyOnce(resolveReady);
-  if (dispatched) setSkipHandler(null);
-  if (!dispatched) return;
+  if (!dispatched) {
+    btn.disabled = wasDisabled;
+    if (hadNextReady) {
+      dataset.nextReady = previousNextReady;
+    } else {
+      delete dataset.nextReady;
+    }
+    return;
+  }
+  setSkipHandler(null);
 }
 
 /**

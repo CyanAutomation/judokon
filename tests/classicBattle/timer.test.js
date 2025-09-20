@@ -1,5 +1,31 @@
 import * as timerUtils from "../../src/helpers/timerUtils.js";
 
+function installMockBattleMachine(dispatchImpl) {
+  const machine = {
+    dispatch: dispatchImpl,
+    getState: () => "cooldown"
+  };
+  const previousDebugReader = globalThis.__classicBattleDebugRead;
+  globalThis.__classicBattleDebugRead = (token) => {
+    if (token === "getClassicBattleMachine") {
+      return () => machine;
+    }
+    if (typeof previousDebugReader === "function") {
+      return previousDebugReader(token);
+    }
+    return previousDebugReader;
+  };
+  return () => {
+    if (typeof previousDebugReader === "function") {
+      globalThis.__classicBattleDebugRead = previousDebugReader;
+    } else if (previousDebugReader !== undefined) {
+      globalThis.__classicBattleDebugRead = previousDebugReader;
+    } else {
+      delete globalThis.__classicBattleDebugRead;
+    }
+  };
+}
+
 describe("Classic Battle round timer", () => {
   test("starts timer and clears on expire deterministically", async () => {
     const timers = vi.useFakeTimers();
@@ -90,52 +116,87 @@ describe("Classic Battle round timer", () => {
       timers.useRealTimers();
 
   test("retries ready dispatch when initial attempt is refused", async () => {
-    vi.resetModules();
-    const dispatchBattleEventMock = vi
-      .fn()
-      .mockResolvedValueOnce(false)
-      .mockResolvedValue(true);
-
-    vi.doMock("../../src/helpers/classicBattle/eventDispatcher.js", async () => {
-      const actual = await vi.importActual("../../src/helpers/classicBattle/eventDispatcher.js");
-      return {
-        ...actual,
-        dispatchBattleEvent: dispatchBattleEventMock
-      };
-    });
-
+    const timers = vi.useFakeTimers();
+    const dispatchBattleEventMock = vi.fn().mockResolvedValueOnce(false).mockResolvedValue(true);
+    const readyState = await import("../../src/helpers/classicBattle/roundReadyState.js");
+    readyState.setReadyDispatchedForCurrentCooldown(false);
     const skipModule = await import("../../src/helpers/classicBattle/skipHandler.js");
     const skipSpy = vi.spyOn(skipModule, "setSkipHandler");
+    const { advanceWhenReady } = await import("../../src/helpers/classicBattle/timerService.js");
+    const restoreMachine = installMockBattleMachine(dispatchBattleEventMock);
+    const resolveReady = vi.fn();
+    const button = { disabled: false, dataset: { nextReady: "" } };
 
     try {
-      const readyState = await import("../../src/helpers/classicBattle/roundReadyState.js");
-      readyState.setReadyDispatchedForCurrentCooldown(false);
-
-      const { advanceWhenReady } = await import("../../src/helpers/classicBattle/timerService.js");
-
-      const resolveReady = vi.fn();
-      const button = { disabled: false, dataset: {} };
-
       await advanceWhenReady(button, resolveReady);
 
       expect(dispatchBattleEventMock).toHaveBeenCalledTimes(1);
-      expect(resolveReady).not.toHaveBeenCalled();
+      expect(resolveReady).toHaveBeenCalledTimes(1);
       expect(skipSpy).not.toHaveBeenCalled();
+      expect(button.disabled).toBe(false);
+      expect(button.dataset.nextReady).toBe("");
       expect(readyState.hasReadyBeenDispatchedForCurrentCooldown()).toBe(false);
 
       skipSpy.mockClear();
       resolveReady.mockClear();
       button.disabled = false;
 
+      await vi.runAllTimersAsync();
+
       await advanceWhenReady(button, resolveReady);
 
       expect(dispatchBattleEventMock).toHaveBeenCalledTimes(2);
       expect(resolveReady).toHaveBeenCalledTimes(1);
       expect(skipSpy).toHaveBeenCalledTimes(1);
+      expect(button.disabled).toBe(true);
+      expect(button.dataset.nextReady).toBeUndefined();
     } finally {
       skipSpy.mockRestore();
-      vi.doUnmock("../../src/helpers/classicBattle/eventDispatcher.js");
-      vi.resetModules();
+      restoreMachine();
+      readyState.setReadyDispatchedForCurrentCooldown(false);
+      timers.useRealTimers();
+    }
+  });
+
+  test("keeps next button interactive across consecutive ready dispatch refusals", async () => {
+    const timers = vi.useFakeTimers();
+    const dispatchBattleEventMock = vi.fn().mockResolvedValue(false);
+    const readyState = await import("../../src/helpers/classicBattle/roundReadyState.js");
+    readyState.setReadyDispatchedForCurrentCooldown(false);
+    const skipModule = await import("../../src/helpers/classicBattle/skipHandler.js");
+    const skipSpy = vi.spyOn(skipModule, "setSkipHandler");
+    const { advanceWhenReady } = await import("../../src/helpers/classicBattle/timerService.js");
+    const restoreMachine = installMockBattleMachine(dispatchBattleEventMock);
+    const resolveReady = vi.fn();
+    const button = { disabled: false, dataset: { nextReady: "" } };
+
+    try {
+      await advanceWhenReady(button, resolveReady);
+
+      expect(dispatchBattleEventMock).toHaveBeenCalledTimes(1);
+      expect(resolveReady).toHaveBeenCalledTimes(1);
+      expect(skipSpy).not.toHaveBeenCalled();
+      expect(button.disabled).toBe(false);
+      expect(button.dataset.nextReady).toBe("");
+
+      await vi.runAllTimersAsync();
+
+      button.disabled = false;
+      resolveReady.mockClear();
+
+      await advanceWhenReady(button, resolveReady);
+
+      expect(dispatchBattleEventMock).toHaveBeenCalledTimes(2);
+      expect(resolveReady).toHaveBeenCalledTimes(1);
+      expect(skipSpy).not.toHaveBeenCalled();
+      expect(button.disabled).toBe(false);
+      expect(button.dataset.nextReady).toBe("");
+      expect(readyState.hasReadyBeenDispatchedForCurrentCooldown()).toBe(false);
+    } finally {
+      skipSpy.mockRestore();
+      restoreMachine();
+      readyState.setReadyDispatchedForCurrentCooldown(false);
+      timers.useRealTimers();
     }
   });
 });
