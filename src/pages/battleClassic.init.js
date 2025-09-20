@@ -456,6 +456,150 @@ let highestDisplayedRound = 0;
 let lastForcedTargetRound = null;
 let lastRoundCounterUpdateContext = "init";
 
+/**
+ * Reset round counter tracking state to the initial baseline.
+ *
+ * @pseudocode
+ * 1. Zero out highest round and forced target tracking.
+ * 2. Restore the update context to "init".
+ * 3. Sync diagnostic globals for test introspection.
+ */
+function resetRoundCounterTracking() {
+  highestDisplayedRound = 0;
+  lastForcedTargetRound = null;
+  lastRoundCounterUpdateContext = "init";
+  if (typeof window !== "undefined") {
+    try {
+      window.__highestDisplayedRound = highestDisplayedRound;
+      window.__lastRoundCounterContext = lastRoundCounterUpdateContext;
+      window.__previousRoundCounterContext = null;
+    } catch {}
+  }
+}
+
+/**
+ * Determine whether forced advancement should apply for this update.
+ *
+ * @pseudocode
+ * 1. Require an expected advance with a visible round already shown.
+ * 2. Ensure the engine has not yet caught up to the visible round.
+ * 3. Prevent forcing past any previously coerced round target.
+ *
+ * @param {boolean} expectAdvance - Whether the caller expects a visible advance.
+ * @param {boolean} hasVisibleRound - Whether a round is already displayed.
+ * @param {boolean} hasEngineRound - Whether the engine reported a round.
+ * @param {number} engineRound - Round value read from the engine.
+ * @param {number|null} visibleRound - Round value currently shown.
+ * @returns {boolean} True when the UI should coerce the next round.
+ */
+function shouldForceAdvancement(
+  expectAdvance,
+  hasVisibleRound,
+  hasEngineRound,
+  engineRound,
+  visibleRound
+) {
+  return (
+    expectAdvance &&
+    hasVisibleRound &&
+    (!hasEngineRound || engineRound < Number(visibleRound)) &&
+    (lastForcedTargetRound === null || Number(visibleRound) < lastForcedTargetRound)
+  );
+}
+
+/**
+ * Compute the lowest acceptable round to render.
+ *
+ * @pseudocode
+ * 1. Use the tracked highest round when available; otherwise fall back to 1.
+ * 2. Use the visible round when present; otherwise fall back to 1.
+ * 3. Return the max of those candidates.
+ */
+function computeBaselineRound(hasHighestRound, highestRound, hasVisibleRound, visibleRound) {
+  const highest = hasHighestRound ? highestRound : 1;
+  const visible = hasVisibleRound ? Number(visibleRound) : 1;
+  return Math.max(highest, visible);
+}
+
+/**
+ * Determine the next round to display and whether it was forced.
+ *
+ * @pseudocode
+ * 1. Start from the engine-reported round when available.
+ * 2. Apply forced advancement rules when the engine lags behind.
+ * 3. Guarantee the result is never below the calculated baseline.
+ */
+function resolveNextRound({
+  expectAdvance,
+  hasVisibleRound,
+  hasEngineRound,
+  engineRound,
+  visibleRound,
+  baselineRound
+}) {
+  let nextRound = hasEngineRound ? engineRound : baselineRound;
+  const forceAdvance = shouldForceAdvancement(
+    expectAdvance,
+    hasVisibleRound,
+    hasEngineRound,
+    engineRound,
+    visibleRound
+  );
+
+  if (forceAdvance) {
+    const forcedTarget = Math.max(Number(visibleRound) + 1, baselineRound);
+    nextRound = Math.max(nextRound, forcedTarget);
+  } else {
+    nextRound = Math.max(nextRound, baselineRound);
+  }
+
+  return { nextRound, forceAdvance };
+}
+
+/**
+ * Update global tracking state and diagnostics after rendering a new round.
+ *
+ * @pseudocode
+ * 1. Raise the recorded highest displayed round when necessary.
+ * 2. Maintain forced advancement guards based on the latest outcome.
+ * 3. Record the active update context for debug instrumentation.
+ */
+function updateRoundCounterState({
+  nextRound,
+  expectAdvance,
+  shouldForceAdvance,
+  hasEngineRound,
+  engineRound,
+  priorContext
+}) {
+  highestDisplayedRound = Math.max(highestDisplayedRound, nextRound);
+
+  if (shouldForceAdvance) {
+    lastForcedTargetRound = nextRound;
+  } else if (!expectAdvance || (hasEngineRound && engineRound >= nextRound)) {
+    lastForcedTargetRound = null;
+  }
+
+  lastRoundCounterUpdateContext = expectAdvance ? "advance" : "regular";
+  if (typeof window !== "undefined") {
+    try {
+      window.__highestDisplayedRound = highestDisplayedRound;
+      window.__lastRoundCounterContext = lastRoundCounterUpdateContext;
+      window.__previousRoundCounterContext = priorContext;
+    } catch {}
+  }
+}
+
+/**
+ * Update the round counter from engine state.
+ *
+ * @pseudocode
+ * 1. Read `getRoundsPlayed()` and compute `played + 1` when possible.
+ * 2. Track the highest round shown so far and never render a lower value.
+ * 3. When `expectAdvance` is true and the engine still reports the prior total,
+ *    increment from the visible round so early `round.start` signals progress.
+ * 4. Fall back to the last known round (or 1) when engine data is unavailable.
+ */
 function updateRoundCounterFromEngine(options = {}) {
   const { expectAdvance = false } = options;
   const visibleRound = getVisibleRoundNumber();
@@ -471,43 +615,31 @@ function updateRoundCounterFromEngine(options = {}) {
     const engineRound = calculateEngineRound();
     const hasEngineRound = Number.isFinite(engineRound) && engineRound >= 1;
     const hasHighestRound = Number.isFinite(highestDisplayedRound) && highestDisplayedRound >= 1;
-    const baselineRound = Math.max(
-      hasHighestRound ? highestDisplayedRound : 1,
-      hasVisibleRound ? Number(visibleRound) : 1
+    const baselineRound = computeBaselineRound(
+      hasHighestRound,
+      highestDisplayedRound,
+      hasVisibleRound,
+      visibleRound
     );
 
-    let nextRound = hasEngineRound ? engineRound : baselineRound;
-
-    const shouldForceAdvance =
-      expectAdvance &&
-      hasVisibleRound &&
-      (!hasEngineRound || engineRound < Number(visibleRound)) &&
-      (lastForcedTargetRound === null || Number(visibleRound) < lastForcedTargetRound);
-
-    if (shouldForceAdvance) {
-      const forcedTarget = Math.max(Number(visibleRound) + 1, baselineRound);
-      nextRound = Math.max(nextRound, forcedTarget);
-    } else {
-      nextRound = Math.max(nextRound, baselineRound);
-    }
+    const { nextRound, forceAdvance } = resolveNextRound({
+      expectAdvance,
+      hasVisibleRound,
+      hasEngineRound,
+      engineRound,
+      visibleRound,
+      baselineRound
+    });
 
     updateRoundCounter(nextRound);
-    highestDisplayedRound = Math.max(highestDisplayedRound, nextRound);
-
-    if (shouldForceAdvance) {
-      lastForcedTargetRound = nextRound;
-    } else if (!expectAdvance || (hasEngineRound && engineRound >= nextRound)) {
-      lastForcedTargetRound = null;
-    }
-
-    lastRoundCounterUpdateContext = expectAdvance ? "advance" : "regular";
-    if (typeof window !== "undefined") {
-      try {
-        window.__highestDisplayedRound = highestDisplayedRound;
-        window.__lastRoundCounterContext = lastRoundCounterUpdateContext;
-        window.__previousRoundCounterContext = priorContext;
-      } catch {}
-    }
+    updateRoundCounterState({
+      nextRound,
+      expectAdvance,
+      shouldForceAdvance: forceAdvance,
+      hasEngineRound,
+      engineRound,
+      priorContext
+    });
   } catch (err) {
     console.debug("battleClassic: getRoundsPlayed failed", err);
     handleRoundCounterFallback(visibleRound);
@@ -737,6 +869,8 @@ async function handleReplay(store) {
     // Reset store state
     store.selectionMade = false;
     store.playerChoice = null;
+
+    resetRoundCounterTracking();
 
     try {
       updateRoundCounter(1);
