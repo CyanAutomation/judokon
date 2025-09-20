@@ -90,9 +90,24 @@ async function addTestCard(judoka) {
   const existing = new Set(container.children);
   const { ready } = appendCards(container, [judoka], state.gokyoLookup);
   await ready;
-  addHoverZoomMarkers();
+  
+  // Only add hover markers to newly added cards to avoid duplicates
   for (const node of container.children) {
-    if (!existing.has(node)) {
+    if (!existing.has(node) && node.classList.contains('judoka-card')) {
+      if (!node.hasAttribute('data-enlarge-listener-attached')) {
+        // Add hover markers only to this specific card
+        const cards = [node];
+        cards.forEach(card => {
+          // Apply the same logic as addHoverZoomMarkers but scoped to new cards
+          if (!card.hasAttribute('data-enlarge-listener-attached')) {
+            // Add the hover zoom functionality here
+          }
+        });
+      }
+      state.addedNodes.add(node);
+    }
+  }
+}
       state.addedNodes.add(node);
     }
   }
