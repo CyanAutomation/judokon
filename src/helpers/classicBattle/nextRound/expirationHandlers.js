@@ -411,11 +411,15 @@ export async function runReadyDispatchStrategies(params = {}) {
   }
   let dispatched = false;
   const interpretResult = (value) => {
-    if (value && typeof value === "object" && ("dispatched" in value || "propagate" in value)) {
-      return {
-        dispatched: value.dispatched === true,
-        propagate: value.propagate === true
-      };
+    if (value && typeof value === "object" && value !== null && !Array.isArray(value)) {
+      const hasDispatchedProp = "dispatched" in value;
+      const hasPropagateProp = "propagate" in value;
+      if (hasDispatchedProp || hasPropagateProp) {
+        return {
+          dispatched: value.dispatched === true,
+          propagate: value.propagate === true
+        };
+      }
     }
     return { dispatched: value === true, propagate: false };
   };
