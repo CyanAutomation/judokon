@@ -45,12 +45,26 @@ export function bindUIHelperEventHandlersDynamic() {
       // If the caller requests a delayed opponent message, schedule it
       // after the configured opponent delay. Otherwise show it immediately.
       if (opts.delayOpponentMessage) {
-        opponentSnackbarId = setTimeout(() => {
+        const delay = getOpponentDelay();
+        if (delay > 0) {
           try {
             showSnackbar(t("ui.opponentChoosing"));
           } catch {}
-        }, getOpponentDelay());
+          opponentSnackbarId = setTimeout(() => {
+            try {
+              showSnackbar(t("ui.opponentChoosing"));
+            } catch {}
+          }, delay);
+        } else {
+          clearTimeout(opponentSnackbarId);
+          opponentSnackbarId = 0;
+          try {
+            showSnackbar(t("ui.opponentChoosing"));
+          } catch {}
+        }
       } else {
+        clearTimeout(opponentSnackbarId);
+        opponentSnackbarId = 0;
         try {
           showSnackbar(t("ui.opponentChoosing"));
         } catch {}
