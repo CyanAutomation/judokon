@@ -829,7 +829,9 @@ async function beginSelectionTimer(store) {
             scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
           }
         } catch {}
-        triggerCooldownOnce(store, "vitestTimerExpired");
+        if (!result?.matchEnded) {
+          triggerCooldownOnce(store, "vitestTimerExpired");
+        }
       },
       pauseOnHidden: false
     });
@@ -863,11 +865,17 @@ async function beginSelectionTimer(store) {
           scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
         }
       } catch {}
-      const manualTrigger = triggerCooldownOnce(store, "selectionTimerAutoResolve");
-      if (manualTrigger) {
-        // If something interferes with the cooldown wiring, ensure Next is usable
+      if (!result?.matchEnded) {
+        const manualTrigger = triggerCooldownOnce(store, "selectionTimerAutoResolve");
+        if (manualTrigger) {
+          // If something interferes with the cooldown wiring, ensure Next is usable
+          try {
+            enableNextRoundButton();
+          } catch {}
+        }
+      } else {
         try {
-          enableNextRoundButton();
+          showSnackbar("");
         } catch {}
       }
     } catch (err) {
@@ -895,10 +903,16 @@ async function beginSelectionTimer(store) {
               scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
             }
           } catch {}
-          const fallbackTriggered = triggerCooldownOnce(store, "selectionFailSafe");
-          if (fallbackTriggered) {
+          if (!result?.matchEnded) {
+            const fallbackTriggered = triggerCooldownOnce(store, "selectionFailSafe");
+            if (fallbackTriggered) {
+              try {
+                enableNextRoundButton();
+              } catch {}
+            }
+          } else {
             try {
-              enableNextRoundButton();
+              showSnackbar("");
             } catch {}
           }
         }

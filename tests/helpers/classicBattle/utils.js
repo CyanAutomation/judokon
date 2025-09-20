@@ -1,5 +1,6 @@
 import { isConsoleMocked, shouldShowTestLogs } from "../../../src/helpers/testLogGate.js";
 import { vi } from "vitest";
+import { installRAFMock } from "../rafMock.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { disposeClassicBattleOrchestrator } from "../../../src/helpers/classicBattle/orchestrator.js";
 
@@ -31,28 +32,9 @@ export function setupClassicBattleDom() {
   // vi.resetModules(); // Temporarily disabled to fix test timeouts
   const timerSpy = vi.useFakeTimers();
 
-  // Queue-based mock for requestAnimationFrame to prevent infinite recursion
-  const rafQueue = [];
-  let rafIdCounter = 0;
-  globalThis.requestAnimationFrame = vi.fn((cb) => {
-    const id = ++rafIdCounter;
-    rafQueue.push({ id, cb });
-    return id;
-  });
-  globalThis.cancelAnimationFrame = vi.fn((id) => {
-    const index = rafQueue.findIndex((item) => item.id === id);
-    if (index > -1) {
-      rafQueue.splice(index, 1);
-    }
-  });
+  // Install shared queue-based RAF mock helper
+  const rafMock = installRAFMock();
 
-  // Function to flush queued RAF callbacks
-  globalThis.flushRAF = () => {
-    while (rafQueue.length > 0) {
-      const { cb } = rafQueue.shift();
-      cb(performance.now());
-    }
-  };
 
   // Let Vitest's fake timers handle setTimeout/clearTimeout automatically
   // globalThis.setTimeout = vi.fn((cb, delay) => {
@@ -128,6 +110,7 @@ export function setupClassicBattleDom() {
     generateRandomCardMock,
     getRandomJudokaMock,
     renderMock,
-    currentFlags
+    currentFlags,
+    restoreRAF: rafMock.restore
   };
 }
