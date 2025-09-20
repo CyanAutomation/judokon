@@ -193,3 +193,11 @@ Next recommended step: I can continue with the next mapping entry (`docs/vector-
 - Acceptance notes were added to the PRD appendix to guide unit, integration, and E2E tests.
 
 Next recommended step: Proceed to the next mapped item in `reports/prd-mapping-report.json` (merge the next `docs/` file into its mapped PRD and delete the source file), or pause for review.
+
+### Recent agent action — battle markup assimilation
+
+- Merged `design/battleMarkup.md` into `design/productRequirementsDocuments/prdBattleMarkup.md` under "Appendix: Classic Battle Markup." The PRD now contains the authoritative list of required IDs, data-test hooks, and example markup.
+- Deleted the original `design/battleMarkup.md` to avoid duplication.
+- Fixed table formatting in the PRD to pass markdown linting rules.
+
+Next recommended step: Continue with the next mapped item in `reports/prd-mapping-report.json`.
