@@ -526,7 +526,12 @@ function handleReadyDispatchEarlyExit({ context, controls, emitTelemetry, getDeb
   }
 
   if (controls) {
-    finalizeReadyControls(controls, true);
+    if (controls.__finalizingReady === true) {
+      controls.readyInFlight = false;
+      controls.readyDispatched = true;
+    } else {
+      finalizeReadyControls(controls, true);
+    }
   }
 
   return true;
@@ -658,8 +663,14 @@ function createReadyDispatchStrategies({
 function finalizeReadyControls(controls, dispatched) {
   if (!controls) return;
   controls.readyInFlight = false;
-  if (!controls.readyDispatched && dispatched && typeof controls.resolveReady === "function") {
-    controls.resolveReady();
+  const resolver = typeof controls.resolveReady === "function" ? controls.resolveReady : null;
+  if (!controls.readyDispatched && dispatched && resolver) {
+    controls.__finalizingReady = true;
+    try {
+      resolver();
+    } finally {
+      controls.__finalizingReady = false;
+    }
   }
   if (dispatched) {
     controls.readyDispatched = true;

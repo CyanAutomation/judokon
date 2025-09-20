@@ -378,11 +378,21 @@ export async function dispatchReadyDirectly(params) {
     emitTelemetry?.("handleNextRound_dispatchReadyDirectly_result", true);
     return { dispatched: true, dedupeTracked };
   };
+  const dispatchViaMachine = async () => {
+    const result = machine.dispatch("ready");
+    await Promise.resolve(result);
+  };
   let fallbackError = null;
   if (typeof globalDispatchBattleEvent === "function") {
     try {
       const result = await globalDispatchBattleEvent("ready");
       if (result !== false) {
+        try {
+          await dispatchViaMachine();
+        } catch (error) {
+          fallbackError = error;
+          throw error;
+        }
         return recordSuccess(true);
       }
     } catch (error) {
@@ -390,8 +400,7 @@ export async function dispatchReadyDirectly(params) {
     }
   }
   try {
-    const result = machine.dispatch("ready");
-    await Promise.resolve(result);
+    await dispatchViaMachine();
     return recordSuccess(false);
   } catch (error) {
     const parts = [];
