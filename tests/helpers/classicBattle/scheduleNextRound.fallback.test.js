@@ -462,4 +462,47 @@ describe("handleNextRoundExpiration orchestrated propagation", () => {
     expect(machine.dispatch).toHaveBeenCalledTimes(1);
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
+
+  it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
+    expect(controls).toBeTruthy();
+    expect(typeof runtime?.onExpired).toBe("function");
+    dispatchReadyViaBusSpy?.mockClear();
+    globalDispatchSpy.mockClear();
+    machine.dispatch.mockClear();
+    dispatchReadyViaBusSpy?.mockImplementation(async (options = {}) => {
+      const dispatchers = [];
+      if (options.skipCandidate !== true && typeof options.dispatchBattleEvent === "function") {
+        dispatchers.push(options.dispatchBattleEvent);
+      }
+      if (
+        typeof globalDispatchSpy === "function" &&
+        globalDispatchSpy !== options.dispatchBattleEvent
+      ) {
+        dispatchers.push(globalDispatchSpy);
+      }
+      if (options.alreadyDispatched) {
+        return true;
+      }
+      for (const dispatcher of dispatchers) {
+        const result = dispatcher("ready");
+        const resolved = await Promise.resolve(result);
+        if (resolved !== false) {
+          return true;
+        }
+      }
+      return false;
+    });
+    globalDispatchSpy.mockImplementationOnce(() => false);
+    globalDispatchSpy.mockImplementation(() => true);
+    await runtime.onExpired();
+    expect(globalDispatchSpy).toHaveBeenCalledTimes(2);
+    expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, "ready");
+    expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, "ready");
+    expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ alreadyDispatched: false })
+    );
+    expect(machine.dispatch).toHaveBeenCalledTimes(1);
+    expect(machine.dispatch).toHaveBeenCalledWith("ready");
+  });
 });
