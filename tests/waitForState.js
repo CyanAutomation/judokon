@@ -1,12 +1,7 @@
-const shouldShowTestLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
-const isConsoleMocked = (method) => {
-  const viInstance = globalThis?.vi;
-  return (
-    typeof viInstance?.isMockFunction === "function" &&
-    typeof method === "function" &&
-    viInstance.isMockFunction(method)
-  );
-};
+import { isConsoleMocked, shouldShowTestLogs } from "../src/helpers/testLogGate.js";
+import { onBattleEvent, offBattleEvent } from "../src/helpers/classicBattle/battleEvents.js";
+import { getStateSnapshot } from "../src/helpers/classicBattle/battleDebug.js";
+
 const debugLog = (...args) => {
   if (typeof console === "undefined") return;
   if (shouldShowTestLogs() || isConsoleMocked(console.log)) {
@@ -15,11 +10,6 @@ const debugLog = (...args) => {
 };
 
 debugLog("[TEST DEBUG] waitForState.js top-level loaded");
-// [TEST DEBUG] top-level waitForState.js
-
-debugLog("[TEST DEBUG] top-level waitForState.js");
-import { onBattleEvent, offBattleEvent } from "../src/helpers/classicBattle/battleEvents.js";
-import { getStateSnapshot } from "../src/helpers/classicBattle/battleDebug.js";
 
 /**
  * Wait for the classic battle state machine to reach a specific state.

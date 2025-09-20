@@ -1,4 +1,5 @@
 import { recordDebugState } from "./debugState.js";
+import { isConsoleMocked, shouldShowTestLogs } from "./testLogGate.js";
 
 /**
  * Toggle the tooltip debug overlay class on the document body.
@@ -11,25 +12,11 @@ import { recordDebugState } from "./debugState.js";
  * @param {boolean} enabled - Whether the overlay should be enabled.
  * @returns {void}
  */
-
-const shouldShowDebugLogs = () => typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
-const isConsoleMocked = (method) => {
-  const viInstance = globalThis?.vi;
-  return (
-    typeof viInstance?.isMockFunction === "function" &&
-    typeof method === "function" &&
-    viInstance.isMockFunction(method)
-  );
-};
-
 export function toggleTooltipOverlayDebug(enabled) {
   const nextState = Boolean(enabled);
   recordDebugState("tooltipOverlayDebug", nextState);
   if (typeof document === "undefined" || !document.body) {
-    if (
-      typeof console !== "undefined" &&
-      (shouldShowDebugLogs() || isConsoleMocked(console.info))
-    ) {
+    if (typeof console !== "undefined" && (shouldShowTestLogs() || isConsoleMocked(console.info))) {
       console.info(
         "[tooltipOverlayDebug] Document unavailable; recorded desired state:",
         nextState
