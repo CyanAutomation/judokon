@@ -100,6 +100,32 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
   });
 
+  test("settles ready promise when ready dispatch throws", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = '<button id="next-button" data-next-ready="true"></button>';
+    const error = new Error("ready-dispatch-error");
+    const dispatchBattleEvent = vi.fn().mockRejectedValue(error);
+    vi.doMock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent,
+      resetDispatchHistory: vi.fn()
+    }));
+
+    const { advanceWhenReady } = await import("../../src/helpers/classicBattle/timerService.js");
+    const btn = document.getElementById("next-button");
+    expect(btn).toBeTruthy();
+
+    let resolveReady;
+    const readyPromise = new Promise((resolve) => {
+      resolveReady = resolve;
+    });
+
+    await expect(advanceWhenReady(btn, resolveReady)).rejects.toThrow(error);
+    await expect(readyPromise).resolves.toBeUndefined();
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(btn?.disabled).toBe(false);
+    expect(btn?.getAttribute("data-next-ready")).toBe("true");
+  });
+
   test("re-enables Next if a callback disables it", async () => {
     vi.useFakeTimers();
     document.body.innerHTML = '<button id="next-button" disabled></button>';

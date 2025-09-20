@@ -139,26 +139,40 @@ const ADVANCE_TRANSITIONS = {
  * @returns {Promise<boolean>} True when the helper dispatched "ready".
  */
 async function dispatchReadyOnce(resolveReady) {
+  const shouldResolve = typeof resolveReady === "function";
   if (hasReadyBeenDispatchedForCurrentCooldown()) {
-    if (typeof resolveReady === "function") resolveReady();
+    if (shouldResolve) {
+      guard(() => resolveReady());
+    }
     return false;
   }
+
   setReadyDispatchedForCurrentCooldown(true);
   let dispatchSucceeded = true;
+  /** @type {unknown} */
+  let dispatchError;
+
   try {
     const result = await dispatchBattleEvent("ready");
     if (result === false) {
       dispatchSucceeded = false;
-      setReadyDispatchedForCurrentCooldown(false);
     }
   } catch (error) {
-    // Reset the flag if dispatch fails to allow retry
-    setReadyDispatchedForCurrentCooldown(false);
-    throw error;
+    dispatchSucceeded = false;
+    dispatchError = error;
+  } finally {
+    if (!dispatchSucceeded) {
+      setReadyDispatchedForCurrentCooldown(false);
+    }
+    if (shouldResolve) {
+      guard(() => resolveReady());
+    }
   }
-  if (dispatchSucceeded && typeof resolveReady === "function") {
-    resolveReady();
+
+  if (dispatchError) {
+    throw dispatchError;
   }
+
   return dispatchSucceeded;
 }
 
@@ -191,7 +205,18 @@ export async function advanceWhenReady(btn, resolveReady) {
       await dispatchBattleEvent(t.event, t.payload);
     } catch {}
   }
-  const dispatched = await dispatchReadyOnce(resolveReady);
+  let dispatched = false;
+  try {
+    dispatched = await dispatchReadyOnce(resolveReady);
+  } catch (error) {
+    btn.disabled = wasDisabled;
+    if (hadNextReady) {
+      dataset.nextReady = previousNextReady;
+    } else {
+      delete dataset.nextReady;
+    }
+    throw error;
+  }
   if (!dispatched) {
     btn.disabled = wasDisabled;
     if (hadNextReady) {

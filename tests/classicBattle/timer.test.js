@@ -165,7 +165,7 @@ describe("Classic Battle round timer", () => {
       await advanceWhenReady(button, resolveReady);
 
       expect(dispatchBattleEventMock).toHaveBeenCalledTimes(1);
-      expect(resolveReady).not.toHaveBeenCalled();
+      expect(resolveReady).toHaveBeenCalledTimes(1);
       expect(skipSpy).not.toHaveBeenCalled();
       expect(button.disabled).toBe(false);
       expect(button.dataset.nextReady).toBe("");
@@ -208,7 +208,7 @@ describe("Classic Battle round timer", () => {
       await advanceWhenReady(button, resolveReady);
 
       expect(dispatchBattleEventMock).toHaveBeenCalledTimes(1);
-      expect(resolveReady).not.toHaveBeenCalled();
+      expect(resolveReady).toHaveBeenCalledTimes(1);
       expect(skipSpy).not.toHaveBeenCalled();
       expect(button.disabled).toBe(false);
       expect(button.dataset.nextReady).toBe("");
@@ -221,7 +221,7 @@ describe("Classic Battle round timer", () => {
       await advanceWhenReady(button, resolveReady);
 
       expect(dispatchBattleEventMock).toHaveBeenCalledTimes(2);
-      expect(resolveReady).not.toHaveBeenCalled();
+      expect(resolveReady).toHaveBeenCalledTimes(1);
       expect(skipSpy).not.toHaveBeenCalled();
       expect(button.disabled).toBe(false);
       expect(button.dataset.nextReady).toBe("");
