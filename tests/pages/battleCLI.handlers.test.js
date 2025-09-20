@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import statNamesData from "../../src/data/statNames.js";
 
 let cleanupSetAutoContinue;
@@ -87,6 +87,7 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
 async function setupHandlers(options) {
   const result = await loadHandlers(options);
   cleanupSetAutoContinue = result.setAutoContinue;
+  result.handlers.ensureCliDomForTest({ reset: true });
   await result.handlers.renderStatList();
   try {
     result.handlers.installEventBindings?.();
@@ -111,15 +112,6 @@ async function setupHandlers(options) {
 }
 
 describe("battleCLI event handlers", () => {
-  beforeEach(() => {
-    document.body.innerHTML =
-      '<div id="cli-stats"></div>' +
-      '<ul id="cli-help"></ul>' +
-      '<div id="round-message"></div>' +
-      '<div id="snackbar-container"></div>' +
-      '<main id="cli-main"></main>' +
-      '<pre id="cli-verbose-log"></pre>';
-  });
   afterEach(() => {
     document.body.innerHTML = "";
     delete window.__TEST__;
@@ -186,10 +178,9 @@ describe("battleCLI event handlers", () => {
   it("captures remaining selection time when paused", async () => {
     vi.useFakeTimers();
     const { handlers } = await setupHandlers();
-    const countdown = document.createElement("div");
-    countdown.id = "cli-countdown";
+    const countdown = document.getElementById("cli-countdown");
     countdown.dataset.remainingTime = "5";
-    document.body.appendChild(countdown);
+    countdown.setAttribute("data-remaining-time", "5");
     handlers.setSelectionTimers(
       setTimeout(() => {}, 5000),
       setInterval(() => {}, 1000)
@@ -204,11 +195,11 @@ describe("battleCLI event handlers", () => {
   it("captures remaining cooldown time when paused", async () => {
     vi.useFakeTimers();
     const { handlers } = await setupHandlers();
-    const bar = document.getElementById("snackbar-container");
-    const snack = document.createElement("div");
-    snack.className = "snackbar";
-    snack.textContent = "Next round in: 7";
-    bar.appendChild(snack);
+    handlers.handleCountdownStart({ detail: { duration: 7 } });
+    const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
+      handlers.getCooldownTimers();
+    clearTimeout(originalTimer);
+    clearInterval(originalInterval);
     handlers.setCooldownTimers(
       setTimeout(() => {}, 7000),
       setInterval(() => {}, 1000)
@@ -223,19 +214,18 @@ describe("battleCLI event handlers", () => {
   it("preserves remaining time when paused twice", async () => {
     vi.useFakeTimers();
     const { handlers } = await setupHandlers();
-    const countdown = document.createElement("div");
-    countdown.id = "cli-countdown";
+    const countdown = document.getElementById("cli-countdown");
     countdown.dataset.remainingTime = "5";
-    document.body.appendChild(countdown);
+    countdown.setAttribute("data-remaining-time", "5");
     handlers.setSelectionTimers(
       setTimeout(() => {}, 5000),
       setInterval(() => {}, 1000)
     );
-    const bar = document.getElementById("snackbar-container");
-    const snack = document.createElement("div");
-    snack.className = "snackbar";
-    snack.textContent = "Next round in: 7";
-    bar.appendChild(snack);
+    handlers.handleCountdownStart({ detail: { duration: 7 } });
+    const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
+      handlers.getCooldownTimers();
+    clearTimeout(originalTimer);
+    clearInterval(originalInterval);
     handlers.setCooldownTimers(
       setTimeout(() => {}, 7000),
       setInterval(() => {}, 1000)
@@ -392,6 +382,13 @@ describe("battleCLI event handlers", () => {
       setTimeout(() => {}, 0),
       setInterval(() => {}, 100)
     );
+
+    handlers.handleCountdownStart({ detail: { duration: 3 } });
+    const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
+      handlers.getCooldownTimers();
+    clearTimeout(originalTimer);
+    clearInterval(originalInterval);
+
     handlers.onClickAdvance({ target: document.body });
     expect(mockDispatch).toHaveBeenCalledWith("ready");
     expect(handlers.getCooldownTimers()).toEqual({
