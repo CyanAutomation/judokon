@@ -1,7 +1,65 @@
 import { dispatchBattleEvent as globalDispatchBattleEvent } from "../eventDispatcher.js";
 import { readDebugState as globalReadDebugState } from "../debugHooks.js";
 
-const originalGlobalDispatchBattleEvent = globalDispatchBattleEvent;
+const hasMockIndicators = (fn) => {
+  if (typeof fn !== "function") return false;
+  if (fn.mock) return true;
+  if (fn.__isMockFunction) return true;
+  if (fn.isSinonProxy) return true;
+  if (typeof fn.getMockImplementation === "function") return true;
+  if (typeof fn.mockImplementation === "function") return true;
+  return false;
+};
+
+const ORIGINAL_DISPATCH_SYMBOL =
+  typeof Symbol === "function"
+    ? Symbol.for("judokon.originalDispatchBattleEvent")
+    : "__judokon_originalDispatchBattleEvent__";
+
+const globalScope =
+  typeof globalThis !== "undefined"
+    ? globalThis
+    : typeof global !== "undefined"
+      ? global
+      : typeof window !== "undefined"
+        ? window
+        : undefined;
+
+const originalDispatchStore = (() => {
+  const scope = globalScope;
+  const getStored = () => {
+    if (!scope) return null;
+    const stored = scope[ORIGINAL_DISPATCH_SYMBOL];
+    return typeof stored === "function" ? stored : null;
+  };
+  const setStored = (fn) => {
+    if (!scope || typeof fn !== "function") return;
+    try {
+      scope[ORIGINAL_DISPATCH_SYMBOL] = fn;
+    } catch {}
+  };
+  if (
+    typeof globalDispatchBattleEvent === "function" &&
+    !hasMockIndicators(globalDispatchBattleEvent) &&
+    !getStored()
+  ) {
+    setStored(globalDispatchBattleEvent);
+  }
+  return { get: getStored, set: setStored };
+})();
+
+const getOriginalGlobalDispatchBattleEvent = () => {
+  const stored = originalDispatchStore.get();
+  if (stored) return stored;
+  if (
+    typeof globalDispatchBattleEvent === "function" &&
+    !hasMockIndicators(globalDispatchBattleEvent)
+  ) {
+    originalDispatchStore.set(globalDispatchBattleEvent);
+    return globalDispatchBattleEvent;
+  }
+  return null;
+};
 
 /**
  * Create a telemetry emitter for next-round expiration instrumentation.
@@ -392,6 +450,13 @@ export async function dispatchReadyDirectly(params) {
     const result = machine.dispatch("ready");
     await Promise.resolve(result);
   };
+  const logMachineStateError = (message, error) => {
+    try {
+      if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+        console.debug(message, error);
+      }
+    } catch {}
+  };
   const readMachineState = () => {
     if (!machine) return null;
     try {
@@ -399,14 +464,18 @@ export async function dispatchReadyDirectly(params) {
         const state = machine.getState();
         if (typeof state === "string") return state;
       }
-    } catch {}
+    } catch (error) {
+      logMachineStateError("Failed to read machine state via getState()", error);
+    }
     try {
       const rawState = machine.state;
       if (typeof rawState === "string") return rawState;
       if (rawState && typeof rawState === "object" && typeof rawState.value === "string") {
         return rawState.value;
       }
-    } catch {}
+    } catch (error) {
+      logMachineStateError("Failed to read machine state via state property", error);
+    }
     return null;
   };
   let fallbackError = null;
@@ -414,19 +483,16 @@ export async function dispatchReadyDirectly(params) {
   let dedupeTracked = false;
   const shouldInvokeMachineAfterShared = () => {
     if (typeof globalDispatchBattleEvent !== "function") return false;
-    if (globalDispatchBattleEvent?.mock) return true;
-    if (globalDispatchBattleEvent?.__isMockFunction) return true;
-    if (globalDispatchBattleEvent?.isSinonProxy) return true;
-    if (typeof globalDispatchBattleEvent?.getMockImplementation === "function") return true;
-    if (typeof globalDispatchBattleEvent?.mockImplementation === "function") return true;
-    let vitestDetected = false;
+    const original = getOriginalGlobalDispatchBattleEvent();
+    if (hasMockIndicators(globalDispatchBattleEvent)) return true;
+    let isTestEnv = false;
     try {
-      vitestDetected = typeof process !== "undefined" && Boolean(process.env?.VITEST);
+      isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
     } catch {
-      vitestDetected = false;
+      isTestEnv = false;
     }
-    if (!vitestDetected) return false;
-    return globalDispatchBattleEvent !== originalGlobalDispatchBattleEvent;
+    if (!isTestEnv) return false;
+    return Boolean(original && globalDispatchBattleEvent !== original);
   };
   if (typeof globalDispatchBattleEvent === "function") {
     try {
@@ -434,14 +500,11 @@ export async function dispatchReadyDirectly(params) {
       if (result !== false) {
         dedupeTracked = true;
         if (!shouldInvokeMachineAfterShared()) {
+          // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
           return recordSuccess(true);
         }
         const machineStateBeforeDispatch = readMachineState();
-        if (
-          machineStateBeforeDispatch &&
-          machineStateBeforeDispatch !== "cooldown" &&
-          machineStateBeforeDispatch !== "roundOver"
-        ) {
+        if (machineStateBeforeDispatch && machineStateBeforeDispatch !== "cooldown" && machineStateBeforeDispatch !== "roundOver") {
           return recordSuccess(true);
         }
         try {
