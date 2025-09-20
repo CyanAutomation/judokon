@@ -7,6 +7,31 @@ const machineIds = new WeakMap();
 let machineIdCounter = 0;
 
 /**
+ * Write deduplication diagnostics when stdout is available.
+ *
+ * @pseudocode
+ * 1. Confirm a Node-like `process.stdout.write` function exists.
+ * 2. Attempt to write the provided message to stdout.
+ * 3. Silently ignore any write failures to keep diagnostics best-effort.
+ *
+ * @param {string} message - The diagnostic message to emit.
+ */
+function writeDedupeLog(message) {
+  if (
+    typeof process !== "undefined" &&
+    process &&
+    process.stdout &&
+    typeof process.stdout.write === "function"
+  ) {
+    try {
+      process.stdout.write(message);
+    } catch {
+      // Silently ignore write failures to keep diagnostics best-effort
+    }
+  }
+}
+
+/**
  * Get a high-resolution timestamp for deduplication tracking.
  *
  * @pseudocode
@@ -102,14 +127,14 @@ function registerDispatch(eventName, machine) {
     try {
       exposeDebugState("dispatchReadySkipped", now - last);
     } catch {}
-    process.stdout.write(`[dedupe] skip ${eventName} ${now - last} ${key}
+    writeDedupeLog(`[dedupe] skip ${eventName} ${now - last} ${key}
 `);
     return { shouldSkip: true, key, timestamp: last };
   }
   try {
     exposeDebugState("dispatchReadyTracked", now);
   } catch {}
-  process.stdout.write(`[dedupe] track ${eventName} ${now} ${key}
+  writeDedupeLog(`[dedupe] track ${eventName} ${now} ${key}
 `);
   recentDispatches.set(key, now);
   if (typeof setTimeout === "function") {
@@ -135,7 +160,7 @@ function registerDispatch(eventName, machine) {
  * @returns {void}
  */
 export function resetDispatchHistory(eventName) {
-  process.stdout.write(`[dedupe] reset ${eventName}
+  writeDedupeLog(`[dedupe] reset ${eventName}
 `);
   if (!eventName) {
     recentDispatches.clear();
@@ -251,7 +276,7 @@ export async function dispatchBattleEvent(eventName, payload) {
     try {
       exposeDebugState("dispatchBattleEventSkipped", { event: eventName, key: dispatchKey });
     } catch {}
-    process.stdout.write(`[dedupe] short-circuit ${eventName} ${dispatchKey}
+    writeDedupeLog(`[dedupe] short-circuit ${eventName} ${dispatchKey}
 `);
     return true;
   }
