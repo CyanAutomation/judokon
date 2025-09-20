@@ -145,7 +145,11 @@ async function dispatchReadyOnce(resolveReady) {
   }
   setReadyDispatchedForCurrentCooldown(true);
   try {
-    await dispatchBattleEvent("ready");
+    const result = await dispatchBattleEvent("ready");
+    if (result === false) {
+      setReadyDispatchedForCurrentCooldown(false);
+      return false;
+    }
   } catch (error) {
     // Reset the flag if dispatch fails to allow retry
     setReadyDispatchedForCurrentCooldown(false);
@@ -181,7 +185,7 @@ export async function advanceWhenReady(btn, resolveReady) {
     } catch {}
   }
   const dispatched = await dispatchReadyOnce(resolveReady);
-  setSkipHandler(null);
+  if (dispatched) setSkipHandler(null);
   if (!dispatched) return;
 }
 
