@@ -12,8 +12,6 @@ describe("timeout → interruptRound → cooldown auto-advance - minimal", () =>
     // Install shared RAF mock for deterministic frame control
     const raf = installRAFMock();
     global.__timeoutInterruptRafRestore = raf.restore;
-    stubbedRaf = true;
-    stubbedCancel = true;
 
     if (typeof document !== "undefined") {
       document.body.innerHTML = "";
@@ -37,11 +35,10 @@ describe("timeout → interruptRound → cooldown auto-advance - minimal", () =>
 
     try {
       global.__timeoutInterruptRafRestore?.();
+      try {
+        delete global.__timeoutInterruptRafRestore;
+      } catch {}
     } catch {}
-    originalRaf = undefined;
-    originalCancelRaf = undefined;
-    stubbedRaf = false;
-    stubbedCancel = false;
 
     if (typeof document !== "undefined") {
       document.body.innerHTML = "";
