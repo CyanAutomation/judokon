@@ -2,6 +2,47 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 
+const READY_EVENT = "ready";
+
+/**
+ * Create a dispatcher mock that replays candidate dispatchers before falling
+ * back to the provided global dispatcher.
+ *
+ * @param {import('vitest').Mock} globalDispatcher - Fallback dispatcher spy.
+ * @returns {(
+ *   options: {
+ *     skipCandidate?: boolean;
+ *     dispatchBattleEvent?: import('vitest').Mock;
+ *     alreadyDispatched?: boolean;
+ *   }
+ * ) => Promise<boolean>} A Vitest-compatible mock implementation.
+ */
+function createBusPropagationMock(globalDispatcher) {
+  return async function busPropagationMock(options = {}) {
+    const dispatchers = [];
+    if (options.skipCandidate !== true && typeof options.dispatchBattleEvent === "function") {
+      dispatchers.push(options.dispatchBattleEvent);
+    }
+    if (
+      typeof globalDispatcher === "function" &&
+      globalDispatcher !== options.dispatchBattleEvent
+    ) {
+      dispatchers.push(globalDispatcher);
+    }
+    if (options.alreadyDispatched) {
+      return true;
+    }
+    for (const dispatcher of dispatchers) {
+      const result = dispatcher(READY_EVENT);
+      const resolved = await Promise.resolve(result);
+      if (resolved !== false) {
+        return true;
+      }
+    }
+    return false;
+  };
+}
+
 describe("startCooldown fallback timer", () => {
   let scheduler;
   beforeEach(async () => {
@@ -469,35 +510,13 @@ describe("handleNextRoundExpiration orchestrated propagation", () => {
     dispatchReadyViaBusSpy?.mockClear();
     globalDispatchSpy.mockClear();
     machine.dispatch.mockClear();
-    dispatchReadyViaBusSpy?.mockImplementation(async (options = {}) => {
-      const dispatchers = [];
-      if (options.skipCandidate !== true && typeof options.dispatchBattleEvent === "function") {
-        dispatchers.push(options.dispatchBattleEvent);
-      }
-      if (
-        typeof globalDispatchSpy === "function" &&
-        globalDispatchSpy !== options.dispatchBattleEvent
-      ) {
-        dispatchers.push(globalDispatchSpy);
-      }
-      if (options.alreadyDispatched) {
-        return true;
-      }
-      for (const dispatcher of dispatchers) {
-        const result = dispatcher("ready");
-        const resolved = await Promise.resolve(result);
-        if (resolved !== false) {
-          return true;
-        }
-      }
-      return false;
-    });
+    dispatchReadyViaBusSpy?.mockImplementation(createBusPropagationMock(globalDispatchSpy));
     globalDispatchSpy.mockImplementationOnce(() => false);
     globalDispatchSpy.mockImplementation(() => true);
     await runtime.onExpired();
     expect(globalDispatchSpy).toHaveBeenCalledTimes(2);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, "ready");
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, "ready");
+    expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
+    expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
       expect.objectContaining({ alreadyDispatched: false })
