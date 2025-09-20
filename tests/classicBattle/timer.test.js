@@ -43,6 +43,51 @@ describe("Classic Battle round timer", () => {
       timers.useRealTimers();
     }
   });
+  
+  test("Next button dispatches ready when skip flag is active", async () => {
+    const timers = vi.useFakeTimers();
+    const previousOverrides = typeof window !== "undefined" ? window.__FF_OVERRIDES : undefined;
+    if (typeof window !== "undefined") {
+      window.__FF_OVERRIDES = { ...(previousOverrides || {}), skipRoundCooldown: true };
+    }
+    let readySpy;
+    try {
+      const { createBattleHeader } = await import("../utils/testUtils.js");
+      const header = createBattleHeader();
+      const nextButton = document.createElement("button");
+      nextButton.id = "next-button";
+      document.body.append(header, nextButton);
+
+      const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
+      readySpy = vi.spyOn(dispatcher, "dispatchBattleEvent").mockResolvedValue();
+
+      const { __setStateSnapshot } = await import("../../src/helpers/classicBattle/battleDebug.js");
+      __setStateSnapshot({ state: "cooldown" });
+
+      const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
+      const resolveReady = vi.fn();
+      nextButton.dataset.nextReady = "true";
+
+      await onNextButtonClick(
+        new MouseEvent("click"),
+        { timer: null, resolveReady },
+        { root: document }
+      );
+
+      expect(readySpy).toHaveBeenCalledWith("ready");
+      expect(resolveReady).toHaveBeenCalledTimes(1);
+      expect(nextButton.disabled).toBe(true);
+    } finally {
+      if (readySpy) readySpy.mockRestore();
+      if (typeof window !== "undefined") {
+        if (previousOverrides) {
+          window.__FF_OVERRIDES = previousOverrides;
+        } else {
+          delete window.__FF_OVERRIDES;
+        }
+      }
+      document.body.innerHTML = "";
+      timers.useRealTimers();
 
   test("retries ready dispatch when initial attempt is refused", async () => {
     vi.resetModules();

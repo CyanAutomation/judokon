@@ -232,7 +232,7 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  * `cancelTimerOrAdvance` to stop an active timer / advance when in cooldown.
  *
  * @pseudocode
- * 1. Call `skipRoundCooldownIfEnabled`; return early if it skips.
+ * 1. Ask `skipRoundCooldownIfEnabled` to execute its fast path when available.
  * 2. Emit `countdownFinished` via the battle event bus.
  * 3. Read `controls` (timer and resolveReady) from `getNextRoundControls()` when not supplied.
  * 4. If the Next button element has `data-next-ready="true"`, call `advanceWhenReady`.
@@ -244,7 +244,12 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  * @returns {Promise<void>}
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls(), options = {}) {
-  if (skipRoundCooldownIfEnabled()) return;
+  const skipHintConsumed = skipRoundCooldownIfEnabled({
+    onSkip: () => setSkipHandler(null)
+  });
+  if (skipHintConsumed) {
+    timerLogger.debug("skipRoundCooldown hint consumed during Next click");
+  }
   emitBattleEvent("countdownFinished");
   emitBattleEvent("round.start");
   const { timer = null, resolveReady = null } = controls || {};
