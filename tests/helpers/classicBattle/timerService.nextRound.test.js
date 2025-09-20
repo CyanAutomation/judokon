@@ -250,6 +250,7 @@ describe("timerService next round handling", () => {
       cb();
       return null;
     });
+    dispatchBattleEvent.mockReturnValueOnce(true);
     const roundMod = await import("../../../src/helpers/classicBattle/roundManager.js");
     try {
       const controls = roundMod.startCooldown({}, scheduler, {
@@ -259,6 +260,8 @@ describe("timerService next round handling", () => {
       });
       await expect(controls.ready).resolves.toBeUndefined();
       expect(setupFallbackTimer).toHaveBeenCalled();
+      expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+      expect(dispatchBattleEvent).toHaveBeenCalledTimes(1);
       expect(machine.dispatch).toHaveBeenCalledWith("ready");
       expect(machine.dispatch).toHaveBeenCalledTimes(1);
       expect(getStateSnapshot).toHaveBeenCalled();

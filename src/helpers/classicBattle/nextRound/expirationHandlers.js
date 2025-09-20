@@ -382,42 +382,51 @@ export async function dispatchReadyDirectly(params) {
     emitTelemetry?.("handleNextRound_dispatchReadyDirectly_result", true);
     return { dispatched: true, dedupeTracked };
   };
+  let machineAttempted = false;
   const dispatchViaMachine = async () => {
+    machineAttempted = true;
     const result = machine.dispatch("ready");
     await Promise.resolve(result);
   };
   let fallbackError = null;
+  let machineError = null;
   if (typeof globalDispatchBattleEvent === "function") {
     try {
       const result = await globalDispatchBattleEvent("ready");
       if (result !== false) {
-        return recordSuccess(true);
+        try {
+          await dispatchViaMachine();
+          return recordSuccess(true);
+        } catch (error) {
+          machineError = error;
+        }
       }
     } catch (error) {
       fallbackError = error;
     }
   }
-  try {
-    await dispatchViaMachine();
-    return recordSuccess(false);
-  } catch (error) {
-    const parts = [];
-    if (error && error.message) {
-      parts.push(error.message);
-    } else if (error) {
-      parts.push(String(error));
+  if (!machineAttempted) {
+    try {
+      await dispatchViaMachine();
+      return recordSuccess(false);
+    } catch (error) {
+      machineError = error;
     }
-    if (fallbackError) {
-      if (fallbackError && fallbackError.message) {
-        parts.push(`fallback:${fallbackError.message}`);
-      } else {
-        parts.push(`fallback:${String(fallbackError)}`);
-      }
-    }
-    const payload = parts.length > 0 ? parts.join(" | ") : "unknown";
-    emitTelemetry?.("handleNextRound_dispatchReadyDirectly_error", payload);
-    return { dispatched: false, dedupeTracked: false };
   }
+  const parts = [];
+  if (machineError) {
+    parts.push(machineError.message ? machineError.message : String(machineError));
+  }
+  if (fallbackError) {
+    parts.push(
+      fallbackError && fallbackError.message
+        ? `fallback:${fallbackError.message}`
+        : `fallback:${String(fallbackError)}`
+    );
+  }
+  const payload = parts.length > 0 ? parts.join(" | ") : "unknown";
+  emitTelemetry?.("handleNextRound_dispatchReadyDirectly_error", payload);
+  return { dispatched: false, dedupeTracked: false };
 }
 
 /**
