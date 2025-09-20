@@ -217,6 +217,20 @@ describe("dispatchReadyDirectly", () => {
     });
     expect(result).toEqual({ dispatched: true, dedupeTracked: true });
     expect(mocked).toHaveBeenCalledWith("ready");
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
+  });
+
+  it("falls back to the machine when the shared dispatcher declines under test guard", async () => {
+    const emit = vi.fn();
+    const dispatch = vi.fn(() => "done");
+    const mocked = getMockedDispatch();
+    mocked.mockReturnValueOnce(false);
+    const result = await dispatchReadyDirectly({
+      machineReader: () => ({ dispatch }),
+      emitTelemetry: emit
+    });
+    expect(result).toEqual({ dispatched: true, dedupeTracked: false });
     expect(dispatch).toHaveBeenCalledWith("ready");
     expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
   });
@@ -235,6 +249,44 @@ describe("dispatchReadyDirectly", () => {
     expect(result).toEqual({ dispatched: true, dedupeTracked: false });
     expect(dispatch).toHaveBeenCalledWith("ready");
     expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
+  });
+
+  it("skips direct dispatch when the shared dispatcher declines in production mode", async () => {
+    const emit = vi.fn();
+    const dispatch = vi.fn(() => "done");
+    const mocked = getMockedDispatch();
+    const previousEnv = process.env.VITEST;
+    const previousOverride = mocked.__classicBattleTreatAsMock;
+    try {
+      mocked.mockReturnValueOnce(false);
+      mocked.__classicBattleTreatAsMock = false;
+      delete process.env.VITEST;
+      const result = await dispatchReadyDirectly({
+        machineReader: () => ({ dispatch }),
+        emitTelemetry: emit
+      });
+      expect(result).toEqual({ dispatched: false, dedupeTracked: false });
+      expect(dispatch).not.toHaveBeenCalled();
+    } finally {
+      process.env.VITEST = previousEnv;
+      mocked.__classicBattleTreatAsMock = previousOverride;
+    }
+  });
+
+  it("reports telemetry when direct dispatch throws", async () => {
+    const emit = vi.fn();
+    const error = new Error("machine boom");
+    const mocked = getMockedDispatch();
+    mocked.mockReturnValueOnce(false);
+    await dispatchReadyDirectly({
+      machineReader: () => ({
+        dispatch() {
+          throw error;
+        }
+      }),
+      emitTelemetry: emit
+    });
+    expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_error", "machine boom");
   });
 
   it("reports missing dispatch capability", async () => {
