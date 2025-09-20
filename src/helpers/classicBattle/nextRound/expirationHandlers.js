@@ -496,18 +496,22 @@ export async function dispatchReadyDirectly(params) {
   };
   if (typeof globalDispatchBattleEvent === "function") {
     try {
+      const stateBeforeDispatch = readMachineState();
       const result = await globalDispatchBattleEvent("ready");
-              if (result !== false) {
-                dedupeTracked = true;
-                if (!shouldInvokeMachineAfterShared()) {
-                  // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
-                  return recordSuccess(true);
-                }        const machineStateBeforeDispatch = readMachineState();
-        if (
-          machineStateBeforeDispatch &&
-          machineStateBeforeDispatch !== "cooldown" &&
-          machineStateBeforeDispatch !== "roundOver"
-        ) {
+      const stateAfterDispatch = readMachineState();
+      const dispatcherHandled =
+        result !== false ||
+        (stateBeforeDispatch && stateAfterDispatch && stateBeforeDispatch !== stateAfterDispatch) ||
+        (stateBeforeDispatch &&
+          stateBeforeDispatch !== "cooldown" &&
+          stateBeforeDispatch !== "roundOver");
+      if (dispatcherHandled) {
+        dedupeTracked = true;
+        if (!shouldInvokeMachineAfterShared()) {
+          // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
+          return recordSuccess(true);
+        }
+        if (stateAfterDispatch && stateAfterDispatch !== "cooldown" && stateAfterDispatch !== "roundOver") {
           return recordSuccess(true);
         }
         try {

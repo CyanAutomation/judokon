@@ -135,6 +135,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
         ([eventName]) => eventName === "ready"
       );
       expect(readyCallsAfterFlushing.length).toBe(readyCallsAfterAdvance.length);
+      expect(readyCallsAfterFlushing).toHaveLength(1);
       expect(readyDispatchTracker.events.length).toBe(1);
       expect(readyDispatchTracker.events[0]?.[0]).toBe("ready");
 
