@@ -88,12 +88,15 @@ test("roundManager - cooldown expiry: observe ready dispatch count (baseline)", 
     getClassicBattleMachine: () => machine
   });
 
+  // Ensure no immediate machine dispatch occurs before async work resolves.
+  expect(machine.dispatch).not.toHaveBeenCalled();
+
   // Allow microtasks to settle
   await new Promise((r) => setTimeout(r, 0));
 
   // In this scenario the injected dispatcher handled the event, so machine.dispatch should not be called
-  const callsA = machine.dispatch.mock ? machine.dispatch.mock.calls.length : 0;
-  expect(callsA).toBe(0);
+  expect(machine.dispatch).not.toHaveBeenCalled();
+  expect(dispatchBattleEventSpy).toHaveBeenCalledTimes(1);
 
   // Inspect trace (accept any of several markers; ordering can vary by timing)
   const traceA = globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") || [];
