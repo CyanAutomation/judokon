@@ -91,25 +91,17 @@ async function addTestCard(judoka) {
   const { ready } = appendCards(container, [judoka], state.gokyoLookup);
   await ready;
   
-  // Only add hover markers to newly added cards to avoid duplicates
+  const newlyAddedCards = [];
   for (const node of container.children) {
-    if (!existing.has(node) && node.classList.contains('judoka-card')) {
-      if (!node.hasAttribute('data-enlarge-listener-attached')) {
-        // Add hover markers only to this specific card
-        const cards = [node];
-        cards.forEach(card => {
-          // Apply the same logic as addHoverZoomMarkers but scoped to new cards
-          if (!card.hasAttribute('data-enlarge-listener-attached')) {
-            // Add the hover zoom functionality here
-          }
-        });
-      }
-      state.addedNodes.add(node);
+    if (existing.has(node)) continue;
+    state.addedNodes.add(node);
+    if (typeof node.matches === "function" && node.matches(".card, .judoka-card")) {
+      newlyAddedCards.push(node);
     }
   }
-}
-      state.addedNodes.add(node);
-    }
+
+  if (newlyAddedCards.length > 0) {
+    addHoverZoomMarkers();
   }
 }
 
@@ -120,22 +112,20 @@ async function addTestCard(judoka) {
  * 1. Re-enable hover animations if they were disabled.
  * 2. Remove any nodes tracked in `addedNodes` that are still attached to the DOM.
  * 3. Clear the `addedNodes` set to avoid leaking references across renders.
- *
+ */
 function resetState() {
   enableHoverAnimations();
   for (const node of state.addedNodes) {
     try {
       node?.parentElement?.removeChild(node);
     } catch (error) {
-      // Only ignore errors for nodes that are already removed
-      if (error.name !== 'NotFoundError' && !error.message.includes('not a child')) {
-        console.warn('Error removing test node during cleanup:', error);
+      const message = String(error?.message || "");
+      const alreadyRemoved =
+        error?.name === "NotFoundError" || /not (?:a )?child/i.test(message);
+      if (!alreadyRemoved) {
+        throw error;
       }
     }
-  }
-  state.addedNodes.clear();
-}
-    } catch {}
   }
   state.addedNodes.clear();
 }
