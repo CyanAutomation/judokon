@@ -30,15 +30,16 @@ describe("Classic Battle dispatchBattleEvent getter caching", () => {
     vi.resetModules();
   });
 
-  it("caches the getter result and continues to dedupe rapid ready events", async () => {
-    const dispatchSpies = [];
+  it("invokes the machine getter exactly once for a single dispatch", async () => {
+    const machineInstances = [];
     const machineGetter = vi.fn(() => {
       const dispatch = vi.fn(async () => "dispatched");
-      dispatchSpies.push(dispatch);
-      return {
+      const machine = {
         dispatch,
         getState: vi.fn(() => "cooldown")
       };
+      machineInstances.push(machine);
+      return machine;
     });
 
     globalThis.__classicBattleDebugRead = (token) => {
@@ -49,29 +50,56 @@ describe("Classic Battle dispatchBattleEvent getter caching", () => {
     };
 
     await withMutedConsole(async () => {
-      const firstResult = await dispatchBattleEvent("ready");
-      expect(firstResult).toBe("dispatched");
+      const result = await dispatchBattleEvent("ready");
+      expect(result).toBe("dispatched");
     }, ["error", "warn", "log"]);
 
     expect(machineGetter).toHaveBeenCalledTimes(1);
-    expect(dispatchSpies).toHaveLength(1);
-    expect(dispatchSpies[0]).toHaveBeenCalledTimes(1);
+    expect(machineInstances).toHaveLength(1);
+    expect(machineInstances[0].dispatch).toHaveBeenCalledTimes(1);
+    expect(machineInstances[0].getState).toHaveBeenCalled();
+  });
 
-    resetDispatchHistory();
-    const stableMachine = {
-      dispatch: vi.fn(async () => "dispatched"),
+  it("uses a fresh machine instance when the getter implementation changes", async () => {
+    const firstMachine = {
+      dispatch: vi.fn(async () => "first"),
       getState: vi.fn(() => "cooldown")
     };
-    machineGetter.mockImplementation(() => stableMachine);
+    const secondMachine = {
+      dispatch: vi.fn(async () => "second"),
+      getState: vi.fn(() => "cooldown")
+    };
+
+    const machineGetter = vi.fn(() => firstMachine);
+
+    globalThis.__classicBattleDebugRead = (token) => {
+      if (token === "getClassicBattleMachine") {
+        return machineGetter;
+      }
+      return undefined;
+    };
 
     await withMutedConsole(async () => {
       const firstReady = await dispatchBattleEvent("ready");
-      expect(firstReady).toBe("dispatched");
-
-      const secondReady = await dispatchBattleEvent("ready");
-      expect(secondReady).toBe(true);
+      expect(firstReady).toBe("first");
     }, ["error", "warn", "log"]);
 
-    expect(stableMachine.dispatch).toHaveBeenCalledTimes(1);
+    expect(machineGetter).toHaveBeenCalledTimes(1);
+    expect(firstMachine.dispatch).toHaveBeenCalledTimes(1);
+
+    resetDispatchHistory();
+    machineGetter.mockImplementation(() => secondMachine);
+
+    await withMutedConsole(async () => {
+      const secondReady = await dispatchBattleEvent("ready");
+      expect(secondReady).toBe("second");
+
+      const dedupedReady = await dispatchBattleEvent("ready");
+      expect(dedupedReady).toBe(true);
+    }, ["error", "warn", "log"]);
+
+    expect(machineGetter).toHaveBeenCalledTimes(3);
+    expect(firstMachine.dispatch).toHaveBeenCalledTimes(1);
+    expect(secondMachine.dispatch).toHaveBeenCalledTimes(1);
   });
 });
