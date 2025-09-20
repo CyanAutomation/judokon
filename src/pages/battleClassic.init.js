@@ -19,20 +19,21 @@ import {
   getRoundsPlayed
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
-import { startTimer } from "../helpers/classicBattle/timerService.js";
+import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
 import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
+import { showSnackbar } from "../helpers/showSnackbar.js";
+import { t } from "../helpers/i18n.js";
 import { showSelectionPrompt, getOpponentDelay } from "../helpers/classicBattle/snackbar.js";
 import {
   removeBackdrops,
   enableNextRoundButton,
   showFatalInitError
 } from "../helpers/classicBattle/uiHelpers.js";
-import { showSnackbar } from "../helpers/showSnackbar.js";
-import { t } from "../helpers/i18n.js";
+import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -51,6 +52,46 @@ const POST_SELECTION_READY_DELAY_MS = 48;
  * Prevents UI elements from changing too quickly for user comprehension.
  */
 const OPPONENT_MESSAGE_BUFFER_MS = 150;
+
+const COOLDOWN_FLAG = "__uiCooldownStarted";
+
+function resetCooldownFlag(store) {
+  if (!store || typeof store !== "object") return;
+  try {
+    store[COOLDOWN_FLAG] = false;
+  } catch {}
+}
+
+function markCooldownStarted(store) {
+  if (!store || typeof store !== "object") return false;
+  if (store[COOLDOWN_FLAG]) return false;
+  try {
+    store[COOLDOWN_FLAG] = true;
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+function triggerCooldownOnce(store, reason) {
+  if (!markCooldownStarted(store)) return false;
+  try {
+    startCooldown(store);
+    return true;
+  } catch (err) {
+    try {
+      store[COOLDOWN_FLAG] = false;
+    } catch {}
+    try {
+      console.debug("battleClassic: startCooldown manual trigger failed", {
+        reason: reason || "unknown",
+        error: err
+      });
+    } catch {}
+    return false;
+  }
+}
+
 
 /**
  * Stop the active selection timer and clear the timer display.
@@ -186,6 +227,7 @@ function updateRoundCounterFromEngine() {
 function renderStatButtons(store) {
   const container = document.getElementById("stat-buttons");
   if (!container) return;
+  resetCooldownFlag(store);
   container.innerHTML = "";
   for (const stat of STATS) {
     const btn = document.createElement("button");
@@ -195,7 +237,7 @@ function renderStatButtons(store) {
     btn.setAttribute("data-testid", "stat-button");
     btn.setAttribute("aria-describedby", "round-message");
     btn.addEventListener("click", async () => {
-      console.error("[DEBUG] Stat button click handler invoked!");
+      console.debug("battleClassic: stat button click handler invoked");
       if (btn.disabled) return;
       let selectionResolved = false;
       let result;
@@ -221,6 +263,14 @@ function renderStatButtons(store) {
             ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
             : 0;
 
+        if (typeof window !== "undefined" && window.__battleClassicStopSelectionTimer) {
+          try {
+            window.__battleClassicStopSelectionTimer();
+          } catch (err) {
+            console.debug("battleClassic: cancel selection timer failed", err);
+          }
+        }
+
         try {
           showSnackbar(t("ui.opponentChoosing"));
         } catch {}
@@ -230,6 +280,15 @@ function renderStatButtons(store) {
           opponentVal: 3,
           delayMs: delayOverride
         });
+        let matchEnded = Boolean(result && result.matchEnded);
+        try {
+          console.debug("battleClassic: stat selection result", {
+            matchEnded,
+            outcome: result?.outcome,
+            playerScore: result?.playerScore,
+            opponentScore: result?.opponentScore
+          });
+        } catch {}
         selectionResolved = true;
         // Defensively ensure the scoreboard reflects the latest scores even
         // when adapters are not yet bound in E2E. This mirrors the adapter
@@ -246,11 +305,65 @@ function renderStatButtons(store) {
         } catch {} // Ignore errors if score update fails
         try {
           const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
-          if (isMatchEnded() || (result && result.matchEnded)) {
+          if (typeof isMatchEnded === "function" && isMatchEnded()) {
+            matchEnded = true;
+          }
+          if (matchEnded) {
             showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
           }
         } catch (err) {
           console.debug("battleClassic: checking match end failed", err);
+        }
+        if (!matchEnded) {
+          const applyCooldownAndEnable = () => {
+            triggerCooldownOnce(store, "statSelectionResolved");
+            let nextBtn = null;
+            try {
+              nextBtn =
+                document.getElementById("next-button") ||
+                document.querySelector('[data-role="next-round"]');
+            } catch {}
+            try {
+              enableNextRoundButton();
+            } catch {}
+            if (nextBtn) {
+              try {
+                nextBtn.disabled = false;
+                nextBtn.removeAttribute("disabled");
+              } catch {}
+              try {
+                nextBtn.setAttribute("data-next-ready", "true");
+                if (nextBtn.dataset) nextBtn.dataset.nextReady = "true";
+              } catch {}
+              try {
+                console.debug("battleClassic: next button enabled after selection", {
+                  disabled: nextBtn.disabled,
+                  attr: nextBtn.getAttribute("data-next-ready")
+                });
+              } catch {}
+              try {
+                setTimeout(() => {
+                  try {
+                    nextBtn.disabled = false;
+                    nextBtn.removeAttribute("disabled");
+                    nextBtn.setAttribute("data-next-ready", "true");
+                    if (nextBtn.dataset) nextBtn.dataset.nextReady = "true";
+                    try {
+                      console.debug("battleClassic: next button enable retry applied", {
+                        disabled: nextBtn.disabled,
+                        attr: nextBtn.getAttribute("data-next-ready")
+                      });
+                    } catch {}
+                  } catch {}
+                }, 0);
+              } catch {}
+            }
+          };
+          try {
+            setTimeout(applyCooldownAndEnable, 150);
+          } catch {
+            applyCooldownAndEnable();
+          }
         }
       } catch (err) {
         console.debug("battleClassic: stat selection handler failed", err);
@@ -373,11 +486,7 @@ async function beginSelectionTimer(store) {
             scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
           }
         } catch {}
-        try {
-          startCooldown(store);
-        } catch (err) {
-          console.debug("battleClassic: startCooldown (vitest) failed", err);
-        }
+        triggerCooldownOnce(store, "vitestTimerExpired");
       },
       pauseOnHidden: false
     });
@@ -405,11 +514,13 @@ async function beginSelectionTimer(store) {
           scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
         }
       } catch {}
-      startCooldown(store);
-      // If something interferes with the cooldown wiring, ensure Next is usable
-      try {
-        enableNextRoundButton();
-      } catch {}
+      const manualTrigger = triggerCooldownOnce(store, "selectionTimerAutoResolve");
+      if (manualTrigger) {
+        // If something interferes with the cooldown wiring, ensure Next is usable
+        try {
+          enableNextRoundButton();
+        } catch {}
+      }
     } catch (err) {
       console.debug("battleClassic: computeRoundResult (timer) failed", err);
     }
@@ -434,12 +545,12 @@ async function beginSelectionTimer(store) {
               scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
             }
           } catch {}
-          try {
-            startCooldown(store);
-          } catch {}
-          try {
-            enableNextRoundButton();
-          } catch {}
+          const fallbackTriggered = triggerCooldownOnce(store, "selectionFailSafe");
+          if (fallbackTriggered) {
+            try {
+              enableNextRoundButton();
+            } catch {}
+          }
         }
       } catch {}
     }, ms);
@@ -649,6 +760,16 @@ async function init() {
       window.battleStore = store;
     } catch (err) {
       console.debug("battleClassic: exposing store to window failed", err);
+    }
+    try {
+      const markFromEvent = () => {
+        markCooldownStarted(store);
+      };
+      onBattleEvent("nextRoundCountdownStarted", markFromEvent);
+      onBattleEvent("control.countdown.started", markFromEvent);
+      onBattleEvent("countdownStart", markFromEvent);
+    } catch (err) {
+      console.debug("battleClassic: binding countdown flag listeners failed", err);
     }
     // Bind transient UI handlers (opponent choosing message, reveal, outcome)
     // Bind transient UI handlers (opponent choosing message, reveal, outcome)
