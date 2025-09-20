@@ -242,6 +242,27 @@ describe("runReadyDispatchStrategies", () => {
     expect(result).toBe(false);
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", false);
   });
+
+  it("allows later strategies to run when a step requests propagation", async () => {
+    const emit = vi.fn();
+    const calls = [];
+    const result = await runReadyDispatchStrategies({
+      strategies: [
+        () => {
+          calls.push("machine");
+          return { dispatched: true, propagate: true };
+        },
+        () => {
+          calls.push("bus");
+          return true;
+        }
+      ],
+      emitTelemetry: emit
+    });
+    expect(result).toBe(true);
+    expect(calls).toEqual(["machine", "bus"]);
+    expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
+  });
 });
 
 describe("updateExpirationUi", () => {

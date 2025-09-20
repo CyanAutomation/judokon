@@ -382,8 +382,8 @@ export async function dispatchReadyDirectly(params) {
 /**
  * Sequentially execute dispatch strategies until one succeeds.
  *
- * @summary Coordinates multiple dispatch strategies, short-circuiting on the
- * first successful attempt while logging telemetry.
+ * @summary Coordinates multiple dispatch strategies, allowing successful steps
+ * to request propagation before logging the aggregate result.
  *
  * @pseudocode
  * 1. If a previous step already dispatched "ready", emit success telemetry and
@@ -395,7 +395,11 @@ export async function dispatchReadyDirectly(params) {
  *
  * @param {object} params
  * @param {boolean} [params.alreadyDispatchedReady]
- * @param {Array<() => Promise<boolean>|boolean>} [params.strategies]
+ * @param {Array<
+ *   () => Promise<boolean|{dispatched: boolean, propagate?: boolean}> |
+ *   boolean |
+ *   { dispatched: boolean, propagate?: boolean }
+ * >} [params.strategies]
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
  * @returns {Promise<boolean>}
  */
@@ -405,18 +409,32 @@ export async function runReadyDispatchStrategies(params = {}) {
     emitTelemetry?.("handleNextRoundDispatchResult", true);
     return true;
   }
+  let dispatched = false;
+  const interpretResult = (value) => {
+    if (value && typeof value === "object" && ("dispatched" in value || "propagate" in value)) {
+      return {
+        dispatched: value.dispatched === true,
+        propagate: value.propagate === true
+      };
+    }
+    return { dispatched: value === true, propagate: false };
+  };
   for (const strategy of strategies) {
     if (typeof strategy !== "function") continue;
     try {
-      const result = await Promise.resolve(strategy());
-      if (result) {
-        emitTelemetry?.("handleNextRoundDispatchResult", true);
-        return true;
+      const rawResult = await Promise.resolve(strategy());
+      const { dispatched: stepDispatched, propagate } = interpretResult(rawResult);
+      if (stepDispatched) {
+        dispatched = true;
+        if (!propagate) {
+          emitTelemetry?.("handleNextRoundDispatchResult", true);
+          return true;
+        }
       }
     } catch {}
   }
-  emitTelemetry?.("handleNextRoundDispatchResult", false);
-  return false;
+  emitTelemetry?.("handleNextRoundDispatchResult", dispatched);
+  return dispatched;
 }
 
 /**
