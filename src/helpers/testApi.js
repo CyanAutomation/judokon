@@ -17,6 +17,26 @@ import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 import { isEnabled } from "./featureFlags.js";
 
+function isDevelopmentEnvironment() {
+  if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+    return true;
+  }
+
+  if (typeof window !== "undefined" && window.__DEV__) {
+    return true;
+  }
+
+  return false;
+}
+
+function logDevWarning(message, error) {
+  if (!isDevelopmentEnvironment()) return;
+
+  try {
+    console.warn(message, error);
+  } catch {}
+}
+
 // Test mode detection
 function isTestMode() {
   // Check for common test environment indicators
@@ -130,9 +150,13 @@ const timerApi = {
         el.dataset.remainingTime = String(normalized);
         try {
           el.setAttribute("data-remaining-time", String(normalized));
-        } catch {}
+        } catch (err) {
+          logDevWarning("Failed to set data-remaining-time attribute", err);
+        }
         el.textContent = value !== null ? `Timer: ${String(normalized).padStart(2, "0")}` : "";
-      } catch {}
+      } catch (err) {
+        logDevWarning("Failed to apply countdown value", err);
+      }
     };
 
     try {
@@ -156,7 +180,9 @@ const timerApi = {
       }
 
       applyCountdown(seconds);
-    } catch {}
+    } catch (err) {
+      logDevWarning("Failed to set countdown via timer API", err);
+    }
   },
 
   /**
