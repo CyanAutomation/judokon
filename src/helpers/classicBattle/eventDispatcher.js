@@ -20,11 +20,14 @@ function writeDedupeLog(message) {
   if (
     typeof process !== "undefined" &&
     process &&
-    typeof process.stdout?.write === "function"
+    process.stdout &&
+    typeof process.stdout.write === "function"
   ) {
     try {
       process.stdout.write(message);
-    } catch {}
+    } catch {
+      // Silently ignore write failures to keep diagnostics best-effort
+    }
   }
 }
 
