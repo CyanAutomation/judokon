@@ -95,27 +95,34 @@ Status: planning completed. Execution is paused awaiting your approval. No files
 Planned activities (non-destructive, low-risk):
 
 1) Generate canonical PRD index
+
 - Command: `node scripts/generatePrdIndex.js` then `npm run sync:agents`
 - Expected artifacts: machine-readable index (e.g., `design/productRequirementsDocuments/prdIndex.json`) and agent sync report.
 - Acceptance: scripts exit 0; index lists PRDs and unmapped docs.
 - Fallback: if script fails, produce a minimal map via targeted grep queries.
 
 2) Review index and produce mapping report
+
 - Produce `reports/prd-mapping-report.json` and `.csv` with columns: source path, mapped PRD, status (mapped/unmapped/duplicate), suggested action, owner.
 
 3) Create stub redirect files (non-destructive)
+
 - For each duplicate/mapped doc create a short stub that points to the authoritative PRD and includes last-updated + owner metadata. Prefer committing to a feature branch for review.
 
 4) Add 'Authoritative' header + 'See also' to PRDs
+
 - Add a short header block to PRDs stating authority, canonical path, owner, and links to implementation appendices in `design/`.
 
 5) Run validation and smoke checks
+
 - Commands: `npm run validate:data` (if available), `npx prettier . --check`, `npx eslint .`, `npm run rag:validate` (if present), and a markdown-link-check on changed files.
 
 6) Produce Phase-1 report and open PR
+
 - Commit the index, reports, stub files, and PRD header edits to a feature branch and open a PR with a short migration plan for Phase 2.
 
 Deliverables for Phase 1:
+
 - `design/productRequirementsDocuments/prdIndex.json` (script output)
 - `reports/prd-mapping-report.json` and `.csv`
 - stub redirect files in `docs/` and `design/`
@@ -123,11 +130,13 @@ Deliverables for Phase 1:
 - Phase-1 PR (branch) with validation checks passing
 
 Notes & constraints:
+
 - No deletions or destructive moves will be performed in Phase 1.
 - If owners are missing, the mapping report will flag TODO owners in PRD headers.
 - Agent tooling must be re-synced (`npm run sync:agents`) before any deletions.
 
 Next step options for you:
+
 - A) Approve Phase 1 execution and I will run the scripts and create artifacts.
 - B) Ask me to create a single example stub+PRD header update for review before running scripts.
 - C) Request changes to the plan before I proceed.
