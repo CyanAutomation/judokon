@@ -37,7 +37,8 @@ vi.mock("../../../src/helpers/dataUtils.js", () => ({
 }));
 
 vi.mock("../../../src/helpers/utils.js", () => ({
-  createGokyoLookup: () => ({})
+  createGokyoLookup: () => ({}),
+  escapeHTML: (value) => String(value)
 }));
 
 vi.mock("../../../src/helpers/featureFlags.js", () => ({

@@ -26,6 +26,40 @@ const readStatFromCard = (card, stat, getCardStatValue) => {
   return Number.isFinite(domVal) ? domVal : NaN;
 };
 
+const TEST_STAT_BASE = {
+  power: 1,
+  speed: 1,
+  technique: 1,
+  kumikata: 1,
+  newaza: 1
+};
+
+const TEST_PLAYER_CARD_BASE = {
+  id: 10000,
+  firstname: "Test",
+  surname: "Player",
+  country: "Testland",
+  countryCode: "tt",
+  weightClass: "Open",
+  signatureMoveId: 0,
+  rarity: "common",
+  stats: TEST_STAT_BASE
+};
+
+const TEST_OPPONENT_CARD_BASE = {
+  id: 10001,
+  firstname: "Test",
+  surname: "Opponent",
+  country: "Testland",
+  countryCode: "tt",
+  weightClass: "Open",
+  signatureMoveId: 0,
+  rarity: "common",
+  stats: TEST_STAT_BASE
+};
+
+let __createStatsPanelPromise;
+
 const deriveSelectionValues = (stat, getCardStatValue, getOpponentJudoka) => {
   const values = {};
   const playerCard = document.getElementById("player-card");
@@ -50,6 +84,80 @@ const deriveSelectionValues = (stat, getCardStatValue, getOpponentJudoka) => {
 
   return values;
 };
+
+const mergeTestCardData = (base, overrides = {}) => {
+  const { stats: statOverrides, ...cardOverrides } = overrides || {};
+  const mergedStats = {
+    ...base.stats,
+    ...(statOverrides && typeof statOverrides === "object" ? statOverrides : {})
+  };
+const renderStatsCardForTest = async (target, base, overrides) => {
+  if (!target) return null;
+  if (!__createStatsPanelPromise) {
+    // Preload during module initialization instead of lazy loading
+    __createStatsPanelPromise = import("/src/components/StatsPanel.js").then(
+      (mod) => mod.createStatsPanel
+    );
+  }
+  const createStatsPanel = await __createStatsPanelPromise;
+  if (!target) return null;
+  if (!__createStatsPanelPromise) {
+    __createStatsPanelPromise = import("/src/components/StatsPanel.js").then(
+      (mod) => mod.createStatsPanel
+    );
+  }
+  const createStatsPanel = await __createStatsPanelPromise;
+  if (typeof createStatsPanel !== "function") return null;
+
+  const cardData = mergeTestCardData(base, overrides);
+  const rarityClass = String(cardData.rarity || "common").toLowerCase();
+  const statsPanel = await createStatsPanel(cardData.stats, { type: rarityClass });
+
+  const card = document.createElement("div");
+  card.className = `judoka-card ${rarityClass}`.trim();
+  try {
+    container.dataset.cardJson = JSON.stringify(cardData);
+  } catch (error) {
+    console.warn("Failed to serialize card  error);
+    container.dataset.cardJson = JSON.stringify({ id: cardData.id, stats: cardData.stats });
+  }
+  container.className = "card-container";
+  try {
+    container.dataset.cardJson = JSON.stringify(cardData);
+  } catch {}
+  container.appendChild(card);
+
+  target.replaceChildren(container);
+
+  return cardData;
+};
+
+/**
+ * Render simplified Classic Battle cards with deterministic stat values for tests.
+ *
+ * @pseudocode
+ * @param {object} [config] - Configuration object with player and opponent overrides.
+ * @param {object} [config.player] - Player card overrides including stats.
+ * @param {object} [config.opponent] - Opponent card overrides including stats.
+ * @param {object} [config.player.stats] - Player stat overrides (power, speed, technique, etc.).
+ * @param {object} [config.opponent.stats] - Opponent stat overrides (power, speed, technique, etc.).
+ *   player?: { stats?: Partial<Record<string, number>> } & Record<string, unknown>,
+ *   opponent?: { stats?: Partial<Record<string, number>> } & Record<string, unknown>
+ * }} [config] - Stat overrides and optional card metadata for each side.
+ * @returns {Promise<{playerCardData: object|null, opponentCardData: object|null}>}
+ */
+export async function setCardStatValuesForTest(config = {}) {
+  const { player = {}, opponent = {} } = config || {};
+  const playerTarget = document.getElementById("player-card");
+  const opponentTarget = document.getElementById("opponent-card");
+
+  const [playerCardData, opponentCardData] = await Promise.all([
+    renderStatsCardForTest(playerTarget, TEST_PLAYER_CARD_BASE, player),
+    renderStatsCardForTest(opponentTarget, TEST_OPPONENT_CARD_BASE, opponent)
+  ]);
+
+  return { playerCardData, opponentCardData };
+}
 
 /**
  * Ensure Classic Battle UI listeners and test promises are registered.

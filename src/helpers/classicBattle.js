@@ -222,7 +222,8 @@ export {
   ensureBindings as __ensureClassicBattleBindings,
   resetBindings as __resetClassicBattleBindings,
   triggerRoundTimeoutNow as __triggerRoundTimeoutNow,
-  triggerStallPromptNow as __triggerStallPromptNow
+  triggerStallPromptNow as __triggerStallPromptNow,
+  setCardStatValuesForTest as __setCardStatValuesForTest
 } from "./classicBattle/testHooks.js";
 
 // PRD Orchestrator API shims
