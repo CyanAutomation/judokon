@@ -57,7 +57,7 @@ describe("classicBattle stat selection failure recovery", () => {
     vi.resetModules();
   });
 
-  it("starts cooldown and marks Next ready when selection handler rejects", async () => {
+  it("starts cooldown, resets cooldown flag, and marks Next ready when selection handler rejects", async () => {
     handleStatSelectionMock.mockRejectedValue(new Error("stat selection failed"));
 
     document.body.innerHTML = `
@@ -73,9 +73,14 @@ describe("classicBattle stat selection failure recovery", () => {
 
     btn.click();
 
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 10));
 
+    expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+    expect(handleStatSelectionMock).toHaveBeenCalledWith(
+      store,
+      expect.any(String),
+      expect.objectContaining({ playerVal: 5, opponentVal: 3 })
+    );
     expect(startCooldownMock).toHaveBeenCalledTimes(1);
     expect(startCooldownMock).toHaveBeenCalledWith(store);
     expect(store.__uiCooldownStarted).toBe(false);
@@ -84,5 +89,58 @@ describe("classicBattle stat selection failure recovery", () => {
     expect(nextBtn.disabled).toBe(false);
     expect(nextBtn.getAttribute("data-next-ready")).toBe("true");
     expect(nextBtn.dataset.nextReady).toBe("true");
+  });
+
+  it("recovers when the Next button is absent", async () => {
+    handleStatSelectionMock.mockRejectedValue(new Error("stat selection failed"));
+
+    document.body.innerHTML = `
+      <div id="stat-buttons"></div>
+    `;
+
+    const store = {};
+    renderStatButtons(store);
+
+    const btn = document.querySelector("[data-stat]");
+    expect(btn).toBeTruthy();
+
+    btn.click();
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+    expect(startCooldownMock).toHaveBeenCalledTimes(1);
+    expect(store.__uiCooldownStarted).toBe(false);
+    expect(document.getElementById("next-button")).toBeNull();
+  });
+
+  it("logs cooldown failure and still re-enables Next when startCooldown throws", async () => {
+    startCooldownMock.mockImplementation(() => {
+      throw new Error("cooldown failure");
+    });
+    handleStatSelectionMock.mockRejectedValue(new Error("stat selection failed"));
+
+    document.body.innerHTML = `
+      <div id="stat-buttons"></div>
+      <button id="next-button" data-role="next-round" disabled></button>
+    `;
+
+    const store = {};
+    renderStatButtons(store);
+
+    const btn = document.querySelector("[data-stat]");
+    expect(btn).toBeTruthy();
+
+    btn.click();
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+    expect(startCooldownMock).toHaveBeenCalledTimes(1);
+    expect(store.__uiCooldownStarted).toBe(false);
+
+    const nextBtn = document.getElementById("next-button");
+    expect(nextBtn.disabled).toBe(false);
+    expect(nextBtn.getAttribute("data-next-ready")).toBe("true");
   });
 });
