@@ -521,9 +521,14 @@ function createReadyDispatchStrategies({
     typeof options.dispatchBattleEvent === "function" &&
     options.dispatchBattleEvent !== dispatchBattleEvent;
   const shouldShortCircuitReadyDispatch = () => hasReadyBeenDispatchedForCurrentCooldown();
-  const machineStrategy = () => {
+  const shouldPropagateAfterMachine = orchestrated && !hasCustomDispatcher;
+  const machineStrategy = async () => {
     if (shouldShortCircuitReadyDispatch()) return true;
-    return dispatchReadyDirectly({ machineReader, emitTelemetry });
+    const dispatched = await dispatchReadyDirectly({ machineReader, emitTelemetry });
+    if (dispatched && shouldPropagateAfterMachine) {
+      return { dispatched: true, propagate: true };
+    }
+    return dispatched;
   };
   const strategies = [];
   let machineStrategyAdded = false;
