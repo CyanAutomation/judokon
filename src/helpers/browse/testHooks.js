@@ -120,10 +120,7 @@ function resetState() {
     try {
       parent.removeChild(node);
     } catch (error) {
-      if (
-        error?.name === "NotFoundError" ||
-        error?.message?.includes("not a child")
-      ) {
+      if (error?.name === "NotFoundError" || error?.message?.includes("not a child")) {
         continue;
       }
       throw error;
