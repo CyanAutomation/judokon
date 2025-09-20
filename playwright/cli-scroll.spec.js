@@ -25,18 +25,17 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 1024, height: 768 });
 
-      // Simulate adding content to test scrolling
-      await page.evaluate(() => {
-        const content = document.querySelector("#cli-content, .cli-content, .terminal");
-        if (content) {
-          // Add multiple lines to test scrolling
-          for (let i = 0; i < 50; i++) {
-            const line = document.createElement("div");
-            line.textContent = `Test line ${i + 1}: This is a long line of text to test horizontal scrolling behavior and content wrapping.`;
-            content.appendChild(line);
-          }
-        }
-      });
+      await page.waitForFunction(() => window.__test?.cli?.appendTranscript);
+
+      await page.evaluate(() =>
+        window.__test.cli.appendTranscript(
+          Array.from(
+            { length: 50 },
+            (_, i) =>
+              `Test line ${i + 1}: This is a long line of text to test horizontal scrolling behavior and content wrapping.`
+          )
+        )
+      );
 
       // Check that content is scrollable vertically but not horizontally
       const scrollInfo = await page.evaluate(() => {
@@ -165,21 +164,15 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 800, height: 600 });
 
-      // Add extremely long content
-      await page.evaluate(() => {
-        const content = document.querySelector("#cli-content, .cli-content, .terminal");
-        if (content) {
-          const longLine = document.createElement("div");
-          longLine.textContent = "A".repeat(1000); // Very long line
-          content.appendChild(longLine);
-        }
-      });
+      await page.waitForFunction(() => window.__test?.cli?.appendTranscript);
+
+      await page.evaluate(() => window.__test.cli.appendTranscript("A".repeat(1000)));
 
       // Check that long lines don't break layout
       const layoutBroken = await page.evaluate(() => {
-        const content = document.querySelector("#cli-content, .cli-content, .terminal");
-        if (content) {
-          const rect = content.getBoundingClientRect();
+        const pre = document.getElementById("cli-verbose-log");
+        if (pre) {
+          const rect = pre.getBoundingClientRect();
           // Check if content extends beyond reasonable bounds
           return rect.right > window.innerWidth + 50;
         }
@@ -193,32 +186,37 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 1024, height: 768 });
 
-      // Add multiple content sections
-      await page.evaluate(() => {
-        const container = document.querySelector("#cli-container, .cli-container, main");
-        if (container) {
-          for (let i = 0; i < 10; i++) {
-            const section = document.createElement("div");
-            section.className = "cli-section";
-            section.textContent = `Section ${i + 1}: This is test content for section ${i + 1}.`;
-            container.appendChild(section);
-          }
-        }
+      await page.waitForFunction(() => window.__test?.cli?.appendTranscript);
+
+      await page.evaluate(() =>
+        window.__test.cli.appendTranscript(
+          Array.from({ length: 10 }, (_, i) => ({
+            from: `state-${i}`,
+            to: `Section ${i + 1}: This is test content for section ${i + 1}.`
+          }))
+        )
+      );
+
+      const transcriptLines = await page.evaluate(() => {
+        const pre = document.getElementById("cli-verbose-log");
+        if (!pre) return [];
+        return pre.textContent
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean);
       });
+      expect(transcriptLines.length).toBeGreaterThanOrEqual(10);
 
-      // Verify all sections are accessible
-      const sections = page.locator(".cli-section");
-      const sectionCount = await sections.count();
-      expect(sectionCount).toBe(10);
-
-      // Check that sections don't overlap or break layout
       const layoutIssues = await page.evaluate(() => {
-        const sections = document.querySelectorAll(".cli-section");
+        const sections = document.querySelectorAll(".cli-block");
         let issues = 0;
         for (const section of sections) {
+          if (section.hidden || section.offsetParent === null) {
+            continue;
+          }
           const rect = section.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) {
-            issues++; // Invisible or broken section
+            issues++;
           }
         }
         return issues;

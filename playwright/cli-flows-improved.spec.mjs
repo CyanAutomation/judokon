@@ -548,8 +548,14 @@ test.describe("CLI Battle Interface", () => {
       await expect(page.locator("#cli-controls-hint")).toBeVisible();
 
       // Test touch targets meet minimum size requirements
+      await page.waitForFunction(
+        () => document.querySelectorAll(".cli-stat").length > 0,
+        undefined,
+        { timeout: 10_000 }
+      );
       const statItems = page.locator(".cli-stat");
       const firstStat = statItems.first();
+      await expect(firstStat).toBeVisible();
       const box = await firstStat.boundingBox();
       expect(box?.height).toBeGreaterThanOrEqual(44); // Minimum touch target
     });

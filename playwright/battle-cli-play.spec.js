@@ -6,9 +6,11 @@ test.describe("Battle CLI - Play", () => {
     await withMutedConsole(async () => {
       await page.goto("/src/pages/battleCLI.html?autostart=1");
 
-      // Wait for the stats to be ready
-      const statsContainer = page.locator("#cli-stats");
-      await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
+    await page.waitForFunction(() => window.__test?.cli?.resolveRound);
+
+    // Wait for the stats to be ready
+    const statsContainer = page.locator("#cli-stats");
+    await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
 
       // The stat buttons should be visible
       const statButton = page.locator(".cli-stat").first();
@@ -17,17 +19,14 @@ test.describe("Battle CLI - Play", () => {
       // Click the first stat button
       await statButton.click();
 
-      // Manually trigger round resolved for testing purposes due to application bug
-      await page.evaluate(() => {
-        window.__test.handleRoundResolved({
-          detail: {
-            result: { message: "Round Over", playerScore: 1, opponentScore: 0 },
-            stat: "speed",
-            playerVal: 5,
-            opponentVal: 3
-          }
-        });
-      });
+    await page.evaluate(() =>
+      window.__test.cli.resolveRound({
+        stat: "speed",
+        playerVal: 5,
+        opponentVal: 3,
+        result: { message: "Round Over", playerScore: 1, opponentScore: 0 }
+      })
+    );
 
       // Wait for the round message to show the result
       const roundMessage = page.locator("#round-message");

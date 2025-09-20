@@ -214,6 +214,135 @@ function ensureCliDomForTest({ reset = false } = {}) {
   return document.getElementById("cli-root");
 }
 
+/**
+ * Normalize event-like input into a round detail object.
+ *
+ * @param {object} [eventLike]
+ * @returns {object}
+ * @pseudocode
+ * if eventLike has detail → use detail, else clone eventLike
+ * ensure result object exists with message/playerScore/opponentScore defaults
+ * ensure store fallback is present when available
+ * return normalized object
+ */
+function normalizeRoundDetailForTest(eventLike = {}) {
+  const source =
+    eventLike && typeof eventLike === "object" && "detail" in eventLike
+      ? eventLike.detail || {}
+      : eventLike || {};
+  const normalized = { ...source };
+  const resultSource = source && typeof source.result === "object" ? { ...source.result } : {};
+  const message = resultSource.message ?? source.resultMessage ?? source.message ?? "";
+  const playerScore = resultSource.playerScore ?? source.playerScore ?? source.resultPlayerScore;
+  const opponentScore =
+    resultSource.opponentScore ?? source.opponentScore ?? source.resultOpponentScore;
+
+  normalized.result = {
+    ...resultSource,
+    message,
+    playerScore: typeof playerScore === "number" ? playerScore : Number(playerScore ?? 0) || 0,
+    opponentScore:
+      typeof opponentScore === "number" ? opponentScore : Number(opponentScore ?? 0) || 0
+  };
+
+  if (!normalized.store && store) {
+    normalized.store = store;
+  }
+
+  return normalized;
+}
+
+/**
+ * Resolve the active round through the orchestrator for deterministic tests.
+ *
+ * @param {object} [eventLike]
+ * @returns {Promise<{ detail: object, dispatched: boolean, emitted: boolean }>}
+ * @pseudocode
+ * detail = normalizeRoundDetailForTest(eventLike)
+ * dispatched = await safeDispatch("roundResolved", detail)
+ * emitBattleEvent("roundResolved", detail)
+ * return { detail, dispatched: dispatched !== false, emitted: true on success }
+ */
+async function resolveRoundForTest(eventLike = {}) {
+  const detail = normalizeRoundDetailForTest(eventLike);
+  let dispatched = false;
+  try {
+    const result = await safeDispatch("roundResolved", detail);
+    dispatched = result !== false;
+  } catch {}
+
+  let emitted = false;
+  try {
+    emitBattleEvent("roundResolved", detail);
+    emitted = true;
+  } catch {}
+
+  return { detail, dispatched, emitted };
+}
+
+/**
+ * Ensure the verbose transcript section is visible for test interactions.
+ *
+ * @returns {void}
+ * @pseudocode
+ * set verboseEnabled = true
+ * unhide verbose section and mark checkbox checked when available
+ */
+function ensureVerboseSectionForTest() {
+  verboseEnabled = true;
+  try {
+    const checkbox = byId("verbose-toggle");
+    if (checkbox) {
+      checkbox.checked = true;
+    }
+  } catch {}
+  try {
+    const section = byId("cli-verbose-section");
+    if (section) {
+      section.hidden = false;
+    }
+  } catch {}
+}
+
+/**
+ * Append transcript lines to the verbose log using production helpers.
+ *
+ * @param {Array<string|{from?: string|null, to?: string}>|string} entries
+ * @returns {string[]}
+ * @pseudocode
+ * normalize entries into array
+ * ensure verbose section visible
+ * for each entry → derive from/to strings and call logStateChange(from, to)
+ * collect appended text and return
+ */
+function appendTranscriptForTest(entries) {
+  const list = Array.isArray(entries) ? entries : [entries];
+  ensureVerboseSectionForTest();
+  const appended = [];
+
+  for (const entry of list) {
+    if (entry === null || entry === undefined) continue;
+    if (typeof entry === "string") {
+      logStateChange(null, entry);
+      appended.push(entry);
+      continue;
+    }
+    if (typeof entry === "object") {
+      const from = entry.from === undefined || entry.from === null ? null : String(entry.from);
+      const target = entry.to ?? entry.text ?? entry.message ?? entry.detail ?? "";
+      const to = target === null || target === undefined ? "" : String(target);
+      logStateChange(from, to);
+      appended.push(to);
+      continue;
+    }
+    const to = String(entry);
+    logStateChange(null, to);
+    appended.push(to);
+  }
+
+  return appended;
+}
+
 // Test hooks to access internal timer state
 export const __test = {
   ensureCliDomForTest,
@@ -276,7 +405,12 @@ export const __test = {
   onClickAdvance,
   // Re-expose scoreboard message helpers for tests
   handleScoreboardShowMessage,
-  handleScoreboardClearMessage
+  handleScoreboardClearMessage,
+  cli: {
+    resolveRound: resolveRoundForTest,
+    appendTranscript: appendTranscriptForTest,
+    showVerboseSection: ensureVerboseSectionForTest
+  }
 };
 
 /**
