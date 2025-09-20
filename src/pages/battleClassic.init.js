@@ -1,6 +1,7 @@
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
 import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
+import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
 import {
   setStatButtonsEnabled,
   resolveStatButtonsReady
@@ -24,9 +25,9 @@ import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapte
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
-import { showSelectionPrompt } from "../helpers/classicBattle/snackbar.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
 import { t } from "../helpers/i18n.js";
+import { showSelectionPrompt, getOpponentDelay } from "../helpers/classicBattle/snackbar.js";
 import {
   removeBackdrops,
   enableNextRoundButton,
@@ -40,6 +41,17 @@ let activeSelectionTimer = null;
 let failSafeTimerId = null;
 // Re-entrancy guard to avoid starting multiple round cycles concurrently
 let isStartingRoundCycle = false;
+/**
+ * Minimum delay before enabling the Next button after stat selection.
+ * Ensures UI state transitions are visible to users.
+ */
+const POST_SELECTION_READY_DELAY_MS = 48;
+
+/**
+ * Buffer time added to opponent delay to ensure snackbar message is visible.
+ * Prevents UI elements from changing too quickly for user comprehension.
+ */
+const OPPONENT_MESSAGE_BUFFER_MS = 150;
 
 const COOLDOWN_FLAG = "__uiCooldownStarted";
 
@@ -227,6 +239,8 @@ function renderStatButtons(store) {
     btn.addEventListener("click", async () => {
       console.debug("battleClassic: stat button click handler invoked");
       if (btn.disabled) return;
+      let selectionResolved = false;
+      let result;
       try {
         // Proactively clear the visible timer and nudge the scoreboard so
         // Playwright assertions that run immediately after the click observe
@@ -256,11 +270,12 @@ function renderStatButtons(store) {
             console.debug("battleClassic: cancel selection timer failed", err);
           }
         }
+
         try {
           showSnackbar(t("ui.opponentChoosing"));
         } catch {}
 
-        const result = await handleStatSelection(store, String(stat), {
+        result = await handleStatSelection(store, String(stat), {
           playerVal: 5,
           opponentVal: 3,
           delayMs: delayOverride
@@ -274,6 +289,7 @@ function renderStatButtons(store) {
             opponentScore: result?.opponentScore
           });
         } catch {}
+        selectionResolved = true;
         // Defensively ensure the scoreboard reflects the latest scores even
         // when adapters are not yet bound in E2E. This mirrors the adapter
         // behavior and keeps the UI deterministic for tests.
@@ -351,6 +367,69 @@ function renderStatButtons(store) {
         }
       } catch (err) {
         console.debug("battleClassic: stat selection handler failed", err);
+      }
+
+      if (!selectionResolved) return;
+
+      const finalizeRoundReady = () => {
+        try {
+          startCooldown(store);
+        } catch (err) {
+          console.debug("battleClassic: startCooldown after selection failed", err);
+        }
+        try {
+          enableNextRoundButton();
+        } catch (err) {
+          console.debug("battleClassic: enableNextRoundButton after selection failed", err);
+        }
+        try {
+          updateRoundCounterFromEngine();
+        } catch (err) {
+          console.debug("battleClassic: updateRoundCounterFromEngine after selection failed", err);
+        }
+      };
+
+      const computeFinalizationDelay = () => {
+        let delayForReady = Math.max(POST_SELECTION_READY_DELAY_MS, OPPONENT_MESSAGE_BUFFER_MS);
+        try {
+          const opponentDelay = getOpponentDelay?.();
+          if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
+            delayForReady = Math.max(delayForReady, opponentDelay + OPPONENT_MESSAGE_BUFFER_MS);
+          }
+        } catch {}
+        return delayForReady;
+      };
+
+      const scheduleFinalization = (delayMs) => {
+        try {
+          if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
+            window.setTimeout(() => finalizeRoundReady(), delayMs);
+            return true;
+          }
+        } catch (err) {
+          console.debug("battleClassic: window.setTimeout scheduling failed", err);
+        }
+        try {
+          if (typeof setTimeout === "function") {
+            setTimeout(() => finalizeRoundReady(), delayMs);
+            return true;
+          }
+        } catch (err) {
+          console.debug("battleClassic: setTimeout scheduling failed", err);
+        }
+        try {
+          if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(() => finalizeRoundReady());
+            return true;
+          }
+        } catch (err) {
+          console.debug("battleClassic: requestAnimationFrame scheduling failed", err);
+        }
+        return false;
+      };
+
+      if (!scheduleFinalization(computeFinalizationDelay())) {
+        finalizeRoundReady();
       }
     });
     container.appendChild(btn);
@@ -498,6 +577,12 @@ async function handleReplay(store) {
     // Reset store state
     store.selectionMade = false;
     store.playerChoice = null;
+
+    try {
+      updateRoundCounter(1);
+    } catch (err) {
+      console.debug("battleClassic: reset round counter after replay failed", err);
+    }
 
     // Clear any pending timers
     if (store.statTimeoutId) {

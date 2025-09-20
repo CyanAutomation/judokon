@@ -552,6 +552,33 @@ function handleReadyDispatchEarlyExit({ context, controls, emitTelemetry, getDeb
  * @param {object} params - Strategy construction context.
  * @returns {Array<() => Promise<boolean>|boolean>} Ordered strategy list.
  */
+/**
+ * Evaluate the machine dispatch results and determine whether additional
+ * propagation steps are required.
+ *
+ * @param {object} params - Propagation evaluation context.
+ * @param {{ dispatched: boolean, dedupeTracked: boolean }} params.state - The
+ * machine dispatch outcome flags.
+ * @param {() => boolean} params.shouldPropagateAfterMachine - Strategy that
+ * determines whether bus propagation is allowed.
+ * @param {() => void} params.markMachineHandled - Callback invoked when the
+ * machine can finalize the dispatch without bus propagation.
+ * @returns {{ propagate: boolean, requiresPropagation: boolean }} Propagation
+ * metadata describing follow-up actions.
+ */
+function evaluateMachineReadyPropagation({
+  state,
+  shouldPropagateAfterMachine,
+  markMachineHandled
+}) {
+  const propagate = state.dispatched && shouldPropagateAfterMachine();
+  const requiresPropagation = state.dispatched && propagate && !state.dedupeTracked;
+  if (state.dispatched && !propagate) {
+    markMachineHandled?.();
+  }
+  return { propagate, requiresPropagation };
+}
+
 function createReadyDispatchStrategies({
   options,
   bus,
@@ -589,8 +616,11 @@ function createReadyDispatchStrategies({
   };
   const shouldPropagateAfterMachine = () => isOrchestratedActive() && !hasCustomDispatcher;
   const machineDispatchState = {
+    /** @type {boolean} Whether the machine successfully dispatched the ready event */
     dispatched: false,
+    /** @type {boolean} Whether dedupe tracking was engaged during dispatch */
     dedupeTracked: false,
+    /** @type {boolean} Whether this dispatch requires propagation to bus handlers */
     requiresPropagation: false
   };
   const machineStrategy = async () => {
@@ -609,12 +639,12 @@ function createReadyDispatchStrategies({
         : { dispatched: rawResult === true, dedupeTracked: false };
     machineDispatchState.dispatched = normalizedResult.dispatched === true;
     machineDispatchState.dedupeTracked = normalizedResult.dedupeTracked === true;
-    const shouldPropagate = machineDispatchState.dispatched && shouldPropagateAfterMachine();
-    machineDispatchState.requiresPropagation =
-      machineDispatchState.dispatched && shouldPropagate && !machineDispatchState.dedupeTracked;
-    if (machineDispatchState.dispatched && !shouldPropagate) {
-      setReadyDispatchedForCurrentCooldown(true);
-    }
+    const { propagate: shouldPropagate, requiresPropagation } = evaluateMachineReadyPropagation({
+      state: machineDispatchState,
+      shouldPropagateAfterMachine,
+      markMachineHandled: () => setReadyDispatchedForCurrentCooldown(true)
+    });
+    machineDispatchState.requiresPropagation = requiresPropagation;
     const end =
       typeof performance !== "undefined" && typeof performance.now === "function"
         ? performance.now()
@@ -666,6 +696,7 @@ function createReadyDispatchStrategies({
     if (shouldShortCircuitReadyDispatch()) return true;
     return dispatchReadyViaBus({
       ...busStrategyOptions,
+      // Machine handled the ready event and no additional propagation is needed.
       alreadyDispatched:
         machineDispatchState.dispatched && !machineDispatchState.requiresPropagation
     });
