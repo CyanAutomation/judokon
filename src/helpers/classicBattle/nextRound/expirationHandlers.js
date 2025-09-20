@@ -320,18 +320,17 @@ export function createMachineStateInspector(params) {
  * @returns {Promise<boolean>}
  */
 export async function dispatchReadyViaBus(options = {}) {
+  if (options.alreadyDispatched === true) {
+    return true;
+  }
   const dispatchers = [];
-  const candidate = options.dispatchBattleEvent;
   const skipCandidate = options.skipCandidate === true;
-  const alreadyDispatched = options.alreadyDispatched === true;
+  const candidate = options.dispatchBattleEvent;
   if (!skipCandidate && typeof candidate === "function") {
     dispatchers.push(candidate);
   }
   if (typeof globalDispatchBattleEvent === "function" && globalDispatchBattleEvent !== candidate) {
     dispatchers.push(globalDispatchBattleEvent);
-  }
-  if (alreadyDispatched) {
-    return true;
   }
   for (const dispatcher of dispatchers) {
     try {
