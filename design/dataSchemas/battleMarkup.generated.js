@@ -38,7 +38,8 @@ export default {
       selector: ".player-card[data-player]",
       dataTestId: "battle:player-card",
       role: "group",
-      description: "Root element for a player's card. Has attribute data-player with values 0 or 1.",
+      description:
+        "Root element for a player's card. Has attribute data-player with values 0 or 1.",
       owner: "frontend-team",
       stability: "stable",
       aliases: []
@@ -48,7 +49,8 @@ export default {
       selector: ".stat-button[data-stat][data-player]",
       dataTestId: "battle:stat-button",
       role: "button",
-      description: "Interactive stat button. Attributes: data-stat (strength|speed|tech) and data-player.",
+      description:
+        "Interactive stat button. Attributes: data-stat (strength|speed|tech) and data-player.",
       owner: "frontend-team",
       stability: "stable",
       aliases: ["button.stat-action"]

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import selectors from "../../helpers/selectors";
 
 test.describe("Classic Battle Opponent Reveal", () => {
   test.describe("Basic Opponent Reveal Functionality", () => {
@@ -23,13 +24,13 @@ test.describe("Classic Battle Opponent Reveal", () => {
         setOpponentDelay(50);
       });
 
-      // Click the first stat
-      const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-      await firstStat.click();
+  // Click the first stat (player 0)
+  const firstStat = page.locator(selectors.statButton(0)).first();
+  await firstStat.click();
 
-      // Expect the snackbar to show opponent choosing soon
-      const snack = page.locator("#snackbar-container");
-      await expect(snack).toContainText(/Opponent is choosing/i, { timeout: 1000 });
+  // Expect the snackbar to show opponent choosing soon
+  const snack = page.locator(selectors.snackbarContainer());
+  await expect(snack).toContainText(/Opponent is choosing/i, { timeout: 1000 });
 
       // After resolution delay, outcome should apply and cooldown begin
       await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
@@ -55,15 +56,15 @@ test.describe("Classic Battle Opponent Reveal", () => {
         setOpponentDelay(0);
       });
 
-      const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-      await firstStat.click();
+  const firstStat = page.locator(selectors.statButton(0)).first();
+  await firstStat.click();
 
-      // Should still show opponent choosing briefly
-      const snackbar = page.locator("#snackbar-container");
-      await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 500 });
+  // Should still show opponent choosing briefly
+  const snackbar = page.locator(selectors.snackbarContainer());
+  await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 500 });
 
-      // Score should update quickly
-      await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
+  // Score should update quickly
+  await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
     });
 
     test("opponent reveal integrates with battle flow", async ({ page }) => {
@@ -84,17 +85,18 @@ test.describe("Classic Battle Opponent Reveal", () => {
       });
 
       // First round
-      const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-      await firstStat.click();
+  const firstStat = page.locator(selectors.statButton(0)).first();
+  await firstStat.click();
 
       // Verify battle flow continues (snackbar shows various states)
-      const snackbar = page.locator("#snackbar-container");
-      await expect(snackbar).toBeVisible();
+
+  const snackbar = page.locator(selectors.snackbarContainer());
+  await expect(snackbar).toBeVisible();
 
       // Wait for resolution and next round button
-      const nextButton = page.locator("#next-button");
-      await expect(nextButton).toBeEnabled();
-      await expect(nextButton).toHaveAttribute("data-next-ready", "true");
+  const nextButton = page.locator("#next-button");
+  await expect(nextButton).toBeEnabled();
+  await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
       // Click next round
       await nextButton.click();
@@ -103,8 +105,8 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await expect(page.locator("#round-counter")).toContainText(/Round 2/);
 
       // Second round should work the same way
-      const secondStat = page.locator("#stat-buttons button[data-stat]").nth(1);
-      await secondStat.click();
+  const secondStat = page.locator(selectors.statButton(0)).nth(1);
+  await secondStat.click();
 
       // Should resolve second round
       await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
@@ -132,8 +134,8 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await firstStat.click();
 
       // Should still show message briefly
-      const snackbar = page.locator("#snackbar-container");
-      await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 200 });
+  const snackbar = page.locator(selectors.snackbarContainer());
+  await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 200 });
 
       // Should resolve quickly
       await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
@@ -155,12 +157,12 @@ test.describe("Classic Battle Opponent Reveal", () => {
         setOpponentDelay(500);
       });
 
-      const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-      await firstStat.click();
+  const firstStat = page.locator(selectors.statButton(0)).first();
+  await firstStat.click();
 
       // Should show message for longer period
-      const snackbar = page.locator("#snackbar-container");
-      await expect(snackbar).toContainText(/Opponent is choosing/i);
+  const snackbar = page.locator(selectors.snackbarContainer());
+  await expect(snackbar).toContainText(/Opponent is choosing/i);
 
       // Should eventually resolve
       await expect(page.locator("#score-display")).toContainText(/You:\s*\d/, { timeout: 2000 });
@@ -331,17 +333,17 @@ test.describe("Classic Battle Opponent Reveal", () => {
       });
 
       // Test different stat selections
-      const stats = page.locator("#stat-buttons button[data-stat]");
+  const stats = page.locator(selectors.statButton(0));
       const statCount = await stats.count();
 
       for (let i = 0; i < Math.min(statCount, 3); i++) {
-        const stat = stats.nth(i);
+  const stat = stats.nth(i);
         await stat.click();
 
-        const snackbar = page.locator("#snackbar-container");
-        await expect(snackbar).toContainText(/Opponent is choosing/i);
+  const snackbar = page.locator(selectors.snackbarContainer());
+  await expect(snackbar).toContainText(/Opponent is choosing/i);
 
-        await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
+  await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
         // Reset for next iteration if not last
         if (i < Math.min(statCount, 3) - 1) {
