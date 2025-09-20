@@ -41,14 +41,24 @@ import { runWhenIdle } from "./idleCallback.js";
 import { getStateSnapshot } from "./battleDebug.js";
 
 /**
- * Determine whether round cooldowns should be skipped.
+ * Determine whether round cooldowns should be skipped and optionally invoke a fast path.
  *
- * @returns {boolean}
+ * @param {{ onSkip?: () => void }} [options]
+ * @returns {boolean} True when the skip flag is active.
  * @pseudocode
- * 1. Return the `skipRoundCooldown` feature flag state.
+ * 1. Resolve the `skipRoundCooldown` feature flag state.
+ * 2. If disabled, return `false` immediately.
+ * 3. When enabled and an `onSkip` callback is provided, execute it defensively.
+ * 4. Return `true` to indicate the skip flag is active.
  */
-export function skipRoundCooldownIfEnabled() {
-  return isEnabled("skipRoundCooldown");
+export function skipRoundCooldownIfEnabled(options = {}) {
+  const enabled = isEnabled("skipRoundCooldown");
+  if (!enabled) return false;
+  const { onSkip } = options || {};
+  if (typeof onSkip === "function") {
+    guard(() => onSkip());
+  }
+  return true;
 }
 
 export const INITIAL_SCOREBOARD_TEXT = "You: 0\nOpponent: 0";

@@ -1602,7 +1602,16 @@ function handleStatSelectionStalled() {
 }
 
 function handleCountdownStart(e) {
-  if (skipRoundCooldownIfEnabled()) return;
+  if (
+    skipRoundCooldownIfEnabled({
+      onSkip: () => {
+        emitBattleEvent("countdownFinished");
+        emitBattleEvent("round.start");
+      }
+    })
+  ) {
+    return;
+  }
   const ds = typeof document !== "undefined" ? document.body?.dataset : undefined;
   if (ds) ds.battleState = "cooldown";
   // Ensure score line reflects the resolved round before any user interaction

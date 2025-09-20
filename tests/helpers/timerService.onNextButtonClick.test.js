@@ -99,22 +99,35 @@ describe("onNextButtonClick", () => {
     expect(resolveReady2).toHaveBeenCalledTimes(1);
   });
 
-  it("returns early when feature flag skips cooldown", async () => {
+  it("still dispatches ready when skip flag is active", async () => {
+    let resolveReady;
+    let uiHelpers;
     await runWithFakeTimers(async () => {
-      const uiHelpers = await import("../../src/helpers/classicBattle/uiHelpers.js");
-      uiHelpers.skipRoundCooldownIfEnabled.mockReturnValue(true);
+      uiHelpers = await import("../../src/helpers/classicBattle/uiHelpers.js");
+      uiHelpers.skipRoundCooldownIfEnabled.mockImplementation((options) => {
+        if (options?.onSkip) options.onSkip();
+        return true;
+      });
       const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
       btn.dataset.nextReady = "true";
+      __setStateSnapshot({ state: "cooldown" });
+      resolveReady = vi.fn();
       await onNextButtonClick(
         new MouseEvent("click"),
-        { timer: null, resolveReady: null },
+        { timer: null, resolveReady },
         { root: document }
       );
     });
     const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const events = await import("../../src/helpers/classicBattle/battleEvents.js");
-    expect(events.emitBattleEvent).not.toHaveBeenCalled();
-    expect(dispatcher.dispatchBattleEvent).not.toHaveBeenCalled();
-    expect(btn.disabled).toBe(false);
+    expect(uiHelpers.skipRoundCooldownIfEnabled).toHaveBeenCalledWith(
+      expect.objectContaining({ onSkip: expect.any(Function) })
+    );
+    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
+    expect(events.emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start");
+    expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledWith("ready");
+    expect(resolveReady).toHaveBeenCalledTimes(1);
+    expect(btn.disabled).toBe(true);
+    expect(btn.dataset.nextReady).toBeUndefined();
   });
 });
