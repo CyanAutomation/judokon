@@ -156,7 +156,9 @@ async function dispatchReadyOnce(resolveReady) {
     setReadyDispatchedForCurrentCooldown(false);
     throw error;
   }
-  if (typeof resolveReady === "function") resolveReady();
+  if (dispatchSucceeded && typeof resolveReady === "function") {
+    resolveReady();
+  }
   return dispatchSucceeded;
 }
 
