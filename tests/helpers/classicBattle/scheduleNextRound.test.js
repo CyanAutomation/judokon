@@ -453,6 +453,8 @@ describe("classicBattle startCooldown", () => {
       expect(countdownIndex).toBeGreaterThan(-1);
       expect(roundStartIndex).toBeGreaterThan(-1);
       expect(countdownIndex).toBeLessThan(roundStartIndex);
+      expect(events).toContain("countdownFinished");
+      expect(events).toContain("round.start");
     } else {
       expect(attachCooldownRenderer).toHaveBeenCalled();
       expect(emitSpy).toHaveBeenCalledTimes(1);
