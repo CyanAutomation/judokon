@@ -8,8 +8,7 @@
  * else return Boolean(process.env.SHOW_TEST_LOGS)
  */
 export function shouldShowTestLogs() {
-  return typeof process !== "undefined" && process.env?.SHOW_TEST_LOGS;
-}
+  return typeof process !== "undefined" && Boolean(process.env?.SHOW_TEST_LOGS);
 }
 
 /**
