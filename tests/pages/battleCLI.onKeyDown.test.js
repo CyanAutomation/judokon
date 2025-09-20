@@ -35,15 +35,7 @@ describe("battleCLI onKeyDown", () => {
       battleCLI: __test,
       getEscapeHandledPromise
     } = await import("../../src/pages/index.js"));
-    document.body.innerHTML = `
-      <div id="cli-root">
-        <div id="cli-main"></div>
-      </div>
-      <div id="cli-shortcuts" hidden><button id="cli-shortcuts-close"></button></div>
-      <div id="cli-countdown" aria-live="polite"></div>
-      <div id="snackbar-container"></div>
-      <div id="modal-container"></div>
-    `;
+    __test.ensureCliDomForTest({ reset: true });
     document.body.className = "";
     document.body.dataset.battleState = "";
   });
@@ -112,13 +104,13 @@ describe("battleCLI onKeyDown", () => {
   });
 
   it("routes arrow keys to stat list navigation", async () => {
-    const list = document.createElement("ul");
-    list.id = "cli-stats";
-    const li = document.createElement("li");
-    list.appendChild(li);
-    document.getElementById("cli-main").appendChild(list);
-    li.tabIndex = -1;
-    li.focus();
+    const list = document.getElementById("cli-stats");
+    list.innerHTML = "";
+    const item = document.createElement("div");
+    item.className = "cli-stat";
+    item.tabIndex = -1;
+    list.appendChild(item);
+    item.focus();
     const battleHandlers = await import("../../src/pages/battleCLI/battleHandlers.js");
     const spy = vi.spyOn(battleHandlers, "handleStatListArrowKey");
     onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));

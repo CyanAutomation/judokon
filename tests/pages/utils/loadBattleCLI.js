@@ -34,30 +34,6 @@ export async function loadBattleCLI(options = {}) {
     mockBattleEngine = true
   } = options;
 
-  const baseHtml = `
-    <div id="cli-root"></div>
-    <main id="cli-main"></main>
-    <div id="cli-round"></div>
-    <div id="cli-stats" tabindex="0"></div>
-    <div id="cli-help"></div>
-    <select id="points-select">
-      <option value="5">5</option>
-      <option value="10">10</option>
-      <option value="15">15</option>
-    </select>
-    <section id="cli-verbose-section" hidden>
-      <pre id="cli-verbose-log"></pre>
-    </section>
-    <input id="verbose-toggle" type="checkbox" />
-    <div id="cli-shortcuts" hidden><button id="cli-shortcuts-close"></button><div id="cli-shortcuts-body"></div></div>
-    <span id="battle-state-badge"></span>
-    <div id="round-message"></div>
-    <div id="cli-countdown"></div>
-    <div id="cli-score" data-score-player="0" data-score-opponent="0"></div>
-    <div id="snackbar-container"></div>
-    <div id="cli-controls-hint" aria-hidden="true"></div>
-  `;
-  document.body.innerHTML = baseHtml + html;
   window.__TEST__ = true;
   if (url) {
     vi.stubGlobal("location", new URL(url));
@@ -178,7 +154,12 @@ export async function loadBattleCLI(options = {}) {
   }
 
   const mod = await import("../../../src/pages/index.js");
-  return mod.battleCLI;
+  const cli = mod.battleCLI;
+  cli.ensureCliDomForTest({ reset: true });
+  if (html) {
+    document.body.insertAdjacentHTML("beforeend", html);
+  }
+  return cli;
 }
 
 /**

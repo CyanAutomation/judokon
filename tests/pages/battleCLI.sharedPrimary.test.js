@@ -3,7 +3,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
   let mockSharedScoreboard;
 
-  beforeEach(() => {
+  async function ensureCliDom() {
+    const { battleCLI } = await import("../../src/pages/index.js");
+    battleCLI.ensureCliDomForTest({ reset: true });
+  }
+
+  beforeEach(async () => {
+    window.__TEST__ = true;
     // Mock the shared Scoreboard component functions
     mockSharedScoreboard = {
       showMessage: vi.fn((text) => {
@@ -14,30 +20,6 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
       updateScore: vi.fn(),
       updateRoundCounter: vi.fn()
     };
-
-    // Setup DOM structure
-    document.body.innerHTML = `
-      <header class="cli-header">
-        <div class="cli-status">
-          <div id="cli-round">Round 0 of 0</div>
-          <div id="cli-score" data-score-player="0" data-score-opponent="0">You: 0 Opponent: 0</div>
-        </div>
-        <div class="standard-scoreboard-nodes" style="display: block;">
-          <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
-          <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
-          <p id="score-display" aria-live="off" aria-atomic="true">You: 0 Opponent: 0</p>
-        </div>
-      </header>
-      <main>
-        <section>
-          <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
-          <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
-        </section>
-      </main>
-    `;
-
-    // Mock the shared helpers to be available
-    global.sharedScoreboardHelpers = mockSharedScoreboard;
   });
 
   afterEach(() => {
@@ -45,6 +27,7 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
     vi.clearAllMocks();
     vi.resetModules();
     delete global.sharedScoreboardHelpers;
+    delete window.__TEST__;
   });
 
   it("should primarily use shared Scoreboard for round message updates", async () => {
@@ -52,6 +35,10 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
     vi.doMock("../../src/components/Scoreboard.js", () => mockSharedScoreboard);
 
     const { setRoundMessage } = await import("../../src/pages/battleCLI/dom.js");
+    await ensureCliDom();
+
+    // Mock the shared helpers to be available
+    global.sharedScoreboardHelpers = mockSharedScoreboard;
 
     const testMessage = "Player wins this round!";
 
@@ -76,6 +63,8 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
     }));
 
     const { updateScoreLine } = await import("../../src/pages/battleCLI/dom.js");
+    await ensureCliDom();
+    global.sharedScoreboardHelpers = mockSharedScoreboard;
 
     updateScoreLine();
 
@@ -88,6 +77,8 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
 
   it("should primarily use shared Scoreboard for round counter updates", async () => {
     const { updateRoundHeader } = await import("../../src/pages/battleCLI/dom.js");
+    await ensureCliDom();
+    global.sharedScoreboardHelpers = mockSharedScoreboard;
 
     updateRoundHeader(4, 7);
 
@@ -125,6 +116,8 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
     const { setRoundMessage, updateScoreLine, updateRoundHeader } = await import(
       "../../src/pages/battleCLI/dom.js"
     );
+    await ensureCliDom();
+    global.sharedScoreboardHelpers = failingMock;
 
     // Test fallback behavior
     setRoundMessage("Fallback message");
@@ -137,7 +130,9 @@ describe("battleCLI shared Scoreboard primary (Phase 3)", () => {
     expect(document.getElementById("cli-round").textContent).toBe("Round 2 Target: 3");
   });
 
-  it("should prefer standard scoreboard elements in tests", () => {
+  it("should prefer standard scoreboard elements in tests", async () => {
+    await ensureCliDom();
+    global.sharedScoreboardHelpers = mockSharedScoreboard;
     // Phase 3: Tests should now check standard elements as primary
     expect(document.getElementById("score-display")).toBeTruthy();
     expect(document.getElementById("round-counter")).toBeTruthy();

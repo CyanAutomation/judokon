@@ -60,8 +60,7 @@ describe("battleCLI scoreboard", () => {
 
   it("updates after player win", async () => {
     const handlers = await loadHandlers({ playerScore: 1, opponentScore: 0 });
-    document.body.innerHTML =
-      '<div id="round-message"></div><div id="cli-score" data-score-player="0" data-score-opponent="0">You: 0 Opponent: 0</div>';
+    handlers.ensureCliDomForTest({ reset: true });
     handlers.handleRoundResolved({ detail: { result: { message: "Win" } } });
     const el = document.getElementById("cli-score");
     expect(el.dataset.scorePlayer).toBe("1");
@@ -70,8 +69,11 @@ describe("battleCLI scoreboard", () => {
 
   it("updates after player loss", async () => {
     const handlers = await loadHandlers({ playerScore: 0, opponentScore: 1 });
-    document.body.innerHTML =
-      '<div id="round-message"></div><div id="cli-score" data-score-player="2" data-score-opponent="2">You: 2 Opponent: 2</div>';
+    handlers.ensureCliDomForTest({ reset: true });
+    const scoreEl = document.getElementById("cli-score");
+    scoreEl.dataset.scorePlayer = "2";
+    scoreEl.dataset.scoreOpponent = "2";
+    scoreEl.textContent = "You: 2 Opponent: 2";
     handlers.handleRoundResolved({ detail: { result: { message: "Loss" } } });
     const el = document.getElementById("cli-score");
     expect(el.dataset.scorePlayer).toBe("0");
@@ -80,8 +82,11 @@ describe("battleCLI scoreboard", () => {
 
   it("updates after draw", async () => {
     const handlers = await loadHandlers({ playerScore: 0, opponentScore: 0 });
-    document.body.innerHTML =
-      '<div id="round-message"></div><div id="cli-score" data-score-player="5" data-score-opponent="6">You: 5 Opponent: 6</div>';
+    handlers.ensureCliDomForTest({ reset: true });
+    const scoreEl = document.getElementById("cli-score");
+    scoreEl.dataset.scorePlayer = "5";
+    scoreEl.dataset.scoreOpponent = "6";
+    scoreEl.textContent = "You: 5 Opponent: 6";
     handlers.handleRoundResolved({ detail: { result: { message: "Draw" } } });
     const el = document.getElementById("cli-score");
     expect(el.dataset.scorePlayer).toBe("0");

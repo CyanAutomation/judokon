@@ -13,19 +13,23 @@ const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe("Battle CLI Helpers", () => {
   beforeEach(async () => {
-    document.body.innerHTML = `
-      <input id="verbose-toggle" type="checkbox" />
-      <section id="cli-verbose-section" hidden></section>
-      <section id="cli-shortcuts" hidden><button id="cli-shortcuts-close"></button></section>
-      <div id="cli-countdown"></div>
-      <div id="round-message"></div>
-      <div id="cli-root"></div>
-    `;
-
+    window.__TEST__ = true;
+    let verboseFlag = false;
     featureFlagsMock = {
       initFeatureFlags: vi.fn().mockResolvedValue(undefined),
-      isEnabled: vi.fn((flag) => flag === "cliShortcuts"),
-      setFlag: vi.fn().mockResolvedValue(undefined),
+      isEnabled: vi.fn((flag) => {
+        if (flag === "cliVerbose") return verboseFlag;
+        return flag === "cliShortcuts";
+      }),
+      setFlag: vi.fn(async (flag, value) => {
+        if (flag === "cliVerbose") {
+          verboseFlag = !!value;
+          featureFlagsMock.featureFlagsEmitter.dispatchEvent(
+            new CustomEvent("change", { detail: { flag } })
+          );
+        }
+        return undefined;
+      }),
       featureFlagsEmitter: new EventTarget()
     };
 
@@ -50,6 +54,9 @@ describe("Battle CLI Helpers", () => {
     }));
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => engineFacadeMock);
 
+    const { battleCLI } = await import("../../src/pages/index.js");
+    battleCLI.ensureCliDomForTest({ reset: true });
+
     ({ setupFlags, wireEvents, subscribeEngine } = await import(
       "../../src/pages/battleCLI/init.js"
     ));
@@ -58,6 +65,7 @@ describe("Battle CLI Helpers", () => {
   afterEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    delete window.__TEST__;
   });
 
   describe("setupFlags", () => {

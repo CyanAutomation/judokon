@@ -33,7 +33,13 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     return module;
   }
 
-  beforeEach(() => {
+  async function ensureCliDom() {
+    const { battleCLI } = await import("../../src/pages/index.js");
+    battleCLI.ensureCliDomForTest({ reset: true });
+  }
+
+  beforeEach(async () => {
+    window.__TEST__ = true;
     vi.useFakeTimers();
     // Mock the shared Scoreboard component functions
     mockSharedScoreboard = {
@@ -41,27 +47,6 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
       updateScore: vi.fn(),
       updateRoundCounter: vi.fn()
     };
-
-    // Setup DOM structure
-    document.body.innerHTML = `
-      <header class="cli-header">
-        <div class="cli-status">
-          <div id="cli-round">Round 0 of 0</div>
-          <div id="cli-score" data-score-player="0" data-score-opponent="0">You: 0 Opponent: 0</div>
-        </div>
-        <div class="standard-scoreboard-nodes" style="display: block;">
-          <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
-          <p id="round-counter" aria-live="polite" aria-atomic="true">Round 0</p>
-          <p id="score-display" aria-live="off" aria-atomic="true">You: 0 Opponent: 0</p>
-        </div>
-      </header>
-      <main>
-        <section>
-          <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
-          <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
-        </section>
-      </main>
-    `;
   });
 
   afterEach(async () => {
@@ -70,6 +55,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     vi.clearAllMocks();
     vi.doUnmock(SCOREBOARD_MODULE_PATH);
     vi.resetModules();
+    delete window.__TEST__;
     const scoreboardModule = await import(SCOREBOARD_MODULE_PATH);
     expect(vi.isMockFunction(scoreboardModule.showMessage)).toBe(false);
     expect(vi.isMockFunction(scoreboardModule.updateScore)).toBe(false);
@@ -79,6 +65,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
   it("should update both CLI and standard elements when setting round message", async () => {
     const { setRoundMessage } = await importDomWithScoreboard();
+    await ensureCliDom();
 
     const testMessage = "Player wins this round!";
     setRoundMessage(testMessage);
@@ -97,6 +84,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     }));
 
     const { updateScoreLine } = await importDomWithScoreboard();
+    await ensureCliDom();
 
     updateScoreLine();
 
@@ -111,6 +99,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
   it("should update both CLI and standard elements when updating round header", async () => {
     const { updateRoundHeader } = await importDomWithScoreboard();
+    await ensureCliDom();
 
     updateRoundHeader(3, 5);
 
@@ -128,7 +117,8 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     }
   });
 
-  it("should have standard scoreboard nodes visible after Phase 2", () => {
+  it("should have standard scoreboard nodes visible after Phase 2", async () => {
+    await ensureCliDom();
     const standardNodes = document.querySelector(".standard-scoreboard-nodes");
     expect(standardNodes).toBeTruthy();
     expect(standardNodes.style.display).toBe("block");
@@ -142,6 +132,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
   it("should gracefully handle missing shared scoreboard helpers", async () => {
     const { setRoundMessage } = await importDomWithScoreboard({});
+    await ensureCliDom();
 
     // Should not throw error even if shared component methods are missing
     expect(() => setRoundMessage("Test message")).not.toThrow();
