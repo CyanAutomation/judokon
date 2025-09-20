@@ -460,7 +460,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
       }
     });
 
-    return createCleanupHandler(cleanupStack);
+    return true;
   };
 
   const installOnclickTracker = (btn, { getAssignedClick, setAssignedClick }) => {
@@ -474,7 +474,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
       return createCleanupHandler(cleanupStack);
     }
 
-    return handleDirectAssignment(btn, { getAssignedClick, setAssignedClick }, cleanupStack);
+    handleDirectAssignment(btn, { getAssignedClick, setAssignedClick }, cleanupStack);
+    return createCleanupHandler(cleanupStack);
   };
 
   const cleanupDetachFns = (fns) => {
@@ -520,10 +521,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
       }
       await handler(store, stat, {});
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+      disableRef.current?.();
       emitBattleEvent("roundResolved", { stat });
-      setTimeout(() => {
-        disableRef.current?.();
-      }, 0);
     };
   };
 
@@ -589,6 +588,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
       proxyState
     });
 
+    // Production initStatButtons attaches click handlers in the bubbling phase; mirror
+    // that behavior here so the mock environment matches runtime ordering.
     btn.addEventListener("click", listener);
 
     state.detachFns.push(() => {
@@ -689,17 +690,7 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
    *
    * @returns {{ enable: () => void, disable: () => void }} Mock stat button controls.
    */
-  const initStatButtons = vi.fn((store) => {
-    void store;
-    const buttons = findStatButtons();
-    const containers = selectPrimaryContainer(findStatContainers(buttons));
-    const nativeClick =
-      typeof HTMLElement !== "undefined" ? HTMLElement.prototype.click : undefined;
-
-    if (containers.length === 0 || buttons.length === 0) {
-      return createEmptyStatControls();
-    }
-
+  const createStatButtonControls = ({ buttons, containers, store, nativeClick }) => {
     const readyState = createReadyState(containers);
 
     const disableRef = { current: null };
@@ -729,6 +720,24 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     const controls = { enable, disable, buttons: [...buttons] };
     window.__statControls = controls;
     return controls;
+  };
+
+  const initStatButtons = vi.fn((store) => {
+    const buttons = findStatButtons();
+    const containers = selectPrimaryContainer(findStatContainers(buttons));
+    const nativeClick =
+      typeof HTMLElement !== "undefined" ? HTMLElement.prototype.click : undefined;
+
+    if (containers.length === 0 || buttons.length === 0) {
+      return createEmptyStatControls();
+    }
+
+    return createStatButtonControls({
+      buttons,
+      containers,
+      store,
+      nativeClick
+    });
   });
 
   return {
