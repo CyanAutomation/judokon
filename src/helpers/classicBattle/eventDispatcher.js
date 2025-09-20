@@ -236,26 +236,20 @@ export async function dispatchBattleEvent(eventName, payload) {
       exposeDebugState("dispatch_globalGetterType", typeof globalGetter);
     } catch {}
   } catch {}
+  const machineSourceType = typeof machineSource;
+  let machine = null;
+  if (machineSourceType === "function") {
+    machine = machineSource();
+  } else if (machineSource) {
+    machine = machineSource;
+  }
   try {
-    exposeDebugState("dispatch_machineSourceType", typeof machineSource);
+    exposeDebugState("dispatch_machineSourceType", machineSourceType);
   } catch {}
   try {
-    if (typeof machineSource === "function") {
-      let invoked = null;
-      try {
-        invoked = machineSource();
-      } catch {}
-      try {
-        exposeDebugState("dispatch_machineSourceInvokedType", typeof invoked);
-      } catch {}
-    } else {
-      try {
-        exposeDebugState("dispatch_machineSourceInvokedType", typeof machineSource);
-      } catch {}
-    }
+    const invokedType = machineSourceType === "function" ? typeof machine : machineSourceType;
+    exposeDebugState("dispatch_machineSourceInvokedType", invokedType);
   } catch {}
-
-  const machine = typeof machineSource === "function" ? machineSource() : machineSource || null;
   try {
     exposeDebugState("dispatchMachineAvailable", !!machine);
   } catch {}

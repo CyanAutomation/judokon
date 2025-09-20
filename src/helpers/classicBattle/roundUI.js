@@ -405,6 +405,12 @@ export function bindRoundUIEventHandlers() {
  * encountered again the function exits early, mirroring the previous module-
  * level behavior without performing work eagerly on import.
  *
+ * @pseudocode
+ * 1. Optimistically schedule lazy UI service preload to match default path.
+ * 2. Read the global WeakSet keyed by the battle event target.
+ * 3. If the current target already exists in the set, skip binding.
+ * 4. Otherwise add the target and invoke the shared binding routine.
+ *
  * @returns {void}
  */
 export function bindRoundUIEventHandlersOnce() {

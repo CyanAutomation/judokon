@@ -216,6 +216,12 @@ function bindUIServiceEventHandlers() {
  * Mirrors the previous module-level binding behavior but defers execution
  * until explicitly invoked so tests can control when listeners register.
  *
+ * @pseudocode
+ * 1. Assume binding should occur; fetch the shared battle event target.
+ * 2. Look up (or create) the WeakSet tracking bound targets.
+ * 3. If the target is already tracked, skip binding.
+ * 4. Otherwise add the target and delegate to `bindUIServiceEventHandlers`.
+ *
  * @returns {void}
  */
 export function bindUIServiceEventHandlersOnce() {
