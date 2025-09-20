@@ -214,9 +214,7 @@ export function createCooldownControls({ emit } = {}) {
       });
       controls.readyDispatched = true;
       controls.readyInFlight = false;
-      safeRound("createCooldownControls.notifyReady", () => notify("nextRoundTimerReady"), {
-        suppressInProduction: true
-      });
+
       resolve();
       controls.resolveReady = null;
       appendReadyTrace("resolveReadySettled", { readyDispatched: true });

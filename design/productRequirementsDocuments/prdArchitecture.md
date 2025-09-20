@@ -23,7 +23,6 @@ Architecture decisions are cross-cutting and affect multiple teams and features.
 - RAG/Vector Search (`src/helpers/vectorSearch` / `minilm` models): search and query expansion responsibilities.
 - Test Orchestration / Fixtures (`playwright/`, `tests/`): helpers and promises used to detect engine/UI readiness.
 
-
 ## Public Contracts Inventory (starter)
 
 This PRD must be populated and maintained with a canonical inventory. The table below is a starter subset; owners must keep it current.
@@ -55,7 +54,6 @@ Starter hot-path list (owners must keep this list current):
 
 Change to any hot-path module that introduces dynamic imports requires Architecture PRD sign-off and regression tests demonstrating no measurable impact on selection latency.
 
-
 ## Versioning and Change Process
 
 Public contract changes MUST follow this minimal process:
@@ -76,7 +74,6 @@ Versioning recommendation: use `major.minor` for contracts (e.g., event v1 → v
 | Selection latency | UI selection handlers respond within 16ms JS main-thread budget (no blocking) |
 | Vector search | Local dev response <250ms; production targets differ by infra |
 | Accessibility | Keyboard navigation for primary flows, ARIA labels for key controls |
-
 
 ## User Stories
 
@@ -123,7 +120,6 @@ Acceptance Criteria:
 ## Appendix / Next actions
 
 - Action: Owners of Battle Engine, Classic Battle UI, and Vector Search should populate the canonical inventory section in this PRD with full contract entries and reference schemas/diagrams.
-
 
 ## Appendix / Sources
 

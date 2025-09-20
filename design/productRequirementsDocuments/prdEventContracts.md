@@ -45,6 +45,101 @@ Acceptance Criteria:
 
 - Example unit/integration tests exist or are referenced.
 
+## Event Inventory (starter)
+
+| Event name | Emitter | Primary consumers | Payload schema (path) | Owner |
+|------------|---------|-------------------|-----------------------|-------|
+| `battle:round-start` | Battle Engine | UI, CLI, tests | `design/dataSchemas/events/battle.round-start.schema.json` | Battle Engine |
+| `battle:stat-selected` | UI / CLI | Battle Engine, tests | `design/dataSchemas/events/battle.stat-selected.schema.json` | Classic Battle UI |
+| `battle:round-resolved` | Battle Engine | UI, scoreboard, tests | `design/dataSchemas/events/battle.round-resolved.schema.json` | Battle Engine |
+
+Owners must keep this table current. Add new events with a short rationale and acceptance tests.
+
+## Sample Event Payload Schemas
+
+`design/dataSchemas/events/battle.round-start.schema.json` (example)
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "battle:round-start",
+  "type": "object",
+  "required": ["roundNumber", "playerIds"],
+  "properties": {
+    "roundNumber": { "type": "integer", "minimum": 1 },
+    "playerIds": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 },
+    "seed": { "type": "integer" }
+  },
+  "additionalProperties": false
+}
+```
+
+`design/dataSchemas/events/battle.stat-selected.schema.json` (example)
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "battle:stat-selected",
+  "type": "object",
+  "required": ["playerId", "statKey", "timestamp"],
+  "properties": {
+    "playerId": { "type": "string" },
+    "statKey": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "context": { "type": "object" }
+  },
+  "additionalProperties": false
+}
+```
+
+`design/dataSchemas/events/battle.round-resolved.schema.json` (example)
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "battle:round-resolved",
+  "type": "object",
+  "required": ["tie", "details"],
+  "properties": {
+    "winnerId": { "type": ["string", "null"] },
+    "tie": { "type": "boolean" },
+    "details": { "type": "object" }
+  },
+  "additionalProperties": false
+}
+```
+
+## Versioning and Deprecation Rules for Events
+
+- Non-breaking (minor) changes: adding optional fields, loosening formats. No immediate consumer action required but must be announced.
+- Breaking (major) changes: removing/renaming required fields or changing semantics — require PRD update, migration plan, and a compatibility period where both old and new payloads are produced (if feasible).
+
+Process:
+
+1. Update `prdEventContracts.md` with rationale and migration approach.
+2. Add schema change and consumer contract tests in the same PR.
+3. For breaking changes, emit both old and new event shapes for at least one release cycle and include telemetry to monitor consumer errors.
+
+## Consumer Test Guidance
+
+Provide lightweight consumer tests that validate event payloads in CI. Example (Node/Jest pseudo-code):
+
+```js
+import Ajv from 'ajv';
+import roundStartSchema from '../../design/dataSchemas/events/battle.round-start.schema.json';
+
+test('round-start event matches schema', () => {
+	const ajv = new Ajv();
+	const validate = ajv.compile(roundStartSchema);
+	const sample = { roundNumber: 1, playerIds: ['p1','p2'] };
+	expect(validate(sample)).toBe(true);
+});
+```
+
+Acceptance Criteria (tests):
+
+- Each P1 event has at least one consumer test that validates schema adherence in CI.
+
 ## Common Event Examples (starter list)
 
 - `battle:round-start` – emitted by Battle Engine when a new round starts. Payload: `{ roundNumber: number, playerIds: [string, string] }`.
