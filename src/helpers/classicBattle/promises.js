@@ -117,17 +117,6 @@ export function resetBattlePromises() {
   roundResolvedPromise = setupPromise("roundResolvedPromise", "roundResolved")();
 }
 
-// Initialize on module load once per worker to avoid accumulating listeners
-try {
-  const FLAG = "__classicBattlePromisesBound";
-  if (!globalThis[FLAG]) {
-    resetBattlePromises();
-    globalThis[FLAG] = true;
-  }
-} catch {
-  resetBattlePromises();
-}
-
 // Return the latest promise instance for each awaitable, using the window-scoped
 // reference maintained by setupPromise(). This avoids races where a module-level
 // Promise was already resolved before the test started awaiting it.
