@@ -1,7 +1,7 @@
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
 import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
-import { handleStatSelection } from "../helpers/classicBattle/selectionHandler.js";
+// Removed duplicate import of handleStatSelection
 import {
   setStatButtonsEnabled,
   resolveStatButtonsReady
@@ -91,7 +91,6 @@ function triggerCooldownOnce(store, reason) {
     return false;
   }
 }
-
 
 /**
  * Stop the active selection timer and clear the timer display.
