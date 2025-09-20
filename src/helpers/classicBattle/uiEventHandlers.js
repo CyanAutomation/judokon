@@ -9,6 +9,13 @@ import { getOpponentDelay } from "./snackbar.js";
 
 let opponentSnackbarId = 0;
 
+function clearOpponentSnackbarTimeout() {
+  if (opponentSnackbarId) {
+    clearTimeout(opponentSnackbarId);
+  }
+  opponentSnackbarId = 0;
+}
+
 /**
  * Bind dynamic UI helper event handlers on the shared battle EventTarget.
  *
@@ -45,26 +52,23 @@ export function bindUIHelperEventHandlersDynamic() {
       // If the caller requests a delayed opponent message, schedule it
       // after the configured opponent delay. Otherwise show it immediately.
       if (opts.delayOpponentMessage) {
-        const delay = getOpponentDelay();
-        if (delay > 0) {
+        const delay = Number(getOpponentDelay());
+        if (!Number.isFinite(delay) || delay <= 0) {
+          clearOpponentSnackbarTimeout();
           try {
             showSnackbar(t("ui.opponentChoosing"));
           } catch {}
+        } else {
+          clearOpponentSnackbarTimeout();
           opponentSnackbarId = setTimeout(() => {
             try {
               showSnackbar(t("ui.opponentChoosing"));
             } catch {}
           }, delay);
-        } else {
-          clearTimeout(opponentSnackbarId);
-          opponentSnackbarId = 0;
-          try {
-            showSnackbar(t("ui.opponentChoosing"));
-          } catch {}
         }
       } else {
-        clearTimeout(opponentSnackbarId);
-        opponentSnackbarId = 0;
+        clearOpponentSnackbarTimeout();
+        // Cancel any pending delay to ensure the immediate snackbar wins.
         try {
           showSnackbar(t("ui.opponentChoosing"));
         } catch {}
@@ -73,7 +77,7 @@ export function bindUIHelperEventHandlersDynamic() {
   });
 
   onBattleEvent("roundResolved", async (e) => {
-    clearTimeout(opponentSnackbarId);
+    clearOpponentSnackbarTimeout();
     const { store, stat, playerVal, opponentVal, result } = e.detail || {};
     if (!result) return;
     try {
