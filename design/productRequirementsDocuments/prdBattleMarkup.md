@@ -4,46 +4,160 @@
 
 This PRD defines the canonical DOM/markup contracts used by Classic Battle and related tools (CLI, tests, debug panels). It lists stable IDs, data attributes, and the responsibilities of the markup to support automation and accessibility.
 
+## Owner & Version
+
+- Owner: @frontend-team (placeholder — update to an individual owner)
+- Document version: 1.0.0 — changes to markup contracts MUST follow the Governance section below.
+
 ## Problem Statement / Why it matters
 
-Playwright tests, CLI clients, and automation rely on stable DOM hooks. If markup changes without coordination, tests and external tooling break. The markup must be a product-level contract.
+Playwright tests, CLI integrations, and automation depend on stable DOM hooks. Historically, ad-hoc changes to class names and IDs caused multiple test failures and brittle selectors. Treating markup as a product contract reduces breakage and speeds up safe refactors. This document defines the canonical mapping and the process to change it.
 
 ## Goals / Success Metrics
 
-- Enumerate stable DOM IDs and selectors used by tests and integrations.
-- Define the policy for changing markup (deprecation window, test updates required).
+- Authoritative, machine-readable list of stable DOM hooks (IDs, data-attributes, roles) for all battle UI surfaces.
+- Reduce test-breakage related to selector drift by 90% in the next quarter.
+- All Playwright tests must reference selectors from the canonical mapping (directly or via helper utilities).
+- Every markup change that affects a canonical selector must include: PRD update, automated test changes, and a 14-day deprecation window for removals.
 
 ## User Stories
 
-- As a test author, I want stable IDs for querying elements.
-- As a developer, I want clear guidance on when I can change markup and the process to do so.
+- As a test author, I want a single source of truth for selectors so tests remain resilient to styling changes.
+- As a developer, I want a documented process to change markup so I can perform safe refactors without surprising test owners.
+- As an accessibility reviewer, I want roles/labels mapped to elements so automated accessibility checks are accurate.
+- As an external CLI/automation consumer, I want stable hooks so my tooling doesn't break across releases.
 
 ## Prioritized Functional Requirements
 
-P1 - DOM Contracts Inventory: List of elements/IDs/attributes (e.g., `#round-message`, `#snackbar-container`, `#battle-state-badge`, stat button selectors) and their intended semantics.
+### P1 — DOM Contracts Inventory
+
+- Feature: Canonical mapping file (`design/dataSchemas/battleMarkup.json`) listing stable hooks: logicalName, selector, dataTestId, role, description, owner, stability, aliases.
+- Description: A machine-readable list authoritative for tests/CLI. Changes to entries follow the Change Policy below.
 
 Acceptance Criteria:
 
-- The inventory is included and referenced by tests and CLI helpers.
+- The mapping file exists and contains at minimum entries for: `roundMessage`, `snackbarContainer`, `battleStateBadge`, `playerCard`, `statButton` (per-player), `statLabel`, `statValue`, `selectStatButton`, `autoSelectIndicator`, modal/dialog roots used during battle flows.
+- Playwright tests use the mapping via helpers (or import) for at least one representative test in `playwright/`.
 
-P1 - Change Policy: Document the deprecation and migration process for markup changes (communication, test updates, feature flags if needed).
+### P1 — Change Policy and Governance
 
-Acceptance Criteria:
-
-- A short policy section exists describing required steps before markup removal/rename.
-
-P2 - Accessibility Requirements: Specify ARIA roles and focus behavior for key controls.
+- Feature: Documented policy for renaming/deprecating selectors (communication, deprecation window, test updates requirement).
+- Description: Steps required to change any canonical selector.
 
 Acceptance Criteria:
 
-- Key elements include role/label guidance and keyboard interaction expectations.
+- Policy section exists in this PRD and lists required steps (announce, add alias, update tests, remove after deprecation window).
+- Every PR that updates a canonical selector includes a checklist linking to this PRD and references affected tests.
+
+### P1 — Accessibility Mapping
+
+- Feature: ARIA role/label guidance for canonical elements and keyboard focus expectations.
+- Description: Each canonical entry must include recommended role/aria-label and keyboard behaviors (e.g., stat buttons must be focusable and operable with Enter/Space).
+
+Acceptance Criteria:
+
+- Accessibility guidance is present for each P1 element and Playwright accessibility checks exist for at least the stat-selection flow.
+
+### P2 — Data-test-id Naming Convention
+
+- Feature: Define a stable naming convention for `data-testid`/`data-test-id` attributes and an example linter rule to prefer them over brittle class-name selectors.
+- Description: Recommend `data-testid="area:element"` style and discourage using visual or CSS classes as test hooks.
+
+Acceptance Criteria:
+
+- A naming guideline exists and one example test or helper in `playwright/helpers` uses it.
+
+### P2 — Selector Compatibility Aliases
+
+- Feature: Support aliasing old selectors to new selectors during deprecation window (both selectors present) to avoid breaking consumers.
+- Description: Mapping entries may include `aliases: []` to hold deprecated selectors that will be removed later.
+
+Acceptance Criteria:
+
+- Mapping entries can include `aliases`, and the Change Policy describes when aliases must be removed.
+
+### P3 — Developer Ergonomics for Selectors
+
+- Feature: Helper utilities for tests to resolve selectors by logical name (e.g., `selectors.roundMessage()` returns the current selector) and a small example helper in `playwright/helpers/selectors.js`.
+- Description: Helpers reduce duplication and centralize future updates.
+
+Acceptance Criteria:
+
+- A minimal helper example is present in the repository or linked from this PRD and one test imports it.
+
+## Acceptance Criteria (overall)
+
+- Every P1 requirement has at least one automated test referencing the canonical mapping.
+- New or changed canonical selectors must have accompanying PRD/CHANGE notes and an explicit owner.
 
 ## Non-Functional Requirements / Design Considerations
 
-- Markup must favor semantic HTML and ARIA for accessibility.
-- Avoid coupling internal state to class names used by tests; prefer data attributes (e.g., `data-test-id`).
+- Use semantic HTML where possible and provide ARIA attributes for interactive elements.
+- Favor `data-testid` attributes for test hooks instead of CSS classes.
+- Keep the DOM tree shallow for key interactive areas to improve test and accessibility traversal performance.
+- Minimize number of distinct root IDs to simplify test setup and query performance.
+
+## Accessibility Checklist
+
+- All interactive elements expose a role or are native interactive elements (button, input, a).
+- Keyboard users can operate the stat selection flow (Tab to stat, Enter or Space to select).
+- Visible focus indicators exist for stat buttons and primary controls.
+- ARIA labels exist for non-textual controls (icons, badges) and match the copy used by tests.
+
+## Change Policy (detailed)
+
+1. Propose change in a PR that updates `design/dataSchemas/battleMarkup.json` and this PRD if semantics change.
+2. Add `aliases` for removed selectors and keep both selectors present for a minimum deprecation window (default: 14 days) unless security/bugfix requires immediate removal.
+3. Update all Playwright tests (or add a migration diff) in the same PR or a follow-up PR referenced by the original.
+4. Notify test owners and add an entry to `CHANGELOG.md` referencing the selector change.
+5. After the deprecation window, remove aliases and finalize mapping.
+
+## Governance & Versioning
+
+- Mapping file follows semantic versioning for the contract (major.minor.patch). Breaking changes bump major and require a documented migration plan.
+- Minor/patch changes may be applied with PRD update and automated test updates.
+
+## Example canonical mapping (human-readable excerpt)
+
+- `roundMessage`
+  - selector: `#round-message`
+  - data-test-id: `battle:round-message`
+  - role: `status`
+  - description: Message shown for round prompts and results.
+  - owner: `frontend-team`
+  - stability: `stable`
+
+- `snackbarContainer`
+  - selector: `#snackbar-container`
+  - data-test-id: `ui:snackbar`
+  - role: `status`
+  - description: Global transient messages (hints, countdown).
+
+See the machine-readable file `design/dataSchemas/battleMarkup.json` for the full list.
+
+## Example Playwright usage (recommended pattern)
+
+// pseudo-code example (test authors should import the selector helper)
+
+```js
+// tests/battle/select-stat.spec.js
+import selectors from "../../playwright/helpers/selectors";
+
+test("player can select a stat via keyboard", async ({ page }) => {
+  await page.goto("/battle/classic");
+  await page.focus(selectors.statButton(0));
+  await page.keyboard.press("Enter");
+  await expect(page.locator(selectors.roundMessage())).toHaveText(/selected/i);
+});
+```
 
 ## Dependencies and Open Questions
 
-- Cross-reference: `design/battleMarkup.md`, `docs/testing-modes.md` and `playwright/` helpers.
-- Open question: canonical prefix for test IDs (recommend `data-testid` or `data-test-id`).
+- Depends on: `playwright/helpers` (selector helpers), `design/dataSchemas/` as canonical artifacts, and test owner contact list.
+- Open: final canonical attribute name (`data-testid` vs `data-test-id`) — recommend `data-testid` for consistency with Playwright conventions but allow repo-wide lint rule to enforce chosen form.
+
+## Next steps
+
+1. Populate `design/dataSchemas/battleMarkup.json` with full inventory (owner to fill missing entries).
+2. Add a small selector helper under `playwright/helpers/selectors.js` that resolves logical names to selectors using the canonical mapping.
+3. Update a sample Playwright test to use the helper and show the end-to-end workflow.
