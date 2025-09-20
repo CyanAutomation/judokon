@@ -247,16 +247,25 @@ async function applySelectionResult(store, result) {
   matchEnded = await confirmMatchOutcome(store, matchEnded);
   if (!matchEnded) {
     scheduleNextReadyAfterSelection(store);
+  } else {
+    try {
+      showSnackbar("");
+    } catch {}
   }
   return matchEnded;
 }
 
-function finalizeSelectionReady(store) {
+function finalizeSelectionReady(store, options = {}) {
+  const { shouldStartCooldown = true } = options;
   const finalizeRoundReady = () => {
-    try {
-      startCooldown(store);
-    } catch (err) {
-      console.debug("battleClassic: startCooldown after selection failed", err);
+    if (shouldStartCooldown) {
+      try {
+        startCooldown(store);
+      } catch (err) {
+        console.debug("battleClassic: startCooldown after selection failed", err);
+      }
+    } else {
+      resetCooldownFlag(store);
     }
     try {
       enableNextRoundButton();
@@ -559,14 +568,15 @@ async function handleStatButtonClick(store, stat, btn) {
     return;
   }
 
+  let matchEnded = false;
   try {
-    await applySelectionResult(store, result);
+    matchEnded = await applySelectionResult(store, result);
   } catch (err) {
     handleStatSelectionError(store, err);
     return;
   }
 
-  finalizeSelectionReady(store);
+  finalizeSelectionReady(store, { shouldStartCooldown: !Boolean(matchEnded) });
 }
 
 /**

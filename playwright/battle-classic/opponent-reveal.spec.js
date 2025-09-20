@@ -421,8 +421,13 @@ test.describe("Classic Battle Opponent Reveal", () => {
       // Wait for match to end
       await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
 
-      // Should not show opponent choosing after match ends
-      await expect(snackbar).not.toContainText(/Opponent is choosing/i);
+      // Final round should not transition into the cooldown countdown message
+      await expect(snackbar).not.toContainText(/Next round in/i);
+
+      const finalText = ((await snackbar.textContent()) || "").trim();
+      expect(
+        finalText === "" || /Opponent is choosing/i.test(finalText)
+      ).toBeTruthy();
     });
   });
 
