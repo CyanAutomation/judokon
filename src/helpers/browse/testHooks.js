@@ -121,13 +121,20 @@ async function addTestCard(judoka) {
  * 2. Remove any nodes tracked in `addedNodes` that are still attached to the DOM.
  * 3. Clear the `addedNodes` set to avoid leaking references across renders.
  *
- * @returns {void}
- */
 function resetState() {
   enableHoverAnimations();
   for (const node of state.addedNodes) {
     try {
       node?.parentElement?.removeChild(node);
+    } catch (error) {
+      // Only ignore errors for nodes that are already removed
+      if (error.name !== 'NotFoundError' && !error.message.includes('not a child')) {
+        console.warn('Error removing test node during cleanup:', error);
+      }
+    }
+  }
+  state.addedNodes.clear();
+}
     } catch {}
   }
   state.addedNodes.clear();
