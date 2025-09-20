@@ -115,9 +115,10 @@ async function addTestCard(judoka) {
 function resetState() {
   enableHoverAnimations();
   for (const node of state.addedNodes) {
-    if (!node?.parentElement) continue;
+    const parent = node?.parentElement;
+    if (!parent) continue;
     try {
-      node.parentElement.removeChild(node);
+      parent.removeChild(node);
     } catch (error) {
       if (
         error?.name === "NotFoundError" ||
