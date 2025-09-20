@@ -496,7 +496,8 @@ function prepareCooldownContext(options, emitTelemetry) {
  * @pseudocode
  * 1. Detect whether a custom dispatcher exists and configure bus dispatch options.
  * 2. Create a guarded helper for the machine strategy so it is registered once.
- * 3. When orchestrated, register the machine first so orchestration observes the event before fallbacks.
+ * 3. When orchestrated without a custom dispatcher override, register the machine first so orchestration observes the event
+ *    before fallbacks.
  * 4. Append custom dispatcher and bus strategies, then add the machine strategy again if not already present so manual flows
  *    still dispatch through the machine when earlier strategies short circuit.
  * 5. Return the assembled strategy list for `runReadyDispatchStrategies`.
@@ -538,7 +539,7 @@ function createReadyDispatchStrategies({
     strategies.push(machineStrategy);
     machineStrategyAdded = true;
   };
-  if (orchestrated) {
+  if (orchestrated && !hasCustomDispatcher) {
     addMachineStrategy();
   }
   if (hasCustomDispatcher) {
