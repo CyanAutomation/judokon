@@ -41,6 +41,7 @@ import {
   setupOrchestratedReady,
   startTimerWithDiagnostics
 } from "./cooldownOrchestrator.js";
+import { createNextRoundSession } from "./nextRound/session.js";
 import {
   hasReadyBeenDispatchedForCurrentCooldown,
   resetReadyDispatchState,
@@ -333,10 +334,21 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   });
   startTimerWithDiagnostics(runtime, cooldownSeconds);
   scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired });
-  currentNextRound = controls;
+  const session = createNextRoundSession({
+    controls,
+    runtime,
+    bus,
+    scheduler: activeScheduler,
+    orchestrated: orchestratedMode,
+    machine: orchestratorMachine,
+    readinessTarget,
+    metadata: { cooldownSeconds }
+  });
+  const sessionControls = session.controls;
+  currentNextRound = sessionControls;
   safeRound(
     "startCooldown.exposeCurrentNextRound",
-    () => exposeDebugState("currentNextRound", controls),
+    () => exposeDebugState("currentNextRound", sessionControls),
     { suppressInProduction: true }
   );
   safeRound(
@@ -344,7 +356,7 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     () => exposeDebugState("startCooldownCalled", true),
     { suppressInProduction: true }
   );
-  return controls;
+  return sessionControls;
 }
 
 /**
