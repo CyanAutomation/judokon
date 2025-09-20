@@ -122,6 +122,19 @@ const timerApi = {
    * @param {number} seconds - Countdown value in seconds
    */
   setCountdown(seconds) {
+    const applyCountdown = (value) => {
+      try {
+        const el = document.getElementById("cli-countdown");
+        if (!el) return;
+        const normalized = value ?? 0;
+        el.dataset.remainingTime = String(normalized);
+        try {
+          el.setAttribute("data-remaining-time", String(normalized));
+        } catch {}
+        el.textContent = value !== null ? `Timer: ${String(normalized).padStart(2, "0")}` : "";
+      } catch {}
+    };
+
     try {
       // Use existing battleCLI helper if available
       if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
@@ -138,15 +151,11 @@ const timerApi = {
           } catch {}
         }
 
+        applyCountdown(seconds);
         return;
       }
 
-      // Direct DOM update as fallback
-      const el = document.getElementById("cli-countdown");
-      if (el) {
-        el.dataset.remainingTime = String(seconds ?? 0);
-        el.textContent = seconds !== null ? `Timer: ${String(seconds).padStart(2, "0")}` : "";
-      }
+      applyCountdown(seconds);
     } catch {}
   },
 
