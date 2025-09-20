@@ -250,3 +250,28 @@ Run `node scripts/evaluation/evaluateRAG.js` from the project root to measure re
   - [x] 5.2 Provide usage examples with test agents
   - [x] 5.3 Log agent response coverage and latency
   - [x] 5.4 Expose a simple API or utility function for programmatic search access
+
+## Appendix: Vector Search Workflow (merged from `docs/vector-search.md`)
+
+This appendix documents the Vector Search page workflow that was previously maintained in `docs/vector-search.md`.
+
+1. **Query expansion and encoding** – `buildQueryVector` splits the user's
+  query into terms, expands synonyms via `vectorSearch.expandQueryWithSynonyms`,
+  and uses the MiniLM extractor to generate an embedding vector.
+2. **Match selection** – `vectorSearch.findMatches` returns scored results which
+  `selectTopMatches` partitions into strong and weak groups before choosing the
+  subset to render.
+3. **UI state management** – `applyResultsState` applies one of four declarative
+  states (`loading`, `results`, `empty`, `error`) to control spinner visibility
+  and messaging.
+4. **Orchestration** – `handleSearch` composes the above steps, updating the UI
+  and rendering results once matches are available.
+
+The workflow keeps heavy logic out of the DOM layer and enables unit testing of
+pure utilities.
+
+Acceptance notes for PRD tests:
+
+- Unit tests should cover `buildQueryVector` for proper expansion and vector dimensions.
+- Integration tests should simulate `handleSearch` and assert `applyResultsState` transitions for `loading` → `results` / `empty` / `error` paths.
+- End-to-end Playwright tests should verify the demo UI renders matches and keyboard navigation works when the embedding file is loaded.

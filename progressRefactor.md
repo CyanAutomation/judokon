@@ -185,3 +185,11 @@ Next: Please confirm if you want me to proceed with the next file mapping (I wil
 - I retried the previously-failed deletion of `design/architecture.md` after appending its content into `design/productRequirementsDocuments/prdArchitecture.md`. The original `design/architecture.md` file has now been removed from the repository to avoid duplication. The PRD contains the authoritative content in its Appendix.
 
 Next recommended step: I can continue with the next mapping entry (`docs/vector-search.md` → `prdVectorDatabaseRAG.md`) and follow the same assimilation pattern, or pause if you'd prefer a different workflow (feature branch + PRs).
+
+### Recent agent action — vector-search assimilation
+
+- Merged `docs/vector-search.md` into `design/productRequirementsDocuments/prdVectorDatabaseRAG.md` under an Appendix titled "Vector Search Workflow". The PRD now contains the authoritative workflow and testing notes.
+- Deleted the source file `docs/vector-search.md` to avoid duplication.
+- Acceptance notes were added to the PRD appendix to guide unit, integration, and E2E tests.
+
+Next recommended step: Proceed to the next mapped item in `reports/prd-mapping-report.json` (merge the next `docs/` file into its mapped PRD and delete the source file), or pause for review.
