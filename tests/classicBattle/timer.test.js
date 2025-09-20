@@ -148,8 +148,6 @@ describe("Classic Battle round timer", () => {
       timers.useRealTimers();
     }
   });
-    }
-  });
 
   test("retries ready dispatch when initial attempt is refused", async () => {
     const timers = vi.useFakeTimers();

@@ -10,10 +10,7 @@ import { setupButtonEffects } from "./buttonEffects.js";
 import { setupCountryToggle } from "./browse/setupCountryToggle.js";
 import { setupCountryFilter } from "./browse/setupCountryFilter.js";
 import { addHoverZoomMarkers } from "./setupHoverZoom.js";
-import {
-  resetBrowseTestHooks,
-  updateBrowseTestHooksContext
-} from "./browse/testHooks.js";
+import { resetBrowseTestHooks, updateBrowseTestHooksContext } from "./browse/testHooks.js";
 
 let resolveBrowseReady;
 export const browseJudokaReadyPromise =

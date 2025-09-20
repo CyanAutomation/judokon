@@ -16,7 +16,6 @@ async function callBrowseHook(page, name, ...args) {
     [name, args]
   );
 }
-}
 
 async function resetBrowseHooks(page) {
   await page.evaluate(() => window.__testHooks?.browse?.reset?.());

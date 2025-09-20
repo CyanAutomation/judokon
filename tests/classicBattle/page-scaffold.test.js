@@ -176,10 +176,9 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
   }));
 
   const startCooldown = vi.fn();
-  const handleReplay = vi.fn();
-  const isOrchestrated = vi.fn(() => false);
 
   const startRound = vi.fn(async (store, applyRoundUI) => {
+    void applyRoundUI;
     const container = document.getElementById("stat-buttons");
     const buttons = container ? Array.from(container.querySelectorAll("button")) : [];
     buttons.forEach((btn) => {
@@ -222,6 +221,7 @@ vi.mock("../../src/helpers/classicBattle/roundResolver.js", () => ({
 
 vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => {
   const handleStatSelection = vi.fn(async (...args) => {
+    void args;
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("roundResolved");
     return {
@@ -746,8 +746,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
     showFatalInitError,
     setupNextButton,
     initStatButtons,
-    syncScoreDisplay: vi.fn(),
-    updateDebugPanel: vi.fn()
+    syncScoreDisplay,
+    updateDebugPanel
   };
 });
 

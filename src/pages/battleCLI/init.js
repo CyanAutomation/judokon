@@ -1873,8 +1873,8 @@ export async function setupFlags() {
         hasStoredTarget = true;
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.debug('Failed to get points to win:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.debug("Failed to get points to win:", error);
       }
       hasStoredTarget = false;
       target = undefined;
