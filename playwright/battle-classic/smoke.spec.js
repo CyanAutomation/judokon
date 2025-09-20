@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import selectors from "../../helpers/selectors";
 
 test.describe("Classic Battle page scaffold", () => {
   test("loads without console errors and has scoreboard nodes", async ({ page }) => {
@@ -11,10 +12,10 @@ test.describe("Classic Battle page scaffold", () => {
     );
     await page.goto("/src/pages/battleClassic.html");
 
-    await expect(page.locator("header #round-message")).toBeVisible();
-    await expect(page.locator("header #next-round-timer")).toBeVisible();
-    await expect(page.locator("header #round-counter")).toBeVisible();
-    await expect(page.locator("header #score-display")).toBeVisible();
+    await expect(page.locator(selectors.roundMessage())).toBeVisible();
+    await expect(page.locator(selectors.nextRoundTimer())).toBeVisible();
+    await expect(page.locator(selectors.roundCounter())).toBeVisible();
+    await expect(page.locator(selectors.scoreDisplay())).toBeVisible();
 
     expect(errors, `Console errors detected: ${errors.join("\n")}`).toHaveLength(0);
   });

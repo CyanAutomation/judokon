@@ -129,10 +129,10 @@ import Ajv from 'ajv';
 import roundStartSchema from '../../design/dataSchemas/events/battle.round-start.schema.json';
 
 test('round-start event matches schema', () => {
-	const ajv = new Ajv();
-	const validate = ajv.compile(roundStartSchema);
-	const sample = { roundNumber: 1, playerIds: ['p1','p2'] };
-	expect(validate(sample)).toBe(true);
+ const ajv = new Ajv();
+ const validate = ajv.compile(roundStartSchema);
+ const sample = { roundNumber: 1, playerIds: ['p1','p2'] };
+ expect(validate(sample)).toBe(true);
 });
 ```
 
