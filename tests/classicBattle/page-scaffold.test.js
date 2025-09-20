@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeEach, afterEach, describe, test, expect, vi } from "vitest";
 import * as scheduler from "../../src/utils/scheduler.js";
+import installRAFMock from "../helpers/rafMock.js";
 
 const engineMock = vi.hoisted(() => ({
   listeners: new Map(),
@@ -775,18 +776,17 @@ async function flushImmediateTasks() {
 }
 
 describe("Classic Battle page scaffold (behavioral)", () => {
+  let __rafMockRestore;
   beforeEach(() => {
     const file = resolve(process.cwd(), "src/pages/battleClassic.html");
     const html = readFileSync(file, "utf-8");
     document.documentElement.innerHTML = html;
     window.__FF_OVERRIDES = {};
+    // Install shared RAF mock for deterministic frame control
+    const rafMock = installRAFMock();
+    __rafMockRestore = rafMock.restore;
     originalRAF = global.requestAnimationFrame;
     originalCAF = global.cancelAnimationFrame;
-    global.requestAnimationFrame = (cb) => {
-      if (typeof cb === "function") cb(0);
-      return 1;
-    };
-    global.cancelAnimationFrame = vi.fn();
     modalMock.onStart = null;
     engineMock.listeners.clear();
     engineMock.roundsPlayed = 0;
@@ -802,6 +802,9 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     document.documentElement.innerHTML = "";
     delete window.__FF_OVERRIDES;
     delete global.localStorage;
+    try {
+      __rafMockRestore?.();
+    } catch {}
     global.requestAnimationFrame = originalRAF;
     global.cancelAnimationFrame = originalCAF;
     engineMock.listeners.clear();

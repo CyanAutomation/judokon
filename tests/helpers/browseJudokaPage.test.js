@@ -1,4 +1,16 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import installRAFMock from "../helpers/rafMock.js";
+
+let __browseRafRestore;
+beforeEach(() => {
+  const raf = installRAFMock();
+  __browseRafRestore = raf.restore;
+});
+afterEach(() => {
+  try {
+    __browseRafRestore?.();
+  } catch {}
+});
 
 describe("browseJudokaPage helpers", () => {
   it("setupCountryToggle toggles panel and loads flags once", async () => {
@@ -140,7 +152,6 @@ describe("browseJudokaPage helpers", () => {
   });
 
   it("shows a spinner during load and removes it after rendering", async () => {
-    global.requestAnimationFrame = (cb) => cb();
 
     const fetchResolvers = [];
     const fetchJson = vi.fn(() => new Promise((resolve) => fetchResolvers.push(resolve)));
@@ -216,9 +227,11 @@ describe("browseJudokaPage helpers", () => {
 
     fetchResolvers[0]([{ id: 1, country: "JP" }]);
     fetchResolvers[1]([]);
-    await pagePromise;
+  await pagePromise;
+  // Ensure any queued RAF callbacks run (existing tests used immediate RAF)
+  if (typeof globalThis.flushRAF === "function") globalThis.flushRAF();
 
-    expect(carousel.querySelector(".loading-spinner")).toBeNull();
+  expect(carousel.querySelector(".loading-spinner")).toBeNull();
     expect(remove).toHaveBeenCalled();
     expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel, false);
     delete globalThis.__forceSpinner__;
