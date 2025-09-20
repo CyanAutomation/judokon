@@ -54,10 +54,10 @@ afterEach(() => {
 });
 
 async function playRound(battleMod, store, playerValue, opponentValue) {
-  document.getElementById("player-card").innerHTML =
-    `<ul><li class="stat"><strong>Power</strong> <span>${playerValue}</span></li></ul>`;
-  document.getElementById("opponent-card").innerHTML =
-    `<ul><li class="stat"><strong>Power</strong> <span>${opponentValue}</span></li></ul>`;
+  await battleMod.__setCardStatValuesForTest({
+    player: { stats: { power: playerValue } },
+    opponent: { stats: { power: opponentValue } }
+  });
   store.selectionMade = false;
   const playerVal = battleMod.getCardStatValue(document.getElementById("player-card"), "power");
   const opponentVal = battleMod.getCardStatValue(document.getElementById("opponent-card"), "power");

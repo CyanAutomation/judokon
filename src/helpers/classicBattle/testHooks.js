@@ -26,6 +26,40 @@ const readStatFromCard = (card, stat, getCardStatValue) => {
   return Number.isFinite(domVal) ? domVal : NaN;
 };
 
+const TEST_STAT_BASE = {
+  power: 1,
+  speed: 1,
+  technique: 1,
+  kumikata: 1,
+  newaza: 1
+};
+
+const TEST_PLAYER_CARD_BASE = {
+  id: 10000,
+  firstname: "Test",
+  surname: "Player",
+  country: "Testland",
+  countryCode: "tt",
+  weightClass: "Open",
+  signatureMoveId: 0,
+  rarity: "common",
+  stats: TEST_STAT_BASE
+};
+
+const TEST_OPPONENT_CARD_BASE = {
+  id: 10001,
+  firstname: "Test",
+  surname: "Opponent",
+  country: "Testland",
+  countryCode: "tt",
+  weightClass: "Open",
+  signatureMoveId: 0,
+  rarity: "common",
+  stats: TEST_STAT_BASE
+};
+
+let __createStatsPanelPromise;
+
 const deriveSelectionValues = (stat, getCardStatValue, getOpponentJudoka) => {
   const values = {};
   const playerCard = document.getElementById("player-card");
@@ -50,6 +84,76 @@ const deriveSelectionValues = (stat, getCardStatValue, getOpponentJudoka) => {
 
   return values;
 };
+
+const mergeTestCardData = (base, overrides = {}) => {
+  const { stats: statOverrides, ...cardOverrides } = overrides || {};
+  const mergedStats = {
+    ...base.stats,
+    ...(statOverrides && typeof statOverrides === "object" ? statOverrides : {})
+  };
+  return {
+    ...base,
+    ...cardOverrides,
+    stats: mergedStats
+  };
+};
+
+const renderStatsCardForTest = async (target, base, overrides) => {
+  if (!target) return null;
+  if (!__createStatsPanelPromise) {
+    __createStatsPanelPromise = import("/src/components/StatsPanel.js").then(
+      (mod) => mod.createStatsPanel
+    );
+  }
+  const createStatsPanel = await __createStatsPanelPromise;
+  if (typeof createStatsPanel !== "function") return null;
+
+  const cardData = mergeTestCardData(base, overrides);
+  const rarityClass = String(cardData.rarity || "common").toLowerCase();
+  const statsPanel = await createStatsPanel(cardData.stats, { type: rarityClass });
+
+  const card = document.createElement("div");
+  card.className = `judoka-card ${rarityClass}`.trim();
+  card.appendChild(statsPanel);
+
+  const container = document.createElement("div");
+  container.className = "card-container";
+  try {
+    container.dataset.cardJson = JSON.stringify(cardData);
+  } catch {}
+  container.appendChild(card);
+
+  target.replaceChildren(container);
+
+  return cardData;
+};
+
+/**
+ * Render simplified Classic Battle cards with deterministic stat values for tests.
+ *
+ * @pseudocode
+ * 1. Locate the player and opponent card containers in the DOM.
+ * 2. Use `createStatsPanel` to render stat lists for each side with the provided overrides.
+ * 3. Replace the existing card markup with the generated panels and return the merged card data.
+ *
+ * @param {{
+ *   player?: { stats?: Partial<Record<string, number>> } & Record<string, unknown>,
+ *   opponent?: { stats?: Partial<Record<string, number>> } & Record<string, unknown>
+ * }} [config] - Stat overrides and optional card metadata for each side.
+ * @returns {Promise<{playerCardData: object|null, opponentCardData: object|null}>}
+ */
+export async function setCardStatValuesForTest(config = {}) {
+  const { player = {}, opponent = {} } = config || {};
+  const playerTarget = document.getElementById("player-card");
+  const opponentTarget = document.getElementById("opponent-card");
+
+  const [playerCardData, opponentCardData] = await Promise.all([
+    renderStatsCardForTest(playerTarget, TEST_PLAYER_CARD_BASE, player),
+    renderStatsCardForTest(opponentTarget, TEST_OPPONENT_CARD_BASE, opponent)
+  ]);
+
+  return { playerCardData, opponentCardData };
+}
 
 /**
  * Ensure Classic Battle UI listeners and test promises are registered.
