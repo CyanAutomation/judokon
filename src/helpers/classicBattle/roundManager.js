@@ -588,6 +588,7 @@ function createReadyDispatchStrategies({
     return !!orchestrated;
   };
   const shouldPropagateAfterMachine = () => isOrchestratedActive() && !hasCustomDispatcher;
+  let machineHandledReady = false;
   const machineStrategy = async () => {
     if (shouldShortCircuitReadyDispatch()) return true;
     const start =
@@ -602,8 +603,11 @@ function createReadyDispatchStrategies({
             dedupeTracked: rawResult.dedupeTracked === true
           }
         : { dispatched: rawResult === true, dedupeTracked: false };
+    if (normalizedResult.dispatched === true) {
+      machineHandledReady = true;
+    }
     const propagate = normalizedResult.dispatched === true && shouldPropagateAfterMachine();
-    if (normalizedResult.dispatched === true && !propagate) {
+    if (machineHandledReady && !propagate) {
       setReadyDispatchedForCurrentCooldown(true);
     }
     const end =
@@ -654,7 +658,10 @@ function createReadyDispatchStrategies({
   }
   strategies.push(() => {
     if (shouldShortCircuitReadyDispatch()) return true;
-    return dispatchReadyViaBus(busStrategyOptions);
+    return dispatchReadyViaBus({
+      ...busStrategyOptions,
+      alreadyDispatched: machineHandledReady
+    });
   });
   addMachineStrategy();
   return strategies;

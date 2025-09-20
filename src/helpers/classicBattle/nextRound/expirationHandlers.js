@@ -261,11 +261,15 @@ export async function dispatchReadyViaBus(options = {}) {
   const dispatchers = [];
   const candidate = options.dispatchBattleEvent;
   const skipCandidate = options.skipCandidate === true;
+  const alreadyDispatched = options.alreadyDispatched === true;
   if (!skipCandidate && typeof candidate === "function") {
     dispatchers.push(candidate);
   }
   if (typeof globalDispatchBattleEvent === "function" && globalDispatchBattleEvent !== candidate) {
     dispatchers.push(globalDispatchBattleEvent);
+  }
+  if (alreadyDispatched) {
+    return true;
   }
   for (const dispatcher of dispatchers) {
     try {
