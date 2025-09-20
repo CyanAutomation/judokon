@@ -216,8 +216,14 @@ describe("dispatchReadyDirectly", () => {
       emitTelemetry: emit
     });
     expect(result).toEqual({ dispatched: true, dedupeTracked: true });
+    expect(mocked).toHaveBeenCalledTimes(1);
     expect(mocked).toHaveBeenCalledWith("ready");
+    expect(mocked.mock.results[0]?.value).toBeTruthy();
+    expect(dispatch).toHaveBeenCalledTimes(1);
     expect(dispatch).toHaveBeenCalledWith("ready");
+    expect(dispatch.mock.invocationCallOrder[0]).toBeGreaterThan(
+      mocked.mock.invocationCallOrder[0]
+    );
     expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
   });
 
