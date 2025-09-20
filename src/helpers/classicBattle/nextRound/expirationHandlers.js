@@ -384,38 +384,32 @@ export async function dispatchReadyDirectly(params) {
     emitTelemetry?.("handleNextRound_dispatchReadyDirectly_result", true);
     return { dispatched: true, dedupeTracked };
   };
-  let machineAttempted = false;
   const dispatchViaMachine = async () => {
-    machineAttempted = true;
     const result = machine.dispatch("ready");
     await Promise.resolve(result);
   };
   let fallbackError = null;
   let machineError = null;
+  let dedupeTracked = false;
   if (typeof globalDispatchBattleEvent === "function") {
     try {
       const result = await globalDispatchBattleEvent("ready");
       if (result !== false) {
-        try {
-          await dispatchViaMachine();
-          return recordSuccess(true);
-        } catch (error) {
-          machineError = error;
-          emitTelemetry?.("handleNextRound_dispatchReadyDirectly_machineErrorAfterShared", {
-            message: error?.message ?? String(error)
-          });
-        }
+        dedupeTracked = true;
       }
     } catch (error) {
       fallbackError = error;
     }
   }
-  if (!machineAttempted) {
-    try {
-      await dispatchViaMachine();
-      return recordSuccess(false);
-    } catch (error) {
-      machineError = error;
+  try {
+    await dispatchViaMachine();
+    return recordSuccess(dedupeTracked);
+  } catch (error) {
+    machineError = error;
+    if (dedupeTracked) {
+      emitTelemetry?.("handleNextRound_dispatchReadyDirectly_machineErrorAfterShared", {
+        message: error?.message ?? String(error)
+      });
     }
   }
   const parts = [];
