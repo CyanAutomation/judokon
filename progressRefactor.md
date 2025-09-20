@@ -201,3 +201,11 @@ Next recommended step: Proceed to the next mapped item in `reports/prd-mapping-r
 - Fixed table formatting in the PRD to pass markdown linting rules.
 
 Next recommended step: Continue with the next mapped item in `reports/prd-mapping-report.json`.
+
+### Recent agent action — CLI docs assimilation
+
+- Confirmed `design/productRequirementsDocuments/prdBattleCLI.md` contains the merged content from `docs/battle-cli.md` and `docs/battleCLI.md` (user had manual edits; merges preserved existing PRD content and only removed redundant sources).
+- Deleted `docs/battle-cli.md` and `docs/battleCLI.md` to avoid duplication. The authoritative content lives in `prdBattleCLI.md`.
+- No functional changes were made to `prdBattleCLI.md` beyond preserving manual edits; only source documents were removed.
+
+Next recommended step: Continue with the next mapped item from `reports/prd-mapping-report.json`.
