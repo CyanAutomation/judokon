@@ -148,7 +148,6 @@ async function dispatchReadyOnce(resolveReady) {
     const result = await dispatchBattleEvent("ready");
     if (result === false) {
       setReadyDispatchedForCurrentCooldown(false);
-      if (typeof resolveReady === "function") resolveReady();
       return false;
     }
   } catch (error) {
