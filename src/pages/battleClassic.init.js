@@ -423,6 +423,59 @@ function renderStatButtons(store) {
         }
       } catch (err) {
         console.debug("battleClassic: stat selection handler failed", err);
+        let cooldownStarted = false;
+        try {
+          cooldownStarted = triggerCooldownOnce(store, "statSelectionFailed");
+        } catch (cooldownErr) {
+          console.debug(
+            "battleClassic: triggerCooldownOnce after selection failure failed",
+            cooldownErr
+          );
+        }
+        try {
+          resetCooldownFlag(store);
+        } catch {}
+        try {
+          enableNextRoundButton();
+        } catch (enableErr) {
+          console.debug(
+            "battleClassic: enableNextRoundButton after selection failure failed",
+            enableErr
+          );
+        }
+        let nextBtn = null;
+        try {
+          nextBtn =
+            document.getElementById("next-button") ||
+            document.querySelector('[data-role="next-round"]');
+        } catch {}
+        if (nextBtn) {
+          try {
+            nextBtn.disabled = false;
+            nextBtn.removeAttribute("disabled");
+          } catch {}
+          try {
+            nextBtn.setAttribute("data-next-ready", "true");
+            if (nextBtn.dataset) nextBtn.dataset.nextReady = "true";
+          } catch {}
+          try {
+            setTimeout(() => {
+              try {
+                nextBtn.disabled = false;
+                nextBtn.removeAttribute("disabled");
+                nextBtn.setAttribute("data-next-ready", "true");
+                if (nextBtn.dataset) nextBtn.dataset.nextReady = "true";
+              } catch {}
+            }, 0);
+          } catch {}
+          try {
+            console.debug("battleClassic: next button enabled after selection failure", {
+              disabled: nextBtn.disabled,
+              attr: nextBtn.getAttribute("data-next-ready"),
+              cooldownStarted
+            });
+          } catch {}
+        }
       }
 
       if (!selectionResolved) return;
