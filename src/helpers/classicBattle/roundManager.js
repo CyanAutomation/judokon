@@ -565,6 +565,12 @@ function handleReadyDispatchEarlyExit({ context, controls, emitTelemetry, getDeb
  * machine can finalize the dispatch without bus propagation.
  * @returns {{ propagate: boolean, requiresPropagation: boolean }} Propagation
  * metadata describing follow-up actions.
+ *
+ * @pseudocode
+ * 1. If deduplication tracking is active, mark machine as handled and skip propagation
+ * 2. Otherwise evaluate propagation requirements based on dispatch state and strategy
+ * 3. Mark machine as handled when dispatch succeeded but propagation is disabled
+ * 4. Return propagation flags for downstream decision making
  */
 function evaluateMachineReadyPropagation({
   state,
