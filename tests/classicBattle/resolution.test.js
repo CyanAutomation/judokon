@@ -36,17 +36,10 @@ describe("Classic Battle round resolution", () => {
       const mod = await import("../../src/pages/battleClassic.init.js");
       if (typeof mod.init === "function") mod.init();
 
-      const { onBattleEvent, offBattleEvent } = await import(
-        "../../src/helpers/classicBattle/battleEvents.js"
+      const { getRoundResolvedPromise } = await import(
+        "../../src/helpers/classicBattle/promises.js"
       );
-
-      const roundResolvedPromise = new Promise((resolve) => {
-        const handler = (e) => {
-          offBattleEvent("nextRoundTimerReady", handler);
-          resolve(e);
-        };
-        onBattleEvent("nextRoundTimerReady", handler);
-      });
+      const roundResolvedPromise = getRoundResolvedPromise();
 
       // Open modal and pick any option to start
       // Use shared test utility to wait for DOM nodes safely
@@ -57,7 +50,7 @@ describe("Classic Battle round resolution", () => {
   btn.click();
   // If tests use the queued RAF mock, flush any enqueued frames so scheduled work runs.
   if (typeof globalThis.flushRAF === "function") globalThis.flushRAF();
-      vi.advanceTimersByTime(1200);
+      vi.runAllTimers();
       // Ensure any pending fake timers and RAF callbacks run
       try {
         await vi.runAllTimersAsync();
