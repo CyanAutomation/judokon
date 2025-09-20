@@ -40,7 +40,16 @@ let activeSelectionTimer = null;
 let failSafeTimerId = null;
 // Re-entrancy guard to avoid starting multiple round cycles concurrently
 let isStartingRoundCycle = false;
+/**
+ * Minimum delay before enabling the Next button after stat selection.
+ * Ensures UI state transitions are visible to users.
+ */
 const POST_SELECTION_READY_DELAY_MS = 48;
+
+/**
+ * Buffer time added to opponent delay to ensure snackbar message is visible.
+ * Prevents UI elements from changing too quickly for user comprehension.
+ */
 const OPPONENT_MESSAGE_BUFFER_MS = 150;
 
 /**
@@ -212,15 +221,16 @@ function renderStatButtons(store) {
             ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)
             : 0;
 
+        try {
+          showSnackbar(t("ui.opponentChoosing"));
+        } catch {}
+
         result = await handleStatSelection(store, String(stat), {
           playerVal: 5,
           opponentVal: 3,
           delayMs: delayOverride
         });
         selectionResolved = true;
-        try {
-          showSnackbar(t("ui.opponentChoosing"));
-        } catch {}
         // Defensively ensure the scoreboard reflects the latest scores even
         // when adapters are not yet bound in E2E. This mirrors the adapter
         // behavior and keeps the UI deterministic for tests.
@@ -244,25 +254,29 @@ function renderStatButtons(store) {
         }
       } catch (err) {
         console.debug("battleClassic: stat selection handler failed", err);
-      } finally {
-        if (!selectionResolved) return;
-        const finalizeRoundReady = () => {
-          try {
-            startCooldown(store);
-          } catch (err) {
-            console.debug("battleClassic: startCooldown after selection failed", err);
-          }
-          try {
-            enableNextRoundButton();
-          } catch (err) {
-            console.debug("battleClassic: enableNextRoundButton after selection failed", err);
-          }
-          try {
-            updateRoundCounterFromEngine();
-          } catch (err) {
-            console.debug("battleClassic: updateRoundCounterFromEngine after selection failed", err);
-          }
-        };
+      }
+
+      if (!selectionResolved) return;
+
+      const finalizeRoundReady = () => {
+        try {
+          startCooldown(store);
+        } catch (err) {
+          console.debug("battleClassic: startCooldown after selection failed", err);
+        }
+        try {
+          enableNextRoundButton();
+        } catch (err) {
+          console.debug("battleClassic: enableNextRoundButton after selection failed", err);
+        }
+        try {
+          updateRoundCounterFromEngine();
+        } catch (err) {
+          console.debug("battleClassic: updateRoundCounterFromEngine after selection failed", err);
+        }
+      };
+
+      const computeFinalizationDelay = () => {
         let delayForReady = Math.max(POST_SELECTION_READY_DELAY_MS, OPPONENT_MESSAGE_BUFFER_MS);
         try {
           const opponentDelay = getOpponentDelay?.();
@@ -270,24 +284,39 @@ function renderStatButtons(store) {
             delayForReady = Math.max(delayForReady, opponentDelay + OPPONENT_MESSAGE_BUFFER_MS);
           }
         } catch {}
-        let scheduled = false;
+        return delayForReady;
+      };
+
+      const scheduleFinalization = (delayMs) => {
         try {
           if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
-            window.setTimeout(() => finalizeRoundReady(), delayForReady);
-            scheduled = true;
-          } else if (typeof setTimeout === "function") {
-            setTimeout(() => finalizeRoundReady(), delayForReady);
-            scheduled = true;
-          } else if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
-            window.requestAnimationFrame(() => finalizeRoundReady());
-            scheduled = true;
+            window.setTimeout(() => finalizeRoundReady(), delayMs);
+            return true;
           }
         } catch (err) {
-          console.debug("battleClassic: scheduling post-selection cooldown failed", err);
+          console.debug("battleClassic: window.setTimeout scheduling failed", err);
         }
-        if (!scheduled) {
-          finalizeRoundReady();
+        try {
+          if (typeof setTimeout === "function") {
+            setTimeout(() => finalizeRoundReady(), delayMs);
+            return true;
+          }
+        } catch (err) {
+          console.debug("battleClassic: setTimeout scheduling failed", err);
         }
+        try {
+          if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+            window.requestAnimationFrame(() => finalizeRoundReady());
+            return true;
+          }
+        } catch (err) {
+          console.debug("battleClassic: requestAnimationFrame scheduling failed", err);
+        }
+        return false;
+      };
+
+      if (!scheduleFinalization(computeFinalizationDelay())) {
+        finalizeRoundReady();
       }
     });
     container.appendChild(btn);
