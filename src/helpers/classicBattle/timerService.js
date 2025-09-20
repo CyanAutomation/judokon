@@ -144,11 +144,11 @@ async function dispatchReadyOnce(resolveReady) {
     return false;
   }
   setReadyDispatchedForCurrentCooldown(true);
-  let dispatched = true;
+  let dispatchSucceeded = true;
   try {
     const result = await dispatchBattleEvent("ready");
     if (result === false) {
-      dispatched = false;
+      dispatchSucceeded = false;
       setReadyDispatchedForCurrentCooldown(false);
     }
   } catch (error) {
@@ -157,7 +157,7 @@ async function dispatchReadyOnce(resolveReady) {
     throw error;
   }
   if (typeof resolveReady === "function") resolveReady();
-  return dispatched;
+  return dispatchSucceeded;
 }
 
 /**
