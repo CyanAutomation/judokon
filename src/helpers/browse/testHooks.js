@@ -90,11 +90,17 @@ async function addTestCard(judoka) {
   const existing = new Set(container.children);
   const { ready } = appendCards(container, [judoka], state.gokyoLookup);
   await ready;
-  addHoverZoomMarkers(container);
+
+  let hasNewNodes = false;
   for (const node of container.children) {
     if (!existing.has(node)) {
       state.addedNodes.add(node);
+      hasNewNodes = true;
     }
+  }
+
+  if (hasNewNodes) {
+    addHoverZoomMarkers();
   }
 }
 
@@ -109,13 +115,15 @@ async function addTestCard(judoka) {
 function resetState() {
   enableHoverAnimations();
   for (const node of state.addedNodes) {
+    const parent = node?.parentElement;
+    if (!parent) continue;
     try {
-      node?.parentElement?.removeChild(node);
+      parent.removeChild(node);
     } catch (error) {
-      // Only ignore errors for nodes that are already removed
-      if (error?.name !== "NotFoundError" && !error?.message?.includes("not a child")) {
-        console.warn("Error removing test node during cleanup:", error);
+      if (error?.name === "NotFoundError" || error?.message?.includes("not a child")) {
+        continue;
       }
+      throw error;
     }
   }
   state.addedNodes.clear();

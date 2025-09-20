@@ -118,14 +118,6 @@ export function markNextButtonReady(btn) {
   btn.disabled = false;
   if (btn.dataset) btn.dataset.nextReady = "true";
   btn.setAttribute("data-next-ready", "true");
-  console.error(
-    "[DEBUG] markNextButtonReady called with btn:",
-    btn.id,
-    "disabled after:",
-    btn.disabled,
-    "data-next-ready after:",
-    btn.dataset.nextReady
-  );
 }
 
 /**
@@ -206,7 +198,7 @@ export function setupInterRoundTimer({ timer, duration, onTick, onExpired }) {
  * 1. Track the fallback timer id for later cancellation.
  * 2. When invoked, guard against repeated execution.
  * 3. Clear fallback timers and stop the engine timer.
- * 4. Reset the skip handler and mark the Next button ready.
+ * 4. Reset the skip handler and mark the Next button ready when needed.
  * 5. Emit completion events then dispatch `machine.dispatch("ready")` asynchronously.
  *
  * @param {object} options
@@ -240,7 +232,11 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
     guard(() => timer?.stop?.());
     guard(() => setSkipHandler(null));
     const target = button || getNextButton();
-    guard(() => markNextButtonReady(target));
+    const isButtonAlreadyReady =
+      !!target && target.disabled === false && target.dataset?.nextReady === "true";
+    if (!isButtonAlreadyReady) {
+      guard(() => markNextButtonReady(target));
+    }
     for (const evt of [
       "cooldown.timer.expired",
       "nextRoundTimerReady",

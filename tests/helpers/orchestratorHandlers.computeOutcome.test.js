@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { createTestBattleDom } from "./classicBattle/createTestBattleDom.js";
 let debugHooks;
 
 let store;
+let cleanupBattleDom = null;
 beforeEach(async () => {
   vi.resetModules();
+  cleanupBattleDom = null;
   debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
   store = {};
   vi.spyOn(debugHooks, "exposeDebugState").mockImplementation((k, v) => {
@@ -14,17 +17,28 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  let cleanupError;
+  if (typeof cleanupBattleDom === "function") {
+    try {
+      cleanupBattleDom();
+    } catch (error) {
+      cleanupError = error;
+    } finally {
+      cleanupBattleDom = null;
+    }
+  } else {
+    cleanupBattleDom = null;
+  }
+  vi.useRealTimers();
   vi.restoreAllMocks();
+  if (cleanupError) {
+    throw cleanupError;
+  }
 });
 
 describe("computeAndDispatchOutcome", () => {
   it("dispatches outcome and continue events", async () => {
     vi.useFakeTimers();
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: vi.fn(),
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn()
-    }));
     vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
       getOpponentJudoka: vi.fn(() => ({ stats: { strength: 3 } }))
     }));
@@ -34,8 +48,10 @@ describe("computeAndDispatchOutcome", () => {
 
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
 
-    document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
-    document.body.dataset.battleState = "roundDecision";
+    const { cleanup, dispatchBattleState } = await createTestBattleDom();
+    cleanupBattleDom = cleanup;
+    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
+    dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
     debugHooks.exposeDebugState("roundDebug", {});
 
     const store = { playerChoice: "strength" };
@@ -46,16 +62,10 @@ describe("computeAndDispatchOutcome", () => {
 
     expect(machine.dispatch).toHaveBeenCalledWith("outcome=winPlayer");
     expect(machine.dispatch).toHaveBeenCalledWith("continue");
-    vi.useRealTimers();
   });
 
   it("waits for user input when autoContinue is disabled", async () => {
     vi.useFakeTimers();
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: vi.fn(),
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn()
-    }));
     vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
       getOpponentJudoka: vi.fn(() => ({ stats: { strength: 3 } }))
     }));
@@ -66,8 +76,10 @@ describe("computeAndDispatchOutcome", () => {
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
     mod.setAutoContinue(false);
 
-    document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
-    document.body.dataset.battleState = "roundDecision";
+    const { cleanup, dispatchBattleState } = await createTestBattleDom();
+    cleanupBattleDom = cleanup;
+    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
+    dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
     debugHooks.exposeDebugState("roundDebug", {});
 
     const store = { playerChoice: "strength" };
@@ -78,15 +90,9 @@ describe("computeAndDispatchOutcome", () => {
 
     expect(machine.dispatch).toHaveBeenCalledWith("outcome=winPlayer");
     expect(machine.dispatch).not.toHaveBeenCalledWith("continue");
-    vi.useRealTimers();
   });
 
   it("dispatches interrupt when no outcome is produced", async () => {
-    vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-      emitBattleEvent: vi.fn(),
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn()
-    }));
     vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
       getOpponentJudoka: vi.fn(() => ({ stats: { strength: 5 } }))
     }));
@@ -96,8 +102,10 @@ describe("computeAndDispatchOutcome", () => {
 
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
 
-    document.body.innerHTML = '<div id="player-card"></div><div id="opponent-card"></div>';
-    document.body.dataset.battleState = "roundDecision";
+    const { cleanup, dispatchBattleState } = await createTestBattleDom();
+    cleanupBattleDom = cleanup;
+    dispatchBattleState({ from: "roundStart", to: "waitingForPlayerAction" });
+    dispatchBattleState({ from: "waitingForPlayerAction", to: "roundDecision" });
     debugHooks.exposeDebugState("roundDebug", {});
 
     const store = { playerChoice: "strength" };
