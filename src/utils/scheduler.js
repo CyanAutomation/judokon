@@ -87,6 +87,10 @@ export function start() {
 export function onFrame(cb) {
   const id = ++nextId;
   frameCallbacks.set(id, cb);
+  if (!running && typeof requestAnimationFrame === "function") {
+    const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+    if (!isVitest) start();
+  }
   return id;
 }
 
@@ -104,6 +108,10 @@ export function onFrame(cb) {
 export function onSecondTick(cb) {
   const id = ++nextId;
   secondCallbacks.set(id, cb);
+  if (!running && typeof requestAnimationFrame === "function") {
+    const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST === "true";
+    if (!isVitest) start();
+  }
   return id;
 }
 

@@ -221,3 +221,14 @@ Next recommended step: Continue with the next mapped item from `reports/prd-mapp
 - Updated PRDs retain the authoritative content; the repo now references PRDs under `design/productRequirementsDocuments/` as the source of truth for these topics.
 
 Validation: After the deletions I will run formatting and JSDoc checks to ensure no regressions (prettier/eslint/jsdoc). If you'd prefer these deletions staged on a branch for review, tell me and I'll revert the deletions locally and create a feature branch instead.
+
+### Recent agent action — review of mapped sources (no-op)
+
+- Re-checked mapped source files from `reports/prd-mapping-report.json` to avoid deleting files that were edited manually since my last run.
+- I inspected the following mapped sources and confirmed their content is present in their target PRDs; I did not perform deletions because manual edits were made to PRDs or the files since the previous pass:
+  - `docs/battle-cli.md` (content present in `prdBattleCLI.md`)
+  - `docs/battleCLI.md` (content present in `prdBattleCLI.md`)
+  - `docs/round-selection.md` (content present in `prdRoundSelection.md`)
+  - `design/battleMarkup.md` (content present in `prdBattleMarkup.md`)
+
+If you'd like, I can now create a feature branch and apply deletions there so you can review the changes as a single PR. Otherwise I will continue processing the next mapped entries per `reports/prd-mapping-report.json` (triage unmapped docs or create stubs) — tell me which you prefer.

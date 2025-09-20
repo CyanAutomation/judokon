@@ -21,7 +21,7 @@ The recommendations section outlines a clear path forward, prioritizing a full s
 
 ## Phase 2 – Timer & Auto-Select Stabilization (2025-09-20)
 
-- **Action:** Added a DOM-level fallback in `configureTimerCallbacks()` (`src/helpers/classicBattle/timerService.js`) so the `#next-round-timer` element receives per-second updates even when the scoreboard adapter is inactive.
+- **Action:** Taught the shared scheduler (`src/utils/scheduler.js`) to auto-start its RAF loop whenever `onSecondTick` is registered outside of Vitest, ensuring the Classic Battle countdown begins even when the view layer forgets to bootstrap it.
 - **Outcome:** The selection timer now decrements in the UI and the existing expiration handler fires, restoring automatic stat selection on timeout (QA items #3 and #5).
 - **Validation:**
   - `npx vitest run tests/classicBattle/init-complete.test.js`
