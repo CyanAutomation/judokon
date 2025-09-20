@@ -425,9 +425,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
       await expect(snackbar).not.toContainText(/Next round in/i);
 
       const finalText = ((await snackbar.textContent()) || "").trim();
-      expect(
-        finalText === "" || /Opponent is choosing/i.test(finalText)
-      ).toBeTruthy();
+      expect(finalText === "" || /Opponent is choosing/i.test(finalText)).toBeTruthy();
     });
   });
 
