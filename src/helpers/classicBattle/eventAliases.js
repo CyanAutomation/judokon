@@ -108,54 +108,6 @@ export function emitEventWithAliases(eventTarget, eventName, payload, options = 
 }
 
 /**
- * Enhanced battle event emission with alias support
- *
- * @param {string} eventName - Event name (new or old)
- * @param {any} payload - Event payload
- * @param {object} options - Emission options
- * @returns {void}
- *
- * @pseudocode
- * 1. Resolve the battle event target via `getBattleEventTarget`.
- * 2. If `eventName` is deprecated, warn and emit both new and old names.
- * 3. Otherwise delegate to `emitEventWithAliases` with the given name.
- */
-export function emitBattleEventWithAliases(eventName, payload, options = {}) {
-  // Import the battle event target dynamically to avoid circular deps
-  let battleEventTarget;
-  try {
-    const battleEvents = require("./battleEvents.js");
-    battleEventTarget = battleEvents.getBattleEventTarget();
-  } catch {
-    // Fallback for browser environment - try globalThis
-    const EVENT_TARGET_KEY = "__classicBattleEventTarget";
-    battleEventTarget = globalThis[EVENT_TARGET_KEY];
-    if (!battleEventTarget) {
-      console.warn("[eventAliases] Battle event target not found, skipping emission");
-      return;
-    }
-  }
-
-  // Check if this is an old event name being used
-  const standardizedName = REVERSE_EVENT_ALIASES[eventName];
-
-  if (standardizedName) {
-    // Old name used - emit with standardized name and warn
-    const isDev =
-      typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development";
-    const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST;
-
-    if (options.warnDeprecated !== false && (isDev || isVitest)) {
-      console.warn(`⚠️ Deprecated event name '${eventName}' used. Update to '${standardizedName}'`);
-    }
-    emitEventWithAliases(battleEventTarget, standardizedName, payload, options);
-  } else {
-    // New name used - emit with aliases
-    emitEventWithAliases(battleEventTarget, eventName, payload, options);
-  }
-}
-
-/**
  * Create migration helper for updating event names in test files
  *
  * @param {string} oldEventName - Deprecated event name
