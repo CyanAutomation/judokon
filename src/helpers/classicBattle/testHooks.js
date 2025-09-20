@@ -115,9 +115,12 @@ const renderStatsCardForTest = async (target, base, overrides) => {
 
   const card = document.createElement("div");
   card.className = `judoka-card ${rarityClass}`.trim();
-  card.appendChild(statsPanel);
-
-  const container = document.createElement("div");
+  try {
+    container.dataset.cardJson = JSON.stringify(cardData);
+  } catch (error) {
+    console.warn("Failed to serialize card  error);
+    container.dataset.cardJson = JSON.stringify({ id: cardData.id, stats: cardData.stats });
+  }
   container.className = "card-container";
   try {
     container.dataset.cardJson = JSON.stringify(cardData);
