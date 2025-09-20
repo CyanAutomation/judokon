@@ -76,7 +76,8 @@ export function createBattleStore() {
     playerCardEl: null,
     opponentCardEl: null,
     statButtonEls: null,
-    currentPlayerJudoka: null
+    currentPlayerJudoka: null,
+    currentOpponentJudoka: null
   };
 }
 
@@ -183,6 +184,7 @@ export async function startRound(store, onRoundStart) {
   const scheduler = store?.context?.scheduler || store?.scheduler;
   const cards = await drawCards();
   store.currentPlayerJudoka = cards.playerJudoka || null;
+  store.currentOpponentJudoka = cards.opponentJudoka || null;
   let roundNumber = 1;
   safeRound(
     "startRound.resolveRoundNumber",

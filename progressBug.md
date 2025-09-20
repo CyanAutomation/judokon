@@ -37,15 +37,15 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 
 4. Refactor the test to not mix display.round.start with roundEnded. The test should focus on the start event only, or test the end event separately.
 
-**Actions Taken:**
+**Actions Taken (verified by code inspection):**
 
-- Fixed the mock for `emitBattleEvent` in `tests/classicBattle/page-scaffold.test.js` to properly pass event objects with `detail` property to match the real CustomEvent behavior, allowing the `display.round.start` handler to access `e.detail.roundNumber`.
+- The test-level mock for `emitBattleEvent` used in `tests/classicBattle/page-scaffold.test.js` was updated in-place. The mock now emits events with a `detail` object (i.e. `battleEvents.emit(event, { type: event, detail: data })`), which matches how production handlers expect CustomEvent-like payloads and allows handlers reading `e?.detail?.roundNumber` to work.
 
-**Outcomes:**
+**Outcomes (status):**
 
-- The test "updates scoreboard text when a mock round starts" now passes as the round number is correctly set to 3 and remains at 3 after roundEnded, since the mock for emitBattleEvent was fixed to properly pass event objects with `detail` property.
-- No regressions detected in other tests in the same file; the other two failing tests remain as expected.
-- The event flow remains unchanged, but the test mock is now more accurate to the real CustomEvent behavior.
+- Implementation: The `emitBattleEvent` mock change is present in the repository and has been confirmed by static inspection of `tests/classicBattle/page-scaffold.test.js` and of `src/helpers/classicBattle/scoreboardAdapter.js` (which reads `e?.detail?.roundNumber`).
+- Runtime verification: I attempted a local Vitest run for the file, but the run returned the tests as skipped (Vitest reported the file and tests were skipped). Because of that, I could not conclusively confirm the test passes at runtime from this environment. See "Next steps" for how to validate locally/CI.
+- Risk: The underlying application event flow was not modified by this change (only the test harness was made more accurate). A longer-term architectural recommendation (centralize round state) remains valid but is not applied here.
 
 See consolidated "Opportunities for improvement" section at the end of this document.
 
@@ -82,9 +82,12 @@ The test times out because a promise that waits for the `round.resolved` event n
 
 See consolidated "Opportunities for improvement" section at the end of this document.
 
-**Actions (2025-XX-XX):**
+**Actions (current state):**
 
-- Prototyped richer mocks for `roundManager` and `timerService` to route stat-button clicks through `handleStatSelection`, but the Vitest scenario still times out because the synthetic click never reaches the mocked handler. No code committed; additional refinement is needed before rerunning the suite.
+- The page-scaffold test file includes a realistic mock of `../../src/helpers/classicBattle/uiHelpers.js` (in-file). That mock provides an implementation of `initStatButtons` which mirrors runtime behavior: it finds stat buttons, attaches click handlers (including bubbling-phase listener behavior) and exposes enable/disable controls. Static inspection confirms the mock attaches listeners in a way that should allow synthetic `Element.click()` calls in tests to reach the selection handler.
+- The `selectionHandler` mock in the same test file is present and calls `emitBattleEvent("roundResolved")` as expected.
+
+**Status:** implementation present; runtime verification attempted but skipped by Vitest in this environment. If you still see timeouts locally, re-run the specific test with no test-skipping flags or check for outer describe/test-level skip conditions.
 
 ---
 
@@ -117,18 +120,16 @@ The test fails due to an infinite recursive loop between the animation scheduler
 3. Refactor the test to use the scheduler's public API and fake timers instead of mocking `requestAnimationFrame`.
 4. Implement a safer mock utility that can be reused across tests requiring animation frame control.
 
-**Actions Taken:**
+**Actions Taken (verified by code inspection):**
 
-- Replaced the synchronous mock for `requestAnimationFrame` in `tests/helpers/classicBattle/utils.js` with a queue-based implementation that queues callbacks instead of executing them immediately, preventing infinite recursion.
-- Added a `flushRAF` function to manually execute queued `requestAnimationFrame` callbacks for testing purposes.
-- Updated the failing test in `tests/classicBattle/page-scaffold.test.js` to call `globalThis.flushRAF()` after enabling stat controls and after resetting stat buttons to ensure scheduler callbacks are processed without causing stack overflow.
+- `tests/helpers/classicBattle/utils.js` contains a queue-based `requestAnimationFrame` mock and a `flushRAF` helper. The mock enqueues callbacks and returns ids; `cancelAnimationFrame` removes queued callbacks. `globalThis.flushRAF` is implemented to drain and synchronously run queued callbacks in a controlled fashion.
+- `tests/classicBattle/page-scaffold.test.js` includes calls to `globalThis.flushRAF()` in the `stat buttons` tests to ensure queued frames are flushed at key points.
 
-**Outcomes:**
+**Outcomes (status):**
 
-- The test "stat buttons re-enable when scheduler loop is idle" now passes without causing a maximum call stack size exceeded error, as the queue-based mock prevents infinite recursion in the scheduler loop.
-- The queue-based mock provides a safer utility that can be reused across tests requiring animation frame control, addressing the root cause of the synchronous callback execution.
-- Test results: 4 passed, 1 failed (the second failure remains unfixed as requested).
-- The fix successfully resolves the stack overflow issue for the targeted test while maintaining functionality for other passing tests in the file.
+- Implementation: The safer RAF mock and `flushRAF` helper are present in the repo and referenced by tests; static inspection confirms the intended mitigation for the previous infinite-recursion issue.
+- Runtime verification: As noted above, a local targeted Vitest run reported the test file as skipped in this environment, so I couldn't conclusively re-run and observe a passing run here. The code-level fixes needed to avoid synchronous recursion are in place.
+- Test summary reported earlier in this document ("4 passed, 1 failed") could not be reproduced here and appears to have been an earlier, ad-hoc run; please re-run tests in CI or locally to confirm final pass counts.
 
 **Opportunities for Improvement:**
 
@@ -211,8 +212,25 @@ Notes on ranking & scoring:
 - Medium-term: items 4–6 require more coordination but substantially improve test health.
 - Long-term: items 7–9 touch production code and APIs and should be done behind feature flags with thorough validation.
 
-Suggested next steps:
+Suggested next steps / verification checklist:
 
-- Implement items 1 and 2 this sprint (pack the RAF helper and shared mocks into `tests/utils/`), and update the handful of failing tests to use them.
-- Publish the fake-timer playbook and update CI docs.
-- Schedule a design spike for the centralized round store and scheduler hooks (item 7 and 8) to produce a migration plan.
+1. Run the `page-scaffold` tests locally without filtering/skipping to validate runtime behavior:
+
+  - From repository root run:
+
+    ```bash
+    npx vitest run tests/classicBattle/page-scaffold.test.js
+    ```
+
+  - If Vitest reports the file as skipped, search for any `describe.skip`/`test.skip` or environment gating that may be preventing execution.
+
+2. If timeouts persist for the "render enabled after start; clicking resolves and starts cooldown" test, re-run that single test with verbose output and trace the listener wiring. Useful steps:
+
+  - Ensure `initStatButtons` mock is the one being executed (the file-level mock is present; cross-module mocks can mask it).
+  - Add temporary `console.log` (or a muted test log gate) to verify the click handler is attached and that `handleStatSelection` is called.
+
+3. Once the small, test-only fixes are validated, consider extracting the RAF mock and common test helpers into `tests/helpers/*` to reduce duplication and improve reuse (low-risk refactor).
+
+4. For the longer-term architectural suggestion (centralized round state), open a separate design spike/PR so we can discuss API surface and migration strategy; this remains recommended but out-of-scope for the quick test fixes applied here.
+
+5. Report back with the Vitest output (or CI job) and I will update this document to record final pass/fail numbers and close outstanding items.
