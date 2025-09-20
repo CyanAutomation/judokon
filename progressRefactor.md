@@ -49,6 +49,67 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/technical/classicBattleTesting.md`, `design/testing/classicBattleTesting.md` → embed deterministic testing checklist in `prdBattleClassic.md` and `prdTestingStandards.md`, then archive duplicates.
 - `docs/components.md` and `docs/roundUI.md` → integrate into `prdUIDesignSystem.md` and ensure `prdBattleMarkup.md` owns DOM contracts.
 
+## Proposed mapping for currently-unmapped docs (recommended)
+
+Below are the unmapped documents discovered in the inventory scan with a recommended PRD target, a suggested action (assimilate, stub, or create new PRD), and a short rationale. If you approve, I will implement these as stubs or appendices on a feature branch.
+
+- `docs/TestValuePolicy.md` -> `prdTestingStandards.md`
+  - Action: Assimilate (append acceptance criteria + testing rubric)
+  - Rationale: This doc belongs with test value definitions and evaluation rules used by Playwright/Vitest; `prdTestingStandards.md` should own the policy.
+
+- `docs/components.md` -> `prdUIDesignSystem.md`
+  - Action: Assimilate (migrate component descriptions and examples into PRD appendix)
+  - Rationale: Component-level guidance supports the UI design system and should be consolidated under `prdUIDesignSystem.md`.
+
+- `docs/product-docs.md` -> `prdPRDViewer.md`
+  - Action: Stub (create redirect stub pointing to `prdPRDViewer.md` and note owner)
+  - Rationale: This is documentation about product docs themselves; the PRD viewer PRD is the natural owner.
+
+- `docs/rag-system.md` -> `prdVectorDatabaseRAG.md`
+  - Action: Assimilate (append agent usage guidance and provenance rules)
+  - Rationale: The RAG usage and agent workflow belong with the vector/RAG PRD.
+
+- `docs/roundUI.md` -> `prdBattleMarkup.md` (or `prdUIDesignSystem.md`)
+  - Action: Decide + Assimilate (prefer `prdBattleMarkup.md` for DOM contract content; move style/UX guidance to `prdUIDesignSystem.md`)
+  - Rationale: Round UI contains both markup contract and styling guidance; split accordingly.
+
+- `docs/testing-guide.md` -> `prdTestingStandards.md`
+  - Action: Assimilate (merge testing how-tos and actionable commands into PRD sections)
+  - Rationale: Operational testing guidance should live in the testing standards PRD alongside validation commands and policies.
+
+- `docs/testing-modes.md` -> `prdTestMode.md` + `prdTestingStandards.md`
+  - Action: Assimilate (taxonomy into `prdTestMode.md`, enforcement and rubrics into `prdTestingStandards.md`)
+  - Rationale: Mode definitions and test runner modes deserve a small dedicated PRD but must be cross-linked to standards.
+
+- `docs/validation-commands.md` -> `prdTestingStandards.md` + `prdDevelopmentStandards.md`
+  - Action: Split & Assimilate (test-run commands into testing PRD; agent/dev workflow commands into dev standards PRD)
+  - Rationale: The command matrix serves both test operations and developer/agent workflows; split reduces PRD scope creep.
+
+- `docs/vector-search.md` -> `prdVectorDatabaseRAG.md` (verify)
+  - Action: Confirm assimilation (ensure Appendix contains the workflow and remove source or add stub)
+  - Rationale: Vector search content belongs in the RAG PRD; if not already fully merged, finish assimilation.
+
+- `design/battleCLI-legacy-alignment.md` -> `prdBattleCLI.md`
+  - Action: Assimilate (append legacy alignment notes and migration checklist)
+  - Rationale: Legacy alignment concerns the CLI behavior; `prdBattleCLI.md` should document compatibility and migration steps.
+
+- `design/eventNamingAudit.md` -> `prdEventContracts.md`
+  - Action: Assimilate (append audit tables and migration checklist)
+  - Rationale: Event naming and listener contract audits belong under the event contracts PRD.
+
+- `design/retroThemeContrast.md` -> `prdUIDesignSystem.md`
+  - Action: Assimilate (accessibility contrast guidance into UI PRD)
+  - Rationale: Theme and contrast guidance is a UI concern and should sit under the design system PRD.
+
+- `design/stateHandlerAudit.md` -> `prdStateHandler.md`
+  - Action: Assimilate (add diagrams, compliance table, and acceptance criteria)
+  - Rationale: State handler audits and compliance belong with the state handler PRD.
+
+Notes:
+
+- For long/deep docs consider adding an Appendix section in the PRD and keeping the original file as a short stub that points to the PRD until the PRD is reviewed.
+- I can implement these as non-destructive stubs first (feature branch), then follow up with assimilation and source deletions after review.
+
 ## Revised phased approach
 
 **Phase 1 – Confirm inventory & patch references**

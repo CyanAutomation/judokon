@@ -1,5 +1,9 @@
 import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js";
-import { createBattleStore, startCooldown } from "../helpers/classicBattle/roundManager.js";
+import {
+  createBattleStore,
+  startCooldown,
+  startRound
+} from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 // Removed duplicate import of handleStatSelection
 import {
@@ -920,29 +924,41 @@ async function handleReplay(store) {
  * 2. Render selection UI.
  * 3. Begin selection timer.
  */
-async function startRoundCycle(store) {
-  // Prevent duplicate cycle starts caused by repeated events or late timers
+async function startRoundCycle(store, options = {}) {
+  const { skipStartRound = false } = options;
   if (isStartingRoundCycle) return;
   isStartingRoundCycle = true;
-  // Ensure any previous selection timers/fallbacks are fully stopped
   try {
-    stopActiveSelectionTimer();
-  } catch {}
-  updateRoundCounterFromEngine({ expectAdvance: true });
-  try {
-    renderStatButtons(store);
-  } catch (err) {
-    console.debug("battleClassic: renderStatButtons failed", err);
+    try {
+      stopActiveSelectionTimer();
+    } catch {}
+
+    if (!skipStartRound) {
+      try {
+        await startRound(store);
+      } catch (err) {
+        console.debug("battleClassic: startRound failed", err);
+      }
+    }
+
+    updateRoundCounterFromEngine({ expectAdvance: true });
+
+    try {
+      renderStatButtons(store);
+    } catch (err) {
+      console.debug("battleClassic: renderStatButtons failed", err);
+    }
+    try {
+      showSelectionPrompt();
+    } catch (err) {
+      console.debug("battleClassic: showSelectionPrompt failed", err);
+    }
+    try {
+      await beginSelectionTimer(store);
+    } catch {}
+  } finally {
+    isStartingRoundCycle = false;
   }
-  try {
-    showSelectionPrompt();
-  } catch (err) {
-    console.debug("battleClassic: showSelectionPrompt failed", err);
-  }
-  try {
-    await beginSelectionTimer(store);
-  } catch {}
-  isStartingRoundCycle = false;
 }
 
 /**
