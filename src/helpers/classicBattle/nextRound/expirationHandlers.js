@@ -243,7 +243,7 @@ export function createMachineStateInspector(params) {
  * Dispatch the ready event via available battle event dispatchers.
  *
  * @summary Attempts to trigger the "ready" event using provided and global
- * dispatchers until one succeeds.
+ * dispatchers until one succeeds or short-circuits when already dispatched.
  *
  * @pseudocode
  * 1. Collect the candidate dispatcher from options and include the global
@@ -255,6 +255,8 @@ export function createMachineStateInspector(params) {
  * @param {object} [options]
  * @param {(type: string) => any} [options.dispatchBattleEvent]
  * @param {boolean} [options.skipCandidate]
+ * @param {boolean} [options.alreadyDispatched] True when the ready event was
+ * already emitted and re-dispatching should be skipped.
  * @returns {Promise<boolean>}
  */
 export async function dispatchReadyViaBus(options = {}) {
