@@ -1,9 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { setupFlags, wireEvents, subscribeEngine } from "../../src/pages/battleCLI/init.js";
-import * as battleEngineFacade from "../../src/helpers/battleEngineFacade.js";
+
+vi.mock("../../src/helpers/classicBattle/testHooks.js", () => ({}));
+
+let setupFlags;
+let wireEvents;
+let subscribeEngine;
+let engineFacadeMock;
+let featureFlagsMock;
+let updateRoundHeaderMock;
+
+const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe("Battle CLI Helpers", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     document.body.innerHTML = `
       <input id="verbose-toggle" type="checkbox" />
       <section id="cli-verbose-section" hidden></section>
@@ -12,19 +21,38 @@ describe("Battle CLI Helpers", () => {
       <div id="round-message"></div>
       <div id="cli-root"></div>
     `;
-    vi.doMock("../../src/helpers/featureFlags.js", () => ({
+
+    featureFlagsMock = {
       initFeatureFlags: vi.fn().mockResolvedValue(undefined),
-      isEnabled: vi.fn(() => true), // Enable cliShortcuts
+      isEnabled: vi.fn((flag) => flag === "cliShortcuts"),
       setFlag: vi.fn().mockResolvedValue(undefined),
       featureFlagsEmitter: new EventTarget()
-    }));
+    };
+
+    updateRoundHeaderMock = vi.fn();
+
+    engineFacadeMock = {
+      getPointsToWin: vi.fn(),
+      setPointsToWin: vi.fn(),
+      on: vi.fn()
+    };
+
+    vi.doMock("../../src/helpers/featureFlags.js", () => featureFlagsMock);
     vi.doMock("../../src/pages/battleCLI/dom.js", () => ({
       byId: (id) => document.getElementById(id),
-      updateRoundHeader: vi.fn(),
+      updateRoundHeader: updateRoundHeaderMock,
       setRoundMessage: (msg) => {
-        document.getElementById("round-message").textContent = msg;
-      }
+        const node = document.getElementById("round-message");
+        if (node) node.textContent = msg;
+      },
+      updateScoreLine: vi.fn(),
+      clearVerboseLog: vi.fn()
     }));
+    vi.doMock("../../src/helpers/battleEngineFacade.js", () => engineFacadeMock);
+
+    ({ setupFlags, wireEvents, subscribeEngine } = await import(
+      "../../src/pages/battleCLI/init.js"
+    ));
   });
 
   afterEach(() => {
@@ -34,10 +62,6 @@ describe("Battle CLI Helpers", () => {
 
   describe("setupFlags", () => {
     it("toggles the verbose section when the checkbox is clicked", async () => {
-      vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-        getPointsToWin: vi.fn(),
-        setPointsToWin: vi.fn()
-      }));
       await setupFlags();
       const verboseToggle = document.getElementById("verbose-toggle");
       const verboseSection = document.getElementById("cli-verbose-section");
@@ -45,17 +69,60 @@ describe("Battle CLI Helpers", () => {
       expect(verboseSection.hidden).toBe(true);
 
       verboseToggle.click();
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await flushMicrotasks();
       expect(verboseSection.hidden).toBe(false);
 
       verboseToggle.click();
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await flushMicrotasks();
       expect(verboseSection.hidden).toBe(true);
+    });
+
+    it("keeps the verbose UI responsive when the engine facade throws", async () => {
+      engineFacadeMock.getPointsToWin.mockImplementation(() => {
+        throw new Error("boom");
+      });
+      engineFacadeMock.setPointsToWin.mockImplementation(() => {
+        throw new Error("boom");
+      });
+      const root = document.getElementById("cli-root");
+      root.dataset.target = "7";
+      root.dataset.round = "2";
+
+      await setupFlags();
+      const verboseToggle = document.getElementById("verbose-toggle");
+      const verboseSection = document.getElementById("cli-verbose-section");
+
+      expect(verboseSection.hidden).toBe(true);
+
+      verboseToggle.click();
+      await flushMicrotasks();
+
+      expect(engineFacadeMock.setPointsToWin).not.toHaveBeenCalled();
+      expect(verboseSection.hidden).toBe(false);
+      const lastCall = updateRoundHeaderMock.mock.calls.at(-1);
+      expect(lastCall).toEqual([2, 7]);
+    });
+
+    it("toggles the verbose UI when the engine facade is unavailable", async () => {
+      engineFacadeMock.getPointsToWin = undefined;
+      engineFacadeMock.setPointsToWin = undefined;
+
+      await setupFlags();
+      const verboseToggle = document.getElementById("verbose-toggle");
+      const verboseSection = document.getElementById("cli-verbose-section");
+
+      expect(verboseSection.hidden).toBe(true);
+
+      verboseToggle.click();
+      await flushMicrotasks();
+
+      expect(verboseSection.hidden).toBe(false);
     });
   });
 
   describe("wireEvents", () => {
-    it("toggles the help section when the 'h' key is pressed", () => {
+    it("toggles the help section when the 'h' key is pressed", async () => {
+      await setupFlags();
       wireEvents();
       const shortcutsSection = document.getElementById("cli-shortcuts");
       expect(shortcutsSection.hidden).toBe(true);
@@ -68,11 +135,13 @@ describe("Battle CLI Helpers", () => {
   });
 
   describe("subscribeEngine", () => {
-    it("updates the timer display on a timerTick engine event", () => {
-      const onSpy = vi.spyOn(battleEngineFacade, "on");
+    it("updates the timer display on a timerTick engine event", async () => {
+      await setupFlags();
       subscribeEngine();
 
-      const timerTickCallback = onSpy.mock.calls.find((call) => call[0] === "timerTick")[1];
+      const timerTickCallback = engineFacadeMock.on.mock.calls.find(
+        (call) => call[0] === "timerTick"
+      )[1];
       const countdownDisplay = document.getElementById("cli-countdown");
       expect(countdownDisplay.textContent).toBe("");
 
@@ -81,11 +150,13 @@ describe("Battle CLI Helpers", () => {
       expect(countdownDisplay.textContent).toBe("Time remaining: 5");
     });
 
-    it("displays the match ended message on a matchEnded engine event", () => {
-      const onSpy = vi.spyOn(battleEngineFacade, "on");
+    it("displays the match ended message on a matchEnded engine event", async () => {
+      await setupFlags();
       subscribeEngine();
 
-      const matchEndedCallback = onSpy.mock.calls.find((call) => call[0] === "matchEnded")[1];
+      const matchEndedCallback = engineFacadeMock.on.mock.calls.find(
+        (call) => call[0] === "matchEnded"
+      )[1];
       const roundMessage = document.getElementById("round-message");
       expect(roundMessage.textContent).toBe("");
 

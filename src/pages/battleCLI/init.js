@@ -1854,12 +1854,38 @@ export async function setupFlags() {
     }
   };
   const toggleVerbose = async (enable) => {
-    const target = engineFacade.getPointsToWin?.();
+    let target;
+    let hasStoredTarget = false;
+    try {
+      const getter = engineFacade.getPointsToWin;
+      if (typeof getter === "function") {
+        target = getter();
+        hasStoredTarget = true;
+      }
+    } catch {
+      hasStoredTarget = false;
+      target = undefined;
+    }
+
     verboseEnabled = !!enable;
     await setFlag("cliVerbose", enable);
-    engineFacade.setPointsToWin?.(target);
-    const round = Number(byId("cli-root")?.dataset.round || 0);
-    updateRoundHeader(round, target);
+
+    try {
+      const setter = engineFacade.setPointsToWin;
+      if (hasStoredTarget && typeof setter === "function") {
+        setter(target);
+      }
+    } catch {}
+
+    const root = byId("cli-root");
+    const round = Number(root?.dataset.round || 0);
+    let headerTarget = target;
+    if (!hasStoredTarget && root?.dataset.target !== undefined) {
+      const datasetTarget = root.dataset.target;
+      const parsedTarget = Number(datasetTarget);
+      headerTarget = Number.isNaN(parsedTarget) ? datasetTarget : parsedTarget;
+    }
+    updateRoundHeader(round, headerTarget);
     updateVerbose();
   };
   try {

@@ -118,7 +118,7 @@ const renderStatsCardForTest = async (target, base, overrides) => {
   try {
     container.dataset.cardJson = JSON.stringify(cardData);
   } catch (error) {
-    console.warn("Failed to serialize card  error);
+    console.warn("Failed to serialize card", error);
     container.dataset.cardJson = JSON.stringify({ id: cardData.id, stats: cardData.stats });
   }
   container.className = "card-container";
