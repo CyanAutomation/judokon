@@ -2,12 +2,15 @@ import { beforeEach, afterEach, test, expect, vi } from "vitest";
 import {
   createBattleStore,
   startCooldown,
-  _resetForTest
+  _resetForTest,
+  __testFinalizeReadyControls as finalizeReadyControlsForTest
 } from "../src/helpers/classicBattle/roundManager.js";
 import {
   detectOrchestratorContext,
   initializeCooldownTelemetry,
-  resolveActiveScheduler
+  resolveActiveScheduler,
+  createCooldownControls,
+  createExpirationDispatcher
 } from "../src/helpers/classicBattle/cooldownOrchestrator.js";
 import { exposeDebugState } from "../src/helpers/classicBattle/debugHooks.js";
 
@@ -186,4 +189,43 @@ test("roundManager - cooldown expiry: observe ready dispatch count (baseline)", 
       );
     } catch {}
   } catch {}
+});
+
+test("finalizeReadyControls guards wrapped resolveReady against reentry", async () => {
+  const controls = createCooldownControls();
+  const originalResolve = controls.resolveReady;
+  const resolveSpy = vi.fn(function resolveReadySpy(...args) {
+    return originalResolve.apply(this, args);
+  });
+  controls.resolveReady = resolveSpy;
+  const runtime = {
+    bus: { emit: vi.fn() },
+    expirationOptions: {},
+    timer: null,
+    scheduler: { clearTimeout: vi.fn() },
+    fallbackId: null,
+    schedulerFallbackId: null,
+    finalizePromise: null,
+    expired: false
+  };
+  const handleExpiration = vi.fn(async () => {
+    finalizeReadyControlsForTest(controls, true);
+    return true;
+  });
+  createExpirationDispatcher({
+    controls,
+    btn: null,
+    runtime,
+    handleExpiration,
+    getReadyDispatched: () => true
+  });
+  controls.readyInFlight = true;
+
+  finalizeReadyControlsForTest(controls, true);
+
+  await expect(controls.ready).resolves.toBeUndefined();
+  expect(handleExpiration).toHaveBeenCalledTimes(1);
+  expect(resolveSpy).toHaveBeenCalledTimes(1);
+  expect(controls.readyDispatched).toBe(true);
+  expect(controls.readyInFlight).toBe(false);
 });

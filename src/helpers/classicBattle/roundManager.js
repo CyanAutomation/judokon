@@ -671,16 +671,17 @@ function finalizeReadyControls(controls, dispatched) {
   if (!controls) return;
   controls.readyInFlight = false;
   const resolver = typeof controls.resolveReady === "function" ? controls.resolveReady : null;
-  if (!controls.readyDispatched && dispatched && resolver) {
+  const shouldResolveReady = Boolean(dispatched && !controls.readyDispatched && resolver);
+  if (dispatched) {
+    controls.readyDispatched = true;
+  }
+  if (shouldResolveReady) {
     controls.__finalizingReady = true;
     try {
       resolver();
     } finally {
       controls.__finalizingReady = false;
     }
-  }
-  if (dispatched) {
-    controls.readyDispatched = true;
   }
 }
 
@@ -905,3 +906,13 @@ function isOrchestrated() {
     defaultValue: false
   });
 }
+
+/**
+ * @summary Test-only alias for the finalizeReadyControls guard.
+ *
+ * @pseudocode
+ * 1. Return the finalizeReadyControls reference so tests can import the guard logic.
+ *
+ * @returns {typeof finalizeReadyControls} The finalizeReadyControls implementation for tests.
+ */
+export const __testFinalizeReadyControls = finalizeReadyControls;
