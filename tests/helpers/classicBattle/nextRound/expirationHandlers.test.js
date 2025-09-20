@@ -193,22 +193,41 @@ describe("dispatchReadyViaBus", () => {
 });
 
 describe("dispatchReadyDirectly", () => {
-  it("invokes machine dispatch when available", async () => {
+  it("prefers the shared battle dispatcher when available", async () => {
     const emit = vi.fn();
     const dispatch = vi.fn(() => "done");
+    const mocked = getMockedDispatch();
+    mocked.mockReturnValueOnce("done");
     const result = await dispatchReadyDirectly({
       machineReader: () => ({ dispatch }),
       emitTelemetry: emit
     });
-    expect(result).toBe(true);
+    expect(result).toEqual({ dispatched: true, dedupeTracked: true });
+    expect(mocked).toHaveBeenCalledWith("ready");
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
+  });
+
+  it("falls back to the machine dispatch when the shared dispatcher fails", async () => {
+    const emit = vi.fn();
+    const dispatch = vi.fn(() => "done");
+    const mocked = getMockedDispatch();
+    mocked.mockImplementationOnce(() => {
+      throw new Error("boom");
+    });
+    const result = await dispatchReadyDirectly({
+      machineReader: () => ({ dispatch }),
+      emitTelemetry: emit
+    });
+    expect(result).toEqual({ dispatched: true, dedupeTracked: false });
     expect(dispatch).toHaveBeenCalledWith("ready");
     expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_result", true);
   });
 
-  it("returns false when dispatch missing", async () => {
+  it("reports missing dispatch capability", async () => {
     const emit = vi.fn();
     const result = await dispatchReadyDirectly({ machineReader: () => ({}), emitTelemetry: emit });
-    expect(result).toBe(false);
+    expect(result).toEqual({ dispatched: false, dedupeTracked: false });
     expect(emit).toHaveBeenCalledWith("handleNextRound_dispatchReadyDirectly_info", {
       machineExists: true,
       hasDispatch: false

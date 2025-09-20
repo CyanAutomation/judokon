@@ -538,21 +538,32 @@ function createReadyDispatchStrategies({
       typeof performance !== "undefined" && typeof performance.now === "function"
         ? performance.now()
         : Date.now();
-    const dispatched = await dispatchReadyDirectly({ machineReader, emitTelemetry });
-    const propagate = dispatched && shouldPropagateAfterMachine();
+    const rawResult = await dispatchReadyDirectly({ machineReader, emitTelemetry });
+    const normalizedResult =
+      rawResult && typeof rawResult === "object" && rawResult !== null
+        ? {
+            dispatched: rawResult.dispatched === true,
+            dedupeTracked: rawResult.dedupeTracked === true
+          }
+        : { dispatched: rawResult === true, dedupeTracked: false };
+    if (normalizedResult.dispatched) {
+      setReadyDispatchedForCurrentCooldown(true);
+    }
+    const propagate = normalizedResult.dispatched && shouldPropagateAfterMachine();
     const end =
       typeof performance !== "undefined" && typeof performance.now === "function"
         ? performance.now()
         : Date.now();
     emitTelemetry?.("handleNextRoundMachineStrategyResult", {
-      dispatched: dispatched === true,
+      dispatched: normalizedResult.dispatched === true,
       propagate,
+      dedupeTracked: normalizedResult.dedupeTracked === true,
       durationMs: typeof end === "number" && typeof start === "number" ? end - start : undefined
     });
     if (propagate) {
       return { dispatched: true, propagate: true };
     }
-    return dispatched;
+    return normalizedResult.dispatched;
   };
   const strategies = [];
   let machineStrategyAdded = false;

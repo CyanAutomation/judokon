@@ -339,21 +339,25 @@ export async function dispatchReadyWithOptions(params) {
 /**
  * Directly dispatch the ready event via the state machine when available.
  *
- * @summary Reads the machine from the provided reader and calls its
- * `dispatch("ready")` method when possible, reporting telemetry along the way.
+ * @summary Reads the machine from the provided reader and dispatches "ready"
+ * while preferring the shared battle dispatcher so dedupe tracking engages
+ * before falling back to the raw machine.
  *
  * @pseudocode
  * 1. Attempt to read the machine defensively and record whether it exists and
  *    has a dispatch method.
- * 2. If dispatch is unavailable, return `false` immediately.
- * 3. Invoke `dispatch("ready")`, awaiting promise results and emitting success
- *    telemetry.
- * 4. Catch failures, emit error telemetry, and return `false`.
+ * 2. If dispatch is unavailable, return an object indicating failure.
+ * 3. When the shared dispatcher exists, invoke `dispatchBattleEvent("ready")`
+ *    so the dedupe path tracks the attempt before the bus strategy runs.
+ * 4. If the shared dispatcher is unavailable or fails, fall back to calling
+ *    the machine `dispatch("ready")` directly.
+ * 5. Emit telemetry for success or failure and include whether dedupe tracking
+ *    handled the dispatch in the returned payload.
  *
  * @param {object} params
  * @param {() => any} params.machineReader
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
- * @returns {Promise<boolean>}
+ * @returns {Promise<{ dispatched: boolean, dedupeTracked: boolean }>}
  */
 export async function dispatchReadyDirectly(params) {
   const { machineReader, emitTelemetry } = params;
@@ -366,16 +370,46 @@ export async function dispatchReadyDirectly(params) {
     hasDispatch: typeof machine?.dispatch === "function"
   };
   emitTelemetry?.("handleNextRound_dispatchReadyDirectly_info", info);
-  if (!info.hasDispatch) return false;
+  if (!info.hasDispatch) {
+    return { dispatched: false, dedupeTracked: false };
+  }
+
+  const recordSuccess = (dedupeTracked) => {
+    emitTelemetry?.("handleNextRound_dispatchReadyDirectly_result", true);
+    return { dispatched: true, dedupeTracked };
+  };
+  let fallbackError = null;
+  if (typeof globalDispatchBattleEvent === "function") {
+    try {
+      const result = await globalDispatchBattleEvent("ready");
+      if (result !== false) {
+        return recordSuccess(true);
+      }
+    } catch (error) {
+      fallbackError = error;
+    }
+  }
   try {
     const result = machine.dispatch("ready");
     await Promise.resolve(result);
-    emitTelemetry?.("handleNextRound_dispatchReadyDirectly_result", true);
-    return true;
+    return recordSuccess(false);
   } catch (error) {
-    const payload = error && error.message ? error.message : String(error);
+    const parts = [];
+    if (error && error.message) {
+      parts.push(error.message);
+    } else if (error) {
+      parts.push(String(error));
+    }
+    if (fallbackError) {
+      if (fallbackError && fallbackError.message) {
+        parts.push(`fallback:${fallbackError.message}`);
+      } else {
+        parts.push(`fallback:${String(fallbackError)}`);
+      }
+    }
+    const payload = parts.length > 0 ? parts.join(" | ") : "unknown";
     emitTelemetry?.("handleNextRound_dispatchReadyDirectly_error", payload);
-    return false;
+    return { dispatched: false, dedupeTracked: false };
   }
 }
 
