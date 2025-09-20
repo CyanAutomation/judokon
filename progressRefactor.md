@@ -1,90 +1,89 @@
 ## Goal
 
-Produce a small, actionable plan to make `design/productRequirementsDocuments/` the single source of truth by comparing the existing `docs/` and top-level `design/` documents to the PRDs, flagging missing PRDs and documents that should be assimilated into PRDs.
+Produce a small, actionable plan to make `design/productRequirementsDocuments/` the single source of truth by comparing the existing `docs/` and top-level `design/` documents to the PRDs, flagging missing PRDs and documents that should be assimilated into PRDs. This revision documents the validation results and updates the plan accordingly.
 
-This file is a short audit, mapping, and phased plan. After you review, I'll implement the changes you approve (create missing PRDs or merge docs into PRDs).
+## Validation summary
 
-## Quick summary (high level)
+- Confirmed that every PRD referenced below exists under `design/productRequirementsDocuments/`.
+- There is no `design/technical/` directory; the duplicated audits live under `docs/technical/` and at the root of `design/`. Language below reflects the actual paths.
+- Additional documents surfaced during validation require explicit mapping: `docs/TestValuePolicy.md`, `docs/rag-system.md`, `docs/technical/architecture.md`, `docs/technical/classicBattleTesting.md`, `design/architecture.md`, `design/testing/classicBattleTesting.md`, and the `design/eventAudit/` artifacts.
+- The Battle CLI topic is split between `docs/battle-cli.md` (usage) and `docs/battleCLI.md` (module structure). Those guides should be merged while migrating content into `prdBattleCLI.md`.
+- `design/codeStandards/` already holds deep dives referenced by `prdCodeStandards.md`; make sure those references stay canonical when content moves.
 
-- I compared `docs/` and `design/technical` against `design/productRequirementsDocuments/`.
-- Most high-level topics in `docs/` already have a matching PRD (or a related PRD exists). Several technical/operational docs in `docs/technical` and `design/` should be assimilated into their corresponding PRDs (for discoverability and governance). A few topics are missing an explicit PRD and should be created.
+## Inventory & mapping (docs → PRD home)
 
-## Inventory & mapping (docs -> PRD)
+- `docs/battle-cli.md` / `docs/battleCLI.md` → `design/productRequirementsDocuments/prdBattleCLI.md` (exists; merge usage + module structure into PRD appendix and collapse duplicate Markdown once PRD is authoritative).
+- `docs/round-selection.md` → `prdRoundSelection.md` (exists).
+- `docs/vector-search.md` → `prdVectorDatabaseRAG.md` (exists).
+- `docs/rag-system.md` → `prdVectorDatabaseRAG.md` (PRD covers RAG operations; incorporate agent usage guidance or reference it from PRD).
+- `docs/testing-modes.md` → `prdTestMode.md` and `prdTestingStandards.md` (exists; split mode taxonomy vs helper APIs).
+- `docs/testing-guide.md` / `docs/validation-commands.md` / `docs/TestValuePolicy.md` → `prdTestingStandards.md` plus `prdCodeStandards.md` (exists; ensure evaluation rubrics and command matrix live in PRDs).
+- `docs/components.md` → `prdUIDesignSystem.md` (exists).
+- `docs/roundUI.md` → `prdBattleMarkup.md` or `prdUIDesignSystem.md` (decide based on whether the content is markup contract vs component style guidance).
+- `docs/product-docs.md` → `prdPRDViewer.md` (exists).
+- `docs/technical/architecture.md` / `design/architecture.md` → `prdArchitecture.md` (exists; collapse duplicate Markdown after integrating callouts).
+- `docs/technical/battleMarkup.md` / `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat Markdown as temporary appendix until canonical schema lives in PRD).
+- `docs/technical/dataSchemas.md` → `prdDataSchemas.md` (exists).
+- `docs/technical/eventNamingAudit.md` / `design/eventNamingAudit.md` / `design/eventAudit/*.txt` → `prdEventContracts.md` (exists; move migration tables + listener inventories).
+- `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → `prdStateHandler.md` (exists).
+- `docs/technical/classicBattleTesting.md` / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
+- `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md` / `prdTooltipViewer.md` (exists).
+- `design/testing/classicBattleTesting.md`, `design/codeStandards/*.md`, and similar deep dives remain valuable as implementation notes; decide per file whether to fold content into the owning PRD or keep them as linked appendices with a clear authority statement.
 
-The following maps the main files I checked to existing PRDs (exact matches or recommended home):
+## Missing PRDs or extensions
 
-- `docs/battle-cli.md` / `docs/battleCLI.md` → `design/productRequirementsDocuments/prdBattleCLI.md` (exists)
-- `docs/round-selection.md` → `design/productRequirementsDocuments/prdRoundSelection.md` (exists)
-- `docs/vector-search.md` → `design/productRequirementsDocuments/prdVectorDatabaseRAG.md` (exists)
-- `docs/testing-modes.md` → `design/productRequirementsDocuments/prdTestMode.md` (exists)
-- `docs/testing-guide.md` / `docs/validation-commands.md` → `design/productRequirementsDocuments/prdTestingStandards.md` (exists) or `prdDevelopmentStandards.md` / `prdCodeStandards.md` (review/merge recommended)
-- `docs/roundUI.md` → candidate to be assimilated into `prdBattleMarkup.md` or `prdUIDesignSystem.md` (PRD exists)
-- `docs/components.md` → `prdUIDesignSystem.md` (exists)
-- `docs/product-docs.md` (PRD reader) → `prdPRDViewer.md` (exists)
-- `docs/technical/dataSchemas.md` → `prdDataSchemas.md` (exists)
-- `docs/technical/eventNamingAudit.md` → content should be assimilated or referenced by `prdEventContracts.md` (exists)
-- `docs/technical/stateHandlerAudit.md` → should be assimilated or referenced by `prdStateHandler.md` (exists)
-- `docs/technical/battleMarkup.md` → canonical markup should be assimilated into `prdBattleMarkup.md` (exists)
-- `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md` / `prdTooltipViewer.md` (exists) — merge guidance into the PRD
+1. **Public API & integration contracts** – No single PRD enumerates CLI telemetry, Test API surfaces, and automation hooks. Either extend `prdBattleCLI.md` and `prdDevelopmentStandards.md` with a consolidated table or create `prdPublicAPIs.md`.
+2. **Classic Battle test harness ownership** – Expand `prdBattleClassic.md` with an explicit testing appendix summarizing harness helpers and promises (or create `prdBattleClassicTesting.md` if scope demands a standalone PRD).
+3. **Event migration tracker** – Extend `prdEventContracts.md` with migration status, acceptance criteria, and exit checklist. Split into a companion PRD only if the material outgrows the main document.
+4. **Test helper governance (optional)** – If helper APIs require explicit owners and change control, introduce `prdTestHelpers.md`; otherwise add a dedicated section to `prdTestingStandards.md`.
 
-Notes: the `design/` folder also contains `battleMarkup.md`, `eventNamingAudit.md`, and `stateHandlerAudit.md` (plus `design/testing/`) which are technical audits and implementation notes — these should be either referenced by matching PRDs or their authoritative content moved into PRDs.
+## Documents to assimilate or cross-reference
 
-## Missing PRDs (recommend creating)
+- `docs/technical/eventNamingAudit.md`, `design/eventNamingAudit.md`, `design/eventAudit/*.txt` → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
+- `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → integrate diagrams + compliance table into `prdStateHandler.md`.
+- `docs/technical/battleMarkup.md` & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
+- `docs/testing-modes.md`, `docs/testing-guide.md`, `docs/TestValuePolicy.md`, `design/codeStandards/evaluatingPlaywrightTests.md`, `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
+- `docs/validation-commands.md` → split command matrix between `prdTestingStandards.md` (test suite) and `prdDevelopmentStandards.md` (agent/dev workflows); keep CLI script references synchronized.
+- `docs/rag-system.md` → summarize agent workflow in `prdVectorDatabaseRAG.md` and link to `design/agentWorkflows/` examples.
+- `docs/technical/architecture.md`, `design/architecture.md` → migrate architectural overview into `prdArchitecture.md` (with diagrams referenced from `design/architecture/` if needed).
+- `docs/technical/classicBattleTesting.md`, `design/testing/classicBattleTesting.md` → embed deterministic testing checklist in `prdBattleClassic.md` and `prdTestingStandards.md`, then archive duplicates.
+- `docs/components.md` and `docs/roundUI.md` → integrate into `prdUIDesignSystem.md` and ensure `prdBattleMarkup.md` owns DOM contracts.
 
-Based on the scan there are a few topics where a dedicated PRD is missing or where the doc currently lives outside `productRequirementsDocuments` and would benefit from a PRD-style treatment:
+## Revised phased approach
 
-1. Integration & Public API Contracts PRD (if not covered) — a place to centralize CLI / Test API / public browser Test API contracts. I did not find a single PRD that explicitly lists the Test API surface and CLI telemetry contracts. If you want this explicitly, create `prdPublicAPIs.md` or fold into `prdBattleCLI.md`.
-2. Event naming migration plan as a PRD supplement — `docs/technical/eventNamingAudit.md` is an audit; the migration plan and acceptance criteria should live in `prdEventContracts.md` (extend it). No new PRD necessary, but a short PRD supplement page (e.g., `prdEventNamingMigration.md`) could be created if you want a separate tracked plan.
-3. Test utilities & Playwright helpers PRD — `docs/testing-modes.md` and `playwright/fixtures` contain helpers and conventions; some of this is in `prdTestingStandards.md`, but a focused `prdTestHelpers.md` would help standardize helper APIs and governance (optional).
+**Phase 1 – Confirm inventory & patch references**
 
-If you prefer a minimal approach, these can be merged into existing PRDs instead of creating new ones. I recommend folding (2) into `prdEventContracts.md` and (1) into `prdBattleCLI.md` or `prdDevelopmentStandards.md` unless you want separate ownership.
+- Run `node scripts/generatePrdIndex.js` and `npm run sync:agents` to capture the current asset map before editing.
+- Update PRDs with `See also` references pointing at the authoritative Markdown so consumers do not lose context during migration.
+- Correct documentation headers/footers to state that PRDs are the source of truth.
 
-## Documents I recommend assimilating into PRDs
+**Phase 2 – Migrate duplicate audits into PRDs**
 
-These docs are currently authoritative but are better governed as PRD content (or referenced from PRD with a snapshot/gist):
+- Fold event naming, state handler, battle markup, Classic Battle testing, and architecture content into their target PRDs.
+- Add acceptance criteria, owners, and change control notes while migrating.
+- Leave short stub files in `docs/` and `design/` that redirect to the PRD until cleanup.
 
-- `docs/technical/eventNamingAudit.md` → merge into `prdEventContracts.md` (inventory + migration plan + test helpers + mapping table)
-- `design/stateHandlerAudit.md` & `docs/technical/stateHandlerAudit.md` → merge into `prdStateHandler.md` (state graph, required actions, compliance matrix)
-- `design/battleMarkup.md` and `docs/technical/battleMarkup.md` → merge into `prdBattleMarkup.md` (canonical IDs + machine-readable mapping) — note: `design/dataSchemas/battleMarkup.json` and generated module already exists from previous work and should be referenced by the PRD
-- `docs/testing-modes.md` → merge into `prdTestMode.md` or expand `prdTestingStandards.md` to include the test utilities and modes
-- `docs/validation-commands.md` → reference or extract key commands into `prdTestingStandards.md` and `prdDevelopmentStandards.md` (CI-level requirements)
-- `docs/roundUI.md` → assimilate to `prdBattleMarkup.md` or `prdUIDesignSystem.md` depending on scope (UI contract vs high-level design)
+**Phase 3 – Author or extend PRDs for uncovered surfaces**
 
-Rationale: PRDs are the discoverable canonical source and include acceptance criteria, owners, and change policy. Technical audits and how-to docs are valuable, but they should either be referenced from PRDs or included inside PRDs under a clearly labeled "implementation notes / audits" section.
+- Consolidate Public API/Test API/CLI metadata under a dedicated section or new PRD.
+- Expand `prdBattleClassic.md` and `prdTestingStandards.md` with the Classic Battle harness details.
+- Decide whether test helper governance warrants a new PRD or can live inside existing ones.
+- Update `prdIndex.json` and assign owners as PRDs are added or expanded.
 
-## Planned approach — phased, discrete steps
+**Phase 4 – Automation & schema support**
 
-Phase 1 — Low-risk assimilation (quick wins)
+- Move machine-readable artifacts (e.g., future `design/dataSchemas/events/*.json`) into the repo and backfill AJV validation tests once the corresponding PRD sections are stable.
+- Add a script (e.g., `npm run generate:markup`) only after confirming desired JSON inputs and consumption patterns; wire it into CI alongside existing `validate:data`.
 
-- For each doc flagged above (event naming, state handler, battle markup, testing modes, validation commands):
-- Create PRD supplement entries or extend existing PRDs with a new section "Implementation notes / audit" and link to original doc.
-- Add acceptance criteria and owner for each inserted section.
-- Create machine-readable artifacts where useful (e.g., `design/dataSchemas/events/*.json` for schemas; `design/dataSchemas/battleMarkup.generated.js` already exists).
-- Success criteria: PRDs updated, CI and Prettier pass, no behavior changes.
+**Phase 5 – Deprecation & governance**
 
-Phase 2 — New PRDs and consolidation
-
-- Create any missing PRDs (e.g., `prdPublicAPIs.md` or `prdEventNamingMigration.md`) with the standard PRD template.
-- Migrate significant content from `docs/` into PRDs and remove the original doc.
-- Success criteria: New PRDs created, index updated (`prdIndex.json`) and reviewers assigned.
-
-Phase 3 — Test & automation
-
-- Add small consumer tests where PRDs added schema/artifacts (e.g., AJV-based schema validation tests under `tests/` referencing `design/dataSchemas/events/*.json`).
-- Add a generation script to build `design/dataSchemas/battleMarkup.generated.js` from the canonical JSON and include it in `package.json` (e.g., `npm run generate:markup`).
-- Success criteria: Tests that validate schemas and helpers run in CI; generated artifact pipeline in place.
-
-Phase 4 — Cleanup and deprecation
-
-- Remove or archive duplicate docs from `docs/` if their content is fully absorbed into PRDs. Keep short redirect doc with a pointer back to PRD. Update links across the repo (README, docs, tests).
-- Add a short changelog entry listing the moves.
-
-Phase 5 — Governance & ongoing maintenance
-
-- Add a small checklist in `prdCodeStandards.md` requiring new PRDs or PRD updates when design/docs content is added.
-- Add owners to PRDs that currently have placeholders so future changes are gated and traceable.
+- Remove or archive redundant Markdown once consumers reference PRDs; refresh links across README, docs, and tests.
+- Document migration results in `prdChangeLog.md` and/or release notes.
+- Update `prdCodeStandards.md` with a PRD update checklist for new documentation work and ensure each PRD lists an explicit owner.
 
 ## Risks and mitigations
 
-- Risk: Breaking links or CI if tests depend on docs in place. Mitigation: Phase 1 only adds references; Phase 4 removes content only after PRD consumers point to PRD and tests pass.
-- Risk: PRDs become large. Mitigation: keep PRD sections focused; move large implementation guides to `design/implementation/` and link them from PRD with a summary.
+- **Link rot / consumer drift** – Addressed by Phase 1 cross-links and staggered removals; run `node scripts/validateDocs.mjs` before deleting stubs.
+- **Scope creep in “low-risk” work** – Creation of new schemas/scripts moved to Phase 4 when requirements are codified.
+- **PRD bloat** – Introduce appendices or reference implementation notes in `design/` when content is too detailed; keep summaries concise.
+- **Automation drift** – Re-run `npm run sync:agents` and `npm run rag:validate` after migrations to keep agent tooling aligned.
