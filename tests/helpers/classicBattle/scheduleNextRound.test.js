@@ -336,6 +336,11 @@ describe("classicBattle startCooldown", () => {
     );
     expect(readyDispatchCalls).toHaveLength(1);
 
+    const readyBusCalls = dispatchBattleEventSpy.mock.calls.filter(
+      ([eventName]) => eventName === "ready"
+    );
+    expect(readyBusCalls.length).toBeLessThanOrEqual(1);
+
     expect(machine.getState()).toBe("waitingForPlayerAction");
     const btn = document.querySelector('[data-role="next-round"]');
     expect(btn?.dataset.nextReady).toBe("true");
@@ -388,6 +393,8 @@ describe("classicBattle startCooldown", () => {
     await cooldownEnter(machine);
     console.log("[TEST] cooldownEnter called");
 
+    dispatchBattleEventSpy.mockClear();
+
     timerSpy.advanceTimersByTime(1000);
     await vi.runAllTimersAsync();
 
@@ -420,6 +427,11 @@ describe("classicBattle startCooldown", () => {
       ([eventName]) => eventName === "ready"
     );
     expect(readyDispatchCalls).toHaveLength(1);
+
+    const readyBusCalls = dispatchBattleEventSpy.mock.calls.filter(
+      ([eventName]) => eventName === "ready"
+    );
+    expect(readyBusCalls.length).toBeLessThanOrEqual(1);
 
     expect(machine.getState()).toBe("waitingForPlayerAction");
   });

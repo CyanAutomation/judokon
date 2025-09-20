@@ -7,6 +7,10 @@ import { setSkipHandler } from "./skipHandler.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
 import { startCoolDown } from "../battleEngineFacade.js";
+import {
+  hasReadyBeenDispatchedForCurrentCooldown,
+  setReadyDispatchedForCurrentCooldown
+} from "./roundReadyState.js";
 
 /**
  * Additional buffer to ensure fallback timers fire after engine-backed timers.
@@ -245,7 +249,32 @@ export function createCooldownCompletion({ machine, timer, button, scheduler }) 
     ]) {
       guard(() => emitBattleEvent(evt));
     }
-    guardAsync(() => machine?.dispatch?.("ready"));
+    const orchestratedActive =
+      typeof document !== "undefined" &&
+      !!document?.body?.dataset?.battleState;
+    const canDispatchReadyDirectly =
+      typeof machine?.dispatch === "function" &&
+      !orchestratedActive &&
+      !hasReadyBeenDispatchedForCurrentCooldown();
+    const orchestratedHandled =
+      typeof globalThis !== "undefined" &&
+      globalThis.__classicBattleOrchestratedReady === true;
+    const canDispatchReady =
+      typeof machine?.dispatch === "function" &&
+      !orchestratedHandled &&
+      !hasReadyBeenDispatchedForCurrentCooldown();
+    if (canDispatchReady) {
+      setReadyDispatchedForCurrentCooldown(true);
+    }
+    guardAsync(async () => {
+      if (!canDispatchReady) return;
+      try {
+        await Promise.resolve(machine.dispatch("ready"));
+      } catch (error) {
+        setReadyDispatchedForCurrentCooldown(false);
+        throw error;
+      }
+    });
   };
 
   return {

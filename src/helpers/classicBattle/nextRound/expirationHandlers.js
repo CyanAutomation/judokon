@@ -1,4 +1,5 @@
 import { dispatchBattleEvent as globalDispatchBattleEvent } from "../eventDispatcher.js";
+import { hasReadyBeenDispatchedForCurrentCooldown } from "../roundReadyState.js";
 import { readDebugState as globalReadDebugState } from "../debugHooks.js";
 
 /**
@@ -357,6 +358,15 @@ export async function dispatchReadyWithOptions(params) {
  */
 export async function dispatchReadyDirectly(params) {
   const { machineReader, emitTelemetry } = params;
+  emitTelemetry?.("handleNextRound_dispatchReadyDirectly_flag", {
+    alreadyDispatched: hasReadyBeenDispatchedForCurrentCooldown()
+  });
+  if (hasReadyBeenDispatchedForCurrentCooldown()) {
+    emitTelemetry?.("handleNextRound_dispatchReadyDirectly_skipped", {
+      reason: "alreadyDispatched"
+    });
+    return true;
+  }
   let machine = null;
   try {
     machine = machineReader?.();
@@ -367,10 +377,22 @@ export async function dispatchReadyDirectly(params) {
   };
   emitTelemetry?.("handleNextRound_dispatchReadyDirectly_info", info);
   if (!info.hasDispatch) return false;
+  const guardKey = "__readyDispatchedForCooldown";
+  if (machine && machine[guardKey]) {
+    emitTelemetry?.("handleNextRound_dispatchReadyDirectly_skipped", {
+      reason: "machineGuard"
+    });
+    return true;
+  }
   try {
     const result = machine.dispatch("ready");
     await Promise.resolve(result);
     emitTelemetry?.("handleNextRound_dispatchReadyDirectly_result", true);
+    if (machine) {
+      try {
+        machine[guardKey] = true;
+      } catch {}
+    }
     return true;
   } catch (error) {
     const payload = error && error.message ? error.message : String(error);

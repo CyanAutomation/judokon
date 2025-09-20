@@ -267,6 +267,33 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   if (orchestratedMode && !orchestratorMachine) {
     orchestratedMode = false;
   }
+  if (typeof globalThis !== "undefined") {
+    globalThis.__classicBattleOrchestratedReady = orchestratedMode === true;
+  }
+  if (orchestratorMachine && typeof orchestratorMachine === "object") {
+    try {
+      delete orchestratorMachine.__readyDispatchedForCooldown;
+    } catch {}
+    if (typeof orchestratorMachine.dispatch === "function" && !orchestratorMachine.__readyDispatchWrapper) {
+      const originalDispatch = orchestratorMachine.dispatch.bind(orchestratorMachine);
+      orchestratorMachine.dispatch = function wrappedDispatch(event, ...args) {
+        if (event === "ready") {
+          if (orchestratorMachine.__readyDispatchedForCooldown) {
+            return Promise.resolve(true);
+          }
+          orchestratorMachine.__readyDispatchedForCooldown = true;
+        }
+        return originalDispatch(event, ...args);
+      };
+      Object.defineProperty(orchestratorMachine, "__readyDispatchWrapper", {
+        value: true,
+        writable: false,
+        configurable: false
+      });
+    } else if (orchestratorMachine) {
+      orchestratorMachine.__readyDispatchedForCooldown = false;
+    }
+  }
   const { primary: btn, fallback: fallbackBtn } = resolveReadinessTarget();
   const readinessTarget = btn || fallbackBtn;
   if (readinessTarget && !orchestratedMode) {
@@ -511,7 +538,8 @@ function createReadyDispatchStrategies({
   machineReader,
   emitTelemetry,
   getDebugBag,
-  orchestrated
+  orchestrated,
+  alreadyDispatchedReady = false
 }) {
   const busStrategyOptions = {};
   if (bus) {
@@ -520,7 +548,18 @@ function createReadyDispatchStrategies({
   const hasCustomDispatcher =
     typeof options.dispatchBattleEvent === "function" &&
     options.dispatchBattleEvent !== dispatchBattleEvent;
-  const shouldShortCircuitReadyDispatch = () => hasReadyBeenDispatchedForCurrentCooldown();
+  let readyDispatched =
+    alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown();
+  if (readyDispatched) {
+    return [];
+  }
+  const markReadyDispatched = () => {
+    if (readyDispatched) return;
+    readyDispatched = true;
+    setReadyDispatchedForCurrentCooldown(true);
+  };
+  const shouldShortCircuitReadyDispatch = () =>
+    readyDispatched || hasReadyBeenDispatchedForCurrentCooldown();
   const isOrchestratedActive = () => {
     if (typeof orchestrated === "function") {
       try {
@@ -539,6 +578,9 @@ function createReadyDispatchStrategies({
         ? performance.now()
         : Date.now();
     const dispatched = await dispatchReadyDirectly({ machineReader, emitTelemetry });
+    if (dispatched) {
+      markReadyDispatched();
+    }
     const propagate = dispatched && shouldPropagateAfterMachine();
     const end =
       typeof performance !== "undefined" && typeof performance.now === "function"
@@ -556,13 +598,6 @@ function createReadyDispatchStrategies({
   };
   const strategies = [];
   let machineStrategyAdded = false;
-  // Machine dispatch must appear exactly once in the strategy list while
-  // retaining its priority before and after bus dispatch. We achieve this by
-  // adding the function lazily: orchestrated flows register it first so the
-  // orchestrator machine sees the event before any fallbacks, and non-
-  // orchestrated flows add it after the bus strategy to guarantee the machine
-  // still runs when earlier strategies short circuit. The guard prevents
-  // duplicate registrations when both branches attempt to add it.
   const addMachineStrategy = () => {
     if (machineStrategyAdded) return;
     strategies.push(machineStrategy);
@@ -578,6 +613,11 @@ function createReadyDispatchStrategies({
         dispatchBattleEvent: options.dispatchBattleEvent,
         emitTelemetry,
         getDebugBag
+      }).then((result) => {
+        if (result) {
+          markReadyDispatched();
+        }
+        return result;
       });
     });
     busStrategyOptions.dispatchBattleEvent = options.dispatchBattleEvent;
@@ -587,7 +627,12 @@ function createReadyDispatchStrategies({
   }
   strategies.push(() => {
     if (shouldShortCircuitReadyDispatch()) return true;
-    return dispatchReadyViaBus(busStrategyOptions);
+    return dispatchReadyViaBus(busStrategyOptions).then((result) => {
+      if (result) {
+        markReadyDispatched();
+      }
+      return result;
+    });
   });
   addMachineStrategy();
   return strategies;
@@ -641,17 +686,19 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       if (typeof updatePanel === "function") updatePanel();
     }
   });
+  const alreadyDispatchedReady =
+    options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown();
   const strategies = createReadyDispatchStrategies({
     options,
     bus,
     machineReader,
     emitTelemetry,
     getDebugBag,
-    orchestrated
+    orchestrated,
+    alreadyDispatchedReady
   });
   const dispatched = await runReadyDispatchStrategies({
-    alreadyDispatchedReady:
-      options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown(),
+    alreadyDispatchedReady,
     strategies,
     emitTelemetry
   });
