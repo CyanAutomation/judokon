@@ -435,9 +435,7 @@ describe("classicBattle startCooldown", () => {
     const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
     battleEventsMod.__resetBattleEventTarget();
     const emitSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
-    const uiService = await import(
-      "../../../src/helpers/classicBattle/uiService.js"
-    );
+    const uiService = await import("../../../src/helpers/classicBattle/uiService.js");
     uiService.bindUIServiceEventHandlersOnce();
 
     const { attachCooldownRenderer } = await import("../../../src/helpers/CooldownRenderer.js");
