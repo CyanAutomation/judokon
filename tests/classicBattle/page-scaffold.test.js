@@ -301,7 +301,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
       resolveReadyPromise();
     });
 
-    const nativeClick = typeof HTMLElement !== "undefined" ? HTMLElement.prototype.click : undefined;
+    const nativeClick =
+      typeof HTMLElement !== "undefined" ? HTMLElement.prototype.click : undefined;
 
     const attachHandlers = () => {
       buttons.forEach((btn) => {
