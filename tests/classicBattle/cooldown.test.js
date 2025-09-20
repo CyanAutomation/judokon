@@ -67,6 +67,39 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     timers.useRealTimers();
   });
 
+  test("settles ready promise when ready dispatch returns false", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = '<button id="next-button" data-next-ready="true"></button>';
+    const dispatchBattleEvent = vi.fn().mockResolvedValue(false);
+    vi.doMock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
+      dispatchBattleEvent,
+      resetDispatchHistory: vi.fn()
+    }));
+
+    const { advanceWhenReady } = await import("../../src/helpers/classicBattle/timerService.js");
+    const btn = document.getElementById("next-button");
+    expect(btn).toBeTruthy();
+
+    let resolveReady;
+    const readyPromise = new Promise((resolve) => {
+      resolveReady = resolve;
+    });
+
+    await advanceWhenReady(btn, resolveReady);
+    await expect(readyPromise).resolves.toBeUndefined();
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
+
+    let resolveReadyAgain;
+    const readyAgainPromise = new Promise((resolve) => {
+      resolveReadyAgain = resolve;
+    });
+    btn?.setAttribute("data-next-ready", "true");
+
+    await advanceWhenReady(btn, resolveReadyAgain);
+    await expect(readyAgainPromise).resolves.toBeUndefined();
+    expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
+  });
+
   test("re-enables Next if a callback disables it", async () => {
     vi.useFakeTimers();
     document.body.innerHTML = '<button id="next-button" disabled></button>';
