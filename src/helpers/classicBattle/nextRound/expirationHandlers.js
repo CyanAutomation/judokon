@@ -391,12 +391,6 @@ export async function dispatchReadyDirectly(params) {
     try {
       const result = await globalDispatchBattleEvent("ready");
       if (result !== false) {
-        try {
-          await dispatchViaMachine();
-        } catch (error) {
-          fallbackError = error;
-          throw error;
-        }
         return recordSuccess(true);
       }
     } catch (error) {
