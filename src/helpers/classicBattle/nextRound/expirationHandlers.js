@@ -315,8 +315,8 @@ export function createMachineStateInspector(params) {
  * @param {object} [options]
  * @param {(type: string) => any} [options.dispatchBattleEvent]
  * @param {boolean} [options.skipCandidate]
- * @param {boolean} [options.alreadyDispatched] True when the ready event was
- * already emitted and re-dispatching should be skipped.
+ * @param {boolean} [options.alreadyDispatched] Set to true when the ready
+ * event has already been dispatched so re-dispatch attempts short-circuit.
  * @returns {Promise<boolean>}
  */
 export async function dispatchReadyViaBus(options = {}) {
