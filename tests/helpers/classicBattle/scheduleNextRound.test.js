@@ -444,13 +444,48 @@ describe("classicBattle startCooldown", () => {
     await battleEventsMod.emitBattleEvent("countdownStart", { duration: 3 });
     await Promise.resolve();
 
+    const events = emitSpy.mock.calls.map(([eventName]) => eventName);
+
     if (enabled) {
       expect(attachCooldownRenderer).not.toHaveBeenCalled();
-      expect(emitSpy).toHaveBeenCalledWith("countdownFinished");
+      const countdownIndex = events.indexOf("countdownFinished");
+      const roundStartIndex = events.indexOf("round.start");
+      expect(countdownIndex).toBeGreaterThan(-1);
+      expect(roundStartIndex).toBeGreaterThan(-1);
+      expect(countdownIndex).toBeLessThan(roundStartIndex);
     } else {
       expect(attachCooldownRenderer).toHaveBeenCalled();
       expect(emitSpy).toHaveBeenCalledTimes(1);
     }
+  });
+
+  it("emits countdownFinished before round.start when countdown expires", async () => {
+    vi.resetModules();
+    currentFlags.skipRoundCooldown = { enabled: false };
+    applyMockSetup({ currentFlags });
+
+    const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    battleEventsMod.__resetBattleEventTarget();
+    const emitSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
+    const uiService = await import("../../../src/helpers/classicBattle/uiService.js");
+    uiService.bindUIServiceEventHandlersOnce();
+
+    const onFinished = vi.fn();
+    await battleEventsMod.emitBattleEvent("countdownStart", { duration: 2, onFinished });
+    await Promise.resolve();
+
+    await vi.runAllTimersAsync();
+    await Promise.resolve();
+    const events = emitSpy.mock.calls.map(([eventName]) => eventName);
+    const countdownIndex = events.lastIndexOf("countdownFinished");
+    const roundStartIndex = events.lastIndexOf("round.start");
+    expect(countdownIndex).toBeGreaterThan(-1);
+    expect(roundStartIndex).toBeGreaterThan(-1);
+    expect(countdownIndex).toBeLessThan(roundStartIndex);
+    // Verify both events were actually emitted
+    expect(events).toContain("countdownFinished");
+    expect(events).toContain("round.start");
+    expect(onFinished).toHaveBeenCalled();
   });
 
   it("schedules a 1s minimum cooldown in test mode", async () => {
