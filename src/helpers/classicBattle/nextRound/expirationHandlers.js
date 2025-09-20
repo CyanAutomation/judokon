@@ -380,6 +380,14 @@ export async function dispatchReadyDirectly(params) {
 }
 
 /**
+ * @typedef {() => (
+ *   | boolean
+ *   | { dispatched: boolean, propagate?: boolean }
+ *   | Promise<boolean | { dispatched: boolean, propagate?: boolean }>
+ * )} ReadyDispatchStrategy
+ */
+
+/**
  * Sequentially execute dispatch strategies until one succeeds.
  *
  * @summary Coordinates multiple dispatch strategies, allowing successful steps
@@ -395,11 +403,7 @@ export async function dispatchReadyDirectly(params) {
  *
  * @param {object} params
  * @param {boolean} [params.alreadyDispatchedReady]
- * @param {Array<
- *   () => Promise<boolean|{dispatched: boolean, propagate?: boolean}> |
- *   boolean |
- *   { dispatched: boolean, propagate?: boolean }
- * >} [params.strategies]
+ * @param {Array<ReadyDispatchStrategy>} [params.strategies]
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
  * @returns {Promise<boolean>}
  */
@@ -430,6 +434,14 @@ export async function runReadyDispatchStrategies(params = {}) {
       const { dispatched: stepDispatched, propagate } = interpretResult(rawResult);
       if (stepDispatched) {
         dispatched = true;
+        emitTelemetry?.("handleNextRoundDispatchStepResult", {
+          step:
+            typeof strategy?.name === "string" && strategy.name.length > 0
+              ? strategy.name
+              : "anonymous",
+          dispatched: true,
+          propagate
+        });
         if (!propagate) {
           emitTelemetry?.("handleNextRoundDispatchResult", true);
           return true;

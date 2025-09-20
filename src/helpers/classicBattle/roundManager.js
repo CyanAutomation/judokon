@@ -521,11 +521,35 @@ function createReadyDispatchStrategies({
     typeof options.dispatchBattleEvent === "function" &&
     options.dispatchBattleEvent !== dispatchBattleEvent;
   const shouldShortCircuitReadyDispatch = () => hasReadyBeenDispatchedForCurrentCooldown();
-  const shouldPropagateAfterMachine = orchestrated && !hasCustomDispatcher;
+  const isOrchestratedActive = () => {
+    if (typeof orchestrated === "function") {
+      try {
+        return orchestrated();
+      } catch {
+        return false;
+      }
+    }
+    return !!orchestrated;
+  };
+  const shouldPropagateAfterMachine = () => isOrchestratedActive() && !hasCustomDispatcher;
   const machineStrategy = async () => {
     if (shouldShortCircuitReadyDispatch()) return true;
+    const start =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
     const dispatched = await dispatchReadyDirectly({ machineReader, emitTelemetry });
-    if (dispatched && shouldPropagateAfterMachine) {
+    const propagate = dispatched && shouldPropagateAfterMachine();
+    const end =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+    emitTelemetry?.("handleNextRoundMachineStrategyResult", {
+      dispatched: dispatched === true,
+      propagate,
+      durationMs: typeof end === "number" && typeof start === "number" ? end - start : undefined
+    });
+    if (propagate) {
       return { dispatched: true, propagate: true };
     }
     return dispatched;
@@ -544,7 +568,7 @@ function createReadyDispatchStrategies({
     strategies.push(machineStrategy);
     machineStrategyAdded = true;
   };
-  if (orchestrated && !hasCustomDispatcher) {
+  if (isOrchestratedActive() && !hasCustomDispatcher) {
     addMachineStrategy();
   }
   if (hasCustomDispatcher) {
