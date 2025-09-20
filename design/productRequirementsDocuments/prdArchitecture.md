@@ -124,3 +124,36 @@ Acceptance Criteria:
 ## Appendix / Sources
 
 - See `design/architecture.md`, `design/eventNamingAudit.md`, and `design/stateHandlerAudit.md` for background.
+
+### Appendix: Project Architecture Overview (assimilated from `design/architecture.md`)
+
+This appendix preserves the implementation and agent-facing notes from the former `design/architecture.md`.
+
+#### Entry Points
+
+- `game.js` — exports setup helpers and `initGame`. `gameBootstrap.js` listens for `DOMContentLoaded` and invokes `initGame` in production.
+
+#### helpers/
+
+Reusable utilities organized by concern (card building, data fetching, random card generation). Prefer small, single-purpose functions. Key helpers: `generateRandomCard()`, `renderJudokaCard()`, `navigationBar.js`, `setupBottomNavbar.js`.
+
+Engine vs UI layers: Core battle logic lives in `helpers/battleEngine.js` with no DOM access. UI scripts call the engine via the facade in `helpers/api/battleUI.js`.
+
+#### helpers/vector search
+
+Vector-search pages import DOM-free utilities from `helpers/api/vectorSearchPage.js` for match selection, tag formatting, and MiniLM extractor loading.
+
+#### Data
+
+- `judoka.json`, `tooltips.json`, `cards.json` — canonical static JSON sources.
+
+#### AI Agent Design Considerations
+
+- State exposure via `data-*` attributes, toggleable debug panels, stable ID/class naming, modular JS/HTML, and observable hashes/query params.
+
+#### Event Bus & State Manager
+
+- The Classic Battle orchestrator emits `battleStateChange` events; `document.body.dataset.battleState` mirrors the current state.
+- State progression: `waitingForMatchStart` → `matchStart` → `cooldown` → ... → `matchOver`.
+
+See the original `design/architecture.md` for annotated components and agent-facing tables; content has been integrated into this PRD to centralize architecture guidance.

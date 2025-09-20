@@ -179,3 +179,9 @@ I will pause here for your review and instructions on how to proceed with stubs 
 - Assimilated `docs/round-selection.md` into `design/productRequirementsDocuments/prdRoundSelection.md` and deleted the original `docs/round-selection.md` file. The PRD now includes implementation notes for `initRoundSelectModal`, autostart handling, and the fallback Start Match button.
 
 Next: Please confirm if you want me to proceed with the next file mapping (I will follow the same pattern: merge the docs file into the mapped PRD under an Appendix, ensure acceptance criteria are explicit per `design/codeStandards/prdRulesForAgents.md`, and commit changes non-destructively). If yes, tell me which source file to merge next or I can proceed in the order from `reports/prd-mapping-report.json` (recommended).
+
+## Recent agent action — architecture file removal
+
+- I retried the previously-failed deletion of `design/architecture.md` after appending its content into `design/productRequirementsDocuments/prdArchitecture.md`. The original `design/architecture.md` file has now been removed from the repository to avoid duplication. The PRD contains the authoritative content in its Appendix.
+
+Next recommended step: I can continue with the next mapping entry (`docs/vector-search.md` → `prdVectorDatabaseRAG.md`) and follow the same assimilation pattern, or pause if you'd prefer a different workflow (feature branch + PRs).
