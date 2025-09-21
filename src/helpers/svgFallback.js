@@ -69,7 +69,7 @@ function createFallbackState(img) {
  */
 export function applySvgFallback(fallbackSrc = DEFAULT_FALLBACK) {
   const resolvedFallbackHref = new URL(fallbackSrc, document.baseURI).href;
-  const svgImages = document.querySelectorAll('img[src$=".svg"]');
+  const svgImages = document.querySelectorAll('img[src$=".svg"], img[data-src$=".svg"]');
 
   svgImages.forEach((img) => {
     let state = fallbackState.get(img);

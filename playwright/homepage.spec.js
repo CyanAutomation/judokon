@@ -53,7 +53,7 @@ test.describe("Homepage", () => {
   test("fallback icon applied on load failure", async ({ page }) => {
     await page.goto("/playwright/fixtures/svg-fallback.html");
 
-    const icon = page.locator("#broken-icon");
+    const icon = page.getByTestId("broken-icon");
     await expect(icon).toBeVisible();
     await expect.poll(() => icon.getAttribute("src")).toContain("judokonLogoSmall.png");
     await expect(icon).toHaveClass(/svg-fallback/);
