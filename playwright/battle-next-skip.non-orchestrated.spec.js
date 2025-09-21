@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForBattleState, waitForNextRoundReadyEvent } from "./fixtures/waits.js";
 import { withMutedConsole } from "../tests/utils/console.js";
 
 /**
@@ -22,65 +23,36 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     // Navigate to actual battle page instead of replacing body HTML
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for page initialization and Test API availability
-    await page.waitForFunction(
-      () => {
-        return (
-          document.querySelector("#next-button") !== null ||
-          document.querySelector("[data-role='next-round']") !== null
-        );
-      },
-      { timeout: 5000 }
-    );
+    // Attempt readiness wait; fall back gracefully when the state machine has not booted yet.
+    await waitForBattleState(page, "waitingForMatchStart", 3000).catch(() => {});
 
-    // Use existing battle infrastructure instead of synthetic DOM
     const nextButton = page.locator("#next-button, [data-role='next-round']").first();
     await nextButton.waitFor({ timeout: 3000 });
 
-    await page.evaluate(async () => {
-      // Force non-orchestrated mode by clearing battle state
-      document.body.removeAttribute("data-battle-state");
-
-      window.readyEvent = new Promise((resolve) => {
-        globalThis.__classicBattleEventTarget.addEventListener(
-          "nextRoundTimerReady",
-          () => resolve(),
-          { once: true }
-        );
-      });
-      const { startCooldown } = await import("/src/helpers/classicBattle/roundManager.js");
-      const { onNextButtonClick } = await import("/src/helpers/classicBattle/timerService.js");
-      const { enableNextRoundButton } = await import("/src/helpers/classicBattle/uiHelpers.js");
-
-      const controls = startCooldown({});
-
-      // For testing purposes, enable the button directly
-      enableNextRoundButton();
-
-      // Find the actual next button in the real battle page
-      const btn =
-        document.getElementById("next-button") ||
-        document.querySelector("[data-role='next-round']");
-
-      if (btn) {
-        btn.addEventListener("click", (evt) => onNextButtonClick(evt, controls));
-        window.readyResolved = false;
-        controls.ready.then(() => {
-          window.readyResolved = true;
-        });
-      } else {
-        console.warn("Next button not found in battle page");
-        window.readyResolved = true; // Allow test to continue
+    const manualCooldown = await page.evaluate(() => {
+      const api = window.__TEST_API?.timers;
+      if (!api?.startManualCooldownForTest) {
+        throw new Error("Manual cooldown test helper unavailable");
       }
+      return api.startManualCooldownForTest({ orchestrated: false });
     });
 
-    await page.evaluate(() => window.readyEvent);
+    const { handle, started, hasReady } = manualCooldown;
 
-    // Use the same selector as above for consistency
-    const nextBtn = page.locator("#next-button, [data-role='next-round']").first();
-    await expect(nextBtn).toBeEnabled();
-    await expect(nextBtn).toHaveAttribute("data-next-ready", "true");
-    await nextBtn.click();
-    await page.waitForFunction(() => window.readyResolved === true, { timeout: 1000 });
+    expect(started).toBe(true);
+    expect(handle).toBeTruthy();
+    expect(hasReady).toBe(true);
+
+    await waitForNextRoundReadyEvent(page);
+
+    await expect(nextButton).toBeEnabled();
+    await expect(nextButton).toHaveAttribute("data-next-ready", "true");
+    await nextButton.click();
+
+    const readySettled = await page.evaluate((cooldownHandle) => {
+      return window.__TEST_API.timers.waitForManualCooldownReady(cooldownHandle, 500);
+    }, handle);
+
+    expect(readySettled).toBe(true);
   }, ["log", "info", "warn", "error", "debug"]);
 });

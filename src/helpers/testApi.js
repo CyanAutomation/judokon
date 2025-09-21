@@ -15,6 +15,7 @@
 import { getBattleStateMachine } from "./classicBattle/orchestrator.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
+import { startCooldown, getNextRoundControls } from "./classicBattle/roundManager.js";
 import { isEnabled } from "./featureFlags.js";
 
 function isDevelopmentEnvironment() {
@@ -136,6 +137,9 @@ const stateApi = {
 };
 
 // Timer control API
+const manualCooldownHandles = new Map();
+let manualCooldownHandleCounter = 0;
+
 const timerApi = {
   /**
    * Set countdown value directly without waiting for timer ticks
@@ -182,6 +186,67 @@ const timerApi = {
       applyCountdown(seconds);
     } catch (err) {
       logDevWarning("Failed to set countdown via timer API", err);
+    }
+  },
+
+  /**
+   * Start a manual cooldown cycle and expose its ready handle for tests.
+   * @param {{ orchestrated?: boolean }} [options]
+   * @returns {{ handle: string|null, started: boolean, hasReady: boolean }}
+   */
+  startManualCooldownForTest(options = {}) {
+    const { orchestrated = false } = options;
+    try {
+      const controls = startCooldown(null, null, {
+        isOrchestrated: () => Boolean(orchestrated)
+      });
+      const handle = `manual-${Date.now()}-${manualCooldownHandleCounter++}`;
+      manualCooldownHandles.set(handle, { controls });
+      const hasReady = !!controls?.ready && typeof controls.ready.then === "function";
+      return { handle, started: Boolean(controls), hasReady };
+    } catch (error) {
+      logDevWarning("Failed to start manual cooldown for test", error);
+      return { handle: null, started: false, hasReady: false };
+    }
+  },
+
+  /**
+   * Await the ready promise for a manual cooldown started via the test API.
+   * @param {string|null} handle - Handle returned from `startManualCooldownForTest`.
+   * @param {number} [timeout=1000] - Timeout in milliseconds before resolving false.
+   * @returns {Promise<boolean>} Resolves true when ready settled before timeout.
+   */
+  waitForManualCooldownReady(handle, timeout = 1000) {
+    const normalizedTimeout = Math.max(0, Number(timeout) || 0);
+    try {
+      const record = handle ? manualCooldownHandles.get(handle) : null;
+      const controls =
+        record?.controls ||
+        (typeof getNextRoundControls === "function" ? getNextRoundControls() : null);
+      if (!controls?.ready || typeof controls.ready.then !== "function") {
+        return Promise.resolve(false);
+      }
+      return new Promise((resolve) => {
+        let settled = false;
+        let timerId = null;
+        const finalize = (value) => {
+          if (settled) return;
+          settled = true;
+          manualCooldownHandles.delete(handle);
+          if (timerId !== null) clearTimeout(timerId);
+          resolve(value);
+        };
+        controls.ready.then(
+          () => finalize(true),
+          () => finalize(false)
+        );
+        if (normalizedTimeout > 0) {
+          timerId = setTimeout(() => finalize(false), normalizedTimeout);
+        }
+      });
+    } catch (error) {
+      logDevWarning("Failed to await manual cooldown ready", error);
+      return Promise.resolve(false);
     }
   },
 
