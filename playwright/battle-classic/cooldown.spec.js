@@ -50,9 +50,10 @@ test.describe("Classic Battle cooldown + Next", () => {
       // Click next button
       await nextButton.click();
 
-      // Check that the round counter has advanced exactly once (no double advance)
-      await expect(roundCounter).toHaveText("Round 2");
-      await expect(roundCounter).not.toHaveText("Round 3");
+      // Immediately after the click, the round counter should remain on Round 2
+      // ensuring no eager fallback increments to Round 3.
+      await expect(roundCounter).toHaveText(/Round\s*2/);
+      await expect(roundCounter).not.toHaveText(/Round\s*3/);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
