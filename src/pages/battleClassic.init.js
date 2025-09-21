@@ -50,6 +50,11 @@ let activeSelectionTimer = null;
 let failSafeTimerId = null;
 // Re-entrancy guard to avoid starting multiple round cycles concurrently
 let isStartingRoundCycle = false;
+// Suppress duplicate round cycle starts when manual Next clicks trigger both
+// `round.start` and `ready` back-to-back.
+let suppressedReadyToken = null;
+let lastRoundCycleTriggerSource = null;
+let lastRoundCycleTriggerTimestamp = 0;
 /**
  * Minimum delay before enabling the Next button after stat selection.
  * Ensures UI state transitions are visible to users.
@@ -105,6 +110,57 @@ function calculateRemainingOpponentMessageTime() {
     return Math.max(0, MIN_OPPONENT_MESSAGE_DURATION_MS - elapsed);
   } catch {}
   return 0;
+}
+
+function recordRoundCycleTrigger(source) {
+  lastRoundCycleTriggerSource = source;
+  lastRoundCycleTriggerTimestamp = getCurrentTimestamp();
+  if (typeof window !== "undefined") {
+    try {
+      window.__lastRoundCycleTrigger = {
+        source: lastRoundCycleTriggerSource,
+        timestamp: lastRoundCycleTriggerTimestamp
+      };
+    } catch {}
+  }
+}
+
+function trackRoundCycleEvent(type, info = {}) {
+  if (typeof window === "undefined") return;
+  try {
+    if (!Array.isArray(window.__roundCycleHistory)) {
+      window.__roundCycleHistory = [];
+    }
+    window.__roundCycleHistory.push({
+      type: type || "unknown",
+      timestamp: getCurrentTimestamp(),
+      ...info
+    });
+  } catch {}
+}
+
+function beginManualReadySuppression() {
+  suppressedReadyToken = Symbol("manualReadySuppression");
+  if (typeof window !== "undefined") {
+    try {
+      window.__lastManualReadySuppressionToken = suppressedReadyToken;
+    } catch {}
+  }
+}
+
+function clearManualReadySuppression() {
+  suppressedReadyToken = null;
+  if (typeof window !== "undefined") {
+    try {
+      delete window.__lastManualReadySuppressionToken;
+    } catch {}
+  }
+}
+
+function shouldSkipReadyEvent() {
+  if (!suppressedReadyToken) return false;
+  clearManualReadySuppression();
+  return true;
 }
 
 function handleCooldownError(store, reason, err) {
@@ -191,6 +247,7 @@ function markCooldownStarted(store) {
 
 function triggerCooldownOnce(store, reason) {
   if (!markCooldownStarted(store)) return false;
+  clearManualReadySuppression();
 
   const remaining = calculateRemainingOpponentMessageTime();
   const shouldForceImmediate = reason === "statSelectionFailed";
@@ -1374,12 +1431,41 @@ async function init() {
     // cooldown is considered finished. Some paths may dispatch `ready` directly
     // (e.g. when skipping timers), so listen to both events.
     try {
-      const startIfNotEnded = async () => {
+      const startIfNotEnded = async (evt) => {
+        const eventType = typeof evt === "string" ? evt : evt?.type;
+        const eventDetail =
+          evt && typeof evt === "object" && "detail" in evt ? evt.detail : undefined;
+        const manualRoundStart =
+          eventType === "round.start" &&
+          eventDetail &&
+          typeof eventDetail === "object" &&
+          eventDetail?.source === "next-button";
+
+        if (manualRoundStart) {
+          beginManualReadySuppression();
+        }
+
+        if (eventType === "ready") {
+          const tokenActiveBeforeCheck = Boolean(suppressedReadyToken);
+          const skipDueToManual = shouldSkipReadyEvent();
+          trackRoundCycleEvent(eventType, {
+            skipped: skipDueToManual,
+            manualSuppression: skipDueToManual ? tokenActiveBeforeCheck : Boolean(suppressedReadyToken)
+          });
+          if (skipDueToManual) {
+            return;
+          }
+        } else {
+          trackRoundCycleEvent(eventType, { manualRoundStart });
+        }
+
         try {
           const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
           if (typeof isMatchEnded === "function" && isMatchEnded()) return;
         } catch {}
+
         await startRoundCycle(store);
+        recordRoundCycleTrigger(eventType || "unknown");
       };
       onBattleEvent("round.start", startIfNotEnded);
       onBattleEvent("ready", startIfNotEnded);
