@@ -1,60 +1,116 @@
-import { expect, test } from "vitest";
-import fs from "fs";
-import path from "path";
+import { expect, test, vi } from "vitest";
 import {
   createBattleStore,
   startCooldown,
   _resetForTest
 } from "../../src/helpers/classicBattle/roundManager.js";
-import { createBattleEngine } from "../../src/helpers/battleEngineFacade.js";
+import * as eventDispatcher from "../../src/helpers/classicBattle/eventDispatcher.js";
 
-test("integration: startCoolDown with real engine and scheduler should record traces", async () => {
-  // Ensure a fresh test environment and real engine
+function createScoreboardStub() {
+  return {
+    clearTimer: vi.fn(),
+    showMessage: vi.fn(),
+    showAutoSelect: vi.fn(),
+    showTemporaryMessage: vi.fn(() => vi.fn()),
+    updateTimer: vi.fn(),
+    updateRoundCounter: vi.fn(),
+    clearRoundCounter: vi.fn()
+  };
+}
+
+function createSnackbarStub() {
+  return {
+    showSnackbar: vi.fn(),
+    updateSnackbar: vi.fn()
+  };
+}
+
+test("integration: startCooldown drives readiness flow with fake timers", async () => {
+  const timers = vi.useFakeTimers();
   const store = createBattleStore();
-  _resetForTest(store);
-  // Create engine explicitly to make sure the real engine starter is available
+  const dispatchSpy = vi
+    .spyOn(eventDispatcher, "dispatchBattleEvent")
+    .mockResolvedValue(true);
+
+  const previousDebugMap = window.__classicBattleDebugMap;
+  const previousStartCount = globalThis.__startCooldownCount;
+  const previousInvoked = window.__startCooldownInvoked;
+  const previousCooldownOverride = window.__NEXT_ROUND_COOLDOWN_MS;
+
+  window.__classicBattleDebugMap = new Map();
+  globalThis.__startCooldownCount = 0;
+  window.__startCooldownInvoked = false;
+  window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+
+  document.body.innerHTML = "";
+  delete document.body.dataset?.battleState;
+
   try {
-    createBattleEngine();
-  } catch {}
+    _resetForTest(store);
 
-  // Start cooldown with real scheduler (no fake timers). Use a short duration
-  // so the test completes quickly. We rely on the module's fallback to schedule
-  // a 10ms timeout when duration <= 0; pass 0 to trigger short fallback.
-  const controls = startCooldown(store, undefined, {});
+    document.body.innerHTML =
+      '<button id="next-button" data-role="next-round" disabled data-next-ready="false"></button>';
+    delete document.body.dataset?.battleState;
 
-  // Wait for a short real-time period to allow expiration to run
-  await new Promise((r) => setTimeout(r, 200));
+    const controls = startCooldown(store, undefined, {
+      scoreboard: createScoreboardStub(),
+      showSnackbar: createSnackbarStub(),
+      updateDebugPanel: vi.fn(),
+      getStateSnapshot: () => ({ state: "cooldown", log: [] })
+    });
 
-  // Read traces from debug state file produced by unit tests or instrumentation.
-  // The instrumentation writes to test-traces.json; if not present, read debug map via global.
-  const tracesFile = path.resolve(process.cwd(), "test-traces.json");
-  let traces = {};
-  try {
-    if (fs.existsSync(tracesFile)) {
-      traces = JSON.parse(fs.readFileSync(tracesFile, "utf8"));
+    expect(controls).toBeTruthy();
+    expect(window.__startCooldownInvoked).toBe(true);
+    expect(globalThis.__startCooldownCount).toBe(1);
+
+    const nextButton = document.getElementById("next-button");
+    expect(nextButton?.disabled).toBe(false);
+    expect(nextButton?.getAttribute("data-next-ready")).toBe("true");
+
+    const initialTrace =
+      globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") ?? [];
+    expect(Array.isArray(initialTrace)).toBe(true);
+    expect(initialTrace.some((entry) => entry.event === "startCooldown")).toBe(true);
+    expect(initialTrace.some((entry) => entry.event === "controlsCreated")).toBe(true);
+
+    const readyPromise = controls.ready;
+    await vi.runAllTimersAsync();
+    await expect(readyPromise).resolves.toBeUndefined();
+
+    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+
+    const finalTrace =
+      globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") ?? [];
+    const traceEvents = finalTrace.map((entry) => entry.event);
+    expect(traceEvents).toContain("handleNextRoundExpiration.start");
+    expect(traceEvents).toContain("handleNextRoundExpiration.dispatched");
+    expect(traceEvents).toContain("handleNextRoundExpiration.end");
+  } finally {
+    timers.useRealTimers();
+    dispatchSpy.mockRestore();
+    document.body.innerHTML = "";
+    try {
+      _resetForTest(store);
+    } catch {}
+    if (typeof previousCooldownOverride === "undefined") {
+      delete window.__NEXT_ROUND_COOLDOWN_MS;
+    } else {
+      window.__NEXT_ROUND_COOLDOWN_MS = previousCooldownOverride;
     }
-  } catch {
-    // ignore
+    if (typeof previousDebugMap === "undefined") {
+      delete window.__classicBattleDebugMap;
+    } else {
+      window.__classicBattleDebugMap = previousDebugMap;
+    }
+    if (typeof previousStartCount === "undefined") {
+      delete globalThis.__startCooldownCount;
+    } else {
+      globalThis.__startCooldownCount = previousStartCount;
+    }
+    if (typeof previousInvoked === "undefined") {
+      delete window.__startCooldownInvoked;
+    } else {
+      window.__startCooldownInvoked = previousInvoked;
+    }
   }
-
-  // Always write current debug state snapshot for manual inspection
-  try {
-    const dbg =
-      typeof globalThis.__classicBattleDebugRead === "function"
-        ? globalThis.__classicBattleDebugRead
-        : null;
-    const map = {};
-    if (dbg) {
-      try {
-        const last = dbg("nextRoundReadyTrace") || [];
-        map.trace = last;
-      } catch {}
-    }
-    const out = { tracesFile: traces || {}, debug: map };
-    fs.writeFileSync(tracesFile, JSON.stringify(out, null, 2));
-  } catch {}
-
-  // At minimum, ensure controls exists and that traces file was created
-  expect(controls).toBeTruthy();
-  expect(fs.existsSync(tracesFile)).toBe(true);
 });
