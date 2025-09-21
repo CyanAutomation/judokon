@@ -62,6 +62,25 @@ const POST_SELECTION_READY_DELAY_MS = 48;
  */
 const OPPONENT_MESSAGE_BUFFER_MS = 150;
 
+const BASE_SELECTION_READY_DELAY_MS = Math.max(
+  POST_SELECTION_READY_DELAY_MS,
+  OPPONENT_MESSAGE_BUFFER_MS
+);
+
+function computeSelectionReadyDelay() {
+  let delayForReady = BASE_SELECTION_READY_DELAY_MS;
+  try {
+    const opponentDelay = getOpponentDelay?.();
+    if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
+      delayForReady = Math.max(
+        delayForReady,
+        opponentDelay + OPPONENT_MESSAGE_BUFFER_MS
+      );
+    }
+  } catch {}
+  return delayForReady;
+}
+
 const COOLDOWN_FLAG = "__uiCooldownStarted";
 
 function resolveStatValues(store, stat) {
@@ -267,7 +286,7 @@ function scheduleNextReadyAfterSelection(store) {
     logNextButtonRecovery("selection", nextBtn, { cooldownStarted });
   };
   try {
-    setTimeout(scheduleNextReady, 150);
+    setTimeout(scheduleNextReady, computeSelectionReadyDelay());
   } catch (err) {
     console.debug("battleClassic: scheduling next ready failed", err);
     scheduleNextReady();
@@ -322,17 +341,6 @@ function finalizeSelectionReady(store, options = {}) {
     }
   };
 
-  const computeFinalizationDelay = () => {
-    let delayForReady = Math.max(POST_SELECTION_READY_DELAY_MS, OPPONENT_MESSAGE_BUFFER_MS);
-    try {
-      const opponentDelay = getOpponentDelay?.();
-      if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
-        delayForReady = Math.max(delayForReady, opponentDelay + OPPONENT_MESSAGE_BUFFER_MS);
-      }
-    } catch {}
-    return delayForReady;
-  };
-
   const scheduleFinalization = (delayMs) => {
     try {
       if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
@@ -361,7 +369,7 @@ function finalizeSelectionReady(store, options = {}) {
     return false;
   };
 
-  if (!scheduleFinalization(computeFinalizationDelay())) {
+  if (!scheduleFinalization(computeSelectionReadyDelay())) {
     finalizeRoundReady();
   }
 }
