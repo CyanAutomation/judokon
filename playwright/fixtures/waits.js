@@ -8,8 +8,47 @@ import path from "path";
  * @param {import('@playwright/test').Page} page
  */
 export async function waitForBattleReady(page) {
-  await page.waitForFunction(() => window.battleReadyPromise);
-  await page.evaluate(() => window.battleReadyPromise);
+  await page.waitForFunction(() => {
+    if (window.battleReadyPromise) return true;
+    const root = document.querySelector(".home-screen") || document.body;
+    if (root?.dataset?.ready === "true") return true;
+    const state = document.body?.dataset?.battleState;
+    if (typeof state === "string" && state.length > 0) return true;
+    const api = window.__TEST_API?.init?.waitForBattleReady;
+    return typeof api === "function";
+  });
+  await page.evaluate(async () => {
+    if (window.battleReadyPromise) {
+      await window.battleReadyPromise;
+      return;
+    }
+
+    const root = document.querySelector(".home-screen") || document.body;
+    if (root?.dataset?.ready === "true") {
+      return;
+    }
+
+    if (document.body?.dataset?.battleState) {
+      return;
+    }
+
+    if (window.__TEST_API?.init?.waitForBattleReady) {
+      await window.__TEST_API.init.waitForBattleReady();
+      return;
+    }
+
+    await new Promise((resolve) => {
+      const handler = () => {
+        document.removeEventListener("battle:init", handler);
+        resolve();
+      };
+      document.addEventListener("battle:init", handler, { once: true });
+      setTimeout(() => {
+        document.removeEventListener("battle:init", handler);
+        resolve();
+      }, 3000);
+    });
+  });
 }
 
 /**
@@ -42,6 +81,18 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
         try {
           if (typeof window.getStateSnapshot === "function") {
             w = window.getStateSnapshot().state;
+          }
+          if (!w) {
+            const apiState = window.__TEST_API?.state?.getBattleState?.();
+            if (apiState) {
+              w = apiState;
+            }
+          }
+          if (!w) {
+            const debugState = window.__TEST_API?.inspect?.getDebugInfo?.()?.machine?.currentState;
+            if (debugState) {
+              w = debugState;
+            }
           }
         } catch {}
         return d === s || w === s;
