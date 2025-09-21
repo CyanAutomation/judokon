@@ -518,3 +518,49 @@ Proceed to Phase 1 for items 1–3?
 - Debug output format: `[RAF Mock] <message>` with relevant details (queue length, callback IDs, etc.)
 
 **Next:** Item 2 Phase 3 complete. All phases of Item 2 are now complete. Ready to proceed to Item 3 Phase 1 or another item?
+
+
+## Phase 1 Completion: Item 3 (Publish a fake-timers playbook & canonical test setup)
+
+**Actions Taken:**
+
+- **Audit completed:** Scanned `tests/` directory for timer usage patterns:
+  - Found 20+ files using `vi.useFakeTimers()` with proper `vi.useRealTimers()` cleanup
+  - Identified 1 file with manual timer spying (`tooltipViewerPage.test.js`)
+  - Found direct RAF patches in `rafMock.js` (expected)
+  - Discovered real timer usage in test utilities and mocks (expected for test infrastructure)
+- **Created canonical fake timers helper** (`tests/setup/fakeTimers.js`):
+  - `useCanonicalTimers()`: Returns timer control object with cleanup method
+  - `withFakeTimers(fn)`: Auto-setup/cleanup wrapper for simple tests
+  - `runAllTimersAsync()`, `advanceTimersByTimeAsync()`, `runOnlyPendingTimersAsync()`: Async helper functions
+  - Comprehensive JSDoc with pseudocode and usage examples
+- **Added comprehensive unit tests** (`tests/setup/fakeTimers.test.js`):
+  - Tests for `useCanonicalTimers()` setup/cleanup functionality
+  - Tests for `withFakeTimers()` wrapper pattern
+  - Tests for standalone async timer helper functions
+  - All 5 tests pass, verifying correct timer behavior
+- **Updated documentation**:
+  - Added "Fake Timers Playbook" section to `docs/testing-guide.md` with:
+    - Preferred setup patterns and examples
+    - Async timer helper usage
+    - Wrapper pattern for simple tests
+    - Integration with RAF mocks
+    - Anti-patterns to avoid
+    - Migration guide from old patterns
+  - Created `tests/README.md` with:
+    - Directory structure overview
+    - Fake timers quick reference
+    - RAF mocking examples
+    - Test categories and running instructions
+    - Best practices and debugging tips
+
+**Outcome:**
+
+- Canonical fake timers pattern established with `useCanonicalTimers()` helper
+- Comprehensive documentation added to testing guide and tests README
+- Unit tests (5/5) pass, verifying helper functionality
+- No regressions: Timer-related tests (5/5) and Playwright tests (1/1) continue to pass
+- Acceptance criteria met: Playbook documented, helper file created, examples provided
+- Migration path clear for future adoption of canonical patterns
+
+**Next:** Item 3 Phase 1 complete. Ready to proceed to Item 3 Phase 2 or another item?
