@@ -1,6 +1,10 @@
 import * as snackbar from "./showSnackbar.js";
 import * as scoreboard from "./setupScoreboard.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
+import {
+  getOpponentPromptTimestamp,
+  getOpponentPromptMinDuration
+} from "./classicBattle/opponentPromptTracker.js";
 import { t } from "./i18n.js";
 
 /**
@@ -20,6 +24,56 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   let started = false;
   let lastRendered = -1;
   let rendered = false;
+  let pendingDelayId = null;
+  /** @type {{value: number, suppressEvents: boolean}|null} */
+  let queuedTickPayload = null;
+  const setTimeoutFn =
+    typeof window !== "undefined" && typeof window.setTimeout === "function"
+      ? window.setTimeout.bind(window)
+      : setTimeout;
+  const clearTimeoutFn =
+    typeof window !== "undefined" && typeof window.clearTimeout === "function"
+      ? window.clearTimeout.bind(window)
+      : clearTimeout;
+
+  const now = () => {
+    try {
+      if (typeof performance !== "undefined" && typeof performance.now === "function") {
+        return performance.now();
+      }
+    } catch {}
+    try {
+      return Date.now();
+    } catch {}
+    return 0;
+  };
+
+  const clearCountdownDelay = () => {
+    if (pendingDelayId !== null) {
+      clearTimeoutFn(pendingDelayId);
+      pendingDelayId = null;
+    }
+    queuedTickPayload = null;
+  };
+
+  const getRemainingPromptDelayMs = () => {
+    try {
+      const minDuration = Number(getOpponentPromptMinDuration());
+      if (!Number.isFinite(minDuration) || minDuration <= 0) {
+        return 0;
+      }
+      const lastPrompt = Number(getOpponentPromptTimestamp());
+      if (!Number.isFinite(lastPrompt) || lastPrompt <= 0) {
+        return 0;
+      }
+      const elapsed = now() - lastPrompt;
+      if (!Number.isFinite(elapsed)) {
+        return 0;
+      }
+      return Math.max(0, minDuration - elapsed);
+    } catch {}
+    return 0;
+  };
   // In unit tests, if a snackbar already shows a countdown value, treat that
   // as the initial render and skip the first decrement to avoid off-by-one
   // perception when timers begin very soon after the outcome.
@@ -58,23 +112,61 @@ export function attachCooldownRenderer(timer, initialRemaining) {
     return clamped;
   };
 
-  const onTick = (remaining) => {
-    const normalized = normalizeRemaining(remaining);
-    // If tests already show an initial value, skip the first visible update
-    // when the timer repeats the same number and only mark that the countdown
-    // started.
+  const processTick = (normalized, { suppressEvents = false } = {}) => {
     if (!started && rendered && lastRendered >= 0 && normalized === lastRendered) {
-      started = true;
-      emitBattleEvent("nextRoundCountdownStarted");
-      emitBattleEvent("nextRoundCountdownTick", { remaining: normalized });
+      if (!suppressEvents) {
+        started = true;
+        emitBattleEvent("nextRoundCountdownStarted");
+        emitBattleEvent("nextRoundCountdownTick", { remaining: normalized });
+      }
       return;
     }
     const clamped = render(normalized);
-    if (!started) {
+    if (!started && !suppressEvents) {
       started = true;
       emitBattleEvent("nextRoundCountdownStarted");
     }
-    emitBattleEvent("nextRoundCountdownTick", { remaining: clamped });
+    if (!suppressEvents) {
+      emitBattleEvent("nextRoundCountdownTick", { remaining: clamped });
+    }
+  };
+
+  const queueTickAfterPromptDelay = (normalized, suppressEvents) => {
+    queuedTickPayload = { value: normalized, suppressEvents };
+    const waitMs = getRemainingPromptDelayMs();
+    if (waitMs <= 0) {
+      const payload = queuedTickPayload;
+      queuedTickPayload = null;
+      pendingDelayId = null;
+      if (payload) {
+        processTick(payload.value, { suppressEvents: payload.suppressEvents });
+      }
+      return;
+    }
+    if (pendingDelayId !== null) {
+      clearTimeoutFn(pendingDelayId);
+    }
+    pendingDelayId = setTimeoutFn(() => {
+      pendingDelayId = null;
+      const payload = queuedTickPayload;
+      queuedTickPayload = null;
+      if (payload) {
+        processTick(payload.value, { suppressEvents: payload.suppressEvents });
+      }
+    }, waitMs);
+  };
+
+  const onTick = (remaining) => {
+    const normalized = normalizeRemaining(remaining);
+    if (!started) {
+      const waitMs = getRemainingPromptDelayMs();
+      if (waitMs > 0) {
+        queueTickAfterPromptDelay(normalized, false);
+        return;
+      }
+    }
+    clearCountdownDelay();
+    processTick(normalized);
   };
 
   const onExpired = () => onTick(0);
@@ -84,11 +176,17 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   const initialValue = Number(initialRemaining);
   if (Number.isFinite(initialValue)) {
     try {
-      render(initialValue);
+      const normalizedInitial = normalizeRemaining(initialValue);
+      if (getRemainingPromptDelayMs() > 0) {
+        queueTickAfterPromptDelay(normalizedInitial, true);
+      } else {
+        processTick(normalizedInitial, { suppressEvents: true });
+      }
     } catch {}
   }
   return () => {
     timer.off("tick", onTick);
     timer.off("expired", onExpired);
+    clearCountdownDelay();
   };
 }

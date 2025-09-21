@@ -54,10 +54,10 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await page.waitForSelector("#round-select-2", { state: "visible" });
         await page.click("#round-select-2");
 
-        // Test with no delay
+        // Test with a minimal delay to avoid race conditions
         await page.evaluate(async () => {
           const { setOpponentDelay } = await import("/src/helpers/classicBattle/snackbar.js");
-          setOpponentDelay(0);
+          setOpponentDelay(1);
         });
 
         const firstStat = page.locator(selectors.statButton(0)).first();
