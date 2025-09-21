@@ -28,6 +28,140 @@ Run on demand:
 npm run test:style
 ```
 
+## Fake Timers Playbook
+
+JU-DO-KON! uses Vitest fake timers for deterministic testing of time-dependent code. Follow this canonical pattern to avoid flaky tests and ensure consistent behavior.
+
+### Preferred Setup Pattern
+
+**Use the canonical helper instead of calling `vi.useFakeTimers()` directly:**
+
+```js
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
+
+describe("My Timer Test", () => {
+  let timers;
+
+  beforeEach(() => {
+    timers = useCanonicalTimers();
+  });
+
+  afterEach(() => {
+    timers.cleanup();
+  });
+
+  it("should handle timeouts", async () => {
+    let called = false;
+    setTimeout(() => (called = true), 1000);
+
+    await timers.advanceTimersByTimeAsync(1000);
+    expect(called).toBe(true);
+  });
+});
+```
+
+### Async Timer Helpers
+
+**Always use async timer methods for reliable execution:**
+
+```js
+// ✅ Preferred: Async execution ensures proper sequencing
+await timers.runAllTimersAsync();
+await timers.advanceTimersByTimeAsync(1000);
+
+// ❌ Avoid: Synchronous methods can cause race conditions
+timers.runAllTimersAsync(); // Missing await!
+vi.runAllTimers(); // Not async-safe
+```
+
+### Wrapper Pattern for Simple Tests
+
+**For tests that need timers throughout execution:**
+
+```js
+import { withFakeTimers } from "../setup/fakeTimers.js";
+
+it(
+  "should work with timers",
+  withFakeTimers(async () => {
+    setTimeout(() => doSomething(), 100);
+    await runAllTimersAsync();
+    expect(somethingDone).toBe(true);
+  })
+);
+```
+
+### Mixing with RAF Mocks
+
+**When testing code that uses both timers and RAF:**
+
+```js
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
+import { install, uninstall } from "../helpers/rafMock.js";
+
+describe("Timer + RAF Test", () => {
+  let timers;
+
+  beforeEach(() => {
+    timers = useCanonicalTimers();
+    install();
+  });
+
+  afterEach(() => {
+    uninstall();
+    timers.cleanup();
+  });
+
+  it("should coordinate timers and animation frames", async () => {
+    // Test code that uses both setTimeout and requestAnimationFrame
+    setTimeout(() => requestAnimationFrame(() => (done = true)), 100);
+    await timers.advanceTimersByTimeAsync(100);
+    flushAll(); // From rafMock
+    expect(done).toBe(true);
+  });
+});
+```
+
+### Anti-Patterns to Avoid
+
+**❌ Don't call `vi.useFakeTimers()` directly:**
+
+```js
+// Avoid this - use useCanonicalTimers() instead
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => vi.useRealTimers());
+```
+
+**❌ Don't use synchronous timer methods in async contexts:**
+
+```js
+// Avoid this - can cause timing issues
+setTimeout(() => callback(), 100);
+vi.runAllTimers(); // Not async-safe
+```
+
+**❌ Don't mix real and fake timers:**
+
+```js
+// Avoid this - leads to flaky tests
+vi.useFakeTimers();
+// ... some test code that accidentally uses real timers
+```
+
+### Migration Guide
+
+**Replace existing patterns:**
+
+```js
+// Old pattern - replace with useCanonicalTimers()
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => vi.useRealTimers());
+
+// New pattern
+beforeEach(() => (timers = useCanonicalTimers()));
+afterEach(() => timers.cleanup());
+```
+
 ## Playwright Testing
 
 ### Stable Readiness Patterns
