@@ -93,7 +93,7 @@ describe("startCooldown fallback timer", () => {
           resetDispatchHistory: vi.fn()
         }),
         // Mock debugHooks to return null for readDebugState
-        "../../../src/helpers/debugHooks.js": () => ({
+        "../../../src/helpers/classicBattle/debugHooks.js": () => ({
           readDebugState: vi.fn(() => null)
         })
       }
