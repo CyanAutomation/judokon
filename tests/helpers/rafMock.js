@@ -4,6 +4,9 @@ import { vi } from "vitest";
  * Queue-based mock for requestAnimationFrame/cancelAnimationFrame.
  * Provides deterministic control over animation frame scheduling in tests.
  *
+ * Debug mode can be enabled with RAF_MOCK_DEBUG=1 or DEBUG_RAF=1 environment variables.
+ * When enabled, logs queue operations, callback counts, and pending callbacks.
+ *
  * @pseudocode
  * - install(): Replace global RAF/CAF with mocked versions
  * - uninstall(): Restore original RAF/CAF globals
@@ -23,6 +26,22 @@ class RafMock {
   }
 
   /**
+   * Check if debug mode is enabled via environment variable
+   */
+  isDebugEnabled() {
+    return process.env.RAF_MOCK_DEBUG === "1" || process.env.DEBUG_RAF === "1";
+  }
+
+  /**
+   * Debug logging helper
+   */
+  debug(message, ...args) {
+    if (this.isDebugEnabled()) {
+      console.log(`[RAF Mock] ${message}`, ...args);
+    }
+  }
+
+  /**
    * Install the mock by replacing global requestAnimationFrame/cancelAnimationFrame
    */
   install() {
@@ -36,6 +55,7 @@ class RafMock {
     globalThis.requestAnimationFrame = vi.fn((cb) => {
       const id = ++this.rafIdCounter;
       this.rafQueue.push({ id, cb });
+      this.debug(`Enqueued callback ${id}, queue length: ${this.rafQueue.length}`);
       return id;
     });
 
@@ -43,12 +63,15 @@ class RafMock {
       const index = this.rafQueue.findIndex((item) => item.id === id);
       if (index > -1) {
         this.rafQueue.splice(index, 1);
+        this.debug(`Cancelled callback ${id}, queue length: ${this.rafQueue.length}`);
         return true;
       }
+      this.debug(`Cancel failed: callback ${id} not found`);
       return false;
     });
 
     this.installed = true;
+    this.debug("RAF mock installed");
   }
 
   /**
@@ -67,9 +90,11 @@ class RafMock {
       delete globalThis.flushRAF;
     } catch {}
 
+    const pendingCount = this.rafQueue.length;
     this.rafQueue = [];
     this.rafIdCounter = 0;
     this.installed = false;
+    this.debug(`RAF mock uninstalled, cleared ${pendingCount} pending callbacks`);
   }
 
   /**
@@ -78,6 +103,7 @@ class RafMock {
   enqueue(callback) {
     const id = ++this.rafIdCounter;
     this.rafQueue.push({ id, cb: callback });
+    this.debug(`Manually enqueued callback ${id}, queue length: ${this.rafQueue.length}`);
     return id;
   }
 
@@ -85,8 +111,12 @@ class RafMock {
    * Execute the next queued callback
    */
   flushNext() {
-    if (this.rafQueue.length === 0) return;
-    const { cb } = this.rafQueue.shift();
+    if (this.rafQueue.length === 0) {
+      this.debug("flushNext: no callbacks in queue");
+      return;
+    }
+    const { id, cb } = this.rafQueue.shift();
+    this.debug(`Flushing callback ${id}, ${this.rafQueue.length} remaining`);
     try {
       cb(performance.now());
     } catch {}
@@ -96,8 +126,15 @@ class RafMock {
    * Execute all queued callbacks in FIFO order
    */
   flushAll() {
+    const count = this.rafQueue.length;
+    if (count === 0) {
+      this.debug("flushAll: no callbacks in queue");
+      return;
+    }
+    this.debug(`Flushing all ${count} callbacks`);
     while (this.rafQueue.length > 0) {
-      const { cb } = this.rafQueue.shift();
+      const { id, cb } = this.rafQueue.shift();
+      this.debug(`Flushing callback ${id}, ${this.rafQueue.length} remaining`);
       try {
         cb(performance.now());
       } catch {
@@ -114,8 +151,10 @@ class RafMock {
     const index = this.rafQueue.findIndex((item) => item.id === id);
     if (index > -1) {
       this.rafQueue.splice(index, 1);
+      this.debug(`Manually cancelled callback ${id}, queue length: ${this.rafQueue.length}`);
       return true;
     }
+    this.debug(`Manual cancel failed: callback ${id} not found`);
     return false;
   }
 

@@ -384,6 +384,7 @@ export async function advanceWhenReady(btn, resolveReady) {
     }
     return;
   }
+  emitBattleEvent("round.start", { source: "next-button", via: "manual-click" });
   setSkipHandler(null);
 }
 
@@ -463,7 +464,6 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
     }
     if (!skipHandled) {
       emitBattleEvent("countdownFinished");
-      emitBattleEvent("round.start", { source: "next-button", via: "manual-click" });
     }
 
     const { timer = null, resolveReady = null } = controls || {};
