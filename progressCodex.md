@@ -113,12 +113,8 @@ A robust state machine is critical. It will resolve the majority of the function
 
 ### 4. Improve Accessibility (A11y)
 
-- **Action (ARIA):** Implement `aria-live="polite"` on the scoreboard and `aria-describedby` on stat buttons to provide screen reader support. Add `alt` text for card images.
-- **Fixes:** #12
-- **Action (Focus Management):** Trap focus within modals to prevent interaction with background elements.
-- **Fixes:** #11
-- **Action (Keyboard Navigation):** Implement the advertised keyboard shortcuts (number and arrow keys) for match length selection.
-- **Fixes:** #13
+- **Action (ARIA + Keyboard Support):** Ensure the scoreboard, stat buttons, and modal flows provide `aria-live`/`aria-describedby` announcements, conforming keyboard shortcuts, and resilient focus management.
+- **Fixes:** #11, #12, #13
 - **Action (Contrast and Layout):** Ensure the color contrast meets WCAG 2.1 AA standards (≥4.5:1) and that the layout is responsive, especially at 200% zoom.
 - **Fixes:** (Not explicitly in a bug, but a best practice)
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { install, uninstall, enqueue, flushNext, flushAll, withRafMock } from "../rafMock.js";
+import { install, uninstall, enqueue, flushNext, flushAll, withRafMock } from "./rafMock.js";
 
 /**
  * @pseudocode
@@ -72,9 +72,9 @@ describe("RafMock", () => {
       const cb2 = vi.fn(() => calls.push(2));
       const cb3 = vi.fn(() => calls.push(3));
 
-      const _id1 = requestAnimationFrame(cb1);
+      requestAnimationFrame(cb1);
       const id2 = requestAnimationFrame(cb2);
-      const _id3 = requestAnimationFrame(cb3);
+      requestAnimationFrame(cb3);
 
       cancelAnimationFrame(id2);
 
@@ -214,10 +214,10 @@ describe("RafMock", () => {
     it("should maintain installRAFMock backward compatibility", () => {
       uninstall(); // Clean up from beforeEach
 
-      const { restore, flushAll: legacyFlushAll, flushNext: legacyFlushNext, cancel: legacyCancel } = installRAFMock();
+      const { restore, flushAll: legacyFlushAll } = installRAFMock();
 
       const cb = vi.fn();
-      const id = requestAnimationFrame(cb);
+      requestAnimationFrame(cb);
 
       legacyFlushAll();
       expect(cb).toHaveBeenCalledTimes(1);
