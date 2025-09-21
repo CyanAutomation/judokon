@@ -120,6 +120,67 @@ function writeRoundCounter(root, value) {
 }
 
 /**
+ * Lightweight accessors for the diagnostic round-tracking globals.
+ *
+ * @summary Centralizes reads/writes for `__highestDisplayedRound` and context flags
+ * to make dependencies explicit and easier to reason about.
+ */
+const roundTrackingState = {
+  /**
+   * @param {Document|Element} root
+   * @returns {{counterEl: Element|null, highest: number|null, lastContext: string, previousContext: string}}
+   */
+  read(root) {
+    const counterEl = getRoundCounterElement(root);
+
+    let highest = Number(globalThis.__highestDisplayedRound ?? NaN);
+    if (!Number.isFinite(highest) || highest < 1) {
+      const datasetHighest = Number(counterEl?.dataset?.highestRound ?? NaN);
+      highest = Number.isFinite(datasetHighest) && datasetHighest >= 1 ? datasetHighest : NaN;
+    }
+
+    const lastContext =
+      typeof globalThis.__lastRoundCounterContext === "string"
+        ? globalThis.__lastRoundCounterContext
+        : "";
+    const previousContext =
+      typeof globalThis.__previousRoundCounterContext === "string"
+        ? globalThis.__previousRoundCounterContext
+        : "";
+
+    return {
+      counterEl,
+      highest: Number.isFinite(highest) && highest >= 1 ? highest : null,
+      lastContext,
+      previousContext
+    };
+  },
+  /**
+   * @param {{counterEl: Element|null, highest?: number|null, lastContext?: string|null, previousContext?: string|null}} state
+   * @returns {void}
+   */
+  write({ counterEl, highest, lastContext, previousContext }) {
+    if (Number.isFinite(highest) && highest >= 1) {
+      try {
+        globalThis.__highestDisplayedRound = highest;
+      } catch {}
+      if (counterEl && counterEl.dataset) {
+        const prior = Number(counterEl.dataset.highestRound || 0);
+        const stable = Number.isFinite(prior) && prior >= 1 ? Math.max(prior, highest) : highest;
+        counterEl.dataset.highestRound = String(stable);
+      }
+    }
+
+    if (lastContext !== undefined) {
+      globalThis.__lastRoundCounterContext = lastContext;
+    }
+    if (previousContext !== undefined) {
+      globalThis.__previousRoundCounterContext = previousContext;
+    }
+  }
+};
+
+/**
  * Transition events required when advancing from states other than `cooldown`.
  *
  * `advanceWhenReady` consults this table to dispatch an interrupt that moves the
@@ -335,55 +396,46 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
     displayedRoundBefore !== null &&
     (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
   ) {
-    /** @type {number} */
-    let trackedHighest = Number(globalThis.__highestDisplayedRound ?? NaN);
-    const hasTrackedHighest = Number.isFinite(trackedHighest) && trackedHighest >= 1;
-    const lastContext =
-      typeof globalThis.__lastRoundCounterContext === "string"
-        ? globalThis.__lastRoundCounterContext
-        : "";
-    const previousContext =
-      typeof globalThis.__previousRoundCounterContext === "string"
-        ? globalThis.__previousRoundCounterContext
-        : "";
-    const engineAlreadyAdvanced = lastContext === "advance" || previousContext === "advance";
+    const tracking = roundTrackingState.read(root);
+    const { counterEl, highest: recordedHighest, lastContext, previousContext } = tracking;
+    const hasRecordedHighest = typeof recordedHighest === "number";
+    const fallbackBase = displayedRoundBefore + 1;
 
-    let fallbackTarget = displayedRoundBefore + 1;
-    if (hasTrackedHighest) {
-      if (engineAlreadyAdvanced && trackedHighest >= displayedRoundBefore) {
-        fallbackTarget = trackedHighest;
-      } else {
-        fallbackTarget = Math.max(fallbackTarget, trackedHighest);
-      }
+    let fallbackTarget = fallbackBase;
+    if (hasRecordedHighest) {
+      fallbackTarget = Math.max(fallbackTarget, recordedHighest);
     }
-    if (hasTrackedHighest && engineAlreadyAdvanced && fallbackTarget > trackedHighest) {
-      fallbackTarget = trackedHighest;
+
+    const contextReportedAdvance = lastContext === "advance" || previousContext === "advance";
+    const recordedNextRound = hasRecordedHighest && recordedHighest >= fallbackBase;
+    const priorAdvanceMatchesDisplay =
+      previousContext === "advance" &&
+      hasRecordedHighest &&
+      recordedHighest === displayedRoundBefore;
+    const engineAlreadyAdvanced =
+      contextReportedAdvance && (recordedNextRound || priorAdvanceMatchesDisplay);
+    if (engineAlreadyAdvanced && hasRecordedHighest) {
+      fallbackTarget = recordedHighest;
     }
 
     if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1) {
       writeRoundCounter(root, fallbackTarget);
+      const nextRecordedHighest = hasRecordedHighest
+        ? Math.max(recordedHighest, fallbackTarget)
+        : fallbackTarget;
+      const shouldMarkFallbackContext =
+        fallbackTarget > displayedRoundBefore && !engineAlreadyAdvanced;
+
       try {
-        const newHighest = hasTrackedHighest
-          ? Math.max(trackedHighest, fallbackTarget)
-          : fallbackTarget;
-        if (Number.isFinite(newHighest) && newHighest >= 1) {
-          trackedHighest = newHighest;
-          globalThis.__highestDisplayedRound = newHighest;
-        }
-        const counterEl = getRoundCounterElement(root);
-        if (counterEl && counterEl.dataset) {
-          const priorHighest = Number(counterEl.dataset.highestRound || 0);
-          if (Number.isFinite(priorHighest) && priorHighest >= 1) {
-            counterEl.dataset.highestRound = String(Math.max(priorHighest, trackedHighest));
-          } else {
-            counterEl.dataset.highestRound = String(trackedHighest);
-          }
-        }
-        if (!engineAlreadyAdvanced) {
-          globalThis.__previousRoundCounterContext = lastContext || null;
-          globalThis.__lastRoundCounterContext = "fallback";
-        }
-      } catch {}
+        roundTrackingState.write({
+          counterEl,
+          highest: nextRecordedHighest,
+          lastContext: shouldMarkFallbackContext ? "fallback" : undefined,
+          previousContext: shouldMarkFallbackContext ? lastContext || null : undefined
+        });
+      } catch (error) {
+        guard(() => console.warn("[timerService] Failed to update round tracking state:", error));
+      }
     }
   }
   if (cooldownWarningTimeoutId !== null) {

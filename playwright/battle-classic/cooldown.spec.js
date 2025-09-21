@@ -27,20 +27,21 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(nextButton).toBeEnabled();
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
-      // Simulate an engine-driven update that already advanced the round.
-      await page.evaluate(() => {
-        const counter = document.getElementById("round-counter");
-        if (!counter) return;
-        counter.textContent = "Round 2";
-        if (counter.dataset) {
-          counter.dataset.highestRound = "2";
-        }
+      // Simulate an engine-driven advance using the scoreboard API and diagnostic state.
+      await page.evaluate(async () => {
+        const { updateRoundCounter } = await import("../helpers/setupScoreboard.js");
+        updateRoundCounter(2);
+
         const lastContext =
           typeof window.__lastRoundCounterContext === "string"
             ? window.__lastRoundCounterContext
             : null;
+        const previousContext =
+          typeof window.__previousRoundCounterContext === "string"
+            ? window.__previousRoundCounterContext
+            : null;
         window.__highestDisplayedRound = 2;
-        window.__previousRoundCounterContext = lastContext;
+        window.__previousRoundCounterContext = previousContext ?? lastContext ?? null;
         window.__lastRoundCounterContext = "advance";
       });
       await expect(roundCounter).toHaveText("Round 2");
@@ -48,9 +49,10 @@ test.describe("Classic Battle cooldown + Next", () => {
       // Click next button
       await nextButton.click();
 
-      // Check that the round counter has advanced
+      // Check that the round counter has advanced exactly once (no double advance)
       await expect(roundCounter).toHaveText("Round 2");
       await expect.poll(async () => roundCounter.textContent()).toBe("Round 2");
+      await expect(roundCounter).not.toHaveText("Round 3");
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
