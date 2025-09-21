@@ -193,7 +193,9 @@ function triggerCooldownOnce(store, reason) {
   if (!markCooldownStarted(store)) return false;
 
   const remaining = calculateRemainingOpponentMessageTime();
-  if (remaining > 0 && scheduleDelayedCooldown(remaining, store, reason)) {
+  const shouldForceImmediate = reason === "statSelectionFailed";
+
+  if (!shouldForceImmediate && remaining > 0 && scheduleDelayedCooldown(remaining, store, reason)) {
     return true;
   }
 
