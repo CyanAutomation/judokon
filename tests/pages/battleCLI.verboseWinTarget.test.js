@@ -8,7 +8,7 @@ function getListener(spy, type) {
   if (!entry) {
     throw new Error(`Expected ${type} listener to be registered`);
   }
-  const listener = entry.find((param, index) => index > 0 && typeof param === "function");
+  const listener = entry.find((param) => typeof param === "function");
   if (!listener) {
     throw new Error(`Expected ${type} listener to be a function`);
   }
@@ -26,6 +26,7 @@ describe("battleCLI verbose win target", () => {
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     delete window.__TEST_MACHINE__;
     await cleanupBattleCLI();
@@ -44,9 +45,9 @@ describe("battleCLI verbose win target", () => {
     const { toggleVerbose } = await initModule.setupFlags();
     expect(toggleVerbose).toEqual(expect.any(Function));
 
-    const { setPointsToWin, getPointsToWin } = await import(
-      "../../src/helpers/battleEngineFacade.js"
-    );
+    const battleFacade = await import("../../src/helpers/battleEngineFacade.js");
+    const { getPointsToWin } = battleFacade;
+    const setPointsToWinSpy = vi.spyOn(battleFacade, "setPointsToWin");
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const changeHandler = getListener(changeSpy, "change");
@@ -56,15 +57,17 @@ describe("battleCLI verbose win target", () => {
     expect(getPointsToWin()).toBe(15);
     expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("15");
     confirmSpy.mockRestore();
+    changeSpy.mockRestore();
 
-    setPointsToWin.mockClear();
+    setPointsToWinSpy.mockClear();
 
     await toggleVerbose(true);
     await toggleVerbose(false);
 
-    expect(setPointsToWin).toHaveBeenCalledTimes(2);
-    expect(setPointsToWin).toHaveBeenNthCalledWith(1, 15);
-    expect(setPointsToWin).toHaveBeenNthCalledWith(2, 15);
+    expect(setPointsToWinSpy).toHaveBeenCalledTimes(2);
+    expect(setPointsToWinSpy).toHaveBeenNthCalledWith(1, 15);
+    expect(setPointsToWinSpy).toHaveBeenNthCalledWith(2, 15);
     expect(getPointsToWin()).toBe(15);
+    setPointsToWinSpy.mockRestore();
   });
 });
