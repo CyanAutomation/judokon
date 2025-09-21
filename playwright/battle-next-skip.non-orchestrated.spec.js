@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForBattleReady } from "./fixtures/waits.js";
 import { withMutedConsole } from "../tests/utils/console.js";
 
 /**
@@ -27,46 +28,25 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     await page.getByRole("dialog").waitFor();
     await page.getByRole("button", { name: "Medium" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible();
-
-    // Wait for Test API availability
-    await page.waitForFunction(
-      () => {
-        return (
-          document.querySelector("#next-button") !== null ||
-          document.querySelector("[data-role='next-round']") !== null
-        );
-      },
-      { timeout: 5000 }
-    );
+    await waitForBattleReady(page);
 
     // Use existing battle infrastructure instead of synthetic DOM
     const nextButton = page.locator("#next-button, [data-role='next-round']").first();
     await nextButton.waitFor({ timeout: 3000 });
 
-    // Wait for the Classic Battle test API to be available
-    await page.waitForFunction(
-      () =>
-        typeof window.__TEST_API?.inspect?.getDebugInfo === "function" &&
-        typeof window.__TEST_API?.timers?.skipCooldown === "function"
-    );
+    const apiReady = await page.evaluate(() => window.__TEST_API?.init?.waitForBattleReady?.());
+    expect(apiReady).toBe(true);
 
     // Make a stat selection so the round resolves and cooldown begins
     await page.getByRole("button", { name: /power/i }).click();
-    await page.waitForFunction(() => {
-      const info = window.__TEST_API?.inspect?.getDebugInfo?.();
-      return info?.store?.selectionMade === true;
-    });
-
     const selectionInfo = await page.evaluate(() => window.__TEST_API.inspect.getDebugInfo());
     expect(selectionInfo.store.selectionMade).toBe(true);
 
     const skipped = await page.evaluate(() => window.__TEST_API.timers.skipCooldown());
     expect(skipped).toBeTruthy();
 
-    await page.waitForFunction(() => {
-      const info = window.__TEST_API?.inspect?.getDebugInfo?.();
-      return info?.dom?.nextButtonReady === true;
-    });
+    const nextReady = await page.evaluate(() => window.__TEST_API.state.waitForNextButtonReady());
+    expect(nextReady).toBe(true);
 
     // Use the same selector as above for consistency
     const nextBtn = page.locator("#next-button, [data-role='next-round']").first();

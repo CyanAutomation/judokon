@@ -132,6 +132,47 @@ const stateApi = {
 
       check();
     });
+  },
+
+  /**
+   * Wait for the Next button to be marked ready and enabled.
+   * @param {number} timeout - Timeout in milliseconds
+   * @returns {Promise<boolean>} Resolves true when ready, false on timeout
+   */
+  async waitForNextButtonReady(timeout = 5000) {
+    return new Promise((resolve) => {
+      const startTime = Date.now();
+
+      const check = () => {
+        try {
+          const nextButton =
+            document.getElementById("next-button") ||
+            document.querySelector("[data-role='next-round']");
+          const ariaDisabled =
+            typeof nextButton?.getAttribute === "function"
+              ? nextButton.getAttribute("aria-disabled")
+              : null;
+          if (
+            nextButton &&
+            nextButton.dataset?.nextReady === "true" &&
+            nextButton.disabled !== true &&
+            ariaDisabled !== "true"
+          ) {
+            resolve(true);
+            return;
+          }
+        } catch {}
+
+        if (Date.now() - startTime > timeout) {
+          resolve(false);
+          return;
+        }
+
+        setTimeout(check, 50);
+      };
+
+      check();
+    });
   }
 };
 
