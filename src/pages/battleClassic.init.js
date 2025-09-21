@@ -150,18 +150,52 @@ function recordRoundCycleTrigger(source) {
   }
 }
 
-function trackRoundCycleEvent(type, info = {}) {
+function trackRoundCycleEvent(type, info = {}, eventDetail) {
   if (typeof window === "undefined") return;
+
+  const sanitizeDetailValue = (value) => {
+    if (value === null) return null;
+    const valueType = typeof value;
+    return valueType === "string" || valueType === "number" || valueType === "boolean"
+      ? value
+      : undefined;
+  };
+
+  const detailSnapshot =
+    eventDetail && typeof eventDetail === "object"
+      ? {
+          source: sanitizeDetailValue(eventDetail?.source),
+          via: sanitizeDetailValue(eventDetail?.via)
+        }
+      : undefined;
+
+  const historyEntry = {
+    type: type || "unknown",
+    timestamp: getCurrentTimestamp(),
+    ...info
+  };
+
+  if (detailSnapshot) {
+    historyEntry.payload = detailSnapshot;
+  }
+
   try {
     if (!Array.isArray(window.__roundCycleHistory)) {
       window.__roundCycleHistory = [];
     }
-    window.__roundCycleHistory.push({
-      type: type || "unknown",
-      timestamp: getCurrentTimestamp(),
-      ...info
-    });
-  } catch {}
+    window.__roundCycleHistory.push(historyEntry);
+  } catch (error) {
+    try {
+      if (typeof console !== "undefined" && typeof console.debug === "function") {
+        console.debug("battleClassic: failed to push to window.__roundCycleHistory", {
+          type: historyEntry.type,
+          info,
+          payload: historyEntry.payload,
+          error
+        });
+      }
+    } catch {}
+  }
 }
 
 function handleCooldownError(store, reason, err) {
@@ -1441,12 +1475,12 @@ async function init() {
           if (hasManualStamp && Number.isFinite(elapsedSinceManual)) {
             eventInfo.sinceManualStartMs = elapsedSinceManual;
           }
-          trackRoundCycleEvent(eventType, eventInfo);
+          trackRoundCycleEvent(eventType, eventInfo, eventDetail);
           if (skipDueToManual) {
             return;
           }
         } else {
-          trackRoundCycleEvent(eventType, { manualRoundStart });
+          trackRoundCycleEvent(eventType, { manualRoundStart }, eventDetail);
         }
 
         try {
