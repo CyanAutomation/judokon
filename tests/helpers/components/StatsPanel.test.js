@@ -40,7 +40,7 @@ describe("createStatsPanel", () => {
   });
 
   it("provides stat value lookup", async () => {
-    const panel = createStatsPanel(mockStats);
+    const panel = await createStatsPanel(mockStats);
 
     // Note: getStatValue depends on actual stat loading, so we'll test the method exists
     // The actual value lookup depends on the real StatsPanel implementation
@@ -49,7 +49,7 @@ describe("createStatsPanel", () => {
   });
 
   it("tracks update calls with spy", async () => {
-    const panel = createStatsPanel(mockStats);
+    const panel = await createStatsPanel(mockStats);
 
     expect(panel.onUpdate).toHaveBeenCalledTimes(1); // Initial call
 
@@ -59,9 +59,10 @@ describe("createStatsPanel", () => {
     expect(panel.onUpdate).toHaveBeenLastCalledWith({ power: 95, speed: 85 });
   });
 
-  it("throws error for invalid stats", () => {
-    expect(() => createStatsPanel(null)).toThrow("Stats object is required");
-    expect(() => createStatsPanel(undefined)).toThrow("Stats object is required");
-    expect(() => createStatsPanel("invalid")).toThrow("Stats object is required");
+  it("throws error for invalid stats", async () => {
+    // Note: The error is thrown during async update, not construction
+    await expect(createStatsPanel(null)).rejects.toThrow("Stats object is required");
+    await expect(createStatsPanel(undefined)).rejects.toThrow("Stats object is required");
+    await expect(createStatsPanel("invalid")).rejects.toThrow("Stats object is required");
   });
 });
