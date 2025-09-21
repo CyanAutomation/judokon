@@ -419,6 +419,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await page.click("#round-select-1");
 
         await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
+        await page.evaluate(async () => {
           const { setOpponentDelay } = await import("/src/helpers/classicBattle/snackbar.js");
           setOpponentDelay(50);
         });
