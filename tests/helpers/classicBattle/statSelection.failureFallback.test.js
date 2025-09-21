@@ -166,18 +166,16 @@ describe("classicBattle stat selection failure recovery", () => {
     renderStatButtons(store);
 
     const statButton = document.querySelector("[data-stat]");
-    const spy = withListenerSpy(statButton, "click", () => {
-      // The spy will capture the call
+    await withListenerSpy(statButton, "click", async (calls) => {
+      statButton.click();
+
+      expect(calls).toHaveLength(1);
+      expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+      expect(startCooldownMock).toHaveBeenCalledTimes(1);
+      expect(store.__uiCooldownStarted).toBe(false);
+      expect(enableNextRoundButtonMock).toHaveBeenCalled();
+      expect(document.getElementById("next-button")).toBeNull();
     });
-
-    statButton.click();
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
-    expect(startCooldownMock).toHaveBeenCalledTimes(1);
-    expect(store.__uiCooldownStarted).toBe(false);
-    expect(enableNextRoundButtonMock).toHaveBeenCalled();
-    expect(document.getElementById("next-button")).toBeNull();
   });
 
   it("logs cooldown failure and still re-enables Next when startCooldown throws", async () => {
@@ -194,22 +192,19 @@ describe("classicBattle stat selection failure recovery", () => {
     renderStatButtons(store);
 
     const statButton = document.querySelector("[data-stat]");
-    const spy = withListenerSpy(statButton, "click", () => {
-      // The spy will capture the call
+    await withListenerSpy(statButton, "click", async (calls) => {
+      statButton.click();
+
+      expect(calls).toHaveLength(1);
+      expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+      expect(startCooldownMock).toHaveBeenCalledTimes(1);
+      expect(store.__uiCooldownStarted).toBe(false);
+      expect(enableNextRoundButtonMock).toHaveBeenCalled();
     });
-
-    statButton.click();
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
-    expect(startCooldownMock).toHaveBeenCalledTimes(1);
-    expect(store.__uiCooldownStarted).toBe(false);
-    expect(enableNextRoundButtonMock).toHaveBeenCalled();
   });
 
   it("keeps opponent choosing message visible before countdown when opponent delay is zero", async () => {
-    const { timers, cleanup } = useCanonicalTimers();
-    timers.useFakeTimers();
+    const { cleanup, advanceTimersByTimeAsync } = useCanonicalTimers();
     try {
       handleStatSelectionMock.mockImplementation(() => ({ matchEnded: false }));
 
@@ -233,39 +228,37 @@ describe("classicBattle stat selection failure recovery", () => {
       win.__MIN_OPPONENT_MESSAGE_DURATION_MS = minDisplay;
 
       const statButton = document.querySelector("[data-stat]");
-      const spy = withListenerSpy(statButton, "click", () => {
-        // The spy will capture the call
+      await withListenerSpy(statButton, "click", async (calls) => {
+        statButton.click();
+
+        expect(calls).toHaveLength(1);
+
+        await flushMicrotasks();
+        await advanceTimersByTimeAsync(0);
+
+        expect(showSnackbarMock).toHaveBeenCalledWith("Opponent is choosing…");
+        expect(startCooldownMock).not.toHaveBeenCalled();
+
+        await advanceTimersByTimeAsync(minDisplay - 1);
+        expect(startCooldownMock).not.toHaveBeenCalled();
+
+        await advanceTimersByTimeAsync(1);
+        await advanceTimersByTimeAsync(0);
+        await flushMicrotasks();
+
+        expect(startCooldownMock).toHaveBeenCalledTimes(1);
+        const lastMessage = showSnackbarMock.mock.calls.at(-1)?.[0];
+        expect(lastMessage).toBe("Opponent is choosing…");
+        const snackOrder = showSnackbarMock.mock.invocationCallOrder?.[0] ?? 0;
+        const cooldownOrder = startCooldownMock.mock.invocationCallOrder?.[0] ?? Infinity;
+        expect(snackOrder).toBeLessThan(cooldownOrder);
+
+        if (typeof previousMin === "undefined") {
+          delete win.__MIN_OPPONENT_MESSAGE_DURATION_MS;
+        } else {
+          win.__MIN_OPPONENT_MESSAGE_DURATION_MS = previousMin;
+        }
       });
-
-      statButton.click();
-
-      expect(spy).toHaveBeenCalledTimes(1);
-
-      await flushMicrotasks();
-      await timers.advanceTimersByTimeAsync(0);
-
-      expect(showSnackbarMock).toHaveBeenCalledWith("Opponent is choosing…");
-      expect(startCooldownMock).not.toHaveBeenCalled();
-
-      await timers.advanceTimersByTimeAsync(minDisplay - 1);
-      expect(startCooldownMock).not.toHaveBeenCalled();
-
-      await timers.advanceTimersByTimeAsync(1);
-      await timers.advanceTimersByTimeAsync(0);
-      await flushMicrotasks();
-
-      expect(startCooldownMock).toHaveBeenCalledTimes(1);
-      const lastMessage = showSnackbarMock.mock.calls.at(-1)?.[0];
-      expect(lastMessage).toBe("Opponent is choosing…");
-      const snackOrder = showSnackbarMock.mock.invocationCallOrder?.[0] ?? 0;
-      const cooldownOrder = startCooldownMock.mock.invocationCallOrder?.[0] ?? Infinity;
-      expect(snackOrder).toBeLessThan(cooldownOrder);
-
-      if (typeof previousMin === "undefined") {
-        delete win.__MIN_OPPONENT_MESSAGE_DURATION_MS;
-      } else {
-        win.__MIN_OPPONENT_MESSAGE_DURATION_MS = previousMin;
-      }
     } finally {
       cleanup();
     }

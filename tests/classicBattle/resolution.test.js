@@ -224,7 +224,8 @@ test("scoreboard reconciles directly to round result", async () => {
   globalThis.requestAnimationFrame = (cb) => {
     const id = setTimeout(() => {
       try {
-        const now = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+        const now =
+          typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
         cb(now);
       } catch {
         cb(0);
@@ -272,6 +273,8 @@ test("scoreboard reconciles directly to round result", async () => {
     const normalizedScore = scoreEl.textContent.replace(/\s+/g, " ").trim();
     expect(normalizedScore).toBe("You: 4 Opponent: 1");
     expect(normalizedScore).not.toBe("You: 1 Opponent: 0");
+    expect(scoreEl.querySelector('[data-side="player"]')).not.toBeNull();
+    expect(scoreEl.querySelector('[data-side="opponent"]')).not.toBeNull();
   } finally {
     globalThis.requestAnimationFrame = originalRaf;
     globalThis.cancelAnimationFrame = originalCancelRaf;

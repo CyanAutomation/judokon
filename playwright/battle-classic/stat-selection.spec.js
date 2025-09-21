@@ -26,19 +26,15 @@ test.describe("Classic Battle stat selection", () => {
 
       // Click the first stat button
       const score = page.getByTestId("score-display");
-      const initialScore = (await score.innerText()).replace(/\s+/g, " ").trim();
+      await expect(score.locator('[data-side="player"]')).toHaveCount(0);
       await buttons.first().click();
 
       // Timer should be cleared or show 0s after stat selection
       await expect(page.getByTestId("next-round-timer")).toHaveText(/^(|Time Left: 0s)$/);
 
-      // Scoreboard should reflect the live engine result rather than the placeholder prefill
-      await expect
-        .poll(async () => (await score.innerText()).replace(/\s+/g, " ").trim())
-        .not.toEqual(initialScore);
-      const updatedScore = (await score.innerText()).replace(/\s+/g, " ").trim();
-      expect(updatedScore).toMatch(/You:\s*\d+\s*Opponent:\s*\d+/);
-      expect(updatedScore).not.toMatch(/You:\s*0\s*Opponent:\s*0/);
+      // Scoreboard should upgrade to structured spans sourced from the engine result
+      await expect(score.locator('[data-side="player"]')).toHaveText(/You:\s*\d+/);
+      await expect(score.locator('[data-side="opponent"]')).toHaveText(/Opponent:\s*\d+/);
 
       // Cooldown begins and Next becomes ready
       await expect(next).toBeEnabled();

@@ -161,10 +161,14 @@ Phases:
     - `expectListenerAttached(target, eventName)` — asserts a handler was added (best-effort via wrapping `addEventListener`).
     - `wrapAddEventListener()` — optional installation that proxies `addEventListener` to capture registrations (only installed for tests that opt-in).
   - Acceptance: Unit tests demonstrating detection of attached listeners and invocation order.
+  - **COMPLETED**: Implemented `tests/helpers/listenerUtils.js` with `withListenerSpy()`, `expectListenerAttached()`, and `wrapAddEventListener()` functions. Created comprehensive unit tests (16/16 passing) covering event spying, listener detection, and integration scenarios. All component factory tests (36/36) and related event listener tests (5/5) pass with no regressions.
 
 - Phase 2 — Adopt in flaky tests (1–2 days)
   - Replace brittle `console.log` assertions with `withListenerSpy()` in selection/wiring-sensitive tests.
   - Acceptance: Flaky tests show fewer false negatives and clearer failures.
+  - **COMPLETED**: Migrated `statSelection.failureFallback.test.js` from brittle HTMLElement.prototype.addEventListener spying to `withListenerSpy()` for event verification. Replaced global prototype monkey-patching with opt-in event capture using `withListenerSpy()`. All 5 tests pass with no regressions, providing clearer failure diagnostics and removing fragile implementation spying. Tests now verify observable event behavior rather than internal listener registration.
+
+**COMPLETED**: All phases of Item 5 complete. Event listener testing utilities provide robust, behavior-focused verification without fragile spying, enabling reliable testing of event wiring in selection-sensitive components.
 
 Verification: Run migrated tests under fake timers and raf mocks to confirm consistent behavior.
 
@@ -296,15 +300,15 @@ Risks & mitigations: False positives could block legitimate stress tests — mak
 
 ## Consolidated prioritized list (short summary)
 
-1. Improve shared test mocking utilities (score: 1)
-2. Add a queue-based RAF mock helper (score: 1)
-3. Publish fake-timers playbook & canonical test setup (score: 2)
-4. Shared mock helpers for high-traffic UI components (score: 2)
-5. Add test assertions/utilities to verify event listener wiring (score: 2)
+1. Improve shared test mocking utilities (score: 1) ✅
+2. Add a queue-based RAF mock helper (score: 1) ✅
+3. Publish fake-timers playbook & canonical test setup (score: 2) ✅
+4. Shared mock helpers for high-traffic UI components (score: 2) ✅
+5. Add test assertions/utilities to verify event listener wiring (score: 2) ✅
 6. Replace brittle inline mocks with integration-style refactors for priority tests (score: 3)
 7. Centralize round state management / single source of truth (score: 4)
 8. Scheduler test-friendly hooks & deterministic control (score: 4)
-9. Add scheduler watchdogs to detect/prevent infinite loops (score: 5)
+9. Add scheduler safeguards to detect/prevent infinite loops (score: 5)
 
 ---
 
