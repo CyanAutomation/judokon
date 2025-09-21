@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount, clearBody } from "./domUtils.js";
 
 vi.mock("../../src/helpers/motionUtils.js", () => ({
@@ -6,8 +6,32 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
 }));
 
 describe("scoreboard readiness badge reflection", () => {
+  let originalMutationObserver;
+  /** @type {((...args: unknown[]) => void) | undefined} */
+  let invokeObserver;
+
   beforeEach(() => {
     vi.resetModules();
+    originalMutationObserver = globalThis.MutationObserver;
+    invokeObserver = undefined;
+    globalThis.MutationObserver = class {
+      constructor(callback) {
+        invokeObserver = callback;
+      }
+      observe() {}
+      disconnect() {}
+      takeRecords() {
+        return [];
+      }
+    };
+  });
+
+  afterEach(() => {
+    if (originalMutationObserver) {
+      globalThis.MutationObserver = originalMutationObserver;
+    } else {
+      delete globalThis.MutationObserver;
+    }
   });
 
   it("toggles #next-ready-badge hidden based on next button readiness", async () => {
@@ -45,14 +69,11 @@ describe("scoreboard readiness badge reflection", () => {
     expect(badge.hidden).toBe(true);
     // Enable next button => badge visible
     nextButton.disabled = false;
-    // allow microtasks used by setupScoreboard to run
-    await Promise.resolve();
-    await Promise.resolve();
+    invokeObserver?.([]);
     expect(badge.hidden).toBe(false);
     // Disable again => badge hidden
     nextButton.disabled = true;
-    await Promise.resolve();
-    await Promise.resolve();
+    invokeObserver?.([]);
     expect(badge.hidden).toBe(true);
 
     clearBody();
