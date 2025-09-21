@@ -105,21 +105,17 @@ async function handleAutostartAndTestMode(onStart, { emitEvents, isPlaywright, s
   return false;
 }
 
-async function handlePersistedSelection(onStart, emitEvents) {
+function loadPersistedSelection() {
   try {
     const storage = wrap(BATTLE_POINTS_TO_WIN);
     const saved = storage.get();
     const numeric = Number(saved);
     if (POINTS_TO_WIN_OPTIONS.includes(numeric)) {
-      try {
-        logEvent("battle.start", { pointsToWin: numeric, source: "storage" });
-      } catch {}
-      await startRound(numeric, onStart, emitEvents);
-      return true;
+      return numeric;
     }
   } catch {}
 
-  return false;
+  return null;
 }
 
 function createRoundSelectModal() {
@@ -149,13 +145,23 @@ function createCleanupRegistry() {
   };
 }
 
-function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart }) {
+function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart, defaultValue }) {
   const buttons = [];
+  let defaultButton = null;
 
   rounds.forEach((round) => {
     const button = createButton(round.label, { id: `round-select-${round.id}` });
     button.dataset.tooltipId = `ui.round${round.label}`;
     button.addEventListener("click", () => {
+      for (const other of buttons) {
+        if (other === button) {
+          other.setAttribute("aria-pressed", "true");
+          delete other.dataset.defaultSelection;
+        } else {
+          other.removeAttribute("aria-pressed");
+          delete other.dataset.defaultSelection;
+        }
+      }
       handleRoundSelect({
         value: round.value,
         modal,
@@ -166,9 +172,13 @@ function wireRoundSelectionButtons({ modal, container, cleanupRegistry, onStart 
     });
     container.appendChild(button);
     buttons.push(button);
+
+    if (Number(defaultValue) === Number(round.value)) {
+      defaultButton = button;
+    }
   });
 
-  return buttons;
+  return { buttons, defaultButton };
 }
 
 function setupKeyboardNavigation(modalElement, buttons) {
@@ -483,9 +493,7 @@ export async function initRoundSelectModal(onStart) {
     return;
   }
 
-  if (await handlePersistedSelection(onStart, environment.emitEvents)) {
-    return;
-  }
+  const persistedSelection = loadPersistedSelection();
 
   const { modal, buttonContainer } = createRoundSelectModal();
 
@@ -493,11 +501,12 @@ export async function initRoundSelectModal(onStart) {
   positioner.apply();
 
   const cleanupRegistry = createCleanupRegistry();
-  const buttons = wireRoundSelectionButtons({
+  const { buttons, defaultButton } = wireRoundSelectionButtons({
     modal,
     container: buttonContainer,
     cleanupRegistry,
-    onStart
+    onStart,
+    defaultValue: persistedSelection
   });
 
   const modalElement = modal.element;
@@ -509,11 +518,15 @@ export async function initRoundSelectModal(onStart) {
   cleanupRegistry.tooltips = tooltipLifecycle.cleanup;
 
   modal.open();
-  if (buttons.length > 0) {
-    try {
+  try {
+    if (defaultButton instanceof HTMLElement) {
+      defaultButton.dataset.defaultSelection = "true";
+      defaultButton.setAttribute("aria-pressed", "true");
+      defaultButton.focus();
+    } else if (buttons.length > 0) {
       buttons[0].focus();
-    } catch {}
-  }
+    }
+  } catch {}
 
   emitBattleEvent("roundOptionsReady");
 

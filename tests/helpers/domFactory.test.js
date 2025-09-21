@@ -92,7 +92,12 @@ describe("domFactory", () => {
 
   describe("createButton", () => {
     it("creates a button with options", () => {
-      const btn = createButton({ text: "Click me", id: "test-btn", className: "btn", disabled: true });
+      const btn = createButton({
+        text: "Click me",
+        id: "test-btn",
+        className: "btn",
+        disabled: true
+      });
       expect(btn.tagName).toBe("BUTTON");
       expect(btn.textContent).toBe("Click me");
       expect(btn.id).toBe("test-btn");

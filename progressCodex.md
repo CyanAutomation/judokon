@@ -49,6 +49,16 @@ Pending your review before starting Phase 3.
 
 Pending your review before starting Phase 4.
 
+## Phase 4 – Match Length Modal Reliability (2025-09-20)
+
+- **Action:** Retooled `initRoundSelectModal` to always present the length picker even when a previous selection is stored, highlighting the saved choice instead of auto-starting; refreshed button state management so the preselected option carries `aria-pressed` and updates when the user chooses a different length.
+- **Outcome:** Returning to `battleClassic.html` or replaying now consistently surfaces the modal, eliminating the stuck state from QA item #1 while preserving the remembered preference as a visual default.
+- **Validation:**
+  - ✅ `npx vitest run tests/helpers/classicBattle/roundSelectModal.test.js`
+  - ✅ `npx playwright test battle-classic/round-select.spec.js`
+
+Pending your review before starting Phase 5.
+
 ## 2. Issues Found
 
 The following table details the identified issues, ranked by severity.

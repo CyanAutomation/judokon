@@ -90,6 +90,7 @@ describe("initRoundSelectModal", () => {
     const startOrder = onStart.mock.invocationCallOrder[0];
     const emitOrder = mocks.emit.mock.invocationCallOrder[1];
     expect(startOrder).toBeLessThan(emitOrder);
+    expect(first.getAttribute("aria-pressed")).toBe("true");
   });
 
   it("opens modal and starts match even if tooltip init fails", async () => {
@@ -120,19 +121,24 @@ describe("initRoundSelectModal", () => {
     expect(wrap(BATTLE_POINTS_TO_WIN).get()).toBeNull();
   });
 
-  it("uses persisted selection when available and skips modal", async () => {
+  it("preselects persisted selection but still requires confirmation", async () => {
     const onStart = vi.fn();
     wrap(BATTLE_POINTS_TO_WIN).set(rounds[1].value);
     await initRoundSelectModal(onStart);
-    expect(mocks.logEvent).toHaveBeenCalledWith("battle.start", {
-      pointsToWin: rounds[1].value,
-      source: "storage"
-    });
+    const buttons = document.querySelectorAll(".round-select-buttons button");
+    expect(buttons).toHaveLength(3);
+    expect(onStart).not.toHaveBeenCalled();
+    expect(mocks.setPointsToWin).not.toHaveBeenCalledWith(rounds[1].value);
+
+    const preselected = document.querySelector('[data-default-selection="true"]');
+    expect(preselected).toBe(buttons[1]);
+    expect(preselected?.getAttribute("aria-pressed")).toBe("true");
+
+    preselected?.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[1].value);
     expect(onStart).toHaveBeenCalled();
-    expect(document.querySelector(".round-select-buttons")).toBeNull();
-    expect(mocks.initTooltips).not.toHaveBeenCalled();
-    expect(mocks.cleanup).not.toHaveBeenCalled();
   });
 
   it("propagates errors when modal creation fails", async () => {

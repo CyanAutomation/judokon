@@ -389,6 +389,7 @@ Proceed to Phase 1 for items 1–3?
 ## Phase 1 Completion: Item 1 (Improve shared test mocking utilities)
 
 **Actions Taken:**
+
 - Created `tests/helpers/domFactory.js` with factories: `createStatButton()`, `createSnackbar()`, `createScoreboard()`.
 - Added utilities: `attachEventSpy()`, `withMutedConsole()`.
 - Created comprehensive unit tests in `tests/helpers/domFactory.test.js` covering all helpers.
@@ -397,6 +398,7 @@ Proceed to Phase 1 for items 1–3?
 - Ran Playwright test: `navigation.spec.js` (1 test passed).
 
 **Outcome:**
+
 - New helpers provide consistent DOM mocks with realistic behavior (disabled states, ARIA, event handling).
 - No regressions in existing DOM-heavy tests.
 - Acceptance criteria met: Helper exports documented, unit tests pass.
@@ -404,6 +406,7 @@ Proceed to Phase 1 for items 1–3?
 ## Phase 2 Completion: Item 1 (Improve shared test mocking utilities)
 
 **Actions Taken:**
+
 - Added generic `createButton()` and `createDiv()` to `domFactory.js` for broader reuse.
 - Migrated 2 high-value tests to use helpers:
   - `scrollButtonState.test.js`: Replaced 8 `document.createElement()` calls with `createDiv()` and `createButton()`.
@@ -412,6 +415,7 @@ Proceed to Phase 1 for items 1–3?
 - Ran regression tests: `navigation.spec.js` (1 Playwright test passed).
 
 **Outcome:**
+
 - Reduced inline DOM creation in tests; helpers now used in 2 files.
 - No regressions; tests maintain same behavior with cleaner setup.
 - Acceptance criteria met: Identified and migrated high-value tests, no new failures.
