@@ -4,6 +4,17 @@ import { wrap } from "../../../src/helpers/storage.js";
 import { BATTLE_POINTS_TO_WIN } from "../../../src/config/storageKeys.js";
 import rounds from "../../../src/data/battleRounds.js";
 
+const observeMockCall = (mockFn, projector = (...args) => args) => {
+  let resolve;
+  const promise = new Promise((res) => {
+    resolve = res;
+  });
+  mockFn.mockImplementation((...args) => {
+    resolve(projector(...args));
+  });
+  return promise;
+};
+
 const mocks = vi.hoisted(() => {
   const modal = { open: vi.fn(), close: vi.fn(), destroy: vi.fn() };
   const defaultCreateModal = (content) => {
@@ -73,16 +84,8 @@ describe("initRoundSelectModal", () => {
 
   it("selecting an option persists, cleans up, and starts the match", async () => {
     const onStart = vi.fn(() => Promise.resolve());
-    const setPointsCalled = new Promise((resolve) => {
-      mocks.setPointsToWin.mockImplementation((value) => {
-        resolve(value);
-      });
-    });
-    const loggedStart = new Promise((resolve) => {
-      mocks.logEvent.mockImplementation((...args) => {
-        resolve(args);
-      });
-    });
+    const setPointsCalled = observeMockCall(mocks.setPointsToWin, (value) => value);
+    const loggedStart = observeMockCall(mocks.logEvent);
 
     await initRoundSelectModal(onStart);
     const first = document.querySelector(".round-select-buttons button");
@@ -146,11 +149,7 @@ describe("initRoundSelectModal", () => {
     expect(preselected).toBe(buttons[1]);
     expect(preselected?.getAttribute("aria-pressed")).toBe("true");
 
-    const nextSelection = new Promise((resolve) => {
-      mocks.setPointsToWin.mockImplementation((value) => {
-        resolve(value);
-      });
-    });
+    const nextSelection = observeMockCall(mocks.setPointsToWin, (value) => value);
 
     preselected?.click();
 
