@@ -25,6 +25,7 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
   const updateBattleStateBadge = vi.fn();
   const resetGame = vi.fn();
   const mockDispatch = vi.fn();
+  const buttonClickHandlers = [];
   vi.doMock("../../src/helpers/featureFlags.js", () => ({
     initFeatureFlags: vi.fn(),
     isEnabled: vi.fn((flag) => (flag === "autoSelect" ? autoSelect : false)),
@@ -32,7 +33,11 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
     featureFlagsEmitter: emitter
   }));
   vi.doMock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
-    skipRoundCooldownIfEnabled: vi.fn(() => skipCooldown),
+    skipRoundCooldownIfEnabled: vi.fn(({ onSkip }) => {
+      if (!skipCooldown) return false;
+      onSkip?.();
+      return true;
+    }),
     updateBattleStateBadge
   }));
   vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
@@ -90,6 +95,22 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
       };
     })
   }));
+  vi.doMock("../../src/components/Button.js", () => ({
+    createButton: vi.fn((label, options = {}) => {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      if (options.id) btn.id = options.id;
+      if (options.className) btn.className = options.className;
+      const originalAdd = btn.addEventListener.bind(btn);
+      btn.addEventListener = vi.fn((event, handler, opts) => {
+        if (event === "click" && typeof handler === "function") {
+          buttonClickHandlers.push(handler);
+        }
+        return originalAdd(event, handler, opts);
+      });
+      return btn;
+    })
+  }));
   window.__TEST__ = true;
   const { battleCLI } = await import("../../src/pages/index.js");
   return {
@@ -98,7 +119,8 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
     updateBattleStateBadge,
     resetGame,
     setAutoContinue,
-    mockDispatch
+    mockDispatch,
+    buttonClickHandlers
   };
 }
 
@@ -126,7 +148,51 @@ async function setupHandlers(options) {
   const transitionToBattleState = (to, detail = {}) => {
     result.emitBattleEvent("battleStateChange", { ...detail, to });
   };
-  return { ...result, transitionToBattleState };
+  const getRoundMessage = () => document.getElementById("round-message")?.textContent ?? "";
+  const getBottomLineText = () =>
+    document.querySelector("#snackbar-container .snackbar")?.textContent ?? "";
+  const getVerboseLog = () => document.getElementById("cli-verbose-log")?.textContent ?? "";
+  const seedVerboseLog = (text) => {
+    const el = document.getElementById("cli-verbose-log");
+    if (el) el.textContent = text;
+  };
+  const addHomeLink = (href) => {
+    const link = document.createElement("a");
+    link.dataset.testid = "home-link";
+    link.href = href;
+    document.body.appendChild(link);
+    return link;
+  };
+  const hasPlayAgainButton = () => Boolean(document.getElementById("play-again-button"));
+  const hasLobbyLink = () => Boolean(document.getElementById("return-to-lobby-link"));
+  const getLobbyLinkHref = () =>
+    document.getElementById("return-to-lobby-link")?.getAttribute("href") ?? null;
+  const clickPlayAgain = async () => {
+    const handler = result.buttonClickHandlers.at(-1);
+    if (handler) {
+      await handler(new Event("click"));
+    }
+  };
+  const getNextRoundButtons = () => Array.from(document.querySelectorAll("#next-round-button"));
+  const appendToStats = (element) => {
+    document.getElementById("cli-stats")?.appendChild(element);
+    return element;
+  };
+  return {
+    ...result,
+    transitionToBattleState,
+    getRoundMessage,
+    getBottomLineText,
+    getVerboseLog,
+    seedVerboseLog,
+    addHomeLink,
+    hasPlayAgainButton,
+    hasLobbyLink,
+    getLobbyLinkHref,
+    clickPlayAgain,
+    getNextRoundButtons,
+    appendToStats
+  };
 }
 
 describe("battleCLI event handlers", () => {
@@ -151,6 +217,7 @@ describe("battleCLI event handlers", () => {
     vi.doUnmock("../../src/helpers/classicBattle/orchestratorHandlers.js");
     vi.doUnmock("../../src/helpers/classicBattle/debugHooks.js");
     vi.doUnmock("../../src/helpers/timers/createRoundTimer.js");
+    vi.doUnmock("../../src/components/Button.js");
     if (typeof cleanupSetAutoContinue === "function") {
       cleanupSetAutoContinue(true);
       cleanupSetAutoContinue = undefined;
@@ -158,28 +225,26 @@ describe("battleCLI event handlers", () => {
   });
 
   it("updates round message on scoreboard event", async () => {
-    const { handlers } = await setupHandlers();
+    const { handlers, getRoundMessage } = await setupHandlers();
     handlers.handleScoreboardShowMessage({ detail: "Hello" });
-    expect(document.getElementById("round-message").textContent).toBe("Hello");
+    expect(getRoundMessage()).toBe("Hello");
     handlers.handleScoreboardClearMessage();
-    expect(document.getElementById("round-message").textContent).toBe("");
+    expect(getRoundMessage()).toBe("");
   });
 
   it("shows stalled message when auto-select disabled", async () => {
-    const { handlers } = await setupHandlers({ autoSelect: false });
+    const { handlers, getBottomLineText } = await setupHandlers({ autoSelect: false });
     handlers.handleStatSelectionStalled();
-    expect(document.querySelector(".snackbar").textContent).toBe(
-      "Stat selection stalled. Pick a stat."
-    );
+    expect(getBottomLineText()).toBe("Stat selection stalled. Pick a stat.");
   });
 
   it("runs countdown and emits finished", async () => {
     vi.useFakeTimers();
-    const { handlers, emitBattleEvent } = await setupHandlers();
+    const { handlers, emitBattleEvent, getBottomLineText } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 2 } });
-    expect(document.querySelector(".snackbar").textContent).toBe("Next round in: 2");
+    expect(getBottomLineText()).toBe("Next round in: 2");
     vi.advanceTimersByTime(1000);
-    expect(document.querySelector(".snackbar").textContent).toBe("Next round in: 1");
+    expect(getBottomLineText()).toBe("Next round in: 1");
     vi.advanceTimersByTime(1000);
     expect(emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
     vi.useRealTimers();
@@ -187,10 +252,10 @@ describe("battleCLI event handlers", () => {
 
   it("clears countdown on finish", async () => {
     vi.useFakeTimers();
-    const { handlers } = await setupHandlers();
+    const { handlers, getBottomLineText } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 1 } });
     handlers.handleCountdownFinished();
-    expect(document.querySelector(".snackbar").textContent).toBe("");
+    expect(getBottomLineText()).toBe("");
     vi.useRealTimers();
   });
 
@@ -266,7 +331,7 @@ describe("battleCLI event handlers", () => {
   });
 
   it("updates message after round resolved", async () => {
-    const { handlers } = await setupHandlers();
+    const { handlers, getRoundMessage } = await setupHandlers();
     const speedName = statNamesData.find((s) => s.statIndex === 2).name;
     handlers.handleRoundResolved({
       detail: {
@@ -276,13 +341,13 @@ describe("battleCLI event handlers", () => {
         opponentVal: 3
       }
     });
-    const msg = document.getElementById("round-message").textContent;
+    const msg = getRoundMessage();
     expect(msg).toContain("Win");
     expect(msg).toContain(speedName);
   });
 
   it("displays hyphenated stat names", async () => {
-    const { handlers } = await setupHandlers();
+    const { handlers, getRoundMessage } = await setupHandlers();
     const kumikataName = statNamesData.find((s) => s.statIndex === 4).name;
     handlers.handleRoundResolved({
       detail: {
@@ -292,85 +357,91 @@ describe("battleCLI event handlers", () => {
         opponentVal: 3
       }
     });
-    expect(document.getElementById("round-message").textContent).toContain(kumikataName);
+    expect(getRoundMessage()).toContain(kumikataName);
   });
 
   it("adds play again button and lobby link on match over", async () => {
-    const { handlers } = await setupHandlers();
-    const home = document.createElement("a");
-    home.dataset.testid = "home-link";
-    home.href = "/index.html";
-    document.body.appendChild(home);
+    const { handlers, addHomeLink, hasPlayAgainButton, hasLobbyLink, getLobbyLinkHref } =
+      await setupHandlers();
+    addHomeLink("/index.html");
     handlers.handleMatchOver();
-    expect(document.getElementById("play-again-button")).toBeTruthy();
-    expect(document.getElementById("return-to-lobby-link")).toBeTruthy();
+    expect(hasPlayAgainButton()).toBe(true);
+    expect(hasLobbyLink()).toBe(true);
+    expect(getLobbyLinkHref()).toContain("index.html");
   });
 
   it("clears verbose log on new match start", async () => {
-    const { handlers } = await setupHandlers();
-    document.getElementById("cli-verbose-log").textContent = "old";
+    const { handlers, seedVerboseLog, getVerboseLog } = await setupHandlers();
+    seedVerboseLog("old");
     handlers.handleBattleState({ detail: { from: "roundOver", to: "matchStart" } });
-    expect(document.getElementById("cli-verbose-log").textContent).toBe("");
+    expect(getVerboseLog()).toBe("");
   });
 
   it("clears verbose log when play again clicked", async () => {
-    const { handlers, emitBattleEvent, resetGame } = await setupHandlers();
-    document.getElementById("cli-verbose-log").textContent = "old";
+    const {
+      handlers,
+      emitBattleEvent,
+      resetGame,
+      seedVerboseLog,
+      getVerboseLog,
+      clickPlayAgain,
+      hasPlayAgainButton
+    } = await setupHandlers();
+    seedVerboseLog("old");
     handlers.handleMatchOver();
-    const btn = document.getElementById("play-again-button");
-    btn.click();
-    await new Promise((r) => setTimeout(r));
-    expect(document.getElementById("cli-verbose-log").textContent).toBe("");
+    expect(hasPlayAgainButton()).toBe(true);
+    await clickPlayAgain();
+    expect(getVerboseLog()).toBe("");
     expect(resetGame).toHaveBeenCalled();
     expect(emitBattleEvent).toHaveBeenCalledWith("startClicked");
   });
 
   it("handles battle state transitions", async () => {
-    const { handlers, updateBattleStateBadge, setAutoContinue } = await setupHandlers();
+    const { handlers, updateBattleStateBadge, setAutoContinue, getBottomLineText } =
+      await setupHandlers();
     setAutoContinue(false);
     handlers.handleBattleState({ detail: { from: "a", to: "roundOver" } });
     expect(updateBattleStateBadge).toHaveBeenCalledWith("roundOver");
-    expect(document.querySelector(".snackbar").textContent).toBe("Press Enter to continue");
+    expect(getBottomLineText()).toBe("Press Enter to continue");
   });
 
   it("renders next-round-button only during roundOver", async () => {
-    const { handlers, setAutoContinue } = await setupHandlers();
+    const { handlers, setAutoContinue, getNextRoundButtons } = await setupHandlers();
     setAutoContinue(false);
     handlers.handleBattleState({ detail: { from: "waiting", to: "roundOver" } });
-    const firstBtn = document.getElementById("next-round-button");
+    const [firstBtn] = getNextRoundButtons();
     expect(firstBtn).toBeTruthy();
     handlers.handleBattleState({
       detail: { from: "roundOver", to: "waitingForPlayerAction" }
     });
-    expect(document.getElementById("next-round-button")).toBeFalsy();
+    expect(getNextRoundButtons()).toHaveLength(0);
     handlers.handleBattleState({
       detail: { from: "waitingForPlayerAction", to: "roundOver" }
     });
-    const secondBtn = document.getElementById("next-round-button");
+    const [secondBtn] = getNextRoundButtons();
     expect(secondBtn).toBeTruthy();
     expect(secondBtn.id).toBe("next-round-button");
     expect(secondBtn).not.toBe(firstBtn);
   });
 
   it("creates next-round button when round over", async () => {
-    const { handlers, setAutoContinue } = await setupHandlers();
+    const { handlers, setAutoContinue, getNextRoundButtons } = await setupHandlers();
     setAutoContinue(false);
     handlers.handleBattleState({ detail: { from: "x", to: "roundOver" } });
-    expect(document.getElementById("next-round-button")).toBeTruthy();
+    expect(getNextRoundButtons()).toHaveLength(1);
   });
 
   it("logs state changes based on verbose flag", async () => {
-    const { handlers } = await setupHandlers();
-    const pre = document.getElementById("cli-verbose-log");
+    const { handlers, getVerboseLog } = await setupHandlers();
     const spy = vi.spyOn(console, "info").mockImplementation(() => {});
     handlers.setVerboseEnabled(false);
     handlers.handleBattleState({ detail: { from: "a", to: "b" } });
-    expect(pre.textContent).toBe("");
+    expect(getVerboseLog()).toBe("");
     expect(spy).not.toHaveBeenCalled();
     spy.mockClear();
     handlers.setVerboseEnabled(true);
     handlers.handleBattleState({ detail: { from: "b", to: "c" } });
-    expect(pre.textContent).toMatch(/b -> c/);
+    expect(getVerboseLog()).toMatch(/b -> c/);
     expect(spy).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });
@@ -383,7 +454,8 @@ describe("battleCLI event handlers", () => {
   });
 
   it("clears cooldown timers and dispatches ready", async () => {
-    const { handlers, mockDispatch, transitionToBattleState } = await setupHandlers();
+    const { handlers, mockDispatch, transitionToBattleState, getBottomLineText } =
+      await setupHandlers();
     transitionToBattleState("cooldown");
     handlers.setCooldownTimers(
       setTimeout(() => {}, 0),
@@ -402,15 +474,16 @@ describe("battleCLI event handlers", () => {
       cooldownTimer: null,
       cooldownInterval: null
     });
-    expect(document.querySelector(".snackbar").textContent).toBe("");
+    expect(getBottomLineText()).toBe("");
   });
 
   it("ignores clicks on stat elements", async () => {
-    const { handlers, mockDispatch, transitionToBattleState } = await setupHandlers();
+    const { handlers, mockDispatch, transitionToBattleState, appendToStats } =
+      await setupHandlers();
     transitionToBattleState("roundOver");
     const stat = document.createElement("div");
     stat.className = "cli-stat";
-    document.getElementById("cli-stats").appendChild(stat);
+    appendToStats(stat);
     handlers.onClickAdvance({ target: stat });
     expect(mockDispatch).not.toHaveBeenCalled();
   });
