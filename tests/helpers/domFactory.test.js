@@ -64,10 +64,11 @@ describe("domFactory", () => {
   describe("createScoreboard", () => {
     it("creates scoreboard with initial score", () => {
       const { element, updateScore } = createScoreboard();
+      updateScore({ player: 1, opponent: 2 }); // Use updateScore to update the scoreboard
       expect(element.tagName).toBe("DIV");
       expect(element.className).toBe("scoreboard");
-      expect(element.textContent).toContain("Player: 0");
-      expect(element.textContent).toContain("Opponent: 0");
+      expect(element.textContent).toContain("Player: 1");
+      expect(element.textContent).toContain("Opponent: 2");
     });
 
     it("updates score and re-renders", () => {

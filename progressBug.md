@@ -443,3 +443,34 @@ Proceed to Phase 1 for items 1–3?
 - No regressions: All helper tests (12/12) and migrated tests (6/6) pass, Playwright navigation test (1/1) passes
 
 **Next:** Item 1 complete. Ready to proceed to Item 2 Phase 1 or another item?
+
+## Phase 1 Completion: Item 2 (Add a queue-based animation frame mock helper)
+
+**Actions Taken:**
+
+- Updated `tests/helpers/rafMock.js` to expose the required API:
+  - `install()`: Replace global RAF/CAF with mocked versions
+  - `uninstall()`: Restore original RAF/CAF globals
+  - `enqueue(callback)`: Manually enqueue callbacks for testing
+  - `flushNext()`: Execute the next queued callback
+  - `flushAll()`: Execute all queued callbacks in FIFO order
+  - `cancel(id)`: Cancel a specific queued callback
+  - `withRafMock(fn)`: Auto-install/uninstall wrapper for tests
+- Maintained backward compatibility with existing `installRAFMock()` function
+- Created comprehensive unit tests in `rafMock.test.js` covering:
+  - Basic queuing and flushing behavior
+  - Cancellation semantics
+  - Nested RAF calls during flush
+  - Error handling (swallows callback errors)
+  - Legacy compatibility
+  - withRafMock wrapper functionality
+
+**Outcome:**
+
+- New API provides deterministic control over RAF scheduling in tests
+- Unit tests (14/14) pass, covering ordering, nested behavior, and cancellation
+- Backward compatibility maintained: existing tests using `installRAFMock` continue to work
+- Acceptance criteria met: API exposes required functions with instrumentation for calls/order/canceled IDs
+- No regressions: Existing rafMock-dependent tests (5/5) and Playwright tests (1/1) pass
+
+**Next:** Item 2 Phase 1 complete. Ready to proceed to Item 2 Phase 2 or another item?

@@ -13,7 +13,7 @@ describe("Scoreboard live region discipline", () => {
     document.body.appendChild(header);
   });
 
-  it("initializes score display with aria-live=off and does not announce on timer ticks", async () => {
+  it("keeps score display in a polite live region without disrupting outcome messaging", async () => {
     const header = document.querySelector("header");
     const { initScoreboard, updateTimer, resetScoreboard } = await import(
       "../../src/components/Scoreboard.js"
@@ -22,7 +22,7 @@ describe("Scoreboard live region discipline", () => {
     initScoreboard(header);
 
     const score = document.getElementById("score-display");
-    expect(score.getAttribute("aria-live")).toBe("off");
+    expect(score.getAttribute("aria-live")).toBe("polite");
 
     const msg = document.getElementById("round-message");
     msg.textContent = "Outcome here";

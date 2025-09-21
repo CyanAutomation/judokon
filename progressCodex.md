@@ -59,6 +59,17 @@ Pending your review before starting Phase 4.
 
 Pending your review before starting Phase 5.
 
+## Phase 5 – Accessibility Enhancements (2025-09-21)
+
+- **Action:** Raised Classic Battle’s live regions to screen-reader parity by keeping the score display in a polite status region, delaying cooldown countdown announcements until the opponent prompt’s dwell time elapses, and tightening modal focus traps so even content-only dialogs retain keyboard focus.
+- **Outcome:** Score, timer, and round updates now announce in order without clipping outcome messaging, the “Opponent is choosing” prompt remains audible until reveals complete, and modals no longer allow focus to drift to background controls (addresses QA #11, #12, #13).
+- **Validation:**
+  - ✅ `npx vitest run tests/components/Modal.focusTrap.test.js tests/components/Scoreboard.a11y.liveRegions.test.js`
+  - ✅ `npx vitest run tests/classicBattle/page-scaffold.test.js tests/classicBattle/bootstrap.test.js`
+  - ✅ `npx playwright test battle-classic/round-select.spec.js`
+
+Pending your review before starting Phase 6.
+
 ## 2. Issues Found
 
 The following table details the identified issues, ranked by severity.

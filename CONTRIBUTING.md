@@ -1,4 +1,4 @@
-# Contributing to JU-DO-KON!
+# Contributing to JU-DO-KON
 
 This document summarizes the key steps and rules for submitting pull requests.
 It consolidates the instructions from `AGENTS.md` and the design documents so contributors can quickly confirm the required checks and documentation standards.

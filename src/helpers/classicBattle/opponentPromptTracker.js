@@ -1,7 +1,3 @@
-/**
- * @summary The default minimum duration in milliseconds for the opponent prompt message.
- * @type {number}
- */
 const DEFAULT_MIN_PROMPT_DURATION_MS = 600;
 
 let lastPromptTimestamp = 0;
@@ -86,7 +82,13 @@ function readMinOverride() {
  */
 export function getOpponentPromptMinDuration() {
   const override = readMinOverride();
-  return Number.isFinite(override) && override >= 0 ? Number(override) : DEFAULT_MIN_PROMPT_DURATION_MS;
+  return Number.isFinite(override) && override >= 0
+    ? Number(override)
+    : DEFAULT_MIN_PROMPT_DURATION_MS;
 }
 
+/**
+ * @summary The default minimum duration in milliseconds for the opponent prompt message.
+ * @type {number}
+ */
 export { DEFAULT_MIN_PROMPT_DURATION_MS };

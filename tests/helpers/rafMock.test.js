@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { install, uninstall, enqueue, flushNext, flushAll, withRafMock, installRAFMock } from "./rafMock.js";
+import {
+  install,
+  uninstall,
+  enqueue,
+  flushNext,
+  flushAll,
+  withRafMock,
+  installRAFMock
+} from "./rafMock.js";
 
 /**
  * @pseudocode

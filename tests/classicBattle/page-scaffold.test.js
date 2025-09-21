@@ -874,7 +874,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       expect(el.getAttribute("aria-live")).toBe("polite");
       expect(el.getAttribute("aria-atomic")).toBe("true");
     }
-    expect(score.getAttribute("aria-live")).toBe("off");
+    expect(score.getAttribute("aria-live")).toBe("polite");
     expect(score.getAttribute("aria-atomic")).toBe("true");
 
     expect(score.textContent).toContain("You: 0");
@@ -910,7 +910,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     const opponentSpan = score?.querySelector("[data-side='opponent']");
     expect(playerSpan?.textContent).toContain("You: 4");
     expect(opponentSpan?.textContent).toContain("Opponent: 1");
-    expect(score?.getAttribute("aria-live")).toBe("off");
+    expect(score?.getAttribute("aria-live")).toBe("polite");
 
     const statButtons = document.querySelectorAll("#stat-buttons button[data-stat]");
     expect(statButtons.length).toBeGreaterThan(0);

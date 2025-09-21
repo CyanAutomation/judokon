@@ -34,8 +34,9 @@ export function createScoreboard(container = document.createElement("div")) {
 
   const scoreEl = document.createElement("p");
   scoreEl.id = "score-display";
-  scoreEl.setAttribute("aria-live", "off");
+  scoreEl.setAttribute("aria-live", "polite");
   scoreEl.setAttribute("aria-atomic", "true");
+  scoreEl.setAttribute("role", "status");
   scoreEl.setAttribute("data-testid", "score-display");
 
   container.append(messageEl, timerEl, roundCounterEl, scoreEl);
@@ -180,7 +181,7 @@ export class Scoreboard {
  * 2. If a default scoreboard with a view already exists, do nothing.
  * 3. Create a new ScoreboardModel.
  * 4. Create a new ScoreboardView, locating child elements within the container.
- * 5. Set the `aria-live` attribute of the score element to "off".
+ * 5. Ensure the score element participates in the shared polite live region.
  * 6. Create a new Scoreboard with the model and view, and store it as the default.
  *
  * @param {HTMLElement|null} container - Header container or null for headless.
@@ -222,9 +223,6 @@ export function initScoreboard(container, _controls) {
     roundCounterEl: container.querySelector("#round-counter"),
     scoreEl: container.querySelector("#score-display")
   });
-  try {
-    if (view && view.scoreEl) view.scoreEl.setAttribute("aria-live", "off");
-  } catch {}
   defaultScoreboard = new Scoreboard(model, view);
 }
 

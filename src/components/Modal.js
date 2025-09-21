@@ -81,7 +81,19 @@ export class Modal {
   trapFocus(el) {
     const selectors = "a[href], button, textarea, input, select, [tabindex]:not([tabindex='-1'])";
     const focusables = Array.from(el.querySelectorAll(selectors));
-    if (focusables.length === 0) return () => {};
+    if (focusables.length === 0) {
+      if (!el.hasAttribute("tabindex")) {
+        el.tabIndex = -1;
+      }
+      const handleNoFocusables = (e) => {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          el.focus();
+        }
+      };
+      el.addEventListener("keydown", handleNoFocusables);
+      return () => el.removeEventListener("keydown", handleNoFocusables);
+    }
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
 
@@ -138,7 +150,11 @@ export class Modal {
     const focusTarget = this.dialog.querySelector(
       "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
     );
-    (focusTarget || this.dialog).focus();
+    const target = focusTarget || this.dialog;
+    if (!target.hasAttribute("tabindex")) {
+      target.tabIndex = -1;
+    }
+    target.focus();
     registerModal(this);
   }
 
