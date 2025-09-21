@@ -185,6 +185,7 @@ Phases:
 - Phase 0 — Identify priority tests (0.5 day)
   - From flaky-test reports, identify the set of tests that produce the majority of CI flakes.
   - Acceptance: Short list of priority tests.
+  - **COMPLETED**: Analyzed test files by mock complexity, identifying top 4 priority tests for integration refactoring: `scheduleNextRound.fallback.test.js` (38 mocks), `settingsPage.test.js` (34 mocks), `resolution.test.js` (23 mocks), `browseJudokaPage.test.js` (22 mocks). These tests represent the most brittle inline mocking patterns and are prime candidates for integration-style refactoring to reduce flakiness.
 
 - Phase 1 — Design integration harness (1–2 days)
   - Create a test harness template that boots real modules and provides deterministic inputs (fixtures, fake timers, raf mock).
@@ -305,7 +306,7 @@ Risks & mitigations: False positives could block legitimate stress tests — mak
 3. Publish fake-timers playbook & canonical test setup (score: 2) ✅
 4. Shared mock helpers for high-traffic UI components (score: 2) ✅
 5. Add test assertions/utilities to verify event listener wiring (score: 2) ✅
-6. Replace brittle inline mocks with integration-style refactors for priority tests (score: 3)
+6. Replace brittle inline mocks with integration-style refactors for priority tests (score: 3) [Phase 0 ✅]
 7. Centralize round state management / single source of truth (score: 4)
 8. Scheduler test-friendly hooks & deterministic control (score: 4)
 9. Add scheduler safeguards to detect/prevent infinite loops (score: 5)
