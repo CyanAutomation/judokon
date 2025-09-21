@@ -948,6 +948,12 @@ async function handleReplay(store) {
     const { createBattleEngine } = await import("../helpers/battleEngineFacade.js");
     createBattleEngine({ forceCreate: true });
 
+    try {
+      bridgeEngineEvents();
+    } catch (err) {
+      console.debug("battleClassic: bridgeEngineEvents failed", err);
+    }
+
     // Reset store state
     store.selectionMade = false;
     store.playerChoice = null;
