@@ -946,14 +946,10 @@ function mountScaffoldDom() {
     btn.dataset.role = btn.dataset.role ?? "quit";
   });
 
-  const container = ensureElement(
-    "stat-buttons",
-    "div",
-    (div) => {
-      div.dataset.buttonsReady = div.dataset.buttonsReady ?? "false";
-      div.setAttribute("data-testid", "stat-buttons");
-    }
-  );
+  const container = ensureElement("stat-buttons", "div", (div) => {
+    div.dataset.buttonsReady = div.dataset.buttonsReady ?? "false";
+    div.setAttribute("data-testid", "stat-buttons");
+  });
   if (!container.querySelector("button[data-stat]")) {
     const button = document.createElement("button");
     button.type = "button";
@@ -1038,9 +1034,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     const roundEnded = engineMock.listeners.get("roundEnded");
     roundEnded?.({ playerScore: 4, opponentScore: 1 });
 
-    expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBeGreaterThan(
-      initialRoundCalls
-    );
+    expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBeGreaterThan(initialRoundCalls);
     expect(scoreboardMock.updateScore.mock.calls.length).toBeGreaterThan(initialScoreCalls);
     expect(scoreboardMock.updateRoundCounter.mock.calls.at(-1)).toEqual([3]);
     expect(scoreboardMock.updateScore.mock.calls.at(-1)).toEqual([4, 1]);
@@ -1127,9 +1121,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
   });
 
   test("renders scoreboard updates in the DOM using the real module", async () => {
-    const scoreboardModule = await vi.importActual(
-      "../../src/helpers/setupScoreboard.js"
-    );
+    const scoreboardModule = await vi.importActual("../../src/helpers/setupScoreboard.js");
     const controls = {
       pauseTimer: vi.fn(),
       resumeTimer: vi.fn(),

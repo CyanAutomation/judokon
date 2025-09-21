@@ -109,7 +109,9 @@ export async function getExtractor() {
             // Do not proceed to remote fetch in strict mode
             throw new Error(msg);
           }
-          console.warn("RAG: Local model not found or failed to load; falling back to Xenova/all-MiniLM-L6-v2 from CDN.");
+          console.warn(
+            "RAG: Local model not found or failed to load; falling back to Xenova/all-MiniLM-L6-v2 from CDN."
+          );
           extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
             quantized: true
           });

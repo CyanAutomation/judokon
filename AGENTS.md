@@ -224,6 +224,29 @@ You **MUST** use RAG as your first step for questions related to:
 - Lexical fallback (optional, degraded): if the model is unavailable, set `RAG_ALLOW_LEXICAL_FALLBACK=1` or pass `{ allowLexicalFallback: true }` to `queryRag(...)` to use sparse lexical scoring against the offline corpus. Keep this feature-gated to avoid silent regressions.
 - Provenance: prefer `withProvenance: true` and include the provided `contextPath` and `rationale` in your outputs.
 
+### 🛠 RAG Model Setup & Troubleshooting
+
+To ensure the RAG system functions correctly, the local MiniLM model must be present and correctly configured.
+
+**1. Prepare the Local Model:**
+If you encounter errors related to model loading or "Local model not found", you need to download and prepare the local RAG model files.
+```bash
+npm run rag:prepare:models
+```
+This command will download the necessary model files into `src/models/minilm`.
+
+**2. Verify Model Files:**
+You can manually check if the RAG model files are present and accounted for using the following command:
+```bash
+npm run check:rag
+```
+This script verifies the existence of all required model files. It is also integrated into the pre-commit hook to provide a warning if files are missing.
+
+**3. Troubleshooting Model Loading Issues:**
+*   **"Failed to load model because protobuf parsing failed."**: This often indicates corrupted or incomplete model files. Run `npm run rag:prepare:models` to re-download them.
+*   **"Local model not found; falling back..."**: While this message might appear even if the local model is eventually used, ensure `npm run rag:prepare:models` has been run. Check the console logs for "RAG: Successfully loaded local MiniLM model." for confirmation of local model usage.
+*   **Network Issues**: If falling back to CDN fails due to network connectivity, ensure your network is stable or use `npm run rag:prepare:models` to set up the local model for offline use.
+
 ### Agent Usage Tips (RAG)
 
 - Prefer `queryRag({ withProvenance: true })` for “How/Why/What/Where/Which” questions to include `contextPath` and a short `rationale` explaining ranking.

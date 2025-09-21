@@ -4,7 +4,7 @@
 
 SKIP_VAR_NAME=SKIP_CHECK_JSDOC
 # POSIX-safe indirect expansion: evaluate the named var's value
-SKIP_VAL=$(eval "echo \$$SKIP_VAR_NAME")
+SKIP_VAL=$(eval "echo \$SKIP_VAR_NAME")
 if [ "$SKIP_VAL" = "1" ]; then
   echo "Skipping JSDoc check because ${SKIP_VAR_NAME}=1"
   exit 0
@@ -20,6 +20,19 @@ if [ $status -ne 0 ]; then
   echo "Run 'npm run check:jsdoc' to see details. This hook will not block commits." 
 else
   echo "JSDoc check passed"
+fi
+
+# RAG Model Check
+echo "Running RAG model file check..."
+set +e
+npm run check:rag
+rag_status=$?
+set -e
+if [ $rag_status -ne 0 ]; then
+  printf "\nRAG model check failed (non-blocking). Please run 'npm run rag:prepare:models' to fix.\n"
+  echo "This hook will not block commits, but it's recommended to fix the RAG model files."
+else
+  echo "RAG model check passed"
 fi
 
 exit 0

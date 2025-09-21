@@ -29,6 +29,7 @@
     "rag:query": "node scripts/queryRagCli.mjs",
     "rag:validate": "node scripts/checkRagPreflight.mjs && node scripts/evaluation/evaluateRAG.js && npm run validate:data && node scripts/checkHotPaths.js",
     "rag:prepare:models": "node scripts/prepareLocalModel.mjs",
+    "check:rag": "node scripts/checkRagModel.mjs",
     "build:offline-rag": "node scripts/buildOfflineRag.mjs",
     "rgs": "bash ./scripts/rgs",
     "test:value": "node scripts/test-value-evaluator.js",
