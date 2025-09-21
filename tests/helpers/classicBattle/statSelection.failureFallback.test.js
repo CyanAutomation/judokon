@@ -43,6 +43,7 @@ describe("classicBattle stat selection failure recovery", () => {
     try {
       global.__statSelectionRafRestore?.();
     } catch {}
+    vi.useRealTimers();
     if (originalLocalStorage) {
       globalThis.localStorage = originalLocalStorage;
     } else {
@@ -84,6 +85,32 @@ describe("classicBattle stat selection failure recovery", () => {
     expect(nextBtn.disabled).toBe(false);
     expect(nextBtn.getAttribute("data-next-ready")).toBe("true");
     expect(nextBtn.dataset.nextReady).toBe("true");
+  });
+
+  it("immediately triggers cooldown on selection failure without advancing timers", async () => {
+    vi.useFakeTimers();
+    handleStatSelectionMock.mockRejectedValue(new Error("stat selection failed"));
+
+    document.body.innerHTML = `
+      <div id="stat-buttons"></div>
+      <button id="next-button" data-role="next-round" disabled></button>
+    `;
+
+    const store = {};
+    renderStatButtons(store);
+
+    const btn = document.querySelector("[data-stat]");
+    expect(btn).toBeTruthy();
+
+    btn.click();
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+    expect(startCooldownMock).toHaveBeenCalledTimes(1);
+    expect(startCooldownMock).toHaveBeenCalledWith(store);
+    expect(store.__uiCooldownStarted).toBe(false);
   });
 
   it("recovers when the Next button is absent", async () => {
