@@ -48,8 +48,11 @@ function createBusPropagationMock(globalDispatcher) {
 describe("startCooldown fallback timer", () => {
   let harness;
   let scheduler;
+  /** @type {import('vitest').Mock} */
+  let dispatchSpy;
 
   beforeEach(async () => {
+    dispatchSpy = vi.fn(() => true);
     harness = createClassicBattleHarness({
       useFakeTimers: false,
       mocks: {
@@ -89,7 +92,7 @@ describe("startCooldown fallback timer", () => {
         }),
         // Mock eventDispatcher to return true for dispatchBattleEvent
         "../../../src/helpers/classicBattle/eventDispatcher.js": () => ({
-          dispatchBattleEvent: vi.fn(() => true),
+          dispatchBattleEvent: dispatchSpy,
           resetDispatchHistory: vi.fn()
         }),
         // Mock debugHooks to return null for readDebugState
@@ -130,6 +133,28 @@ describe("startCooldown fallback timer", () => {
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
     scheduler.tick(1);
+    expect(resolved).toBe(true);
+    expect(btn.dataset.nextReady).toBe("true");
+    expect(btn.disabled).toBe(false);
+  });
+
+  it("resolves ready when dispatcher reports false and enables button", async () => {
+    dispatchSpy.mockImplementation(() => false);
+
+    const { startCooldown } = await harness.importModule(
+      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
+    );
+    const btn = document.querySelector('[data-role="next-round"]');
+    btn.disabled = true;
+    const controls = startCooldown({}, scheduler);
+    let resolved = false;
+    controls.ready.then(() => {
+      resolved = true;
+    });
+
+    scheduler.tick(9);
+    await controls.ready;
+
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
     expect(btn.disabled).toBe(false);
@@ -227,7 +252,6 @@ describe("handleNextRoundExpiration immediate readiness", () => {
 
     await harness.setup();
     scheduler = createMockScheduler();
-    dispatchSpy = undefined;
     document.body.innerHTML = "";
     createTimerNodes();
   });
