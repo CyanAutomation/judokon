@@ -73,7 +73,7 @@ Pending your review before starting Phase 4.
 - **Outcome:** Quitting mid-match now reports “You quit the match. You lose!” consistently, and match-length tooltips render their two-line blurbs without showing raw escape characters.
 - **Validation:**
   - ✅ `npx vitest run tests/classicBattle/end-modal.test.js tests/classicBattle/resolution.test.js tests/helpers/parseTooltipText.test.js tests/classicBattle/quit-flow.test.js`
-  - ⚠️ `npx playwright test battle-classic/quit-flow.spec.js battle-classic/end-modal.spec.js` *(blocked: sandbox denied web server bind on 127.0.0.1:5000 / EPERM)*
+  - ⚠️ `npx playwright test battle-classic/quit-flow.spec.js battle-classic/end-modal.spec.js` _(blocked: sandbox denied web server bind on 127.0.0.1:5000 / EPERM)_
 
 ## 2. Issues Found
 

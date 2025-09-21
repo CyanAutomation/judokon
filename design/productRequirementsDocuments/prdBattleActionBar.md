@@ -14,9 +14,9 @@ It provides players with a **consistent control surface** across battles, while 
 
 **Structure:**
 
-* **Leftmost:** Options button → opens modal with battle + global settings.
-* **Middle (5 buttons):** Direct mappings to judoka card stats. Always visible; enabled only when stat selection is required.
-* **Rightmost:** Action button → advances the match (Start, Draw, Next).
+- **Leftmost:** Options button → opens modal with battle + global settings.
+- **Middle (5 buttons):** Direct mappings to judoka card stats. Always visible; enabled only when stat selection is required.
+- **Rightmost:** Action button → advances the match (Start, Draw, Next).
 
 The Action Bar is **reusable, themeable, and observable**, ensuring a unified user experience across Classic, CLI, Bandit, and Quick modes.
 
@@ -29,10 +29,10 @@ Each battle mode handled controls differently, increasing **complexity, inconsis
 
 We need a **dedicated, unified Action Bar** that:
 
-* Aligns interaction across battle modes.
-* Reduces duplication of UI logic.
-* Provides consistent hooks for testing, accessibility, and observability.
-* Can be styled per mode while preserving core structure and behaviour.
+- Aligns interaction across battle modes.
+- Reduces duplication of UI logic.
+- Provides consistent hooks for testing, accessibility, and observability.
+- Can be styled per mode while preserving core structure and behaviour.
 
 ---
 
@@ -49,29 +49,29 @@ We need a **dedicated, unified Action Bar** that:
 
 ## 4. Functional Requirements
 
-| #  | Requirement                                                                                                                                        | Priority |
-| -- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| 1  | Must render **7 buttons** in fixed order: Options, Stat1–5, Action                                                                                 | High     |
-| 2  | Options button opens a **modal** with: Quit (→ confirm then landing page), Replay, Audio toggle, Reduced motion toggle, and future shared settings | High     |
-| 3  | Stat buttons map to **Power, Speed, Technique, Kumi-kata, Ne-waza**                                                                                | High     |
-| 4  | Stat buttons always visible, but only **enabled** when the battle engine state requires selection                                                  | High     |
-| 5  | Tooltips/labels displayed depending on mode style (Classic = icons, CLI = text labels)                                                             | Medium   |
-| 6  | Action button updates dynamically with engine state (Start, Draw, Next). MVP: **always “Next”**                                                    | High     |
-| 7  | Action button must disable/lock during cooldowns or invalid states                                                                                 | High     |
-| 8  | Component must **listen to engine/orchestrator state changes** and update UI accordingly                                                           | High     |
-| 9  | Component exposes observability hooks via `data-*` attributes (`data-action-state`, `data-options-open`, `data-stat-enabled`)                      | High     |
-| 10 | Theming via explicit CSS hook points: `.action-bar--classic`, `.action-bar--cli`, `.action-bar--bandit`, `.action-bar--quick`                      | High     |
-| 11 | Accessibility: ARIA labels for all buttons, keyboard shortcuts (`1–5` for stats, `O` for options, `Enter/Space` for action)                        | High     |
-| 12 | Works across screen sizes and modes (desktop-first, text-first in CLI)                                                                             | High     |
+| #   | Requirement                                                                                                                                        | Priority |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| 1   | Must render **7 buttons** in fixed order: Options, Stat1–5, Action                                                                                 | High     |
+| 2   | Options button opens a **modal** with: Quit (→ confirm then landing page), Replay, Audio toggle, Reduced motion toggle, and future shared settings | High     |
+| 3   | Stat buttons map to **Power, Speed, Technique, Kumi-kata, Ne-waza**                                                                                | High     |
+| 4   | Stat buttons always visible, but only **enabled** when the battle engine state requires selection                                                  | High     |
+| 5   | Tooltips/labels displayed depending on mode style (Classic = icons, CLI = text labels)                                                             | Medium   |
+| 6   | Action button updates dynamically with engine state (Start, Draw, Next). MVP: **always “Next”**                                                    | High     |
+| 7   | Action button must disable/lock during cooldowns or invalid states                                                                                 | High     |
+| 8   | Component must **listen to engine/orchestrator state changes** and update UI accordingly                                                           | High     |
+| 9   | Component exposes observability hooks via `data-*` attributes (`data-action-state`, `data-options-open`, `data-stat-enabled`)                      | High     |
+| 10  | Theming via explicit CSS hook points: `.action-bar--classic`, `.action-bar--cli`, `.action-bar--bandit`, `.action-bar--quick`                      | High     |
+| 11  | Accessibility: ARIA labels for all buttons, keyboard shortcuts (`1–5` for stats, `O` for options, `Enter/Space` for action)                        | High     |
+| 12  | Works across screen sizes and modes (desktop-first, text-first in CLI)                                                                             | High     |
 
 ---
 
 ## 5. Non-Functional Requirements
 
-* **Performance:** Lightweight, no animation bottlenecks.
-* **Resilience:** Must degrade gracefully if the engine state is missing (e.g., disabled buttons).
-* **Testability:** Deterministic behaviour in test environments.
-* **Maintainability:** Centralized logic in `actionBar.js`, no mode-specific forks.
+- **Performance:** Lightweight, no animation bottlenecks.
+- **Resilience:** Must degrade gracefully if the engine state is missing (e.g., disabled buttons).
+- **Testability:** Deterministic behaviour in test environments.
+- **Maintainability:** Centralized logic in `actionBar.js`, no mode-specific forks.
 
 ---
 
@@ -120,4 +120,3 @@ And pressing `Enter` or `Space` must trigger the Action button
 3. Should **stat buttons** also visually reflect the stat values (e.g., numbers or bars), or remain as simple buttons with tooltips?
 
 ---
-
