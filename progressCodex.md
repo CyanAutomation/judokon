@@ -1,71 +1,61 @@
 # QA Report & Improvement Plan: `src/pages/battleCLI.html`
 
-This document provides a Quality Assurance (QA) analysis of the `battleCLI.html` page and outlines opportunities for improvement.
+This document records the verification of the QA observations for `src/pages/battleCLI.html` and refines the follow-up actions.
 
-## 1. Confirmed Issues
+## Verification Summary
 
-The following issues reported have been verified against the current version of the file.
+- ✅ **Confirmed**: Issue #4 — The CLI header renders duplicate scoreboard elements after initialisation.
+- ⚠️ **Clarify**: Issue #6 — The timer already exposes `aria-live="polite"`, but a broader a11y audit remains worthwhile.
+- ❌ **Not reproduced / outdated**: Issues #1, #2, #3/#7, and #8.
 
-### 1.1. Critical: Battle Fails to Start (Issue #1)
+## Detailed Findings
 
-- **Observation**: After selecting a match length (e.g., "Quick"), the game does not begin. The UI remains in its initial pre-battle state.
-- **Expected**: The battle should commence, displaying "Round 1 of N", starting a countdown, and presenting stats for selection.
-- **Analysis**: This is a critical blocker. The issue likely lies in the JavaScript (`battleCLI.init.js`) where the event listener for match selection fails to trigger the battle engine's start sequence.
+### Issue #4 – Duplicate & Misaligned Scoreboard (**valid**)
+- The CLI header keeps the legacy scoreboard (`#cli-round`, `#cli-score`) alongside the shared scoreboard nodes that are unhidden during `init()` (`src/pages/battleCLI/init.js:2339`).
+- Because both sets stay visible inside the flex header defined in the page markup (`src/pages/battleCLI.html:509`), users see “Round 0…” / “You: 0…” twice and layout alignment varies by viewport.
+- **Action**: Decide on a single source of truth. Either hide the CLI-only nodes once the shared scoreboard is initialised, or relocate the shared nodes outside the header to avoid duplication.
 
-### 1.2. UI/UX: Input Handling Conflicts (Issues #3, #7)
+### Issue #1 – Battle fails to start (**not reproduced**)
+- Selecting a match length through the modal calls `handleRoundSelect`, which persists the value, closes and destroys the modal, and dispatches `startClicked` to the orchestrator (`src/helpers/classicBattle/roundSelectModal.js:259`).
+- If the modal cannot load, the CLI falls back to a dedicated “Start match” button that also emits `startClicked` (`src/pages/battleCLI/init.js:537`), and tests cover the fallback (`tests/pages/battleCLI.pointsToWin.startOnce.test.js:6`).
+- **Conclusion**: The reported blocker is not reproducible in the current codebase.
 
-- **Observation**: Typing numbers into the "Seed" input field incorrectly triggers "Invalid key" warnings. This indicates global keyboard shortcuts are not being suppressed when an input field has focus.
-- **Expected**: Input fields should have exclusive control over keyboard input when focused.
-- **Analysis**: The global keydown handler needs to check `event.target` to ensure it's not an input element before processing game commands.
+### Issues #3 / #7 – Seed input triggers “Invalid key” warnings (**not reproduced**)
+- The global key handler ignores events that originate from form controls (`src/pages/battleCLI/events.js:57`), so typing in the seed input cannot surface the warning banner.
+- **Conclusion**: Behaviour matches expectations; no change needed.
 
-### 1.3. UI/UX: Persistent Modal Artifacts (Issue #2)
+### Issue #2 – Modal artefacts persist after close (**not reproduced**)
+- `handleRoundSelect` explicitly calls `modal.close()`, fires a `close` event, invokes tooltip/keyboard clean-up callbacks, and finally removes the modal backdrop via `modal.destroy()` (`src/helpers/classicBattle/roundSelectModal.js:259`).
+- The component implementation of `Modal.destroy()` detaches the element from the DOM (`src/components/Modal.js:120`).
+- **Conclusion**: The described overlap cannot be reproduced with the current lifecycle.
 
-- **Observation**: Text from the round-selection modal remains on screen after the modal closes, overlapping the stat selection area.
-- **Expected**: Modal elements should be completely removed from the DOM upon closing.
-- **Analysis**: The cleanup logic for the modal is incomplete. It fails to remove all injected nodes.
+### Issue #8 – Verbose mode is missing (**not reproduced**)
+- The verbose checkbox is wired through `setupFlags()`, which syncs the checkbox state, toggles section visibility, and streams battle events into the log when enabled (`src/pages/battleCLI/init.js:2088`).
+- **Conclusion**: Verbose logging already works; no engineering effort required beyond potential UX refinements.
 
-### 1.4. UI/UX: Redundant & Misaligned Scoreboard (Issue #4)
+### Issue #6 – Countdown `aria-live` assertion (**clarify**)
+- The countdown element ships with `role="status"` and `aria-live="polite"` (`src/pages/battleCLI.html:533`), so the specific concern is outdated.
+- Nevertheless, a holistic review of live regions is advisable while addressing the scoreboard changes.
 
-- **Observation**: The header displays duplicate and misaligned scoreboard information (e.g., "Round 0 of 0" and "You: 0 Opponent: 0").
-- **Expected**: A single, clean scoreboard should be present as defined in wireframes.
-- **Analysis**: The HTML contains two sets of scoreboard elements: one visible (`#cli-round`, `#cli-score`) and one hidden (`.standard-scoreboard-nodes`). This redundancy is the likely cause and should be consolidated.
+## Updated Improvement Opportunities
 
-### 1.5. Functional: Verbose Mode is Not Implemented (Issue #8)
+1. **Resolve scoreboard duplication (High Feasibility)**  
+   Hide or repurpose the legacy CLI scoreboard once the shared scoreboard initialises (`src/pages/battleCLI/init.js:2339`). Update related tests such as `tests/pages/battleCLI.dualWrite.test.js` to reflect the chosen primary UI.
+2. **Audit dynamic announcements (Medium Feasibility)**  
+   Reconfirm `aria-live` / `aria-atomic` settings for score, round, and snackbar updates after the scoreboard changes to avoid double announcements.
+3. **Align stat list semantics (Medium Feasibility)**  
+   Update `buildStatRows` to emit `role="option"` rows under the `role="listbox"` container and ensure the active descendant logic still applies (`src/pages/battleCLI/init.js:1313`).
+4. **Modularise inline styles (Medium Feasibility)**  
+   Move the large `<style>` block into a dedicated stylesheet to improve maintainability and caching (`src/pages/battleCLI.html:16`).
+5. **Stabilise test hooks (Low Feasibility)**  
+   Expand the existing `data-testid` coverage for key CLI controls (e.g., stats grid, verbose toggle) to support future Playwright coverage without depending on structural selectors.
 
-- **Observation**: The "Verbose" checkbox can be toggled, but the corresponding log panel never appears.
-- **Expected**: Enabling verbose mode should display a log of battle events.
-- **Analysis**: The HTML contains a hidden `<section id="cli-verbose-section">` prepared for this feature, but the JavaScript logic to un-hide and populate it is missing.
+## Reference Files
 
-## 2. Partially Inaccurate Issues
-
-### 2.1. Accessibility: Timer `aria-live` region is present (Issue #6)
-
-- **Original Report**: Claimed the countdown timer (`#cli-countdown`) lacks an `aria-live` attribute.
-- **Verification**: The element **does** have `aria-live="polite"` and `role="status"`. The report was likely based on an outdated version or was confused by the duplicate, hidden scoreboard which has `aria-live="off"`.
-- **Conclusion**: While the specific claim is inaccurate, the broader goal of ensuring all dynamic content is announced to screen readers is valid and should be a priority.
-
-## 3. Feasibility & Improvement Opportunities
-
-All identified issues are highly feasible to fix. The following is a prioritized list of recommendations.
-
-### 3.1. Core Functionality
-
-1. **Fix Battle Start Logic**: Prioritize fixing the event handler for match length selection to correctly initialize the battle engine. This will resolve the main blocker (#1) and the dependent issue of stats/timer not appearing (#5).
-2. **Refine Keyboard Input Handling**: Modify the global key listener to ignore input when form elements (`input`, `select`) are focused. This will fix the "Invalid key" warnings (#3, #7).
-
-### 3.2. UI & Code Hygiene
-
-3. **Consolidate Scoreboard HTML**: Remove the redundant `.standard-scoreboard-nodes` from the HTML. All JavaScript logic should update a single, authoritative scoreboard structure to fix rendering bugs (#4).
-4. **Ensure Complete Modal Cleanup**: Update the modal's closing sequence to remove all of its DOM elements, preventing UI artifacts (#2).
-5. **Implement Verbose Logging**: Hook up the "Verbose" checkbox to toggle the visibility of the `#cli-verbose-section` and populate it with game events.
-
-### 3.3. Accessibility (A11y)
-
-6. **Audit ARIA Live Regions**: Verify that all dynamic content—including score changes, round results, and prompts—are correctly announced by screen readers. While the timer is correctly configured, a full audit is recommended.
-7. **Manage Focus**: Ensure logical focus management. For example, after a modal closes, focus should return to a sensible element in the main UI. When a stat is selected via keyboard, the focus indicator should be visible on that stat.
-
-### 3.4. Codebase Quality
-
-8. **Externalize CSS**: The large `<style>` block in the `<head>` should be moved to a dedicated `.css` file. This improves maintainability, enables caching, and separates concerns.
-9. **Improve Semantic HTML**: Review the use of ARIA roles. For instance, when the stat skeleton placeholders are replaced with actual stats, the `<li>`-like elements should have `role="option"` within the `role="listbox"` container.
-10. **Establish Test Hooks**: Solidify `data-testid` attributes for all key interactive elements and status displays as a best practice, facilitating more robust Playwright or Vitest testing.
+- `src/pages/battleCLI.html`
+- `src/pages/battleCLI/init.js`
+- `src/helpers/classicBattle/roundSelectModal.js`
+- `src/pages/battleCLI/events.js`
+- `src/components/Modal.js`
+- `tests/pages/battleCLI.pointsToWin.startOnce.test.js`
+- `tests/pages/battleCLI.dualWrite.test.js`
