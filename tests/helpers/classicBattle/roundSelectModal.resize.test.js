@@ -3,6 +3,7 @@ import installRAFMock from "../rafMock.js";
 
 let modalInstance;
 let modalCloseSpy;
+let rafControls;
 
 function mockModalReturning(backdrop) {
   modalCloseSpy = vi.fn();
@@ -22,16 +23,16 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     document.body.innerHTML = "";
     vi.resetModules();
     // Install queued RAF mock for deterministic control
-    const raf = installRAFMock();
-    global.__roundSelectRafRestore = raf.restore;
+    rafControls = installRAFMock();
     modalInstance = null;
     modalCloseSpy = null;
   });
 
   afterEach(() => {
     try {
-      global.__roundSelectRafRestore?.();
+      rafControls?.restore();
     } catch {}
+    rafControls = null;
     vi.restoreAllMocks();
   });
 
@@ -111,7 +112,7 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     window.dispatchEvent(new Event("resize"));
 
     // wait a tick for RAF
-    await new Promise((r) => setTimeout(r, 0));
+    rafControls.flushAll();
     expect(backdrop.style.getPropertyValue("--modal-inset-top")).toBe("80px");
 
     // simulate close (cleanup listeners)
@@ -120,7 +121,7 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     // change again and resize; inset should remain at previous value
     Object.defineProperty(header, "offsetHeight", { value: 100, configurable: true });
     window.dispatchEvent(new Event("resize"));
-    await new Promise((r) => setTimeout(r, 0));
+    rafControls.flushAll();
     expect(backdrop.style.getPropertyValue("--modal-inset-top")).toBe("80px");
   });
 });
