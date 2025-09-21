@@ -1,124 +1,168 @@
 import { test, expect } from "@playwright/test";
-import { resolve } from "path";
 import { withMutedConsole } from "../tests/utils/console.js";
+
+const CLI_PAGE = "/src/pages/battleCLI.html";
 
 test.describe("CLI Keyboard Flows", () => {
   test.beforeEach(async ({ page }) => {
-    const file = "file://" + resolve(process.cwd(), "src/pages/battleCLI.html");
-    await page.goto(file);
-
-    // Wait for CLI interface to be ready
-    await page.waitForSelector("#cli-stats", { timeout: 8000 });
-
-    // Force modal display for consistent testing
-    await page.evaluate(() => {
-      window.__FF_OVERRIDES = { showRoundSelectModal: true };
-    });
+    await page.goto(CLI_PAGE);
+    await page.waitForSelector("#cli-root", { timeout: 8000 });
+    await page.waitForFunction(
+      () =>
+        typeof window !== "undefined" &&
+        window.__test?.cli?.appendTranscript &&
+        window.__TEST_API?.inspect?.getBattleStore,
+      { timeout: 8000 }
+    );
+    await page.waitForSelector('#cli-stats[aria-busy="false"]', { timeout: 8000 });
   });
 
-  test("should load CLI interface correctly", async ({ page }) => {
+  test("should load CLI interface structure and expose test hooks", async ({ page }) => {
     await withMutedConsole(async () => {
-      // Verify CLI stats container is present
-      const statsContainer = page.locator("#cli-stats");
-      await expect(statsContainer).toBeVisible();
-
-      // Verify CLI has expected structure
       const cliRoot = page.locator("#cli-root");
       await expect(cliRoot).toBeVisible();
+      await expect(page.locator(".terminal-title-bar")).toContainText("JU-DO-KON");
+      await expect(page.locator("#cli-header")).toHaveAttribute("role", "banner");
+      await expect(page.locator("#cli-main")).toHaveAttribute("role", "main");
+      await expect(page.locator("#cli-round")).toContainText("Round");
+      await expect(page.locator("#cli-score")).toContainText("You: 0");
 
-      // Verify round display
-      const roundDisplay = page.locator("#cli-round");
-      await expect(roundDisplay).toBeVisible();
+      const apiState = await page.evaluate(() => {
+        const selectionTimers = window.__test?.getSelectionTimers?.();
+        const cooldownTimers = window.__test?.getCooldownTimers?.();
+        const hasAppend = typeof window.__test?.cli?.appendTranscript === "function";
+        const hasShowVerbose = typeof window.__test?.cli?.showVerboseSection === "function";
+        const testApi = window.__TEST_API;
+        const stateApis = {
+          battleState: typeof testApi?.state?.getBattleState === "function",
+          debugInfo: typeof testApi?.inspect?.getDebugInfo === "function",
+          battleStore: typeof testApi?.inspect?.getBattleStore === "function"
+        };
+        if (hasShowVerbose) {
+          window.__test.cli.showVerboseSection();
+        }
+        if (hasAppend) {
+          window.__test.cli.appendTranscript([
+            "Round 1 started",
+            { from: "waitingForMatchStart", to: "waitingForPlayerAction" }
+          ]);
+        }
+        const verboseText = document.getElementById("cli-verbose-log")?.textContent?.trim();
+        return {
+          selectionTimers,
+          cooldownTimers,
+          hasAppend,
+          hasShowVerbose,
+          stateApis,
+          verboseText
+        };
+      });
 
-      // Verify score display
-      const scoreDisplay = page.locator("#cli-score");
-      await expect(scoreDisplay).toBeVisible();
+      expect(apiState.hasAppend).toBe(true);
+      expect(apiState.hasShowVerbose).toBe(true);
+      expect(apiState.selectionTimers?.selectionTimer).toBeNull();
+      expect(apiState.selectionTimers?.selectionInterval).toBeNull();
+      expect(apiState.cooldownTimers?.cooldownTimer).toBeNull();
+      expect(apiState.stateApis.battleState).toBe(true);
+      expect(apiState.stateApis.debugInfo).toBe(true);
+      expect(apiState.stateApis.battleStore).toBe(true);
+      expect(apiState.verboseText).toContain("Round 1 started");
+      expect(apiState.verboseText).toContain("waitingForPlayerAction");
     }, ["log", "warn", "error"]);
   });
 
-  test("should handle keyboard input without errors", async ({ page }) => {
+  test("should toggle help when pressing H and clear invalid key message", async ({ page }) => {
     await withMutedConsole(async () => {
-      // Test various keyboard inputs that should not cause crashes
-      const testKeys = ["1", "2", "3", "h", "H", "q", "Q", "Enter", " "];
+      const shortcuts = page.locator("#cli-shortcuts");
+      await expect(shortcuts).toHaveAttribute("hidden", "");
+      const countdown = page.locator("#cli-countdown");
 
-      for (const key of testKeys) {
-        await page.keyboard.press(key);
-        // Verify page remains stable after each key press
-        await expect(page.locator("#cli-root")).toBeVisible();
-      }
+      await page.keyboard.press("x");
+      await expect(countdown).toHaveText("Invalid key, press H for help");
 
-      // Verify we're still on the CLI page
-      await expect(page).toHaveURL(/battleCLI.html/);
+      await page.keyboard.press("h");
+      await expect(shortcuts).toBeVisible();
+      await expect(countdown).toHaveText("");
+
+      await page.keyboard.press("h");
+      await expect(shortcuts).toHaveAttribute("hidden", "");
     }, ["log", "warn", "error"]);
   });
 
-  test("should display help information when available", async ({ page }) => {
+  test("should select stats with number keys and update store", async ({ page }) => {
     await withMutedConsole(async () => {
-      // Check if help panel exists
-      const helpPanel = page.locator("#cli-shortcuts");
+      await page.waitForFunction(
+        () => document.querySelector('#cli-stats .cli-stat[data-stat-index]'),
+        { timeout: 8000 }
+      );
+      await page.evaluate(() => {
+        document.body.dataset.battleState = "waitingForPlayerAction";
+        window.__test.handleBattleState({ detail: { from: null, to: "waitingForPlayerAction" } });
+      });
+      await page.locator("#cli-stats").focus();
 
-      if ((await helpPanel.count()) > 0) {
-        // If help panel exists, test keyboard toggle
-        // const isInitiallyVisible = await helpPanel.isVisible();
+      await page.keyboard.press("1");
 
-        // Press 'h' to potentially toggle help
-        await page.keyboard.press("h");
+      const selectedStat = page.locator("#cli-stats .cli-stat.selected");
+      await expect(selectedStat).toHaveCount(1, { timeout: 8000 });
+      await expect(selectedStat).toHaveAttribute("aria-selected", "true");
+      await expect(page.locator("#snackbar-container .snackbar")).toContainText("You Picked:");
 
-        // Page should remain stable regardless of toggle behavior
-        await expect(page.locator("#cli-root")).toBeVisible();
+      const storeSnapshot = await page.evaluate(() => {
+        const list = document.getElementById("cli-stats");
+        const selected = list?.querySelector(".cli-stat.selected");
+        const label = selected?.textContent?.replace(/\s+/g, " ").trim();
+        const statIndex = selected?.dataset?.statIndex;
+        const store = window.__TEST_API.inspect.getBattleStore();
+        return {
+          selectedIndex: list?.dataset?.selectedIndex,
+          statIndex,
+          label,
+          store
+        };
+      });
 
-        // Press 'h' again
-        await page.keyboard.press("h");
-        await expect(page.locator("#cli-root")).toBeVisible();
-      } else {
-        // Help panel not implemented - that's okay
-        // Just verify basic CLI functionality
-        await expect(page.locator("#cli-stats")).toBeVisible();
-      }
+      expect(storeSnapshot.selectedIndex).toBe("1");
+      expect(storeSnapshot.statIndex).toBe("1");
+      expect(storeSnapshot.store?.selectionMade).toBe(true);
+      expect(typeof storeSnapshot.store?.playerChoice).toBe("string");
+      expect(storeSnapshot.label).toContain("[1]");
     }, ["log", "warn", "error"]);
   });
 
-  test("should handle quit functionality gracefully", async ({ page }) => {
+  test("should resume countdown timers when quitting is canceled", async ({ page }) => {
     await withMutedConsole(async () => {
-      // Press 'q' for quit
+      await page.evaluate(() => {
+        document.body.dataset.battleState = "waitingForPlayerAction";
+        window.__test.handleBattleState({ detail: { from: null, to: "waitingForPlayerAction" } });
+        window.__test.startSelectionCountdown(5);
+      });
+
+      const timersBefore = await page.evaluate(() => window.__test.getSelectionTimers());
+      expect(timersBefore.selectionTimer).not.toBeNull();
+      expect(timersBefore.selectionInterval).not.toBeNull();
+
       await page.keyboard.press("q");
+      const cancelButton = page.locator("#cancel-quit-button");
+      await expect(cancelButton).toBeVisible();
 
-      // Page should remain stable
-      await expect(page.locator("#cli-root")).toBeVisible();
+      const paused = await page.evaluate(() => window.__test.getPausedTimes());
+      expect(paused.selection).toBeGreaterThanOrEqual(0);
 
-      // Check if modal container exists and is empty (expected for quit)
-      const modalContainer = page.locator("#modal-container");
-      if ((await modalContainer.count()) > 0) {
-        // Modal container exists - verify it doesn't break the page
-        await expect(modalContainer).toBeAttached();
-      }
+      await cancelButton.click();
+      await expect(page.locator("#confirm-quit-button")).toBeHidden();
 
-      // Verify we're still on a valid page
-      await expect(page).toHaveURL(/.*/);
-    }, ["log", "warn", "error"]);
-  });
+      await expect.poll(async () => {
+        const timers = await page.evaluate(() => window.__test.getSelectionTimers());
+        return Boolean(timers.selectionTimer && timers.selectionInterval);
+      }).toBe(true);
+      const pausedAfter = await page.evaluate(() => window.__test.getPausedTimes());
+      expect(pausedAfter.selection).toBeNull();
 
-  test("should maintain CLI state through multiple interactions", async ({ page }) => {
-    await withMutedConsole(async () => {
-      // Perform a sequence of interactions
-      const interactions = [
-        () => page.keyboard.press("1"),
-        () => page.keyboard.press("h"),
-        () => page.keyboard.press("2"),
-        () => page.keyboard.press("h"),
-        () => page.keyboard.press("q"),
-        () => page.keyboard.press("Enter")
-      ];
-
-      for (const interaction of interactions) {
-        await interaction();
-        // Verify CLI root remains stable after each interaction
-        await expect(page.locator("#cli-root")).toBeVisible();
-      }
-
-      // Final verification
-      await expect(page.locator("#cli-stats")).toBeVisible();
-      await expect(page.locator("#cli-round")).toBeVisible();
+      await page.evaluate(() => {
+        window.__test.pauseTimers();
+        window.__test.setSelectionTimers(null, null);
+      });
     }, ["log", "warn", "error"]);
   });
 });
