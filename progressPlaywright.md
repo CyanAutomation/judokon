@@ -11,6 +11,10 @@
 | 9    | `playwright/cli.spec.js`                               | 4     | REMOVE/MERGE | 1      | 0         | 1         | 2          | 0    | 573          | 0       | Drive countdown/focus with accessible UI interactions rather than invoking `window.__battleCLIinit` helpers so failures reflect user-visible regressions.\:codex-file-citation                                                                                            |
 | 10   | `playwright/battle-classic/timer.spec.js`              | 5     | REFACTOR     | 2      | 1         | 1         | 0          | 1    | 449          | 0       | Swap the two `waitForTimeout` polls for expectations tied to the countdown element or test API hooks so the timer is asserted deterministically without idle delays.\:codex-file-citation                                                                                 |
 
+Merged suites
+
+- `playwright/cli.spec.mjs` was consolidated into `playwright/cli.spec.js` after porting the stat row assertion so the CLI smoke coverage now lives in a single server-backed spec.
+
 Common problems
 Many CLI specs bypass real behavior by calling internal helpers like window.**test or**battleCLIinit, so they never prove the user flow works end-to-end.
 Heavy use of page.waitForTimeout introduces brittle timing and multi-second runtimes without asserting the actual events that should unblock the flow.

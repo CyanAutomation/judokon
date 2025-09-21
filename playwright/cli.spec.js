@@ -5,6 +5,9 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
 
   // stats container present (rows may be skeleton or populated, allow racing init)
   await expect(page.locator("#cli-stats")).toHaveCount(1);
+  // skeleton placeholders ensure keyboard rows exist before data loads
+  const statsCount = await page.locator("#cli-stats .cli-stat").count();
+  expect(statsCount).toBeGreaterThan(0);
 
   // countdown helper exposed on window
   const hasHelper = await page.waitForFunction(
