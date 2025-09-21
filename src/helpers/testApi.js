@@ -241,10 +241,21 @@ const timerApi = {
   }
 };
 
+const MIN_VIEWPORT_ZOOM = 0.1;
+const MAX_VIEWPORT_ZOOM = 10;
+
 // Viewport control API
 const viewportApi = {
   /**
    * Adjust the document zoom level to simulate browser zoom in tests.
+   *
+   * @pseudocode
+   * 1. Normalize the input zoom value (default to 1 when invalid or non-positive)
+   * 2. Clamp the normalized zoom within the supported safety bounds (0.1 - 10)
+   * 3. Ensure the document and body elements are available before mutating styles
+   * 4. Apply or remove zoom styles plus tracking attributes based on the target zoom
+   * 5. Log failures during development and return a boolean success indicator
+   *
    * @param {number} zoomLevel - Target zoom multiplier (1 = 100%).
    * @returns {boolean} True when zoom is applied synchronously.
    */
@@ -260,9 +271,16 @@ const viewportApi = {
 
     const numericZoom = Number(zoomLevel);
     const normalizedZoom = Number.isFinite(numericZoom) && numericZoom > 0 ? numericZoom : 1;
+    const clampedZoom = Math.min(Math.max(normalizedZoom, MIN_VIEWPORT_ZOOM), MAX_VIEWPORT_ZOOM);
+
+    if (clampedZoom !== normalizedZoom) {
+      logDevWarning(
+        `Viewport zoom ${normalizedZoom} outside safe bounds; clamped to ${clampedZoom}.`
+      );
+    }
 
     try {
-      if (normalizedZoom === 1) {
+      if (clampedZoom === 1) {
         body.style.removeProperty("zoom");
         try {
           delete root.dataset.testZoom;
@@ -273,12 +291,14 @@ const viewportApi = {
         return true;
       }
 
-      body.style.zoom = String(normalizedZoom);
+      const zoomString = String(clampedZoom);
+
+      body.style.zoom = zoomString;
       try {
-        root.dataset.testZoom = String(normalizedZoom);
+        root.dataset.testZoom = zoomString;
       } catch {}
       try {
-        root.style.setProperty("--test-zoom-scale", String(normalizedZoom));
+        root.style.setProperty("--test-zoom-scale", zoomString);
       } catch {}
 
       return true;
@@ -290,27 +310,18 @@ const viewportApi = {
 
   /**
    * Clear any simulated zoom overrides applied during a test run.
+   *
+   * @pseudocode
+   * 1. Delegate to `setZoom(1)` so the same validation and cleanup paths are reused
+   * 2. Allow the shared implementation to handle DOM availability checks
+   * 3. Rely on `setZoom` for style cleanup, attribute removal, and logging
+   * 4. Return the boolean success status from the delegated call
+   *
    * @returns {boolean} True when cleanup is completed.
    */
   resetZoom() {
-    if (typeof document === "undefined") return false;
-
-    const root = document.documentElement;
-    const body = document.body;
-
-    if (!root || !body) {
-      return false;
-    }
-
     try {
-      body.style.removeProperty("zoom");
-      try {
-        delete root.dataset.testZoom;
-      } catch {}
-      try {
-        root.style.removeProperty("--test-zoom-scale");
-      } catch {}
-      return true;
+      return this.setZoom(1);
     } catch (error) {
       logDevWarning("Failed to reset viewport zoom", error);
       return false;

@@ -31,7 +31,20 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
     await page.goto("/src/pages/battleCLI.html");
     await page.waitForLoadState("networkidle");
 
-    await page.waitForFunction(() => typeof window.__TEST_API?.viewport?.setZoom === "function");
+    const viewportReadyHandle = await page
+      .waitForFunction(() => typeof window.__TEST_API?.viewport?.setZoom === "function", {
+        timeout: 5000
+      })
+      .catch(() => null);
+
+    if (!viewportReadyHandle) {
+      throw new Error(
+        "Test API viewport helper is unavailable. Ensure testApi.js exposes viewport.setZoom."
+      );
+    }
+
+    await viewportReadyHandle.dispose();
+
     await page.evaluate(() => {
       window.__TEST_API.viewport.setZoom(2);
     });
