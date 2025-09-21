@@ -627,6 +627,66 @@ Proceed to Phase 1 for items 1–3?
 
 ---
 
+## Phase 1 Completion: Item 4 (Shared mock helpers for high-traffic UI components)
+
+**Actions Taken:**
+
+- **Created component factory directory** `tests/helpers/components/` with comprehensive API contract documentation
+- **Implemented 5 component factories** following the defined API contract:
+  - **Modal**: `createModal()` - Focus management, ARIA attributes, open/close/destroy with event spies
+  - **Scoreboard**: `createScoreboard()` - Uses real ScoreboardModel/ScoreboardView with helper methods for updates
+  - **StatsPanel**: `createStatsPanel()` - Async factory using real StatsPanel with stat loading and update tracking
+  - **Button**: `createButton()` - Styled buttons with icon support, click tracking, and programmatic controls
+  - **Card**: `createCard()` - Flexible card containers with content insertion and optional click handling
+
+- **Created comprehensive unit tests** for all factories (36 tests total):
+  - DOM structure validation matching real components
+  - Event handling and spy verification
+  - Configuration option testing
+  - Error handling for invalid inputs
+  - Observable hook functionality
+
+- **Established consistent API patterns**:
+  - All factories return `{ element, ...methods, ...spies }`
+  - Observable hooks for testing (onClick, onOpen, onClose, onUpdate)
+  - Realistic behavior mimicking actual component implementations
+  - Proper async handling for components with async initialization
+
+**Factory Implementations:**
+
+- **Modal** (`Modal.js`): 103 lines - Full focus management, backdrop clicks, ARIA labeling
+- **Scoreboard** (`Scoreboard.js`): 101 lines - Real model/view integration with update helpers  
+- **StatsPanel** (`StatsPanel.js`): 54 lines - Async stat loading with update tracking
+- **Button** (`Button.js`): 84 lines - Icon support, styling, click event spying
+- **Card** (`Card.js`): 71 lines - Content insertion, optional clickability
+
+**Testing Coverage:**
+
+- **Modal**: 6 tests - Structure, ARIA, focus management, event handling
+- **Scoreboard**: 6 tests - DOM structure, model/view integration, update methods, state getters
+- **StatsPanel**: 6 tests - Async creation, stat loading, update tracking, error handling
+- **Button**: 9 tests - Basic creation, options, icons, events, state management
+- **Card**: 9 tests - Content handling, clickability, class management
+
+**Verification Results:**
+
+- **All factory tests pass**: 36/36 tests ✅
+- **No regressions**: Existing domFactory (12 tests) and Scoreboard (3 tests) still pass ✅
+- **API contract compliance**: All factories follow `{ element, ...methods, ...spies }` pattern ✅
+- **Realistic behavior**: Factories match actual component DOM structure and behavior ✅
+
+**Outcome:**
+
+- Component factories provide realistic mock implementations for testing
+- Observable hooks enable comprehensive event and state verification
+- Consistent API surface reduces cognitive load for test authors
+- Acceptance criteria met: Unit tests for factories and example usage patterns added
+- Foundation established for Phase 2 migration of existing tests
+
+**Next:** Item 4 Phase 1 complete. Ready to proceed to Item 4 Phase 2 (Migration & sample conversions).
+
+---
+
 ## Phase 0 Completion: Item 4 (Shared mock helpers for high-traffic UI components)
 
 **Actions Taken:**
