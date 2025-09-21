@@ -421,3 +421,25 @@ Proceed to Phase 1 for items 1–3?
 - Acceptance criteria met: Identified and migrated high-value tests, no new failures.
 
 **Next:** Proceed to Item 1 Phase 3 (stabilize & docs) or move to another item?
+
+## Phase 3 Completion: Item 1 (Improve shared test mocking utilities)
+
+**Actions Taken:**
+
+- Created comprehensive README.md in `tests/helpers/` with:
+  - Overview of all helper functions and their purposes
+  - Quick start examples showing common usage patterns
+  - Detailed API reference for each factory and utility
+  - Best practices section with migration examples
+  - Contributing guidelines for adding new helpers
+- Added reference to test helpers documentation in CONTRIBUTING.md under "Test Quality Verification" section
+- Verified README formatting and content completeness
+
+**Outcome:**
+
+- Documentation provides clear guidance for using shared test utilities
+- Contributors can easily discover and adopt helpers for new tests
+- Acceptance criteria met: README merged and referenced in CONTRIBUTING.md
+- No regressions: All helper tests (12/12) and migrated tests (6/6) pass, Playwright navigation test (1/1) passes
+
+**Next:** Item 1 complete. Ready to proceed to Item 2 Phase 1 or another item?

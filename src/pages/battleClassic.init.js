@@ -47,7 +47,8 @@ import setupScheduler from "../helpers/classicBattle/setupScheduler.js";
 import {
   recordOpponentPromptTimestamp,
   getOpponentPromptTimestamp,
-  resetOpponentPromptTimestamp
+  resetOpponentPromptTimestamp,
+  getOpponentPromptMinDuration
 } from "../helpers/classicBattle/opponentPromptTracker.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
@@ -84,16 +85,6 @@ const POST_SELECTION_READY_DELAY_MS = 48;
  */
 const OPPONENT_MESSAGE_BUFFER_MS = 150;
 
-/**
- * Minimum amount of time the opponent choosing message should remain visible
- * before transitioning into the next-round countdown state.
- * Can be overridden via window.__MIN_OPPONENT_MESSAGE_DURATION_MS for testing.
- */
-const MIN_OPPONENT_MESSAGE_DURATION_MS =
-  typeof window !== "undefined" && typeof window.__MIN_OPPONENT_MESSAGE_DURATION_MS === "number"
-    ? window.__MIN_OPPONENT_MESSAGE_DURATION_MS
-    : 600;
-
 const BASE_SELECTION_READY_DELAY_MS = Math.max(
   POST_SELECTION_READY_DELAY_MS,
   OPPONENT_MESSAGE_BUFFER_MS
@@ -116,7 +107,7 @@ function calculateRemainingOpponentMessageTime() {
     const now = getCurrentTimestamp();
     const lastPrompt = getOpponentPromptTimestamp() || 0;
     const elapsed = now - lastPrompt;
-    return Math.max(0, MIN_OPPONENT_MESSAGE_DURATION_MS - elapsed);
+    return Math.max(0, getOpponentPromptMinDuration() - elapsed);
   } catch {}
   return 0;
 }
@@ -246,7 +237,7 @@ function computeSelectionReadyDelay() {
       delayForReady = Math.max(delayForReady, opponentDelay + OPPONENT_MESSAGE_BUFFER_MS);
     }
   } catch {}
-  return Math.max(delayForReady, MIN_OPPONENT_MESSAGE_DURATION_MS);
+  return Math.max(delayForReady, getOpponentPromptMinDuration());
 }
 
 const COOLDOWN_FLAG = "__uiCooldownStarted";

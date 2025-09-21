@@ -1,3 +1,5 @@
+const DEFAULT_MIN_PROMPT_DURATION_MS = 600;
+
 let lastPromptTimestamp = 0;
 
 function now() {
@@ -30,3 +32,20 @@ export function resetOpponentPromptTimestamp() {
 export function markOpponentPromptNow() {
   recordOpponentPromptTimestamp(now());
 }
+
+function readMinOverride() {
+  if (typeof window === "undefined") return null;
+  try {
+    const value = window.__MIN_OPPONENT_MESSAGE_DURATION_MS;
+    return typeof value === "number" ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getOpponentPromptMinDuration() {
+  const override = readMinOverride();
+  return Number.isFinite(override) && override >= 0 ? Number(override) : DEFAULT_MIN_PROMPT_DURATION_MS;
+}
+
+export { DEFAULT_MIN_PROMPT_DURATION_MS };
