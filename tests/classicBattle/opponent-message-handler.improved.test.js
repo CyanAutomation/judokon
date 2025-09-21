@@ -1,78 +1,114 @@
-/**
- * Improved test using real HTML structure instead of manual DOM manipulation
- * Demonstrates selective reduction of manual DOM where it provides value
- */
+import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 
-import { beforeEach, afterEach, describe, it, expect } from "vitest";
-import { JSDOM } from "jsdom";
-import { readFileSync } from "fs";
-import { join } from "path";
-import { setOpponentDelay } from "../../src/helpers/classicBattle/snackbar.js";
-import { bindUIHelperEventHandlersDynamic } from "../../src/helpers/classicBattle/uiEventHandlers.js";
-import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
+const showSnackbar = vi.fn();
+const markOpponentPromptNow = vi.fn();
+const scoreboardClearTimer = vi.fn();
+const renderOpponentCard = vi.fn();
+const showRoundOutcome = vi.fn();
+const showStatComparison = vi.fn();
+const updateDebugPanel = vi.fn();
+const getOpponentCardData = vi.fn();
 
-describe("UI handlers: opponent message (Improved with Real HTML)", () => {
-  let dom;
-  let window;
-  let document;
+const delayState = { value: 500 };
+const setOpponentDelayMock = vi.fn((ms) => {
+  delayState.value = ms;
+});
+const getOpponentDelayMock = vi.fn(() => delayState.value);
+
+vi.mock("../../src/helpers/showSnackbar.js", () => ({ showSnackbar }));
+vi.mock("../../src/helpers/classicBattle/opponentPromptTracker.js", () => ({
+  markOpponentPromptNow
+}));
+vi.mock("../../src/helpers/classicBattle/snackbar.js", () => ({
+  showSelectionPrompt: vi.fn(),
+  setOpponentDelay: setOpponentDelayMock,
+  getOpponentDelay: getOpponentDelayMock
+}));
+vi.mock("../../src/helpers/classicBattle/opponentController.js", () => ({
+  getOpponentCardData
+}));
+vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
+  renderOpponentCard,
+  showRoundOutcome,
+  showStatComparison
+}));
+vi.mock("../../src/helpers/classicBattle/debugPanel.js", () => ({
+  updateDebugPanel
+}));
+vi.mock("../../src/helpers/setupScoreboard.js", () => ({
+  clearTimer: scoreboardClearTimer
+}));
+vi.mock("../../src/helpers/i18n.js", () => ({
+  t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key)
+}));
+
+describe("UI handlers: opponent message events", () => {
+  let setOpponentDelay;
+  let bindUIHelperEventHandlersDynamic;
+  let emitBattleEvent;
+  let resetBattleEventTarget;
+
+  beforeAll(async () => {
+    ({ setOpponentDelay } = await import("../../src/helpers/classicBattle/snackbar.js"));
+    ({ bindUIHelperEventHandlersDynamic } = await import(
+      "../../src/helpers/classicBattle/uiEventHandlers.js"
+    ));
+    ({ emitBattleEvent, __resetBattleEventTarget: resetBattleEventTarget } = await import(
+      "../../src/helpers/classicBattle/battleEvents.js"
+    ));
+  });
 
   beforeEach(() => {
-    // Load actual HTML file for complete structure
-    const htmlPath = join(process.cwd(), "src/pages/battleClassic.html");
-    const htmlContent = readFileSync(htmlPath, "utf-8");
-
-    dom = new JSDOM(htmlContent, {
-      url: "http://localhost:3000/battleClassic.html",
-      pretendToBeVisual: true
-    });
-
-    window = dom.window;
-    document = window.document;
-    global.window = window;
-    global.document = document;
+    vi.useFakeTimers();
+    delayState.value = 500;
+    showSnackbar.mockReset();
+    markOpponentPromptNow.mockReset();
+    scoreboardClearTimer.mockReset();
+    renderOpponentCard.mockReset();
+    showRoundOutcome.mockReset();
+    showStatComparison.mockReset();
+    updateDebugPanel.mockReset();
+    getOpponentCardData.mockReset();
+    setOpponentDelayMock.mockClear();
+    getOpponentDelayMock.mockClear();
+    vi.stubGlobal("document", { getElementById: vi.fn(() => null) });
+    resetBattleEventTarget?.();
+    delete globalThis.__cbUIHelpersDynamicBoundTargets;
   });
 
   afterEach(() => {
-    dom?.window?.close();
+    vi.clearAllTimers();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
-  it("shows snackbar 'Opponent is choosing…' with real HTML structure", async () => {
-    // Real HTML has proper snackbar container with correct attributes
-    const snackContainer = document.getElementById("snackbar-container");
-    expect(snackContainer).toBeTruthy();
-    expect(snackContainer.getAttribute("aria-live")).toBe("polite");
-    expect(snackContainer.getAttribute("aria-atomic")).toBe("true");
-
-    // Real HTML has round message element
-    const roundMessage = document.getElementById("round-message");
-    expect(roundMessage).toBeTruthy();
-    expect(roundMessage.getAttribute("aria-live")).toBe("polite");
-
-    setOpponentDelay(10);
+  it("emits opponent choosing snackbar after configured delay", () => {
+    setOpponentDelay(120);
     bindUIHelperEventHandlersDynamic();
-    emitBattleEvent("statSelected", { opts: {} });
 
-    // Wait just beyond the configured delay
-    await new Promise((r) => setTimeout(r, 15));
+    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
-    const snack = document.getElementById("snackbar-container");
-    expect(snack.textContent || "").toMatch(/Opponent is choosing/i);
+    expect(scoreboardClearTimer).toHaveBeenCalledTimes(1);
+    expect(showSnackbar).not.toHaveBeenCalled();
+    expect(markOpponentPromptNow).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(119);
+    expect(showSnackbar).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1);
+    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
   });
 
-  it("demonstrates advantages over manual DOM", () => {
-    // Real HTML structure provides additional validation opportunities
-    const snackContainer = document.getElementById("snackbar-container");
+  it("shows opponent choosing snackbar immediately when delay is not positive", () => {
+    setOpponentDelay(0);
+    bindUIHelperEventHandlersDynamic();
 
-    // Manual DOM test would miss these important attributes:
-    expect(snackContainer.getAttribute("aria-live")).toBe("polite");
-    expect(snackContainer.getAttribute("aria-atomic")).toBe("true");
-    // Note: Real HTML doesn't have role="status" - this shows integration testing reveals actual structure
+    emitBattleEvent("statSelected", { opts: { delayOpponentMessage: true } });
 
-    // Manual DOM test would miss the complete page structure:
-    expect(document.querySelector("header[role='banner']")).toBeTruthy();
-    expect(document.querySelector("main[role='main']")).toBeTruthy();
-
-    // This validates the snackbar works in the context of the full page
-    expect(snackContainer.parentElement.tagName).toBe("BODY");
+    expect(scoreboardClearTimer).toHaveBeenCalledTimes(1);
+    expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
+    expect(markOpponentPromptNow).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
