@@ -215,6 +215,38 @@ function determineEngineAdvanceState({
 }
 
 /**
+ * Determine whether the manual round counter fallback should render an update.
+ *
+ * @pseudocode
+ * 1. Flag lagging contexts by checking for non-empty, non-regular context strings.
+ * 2. Detect when the recorded highest round exceeds the displayed counter.
+ * 3. Return true if either condition suggests the UI is behind the engine state.
+ *
+ * @param {{
+ *   lastContext: string | null | undefined,
+ *   hasRecordedHighest: boolean,
+ *   recordedHighest: number | null | undefined,
+ *   displayedRoundBefore: number
+ * }} params - Signals describing the round counter tracking state.
+ * @returns {boolean}
+ */
+function shouldApplyRoundCounterFallback({
+  lastContext,
+  hasRecordedHighest,
+  recordedHighest,
+  displayedRoundBefore
+}) {
+  const hasLaggingContext =
+    typeof lastContext === "string" && lastContext !== "" && lastContext !== "regular";
+  const displayBehindRecordedHighest =
+    hasRecordedHighest &&
+    typeof recordedHighest === "number" &&
+    recordedHighest > displayedRoundBefore;
+
+  return hasLaggingContext || displayBehindRecordedHighest;
+}
+
+/**
  * Transition events required when advancing from states other than `cooldown`.
  *
  * `advanceWhenReady` consults this table to dispatch an interrupt that moves the
@@ -469,16 +501,14 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
         fallbackTarget = recordedHighest;
       }
 
-      const hasLaggingContext =
-        typeof lastContext === "string" && lastContext !== "" && lastContext !== "regular";
-      const displayBehindRecordedHighest =
-        hasRecordedHighest && recordedHighest > displayedRoundBefore;
+      const shouldApplyFallback = shouldApplyRoundCounterFallback({
+        lastContext,
+        hasRecordedHighest,
+        recordedHighest,
+        displayedRoundBefore
+      });
 
-      if (
-        Number.isFinite(fallbackTarget) &&
-        fallbackTarget >= 1 &&
-        (hasLaggingContext || displayBehindRecordedHighest)
-      ) {
+      if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1 && shouldApplyFallback) {
         writeRoundCounter(root, fallbackTarget);
         const nextRecordedHighest = hasRecordedHighest
           ? Math.max(recordedHighest, fallbackTarget)
