@@ -5,11 +5,6 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
     // Set viewport to simulate mobile-like dimensions at 200% zoom
     await page.setViewportSize({ width: 1280, height: 800 });
 
-    // Set zoom level to 200%
-    await page.evaluate(() => {
-      document.body.style.zoom = "2";
-    });
-
     await page.addInitScript(() => {
       // Keep UI deterministic for tests
       try {
@@ -35,6 +30,14 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
 
     await page.goto("/src/pages/battleCLI.html");
     await page.waitForLoadState("networkidle");
+
+    await page.waitForFunction(
+      () => typeof window.__TEST_API?.viewport?.setZoom === "function"
+    );
+    await page.evaluate(() => {
+      window.__TEST_API.viewport.setZoom(2);
+    });
+    await page.waitForFunction(() => document.body?.style?.zoom === "2");
   });
 
   test("CLI interface remains usable at 200% zoom", async ({ page }) => {

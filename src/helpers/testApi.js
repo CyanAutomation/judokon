@@ -241,6 +241,83 @@ const timerApi = {
   }
 };
 
+// Viewport control API
+const viewportApi = {
+  /**
+   * Adjust the document zoom level to simulate browser zoom in tests.
+   * @param {number} zoomLevel - Target zoom multiplier (1 = 100%).
+   * @returns {boolean} True when zoom is applied synchronously.
+   */
+  setZoom(zoomLevel = 1) {
+    if (typeof document === "undefined") return false;
+
+    const root = document.documentElement;
+    const body = document.body;
+
+    if (!root || !body) {
+      return false;
+    }
+
+    const numericZoom = Number(zoomLevel);
+    const normalizedZoom = Number.isFinite(numericZoom) && numericZoom > 0 ? numericZoom : 1;
+
+    try {
+      if (normalizedZoom === 1) {
+        body.style.removeProperty("zoom");
+        try {
+          delete root.dataset.testZoom;
+        } catch {}
+        try {
+          root.style.removeProperty("--test-zoom-scale");
+        } catch {}
+        return true;
+      }
+
+      body.style.zoom = String(normalizedZoom);
+      try {
+        root.dataset.testZoom = String(normalizedZoom);
+      } catch {}
+      try {
+        root.style.setProperty("--test-zoom-scale", String(normalizedZoom));
+      } catch {}
+
+      return true;
+    } catch (error) {
+      logDevWarning("Failed to set viewport zoom", error);
+      return false;
+    }
+  },
+
+  /**
+   * Clear any simulated zoom overrides applied during a test run.
+   * @returns {boolean} True when cleanup is completed.
+   */
+  resetZoom() {
+    if (typeof document === "undefined") return false;
+
+    const root = document.documentElement;
+    const body = document.body;
+
+    if (!root || !body) {
+      return false;
+    }
+
+    try {
+      body.style.removeProperty("zoom");
+      try {
+        delete root.dataset.testZoom;
+      } catch {}
+      try {
+        root.style.removeProperty("--test-zoom-scale");
+      } catch {}
+      return true;
+    } catch (error) {
+      logDevWarning("Failed to reset viewport zoom", error);
+      return false;
+    }
+  }
+};
+
 // Component initialization API
 const initApi = {
   /**
@@ -461,7 +538,8 @@ const testApi = {
   state: stateApi,
   timers: timerApi,
   init: initApi,
-  inspect: inspectionApi
+  inspect: inspectionApi,
+  viewport: viewportApi
 };
 
 /**
@@ -485,6 +563,7 @@ export function exposeTestAPI() {
     window.__TIMER_API = timerApi;
     window.__INIT_API = initApi;
     window.__INSPECT_API = inspectionApi;
+    window.__VIEWPORT_API = viewportApi;
   }
 }
 
