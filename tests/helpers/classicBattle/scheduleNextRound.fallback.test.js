@@ -95,6 +95,10 @@ describe("startCooldown fallback timer", () => {
         // Mock debugHooks to return null for readDebugState
         "../../../src/helpers/classicBattle/debugHooks.js": () => ({
           readDebugState: vi.fn(() => null)
+        }),
+        // Mock debugPanel to avoid slow updateDebugPanel
+        "../../../src/helpers/classicBattle/debugPanel.js": () => ({
+          updateDebugPanel: vi.fn()
         })
       }
     });
