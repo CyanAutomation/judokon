@@ -59,6 +59,11 @@ describe("classic battle state table transitions", () => {
         await machine.dispatch(trigger.on);
         expect(machine.getState()).toBe(trigger.target);
         expect(spy).toHaveBeenCalled();
+        const { battleState, prevBattleState } = document.body.dataset;
+        expect(battleState).toBe(trigger.target);
+        if (prevBattleState) {
+          expect(prevBattleState).toBe(state.name);
+        }
         offBattleEvent("battleStateChange", spy);
         offBattleEvent("battleStateChange", domStateListener);
       });
