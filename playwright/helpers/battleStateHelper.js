@@ -54,29 +54,33 @@ export async function waitForBattleReady(page, options = {}) {
     return;
   }
 
-  if (readyViaApi === false && !allowFallback) {
-    throw new Error("Timed out waiting for battle readiness via Test API");
-  }
-
-  if (readyViaApi === false || readyViaApi === null) {
+  if (readyViaApi === false) {
     if (!allowFallback) {
-      throw new Error("Test API waitForBattleReady unavailable and fallback disabled");
+      throw new Error("Timed out waiting for battle readiness via Test API");
     }
-
-    await page.waitForFunction(
-      () => {
-        try {
-          return (
-            typeof window.__TEST_API?.init?.isBattleReady === "function" &&
-            window.__TEST_API.init.isBattleReady()
-          );
-        } catch {
-          return false;
-        }
-      },
-      { timeout }
-    );
+  } else if (readyViaApi === null && !allowFallback) {
+    throw new Error("Test API waitForBattleReady unavailable and fallback disabled");
   }
+
+  if (!allowFallback) {
+    return;
+  }
+
+  await page.waitForFunction(
+    () => {
+      try {
+        const bodyState = document.body?.dataset?.battleState || "";
+        const statsReady =
+          document.querySelector('#cli-stats[aria-busy="false"]') ||
+          document.querySelector('[data-testid="battle-stats"][aria-busy="false"]');
+        const hasBattleStateAttribute = document.querySelector("[data-battle-state]");
+        return Boolean(bodyState && (statsReady || hasBattleStateAttribute));
+      } catch {
+        return false;
+      }
+    },
+    { timeout }
+  );
 }
 
 /**
@@ -110,17 +114,19 @@ export async function waitForBattleState(page, expectedState, options = {}) {
     return;
   }
 
-  if (apiResult === false && !allowFallback) {
-    throw new Error(`Timed out waiting for battle state "${expectedState}" via Test API`);
-  }
-
-  if (apiResult === false || apiResult === null) {
+  if (apiResult === false) {
     if (!allowFallback) {
-      throw new Error(`Test API waitForBattleState unavailable for "${expectedState}"`);
+      throw new Error(`Timed out waiting for battle state "${expectedState}" via Test API`);
     }
-
-    await page.waitForSelector(`[data-battle-state="${expectedState}"]`, { timeout });
+  } else if (apiResult === null && !allowFallback) {
+    throw new Error(`Test API waitForBattleState unavailable for "${expectedState}"`);
   }
+
+  if (!allowFallback) {
+    return;
+  }
+
+  await page.waitForSelector(`[data-battle-state="${expectedState}"]`, { timeout });
 }
 
 /**

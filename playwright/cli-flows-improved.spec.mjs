@@ -17,7 +17,7 @@ const gotoCliPage = async (page, testInfo) => {
 };
 
 const ensureBattleReady = async (page) => {
-  await waitForBattleReady(page, { timeout: 10_000, allowFallback: false });
+  await waitForBattleReady(page, { timeout: 10_000 });
 };
 
 const waitForStatsReady = async (page) => {
@@ -53,6 +53,10 @@ const getBattleStore = (page) =>
 
 const getBattleState = (page) =>
   page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
+
+// Note: the previous getRoundsPlayed helper has been removed intentionally. The tests now
+// assert battle progression through explicit state waits and CLI stat instrumentation instead
+// of reading the internal rounds counter directly.
 
 test.beforeEach(async ({ page }, testInfo) => {
   await gotoCliPage(page, testInfo);

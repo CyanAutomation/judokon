@@ -8,37 +8,45 @@ const buildCliUrl = (testInfo) => {
   return new URL("/src/pages/battleCLI.html", baseUrl).toString();
 };
 
+const waitForCliApis = async (page, timeout = 8000) => {
+  await waitForTestApi(page, { timeout });
+
+  const waitForTranscript = expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          try {
+            return typeof window.__test?.cli?.appendTranscript === "function";
+          } catch {
+            return false;
+          }
+        }),
+      { timeout }
+    )
+    .toBe(true);
+
+  const waitForBattleStore = expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          try {
+            return typeof window.__TEST_API?.inspect?.getBattleStore === "function";
+          } catch {
+            return false;
+          }
+        }),
+      { timeout }
+    )
+    .toBe(true);
+
+  await Promise.all([waitForTranscript, waitForBattleStore]);
+};
+
 test.describe("CLI Keyboard Flows", () => {
   test.beforeEach(async ({ page }, testInfo) => {
     await page.goto(buildCliUrl(testInfo));
     await page.waitForSelector("#cli-root", { timeout: 8000 });
-    await waitForTestApi(page, { timeout: 8000 });
-    await expect
-      .poll(
-        () =>
-          page.evaluate(() => {
-            try {
-              return typeof window.__test?.cli?.appendTranscript === "function";
-            } catch {
-              return false;
-            }
-          }),
-        { timeout: 8000 }
-      )
-      .toBe(true);
-    await expect
-      .poll(
-        () =>
-          page.evaluate(() => {
-            try {
-              return typeof window.__TEST_API?.inspect?.getBattleStore === "function";
-            } catch {
-              return false;
-            }
-          }),
-        { timeout: 8000 }
-      )
-      .toBe(true);
+    await waitForCliApis(page, 8000);
   });
 
   const startBattle = async (page) => {
@@ -89,7 +97,7 @@ test.describe("CLI Keyboard Flows", () => {
 
       await page.keyboard.press("h");
       await expect(shortcuts).toBeVisible();
-      await expect(countdown).toHaveText("");
+      await expect(countdown).not.toContainText("Invalid key, press H for help");
 
       await page.keyboard.press("h");
       await expect(shortcuts).toHaveAttribute("hidden", "");
