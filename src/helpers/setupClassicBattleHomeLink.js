@@ -14,20 +14,25 @@ import { markBattlePartReady } from "./battleInit.js";
  * @returns {void}
  */
 export function setupClassicBattleHomeLink() {
-  const homeLink = document.querySelector('[data-testid="home-link"]');
-  if (homeLink) {
-    homeLink.addEventListener("click", (e) => {
+  const homeLinks = Array.from(document.querySelectorAll('[data-testid="home-link"]'));
+  if (homeLinks.length === 0) return;
+
+  homeLinks.forEach((link) => {
+    if (link.dataset.homeLinkBound === "true") return;
+    link.dataset.homeLinkBound = "true";
+    link.addEventListener("click", (e) => {
       e.preventDefault();
-      quitMatch(window.battleStore, homeLink);
+      quitMatch(window.battleStore, link);
     });
-    (function waitForStore() {
-      if (window.battleStore) {
-        markBattlePartReady("home");
-      } else {
-        setTimeout(waitForStore, 0);
-      }
-    })();
-  }
+  });
+
+  (function waitForStore() {
+    if (window.battleStore) {
+      markBattlePartReady("home");
+    } else {
+      setTimeout(waitForStore, 0);
+    }
+  })();
 }
 
 onDomReady(setupClassicBattleHomeLink);
