@@ -65,15 +65,87 @@ const OPPONENT_MESSAGE_BUFFER_MS = 150;
 /**
  * Minimum amount of time the opponent choosing message should remain visible
  * before transitioning into the next-round countdown state.
+ * Can be overridden via window.__MIN_OPPONENT_MESSAGE_DURATION_MS for testing.
  */
-const MIN_OPPONENT_MESSAGE_DURATION_MS = 250;
+const MIN_OPPONENT_MESSAGE_DURATION_MS =
+  typeof window !== "undefined" && typeof window.__MIN_OPPONENT_MESSAGE_DURATION_MS === "number"
+    ? window.__MIN_OPPONENT_MESSAGE_DURATION_MS
+    : 250;
 
 const BASE_SELECTION_READY_DELAY_MS = Math.max(
   POST_SELECTION_READY_DELAY_MS,
   OPPONENT_MESSAGE_BUFFER_MS
 );
 
+/**
+ * Tracks the most recent time (in ms) the opponent choosing prompt was shown.
+ * This timestamp is used to enforce the minimum snackbar visibility duration
+ * before triggering the cooldown for the next round.
+ *
+ * @type {number}
+ */
 let lastOpponentPromptTimestamp = 0;
+
+function getCurrentTimestamp() {
+  try {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") {
+      return performance.now();
+    }
+  } catch {}
+  try {
+    return Date.now();
+  } catch {}
+  return 0;
+}
+
+function calculateRemainingOpponentMessageTime() {
+  try {
+    const now = getCurrentTimestamp();
+    const elapsed = now - (lastOpponentPromptTimestamp || 0);
+    return Math.max(0, MIN_OPPONENT_MESSAGE_DURATION_MS - elapsed);
+  } catch {}
+  return 0;
+}
+
+function handleCooldownError(store, reason, err) {
+  try {
+    store[COOLDOWN_FLAG] = false;
+  } catch {}
+  try {
+    console.debug("battleClassic: startCooldown manual trigger failed", {
+      reason: reason || "unknown",
+      error: err
+    });
+  } catch {}
+}
+
+function invokeStartCooldown(store, reason) {
+  try {
+    startCooldown(store);
+    return true;
+  } catch (err) {
+    handleCooldownError(store, reason, err);
+    return false;
+  }
+}
+
+function scheduleDelayedCooldown(delayMs, store, reason) {
+  const runner = () => invokeStartCooldown(store, reason);
+
+  try {
+    if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
+      window.setTimeout(runner, delayMs);
+      return true;
+    }
+  } catch {}
+
+  try {
+    setTimeout(runner, delayMs);
+    return true;
+  } catch {}
+
+  return false;
+}
 
 function computeSelectionReadyDelay() {
   let delayForReady = BASE_SELECTION_READY_DELAY_MS;
@@ -119,54 +191,13 @@ function markCooldownStarted(store) {
 
 function triggerCooldownOnce(store, reason) {
   if (!markCooldownStarted(store)) return false;
-  const invokeStartCooldown = () => {
-    try {
-      startCooldown(store);
-      return true;
-    } catch (err) {
-      try {
-        store[COOLDOWN_FLAG] = false;
-      } catch {}
-      try {
-        console.debug("battleClassic: startCooldown manual trigger failed", {
-          reason: reason || "unknown",
-          error: err
-        });
-      } catch {}
-      return false;
-    }
-  };
 
-  const scheduleStartCooldown = (delayMs) => {
-    const runner = () => {
-      invokeStartCooldown();
-    };
-    try {
-      if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
-        window.setTimeout(runner, delayMs);
-        return true;
-      }
-    } catch {}
-    try {
-      setTimeout(runner, delayMs);
-      return true;
-    } catch {}
-    return false;
-  };
+  const remaining = calculateRemainingOpponentMessageTime();
+  if (remaining > 0 && scheduleDelayedCooldown(remaining, store, reason)) {
+    return true;
+  }
 
-  try {
-    const now =
-      typeof performance !== "undefined" && typeof performance.now === "function"
-        ? performance.now()
-        : Date.now();
-    const elapsed = now - (lastOpponentPromptTimestamp || 0);
-    const remaining = Math.max(0, MIN_OPPONENT_MESSAGE_DURATION_MS - elapsed);
-    if (remaining > 0 && scheduleStartCooldown(remaining)) {
-      return true;
-    }
-  } catch {}
-
-  return invokeStartCooldown();
+  return invokeStartCooldown(store, reason);
 }
 
 function getNextRoundButton() {
@@ -238,6 +269,10 @@ function handleStatSelectionError(store, err) {
   logNextButtonRecovery("selection failure", btn, { cooldownStarted });
 }
 
+/**
+ * Prepares the UI before stat selection occurs and captures the timestamp of
+ * the opponent choosing prompt for minimum duration enforcement.
+ */
 function prepareUiBeforeSelection() {
   try {
     stopActiveSelectionTimer();
@@ -264,15 +299,7 @@ function prepareUiBeforeSelection() {
   }
   try {
     showSnackbar(t("ui.opponentChoosing"));
-    try {
-      const now =
-        typeof performance !== "undefined" && typeof performance.now === "function"
-          ? performance.now()
-          : Date.now();
-      lastOpponentPromptTimestamp = now;
-    } catch {
-      lastOpponentPromptTimestamp = Date.now();
-    }
+    lastOpponentPromptTimestamp = getCurrentTimestamp();
   } catch {}
   return delayOverride;
 }
