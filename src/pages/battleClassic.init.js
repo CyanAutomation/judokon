@@ -1450,7 +1450,9 @@ async function init() {
           const skipDueToManual = shouldSkipReadyEvent();
           trackRoundCycleEvent(eventType, {
             skipped: skipDueToManual,
-            manualSuppression: skipDueToManual ? tokenActiveBeforeCheck : Boolean(suppressedReadyToken)
+            manualSuppression: skipDueToManual
+              ? tokenActiveBeforeCheck
+              : Boolean(suppressedReadyToken)
           });
           if (skipDueToManual) {
             return;

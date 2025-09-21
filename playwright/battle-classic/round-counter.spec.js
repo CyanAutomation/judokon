@@ -39,7 +39,9 @@ test.describe("Classic Battle round counter", () => {
     }, ["log", "info", "warn", "error", "debug"]);
   });
 
-  test("clicking Next once only advances a single round when ready fires immediately", async ({ page }) => {
+  test("clicking Next once only advances a single round when ready fires immediately", async ({
+    page
+  }) => {
     await withMutedConsole(async () => {
       await page.addInitScript(() => {
         window.__OVERRIDE_TIMERS = { roundTimer: 1 };
@@ -67,11 +69,13 @@ test.describe("Classic Battle round counter", () => {
       const startedEvents = history.filter((entry) => entry?.type === "round.start");
       expect(startedEvents).toHaveLength(1);
 
-      await expect.poll(async () => {
-        const text = await roundCounter.textContent();
-        const match = text ? text.match(/Round\s*(\d+)/i) : null;
-        return match ? Number.parseInt(match[1], 10) : NaN;
-      }).toBe(2);
+      await expect
+        .poll(async () => {
+          const text = await roundCounter.textContent();
+          const match = text ? text.match(/Round\s*(\d+)/i) : null;
+          return match ? Number.parseInt(match[1], 10) : NaN;
+        })
+        .toBe(2);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });

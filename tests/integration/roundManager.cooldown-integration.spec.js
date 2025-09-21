@@ -28,9 +28,7 @@ function createSnackbarStub() {
 test("integration: startCooldown drives readiness flow with fake timers", async () => {
   const timers = vi.useFakeTimers();
   const store = createBattleStore();
-  const dispatchSpy = vi
-    .spyOn(eventDispatcher, "dispatchBattleEvent")
-    .mockResolvedValue(true);
+  const dispatchSpy = vi.spyOn(eventDispatcher, "dispatchBattleEvent").mockResolvedValue(true);
 
   const previousDebugMap = window.__classicBattleDebugMap;
   const previousStartCount = globalThis.__startCooldownCount;
@@ -67,8 +65,7 @@ test("integration: startCooldown drives readiness flow with fake timers", async 
     expect(nextButton?.disabled).toBe(false);
     expect(nextButton?.getAttribute("data-next-ready")).toBe("true");
 
-    const initialTrace =
-      globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") ?? [];
+    const initialTrace = globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") ?? [];
     expect(Array.isArray(initialTrace)).toBe(true);
     expect(initialTrace.some((entry) => entry.event === "startCooldown")).toBe(true);
     expect(initialTrace.some((entry) => entry.event === "controlsCreated")).toBe(true);
@@ -79,8 +76,7 @@ test("integration: startCooldown drives readiness flow with fake timers", async 
 
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
 
-    const finalTrace =
-      globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") ?? [];
+    const finalTrace = globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") ?? [];
     const traceEvents = finalTrace.map((entry) => entry.event);
     expect(traceEvents).toContain("handleNextRoundExpiration.start");
     expect(traceEvents).toContain("handleNextRoundExpiration.dispatched");
