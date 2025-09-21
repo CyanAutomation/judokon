@@ -54,7 +54,10 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     listeners[event].delete(handler);
   }
 
-  function start(dur) {
+  function start(dur, { resetRetries = true } = {}) {
+    if (resetRetries) {
+      retries = 0;
+    }
     if (fallbackTimeoutId !== null) {
       try {
         clearTimeout(fallbackTimeoutId);
@@ -121,7 +124,7 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
       return;
     }
     emit("drift", remaining);
-    await start(remaining);
+    await start(remaining, { resetRetries: false });
   }
 
   function stop() {

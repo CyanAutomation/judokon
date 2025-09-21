@@ -52,7 +52,7 @@ describe("UI handlers: opponent message events", () => {
   let setTimeoutSpy;
 
   beforeAll(async () => {
-    const snackbarModule = await import("../../src/helpers/classicBattle/snackbar.js");
+    await import("../../src/helpers/classicBattle/snackbar.js");
     const uiEventHandlersModule = await import(
       "../../src/helpers/classicBattle/uiEventHandlers.js"
     );

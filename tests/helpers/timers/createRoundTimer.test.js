@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createRoundTimer } from "../../../src/helpers/timers/createRoundTimer.js";
 
 describe("createRoundTimer events", () => {
@@ -24,5 +24,49 @@ describe("createRoundTimer events", () => {
       ["tick", 0]
     ]);
     expect(expired).toBe(1);
+  });
+
+  it("resets drift retries when the timer restarts", async () => {
+    const onDriftFail = vi.fn();
+    let onDrift;
+    const timer = createRoundTimer({
+      starter: (onTick, onExpired, total, driftHandler) => {
+        onDrift = driftHandler;
+      },
+      onDriftFail
+    });
+
+    timer.start(5);
+    expect(typeof onDrift).toBe("function");
+    await onDrift(4);
+    await onDrift(3);
+    await onDrift(2);
+
+    timer.stop();
+
+    timer.start(5);
+    await onDrift(4);
+
+    expect(onDriftFail).not.toHaveBeenCalled();
+  });
+
+  it("still aborts after exceeding drift retries", async () => {
+    const onDriftFail = vi.fn();
+    let onDrift;
+    const timer = createRoundTimer({
+      starter: (onTick, onExpired, total, driftHandler) => {
+        onDrift = driftHandler;
+      },
+      onDriftFail
+    });
+
+    timer.start(5);
+    expect(typeof onDrift).toBe("function");
+    await onDrift(4);
+    await onDrift(4);
+    await onDrift(4);
+    await onDrift(4);
+
+    expect(onDriftFail).toHaveBeenCalledTimes(1);
   });
 });

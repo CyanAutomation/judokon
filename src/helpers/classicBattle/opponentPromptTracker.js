@@ -1,4 +1,10 @@
-const DEFAULT_MIN_PROMPT_DURATION_MS = 600;
+/**
+ * @summary Default minimum display duration for the opponent prompt message in milliseconds.
+ * @returns {number} The DEFAULT_MIN_PROMPT_DURATION_MS constant.
+ * @pseudocode
+ * 1. Provide the shared constant used to gate opponent prompt visibility.
+ */
+export const DEFAULT_MIN_PROMPT_DURATION_MS = 600;
 
 let lastPromptTimestamp = 0;
 
@@ -86,9 +92,3 @@ export function getOpponentPromptMinDuration() {
     ? Number(override)
     : DEFAULT_MIN_PROMPT_DURATION_MS;
 }
-
-/**
- * @summary The default minimum duration in milliseconds for the opponent prompt message.
- * @type {number}
- */
-export { DEFAULT_MIN_PROMPT_DURATION_MS };

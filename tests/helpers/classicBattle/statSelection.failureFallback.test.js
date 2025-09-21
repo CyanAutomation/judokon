@@ -24,6 +24,10 @@ describe("classicBattle stat selection failure recovery", () => {
     return entry;
   };
 
+  /**
+   * Flush pending microtasks to ensure async operations complete
+   * @returns {Promise<void>}
+   */
   const flushMicrotasks = async () => {
     await Promise.resolve();
     await Promise.resolve();
@@ -45,7 +49,7 @@ describe("classicBattle stat selection failure recovery", () => {
         if (type === "click" && this?.getAttribute?.("data-stat")) {
           statClickHandlers.push({ element: this, handler: listener });
         }
-        return nativeAddEventListener.call(this, type, listener, options);
+        return nativeAddEventListener?.call(this, type, listener, options);
       });
     }
 
@@ -60,8 +64,8 @@ describe("classicBattle stat selection failure recovery", () => {
     }));
 
     vi.doMock(UI_HELPERS_PATH, () => ({
-      enableNextRoundButton: (...args) => enableNextRoundButtonMock(...args),
-      disableNextRoundButton: (...args) => disableNextRoundButtonMock(...args),
+      enableNextRoundButton: enableNextRoundButtonMock,
+      disableNextRoundButton: disableNextRoundButtonMock,
       removeBackdrops: vi.fn(),
       showFatalInitError: vi.fn()
     }));

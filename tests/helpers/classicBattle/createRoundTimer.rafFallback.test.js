@@ -39,4 +39,32 @@ describe("createRoundTimer fallback (no starter) under fake timers", () => {
 
     expect(expiredSpy).toHaveBeenCalled();
   });
+
+  it("clears the previous fallback timeout when restarting", () => {
+    timer.start(3);
+    vi.advanceTimersByTime(2000);
+
+    timer.start(5);
+
+    // After one additional second the old timer would have expired if not cleared
+    vi.advanceTimersByTime(1000);
+
+    expect(expiredSpy).not.toHaveBeenCalled();
+    expect(tickSpy).toHaveBeenLastCalledWith(4);
+
+    vi.advanceTimersByTime(4000);
+
+    expect(expiredSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops the fallback timeout when stop is called", () => {
+    timer.start(3);
+    vi.advanceTimersByTime(1000);
+
+    timer.stop();
+
+    vi.advanceTimersByTime(5000);
+
+    expect(expiredSpy).not.toHaveBeenCalled();
+  });
 });
