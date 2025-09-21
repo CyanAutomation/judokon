@@ -32,7 +32,7 @@ test.describe("Classic Battle timer", () => {
 
       const readTimerText = async () => (await timerLocator.textContent()) ?? "";
       const waitForTimerUpdate = async (previousText) => {
-        await expect.poll(readTimerText).not.toBe(previousText);
+        await expect.poll(readTimerText, { timeout: 5000 }).not.toBe(previousText);
         return readTimerText();
       };
 
