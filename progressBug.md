@@ -217,6 +217,7 @@ Phases:
   - Prototype a tiny `RoundStore` (observable or event-emitter) API, showing how UI and orchestrator read/write round state.
   - Create a migration plan and compatibility layer for existing consumers.
   - Acceptance: Prototype PR + design doc explaining migration.
+  - **COMPLETED**: Implemented `src/helpers/classicBattle/roundStore.js` with observable RoundStore class providing centralized state management for round number, state, selected stat, outcome, and ready dispatch tracking. Created comprehensive unit tests (17/17 passing) covering all API methods, callback subscriptions, and backward compatibility. Built integration examples demonstrating compatibility with existing modules (roundManager.js, battleDebug.js, scoreboardAdapter.js, roundReadyState.js) while maintaining event-driven architecture. All validation passes (prettier, eslint, vitest).
 
 - Phase 1 — Implement store behind feature flag (5–8 days)
   - Add `RoundStore` module and wire it into a small subset of consumers behind a runtime/config flag.

@@ -1029,7 +1029,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
   });
 
   describe("Classic Battle stat buttons", () => {
-
     async function initBattle() {
       const statContainer = document.createElement("div");
       statContainer.id = "stat-buttons";
