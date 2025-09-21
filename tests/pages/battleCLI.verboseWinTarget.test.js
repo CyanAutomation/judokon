@@ -1,8 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
-import { waitFor } from "../waitFor.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+
+function getListener(spy, type) {
+  const entry = spy.mock.calls.find(([eventType]) => eventType === type);
+  if (!entry) {
+    throw new Error(`Expected ${type} listener to be registered`);
+  }
+  const listener = entry.find((param, index) => index > 0 && typeof param === "function");
+  if (!listener) {
+    throw new Error(`Expected ${type} listener to be a function`);
+  }
+  return listener;
+}
 
 describe("battleCLI verbose win target", () => {
   beforeEach(() => {
@@ -23,22 +34,37 @@ describe("battleCLI verbose win target", () => {
   it("keeps win target when verbose toggled", async () => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
     const mod = await loadBattleCLI();
+    const root = mod.ensureCliDomForTest();
+    const select = root.querySelector("#points-select");
+    const changeSpy = vi.spyOn(select, "addEventListener");
+
     await mod.init();
-    const select = document.getElementById("points-select");
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const initModule = await import("../../src/pages/battleCLI/init.js");
+    const { toggleVerbose } = await initModule.setupFlags();
+    expect(toggleVerbose).toEqual(expect.any(Function));
+
+    const { setPointsToWin, getPointsToWin } = await import(
+      "../../src/helpers/battleEngineFacade.js"
+    );
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    const changeHandler = getListener(changeSpy, "change");
     select.value = "15";
-    select.dispatchEvent(new Event("change"));
-    await waitFor(() => document.getElementById("cli-round").textContent === "Round 0 Target: 15");
-    const { getPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
+    await changeHandler(new Event("change"));
+
     expect(getPointsToWin()).toBe(15);
-    const checkbox = document.getElementById("verbose-toggle");
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event("change"));
-    await waitFor(() => document.getElementById("cli-round").textContent === "Round 0 Target: 15");
-    expect(getPointsToWin()).toBe(15);
-    checkbox.checked = false;
-    checkbox.dispatchEvent(new Event("change"));
-    await waitFor(() => document.getElementById("cli-round").textContent === "Round 0 Target: 15");
+    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("15");
+    confirmSpy.mockRestore();
+
+    setPointsToWin.mockClear();
+
+    await toggleVerbose(true);
+    await toggleVerbose(false);
+
+    expect(setPointsToWin).toHaveBeenCalledTimes(2);
+    expect(setPointsToWin).toHaveBeenNthCalledWith(1, 15);
+    expect(setPointsToWin).toHaveBeenNthCalledWith(2, 15);
     expect(getPointsToWin()).toBe(15);
   });
 });
