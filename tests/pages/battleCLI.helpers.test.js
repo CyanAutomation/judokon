@@ -126,11 +126,15 @@ describe("Battle CLI Helpers", () => {
     it("toggles the help section when the 'h' key is pressed", async () => {
       await setupFlags();
       const addEventListenerSpy = vi.spyOn(window, "addEventListener");
+      const addEventListenerSpy = vi.spyOn(window, "addEventListener");
       wireEvents();
-      const keydownHandler = addEventListenerSpy.mock.calls.find(
+      const keydownCall = addEventListenerSpy.mock.calls.find(
         ([eventName]) => eventName === "keydown"
-      )[1];
-      const shortcutsSection = document.getElementById("cli-shortcuts");
+      );
+      if (!keydownCall) {
+        throw new Error("Expected keydown event listener to be registered");
+      }
+      const keydownHandler = keydownCall[1];
       expect(shortcutsSection.hidden).toBe(true);
 
       const keydownEvent = new KeyboardEvent("keydown", { key: "h" });
