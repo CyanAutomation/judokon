@@ -99,6 +99,40 @@ export function attachEventSpy(el, eventName) {
 }
 
 /**
+ * Create a generic button element.
+ * @param {object} options
+ * @param {string} options.text - Button text
+ * @param {string} options.id - Element id
+ * @param {string} options.className - CSS class
+ * @param {boolean} options.disabled - Initial disabled state
+ * @returns {HTMLButtonElement}
+ */
+export function createButton({ text = "", id = "", className = "", disabled = false } = {}) {
+  const btn = document.createElement("button");
+  btn.textContent = text;
+  if (id) btn.id = id;
+  if (className) btn.className = className;
+  btn.disabled = disabled;
+  return btn;
+}
+
+/**
+ * Create a generic div element.
+ * @param {object} options
+ * @param {string} options.id - Element id
+ * @param {string} options.className - CSS class
+ * @param {string} options.textContent - Initial text
+ * @returns {HTMLDivElement}
+ */
+export function createDiv({ id = "", className = "", textContent = "" } = {}) {
+  const div = document.createElement("div");
+  if (id) div.id = id;
+  if (className) div.className = className;
+  div.textContent = textContent;
+  return div;
+}
+
+/**
  * Wrapper to mute console.warn/error during test execution.
  * @param {function} fn - Async function to run
  * @returns {Promise} Result of fn

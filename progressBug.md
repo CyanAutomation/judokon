@@ -401,4 +401,19 @@ Proceed to Phase 1 for items 1–3?
 - No regressions in existing DOM-heavy tests.
 - Acceptance criteria met: Helper exports documented, unit tests pass.
 
-**Next:** Proceed to Item 1 Phase 2 (migrate high-value tests) or move to another item?
+## Phase 2 Completion: Item 1 (Improve shared test mocking utilities)
+
+**Actions Taken:**
+- Added generic `createButton()` and `createDiv()` to `domFactory.js` for broader reuse.
+- Migrated 2 high-value tests to use helpers:
+  - `scrollButtonState.test.js`: Replaced 8 `document.createElement()` calls with `createDiv()` and `createButton()`.
+  - `battleScoreboard.ordering.test.js`: Replaced `document.createElement("header")` with `createDiv({ className: "battle-header" })`.
+- Ran migrated tests: 6/6 passed.
+- Ran regression tests: `navigation.spec.js` (1 Playwright test passed).
+
+**Outcome:**
+- Reduced inline DOM creation in tests; helpers now used in 2 files.
+- No regressions; tests maintain same behavior with cleaner setup.
+- Acceptance criteria met: Identified and migrated high-value tests, no new failures.
+
+**Next:** Proceed to Item 1 Phase 3 (stabilize & docs) or move to another item?

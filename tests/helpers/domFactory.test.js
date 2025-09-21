@@ -1,10 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
 import {
   createStatButton,
   createSnackbar,
   createScoreboard,
   attachEventSpy,
-  withMutedConsole
+  withMutedConsole,
+  createButton,
+  createDiv
 } from "./domFactory.js";
 
 describe("domFactory", () => {
@@ -86,6 +87,27 @@ describe("domFactory", () => {
       el.dispatchEvent(event);
 
       expect(spy).toHaveBeenCalledWith(event);
+    });
+  });
+
+  describe("createButton", () => {
+    it("creates a button with options", () => {
+      const btn = createButton({ text: "Click me", id: "test-btn", className: "btn", disabled: true });
+      expect(btn.tagName).toBe("BUTTON");
+      expect(btn.textContent).toBe("Click me");
+      expect(btn.id).toBe("test-btn");
+      expect(btn.className).toBe("btn");
+      expect(btn.disabled).toBe(true);
+    });
+  });
+
+  describe("createDiv", () => {
+    it("creates a div with options", () => {
+      const div = createDiv({ id: "test-div", className: "container", textContent: "Hello" });
+      expect(div.tagName).toBe("DIV");
+      expect(div.id).toBe("test-div");
+      expect(div.className).toBe("container");
+      expect(div.textContent).toBe("Hello");
     });
   });
 

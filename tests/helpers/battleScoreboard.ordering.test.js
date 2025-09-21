@@ -4,13 +4,13 @@ import {
   emitBattleEvent
 } from "../../src/helpers/classicBattle/battleEvents.js";
 import { mount, clearBody } from "./domUtils.js";
+import { createDiv } from "../helpers/domFactory.js";
 
 describe("battleScoreboard out-of-order guards", () => {
   beforeEach(async () => {
     __resetBattleEventTarget();
     const { container } = mount();
-    const header = document.createElement("header");
-    header.className = "battle-header";
+    const header = createDiv({ className: "battle-header" });
     header.innerHTML = `
       <p id="round-message" aria-live="polite" aria-atomic="true" role="status"></p>
       <p id="next-round-timer" aria-live="polite" aria-atomic="true" role="status"></p>
