@@ -133,10 +133,14 @@ const roundTrackingState = {
   read(root) {
     const counterEl = getRoundCounterElement(root);
 
-    let highest = Number(globalThis.__highestDisplayedRound ?? NaN);
-    if (!Number.isFinite(highest) || highest < 1) {
-      const datasetHighest = Number(counterEl?.dataset?.highestRound ?? NaN);
-      highest = Number.isFinite(datasetHighest) && datasetHighest >= 1 ? datasetHighest : NaN;
+    const globalHighest = Number(globalThis.__highestDisplayedRound ?? NaN);
+    const datasetHighest = Number(counterEl?.dataset?.highestRound ?? NaN);
+
+    let highest = null;
+    if (Number.isFinite(globalHighest) && globalHighest >= 1) {
+      highest = globalHighest;
+    } else if (Number.isFinite(datasetHighest) && datasetHighest >= 1) {
+      highest = datasetHighest;
     }
 
     const lastContext =
@@ -150,7 +154,7 @@ const roundTrackingState = {
 
     return {
       counterEl,
-      highest: Number.isFinite(highest) && highest >= 1 ? highest : null,
+      highest,
       lastContext,
       previousContext
     };
@@ -179,6 +183,34 @@ const roundTrackingState = {
     }
   }
 };
+
+/**
+ * Determine whether the engine has already advanced the round.
+ *
+ * @pseudocode
+ * 1. Exit early when no advance context has been recorded or highest is unset.
+ * 2. Treat a recorded next round or matching prior advance as authoritative.
+ *
+ * @param {{
+ *   contextReportedAdvance: boolean,
+ *   recordedNextRound: boolean,
+ *   priorAdvanceMatchesDisplay: boolean,
+ *   hasRecordedHighest: boolean
+ * }} params - Diagnostic flags derived from round tracking state.
+ * @returns {boolean}
+ */
+function determineEngineAdvanceState({
+  contextReportedAdvance,
+  recordedNextRound,
+  priorAdvanceMatchesDisplay,
+  hasRecordedHighest
+}) {
+  if (!contextReportedAdvance || !hasRecordedHighest) {
+    return false;
+  }
+
+  return recordedNextRound || priorAdvanceMatchesDisplay;
+}
 
 /**
  * Transition events required when advancing from states other than `cooldown`.
@@ -412,8 +444,12 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       previousContext === "advance" &&
       hasRecordedHighest &&
       recordedHighest === displayedRoundBefore;
-    const engineAlreadyAdvanced =
-      contextReportedAdvance && (recordedNextRound || priorAdvanceMatchesDisplay);
+    const engineAlreadyAdvanced = determineEngineAdvanceState({
+      contextReportedAdvance,
+      recordedNextRound,
+      priorAdvanceMatchesDisplay,
+      hasRecordedHighest
+    });
     if (engineAlreadyAdvanced && hasRecordedHighest) {
       fallbackTarget = recordedHighest;
     }
