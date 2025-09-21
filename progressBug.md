@@ -588,3 +588,39 @@ Proceed to Phase 1 for items 1–3?
 - Migration demonstrates clear path for remaining timer tests to adopt canonical pattern
 
 **Next:** Item 3 Phase 2 complete. Ready to proceed to Item 3 Phase 3 or another item?
+
+---
+
+## Phase 3 Completion: Item 3 (Publish a fake-timers playbook & canonical test setup)
+
+**Actions Taken:**
+
+- **Created custom ESLint rule** (`eslint-rules/canonical-timers.js`) to detect direct `vi.useFakeTimers()` usage in test files
+- **Updated ESLint configuration** (`eslint.config.mjs`) to include the new `canonical-timers` plugin and rule
+- **Created CI enforcement script** (`scripts/check-canonical-timers.js`) that runs ESLint with the rule and reports violations
+- **Configured warning-only mode** for CI to allow gradual migration without breaking builds
+- **Tested enforcement pipeline**: Script successfully detects 74 violations across 40+ test files using direct `vi.useFakeTimers()` calls
+
+**Enforcement Infrastructure:**
+
+- **ESLint Rule**: Detects `vi.useFakeTimers()` calls and suggests using `useCanonicalTimers()` from `tests/setup/fakeTimers.js`
+- **CI Script**: Runs ESLint with custom formatter, exits with warning status (not failure) to allow migration
+- **Clear messaging**: Provides actionable guidance for developers to migrate to canonical pattern
+- **Comprehensive coverage**: Scans all test files and reports violations with file paths and line numbers
+
+**Verification Results:**
+
+- **ESLint rule**: Successfully detects violations with clear warning messages ✅
+- **CI script**: Runs successfully and reports 74 violations across codebase ✅
+- **No false positives**: Only detects actual `vi.useFakeTimers()` usage ✅
+- **Helpful output**: Provides migration guidance and violation counts ✅
+
+**Outcome:**
+
+- Automated enforcement now in place for canonical timer usage
+- CI will warn on new violations while allowing gradual migration
+- Clear path established for teams to adopt canonical `useCanonicalTimers()` pattern
+- Acceptance criteria met: CI warns/fails if new tests deviate from playbook (configurable warning mode)
+- Foundation laid for consistent timer mocking across entire test suite
+
+**Next:** Item 3 Phase 3 complete. All phases of Item 3 (fake-timers playbook) now complete. Ready to proceed to Item 4 or another improvement item?

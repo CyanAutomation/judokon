@@ -3,6 +3,7 @@ import globals from "globals";
 import prettierPlugin from "eslint-plugin-prettier";
 import ymlPlugin from "eslint-plugin-yml";
 import { defineConfig } from "eslint/config";
+import canonicalTimersRule from "./eslint-rules/canonical-timers.js";
 
 export default defineConfig([
   {
@@ -24,7 +25,12 @@ export default defineConfig([
     files: ["**/*.{js,mjs,cjs}"],
     plugins: {
       js,
-      prettier: prettierPlugin
+      prettier: prettierPlugin,
+      "canonical-timers": {
+        rules: {
+          useCanonicalTimers: canonicalTimersRule
+        }
+      }
     },
     languageOptions: {
       globals: globals.browser,
@@ -44,6 +50,9 @@ export default defineConfig([
         ...globals.browser,
         ...globals.jest // Enable jest globals in test files
       }
+    },
+    rules: {
+      "canonical-timers/useCanonicalTimers": "warn"
     }
   },
   {
