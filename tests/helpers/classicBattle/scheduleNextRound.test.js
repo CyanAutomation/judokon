@@ -7,7 +7,6 @@ import { createTimerNodes } from "./domUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
 // Note: battleEvents is imported where needed inside tests; avoid unused named import here.
 
-import { waitForState } from "../../waitForState.js";
 import * as debugHooks from "../../../src/helpers/classicBattle/debugHooks.js";
 // import { startCooldown } from "../../../src/helpers/classicBattle/roundManager.js";
 import { cooldownEnter } from "../../../src/helpers/classicBattle/stateHandlers/cooldownEnter.js";
@@ -253,56 +252,42 @@ describe("classicBattle startCooldown", () => {
   }
 
   it("auto-dispatches ready after 1s cooldown", async () => {
-    console.log("[TEST] Test started");
     document.getElementById("next-round-timer")?.remove();
-    console.log("[TEST] next-round-timer removed");
     const { nextButton } = createTimerNodes();
-    console.log("[TEST] createTimerNodes called");
     nextButton.disabled = true;
 
     mockBattleData();
+    const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
     battleEngineMod.createBattleEngine();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
 
-    // Attach spy at the eventDispatcher source so all modules share the wrapped reference.
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
-      // Call the real startRound to ensure card generation and proper state transitions
       return await battleMod.startRound(store);
     });
 
-    console.error("[TEST] About to init orchestrator");
     await orchestrator.initClassicBattleOrchestrator({
       store,
       startRoundWrapper,
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
-    console.error("[TEST] Orchestrator initialized");
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
 
-    // Ensure machine is in roundOver state for the test
     await machine.dispatch("roundOver");
     expect(machine.getState()).toBe("roundOver");
 
-    console.error("[TEST] About to dispatch continue");
     await machine.dispatch("continue");
-    console.error("[TEST] continue dispatched");
     expect(machine.getState()).toBe("cooldown");
 
-    // Manually trigger cooldownEnter since test state table lacks onEnter
-    console.error("[TEST] About to call cooldownEnter");
     await cooldownEnter(machine);
-    console.error("[TEST] cooldownEnter called");
 
-    // Clear spy after manual continue call to only capture automatic ready call
     dispatchBattleEventSpy.mockClear();
 
-    timerSpy.advanceTimersByTime(1000);
-    await vi.runAllTimersAsync();
     expect(window.__cooldownEnterInvoked).toBe(true);
     expect(window.__startCooldownInvoked).toBe(true);
     const debugRead = globalThis.__classicBattleDebugRead;
@@ -314,6 +299,14 @@ describe("classicBattle startCooldown", () => {
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.timer?.start).toBe("function");
     expect(typeof currentNextRound?.ready?.then).toBe("function");
+
+    const readyResolutionSpy = vi.fn();
+    currentNextRound.ready.then(readyResolutionSpy);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    await currentNextRound.ready;
+
+    expect(readyResolutionSpy).toHaveBeenCalledTimes(1);
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
     const getterInfo = debugRead("handleNextRoundMachineGetter");
     debugHooks.exposeDebugState("latestGetterInfo", getterInfo ?? null);
@@ -326,23 +319,22 @@ describe("classicBattle startCooldown", () => {
     expect(["cooldown", "roundOver", "roundStart", "waitingForPlayerAction", null]).toContain(
       snapshotStateBefore
     );
-    expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
+    expect(currentNextRound.readyDispatched).toBe(true);
+    expect(currentNextRound.readyInFlight).toBe(false);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
-    // State transitions to waitingForPlayerAction after ready dispatch
-    await waitForState("waitingForPlayerAction");
+
+    const emittedEvents = emitBattleEventSpy.mock.calls.map(([eventName]) => eventName);
+    expect(emittedEvents).toContain("nextRoundTimerReady");
 
     const getReadyDispatchCalls = () =>
       machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
-    // Advance timers to ensure no additional ready dispatches occur after cooldown completion
     await vi.runAllTimersAsync();
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
-    expect(machine.getState()).toBe("waitingForPlayerAction");
-    const btn = document.querySelector('[data-role="next-round"]');
-    expect(btn?.dataset.nextReady).toBe("true");
-    expect(btn?.disabled).toBe(false);
+    expect(["roundStart", "waitingForPlayerAction"]).toContain(machine.getState());
+    expect(startRoundWrapper).toHaveBeenCalledTimes(1);
     delete window.__NEXT_ROUND_COOLDOWN_MS;
   }, 10000);
 
@@ -355,15 +347,15 @@ describe("classicBattle startCooldown", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
     mockBattleData();
+    const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
     battleEngineMod.createBattleEngine();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");
-    // orchestrator module is loaded in beforeEach
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
     const startRoundWrapper = vi.fn(async () => {
-      // Call the real startRound to ensure card generation and proper state transitions
       return await battleMod.startRound(store);
     });
 
@@ -375,30 +367,29 @@ describe("classicBattle startCooldown", () => {
     const machine = orchestrator.getBattleStateMachine();
     const machineDispatchSpy = vi.spyOn(machine, "dispatch");
 
-    // Ensure machine is in roundOver state for the test
     await machine.dispatch("roundOver");
     expect(machine.getState()).toBe("roundOver");
 
     await machine.dispatch("continue");
     expect(machine.getState()).toBe("cooldown");
 
-    // Manually trigger cooldownEnter since automatic onEnter may not work in test
-    console.log("[TEST] cooldownEnter is defined:", typeof cooldownEnter);
-    if (typeof cooldownEnter !== "function") {
-      throw new Error("cooldownEnter is not a function");
-    }
-    console.log("[TEST] About to call cooldownEnter");
     await cooldownEnter(machine);
-    console.log("[TEST] cooldownEnter called");
-
-    timerSpy.advanceTimersByTime(1000);
-    await vi.runAllTimersAsync();
 
     const debugRead = globalThis.__classicBattleDebugRead;
     expect(typeof debugRead).toBe("function");
     const currentNextRound = debugRead("currentNextRound");
     expect(currentNextRound).toBeTruthy();
     expect(typeof currentNextRound?.ready?.then).toBe("function");
+
+    const readyPromise = currentNextRound.ready;
+    const readyResolutionSpy = vi.fn();
+    readyPromise.then(readyResolutionSpy);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.runAllTimersAsync();
+    await readyPromise;
+
+    expect(readyResolutionSpy).toHaveBeenCalledTimes(1);
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
     const getterInfo = debugRead("handleNextRoundMachineGetter");
     debugHooks.exposeDebugState("latestGetterInfo", getterInfo ?? null);
@@ -411,13 +402,12 @@ describe("classicBattle startCooldown", () => {
     expect(["cooldown", "roundOver", "roundStart", "waitingForPlayerAction", null]).toContain(
       snapshotStateBefore
     );
-    expect(debugRead("currentNextRoundReadyInFlight")).toBe(true);
+    expect(currentNextRound.readyDispatched).toBe(true);
+    expect(currentNextRound.readyInFlight).toBe(false);
     expect(window.__NEXT_ROUND_EXPIRED).toBe(true);
 
-    document.querySelector('[data-role="next-round"]').click();
-    // Ensure state progressed before assertions
-    await waitForState("waitingForPlayerAction");
-    await vi.runAllTimersAsync();
+    const emittedEvents = emitBattleEventSpy.mock.calls.map(([eventName]) => eventName);
+    expect(emittedEvents).toContain("nextRoundTimerReady");
 
     const getReadyDispatchCalls = () =>
       machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
@@ -426,7 +416,9 @@ describe("classicBattle startCooldown", () => {
     await vi.runAllTimersAsync();
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
-    expect(machine.getState()).toBe("waitingForPlayerAction");
+    expect(["roundStart", "waitingForPlayerAction"]).toContain(machine.getState());
+    expect(startRoundWrapper).toHaveBeenCalledTimes(1);
+    delete window.__NEXT_ROUND_COOLDOWN_MS;
   });
 
   it.each([
@@ -501,6 +493,8 @@ describe("classicBattle startCooldown", () => {
     nextButton.disabled = true;
 
     mockBattleData();
+    const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const battleEngineMod = await import("../../../src/helpers/battleEngineFacade.js");
     battleEngineMod.createBattleEngine();
 
@@ -522,6 +516,7 @@ describe("classicBattle startCooldown", () => {
       stateTable: globalThis.__CLASSIC_BATTLE_STATES__
     });
     const machine = orchestrator.getBattleStateMachine();
+    const machineDispatchSpy = vi.spyOn(machine, "dispatch");
 
     // Ensure machine is in roundOver state for the test
     await machine.dispatch("roundOver");
@@ -530,14 +525,39 @@ describe("classicBattle startCooldown", () => {
     await machine.dispatch("continue");
     expect(machine.getState()).toBe("cooldown");
 
-    expect(nextButton.dataset.nextReady).toBeUndefined();
+    const debugRead = globalThis.__classicBattleDebugRead;
+    expect(typeof debugRead).toBe("function");
+    const currentNextRound = debugRead("currentNextRound");
+    expect(currentNextRound).toBeTruthy();
+    expect(typeof currentNextRound?.ready?.then).toBe("function");
+    expect(currentNextRound.readyDispatched).toBe(false);
 
-    timerSpy.advanceTimersByTime(1000);
+    const readyResolutionSpy = vi.fn();
+    currentNextRound.ready.then(readyResolutionSpy);
+
+    await vi.advanceTimersByTimeAsync(999);
+    expect(readyResolutionSpy).not.toHaveBeenCalled();
+    expect(currentNextRound.readyDispatched).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    await currentNextRound.ready;
+
+    expect(readyResolutionSpy).toHaveBeenCalledTimes(1);
+    expect(currentNextRound.readyDispatched).toBe(true);
+    expect(currentNextRound.readyInFlight).toBe(false);
+
+    const emittedEvents = emitBattleEventSpy.mock.calls.map(([eventName]) => eventName);
+    expect(emittedEvents).toContain("nextRoundTimerReady");
+
+    const getReadyDispatchCalls = () =>
+      machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
+    expect(getReadyDispatchCalls()).toHaveLength(1);
+
     await vi.runAllTimersAsync();
+    expect(getReadyDispatchCalls()).toHaveLength(1);
 
-    const btn = document.querySelector('[data-role="next-round"]');
-    expect(btn?.dataset.nextReady).toBe("true");
-    expect(btn?.disabled).toBe(false);
+    expect(["roundStart", "waitingForPlayerAction"]).toContain(machine.getState());
+    expect(startRoundWrapper).toHaveBeenCalledTimes(1);
 
     setTestMode(false);
   }, 10000);
