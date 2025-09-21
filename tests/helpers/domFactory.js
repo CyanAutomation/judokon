@@ -40,10 +40,10 @@ export function createSnackbar() {
   el.className = "snackbar";
   el.style.display = "none";
 
-  let lastMessage = "";
+  let _lastMessage = "";
 
   const show = (message) => {
-    lastMessage = message;
+    _lastMessage = message;
     el.textContent = message;
     el.style.display = "block";
   };
@@ -52,7 +52,12 @@ export function createSnackbar() {
     el.style.display = "none";
   };
 
-  return { element: el, show, hide, get lastMessage() { return lastMessage; } };
+  return { 
+    element: el, 
+    show, 
+    hide, 
+    get lastMessage() { return _lastMessage; } 
+  };
 }
 
 /**

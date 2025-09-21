@@ -385,3 +385,20 @@ Risks & mitigations: False positives could block legitimate stress tests — mak
 - **Item 3 Acceptance:** Spreadsheet of problem areas (above); prioritized list: migrate classicBattle/ tests first.
 
 Proceed to Phase 1 for items 1–3?
+
+## Phase 1 Completion: Item 1 (Improve shared test mocking utilities)
+
+**Actions Taken:**
+- Created `tests/helpers/domFactory.js` with factories: `createStatButton()`, `createSnackbar()`, `createScoreboard()`.
+- Added utilities: `attachEventSpy()`, `withMutedConsole()`.
+- Created comprehensive unit tests in `tests/helpers/domFactory.test.js` covering all helpers.
+- Ran unit tests: 10/10 passed.
+- Ran regression tests: `timerService.test.js` (8 tests passed), `scrollButtonState.test.js` (8 tests passed).
+- Ran Playwright test: `navigation.spec.js` (1 test passed).
+
+**Outcome:**
+- New helpers provide consistent DOM mocks with realistic behavior (disabled states, ARIA, event handling).
+- No regressions in existing DOM-heavy tests.
+- Acceptance criteria met: Helper exports documented, unit tests pass.
+
+**Next:** Proceed to Item 1 Phase 2 (migrate high-value tests) or move to another item?

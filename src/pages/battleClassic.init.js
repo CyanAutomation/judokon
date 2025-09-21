@@ -92,7 +92,7 @@ const OPPONENT_MESSAGE_BUFFER_MS = 150;
 const MIN_OPPONENT_MESSAGE_DURATION_MS =
   typeof window !== "undefined" && typeof window.__MIN_OPPONENT_MESSAGE_DURATION_MS === "number"
     ? window.__MIN_OPPONENT_MESSAGE_DURATION_MS
-    : 250;
+    : 600;
 
 const BASE_SELECTION_READY_DELAY_MS = Math.max(
   POST_SELECTION_READY_DELAY_MS,
