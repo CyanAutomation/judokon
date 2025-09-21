@@ -244,18 +244,18 @@ test.describe("Vector Search Page", () => {
     });
 
     test("search form prevents default submission", async ({ page }) => {
-      // Monitor for page navigation that would indicate form submission
-      let navigated = false;
-      page.on("framenavigated", () => {
-        navigated = true;
+      page.once("framenavigated", () => {
+        throw new Error("Form submitted");
       });
+
+      const initialUrl = page.url();
 
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
 
-      // Wait a bit and ensure no navigation occurred
-      await page.waitForTimeout(500);
-      expect(navigated).toBe(false);
+      await page.evaluate(() => window.vectorSearchResultsPromise);
+
+      await expect(page).toHaveURL(initialUrl);
     });
 
     test("search input handles keyboard submission", async ({ page }) => {
