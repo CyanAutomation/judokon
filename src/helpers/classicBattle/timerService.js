@@ -430,7 +430,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       onSkip: () => {
         setSkipHandler(null);
         emitBattleEvent("countdownFinished");
-        emitBattleEvent("round.start");
+        emitBattleEvent("round.start", { source: "next-button", via: "skip-hint" });
         skipHandled = true;
       }
     });
@@ -439,7 +439,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
     }
     if (!skipHandled) {
       emitBattleEvent("countdownFinished");
-      emitBattleEvent("round.start");
+      emitBattleEvent("round.start", { source: "next-button", via: "manual-click" });
     }
 
     const { timer = null, resolveReady = null } = controls || {};

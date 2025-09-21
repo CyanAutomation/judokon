@@ -129,7 +129,10 @@ describe("Classic Battle round timer", () => {
       expect(skipCallbackSpy).toHaveBeenCalledTimes(1);
       expect(emitSpy).toHaveBeenCalledTimes(2);
       expect(emitSpy).toHaveBeenNthCalledWith(1, "countdownFinished");
-      expect(emitSpy).toHaveBeenNthCalledWith(2, "round.start");
+      expect(emitSpy).toHaveBeenNthCalledWith(2, "round.start", {
+        source: "next-button",
+        via: "skip-hint"
+      });
       expect(readySpy).toHaveBeenCalledWith("ready");
       expect(resolveReady).toHaveBeenCalledTimes(1);
       expect(nextButton.disabled).toBe(true);

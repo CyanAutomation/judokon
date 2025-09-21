@@ -39,13 +39,19 @@ describe("Next button countdownFinished", () => {
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     expect(emitBattleEvent).toHaveBeenCalledTimes(2);
     expect(emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
-    expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start");
+    expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start", {
+      source: "next-button",
+      via: "manual-click"
+    });
   });
 
   it("emits countdownFinished when button missing", async () => {
     await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
     expect(emitBattleEvent).toHaveBeenCalledTimes(2);
     expect(emitBattleEvent).toHaveBeenNthCalledWith(1, "countdownFinished");
-    expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start");
+    expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "round.start", {
+      source: "next-button",
+      via: "manual-click"
+    });
   });
 });
