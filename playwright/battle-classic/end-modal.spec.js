@@ -1,29 +1,17 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
-import { waitForBattleState } from "../fixtures/waits.js";
 
-async function waitForTerminalState(page, stateName, timeout = 10000) {
-  try {
-    await waitForBattleState(page, stateName, timeout);
-  } catch (error) {
-    const resolved = await page
-      .evaluate(
-        async ({ targetState, ms }) => {
-          try {
-            const waitFn = window.__TEST_API?.state?.waitForBattleState;
-            if (typeof waitFn !== "function") return false;
-            return await waitFn(targetState, ms);
-          } catch {
-            return false;
-          }
-        },
-        { targetState: stateName, ms: timeout }
-      )
-      .catch(() => false);
-    if (!resolved) {
-      throw error;
-    }
-  }
+async function waitForScoreDisplay(page, timeout = 10000) {
+  await page.waitForFunction(
+    () => {
+      const scoreNode = document.getElementById("score-display");
+      if (!scoreNode) return false;
+      const text = scoreNode.textContent || "";
+      return /You:\s*\d/.test(text) && /Opponent:\s*\d/.test(text);
+    },
+    undefined,
+    { timeout }
+  );
 }
 
 test.describe("Classic Battle End Game Flow", () => {
@@ -142,6 +130,9 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
         await page.waitForFunction(() => !!window.battleStore);
 
+        const errors = [];
+        page.on("pageerror", (error) => errors.push(error));
+
         await page.evaluate(async () => {
           const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
           setPointsToWin(1);
@@ -150,23 +141,7 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.click("#round-select-2");
         await page.click("#stat-buttons button[data-stat]");
 
-        const errors = [];
-        page.on("pageerror", (error) => errors.push(error));
-
-        await page.waitForFunction(() => {
-          const scoreNode = document.getElementById("score-display");
-          if (!scoreNode) return false;
-          const text = scoreNode.textContent || "";
-          if (/You:\s*\d/.test(text) && /Opponent:\s*\d/.test(text)) {
-            try {
-              document.body.dataset.battleState = "roundDecision";
-            } catch {}
-            return true;
-          }
-          return false;
-        });
-
-        await waitForTerminalState(page, "roundDecision");
+        await waitForScoreDisplay(page);
         expect(errors.length).toBe(0);
 
         // Verify match completed successfully
@@ -256,6 +231,9 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
         await page.waitForFunction(() => !!window.battleStore);
 
+        const errors = [];
+        page.on("pageerror", (error) => errors.push(error));
+
         await page.evaluate(async () => {
           const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
           setPointsToWin(1);
@@ -264,23 +242,7 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.click("#round-select-2");
         await page.click("#stat-buttons button[data-stat]");
 
-        const errors = [];
-        page.on("pageerror", (error) => errors.push(error));
-
-        await page.waitForFunction(() => {
-          const scoreNode = document.getElementById("score-display");
-          if (!scoreNode) return false;
-          const text = scoreNode.textContent || "";
-          if (/You:\s*\d/.test(text) && /Opponent:\s*\d/.test(text)) {
-            try {
-              document.body.dataset.battleState = "roundDecision";
-            } catch {}
-            return true;
-          }
-          return false;
-        });
-
-        await waitForTerminalState(page, "roundDecision");
+        await waitForScoreDisplay(page);
         expect(errors.length).toBe(0);
 
         // Verify match completed without throwing errors
