@@ -8,8 +8,8 @@
  */
 
 import { vi } from "vitest";
-import { useCanonicalTimers } from "./setup/fakeTimers.js";
-import installRAFMock from "./rafMock.js";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
+import installRAFMock from "../setup/rafMock.js";
 
 /**
  * Configuration options for the integration harness
@@ -191,11 +191,13 @@ export function createIntegrationHarness(config = {}) {
  * Pre-configured harness for classic battle integration tests
  */
 export function createClassicBattleHarness(customConfig = {}) {
+  const { fixtures: customFixtures, mocks: customMocks, ...restConfig } = customConfig;
   return createIntegrationHarness({
+    ...restConfig,
     fixtures: {
       // Default fixtures for classic battle tests
       matchMedia: () => ({ matches: false, addListener: vi.fn(), removeListener: vi.fn() }),
-      ...customConfig.fixtures
+      ...customFixtures
     },
     mocks: {
       // Mock only true externalities, not internal modules
@@ -203,9 +205,8 @@ export function createClassicBattleHarness(customConfig = {}) {
         showSnackbar: vi.fn(),
         updateSnackbar: vi.fn()
       }),
-      ...customConfig.mocks
+      ...customMocks
     },
-    ...customConfig
   });
 }
 
@@ -213,14 +214,16 @@ export function createClassicBattleHarness(customConfig = {}) {
  * Pre-configured harness for settings page integration tests
  */
 export function createSettingsHarness(customConfig = {}) {
+  const { fixtures: customFixtures, mocks: customMocks, ...restConfig } = customConfig;
   return createIntegrationHarness({
+    ...restConfig,
     fixtures: {
       localStorage: {
         getItem: vi.fn(() => null),
         setItem: vi.fn(),
         removeItem: vi.fn()
       },
-      ...customConfig.fixtures
+      ...customFixtures
     },
     mocks: {
       // Mock tooltip system as external dependency
@@ -228,8 +231,7 @@ export function createSettingsHarness(customConfig = {}) {
         initTooltips: vi.fn().mockResolvedValue(vi.fn()),
         getTooltips: vi.fn()
       }),
-      ...customConfig.mocks
+      ...customMocks
     },
-    ...customConfig
   });
 }
