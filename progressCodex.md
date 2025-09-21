@@ -14,10 +14,15 @@ This document records the verification of the QA observations for `src/pages/bat
 
 - The CLI header keeps the legacy scoreboard (`#cli-round`, `#cli-score`) alongside the shared scoreboard nodes that are unhidden during `init()` (`src/pages/battleCLI/init.js:2339`).
 - Because both sets stay visible inside the flex header defined in the page markup (`src/pages/battleCLI.html:509`), users see “Round 0…” / “You: 0…” twice and layout alignment varies by viewport.
-- **Action**: Work on adapting the CLI template and styles to use the new scoreboard component while preserving the old CLI look through CSS. This involves          
+- **Action**: The scoreboard should use the standard scoreboard component, but styled specifically for the battleCLI page. The scoreboard component (as described         
+in design/productRequirementsDocuments/prdBattleScoreboard.md) is a standard component that is shared between all battle modes, and should be a standard      
+implementation. The only difference should be the visual styling. Therefore, there is work to adapt the CLI template and styles to use the new scoreboard component while preserving the old CLI look through CSS. This involves          
 restructuring the header markup, updating CSS classes like .cli-scoreboard, and ensuring ARIA and dataset attributes remain accessible. Also need to handle 
 scoreboard messages, timers, and events to fit CLI style without changing the shared scoreboard logic, likely by CSS overrides. Finally, check and update
-tests that refer to removed CLI-specific elements.
+tests that refer to removed CLI-specific elements. This includes: move scoreboard elements like round-message from main to header, aligning CLI and standard scoreboard designs. This means restructuring
+HTML to centralize scoreboard in header with CLI-specific styling, removing CLI duplicates, and updating CLI scripts to rely fully on scoreboard elements,    
+while ensuring existing functions and datasets remain compatible. And planning CSS tweaks for CLI look and checking scoreboard component expectations for
+element IDs and structure.     
 
 ### Issue #1 – Battle fails to start (**not reproduced**)
 

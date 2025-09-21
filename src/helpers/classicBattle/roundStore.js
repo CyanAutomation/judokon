@@ -12,6 +12,7 @@
  */
 
 import { emitBattleEvent } from "./battleEvents.js";
+import { isEnabled } from "../featureFlags.js";
 
 /**
  * @typedef {Object} RoundData
@@ -234,6 +235,52 @@ class RoundStore {
     this.readyDispatched = false;
     this.callbacks = {};
     this.transitionLog = [];
+  }
+
+  /**
+   * Wire RoundStore into scoreboard adapter when feature flag is enabled.
+   * This replaces event-driven round number updates with direct store subscriptions.
+   */
+  wireIntoScoreboardAdapter() {
+    if (!isEnabled("roundStore")) {
+      return; // Feature flag disabled, use legacy event system
+    }
+
+    // Import scoreboard adapter dynamically to avoid circular dependencies
+    import("../setupScoreboard.js")
+      .then(({ updateRoundCounter }) => {
+        // Subscribe to round number changes
+        this.onRoundNumberChange((newNumber) => {
+          try {
+            updateRoundCounter(newNumber);
+          } catch (error) {
+            console.warn("RoundStore: Failed to update round counter:", error);
+          }
+        });
+
+        // Set initial round number if already set
+        if (this.currentRound.number > 0) {
+          try {
+            updateRoundCounter(this.currentRound.number);
+          } catch (error) {
+            console.warn("RoundStore: Failed to set initial round counter:", error);
+          }
+        }
+      })
+      .catch((error) => {
+        console.warn("RoundStore: Failed to wire into scoreboard adapter:", error);
+      });
+  }
+
+  /**
+   * Disconnect RoundStore from scoreboard adapter.
+   * Removes the round number change callback that was set up for scoreboard integration.
+   */
+  disconnectFromScoreboardAdapter() {
+    // Only clear if there was actually a callback set
+    if (this.callbacks.onRoundNumberChange) {
+      this.callbacks.onRoundNumberChange = null;
+    }
   }
 }
 

@@ -125,6 +125,10 @@
     "opponentDelayMessage": {
       "label": "Opponent Delay Message",
       "description": "Show 'Opponent is choosing...' message to create realistic opponent thinking time."
+    },
+    "roundStore": {
+      "label": "Round Store (Experimental)",
+      "description": "Use centralized round state management for improved performance and debugging."
     }
   },
   "card": {

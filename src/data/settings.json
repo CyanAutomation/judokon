@@ -13,7 +13,8 @@
     "typewriterEffect": "settings.typewriterEffect",
     "tooltips": "settings.tooltips",
     "showCardOfTheDay": "settings.showCardOfTheDay",
-    "fullNavigationMap": "settings.fullNavigationMap"
+    "fullNavigationMap": "settings.fullNavigationMap",
+    "roundStore": "settings.roundStore"
   },
   "gameModes": {},
   "featureFlags": {
@@ -68,6 +69,10 @@
     "opponentDelayMessage": {
       "enabled": true,
       "tooltipId": "settings.opponentDelayMessage"
+    },
+    "roundStore": {
+      "enabled": false,
+      "tooltipId": "settings.roundStore"
     }
   }
 }
