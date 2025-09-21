@@ -9,7 +9,7 @@
 
 import { vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
-import installRAFMock from "../setup/rafMock.js";
+import installRAFMock from "./rafMock.js";
 
 /**
  * Configuration options for the integration harness
@@ -201,7 +201,7 @@ export function createClassicBattleHarness(customConfig = {}) {
     },
     mocks: {
       // Mock only true externalities, not internal modules
-      "../../src/helpers/showSnackbar.js": () => ({
+      "../../../src/helpers/showSnackbar.js": () => ({
         showSnackbar: vi.fn(),
         updateSnackbar: vi.fn()
       }),

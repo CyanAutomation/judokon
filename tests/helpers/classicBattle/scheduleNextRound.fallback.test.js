@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
-import { createClassicBattleHarness } from "../../integrationHarness.js";
+import { createClassicBattleHarness } from "../integrationHarness.js";
 
 const READY_EVENT = "ready";
 
@@ -104,7 +104,7 @@ describe("startCooldown fallback timer", () => {
 
   it("resolves ready after fallback timer and enables button", async () => {
     const { startCooldown } = await harness.importModule(
-      "../../../src/helpers/classicBattle/roundManager.js"
+      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
     );
     const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;
@@ -163,7 +163,7 @@ describe("startCooldown ready dispatch discipline", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
     const { startCooldown } = await harness.importModule(
-      "../../../src/helpers/classicBattle/roundManager.js"
+      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
@@ -180,7 +180,7 @@ describe("startCooldown ready dispatch discipline", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
 
     const { startCooldown } = await harness.importModule(
-      "../../../src/helpers/classicBattle/roundManager.js"
+      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
@@ -198,6 +198,7 @@ describe("startCooldown ready dispatch discipline", () => {
 
 describe("handleNextRoundExpiration immediate readiness", () => {
   let harness;
+  let scheduler;
   /** @type {import('vitest').Mock} */
   let dispatchSpy;
 
@@ -215,7 +216,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     });
 
     await harness.setup();
-    expiredHandler = undefined;
+    scheduler = createMockScheduler();
     dispatchSpy = undefined;
     document.body.innerHTML = "";
     createTimerNodes();
@@ -231,7 +232,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
     const { startCooldown } = await harness.importModule(
-      "../../../src/helpers/classicBattle/roundManager.js"
+      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler);
     expect(controls).toBeTruthy();
@@ -248,7 +249,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
     const { startCooldown } = await harness.importModule(
-      "../../../src/helpers/classicBattle/roundManager.js"
+      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
     );
     const controls = startCooldown({}, scheduler);
     expect(controls).toBeTruthy();
@@ -296,7 +297,7 @@ describe("bus propagation and deduplication", () => {
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
     const { startCooldown } = await harness.importModule(
-      "../../../src/helpers/classicBattle/roundManager.js"
+      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
     );
     controls = startCooldown({}, createMockScheduler(), {
       dispatchReadyViaBus: dispatchReadyViaBusSpy
@@ -309,303 +310,6 @@ describe("bus propagation and deduplication", () => {
 
   afterEach(() => {
     harness.cleanup();
-  });
-
-  it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
-    expect(controls).toBeTruthy();
-    expect(typeof runtime?.onExpired).toBe("function");
-    dispatchReadyViaBusSpy?.mockClear();
-    await runtime.onExpired();
-    expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
-    expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
-    expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
-    expect(machine.dispatch).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
-  });
-
-  it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
-    expect(controls).toBeTruthy();
-    expect(typeof runtime?.onExpired).toBe("function");
-    dispatchReadyViaBusSpy?.mockClear();
-    globalDispatchSpy.mockClear();
-    machine.dispatch.mockClear();
-    dispatchReadyViaBusSpy?.mockImplementation(createBusPropagationMock(globalDispatchSpy));
-    globalDispatchSpy.mockImplementationOnce(() => false);
-    globalDispatchSpy.mockImplementation(() => true);
-    await runtime.onExpired();
-    expect(globalDispatchSpy).toHaveBeenCalledTimes(2);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
-    expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ alreadyDispatched: false })
-    );
-    expect(machine.dispatch).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
-  });
-});
-
-describe("handleNextRoundExpiration immediate readiness", () => {
-  let expiredHandler;
-  /** @type {import('vitest').Mock} */
-  let dispatchSpy;
-
-  beforeEach(() => {
-    vi.useFakeTimers();
-    expiredHandler = undefined;
-    dispatchSpy = undefined;
-    document.body.innerHTML = "";
-    createTimerNodes();
-    vi.resetModules();
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
-      clearTimer: vi.fn(),
-      showMessage: vi.fn(),
-      showAutoSelect: vi.fn(),
-      showTemporaryMessage: vi.fn(() => () => {}),
-      updateTimer: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
-      updateDebugPanel: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => {
-      dispatchSpy = vi.fn();
-      return {
-        dispatchBattleEvent: dispatchSpy,
-        resetDispatchHistory: vi.fn()
-      };
-    });
-    vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
-      setSkipHandler: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn(),
-      emitBattleEvent: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
-      computeNextRoundCooldown: () => 0
-    }));
-    vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
-      attachCooldownRenderer: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/timers/createRoundTimer.js", () => ({
-      createRoundTimer: () => ({
-        on: vi.fn((event, handler) => {
-          if (event === "expired") expiredHandler = handler;
-        }),
-        off: vi.fn(),
-        start: vi.fn(),
-        stop: vi.fn()
-      })
-    }));
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.restoreAllMocks();
-  });
-
-  it("dispatches ready when state already progressed past cooldown", async () => {
-    const { __setStateSnapshot } = await import(
-      "../../../src/helpers/classicBattle/battleDebug.js"
-    );
-    __setStateSnapshot({ state: "cooldown" });
-    const scheduler = {
-      setTimeout: vi.fn((fn, ms) => setTimeout(fn, ms)),
-      clearTimeout: vi.fn((id) => clearTimeout(id))
-    };
-    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
-    const controls = startCooldown({}, scheduler);
-    expect(typeof expiredHandler).toBe("function");
-    // Simulate orchestrator advancing before fallback fires.
-    __setStateSnapshot({ state: "waitingForPlayerAction" });
-    await expiredHandler();
-    await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
-    await vi.runAllTimersAsync();
-  });
-
-  it("falls back to machine dispatch when event dispatcher reports no machine", async () => {
-    const { __setStateSnapshot } = await import(
-      "../../../src/helpers/classicBattle/battleDebug.js"
-    );
-    const debugHooks = await import("../../../src/helpers/classicBattle/debugHooks.js");
-    const machine = { dispatch: vi.fn() };
-    __setStateSnapshot({ state: "cooldown" });
-    debugHooks.exposeDebugState("getClassicBattleMachine", () => machine);
-    const scheduler = {
-      setTimeout: vi.fn((fn, ms) => setTimeout(fn, ms)),
-      clearTimeout: vi.fn((id) => clearTimeout(id))
-    };
-    const originalGlobalRead =
-      typeof globalThis !== "undefined" ? globalThis.__classicBattleDebugRead : undefined;
-    try {
-      if (typeof globalThis !== "undefined") {
-        globalThis.__classicBattleDebugRead = (key) => {
-          if (key === "getClassicBattleMachine") {
-            return () => machine;
-          }
-          return typeof originalGlobalRead === "function"
-            ? originalGlobalRead(key)
-            : originalGlobalRead;
-        };
-      }
-      const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
-      dispatchSpy.mockImplementation(() => {
-        debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
-        return false;
-      });
-      const controls = startCooldown({}, scheduler);
-      expect(typeof expiredHandler).toBe("function");
-      await expiredHandler();
-      await controls.ready;
-      expect(machine.dispatch).toHaveBeenCalledWith("ready");
-      await vi.runAllTimersAsync();
-    } finally {
-      if (typeof globalThis !== "undefined") {
-        globalThis.__classicBattleDebugRead = originalGlobalRead;
-      }
-      debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
-    }
-  });
-});
-
-describe("handleNextRoundExpiration orchestrated propagation", () => {
-  /** @type {import('vitest').Mock | undefined} */
-  let dispatchReadyViaBusSpy;
-  /** @type {import('vitest').Mock | undefined} */
-  let globalDispatchSpy;
-  /** @type {any} */
-  let controls;
-  let runtime;
-  let machine;
-  let scoreboardMock;
-  let eventBus;
-
-  beforeEach(async () => {
-    document.body.innerHTML = '<button id="next-button" data-role="next-round"></button>';
-    vi.resetModules();
-    dispatchReadyViaBusSpy = vi.fn(async () => true);
-    globalDispatchSpy = vi.fn(async () => true);
-    machine = { dispatch: vi.fn(() => true), getState: () => "cooldown" };
-    scoreboardMock = {
-      clearTimer: vi.fn(),
-      showMessage: vi.fn(),
-      showAutoSelect: vi.fn(),
-      showTemporaryMessage: vi.fn(() => () => {}),
-      updateTimer: vi.fn()
-    };
-    const handlers = new Map();
-    eventBus = {
-      emit: vi.fn((type, detail) => {
-        const listeners = handlers.get(type);
-        if (!listeners) return;
-        for (const listener of listeners) {
-          listener(detail);
-        }
-      }),
-      on: vi.fn((type, listener) => {
-        if (!handlers.has(type)) {
-          handlers.set(type, new Set());
-        }
-        handlers.get(type)?.add(listener);
-      }),
-      off: vi.fn((type, listener) => {
-        handlers.get(type)?.delete(listener);
-      })
-    };
-
-    vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
-      dispatchBattleEvent: globalDispatchSpy,
-      resetDispatchHistory: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
-      setSkipHandler: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
-      onBattleEvent: vi.fn(),
-      offBattleEvent: vi.fn(),
-      emitBattleEvent: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/debugHooks.js", () => ({
-      readDebugState: vi.fn(() => undefined),
-      exposeDebugState: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/preloadService.js", () => ({
-      getDebugPanelLazy: vi.fn(async () => ({ updateDebugPanel: vi.fn() }))
-    }));
-    vi.doMock("../../../src/helpers/setupScoreboard.js", () => scoreboardMock);
-    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/CooldownRenderer.js", () => ({
-      attachCooldownRenderer: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
-      computeNextRoundCooldown: () => 0
-    }));
-    vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
-      requireEngine: () => ({ startCoolDown: vi.fn() }),
-      startCoolDown: vi.fn(),
-      startRound: vi.fn(),
-      getScores: vi.fn(() => ({})),
-      createBattleEngine: vi.fn(),
-      stopTimer: vi.fn(),
-      STATS: []
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/nextRound/expirationHandlers.js", async () => {
-      const actual = await vi.importActual(
-        "../../../src/helpers/classicBattle/nextRound/expirationHandlers.js"
-      );
-      return {
-        ...actual,
-        dispatchReadyViaBus: vi.fn(async (options = {}) => {
-          const result = await dispatchReadyViaBusSpy?.(options);
-          return result ?? true;
-        })
-      };
-    });
-    vi.doMock("../../../src/helpers/classicBattle/cooldownOrchestrator.js", async () => {
-      const actual = await vi.importActual(
-        "../../../src/helpers/classicBattle/cooldownOrchestrator.js"
-      );
-      return {
-        ...actual,
-        createExpirationDispatcher: vi.fn((params) => {
-          runtime = params.runtime;
-          return actual.createExpirationDispatcher(params);
-        })
-      };
-    });
-
-    const { startCooldown } = await import("../../../src/helpers/classicBattle/roundManager.js");
-    controls = startCooldown({}, null, {
-      createRoundTimer: () => ({
-        on: vi.fn(),
-        start: vi.fn(),
-        stop: vi.fn()
-      }),
-      eventBus,
-      markReady: vi.fn(),
-      isOrchestrated: () => true,
-      getClassicBattleMachine: () => machine,
-      getStateSnapshot: () => ({ state: "cooldown" }),
-      scoreboard: scoreboardMock,
-      showSnackbar: vi.fn(),
-      setSkipHandler: vi.fn(),
-      updateDebugPanel: vi.fn()
-    });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
