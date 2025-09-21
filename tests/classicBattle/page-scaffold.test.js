@@ -213,11 +213,19 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
     window.__statControls?.enable?.();
   });
 
+  const handleReplay = vi.fn(async (store) => {
+    store.selectionMade = false;
+    store.playerChoice = null;
+    await startRound(store);
+    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+    emitBattleEvent("roundStarted", { store, roundNumber: engineMock.roundsPlayed + 1 });
+  });
+
   return {
     createBattleStore,
     startCooldown,
     startRound,
-    handleReplay: vi.fn(),
+    handleReplay,
     isOrchestrated: vi.fn(() => false)
   };
 });
@@ -915,7 +923,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(nextButton?.getAttribute("data-role")).toBe("next-round");
   });
 
-  test("replay preserves opponent stats for immediate selection", async () => {
+  test("replay draws fresh stats for immediate selection", async () => {
     window.__FF_OVERRIDES = { battleStateBadge: true, showRoundSelectModal: true };
     const { init } = await import("../../src/pages/battleClassic.init.js");
     await init();
@@ -925,12 +933,12 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     const store = window.battleStore;
     expect(store).toBeTruthy();
 
-    const fallbackPlayerStats = { Power: 91, Speed: 82, Skill: 73 };
-    const fallbackOpponentStats = { Power: 64, Speed: 55, Skill: 46 };
-    store.lastPlayerStats = { ...fallbackPlayerStats };
-    store.lastOpponentStats = { ...fallbackOpponentStats };
-    store.currentPlayerJudoka = { stats: { ...fallbackPlayerStats } };
-    store.currentOpponentJudoka = { stats: { ...fallbackOpponentStats } };
+    const previousPlayerStats = { Power: 91, Speed: 82, Skill: 73 };
+    const previousOpponentStats = { Power: 64, Speed: 55, Skill: 46 };
+    store.lastPlayerStats = { ...previousPlayerStats };
+    store.lastOpponentStats = { ...previousOpponentStats };
+    store.currentPlayerJudoka = { stats: { ...previousPlayerStats } };
+    store.currentOpponentJudoka = { stats: { ...previousOpponentStats } };
 
     const replayBtn = document.getElementById("replay-button");
     expect(replayBtn).toBeTruthy();
@@ -954,8 +962,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(lastCall).toBeTruthy();
     const statKey = statButton?.dataset.stat ?? "";
     expect(statKey).toBeTruthy();
-    expect(lastCall?.[2]?.playerVal).toBe(fallbackPlayerStats[statKey]);
-    expect(lastCall?.[2]?.opponentVal).toBe(fallbackOpponentStats[statKey]);
+    expect(lastCall?.[2]?.playerVal).toBe(12);
+    expect(lastCall?.[2]?.opponentVal).toBe(5);
+    expect(lastCall?.[2]?.playerVal).not.toBe(previousPlayerStats[statKey]);
+    expect(lastCall?.[2]?.opponentVal).not.toBe(previousOpponentStats[statKey]);
   });
 
   test("respects battle state badge feature flag overrides", async () => {

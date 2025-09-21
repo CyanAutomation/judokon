@@ -2,7 +2,8 @@ import { createCountdownTimer, getDefaultTimer } from "../helpers/timerUtils.js"
 import {
   createBattleStore,
   startCooldown,
-  startRound
+  startRound,
+  handleReplay
 } from "../helpers/classicBattle/roundManager.js";
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 // Removed duplicate import of handleStatSelection
@@ -1064,44 +1065,6 @@ async function beginSelectionTimer(store) {
  * @param {ReturnType<typeof createBattleStore>} store - Battle state store.
  * @returns {Promise<void>}
  */
-async function handleReplay(store) {
-  try {
-    // Reset engine state
-    const { createBattleEngine } = await import("../helpers/battleEngineFacade.js");
-    createBattleEngine({ forceCreate: true });
-
-    try {
-      bridgeEngineEvents();
-    } catch (err) {
-      console.debug("battleClassic: bridgeEngineEvents failed", err);
-    }
-
-    // Reset store state
-    store.selectionMade = false;
-    store.playerChoice = null;
-
-    resetRoundCounterTracking();
-
-    try {
-      updateRoundCounter(1);
-    } catch (err) {
-      console.debug("battleClassic: reset round counter after replay failed", err);
-    }
-
-    // Clear any pending timers
-    if (store.statTimeoutId) {
-      clearTimeout(store.statTimeoutId);
-      store.statTimeoutId = null;
-    }
-    if (store.autoSelectId) {
-      clearTimeout(store.autoSelectId);
-      store.autoSelectId = null;
-    }
-  } catch (err) {
-    console.debug("battleClassic: handleReplay failed", err);
-  }
-}
-
 /**
  * Start a round cycle: update counter, draw UI, run timer.
  *
@@ -1365,32 +1328,43 @@ async function init() {
       const replayBtn = document.getElementById("replay-button");
       if (replayBtn)
         replayBtn.addEventListener("click", async () => {
+          // Stop any active selection timers and pending fallbacks
           try {
-            // Stop any active selection timers and pending fallbacks
-            try {
-              stopActiveSelectionTimer();
-            } catch {}
-            // Clear any in-flight start cycle to avoid duplicate starts after replay
-            isStartingRoundCycle = false;
+            stopActiveSelectionTimer();
+          } catch {}
+          // Clear any in-flight start cycle to avoid duplicate starts after replay
+          isStartingRoundCycle = false;
+          resetRoundCounterTracking();
+
+          // Cancel pending auto-select timers so the fresh match starts cleanly
+          try {
+            if (store.statTimeoutId) {
+              clearTimeout(store.statTimeoutId);
+              store.statTimeoutId = null;
+            }
+            if (store.autoSelectId) {
+              clearTimeout(store.autoSelectId);
+              store.autoSelectId = null;
+            }
+          } catch (err) {
+            console.debug("battleClassic: clearing replay timeouts failed", err);
+          }
+
+          try {
             await handleReplay(store);
           } catch (err) {
             console.debug("battleClassic: handleReplay failed", err);
           }
+
           try {
             updateScore(0, 0);
             updateRoundCounter(1);
 
-            // Reset fallback scores for tests
+            // Reset fallback scores for tests so DOM mirrors engine state
             const { resetFallbackScores } = await import("../helpers/api/battleUI.js");
             resetFallbackScores();
           } catch (err) {
             console.debug("battleClassic: resetting score after replay failed", err);
-          }
-
-          try {
-            await startRoundCycle(store, { skipStartRound: true });
-          } catch (err) {
-            console.debug("battleClassic: startRoundCycle after replay failed", err);
           }
         });
     } catch (err) {
