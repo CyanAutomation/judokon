@@ -81,30 +81,9 @@ function computeSelectionReadyDelay() {
 const COOLDOWN_FLAG = "__uiCooldownStarted";
 
 function resolveStatValues(store, stat) {
-  const playerStats = store?.currentPlayerJudoka?.stats;
-  const opponentStats = store?.currentOpponentJudoka?.stats;
-
-  const playerStoreValue = Number(playerStats?.[stat]);
-  const opponentStoreValue = Number(opponentStats?.[stat]);
-
-  let playerVal = playerStoreValue;
-  let opponentVal = opponentStoreValue;
-
-  const needsPlayerFallback = !Number.isFinite(playerVal);
-  const needsOpponentFallback = !Number.isFinite(opponentVal);
-
-  if (needsPlayerFallback || needsOpponentFallback) {
-    const fallback = getPlayerAndOpponentValues(stat, playerVal, opponentVal, { store });
-    if (needsPlayerFallback) playerVal = Number(fallback.playerVal);
-    if (needsOpponentFallback) opponentVal = Number(fallback.opponentVal);
-  }
-
-  if (!Number.isFinite(playerVal) && Number.isFinite(playerStoreValue)) {
-    playerVal = playerStoreValue;
-  }
-  if (!Number.isFinite(opponentVal) && Number.isFinite(opponentStoreValue)) {
-    opponentVal = opponentStoreValue;
-  }
+  const { playerVal, opponentVal } = getPlayerAndOpponentValues(stat, undefined, undefined, {
+    store
+  });
 
   return {
     playerVal: Number.isFinite(playerVal) ? playerVal : 0,
