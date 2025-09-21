@@ -61,6 +61,8 @@ grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded wa
 
 **Test Helpers Documentation:** See [tests/helpers/README.md](./tests/helpers/README.md) for shared utilities and best practices for writing reliable unit tests.
 
+**Component Factory Documentation:** See [tests/helpers/components/README.md](./tests/helpers/components/README.md) for standardized component factories that provide realistic mock implementations for testing high-traffic UI components.
+
 - Confirm that any new or modified functions include JSDoc with an `@pseudocode` block so documentation stays complete.
 - Playwright tests clear localStorage at startup. If a manual run fails unexpectedly, clear it in your browser and ensure [http://localhost:5000](http://localhost:5000) is served (start it with `npm start`).
 - Use `src/helpers/storage.js` for persistent data access instead of direct `localStorage` calls.

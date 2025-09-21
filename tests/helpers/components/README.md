@@ -120,51 +120,227 @@ export function createCard(content, options = {}) {
 }
 ```
 
-## Implementation Guidelines
+## Usage Examples
 
-### File Structure
-
-```
-tests/helpers/components/
-├── index.js              # Re-exports all factories
-├── Modal.js              # Modal factory
-├── Scoreboard.js         # Scoreboard factory
-├── StatsPanel.js         # StatsPanel factory
-├── Button.js             # Button factory
-├── Card.js               # Card factory
-└── README.md             # Usage documentation
-```
-
-### Testing Requirements
-
-Each factory must have:
-
-- Unit tests verifying DOM structure matches real component
-- Tests for all public methods and properties
-- Tests for observable hooks and spies
-- Integration tests showing usage in actual test scenarios
-
-### Migration Path
-
-Factories should be designed to replace existing inline DOM creation patterns:
+### Modal Usage Example
 
 ```javascript
-// Before: Inline DOM creation
-const btn = document.createElement("button");
-btn.textContent = "Click me";
-btn.addEventListener("click", handler);
+import { createModal } from "./Modal.js";
 
-// After: Factory usage
-const { element: btn, onClick } = createButton("Click me");
-btn.addEventListener("click", handler);
-// or use the spy: expect(onClick).toHaveBeenCalled()
+describe("Modal interactions", () => {
+  it("opens and closes with focus management", () => {
+    const content = document.createElement("div");
+    content.innerHTML = "<p>Modal content</p>";
+    
+    const modal = createModal(content);
+    document.body.appendChild(modal.element);
+    
+    const trigger = document.createElement("button");
+    document.body.appendChild(trigger);
+    
+    // Open modal
+    modal.open(trigger);
+    expect(modal.isOpen).toBe(true);
+    expect(modal.onOpen).toHaveBeenCalledWith(trigger);
+    
+    // Close modal
+    modal.close();
+    expect(modal.isOpen).toBe(false);
+    expect(modal.onClose).toHaveBeenCalled();
+    
+    modal.destroy();
+  });
+});
 ```
 
-## Acceptance Criteria
+### Scoreboard Usage Example
 
-- [ ] API contract document reviewed and approved
-- [ ] All target components have factory implementations
-- [ ] Factories include comprehensive unit tests
-- [ ] Factories provide observable hooks for testing
-- [ ] Factories match real component DOM structure and behavior
-- [ ] Documentation includes usage examples and migration guide
+```javascript
+import { createScoreboard } from "./Scoreboard.js";
+
+describe("Scoreboard updates", () => {
+  it("updates score and timer", () => {
+    const scoreboard = createScoreboard();
+    document.body.appendChild(scoreboard.element);
+    
+    // Update score
+    scoreboard.updateScore({ player: 10, opponent: 5 });
+    expect(scoreboard.getScore()).toEqual({ player: 10, opponent: 5 });
+    
+    // Update timer
+    scoreboard.updateTimer(30);
+    expect(scoreboard.getTimer()).toBe(30);
+    
+    // Update message
+    scoreboard.updateMessage("Round 2 starting...");
+    expect(scoreboard.getMessage()).toBe("Round 2 starting...");
+  });
+});
+```
+
+### StatsPanel Usage Example
+
+```javascript
+import { createStatsPanel } from "./StatsPanel.js";
+
+describe("StatsPanel loading", () => {
+  it("loads and displays stats", async () => {
+    const mockStats = {
+      strength: 85,
+      speed: 90,
+      technique: 75
+    };
+    
+    const panel = await createStatsPanel(mockStats);
+    document.body.appendChild(panel.element);
+    
+    // Verify stats loaded
+    expect(panel.getStatValue("strength")).toBe(85);
+    expect(panel.getStatValue("speed")).toBe(90);
+    
+    // Update stats
+    panel.update({ strength: 88, speed: 92 });
+    expect(panel.onUpdate).toHaveBeenCalledWith({ strength: 88, speed: 92 });
+  });
+});
+```
+
+### Button Usage Example
+
+```javascript
+import { createButton } from "./Button.js";
+
+describe("Button interactions", () => {
+  it("handles clicks and state changes", () => {
+    const button = createButton("Click me", { id: "test-btn" });
+    document.body.appendChild(button.element);
+    
+    // Test programmatic click
+    button.click();
+    expect(button.onClick).toHaveBeenCalled();
+    
+    // Test text update
+    button.setText("New text");
+    expect(button.element.textContent).toBe("New text");
+    
+    // Test disabled state
+    button.setDisabled(true);
+    expect(button.element.disabled).toBe(true);
+  });
+  
+  it("supports icons", () => {
+    const iconSvg = '<svg><circle cx="10" cy="10" r="5"/></svg>';
+    const button = createButton("With Icon", { icon: iconSvg });
+    
+    expect(button.element.querySelector("svg")).toBeTruthy();
+    expect(button.element.querySelector(".button-label").textContent).toBe("With Icon");
+  });
+});
+```
+
+### Card Usage Example
+
+```javascript
+import { createCard } from "./Card.js";
+
+describe("Card content", () => {
+  it("handles different content types", () => {
+    // Text content
+    const textCard = createCard("Simple text content");
+    expect(textCard.element.textContent).toBe("Simple text content");
+    
+    // HTML content
+    const htmlCard = createCard("<strong>HTML content</strong>", { 
+      allowHtml: true 
+    });
+    expect(htmlCard.element.querySelector("strong")).toBeTruthy();
+    
+    // DOM node content
+    const div = document.createElement("div");
+    div.textContent = "DOM content";
+    const domCard = createCard(div);
+    expect(domCard.element.contains(div)).toBe(true);
+  });
+  
+  it("supports click handling", () => {
+    const clickableCard = createCard("Clickable", { clickable: true });
+    
+    clickableCard.element.click();
+    expect(clickableCard.onClick).toHaveBeenCalled();
+  });
+});
+```
+
+## Migration Guide
+
+### From Inline DOM Creation
+
+Replace repetitive DOM creation patterns:
+
+```javascript
+// Before: Manual button creation
+const btn = document.createElement("button");
+btn.textContent = "Save";
+btn.id = "save-btn";
+btn.addEventListener("click", handleSave);
+container.appendChild(btn);
+
+// After: Factory usage
+const { element: btn, onClick } = createButton("Save", { id: "save-btn" });
+btn.addEventListener("click", handleSave);
+container.appendChild(btn);
+// Or use spy: expect(onClick).toHaveBeenCalled()
+```
+
+### From Basic DOM Factories
+
+Upgrade from `domFactory.js` helpers to component-specific factories:
+
+```javascript
+// Before: Basic button
+const btn = createButton({ text: "Save" });
+
+// After: Component button with full API
+const { element: btn, onClick, setDisabled } = createButton("Save");
+setDisabled(true); // Additional control
+expect(onClick).toHaveBeenCalled(); // Better assertions
+```
+
+### Testing Patterns
+
+Factories enable better testing patterns:
+
+```javascript
+// Observable hooks for assertions
+const modal = createModal(content);
+modal.open(trigger);
+expect(modal.onOpen).toHaveBeenCalledWith(trigger);
+
+// State verification
+const scoreboard = createScoreboard();
+scoreboard.updateScore({ player: 10 });
+expect(scoreboard.getScore().player).toBe(10);
+
+// Event verification
+const button = createButton("Click me");
+button.element.click();
+expect(button.onClick).toHaveBeenCalled();
+```
+
+## Best Practices
+
+- **Use factories for complex components**: Reserve inline DOM creation for simple, one-off elements
+- **Leverage observable hooks**: Use spies for event verification instead of manual event listeners
+- **Test realistic scenarios**: Factories provide behavior matching real components
+- **Combine with existing helpers**: Use factories alongside `domFactory.js` and `rafMock.js`
+- **Document new patterns**: Add examples to this README when creating new factories
+
+## Contributing
+
+When adding new component factories:
+
+1. Follow the API contract pattern: `{ element, ...methods, ...spies }`
+2. Include comprehensive unit tests
+3. Add usage examples to this README
+4. Update the index.js re-exports
+5. Ensure realistic behavior matching the real component

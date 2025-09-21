@@ -70,7 +70,7 @@ Classic Battle’s core loop is now functional: rounds render correctly, timers 
 
 ## 4. Opportunities for Improvement
 
-- **Drop dynamic imports in hot paths:** `ensureScoreboardReflectsResult` and the replay reset block should reuse the static scoreboard/API imports already loaded at module scope (`src/pages/battleClassic.init.js:409`, `src/pages/battleClassic.init.js:1416`).
+- **Drop dynamic imports in hot paths:** Completed by wiring `ensureScoreboardReflectsResult` to the module-scope `updateScore` import and statically importing `resetFallbackScores` for the replay reset path (`src/pages/battleClassic.init.js:410`, `src/pages/battleClassic.init.js:1416`). Tests: `npx vitest run tests/classicBattle/resolution.test.js` ✅, `npx playwright test playwright/battle-classic/replay.spec.js` ✅ (port 5000 approval required).
 - **Remove fake scoreboard prefill:** The pre-selection branch that force-sets `You: 1` risks incorrect UI state when the player has zero wins; rely on live engine scores instead (`src/pages/battleClassic.init.js:387`).
 - **Add coverage for scoreboard reconciliation:** Extend `tests/classicBattle/resolution.test.js` (or a new spec) to assert that scoreboard text transitions directly from the engine scores without interim artifacts when a round begins.
 - **Surface difficulty selection in tests:** Once the UI lands, mirror it in the Vitest harness so `tests/helpers/classicBattle/difficulty.test.js` exercises the end-to-end flow rather than pure helper calls.
