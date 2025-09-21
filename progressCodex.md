@@ -36,13 +36,16 @@ Pending your review before starting Phase 3.
 
 ## Phase 3 – Card Rendering & Scoreboard Sync (2025-09-20)
 
-- **Action:** Routed every round cycle through `startRound()` before wiring stat buttons/timers, added a `roundStarted` listener for replay flows, and restored replay bootstrap so already-drawn cards aren't recreated. (`src/pages/battleClassic.init.js`)
-- **Outcome:** Player/opponent cards now draw at the start of each round and the scoreboard advances consistently after subsequent selections (addresses QA items #2 and #4).
+- **Action:**
+  - Swapped the local replay reset for `handleReplay` from `roundManager` and cleared pending timers so the replay flow reuses the engine-driven `startRound()` path (`src/pages/battleClassic.init.js`).
+  - Added a shared opponent prompt tracker (`src/helpers/classicBattle/opponentPromptTracker.js`) and timestamps from `uiEventHandlers` so the "Opponent is choosing" snackbar survives until cooldown begins; raised the minimum display window to 600 ms.
+  - Updated `page-scaffold` Vitest mocks to emit `roundStarted` during replay and to expect freshly generated stats on the first post-replay selection.
+- **Outcome:** Replay now redraws player/opponent cards and keeps the scoreboard in sync via engine events, but Playwright still reports premature countdown messaging in several opponent-reveal scenarios that need follow-up.
 - **Validation:**
-  - `npx vitest run tests/classicBattle/page-scaffold.test.js`
-  - `npx vitest run tests/classicBattle/bootstrap.test.js`
-  - `npx playwright test battle-classic/stat-selection.spec.js`
-  - `npx playwright test battle-classic/opponent-reveal.spec.js`
+  - ✅ `npx vitest run tests/classicBattle/page-scaffold.test.js`
+  - ✅ `npx vitest run tests/classicBattle/bootstrap.test.js`
+  - ⚠️ `npx playwright test battle-classic/stat-selection.spec.js battle-classic/opponent-reveal.spec.js`
+    - Failures: opponent reveal flow expectations (`opponent reveal integrates with battle flow`, `handles very short opponent delays gracefully`, `opponent reveal cleans up properly on match end`) where the countdown message still replaces the opponent prompt too early.
 
 Pending your review before starting Phase 4.
 

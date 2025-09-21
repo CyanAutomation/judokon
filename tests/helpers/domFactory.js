@@ -52,11 +52,13 @@ export function createSnackbar() {
     el.style.display = "none";
   };
 
-  return { 
-    element: el, 
-    show, 
-    hide, 
-    get lastMessage() { return _lastMessage; } 
+  return {
+    element: el,
+    show,
+    hide,
+    get lastMessage() {
+      return _lastMessage;
+    }
   };
 }
 

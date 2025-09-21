@@ -97,8 +97,12 @@ describe("domFactory", () => {
       const originalWarn = console.warn;
       const originalError = console.error;
 
-      console.warn = () => { warnCalled = true; };
-      console.error = () => { errorCalled = true; };
+      console.warn = () => {
+        warnCalled = true;
+      };
+      console.error = () => {
+        errorCalled = true;
+      };
 
       await withMutedConsole(async () => {
         console.warn("test warn");
