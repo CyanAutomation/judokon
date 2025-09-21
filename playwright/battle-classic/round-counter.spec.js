@@ -89,9 +89,7 @@ test.describe("Classic Battle round counter", () => {
           expect(dedupedReady.suppressionWindowMs).toBeGreaterThan(0);
           expect(dedupedReady.sinceManualStartMs).toBeGreaterThanOrEqual(0);
           // sinceManualStartMs should remain below suppressionWindowMs to confirm deduplication timing
-          expect(dedupedReady.sinceManualStartMs).toBeLessThan(
-            dedupedReady.suppressionWindowMs
-          );
+          expect(dedupedReady.sinceManualStartMs).toBeLessThan(dedupedReady.suppressionWindowMs);
         }
       }
 

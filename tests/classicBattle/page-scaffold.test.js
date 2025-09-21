@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeEach, afterEach, describe, test, expect, vi } from "vitest";
 import * as scheduler from "../../src/utils/scheduler.js";
-import installRAFMock from "../helpers/rafMock.js";
+import { install, uninstall, flushAll } from "../helpers/rafMock.js";
 
 const engineMock = vi.hoisted(() => ({
   listeners: new Map(),
@@ -810,15 +810,13 @@ async function flushImmediateTasks() {
 }
 
 describe("Classic Battle page scaffold (behavioral)", () => {
-  let __rafMockRestore;
   beforeEach(() => {
     const file = resolve(process.cwd(), "src/pages/battleClassic.html");
     const html = readFileSync(file, "utf-8");
     document.documentElement.innerHTML = html;
     window.__FF_OVERRIDES = {};
     // Install shared RAF mock for deterministic frame control
-    const rafMock = installRAFMock();
-    __rafMockRestore = rafMock.restore;
+    install();
     originalRAF = global.requestAnimationFrame;
     originalCAF = global.cancelAnimationFrame;
     modalMock.onStart = null;
@@ -836,9 +834,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     document.documentElement.innerHTML = "";
     delete window.__FF_OVERRIDES;
     delete global.localStorage;
-    try {
-      __rafMockRestore?.();
-    } catch {}
+    uninstall();
     global.requestAnimationFrame = originalRAF;
     global.cancelAnimationFrame = originalCAF;
     engineMock.listeners.clear();
@@ -1095,9 +1091,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
       statControls.enable();
       // Flush any queued RAF callbacks to process scheduler updates
-      if (typeof globalThis.flushRAF === "function") {
-        globalThis.flushRAF();
-      }
+      flushAll();
       await (window.statButtonsReadyPromise ?? Promise.resolve());
       expect(button.disabled).toBe(false);
 
@@ -1107,9 +1101,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       try {
         resetStatButtons();
         // Flush RAF again after reset
-        if (typeof globalThis.flushRAF === "function") {
-          globalThis.flushRAF();
-        }
+        flushAll();
         await flushImmediateTasks();
         expect(button.disabled).toBe(false);
       } finally {

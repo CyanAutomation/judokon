@@ -474,3 +474,24 @@ Proceed to Phase 1 for items 1–3?
 - No regressions: Existing rafMock-dependent tests (5/5) and Playwright tests (1/1) pass
 
 **Next:** Item 2 Phase 1 complete. Ready to proceed to Item 2 Phase 2 or another item?
+
+
+## Phase 2 Completion: Item 2 (Add a queue-based animation frame mock helper)
+
+**Actions Taken:**
+
+- Migrated 2 representative test files from legacy `installRAFMock()` API to new standardized API:
+  - `tests/helpers/browseJudokaPage.test.js`: Updated imports and replaced `globalThis.flushRAF()` calls with `flushAll()`
+  - `tests/classicBattle/page-scaffold.test.js`: Updated setup/teardown to use `install()`/`uninstall()` and replaced `globalThis.flushRAF()` calls with `flushAll()`
+- Verified that existing tests using the legacy API (`installRAFMock()`) continue to work unchanged
+- Ensured all migrated tests use explicit `flushAll()` calls instead of relying on global state
+
+**Outcome:**
+
+- Tests now use the standardized rafMock API with explicit control over callback execution
+- Reduced reliance on global state (`globalThis.flushRAF`) in favor of explicit API calls
+- Acceptance criteria met: Representative inline mocks replaced with helper, tests continue to pass
+- No regressions: Migrated tests (11/11 total) and Playwright tests (6/6) pass
+- Backward compatibility maintained for tests not yet migrated
+
+**Next:** Item 2 Phase 2 complete. Ready to proceed to Item 2 Phase 3 or another item?

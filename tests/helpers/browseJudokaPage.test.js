@@ -1,15 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import installRAFMock from "../helpers/rafMock.js";
+import { install, uninstall, flushAll } from "../helpers/rafMock.js";
 
-let __browseRafRestore;
 beforeEach(() => {
-  const raf = installRAFMock();
-  __browseRafRestore = raf.restore;
+  install();
 });
 afterEach(() => {
-  try {
-    __browseRafRestore?.();
-  } catch {}
+  uninstall();
 });
 
 describe("browseJudokaPage helpers", () => {
@@ -229,9 +225,7 @@ describe("browseJudokaPage helpers", () => {
     await pagePromise;
 
     // Ensure any queued RAF callbacks run (existing tests used immediate RAF)
-    if (typeof globalThis.flushRAF === "function") {
-      globalThis.flushRAF();
-    }
+    flushAll();
 
     expect(carousel.querySelector(".loading-spinner")).toBeNull();
     expect(remove).toHaveBeenCalled();
@@ -315,9 +309,7 @@ describe("browseJudokaPage helpers", () => {
 
     await setupBrowseJudokaPage();
 
-    if (typeof globalThis.flushRAF === "function") {
-      globalThis.flushRAF();
-    }
+    flushAll();
 
     expect(buildCardCarousel).toHaveBeenCalledWith(
       [{ id: 0, firstname: "Fallback", surname: "Judoka" }],
