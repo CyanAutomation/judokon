@@ -1,4 +1,5 @@
 import * as timerUtils from "../../src/helpers/timerUtils.js";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 function installMockBattleMachine(dispatchImpl) {
   const machine = {
@@ -28,7 +29,7 @@ function installMockBattleMachine(dispatchImpl) {
 
 describe("Classic Battle round timer", () => {
   test("starts timer and clears on expire deterministically", async () => {
-    const timers = vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     // Provide a short round timer
     const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
       if (cat === "roundTimer") return 2;
@@ -66,13 +67,13 @@ describe("Classic Battle round timer", () => {
       expect(timerEl?.textContent).toBe("");
     } finally {
       spy.mockRestore();
-      timers.useRealTimers();
+      timers.cleanup();
     }
   });
 
   test("Next button dispatches countdown events and ready when skip flag is active", async () => {
     vi.resetModules();
-    const timers = vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const previousOverrides = typeof window !== "undefined" ? window.__FF_OVERRIDES : undefined;
     if (typeof window !== "undefined") {
       window.__FF_OVERRIDES = { ...(previousOverrides || {}), skipRoundCooldown: true };
@@ -148,12 +149,12 @@ describe("Classic Battle round timer", () => {
         }
       }
       document.body.innerHTML = "";
-      timers.useRealTimers();
+      timers.cleanup();
     }
   });
 
   test("retries ready dispatch when initial attempt is refused", async () => {
-    const timers = vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const dispatchBattleEventMock = vi.fn().mockResolvedValueOnce(false).mockResolvedValue(true);
     const readyState = await import("../../src/helpers/classicBattle/roundReadyState.js");
     readyState.setReadyDispatchedForCurrentCooldown(false);
@@ -191,12 +192,12 @@ describe("Classic Battle round timer", () => {
       skipSpy.mockRestore();
       restoreMachine();
       readyState.setReadyDispatchedForCurrentCooldown(false);
-      timers.useRealTimers();
+      timers.cleanup();
     }
   });
 
   test("keeps next button interactive across consecutive ready dispatch refusals", async () => {
-    const timers = vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const dispatchBattleEventMock = vi.fn().mockResolvedValue(false);
     const readyState = await import("../../src/helpers/classicBattle/roundReadyState.js");
     readyState.setReadyDispatchedForCurrentCooldown(false);
@@ -233,7 +234,7 @@ describe("Classic Battle round timer", () => {
       skipSpy.mockRestore();
       restoreMachine();
       readyState.setReadyDispatchedForCurrentCooldown(false);
-      timers.useRealTimers();
+      timers.cleanup();
     }
   });
 });
