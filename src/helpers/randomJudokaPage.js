@@ -149,6 +149,16 @@ export function createDrawButton() {
   return drawButton;
 }
 
+function updateDrawButtonLabel(drawButton, text) {
+  if (!drawButton) return;
+  const label = drawButton.querySelector?.(".button-label");
+  if (label) {
+    label.textContent = text;
+  } else {
+    drawButton.textContent = text;
+  }
+}
+
 function showError(msg) {
   let errorEl = document.getElementById("draw-error-message");
   if (!errorEl) {
@@ -221,15 +231,10 @@ async function displayCard({
       settle();
       return;
     }
-    const label = drawButton.querySelector(".button-label");
     drawButton.disabled = true;
     drawButton.setAttribute("aria-disabled", "true");
     drawButton.classList.add("is-loading");
-    if (label) {
-      label.textContent = "Drawing…";
-    } else {
-      drawButton.textContent = "Drawing…";
-    }
+    updateDrawButtonLabel(drawButton, "Drawing…");
     drawButton.setAttribute("aria-busy", "true");
     const errorEl = document.getElementById("draw-error-message");
     if (errorEl) errorEl.textContent = "";
@@ -238,11 +243,7 @@ async function displayCard({
       drawButton.disabled = false;
       drawButton.removeAttribute("aria-disabled");
       drawButton.classList.remove("is-loading");
-      if (label) {
-        label.textContent = "Draw Card!";
-      } else {
-        drawButton.textContent = "Draw Card!";
-      }
+      updateDrawButtonLabel(drawButton, "Draw Card!");
       drawButton.removeAttribute("aria-busy");
       settle();
     }
@@ -330,6 +331,18 @@ export async function setupRandomJudokaPage() {
   const cardSection = document.querySelector(".card-section");
   const drawButton = createDrawButton();
   cardSection.appendChild(drawButton);
+
+  if (typeof window !== "undefined") {
+    const testApi =
+      typeof window.__TEST_API === "object" && window.__TEST_API !== null
+        ? window.__TEST_API
+        : (window.__TEST_API = {});
+    const randomJudokaApi = testApi.randomJudoka || (testApi.randomJudoka = {});
+    randomJudokaApi.setDrawButtonLabel = (labelText) => {
+      if (typeof labelText !== "string") return;
+      updateDrawButtonLabel(drawButton, labelText);
+    };
+  }
 
   const onSelect = (j) => addToHistory(historyManager, historyList, j);
 
