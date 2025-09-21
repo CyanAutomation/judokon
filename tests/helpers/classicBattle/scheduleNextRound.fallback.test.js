@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 import { createClassicBattleHarness } from "../integrationHarness.js";
+import { resetDispatchHistory } from "../../../src/helpers/classicBattle/eventDispatcher.js";
 
 const READY_EVENT = "ready";
 
@@ -96,6 +97,7 @@ describe("startCooldown fallback timer", () => {
     // Mock the round timer to not expire for fallback testing
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
+    resetDispatchHistory();
   });
 
   afterEach(() => {
