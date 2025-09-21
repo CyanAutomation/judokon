@@ -40,12 +40,12 @@ Pending your review before starting Phase 3.
   - Swapped the local replay reset for `handleReplay` from `roundManager` and cleared pending timers so the replay flow reuses the engine-driven `startRound()` path (`src/pages/battleClassic.init.js`).
   - Added a shared opponent prompt tracker (`src/helpers/classicBattle/opponentPromptTracker.js`) and timestamps from `uiEventHandlers` so the "Opponent is choosing" snackbar survives until cooldown begins; raised the minimum display window to 600 ms.
   - Updated `page-scaffold` Vitest mocks to emit `roundStarted` during replay and to expect freshly generated stats on the first post-replay selection.
-- **Outcome:** Replay now redraws player/opponent cards and keeps the scoreboard in sync via engine events, but Playwright still reports premature countdown messaging in several opponent-reveal scenarios that need follow-up.
+  - Deferred cooldown snackbar updates until the prompt’s minimum dwell time elapses, preventing the countdown message from pre-empting the opponent prompt (`src/helpers/CooldownRenderer.js`).
+- **Outcome:** Replay now redraws player/opponent cards, the opponent prompt reliably precedes the cooldown countdown, and the scoreboard advances consistently after subsequent selections (addresses QA items #2 and #4).
 - **Validation:**
   - ✅ `npx vitest run tests/classicBattle/page-scaffold.test.js`
   - ✅ `npx vitest run tests/classicBattle/bootstrap.test.js`
-  - ⚠️ `npx playwright test battle-classic/stat-selection.spec.js battle-classic/opponent-reveal.spec.js`
-    - Failures: opponent reveal flow expectations (`opponent reveal integrates with battle flow`, `handles very short opponent delays gracefully`, `opponent reveal cleans up properly on match end`) where the countdown message still replaces the opponent prompt too early.
+  - ✅ `npx playwright test battle-classic/stat-selection.spec.js battle-classic/opponent-reveal.spec.js`
 
 Pending your review before starting Phase 4.
 

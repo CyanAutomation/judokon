@@ -504,7 +504,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       const hasRecordedHighest = typeof recordedHighest === "number";
       const engineNextRound = readEngineNextRound();
       const hasEngineNextRound = Number.isFinite(engineNextRound);
-      const fallbackBase = hasEngineNextRound ? engineNextRound : displayedRoundBefore + 1;
+      const fallbackBase = Math.max(engineNextRound || 0, displayedRoundBefore + 1);
 
       let fallbackTarget = fallbackBase;
       if (hasRecordedHighest) {
