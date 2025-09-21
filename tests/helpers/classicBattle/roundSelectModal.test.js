@@ -72,11 +72,23 @@ describe("initRoundSelectModal", () => {
   });
 
   it("selecting an option persists, cleans up, and starts the match", async () => {
-    const onStart = vi.fn();
+    const onStart = vi.fn(() => Promise.resolve());
+    const setPointsCalled = new Promise((resolve) => {
+      mocks.setPointsToWin.mockImplementation((value) => {
+        resolve(value);
+      });
+    });
+    const loggedStart = new Promise((resolve) => {
+      mocks.logEvent.mockImplementation((...args) => {
+        resolve(args);
+      });
+    });
+
     await initRoundSelectModal(onStart);
     const first = document.querySelector(".round-select-buttons button");
     first.click();
-    await new Promise((r) => setTimeout(r, 0));
+    const startComplete = onStart.mock.results[0]?.value ?? Promise.resolve();
+    await Promise.all([setPointsCalled, loggedStart, startComplete]);
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[0].value);
     expect(wrap(BATTLE_POINTS_TO_WIN).get()).toBe(rounds[0].value);
     expect(onStart).toHaveBeenCalled();
@@ -134,8 +146,15 @@ describe("initRoundSelectModal", () => {
     expect(preselected).toBe(buttons[1]);
     expect(preselected?.getAttribute("aria-pressed")).toBe("true");
 
+    const nextSelection = new Promise((resolve) => {
+      mocks.setPointsToWin.mockImplementation((value) => {
+        resolve(value);
+      });
+    });
+
     preselected?.click();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    await nextSelection;
 
     expect(mocks.setPointsToWin).toHaveBeenCalledWith(rounds[1].value);
     expect(onStart).toHaveBeenCalled();
