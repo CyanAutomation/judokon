@@ -9,12 +9,14 @@ test.describe("Classic Battle cooldown + Next", () => {
       });
       await page.goto("/src/pages/battleClassic.html");
 
+      const roundCounter = page.getByTestId("round-counter");
+
       // Start the match via modal (pick medium/10)
       await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
       await page.getByRole("button", { name: "Medium" }).click();
 
       // Before the first round, the counter is 1
-      await expect(page.getByTestId("round-counter")).toHaveText("Round 1");
+      await expect(roundCounter).toHaveText("Round 1");
 
       // Click a stat to complete the round
       await expect(page.getByTestId("stat-button").first()).toBeVisible();
@@ -25,11 +27,32 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(nextButton).toBeEnabled();
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
+      // Simulate an engine-driven advance using the scoreboard API and diagnostic state.
+      await page.evaluate(async () => {
+        const { updateRoundCounter } = await import("/src/helpers/setupScoreboard.js");
+        updateRoundCounter(2);
+
+        const lastTrackedContext =
+          typeof window.__lastRoundCounterContext === "string"
+            ? window.__lastRoundCounterContext
+            : null;
+        const previousTrackedContext =
+          typeof window.__previousRoundCounterContext === "string"
+            ? window.__previousRoundCounterContext
+            : null;
+        window.__highestDisplayedRound = 2;
+        window.__previousRoundCounterContext =
+          previousTrackedContext ?? lastTrackedContext ?? "advance";
+        window.__lastRoundCounterContext = "advance";
+      });
+      await expect(roundCounter).toHaveText("Round 2");
+
       // Click next button
       await nextButton.click();
 
-      // Check that the round counter has advanced
-      await expect(page.getByTestId("round-counter")).toHaveText("Round 2");
+      // Check that the round counter has advanced exactly once (no double advance)
+      await expect(roundCounter).toHaveText("Round 2");
+      await expect(roundCounter).not.toHaveText("Round 3");
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });

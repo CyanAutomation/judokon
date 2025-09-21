@@ -122,6 +122,99 @@ function writeRoundCounter(root, value) {
 }
 
 /**
+ * Lightweight accessors for the diagnostic round-tracking globals.
+ *
+ * @summary Centralizes reads/writes for `__highestDisplayedRound` and context flags
+ * to make dependencies explicit and easier to reason about.
+ */
+const roundTrackingState = {
+  /**
+   * @param {Document|Element} root
+   * @returns {{counterEl: Element|null, highest: number|null, lastContext: string, previousContext: string}}
+   */
+  read(root) {
+    const counterEl = getRoundCounterElement(root);
+
+    const globalHighest = Number(globalThis.__highestDisplayedRound ?? NaN);
+    const datasetHighest = Number(counterEl?.dataset?.highestRound ?? NaN);
+
+    let highest = null;
+    if (Number.isFinite(globalHighest) && globalHighest >= 1) {
+      highest = globalHighest;
+    } else if (Number.isFinite(datasetHighest) && datasetHighest >= 1) {
+      highest = datasetHighest;
+    }
+
+    const lastContext =
+      typeof globalThis.__lastRoundCounterContext === "string"
+        ? globalThis.__lastRoundCounterContext
+        : "";
+    const previousContext =
+      typeof globalThis.__previousRoundCounterContext === "string"
+        ? globalThis.__previousRoundCounterContext
+        : "";
+
+    return {
+      counterEl,
+      highest,
+      lastContext,
+      previousContext
+    };
+  },
+  /**
+   * @param {{counterEl: Element|null, highest?: number|null, lastContext?: string|null, previousContext?: string|null}} state
+   * @returns {void}
+   */
+  write({ counterEl, highest, lastContext, previousContext }) {
+    if (Number.isFinite(highest) && highest >= 1) {
+      try {
+        globalThis.__highestDisplayedRound = highest;
+      } catch {}
+      if (counterEl && counterEl.dataset) {
+        const prior = Number(counterEl.dataset.highestRound || 0);
+        const stable = Number.isFinite(prior) && prior >= 1 ? Math.max(prior, highest) : highest;
+        counterEl.dataset.highestRound = String(stable);
+      }
+    }
+
+    if (lastContext !== undefined) {
+      globalThis.__lastRoundCounterContext = lastContext;
+    }
+    if (previousContext !== undefined) {
+      globalThis.__previousRoundCounterContext = previousContext;
+    }
+  }
+};
+
+/**
+ * Determine whether the engine has already advanced the round.
+ *
+ * @pseudocode
+ * 1. Exit early when no advance context has been recorded or highest is unset.
+ * 2. Treat a recorded next round or matching prior advance as authoritative.
+ *
+ * @param {{
+ *   contextReportedAdvance: boolean,
+ *   recordedNextRound: boolean,
+ *   priorAdvanceMatchesDisplay: boolean,
+ *   hasRecordedHighest: boolean
+ * }} params - Diagnostic flags derived from round tracking state.
+ * @returns {boolean}
+ */
+function determineEngineAdvanceState({
+  contextReportedAdvance,
+  recordedNextRound,
+  priorAdvanceMatchesDisplay,
+  hasRecordedHighest
+}) {
+  if (!contextReportedAdvance || !hasRecordedHighest) {
+    return false;
+  }
+
+  return recordedNextRound || priorAdvanceMatchesDisplay;
+}
+
+/**
  * Transition events required when advancing from states other than `cooldown`.
  *
  * `advanceWhenReady` consults this table to dispatch an interrupt that moves the
@@ -316,15 +409,92 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       emitBattleEvent("countdownFinished");
       emitBattleEvent("round.start");
     }
-    const { timer = null, resolveReady = null } = controls || {};
-    const root = options.root || document;
-    const displayedRoundBefore = readDisplayedRound(root);
-    const btn = root.getElementById
-      ? root.getElementById("next-button")
-      : root.querySelector("#next-button");
-    if (!btn) return;
-    // Defensive: if a stale readiness flag is present outside of `cooldown`,
-    // clear it so we don't advance via an early-ready path.
+  });
+  if (skipHintEnabled && skipHandled) {
+    timerLogger.debug("skipRoundCooldown hint consumed during Next click");
+  }
+  if (!skipHandled) {
+    emitBattleEvent("countdownFinished");
+    emitBattleEvent("round.start");
+  }
+  const { timer = null, resolveReady = null } = controls || {};
+  const root = options.root || document;
+  const displayedRoundBefore = readDisplayedRound(root);
+  const btn = root.getElementById
+    ? root.getElementById("next-button")
+    : root.querySelector("#next-button");
+  if (!btn) return;
+  // Defensive: if a stale readiness flag is present outside of `cooldown`,
+  // clear it so we don't advance via an early-ready path.
+  const { state } = safeGetSnapshot();
+  if (isNextReady(btn) && state && state !== "cooldown") {
+    resetReadiness(btn);
+    guard(() => console.warn("[next] cleared early readiness outside cooldown"));
+  }
+  // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
+  // feature flag. The flag only affects automatic progression, never user
+  // intent signaled via the Next button.
+  const strategies = {
+    advance: () => advanceWhenReady(btn, resolveReady),
+    cancel: () => cancelTimerOrAdvance(btn, timer, resolveReady)
+  };
+  const action = isNextReady(btn) ? "advance" : "cancel";
+  await strategies[action]();
+  const displayedRoundAfter = readDisplayedRound(root);
+  if (
+    displayedRoundBefore !== null &&
+    (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
+  ) {
+    const tracking = roundTrackingState.read(root);
+    const { counterEl, highest: recordedHighest, lastContext, previousContext } = tracking;
+    const hasRecordedHighest = typeof recordedHighest === "number";
+    const fallbackBase = displayedRoundBefore + 1;
+
+    let fallbackTarget = fallbackBase;
+    if (hasRecordedHighest) {
+      fallbackTarget = Math.max(fallbackTarget, recordedHighest);
+    }
+
+    const contextReportedAdvance = lastContext === "advance" || previousContext === "advance";
+    const recordedNextRound = hasRecordedHighest && recordedHighest >= fallbackBase;
+    const priorAdvanceMatchesDisplay =
+      previousContext === "advance" &&
+      hasRecordedHighest &&
+      recordedHighest === displayedRoundBefore;
+    const engineAlreadyAdvanced = determineEngineAdvanceState({
+      contextReportedAdvance,
+      recordedNextRound,
+      priorAdvanceMatchesDisplay,
+      hasRecordedHighest
+    });
+    if (engineAlreadyAdvanced && hasRecordedHighest) {
+      fallbackTarget = recordedHighest;
+    }
+
+    if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1) {
+      writeRoundCounter(root, fallbackTarget);
+      const nextRecordedHighest = hasRecordedHighest
+        ? Math.max(recordedHighest, fallbackTarget)
+        : fallbackTarget;
+      const shouldMarkFallbackContext =
+        fallbackTarget > displayedRoundBefore && !engineAlreadyAdvanced;
+
+      try {
+        roundTrackingState.write({
+          counterEl,
+          highest: nextRecordedHighest,
+          lastContext: shouldMarkFallbackContext ? "fallback" : undefined,
+          previousContext: shouldMarkFallbackContext ? lastContext || null : undefined
+        });
+      } catch (error) {
+        guard(() => console.warn("[timerService] Failed to update round tracking state:", error));
+      }
+    }
+  }
+  if (cooldownWarningTimeoutId !== null) {
+    realScheduler.clearTimeout(cooldownWarningTimeoutId);
+  }
+  cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
     const { state } = safeGetSnapshot();
     if (isNextReady(btn) && state && state !== "cooldown") {
       resetReadiness(btn);
