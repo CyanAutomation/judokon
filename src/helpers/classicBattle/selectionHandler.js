@@ -33,9 +33,10 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
  * Retrieve stat values for the player and opponent cards.
  *
  * @pseudocode
- * 1. If `playerVal` is missing or NaN, read the value from `#player-card`.
- * 2. If `opponentVal` is missing or NaN, read the value from `#opponent-card`.
- * 3. Coerce both values to numbers and return them.
+ * 1. Extract active judoka stats from the provided battle store context.
+ * 2. For each side, if the precomputed value is missing, read the stat from the DOM.
+ * 3. When the DOM shows a "?" placeholder, prefer the store stat fallback.
+ * 4. Coerce the resolved values to numbers and return them.
  *
  * @param {string} stat - Selected stat key.
  * @param {number} [playerVal] - Precomputed player stat value.
@@ -47,59 +48,77 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
 export function getPlayerAndOpponentValues(stat, playerVal, opponentVal, context = {}) {
   const { store } = typeof context === "object" && context !== null ? context : {};
 
-  const readStoreStat = (stats) => {
-    const raw = stats?.[stat];
-    const numeric = Number(raw);
-    return Number.isFinite(numeric) ? numeric : undefined;
-  };
-
-  const readDomText = (container) => {
-    try {
-      if (!container) return null;
-      const index = STATS.indexOf(stat);
-      if (!Number.isFinite(index) || index < 0) return null;
-      const span = container.querySelector(`li.stat:nth-child(${index + 1}) span`);
-      return span?.textContent?.trim() ?? null;
-    } catch {
-      return null;
-    }
-  };
-
-  const getContainer = (selector) => {
-    try {
-      return document?.querySelector?.(selector) || null;
-    } catch {
-      return null;
-    }
-  };
-
-  const resolveSide = (value, selector, stats) => {
-    if (value === undefined || Number.isNaN(value)) {
-      const container = getContainer(selector);
-      const text = readDomText(container);
-      const domValue = getCardStatValue(container, stat);
-      if (typeof text === "string" && text.trim() === "?") {
-        const fallback = readStoreStat(stats);
-        if (fallback !== undefined) return fallback;
-      }
-      if (Number.isFinite(domValue)) return Number(domValue);
-      const fallback = readStoreStat(stats);
-      if (fallback !== undefined) return fallback;
-      return Number(domValue);
-    }
-    return Number(value);
-  };
-
   const playerStats = store?.currentPlayerJudoka?.stats;
   const opponentStats = store?.currentOpponentJudoka?.stats;
 
-  const resolvedPlayer = resolveSide(playerVal, "#player-card", playerStats);
-  const resolvedOpponent = resolveSide(opponentVal, "#opponent-card", opponentStats);
+  const resolvedPlayer = resolveStatSide({
+    value: playerVal,
+    selector: "#player-card",
+    stat,
+    stats: playerStats
+  });
+
+  const resolvedOpponent = resolveStatSide({
+    value: opponentVal,
+    selector: "#opponent-card",
+    stat,
+    stats: opponentStats
+  });
 
   return {
     playerVal: Number(resolvedPlayer),
     opponentVal: Number(resolvedOpponent)
   };
+}
+
+function resolveStatSide({ value, selector, stat, stats }) {
+  if (value !== undefined && !Number.isNaN(value)) {
+    return Number(value);
+  }
+
+  const container = getStatContainer(selector);
+  const text = readDomStatText(container, stat);
+  const fallback = readStoreStat(stats, stat);
+  const domValue = Number(getCardStatValue(container, stat));
+
+  if (typeof text === "string" && text.trim() === "?" && fallback !== undefined) {
+    return fallback;
+  }
+
+  if (Number.isFinite(domValue)) {
+    return domValue;
+  }
+
+  if (fallback !== undefined) {
+    return fallback;
+  }
+
+  return domValue;
+}
+
+function readStoreStat(stats, stat) {
+  const numeric = Number(stats?.[stat]);
+  return Number.isFinite(numeric) ? numeric : undefined;
+}
+
+function readDomStatText(container, stat) {
+  try {
+    if (!container) return null;
+    const index = STATS.indexOf(stat);
+    if (!Number.isFinite(index) || index < 0) return null;
+    const span = container.querySelector(`li.stat:nth-child(${index + 1}) span`);
+    return span?.textContent?.trim() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function getStatContainer(selector) {
+  try {
+    return document?.querySelector?.(selector) || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
