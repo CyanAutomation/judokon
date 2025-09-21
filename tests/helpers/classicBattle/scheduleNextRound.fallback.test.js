@@ -238,6 +238,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     expect(controls).toBeTruthy();
     expect(typeof controls?.ready).toBe("object");
     expect(typeof controls.ready.then).toBe("function");
+    await vi.runAllTimersAsync();
     await controls.ready;
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
@@ -255,6 +256,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     expect(controls).toBeTruthy();
     expect(typeof controls?.ready).toBe("object");
     expect(typeof controls.ready.then).toBe("function");
+    await vi.runAllTimersAsync();
     await controls.ready;
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
