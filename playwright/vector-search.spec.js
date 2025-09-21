@@ -1,6 +1,38 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 
 /**
+ * Wait for the vector search results promise to be initialized and resolve.
+ *
+ * @param {import("@playwright/test").Page} page
+ */
+async function waitForVectorSearchResults(page) {
+  const result = await page.evaluate(async () => {
+    const promise = window.vectorSearchResultsPromise;
+    if (!promise || typeof promise.then !== "function") {
+      return { status: "missing" };
+    }
+
+    try {
+      await promise;
+      return { status: "resolved" };
+    } catch (error) {
+      if (error instanceof Error) {
+        return { status: "rejected", message: error.message };
+      }
+      return { status: "rejected", message: String(error) };
+    }
+  });
+
+  if (result.status === "missing") {
+    throw new Error("vectorSearchResultsPromise was not initialized.");
+  }
+
+  if (result.status === "rejected") {
+    throw new Error(`vectorSearchResultsPromise rejected: ${result.message}`);
+  }
+}
+
+/**
  * Vector search page comprehensive tests.
  */
 test.describe("Vector Search Page", () => {
@@ -78,7 +110,7 @@ test.describe("Vector Search Page", () => {
       await page.getByRole("button", { name: /search/i }).click();
 
       // Wait for search to complete
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       // Verify results table has content
       const resultsTable = page.locator("#vector-results-table tbody");
@@ -96,7 +128,7 @@ test.describe("Vector Search Page", () => {
     test("search results contain expected data", async ({ page }) => {
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
 
@@ -111,7 +143,7 @@ test.describe("Vector Search Page", () => {
     test("clicking result loads context", async ({ page }) => {
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
       await firstRow.click();
@@ -127,7 +159,7 @@ test.describe("Vector Search Page", () => {
     test("context loads only once per result", async ({ page }) => {
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
 
@@ -215,7 +247,7 @@ test.describe("Vector Search Page", () => {
 
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
       await firstRow.click();
@@ -253,7 +285,7 @@ test.describe("Vector Search Page", () => {
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
 
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       await expect(page).toHaveURL(initialUrl);
     });
@@ -263,7 +295,7 @@ test.describe("Vector Search Page", () => {
       await page.keyboard.press("Enter");
 
       // Wait for search to complete
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       // Verify results are shown
       const resultsTable = page.locator("#vector-results-table tbody");
@@ -274,7 +306,7 @@ test.describe("Vector Search Page", () => {
       // First search
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       const firstResult = page.locator("#vector-results-table tbody tr").first();
       await expect(firstResult).toBeVisible();
@@ -282,7 +314,7 @@ test.describe("Vector Search Page", () => {
       // Second search
       await page.getByRole("searchbox").fill("different query");
       await page.getByRole("button", { name: /search/i }).click();
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       // Results should still be visible (may be same or different)
       const secondResult = page.locator("#vector-results-table tbody tr").first();
@@ -332,7 +364,7 @@ test.describe("Vector Search Page", () => {
     test("results table has proper accessibility attributes", async ({ page }) => {
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       const resultsTable = page.locator("#vector-results-table");
       await expect(resultsTable).toHaveAttribute("aria-label", "Search results");
@@ -396,7 +428,7 @@ test.describe("Vector Search Page", () => {
 
       await page.getByRole("searchbox").fill("query");
       await page.getByRole("button", { name: /search/i }).click();
-      await page.evaluate(() => window.vectorSearchResultsPromise);
+      await waitForVectorSearchResults(page);
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
       await firstRow.click();
