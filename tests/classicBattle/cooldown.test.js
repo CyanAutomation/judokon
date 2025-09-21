@@ -168,5 +168,7 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     const next = document.getElementById("next-button");
     expect(next?.disabled).toBe(false);
     expect(next?.getAttribute("data-next-ready")).toBe("true");
+
+    timers.cleanup();
   });
 });

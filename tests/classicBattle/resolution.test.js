@@ -216,17 +216,25 @@ test("match end forwards outcome to end modal", async () => {
   const playerStats = { power: 9, speed: 9, technique: 9, kumikata: 9, newaza: 9 };
   const opponentStats = { power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 };
   mockModules({ playerStats, opponentStats });
-  computeRoundResultMock.mockImplementation(async () => ({
-    matchEnded: true,
-    outcome: "quit",
-    playerScore: 3,
-    opponentScore: 0
-  }));
 
+  const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
   const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
-  await Promise.resolve();
+
+  const [, handler] = onBattleEvent.mock.calls.find(([eventName]) => eventName === "roundResolved") || [];
+  expect(typeof handler).toBe("function");
+
+  handler({
+    detail: {
+      result: {
+        matchEnded: true,
+        outcome: "quit",
+        playerScore: 3,
+        opponentScore: 0
+      }
+    }
+  });
 
   expect(showEndModal).toHaveBeenCalledWith(
     expect.anything(),

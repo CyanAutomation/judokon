@@ -50,7 +50,9 @@ describe("parseTooltipText", () => {
 
   it("normalizes literal \n sequences into line breaks", () => {
     const { html, warning } = parseTooltipText("First line\\\\nSecond line");
-    expect(html).toBe("First line<br>Second line");
+    expect(html.split("<br>")).toEqual(["First line", "Second line"]);
+    expect(html.includes("\\n")).toBe(false);
+    expect(html.includes("\\")).toBe(false);
     expect(warning).toBe(false);
   });
 });

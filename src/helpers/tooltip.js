@@ -126,7 +126,7 @@ export function parseTooltipText(text) {
   } catch {
     parsed = safe;
   }
-  const html = parsed.replace(/\n/g, "<br>");
+  const html = parsed.replace(/\n/g, "<br>").replace(/\\<br>/g, "<br>");
   return { html, warning };
 }
 

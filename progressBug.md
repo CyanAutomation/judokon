@@ -475,7 +475,6 @@ Proceed to Phase 1 for items 1–3?
 
 **Next:** Item 2 Phase 1 complete. Ready to proceed to Item 2 Phase 2 or another item?
 
-
 ## Phase 2 Completion: Item 2 (Add a queue-based animation frame mock helper)
 
 **Actions Taken:**
@@ -495,7 +494,6 @@ Proceed to Phase 1 for items 1–3?
 - Backward compatibility maintained for tests not yet migrated
 
 **Next:** Item 2 Phase 2 complete. Ready to proceed to Item 2 Phase 3 or another item?
-
 
 ## Phase 3 Completion: Item 2 (Add a queue-based animation frame mock helper)
 
@@ -518,7 +516,6 @@ Proceed to Phase 1 for items 1–3?
 - Debug output format: `[RAF Mock] <message>` with relevant details (queue length, callback IDs, etc.)
 
 **Next:** Item 2 Phase 3 complete. All phases of Item 2 are now complete. Ready to proceed to Item 3 Phase 1 or another item?
-
 
 ## Phase 1 Completion: Item 3 (Publish a fake-timers playbook & canonical test setup)
 
@@ -564,3 +561,30 @@ Proceed to Phase 1 for items 1–3?
 - Migration path clear for future adoption of canonical patterns
 
 **Next:** Item 3 Phase 1 complete. Ready to proceed to Item 3 Phase 2 or another item?
+
+## Phase 2 Completion: Item 3 (Publish a fake-timers playbook & canonical test setup)
+
+**Actions Taken:**
+
+- **Migrated critical test suites** to use `useCanonicalTimers()` instead of direct `vi.useFakeTimers()` calls:
+  - `tests/classicBattle/timer.test.js`: Migrated 4 test functions from `vi.useFakeTimers()` to `useCanonicalTimers()`, replaced `timers.useRealTimers()` with `timers.cleanup()` in finally blocks
+  - `tests/classicBattle/cooldown.test.js`: Migrated 4 test functions, added explicit `timers.cleanup()` calls to ensure proper cleanup
+- **Updated imports**: Added `import { useCanonicalTimers } from "../setup/fakeTimers.js"` to both migrated files
+- **Preserved test logic**: No changes to test behavior or assertions - only timer setup/cleanup patterns updated
+- **Verified compatibility**: All migrated tests continue to pass with new canonical timer pattern
+
+**Migrated Test Summary:**
+
+- **timer.test.js**: 4/4 tests migrated and passing ✅
+- **cooldown.test.js**: 4/4 tests migrated and passing ✅
+- **Total**: 8 critical timer tests migrated to canonical pattern
+
+**Outcome:**
+
+- Critical timer-dependent tests now use canonical `useCanonicalTimers()` helper
+- Proper async cleanup with `timers.cleanup()` ensures no timer leakage between tests
+- Acceptance criteria met: Tests pass and follow the playbook pattern
+- No regressions: Migrated tests (8/8) and Playwright tests (2/2) continue to pass
+- Migration demonstrates clear path for remaining timer tests to adopt canonical pattern
+
+**Next:** Item 3 Phase 2 complete. Ready to proceed to Item 3 Phase 3 or another item?
