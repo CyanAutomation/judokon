@@ -132,7 +132,17 @@ function recordRoundCycleTrigger(source) {
         source: lastRoundCycleTriggerSource,
         timestamp: lastRoundCycleTriggerTimestamp
       };
-    } catch {}
+    } catch (error) {
+      try {
+        if (typeof console !== "undefined" && typeof console.debug === "function") {
+          console.debug("battleClassic: failed to persist lastRoundCycleTrigger", {
+            error,
+            source: lastRoundCycleTriggerSource,
+            timestamp: lastRoundCycleTriggerTimestamp
+          });
+        }
+      } catch {}
+    }
   }
 }
 
