@@ -7,8 +7,10 @@ describe("Stat Buttons", () => {
   let dom;
   let restoreRaf;
   let flushAllFrames;
+  let originalPerformance;
 
   beforeEach(() => {
+    originalPerformance = global.performance;
     dom = new JSDOM(
       `<!DOCTYPE html>
        <body>
@@ -48,7 +50,12 @@ describe("Stat Buttons", () => {
     delete global.Node;
     delete global.CustomEvent;
     delete global.navigator;
-    delete global.performance;
+    if (typeof originalPerformance === "undefined") {
+      delete global.performance;
+    } else {
+      global.performance = originalPerformance;
+    }
+    originalPerformance = undefined;
   });
 
   it("should have aria-describedby and data-buttons-ready attributes", () => {
