@@ -222,7 +222,8 @@ test("match end forwards outcome to end modal", async () => {
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
 
-  const [, handler] = onBattleEvent.mock.calls.find(([eventName]) => eventName === "roundResolved") || [];
+  const [, handler] =
+    onBattleEvent.mock.calls.find(([eventName]) => eventName === "roundResolved") || [];
   expect(typeof handler).toBe("function");
 
   handler({

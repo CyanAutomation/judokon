@@ -57,8 +57,6 @@ Pending your review before starting Phase 4.
   - ✅ `npx vitest run tests/helpers/classicBattle/roundSelectModal.test.js`
   - ✅ `npx playwright test battle-classic/round-select.spec.js`
 
-Pending your review before starting Phase 5.
-
 ## Phase 5 – Accessibility Enhancements (2025-09-21)
 
 - **Action:** Raised Classic Battle’s live regions to screen-reader parity by keeping the score display in a polite status region, delaying cooldown countdown announcements until the opponent prompt’s dwell time elapses, and tightening modal focus traps so even content-only dialogs retain keyboard focus.
@@ -68,7 +66,14 @@ Pending your review before starting Phase 5.
   - ✅ `npx vitest run tests/classicBattle/page-scaffold.test.js tests/classicBattle/bootstrap.test.js`
   - ✅ `npx playwright test battle-classic/round-select.spec.js`
 
-Pending your review before starting Phase 6.
+## Phase 6 – Match Outcome Messaging (2025-09-21)
+
+- **Action:** Refined Classic Battle’s match-end flow to forward engine outcomes directly into the replay modal, so quitting or finishing a match now surfaces the same message across the scoreboard, snackbar, and modal (resolves QA #8).
+- **Action:** Normalized tooltip parsing to treat literal `\n` sequences as line breaks, keeping match-length button tooltips formatted correctly (resolves QA #16).
+- **Outcome:** Quitting mid-match now reports “You quit the match. You lose!” consistently, and match-length tooltips render their two-line blurbs without showing raw escape characters.
+- **Validation:**
+  - ✅ `npx vitest run tests/classicBattle/end-modal.test.js tests/classicBattle/resolution.test.js tests/helpers/parseTooltipText.test.js tests/classicBattle/quit-flow.test.js`
+  - ⚠️ `npx playwright test battle-classic/quit-flow.spec.js battle-classic/end-modal.spec.js` *(blocked: sandbox denied web server bind on 127.0.0.1:5000 / EPERM)*
 
 ## 2. Issues Found
 
