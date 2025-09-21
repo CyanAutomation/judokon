@@ -495,3 +495,26 @@ Proceed to Phase 1 for items 1–3?
 - Backward compatibility maintained for tests not yet migrated
 
 **Next:** Item 2 Phase 2 complete. Ready to proceed to Item 2 Phase 3 or another item?
+
+
+## Phase 3 Completion: Item 2 (Add a queue-based animation frame mock helper)
+
+**Actions Taken:**
+
+- Added debug tooling to `tests/helpers/rafMock.js` with environment variable control:
+  - Added `isDebugEnabled()` method that checks for `RAF_MOCK_DEBUG=1` or `DEBUG_RAF=1` environment variables
+  - Added `debug()` method that logs queue operations when debug mode is enabled
+  - Added debug logging to all key methods: `install()`, `uninstall()`, `enqueue()`, `flushNext()`, `flushAll()`, `cancel()`
+  - Updated JSDoc to document debug functionality and environment variable usage
+- Created test file `tests/debug-raf.test.js` to verify debug functionality works correctly
+- Verified debug output appears when `RAF_MOCK_DEBUG=1` is set and is suppressed when not set
+
+**Outcome:**
+
+- Debug output shows queue counts, pending callbacks, and operation details when enabled
+- Environment variable control allows selective debugging without affecting normal test runs
+- Acceptance criteria met: Debug tooling works and does not affect normal runs
+- No regressions: All existing tests continue to pass
+- Debug output format: `[RAF Mock] <message>` with relevant details (queue length, callback IDs, etc.)
+
+**Next:** Item 2 Phase 3 complete. All phases of Item 2 are now complete. Ready to proceed to Item 3 Phase 1 or another item?
