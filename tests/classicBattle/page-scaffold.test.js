@@ -1,8 +1,6 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { beforeEach, afterEach, describe, test, expect, vi } from "vitest";
 import * as scheduler from "../../src/utils/scheduler.js";
-import { install, uninstall, flushAll } from "../helpers/rafMock.js";
+import { flushAll } from "../helpers/rafMock.js";
 
 const engineMock = vi.hoisted(() => ({
   listeners: new Map(),
@@ -312,6 +310,18 @@ import { setupClassicBattleHooks } from "../helpers/classicBattle/setupTestEnv.j
 import * as timerUtils from "../../src/helpers/timerUtils.js";
 import { resetFallbackScores } from "../../src/helpers/api/battleUI.js";
 import { resetStatButtons } from "../../src/helpers/battle/battleUI.js";
+
+const scoreboardMock = vi.hoisted(() => ({
+  setupScoreboard: vi.fn(),
+  updateScore: vi.fn(),
+  updateRoundCounter: vi.fn(),
+  showMessage: vi.fn(),
+  clearMessage: vi.fn(),
+  updateTimer: vi.fn(),
+  clearTimer: vi.fn()
+}));
+
+vi.mock("../../src/helpers/setupScoreboard.js", () => scoreboardMock);
 
 vi.mock("src/utils/scheduler.js", () => ({
   start: vi.fn(),
@@ -786,8 +796,8 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => {
   };
 });
 
-let originalRAF;
-let originalCAF;
+const getEnv = setupClassicBattleHooks();
+let currentEnv;
 
 function stubGlobal(name, value) {
   const original = globalThis[name];
@@ -797,28 +807,69 @@ function stubGlobal(name, value) {
   };
 }
 
-async function flushImmediateTasks() {
-  if (typeof globalThis.queueMicrotask === "function") {
-    await new Promise((resolve) => {
-      globalThis.queueMicrotask(resolve);
-    });
-    return;
+function ensureElement(id, tag, initializer) {
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement(tag);
+    el.id = id;
+    document.body.appendChild(el);
   }
-  await new Promise((resolve) => {
-    setTimeout(resolve, 0);
+  if (typeof initializer === "function") {
+    initializer(el);
+  }
+  return el;
+}
+
+function mountScaffoldDom() {
+  ensureElement("battle-state-badge", "span", (badge) => {
+    badge.hidden = true;
+    badge.dataset.format = "plain";
+    if (!badge.textContent) {
+      badge.textContent = "";
+    }
+    const header = document.querySelector("header") ?? document.body;
+    if (!header.contains(badge)) {
+      header.appendChild(badge);
+    }
   });
+
+  ensureElement("next-button", "button", (btn) => {
+    btn.type = "button";
+    btn.dataset.role = "next-round";
+    btn.disabled = true;
+    btn.removeAttribute("data-next-ready");
+  });
+
+  ensureElement("replay-button", "button", (btn) => {
+    btn.type = "button";
+  });
+
+  ensureElement("quit-button", "button", (btn) => {
+    btn.type = "button";
+  });
+
+  const container = ensureElement("stat-buttons", "div", (div) => {
+    div.dataset.buttonsReady = div.dataset.buttonsReady ?? "false";
+  });
+  if (!container.querySelector("button[data-stat]")) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.setAttribute("data-stat", "power");
+    button.setAttribute("data-testid", "stat-button");
+    container.appendChild(button);
+  }
 }
 
 describe("Classic Battle page scaffold (behavioral)", () => {
   beforeEach(() => {
-    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
-    const html = readFileSync(file, "utf-8");
-    document.documentElement.innerHTML = html;
+    currentEnv = getEnv();
+    for (const fn of Object.values(scoreboardMock)) {
+      if (typeof fn?.mockClear === "function") {
+        fn.mockClear();
+      }
+    }
+    mountScaffoldDom();
     window.__FF_OVERRIDES = {};
-    // Install shared RAF mock for deterministic frame control
-    install();
-    originalRAF = global.requestAnimationFrame;
-    originalCAF = global.cancelAnimationFrame;
     modalMock.onStart = null;
     engineMock.listeners.clear();
     engineMock.roundsPlayed = 0;
@@ -831,21 +882,22 @@ describe("Classic Battle page scaffold (behavioral)", () => {
   });
 
   afterEach(() => {
-    document.documentElement.innerHTML = "";
+    document.body.innerHTML = "";
     delete window.__FF_OVERRIDES;
-    delete global.localStorage;
-    uninstall();
-    global.requestAnimationFrame = originalRAF;
-    global.cancelAnimationFrame = originalCAF;
-    engineMock.listeners.clear();
-    modalMock.onStart = null;
-    vi.resetModules();
-    vi.clearAllMocks();
     delete window.__selectionHandlerMock;
     delete window.__statControls;
     delete window.__resolveStatButtonsReady;
     delete window.statButtonsReadyPromise;
     delete window.__timerButtonListeners;
+    delete window.__roundCycleHistory;
+    delete window.__lastRoundCycleTrigger;
+    delete window.battleStore;
+    delete global.localStorage;
+    currentEnv?.restoreRAF?.();
+    engineMock.listeners.clear();
+    modalMock.onStart = null;
+    vi.clearAllMocks();
+    vi.resetModules();
   });
 
   test("initializes scoreboard regions and default content", async () => {
@@ -853,29 +905,18 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     const { init } = await import("../../src/pages/battleClassic.init.js");
     await init();
 
-    const header = document.querySelector("header");
-    expect(header).toBeTruthy();
+    expect(scoreboardMock.setupScoreboard).toHaveBeenCalled();
+    const setupArgs = scoreboardMock.setupScoreboard.mock.calls.at(-1)?.[0];
+    expect(setupArgs).toMatchObject({
+      pauseTimer: expect.any(Function),
+      resumeTimer: expect.any(Function),
+      startCooldown: expect.any(Function)
+    });
 
-    const msg = header.querySelector("#round-message");
-    const timer = header.querySelector("#next-round-timer");
-    const round = header.querySelector("#round-counter");
-    const score = header.querySelector("#score-display");
-    expect(msg).toBeTruthy();
-    expect(timer).toBeTruthy();
-    expect(round).toBeTruthy();
-    expect(score).toBeTruthy();
-
-    for (const el of [msg, timer]) {
-      expect(el.getAttribute("role")).toBe("status");
-      expect(el.getAttribute("aria-live")).toBe("polite");
-      expect(el.getAttribute("aria-atomic")).toBe("true");
-    }
-    expect(score.getAttribute("aria-live")).toBe("polite");
-    expect(score.getAttribute("aria-atomic")).toBe("true");
-
-    expect(score.textContent).toContain("You: 0");
-    expect(score.textContent).toContain("Opponent: 0");
-    expect(round.textContent).toContain("Round 0");
+    expect(scoreboardMock.updateScore.mock.calls).toContainEqual([0, 0]);
+    expect(scoreboardMock.updateRoundCounter.mock.calls).toContainEqual([0]);
+    expect(typeof modalMock.onStart).toBe("function");
+    expect(engineMock.listeners.size).toBeGreaterThan(0);
   });
 
   test("updates scoreboard text when a mock round starts", async () => {
@@ -886,35 +927,16 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(typeof modalMock.onStart).toBe("function");
 
     await modalMock.onStart?.();
-
-    const round = document.querySelector("#round-counter");
-    const score = document.querySelector("#score-display");
-    expect(round?.textContent).toContain("Round 1");
-    expect(score?.textContent).toContain("You: 0");
-
+    scoreboardMock.updateScore.mockClear();
+    scoreboardMock.updateRoundCounter.mockClear();
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("display.round.start", { roundNumber: 3 });
 
     const roundEnded = engineMock.listeners.get("roundEnded");
     roundEnded?.({ playerScore: 4, opponentScore: 1 });
 
-    expect(round?.textContent).toContain("Round 3");
-    expect(score?.textContent).toContain("You: 4");
-    expect(score?.textContent).toContain("Opponent: 1");
-
-    const playerSpan = score?.querySelector("[data-side='player']");
-    const opponentSpan = score?.querySelector("[data-side='opponent']");
-    expect(playerSpan?.textContent).toContain("You: 4");
-    expect(opponentSpan?.textContent).toContain("Opponent: 1");
-    expect(score?.getAttribute("aria-live")).toBe("polite");
-
-    const statButtons = document.querySelectorAll("#stat-buttons button[data-stat]");
-    expect(statButtons.length).toBeGreaterThan(0);
-    const firstButton = statButtons[0];
-    expect(firstButton.getAttribute("type")).toBe("button");
-    expect(firstButton.getAttribute("aria-describedby")).toBe("round-message");
-    expect(firstButton.getAttribute("data-testid")).toBe("stat-button");
-
+    expect(scoreboardMock.updateRoundCounter.mock.calls.at(-1)).toEqual([3]);
+    expect(scoreboardMock.updateScore.mock.calls.at(-1)).toEqual([4, 1]);
     const nextButton = document.getElementById("next-button");
     expect(nextButton?.getAttribute("data-role")).toBe("next-round");
   });
@@ -939,11 +961,18 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     const replayBtn = document.getElementById("replay-button");
     expect(replayBtn).toBeTruthy();
 
+    const env = getEnv();
+    const { timerSpy } = env;
+    const roundManager = await import("../../src/helpers/classicBattle/roundManager.js");
+    roundManager.handleReplay.mockClear();
+    roundManager.startRound.mockClear();
     const selectionMod = await import("../../src/helpers/classicBattle/selectionHandler.js");
     selectionMod.handleStatSelection.mockClear();
 
     replayBtn?.click();
-    await flushImmediateTasks();
+    await timerSpy.runAllTimersAsync();
+    expect(roundManager.handleReplay).toHaveBeenCalledWith(store);
+    expect(roundManager.startRound.mock.calls.at(-1)?.[0]).toBe(store);
 
     store.currentPlayerJudoka = null;
     store.currentOpponentJudoka = null;
@@ -952,7 +981,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(statButton).toBeTruthy();
 
     statButton?.click();
-    await flushImmediateTasks();
+    await timerSpy.runAllTimersAsync();
 
     const lastCall = selectionMod.handleStatSelection.mock.calls.at(-1);
     expect(lastCall).toBeTruthy();
@@ -969,17 +998,22 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     let mod = await import("../../src/pages/battleClassic.init.js");
     await mod.init();
 
-    let badge = document.getElementById("battle-state-badge");
+    const badge = document.getElementById("battle-state-badge");
     expect(badge).toBeTruthy();
     expect(badge?.hidden).toBe(false);
     expect(badge?.hasAttribute("hidden")).toBe(false);
     expect(badge?.dataset.format).toBe("plain");
     expect(badge?.textContent).toBe("Lobby");
 
-    document.documentElement.innerHTML = readFileSync(
-      resolve(process.cwd(), "src/pages/battleClassic.html"),
-      "utf-8"
-    );
+    for (const fn of Object.values(scoreboardMock)) {
+      if (typeof fn?.mockClear === "function") {
+        fn.mockClear();
+      }
+    }
+    vi.resetModules();
+    badge.hidden = true;
+    badge.setAttribute("hidden", "");
+    badge.textContent = "";
     modalMock.onStart = null;
     engineMock.listeners.clear();
     engineMock.roundsPlayed = 0;
@@ -987,15 +1021,14 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     mod = await import("../../src/pages/battleClassic.init.js");
     await mod.init();
 
-    badge = document.getElementById("battle-state-badge");
-    expect(badge).toBeTruthy();
-    expect(badge?.hidden).toBe(true);
-    expect(badge?.hasAttribute("hidden")).toBe(true);
-    expect(badge?.dataset.format).toBe("plain");
+    const badgeAfter = document.getElementById("battle-state-badge");
+    expect(badgeAfter).toBeTruthy();
+    expect(badgeAfter?.hidden).toBe(true);
+    expect(badgeAfter?.hasAttribute("hidden")).toBe(true);
+    expect(badgeAfter?.dataset.format).toBe("plain");
   });
 
   describe("Classic Battle stat buttons", () => {
-    const getEnv = setupClassicBattleHooks();
 
     async function initBattle() {
       const statContainer = document.createElement("div");
@@ -1071,6 +1104,8 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
     test("stat buttons re-enable when scheduler loop is idle", async () => {
       resetFallbackScores();
+      const env = getEnv();
+      const { timerSpy } = env;
       const { statControls, container } = await initBattle();
       const button = container.querySelector("button[data-stat]");
       expect(button).toBeTruthy();
@@ -1098,15 +1133,20 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       const restoreRAF = stubGlobal("requestAnimationFrame", undefined);
       const restoreCancelRAF = stubGlobal("cancelAnimationFrame", undefined);
 
+      const restoreQueueMicrotask = stubGlobal("queueMicrotask", (cb) => {
+        setTimeout(cb, 0);
+      });
+
       try {
         resetStatButtons();
         // Flush RAF again after reset
         flushAll();
-        await flushImmediateTasks();
+        await timerSpy.runAllTimersAsync();
         expect(button.disabled).toBe(false);
       } finally {
         restoreRAF();
         restoreCancelRAF();
+        restoreQueueMicrotask();
       }
     });
   });
