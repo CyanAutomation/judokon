@@ -1,22 +1,10 @@
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
+
 describe("Classic Battle inter-round cooldown + Next", () => {
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.resetModules();
-    [
-      "../../src/helpers/setupScoreboard.js",
-      "../../src/helpers/showSnackbar.js",
-      "../../src/helpers/classicBattle/debugPanel.js",
-      "../../src/helpers/classicBattle/eventDispatcher.js",
-      "../../src/helpers/classicBattle/battleEvents.js",
-      "../../src/helpers/timers/createRoundTimer.js",
-      "../../src/helpers/CooldownRenderer.js",
-      "../../src/helpers/timers/computeNextRoundCooldown.js"
-    ].forEach((m) => vi.doUnmock(m));
-  });
   test("enables Next during cooldown and advances on click", async () => {
     // Deterministic: no real waits, no full-page DOM. Use fake timers and
     // wire minimal DOM nodes that the cooldown logic expects.
-    const timers = vi.useFakeTimers();
+    const timers = useCanonicalTimers();
 
     // Minimal DOM: header + next button + timer node
     const { createBattleHeader } = await import("../utils/testUtils.js");
@@ -64,11 +52,11 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     await onNextButtonClick(new MouseEvent("click"), controls);
     await expect(readyPromise).resolves.toBeUndefined();
 
-    timers.useRealTimers();
+    timers.cleanup();
   });
 
   test("settles ready promise when ready dispatch returns false", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     document.body.innerHTML = '<button id="next-button" data-next-ready="true"></button>';
     const dispatchBattleEvent = vi.fn().mockResolvedValue(false);
     vi.doMock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
@@ -98,10 +86,12 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     await advanceWhenReady(btn, resolveReadyAgain);
     await expect(readyAgainPromise).resolves.toBeUndefined();
     expect(dispatchBattleEvent).toHaveBeenCalledTimes(2);
+
+    timers.cleanup();
   });
 
   test("settles ready promise when ready dispatch throws", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     document.body.innerHTML = '<button id="next-button" data-next-ready="true"></button>';
     const error = new Error("ready-dispatch-error");
     const dispatchBattleEvent = vi.fn().mockRejectedValue(error);
@@ -124,10 +114,12 @@ describe("Classic Battle inter-round cooldown + Next", () => {
     expect(dispatchBattleEvent).toHaveBeenCalledWith("ready");
     expect(btn?.disabled).toBe(false);
     expect(btn?.getAttribute("data-next-ready")).toBe("true");
+
+    timers.cleanup();
   });
 
   test("re-enables Next if a callback disables it", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     document.body.innerHTML = '<button id="next-button" disabled></button>';
     document.body.dataset.battleState = "cooldown";
     vi.doMock("../../src/helpers/setupScoreboard.js", () => ({

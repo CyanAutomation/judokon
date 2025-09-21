@@ -15,4 +15,16 @@ describe("Classic Battle end-of-match modal", () => {
     expect(document.getElementById("match-replay-button")).toBeTruthy();
     expect(document.getElementById("match-quit-button")).toBeTruthy();
   });
+
+  test("renders quit outcome messaging with scores", async () => {
+    const file = resolve(process.cwd(), "src/pages/battleClassic.html");
+    const html = readFileSync(file, "utf-8");
+    document.documentElement.innerHTML = html;
+    const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");
+    const { createBattleStore } = await import("../../src/helpers/classicBattle/roundManager.js");
+    const store = createBattleStore();
+    showEndModal(store, { outcome: "quit", scores: { player: 1, opponent: 0 } });
+    const desc = document.getElementById("match-end-desc");
+    expect(desc?.textContent).toBe("You quit the match. You lose! (1-0)");
+  });
 });

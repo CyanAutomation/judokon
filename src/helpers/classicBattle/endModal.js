@@ -2,6 +2,7 @@ import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { handleReplay } from "./roundManager.js";
 import { quitMatch } from "./quitModal.js";
+import { getOutcomeMessage } from "../api/battleUI.js";
 
 /**
  * Show the end-of-match modal with Replay and Quit actions.
@@ -13,7 +14,12 @@ import { quitMatch } from "./quitModal.js";
  * 4. Open the modal, focusing the Replay button.
  *
  * @param {ReturnType<import('./roundManager.js').createBattleStore>} store
- * @param {{ winner?: 'player'|'opponent'|'none', scores?: {player:number, opponent:number} }} [detail]
+ * @param {{
+ *   winner?: 'player'|'opponent'|'none',
+ *   scores?: { player: number, opponent: number },
+ *   outcome?: string,
+ *   message?: string
+ * }} [detail]
  * @returns {import('../../components/Modal.js').Modal}
  */
 export function showEndModal(store, detail = {}) {
@@ -23,13 +29,34 @@ export function showEndModal(store, detail = {}) {
 
   const desc = document.createElement("p");
   desc.id = "match-end-desc";
-  const winner = detail?.winner ?? "player";
+  const rawOutcome = typeof detail?.outcome === "string" ? detail.outcome : "";
   const scores = detail?.scores || { player: 0, opponent: 0 };
-  let summary = "";
-  if (winner === "player") summary = "You win!";
-  else if (winner === "opponent") summary = "Opponent wins!";
-  else summary = "It's a draw!";
-  desc.textContent = `${summary} (${scores.player}-${scores.opponent})`;
+  let winner = detail?.winner;
+  if (!winner) {
+    if (rawOutcome === "matchWinPlayer") winner = "player";
+    else if (rawOutcome === "matchWinOpponent" || rawOutcome === "quit") winner = "opponent";
+    else if (rawOutcome) winner = "none";
+    else winner = "player";
+  }
+
+  const normalizedScores = {
+    player: Number(scores.player) || 0,
+    opponent: Number(scores.opponent) || 0
+  };
+
+  const resolvedMessage = detail?.message || (rawOutcome ? getOutcomeMessage(rawOutcome) : "");
+  let summary = resolvedMessage;
+  if (!summary) {
+    if (winner === "player") summary = "You win!";
+    else if (winner === "opponent") summary = "Opponent wins!";
+    else summary = "It's a draw!";
+  }
+
+  if (summary) {
+    desc.textContent = `${summary} (${normalizedScores.player}-${normalizedScores.opponent})`;
+  } else {
+    desc.textContent = `(${normalizedScores.player}-${normalizedScores.opponent})`;
+  }
 
   const actions = document.createElement("div");
   actions.className = "modal-actions";

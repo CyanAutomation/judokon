@@ -109,7 +109,9 @@ export function getTooltips() {
  * @returns {{ html: string, warning: boolean }} Parsed HTML and warning flag.
  */
 export function parseTooltipText(text) {
-  const safe = escapeHTML(text || "");
+  const raw = String(text ?? "");
+  const normalized = raw.replace(/\r\n?/g, "\n").replace(/\\n/g, "\n");
+  const safe = escapeHTML(normalized);
   const boldCount = (safe.match(/\*\*/g) || []).length;
   const italicPairMatches = safe.match(/_(.*?)_/g) || [];
   const totalUnderscores = (safe.match(/_/g) || []).length;

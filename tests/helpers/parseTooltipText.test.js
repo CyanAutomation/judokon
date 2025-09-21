@@ -47,4 +47,10 @@ describe("parseTooltipText", () => {
     expect(warning).toBe(false);
     marked.parseInline = orig;
   });
+
+  it("normalizes literal \n sequences into line breaks", () => {
+    const { html, warning } = parseTooltipText("First line\\\\nSecond line");
+    expect(html).toBe("First line<br>Second line");
+    expect(warning).toBe(false);
+  });
 });

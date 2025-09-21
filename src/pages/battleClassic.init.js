@@ -419,19 +419,43 @@ async function ensureScoreboardReflectsResult(result) {
   } catch {}
 }
 
-async function confirmMatchOutcome(store, matchEnded) {
+async function confirmMatchOutcome(store, result) {
+  let snapshot = (result && typeof result === "object") ? { ...result } : null;
+  let matchEnded = Boolean(snapshot?.matchEnded);
+  let engineScores = null;
   try {
-    const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
-    if (typeof isMatchEnded === "function" && isMatchEnded()) {
+    const { isMatchEnded, getScores } = await import("../helpers/battleEngineFacade.js");
+    if (!matchEnded && typeof isMatchEnded === "function" && isMatchEnded()) {
       matchEnded = true;
+      snapshot = snapshot || {};
     }
-    if (matchEnded) {
-      showEndModal(store, { winner: "player", scores: { player: 1, opponent: 0 } });
+    if (typeof getScores === "function") {
+      try {
+        engineScores = getScores();
+      } catch {}
     }
   } catch (err) {
     console.debug("battleClassic: checking match end failed", err);
   }
-  return matchEnded;
+
+  if (!matchEnded) {
+    return false;
+  }
+
+  const scores = {
+    player: Number(snapshot?.playerScore ?? engineScores?.playerScore) || 0,
+    opponent: Number(snapshot?.opponentScore ?? engineScores?.opponentScore) || 0
+  };
+
+  let outcome = typeof snapshot?.outcome === "string" ? snapshot.outcome : "";
+  if (!outcome) {
+    if (scores.player > scores.opponent) outcome = "matchWinPlayer";
+    else if (scores.opponent > scores.player) outcome = "matchWinOpponent";
+    else outcome = "matchDraw";
+  }
+
+  showEndModal(store, { outcome, scores });
+  return true;
 }
 
 function scheduleNextReadyAfterSelection(store) {
@@ -449,17 +473,16 @@ function scheduleNextReadyAfterSelection(store) {
 }
 
 async function applySelectionResult(store, result) {
-  let matchEnded = Boolean(result && result.matchEnded);
   try {
     console.debug("battleClassic: stat selection result", {
-      matchEnded,
+      matchEnded: Boolean(result?.matchEnded),
       outcome: result?.outcome,
       playerScore: result?.playerScore,
       opponentScore: result?.opponentScore
     });
   } catch {}
   await ensureScoreboardReflectsResult(result);
-  matchEnded = await confirmMatchOutcome(store, matchEnded);
+  const matchEnded = await confirmMatchOutcome(store, result);
   if (!matchEnded) {
     scheduleNextReadyAfterSelection(store);
   } else {
@@ -1310,17 +1333,11 @@ async function init() {
           const result = e?.detail?.result;
           if (!result || !result.matchEnded) return;
           const outcome = String(result?.outcome || "");
-          const winner =
-            outcome === "matchWinPlayer"
-              ? "player"
-              : outcome === "matchWinOpponent"
-                ? "opponent"
-                : "none";
           const scores = {
             player: Number(result?.playerScore) || 0,
             opponent: Number(result?.opponentScore) || 0
           };
-          showEndModal(store, { winner, scores });
+          showEndModal(store, { outcome, scores });
         } catch {}
       });
     } catch (err) {
@@ -1339,17 +1356,11 @@ async function init() {
       onEngine?.("matchEnded", (detail) => {
         try {
           const outcome = String(detail?.outcome || "");
-          const winner =
-            outcome === "matchWinPlayer"
-              ? "player"
-              : outcome === "matchWinOpponent"
-                ? "opponent"
-                : "none";
           const scores = {
             player: Number(detail?.playerScore) || 0,
             opponent: Number(detail?.opponentScore) || 0
           };
-          showEndModal(store, { winner, scores });
+          showEndModal(store, { outcome, scores });
         } catch {}
       });
     } catch (err) {

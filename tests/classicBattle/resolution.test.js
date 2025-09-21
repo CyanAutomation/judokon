@@ -210,3 +210,29 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
   expect(playerVal).toBe(playerStats.speed);
   expect(opponentVal).toBe(opponentStats.speed);
 });
+
+test("match end forwards outcome to end modal", async () => {
+  setupDom();
+  const playerStats = { power: 9, speed: 9, technique: 9, kumikata: 9, newaza: 9 };
+  const opponentStats = { power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 };
+  mockModules({ playerStats, opponentStats });
+  computeRoundResultMock.mockImplementation(async () => ({
+    matchEnded: true,
+    outcome: "quit",
+    playerScore: 3,
+    opponentScore: 0
+  }));
+
+  const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");
+  const mod = await import("../../src/pages/battleClassic.init.js");
+  await mod.init();
+  await Promise.resolve();
+
+  expect(showEndModal).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      outcome: "quit",
+      scores: { player: 3, opponent: 0 }
+    })
+  );
+});
