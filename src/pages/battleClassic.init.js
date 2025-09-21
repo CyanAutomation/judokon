@@ -1443,7 +1443,9 @@ async function init() {
             ? now - lastManualRoundStartTimestamp
             : Number.POSITIVE_INFINITY;
           const skipDueToManual =
-            hasManualStamp && elapsedSinceManual >= 0 && elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
+            hasManualStamp &&
+            elapsedSinceManual >= 0 &&
+            elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
           const eventInfo = {
             skipped: skipDueToManual,
             suppressionWindowMs: READY_SUPPRESSION_WINDOW_MS
