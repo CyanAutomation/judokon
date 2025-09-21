@@ -504,8 +504,18 @@ test.describe("Classic Battle Opponent Reveal", () => {
           setOpponentDelay(100);
         });
 
-        // Don't click any stat - let timer expire
-        await page.waitForTimeout(3500); // Wait for timer to expire
+        // Don't click any stat - let timer expire, then fast-forward via Test API
+        await page.waitForFunction(
+          () => typeof window.__TEST_API?.state?.waitForBattleState === "function"
+        );
+
+        await page.evaluate(() =>
+          window.__TEST_API.state.waitForBattleState("waitingForPlayerAction")
+        );
+
+        await page.evaluate(() =>
+          window.__TEST_API.timers.expireSelectionTimer()
+        );
 
         // Should auto-select and resolve
         await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
