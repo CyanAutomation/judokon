@@ -5,10 +5,14 @@ import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 function getListener(spy, type) {
   const entry = spy.mock.calls.find(([eventType]) => eventType === type);
-  if (!entry || typeof entry[1] !== "function") {
+  if (!entry) {
     throw new Error(`Expected ${type} listener to be registered`);
   }
-  return entry[1];
+  const listener = entry.find((param, index) => index > 0 && typeof param === "function");
+  if (!listener) {
+    throw new Error(`Expected ${type} listener to be a function`);
+  }
+  return listener;
 }
 
 describe("battleCLI points select", () => {
@@ -81,6 +85,7 @@ describe("battleCLI points select", () => {
     expect(getPointsToWin()).toBe(target);
     expect(setPointsToWin).toHaveBeenCalledWith(target);
     const lastHeaderCall = updateRoundHeaderSpy.mock.calls.at(-1);
+    expect(lastHeaderCall).toBeDefined();
     expect(lastHeaderCall).toEqual([0, target]);
     confirmSpy.mockRestore();
     updateRoundHeaderSpy.mockRestore();

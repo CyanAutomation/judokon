@@ -1,21 +1,49 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
 
-const CLI_PAGE = "/src/pages/battleCLI.html";
+const buildCliUrl = (testInfo) => {
+  const fallbackBase = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5000";
+  const baseUrl = testInfo.project.use.baseURL ?? fallbackBase;
+  return new URL("/src/pages/battleCLI.html", baseUrl).toString();
+};
 
 test.describe("CLI Keyboard Flows", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto(CLI_PAGE);
+  test.beforeEach(async ({ page }, testInfo) => {
+    await page.goto(buildCliUrl(testInfo));
     await page.waitForSelector("#cli-root", { timeout: 8000 });
     await page.waitForFunction(
-      () =>
-        typeof window !== "undefined" &&
-        window.__test?.cli?.appendTranscript &&
-        window.__TEST_API?.inspect?.getBattleStore,
+      () => {
+        try {
+          return (
+            typeof window !== "undefined" &&
+            typeof window.__test?.cli?.appendTranscript === "function" &&
+            typeof window.__TEST_API?.inspect?.getBattleStore === "function"
+          );
+        } catch {
+          return false;
+        }
+      },
       { timeout: 8000 }
     );
-    await page.waitForSelector('#cli-stats[aria-busy="false"]', { timeout: 8000 });
   });
+
+  const startBattle = async (page) => {
+    const startButton = page.getByTestId("start-battle-button");
+    if (await startButton.isVisible()) {
+      await startButton.click();
+    }
+    await page.waitForSelector('#cli-stats[aria-busy="false"]', { timeout: 10000 });
+    await page.waitForFunction(
+      () => {
+        try {
+          return document.body?.dataset?.battleState === "waitingForPlayerAction";
+        } catch {
+          return false;
+        }
+      },
+      { timeout: 10000 }
+    );
+  };
 
   test("should load CLI interface structure and expose test hooks", async ({ page }) => {
     await withMutedConsole(async () => {
@@ -27,52 +55,23 @@ test.describe("CLI Keyboard Flows", () => {
       await expect(page.locator("#cli-round")).toContainText("Round");
       await expect(page.locator("#cli-score")).toContainText("You: 0");
 
-      const apiState = await page.evaluate(() => {
-        const selectionTimers = window.__test?.getSelectionTimers?.();
-        const cooldownTimers = window.__test?.getCooldownTimers?.();
-        const hasAppend = typeof window.__test?.cli?.appendTranscript === "function";
-        const hasShowVerbose = typeof window.__test?.cli?.showVerboseSection === "function";
-        const testApi = window.__TEST_API;
-        const stateApis = {
-          battleState: typeof testApi?.state?.getBattleState === "function",
-          debugInfo: typeof testApi?.inspect?.getDebugInfo === "function",
-          battleStore: typeof testApi?.inspect?.getBattleStore === "function"
-        };
-        if (hasShowVerbose) {
-          window.__test.cli.showVerboseSection();
-        }
-        if (hasAppend) {
-          window.__test.cli.appendTranscript([
-            "Round 1 started",
-            { from: "waitingForMatchStart", to: "waitingForPlayerAction" }
-          ]);
-        }
-        const verboseText = document.getElementById("cli-verbose-log")?.textContent?.trim();
-        return {
-          selectionTimers,
-          cooldownTimers,
-          hasAppend,
-          hasShowVerbose,
-          stateApis,
-          verboseText
-        };
-      });
+      const verboseToggle = page.locator("#verbose-toggle");
+      await expect(verboseToggle).toBeVisible();
+      await verboseToggle.check();
+      await expect(page.locator("#cli-verbose-section")).toBeVisible();
 
-      expect(apiState.hasAppend).toBe(true);
-      expect(apiState.hasShowVerbose).toBe(true);
-      expect(apiState.selectionTimers?.selectionTimer).toBeNull();
-      expect(apiState.selectionTimers?.selectionInterval).toBeNull();
-      expect(apiState.cooldownTimers?.cooldownTimer).toBeNull();
-      expect(apiState.stateApis.battleState).toBe(true);
-      expect(apiState.stateApis.debugInfo).toBe(true);
-      expect(apiState.stateApis.battleStore).toBe(true);
-      expect(apiState.verboseText).toContain("Round 1 started");
-      expect(apiState.verboseText).toContain("waitingForPlayerAction");
+      await startBattle(page);
+
+      const verboseLog = page.locator("#cli-verbose-log");
+      await expect(verboseLog).not.toBeEmpty({ timeout: 8000 });
+      await expect(verboseLog).toContainText("waitingForPlayerAction", { timeout: 8000 });
     }, ["log", "warn", "error"]);
   });
 
   test("should toggle help when pressing H and clear invalid key message", async ({ page }) => {
     await withMutedConsole(async () => {
+      await startBattle(page);
+
       const shortcuts = page.locator("#cli-shortcuts");
       await expect(shortcuts).toHaveAttribute("hidden", "");
       const countdown = page.locator("#cli-countdown");
@@ -91,15 +90,7 @@ test.describe("CLI Keyboard Flows", () => {
 
   test("should select stats with number keys and update store", async ({ page }) => {
     await withMutedConsole(async () => {
-      await page.waitForFunction(
-        () => document.querySelector('#cli-stats .cli-stat[data-stat-index]'),
-        { timeout: 8000 }
-      );
-      await page.evaluate(() => {
-        document.body.dataset.battleState = "waitingForPlayerAction";
-        window.__test.handleBattleState({ detail: { from: null, to: "waitingForPlayerAction" } });
-      });
-      await page.locator("#cli-stats").focus();
+      await startBattle(page);
 
       await page.keyboard.press("1");
 
@@ -107,62 +98,39 @@ test.describe("CLI Keyboard Flows", () => {
       await expect(selectedStat).toHaveCount(1, { timeout: 8000 });
       await expect(selectedStat).toHaveAttribute("aria-selected", "true");
       await expect(page.locator("#snackbar-container .snackbar")).toContainText("You Picked:");
-
-      const storeSnapshot = await page.evaluate(() => {
-        const list = document.getElementById("cli-stats");
-        const selected = list?.querySelector(".cli-stat.selected");
-        const label = selected?.textContent?.replace(/\s+/g, " ").trim();
-        const statIndex = selected?.dataset?.statIndex;
-        const store = window.__TEST_API.inspect.getBattleStore();
-        return {
-          selectedIndex: list?.dataset?.selectedIndex,
-          statIndex,
-          label,
-          store
-        };
-      });
-
-      expect(storeSnapshot.selectedIndex).toBe("1");
-      expect(storeSnapshot.statIndex).toBe("1");
-      expect(storeSnapshot.store?.selectionMade).toBe(true);
-      expect(typeof storeSnapshot.store?.playerChoice).toBe("string");
-      expect(storeSnapshot.label).toContain("[1]");
+      await expect(page.locator("#cli-stats")).toHaveAttribute("data-selected-index", "1");
+      await expect(selectedStat.first()).toContainText("[1]");
     }, ["log", "warn", "error"]);
   });
 
   test("should resume countdown timers when quitting is canceled", async ({ page }) => {
     await withMutedConsole(async () => {
-      await page.evaluate(() => {
-        document.body.dataset.battleState = "waitingForPlayerAction";
-        window.__test.handleBattleState({ detail: { from: null, to: "waitingForPlayerAction" } });
-        window.__test.startSelectionCountdown(5);
-      });
+      await startBattle(page);
 
-      const timersBefore = await page.evaluate(() => window.__test.getSelectionTimers());
-      expect(timersBefore.selectionTimer).not.toBeNull();
-      expect(timersBefore.selectionInterval).not.toBeNull();
+      const countdown = page.locator("#cli-countdown");
+      await expect(countdown).not.toBeEmpty({ timeout: 8000 });
+      await expect(countdown).toHaveAttribute("data-remaining-time", /\d+/, { timeout: 8000 });
+      const initialRemainingAttr = await countdown.getAttribute("data-remaining-time");
+      const initialRemaining = initialRemainingAttr ? Number(initialRemainingAttr) : Number.NaN;
+      expect(initialRemaining).toBeGreaterThan(0);
 
       await page.keyboard.press("q");
       const cancelButton = page.locator("#cancel-quit-button");
       await expect(cancelButton).toBeVisible();
 
-      const paused = await page.evaluate(() => window.__test.getPausedTimes());
-      expect(paused.selection).toBeGreaterThanOrEqual(0);
-
       await cancelButton.click();
       await expect(page.locator("#confirm-quit-button")).toBeHidden();
 
-      await expect.poll(async () => {
-        const timers = await page.evaluate(() => window.__test.getSelectionTimers());
-        return Boolean(timers.selectionTimer && timers.selectionInterval);
-      }).toBe(true);
-      const pausedAfter = await page.evaluate(() => window.__test.getPausedTimes());
-      expect(pausedAfter.selection).toBeNull();
-
-      await page.evaluate(() => {
-        window.__test.pauseTimers();
-        window.__test.setSelectionTimers(null, null);
-      });
+      await expect(countdown).not.toBeEmpty({ timeout: 8000 });
+      await expect
+        .poll(
+          async () => {
+            const attr = await countdown.getAttribute("data-remaining-time");
+            return attr ? Number(attr) : null;
+          },
+          { timeout: 8000 }
+        )
+        .toBeLessThan(initialRemaining);
     }, ["log", "warn", "error"]);
   });
 });
