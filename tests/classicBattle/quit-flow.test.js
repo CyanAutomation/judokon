@@ -25,7 +25,12 @@ describe("Classic Battle quit flow", () => {
       dispatchedEvents.push(eventName);
     });
     vi.spyOn(eventBus, "getBattleState").mockReturnValue("interruptMatch");
-    const navigateSpy = vi.spyOn(navUtils, "navigateToHome").mockImplementation(() => {});
+    const navigateSpy = vi.spyOn(navUtils, "navigateToHome");
+    const navComplete = new Promise((resolve) => {
+      navigateSpy.mockImplementation(() => {
+        resolve();
+      });
+    });
 
     const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
@@ -60,8 +65,7 @@ describe("Classic Battle quit flow", () => {
     expect(document.activeElement?.id).toBe("cancel-quit-button");
 
     confirmBtn.click();
-    await Promise.resolve();
-    await Promise.resolve();
+    await navComplete;
 
     expect(showResultSpy).toHaveBeenCalledWith("You quit the match. You lose!");
     expect(dispatchedEvents).toEqual(["interrupt", "toLobby"]);
