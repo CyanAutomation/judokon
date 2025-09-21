@@ -746,12 +746,13 @@ function createReadyDispatchStrategies({
   return strategies;
 }
 
-function finalizeReadyControls(controls, dispatched) {
+function finalizeReadyControls(controls, dispatched, options = {}) {
   if (!controls) return;
+  const forceResolve = options.forceResolve === true;
   controls.readyInFlight = false;
   const resolver = typeof controls.resolveReady === "function" ? controls.resolveReady : null;
-  const shouldResolveReady = Boolean(dispatched && !controls.readyDispatched && resolver);
-  if (dispatched) {
+  const shouldResolveReady = Boolean((dispatched || forceResolve) && !controls.readyDispatched && resolver);
+  if (dispatched || forceResolve) {
     controls.readyDispatched = true;
   }
   if (shouldResolveReady) {
@@ -837,8 +838,17 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       () => appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true }),
       { suppressInProduction: true }
     );
+  } else {
+    safeRound(
+      "handleNextRoundExpiration.traceFallbackFinalize",
+      () =>
+        appendReadyTrace("handleNextRoundExpiration.fallbackFinalize", {
+          dispatched: false
+        }),
+      { suppressInProduction: true }
+    );
   }
-  finalizeReadyControls(controls, dispatched);
+  finalizeReadyControls(controls, dispatched, { forceResolve: !dispatched });
   safeRound(
     "handleNextRoundExpiration.traceEnd",
     () => appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched }),
