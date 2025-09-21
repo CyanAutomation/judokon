@@ -1,4 +1,5 @@
 import { beforeEach, afterEach, test, expect, vi } from "vitest";
+import { useCanonicalTimers } from "./setup/fakeTimers.js";
 import {
   createBattleStore,
   startCooldown,
@@ -12,9 +13,12 @@ import {
   createCooldownControls,
   createExpirationDispatcher
 } from "../src/helpers/classicBattle/cooldownOrchestrator.js";
-import { exposeDebugState } from "../src/helpers/classicBattle/debugHooks.js";
+import { exposeDebugState, readDebugState } from "../src/helpers/classicBattle/debugHooks.js";
+
+let timers;
 
 beforeEach(() => {
+  timers = useCanonicalTimers();
   // Ensure clean DOM and test env
   document.body.innerHTML = "";
   // Reset any debug dataset
@@ -22,6 +26,10 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  if (timers) {
+    timers.cleanup();
+    timers = null;
+  }
   try {
     _resetForTest();
   } catch {}
@@ -54,141 +62,113 @@ test("detectOrchestratorContext reports debug machine", () => {
 });
 
 test("roundManager - cooldown expiry: observe ready dispatch count (baseline)", async () => {
-  // Simulate orchestrated environment so setupOrchestratedReady is installed
-  document.body.innerHTML = '<button id="next-button"></button>';
-  document.body.dataset.battleState = "orchestrated";
-
   const store = createBattleStore();
 
-  // Machine spy which will be returned by getClassicBattleMachine
   const machine = {
     dispatch: vi.fn(() => true),
     getState: () => "cooldown"
   };
 
-  // Central dispatcher spy
   const dispatchBattleEventSpy = vi.fn(async () => true);
 
-  // Fake timer that immediately triggers expiration when started
-  function fakeTimerFactory() {
-    let handlers = {};
+  const readTraceEntries = () => {
+    const trace = readDebugState("nextRoundReadyTrace");
+    return Array.isArray(trace) ? trace : [];
+  };
+
+  const readTraceEvents = () => readTraceEntries().map((entry) => entry.event);
+
+  const fakeTimerFactory = () => {
+    /** @type {Record<string, ((...args: any[]) => void) | undefined>} */
+    const handlers = {};
     return {
       start: () => {
-        // Synchronously invoke expired to reproduce immediate expiry path
-        if (typeof handlers.expired === "function") handlers.expired();
+        handlers.expired?.();
       },
-      on: (ev, h) => {
-        handlers[ev] = h;
+      on: (event, handler) => {
+        handlers[event] = handler;
       },
       stop: () => {}
     };
-  }
+  };
 
-  // Scenario A: with injected dispatcher override -> finalize should call the injected dispatcher
-  startCooldown(store, null, {
+  exposeDebugState("getClassicBattleMachine", () => machine);
+
+  const controlsWithDispatcher = startCooldown(store, null, {
+    isOrchestrated: () => true,
     createRoundTimer: fakeTimerFactory,
     dispatchBattleEvent: dispatchBattleEventSpy,
     getClassicBattleMachine: () => machine
   });
 
-  // Ensure no immediate machine dispatch occurs before async work resolves.
   expect(machine.dispatch).not.toHaveBeenCalled();
 
-  // Allow microtasks to settle
-  await new Promise((r) => setTimeout(r, 0));
+  await expect(controlsWithDispatcher.ready).resolves.toBeUndefined();
 
-  // In this scenario the injected dispatcher handled the event, so machine.dispatch should not be called
-  expect(machine.dispatch).not.toHaveBeenCalled();
   expect(dispatchBattleEventSpy).toHaveBeenCalledTimes(1);
+  expect(machine.dispatch).not.toHaveBeenCalled();
+  expect(controlsWithDispatcher.readyDispatched).toBe(true);
 
-  // Inspect trace (accept any of several markers; ordering can vary by timing)
-  const traceA = globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") || [];
-  expect(Array.isArray(traceA)).toBe(true);
-  const okA = traceA.some((e) =>
-    [
-      "finalize.dispatched",
-      "dispatchReadyViaBus.start",
-      "handleNextRoundExpiration.dispatched"
-    ].includes(e.event)
-  );
-  expect(okA).toBe(true);
+  const traceWithDispatcherEvents = readTraceEvents();
+  expect(traceWithDispatcherEvents).toContain("handleNextRoundExpiration.dispatched");
 
-  // Reset mocks and environment for scenario B
   machine.dispatch.mockClear();
   dispatchBattleEventSpy.mockClear();
-  delete document.body.dataset.battleState;
-  document.body.dataset.battleState = "orchestrated";
 
-  // Provide a global getter so the centralized dispatcher can locate our machine
-  globalThis.__classicBattleDebugRead = (key) => {
-    if (key === "getClassicBattleMachine") return () => machine;
-    return undefined;
-  };
+  exposeDebugState("getClassicBattleMachine", () => machine);
 
-  // Scenario B: no injected dispatcher -> finalize will call machine.dispatch directly
-  startCooldown(store, null, {
-    createRoundTimer: fakeTimerFactory
+  const controlsWithMachineFallback = startCooldown(store, null, {
+    isOrchestrated: () => true,
+    createRoundTimer: fakeTimerFactory,
+    getClassicBattleMachine: () => machine
   });
 
-  // Allow microtasks to settle
-  await new Promise((r) => setTimeout(r, 0));
+  await expect(controlsWithMachineFallback.ready).resolves.toBeUndefined();
 
-  const callsB = machine.dispatch.mock ? machine.dispatch.mock.calls.length : 0;
+  expect(machine.dispatch.mock.calls.length).toBeGreaterThanOrEqual(1);
+  expect(controlsWithMachineFallback.readyDispatched).toBe(true);
 
-  // Expect at least one dispatch in this baseline run; duplication is timing-dependent
-  expect(callsB).toBeGreaterThanOrEqual(1);
-  const traceB = globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") || [];
-  // When double-dispatch occurs, we expect both finalize.dispatched and dispatchReadyViaBus.start/end traces
-  // Record traceB contents for analysis (may vary by timing); assert it's an array
-  expect(Array.isArray(traceB)).toBe(true);
-  // Attach traceB to global for post-run inspection
-  globalThis.__lastTraceB = traceB;
+  const traceMachineFallbackEvents = readTraceEvents();
+  expect(traceMachineFallbackEvents).toContain("handleNextRoundExpiration.start");
+  expect(traceMachineFallbackEvents).toContain("resolveReadyInvoked");
 
-  // Additional variant: delayed expiry to emulate scheduler differences
   machine.dispatch.mockClear();
-  dispatchBattleEventSpy.mockClear();
-  // Delayed timer factory to simulate microtask ordering
-  function delayedTimerFactory() {
-    let handlers = {};
+
+  const delayedTimerFactory = () => {
+    /** @type {Record<string, ((...args: any[]) => void) | undefined>} */
+    const handlers = {};
     return {
       start: () => {
-        // schedule expired on next macrotask
         setTimeout(() => {
-          if (typeof handlers.expired === "function") handlers.expired();
+          handlers.expired?.();
         }, 0);
       },
-      on: (ev, h) => {
-        handlers[ev] = h;
+      on: (event, handler) => {
+        handlers[event] = handler;
       },
       stop: () => {}
     };
-  }
+  };
 
-  // Reset trace map
-  if (globalThis.__classicBattleDebugExpose) {
-    globalThis.__classicBattleDebugExpose("nextRoundReadyTrace", []);
-  }
+  exposeDebugState("getClassicBattleMachine", () => machine);
 
-  startCooldown(store, null, {
-    createRoundTimer: delayedTimerFactory
+  const controlsWithDelayedTimer = startCooldown(store, null, {
+    isOrchestrated: () => true,
+    createRoundTimer: delayedTimerFactory,
+    getClassicBattleMachine: () => machine
   });
-  await new Promise((r) => setTimeout(r, 10));
-  const traceDelayed = globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") || [];
-  expect(Array.isArray(traceDelayed)).toBe(true);
-  // Print traces for investigator convenience
-  try {
-    const fs = await import("fs");
-    try {
-      fs.promises.writeFile(
-        "./test-traces.json",
-        JSON.stringify(
-          { traceA: traceA || [], traceB: traceB || [], traceDelayed: traceDelayed || [] },
-          null,
-          2
-        )
-      );
-    } catch {}
-  } catch {}
+
+  expect(controlsWithDelayedTimer.readyDispatched).toBe(false);
+
+  await timers.advanceTimersByTimeAsync(0);
+  await expect(controlsWithDelayedTimer.ready).resolves.toBeUndefined();
+
+  const delayedTraceEvents = readTraceEvents();
+  expect(delayedTraceEvents).toContain("handleNextRoundExpiration.dispatched");
+  expect(
+    delayedTraceEvents.filter((event) => event === "resolveReadyInvoked").length
+  ).toBeGreaterThanOrEqual(1);
+  expect(controlsWithDelayedTimer.readyDispatched).toBe(true);
 });
 
 test("finalizeReadyControls guards wrapped resolveReady against reentry", async () => {
