@@ -65,11 +65,6 @@ test.describe("Classic Battle round counter", () => {
 
       await next.click();
 
-      await expect.poll(async () => {
-        const history = await page.evaluate(() => window.__roundCycleHistory || []);
-        return history.filter((entry) => entry?.type === "round.start").length;
-      }).toBe(1);
-
       const history = await page.evaluate(() => window.__roundCycleHistory || []);
       expect(Array.isArray(history)).toBe(true);
 

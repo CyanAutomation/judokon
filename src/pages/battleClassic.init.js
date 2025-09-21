@@ -1468,37 +1468,40 @@ async function init() {
         }
 
         if (eventType === "ready") {
-          const now = getCurrentTimestamp();
-          const hasManualStamp = lastManualRoundStartTimestamp > 0;
-          const elapsedSinceManual = hasManualStamp
-            ? now - lastManualRoundStartTimestamp
-            : Number.POSITIVE_INFINITY;
-          const skipDueToManual =
-            hasManualStamp &&
-            elapsedSinceManual >= 0 &&
-            elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
-          const eventInfo = {
-            skipped: skipDueToManual,
-            suppressionWindowMs: READY_SUPPRESSION_WINDOW_MS
-          };
-          if (hasManualStamp && Number.isFinite(elapsedSinceManual)) {
-            eventInfo.sinceManualStartMs = elapsedSinceManual;
-          }
-          trackRoundCycleEvent(eventType, eventInfo, eventDetail);
-          if (skipDueToManual) {
-            return;
-          }
+          queueMicrotask(async () => {
+            const now = getCurrentTimestamp();
+            const hasManualStamp = lastManualRoundStartTimestamp > 0;
+            const elapsedSinceManual = hasManualStamp
+              ? now - lastManualRoundStartTimestamp
+              : Number.POSITIVE_INFINITY;
+            const skipDueToManual =
+              hasManualStamp &&
+              elapsedSinceManual >= 0 &&
+              elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
+            const eventInfo = {
+              skipped: skipDueToManual,
+              suppressionWindowMs: READY_SUPPRESSION_WINDOW_MS
+            };
+            if (hasManualStamp && Number.isFinite(elapsedSinceManual)) {
+              eventInfo.sinceManualStartMs = elapsedSinceManual;
+            }
+            trackRoundCycleEvent(eventType, eventInfo, eventDetail);
+            if (skipDueToManual) {
+              return;
+            }
+            await startRoundCycle(store);
+            recordRoundCycleTrigger(eventType || "unknown");
+          });
         } else {
           trackRoundCycleEvent(eventType, { manualRoundStart }, eventDetail);
+          await startRoundCycle(store);
+          recordRoundCycleTrigger(eventType || "unknown");
         }
 
         try {
           const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
           if (typeof isMatchEnded === "function" && isMatchEnded()) return;
         } catch {}
-
-        await startRoundCycle(store);
-        recordRoundCycleTrigger(eventType || "unknown");
       };
       onBattleEvent("round.start", startIfNotEnded);
       onBattleEvent("ready", startIfNotEnded);
