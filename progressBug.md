@@ -223,6 +223,7 @@ Phases:
   - Add `RoundStore` module and wire it into a small subset of consumers behind a runtime/config flag.
   - Keep current behavior as default; new flag enables store wiring.
   - Acceptance: Tests for both legacy and store-enabled behavior.
+  - **COMPLETED**: Added "roundStore" feature flag to settings.json and tooltips.json. Modified scoreboardAdapter.js to conditionally use RoundStore when flag is enabled, falling back to legacy event system. Added wireIntoScoreboardAdapter() and disconnectFromScoreboardAdapter() methods to RoundStore. Created comprehensive integration tests (8/8 passing) covering both legacy and store-enabled behavior. All unit tests (25/25) and playwright tests pass with no regressions.
 
 - Phase 2 — Migrate incrementally (2–4 weeks, incremental PRs)
   - Gradually migrate consumers (UI components, orchestrator, analytics) to read from/write to the store.
