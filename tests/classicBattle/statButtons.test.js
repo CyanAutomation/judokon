@@ -1,59 +1,74 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import installRAFMock from "../helpers/rafMock.js";
 import { JSDOM } from "jsdom";
-import { readFileSync } from "fs";
-import { join } from "path";
 import { renderStatButtons } from "../../src/pages/battleClassic.init.js";
 
 describe("Stat Buttons", () => {
   let dom;
-  let window;
-  let document;
+  let restoreRaf;
+  let flushAllFrames;
 
-  beforeEach(async () => {
-    const htmlPath = join(process.cwd(), "src/pages/battleClassic.html");
-    const htmlContent = readFileSync(htmlPath, "utf-8");
+  beforeEach(() => {
+    dom = new JSDOM(
+      `<!DOCTYPE html>
+       <body>
+         <div id="stat-buttons"></div>
+         <button id="next-button" data-role="next-round"></button>
+       </body>`,
+      {
+        url: "http://localhost:3000/battleClassic.html",
+        pretendToBeVisual: true
+      }
+    );
 
-    dom = new JSDOM(htmlContent, {
-      url: "http://localhost:3000/battleClassic.html",
-      runScripts: "dangerously",
-      resources: "usable",
-      pretendToBeVisual: true
-    });
-
-    window = dom.window;
-    document = window.document;
-
+    const { window } = dom;
     global.window = window;
-    global.document = document;
+    global.document = window.document;
+    global.HTMLElement = window.HTMLElement;
+    global.Node = window.Node;
+    global.CustomEvent = window.CustomEvent;
+    global.navigator = window.navigator;
+    global.performance = window.performance;
 
-    // Install queued RAF mock for deterministic control in tests
-    const raf = installRAFMock();
-    // make sure teardown can restore
-    global.__statButtonsRafRestore = raf.restore;
+    const rafControls = installRAFMock();
+    restoreRaf = rafControls.restore;
+    flushAllFrames = rafControls.flushAll;
   });
 
   afterEach(() => {
+    try {
+      restoreRaf?.();
+    } catch {}
     dom?.window?.close();
     vi.clearAllMocks();
-    vi.resetModules();
-    try {
-      global.__statButtonsRafRestore?.();
-    } catch {}
+    flushAllFrames = undefined;
+    delete global.window;
+    delete global.document;
+    delete global.HTMLElement;
+    delete global.Node;
+    delete global.CustomEvent;
+    delete global.navigator;
+    delete global.performance;
   });
 
-  it("should have aria-describedby and data-buttons-ready attributes", async () => {
+  it("should have aria-describedby and data-buttons-ready attributes", () => {
     const store = {};
+    const container = document.getElementById("stat-buttons");
+    expect(container).toBeTruthy();
+
     renderStatButtons(store);
 
-    const statButtonsContainer = document.getElementById("stat-buttons");
+    const frameCallbacks = global.requestAnimationFrame.mock.calls.map(([cb]) => cb);
+    expect(frameCallbacks).toHaveLength(1);
+    expect(frameCallbacks[0]).toBeTypeOf("function");
 
-    // Wait for the next frame where data-buttons-ready is set
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    flushAllFrames?.();
 
-    expect(statButtonsContainer.dataset.buttonsReady).toBe("true");
+    expect(container.dataset.buttonsReady).toBe("true");
+    expect(container.getAttribute("data-buttons-ready")).toBe("true");
 
-    const statButtons = statButtonsContainer.querySelectorAll("button");
+    const statButtons = container.querySelectorAll("button");
+    expect(statButtons.length).toBeGreaterThan(0);
     statButtons.forEach((button) => {
       expect(button.getAttribute("aria-describedby")).toBe("round-message");
     });
