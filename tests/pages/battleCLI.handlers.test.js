@@ -104,7 +104,12 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
       const originalAdd = btn.addEventListener.bind(btn);
       btn.addEventListener = vi.fn((event, handler, opts) => {
         if (event === "click" && typeof handler === "function") {
-          buttonClickHandlers.push(handler);
+          buttonClickHandlers.push({
+            button: btn,
+            handler,
+            label,
+            id: options.id
+          });
         }
         return originalAdd(event, handler, opts);
       });
@@ -168,9 +173,11 @@ async function setupHandlers(options) {
   const getLobbyLinkHref = () =>
     document.getElementById("return-to-lobby-link")?.getAttribute("href") ?? null;
   const clickPlayAgain = async () => {
-    const handler = result.buttonClickHandlers.at(-1);
-    if (handler) {
-      await handler(new Event("click"));
+    const playAgainHandler = result.buttonClickHandlers.find(
+      (item) => item.id === "play-again-button" || item.label === "Play Again"
+    );
+    if (playAgainHandler?.handler) {
+      await playAgainHandler.handler(new Event("click"));
     }
   };
   const getNextRoundButtons = () => Array.from(document.querySelectorAll("#next-round-button"));
