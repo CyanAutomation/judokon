@@ -1,5 +1,10 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { withMutedConsole } from "../tests/utils/console.js";
+import {
+  waitForBattleReady,
+  waitForBattleState,
+  waitForTestApi
+} from "./helpers/battleStateHelper.js";
 
 const buildCliUrl = (testInfo) => {
   const fallbackBase = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:5000";
@@ -11,38 +16,8 @@ const gotoCliPage = async (page, testInfo) => {
   await page.goto(buildCliUrl(testInfo));
 };
 
-const waitForTestApi = async (page) => {
-  await page.waitForFunction(
-    () => {
-      try {
-        return typeof window !== "undefined" && window.__TEST_API !== undefined;
-      } catch {
-        return false;
-      }
-    },
-    { timeout: 10_000 }
-  );
-};
-
-const waitForBattleReady = async (page) => {
-  await page.waitForFunction(
-    () => {
-      try {
-        return (
-          typeof window.__TEST_API?.init?.isBattleReady === "function" &&
-          window.__TEST_API.init.isBattleReady()
-        );
-      } catch {
-        return false;
-      }
-    },
-    { timeout: 10_000 }
-  );
-};
-
 const ensureBattleReady = async (page) => {
-  await waitForTestApi(page);
-  await waitForBattleReady(page);
+  await waitForBattleReady(page, { timeout: 10_000, allowFallback: false });
 };
 
 const waitForStatsReady = async (page) => {
@@ -57,16 +32,10 @@ const startBattle = async (page) => {
   }
 
   await waitForStatsReady(page);
-  await page.waitForFunction(
-    () => {
-      try {
-        return document.body?.dataset?.battleState === "waitingForPlayerAction";
-      } catch {
-        return false;
-      }
-    },
-    { timeout: 10_000 }
-  );
+  await waitForBattleState(page, "waitingForPlayerAction", {
+    timeout: 10_000,
+    allowFallback: false
+  });
 };
 
 const runWithConsoleDiscipline = (callback) => withMutedConsole(callback, ["log", "warn", "error"]);
@@ -85,11 +54,22 @@ const getBattleStore = (page) =>
 const getBattleState = (page) =>
   page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
 
-const getRoundsPlayed = (page) =>
-  page.evaluate(() => window.__TEST_API?.inspect?.getBattleStore?.()?.roundsPlayed ?? 0);
-
 test.beforeEach(async ({ page }, testInfo) => {
   await gotoCliPage(page, testInfo);
+  await waitForTestApi(page, { timeout: 10_000 });
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          try {
+            return typeof window.__TEST_API?.inspect?.getBattleStore === "function";
+          } catch {
+            return false;
+          }
+        }),
+      { timeout: 10_000 }
+    )
+    .toBe(true);
 });
 
 test.describe("CLI Battle Interface", () => {
