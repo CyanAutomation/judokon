@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
+import { waitForBattleState, waitForTestApi } from "./helpers/battleStateHelper.js";
 
 const buildCliUrl = (testInfo) => {
   const fallbackBase = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5000";
@@ -11,20 +12,33 @@ test.describe("CLI Keyboard Flows", () => {
   test.beforeEach(async ({ page }, testInfo) => {
     await page.goto(buildCliUrl(testInfo));
     await page.waitForSelector("#cli-root", { timeout: 8000 });
-    await page.waitForFunction(
-      () => {
-        try {
-          return (
-            typeof window !== "undefined" &&
-            typeof window.__test?.cli?.appendTranscript === "function" &&
-            typeof window.__TEST_API?.inspect?.getBattleStore === "function"
-          );
-        } catch {
-          return false;
-        }
-      },
-      { timeout: 8000 }
-    );
+    await waitForTestApi(page, { timeout: 8000 });
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            try {
+              return typeof window.__test?.cli?.appendTranscript === "function";
+            } catch {
+              return false;
+            }
+          }),
+        { timeout: 8000 }
+      )
+      .toBe(true);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            try {
+              return typeof window.__TEST_API?.inspect?.getBattleStore === "function";
+            } catch {
+              return false;
+            }
+          }),
+        { timeout: 8000 }
+      )
+      .toBe(true);
   });
 
   const startBattle = async (page) => {
@@ -33,16 +47,10 @@ test.describe("CLI Keyboard Flows", () => {
       await startButton.click();
     }
     await page.waitForSelector('#cli-stats[aria-busy="false"]', { timeout: 10000 });
-    await page.waitForFunction(
-      () => {
-        try {
-          return document.body?.dataset?.battleState === "waitingForPlayerAction";
-        } catch {
-          return false;
-        }
-      },
-      { timeout: 10000 }
-    );
+    await waitForBattleState(page, "waitingForPlayerAction", {
+      timeout: 10000,
+      allowFallback: false
+    });
   };
 
   test("should load CLI interface structure and expose test hooks", async ({ page }) => {
