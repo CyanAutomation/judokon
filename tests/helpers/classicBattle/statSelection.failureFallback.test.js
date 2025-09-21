@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import installRAFMock from "../rafMock.js";
 import { withListenerSpy } from "../listenerUtils.js";
-import { useCanonicalTimers } from "../setup/fakeTimers.js";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 describe("classicBattle stat selection failure recovery", () => {
   const ROUND_MANAGER_PATH = "../../../src/helpers/classicBattle/roundManager.js";
@@ -13,18 +13,8 @@ describe("classicBattle stat selection failure recovery", () => {
   let showSnackbarMock;
   let enableNextRoundButtonMock;
   let disableNextRoundButtonMock;
-  let statClickHandlers;
-  let addEventListenerSpy;
   let previousMinDuration;
   let originalLocalStorage;
-  const elementPrototype =
-    globalThis.HTMLElement?.prototype || globalThis.Element?.prototype || null;
-
-  const getStatSelectionEntry = (index = 0) => {
-    const entry = statClickHandlers?.[index];
-    expect(entry?.handler).toBeTypeOf("function");
-    return entry;
-  };
 
   /**
    * Flush pending microtasks to ensure async operations complete
@@ -42,18 +32,6 @@ describe("classicBattle stat selection failure recovery", () => {
     showSnackbarMock = vi.fn();
     enableNextRoundButtonMock = vi.fn();
     disableNextRoundButtonMock = vi.fn();
-    statClickHandlers = [];
-
-    if (elementPrototype) {
-      const nativeAddEventListener = elementPrototype.addEventListener;
-      addEventListenerSpy = vi.spyOn(elementPrototype, "addEventListener");
-      addEventListenerSpy.mockImplementation(function (type, listener, options) {
-        if (type === "click" && this?.getAttribute?.("data-stat")) {
-          statClickHandlers.push({ element: this, handler: listener });
-        }
-        return nativeAddEventListener?.call(this, type, listener, options);
-      });
-    }
 
     vi.doMock(ROUND_MANAGER_PATH, () => ({
       startCooldown: startCooldownMock,
@@ -101,8 +79,6 @@ describe("classicBattle stat selection failure recovery", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
-    addEventListenerSpy?.mockRestore();
-    statClickHandlers = [];
     try {
       global.__statSelectionRafRestore?.();
     } catch {}
@@ -134,24 +110,26 @@ describe("classicBattle stat selection failure recovery", () => {
     const store = {};
     renderStatButtons(store);
 
-    const { handler } = getStatSelectionEntry();
-    handler();
+    const statButton = document.querySelector("[data-stat]");
+    await withListenerSpy(statButton, "click", async (calls) => {
+      statButton.click();
 
-    expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
-    expect(handleStatSelectionMock).toHaveBeenCalledWith(
-      store,
-      expect.any(String),
-      expect.objectContaining({ playerVal: 5, opponentVal: 3 })
-    );
-    expect(startCooldownMock).toHaveBeenCalledTimes(1);
-    expect(startCooldownMock).toHaveBeenCalledWith(store);
-    expect(store.__uiCooldownStarted).toBe(false);
-    expect(enableNextRoundButtonMock).toHaveBeenCalled();
+      expect(calls).toHaveLength(1);
+      expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+      expect(handleStatSelectionMock).toHaveBeenCalledWith(
+        store,
+        expect.any(String),
+        expect.objectContaining({ playerVal: 5, opponentVal: 3 })
+      );
+      expect(startCooldownMock).toHaveBeenCalledTimes(1);
+      expect(startCooldownMock).toHaveBeenCalledWith(store);
+      expect(store.__uiCooldownStarted).toBe(false);
+      expect(enableNextRoundButtonMock).toHaveBeenCalled();
+    });
   });
 
   it("immediately triggers cooldown on selection failure without advancing timers", async () => {
-    const { timers, cleanup } = useCanonicalTimers();
-    timers.useFakeTimers();
+    const { cleanup } = useCanonicalTimers();
     try {
       handleStatSelectionMock.mockImplementation(() => {
         throw new Error("stat selection failed");
@@ -162,13 +140,16 @@ describe("classicBattle stat selection failure recovery", () => {
       const store = {};
       renderStatButtons(store);
 
-      const { handler } = getStatSelectionEntry();
-      handler();
+      const statButton = document.querySelector("[data-stat]");
+      await withListenerSpy(statButton, "click", async (calls) => {
+        statButton.click();
 
-      expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
-      expect(startCooldownMock).toHaveBeenCalledTimes(1);
-      expect(startCooldownMock).toHaveBeenCalledWith(store);
-      expect(store.__uiCooldownStarted).toBe(false);
+        expect(calls).toHaveLength(1);
+        expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+        expect(startCooldownMock).toHaveBeenCalledTimes(1);
+        expect(startCooldownMock).toHaveBeenCalledWith(store);
+        expect(store.__uiCooldownStarted).toBe(false);
+      });
     } finally {
       cleanup();
     }
@@ -184,9 +165,14 @@ describe("classicBattle stat selection failure recovery", () => {
     const store = {};
     renderStatButtons(store);
 
-    const { handler } = getStatSelectionEntry();
-    handler();
+    const statButton = document.querySelector("[data-stat]");
+    const spy = withListenerSpy(statButton, "click", () => {
+      // The spy will capture the call
+    });
 
+    statButton.click();
+
+    expect(spy).toHaveBeenCalledTimes(1);
     expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
     expect(startCooldownMock).toHaveBeenCalledTimes(1);
     expect(store.__uiCooldownStarted).toBe(false);
@@ -207,9 +193,14 @@ describe("classicBattle stat selection failure recovery", () => {
     const store = {};
     renderStatButtons(store);
 
-    const { handler } = getStatSelectionEntry();
-    handler();
+    const statButton = document.querySelector("[data-stat]");
+    const spy = withListenerSpy(statButton, "click", () => {
+      // The spy will capture the call
+    });
 
+    statButton.click();
+
+    expect(spy).toHaveBeenCalledTimes(1);
     expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
     expect(startCooldownMock).toHaveBeenCalledTimes(1);
     expect(store.__uiCooldownStarted).toBe(false);
@@ -241,8 +232,14 @@ describe("classicBattle stat selection failure recovery", () => {
       const previousMin = win.__MIN_OPPONENT_MESSAGE_DURATION_MS;
       win.__MIN_OPPONENT_MESSAGE_DURATION_MS = minDisplay;
 
-      const { handler } = getStatSelectionEntry();
-      handler();
+      const statButton = document.querySelector("[data-stat]");
+      const spy = withListenerSpy(statButton, "click", () => {
+        // The spy will capture the call
+      });
+
+      statButton.click();
+
+      expect(spy).toHaveBeenCalledTimes(1);
 
       await flushMicrotasks();
       await timers.advanceTimersByTimeAsync(0);

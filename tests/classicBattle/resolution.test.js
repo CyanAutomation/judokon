@@ -90,7 +90,9 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     createBattleEngine: vi.fn(),
     STATS: STAT_KEYS,
     on: vi.fn(),
-    getRoundsPlayed: () => 0
+    getRoundsPlayed: () => 0,
+    isMatchEnded: vi.fn(() => false),
+    getScores: vi.fn(() => ({ playerScore: 0, opponentScore: 0 }))
   }));
 
   vi.doMock("../../src/helpers/classicBattle/snackbar.js", () => ({
@@ -213,38 +215,67 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
 
 test("scoreboard reconciles directly to round result", async () => {
   setupDom();
+  const statContainer = document.createElement("div");
+  statContainer.id = "stat-buttons";
+  document.body.appendChild(statContainer);
+
+  const originalRaf = globalThis.requestAnimationFrame;
+  const originalCancelRaf = globalThis.cancelAnimationFrame;
+  globalThis.requestAnimationFrame = (cb) => {
+    const id = setTimeout(() => {
+      try {
+        const now = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+        cb(now);
+      } catch {
+        cb(0);
+      }
+    }, 0);
+    return id;
+  };
+  globalThis.cancelAnimationFrame = (id) => {
+    clearTimeout(id);
+  };
+
   const playerStats = { power: 3, speed: 40, technique: 3, kumikata: 3, newaza: 3 };
   const opponentStats = { power: 2, speed: 10, technique: 2, kumikata: 2, newaza: 2 };
   mockModules({ playerStats, opponentStats });
 
+  const mockedSelection = {
+    handleStatSelection: vi.fn(async () => ({
+      matchEnded: false,
+      outcome: "winPlayer",
+      playerScore: 4,
+      opponentScore: 1
+    })),
+    getPlayerAndOpponentValues: vi.fn(() => ({ playerVal: 9, opponentVal: 3 }))
+  };
+
+  vi.doMock("../../src/helpers/classicBattle/selectionHandler.js", () => mockedSelection);
+
   const { updateScore } = await import("../../src/helpers/setupScoreboard.js");
-  const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
   const mod = await import("../../src/pages/battleClassic.init.js");
-  await mod.init();
 
-  const scoreEl = document.getElementById("score-display");
-  expect(scoreEl).not.toBeNull();
-  scoreEl.textContent = "You: 0 Opponent: 0";
+  try {
+    await mod.init();
 
-  const [, roundResolvedHandler] =
-    onBattleEvent.mock.calls.find(([eventName]) => eventName === "roundResolved") || [];
-  expect(typeof roundResolvedHandler).toBe("function");
+    const scoreEl = document.getElementById("score-display");
+    expect(scoreEl).not.toBeNull();
+    const buttons = document.querySelectorAll("#stat-buttons button[data-stat]");
+    expect(buttons.length).toBeGreaterThan(0);
 
-  await roundResolvedHandler({
-    detail: {
-      result: {
-        matchEnded: false,
-        outcome: "winPlayer",
-        playerScore: 4,
-        opponentScore: 1
-      }
-    }
-  });
+    buttons[0].click();
+    await Promise.resolve();
+    await Promise.resolve();
 
-  expect(updateScore).toHaveBeenLastCalledWith(4, 1);
-  const normalizedScore = scoreEl.textContent.replace(/\s+/g, " ").trim();
-  expect(normalizedScore).toBe("You: 4 Opponent: 1");
-  expect(normalizedScore).not.toBe("You: 1 Opponent: 0");
+    expect(mockedSelection.handleStatSelection).toHaveBeenCalled();
+    expect(updateScore).toHaveBeenLastCalledWith(4, 1);
+    const normalizedScore = scoreEl.textContent.replace(/\s+/g, " ").trim();
+    expect(normalizedScore).toBe("You: 4 Opponent: 1");
+    expect(normalizedScore).not.toBe("You: 1 Opponent: 0");
+  } finally {
+    globalThis.requestAnimationFrame = originalRaf;
+    globalThis.cancelAnimationFrame = originalCancelRaf;
+  }
 });
 
 test("match end forwards outcome to end modal", async () => {
