@@ -31,9 +31,7 @@ test.describe("Classic Battle CLI - 200% Zoom Accessibility", () => {
     await page.goto("/src/pages/battleCLI.html");
     await page.waitForLoadState("networkidle");
 
-    await page.waitForFunction(
-      () => typeof window.__TEST_API?.viewport?.setZoom === "function"
-    );
+    await page.waitForFunction(() => typeof window.__TEST_API?.viewport?.setZoom === "function");
     await page.evaluate(() => {
       window.__TEST_API.viewport.setZoom(2);
     });
