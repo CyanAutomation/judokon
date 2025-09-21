@@ -160,5 +160,6 @@ it("tests real behavior", async () => {
 
 ## Examples
 
-See `tests/helpers/integrationHarness.test.js` for comprehensive examples and `tests/helpers/classicBattle/scheduleNextRound.fallback.integration.test.js` for a real migration example.</content>
+See `tests/helpers/integrationHarness.test.js` for comprehensive examples and `tests/helpers/classicBattle/scheduleNextRound.fallback.integration.test.js` for a real migration example.
+</content>
 <parameter name="filePath">/workspaces/judokon/tests/helpers/integrationHarness.README.md

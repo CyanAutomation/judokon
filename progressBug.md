@@ -1,13 +1,14 @@
 # Opportunities for Improvement — Phased Plans
 
 This document expands each improvement suggestion into a clear, phased implementation plan. Each item - Phase 1 — Implement test utilities (1–2 days)
-  - Implement `tests/helpers/listenerUtils.js` offering helpers:
-  - `withListenerSpy(target, eventName, fn)` — attaches spy that records handler calls.
-  - `expectListenerAttached(target, eventName)` — asserts a handler was added (best-effort via wrapping `addEventListener`).
-  - `wrapAddEventListener()` — optional installation that proxies `addEventListener` to capture registrations (only installed for tests that opt-in).
-  - Acceptance: Unit tests demonstrating detection of attached listeners and invocation order.
-  - **COMPLETED**: Implemented `tests/helpers/listenerUtils.js` with `withListenerSpy()`, `expectListenerAttached()`, and `wrapAddEventListener()` functions. Created comprehensive unit tests (16/16 passing) covering event spying, listener detection, and integration scenarios. All component factory tests (36/36) and related event listener tests (5/5) pass with no regressions.
-  - **COMPLETED**: Implemented `tests/helpers/listenerUtils.js` with `withListenerSpy()`, `expectListenerAttached()`, and `wrapAddEventListener()` functions. Created comprehensive unit tests (16/16 passing) covering event spying, listener detection, and integration scenarios. All component factory tests (36/36) and related event listener tests (5/5) pass with no regressions.ns: phased steps, short acceptance criteria, estimated effort (1–5), and recommended verification steps.
+
+- Implement `tests/helpers/listenerUtils.js` offering helpers:
+- `withListenerSpy(target, eventName, fn)` — attaches spy that records handler calls.
+- `expectListenerAttached(target, eventName)` — asserts a handler was added (best-effort via wrapping `addEventListener`).
+- `wrapAddEventListener()` — optional installation that proxies `addEventListener` to capture registrations (only installed for tests that opt-in).
+- Acceptance: Unit tests demonstrating detection of attached listeners and invocation order.
+- **COMPLETED**: Implemented `tests/helpers/listenerUtils.js` with `withListenerSpy()`, `expectListenerAttached()`, and `wrapAddEventListener()` functions. Created comprehensive unit tests (16/16 passing) covering event spying, listener detection, and integration scenarios. All component factory tests (36/36) and related event listener tests (5/5) pass with no regressions.
+- **COMPLETED**: Implemented `tests/helpers/listenerUtils.js` with `withListenerSpy()`, `expectListenerAttached()`, and `wrapAddEventListener()` functions. Created comprehensive unit tests (16/16 passing) covering event spying, listener detection, and integration scenarios. All component factory tests (36/36) and related event listener tests (5/5) pass with no regressions.ns: phased steps, short acceptance criteria, estimated effort (1–5), and recommended verification steps.
 
 ---
 
@@ -672,7 +673,7 @@ Proceed to Phase 1 for items 1–3?
 **Factory Implementations:**
 
 - **Modal** (`Modal.js`): 103 lines - Full focus management, backdrop clicks, ARIA labeling
-- **Scoreboard** (`Scoreboard.js`): 101 lines - Real model/view integration with update helpers  
+- **Scoreboard** (`Scoreboard.js`): 101 lines - Real model/view integration with update helpers
 - **StatsPanel** (`StatsPanel.js`): 54 lines - Async stat loading with update tracking
 - **Button** (`Button.js`): 84 lines - Icon support, styling, click event spying
 - **Card** (`Card.js`): 71 lines - Content insertion, optional clickability
@@ -736,7 +737,7 @@ Proceed to Phase 1 for items 1–3?
 **Target Components Identified:**
 
 1. **Modal** - Complex focus management and ARIA attributes
-2. **Scoreboard** - Timer/score updates in battle tests  
+2. **Scoreboard** - Timer/score updates in battle tests
 3. **StatsPanel** - Stat loading and tooltip integration
 4. **Button** - Frequent creation with various configurations
 5. **Card** - Basic container with content insertion options

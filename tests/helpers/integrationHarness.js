@@ -151,7 +151,7 @@ export function createIntegrationHarness(config = {}) {
    * Injects a fixture into the test environment
    * @private
    * @param {string} key - Fixture key
- * @param {*} value - Fixture value
+   * @param {*} value - Fixture value
    */
   function injectFixture(key, value) {
     // Common injection patterns - extend as needed
@@ -178,8 +178,12 @@ export function createIntegrationHarness(config = {}) {
     setup,
     cleanup,
     importModule,
-    get timerControl() { return timerControl; },
-    get rafControl() { return rafControl; }
+    get timerControl() {
+      return timerControl;
+    },
+    get rafControl() {
+      return rafControl;
+    }
   };
 }
 
@@ -228,5 +232,4 @@ export function createSettingsHarness(customConfig = {}) {
     },
     ...customConfig
   });
-}</content>
-<parameter name="filePath">/workspaces/judokon/tests/helpers/integrationHarness.js
+}
