@@ -807,12 +807,18 @@ function stubGlobal(name, value) {
   };
 }
 
-function ensureElement(id, tag, initializer) {
+function ensureElement(id, tag, initializer, parent = document.body) {
   let el = document.getElementById(id);
   if (!el) {
     el = document.createElement(tag);
     el.id = id;
-    document.body.appendChild(el);
+    if (parent?.appendChild) {
+      parent.appendChild(el);
+    } else {
+      document.body.appendChild(el);
+    }
+  } else if (parent?.appendChild && !parent.contains(el)) {
+    parent.appendChild(el);
   }
   if (typeof initializer === "function") {
     initializer(el);
@@ -821,36 +827,133 @@ function ensureElement(id, tag, initializer) {
 }
 
 function mountScaffoldDom() {
-  ensureElement("battle-state-badge", "span", (badge) => {
-    badge.hidden = true;
-    badge.dataset.format = "plain";
-    if (!badge.textContent) {
-      badge.textContent = "";
-    }
-    const header = document.querySelector("header") ?? document.body;
-    if (!header.contains(badge)) {
-      header.appendChild(badge);
-    }
-  });
+  const body = document.body ?? document.createElement("body");
+  if (!document.body) {
+    document.documentElement?.appendChild(body);
+  }
+
+  let header = document.querySelector("header");
+  if (!header) {
+    header = document.createElement("header");
+    header.className = "header";
+    header.setAttribute("role", "banner");
+    const leftSpacer = document.createElement("div");
+    leftSpacer.className = "header-spacer left";
+    const rightSpacer = document.createElement("div");
+    rightSpacer.className = "header-spacer right";
+    const logoContainer = document.createElement("div");
+    logoContainer.className = "logo-container";
+    header.append(leftSpacer, logoContainer, rightSpacer);
+    body.prepend(header);
+  }
+
+  let statusContainer = header.querySelector(".battle-status-header");
+  if (!statusContainer) {
+    statusContainer = document.createElement("div");
+    statusContainer.className = "battle-status-header";
+    header.appendChild(statusContainer);
+  }
+
+  ensureElement(
+    "round-message",
+    "p",
+    (el) => {
+      el.setAttribute("aria-live", "polite");
+      el.setAttribute("aria-atomic", "true");
+      el.setAttribute("role", "status");
+      el.setAttribute("data-testid", "round-message");
+      if (!el.textContent) {
+        el.textContent = "";
+      }
+    },
+    statusContainer
+  );
+
+  ensureElement(
+    "next-round-timer",
+    "p",
+    (el) => {
+      el.setAttribute("aria-live", "polite");
+      el.setAttribute("aria-atomic", "true");
+      el.setAttribute("role", "status");
+      el.setAttribute("data-testid", "next-round-timer");
+      if (!el.textContent) {
+        el.textContent = "";
+      }
+    },
+    statusContainer
+  );
+
+  ensureElement(
+    "round-counter",
+    "p",
+    (el) => {
+      el.setAttribute("aria-live", "polite");
+      el.setAttribute("aria-atomic", "true");
+      el.setAttribute("data-testid", "round-counter");
+      if (!el.textContent) {
+        el.textContent = "Round 0";
+      }
+    },
+    statusContainer
+  );
+
+  ensureElement(
+    "score-display",
+    "p",
+    (el) => {
+      el.setAttribute("aria-live", "polite");
+      el.setAttribute("aria-atomic", "true");
+      el.setAttribute("role", "status");
+      el.setAttribute("data-testid", "score-display");
+      if (!el.textContent) {
+        el.textContent = "You: 0 Opponent: 0";
+      }
+    },
+    statusContainer
+  );
+
+  ensureElement(
+    "battle-state-badge",
+    "span",
+    (badge) => {
+      badge.hidden = true;
+      badge.setAttribute("hidden", "");
+      badge.dataset.format = badge.dataset.format ?? "plain";
+      if (!badge.textContent) {
+        badge.textContent = "";
+      }
+    },
+    statusContainer
+  );
 
   ensureElement("next-button", "button", (btn) => {
     btn.type = "button";
     btn.dataset.role = "next-round";
+    btn.setAttribute("data-testid", "next-button");
     btn.disabled = true;
     btn.removeAttribute("data-next-ready");
   });
 
   ensureElement("replay-button", "button", (btn) => {
     btn.type = "button";
+    btn.dataset.role = btn.dataset.role ?? "replay";
+    btn.setAttribute("data-testid", "replay-button");
   });
 
   ensureElement("quit-button", "button", (btn) => {
     btn.type = "button";
+    btn.dataset.role = btn.dataset.role ?? "quit";
   });
 
-  const container = ensureElement("stat-buttons", "div", (div) => {
-    div.dataset.buttonsReady = div.dataset.buttonsReady ?? "false";
-  });
+  const container = ensureElement(
+    "stat-buttons",
+    "div",
+    (div) => {
+      div.dataset.buttonsReady = div.dataset.buttonsReady ?? "false";
+      div.setAttribute("data-testid", "stat-buttons");
+    }
+  );
   if (!container.querySelector("button[data-stat]")) {
     const button = document.createElement("button");
     button.type = "button";
@@ -862,12 +965,12 @@ function mountScaffoldDom() {
 
 describe("Classic Battle page scaffold (behavioral)", () => {
   beforeEach(() => {
-    currentEnv = getEnv();
     for (const fn of Object.values(scoreboardMock)) {
       if (typeof fn?.mockClear === "function") {
         fn.mockClear();
       }
     }
+    currentEnv = getEnv();
     mountScaffoldDom();
     window.__FF_OVERRIDES = {};
     modalMock.onStart = null;
@@ -927,14 +1030,18 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(typeof modalMock.onStart).toBe("function");
 
     await modalMock.onStart?.();
-    scoreboardMock.updateScore.mockClear();
-    scoreboardMock.updateRoundCounter.mockClear();
+    const initialScoreCalls = scoreboardMock.updateScore.mock.calls.length;
+    const initialRoundCalls = scoreboardMock.updateRoundCounter.mock.calls.length;
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("display.round.start", { roundNumber: 3 });
 
     const roundEnded = engineMock.listeners.get("roundEnded");
     roundEnded?.({ playerScore: 4, opponentScore: 1 });
 
+    expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBeGreaterThan(
+      initialRoundCalls
+    );
+    expect(scoreboardMock.updateScore.mock.calls.length).toBeGreaterThan(initialScoreCalls);
     expect(scoreboardMock.updateRoundCounter.mock.calls.at(-1)).toEqual([3]);
     expect(scoreboardMock.updateScore.mock.calls.at(-1)).toEqual([4, 1]);
     const nextButton = document.getElementById("next-button");
@@ -993,9 +1100,9 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(lastCall?.[2]?.opponentVal).not.toBe(previousOpponentStats[statKey]);
   });
 
-  test("respects battle state badge feature flag overrides", async () => {
+  test("shows battle state badge when override is enabled", async () => {
     window.__FF_OVERRIDES = { battleStateBadge: true };
-    let mod = await import("../../src/pages/battleClassic.init.js");
+    const mod = await import("../../src/pages/battleClassic.init.js");
     await mod.init();
 
     const badge = document.getElementById("battle-state-badge");
@@ -1004,28 +1111,47 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     expect(badge?.hasAttribute("hidden")).toBe(false);
     expect(badge?.dataset.format).toBe("plain");
     expect(badge?.textContent).toBe("Lobby");
+  });
 
-    for (const fn of Object.values(scoreboardMock)) {
-      if (typeof fn?.mockClear === "function") {
-        fn.mockClear();
-      }
-    }
-    vi.resetModules();
-    badge.hidden = true;
-    badge.setAttribute("hidden", "");
-    badge.textContent = "";
-    modalMock.onStart = null;
-    engineMock.listeners.clear();
-    engineMock.roundsPlayed = 0;
+  test("hides battle state badge when override is disabled", async () => {
     window.__FF_OVERRIDES = { battleStateBadge: false };
-    mod = await import("../../src/pages/battleClassic.init.js");
+    const mod = await import("../../src/pages/battleClassic.init.js");
     await mod.init();
 
-    const badgeAfter = document.getElementById("battle-state-badge");
-    expect(badgeAfter).toBeTruthy();
-    expect(badgeAfter?.hidden).toBe(true);
-    expect(badgeAfter?.hasAttribute("hidden")).toBe(true);
-    expect(badgeAfter?.dataset.format).toBe("plain");
+    const badge = document.getElementById("battle-state-badge");
+    expect(badge).toBeTruthy();
+    expect(badge?.hidden).toBe(true);
+    expect(badge?.hasAttribute("hidden")).toBe(true);
+    expect(badge?.dataset.format).toBe("plain");
+    expect(badge?.textContent).toBe("");
+  });
+
+  test("renders scoreboard updates in the DOM using the real module", async () => {
+    const scoreboardModule = await vi.importActual(
+      "../../src/helpers/setupScoreboard.js"
+    );
+    const controls = {
+      pauseTimer: vi.fn(),
+      resumeTimer: vi.fn(),
+      startCooldown: vi.fn()
+    };
+    scoreboardModule.setupScoreboard(controls);
+
+    scoreboardModule.showMessage("Fight!");
+    scoreboardModule.updateRoundCounter(5);
+    scoreboardModule.updateScore(2, 1);
+    scoreboardModule.updateTimer(7);
+
+    expect(document.getElementById("round-message")?.textContent).toBe("Fight!");
+    expect(document.getElementById("round-counter")?.textContent).toBe("Round 5");
+    expect(document.getElementById("next-round-timer")?.textContent).toBe("Time Left: 7s");
+    const scoreDisplay = document.getElementById("score-display");
+    expect(scoreDisplay?.textContent).toContain("You: 2");
+    expect(scoreDisplay?.textContent).toContain("Opponent: 1");
+    const badge = document.getElementById("battle-state-badge");
+    const header = document.querySelector("header");
+    expect(badge?.parentElement?.classList.contains("battle-status-header")).toBe(true);
+    expect(header?.contains(badge ?? null)).toBe(true);
   });
 
   describe("Classic Battle stat buttons", () => {
