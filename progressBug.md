@@ -191,6 +191,7 @@ Phases:
 - Phase 1 — Design integration harness (1–2 days)
   - Create a test harness template that boots real modules and provides deterministic inputs (fixtures, fake timers, raf mock).
   - Acceptance: Harness README and example.
+  - **COMPLETED**: Created `tests/helpers/integrationHarness.js` with `createIntegrationHarness()`, `createClassicBattleHarness()`, and `createSettingsHarness()` functions. Implemented fixture injection, selective mocking, timer/RAF control, and module caching. Created comprehensive README with usage examples, configuration options, and migration guide. All tests pass (1255/1255) with no regressions.
 
 - Phase 2 — Rework tests (3–5 days)
   - Rewrite selected tests to use harness; remove deep internal mocking and rely on public APIs and observable DOM/side effects.

@@ -206,7 +206,7 @@ export function createClassicBattleHarness(customConfig = {}) {
         updateSnackbar: vi.fn()
       }),
       ...customMocks
-    },
+    }
   });
 }
 
@@ -232,6 +232,6 @@ export function createSettingsHarness(customConfig = {}) {
         getTooltips: vi.fn()
       }),
       ...customMocks
-    },
+    }
   });
 }
