@@ -7,9 +7,8 @@ describe("createStatsPanel", () => {
     speed: 90,
     technique: 75
   };
-
-  it("creates a stats panel with proper structure", () => {
-    const panel = createStatsPanel(mockStats);
+  it("creates a stats panel with proper structure", async () => {
+    const panel = await createStatsPanel(mockStats);
 
     expect(panel.element.tagName).toBe("DIV");
     expect(panel.element.className).toBe("card-stats common");
@@ -19,7 +18,7 @@ describe("createStatsPanel", () => {
     expect(list).toBeTruthy();
   });
 
-  it("applies custom options", () => {
+  it("applies custom options", async () => {
     const panel = createStatsPanel(mockStats, {
       type: "legendary",
       className: "custom-panel",
@@ -30,7 +29,7 @@ describe("createStatsPanel", () => {
     expect(panel.element.getAttribute("aria-label")).toBe("Custom Stats");
   });
 
-  it("provides stat element access", () => {
+  it("provides stat element access", async () => {
     const panel = createStatsPanel(mockStats);
 
     const statElements = panel.getStatElements();
@@ -40,24 +39,24 @@ describe("createStatsPanel", () => {
     expect(statElements.every((el) => el.tagName === "LI")).toBe(true);
   });
 
-  it("provides stat value lookup", () => {
+  it("provides stat value lookup", async () => {
     const panel = createStatsPanel(mockStats);
 
     // Note: getStatValue depends on actual stat loading, so we'll test the method exists
-    expect(typeof panel.getStatValue).toBe("function");
-
     // The actual value lookup depends on the real StatsPanel implementation
     // which loads stat names asynchronously
+    expect(typeof panel.getStatValue).toBe("function");
   });
 
-  it("tracks update calls with spy", () => {
+  it("tracks update calls with spy", async () => {
     const panel = createStatsPanel(mockStats);
 
-    expect(panel.onUpdate).not.toHaveBeenCalled();
+    expect(panel.onUpdate).toHaveBeenCalledTimes(1); // Initial call
 
-    panel.update({ power: 95, speed: 85 });
+    await panel.update({ power: 95, speed: 85 });
 
-    expect(panel.onUpdate).toHaveBeenCalledWith({ power: 95, speed: 85 });
+    expect(panel.onUpdate).toHaveBeenCalledTimes(2);
+    expect(panel.onUpdate).toHaveBeenLastCalledWith({ power: 95, speed: 85 });
   });
 
   it("throws error for invalid stats", () => {

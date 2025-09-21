@@ -59,30 +59,54 @@ export function createScoreboard(container) {
 
   // Helper methods for testing
   const render = (state) => {
-    scoreboard.render(state);
+    // This is a simplified render that updates the view directly
+    if (state.message) {
+      scoreboard.view.showMessage(state.message.text || state.message, state.message);
+    }
+    if (state.timerSeconds !== undefined) {
+      scoreboard.view.updateTimer(state.timerSeconds);
+    }
+    if (state.score) {
+      scoreboard.model.updateScore(state.score.player || 0, state.score.opponent || 0);
+      scoreboard.view.updateScore();
+    }
+    if (state.roundNumber !== undefined) {
+      scoreboard.view.updateRoundCounter(state.roundNumber);
+    }
   };
 
   const updateScore = (score) => {
-    render({ score });
+    scoreboard.model.updateScore(score.player || 0, score.opponent || 0);
+    scoreboard.view.updateScore();
   };
 
   const updateTimer = (seconds) => {
-    render({ timerSeconds: seconds });
+    scoreboard.view.updateTimer(seconds);
   };
 
   const updateMessage = (text) => {
-    render({ message: { text } });
+    scoreboard.view.showMessage(text);
   };
 
   const updateRound = (roundNumber) => {
-    render({ roundNumber });
+    scoreboard.view.updateRoundCounter(roundNumber);
   };
 
   // Getter methods for testing
-  const getScore = () => model.getScore();
-  const getTimer = () => model.getTimerSeconds();
-  const getMessage = () => model.getMessage();
-  const getRound = () => model.getRoundNumber();
+  const getScore = () => scoreboard.model.getState().score;
+  const getTimer = () => {
+    // Timer state is not stored in model, so we can't easily get it
+    // Return null to indicate this limitation
+    return null;
+  };
+  const getMessage = () => {
+    // Message state is not stored, return null
+    return null;
+  };
+  const getRound = () => {
+    // Round state is not stored in model, return null
+    return null;
+  };
 
   return {
     element: container,

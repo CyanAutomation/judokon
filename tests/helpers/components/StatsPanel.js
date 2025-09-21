@@ -12,7 +12,7 @@ import { StatsPanel } from "../../../src/components/StatsPanel.js";
  * @param {string} [options.ariaLabel="Judoka Stats"] - ARIA label
  * @returns {object} Mock stats panel with element and control methods
  */
-export function createStatsPanel(stats, options = {}) {
+export async function createStatsPanel(stats, options = {}) {
   // Create StatsPanel instance
   const panel = new StatsPanel(stats, options);
 
@@ -21,10 +21,13 @@ export function createStatsPanel(stats, options = {}) {
 
   // Wrap the update method to track calls
   const originalUpdate = panel.update.bind(panel);
-  panel.update = (newStats) => {
+  panel.update = async (newStats) => {
     onUpdate(newStats);
     return originalUpdate(newStats);
   };
+
+  // Initialize with stats
+  await panel.update(stats);
 
   // Helper methods for testing
   const getStatElements = () => {
@@ -33,12 +36,12 @@ export function createStatsPanel(stats, options = {}) {
 
   const getStatValue = (statName) => {
     const statElement = Array.from(panel.element.querySelectorAll("li")).find((li) => {
-      const label = li.querySelector(".stat-label");
+      const label = li.querySelector("strong");
       return label && label.textContent.includes(statName);
     });
 
     if (statElement) {
-      const value = statElement.querySelector(".stat-value");
+      const value = statElement.querySelector("span");
       return value ? value.textContent : null;
     }
     return null;
