@@ -52,7 +52,8 @@ let failSafeTimerId = null;
 let isStartingRoundCycle = false;
 // Suppress duplicate round cycle starts when manual Next clicks trigger both
 // `round.start` and `ready` back-to-back.
-let suppressedReadyToken = null;
+let lastManualRoundStartTimestamp = 0;
+const READY_SUPPRESSION_WINDOW_MS = 100;
 let lastRoundCycleTriggerSource = null;
 let lastRoundCycleTriggerTimestamp = 0;
 /**
@@ -139,30 +140,6 @@ function trackRoundCycleEvent(type, info = {}) {
   } catch {}
 }
 
-function beginManualReadySuppression() {
-  suppressedReadyToken = Symbol("manualReadySuppression");
-  if (typeof window !== "undefined") {
-    try {
-      window.__lastManualReadySuppressionToken = suppressedReadyToken;
-    } catch {}
-  }
-}
-
-function clearManualReadySuppression() {
-  suppressedReadyToken = null;
-  if (typeof window !== "undefined") {
-    try {
-      delete window.__lastManualReadySuppressionToken;
-    } catch {}
-  }
-}
-
-function shouldSkipReadyEvent() {
-  if (!suppressedReadyToken) return false;
-  clearManualReadySuppression();
-  return true;
-}
-
 function handleCooldownError(store, reason, err) {
   try {
     store[COOLDOWN_FLAG] = false;
@@ -247,7 +224,6 @@ function markCooldownStarted(store) {
 
 function triggerCooldownOnce(store, reason) {
   if (!markCooldownStarted(store)) return false;
-  clearManualReadySuppression();
 
   const remaining = calculateRemainingOpponentMessageTime();
   const shouldForceImmediate = reason === "statSelectionFailed";
@@ -1442,18 +1418,30 @@ async function init() {
           eventDetail?.source === "next-button";
 
         if (manualRoundStart) {
-          beginManualReadySuppression();
+          lastManualRoundStartTimestamp = getCurrentTimestamp();
+          if (typeof window !== "undefined") {
+            try {
+              window.__lastManualRoundStartTimestamp = lastManualRoundStartTimestamp;
+            } catch {}
+          }
         }
 
         if (eventType === "ready") {
-          const tokenActiveBeforeCheck = Boolean(suppressedReadyToken);
-          const skipDueToManual = shouldSkipReadyEvent();
-          trackRoundCycleEvent(eventType, {
+          const now = getCurrentTimestamp();
+          const hasManualStamp = lastManualRoundStartTimestamp > 0;
+          const elapsedSinceManual = hasManualStamp
+            ? now - lastManualRoundStartTimestamp
+            : Number.POSITIVE_INFINITY;
+          const skipDueToManual =
+            hasManualStamp && elapsedSinceManual >= 0 && elapsedSinceManual < READY_SUPPRESSION_WINDOW_MS;
+          const eventInfo = {
             skipped: skipDueToManual,
-            manualSuppression: skipDueToManual
-              ? tokenActiveBeforeCheck
-              : Boolean(suppressedReadyToken)
-          });
+            suppressionWindowMs: READY_SUPPRESSION_WINDOW_MS
+          };
+          if (hasManualStamp && Number.isFinite(elapsedSinceManual)) {
+            eventInfo.sinceManualStartMs = elapsedSinceManual;
+          }
+          trackRoundCycleEvent(eventType, eventInfo);
           if (skipDueToManual) {
             return;
           }
