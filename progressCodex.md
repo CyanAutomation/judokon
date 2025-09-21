@@ -1,144 +1,70 @@
 # QA Report: JU-DO-KON! Classic Battle (`battleClassic.html`)
 
-**Report Date:** September 20, 2025
+**Review Date:** September 23, 2025
+
+## 0. Verification Snapshot (2025-09-23)
+
+| #  | Severity     | Status            | Evidence / Notes |
+|----|--------------|-------------------|------------------|
+| 1  | **Critical** | ✅ Resolved       | Match-length modal now always presents options and only highlights the saved choice (`src/helpers/classicBattle/roundSelectModal.js:489`). |
+| 2  | **Critical** | ✅ Resolved       | Card pipeline draws player cards and renders an obscured opponent placeholder before reveal (`src/helpers/classicBattle/cardSelection.js:348`, `src/helpers/classicBattle/uiEventHandlers.js:24`). |
+| 3  | **Critical** | ✅ Resolved       | Countdown uses scheduler ticks with manual and hard timeout fallbacks so the UI decrements each second (`src/helpers/timerUtils.js:116`). |
+| 4  | **Critical** | ⚠️ Needs cleanup  | Scoreboard updates after each round, but the path still performs a dynamic import in the hot flow and preloads a bogus "You: 1" snapshot (`src/pages/battleClassic.init.js:387`, `src/pages/battleClassic.init.js:409`). |
+| 5  | **High**     | ✅ Resolved       | Auto-select stanza triggers through `startTimer` once the countdown expires and flags opponent messaging (`src/helpers/classicBattle/timerService.js:875`). |
+| 6  | **High**     | ✅ Resolved       | Round counter reconciles engine and DOM values, preventing double increments (`src/pages/battleClassic.init.js:841`). |
+| 7  | **High**     | ✅ Resolved       | Replay reuses the engine-managed `startRound` path and zeroes UI state deterministically (`src/helpers/classicBattle/roundManager.js:132`). |
+| 8  | **Medium**   | ✅ Resolved       | End-of-match modal now derives its copy from engine outcome and mirrors scoreboard totals (`src/helpers/classicBattle/endModal.js:1`). |
+| 9  | **Medium**   | ✅ Resolved       | Footer navigation points to `battleClassic.html` (`src/pages/battleClassic.html:100`). |
+| 10 | **Medium**   | ✅ Resolved       | `renderStatButtons` disables Next on entry and only re-enables after selection finalizes (`src/pages/battleClassic.init.js:951`). |
+| 11 | **Medium**   | ✅ Resolved       | Modal helper traps focus and restores it on close, eliminating background focus leaks (`src/components/Modal.js:1`). |
+| 12 | **Low**      | ✅ Resolved       | Scoreboard, timer, and stat controls expose `aria-live`/`aria-describedby` annotations (`src/pages/battleClassic.html:28`). |
+| 13 | **Low**      | ✅ Resolved       | Match-length modal wires number and arrow key navigation across options (`src/helpers/classicBattle/roundSelectModal.js:200`). |
+| 14 | **Low**      | ❌ Not started    | No UI wiring exists for difficulty selection; gameplay still assumes the default difficulty despite helper coverage (`src/pages/battleClassic.html`, `src/helpers/classicBattle/selectionHandler.js:27`). |
+| 15 | **Low**      | ✅ Resolved       | Debug panel materializes when the test-mode flag is active and persists state across reloads (`src/helpers/classicBattle/debugPanel.js:351`). |
+| 16 | **Low**      | ✅ Resolved       | Tooltip parsing normalizes `\n` sequences into `<br>` so match-length tooltips render correctly (`src/helpers/tooltip.js:111`). |
 
 ## 1. Executive Summary
 
-This report details 16 critical, high, and medium-severity issues discovered during a quality assurance review of the Classic Battle feature. The issues span functionality, user interface, accessibility, and state management. Key problems include a broken core gameplay loop (timers, scoring, and round progression are non-functional), missing UI elements (judoka cards), and numerous accessibility gaps.
+Classic Battle’s core loop is now functional: rounds render correctly, timers progress, and replays respect engine state. Accessibility and messaging fixes landed as described. Two regressions require follow-up before the QA slate can close:
+- The hot-path scoreboard updater still violates the dynamic-import policy and momentarily shows an incorrect "You: 1" snapshot when a round begins.
+- The promised AI difficulty control (QA #14) remains unimplemented, leaving the gameplay feature incomplete.
 
-The recommendations section outlines a clear path forward, prioritizing a full state machine implementation to resolve the majority of the functional bugs, followed by UI and accessibility enhancements.
+## 2. Phase Notes
 
-## Phase 1 – Round Entry Controls (2025-09-20)
+### Phase 1 – Round Entry Controls (Delivered)
+- Confirmed `disableNextRoundButton()` runs whenever stat buttons render so players cannot advance prematurely (`src/pages/battleClassic.init.js:951`).
+- Next is only re-enabled after `finalizeSelectionReady` executes the cooldown logic (`src/pages/battleClassic.init.js:520`).
 
-- **Action:** Re-disabled the `Next` button whenever `renderStatButtons` prepares a new round so that players cannot advance before making a stat selection. Implemented via `disableNextRoundButton()` in `src/pages/battleClassic.init.js`.
-- **Outcome:** The round flow now keeps `Next` disabled until a selection resolves or the timer auto-selects; this closes QA item #10 (Next button always enabled).
-- **Validation:**
-  - `npx vitest run tests/classicBattle/init-complete.test.js`
-  - `npx vitest run tests/classicBattle/timer.test.js`
-  - `npx vitest run tests/classicBattle/page-scaffold.test.js`
-  - `npx playwright test battle-classic/round-select.spec.js`
-- `npx playwright test battle-classic/timer.spec.js`
+### Phase 2 – Timer & Auto-Select Stabilization (Delivered)
+- `createCountdownTimer` now attaches manual interval and hard timeout fallbacks, ensuring ticks fire even when RAF stalls (`src/helpers/timerUtils.js:142`).
+- `startTimer` primes the scoreboard display and delegates expiration to `handleTimerExpiration`, triggering auto-select with opponent-delay signalling (`src/helpers/classicBattle/timerService.js:875`).
 
-## Phase 2 – Timer & Auto-Select Stabilization (2025-09-20)
+### Phase 3 – Card Rendering & Scoreboard Sync (Delivered with caveats)
+- Replay path resets engine state and draws fresh cards through `handleReplay`, keeping scoreboard totals aligned (`src/helpers/classicBattle/roundManager.js:132`).
+- Opponent reveal pipeline runs via `uiEventHandlers` so the placeholder persists until data arrives (`src/helpers/classicBattle/uiEventHandlers.js:24`).
+- **Follow-up:** Replace the hot-path dynamic import and remove the temporary `You: 1` injection to avoid UI flicker and policy violations (`src/pages/battleClassic.init.js:387`, `src/pages/battleClassic.init.js:412`).
 
-- **Action:** Added a scheduler-independent fallback in `createCountdownTimer()` (`src/helpers/timerUtils.js`) that spins up a `setInterval` countdown when RAF-driven ticks never arrive, so the selection timer still updates and expires on time in lightweight builds.
-- **Outcome:** The selection timer now decrements in the UI and the existing expiration handler fires, restoring automatic stat selection on timeout (QA items #3 and #5).
-- **Notes:** Local Vitest + Playwright runs confirm per-second updates and timeout auto-selection across multiple round lengths.
-- **Regression status:** Targeted suites remained green after the timer fallback change; awaiting manual QA confirmation before proceeding.
-- **Validation:**
-  - `npx vitest run tests/classicBattle/init-complete.test.js`
-  - `npx vitest run tests/classicBattle/timer.test.js`
-  - `npx vitest run tests/classicBattle/autoSelectHandlers.test.js`
-  - `npx playwright test battle-classic/timer.spec.js`
-  - `npx playwright test battle-classic/stat-selection.spec.js`
+### Phase 4 – Match Length Modal Reliability (Delivered)
+- Persisted selections now highlight the stored choice without bypassing the modal (`src/helpers/classicBattle/roundSelectModal.js:489`).
+- Keyboard shortcuts are wired directly on the modal wrapper to match the UX promise (`src/helpers/classicBattle/roundSelectModal.js:200`).
 
-Pending your review before starting Phase 3.
+### Phase 5 – Accessibility Enhancements (Delivered)
+- Score, timer, and round announcements use polite live regions while opponent prompts record minimum dwell times (`src/pages/battleClassic.html:24`, `src/helpers/classicBattle/opponentPromptTracker.js:1`).
+- Modal focus traps rely on the shared component, preventing background interaction leaks (`src/components/Modal.js:51`).
 
-## Phase 3 – Card Rendering & Scoreboard Sync (2025-09-20)
+### Phase 6 – Match Outcome Messaging (Delivered)
+- Outcome messaging is consistent across snackbar, scoreboard, and end modal using engine-sourced data (`src/helpers/classicBattle/endModal.js:20`).
+- Tooltip formatting now replaces literal `\n` sequences with `<br>` (`src/helpers/tooltip.js:111`).
 
-- **Action:**
-  - Swapped the local replay reset for `handleReplay` from `roundManager` and cleared pending timers so the replay flow reuses the engine-driven `startRound()` path (`src/pages/battleClassic.init.js`).
-  - Added a shared opponent prompt tracker (`src/helpers/classicBattle/opponentPromptTracker.js`) and timestamps from `uiEventHandlers` so the "Opponent is choosing" snackbar survives until cooldown begins; raised the minimum display window to 600 ms.
-  - Updated `page-scaffold` Vitest mocks to emit `roundStarted` during replay and to expect freshly generated stats on the first post-replay selection.
-  - Deferred cooldown snackbar updates until the prompt’s minimum dwell time elapses, preventing the countdown message from pre-empting the opponent prompt (`src/helpers/CooldownRenderer.js`).
-- **Outcome:** Replay now redraws player/opponent cards, the opponent prompt reliably precedes the cooldown countdown, and the scoreboard advances consistently after subsequent selections (addresses QA items #2 and #4).
-- **Validation:**
-  - ✅ `npx vitest run tests/classicBattle/page-scaffold.test.js`
-  - ✅ `npx vitest run tests/classicBattle/bootstrap.test.js`
-  - ✅ `npx playwright test battle-classic/stat-selection.spec.js battle-classic/opponent-reveal.spec.js`
+## 3. Outstanding Work
 
-Pending your review before starting Phase 4.
+- **AI Difficulty selector (QA #14):** No UI element or settings hook exposes the existing difficulty logic; add the control to `battleClassic.html` and thread the selection into the engine startup.
+- **Scoreboard hot-path hygiene:** Refactor the scoreboard updater to use the existing static import and remove the placeholder `You: 1` override before a round starts.
 
-## Phase 4 – Match Length Modal Reliability (2025-09-20)
+## 4. Opportunities for Improvement
 
-- **Action:** Retooled `initRoundSelectModal` to always present the length picker even when a previous selection is stored, highlighting the saved choice instead of auto-starting; refreshed button state management so the preselected option carries `aria-pressed` and updates when the user chooses a different length.
-- **Outcome:** Returning to `battleClassic.html` or replaying now consistently surfaces the modal, eliminating the stuck state from QA item #1 while preserving the remembered preference as a visual default.
-- **Validation:**
-  - ✅ `npx vitest run tests/helpers/classicBattle/roundSelectModal.test.js`
-  - ✅ `npx playwright test battle-classic/round-select.spec.js`
+- **Drop dynamic imports in hot paths:** `ensureScoreboardReflectsResult` and the replay reset block should reuse the static scoreboard/API imports already loaded at module scope (`src/pages/battleClassic.init.js:409`, `src/pages/battleClassic.init.js:1416`).
+- **Remove fake scoreboard prefill:** The pre-selection branch that force-sets `You: 1` risks incorrect UI state when the player has zero wins; rely on live engine scores instead (`src/pages/battleClassic.init.js:387`).
+- **Add coverage for scoreboard reconciliation:** Extend `tests/classicBattle/resolution.test.js` (or a new spec) to assert that scoreboard text transitions directly from the engine scores without interim artifacts when a round begins.
+- **Surface difficulty selection in tests:** Once the UI lands, mirror it in the Vitest harness so `tests/helpers/classicBattle/difficulty.test.js` exercises the end-to-end flow rather than pure helper calls.
 
-## Phase 5 – Accessibility Enhancements (2025-09-21)
-
-- **Action:** Raised Classic Battle’s live regions to screen-reader parity by keeping the score display in a polite status region, delaying cooldown countdown announcements until the opponent prompt’s dwell time elapses, and tightening modal focus traps so even content-only dialogs retain keyboard focus.
-- **Outcome:** Score, timer, and round updates now announce in order without clipping outcome messaging, the “Opponent is choosing” prompt remains audible until reveals complete, and modals no longer allow focus to drift to background controls (addresses QA #11, #12, #13).
-- **Validation:**
-  - ✅ `npx vitest run tests/components/Modal.focusTrap.test.js tests/components/Scoreboard.a11y.liveRegions.test.js`
-  - ✅ `npx vitest run tests/classicBattle/page-scaffold.test.js tests/classicBattle/bootstrap.test.js`
-  - ✅ `npx playwright test battle-classic/round-select.spec.js`
-
-## Phase 6 – Match Outcome Messaging (2025-09-21)
-
-- **Action:** Refined Classic Battle’s match-end flow to forward engine outcomes directly into the replay modal, so quitting or finishing a match now surfaces the same message across the scoreboard, snackbar, and modal (resolves QA #8).
-- **Action:** Normalized tooltip parsing to treat literal `\n` sequences as line breaks, keeping match-length button tooltips formatted correctly (resolves QA #16).
-- **Outcome:** Quitting mid-match now reports “You quit the match. You lose!” consistently, and match-length tooltips render their two-line blurbs without showing raw escape characters.
-- **Validation:**
-  - ✅ `npx vitest run tests/classicBattle/end-modal.test.js tests/classicBattle/resolution.test.js tests/helpers/parseTooltipText.test.js tests/classicBattle/quit-flow.test.js`
-  - ⚠️ `npx playwright test battle-classic/quit-flow.spec.js battle-classic/end-modal.spec.js` _(blocked: sandbox denied web server bind on 127.0.0.1:5000 / EPERM)_
-
-## 2. Issues Found
-
-The following table details the identified issues, ranked by severity.
-
-| #   | Severity     | Issue                                                                                                                                                                        | Steps to Reproduce                                                                                                                                                                   |
-| --- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | **Critical** | **Inconsistent match-length modal** – After quitting or replaying, the match-length selection dialog sometimes does not appear, blocking the user from starting a new match. | Navigate to `battleClassic.html`; observe modal. Select a length and then quit. Return to `battleClassic.html` via the navbar; the modal is missing and the match cannot be started. |
-| 2   | **Critical** | **Cards never displayed** – The player and opponent judoka cards are never shown. Only stat buttons appear, making the core visual element of the game absent.               | Start a match and observe the battle area throughout multiple rounds: cards are never rendered.                                                                                      |
-| 3   | **Critical** | **Selection timer doesn’t work** – The "Time Left: 30s" display is static and never counts down. This prevents the auto-selection on timeout, breaking a core game mechanic. | Start a match. Observe that "Time Left" stays at 30s. Choose a stat; the text becomes "3s" and remains static.                                                                       |
-| 4   | **Critical** | **Scoreboard fails to update** – After the first round, the score no longer updates, and round results are not displayed, leaving the player without feedback.               | Win one round (select any stat). Note the score is 1-0. Select another stat and click **Next**; the score remains 1-0 and no result message appears.                                 |
-| 5   | **High**     | **Auto-select never triggers** – Because the timer is broken, the `autoSelect` feature never triggers a stat choice on timeout. The round stalls until manual intervention.  | Let the 30-second timer expire without clicking any stat. No stat is auto-selected; the round does not progress.                                                                     |
-| 6   | **High**     | **Round numbering increments by two** – Pressing "Next" advances the round counter by two (e.g., Round 2 → Round 4), confusing the player.                                   | During a match, click **Next** repeatedly; notice the round number jumps by two instead of one.                                                                                      |
-| 7   | **High**     | **Replay does not reset state** – The "Replay" button fails to reset scores. The end-of-match "Replay" button incorrectly navigates to `index.html`.                         | During a match, click **Replay**; the round resets to 1 but scores persist. Quit the match and click **Replay** in the final modal; you are redirected to the home menu.             |
-| 8   | **Medium**   | **Contradictory end-condition messaging** – Quitting early shows a "Match Over – It’s a draw! (1-0)" modal while the scoreboard says "You quit the match. You lose!".        | Start a match, win a round, then quit. Note the conflicting messages in the modal and scoreboard.                                                                                    |
-| 9   | **Medium**   | **Broken navigation link** – The main navigation bar’s "Classic Battle" link points to `battleJudoka.html`, which returns a 404 error.                                       | From any page, click "Classic Battle" in the bottom navigation bar.                                                                                                                  |
-| 10  | **Medium**   | **"Next" button is always enabled** – The "Next" button is clickable before a stat is selected, allowing players to skip rounds without playing.                             | At the start of a round, observe that "Next" is enabled. Clicking it increments the round without a stat selection.                                                                  |
-| 11  | **Medium**   | **Modal doesn’t trap focus** – When a confirmation modal is open, focus can move to background elements, which remain interactive. This is an accessibility failure.         | Open the "Quit" confirmation. Press `Tab` to cycle focus; focus moves to elements behind the modal.                                                                                  |
-| 12  | **Low**      | **Missing ARIA roles and descriptions** – Key elements like the scoreboard and stat buttons lack ARIA attributes, making the game inaccessible to screen reader users.       | Inspect elements: no `aria-live` on the scoreboard, no `aria-describedby` on stat buttons.                                                                                           |
-| 13  | **Low**      | **Keyboard shortcuts are advertised but not working** – The UI suggests using number or arrow keys to select match length, but these have no effect.                         | On the match-length modal, press keys 1–3 or arrow keys; nothing happens.                                                                                                            |
-| 14  | **Low**      | **Opponent AI and difficulty not visible** – There is no indication of the opponent's stat choice or a way to set difficulty, making the game feel incomplete.               | Play multiple rounds; there is no "Opponent is choosing…" message or difficulty selector.                                                                                            |
-| 15  | **Low**      | **State-progress and debug features absent** – The debug panel, seed control, and battle state progress list are not present, hindering testing and development.             | There is no toggle to enable test mode or view debug output.                                                                                                                         |
-| 16  | **Low**      | **Tooltip formatting incorrect** – Tooltips on match-length buttons contain a literal `\n` instead of a line break, appearing unprofessional.                                | Hover over the "Quick" button; the tooltip shows `Quick\nFirst to 5 points wins.` instead of a new line.                                                                             |
-
-## 3. Recommendations for Fixes
-
-The following improvements are recommended to address the issues above. They are ordered by priority, starting with foundational changes.
-
-### 1. Implement a Central State Machine
-
-A robust state machine is critical. It will resolve the majority of the functional bugs by design.
-
-- **Action:** Ensure the UI correctly binds to the battle engine’s state transitions: `init` → `selection` → `opponentChoose` → `resolution` → `cooldown` → `nextRound` → `end`.
-- **Fixes:** #1, #4, #5, #6, #7, #10
-
-### 2. Correct Core Gameplay Loop
-
-- **Action (Timers):** Use `setInterval` or `requestAnimationFrame` to create a reliable, pausable timer for the 30-second selection window.
-- **Fixes:** #3, #5
-- **Action (State Reset):** Ensure the `replay` action fully resets the game state, including round number, scores, and card decks.
-- **Fixes:** #7
-- **Action (Round Increments):** The round counter should only increment once per completed round. The "Next" button should be disabled during the selection phase.
-- **Fixes:** #6, #10
-
-### 3. Render UI Components Correctly
-
-- **Action (Judoka Cards):** Implement and render the card components to show judoka portraits and stats. The opponent’s card should be revealed after the player’s selection.
-- **Fixes:** #2
-- **Action (Tooltips):** Replace the literal `\n` with `<br>` or by rendering separate block elements so that tooltips format correctly.
-- **Fixes:** #16
-- **Action (End-of-Match Messages):** Display clear and consistent outcomes (Win/Loss/Draw) in both the scoreboard and the end-of-match modal.
-- **Fixes:** #8
-
-### 4. Improve Accessibility (A11y)
-
-- **Action (ARIA + Keyboard Support):** Ensure the scoreboard, stat buttons, and modal flows provide `aria-live`/`aria-describedby` announcements, conforming keyboard shortcuts, and resilient focus management.
-- **Fixes:** #11, #12, #13
-- **Action (Contrast and Layout):** Ensure the color contrast meets WCAG 2.1 AA standards (≥4.5:1) and that the layout is responsive, especially at 200% zoom.
-- **Fixes:** (Best practice — no QA item)
-
-### 5. Repair Navigation and Add Features
-
-- **Action (Navigation):** Correct the bottom navigation link to point to `battleClassic.html`. Add a header link to return to the main menu.
-- **Fixes:** #9
-- **Action (AI Difficulty):** Add a UI control to select AI difficulty (Easy/Medium/Hard) and adjust the opponent's logic accordingly.
-- **Fixes:** #14
-- **Action (Debug Mode):** Implement the debug panel and state-progress list behind a feature flag to aid development and testing.
-- **Fixes:** #15
