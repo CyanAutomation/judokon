@@ -380,15 +380,6 @@ function prepareUiBeforeSelection() {
   try {
     stopActiveSelectionTimer();
   } catch {}
-  try {
-    const el = document.getElementById("score-display");
-    if (el) {
-      const txt = String(el.textContent || "");
-      if (/You:\s*0/.test(txt)) {
-        el.innerHTML = `<span data-side=\"player\">You: 1</span>\n<span data-side=\"opponent\">Opponent: 0</span>`;
-      }
-    }
-  } catch {}
   const delayOverride =
     typeof window !== "undefined" && typeof window.__OPPONENT_RESOLVE_DELAY_MS === "number"
       ? Number(window.__OPPONENT_RESOLVE_DELAY_MS)

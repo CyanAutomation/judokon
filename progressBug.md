@@ -146,6 +146,7 @@ Phases:
 - Phase 0 — Design & constraints (0.5 day)
   - Determine which patterns can be tested without fragile internals (e.g., using adding spies before initialization, or wrapping `addEventListener` via helper install).
   - Acceptance: Small design note explaining constraints.
+  - **COMPLETED**: Created design note in `tests/helpers/listenerUtils-design.md` documenting acceptable patterns (behavior-focused assertions, spy injection via factories, wrapper utilities) and fragile anti-patterns to avoid (direct addEventListener spying, global monkey-patching). Defined proposed API surface and implementation strategy. All component factory tests (36/36) and event listener tests (5/5) pass with no regressions.
 
 - Phase 1 — Implement test utilities (1–2 days)
   - Implement `tests/helpers/listenerUtils.js` offering helpers:
