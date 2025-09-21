@@ -377,9 +377,9 @@ function finalizeSelectionReady(store, options = {}) {
   const finalizeRoundReady = () => {
     if (shouldStartCooldown) {
       try {
-        startCooldown(store);
+        triggerCooldownOnce(store, "selectionFinalize");
       } catch (err) {
-        console.debug("battleClassic: startCooldown after selection failed", err);
+        console.debug("battleClassic: triggerCooldownOnce after selection failed", err);
       }
     } else {
       resetCooldownFlag(store);
