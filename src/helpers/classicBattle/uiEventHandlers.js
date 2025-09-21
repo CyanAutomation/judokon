@@ -6,6 +6,7 @@ import { t } from "../i18n.js";
 import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
+import { markOpponentPromptNow } from "./opponentPromptTracker.js";
 
 let opponentSnackbarId = 0;
 
@@ -57,12 +58,14 @@ export function bindUIHelperEventHandlersDynamic() {
           clearOpponentSnackbarTimeout();
           try {
             showSnackbar(t("ui.opponentChoosing"));
+            markOpponentPromptNow();
           } catch {}
         } else {
           clearOpponentSnackbarTimeout();
           opponentSnackbarId = setTimeout(() => {
             try {
               showSnackbar(t("ui.opponentChoosing"));
+              markOpponentPromptNow();
             } catch {}
           }, delay);
         }
@@ -71,6 +74,7 @@ export function bindUIHelperEventHandlersDynamic() {
         // Cancel any pending delay to ensure the immediate snackbar wins.
         try {
           showSnackbar(t("ui.opponentChoosing"));
+          markOpponentPromptNow();
         } catch {}
       }
     } catch {}

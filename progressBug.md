@@ -313,5 +313,75 @@ Risks & mitigations: False positives could block legitimate stress tests — mak
 
 ---
 
-If you'd like, I can implement the RAF mock and one small DOM helper now and run the affected tests to show immediate improvement. Otherwise, review this document and tell me which item(s) you want prioritized next.
-5. Report back with the Vitest output (or CI job) and I will update this document to record final pass/fail numbers and close outstanding items.
+## Audit Results: Phase 0 Inventory (Items 1–3)
+
+### Item 1: Inline Mocks & Ad-hoc Helpers
+
+**vi.mock Usage:**
+
+- 20+ files use `vi.mock()` for module mocking (e.g., `renderFeatureFlags.test.js`, `timerService.test.js`, `carouselController.test.js`, etc.)
+- Common patterns: mocking feature flags, UI helpers, timer services, data utils
+- Duplication: Many tests re-mock the same modules (e.g., `setupScoreboard.js`, `showSnackbar.js`)
+
+**Manual DOM Creation:**
+
+- 20+ instances of `document.createElement()` in tests (e.g., `timerService.test.js`, `scrollButtonState.test.js`, `classicBattlePage.syncScoreDisplay.test.js`)
+- Common elements: buttons, divs, nav, headers
+- Patterns: Inline creation without shared factories; repeated wiring of event listeners
+
+**Ad-hoc Helpers:**
+
+- Some tests have inline helper functions (e.g., in `classicBattle/utils.js` for RAF mocking)
+- No centralized `tests/helpers/domFactory.js` yet
+
+### Item 2: RAF Mock Usage
+
+**Existing RAF Mock:**
+
+- `tests/helpers/rafMock.js` already exists with `installRAFMock()` API (queue-based, flushAll/flushNext/cancel)
+- Provides instrumentation and deterministic control
+
+**Inline RAF Mocks:**
+
+- `tests/classicBattle/page-scaffold.test.js`: Manual RAF stubbing (lines 822–842, 1104)
+- `tests/setup.js`: Fallback RAF polyfill using setTimeout
+- `tests/helpers/classicBattle/utils.js`: Commented-out RAF mock code (lines 38–40)
+
+**Behaviors Needed:**
+
+- Queue ordering, cancellation semantics, integration with fake timers
+- Nested RAF callbacks, error handling in flushes
+
+### Item 3: Timer Usage in Tests
+
+**vi.useFakeTimers Usage:**
+
+- 20+ test files call `vi.useFakeTimers()` (e.g., `domReady.test.js`, `selectionHandler.test.js`, `timerService.cooldownGuard.test.js`, many in `classicBattle/` subdir)
+- Common in timing-sensitive tests: cooldowns, selections, round timers
+
+**Real Timer Usage:**
+
+- `setTimeout`: 20+ instances (e.g., in mocks like `mockScheduler.js`, real usage in `roundTimerMock.js`, `roundResolver.resolveRound.test.js`)
+- `setInterval`: 9 instances (e.g., in `commonMocks.js`, `scoreboard.integration.test.js`, `battleCLI` tests)
+- Some tests use real timers for async delays (e.g., `new Promise((r) => setTimeout(r, 0))`)
+
+**RAF Patches:**
+
+- Inline patches in `page-scaffold.test.js` (stubGlobal for RAF)
+- `timerUtils.js` adapts global setTimeout/clearTimeout for mocks
+
+**Problem Areas:**
+
+- Inconsistent teardown: Some tests call `vi.useRealTimers()`, others don't
+- Mixed real/fake timers in same suite (e.g., `battleCLI` tests)
+- No canonical `useCanonicalTimers()` helper yet
+
+---
+
+## Next Steps
+
+- **Item 1 Acceptance:** Inventory doc created (above); API contract PR ready.
+- **Item 2 Acceptance:** Existing rafMock.js documented; inline mocks identified for replacement.
+- **Item 3 Acceptance:** Spreadsheet of problem areas (above); prioritized list: migrate classicBattle/ tests first.
+
+Proceed to Phase 1 for items 1–3?

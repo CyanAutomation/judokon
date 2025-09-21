@@ -44,6 +44,11 @@ import {
   getPlayerAndOpponentValues
 } from "../helpers/classicBattle/selectionHandler.js";
 import setupScheduler from "../helpers/classicBattle/setupScheduler.js";
+import {
+  recordOpponentPromptTimestamp,
+  getOpponentPromptTimestamp,
+  resetOpponentPromptTimestamp
+} from "../helpers/classicBattle/opponentPromptTracker.js";
 
 // Store the active selection timer for cleanup when stat selection occurs
 let activeSelectionTimer = null;
@@ -94,15 +99,6 @@ const BASE_SELECTION_READY_DELAY_MS = Math.max(
   OPPONENT_MESSAGE_BUFFER_MS
 );
 
-/**
- * Tracks the most recent time (in ms) the opponent choosing prompt was shown.
- * This timestamp is used to enforce the minimum snackbar visibility duration
- * before triggering the cooldown for the next round.
- *
- * @type {number}
- */
-let lastOpponentPromptTimestamp = 0;
-
 function getCurrentTimestamp() {
   try {
     if (typeof performance !== "undefined" && typeof performance.now === "function") {
@@ -118,7 +114,8 @@ function getCurrentTimestamp() {
 function calculateRemainingOpponentMessageTime() {
   try {
     const now = getCurrentTimestamp();
-    const elapsed = now - (lastOpponentPromptTimestamp || 0);
+    const lastPrompt = getOpponentPromptTimestamp() || 0;
+    const elapsed = now - lastPrompt;
     return Math.max(0, MIN_OPPONENT_MESSAGE_DURATION_MS - elapsed);
   } catch {}
   return 0;
@@ -361,7 +358,7 @@ function prepareUiBeforeSelection() {
   }
   try {
     showSnackbar(t("ui.opponentChoosing"));
-    lastOpponentPromptTimestamp = getCurrentTimestamp();
+    recordOpponentPromptTimestamp(getCurrentTimestamp());
   } catch {}
   return delayOverride;
 }
@@ -1334,6 +1331,7 @@ async function init() {
           } catch {}
           // Clear any in-flight start cycle to avoid duplicate starts after replay
           isStartingRoundCycle = false;
+          resetOpponentPromptTimestamp();
           resetRoundCounterTracking();
 
           // Cancel pending auto-select timers so the fresh match starts cleanly
