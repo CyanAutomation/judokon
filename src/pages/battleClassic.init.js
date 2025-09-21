@@ -53,7 +53,17 @@ let isStartingRoundCycle = false;
 // Suppress duplicate round cycle starts when manual Next clicks trigger both
 // `round.start` and `ready` back-to-back.
 let lastManualRoundStartTimestamp = 0;
-const READY_SUPPRESSION_WINDOW_MS = 100;
+const READY_SUPPRESSION_WINDOW_MS = (() => {
+  if (typeof window === "undefined") {
+    return 200;
+  }
+  try {
+    const override = window.__READY_SUPPRESSION_WINDOW_MS;
+    return typeof override === "number" ? override : 200;
+  } catch {
+    return 200;
+  }
+})();
 let lastRoundCycleTriggerSource = null;
 let lastRoundCycleTriggerTimestamp = 0;
 /**
