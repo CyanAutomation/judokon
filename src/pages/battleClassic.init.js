@@ -145,26 +145,34 @@ function trackRoundCycleEvent(type, info = {}, eventDetail) {
   if (typeof window === "undefined") return;
 
   const sanitizeDetailValue = (value) => {
-    if (value === null) return null;
+    if (value === null || value === undefined) return null;
     const valueType = typeof value;
     return valueType === "string" || valueType === "number" || valueType === "boolean"
       ? value
-      : undefined;
+      : null;
   };
 
   const detailSnapshot =
     eventDetail && typeof eventDetail === "object"
-      ? {
-          source: sanitizeDetailValue(eventDetail?.source),
-          via: sanitizeDetailValue(eventDetail?.via)
-        }
+      ? Object.fromEntries(
+          Object.entries({
+            source: sanitizeDetailValue(eventDetail?.source),
+            via: sanitizeDetailValue(eventDetail?.via)
+          }).filter(([, value]) => value !== undefined)
+        )
       : undefined;
 
   const historyEntry = {
     type: type || "unknown",
-    timestamp: getCurrentTimestamp(),
-    ...info
+    timestamp: getCurrentTimestamp()
   };
+
+  if (info && typeof info === "object") {
+    for (const [key, value] of Object.entries(info)) {
+      if (key === "type" || key === "timestamp") continue;
+      historyEntry[key] = value;
+    }
+  }
 
   if (detailSnapshot) {
     historyEntry.payload = detailSnapshot;
@@ -177,13 +185,23 @@ function trackRoundCycleEvent(type, info = {}, eventDetail) {
     window.__roundCycleHistory.push(historyEntry);
   } catch (error) {
     try {
-      if (typeof console !== "undefined" && typeof console.debug === "function") {
-        console.debug("battleClassic: failed to push to window.__roundCycleHistory", {
-          type: historyEntry.type,
-          info,
-          payload: historyEntry.payload,
-          error
-        });
+      if (typeof console !== "undefined") {
+        const logger =
+          typeof console.warn === "function"
+            ? console.warn
+            : typeof console.error === "function"
+              ? console.error
+              : typeof console.log === "function"
+                ? console.log
+                : null;
+        if (logger) {
+          logger.call(console, "battleClassic: failed to push to window.__roundCycleHistory", {
+            type: historyEntry.type,
+            info,
+            payload: historyEntry.payload,
+            error
+          });
+        }
       }
     } catch {}
   }
