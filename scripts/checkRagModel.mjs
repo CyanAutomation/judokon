@@ -3,19 +3,19 @@
  * This script is intended to be run as a pre-commit hook or a CI check.
  */
 
-import { stat } from 'fs/promises';
-import { resolve } from 'path';
-import { fileURLToPath } from 'url';
+import { stat } from "fs/promises";
+import { resolve } from "path";
+import { fileURLToPath } from "url";
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const rootDir = resolve(__dirname, '..'); // Adjust if script is not directly in 'scripts'
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+const rootDir = resolve(__dirname, ".."); // Adjust if script is not directly in 'scripts'
 
-const modelDir = resolve(rootDir, 'src', 'models', 'minilm');
+const modelDir = resolve(rootDir, "src", "models", "minilm");
 const requiredFiles = [
-  'config.json',
-  'tokenizer_config.json',
-  'tokenizer.json',
-  'onnx/model_quantized.onnx',
+  "config.json",
+  "tokenizer_config.json",
+  "tokenizer.json",
+  "onnx/model_quantized.onnx"
 ];
 
 async function checkRagModel() {
@@ -35,16 +35,16 @@ async function checkRagModel() {
 
   if (!allFilesPresent) {
     console.error(
-      'RAG model files are missing or incomplete. Please run `npm run rag:prepare:models` to download them.'
+      "RAG model files are missing or incomplete. Please run `npm run rag:prepare:models` to download them."
     );
     process.exit(1);
   } else {
-    console.log('All local RAG model files are present and accounted for.');
+    console.log("All local RAG model files are present and accounted for.");
     process.exit(0);
   }
 }
 
 checkRagModel().catch((error) => {
-  console.error('An unexpected error occurred during RAG model check:', error);
+  console.error("An unexpected error occurred during RAG model check:", error);
   process.exit(1);
 });
