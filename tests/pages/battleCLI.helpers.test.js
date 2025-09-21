@@ -9,8 +9,6 @@ let engineFacadeMock;
 let featureFlagsMock;
 let updateRoundHeaderMock;
 
-const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0));
-
 describe("Battle CLI Helpers", () => {
   beforeEach(async () => {
     window.__TEST__ = true;
@@ -65,23 +63,23 @@ describe("Battle CLI Helpers", () => {
   afterEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    vi.restoreAllMocks();
     delete window.__TEST__;
   });
 
   describe("setupFlags", () => {
     it("toggles the verbose section when the checkbox is clicked", async () => {
-      await setupFlags();
-      const verboseToggle = document.getElementById("verbose-toggle");
+      const { toggleVerbose } = await setupFlags();
       const verboseSection = document.getElementById("cli-verbose-section");
 
       expect(verboseSection.hidden).toBe(true);
 
-      verboseToggle.click();
-      await flushMicrotasks();
+      await toggleVerbose(true);
+      expect(featureFlagsMock.setFlag.mock.calls.at(-1)).toEqual(["cliVerbose", true]);
       expect(verboseSection.hidden).toBe(false);
 
-      verboseToggle.click();
-      await flushMicrotasks();
+      await toggleVerbose(false);
+      expect(featureFlagsMock.setFlag.mock.calls.at(-1)).toEqual(["cliVerbose", false]);
       expect(verboseSection.hidden).toBe(true);
     });
 
@@ -96,14 +94,12 @@ describe("Battle CLI Helpers", () => {
       root.dataset.target = "7";
       root.dataset.round = "2";
 
-      await setupFlags();
-      const verboseToggle = document.getElementById("verbose-toggle");
+      const { toggleVerbose } = await setupFlags();
       const verboseSection = document.getElementById("cli-verbose-section");
 
       expect(verboseSection.hidden).toBe(true);
 
-      verboseToggle.click();
-      await flushMicrotasks();
+      await toggleVerbose(true);
 
       expect(engineFacadeMock.setPointsToWin).not.toHaveBeenCalled();
       expect(verboseSection.hidden).toBe(false);
@@ -115,14 +111,12 @@ describe("Battle CLI Helpers", () => {
       engineFacadeMock.getPointsToWin = undefined;
       engineFacadeMock.setPointsToWin = undefined;
 
-      await setupFlags();
-      const verboseToggle = document.getElementById("verbose-toggle");
+      const { toggleVerbose } = await setupFlags();
       const verboseSection = document.getElementById("cli-verbose-section");
 
       expect(verboseSection.hidden).toBe(true);
 
-      verboseToggle.click();
-      await flushMicrotasks();
+      await toggleVerbose(true);
 
       expect(verboseSection.hidden).toBe(false);
     });
@@ -131,12 +125,16 @@ describe("Battle CLI Helpers", () => {
   describe("wireEvents", () => {
     it("toggles the help section when the 'h' key is pressed", async () => {
       await setupFlags();
+      const addEventListenerSpy = vi.spyOn(window, "addEventListener");
       wireEvents();
+      const keydownHandler = addEventListenerSpy.mock.calls.find(
+        ([eventName]) => eventName === "keydown"
+      )[1];
       const shortcutsSection = document.getElementById("cli-shortcuts");
       expect(shortcutsSection.hidden).toBe(true);
 
       const keydownEvent = new KeyboardEvent("keydown", { key: "h" });
-      window.dispatchEvent(keydownEvent);
+      keydownHandler(keydownEvent);
 
       expect(shortcutsSection.hidden).toBe(false);
     });
