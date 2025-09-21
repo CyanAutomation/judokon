@@ -57,7 +57,9 @@ test.describe("Classic Battle cooldown + Next", () => {
     }, ["log", "info", "warn", "error", "debug"]);
   });
 
-  test("Round counter fallback respects engine state after DOM reversion", async ({ page }) => {
+  // Regression: verifies the round counter fallback realigns engine state after
+  // external scripts or extensions revert DOM changes.
+  test("recovers round counter state after external DOM interference", async ({ page }) => {
     await withMutedConsole(async () => {
       await page.addInitScript(() => {
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
@@ -87,7 +89,6 @@ test.describe("Classic Battle cooldown + Next", () => {
         previous: window.__previousRoundCounterContext ?? null
       }));
 
-      let observerInstalled = false;
       try {
         await page.evaluate(() => {
           const counter = document.getElementById("round-counter");
@@ -95,11 +96,13 @@ test.describe("Classic Battle cooldown + Next", () => {
           const baselineText = String(counter.textContent ?? "");
           const baselineHighest = counter.dataset?.highestRound ?? null;
           let reverted = false;
+          let revertInProgress = false;
           const observer = new MutationObserver(() => {
-            if (reverted || !counter.isConnected) return;
+            if (reverted || !counter.isConnected || revertInProgress) return;
             const currentText = String(counter.textContent ?? "");
             const currentHighest = counter.dataset?.highestRound ?? null;
             if (currentText !== baselineText || currentHighest !== baselineHighest) {
+              revertInProgress = true;
               reverted = true;
               counter.textContent = baselineText;
               if (counter.dataset) {
@@ -110,6 +113,7 @@ test.describe("Classic Battle cooldown + Next", () => {
                 }
               }
               observer.disconnect();
+              revertInProgress = false;
             }
           });
           observer.observe(counter, { characterData: true, childList: true, subtree: true });
@@ -118,35 +122,60 @@ test.describe("Classic Battle cooldown + Next", () => {
             delete window.__restoreRoundCounterObserver;
           };
         });
-        observerInstalled = true;
-
         await nextButton.click();
 
         await expect(roundCounter).toHaveText(/Round\s*2/);
-        const fallbackSnapshot = await page.evaluate(async () => {
-          const { getRoundsPlayed } = await import("/src/helpers/battleEngineFacade.js");
-          const counter = document.getElementById("round-counter");
-          const text = String(counter?.textContent ?? "");
-          const match = text.match(/Round\s*(\d+)/i);
-          const displayed = match ? Number(match[1]) : NaN;
-          const played = Number(getRoundsPlayed());
-          const expected = Number.isFinite(played) ? played + 1 : NaN;
-          return {
-            displayed,
-            expected,
-            highest: Number(window.__highestDisplayedRound ?? NaN),
-            lastContext: window.__lastRoundCounterContext ?? null,
-            previousContext: window.__previousRoundCounterContext ?? null
-          };
-        });
-        expect(Number.isFinite(fallbackSnapshot.expected)).toBe(true);
-        expect(fallbackSnapshot.displayed).toBe(fallbackSnapshot.expected);
-        expect(fallbackSnapshot.highest).toBe(fallbackSnapshot.expected);
-        expect(fallbackSnapshot.lastContext).toBe(contextBeforeNext.last);
+        const captureRoundSnapshot = async () => {
+          try {
+            const { getRoundsPlayed } = await import("/src/helpers/battleEngineFacade.js");
+            const counter = document.getElementById("round-counter");
+            const text = String(counter?.textContent ?? "");
+            const match = text.match(/Round\s*(\d+)/i);
+            const displayed = match ? Number(match[1]) : NaN;
+            const played = Number(getRoundsPlayed());
+            const expected = Number.isFinite(played) ? played + 1 : NaN;
+            return {
+              error: null,
+              displayed,
+              expected,
+              highest: Number(window.__highestDisplayedRound ?? NaN),
+              lastContext: window.__lastRoundCounterContext ?? null,
+              previousContext: window.__previousRoundCounterContext ?? null
+            };
+          } catch (error) {
+            return {
+              error: error instanceof Error ? error.message : String(error),
+              displayed: NaN,
+              expected: NaN,
+              highest: NaN,
+              lastContext: null,
+              previousContext: null
+            };
+          }
+        };
+        const fallbackSnapshot = await page.evaluate(captureRoundSnapshot);
+        expect(
+          fallbackSnapshot.error,
+          `Snapshot should resolve without error, received: ${fallbackSnapshot.error ?? "<none>"}`
+        ).toBeNull();
+        expect(
+          Number.isFinite(fallbackSnapshot.expected),
+          `Expected rounds played + 1 to be finite, got: ${fallbackSnapshot.expected}`
+        ).toBe(true);
+        expect(
+          fallbackSnapshot.displayed,
+          `Round counter should display ${fallbackSnapshot.expected}, but shows ${fallbackSnapshot.displayed}`
+        ).toBe(fallbackSnapshot.expected);
+        expect(
+          fallbackSnapshot.highest,
+          `Highest displayed round should be ${fallbackSnapshot.expected}, but is ${fallbackSnapshot.highest}`
+        ).toBe(fallbackSnapshot.expected);
+        expect(
+          fallbackSnapshot.lastContext,
+          `Last context should remain ${contextBeforeNext.last}, but was ${fallbackSnapshot.lastContext}`
+        ).toBe(contextBeforeNext.last);
 
         await page.evaluate(() => window.__restoreRoundCounterObserver?.());
-        observerInstalled = false;
-
         await page.waitForFunction(() => window.__lastRoundCounterContext === "advance");
         await page.waitForFunction(
           (expected) => window.__previousRoundCounterContext === expected,
@@ -155,30 +184,43 @@ test.describe("Classic Battle cooldown + Next", () => {
 
         await expect(nextButton).not.toHaveAttribute("data-next-ready", "true");
 
-        const cycleSnapshot = await page.evaluate(async () => {
-          const { getRoundsPlayed } = await import("/src/helpers/battleEngineFacade.js");
-          const counter = document.getElementById("round-counter");
-          const text = String(counter?.textContent ?? "");
-          const match = text.match(/Round\s*(\d+)/i);
-          const displayed = match ? Number(match[1]) : NaN;
-          const played = Number(getRoundsPlayed());
-          const expected = Number.isFinite(played) ? played + 1 : NaN;
-          return {
-            displayed,
-            expected,
-            highest: Number(window.__highestDisplayedRound ?? NaN),
-            lastContext: window.__lastRoundCounterContext ?? null,
-            previousContext: window.__previousRoundCounterContext ?? null
-          };
-        });
-        expect(Number.isFinite(cycleSnapshot.expected)).toBe(true);
-        expect(cycleSnapshot.displayed).toBe(cycleSnapshot.expected);
-        expect(cycleSnapshot.highest).toBe(cycleSnapshot.expected);
-        expect(cycleSnapshot.lastContext).toBe("advance");
-        expect(cycleSnapshot.previousContext).toBe(contextBeforeNext.last);
+        const cycleSnapshot = await page.evaluate(captureRoundSnapshot);
+        expect(
+          cycleSnapshot.error,
+          `Snapshot should resolve without error, received: ${cycleSnapshot.error ?? "<none>"}`
+        ).toBeNull();
+        expect(
+          Number.isFinite(cycleSnapshot.expected),
+          `Expected rounds played + 1 to be finite, got: ${cycleSnapshot.expected}`
+        ).toBe(true);
+        expect(
+          cycleSnapshot.displayed,
+          `Round counter should display ${cycleSnapshot.expected}, but shows ${cycleSnapshot.displayed}`
+        ).toBe(cycleSnapshot.expected);
+        expect(
+          cycleSnapshot.highest,
+          `Highest displayed round should be ${cycleSnapshot.expected}, but is ${cycleSnapshot.highest}`
+        ).toBe(cycleSnapshot.expected);
+        expect(cycleSnapshot.lastContext, "Last context should update to 'advance'").toBe(
+          "advance"
+        );
+        expect(
+          cycleSnapshot.previousContext,
+          `Previous context should match ${contextBeforeNext.last}, but was ${cycleSnapshot.previousContext}`
+        ).toBe(contextBeforeNext.last);
       } finally {
-        if (observerInstalled) {
-          await page.evaluate(() => window.__restoreRoundCounterObserver?.());
+        try {
+          await page.evaluate(() => {
+            if (typeof window.__restoreRoundCounterObserver === "function") {
+              window.__restoreRoundCounterObserver();
+            }
+            delete window.__restoreRoundCounterObserver;
+          });
+        } catch (cleanupError) {
+          console.warn(
+            "Test cleanup failed:",
+            cleanupError instanceof Error ? cleanupError.message : cleanupError
+          );
         }
       }
     }, ["log", "info", "warn", "error", "debug"]);
