@@ -68,6 +68,32 @@ test.describe("Classic Battle round counter", () => {
       const history = await page.evaluate(() => window.__roundCycleHistory || []);
       const startedEvents = history.filter((entry) => entry?.type === "round.start");
       expect(startedEvents).toHaveLength(1);
+      const [manualStart] = startedEvents;
+      expect(manualStart).toMatchObject({
+        manualRoundStart: true,
+        payload: {
+          source: "next-button",
+          via: "manual-click"
+        }
+      });
+
+      const readyEvents = history.filter((entry) => entry?.type === "ready");
+      const dedupedReady = readyEvents.find((entry) => entry?.skipped === true);
+      if (readyEvents.length > 0) {
+        expect(
+          dedupedReady,
+          "expected a deduped ready event when ready events are recorded"
+        ).toBeTruthy();
+
+        if (dedupedReady) {
+          expect(dedupedReady.suppressionWindowMs).toBeGreaterThan(0);
+          expect(dedupedReady.sinceManualStartMs).toBeGreaterThanOrEqual(0);
+          // sinceManualStartMs should remain below suppressionWindowMs to confirm deduplication timing
+          expect(dedupedReady.sinceManualStartMs).toBeLessThan(
+            dedupedReady.suppressionWindowMs
+          );
+        }
+      }
 
       await expect
         .poll(async () => {
