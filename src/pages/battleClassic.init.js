@@ -68,16 +68,26 @@ function resolveStatValues(store, stat) {
   const playerStats = store?.currentPlayerJudoka?.stats;
   const opponentStats = store?.currentOpponentJudoka?.stats;
 
-  let playerVal = Number(playerStats?.[stat]);
-  let opponentVal = Number(opponentStats?.[stat]);
+  const playerStoreValue = Number(playerStats?.[stat]);
+  const opponentStoreValue = Number(opponentStats?.[stat]);
+
+  let playerVal = playerStoreValue;
+  let opponentVal = opponentStoreValue;
 
   const needsPlayerFallback = !Number.isFinite(playerVal);
   const needsOpponentFallback = !Number.isFinite(opponentVal);
 
   if (needsPlayerFallback || needsOpponentFallback) {
-    const fallback = getPlayerAndOpponentValues(stat);
+    const fallback = getPlayerAndOpponentValues(stat, playerVal, opponentVal, { store });
     if (needsPlayerFallback) playerVal = Number(fallback.playerVal);
     if (needsOpponentFallback) opponentVal = Number(fallback.opponentVal);
+  }
+
+  if (!Number.isFinite(playerVal) && Number.isFinite(playerStoreValue)) {
+    playerVal = playerStoreValue;
+  }
+  if (!Number.isFinite(opponentVal) && Number.isFinite(opponentStoreValue)) {
+    opponentVal = opponentStoreValue;
   }
 
   return {

@@ -40,16 +40,66 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
  * @param {string} stat - Selected stat key.
  * @param {number} [playerVal] - Precomputed player stat value.
  * @param {number} [opponentVal] - Precomputed opponent stat value.
+ * @param {object} [context]
+ * @param {object} [context.store] - Battle store providing active judoka stats.
  * @returns {{playerVal: number, opponentVal: number}}
  */
-export function getPlayerAndOpponentValues(stat, playerVal, opponentVal) {
-  if (playerVal === undefined || Number.isNaN(playerVal)) {
-    playerVal = getCardStatValue(document.querySelector("#player-card"), stat);
-  }
-  if (opponentVal === undefined || Number.isNaN(opponentVal)) {
-    opponentVal = getCardStatValue(document.querySelector("#opponent-card"), stat);
-  }
-  return { playerVal: Number(playerVal), opponentVal: Number(opponentVal) };
+export function getPlayerAndOpponentValues(stat, playerVal, opponentVal, context = {}) {
+  const { store } = typeof context === "object" && context !== null ? context : {};
+
+  const readStoreStat = (stats) => {
+    const raw = stats?.[stat];
+    const numeric = Number(raw);
+    return Number.isFinite(numeric) ? numeric : undefined;
+  };
+
+  const readDomText = (container) => {
+    try {
+      if (!container) return null;
+      const index = STATS.indexOf(stat);
+      if (!Number.isFinite(index) || index < 0) return null;
+      const span = container.querySelector(`li.stat:nth-child(${index + 1}) span`);
+      return span?.textContent?.trim() ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  const getContainer = (selector) => {
+    try {
+      return document?.querySelector?.(selector) || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const resolveSide = (value, selector, stats) => {
+    if (value === undefined || Number.isNaN(value)) {
+      const container = getContainer(selector);
+      const text = readDomText(container);
+      const domValue = getCardStatValue(container, stat);
+      if (typeof text === "string" && text.trim() === "?") {
+        const fallback = readStoreStat(stats);
+        if (fallback !== undefined) return fallback;
+      }
+      if (Number.isFinite(domValue)) return Number(domValue);
+      const fallback = readStoreStat(stats);
+      if (fallback !== undefined) return fallback;
+      return Number(domValue);
+    }
+    return Number(value);
+  };
+
+  const playerStats = store?.currentPlayerJudoka?.stats;
+  const opponentStats = store?.currentOpponentJudoka?.stats;
+
+  const resolvedPlayer = resolveSide(playerVal, "#player-card", playerStats);
+  const resolvedOpponent = resolveSide(opponentVal, "#opponent-card", opponentStats);
+
+  return {
+    playerVal: Number(resolvedPlayer),
+    opponentVal: Number(resolvedOpponent)
+  };
 }
 
 /**
@@ -139,7 +189,7 @@ function validateSelectionState(store) {
 function applySelectionToStore(store, stat, playerVal, opponentVal) {
   store.selectionMade = true;
   store.playerChoice = stat;
-  return getPlayerAndOpponentValues(stat, playerVal, opponentVal);
+  return getPlayerAndOpponentValues(stat, playerVal, opponentVal, { store });
 }
 
 /**
