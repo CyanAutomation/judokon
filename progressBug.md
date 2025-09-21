@@ -45,9 +45,9 @@ The underlying issue is that the `roundEnded` event handler derives the round st
 
 - Implementation: The `emitBattleEvent` mock change is present in the repository and has been confirmed by static inspection of `tests/classicBattle/page-scaffold.test.js` and of `src/helpers/classicBattle/scoreboardAdapter.js` (which reads `e?.detail?.roundNumber`).
 - Runtime verification: I re-ran the `page-scaffold` test file with Vitest in this environment. The test run completed successfully. Observed summary:
-
   - Command run: `npx vitest run tests/classicBattle/page-scaffold.test.js --run`
-  - Vitest summary: "Test Files  1 passed (1)" and "Tests  5 passed (5)" (duration ~2.5s in this environment).
+  - Vitest summary: "Test Files 1 passed (1)" and "Tests 5 passed (5)" (duration ~2.5s in this environment).
+
 - Risk: The underlying application event flow was not modified by this change (only the test harness was made more accurate). A longer-term architectural recommendation (centralize round state) remains valid but is not applied here.
 
 See consolidated "Opportunities for improvement" section at the end of this document.
@@ -219,18 +219,18 @@ Suggested next steps / verification checklist:
 
 1. Run the `page-scaffold` tests locally without filtering/skipping to validate runtime behavior:
 
-  - From repository root run:
+- From repository root run:
 
-    ```bash
-    npx vitest run tests/classicBattle/page-scaffold.test.js
-    ```
+  ```bash
+  npx vitest run tests/classicBattle/page-scaffold.test.js
+  ```
 
-  - If Vitest reports the file as skipped, search for any `describe.skip`/`test.skip` or environment gating that may be preventing execution.
+- If Vitest reports the file as skipped, search for any `describe.skip`/`test.skip` or environment gating that may be preventing execution.
 
 2. If timeouts persist for the "render enabled after start; clicking resolves and starts cooldown" test, re-run that single test with verbose output and trace the listener wiring. Useful steps:
 
-  - Ensure `initStatButtons` mock is the one being executed (the file-level mock is present; cross-module mocks can mask it).
-  - Add temporary `console.log` (or a muted test log gate) to verify the click handler is attached and that `handleStatSelection` is called.
+- Ensure `initStatButtons` mock is the one being executed (the file-level mock is present; cross-module mocks can mask it).
+- Add temporary `console.log` (or a muted test log gate) to verify the click handler is attached and that `handleStatSelection` is called.
 
 3. Once the small, test-only fixes are validated, consider extracting the RAF mock and common test helpers into `tests/helpers/*` to reduce duplication and improve reuse (low-risk refactor).
 
