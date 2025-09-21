@@ -7,19 +7,31 @@ vi.mock("../../src/helpers/motionUtils.js", () => ({
 
 describe("scoreboard readiness badge reflection", () => {
   let originalMutationObserver;
-  /** @type {((...args: unknown[]) => void) | undefined} */
+  /** @type {MutationObserverCallback | undefined} */
   let invokeObserver;
+  /** @type {Element | undefined} */
+  let observedTarget;
+  /** @type {MutationObserverInit | undefined} */
+  let observedOptions;
 
   beforeEach(() => {
     vi.resetModules();
     originalMutationObserver = globalThis.MutationObserver;
     invokeObserver = undefined;
+    observedTarget = undefined;
+    observedOptions = undefined;
     globalThis.MutationObserver = class {
       constructor(callback) {
         invokeObserver = callback;
       }
-      observe() {}
-      disconnect() {}
+      observe(target, options) {
+        observedTarget = target;
+        observedOptions = options;
+        return undefined;
+      }
+      disconnect() {
+        return undefined;
+      }
       takeRecords() {
         return [];
       }
@@ -27,6 +39,7 @@ describe("scoreboard readiness badge reflection", () => {
   });
 
   afterEach(() => {
+    clearBody();
     if (originalMutationObserver) {
       globalThis.MutationObserver = originalMutationObserver;
     } else {
@@ -34,7 +47,7 @@ describe("scoreboard readiness badge reflection", () => {
     }
   });
 
-  it("toggles #next-ready-badge hidden based on next button readiness", async () => {
+  async function renderScoreboard() {
     const { container } = mount();
     const header = document.createElement("header");
     header.className = "header battle-header";
@@ -64,6 +77,25 @@ describe("scoreboard readiness badge reflection", () => {
     setupScoreboard(controlsApi, scheduler.createMockScheduler());
     const nextButton = container.querySelector("#next-button");
     const badge = container.querySelector("#next-ready-badge");
+    if (!(nextButton instanceof HTMLElement) || !(badge instanceof HTMLElement)) {
+      throw new Error("Scoreboard DOM did not render expected controls");
+    }
+    return { nextButton, badge };
+  }
+
+  it("observes the Next button for readiness changes", async () => {
+    const { nextButton } = await renderScoreboard();
+
+    expect(typeof invokeObserver).toBe("function");
+    expect(observedTarget).toBe(nextButton);
+    expect(observedOptions).toEqual({
+      attributes: true,
+      attributeFilter: ["disabled", "data-next-ready", "aria-busy"]
+    });
+  });
+
+  it("toggles #next-ready-badge hidden based on next button readiness", async () => {
+    const { nextButton, badge } = await renderScoreboard();
     // Initially disabled => badge hidden
     expect(nextButton.disabled).toBe(true);
     expect(badge.hidden).toBe(true);
@@ -75,7 +107,5 @@ describe("scoreboard readiness badge reflection", () => {
     nextButton.disabled = true;
     invokeObserver?.([]);
     expect(badge.hidden).toBe(true);
-
-    clearBody();
   });
 });
