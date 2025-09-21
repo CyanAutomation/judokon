@@ -183,12 +183,11 @@ export function cancel(id) {
  * Auto-install/uninstall wrapper for test functions
  */
 export function withRafMock(fn) {
-  const mock = new RafMock();
-  mock.install();
+  install();
   try {
-    return fn(mock);
+    return fn();
   } finally {
-    mock.uninstall();
+    uninstall();
   }
 }
 

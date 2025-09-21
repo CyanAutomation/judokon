@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { install, uninstall, enqueue, flushNext, flushAll, withRafMock } from "./rafMock.js";
+import { install, uninstall, enqueue, flushNext, flushAll, withRafMock, installRAFMock } from "./rafMock.js";
 
 /**
  * @pseudocode
@@ -159,18 +159,15 @@ describe("RafMock", () => {
 
   describe("withRafMock wrapper", () => {
     it("should auto-install and uninstall", () => {
-      let originalRAF;
-      let originalCAF;
+      // Clean up the beforeEach mock first
+      uninstall();
 
-      const result = withRafMock((mock) => {
-        expect(mock).toBeInstanceOf(Object);
-        expect(mock.install).toBeInstanceOf(Function);
-        expect(mock.uninstall).toBeInstanceOf(Function);
+      const originalRAF = globalThis.requestAnimationFrame;
+      const originalCAF = globalThis.cancelAnimationFrame;
 
-        // Verify globals are mocked
+      const result = withRafMock(() => {
         expect(globalThis.requestAnimationFrame).not.toBe(originalRAF);
         expect(globalThis.cancelAnimationFrame).not.toBe(originalCAF);
-
         return "test result";
       });
 
@@ -179,6 +176,9 @@ describe("RafMock", () => {
       // Verify globals are restored
       expect(globalThis.requestAnimationFrame).toBe(originalRAF);
       expect(globalThis.cancelAnimationFrame).toBe(originalCAF);
+
+      // Reinstall for other tests
+      install();
     });
 
     it("should work with test logic", () => {

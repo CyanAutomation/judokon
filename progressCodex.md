@@ -116,7 +116,7 @@ A robust state machine is critical. It will resolve the majority of the function
 - **Action (ARIA + Keyboard Support):** Ensure the scoreboard, stat buttons, and modal flows provide `aria-live`/`aria-describedby` announcements, conforming keyboard shortcuts, and resilient focus management.
 - **Fixes:** #11, #12, #13
 - **Action (Contrast and Layout):** Ensure the color contrast meets WCAG 2.1 AA standards (≥4.5:1) and that the layout is responsive, especially at 200% zoom.
-- **Fixes:** (Not explicitly in a bug, but a best practice)
+- **Fixes:** (Best practice — no QA item)
 
 ### 5. Repair Navigation and Add Features
 
