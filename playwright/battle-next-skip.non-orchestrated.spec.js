@@ -5,10 +5,11 @@ import { withMutedConsole } from "../tests/utils/console.js";
  * Verify that the Next button can skip the cooldown when no orchestrator is running.
  *
  * @pseudocode
- * 1. Render a minimal page with a disabled Next button.
- * 2. Start the cooldown via `roundManager.startCooldown`.
- * 3. Ensure `nextRoundTimerReady` fires and the button is enabled with `data-next-ready`.
- * 4. Click the button and await the ready promise to resolve quickly.
+ * 1. Load the real battle page and choose a match length.
+ * 2. Make a stat selection to trigger the post-round cooldown logic.
+ * 3. Use the test API to skip the cooldown via `timers.skipCooldown`.
+ * 4. Assert the Next button becomes enabled and marked ready, then click it.
+ * 5. Confirm the selection state resets for the next round.
  */
 
 test("skips cooldown without orchestrator", async ({ page }) => {
@@ -16,13 +17,18 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     await page.addInitScript(() => {
       // Long cooldown to ensure click truly skips it
       window.__NEXT_ROUND_COOLDOWN_MS = 5000;
-      globalThis.__classicBattleEventTarget = new EventTarget();
+      window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
 
     // Navigate to actual battle page instead of replacing body HTML
     await page.goto("/src/pages/battleClassic.html");
 
-    // Wait for page initialization and Test API availability
+    // Wait for page initialization and choose a match length to start the battle
+    await page.getByRole("dialog").waitFor();
+    await page.getByRole("button", { name: "Medium" }).click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+
+    // Wait for Test API availability
     await page.waitForFunction(
       () => {
         return (
@@ -37,50 +43,37 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     const nextButton = page.locator("#next-button, [data-role='next-round']").first();
     await nextButton.waitFor({ timeout: 3000 });
 
-    await page.evaluate(async () => {
-      // Force non-orchestrated mode by clearing battle state
-      document.body.removeAttribute("data-battle-state");
+    // Wait for the Classic Battle test API to be available
+    await page.waitForFunction(
+      () =>
+        typeof window.__TEST_API?.inspect?.getDebugInfo === "function" &&
+        typeof window.__TEST_API?.timers?.skipCooldown === "function"
+    );
 
-      window.readyEvent = new Promise((resolve) => {
-        globalThis.__classicBattleEventTarget.addEventListener(
-          "nextRoundTimerReady",
-          () => resolve(),
-          { once: true }
-        );
-      });
-      const { startCooldown } = await import("/src/helpers/classicBattle/roundManager.js");
-      const { onNextButtonClick } = await import("/src/helpers/classicBattle/timerService.js");
-      const { enableNextRoundButton } = await import("/src/helpers/classicBattle/uiHelpers.js");
-
-      const controls = startCooldown({});
-
-      // For testing purposes, enable the button directly
-      enableNextRoundButton();
-
-      // Find the actual next button in the real battle page
-      const btn =
-        document.getElementById("next-button") ||
-        document.querySelector("[data-role='next-round']");
-
-      if (btn) {
-        btn.addEventListener("click", (evt) => onNextButtonClick(evt, controls));
-        window.readyResolved = false;
-        controls.ready.then(() => {
-          window.readyResolved = true;
-        });
-      } else {
-        console.warn("Next button not found in battle page");
-        window.readyResolved = true; // Allow test to continue
-      }
+    // Make a stat selection so the round resolves and cooldown begins
+    await page.getByRole("button", { name: /power/i }).click();
+    await page.waitForFunction(() => {
+      const info = window.__TEST_API?.inspect?.getDebugInfo?.();
+      return info?.store?.selectionMade === true;
     });
 
-    await page.evaluate(() => window.readyEvent);
+    const selectionInfo = await page.evaluate(() => window.__TEST_API.inspect.getDebugInfo());
+    expect(selectionInfo.store.selectionMade).toBe(true);
+
+    const skipped = await page.evaluate(() => window.__TEST_API.timers.skipCooldown());
+    expect(skipped).toBeTruthy();
+
+    await page.waitForFunction(() => {
+      const info = window.__TEST_API?.inspect?.getDebugInfo?.();
+      return info?.dom?.nextButtonReady === true;
+    });
 
     // Use the same selector as above for consistency
     const nextBtn = page.locator("#next-button, [data-role='next-round']").first();
     await expect(nextBtn).toBeEnabled();
     await expect(nextBtn).toHaveAttribute("data-next-ready", "true");
     await nextBtn.click();
-    await page.waitForFunction(() => window.readyResolved === true, { timeout: 1000 });
+    const postClickInfo = await page.evaluate(() => window.__TEST_API.inspect.getDebugInfo());
+    expect(postClickInfo.store.selectionMade).toBe(false);
   }, ["log", "info", "warn", "error", "debug"]);
 });
