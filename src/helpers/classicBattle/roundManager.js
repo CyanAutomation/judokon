@@ -77,8 +77,24 @@ export function createBattleStore() {
     opponentCardEl: null,
     statButtonEls: null,
     currentPlayerJudoka: null,
-    currentOpponentJudoka: null
+    currentOpponentJudoka: null,
+    lastPlayerStats: null,
+    lastOpponentStats: null
   };
+}
+
+function persistLastJudokaStats(store, playerJudoka, opponentJudoka) {
+  if (!store || typeof store !== "object") {
+    return;
+  }
+
+  if (playerJudoka?.stats && typeof playerJudoka.stats === "object") {
+    store.lastPlayerStats = { ...playerJudoka.stats };
+  }
+
+  if (opponentJudoka?.stats && typeof opponentJudoka.stats === "object") {
+    store.lastOpponentStats = { ...opponentJudoka.stats };
+  }
 }
 
 /**
@@ -114,6 +130,7 @@ function getStartRound(store) {
  * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
  */
 export async function handleReplay(store) {
+  persistLastJudokaStats(store, store?.currentPlayerJudoka, store?.currentOpponentJudoka);
   // Only create a new engine when one does not already exist. Tests call
   // `_resetForTest` frequently; unconditionally recreating the engine here
   // resets match-level scores and causes cumulative score tests to fail.
@@ -185,6 +202,7 @@ export async function startRound(store, onRoundStart) {
   const cards = await drawCards();
   store.currentPlayerJudoka = cards.playerJudoka || null;
   store.currentOpponentJudoka = cards.opponentJudoka || null;
+  persistLastJudokaStats(store, cards.playerJudoka, cards.opponentJudoka);
   let roundNumber = 1;
   safeRound(
     "startRound.resolveRoundNumber",

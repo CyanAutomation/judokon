@@ -33,9 +33,9 @@ export function simulateOpponentStat(stats, difficulty = "easy") {
  * Retrieve stat values for the player and opponent cards.
  *
  * @pseudocode
- * 1. Extract active judoka stats from the provided battle store context.
- * 2. For each side, if the precomputed value is missing, read the stat from the DOM.
- * 3. When the DOM shows a "?" placeholder, prefer the store stat fallback.
+ * 1. Extract active and persisted judoka stats from the provided battle store context.
+ * 2. For each side, prefer the supplied value, then the store's current stats, then the persisted stats.
+ * 3. Only read the DOM when no numeric value is available from store data.
  * 4. Coerce the resolved values to numbers and return them.
  *
  * @param {string} stat - Selected stat key.
@@ -50,19 +50,23 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal, context
 
   const playerStats = store?.currentPlayerJudoka?.stats;
   const opponentStats = store?.currentOpponentJudoka?.stats;
+  const persistedPlayerStats = store?.lastPlayerStats;
+  const persistedOpponentStats = store?.lastOpponentStats;
 
   const resolvedPlayer = resolveStatSide({
     value: playerVal,
     selector: "#player-card",
     stat,
-    stats: playerStats
+    stats: playerStats,
+    persistedStats: persistedPlayerStats
   });
 
   const resolvedOpponent = resolveStatSide({
     value: opponentVal,
     selector: "#opponent-card",
     stat,
-    stats: opponentStats
+    stats: opponentStats,
+    persistedStats: persistedOpponentStats
   });
 
   return {
@@ -71,26 +75,25 @@ export function getPlayerAndOpponentValues(stat, playerVal, opponentVal, context
   };
 }
 
-function resolveStatSide({ value, selector, stat, stats }) {
+function resolveStatSide({ value, selector, stat, stats, persistedStats }) {
   if (value !== undefined && !Number.isNaN(value)) {
     return Number(value);
   }
 
-  const container = getStatContainer(selector);
-  const text = readDomStatText(container, stat);
-  const fallback = readStoreStat(stats, stat);
-  const domValue = Number(getCardStatValue(container, stat));
-
-  if (typeof text === "string" && text.trim() === "?" && fallback !== undefined) {
-    return fallback;
+  const storeValue = readStoreStat(stats, stat);
+  if (storeValue !== undefined) {
+    return storeValue;
   }
 
+  const persistedValue = readStoreStat(persistedStats, stat);
+  if (persistedValue !== undefined) {
+    return persistedValue;
+  }
+
+  const container = getStatContainer(selector);
+  const domValue = Number(getCardStatValue(container, stat));
   if (Number.isFinite(domValue)) {
     return domValue;
-  }
-
-  if (fallback !== undefined) {
-    return fallback;
   }
 
   return domValue;
@@ -99,18 +102,6 @@ function resolveStatSide({ value, selector, stat, stats }) {
 function readStoreStat(stats, stat) {
   const numeric = Number(stats?.[stat]);
   return Number.isFinite(numeric) ? numeric : undefined;
-}
-
-function readDomStatText(container, stat) {
-  try {
-    if (!container) return null;
-    const index = STATS.indexOf(stat);
-    if (!Number.isFinite(index) || index < 0) return null;
-    const span = container.querySelector(`li.stat:nth-child(${index + 1}) span`);
-    return span?.textContent?.trim() ?? null;
-  } catch {
-    return null;
-  }
 }
 
 function getStatContainer(selector) {

@@ -17,6 +17,15 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
   skipRoundCooldownIfEnabled: vi.fn(() => false)
 }));
 
+function createDeferred() {
+  /** @type {() => void} */
+  let resolve;
+  const promise = new Promise((res) => {
+    resolve = res;
+  });
+  return { promise, resolve: resolve ?? (() => {}) };
+}
+
 describe("onNextButtonClick", () => {
   let btn;
   let warnSpy;
@@ -130,5 +139,47 @@ describe("onNextButtonClick", () => {
     expect(resolveReady).toHaveBeenCalledTimes(1);
     expect(btn.disabled).toBe(true);
     expect(btn.dataset.nextReady).toBeUndefined();
+  });
+
+  it("suppresses concurrent clicks while an advance is in flight", async () => {
+    await runWithFakeTimers(async () => {
+      const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
+      const events = await import("../../src/helpers/classicBattle/battleEvents.js");
+      const mod = await import("../../src/helpers/classicBattle/timerService.js");
+      const deferred = createDeferred();
+      dispatcher.dispatchBattleEvent
+        .mockImplementationOnce(() => deferred.promise)
+        .mockImplementation(() => Promise.resolve(true));
+
+      btn.dataset.nextReady = "true";
+      __setStateSnapshot({ state: "cooldown" });
+
+      const firstCall = mod.onNextButtonClick(new MouseEvent("click"), {
+        timer: null,
+        resolveReady: null
+      });
+      let firstSettled = false;
+      firstCall.then(() => {
+        firstSettled = true;
+      });
+
+      // Allow the first invocation to reach the mocked dispatcher before issuing another click.
+      await Promise.resolve();
+
+      const secondCall = mod.onNextButtonClick(new MouseEvent("click"), {
+        timer: null,
+        resolveReady: null
+      });
+
+      // Ensure the guard short-circuits the second attempt while the first is pending.
+      await expect(secondCall).resolves.toBeUndefined();
+      expect(dispatcher.dispatchBattleEvent).toHaveBeenCalledTimes(1);
+      expect(events.emitBattleEvent).toHaveBeenCalledTimes(2);
+      expect(firstSettled).toBe(false);
+
+      deferred.resolve();
+      await firstCall;
+      expect(firstSettled).toBe(true);
+    });
   });
 });

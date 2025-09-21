@@ -173,7 +173,11 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
     selectionMade: false,
     stallTimeoutMs: 0,
     autoSelectId: null,
-    playerChoice: null
+    playerChoice: null,
+    currentPlayerJudoka: null,
+    currentOpponentJudoka: null,
+    lastPlayerStats: null,
+    lastOpponentStats: null
   }));
 
   const startCooldown = vi.fn();
@@ -186,6 +190,12 @@ vi.mock("../../src/helpers/classicBattle/roundManager.js", () => {
       btn.disabled = false;
       btn.removeAttribute("disabled");
     });
+    const playerStats = { Power: 12, Speed: 8, Skill: 6 };
+    const opponentStats = { Power: 5, Speed: 9, Skill: 3 };
+    store.currentPlayerJudoka = { stats: { ...playerStats } };
+    store.currentOpponentJudoka = { stats: { ...opponentStats } };
+    store.lastPlayerStats = { ...playerStats };
+    store.lastOpponentStats = { ...opponentStats };
     if (!window.__selectionHandlerMock) {
       const mod = await import("../../src/helpers/classicBattle/selectionHandler.js");
       window.__selectionHandlerMock = mod.handleStatSelection;
@@ -234,7 +244,23 @@ vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => {
   if (typeof window !== "undefined") {
     window.__selectionHandlerMock = handleStatSelection;
   }
-  return { handleStatSelection };
+  const getPlayerAndOpponentValues = vi.fn((stat, playerVal, opponentVal, context = {}) => {
+    const store = context?.store ?? {};
+    const resolve = (value, currentStats, persistedStats) => {
+      const provided = Number(value);
+      if (Number.isFinite(provided)) return provided;
+      const current = Number(currentStats?.[stat]);
+      if (Number.isFinite(current)) return current;
+      const fallback = Number(persistedStats?.[stat]);
+      if (Number.isFinite(fallback)) return fallback;
+      return Number.NaN;
+    };
+    return {
+      playerVal: resolve(playerVal, store.currentPlayerJudoka?.stats, store.lastPlayerStats),
+      opponentVal: resolve(opponentVal, store.currentOpponentJudoka?.stats, store.lastOpponentStats)
+    };
+  });
+  return { handleStatSelection, getPlayerAndOpponentValues };
 });
 
 vi.mock("../../src/helpers/classicBattle/statButtons.js", () => ({
@@ -887,6 +913,49 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
     const nextButton = document.getElementById("next-button");
     expect(nextButton?.getAttribute("data-role")).toBe("next-round");
+  });
+
+  test("replay preserves opponent stats for immediate selection", async () => {
+    window.__FF_OVERRIDES = { battleStateBadge: true, showRoundSelectModal: true };
+    const { init } = await import("../../src/pages/battleClassic.init.js");
+    await init();
+
+    await modalMock.onStart?.();
+
+    const store = window.battleStore;
+    expect(store).toBeTruthy();
+
+    const fallbackPlayerStats = { Power: 91, Speed: 82, Skill: 73 };
+    const fallbackOpponentStats = { Power: 64, Speed: 55, Skill: 46 };
+    store.lastPlayerStats = { ...fallbackPlayerStats };
+    store.lastOpponentStats = { ...fallbackOpponentStats };
+    store.currentPlayerJudoka = { stats: { ...fallbackPlayerStats } };
+    store.currentOpponentJudoka = { stats: { ...fallbackOpponentStats } };
+
+    const replayBtn = document.getElementById("replay-button");
+    expect(replayBtn).toBeTruthy();
+
+    const selectionMod = await import("../../src/helpers/classicBattle/selectionHandler.js");
+    selectionMod.handleStatSelection.mockClear();
+
+    replayBtn?.click();
+    await flushImmediateTasks();
+
+    store.currentPlayerJudoka = null;
+    store.currentOpponentJudoka = null;
+
+    const statButton = document.querySelector("#stat-buttons button[data-stat]");
+    expect(statButton).toBeTruthy();
+
+    statButton?.click();
+    await flushImmediateTasks();
+
+    const lastCall = selectionMod.handleStatSelection.mock.calls.at(-1);
+    expect(lastCall).toBeTruthy();
+    const statKey = statButton?.dataset.stat ?? "";
+    expect(statKey).toBeTruthy();
+    expect(lastCall?.[2]?.playerVal).toBe(fallbackPlayerStats[statKey]);
+    expect(lastCall?.[2]?.opponentVal).toBe(fallbackOpponentStats[statKey]);
   });
 
   test("respects battle state badge feature flag overrides", async () => {

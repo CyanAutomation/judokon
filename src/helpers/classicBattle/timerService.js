@@ -52,6 +52,8 @@ export { getNextRoundControls } from "./roundManager.js";
 
 // Track timeout for cooldown warning to avoid duplicates.
 let cooldownWarningTimeoutId = null;
+// Prevent re-entrant Next clicks from advancing multiple rounds at once.
+let nextClickInFlight = false;
 
 /**
  * Get the round counter element from the DOM root.
@@ -291,62 +293,72 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  * @returns {Promise<void>}
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls(), options = {}) {
-  let skipHandled = false;
-  const skipHintEnabled = skipRoundCooldownIfEnabled({
-    onSkip: () => {
-      setSkipHandler(null);
+  if (nextClickInFlight) {
+    timerLogger.debug("[next] click ignored while advance in flight");
+    return;
+  }
+
+  nextClickInFlight = true;
+  try {
+    let skipHandled = false;
+    const skipHintEnabled = skipRoundCooldownIfEnabled({
+      onSkip: () => {
+        setSkipHandler(null);
+        emitBattleEvent("countdownFinished");
+        emitBattleEvent("round.start");
+        skipHandled = true;
+      }
+    });
+    if (skipHintEnabled && skipHandled) {
+      timerLogger.debug("skipRoundCooldown hint consumed during Next click");
+    }
+    if (!skipHandled) {
       emitBattleEvent("countdownFinished");
       emitBattleEvent("round.start");
-      skipHandled = true;
     }
-  });
-  if (skipHintEnabled && skipHandled) {
-    timerLogger.debug("skipRoundCooldown hint consumed during Next click");
-  }
-  if (!skipHandled) {
-    emitBattleEvent("countdownFinished");
-    emitBattleEvent("round.start");
-  }
-  const { timer = null, resolveReady = null } = controls || {};
-  const root = options.root || document;
-  const displayedRoundBefore = readDisplayedRound(root);
-  const btn = root.getElementById
-    ? root.getElementById("next-button")
-    : root.querySelector("#next-button");
-  if (!btn) return;
-  // Defensive: if a stale readiness flag is present outside of `cooldown`,
-  // clear it so we don't advance via an early-ready path.
-  const { state } = safeGetSnapshot();
-  if (isNextReady(btn) && state && state !== "cooldown") {
-    resetReadiness(btn);
-    guard(() => console.warn("[next] cleared early readiness outside cooldown"));
-  }
-  // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
-  // feature flag. The flag only affects automatic progression, never user
-  // intent signaled via the Next button.
-  const strategies = {
-    advance: () => advanceWhenReady(btn, resolveReady),
-    cancel: () => cancelTimerOrAdvance(btn, timer, resolveReady)
-  };
-  const action = isNextReady(btn) ? "advance" : "cancel";
-  await strategies[action]();
-  const displayedRoundAfter = readDisplayedRound(root);
-  if (
-    displayedRoundBefore !== null &&
-    (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
-  ) {
-    writeRoundCounter(root, displayedRoundBefore + 1);
-  }
-  if (cooldownWarningTimeoutId !== null) {
-    realScheduler.clearTimeout(cooldownWarningTimeoutId);
-  }
-  cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
+    const { timer = null, resolveReady = null } = controls || {};
+    const root = options.root || document;
+    const displayedRoundBefore = readDisplayedRound(root);
+    const btn = root.getElementById
+      ? root.getElementById("next-button")
+      : root.querySelector("#next-button");
+    if (!btn) return;
+    // Defensive: if a stale readiness flag is present outside of `cooldown`,
+    // clear it so we don't advance via an early-ready path.
     const { state } = safeGetSnapshot();
-    if (state === "cooldown") {
-      guard(() => console.warn("[next] stuck in cooldown"));
+    if (isNextReady(btn) && state && state !== "cooldown") {
+      resetReadiness(btn);
+      guard(() => console.warn("[next] cleared early readiness outside cooldown"));
     }
-    cooldownWarningTimeoutId = null;
-  }, 1000);
+    // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
+    // feature flag. The flag only affects automatic progression, never user
+    // intent signaled via the Next button.
+    const strategies = {
+      advance: () => advanceWhenReady(btn, resolveReady),
+      cancel: () => cancelTimerOrAdvance(btn, timer, resolveReady)
+    };
+    const action = isNextReady(btn) ? "advance" : "cancel";
+    await strategies[action]();
+    const displayedRoundAfter = readDisplayedRound(root);
+    if (
+      displayedRoundBefore !== null &&
+      (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
+    ) {
+      writeRoundCounter(root, displayedRoundBefore + 1);
+    }
+    if (cooldownWarningTimeoutId !== null) {
+      realScheduler.clearTimeout(cooldownWarningTimeoutId);
+    }
+    cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
+      const { state } = safeGetSnapshot();
+      if (state === "cooldown") {
+        guard(() => console.warn("[next] stuck in cooldown"));
+      }
+      cooldownWarningTimeoutId = null;
+    }, 1000);
+  } finally {
+    nextClickInFlight = false;
+  }
 }
 
 // `getNextRoundControls` is re-exported from `roundManager.js` and returns
