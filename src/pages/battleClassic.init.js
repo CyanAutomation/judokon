@@ -420,7 +420,7 @@ async function ensureScoreboardReflectsResult(result) {
 }
 
 async function confirmMatchOutcome(store, result) {
-  let snapshot = (result && typeof result === "object") ? { ...result } : null;
+  let snapshot = result && typeof result === "object" ? { ...result } : null;
   let matchEnded = Boolean(snapshot?.matchEnded);
   let engineScores = null;
   try {
