@@ -8,7 +8,8 @@ import * as eventDispatcher from "../../src/helpers/classicBattle/eventDispatche
 import {
   createGlobalStateManager,
   createScoreboardStub,
-  createSnackbarStub
+  createSnackbarStub,
+  setupCooldownTestDOM
 } from "./roundManagerTestUtils.js";
 
 test("integration: startCooldown drives readiness flow with fake timers", async () => {
@@ -24,15 +25,10 @@ test("integration: startCooldown drives readiness flow with fake timers", async 
     __NEXT_ROUND_COOLDOWN_MS: 1000
   });
 
-  document.body.innerHTML = "";
-  delete document.body.dataset?.battleState;
-
+  let disposeCooldownDOM = () => {};
   try {
     _resetForTest(store);
-
-    document.body.innerHTML =
-      '<button id="next-button" data-role="next-round" disabled data-next-ready="false"></button>';
-    delete document.body.dataset?.battleState;
+    disposeCooldownDOM = setupCooldownTestDOM();
 
     const controls = startCooldown(store, undefined, {
       scoreboard: createScoreboardStub(),
@@ -68,7 +64,7 @@ test("integration: startCooldown drives readiness flow with fake timers", async 
   } finally {
     timers.useRealTimers();
     dispatchSpy.mockRestore();
-    document.body.innerHTML = "";
+    disposeCooldownDOM();
     try {
       _resetForTest(store);
     } catch {}
