@@ -1,37 +1,34 @@
 import { describe, it, expect } from "vitest";
 import { createModal, Modal } from "../../src/components/Modal.js";
 import { mount, clearBody } from "./domUtils.js";
+import { createButton } from "./components/Button.js";
 
 function buildContent() {
   const frag = document.createDocumentFragment();
-  const cancel = document.createElement("button");
-  cancel.textContent = "Cancel";
-  cancel.id = "cancel-btn";
-  const save = document.createElement("button");
-  save.textContent = "Save";
-  frag.append(cancel, save);
+  const cancel = createButton("Cancel", { id: "cancel-btn" });
+  const save = createButton("Save");
+  frag.append(cancel.element, save.element);
   return frag;
 }
 
 describe("createModal", () => {
   it("opens and closes the modal with focus management", () => {
     const { container } = mount();
-    const trigger = document.createElement("button");
-    trigger.id = "trigger";
-    container.appendChild(trigger);
+    const trigger = createButton("Open Modal", { id: "trigger" });
+    container.appendChild(trigger.element);
 
     const modal = createModal(buildContent());
     container.appendChild(modal.element);
 
-    modal.open(trigger);
+    modal.open(trigger.element);
     expect(modal.element.hasAttribute("hidden")).toBe(false);
-    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(trigger.element).toHaveAttribute("aria-expanded", "true");
     expect(document.activeElement.id).toBe("cancel-btn");
 
     modal.close();
     expect(modal.element.hasAttribute("hidden")).toBe(true);
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
-    expect(document.activeElement).toBe(trigger);
+    expect(trigger.element).toHaveAttribute("aria-expanded", "false");
+    expect(document.activeElement).toBe(trigger.element);
 
     modal.destroy();
     clearBody();
@@ -57,11 +54,11 @@ describe("createModal", () => {
 describe("Modal class", () => {
   it("allows direct instantiation", () => {
     const { container } = mount();
-    const trigger = document.createElement("button");
-    container.appendChild(trigger);
+    const trigger = createButton("Open Modal");
+    container.appendChild(trigger.element);
     const modal = new Modal(buildContent());
     container.appendChild(modal.element);
-    modal.open(trigger);
+    modal.open(trigger.element);
     expect(modal.element.hasAttribute("hidden")).toBe(false);
     modal.close();
     expect(modal.element.hasAttribute("hidden")).toBe(true);
