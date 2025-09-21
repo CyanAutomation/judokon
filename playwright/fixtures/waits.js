@@ -18,36 +18,73 @@ export async function waitForBattleReady(page) {
     return typeof api === "function";
   });
   await page.evaluate(async () => {
+    const isDomReady = () => {
+      const root = document.querySelector(".home-screen") || document.body;
+      if (root?.dataset?.ready === "true") {
+        return true;
+      }
+      const state = document.body?.dataset?.battleState;
+      return typeof state === "string" && state.length > 0;
+    };
+
+    const ensureConsistentFlags = async () => {
+      const maxAttempts = 5;
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        if (isDomReady()) {
+          return true;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      return isDomReady();
+    };
+
+    if (isDomReady()) {
+      return;
+    }
+
     if (window.battleReadyPromise) {
-      await window.battleReadyPromise;
-      return;
+      try {
+        await window.battleReadyPromise;
+      } catch {}
+      if (await ensureConsistentFlags()) {
+        return;
+      }
     }
 
-    const root = document.querySelector(".home-screen") || document.body;
-    if (root?.dataset?.ready === "true") {
-      return;
+    const waitForBattleReady = window.__TEST_API?.init?.waitForBattleReady;
+    if (typeof waitForBattleReady === "function") {
+      try {
+        await waitForBattleReady();
+      } catch {}
+      if (await ensureConsistentFlags()) {
+        return;
+      }
     }
 
-    if (document.body?.dataset?.battleState) {
-      return;
-    }
-
-    if (window.__TEST_API?.init?.waitForBattleReady) {
-      await window.__TEST_API.init.waitForBattleReady();
+    if (await ensureConsistentFlags()) {
       return;
     }
 
     await new Promise((resolve) => {
+      let timeoutId = null;
       const handler = () => {
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
+        }
         document.removeEventListener("battle:init", handler);
         resolve();
       };
       document.addEventListener("battle:init", handler, { once: true });
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         document.removeEventListener("battle:init", handler);
+        console.warn(
+          "[waitForBattleReady] Fallback timeout hit after 3000ms; using battle:init timeout"
+        );
         resolve();
       }, 3000);
     });
+
+    await ensureConsistentFlags();
   });
 }
 
@@ -83,16 +120,10 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
             w = window.getStateSnapshot().state;
           }
           if (!w) {
-            const apiState = window.__TEST_API?.state?.getBattleState?.();
-            if (apiState) {
-              w = apiState;
-            }
-          }
-          if (!w) {
-            const debugState = window.__TEST_API?.inspect?.getDebugInfo?.()?.machine?.currentState;
-            if (debugState) {
-              w = debugState;
-            }
+            w =
+              window.__TEST_API?.state?.getBattleState?.() ||
+              window.__TEST_API?.inspect?.getDebugInfo?.()?.machine?.currentState ||
+              null;
           }
         } catch {}
         return d === s || w === s;

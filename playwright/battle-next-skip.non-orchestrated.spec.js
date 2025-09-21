@@ -34,7 +34,13 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     const nextButton = page.locator("#next-button, [data-role='next-round']").first();
     await nextButton.waitFor({ timeout: 3000 });
 
-    const apiReady = await page.evaluate(() => window.__TEST_API?.init?.waitForBattleReady?.());
+    const apiReady = await page.evaluate(async () => {
+      const initApi = window.__TEST_API?.init;
+      if (!initApi || typeof initApi.waitForBattleReady !== "function") {
+        return false;
+      }
+      return await initApi.waitForBattleReady();
+    });
     expect(apiReady).toBe(true);
 
     // Make a stat selection so the round resolves and cooldown begins
@@ -45,7 +51,13 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     const skipped = await page.evaluate(() => window.__TEST_API.timers.skipCooldown());
     expect(skipped).toBeTruthy();
 
-    const nextReady = await page.evaluate(() => window.__TEST_API.state.waitForNextButtonReady());
+    const nextReady = await page.evaluate(async () => {
+      const stateApi = window.__TEST_API?.state;
+      if (!stateApi || typeof stateApi.waitForNextButtonReady !== "function") {
+        return false;
+      }
+      return await stateApi.waitForNextButtonReady();
+    });
     expect(nextReady).toBe(true);
 
     // Use the same selector as above for consistency

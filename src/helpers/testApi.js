@@ -142,22 +142,41 @@ const stateApi = {
   async waitForNextButtonReady(timeout = 5000) {
     return new Promise((resolve) => {
       const startTime = Date.now();
+      const cachedButtons = [];
+
+      const refreshButtons = () => {
+        // Keep only connected references between checks.
+        for (let i = cachedButtons.length - 1; i >= 0; i -= 1) {
+          if (!cachedButtons[i]?.isConnected) {
+            cachedButtons.splice(i, 1);
+          }
+        }
+        if (cachedButtons.length === 0) {
+          const nextById = document.getElementById("next-button");
+          const nextByRole = document.querySelector("[data-role='next-round']");
+          if (nextById) {
+            cachedButtons.push(nextById);
+          }
+          if (nextByRole && nextByRole !== nextById) {
+            cachedButtons.push(nextByRole);
+          }
+        }
+        return cachedButtons;
+      };
+
+      const isButtonReady = (btn) => {
+        if (!btn) return false;
+        const ariaDisabled =
+          typeof btn.getAttribute === "function" ? btn.getAttribute("aria-disabled") : null;
+        return (
+          btn.dataset?.nextReady === "true" && btn.disabled !== true && ariaDisabled !== "true"
+        );
+      };
 
       const check = () => {
         try {
-          const nextButton =
-            document.getElementById("next-button") ||
-            document.querySelector("[data-role='next-round']");
-          const ariaDisabled =
-            typeof nextButton?.getAttribute === "function"
-              ? nextButton.getAttribute("aria-disabled")
-              : null;
-          if (
-            nextButton &&
-            nextButton.dataset?.nextReady === "true" &&
-            nextButton.disabled !== true &&
-            ariaDisabled !== "true"
-          ) {
+          const buttons = refreshButtons();
+          if (buttons.some((btn) => isButtonReady(btn))) {
             resolve(true);
             return;
           }
