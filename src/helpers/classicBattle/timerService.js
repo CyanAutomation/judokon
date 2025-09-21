@@ -469,7 +469,16 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
         fallbackTarget = recordedHighest;
       }
 
-      if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1) {
+      const hasLaggingContext =
+        typeof lastContext === "string" && lastContext !== "" && lastContext !== "regular";
+      const displayBehindRecordedHighest =
+        hasRecordedHighest && recordedHighest > displayedRoundBefore;
+
+      if (
+        Number.isFinite(fallbackTarget) &&
+        fallbackTarget >= 1 &&
+        (hasLaggingContext || displayBehindRecordedHighest)
+      ) {
         writeRoundCounter(root, fallbackTarget);
         const nextRecordedHighest = hasRecordedHighest
           ? Math.max(recordedHighest, fallbackTarget)

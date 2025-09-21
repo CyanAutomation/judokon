@@ -12,12 +12,14 @@ test.describe("Classic Battle round counter", () => {
       });
       await page.goto("/src/pages/battleClassic.html");
 
+      const roundCounter = page.locator("#round-counter");
+
       // Start the match via modal (pick medium/10)
       await page.waitForSelector("#round-select-2", { state: "visible" });
       await page.click("#round-select-2");
 
       // Immediately after starting, the round counter should read Round 1
-      await expect(page.locator("#round-counter")).toHaveText(/Round\s*1/);
+      await expect(roundCounter).toHaveText(/Round\s*1/);
 
       // Click a stat to resolve the round
       await page.waitForSelector("#stat-buttons button[data-stat]");
@@ -30,7 +32,8 @@ test.describe("Classic Battle round counter", () => {
 
       // Click Next to start the next round and verify increment to Round 2
       await next.click();
-      await expect(page.locator("#round-counter")).toHaveText(/Round\s*2/);
+      await expect(roundCounter).toHaveText(/Round\s*2/);
+      await expect(roundCounter).not.toHaveText(/Round\s*3/);
       // Timer should be visible again for the new round
       await expect(page.locator("#next-round-timer")).toContainText(/Time Left:/);
     }, ["log", "info", "warn", "error", "debug"]);
