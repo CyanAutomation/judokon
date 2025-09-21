@@ -114,10 +114,10 @@ describe("startCooldown fallback timer", () => {
       resolved = true;
     });
     scheduler.tick(9);
+    await controls.ready;
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
     scheduler.tick(1);
-    await controls.ready;
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
     expect(btn.disabled).toBe(false);
