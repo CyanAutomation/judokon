@@ -17,6 +17,7 @@ import { initDebugPanel } from "../helpers/classicBattle/debugPanel.js";
 import { showEndModal } from "../helpers/classicBattle/endModal.js";
 import { updateScore, updateRoundCounter } from "../helpers/setupScoreboard.js";
 import { setupScoreboard } from "../helpers/setupScoreboard.js";
+import { resetFallbackScores } from "../helpers/api/battleUI.js";
 import {
   createBattleEngine,
   STATS,
@@ -406,10 +407,9 @@ function prepareUiBeforeSelection() {
   return delayOverride;
 }
 
-async function ensureScoreboardReflectsResult(result) {
+function ensureScoreboardReflectsResult(result) {
   try {
     if (result) {
-      const { updateScore } = await import("../helpers/setupScoreboard.js");
       updateScore(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
       const scoreEl = document.getElementById("score-display");
       if (scoreEl) {
@@ -481,7 +481,7 @@ async function applySelectionResult(store, result) {
       opponentScore: result?.opponentScore
     });
   } catch {}
-  await ensureScoreboardReflectsResult(result);
+  ensureScoreboardReflectsResult(result);
   const matchEnded = await confirmMatchOutcome(store, result);
   if (!matchEnded) {
     scheduleNextReadyAfterSelection(store);
@@ -1413,7 +1413,6 @@ async function init() {
             updateRoundCounter(1);
 
             // Reset fallback scores for tests so DOM mirrors engine state
-            const { resetFallbackScores } = await import("../helpers/api/battleUI.js");
             resetFallbackScores();
           } catch (err) {
             console.debug("battleClassic: resetting score after replay failed", err);

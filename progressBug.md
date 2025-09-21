@@ -122,6 +122,7 @@ Phases:
 - Phase 2 — Migration & sample conversions (2–3 days)
   - Convert several high-traffic tests to use factories and update assertions.
   - Acceptance: Tests that used to replicate component wiring now use factories and remain stable.
+  - **COMPLETED**: Migrated 3 high-traffic test files (`modalComponent.test.js`, `handleKeyboardNavigation.test.js`, `countrySlider.test.js`) to use new Button factory instead of inline DOM creation. All tests pass with no regressions (956/956 tests passing).
 
 - Phase 3 — Documentation & onboarding (1 day)
   - Add examples to `tests/helpers/components/README.md` and reference in CONTRIBUTING.md.
