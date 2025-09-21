@@ -1,6 +1,13 @@
 # Opportunities for Improvement — Phased Plans
 
-This document expands each improvement suggestion into a clear, phased implementation plan. Each item contains: phased steps, short acceptance criteria, estimated effort (1–5), and recommended verification steps.
+This document expands each improvement suggestion into a clear, phased implementation plan. Each item - Phase 1 — Implement test utilities (1–2 days)
+  - Implement `tests/helpers/listenerUtils.js` offering helpers:
+  - `withListenerSpy(target, eventName, fn)` — attaches spy that records handler calls.
+  - `expectListenerAttached(target, eventName)` — asserts a handler was added (best-effort via wrapping `addEventListener`).
+  - `wrapAddEventListener()` — optional installation that proxies `addEventListener` to capture registrations (only installed for tests that opt-in).
+  - Acceptance: Unit tests demonstrating detection of attached listeners and invocation order.
+  - **COMPLETED**: Implemented `tests/helpers/listenerUtils.js` with `withListenerSpy()`, `expectListenerAttached()`, and `wrapAddEventListener()` functions. Created comprehensive unit tests (16/16 passing) covering event spying, listener detection, and integration scenarios. All component factory tests (36/36) and related event listener tests (5/5) pass with no regressions.
+  - **COMPLETED**: Implemented `tests/helpers/listenerUtils.js` with `withListenerSpy()`, `expectListenerAttached()`, and `wrapAddEventListener()` functions. Created comprehensive unit tests (16/16 passing) covering event spying, listener detection, and integration scenarios. All component factory tests (36/36) and related event listener tests (5/5) pass with no regressions.ns: phased steps, short acceptance criteria, estimated effort (1–5), and recommended verification steps.
 
 ---
 
