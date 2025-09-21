@@ -109,9 +109,6 @@ function readDisplayedRound(root) {
  */
 function readEngineNextRound() {
   try {
-    if (typeof getRoundsPlayed !== "function") {
-      return null;
-    }
     const played = Number(getRoundsPlayed());
     if (!Number.isFinite(played)) {
       return null;
@@ -507,9 +504,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       const hasRecordedHighest = typeof recordedHighest === "number";
       const engineNextRound = readEngineNextRound();
       const hasEngineNextRound = Number.isFinite(engineNextRound);
-      const fallbackBase = hasEngineNextRound
-        ? /** @type {number} */ (engineNextRound)
-        : displayedRoundBefore + 1;
+      const fallbackBase = hasEngineNextRound ? engineNextRound : displayedRoundBefore + 1;
 
       let fallbackTarget = fallbackBase;
       if (hasRecordedHighest) {
@@ -518,10 +513,11 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
 
       const contextReportedAdvance = lastContext === "advance" || previousContext === "advance";
       const recordedNextRound = hasRecordedHighest && recordedHighest >= fallbackBase;
+      const expectedPreviousRound = hasEngineNextRound ? fallbackBase - 1 : displayedRoundBefore;
       const priorAdvanceMatchesDisplay =
         previousContext === "advance" &&
         hasRecordedHighest &&
-        recordedHighest === (hasEngineNextRound ? fallbackBase - 1 : displayedRoundBefore);
+        recordedHighest === expectedPreviousRound;
       const engineAlreadyAdvanced = determineEngineAdvanceState({
         contextReportedAdvance,
         recordedNextRound,
@@ -541,17 +537,18 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
 
       if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1 && shouldApplyFallback) {
         timerLogger.debug("[next] syncing round counter", {
-          displayedRoundBefore,
-          fallbackBase,
-          fallbackTarget,
-          engineAlreadyAdvanced,
-          hasEngineNextRound
+          roundDisplayedBefore: displayedRoundBefore,
+          roundFallbackBase: fallbackBase,
+          roundFallbackTarget: fallbackTarget,
+          engineAdvanced: engineAlreadyAdvanced,
+          engineNextRoundAvailable: hasEngineNextRound
         });
         writeRoundCounter(root, fallbackTarget);
         const nextRecordedHighest = hasRecordedHighest
           ? Math.max(recordedHighest, fallbackTarget)
           : fallbackTarget;
-        const shouldMarkFallbackContext = fallbackTarget > fallbackBase && !engineAlreadyAdvanced;
+        const shouldMarkFallbackContext =
+          !engineAlreadyAdvanced && (!hasEngineNextRound || fallbackTarget > fallbackBase);
 
         try {
           roundTrackingState.write({
