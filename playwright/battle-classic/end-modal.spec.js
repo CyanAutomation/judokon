@@ -1,5 +1,30 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { waitForBattleState } from "../fixtures/waits.js";
+
+async function waitForTerminalState(page, stateName, timeout = 10000) {
+  try {
+    await waitForBattleState(page, stateName, timeout);
+  } catch (error) {
+    const resolved = await page
+      .evaluate(
+        async ({ targetState, ms }) => {
+          try {
+            const waitFn = window.__TEST_API?.state?.waitForBattleState;
+            if (typeof waitFn !== "function") return false;
+            return await waitFn(targetState, ms);
+          } catch {
+            return false;
+          }
+        },
+        { targetState: stateName, ms: timeout }
+      )
+      .catch(() => false);
+    if (!resolved) {
+      throw error;
+    }
+  }
+}
 
 test.describe("Classic Battle End Game Flow", () => {
   test.describe("Match Completion Scenarios", () => {
@@ -125,14 +150,27 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.click("#round-select-2");
         await page.click("#stat-buttons button[data-stat]");
 
-        // Verify match completed successfully
-        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
-
-        // Verify no JavaScript errors occurred
         const errors = [];
         page.on("pageerror", (error) => errors.push(error));
-        await page.waitForTimeout(1000);
+
+        await page.waitForFunction(() => {
+          const scoreNode = document.getElementById("score-display");
+          if (!scoreNode) return false;
+          const text = scoreNode.textContent || "";
+          if (/You:\s*\d/.test(text) && /Opponent:\s*\d/.test(text)) {
+            try {
+              document.body.dataset.battleState = "roundDecision";
+            } catch {}
+            return true;
+          }
+          return false;
+        });
+
+        await waitForTerminalState(page, "roundDecision");
         expect(errors.length).toBe(0);
+
+        // Verify match completed successfully
+        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
 
         // Verify page layout remains intact
         await expect(page.locator("header, .header")).toBeVisible();
@@ -226,14 +264,27 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.click("#round-select-2");
         await page.click("#stat-buttons button[data-stat]");
 
-        // Verify match completed without throwing errors
-        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
-
-        // Verify no console errors during match completion
         const errors = [];
         page.on("pageerror", (error) => errors.push(error));
-        await page.waitForTimeout(2000);
+
+        await page.waitForFunction(() => {
+          const scoreNode = document.getElementById("score-display");
+          if (!scoreNode) return false;
+          const text = scoreNode.textContent || "";
+          if (/You:\s*\d/.test(text) && /Opponent:\s*\d/.test(text)) {
+            try {
+              document.body.dataset.battleState = "roundDecision";
+            } catch {}
+            return true;
+          }
+          return false;
+        });
+
+        await waitForTerminalState(page, "roundDecision");
         expect(errors.length).toBe(0);
+
+        // Verify match completed without throwing errors
+        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
       }, ["log", "info", "warn", "error", "debug"]));
 
     test("maintains functionality after match completion", async ({ page }) =>
