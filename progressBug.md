@@ -229,6 +229,7 @@ Phases:
   - Gradually migrate consumers (UI components, orchestrator, analytics) to read from/write to the store.
   - Maintain toggles to validate parity and roll back if issues arise.
   - Acceptance: Parity tests and feature-flag rollout plan executed.
+  - **COMPLETED**: Migrated roundReadyState.js to use RoundStore when feature flag is enabled, maintaining full backward compatibility. Added comprehensive migration tests (8/8 passing) covering both legacy and RoundStore behavior with parity validation. All unit tests (33/33) and playwright tests pass with no regressions.
 
 - Phase 3 — Deprecate legacy paths & cleanup (1–2 weeks)
   - Remove legacy round-management code after confidence window.

@@ -99,7 +99,7 @@ export async function getExtractor() {
 
         try {
           await stat(resolve(modelDirAbs, "config.json"));
-          extractor = await pipeline("feature-extraction", modelDir, { quantized: true });
+          extractor = await pipeline("feature-extraction", modelDirAbs, { quantized: true });
         } catch {
           if (process?.env?.RAG_STRICT_OFFLINE === "1") {
             const msg =
