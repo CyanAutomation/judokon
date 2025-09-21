@@ -149,6 +149,20 @@ export function createDrawButton() {
   return drawButton;
 }
 
+/**
+ * Update the draw button's label text while supporting legacy markup structures.
+ *
+ * @summary Attempts to update the nested `.button-label` element when present,
+ * otherwise falls back to updating the button element directly.
+ * @pseudocode
+ * 1. If `drawButton` is nullish, return early.
+ * 2. Query for a child element with the `.button-label` selector.
+ * 3. If found, update the child's `textContent`.
+ * 4. Otherwise, update the button's `textContent`.
+ *
+ * @param {HTMLElement | null | undefined} drawButton - The draw button element to update.
+ * @param {string} text - The new text content for the button.
+ */
 function updateDrawButtonLabel(drawButton, text) {
   if (!drawButton) return;
   const label = drawButton.querySelector?.(".button-label");
@@ -339,7 +353,7 @@ export async function setupRandomJudokaPage() {
         : (window.__TEST_API = {});
     const randomJudokaApi = testApi.randomJudoka || (testApi.randomJudoka = {});
     randomJudokaApi.setDrawButtonLabel = (labelText) => {
-      if (typeof labelText !== "string") return;
+      if (typeof labelText !== "string" || !labelText.trim()) return;
       updateDrawButtonLabel(drawButton, labelText);
     };
   }
