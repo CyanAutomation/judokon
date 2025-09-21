@@ -624,3 +624,52 @@ Proceed to Phase 1 for items 1–3?
 - Foundation laid for consistent timer mocking across entire test suite
 
 **Next:** Item 3 Phase 3 complete. All phases of Item 3 (fake-timers playbook) now complete. Ready to proceed to Item 4 or another improvement item?
+
+---
+
+## Phase 0 Completion: Item 4 (Shared mock helpers for high-traffic UI components)
+
+**Actions Taken:**
+
+- **Audited existing usage patterns** across test files to identify high-traffic components:
+  - Analyzed 150+ test files using DOM creation or component mocking
+  - Identified most frequently imported components: JudokaCard (7), ScoreboardModel (3), ScoreboardView (2), Modal (2), Button/Card/StatsPanel/PlayerInfo (1 each)
+  - Reviewed existing `domFactory.js` with basic factories for stat buttons, snackbar, and scoreboard
+
+- **Reviewed component APIs** to understand factory requirements:
+  - **Modal**: Complex component with focus management, ARIA attributes, open/close/destroy methods
+  - **Scoreboard**: Timer/score/message updates with model-view architecture
+  - **StatsPanel**: Stat loading, tooltip integration, update methods
+  - **Button**: Styled buttons with icons, text, and event handling
+  - **Card**: Content insertion with HTML sanitization options
+
+- **Defined API contract** in `tests/helpers/components/README.md`:
+  - Established consistent factory function signatures returning `{ element, ...methods, ...spies }`
+  - Defined specific APIs for each target component (Modal, Scoreboard, StatsPanel, Button, Card)
+  - Created file structure plan and implementation guidelines
+  - Included testing requirements and migration path examples
+
+**API Contract Highlights:**
+
+- **Common pattern**: All factories return `{ element, ...componentMethods, ...observableHooks }`
+- **Observable hooks**: Spies for events (onClick, onOpen, onClose, onUpdate)
+- **Realistic behavior**: Factories mimic actual component DOM structure and behavior
+- **Mounting flexibility**: Support for both automatic mounting and manual element return
+
+**Target Components Identified:**
+
+1. **Modal** - Complex focus management and ARIA attributes
+2. **Scoreboard** - Timer/score updates in battle tests  
+3. **StatsPanel** - Stat loading and tooltip integration
+4. **Button** - Frequent creation with various configurations
+5. **Card** - Basic container with content insertion options
+
+**Outcome:**
+
+- Requirements analysis complete with clear component prioritization
+- API contract defined and documented for consistent factory implementations
+- Foundation established for Phase 1 factory implementations
+- Existing tests verified passing (12 domFactory tests + 7 component tests)
+- Acceptance criteria met: API contract document created and reviewed
+
+**Next:** Item 4 Phase 0 complete. Ready to proceed to Item 4 Phase 1 (Implement factories).
