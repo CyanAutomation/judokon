@@ -636,6 +636,12 @@ export function createTestPrdReader(docs, parser) {
       getTaskSummary: () => container.querySelector("#task-summary"),
       getNextButtons: () => container.querySelectorAll('[data-nav="next"]'),
       getPrevButtons: () => container.querySelectorAll('[data-nav="prev"]'),
+      getListItems: () => Array.from(container.querySelectorAll("#prd-list li")),
+      getListItem: (index) => {
+        const items = container.querySelectorAll("#prd-list li");
+        return items[index] ?? null;
+      },
+      getWarningBadge: () => container.querySelector(".markdown-warning"),
       navigateNext: () => {
         const nextBtn = container.querySelector('[data-nav="next"]');
         naturalClick(nextBtn);

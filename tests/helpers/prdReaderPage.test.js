@@ -110,29 +110,24 @@ describe("prdReaderPage", () => {
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-    `;
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    const content = prdReader.testApi.getContentContainer();
+    const titleEl = prdReader.testApi.getTitleElement();
+    const items = prdReader.testApi.getListItems();
 
-    await setupPrdReaderPage(docs, parser);
-
-    const items = document.querySelectorAll("#prd-list li");
-    const container = document.getElementById("prd-content");
-    const titleEl = document.getElementById("prd-title");
-
-    expect(container.innerHTML).toContain("Alpha");
+    expect(content.innerHTML).toContain("Alpha");
     expect(titleEl.textContent).toBe("Alpha");
     expect(items[0].getAttribute("aria-current")).toBe("page");
-    items[1].click();
-    expect(container.innerHTML).toContain("Beta");
+
+    prdReader.testApi.selectDocument(1);
+
+    expect(content.innerHTML).toContain("Beta");
     expect(titleEl.textContent).toBe("Beta");
-    expect(items[1].getAttribute("aria-current")).toBe("page");
+    expect(prdReader.testApi.getListItem(1).getAttribute("aria-current")).toBe("page");
+
+    prdReader.testApi.cleanup();
   });
 
   it("displays task summary when element exists", async () => {
@@ -141,24 +136,16 @@ describe("prdReaderPage", () => {
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    const summary = prdReader.testApi.getTaskSummary();
+    const firstItem = prdReader.testApi.getListItem(0);
 
-    await setupPrdReaderPage(docs, parser);
-
-    const summary = document.getElementById("task-summary");
-    const list = document.getElementById("prd-list");
     expect(summary.textContent).toContain("1/2");
-    expect(list.children[0].getAttribute("aria-current")).toBe("page");
+    expect(firstItem?.getAttribute("aria-current")).toBe("page");
+
+    prdReader.testApi.cleanup();
   });
 
   it("loads document from query parameter", async () => {
@@ -170,25 +157,17 @@ describe("prdReaderPage", () => {
 
     history.replaceState(null, "", "/?doc=b");
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    const content = prdReader.testApi.getContentContainer();
+    const secondItem = prdReader.testApi.getListItem(1);
 
-    await setupPrdReaderPage(docs, parser);
-
-    const container = document.getElementById("prd-content");
-    const list = document.getElementById("prd-list");
-    expect(container.innerHTML).toContain("Second doc");
+    expect(content.innerHTML).toContain("Second doc");
     expect(window.location.search).toBe("?doc=b");
-    expect(list.children[1].getAttribute("aria-current")).toBe("page");
+    expect(secondItem?.getAttribute("aria-current")).toBe("page");
+
+    prdReader.testApi.cleanup();
   });
 
   it("updates URL when navigating", async () => {
@@ -198,37 +177,24 @@ describe("prdReaderPage", () => {
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
-
-    await setupPrdReaderPage(docs, parser);
-
-    const list = document.getElementById("prd-list");
     expect(window.location.search).toBe("?doc=a");
-    expect(list.children[0].getAttribute("aria-current")).toBe("page");
-    const next = document.querySelector('[data-nav="next"]');
-    next.click();
+    expect(prdReader.testApi.getListItem(0)?.getAttribute("aria-current")).toBe("page");
+
+    prdReader.testApi.navigateNext();
+
     expect(window.location.search).toBe("?doc=b");
-    expect(list.children[1].getAttribute("aria-current")).toBe("page");
+    expect(prdReader.testApi.getListItem(1)?.getAttribute("aria-current")).toBe("page");
+
+    prdReader.testApi.cleanup();
   });
 
   it("skips history update when flag false", async () => {
     const docs = { "b.md": "# B", "a.md": "# A" };
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-    `;
+    const prdReader = createTestPrdReader(docs, (md) => `<h1>${md}</h1>`);
+    globalThis.SKIP_PRD_AUTO_INIT = true;
     const { loadPrdDocs, setupSidebarUI } = await import("../../src/helpers/prdReaderPage.js");
     const { replaceHistory } = await import("../../src/helpers/prdReader/history.js");
     const docData = await loadPrdDocs(docs, (md) => `<h1>${md}</h1>`);
@@ -238,6 +204,7 @@ describe("prdReaderPage", () => {
     expect(window.location.search).toBe("?doc=a");
     sidebar.selectDocSync(1, true, true);
     expect(window.location.search).toBe("?doc=b");
+    prdReader.testApi.cleanup();
   });
 
   it("shows warning badge when markdown parsing fails", async () => {
@@ -249,23 +216,17 @@ describe("prdReaderPage", () => {
       return `<h1>${md}</h1>`;
     };
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content"></div>
-    `;
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
+    const warning = prdReader.testApi.getWarningBadge();
+    const firstItem = prdReader.testApi.getListItem(0);
 
-    await setupPrdReaderPage(docs, parser);
-
-    const warning = document.querySelector(".markdown-warning");
-    const list = document.getElementById("prd-list");
     expect(warning).toBeTruthy();
-    expect(warning.getAttribute("aria-label")).toBe("Content could not be fully rendered");
-    expect(list.children[0].getAttribute("aria-current")).toBe("page");
+    expect(warning?.getAttribute("aria-label")).toBe("Content could not be fully rendered");
+    expect(firstItem?.getAttribute("aria-current")).toBe("page");
+
+    prdReader.testApi.cleanup();
   });
 
   it("supports keyboard-only navigation with focus management", async () => {
@@ -275,43 +236,33 @@ describe("prdReaderPage", () => {
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
-
-    await setupPrdReaderPage(docs, parser);
-
-    const container = document.getElementById("prd-content");
-    const list = document.getElementById("prd-list");
-    const items = list.querySelectorAll("li");
+    const container = prdReader.testApi.getContentContainer();
+    const list = prdReader.testApi.getDocumentList();
 
     expect(document.activeElement).toBe(container);
-    expect(items[0].getAttribute("aria-current")).toBe("page");
+    expect(prdReader.testApi.getListItem(0)?.getAttribute("aria-current")).toBe("page");
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
     expect(container.innerHTML).toContain("Second doc");
-    expect(items[1].getAttribute("aria-current")).toBe("page");
+    expect(prdReader.testApi.getListItem(1)?.getAttribute("aria-current")).toBe("page");
     expect(document.activeElement).toBe(container);
 
     list.focus();
     list.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp" }));
     expect(container.innerHTML).toContain("First doc");
-    expect(items[0].getAttribute("aria-current")).toBe("page");
-    expect(document.activeElement).toBe(items[0]);
+    expect(prdReader.testApi.getListItem(0)?.getAttribute("aria-current")).toBe("page");
+    expect(document.activeElement).toBe(prdReader.testApi.getListItem(0));
 
     list.focus();
     list.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
     expect(container.innerHTML).toContain("Second doc");
-    expect(items[1].getAttribute("aria-current")).toBe("page");
-    expect(document.activeElement).toBe(items[1]);
+    expect(prdReader.testApi.getListItem(1)?.getAttribute("aria-current")).toBe("page");
+    expect(document.activeElement).toBe(prdReader.testApi.getListItem(1));
+
+    prdReader.testApi.cleanup();
   });
 
   it("navigates via swipe gestures", async () => {
@@ -320,14 +271,7 @@ describe("prdReaderPage", () => {
       "a.md": "# A"
     };
     const parser = (md) => `<h1>${md}</h1>`;
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
+    const prdReader = createTestPrdReader(docs, parser);
     if (typeof TouchEvent === "undefined") {
       globalThis.TouchEvent = class extends Event {
         constructor(type, opts = {}) {
@@ -337,15 +281,15 @@ describe("prdReaderPage", () => {
         }
       };
     }
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
-    await setupPrdReaderPage(docs, parser);
-    const container = document.getElementById("prd-content");
-    const list = document.getElementById("prd-list");
+    await prdReader.testApi.initialize();
+    const container = prdReader.testApi.getContentContainer();
+    const listItems = prdReader.testApi.getListItems();
     container.dispatchEvent(new TouchEvent("touchstart", { touches: [{ clientX: 100 }] }));
     container.dispatchEvent(new TouchEvent("touchend", { changedTouches: [{ clientX: 0 }] }));
     expect(container.innerHTML).toContain("B");
-    expect(list.children[1].getAttribute("aria-current")).toBe("page");
+    expect(listItems[1].getAttribute("aria-current")).toBe("page");
+
+    prdReader.testApi.cleanup();
   });
 
   it("keeps rendering in sync with navigation history", async () => {
@@ -355,29 +299,20 @@ describe("prdReaderPage", () => {
     };
     const parser = (md) => `<h1>${md}</h1>`;
 
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
+    const prdReader = createTestPrdReader(docs, parser);
+    await prdReader.testApi.initialize();
 
-    globalThis.SKIP_PRD_AUTO_INIT = true;
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
-    await setupPrdReaderPage(docs, parser);
-
-    const container = document.getElementById("prd-content");
-    const list = document.getElementById("prd-list");
-    document.querySelector('[data-nav="next"]').click();
+    const container = prdReader.testApi.getContentContainer();
+    prdReader.testApi.navigateNext();
     expect(history.state.index).toBe(1);
     expect(container.innerHTML).toContain("Second");
     history.replaceState({ index: 0 }, "", "?doc=a");
     window.dispatchEvent(new PopStateEvent("popstate", { state: { index: 0 } }));
     expect(history.state.index).toBe(0);
     expect(container.innerHTML).toContain("First");
-    expect(list.children[0].getAttribute("aria-current")).toBe("page");
+    expect(prdReader.testApi.getListItem(0)?.getAttribute("aria-current")).toBe("page");
+
+    prdReader.testApi.cleanup();
   });
 
   it("bindHistory invokes callback on popstate", async () => {
@@ -396,16 +331,7 @@ describe("prdReaderPage", () => {
     });
 
     const docs = { "a.md": undefined, "b.md": undefined };
-    document.body.innerHTML = `
-      <div id="prd-title"></div>
-      <div id="task-summary"></div>
-      <ul id="prd-list"></ul>
-      <div id="prd-content" tabindex="-1"></div>
-      <button data-nav="prev">Prev</button>
-      <button data-nav="next">Next</button>
-    `;
-
-    globalThis.SKIP_PRD_AUTO_INIT = true;
+    const prdReader = createTestPrdReader(docs, basicParser);
     const { getSanitizer } = await import("../../src/helpers/sanitizeHtml.js");
     await getSanitizer();
     const fetchMock = vi.fn(() =>
@@ -413,9 +339,10 @@ describe("prdReaderPage", () => {
     );
     global.fetch = fetchMock;
 
-    const { setupPrdReaderPage } = await import("../../src/helpers/prdReaderPage.js");
-    await setupPrdReaderPage(docs, basicParser);
+    await prdReader.testApi.initialize();
     await Promise.resolve();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    prdReader.testApi.cleanup();
   });
 });
