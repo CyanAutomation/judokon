@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import installRAFMock from "../rafMock.js";
+import { withListenerSpy } from "../listenerUtils.js";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 describe("classicBattle stat selection failure recovery", () => {
   const ROUND_MANAGER_PATH = "../../../src/helpers/classicBattle/roundManager.js";
@@ -148,23 +150,28 @@ describe("classicBattle stat selection failure recovery", () => {
   });
 
   it("immediately triggers cooldown on selection failure without advancing timers", async () => {
-    vi.useFakeTimers();
-    handleStatSelectionMock.mockImplementation(() => {
-      throw new Error("stat selection failed");
-    });
+    const { timers, cleanup } = useCanonicalTimers();
+    timers.useFakeTimers();
+    try {
+      handleStatSelectionMock.mockImplementation(() => {
+        throw new Error("stat selection failed");
+      });
 
-    document.body.innerHTML = `<div id="stat-buttons"></div>`;
+      document.body.innerHTML = `<div id="stat-buttons"></div>`;
 
-    const store = {};
-    renderStatButtons(store);
+      const store = {};
+      renderStatButtons(store);
 
-    const { handler } = getStatSelectionEntry();
-    handler();
+      const { handler } = getStatSelectionEntry();
+      handler();
 
-    expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
-    expect(startCooldownMock).toHaveBeenCalledTimes(1);
-    expect(startCooldownMock).toHaveBeenCalledWith(store);
-    expect(store.__uiCooldownStarted).toBe(false);
+      expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
+      expect(startCooldownMock).toHaveBeenCalledTimes(1);
+      expect(startCooldownMock).toHaveBeenCalledWith(store);
+      expect(store.__uiCooldownStarted).toBe(false);
+    } finally {
+      cleanup();
+    }
   });
 
   it("recovers when the Next button is absent", async () => {
@@ -210,55 +217,60 @@ describe("classicBattle stat selection failure recovery", () => {
   });
 
   it("keeps opponent choosing message visible before countdown when opponent delay is zero", async () => {
-    vi.useFakeTimers();
-    handleStatSelectionMock.mockImplementation(() => ({ matchEnded: false }));
+    const { timers, cleanup } = useCanonicalTimers();
+    timers.useFakeTimers();
+    try {
+      handleStatSelectionMock.mockImplementation(() => ({ matchEnded: false }));
 
-    document.body.innerHTML = `
-      <div id="score-display"></div>
-      <div id="round-counter"></div>
-      <div id="snackbar-container"></div>
-      <div id="stat-buttons"></div>
-      <div id="next-round-timer"></div>
-    `;
+      document.body.innerHTML = `
+        <div id="score-display"></div>
+        <div id="round-counter"></div>
+        <div id="snackbar-container"></div>
+        <div id="stat-buttons"></div>
+        <div id="next-round-timer"></div>
+      `;
 
-    const store = {};
-    renderStatButtons(store);
+      const store = {};
+      renderStatButtons(store);
 
-    const { setOpponentDelay } = await import("../../../src/helpers/classicBattle/snackbar.js");
-    setOpponentDelay(0);
+      const { setOpponentDelay } = await import("../../../src/helpers/classicBattle/snackbar.js");
+      setOpponentDelay(0);
 
-    const minDisplay = 200;
-    const win = globalThis.window || (globalThis.window = {});
-    const previousMin = win.__MIN_OPPONENT_MESSAGE_DURATION_MS;
-    win.__MIN_OPPONENT_MESSAGE_DURATION_MS = minDisplay;
+      const minDisplay = 200;
+      const win = globalThis.window || (globalThis.window = {});
+      const previousMin = win.__MIN_OPPONENT_MESSAGE_DURATION_MS;
+      win.__MIN_OPPONENT_MESSAGE_DURATION_MS = minDisplay;
 
-    const { handler } = getStatSelectionEntry();
-    handler();
+      const { handler } = getStatSelectionEntry();
+      handler();
 
-    await flushMicrotasks();
-    await vi.advanceTimersByTimeAsync(0);
+      await flushMicrotasks();
+      await timers.advanceTimersByTimeAsync(0);
 
-    expect(showSnackbarMock).toHaveBeenCalledWith("Opponent is choosing…");
-    expect(startCooldownMock).not.toHaveBeenCalled();
+      expect(showSnackbarMock).toHaveBeenCalledWith("Opponent is choosing…");
+      expect(startCooldownMock).not.toHaveBeenCalled();
 
-    await vi.advanceTimersByTimeAsync(minDisplay - 1);
-    expect(startCooldownMock).not.toHaveBeenCalled();
+      await timers.advanceTimersByTimeAsync(minDisplay - 1);
+      expect(startCooldownMock).not.toHaveBeenCalled();
 
-    await vi.advanceTimersByTimeAsync(1);
-    await vi.advanceTimersByTimeAsync(0);
-    await flushMicrotasks();
+      await timers.advanceTimersByTimeAsync(1);
+      await timers.advanceTimersByTimeAsync(0);
+      await flushMicrotasks();
 
-    expect(startCooldownMock).toHaveBeenCalledTimes(1);
-    const lastMessage = showSnackbarMock.mock.calls.at(-1)?.[0];
-    expect(lastMessage).toBe("Opponent is choosing…");
-    const snackOrder = showSnackbarMock.mock.invocationCallOrder?.[0] ?? 0;
-    const cooldownOrder = startCooldownMock.mock.invocationCallOrder?.[0] ?? Infinity;
-    expect(snackOrder).toBeLessThan(cooldownOrder);
+      expect(startCooldownMock).toHaveBeenCalledTimes(1);
+      const lastMessage = showSnackbarMock.mock.calls.at(-1)?.[0];
+      expect(lastMessage).toBe("Opponent is choosing…");
+      const snackOrder = showSnackbarMock.mock.invocationCallOrder?.[0] ?? 0;
+      const cooldownOrder = startCooldownMock.mock.invocationCallOrder?.[0] ?? Infinity;
+      expect(snackOrder).toBeLessThan(cooldownOrder);
 
-    if (typeof previousMin === "undefined") {
-      delete win.__MIN_OPPONENT_MESSAGE_DURATION_MS;
-    } else {
-      win.__MIN_OPPONENT_MESSAGE_DURATION_MS = previousMin;
+      if (typeof previousMin === "undefined") {
+        delete win.__MIN_OPPONENT_MESSAGE_DURATION_MS;
+      } else {
+        win.__MIN_OPPONENT_MESSAGE_DURATION_MS = previousMin;
+      }
+    } finally {
+      cleanup();
     }
   });
 });

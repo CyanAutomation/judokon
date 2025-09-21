@@ -211,6 +211,42 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
   expect(opponentVal).toBe(opponentStats.speed);
 });
 
+test("scoreboard reconciles directly to round result", async () => {
+  setupDom();
+  const playerStats = { power: 3, speed: 40, technique: 3, kumikata: 3, newaza: 3 };
+  const opponentStats = { power: 2, speed: 10, technique: 2, kumikata: 2, newaza: 2 };
+  mockModules({ playerStats, opponentStats });
+
+  const { updateScore } = await import("../../src/helpers/setupScoreboard.js");
+  const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+  const mod = await import("../../src/pages/battleClassic.init.js");
+  await mod.init();
+
+  const scoreEl = document.getElementById("score-display");
+  expect(scoreEl).not.toBeNull();
+  scoreEl.textContent = "You: 0 Opponent: 0";
+
+  const [, roundResolvedHandler] =
+    onBattleEvent.mock.calls.find(([eventName]) => eventName === "roundResolved") || [];
+  expect(typeof roundResolvedHandler).toBe("function");
+
+  await roundResolvedHandler({
+    detail: {
+      result: {
+        matchEnded: false,
+        outcome: "winPlayer",
+        playerScore: 4,
+        opponentScore: 1
+      }
+    }
+  });
+
+  expect(updateScore).toHaveBeenLastCalledWith(4, 1);
+  const normalizedScore = scoreEl.textContent.replace(/\s+/g, " ").trim();
+  expect(normalizedScore).toBe("You: 4 Opponent: 1");
+  expect(normalizedScore).not.toBe("You: 1 Opponent: 0");
+});
+
 test("match end forwards outcome to end modal", async () => {
   setupDom();
   const playerStats = { power: 9, speed: 9, technique: 9, kumikata: 9, newaza: 9 };
