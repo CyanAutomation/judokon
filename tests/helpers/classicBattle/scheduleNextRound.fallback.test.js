@@ -1,3 +1,5 @@
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { dirname, resolve } from "node:path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
@@ -5,6 +7,11 @@ import { createClassicBattleHarness } from "../integrationHarness.js";
 import { resetDispatchHistory } from "../../../src/helpers/classicBattle/eventDispatcher.js";
 
 const READY_EVENT = "ready";
+const TEST_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(TEST_DIR, "../../..");
+const ROUND_MANAGER_MODULE = pathToFileURL(
+  resolve(REPO_ROOT, "src/helpers/classicBattle/roundManager.js")
+).href;
 
 /**
  * Create a dispatcher mock that replays candidate dispatchers before falling
@@ -98,6 +105,10 @@ describe("startCooldown fallback timer", () => {
         // Mock debugHooks to return null for readDebugState
         "../../../src/helpers/classicBattle/debugHooks.js": () => ({
           readDebugState: vi.fn(() => null)
+        }),
+        // Mock debugPanel to avoid slow updateDebugPanel
+        "../../../src/helpers/classicBattle/debugPanel.js": () => ({
+          updateDebugPanel: vi.fn()
         })
       }
     });
@@ -118,9 +129,7 @@ describe("startCooldown fallback timer", () => {
   });
 
   it("resolves ready after fallback timer and enables button", async () => {
-    const { startCooldown } = await harness.importModule(
-      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
-    );
+    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;
     const controls = startCooldown({}, scheduler);
@@ -140,7 +149,6 @@ describe("startCooldown fallback timer", () => {
 
   it("resolves ready when dispatcher reports false and enables button", async () => {
     dispatchSpy.mockImplementation(() => false);
-
     const { startCooldown } = await harness.importModule(
       "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
     );
@@ -199,9 +207,7 @@ describe("startCooldown ready dispatch discipline", () => {
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
-    const { startCooldown } = await harness.importModule(
-      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
-    );
+    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
     await controls.ready;
@@ -214,9 +220,7 @@ describe("startCooldown ready dispatch discipline", () => {
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
 
-    const { startCooldown } = await harness.importModule(
-      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
-    );
+    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
     scheduler.tick(20);
@@ -265,9 +269,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
-    const { startCooldown } = await harness.importModule(
-      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
-    );
+    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const controls = startCooldown({}, scheduler);
     expect(controls).toBeTruthy();
     expect(typeof controls?.ready).toBe("object");
@@ -283,9 +285,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
-    const { startCooldown } = await harness.importModule(
-      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
-    );
+    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const controls = startCooldown({}, scheduler);
     expect(controls).toBeTruthy();
     expect(typeof controls?.ready).toBe("object");
@@ -332,9 +332,7 @@ describe("bus propagation and deduplication", () => {
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
 
-    const { startCooldown } = await harness.importModule(
-      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
-    );
+    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     controls = startCooldown({}, createMockScheduler(), {
       dispatchReadyViaBus: dispatchReadyViaBusSpy
     });

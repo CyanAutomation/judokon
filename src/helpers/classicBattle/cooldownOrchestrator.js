@@ -915,6 +915,12 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
       const secsNum = Number(cooldownSeconds);
       const ms = Number.isFinite(secsNum) ? Math.max(0, secsNum * 1000) : 0;
       const scheduleFallbackTimer = () => {
+        // Debug: trace fallback scheduling in tests
+        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+          try {
+            console.debug(`[TEST DEBUG] scheduling fallback timer ms=${ms}`);
+          } catch {}
+        }
         runtime.fallbackId = runtime.fallbackScheduler(ms, () => {
           safeRound(
             "wireCooldownTimer.fallback.clearSchedulerTimeout",
@@ -939,6 +945,11 @@ export function scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired 
           "wireCooldownTimer.scheduleInjected",
           () => {
             runtime.schedulerFallbackId = runtime.scheduler.setTimeout(() => {
+              if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+                try {
+                  console.debug(`[TEST DEBUG] injected scheduler firing fallback ms=${ms}`);
+                } catch {}
+              }
               safeRound(
                 "wireCooldownTimer.scheduler.clearFallbackTimer",
                 () => {
