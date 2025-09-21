@@ -5,26 +5,11 @@ import {
   _resetForTest
 } from "../../src/helpers/classicBattle/roundManager.js";
 import * as eventDispatcher from "../../src/helpers/classicBattle/eventDispatcher.js";
-import { createGlobalStateManager } from "./roundManagerTestUtils.js";
-
-function createScoreboardStub() {
-  return {
-    clearTimer: vi.fn(),
-    showMessage: vi.fn(),
-    showAutoSelect: vi.fn(),
-    showTemporaryMessage: vi.fn(() => vi.fn()),
-    updateTimer: vi.fn(),
-    updateRoundCounter: vi.fn(),
-    clearRoundCounter: vi.fn()
-  };
-}
-
-function createSnackbarStub() {
-  return {
-    showSnackbar: vi.fn(),
-    updateSnackbar: vi.fn()
-  };
-}
+import {
+  createGlobalStateManager,
+  createScoreboardStub,
+  createSnackbarStub
+} from "./roundManagerTestUtils.js";
 
 test("integration: startCooldown drives readiness flow with fake timers", async () => {
   const globalStateManager = createGlobalStateManager();
