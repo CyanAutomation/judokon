@@ -62,10 +62,18 @@ const POST_SELECTION_READY_DELAY_MS = 48;
  */
 const OPPONENT_MESSAGE_BUFFER_MS = 150;
 
+/**
+ * Minimum amount of time the opponent choosing message should remain visible
+ * before transitioning into the next-round countdown state.
+ */
+const MIN_OPPONENT_MESSAGE_DURATION_MS = 250;
+
 const BASE_SELECTION_READY_DELAY_MS = Math.max(
   POST_SELECTION_READY_DELAY_MS,
   OPPONENT_MESSAGE_BUFFER_MS
 );
+
+let lastOpponentPromptTimestamp = 0;
 
 function computeSelectionReadyDelay() {
   let delayForReady = BASE_SELECTION_READY_DELAY_MS;
@@ -75,7 +83,7 @@ function computeSelectionReadyDelay() {
       delayForReady = Math.max(delayForReady, opponentDelay + OPPONENT_MESSAGE_BUFFER_MS);
     }
   } catch {}
-  return delayForReady;
+  return Math.max(delayForReady, MIN_OPPONENT_MESSAGE_DURATION_MS);
 }
 
 const COOLDOWN_FLAG = "__uiCooldownStarted";
@@ -111,21 +119,54 @@ function markCooldownStarted(store) {
 
 function triggerCooldownOnce(store, reason) {
   if (!markCooldownStarted(store)) return false;
-  try {
-    startCooldown(store);
-    return true;
-  } catch (err) {
+  const invokeStartCooldown = () => {
     try {
-      store[COOLDOWN_FLAG] = false;
+      startCooldown(store);
+      return true;
+    } catch (err) {
+      try {
+        store[COOLDOWN_FLAG] = false;
+      } catch {}
+      try {
+        console.debug("battleClassic: startCooldown manual trigger failed", {
+          reason: reason || "unknown",
+          error: err
+        });
+      } catch {}
+      return false;
+    }
+  };
+
+  const scheduleStartCooldown = (delayMs) => {
+    const runner = () => {
+      invokeStartCooldown();
+    };
+    try {
+      if (typeof window !== "undefined" && typeof window.setTimeout === "function") {
+        window.setTimeout(runner, delayMs);
+        return true;
+      }
     } catch {}
     try {
-      console.debug("battleClassic: startCooldown manual trigger failed", {
-        reason: reason || "unknown",
-        error: err
-      });
+      setTimeout(runner, delayMs);
+      return true;
     } catch {}
     return false;
-  }
+  };
+
+  try {
+    const now =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+    const elapsed = now - (lastOpponentPromptTimestamp || 0);
+    const remaining = Math.max(0, MIN_OPPONENT_MESSAGE_DURATION_MS - elapsed);
+    if (remaining > 0 && scheduleStartCooldown(remaining)) {
+      return true;
+    }
+  } catch {}
+
+  return invokeStartCooldown();
 }
 
 function getNextRoundButton() {
@@ -223,6 +264,15 @@ function prepareUiBeforeSelection() {
   }
   try {
     showSnackbar(t("ui.opponentChoosing"));
+    try {
+      const now =
+        typeof performance !== "undefined" && typeof performance.now === "function"
+          ? performance.now()
+          : Date.now();
+      lastOpponentPromptTimestamp = now;
+    } catch {
+      lastOpponentPromptTimestamp = Date.now();
+    }
   } catch {}
   return delayOverride;
 }
