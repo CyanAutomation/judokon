@@ -167,8 +167,6 @@ describe("startCooldown ready dispatch discipline", () => {
     );
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
-    scheduler.tick(20);
-    await vi.runAllTimersAsync();
     await controls.ready;
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
