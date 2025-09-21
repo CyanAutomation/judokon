@@ -113,10 +113,10 @@ describe("startCooldown fallback timer", () => {
     controls.ready.then(() => {
       resolved = true;
     });
-    await vi.advanceTimersByTimeAsync(9);
+    scheduler.tick(9);
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
-    await vi.advanceTimersByTimeAsync(1);
+    scheduler.tick(1);
     await controls.ready;
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
