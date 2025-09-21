@@ -409,97 +409,25 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       emitBattleEvent("countdownFinished");
       emitBattleEvent("round.start");
     }
-  });
-  if (skipHintEnabled && skipHandled) {
-    timerLogger.debug("skipRoundCooldown hint consumed during Next click");
-  }
-  if (!skipHandled) {
-    emitBattleEvent("countdownFinished");
-    emitBattleEvent("round.start");
-  }
-  const { timer = null, resolveReady = null } = controls || {};
-  const root = options.root || document;
-  const displayedRoundBefore = readDisplayedRound(root);
-  const btn = root.getElementById
-    ? root.getElementById("next-button")
-    : root.querySelector("#next-button");
-  if (!btn) return;
-  // Defensive: if a stale readiness flag is present outside of `cooldown`,
-  // clear it so we don't advance via an early-ready path.
-  const { state } = safeGetSnapshot();
-  if (isNextReady(btn) && state && state !== "cooldown") {
-    resetReadiness(btn);
-    guard(() => console.warn("[next] cleared early readiness outside cooldown"));
-  }
-  // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
-  // feature flag. The flag only affects automatic progression, never user
-  // intent signaled via the Next button.
-  const strategies = {
-    advance: () => advanceWhenReady(btn, resolveReady),
-    cancel: () => cancelTimerOrAdvance(btn, timer, resolveReady)
-  };
-  const action = isNextReady(btn) ? "advance" : "cancel";
-  await strategies[action]();
-  const displayedRoundAfter = readDisplayedRound(root);
-  if (
-    displayedRoundBefore !== null &&
-    (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
-  ) {
-    const tracking = roundTrackingState.read(root);
-    const { counterEl, highest: recordedHighest, lastContext, previousContext } = tracking;
-    const hasRecordedHighest = typeof recordedHighest === "number";
-    const fallbackBase = displayedRoundBefore + 1;
 
-    let fallbackTarget = fallbackBase;
-    if (hasRecordedHighest) {
-      fallbackTarget = Math.max(fallbackTarget, recordedHighest);
+    const { timer = null, resolveReady = null } = controls || {};
+    const root = options.root || document;
+    const displayedRoundBefore = readDisplayedRound(root);
+    const btn = root.getElementById
+      ? root.getElementById("next-button")
+      : root.querySelector("#next-button");
+    if (!btn) {
+      return;
     }
 
-    const contextReportedAdvance = lastContext === "advance" || previousContext === "advance";
-    const recordedNextRound = hasRecordedHighest && recordedHighest >= fallbackBase;
-    const priorAdvanceMatchesDisplay =
-      previousContext === "advance" &&
-      hasRecordedHighest &&
-      recordedHighest === displayedRoundBefore;
-    const engineAlreadyAdvanced = determineEngineAdvanceState({
-      contextReportedAdvance,
-      recordedNextRound,
-      priorAdvanceMatchesDisplay,
-      hasRecordedHighest
-    });
-    if (engineAlreadyAdvanced && hasRecordedHighest) {
-      fallbackTarget = recordedHighest;
-    }
-
-    if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1) {
-      writeRoundCounter(root, fallbackTarget);
-      const nextRecordedHighest = hasRecordedHighest
-        ? Math.max(recordedHighest, fallbackTarget)
-        : fallbackTarget;
-      const shouldMarkFallbackContext =
-        fallbackTarget > displayedRoundBefore && !engineAlreadyAdvanced;
-
-      try {
-        roundTrackingState.write({
-          counterEl,
-          highest: nextRecordedHighest,
-          lastContext: shouldMarkFallbackContext ? "fallback" : undefined,
-          previousContext: shouldMarkFallbackContext ? lastContext || null : undefined
-        });
-      } catch (error) {
-        guard(() => console.warn("[timerService] Failed to update round tracking state:", error));
-      }
-    }
-  }
-  if (cooldownWarningTimeoutId !== null) {
-    realScheduler.clearTimeout(cooldownWarningTimeoutId);
-  }
-  cooldownWarningTimeoutId = realScheduler.setTimeout(() => {
+    // Defensive: if a stale readiness flag is present outside of `cooldown`,
+    // clear it so we don't advance via an early-ready path.
     const { state } = safeGetSnapshot();
     if (isNextReady(btn) && state && state !== "cooldown") {
       resetReadiness(btn);
       guard(() => console.warn("[next] cleared early readiness outside cooldown"));
     }
+
     // Manual clicks must attempt to advance regardless of the `skipRoundCooldown`
     // feature flag. The flag only affects automatic progression, never user
     // intent signaled via the Next button.
@@ -509,13 +437,59 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
     };
     const action = isNextReady(btn) ? "advance" : "cancel";
     await strategies[action]();
+
     const displayedRoundAfter = readDisplayedRound(root);
     if (
       displayedRoundBefore !== null &&
       (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
     ) {
-      writeRoundCounter(root, displayedRoundBefore + 1);
+      const tracking = roundTrackingState.read(root);
+      const { counterEl, highest: recordedHighest, lastContext, previousContext } = tracking;
+      const hasRecordedHighest = typeof recordedHighest === "number";
+      const fallbackBase = displayedRoundBefore + 1;
+
+      let fallbackTarget = fallbackBase;
+      if (hasRecordedHighest) {
+        fallbackTarget = Math.max(fallbackTarget, recordedHighest);
+      }
+
+      const contextReportedAdvance = lastContext === "advance" || previousContext === "advance";
+      const recordedNextRound = hasRecordedHighest && recordedHighest >= fallbackBase;
+      const priorAdvanceMatchesDisplay =
+        previousContext === "advance" &&
+        hasRecordedHighest &&
+        recordedHighest === displayedRoundBefore;
+      const engineAlreadyAdvanced = determineEngineAdvanceState({
+        contextReportedAdvance,
+        recordedNextRound,
+        priorAdvanceMatchesDisplay,
+        hasRecordedHighest
+      });
+      if (engineAlreadyAdvanced && hasRecordedHighest) {
+        fallbackTarget = recordedHighest;
+      }
+
+      if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1) {
+        writeRoundCounter(root, fallbackTarget);
+        const nextRecordedHighest = hasRecordedHighest
+          ? Math.max(recordedHighest, fallbackTarget)
+          : fallbackTarget;
+        const shouldMarkFallbackContext =
+          fallbackTarget > displayedRoundBefore && !engineAlreadyAdvanced;
+
+        try {
+          roundTrackingState.write({
+            counterEl,
+            highest: nextRecordedHighest,
+            lastContext: shouldMarkFallbackContext ? "fallback" : undefined,
+            previousContext: shouldMarkFallbackContext ? lastContext || null : undefined
+          });
+        } catch (error) {
+          guard(() => console.warn("[timerService] Failed to update round tracking state:", error));
+        }
+      }
     }
+
     if (cooldownWarningTimeoutId !== null) {
       realScheduler.clearTimeout(cooldownWarningTimeoutId);
     }
@@ -526,6 +500,8 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       }
       cooldownWarningTimeoutId = null;
     }, 1000);
+  } catch (error) {
+    timerLogger.error("[next] error during click handling", error);
   } finally {
     nextClickInFlight = false;
   }
