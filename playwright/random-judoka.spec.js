@@ -16,9 +16,7 @@ test.describe("View Judoka screen", () => {
     const btn = page.getByTestId("draw-button");
     await expect(btn).toHaveText(/draw card/i);
 
-    await page.waitForFunction(
-      () => !!window.__TEST_API?.randomJudoka?.setDrawButtonLabel
-    );
+    await page.waitForFunction(() => !!window.__TEST_API?.randomJudoka?.setDrawButtonLabel);
     await page.evaluate(() => {
       window.__TEST_API.randomJudoka.setDrawButtonLabel("Pick a random judoka");
     });
