@@ -19,7 +19,7 @@ describe("createStatsPanel", () => {
   });
 
   it("applies custom options", async () => {
-    const panel = createStatsPanel(mockStats, {
+    const panel = await createStatsPanel(mockStats, {
       type: "legendary",
       className: "custom-panel",
       ariaLabel: "Custom Stats"
@@ -30,7 +30,7 @@ describe("createStatsPanel", () => {
   });
 
   it("provides stat element access", async () => {
-    const panel = createStatsPanel(mockStats);
+    const panel = await createStatsPanel(mockStats);
 
     const statElements = panel.getStatElements();
     expect(statElements.length).toBeGreaterThan(0);
