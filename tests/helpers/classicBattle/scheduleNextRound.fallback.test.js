@@ -85,6 +85,11 @@ describe("startCooldown fallback timer", () => {
         // Mock computeNextRoundCooldown to return 0 for predictable timing
         "../../../src/helpers/timers/computeNextRoundCooldown.js": () => ({
           computeNextRoundCooldown: () => 0
+        }),
+        // Mock eventDispatcher to return true for dispatchBattleEvent
+        "../../../src/helpers/classicBattle/eventDispatcher.js": () => ({
+          dispatchBattleEvent: vi.fn(() => true),
+          resetDispatchHistory: vi.fn()
         })
       }
     });
