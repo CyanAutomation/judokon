@@ -100,6 +100,7 @@ export async function getExtractor() {
         try {
           await stat(resolve(modelDirAbs, "config.json"));
           extractor = await pipeline("feature-extraction", modelDirAbs, { quantized: true });
+          console.log("RAG: Successfully loaded local MiniLM model.");
         } catch {
           if (process?.env?.RAG_STRICT_OFFLINE === "1") {
             const msg =
@@ -108,7 +109,7 @@ export async function getExtractor() {
             // Do not proceed to remote fetch in strict mode
             throw new Error(msg);
           }
-          console.warn("Local model not found; falling back to Xenova/all-MiniLM-L6-v2");
+          console.warn("RAG: Local model not found or failed to load; falling back to Xenova/all-MiniLM-L6-v2 from CDN.");
           extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
             quantized: true
           });
