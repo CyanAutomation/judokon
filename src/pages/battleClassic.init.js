@@ -72,10 +72,7 @@ function computeSelectionReadyDelay() {
   try {
     const opponentDelay = getOpponentDelay?.();
     if (Number.isFinite(opponentDelay) && opponentDelay >= 0) {
-      delayForReady = Math.max(
-        delayForReady,
-        opponentDelay + OPPONENT_MESSAGE_BUFFER_MS
-      );
+      delayForReady = Math.max(delayForReady, opponentDelay + OPPONENT_MESSAGE_BUFFER_MS);
     }
   } catch {}
   return delayForReady;
