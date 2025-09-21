@@ -513,9 +513,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           window.__TEST_API.state.waitForBattleState("waitingForPlayerAction")
         );
 
-        await page.evaluate(() =>
-          window.__TEST_API.timers.expireSelectionTimer()
-        );
+        await page.evaluate(() => window.__TEST_API.timers.expireSelectionTimer());
 
         // Should auto-select and resolve
         await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
