@@ -636,7 +636,6 @@ function createReadyDispatchStrategies({
   getDebugBag,
   orchestrated
 }) {
-
   const busStrategyOptions = {};
   if (bus) {
     busStrategyOptions.eventBus = bus;
@@ -751,7 +750,9 @@ function finalizeReadyControls(controls, dispatched, options = {}) {
   const forceResolve = options.forceResolve === true;
   controls.readyInFlight = false;
   const resolver = typeof controls.resolveReady === "function" ? controls.resolveReady : null;
-  const shouldResolveReady = Boolean((dispatched || forceResolve) && !controls.readyDispatched && resolver);
+  const shouldResolveReady = Boolean(
+    (dispatched || forceResolve) && !controls.readyDispatched && resolver
+  );
   if (dispatched || forceResolve) {
     controls.readyDispatched = true;
   }
