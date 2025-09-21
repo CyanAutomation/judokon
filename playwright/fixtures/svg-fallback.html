@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SVG fallback fixture</title>
+  </head>
+  <body>
+    <img id="broken-icon" alt="Broken icon" data-src="./missing-icon.svg" />
+    <script type="module">
+      import { applySvgFallback } from "../../src/helpers/svgFallback.js";
+
+      const brokenIcon = document.getElementById("broken-icon");
+      brokenIcon.src = brokenIcon.dataset.src;
+      applySvgFallback("../../src/assets/images/judokonLogoSmall.png");
+    </script>
+  </body>
+</html>
