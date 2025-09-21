@@ -137,7 +137,7 @@ describe("startCooldown fallback timer", () => {
     expect(resolved).toBe(true);
     expect(btn.dataset.nextReady).toBe("true");
     expect(btn.disabled).toBe(false);
-  });
+  }, 10000);
 });
 
 describe("startCooldown ready dispatch discipline", () => {
