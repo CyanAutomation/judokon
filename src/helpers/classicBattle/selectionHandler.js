@@ -10,6 +10,8 @@ import { resolveDelay } from "./timerUtils.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
+import { roundStore } from "./roundStore.js";
+import { isEnabled } from "../featureFlags.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
@@ -199,6 +201,18 @@ function validateSelectionState(store) {
 function applySelectionToStore(store, stat, playerVal, opponentVal) {
   store.selectionMade = true;
   store.playerChoice = stat;
+  // Mirror selection to RoundStore when feature flag enabled
+  try {
+    if (isEnabled("roundStore")) {
+      try {
+        roundStore.setSelectedStat(stat);
+      } catch {
+        // swallow to preserve legacy behaviour
+      }
+    }
+  } catch {
+    // featureFlags may be uninitialised in some test harnesses
+  }
   return getPlayerAndOpponentValues(stat, playerVal, opponentVal, { store });
 }
 

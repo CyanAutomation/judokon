@@ -5,6 +5,8 @@ import { bridgeEngineEvents } from "./engineBridge.js";
 import { cancel as cancelFrame, stop as stopScheduler } from "../../utils/scheduler.js";
 import { resetSkipState, setSkipHandler } from "./skipHandler.js";
 import { emitBattleEvent } from "./battleEvents.js";
+import { roundStore } from "./roundStore.js";
+import { isEnabled } from "../featureFlags.js";
 import { readDebugState, exposeDebugState } from "./debugHooks.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { dispatchBattleEvent } from "./eventDispatcher.js";
@@ -219,6 +221,23 @@ export async function startRound(store, onRoundStart) {
     });
   }
   emitBattleEvent("roundStarted", { store, roundNumber });
+  // If RoundStore feature flag is enabled, synchronise centralized store
+  try {
+    if (isEnabled("roundStore")) {
+      try {
+        roundStore.setRoundNumber(roundNumber);
+      } catch {
+        /* keep behaviour stable on failure */
+      }
+      try {
+        roundStore.setRoundState("roundStart", "startRound");
+      } catch {
+        /* ignore */
+      }
+    }
+  } catch {
+    /* defensive: featureFlags may not be initialised in some test harnesses */
+  }
   // Attach scheduler to store for downstream use
   if (scheduler) store.scheduler = scheduler;
   return { ...cards, roundNumber };
