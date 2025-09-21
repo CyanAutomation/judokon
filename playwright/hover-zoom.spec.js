@@ -21,6 +21,23 @@ async function resetBrowseHooks(page) {
   await page.evaluate(() => window.__testHooks?.browse?.reset?.());
 }
 
+async function expectToBeEnlarged(locator) {
+  await expect(locator).toHaveAttribute("data-enlarged", "true");
+}
+
+async function expectToBeCollapsed(locator) {
+  await expect(locator).not.toHaveAttribute("data-enlarged", "true");
+}
+
+async function movePointerAwayFromCards(page) {
+  const footerNav = page.locator("[data-testid='bottom-nav']");
+  if ((await footerNav.count()) > 0) {
+    await footerNav.hover({ position: { x: 10, y: 10 } });
+  } else {
+    await page.mouse.move(0, 0);
+  }
+}
+
 test.afterEach(async ({ page }) => {
   await resetBrowseHooks(page);
 });
@@ -44,25 +61,13 @@ test.describe("Hover Zoom Functionality", () => {
       // Hover over the card
       await firstCard.hover();
 
-      // Wait a bit for any transitions
-      await page.waitForTimeout(100);
-
-      // Check if hover zoom is applied (either immediate or after transition)
-      const hasEnlarged = await firstCard.getAttribute("data-enlarged");
-      if (hasEnlarged === "true") {
-        await expect(firstCard).toHaveAttribute("data-enlarged", "true");
-      } else {
-        // If not enlarged, at least verify the hover event was processed
-        await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
-      }
+      await expectToBeEnlarged(firstCard);
 
       // Move mouse away
-      await page.mouse.move(0, 0);
+      await movePointerAwayFromCards(page);
 
       // Verify zoom is removed (if it was applied)
-      if (hasEnlarged === "true") {
-        await expect(firstCard).not.toHaveAttribute("data-enlarged", "true");
-      }
+      await expectToBeCollapsed(firstCard);
     });
 
     test("multiple cards can be hovered independently", async ({ page }) => {
@@ -99,7 +104,7 @@ test.describe("Hover Zoom Functionality", () => {
       expect(firstEnlargedAfter).toBeNull(); // First card should not be enlarged anymore
 
       // Move mouse away
-      await page.mouse.move(0, 0);
+      await movePointerAwayFromCards(page);
     });
 
     test("hover zoom works with keyboard navigation", async ({ page }) => {
@@ -119,13 +124,13 @@ test.describe("Hover Zoom Functionality", () => {
 
       // Simulate hover via mouse (keyboard focus alone doesn't trigger hover)
       await firstCard.hover();
-      await page.waitForTimeout(100);
+      await expectToBeEnlarged(firstCard);
 
       // Verify hover zoom markers are still attached
       await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
-      await page.mouse.move(0, 0);
+      await movePointerAwayFromCards(page);
     });
   });
 
@@ -144,13 +149,14 @@ test.describe("Hover Zoom Functionality", () => {
 
       // Hover over card
       await firstCard.hover();
-      await page.waitForTimeout(100);
+      await expectToBeEnlarged(firstCard);
 
       // Verify hover zoom markers remain attached
       await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
-      await page.mouse.move(0, 0);
+      await movePointerAwayFromCards(page);
+      await expectToBeCollapsed(firstCard);
     });
 
     test("handles test disable animations attribute", async ({ page }) => {
@@ -165,13 +171,14 @@ test.describe("Hover Zoom Functionality", () => {
 
       // Hover over card
       await firstCard.hover();
-      await page.waitForTimeout(100);
+      await expectToBeEnlarged(firstCard);
 
       // Verify hover zoom markers remain attached
       await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
-      await page.mouse.move(0, 0);
+      await movePointerAwayFromCards(page);
+      await expectToBeCollapsed(firstCard);
     });
 
     test("cards remain keyboard accessible during hover", async ({ page }) => {
@@ -191,7 +198,7 @@ test.describe("Hover Zoom Functionality", () => {
 
       // Hover first card
       await firstCard.hover();
-      await page.waitForTimeout(100);
+      await expectToBeEnlarged(firstCard);
 
       // Try to tab to second card (may not work if focus is trapped)
       try {
@@ -213,6 +220,7 @@ test.describe("Hover Zoom Functionality", () => {
     test("handles rapid hover interactions", async ({ page }) => {
       await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
       await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await callBrowseHook(page, "disableHoverAnimations");
 
       const firstCard = page.locator(".judoka-card").first();
       const secondCard = page.locator(".judoka-card").nth(1);
@@ -223,16 +231,18 @@ test.describe("Hover Zoom Functionality", () => {
 
       // Rapid hover switching
       await firstCard.hover();
-      await page.waitForTimeout(50);
+      await expectToBeEnlarged(firstCard);
 
       await secondCard.hover();
-      await page.waitForTimeout(50);
+      await expectToBeEnlarged(secondCard);
 
       await firstCard.hover();
-      await page.waitForTimeout(50);
+      await expectToBeEnlarged(firstCard);
 
       // Final cleanup
-      await page.mouse.move(0, 0);
+      await movePointerAwayFromCards(page);
+      await expectToBeCollapsed(firstCard);
+      await expectToBeCollapsed(secondCard);
 
       // Verify hover zoom markers are still attached
       await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
@@ -252,13 +262,14 @@ test.describe("Hover Zoom Functionality", () => {
       await firstCard.hover();
 
       // Wait for transition to complete
-      await page.waitForTimeout(300);
+      await expectToBeEnlarged(firstCard);
 
       // Verify hover zoom markers are still attached
       await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
-      await page.mouse.move(0, 0);
+      await movePointerAwayFromCards(page);
+      await expectToBeCollapsed(firstCard);
     });
   });
 
@@ -322,7 +333,7 @@ test.describe("Hover Zoom Functionality", () => {
 
       // Start hover
       await firstCard.hover();
-      await page.waitForTimeout(100);
+      await expectToBeEnlarged(firstCard);
 
       // Navigate to another page
       await page.goto("/src/pages/index.html", { waitUntil: "networkidle" });
@@ -348,7 +359,7 @@ test.describe("Hover Zoom Functionality", () => {
 
       // Hover to enlarge
       await firstCard.hover();
-      await page.waitForTimeout(100);
+      await expectToBeEnlarged(firstCard);
 
       // Click to flip (if card flip is available)
       await firstCard.click();
@@ -357,7 +368,7 @@ test.describe("Hover Zoom Functionality", () => {
       await expect(firstCard).toHaveAttribute("data-enlarge-listener-attached", "true");
 
       // Move mouse away
-      await page.mouse.move(0, 0);
+      await movePointerAwayFromCards(page);
     });
 
     test("hover zoom works with different card types", async ({ page }) => {
@@ -374,9 +385,10 @@ test.describe("Hover Zoom Functionality", () => {
           await expect(card).toHaveAttribute("data-enlarge-listener-attached", "true");
 
           await card.hover();
-          await page.waitForTimeout(100);
+          await expectToBeEnlarged(card);
 
-          await page.mouse.move(0, 0);
+          await movePointerAwayFromCards(page);
+          await expectToBeCollapsed(card);
         }
       }
     });
