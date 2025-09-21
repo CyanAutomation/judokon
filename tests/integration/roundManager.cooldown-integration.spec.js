@@ -9,6 +9,8 @@ import {
   createGlobalStateManager,
   createScoreboardStub,
   createSnackbarStub,
+  expectTraceToIncludeEvents,
+  readTraceEntries,
   setupCooldownTestDOM
 } from "./roundManagerTestUtils.js";
 
@@ -45,10 +47,8 @@ test("integration: startCooldown drives readiness flow with fake timers", async 
     expect(nextButton?.disabled).toBe(false);
     expect(nextButton?.getAttribute("data-next-ready")).toBe("true");
 
-    const initialTrace = globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") ?? [];
-    expect(Array.isArray(initialTrace)).toBe(true);
-    expect(initialTrace.some((entry) => entry.event === "startCooldown")).toBe(true);
-    expect(initialTrace.some((entry) => entry.event === "controlsCreated")).toBe(true);
+    const initialTrace = readTraceEntries("nextRoundReadyTrace");
+    expectTraceToIncludeEvents(initialTrace, ["startCooldown", "controlsCreated"]);
 
     const readyPromise = controls.ready;
     await vi.runAllTimersAsync();
@@ -56,11 +56,12 @@ test("integration: startCooldown drives readiness flow with fake timers", async 
 
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
 
-    const finalTrace = globalThis.__classicBattleDebugRead?.("nextRoundReadyTrace") ?? [];
-    const traceEvents = finalTrace.map((entry) => entry.event);
-    expect(traceEvents).toContain("handleNextRoundExpiration.start");
-    expect(traceEvents).toContain("handleNextRoundExpiration.dispatched");
-    expect(traceEvents).toContain("handleNextRoundExpiration.end");
+    const finalTrace = readTraceEntries("nextRoundReadyTrace");
+    expectTraceToIncludeEvents(finalTrace, [
+      "handleNextRoundExpiration.start",
+      "handleNextRoundExpiration.dispatched",
+      "handleNextRoundExpiration.end"
+    ]);
   } finally {
     timers.useRealTimers();
     dispatchSpy.mockRestore();
