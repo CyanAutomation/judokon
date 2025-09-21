@@ -1,5 +1,5 @@
 import { getDefaultTimer } from "../timerUtils.js";
-import { startRound as engineStartRound } from "../battleEngineFacade.js";
+import { startRound as engineStartRound, getRoundsPlayed } from "../battleEngineFacade.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
@@ -95,6 +95,33 @@ function readDisplayedRound(root) {
   if (!match) return null;
   const value = Number(match[1]);
   return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Read the next round number from the battle engine when available.
+ *
+ * @pseudocode
+ * 1. Call `getRoundsPlayed()` and ensure it returns a finite value.
+ * 2. Return the next round (`played + 1`) when valid.
+ * 3. Fall back to `null` when unavailable or on error.
+ *
+ * @returns {number|null}
+ */
+function readEngineNextRound() {
+  try {
+    if (typeof getRoundsPlayed !== "function") {
+      return null;
+    }
+    const played = Number(getRoundsPlayed());
+    if (!Number.isFinite(played)) {
+      return null;
+    }
+    const nextRound = played + 1;
+    return Number.isFinite(nextRound) && nextRound >= 1 ? nextRound : null;
+  } catch (error) {
+    timerLogger.debug("[round] failed to read getRoundsPlayed", error);
+    return null;
+  }
 }
 
 /**
@@ -478,7 +505,11 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       const tracking = roundTrackingState.read(root);
       const { counterEl, highest: recordedHighest, lastContext, previousContext } = tracking;
       const hasRecordedHighest = typeof recordedHighest === "number";
-      const fallbackBase = displayedRoundBefore + 1;
+      const engineNextRound = readEngineNextRound();
+      const hasEngineNextRound = Number.isFinite(engineNextRound);
+      const fallbackBase = hasEngineNextRound
+        ? /** @type {number} */ (engineNextRound)
+        : displayedRoundBefore + 1;
 
       let fallbackTarget = fallbackBase;
       if (hasRecordedHighest) {
@@ -490,7 +521,7 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       const priorAdvanceMatchesDisplay =
         previousContext === "advance" &&
         hasRecordedHighest &&
-        recordedHighest === displayedRoundBefore;
+        recordedHighest === (hasEngineNextRound ? fallbackBase - 1 : displayedRoundBefore);
       const engineAlreadyAdvanced = determineEngineAdvanceState({
         contextReportedAdvance,
         recordedNextRound,
@@ -509,12 +540,18 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
       });
 
       if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1 && shouldApplyFallback) {
+        timerLogger.debug("[next] syncing round counter", {
+          displayedRoundBefore,
+          fallbackBase,
+          fallbackTarget,
+          engineAlreadyAdvanced,
+          hasEngineNextRound
+        });
         writeRoundCounter(root, fallbackTarget);
         const nextRecordedHighest = hasRecordedHighest
           ? Math.max(recordedHighest, fallbackTarget)
           : fallbackTarget;
-        const shouldMarkFallbackContext =
-          fallbackTarget > displayedRoundBefore && !engineAlreadyAdvanced;
+        const shouldMarkFallbackContext = fallbackTarget > fallbackBase && !engineAlreadyAdvanced;
 
         try {
           roundTrackingState.write({
