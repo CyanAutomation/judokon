@@ -260,18 +260,33 @@ describe("BattleDebugLogger", () => {
   });
 
   describe("Clear Functionality", () => {
-    it("should clear all logs and reset start time", async () => {
+    let initialTime;
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      initialTime = new Date("2024-01-01T00:00:00.000Z").getTime();
+      vi.setSystemTime(initialTime);
+      logger = new BattleDebugLogger({ enabled: true, outputMode: "memory" });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should clear all logs and reset start time", () => {
       logger.log(DEBUG_CATEGORIES.STATE, LOG_LEVELS.INFO, "Before clear");
 
       expect(logger.buffer).toHaveLength(1);
 
       const beforeClear = logger.startTime;
-      // Add small delay to ensure time difference
-      await new Promise((resolve) => setTimeout(resolve, 1));
+      expect(beforeClear).toBe(initialTime);
+
+      const timeIncrement = 5;
+      vi.advanceTimersByTime(timeIncrement);
       logger.clear();
 
       expect(logger.buffer).toHaveLength(0);
-      expect(logger.startTime).toBeGreaterThanOrEqual(beforeClear);
+      expect(logger.startTime).toBe(initialTime + timeIncrement);
     });
   });
 });
