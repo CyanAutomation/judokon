@@ -35,6 +35,7 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     drift: new Set()
   };
   let retries = 0;
+  let fallbackTimeoutId = null;
 
   function emit(event, payload) {
     for (const fn of listeners[event]) {
@@ -54,6 +55,12 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   function start(dur) {
+    if (fallbackTimeoutId !== null) {
+      try {
+        clearTimeout(fallbackTimeoutId);
+      } catch {}
+      fallbackTimeoutId = null;
+    }
     const total = Number(dur) || 0;
     const useEngine = typeof starter === "function";
     if (useEngine) {
@@ -69,7 +76,6 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     }
     let remaining = Math.ceil(total);
     emitTick(remaining);
-    let timeoutId = null;
     const tick = () => {
       try {
         // Decrement remaining and emit tick/expired accordingly. Use a
@@ -77,19 +83,22 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
         remaining -= 1;
         if (remaining > 0) {
           emitTick(remaining);
-          timeoutId = setTimeout(tick, 1000);
+          fallbackTimeoutId = setTimeout(tick, 1000);
         } else {
-          timeoutId = null;
+          fallbackTimeoutId = null;
           emitExpired();
         }
       } catch {
         try {
-          if (timeoutId) clearTimeout(timeoutId);
+          if (fallbackTimeoutId !== null) {
+            clearTimeout(fallbackTimeoutId);
+            fallbackTimeoutId = null;
+          }
         } catch {}
       }
     };
     // Start the tick loop after 1 second
-    timeoutId = setTimeout(tick, 1000);
+    fallbackTimeoutId = setTimeout(tick, 1000);
   }
 
   function emitTick(remaining) {
@@ -116,6 +125,12 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   }
 
   function stop() {
+    if (fallbackTimeoutId !== null) {
+      try {
+        clearTimeout(fallbackTimeoutId);
+      } catch {}
+      fallbackTimeoutId = null;
+    }
     try {
       stopTimer();
     } catch {}
