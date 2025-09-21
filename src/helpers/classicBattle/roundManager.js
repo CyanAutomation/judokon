@@ -636,15 +636,7 @@ function createReadyDispatchStrategies({
   getDebugBag,
   orchestrated
 }) {
-  if (
-    handleReadyDispatchEarlyExit({
-      context: options,
-      emitTelemetry,
-      getDebugBag
-    })
-  ) {
-    return [];
-  }
+
   const busStrategyOptions = {};
   if (bus) {
     busStrategyOptions.eventBus = bus;

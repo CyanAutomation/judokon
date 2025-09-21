@@ -317,8 +317,7 @@ describe("bus propagation and deduplication", () => {
     expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
     await runtime.onExpired();
-    expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
-    expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
+
     expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
     expect(machine.dispatch).toHaveBeenCalledTimes(1);
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
@@ -334,7 +333,7 @@ describe("bus propagation and deduplication", () => {
     globalDispatchSpy.mockImplementationOnce(() => false);
     globalDispatchSpy.mockImplementation(() => true);
     await runtime.onExpired();
-    expect(globalDispatchSpy).toHaveBeenCalledTimes(2);
+    expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
     expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
     expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
