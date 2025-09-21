@@ -26,12 +26,19 @@ test.describe("Classic Battle timer", () => {
       const timerLocator = page.getByTestId("next-round-timer");
       await expect(timerLocator).toContainText(/Time Left: \d+s/);
 
-      // Wait for timer to count down and verify it decreases
-      await page.waitForTimeout(1000); // Wait 1 second
-      const timerText1 = await timerLocator.textContent();
+      await page.evaluate(() =>
+        window.__TEST_API?.state?.waitForBattleState?.("waitingForPlayerAction")
+      );
 
-      await page.waitForTimeout(1000); // Wait another second
-      const timerText2 = await timerLocator.textContent();
+      const readTimerText = async () => (await timerLocator.textContent()) ?? "";
+      const waitForTimerUpdate = async (previousText) => {
+        await expect.poll(readTimerText).not.toBe(previousText);
+        return readTimerText();
+      };
+
+      const initialTimerText = await readTimerText();
+      const timerText1 = await waitForTimerUpdate(initialTimerText);
+      const timerText2 = await waitForTimerUpdate(timerText1);
 
       // Timer should have decreased (unless it reached 0)
       if (timerText1 !== "" && timerText2 !== "") {
