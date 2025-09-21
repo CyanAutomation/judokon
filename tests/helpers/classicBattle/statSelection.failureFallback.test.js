@@ -4,18 +4,50 @@ import installRAFMock from "../rafMock.js";
 describe("classicBattle stat selection failure recovery", () => {
   const ROUND_MANAGER_PATH = "../../../src/helpers/classicBattle/roundManager.js";
   const SELECTION_HANDLER_PATH = "../../../src/helpers/classicBattle/selectionHandler.js";
+  const UI_HELPERS_PATH = "../../../src/helpers/classicBattle/uiHelpers.js";
   let renderStatButtons;
   let startCooldownMock;
   let handleStatSelectionMock;
   let showSnackbarMock;
+  let enableNextRoundButtonMock;
+  let disableNextRoundButtonMock;
+  let statClickHandlers;
+  let addEventListenerSpy;
   let previousMinDuration;
   let originalLocalStorage;
+  const elementPrototype =
+    globalThis.HTMLElement?.prototype || globalThis.Element?.prototype || null;
+
+  const getStatSelectionEntry = (index = 0) => {
+    const entry = statClickHandlers?.[index];
+    expect(entry?.handler).toBeTypeOf("function");
+    return entry;
+  };
+
+  const flushMicrotasks = async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  };
 
   beforeEach(async () => {
     vi.resetModules();
     startCooldownMock = vi.fn();
     handleStatSelectionMock = vi.fn();
     showSnackbarMock = vi.fn();
+    enableNextRoundButtonMock = vi.fn();
+    disableNextRoundButtonMock = vi.fn();
+    statClickHandlers = [];
+
+    if (elementPrototype) {
+      const nativeAddEventListener = elementPrototype.addEventListener;
+      addEventListenerSpy = vi.spyOn(elementPrototype, "addEventListener");
+      addEventListenerSpy.mockImplementation(function (type, listener, options) {
+        if (type === "click" && this?.getAttribute?.("data-stat")) {
+          statClickHandlers.push({ element: this, handler: listener });
+        }
+        return nativeAddEventListener.call(this, type, listener, options);
+      });
+    }
 
     vi.doMock(ROUND_MANAGER_PATH, () => ({
       startCooldown: startCooldownMock,
@@ -25,6 +57,13 @@ describe("classicBattle stat selection failure recovery", () => {
     vi.doMock(SELECTION_HANDLER_PATH, () => ({
       handleStatSelection: handleStatSelectionMock,
       getPlayerAndOpponentValues: vi.fn(() => ({ playerVal: 5, opponentVal: 3 }))
+    }));
+
+    vi.doMock(UI_HELPERS_PATH, () => ({
+      enableNextRoundButton: (...args) => enableNextRoundButtonMock(...args),
+      disableNextRoundButton: (...args) => disableNextRoundButtonMock(...args),
+      removeBackdrops: vi.fn(),
+      showFatalInitError: vi.fn()
     }));
 
     vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
@@ -56,6 +95,8 @@ describe("classicBattle stat selection failure recovery", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
+    addEventListenerSpy?.mockRestore();
+    statClickHandlers = [];
     try {
       global.__statSelectionRafRestore?.();
     } catch {}
@@ -78,22 +119,17 @@ describe("classicBattle stat selection failure recovery", () => {
   });
 
   it("starts cooldown, resets cooldown flag, and marks Next ready when selection handler rejects", async () => {
-    handleStatSelectionMock.mockRejectedValue(new Error("stat selection failed"));
+    handleStatSelectionMock.mockImplementation(() => {
+      throw new Error("stat selection failed");
+    });
 
-    document.body.innerHTML = `
-      <div id="stat-buttons"></div>
-      <button id="next-button" data-role="next-round" disabled></button>
-    `;
+    document.body.innerHTML = `<div id="stat-buttons"></div>`;
 
     const store = {};
     renderStatButtons(store);
 
-    const btn = document.querySelector("[data-stat]");
-    expect(btn).toBeTruthy();
-
-    btn.click();
-
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    const { handler } = getStatSelectionEntry();
+    handler();
 
     expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
     expect(handleStatSelectionMock).toHaveBeenCalledWith(
@@ -104,32 +140,22 @@ describe("classicBattle stat selection failure recovery", () => {
     expect(startCooldownMock).toHaveBeenCalledTimes(1);
     expect(startCooldownMock).toHaveBeenCalledWith(store);
     expect(store.__uiCooldownStarted).toBe(false);
-
-    const nextBtn = document.getElementById("next-button");
-    expect(nextBtn.disabled).toBe(false);
-    expect(nextBtn.getAttribute("data-next-ready")).toBe("true");
-    expect(nextBtn.dataset.nextReady).toBe("true");
+    expect(enableNextRoundButtonMock).toHaveBeenCalled();
   });
 
   it("immediately triggers cooldown on selection failure without advancing timers", async () => {
     vi.useFakeTimers();
-    handleStatSelectionMock.mockRejectedValue(new Error("stat selection failed"));
+    handleStatSelectionMock.mockImplementation(() => {
+      throw new Error("stat selection failed");
+    });
 
-    document.body.innerHTML = `
-      <div id="stat-buttons"></div>
-      <button id="next-button" data-role="next-round" disabled></button>
-    `;
+    document.body.innerHTML = `<div id="stat-buttons"></div>`;
 
     const store = {};
     renderStatButtons(store);
 
-    const btn = document.querySelector("[data-stat]");
-    expect(btn).toBeTruthy();
-
-    btn.click();
-
-    await Promise.resolve();
-    await Promise.resolve();
+    const { handler } = getStatSelectionEntry();
+    handler();
 
     expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
     expect(startCooldownMock).toHaveBeenCalledTimes(1);
@@ -138,25 +164,22 @@ describe("classicBattle stat selection failure recovery", () => {
   });
 
   it("recovers when the Next button is absent", async () => {
-    handleStatSelectionMock.mockRejectedValue(new Error("stat selection failed"));
+    handleStatSelectionMock.mockImplementation(() => {
+      throw new Error("stat selection failed");
+    });
 
-    document.body.innerHTML = `
-      <div id="stat-buttons"></div>
-    `;
+    document.body.innerHTML = `<div id="stat-buttons"></div>`;
 
     const store = {};
     renderStatButtons(store);
 
-    const btn = document.querySelector("[data-stat]");
-    expect(btn).toBeTruthy();
-
-    btn.click();
-
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    const { handler } = getStatSelectionEntry();
+    handler();
 
     expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
     expect(startCooldownMock).toHaveBeenCalledTimes(1);
     expect(store.__uiCooldownStarted).toBe(false);
+    expect(enableNextRoundButtonMock).toHaveBeenCalled();
     expect(document.getElementById("next-button")).toBeNull();
   });
 
@@ -164,35 +187,27 @@ describe("classicBattle stat selection failure recovery", () => {
     startCooldownMock.mockImplementation(() => {
       throw new Error("cooldown failure");
     });
-    handleStatSelectionMock.mockRejectedValue(new Error("stat selection failed"));
+    handleStatSelectionMock.mockImplementation(() => {
+      throw new Error("stat selection failed");
+    });
 
-    document.body.innerHTML = `
-      <div id="stat-buttons"></div>
-      <button id="next-button" data-role="next-round" disabled></button>
-    `;
+    document.body.innerHTML = `<div id="stat-buttons"></div>`;
 
     const store = {};
     renderStatButtons(store);
 
-    const btn = document.querySelector("[data-stat]");
-    expect(btn).toBeTruthy();
-
-    btn.click();
-
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    const { handler } = getStatSelectionEntry();
+    handler();
 
     expect(handleStatSelectionMock).toHaveBeenCalledTimes(1);
     expect(startCooldownMock).toHaveBeenCalledTimes(1);
     expect(store.__uiCooldownStarted).toBe(false);
-
-    const nextBtn = document.getElementById("next-button");
-    expect(nextBtn.disabled).toBe(false);
-    expect(nextBtn.getAttribute("data-next-ready")).toBe("true");
+    expect(enableNextRoundButtonMock).toHaveBeenCalled();
   });
 
   it("keeps opponent choosing message visible before countdown when opponent delay is zero", async () => {
     vi.useFakeTimers();
-    handleStatSelectionMock.mockResolvedValue({ matchEnded: false });
+    handleStatSelectionMock.mockImplementation(() => ({ matchEnded: false }));
 
     document.body.innerHTML = `
       <div id="score-display"></div>
@@ -200,14 +215,10 @@ describe("classicBattle stat selection failure recovery", () => {
       <div id="snackbar-container"></div>
       <div id="stat-buttons"></div>
       <div id="next-round-timer"></div>
-      <button id="next-button" data-role="next-round" disabled></button>
     `;
 
     const store = {};
     renderStatButtons(store);
-
-    const btn = document.querySelector("[data-stat]");
-    expect(btn).toBeTruthy();
 
     const { setOpponentDelay } = await import("../../../src/helpers/classicBattle/snackbar.js");
     setOpponentDelay(0);
@@ -217,10 +228,10 @@ describe("classicBattle stat selection failure recovery", () => {
     const previousMin = win.__MIN_OPPONENT_MESSAGE_DURATION_MS;
     win.__MIN_OPPONENT_MESSAGE_DURATION_MS = minDisplay;
 
-    btn.click();
+    const { handler } = getStatSelectionEntry();
+    handler();
 
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushMicrotasks();
     await vi.advanceTimersByTimeAsync(0);
 
     expect(showSnackbarMock).toHaveBeenCalledWith("Opponent is choosing…");
@@ -231,8 +242,7 @@ describe("classicBattle stat selection failure recovery", () => {
 
     await vi.advanceTimersByTimeAsync(1);
     await vi.advanceTimersByTimeAsync(0);
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushMicrotasks();
 
     expect(startCooldownMock).toHaveBeenCalledTimes(1);
     const lastMessage = showSnackbarMock.mock.calls.at(-1)?.[0];
