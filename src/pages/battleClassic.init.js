@@ -946,7 +946,7 @@ async function handleReplay(store) {
   try {
     // Reset engine state
     const { createBattleEngine } = await import("../helpers/battleEngineFacade.js");
-    createBattleEngine();
+    createBattleEngine({ forceCreate: true });
 
     // Reset store state
     store.selectionMade = false;
