@@ -51,6 +51,7 @@ describe("startCooldown fallback timer", () => {
 
   beforeEach(async () => {
     harness = createClassicBattleHarness({
+      useFakeTimers: false,
       mocks: {
         // Mock the battle engine facade to control timer behavior
         "../../../src/helpers/battleEngineFacade.js": () => {
@@ -90,6 +91,10 @@ describe("startCooldown fallback timer", () => {
         "../../../src/helpers/classicBattle/eventDispatcher.js": () => ({
           dispatchBattleEvent: vi.fn(() => true),
           resetDispatchHistory: vi.fn()
+        }),
+        // Mock debugHooks to return null for readDebugState
+        "../../../src/helpers/debugHooks.js": () => ({
+          readDebugState: vi.fn(() => null)
         })
       }
     });
