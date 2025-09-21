@@ -335,7 +335,56 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
     displayedRoundBefore !== null &&
     (displayedRoundAfter === null || displayedRoundAfter === displayedRoundBefore)
   ) {
-    writeRoundCounter(root, displayedRoundBefore + 1);
+    /** @type {number} */
+    let trackedHighest = Number(globalThis.__highestDisplayedRound ?? NaN);
+    const hasTrackedHighest = Number.isFinite(trackedHighest) && trackedHighest >= 1;
+    const lastContext =
+      typeof globalThis.__lastRoundCounterContext === "string"
+        ? globalThis.__lastRoundCounterContext
+        : "";
+    const previousContext =
+      typeof globalThis.__previousRoundCounterContext === "string"
+        ? globalThis.__previousRoundCounterContext
+        : "";
+    const engineAlreadyAdvanced = lastContext === "advance" || previousContext === "advance";
+
+    let fallbackTarget = displayedRoundBefore + 1;
+    if (hasTrackedHighest) {
+      if (engineAlreadyAdvanced && trackedHighest >= displayedRoundBefore) {
+        fallbackTarget = trackedHighest;
+      } else {
+        fallbackTarget = Math.max(fallbackTarget, trackedHighest);
+      }
+    }
+    if (hasTrackedHighest && engineAlreadyAdvanced && fallbackTarget > trackedHighest) {
+      fallbackTarget = trackedHighest;
+    }
+
+    if (Number.isFinite(fallbackTarget) && fallbackTarget >= 1) {
+      writeRoundCounter(root, fallbackTarget);
+      try {
+        const newHighest = hasTrackedHighest
+          ? Math.max(trackedHighest, fallbackTarget)
+          : fallbackTarget;
+        if (Number.isFinite(newHighest) && newHighest >= 1) {
+          trackedHighest = newHighest;
+          globalThis.__highestDisplayedRound = newHighest;
+        }
+        const counterEl = getRoundCounterElement(root);
+        if (counterEl && counterEl.dataset) {
+          const priorHighest = Number(counterEl.dataset.highestRound || 0);
+          if (Number.isFinite(priorHighest) && priorHighest >= 1) {
+            counterEl.dataset.highestRound = String(Math.max(priorHighest, trackedHighest));
+          } else {
+            counterEl.dataset.highestRound = String(trackedHighest);
+          }
+        }
+        if (!engineAlreadyAdvanced) {
+          globalThis.__previousRoundCounterContext = lastContext || null;
+          globalThis.__lastRoundCounterContext = "fallback";
+        }
+      } catch {}
+    }
   }
   if (cooldownWarningTimeoutId !== null) {
     realScheduler.clearTimeout(cooldownWarningTimeoutId);
