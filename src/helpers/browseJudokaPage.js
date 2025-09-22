@@ -12,6 +12,27 @@ import { setupCountryFilter } from "./browse/setupCountryFilter.js";
 import { addHoverZoomMarkers } from "./setupHoverZoom.js";
 import { resetBrowseTestHooks, updateBrowseTestHooksContext } from "./browse/testHooks.js";
 
+/**
+ * @typedef {object} BrowsePageRuntime
+ * @property {Element|null} carouselContainer
+ * @property {Element|null} countryListContainer
+ * @property {HTMLButtonElement|null} toggleBtn
+ * @property {HTMLButtonElement|null} layoutToggle
+ * @property {Element|null} countryPanel
+ * @property {HTMLButtonElement|null} clearBtn
+ * @property {() => void} [ensurePanelHidden]
+ * @property {() => void} [setupToggle]
+ * @property {(forceSpinner: boolean) => { show: () => void, remove: () => void }} [createSpinnerController]
+ * @property {(list: Array<Judoka>, gokyoData: Array) => Promise<{ carousel: Element, containerEl: Element|null }>} [renderCarousel]
+ * @property {() => Element|null} [getAriaLive]
+ * @property {() => void} [setupLayoutToggle]
+ * @property {(judokaList: Array<Judoka>, render: (list: Array<Judoka>) => Promise<void> | void) => void} [setupCountryFilter]
+ * @property {() => Element|null} [appendNoResultsMessage]
+ * @property {() => Element|null} [appendErrorMessage]
+ * @property {(onClick: () => void | Promise<void>) => HTMLButtonElement|null} [appendRetryButton]
+ * @property {() => void} [markReady]
+ */
+
 let resolveBrowseReady;
 export const browseJudokaReadyPromise =
   typeof document !== "undefined"
@@ -23,6 +44,128 @@ export const browseJudokaReadyPromise =
         };
       })
     : Promise.resolve();
+
+/**
+ * Build the DOM runtime used by {@link setupBrowseJudokaPage}.
+ *
+ * @pseudocode
+ * 1. Query all required DOM elements.
+ * 2. Provide helpers for toggles, spinner lifecycle, carousel rendering, and message management.
+ * 3. Encapsulate DOM mutations so tests can replace the runtime with lightweight stubs.
+ *
+ * @param {Document} [documentRef=document]
+ * @returns {BrowsePageRuntime}
+ */
+export function createBrowsePageRuntime(documentRef = document) {
+  const carouselContainer = documentRef?.getElementById?.("carousel-container") ?? null;
+  const countryListContainer = documentRef?.getElementById?.("country-list") ?? null;
+  const toggleBtn = documentRef?.getElementById?.("country-toggle") ?? null;
+  const layoutToggle = documentRef?.getElementById?.("layout-toggle") ?? null;
+  const countryPanel = documentRef?.getElementById?.("country-panel") ?? null;
+  const clearBtn = documentRef?.getElementById?.("clear-filter") ?? null;
+
+  return {
+    carouselContainer,
+    countryListContainer,
+    toggleBtn,
+    layoutToggle,
+    countryPanel,
+    clearBtn,
+    ensurePanelHidden() {
+      countryPanel?.setAttribute?.("hidden", "");
+      toggleCountryPanelMode(countryPanel, false);
+    },
+    setupToggle() {
+      setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
+    },
+    createSpinnerController(forceSpinner) {
+      const spinner = createSpinner(carouselContainer, {
+        delay: forceSpinner ? 0 : undefined
+      });
+      return {
+        show() {
+          spinner.show();
+          if (forceSpinner) {
+            spinner.element.style.display = "block";
+          }
+        },
+        remove() {
+          spinner.remove();
+        }
+      };
+    },
+    async renderCarousel(list, gokyoData) {
+      const carousel = await buildCardCarousel(list, gokyoData);
+      if (carouselContainer) {
+        carouselContainer.innerHTML = "";
+        carouselContainer.appendChild(carousel);
+      }
+      const containerEl = carousel.querySelector?.(".card-carousel") ?? null;
+      if (containerEl) {
+        initScrollMarkers(containerEl, carousel);
+      }
+      setupButtonEffects();
+      addHoverZoomMarkers();
+      updateBrowseTestHooksContext({ container: containerEl || null, gokyoData });
+      return { carousel, containerEl };
+    },
+    getAriaLive() {
+      return carouselContainer?.querySelector?.(".carousel-aria-live") ?? null;
+    },
+    setupLayoutToggle() {
+      setupLayoutToggle(layoutToggle, countryPanel);
+    },
+    setupCountryFilter(judokaList, render) {
+      const ariaLive = this.getAriaLive();
+      setupCountryFilter(
+        countryListContainer,
+        clearBtn,
+        judokaList,
+        render,
+        toggleBtn,
+        countryPanel,
+        carouselContainer,
+        ariaLive
+      );
+    },
+    appendNoResultsMessage() {
+      if (!carouselContainer) return null;
+      const docRef = carouselContainer.ownerDocument ?? documentRef;
+      const node = docRef.createElement("div");
+      node.className = "no-results-message";
+      node.setAttribute("role", "status");
+      node.setAttribute("aria-live", "polite");
+      node.textContent = "No judoka available.";
+      carouselContainer.appendChild(node);
+      return node;
+    },
+    appendErrorMessage() {
+      if (!carouselContainer) return null;
+      const docRef = carouselContainer.ownerDocument ?? documentRef;
+      const node = docRef.createElement("div");
+      node.className = "error-message";
+      node.setAttribute("role", "alert");
+      node.setAttribute("aria-live", "assertive");
+      node.textContent = "Unable to load roster.";
+      carouselContainer.appendChild(node);
+      return node;
+    },
+    appendRetryButton(onClick) {
+      if (!carouselContainer) return null;
+      const button = createButton("Retry", {
+        className: "retry-button",
+        type: "button"
+      });
+      button.setAttribute("aria-label", "Retry loading judoka data");
+      button.addEventListener("click", onClick);
+      carouselContainer.appendChild(button);
+      return button;
+    },
+    markReady() {
+      resolveBrowseReady?.();
+    }
+  };
+}
 
 /**
  * Attach listener to switch layout mode of country panel.
@@ -57,33 +200,21 @@ export function setupLayoutToggle(layoutBtn, panel) {
  * 5. Execute the `init` function.
  * 6. Initialize all tooltips on the page.
  *
+ * @param {{ runtime?: BrowsePageRuntime }} [options] - Optional runtime overrides used for testing.
  * @returns {Promise<void>} A promise that resolves when the page setup is complete.
  */
-export async function setupBrowseJudokaPage() {
+export async function setupBrowseJudokaPage({ runtime } = {}) {
   resetBrowseTestHooks();
-  const carouselContainer = document.getElementById("carousel-container");
+  const pageRuntime = runtime ?? createBrowsePageRuntime();
+  const { carouselContainer } = pageRuntime;
+
   if (!carouselContainer) {
     console.error("Carousel container not found. Cannot set up browse Judoka page.");
-    if (resolveBrowseReady) {
-      resolveBrowseReady(); // Resolve the promise to prevent test timeouts
-    }
+    pageRuntime.markReady?.();
     return;
   }
-  const countryListContainer = document.getElementById("country-list");
-  const toggleBtn = document.getElementById("country-toggle");
-  const countryPanel = document.getElementById("country-panel");
-  const layoutToggle = document.getElementById("layout-toggle");
-
-  // Ensure panel starts hidden so automated tests and assistive tech see the
-  // expected initial state.
-  countryPanel.setAttribute("hidden", "");
-  toggleCountryPanelMode(countryPanel, false);
-
-  // Attach the country panel toggle immediately so early user/test clicks
-  // still open the panel and lazily build the country slider. This avoids
-  // races where data is still loading and the toggle hasn't been bound yet.
-  // Note: country filter wiring that depends on loaded judoka remains below.
-  setupCountryToggle(toggleBtn, countryPanel, countryListContainer);
+  pageRuntime.ensurePanelHidden?.();
+  pageRuntime.setupToggle?.();
 
   /**
    * Fetch judoka and gokyo data concurrently.
@@ -109,81 +240,37 @@ export async function setupBrowseJudokaPage() {
     return { allJudoka: judokaRes.value, gokyoData };
   }
 
-  /**
-   * Build and display the card carousel.
-   *
-   * @pseudocode
-   * 1. Use `buildCardCarousel` to create carousel markup.
-   * 2. Clear the existing container and append the carousel.
-   * 3. Initialize scroll markers on the carousel container.
-   * 4. Apply button ripple effects.
-   * 5. Add hover zoom markers to cards.
-   *
-   * @param {Judoka[]} list - Judoka to display.
-   * @returns {Promise<void>} Resolves when rendering completes.
-   */
-  async function renderCarousel(list, gokyoData) {
-    const carousel = await buildCardCarousel(list, gokyoData);
-    carouselContainer.innerHTML = "";
-    carouselContainer.appendChild(carousel);
-
-    const containerEl = carousel.querySelector(".card-carousel");
-    if (containerEl) {
-      initScrollMarkers(containerEl, carousel);
-    }
-
-    setupButtonEffects();
-    addHoverZoomMarkers();
-    updateBrowseTestHooksContext({ container: containerEl || null, gokyoData });
-  }
-
   async function init() {
     const forceSpinner =
       new URLSearchParams(globalThis.location?.search || "").has("forceSpinner") ||
       globalThis.__forceSpinner__ === true ||
       globalThis.__showSpinnerImmediately__ === true;
-    const spinner = createSpinner(carouselContainer, {
-      delay: forceSpinner ? 0 : undefined
-    });
-    spinner.show();
-    if (forceSpinner) {
-      spinner.element.style.display = "block";
-    }
+    const spinner = pageRuntime.createSpinnerController
+      ? pageRuntime.createSpinnerController(forceSpinner)
+      : {
+          show() {},
+          remove() {}
+        };
+    spinner.show?.();
     try {
       const { allJudoka, gokyoData } = await loadData();
-      const render = (list) => renderCarousel(list, gokyoData);
-      await renderCarousel(allJudoka, gokyoData);
-      resolveBrowseReady?.();
-      spinner.remove();
+      const render = (list) => pageRuntime.renderCarousel(list, gokyoData);
+      await pageRuntime.renderCarousel(allJudoka, gokyoData);
+      pageRuntime.markReady?.();
+      spinner.remove?.();
       if (forceSpinner) {
         delete globalThis.__forceSpinner__;
         delete globalThis.__showSpinnerImmediately__;
       }
       if (allJudoka.length === 0) {
-        const noResultsMessage = document.createElement("div");
-        noResultsMessage.className = "no-results-message";
-        noResultsMessage.setAttribute("role", "status");
-        noResultsMessage.setAttribute("aria-live", "polite");
-        noResultsMessage.textContent = "No judoka available.";
-        carouselContainer.appendChild(noResultsMessage);
+        pageRuntime.appendNoResultsMessage?.();
       }
 
-      const clearBtn = document.getElementById("clear-filter");
-      setupLayoutToggle(layoutToggle, countryPanel);
-      const ariaLive = carouselContainer.querySelector(".carousel-aria-live");
-      setupCountryFilter(
-        countryListContainer,
-        clearBtn,
-        allJudoka,
-        render,
-        toggleBtn,
-        countryPanel,
-        carouselContainer,
-        ariaLive
-      );
+      pageRuntime.setupLayoutToggle?.();
+      pageRuntime.setupCountryFilter?.(allJudoka, render);
     } catch (error) {
-      resolveBrowseReady?.();
-      spinner.remove();
+      pageRuntime.markReady?.();
+      spinner.remove?.();
       if (forceSpinner) {
         delete globalThis.__forceSpinner__;
         delete globalThis.__showSpinnerImmediately__;
@@ -191,34 +278,26 @@ export async function setupBrowseJudokaPage() {
       console.error("Error building the carousel:", error);
 
       const fallback = await getFallbackJudoka();
-      await renderCarousel([fallback], [], undefined);
+      await pageRuntime.renderCarousel([fallback], []);
 
-      const errorMessage = document.createElement("div");
-      errorMessage.className = "error-message";
-      errorMessage.setAttribute("role", "alert");
-      errorMessage.setAttribute("aria-live", "assertive");
-      errorMessage.textContent = "Unable to load roster.";
-      carouselContainer.appendChild(errorMessage);
+      pageRuntime.appendErrorMessage?.();
 
-      const retryButton = createButton("Retry", {
-        className: "retry-button",
-        type: "button"
-      });
-      retryButton.setAttribute("aria-label", "Retry loading judoka data");
-      retryButton.addEventListener("click", async () => {
+      const retryButton = pageRuntime.appendRetryButton?.(async () => {
+        if (!retryButton) {
+          return;
+        }
         retryButton.disabled = true;
         try {
           const data = await loadData();
-          await renderCarousel(data.allJudoka, data.gokyoData);
+          await pageRuntime.renderCarousel(data.allJudoka, data.gokyoData);
         } catch (err) {
           console.error("Error during retry:", err);
           const fallbackRetry = await getFallbackJudoka();
-          await renderCarousel([fallbackRetry], []);
+          await pageRuntime.renderCarousel([fallbackRetry], []);
         } finally {
           retryButton.disabled = false;
         }
       });
-      carouselContainer.appendChild(retryButton);
       return;
     }
   }

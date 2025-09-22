@@ -1,204 +1,155 @@
 import { toggleCountryPanel } from "../countryPanel.js";
-/**
- * Highlight the selected flag button within a container.
- *
- * @pseudocode
- * 1. Remove `selected` class from all flag buttons in the container.
- * 2. Add `selected` class to the provided button.
- *
- * @param {Element} container
- * @param {HTMLButtonElement} button
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Highlight the selected flag button within a container.
- *
- * @summary Remove `selected` from all flag buttons in `container` and add it to `button`.
- * @pseudocode
- * 1. Remove `selected` from all `button.flag-button` in the container.
- * 2. Add `selected` class to the provided `button`.
- *
- * @param {Element} container - Container that holds flag buttons.
- * @param {HTMLButtonElement} button - The button to mark as selected.
- * @returns {void}
- */
-export function highlightSelection(container, button) {
-  const buttons = container.querySelectorAll("button.flag-button");
-  buttons.forEach((b) => b.classList.remove("selected"));
-  button.classList.add("selected");
-}
 
 /**
- * Clear the country filter and reset judoka list.
- *
- * @pseudocode
- * 1. Deselect all country buttons.
- * 2. Render the full judoka list.
- * 3. Update the live region to show all countries.
- * 4. Close the country panel.
- *
- * @param {Element} listContainer
- * @param {Array<Judoka>} judokaList
- * @param {Function} render
- * @param {HTMLButtonElement} toggleButton
- * @param {Element} panel
- * @param {(count: number, country: string) => void} updateLiveRegion
- * @returns {Promise<void>}
+ * @typedef {object} CountryFilterAdapter
+ * @property {() => void} clearSelection - Remove selection styling from all flag buttons.
+ * @property {(button: HTMLButtonElement) => void} highlightSelection - Apply selection styling to the chosen button.
+ * @property {(count: number, label: string) => void} updateLiveRegion - Announce the visible judoka count.
+ * @property {() => void} closePanel - Close the country panel via the toggle helper.
+ * @property {() => void} removeNoResultsMessage - Remove any existing "no results" message from the carousel.
+ * @property {() => void} showNoResultsMessage - Append the "no results" message to the carousel.
+ * @property {(target: EventTarget | null) => HTMLButtonElement | null} findButtonFromEvent - Extract a flag button from a click target.
+ * @property {(button: HTMLButtonElement | null) => string} getButtonValue - Read the country value associated with a button.
  */
-export async function clearCountryFilter(
-  listContainer,
-  judokaList,
-  render,
-  toggleButton,
-  panel,
-  updateLiveRegion
-) {
-  const buttons = listContainer.querySelectorAll("button.flag-button");
-  buttons.forEach((b) => b.classList.remove("selected"));
-  await render(judokaList);
-  updateLiveRegion(judokaList.length, "all countries");
-  toggleCountryPanel(toggleButton, panel, false);
-}
 
 /**
- * Apply a country filter and render the resulting judoka list.
+ * Build the DOM adapter for the country filter interactions.
  *
  * @pseudocode
- * 1. Highlight the selected flag button.
- * 2. Filter judoka by the button's country value.
- * 3. Render the filtered list.
- * 4. Update the live region with the result count.
- * 5. Remove existing no-results message.
- * 6. If no results, append a no-results message.
- * 7. Close the country panel.
+ * 1. Provide helpers for clearing/highlighting selection state on the flag buttons.
+ * 2. Manage the aria-live region by re-querying from the carousel container when necessary.
+ * 3. Manage creation and removal of the "no results" message.
+ * 4. Use the shared `toggleCountryPanel` helper to close the panel.
  *
- * @param {HTMLButtonElement} button
- * @param {Element} listContainer
- * @param {Array<Judoka>} judokaList
- * @param {Function} render
- * @param {HTMLButtonElement} toggleButton
- * @param {Element} panel
- * @param {Element} carouselEl
- * @param {(count: number, country: string) => void} updateLiveRegion
- * @returns {Promise<void>}
+ * @param {Element} listContainer - Container holding country flag buttons.
+ * @param {HTMLButtonElement} toggleButton - Panel toggle button.
+ * @param {Element} panel - Country panel element.
+ * @param {Element} carouselEl - Carousel container for feedback messages.
+ * @param {Element} ariaLiveEl - Initial aria-live region reference.
+ * @param {{ toggleCountryPanelImpl?: typeof toggleCountryPanel }} [dependencies]
+ * @returns {CountryFilterAdapter}
  */
-export async function applyCountryFilter(
-  button,
+export function createCountryFilterAdapter(
   listContainer,
-  judokaList,
-  render,
   toggleButton,
   panel,
   carouselEl,
-  updateLiveRegion
+  ariaLiveEl,
+  { toggleCountryPanelImpl = toggleCountryPanel } = {}
 ) {
-  const selected = button.value;
-  highlightSelection(listContainer, button);
-  const filtered =
-    selected === "all" ? judokaList : judokaList.filter((j) => j.country === selected);
-  await render(filtered);
-  updateLiveRegion(filtered.length, selected === "all" ? "all countries" : selected);
-  const existingMessage = carouselEl.querySelector(".no-results-message");
-  if (existingMessage) {
-    existingMessage.remove();
-  }
-  if (filtered.length === 0) {
-    const noResultsMessage = document.createElement("div");
-    noResultsMessage.className = "no-results-message";
-    noResultsMessage.setAttribute("role", "status");
-    noResultsMessage.setAttribute("aria-live", "polite");
-    noResultsMessage.textContent = "No judoka available for this country";
-    carouselEl.appendChild(noResultsMessage);
-  }
-  toggleCountryPanel(toggleButton, panel, false);
+  let liveRegion = ariaLiveEl ?? null;
+
+  return {
+    clearSelection() {
+      const buttons = listContainer?.querySelectorAll?.("button.flag-button") ?? [];
+      buttons.forEach((btn) => btn.classList.remove("selected"));
+    },
+    highlightSelection(button) {
+      const buttons = listContainer?.querySelectorAll?.("button.flag-button") ?? [];
+      buttons.forEach((btn) => btn.classList.toggle("selected", btn === button));
+    },
+    updateLiveRegion(count, label) {
+      liveRegion = carouselEl?.querySelector?.(".carousel-aria-live") ?? liveRegion;
+      if (liveRegion) {
+        liveRegion.textContent = `Showing ${count} judoka for ${label}`;
+      }
+    },
+    closePanel() {
+      toggleCountryPanelImpl(toggleButton, panel, false);
+    },
+    removeNoResultsMessage() {
+      const existing = carouselEl?.querySelector?.(".no-results-message");
+      existing?.remove?.();
+    },
+    showNoResultsMessage() {
+      if (!carouselEl) return;
+      const doc = carouselEl.ownerDocument ?? document;
+      const message = doc.createElement("div");
+      message.className = "no-results-message";
+      message.setAttribute("role", "status");
+      message.setAttribute("aria-live", "polite");
+      message.textContent = "No judoka available for this country";
+      carouselEl.appendChild(message);
+    },
+    findButtonFromEvent(target) {
+      return target?.closest?.("button.flag-button") ?? null;
+    },
+    getButtonValue(button) {
+      return button?.value ?? "all";
+    }
+  };
 }
 
 /**
- * Configure country filter interactions for the carousel.
+ * Create the pure controller responsible for filtering judoka by country.
  *
  * @pseudocode
- * 1. Define helper to update aria-live region with count and country.
- * 2. On clearButton click:
- *    a. Deselect all country buttons.
- *    b. Render full judoka list.
- *    c. Update live region.
- *    d. Close country panel.
- * 3. On listContainer click:
- *    a. If clicked element is a flag button:
- *       i. Determine selected country.
- *       ii. Highlight selection.
- *       iii. Filter judokaList by country.
- *       iv. Render filtered list.
- *       v. Update live region.
- *       vi. Remove any existing no-results message.
- *       vii. If no results, show 'no-results-message'.
- *       viii. Close country panel.
+ * 1. When clearing:
+ *    a. Reset selection styling.
+ *    b. Render the full judoka list.
+ *    c. Update the aria-live region for "all countries".
+ *    d. Remove any stale "no results" message and close the panel.
+ * 2. When applying a country filter:
+ *    a. Highlight the chosen button.
+ *    b. Filter the judoka list by the selected value.
+ *    c. Render the filtered list and update the aria-live message.
+ *    d. Replace the "no results" message when the filter produces zero entries.
+ *    e. Close the panel after applying the filter.
+ * 3. Return the filtered list so callers (including tests) can inspect the result.
  *
- * @param {Element} listContainer
- * @param {HTMLButtonElement} clearButton
- * @param {Array<Judoka>} judokaList
- * @param {Function} render
- * @param {HTMLButtonElement} toggleButton
- * @param {Element} panel
- * @param {Element} carouselEl
- * @param {Element} ariaLiveEl
+ * @param {Array<Judoka>} judokaList - Complete list of judoka.
+ * @param {(list: Array<Judoka>) => Promise<void> | void} render - Rendering callback supplied by the carousel runtime.
+ * @param {CountryFilterAdapter} adapter - Adapter providing DOM side effects.
+ * @returns {{ clear: () => Promise<Array<Judoka>>, select: (button: HTMLButtonElement) => Promise<Array<Judoka>> }}
  */
+export function createCountryFilterController(judokaList, render, adapter) {
+  const toLabel = (value) => (value === "all" ? "all countries" : value);
+
+  return {
+    async clear() {
+      adapter.clearSelection?.();
+      await render(judokaList);
+      adapter.updateLiveRegion?.(judokaList.length, "all countries");
+      adapter.removeNoResultsMessage?.();
+      adapter.closePanel?.();
+      return judokaList;
+    },
+    async select(button) {
+      const value = adapter.getButtonValue?.(button) ?? "all";
+      adapter.highlightSelection?.(button);
+      const filtered =
+        value === "all" ? judokaList : judokaList.filter((judoka) => judoka.country === value);
+      await render(filtered);
+      adapter.updateLiveRegion?.(filtered.length, toLabel(value));
+      adapter.removeNoResultsMessage?.();
+      if (filtered.length === 0) {
+        adapter.showNoResultsMessage?.();
+      }
+      adapter.closePanel?.();
+      return filtered;
+    }
+  };
+}
+
 /**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Configure country filter interactions for the carousel.
+ * Wire up the country filter UI using the supplied adapter/controller pair.
  *
- * @summary Wire up event handlers for country filter UI: clear and selection handling.
  * @pseudocode
- * 1. Attach click handler to the clear button that resets the filter.
- * 2. Attach click handler to `listContainer` to handle flag button selection and filtering.
+ * 1. Resolve the DOM adapter (either provided or built from the DOM nodes).
+ * 2. Instantiate the controller with the judoka list and render callback.
+ * 3. Attach click listeners that delegate to the controller methods.
+ * 4. Return the controller for callers that need to observe state.
  *
- * @param {Element} listContainer - Container that contains flag buttons.
- * @param {HTMLButtonElement} clearButton - Button to clear the country filter.
- * @param {Array<Judoka>} judokaList - Full judoka dataset.
- * @param {Function} render - Rendering function that accepts filtered lists.
+ * @param {Element} listContainer - Container for flag buttons.
+ * @param {HTMLButtonElement} clearButton - Button that clears the current filter.
+ * @param {Array<Judoka>} judokaList - Complete judoka dataset.
+ * @param {(list: Array<Judoka>) => Promise<void> | void} render - Rendering callback.
  * @param {HTMLButtonElement} toggleButton - Toggle control for the country panel.
- * @param {Element} panel - The country panel element.
- * @param {Element} carouselEl - Carousel element used to show no-results messages.
- * @param {Element} ariaLiveEl - Live region element to announce counts.
- * @returns {void}
+ * @param {Element} panel - Country panel element.
+ * @param {Element} carouselEl - Carousel container for feedback messages.
+ * @param {Element} ariaLiveEl - Initial aria-live region element.
+ * @param {{ adapter?: CountryFilterAdapter }} [options] - Optional adapter override for tests.
+ * @returns {{ clear: () => Promise<Array<Judoka>>, select: (button: HTMLButtonElement) => Promise<Array<Judoka>> }}
  */
 export function setupCountryFilter(
   listContainer,
@@ -208,40 +159,27 @@ export function setupCountryFilter(
   toggleButton,
   panel,
   carouselEl,
-  ariaLiveEl
+  ariaLiveEl,
+  { adapter } = {}
 ) {
-  let liveRegion = ariaLiveEl;
+  const resolvedAdapter =
+    adapter ??
+    createCountryFilterAdapter(listContainer, toggleButton, panel, carouselEl, ariaLiveEl);
+  const controller = createCountryFilterController(judokaList, render, resolvedAdapter);
 
-  function updateLiveRegion(count, country) {
-    liveRegion = carouselEl.querySelector(".carousel-aria-live") || liveRegion;
-    liveRegion.textContent = `Showing ${count} judoka for ${country}`;
-  }
-
-  clearButton.addEventListener("click", async () => {
-    await clearCountryFilter(
-      listContainer,
-      judokaList,
-      render,
-      toggleButton,
-      panel,
-      updateLiveRegion
-    );
+  clearButton?.addEventListener?.("click", () => {
+    void controller.clear();
   });
 
-  listContainer.addEventListener("click", async (e) => {
-    const button = e.target.closest("button.flag-button");
-    if (!button) return;
-    await applyCountryFilter(
-      button,
-      listContainer,
-      judokaList,
-      render,
-      toggleButton,
-      panel,
-      carouselEl,
-      updateLiveRegion
-    );
+  listContainer?.addEventListener?.("click", (event) => {
+    const button = resolvedAdapter.findButtonFromEvent?.(event.target) ?? null;
+    if (!button) {
+      return;
+    }
+    void controller.select(button);
   });
+
+  return controller;
 }
 
 export default setupCountryFilter;
