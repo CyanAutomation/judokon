@@ -7,9 +7,93 @@
  * @module tests/helpers/integrationHarness
  */
 
+import { pathToFileURL } from "node:url";
 import { vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import installRAFMock from "./rafMock.js";
+
+const REPO_ROOT_URL = new URL("../..", import.meta.url);
+const WINDOWS_DRIVE_PATH_PATTERN = /^[a-zA-Z]:[\\/]/;
+const URL_SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z\d+\-.]*:/;
+
+function resolveMockModuleSpecifier(modulePath) {
+  if (typeof modulePath !== "string") {
+    return modulePath;
+  }
+
+  if (WINDOWS_DRIVE_PATH_PATTERN.test(modulePath)) {
+    return pathToFileURL(modulePath).href;
+  }
+
+  if (modulePath.startsWith("/")) {
+    return pathToFileURL(modulePath).href;
+  }
+
+  if (looksLikeUrl(modulePath) || isBareModuleSpecifier(modulePath)) {
+    return modulePath;
+  }
+
+  const sanitizedPath = clampModulePath(modulePath);
+
+  if (!sanitizedPath) {
+    throw new Error(
+      `Unable to resolve mock module path "${modulePath}" relative to repository root.`
+    );
+  }
+
+  return new URL(sanitizedPath, REPO_ROOT_URL).href;
+}
+
+function clampModulePath(specifier) {
+  const parts = specifier.replace(/\\/g, "/").split("/");
+  const resolved = [];
+
+  for (const part of parts) {
+    if (!part || part === ".") {
+      continue;
+    }
+
+    if (part === "..") {
+      if (resolved.length > 0) {
+        resolved.pop();
+      }
+      continue;
+    }
+
+    resolved.push(part);
+  }
+
+  return resolved.join("/");
+}
+
+function looksLikeUrl(value) {
+  if (!URL_SCHEME_PATTERN.test(value)) {
+    return false;
+  }
+
+  const scheme = value.split(":", 1)[0];
+  return scheme.length > 1;
+}
+
+function isBareModuleSpecifier(specifier) {
+  if (!specifier) {
+    return false;
+  }
+
+  if (specifier.startsWith("@")) {
+    return !specifier.startsWith("@/");
+  }
+
+  if (specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("\\")) {
+    return false;
+  }
+
+  if (WINDOWS_DRIVE_PATH_PATTERN.test(specifier)) {
+    return false;
+  }
+
+  return !specifier.includes("/") && !specifier.includes("\\");
+}
 
 /**
  * Normalizes mock implementations for Vitest's factory contract.
@@ -112,7 +196,9 @@ export function createIntegrationHarness(config = {}) {
        */
       const mockFactory = createMockFactory(mockImpl);
 
-      mockRegistrar(modulePath, mockFactory);
+      const resolvedModulePath = resolveMockModuleSpecifier(modulePath);
+
+      mockRegistrar(resolvedModulePath, mockFactory);
     }
 
     // Inject fixtures into global scope or modules as needed
