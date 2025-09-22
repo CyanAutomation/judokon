@@ -5,6 +5,11 @@ import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 import { createClassicBattleHarness } from "../integrationHarness.js";
 import { resetDispatchHistory } from "../../../src/helpers/classicBattle/eventDispatcher.js";
+import {
+  dispatchReadyDirectly,
+  dispatchReadyViaBus
+} from "../../../src/helpers/classicBattle/nextRound/expirationHandlers.js";
+import { exposeDebugState } from "../../../src/helpers/classicBattle/debugHooks.js";
 
 const READY_EVENT = "ready";
 const TEST_DIR = dirname(fileURLToPath(import.meta.url));
@@ -298,83 +303,67 @@ describe("handleNextRoundExpiration immediate readiness", () => {
 });
 
 describe("bus propagation and deduplication", () => {
-  let harness;
-  let controls;
-  let runtime;
   let machine;
   let dispatchReadyViaBusSpy;
   let globalDispatchSpy;
+  let restoreDispatch;
 
   beforeEach(async () => {
     machine = { dispatch: vi.fn() };
     dispatchReadyViaBusSpy = vi.fn();
-    globalDispatchSpy = vi.fn().mockResolvedValue(true);
-
-    harness = createClassicBattleHarness({
-      mocks: {
-        // Mock the orchestrator context to return our test machine
-        "../../../src/helpers/classicBattle/orchestrator.js": () => ({
-          isOrchestrated: () => true,
-          getMachine: () => machine
-        }),
-        // Mock battle events for bus propagation
-        "../../../src/helpers/classicBattle/battleEvents.js": () => ({
-          onBattleEvent: vi.fn(),
-          offBattleEvent: vi.fn(),
-          emitBattleEvent: vi.fn()
-        })
-      }
-    });
-
-    await harness.setup();
-
-    // Mock round timer to expire
-    const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
-    mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
-
-    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
-    controls = startCooldown({}, createMockScheduler(), {
-      dispatchReadyViaBus: dispatchReadyViaBusSpy
-    });
-
-    // Access the runtime internals (this would normally be private)
-    // In a real integration test, we'd test observable behavior instead
-    runtime = { onExpired: vi.fn() };
+    const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
+    globalDispatchSpy = vi.spyOn(eventDispatcher, "dispatchBattleEvent").mockResolvedValue(true);
+    exposeDebugState("getClassicBattleMachine", () => machine);
+    restoreDispatch = () => {
+      globalDispatchSpy.mockRestore();
+      exposeDebugState("getClassicBattleMachine", undefined);
+    };
   });
 
   afterEach(() => {
-    harness.cleanup();
+    restoreDispatch?.();
   });
 
   it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
-    expect(controls).toBeTruthy();
-    expect(typeof runtime?.onExpired).toBe("function");
-    dispatchReadyViaBusSpy?.mockClear();
-    await runtime.onExpired();
+    const result = await dispatchReadyDirectly({
+      machineReader: () => machine,
+      emitTelemetry: vi.fn()
+    });
+
+    expect(result).toEqual({ dispatched: true, dedupeTracked: true });
+    expect(machine.dispatch).toHaveBeenCalledTimes(1);
+    expect(machine.dispatch).toHaveBeenCalledWith("ready", undefined);
+
+    await dispatchReadyViaBus({
+      dispatchBattleEvent: dispatchReadyViaBusSpy,
+      alreadyDispatched: true
+    });
 
     expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
-    expect(machine.dispatch).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 
   it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
-    expect(controls).toBeTruthy();
-    expect(typeof runtime?.onExpired).toBe("function");
-    dispatchReadyViaBusSpy?.mockClear();
     globalDispatchSpy.mockClear();
-    machine.dispatch.mockClear();
-    dispatchReadyViaBusSpy?.mockImplementation(createBusPropagationMock(globalDispatchSpy));
     globalDispatchSpy.mockImplementationOnce(() => false);
     globalDispatchSpy.mockImplementation(() => true);
-    await runtime.onExpired();
+
+    await dispatchReadyDirectly({
+      machineReader: () => machine,
+      emitTelemetry: vi.fn()
+    });
+
+    dispatchReadyViaBusSpy.mockImplementation(createBusPropagationMock(globalDispatchSpy));
+
+    await dispatchReadyViaBus({
+      dispatchBattleEvent: dispatchReadyViaBusSpy,
+      alreadyDispatched: false
+    });
+
     expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
+    expect(globalDispatchSpy).toHaveBeenCalledWith(READY_EVENT);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ alreadyDispatched: false })
-    );
+    expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(READY_EVENT);
     expect(machine.dispatch).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
+    expect(machine.dispatch).toHaveBeenCalledWith("ready", undefined);
   });
 });

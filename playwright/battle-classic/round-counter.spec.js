@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { selectWinningStat } from "../helpers/classicBattleActions.js";
 
 test.describe("Classic Battle round counter", () => {
   test("shows Round 1 after start and increments after Next", async ({ page }) => {
@@ -23,7 +24,7 @@ test.describe("Classic Battle round counter", () => {
 
       // Click a stat to resolve the round
       await page.waitForSelector("#stat-buttons button[data-stat]");
-      await page.click("#stat-buttons button[data-stat]");
+      await selectWinningStat(page);
 
       // Wait for cooldown to start and Next to be ready
       const next = page.locator("#next-button");
@@ -57,7 +58,7 @@ test.describe("Classic Battle round counter", () => {
       await expect(roundCounter).toHaveText(/Round\s*1/);
 
       await page.waitForSelector("#stat-buttons button[data-stat]");
-      await page.click("#stat-buttons button[data-stat]");
+      await selectWinningStat(page);
 
       const next = page.locator("#next-button");
       await expect(next).toBeEnabled();

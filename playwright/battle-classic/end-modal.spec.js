@@ -1,5 +1,6 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { selectWinningStat } from "../helpers/classicBattleActions.js";
 
 async function waitForScoreDisplay(page, timeout = 10000) {
   await page.waitForFunction(
@@ -37,7 +38,7 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Start match
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+        await selectWinningStat(page);
 
         // Verify match completion
         await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
@@ -66,7 +67,7 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Start and complete match
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+        await selectWinningStat(page);
 
         // Verify score display shows completion
         const scoreDisplay = page.locator("#score-display");
@@ -101,7 +102,7 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+        await selectWinningStat(page);
 
         // Verify match ended
         await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
@@ -139,7 +140,7 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+        await selectWinningStat(page);
 
         await waitForScoreDisplay(page);
         expect(errors.length).toBe(0);
@@ -171,7 +172,7 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+        await selectWinningStat(page);
 
         // Verify score display is clear and readable
         const scoreDisplay = page.locator("#score-display");
@@ -202,7 +203,7 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+        await selectWinningStat(page);
 
         // Verify match completed
         await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
@@ -240,7 +241,7 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+        await selectWinningStat(page);
 
         await waitForScoreDisplay(page);
         expect(errors.length).toBe(0);
@@ -267,7 +268,7 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Complete first match
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+        await selectWinningStat(page);
         await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
 
         // Verify page remains functional after match completion

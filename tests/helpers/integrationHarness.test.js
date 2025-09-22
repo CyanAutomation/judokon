@@ -1,6 +1,13 @@
+import { dirname, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
 import { describe, expect, it, vi } from "vitest";
 
 import { createIntegrationHarness, createMockFactory } from "./integrationHarness.js";
+
+const TEST_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(TEST_DIR, "..", "..");
+const toRepoPath = (specifier) => resolve(REPO_ROOT, specifier);
 
 describe("createMockFactory", () => {
   it("returns function mocks unchanged so they execute as factories", () => {
@@ -34,8 +41,14 @@ describe("createIntegrationHarness mocks", () => {
     await harness.setup();
     const calls = mockRegistrar.mock.calls.slice();
     harness.cleanup();
+    const resolvedUrl = pathToFileURL(toRepoPath("test/function-module")).href;
 
-    expect(calls).toContainEqual(["test/function-module", factoryMock]);
+    expect(calls).toEqual(
+      expect.arrayContaining([
+        [resolvedUrl, expect.any(Function)],
+        ["test/function-module", factoryMock]
+      ])
+    );
   });
 
   it("registers value mocks via generated factory wrappers", async () => {

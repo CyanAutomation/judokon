@@ -7,9 +7,60 @@
  * @module tests/helpers/integrationHarness
  */
 
+import { relative as relativePath, resolve as resolvePath } from "node:path";
+import { pathToFileURL } from "node:url";
+
 import { vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import installRAFMock from "./rafMock.js";
+
+const WINDOWS_ABSOLUTE_PATH_PATTERN = /^[a-zA-Z]:[\\/]/;
+const SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z+\-.]*:/;
+const REPOSITORY_ROOT_PATH = process.cwd();
+const REPOSITORY_ROOT_URL = new URL("./", pathToFileURL(REPOSITORY_ROOT_PATH));
+
+function hasScheme(specifier) {
+  if (WINDOWS_ABSOLUTE_PATH_PATTERN.test(specifier)) {
+    return false;
+  }
+  return SCHEME_PATTERN.test(specifier);
+}
+
+function resolveMockModuleSpecifier(modulePath) {
+  if (modulePath.startsWith("file://")) {
+    return new URL(modulePath).href;
+  }
+
+  if (hasScheme(modulePath)) {
+    return modulePath;
+  }
+
+  if (typeof import.meta.resolve === "function") {
+    try {
+      const resolvedSpecifier = import.meta.resolve(modulePath, REPOSITORY_ROOT_URL);
+      return resolvedSpecifier.startsWith("file://")
+        ? new URL(resolvedSpecifier).href
+        : resolvedSpecifier;
+    } catch (error) {
+      if (error && error.code !== "ERR_MODULE_NOT_FOUND") {
+        throw error;
+      }
+    }
+  }
+
+  let absolutePath = resolvePath(REPOSITORY_ROOT_PATH, modulePath);
+  const relativeFromRoot = relativePath(REPOSITORY_ROOT_PATH, absolutePath);
+  if (relativeFromRoot.startsWith("..")) {
+    const sanitizedPath = modulePath.replace(/^(?:\.\.[/\\])+/, "");
+    const candidatePath = resolvePath(REPOSITORY_ROOT_PATH, sanitizedPath);
+    const candidateRelative = relativePath(REPOSITORY_ROOT_PATH, candidatePath);
+    if (!candidateRelative.startsWith("..")) {
+      absolutePath = candidatePath;
+    }
+  }
+
+  return pathToFileURL(absolutePath).href;
+}
 
 /**
  * Normalizes mock implementations for Vitest's factory contract.
@@ -111,8 +162,35 @@ export function createIntegrationHarness(config = {}) {
        * non-function mocks are wrapped in a factory closure.
        */
       const mockFactory = createMockFactory(mockImpl);
+      const resolvedModuleSpecifier = resolveMockModuleSpecifier(modulePath);
 
-      mockRegistrar(modulePath, mockFactory);
+      const mergingFactory = async (...args) => {
+        const factoryResult = await mockFactory(...args);
+        if (
+          factoryResult &&
+          typeof factoryResult === "object" &&
+          resolvedModuleSpecifier.startsWith("file://")
+        ) {
+          try {
+            const actualModule = await import(resolvedModuleSpecifier);
+            const actualKeys = Object.keys(actualModule).filter((key) => key !== "default");
+            const providedKeys = Object.keys(factoryResult);
+            const hasMissingKeys = actualKeys.some((key) => !providedKeys.includes(key));
+            if (hasMissingKeys) {
+              return { ...actualModule, ...factoryResult };
+            }
+            return factoryResult;
+          } catch {
+            return factoryResult;
+          }
+        }
+        return factoryResult;
+      };
+
+      mockRegistrar(resolvedModuleSpecifier, mergingFactory);
+      if (resolvedModuleSpecifier !== modulePath) {
+        mockRegistrar(modulePath, mockFactory);
+      }
     }
 
     // Inject fixtures into global scope or modules as needed

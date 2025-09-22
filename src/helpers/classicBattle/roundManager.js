@@ -373,6 +373,11 @@ export function startCooldown(_store, scheduler, overrides = {}) {
   });
   startTimerWithDiagnostics(runtime, cooldownSeconds);
   scheduleCooldownFallbacks({ runtime, cooldownSeconds, onExpired });
+  safeRound(
+    "startCooldown.exposeRuntime",
+    () => exposeDebugState("currentNextRoundRuntime", runtime),
+    { suppressInProduction: true }
+  );
   const session = createNextRoundSession({
     controls,
     runtime,

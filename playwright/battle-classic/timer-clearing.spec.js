@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import selectors from "../../playwright/helpers/selectors";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { selectWinningStat } from "../helpers/classicBattleActions.js";
 
 test.describe("Classic Battle timer clearing", () => {
   test("score is updated immediately when stat selection is made", async ({ page }) => {
@@ -25,7 +26,7 @@ test.describe("Classic Battle timer clearing", () => {
       await expect(timerLocator).toHaveText(/Time Left: \d+s/);
 
       // Click stat button
-      await buttons.first().click();
+      await selectWinningStat(page);
 
       // Score should be updated
       const score = page.locator(selectors.scoreDisplay());

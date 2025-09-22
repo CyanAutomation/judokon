@@ -2,6 +2,15 @@ import { test, expect } from "@playwright/test";
 import selectors from "../helpers/selectors.js";
 import { readScoreboardRound } from "../helpers/roundCounter.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { selectWinningStat } from "../helpers/classicBattleActions.js";
+
+async function chooseStatByIndex(page, index) {
+  const statKey = await page.evaluate((idx) => {
+    const buttons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    return buttons[idx]?.getAttribute("data-stat") || null;
+  }, index);
+  await selectWinningStat(page, { statKey: statKey ?? undefined });
+}
 
 test.describe("Classic Battle Opponent Reveal", () => {
   test.describe("Basic Opponent Reveal Functionality", () => {
@@ -28,8 +37,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         });
 
         // Click the first stat (player 0)
-        const firstStat = page.locator(selectors.statButton(0)).first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         // Expect the snackbar to show opponent choosing soon
         const snack = page.locator(selectors.snackbarContainer());
@@ -60,8 +68,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           setOpponentDelay(1);
         });
 
-        const firstStat = page.locator(selectors.statButton(0)).first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         // Should still show opponent choosing briefly
         const snackbar = page.locator(selectors.snackbarContainer());
@@ -118,8 +125,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         });
 
         // First round
-        const firstStat = page.locator(selectors.statButton(0)).first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         // Verify battle flow continues (snackbar shows various states)
 
@@ -217,8 +223,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         });
 
         // Second round should work the same way
-        const secondStat = page.locator(selectors.statButton(0)).nth(1);
-        await secondStat.click();
+        await chooseStatByIndex(page, 1);
 
         // Should resolve second round
         await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
@@ -243,8 +248,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           setOpponentDelay(10);
         });
 
-        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         // Should still show message briefly
         const snackbar = page.locator(selectors.snackbarContainer());
@@ -271,8 +275,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           setOpponentDelay(500);
         });
 
-        const firstStat = page.locator(selectors.statButton(0)).first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         // Should show message for longer period
         const snackbar = page.locator(selectors.snackbarContainer());
@@ -302,7 +305,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         // Click multiple stats rapidly
         const stats = page.locator("#stat-buttons button[data-stat]");
-        await stats.first().click();
+        await chooseStatByIndex(page, 0);
         await stats.nth(1).click(); // Should be ignored
 
         // Should still resolve properly despite rapid clicks
@@ -325,8 +328,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           setOpponentDelay(200);
         });
 
-        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         // Navigate away during opponent reveal
         await page.goto("/index.html");
@@ -360,8 +362,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           setOpponentDelay(50);
         });
 
-        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         // Should still resolve even without snackbar
         await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
@@ -387,8 +388,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         });
 
         // First round
-        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         // Wait for first round to complete
         await expect(page.locator("#next-button")).toBeEnabled();
@@ -399,8 +399,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           .poll(() => readScoreboardRound(page.locator("#round-counter")))
           .toBeGreaterThanOrEqual(2);
 
-        const secondStat = page.locator("#stat-buttons button[data-stat]").nth(1);
-        await secondStat.click();
+        await chooseStatByIndex(page, 1);
 
         // Should resolve second round
         await expect(page.locator("#score-display")).toContainText(/You:\s*\d/);
@@ -428,8 +427,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           setOpponentDelay(50);
         });
 
-        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
-        await firstStat.click();
+        await selectWinningStat(page);
 
         const snackbar = page.locator("#snackbar-container");
         await expect(snackbar).toContainText(/Opponent is choosing/i);
