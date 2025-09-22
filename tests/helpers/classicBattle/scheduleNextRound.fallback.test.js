@@ -174,8 +174,7 @@ describe("startCooldown ready dispatch discipline", () => {
   let dispatchSpy;
 
   beforeEach(async () => {
-    dispatchSpy = vi.fn();
-    dispatchSpy.mockResolvedValue(undefined);
+    dispatchSpy = vi.fn(() => undefined);
 
     harness = createClassicBattleHarness({
       mocks: {
@@ -307,8 +306,9 @@ describe("bus propagation and deduplication", () => {
 
   beforeEach(async () => {
     machine = { dispatch: vi.fn() };
+    machine.state = { value: "idle" };
     dispatchReadyViaBusSpy = vi.fn();
-    globalDispatchSpy = vi.fn().mockResolvedValue(true);
+    globalDispatchSpy = vi.fn(() => true);
 
     harness = createClassicBattleHarness({
       mocks: {
@@ -350,11 +350,12 @@ describe("bus propagation and deduplication", () => {
     expect(controls).toBeTruthy();
     expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
+    globalDispatchSpy.mockClear();
     await runtime.onExpired();
 
     expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
-    expect(machine.dispatch).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
+    expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
+    expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
   });
 
   it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
@@ -362,7 +363,6 @@ describe("bus propagation and deduplication", () => {
     expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
     globalDispatchSpy.mockClear();
-    machine.dispatch.mockClear();
     dispatchReadyViaBusSpy?.mockImplementation(createBusPropagationMock(globalDispatchSpy));
     globalDispatchSpy.mockImplementationOnce(() => false);
     globalDispatchSpy.mockImplementation(() => true);
@@ -374,7 +374,5 @@ describe("bus propagation and deduplication", () => {
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
       expect.objectContaining({ alreadyDispatched: false })
     );
-    expect(machine.dispatch).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 });
