@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createIntegrationHarness, createMockFactory } from "./integrationHarness.js";
 
+const REPO_ROOT_URL = new URL("../..", import.meta.url);
+
 describe("createMockFactory", () => {
   it("returns function mocks unchanged so they execute as factories", () => {
     const factoryMock = vi.fn();
@@ -35,7 +37,12 @@ describe("createIntegrationHarness mocks", () => {
     const calls = mockRegistrar.mock.calls.slice();
     harness.cleanup();
 
-    expect(calls).toContainEqual(["test/function-module", factoryMock]);
+    const expectedModuleSpecifier = new URL(
+      "test/function-module",
+      REPO_ROOT_URL
+    ).href;
+
+    expect(calls).toContainEqual([expectedModuleSpecifier, factoryMock]);
   });
 
   it("registers value mocks via generated factory wrappers", async () => {
@@ -52,8 +59,12 @@ describe("createIntegrationHarness mocks", () => {
     });
 
     await harness.setup();
+    const expectedModuleSpecifier = new URL(
+      "test/value-module",
+      REPO_ROOT_URL
+    ).href;
     const [, factory] = mockRegistrar.mock.calls.find(
-      ([modulePath]) => modulePath === "test/value-module"
+      ([modulePath]) => modulePath === expectedModuleSpecifier
     );
     harness.cleanup();
 
