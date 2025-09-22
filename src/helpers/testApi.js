@@ -192,6 +192,83 @@ const stateApi = {
 
       check();
     });
+  },
+
+  /**
+   * Simulate an external script reverting the round counter display.
+   *
+   * @param {{
+   *   round?: number|null,
+   *   text?: string|null,
+   *   highestRound?: number|null
+   * }} [options]
+   * @returns {{
+   *   success: boolean,
+   *   previousText: string|null,
+   *   previousHighest: string|null,
+   *   appliedText: string|null,
+   *   appliedHighest: string|null,
+   *   reason?: string
+   * }} Snapshot describing the interference effect.
+   */
+  simulateRoundCounterInterference(options = {}) {
+    const { round = null, text = null, highestRound = null } = options || {};
+
+    try {
+      const counter = document.getElementById("round-counter");
+      if (!counter) {
+        return {
+          success: false,
+          previousText: null,
+          previousHighest: null,
+          appliedText: null,
+          appliedHighest: null,
+          reason: "round-counter-missing"
+        };
+      }
+
+      const previousText = String(counter.textContent ?? "");
+      const previousHighest = counter.dataset?.highestRound ?? null;
+
+      let appliedText = null;
+      if (typeof text === "string") {
+        appliedText = text;
+      } else if (Number.isFinite(Number(round)) && Number(round) > 0) {
+        appliedText = `Round ${Number(round)}`;
+      }
+
+      if (appliedText !== null) {
+        counter.textContent = appliedText;
+      }
+
+      let appliedHighest = null;
+      const numericHighest = Number(highestRound);
+      if (Number.isFinite(numericHighest) && numericHighest > 0) {
+        appliedHighest = String(numericHighest);
+        if (counter.dataset) {
+          counter.dataset.highestRound = appliedHighest;
+        }
+      } else if (counter.dataset && "highestRound" in counter.dataset) {
+        delete counter.dataset.highestRound;
+      }
+
+      return {
+        success: true,
+        previousText,
+        previousHighest,
+        appliedText,
+        appliedHighest
+      };
+    } catch (error) {
+      return {
+        success: false,
+        previousText: null,
+        previousHighest: null,
+        appliedText: null,
+        appliedHighest: null,
+        reason: error instanceof Error ? error.message : String(error)
+      };
+    }
   }
 };
 
