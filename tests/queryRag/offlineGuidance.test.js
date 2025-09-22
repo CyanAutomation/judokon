@@ -40,8 +40,18 @@ describe("getExtractor offline guidance", () => {
       env: { allowLocalModels: false, localModelPath: "", backends: { onnx: { wasm: {} } } }
     }));
     const statMock = vi.fn(async (path) => {
-      if (String(path).includes("ort-wasm")) {
+      const pathStr = String(path);
+      if (pathStr.includes("ort-wasm")) {
         return { size: 1024 };
+      }
+      if (pathStr.includes("config.json")) {
+        return { size: 50 };
+      }
+      if (pathStr.includes("tokenizer.json")) {
+        return { size: 100 };
+      }
+      if (pathStr.includes("model_quantized.onnx")) {
+        return { size: 500 };
       }
       return { size: 10 };
     });

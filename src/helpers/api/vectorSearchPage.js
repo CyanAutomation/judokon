@@ -119,57 +119,65 @@ export async function getExtractor() {
         const strictOffline = process?.env?.RAG_STRICT_OFFLINE === "1";
 
         const assetDescriptors = [
-          { label: "config.json", path: resolve(modelDirAbs, "config.json"), minBytes: 200 },
-          { label: "tokenizer.json", path: resolve(modelDirAbs, "tokenizer.json"), minBytes: 1024 },
+          { label: "config.json", path: resolve(modelDirAbs, "config.json"), minBytes: 50 },
+          { label: "tokenizer.json", path: resolve(modelDirAbs, "tokenizer.json"), minBytes: 500 },
           {
             label: "tokenizer_config.json",
             path: resolve(modelDirAbs, "tokenizer_config.json"),
-            minBytes: 200
+            minBytes: 50
           },
           {
             label: "onnx/model_quantized.onnx",
             path: resolve(modelDirAbs, "onnx/model_quantized.onnx"),
-            minBytes: 1_000_000
+            minBytes: 500_000
           }
         ];
 
-        const assetStats = await Promise.all(
+        const assetChecks = await Promise.allSettled(
           assetDescriptors.map(async (asset) => {
-            try {
-              const info = await stat(asset.path);
-              return { asset, info };
-            } catch (error) {
-              return { asset, error };
-            }
+            const info = await stat(asset.path);
+            return { asset, info };
           })
         );
 
-        const placeholderAssets = assetStats.filter(
-          ({ asset, info, error }) =>
-            !error && typeof asset.minBytes === "number" && info.size < asset.minBytes
-        );
+        const missingAssets = [];
+        const placeholderAssets = [];
 
-        if (placeholderAssets.length > 0) {
+        for (const [index, result] of assetChecks.entries()) {
+          const descriptor = assetDescriptors[index];
+          if (result.status === "rejected") {
+            missingAssets.push({ asset: descriptor, error: result.reason });
+            continue;
+          }
+
+          const { info } = result.value;
+          if (
+            typeof descriptor.minBytes === "number" &&
+            typeof info?.size === "number" &&
+            info.size < descriptor.minBytes
+          ) {
+            placeholderAssets.push({ asset: descriptor, info });
+          }
+        }
+
+        if (missingAssets.length > 0) {
+          if (strictOffline) {
+            throw new Error(STRICT_OFFLINE_MESSAGE);
+          }
+          const details = missingAssets.map(({ asset }) => asset.label).join(", ");
+          console.warn(
+            `RAG: Local MiniLM assets missing (${details}); falling back to Xenova/all-MiniLM-L6-v2 from CDN. ${HYDRATION_GUIDANCE_MESSAGE}`
+          );
+          extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+            quantized: true
+          });
+        } else if (placeholderAssets.length > 0) {
           if (strictOffline) {
             throw new Error(STRICT_OFFLINE_MESSAGE);
           }
           const details = placeholderAssets.map(({ asset }) => asset.label).join(", ");
           const placeholderError = new Error(`MiniLM assets appear to be placeholders: ${details}`);
           throw createHydrationGuidanceError(placeholderError);
-        }
-
-        const missingAssets = assetStats.filter(({ error }) => error);
-
-        if (missingAssets.length > 0) {
-          if (strictOffline) {
-            throw new Error(STRICT_OFFLINE_MESSAGE);
-          }
-          console.warn(
-            "RAG: Local model not found or failed to load; falling back to Xenova/all-MiniLM-L6-v2 from CDN."
-          );
-          extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
-            quantized: true
-          });
         } else {
           extractor = await pipeline("feature-extraction", modelDirAbs, { quantized: true });
           console.log("RAG: Successfully loaded local MiniLM model.");
