@@ -347,6 +347,33 @@ const timerApi = {
   },
 
   /**
+   * Override the simulated opponent resolution delay used by the battle engine.
+   * @param {number|null|undefined} delayMs - Delay in milliseconds (reset when nullish)
+   * @returns {boolean} True when the delay override is applied
+   */
+  setOpponentResolveDelay(delayMs) {
+    try {
+      if (typeof window === "undefined") return false;
+
+      if (delayMs === null || delayMs === undefined) {
+        try {
+          delete window.__OPPONENT_RESOLVE_DELAY_MS;
+        } catch {
+          window.__OPPONENT_RESOLVE_DELAY_MS = 0;
+        }
+        return true;
+      }
+
+      const numeric = Number(delayMs);
+      const normalized = Number.isFinite(numeric) && numeric >= 0 ? numeric : 0;
+      window.__OPPONENT_RESOLVE_DELAY_MS = normalized;
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  /**
    * Clear all active timers
    */
   clearAllTimers() {
