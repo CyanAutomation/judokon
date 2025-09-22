@@ -186,3 +186,39 @@ Await user approval of this implementation plan before proceeding with changes.
 - No syntax errors introduced in HTML modifications
 
 **Next:** Awaiting user review before proceeding to Phase 2: JavaScript Cleanup
+
+## Phase 2: JavaScript Cleanup - COMPLETED ✅
+
+**Actions Taken:**
+
+- **Removed navigation imports** from `src/helpers/classicBattle/view.js` (removed `setupBottomNavbar.js` import)
+- **Removed navigation mocks** from `tests/helpers/classicBattle/controlState.test.js` (removed `setupBottomNavbar.js` mock)
+- **Deleted navigation files:**
+  - `src/helpers/setupBottomNavbar.js`
+  - `src/helpers/navigationBar.js`
+  - `src/helpers/navigation/` directory (containing `navData.js`, `navigationUI.js`, `navigationService.js`, `navMenu.js`)
+- **Deleted navigation test files:**
+  - `tests/helpers/setupBottomNavbar.test.js`
+  - `tests/helpers/bottomNavigation.test.js`
+  - `tests/helpers/navMenuResponsive.test.js`
+  - `tests/helpers/buildMenu.ssr.test.js`
+- **Preserved navTooltipKey function** by moving it to `src/helpers/navigationService.js` (kept only this function, removed others)
+- **Updated imports** to point to new `navigationService.js` location:
+  - `src/helpers/settings/gameModeSwitches.js`
+  - `tests/helpers/settingsFormUtils.test.js`
+  - `tests/helpers/navigationTooltips.test.js`
+- **Changed tooltip IDs** from `nav.*` to `mode.*` in settings switches to use existing mode tooltips
+- **Updated tests** to expect `mode.*` tooltip IDs instead of `nav.*`
+- **Updated navigationTooltips.test.js** to check for `mode.*` tooltips instead of `nav.*`
+
+**Outcomes:**
+
+- ✅ All navigation-related JavaScript files and directories removed
+- ✅ All navigation-related test files removed
+- ✅ navTooltipKey function preserved and relocated
+- ✅ Settings switches now use `mode.*` tooltips instead of `nav.*`
+- ✅ All imports updated to work with new file locations
+- ✅ No broken imports or references to deleted files
+- ✅ Core functionality (navTooltipKey for settings) preserved
+
+**Next:** Awaiting user review before proceeding to Phase 3: CSS Cleanup

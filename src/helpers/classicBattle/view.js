@@ -3,7 +3,6 @@ import setupScheduler from "./setupScheduler.js";
 import setupUIBindings from "./setupUIBindings.js";
 import setupDebugHooks from "./setupDebugHooks.js";
 import { getOrientation } from "../orientation.js";
-import "../setupBottomNavbar.js";
 import "../setupDisplaySettings.js";
 import "../setupSvgFallback.js";
 import "../setupClassicBattleHomeLink.js";

@@ -356,7 +356,6 @@ export async function dispatchReadyViaBus(options = {}) {
     }
     try {
       if (typeof process !== "undefined" && process.env?.VITEST) {
-        // eslint-disable-next-line no-console
         console.error("[TEST] dispatchReadyViaBus candidates:", {
           candidate: typeof candidate,
           global: typeof current
@@ -415,7 +414,6 @@ export async function dispatchReadyWithOptions(params) {
   try {
     try {
       if (typeof process !== "undefined" && process.env?.VITEST) {
-        // eslint-disable-next-line no-console
         console.error("[TEST] dispatchReadyWithOptions calling provided dispatcher", {
           name: dispatchBattleEvent?.name,
           isMock: !!dispatchBattleEvent?.mock

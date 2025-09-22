@@ -51,7 +51,6 @@ vi.mock("../../../src/helpers/battleStateProgress.js", () => ({
   initBattleStateProgress: vi.fn().mockResolvedValue(null)
 }));
 vi.mock("../../../src/helpers/tooltip.js", () => ({ initTooltips: vi.fn().mockResolvedValue() }));
-vi.mock("../../../src/helpers/setupBottomNavbar.js", () => ({}));
 vi.mock("../../../src/helpers/setupDisplaySettings.js", () => ({}));
 vi.mock("../../../src/helpers/setupSvgFallback.js", () => ({}));
 
