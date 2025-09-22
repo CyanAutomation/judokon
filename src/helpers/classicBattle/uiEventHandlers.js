@@ -49,26 +49,25 @@ export function bindUIHelperEventHandlersDynamic() {
       scoreboard.clearTimer?.();
     } catch {}
     try {
-      const opts = (e && e.detail && e.detail.opts) || {};
+      const detail = (e && e.detail) || {};
+      const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
+      if (!hasOpts) {
+        return;
+      }
+
+      const opts = detail.opts || {};
       // If the caller requests a delayed opponent message, schedule it
       // after the configured opponent delay. Otherwise show it immediately.
       if (opts.delayOpponentMessage) {
         const delay = Number(getOpponentDelay());
-        if (!Number.isFinite(delay) || delay <= 0) {
-          clearOpponentSnackbarTimeout();
+        const resolvedDelay = Number.isFinite(delay) && delay > 0 ? delay : 0;
+        clearOpponentSnackbarTimeout();
+        opponentSnackbarId = setTimeout(() => {
           try {
             showSnackbar(t("ui.opponentChoosing"));
             markOpponentPromptNow();
           } catch {}
-        } else {
-          clearOpponentSnackbarTimeout();
-          opponentSnackbarId = setTimeout(() => {
-            try {
-              showSnackbar(t("ui.opponentChoosing"));
-              markOpponentPromptNow();
-            } catch {}
-          }, delay);
-        }
+        }, resolvedDelay);
       } else {
         clearOpponentSnackbarTimeout();
         // Cancel any pending delay to ensure the immediate snackbar wins.
