@@ -60,22 +60,28 @@ Progress status (current)
 - Reproduced failing tests and collected outputs. (Done)
 - Converted `expirationHandlers.js` to use runtime dispatcher lookup and added debug logs. (Done)
 - Determined that failures persist; suspected module-specifier mismatch or other static captures remain. (In progress)
+- **Specifier alignment analysis completed**: Found mismatch between test mock specifier ("../../../src/helpers/classicBattle/eventDispatcher.js") and production import specifiers (mostly "./eventDispatcher.js" or "../eventDispatcher.js"). Proposed fix: update test mock to use absolute path "/src/helpers/classicBattle/eventDispatcher.js" to ensure mocking applies to all imports.
 
 Planned next steps
 ------------------
 
 1. Verify mock vs import specifier alignment (highest priority):
 
-- List every test-level mock registration for the event dispatcher and every production import of the event dispatcher, and check for differing specifiers.
-- If mismatched, either update the tests to mock the canonical module specifier the production code uses, or update the harness to register mocks by canonical resolved file URL.
+- **Completed**: Listed all test mocks and production imports. Found that test mocks use relative paths from test directory, while production uses relative from src. Mismatch likely prevents mocking from applying to production imports.
+- **Proposed fix**: Change mock specifier in failing test to absolute path "/src/helpers/classicBattle/eventDispatcher.js" to match the pattern used in `testHooks.js` and ensure it overrides all imports to that module.
 
-2. Search for remaining static captures:
+2. Implement specifier fix and re-run tests:
+
+- Update `tests/helpers/classicBattle/scheduleNextRound.fallback.test.js` to use absolute mock specifier.
+- Re-run the failing test file to check if spies are now called.
+
+3. Search for remaining static captures:
 
 - Find files that read and store `dispatchBattleEvent` at import time; convert them to runtime lookup (similar to `getGlobalDispatch()`), or update tests accordingly.
 
-3. Re-run the failing test file with the debug logs enabled and capture console output from the runtime getter to confirm which function is being resolved at each call site (mock vs original function).
+4. Re-run the failing test file with the debug logs enabled and capture console output from the runtime getter to confirm which function is being resolved at each call site (mock vs original function).
 
-4. Implement minimal fixes based on findings and re-run the affected tests until green.
+5. Implement minimal fixes based on findings and re-run the affected tests until green.
 
 Notes and assumptions
 ---------------------

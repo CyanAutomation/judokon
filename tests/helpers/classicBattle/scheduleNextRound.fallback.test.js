@@ -12,6 +12,9 @@ const REPO_ROOT = resolve(TEST_DIR, "../../..");
 const ROUND_MANAGER_MODULE = pathToFileURL(
   resolve(REPO_ROOT, "src/helpers/classicBattle/roundManager.js")
 ).href;
+const EVENT_DISPATCHER_MODULE = pathToFileURL(
+  resolve(REPO_ROOT, "src/helpers/classicBattle/eventDispatcher.js")
+).href;
 
 /**
  * Create a dispatcher mock that replays candidate dispatchers before falling
@@ -98,7 +101,7 @@ describe("startCooldown fallback timer", () => {
           computeNextRoundCooldown: () => 0
         }),
         // Mock eventDispatcher to return true for dispatchBattleEvent
-        "../../../src/helpers/classicBattle/eventDispatcher.js": () => ({
+        [EVENT_DISPATCHER_MODULE]: () => ({
           dispatchBattleEvent: dispatchSpy,
           resetDispatchHistory: vi.fn()
         }),
