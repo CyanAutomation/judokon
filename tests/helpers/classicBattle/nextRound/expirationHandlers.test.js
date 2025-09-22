@@ -301,6 +301,20 @@ describe("runReadyDispatchStrategies", () => {
     expect(calls).toEqual(["machine", "bus"]);
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
   });
+
+  it("does not report success when only fallback dispatches", async () => {
+    const emit = vi.fn();
+    const fallbackDispatcher = vi.fn(() => true);
+    const result = await runReadyDispatchStrategies({
+      strategies: [() => false],
+      emitTelemetry: emit,
+      fallback: { dispatcher: fallbackDispatcher }
+    });
+    expect(result).toBe(false);
+    expect(fallbackDispatcher).toHaveBeenCalledWith("ready");
+    expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchFallback", true);
+    expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", false);
+  });
 });
 
 describe("updateExpirationUi", () => {
