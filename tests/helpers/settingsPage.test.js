@@ -126,10 +126,6 @@ describe("renderSettingsControls", () => {
       updateNavigationItemHidden,
       loadNavigationItems: vi.fn()
     }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
-    }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       getTooltips: vi.fn().mockResolvedValue({}),
       initTooltips: vi.fn().mockResolvedValue(() => {})
@@ -155,15 +151,10 @@ describe("renderSettingsControls", () => {
 
   it("persists feature flag changes", async () => {
     const updateSetting = vi.fn().mockResolvedValue(baseSettings);
-    const showSnackbar = vi.fn();
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({
       updateSetting,
       loadSettings: vi.fn(),
       resetSettings: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar,
-      updateSnackbar: vi.fn()
     }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       getTooltips: vi.fn().mockResolvedValue({}),
