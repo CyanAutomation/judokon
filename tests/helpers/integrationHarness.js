@@ -16,6 +16,22 @@ const REPO_ROOT_URL = new URL("../..", import.meta.url);
 const WINDOWS_DRIVE_PATH_PATTERN = /^[a-zA-Z]:[\\/]/;
 const URL_SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z\d+\-.]*:/;
 
+/**
+ * Resolves mock module specifiers to repository-rooted URLs for consistent mock registration.
+ *
+ * @pseudocode
+ * ```
+ * if modulePath is not string: return as-is
+ * if modulePath is Windows drive path: convert to file URL
+ * if modulePath is absolute path: convert to file URL
+ * if modulePath looks like URL or is bare: return as-is
+ * sanitize relative path and resolve against repository root
+ * ```
+ *
+ * @param {string|*} modulePath - Module path specifier to resolve.
+ * @returns {string|*} Resolved module specifier as URL or original value.
+ * @throws {Error} When the sanitized relative path is empty or unsafe.
+ */
 function resolveMockModuleSpecifier(modulePath) {
   if (typeof modulePath !== "string") {
     return modulePath;
@@ -37,7 +53,9 @@ function resolveMockModuleSpecifier(modulePath) {
 
   if (!sanitizedPath) {
     throw new Error(
-      `Unable to resolve mock module path "${modulePath}" relative to repository root.`
+      `Unable to resolve mock module path "${modulePath}" relative to repository root. ` +
+        `Expected formats: relative paths (e.g., "src/module.js"), bare specifiers (e.g., "lodash"), ` +
+        `or absolute URLs (e.g., "https://example.com/module.js").`
     );
   }
 
@@ -63,7 +81,13 @@ function clampModulePath(specifier) {
     resolved.push(part);
   }
 
-  return resolved.join("/");
+  const result = resolved.join("/");
+
+  if (result.includes("..") || result.startsWith("/")) {
+    throw new Error(`Invalid module path after normalization: "${result}"`);
+  }
+
+  return result;
 }
 
 function looksLikeUrl(value) {
@@ -71,8 +95,12 @@ function looksLikeUrl(value) {
     return false;
   }
 
-  const scheme = value.split(":", 1)[0];
-  return scheme.length > 1;
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function isBareModuleSpecifier(specifier) {
@@ -80,11 +108,21 @@ function isBareModuleSpecifier(specifier) {
     return false;
   }
 
-  if (specifier.startsWith("@")) {
-    return !specifier.startsWith("@/");
+  if (specifier === "." || specifier === "..") {
+    return false;
   }
 
-  if (specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("\\")) {
+  if (specifier.startsWith("@")) {
+    const slashIndex = specifier.indexOf("/");
+    return slashIndex > 1 && slashIndex < specifier.length - 1;
+  }
+
+  if (
+    specifier.startsWith("./") ||
+    specifier.startsWith("../") ||
+    specifier.startsWith("/") ||
+    specifier.startsWith("\\")
+  ) {
     return false;
   }
 
@@ -92,7 +130,11 @@ function isBareModuleSpecifier(specifier) {
     return false;
   }
 
-  return !specifier.includes("/") && !specifier.includes("\\");
+  if (specifier.includes("\\")) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
