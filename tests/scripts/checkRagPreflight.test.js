@@ -5,6 +5,7 @@ import { withMutedConsole } from "../utils/console.js";
 describe("checkRagPreflight", () => {
   it("passes when offline artifacts consistent and strict offline disabled", async () => {
     // Mock fs to simulate consistent artifacts
+    vi.resetModules();
     vi.doMock("node:fs/promises", () => ({
       readFile: vi.fn(async (p) => {
         const pathStr = String(p);
@@ -14,7 +15,16 @@ describe("checkRagPreflight", () => {
         // vectors.bin length must be vectorLength * count = 6 bytes
         return Buffer.from([1, 2, 3, 4, 5, 6]);
       }),
-      stat: vi.fn(async () => ({ size: 1 }))
+      stat: vi.fn(async (p) => {
+        const pathStr = String(p);
+        if (pathStr.includes("models") && pathStr.includes("minilm")) {
+          if (pathStr.endsWith("model_quantized.onnx")) {
+            return { size: 600 * 1024 };
+          }
+          return { size: 5_000 };
+        }
+        return { size: 1 };
+      })
     }));
 
     const mod = await import("../../scripts/checkRagPreflight.mjs");
@@ -24,6 +34,7 @@ describe("checkRagPreflight", () => {
   });
 
   it("reports missing model files when strict offline is enabled", async () => {
+    vi.resetModules();
     vi.doMock("node:fs/promises", () => ({
       readFile: vi.fn(async (p) => {
         if (String(p).endsWith("offline_rag_metadata.json")) {
@@ -48,6 +59,7 @@ describe("checkRagPreflight", () => {
   });
 
   it("warns when model files missing and strict offline disabled", async () => {
+    vi.resetModules();
     vi.doMock("node:fs/promises", () => ({
       readFile: vi.fn(async () => Buffer.from([1])),
       stat: vi.fn(async (p) => {
@@ -72,5 +84,29 @@ describe("checkRagPreflight", () => {
     expect(warnSpy.mock.calls[0][0]).toMatch(
       /npm run rag:prepare:models -- --from-dir \/path\/to\/minilm/
     );
+  });
+
+  it("fails when local MiniLM artifacts appear truncated", async () => {
+    vi.resetModules();
+    vi.doMock("node:fs/promises", () => ({
+      readFile: vi.fn(async () => Buffer.from([1])),
+      stat: vi.fn(async (p) => {
+        const s = String(p);
+        if (s.includes("models") && s.includes("minilm")) {
+          return { size: 10 };
+        }
+        return { size: 1 };
+      })
+    }));
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const mod = await import("../../scripts/checkRagPreflight.mjs");
+
+    const res = await withMutedConsole(async () => mod.checkStrictOfflineModel({}), ["error"]);
+
+    expect(res.ok).toBe(false);
+    expect(res.errors[0]).toMatch(/appears truncated/);
+    expect(res.errors[0]).toMatch(/npm run rag:prepare:models -- --from-dir \/path\/to\/minilm/);
+    expect(warnSpy).toHaveBeenCalled();
   });
 });

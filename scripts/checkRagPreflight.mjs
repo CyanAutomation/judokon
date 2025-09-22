@@ -13,30 +13,74 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.join(rootDir, "src");
 
-const REQUIRED_MODEL_FILES = [
-  "config.json",
-  "tokenizer.json",
-  "tokenizer_config.json",
-  path.join("onnx", "model_quantized.onnx")
+const MODEL_FILE_THRESHOLDS = [
+  { relPath: "config.json", minBytes: 400 },
+  { relPath: "tokenizer.json", minBytes: 1_000 },
+  { relPath: "tokenizer_config.json", minBytes: 400 },
+  { relPath: path.join("onnx", "model_quantized.onnx"), minBytes: 300 * 1024 }
 ];
 
-async function fileExistsNonEmpty(p) {
-  try {
-    const s = await stat(p);
-    return s.size > 0;
-  } catch {
-    return false;
-  }
+const MODEL_PREP_COMMAND = "npm run rag:prepare:models -- --from-dir /path/to/minilm";
+
+function formatBytes(bytes) {
+  return `${bytes}B`;
 }
 
 export async function checkStrictOfflineModel(env = process.env) {
   const strict = env?.RAG_STRICT_OFFLINE === "1";
   const modelDir = path.join(srcDir, "models", "minilm");
   const missing = [];
-  for (const rel of REQUIRED_MODEL_FILES) {
-    const full = path.join(modelDir, rel);
-    const ok = await fileExistsNonEmpty(full);
-    if (!ok) missing.push(path.relative(rootDir, full));
+  const undersized = [];
+  const statFailures = [];
+
+  for (const { relPath, minBytes } of MODEL_FILE_THRESHOLDS) {
+    const full = path.join(modelDir, relPath);
+    try {
+      const s = await stat(full);
+      if (typeof s.size !== "number" || Number.isNaN(s.size)) {
+        const rel = path.relative(rootDir, full);
+        statFailures.push(`Failed to stat ${rel}: invalid size returned`);
+        continue;
+      }
+
+      if (s.size < minBytes) {
+        undersized.push({
+          relPath: path.relative(rootDir, full),
+          size: s.size,
+          minBytes
+        });
+      }
+    } catch (error) {
+      const rel = path.relative(rootDir, full);
+      if (error && (error.code === "ENOENT" || error.code === "ENOTDIR")) {
+        missing.push(rel);
+      } else {
+        statFailures.push(`Failed to stat ${rel}: ${error?.message ?? "unknown error"}`);
+      }
+    }
+  }
+
+  if (undersized.length > 0 || statFailures.length > 0) {
+    const guidance = `Run "${MODEL_PREP_COMMAND}" to download MiniLM model artifacts.`;
+    const truncatedErrors = undersized.map(
+      ({ relPath, size, minBytes }) =>
+        `${strict ? "Strict offline: " : ""}Model file appears truncated: ${relPath} (${formatBytes(
+          size
+        )} < ${formatBytes(minBytes)}).`
+    );
+    const failureMessages = [...truncatedErrors, ...statFailures];
+
+    if (!strict) {
+      const warnLines = [
+        ...failureMessages.map((m) => m.replace(/^Strict offline: /, "")),
+        guidance
+      ];
+      console.warn(warnLines.join("\n"));
+    }
+
+    const errorsWithGuidance = failureMessages.map((msg) => `${msg} ${guidance}`);
+
+    return { ok: false, errors: errorsWithGuidance };
   }
 
   if (missing.length === 0) {
@@ -52,7 +96,7 @@ export async function checkStrictOfflineModel(env = process.env) {
 
   console.warn(
     `Offline model files missing (${missing.join(", ")}). ` +
-      'Run "npm run rag:prepare:models -- --from-dir /path/to/minilm" or enable RAG_STRICT_OFFLINE=1.'
+      `Run "${MODEL_PREP_COMMAND}" or enable RAG_STRICT_OFFLINE=1 to skip offline validation.`
   );
 
   return { ok: true, errors: [] };
