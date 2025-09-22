@@ -7,7 +7,7 @@
  * 3. Show an error message if initialization fails.
  */
 import { resetSettings } from "./settingsStorage.js";
-import { loadNavigationItems } from "./gameModeUtils.js";
+import { loadGameModes } from "./gameModeUtils.js";
 import { showSettingsError } from "./showSettingsError.js";
 import { applyDisplayMode } from "./displayMode.js";
 import { withViewTransition } from "./viewTransition.js";
@@ -216,7 +216,7 @@ export async function fetchSettingsData() {
   try {
     const [settings, gameModes, tooltipMap] = await Promise.all([
       initFeatureFlags(),
-      loadNavigationItems(),
+      loadGameModes(),
       getTooltips()
     ]);
     return { settings, gameModes, tooltipMap };

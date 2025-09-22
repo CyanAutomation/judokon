@@ -237,4 +237,31 @@ Await user approval of this implementation plan before proceeding with changes.
 - ✅ Battle-specific navigation behavior (opacity reduction) removed
 - ✅ Layout remains functional without bottom navigation styling
 
-**Next:** Awaiting user review before proceeding to Phase 4: Data Cleanup
+## Phase 4: Data Cleanup - COMPLETED ✅
+
+**Actions Taken:**
+
+- **Deleted navigation data file:** Removed `/workspaces/judokon/src/data/navigationItems.js`
+- **Deleted navigation schema file:** Removed `/workspaces/judokon/src/schemas/navigationItems.schema.json`
+- **Removed navigation functions from gameModeUtils.js:**
+  - Removed `import navigationItems from "../data/navigationItems.js"`
+  - Removed `import { load as loadNavCache, save as saveNavCache } from "./navigationCache.js"`
+  - Removed `loadNavigationItems()` function
+  - Removed `getGameModeById()` function
+  - Removed `validateGameModeUrl()` function
+  - Removed `updateNavigationItemHidden()` function
+- **Deleted navigationCache.js:** Removed `/workspaces/judokon/src/helpers/navigationCache.js`
+- **Updated settingsPage.js:**
+  - Changed import from `loadNavigationItems` to `loadGameModes`
+  - Updated `fetchSettingsData()` to use `loadGameModes()` instead of `loadNavigationItems()`
+
+**Outcomes:**
+
+- ✅ All navigation data files and schemas removed
+- ✅ Navigation-related functions removed from gameModeUtils.js
+- ✅ navigationCache.js file deleted
+- ✅ Settings page updated to use game modes directly instead of merged navigation items
+- ✅ No remaining references to navigationItems or navigationCache in source code
+- ✅ Core functionality preserved (settings still loads game modes for toggles)
+
+**Next:** Awaiting user review before proceeding to Phase 5: Test Updates
