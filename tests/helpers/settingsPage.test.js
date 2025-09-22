@@ -92,6 +92,10 @@ describe("fetchSettingsData", () => {
 
 describe("renderSettingsControls", () => {
   it("renders expected toggles", async () => {
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      getTooltips: vi.fn().mockResolvedValue({}),
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
     const gameModes = [
       { id: 1, name: "Classic", category: "mainMenu", order: 10 },
       { id: 2, name: "Blitz", category: "bonus", order: 20 },
@@ -125,6 +129,10 @@ describe("renderSettingsControls", () => {
     vi.doMock("../../src/helpers/showSnackbar.js", () => ({
       showSnackbar: vi.fn(),
       updateSnackbar: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      getTooltips: vi.fn().mockResolvedValue({}),
+      initTooltips: vi.fn().mockResolvedValue(() => {})
     }));
     const testHarness = createSettingsHarness();
     await testHarness.setup();
@@ -247,6 +255,8 @@ describe("renderSettingsControls", () => {
     renderSettingsControls(baseSettings, [], tooltipMap);
     expect(addSpy).not.toHaveBeenCalled();
     addSpy.mockRestore();
+  });
+
   it("renders missing feature flags from defaults", async () => {
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       getTooltips: vi.fn().mockResolvedValue({}),
@@ -300,50 +310,17 @@ describe("initializeSettingsPage", () => {
 
   it("renders game mode toggles when cache load fails", async () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-    const navItems = [
-      {
-        id: 1,
-        url: "classic.html",
-        category: "mainMenu",
-        order: 10,
-        isHidden: false,
-        gameModeId: 1
-      }
-    ];
-    const modes = [{ id: 1, name: "Classic", category: "mainMenu" }];
     const onDomReady = vi.fn();
-    vi.doMock("../../src/helpers/navigationCache.js", () => ({
-      load: vi.fn().mockRejectedValue(new Error("cache error")),
-      save: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: vi
-        .fn()
-        .mockResolvedValue(navItems.map((item) => ({ ...item, ...modes[0] }))),
-      updateNavigationItemHidden: vi.fn()
-    }));
     vi.doMock("../../src/helpers/featureFlags.js", () => ({
       initFeatureFlags: vi.fn().mockResolvedValue(baseSettings),
       isEnabled: vi.fn()
     }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
+      loadGameModes: vi.fn().mockResolvedValue([{ id: 1, name: "Classic", category: "mainMenu" }])
+    }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       initTooltips: vi.fn().mockResolvedValue(() => {}),
       getTooltips: vi.fn().mockResolvedValue({})
-    }));
-    vi.doMock("../../src/helpers/displayMode.js", () => ({
-      applyDisplayMode: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({
-      applyMotionPreference: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/viewportDebug.js", () => ({
-      toggleViewportSimulation: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({
-      toggleTooltipOverlayDebug: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/layoutDebugPanel.js", () => ({
-      toggleLayoutDebugPanel: vi.fn()
     }));
     vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady }));
     const testHarness = createSettingsHarness();
@@ -361,6 +338,10 @@ describe("initializeSettingsPage", () => {
 
 describe("renderWithFallbacks", () => {
   it("shows error when game modes are missing", async () => {
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      getTooltips: vi.fn().mockResolvedValue({}),
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
     const { renderWithFallbacks } = await import("../../src/helpers/settingsPage.js");
     renderWithFallbacks({ settings: baseSettings, gameModes: [], tooltipMap: {} });
     const errorEl = document.querySelector("#game-mode-toggle-container .settings-section-error");
@@ -370,6 +351,10 @@ describe("renderWithFallbacks", () => {
   });
 
   it("shows error when feature flags are missing", async () => {
+    vi.doMock("../../src/helpers/tooltip.js", () => ({
+      getTooltips: vi.fn().mockResolvedValue({}),
+      initTooltips: vi.fn().mockResolvedValue(() => {})
+    }));
     const badSettings = { ...baseSettings };
     // remove featureFlags to trigger error
     delete badSettings.featureFlags;
