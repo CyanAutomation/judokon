@@ -145,9 +145,12 @@ export async function loadNavigationItems() {
     const cached = await navigationCache.load();
     if (Array.isArray(cached)) {
       navItems = cloneNavigationItems(cached);
+    } else {
+      navItems = null;
     }
   } catch (error) {
     console.error("Failed to load navigationItems from cache:", error);
+    navItems = null;
   }
 
   if (!navItems) {
