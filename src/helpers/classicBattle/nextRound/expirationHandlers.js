@@ -626,7 +626,7 @@ export async function dispatchReadyDirectly(params) {
  * @param {(type: string) => any} [params.fallback.dispatcher]
  * @param {boolean} [params.fallback.useGlobal]
  *   When `true`, invoke the shared global dispatcher after strategies fail.
- * @returns {Promise<boolean>}
+ * @returns {Promise<{ dispatched: boolean, fallbackDispatched: boolean }>}
  */
 export async function runReadyDispatchStrategies(params = {}) {
   const { alreadyDispatchedReady = false, strategies = [], emitTelemetry, fallback = {} } = params;
@@ -639,9 +639,10 @@ export async function runReadyDispatchStrategies(params = {}) {
   };
   if (alreadyDispatchedReady) {
     emitResult(true);
-    return true;
+    return { dispatched: true, fallbackDispatched: false };
   }
   let dispatched = false;
+  let fallbackDispatched = false;
   const interpretResult = (value) => {
     if (value && typeof value === "object" && value !== null && !Array.isArray(value)) {
       const hasDispatchedProp = "dispatched" in value;
@@ -672,12 +673,11 @@ export async function runReadyDispatchStrategies(params = {}) {
         });
         if (!propagate) {
           emitResult(true);
-          return true;
+          return { dispatched: true, fallbackDispatched: false };
         }
       }
     } catch {}
   }
-  let fallbackDispatched = false;
   let fallbackAttempted = false;
   const invokeFallbackDispatcher = async (dispatcher) => {
     if (typeof dispatcher !== "function") {
@@ -720,7 +720,7 @@ export async function runReadyDispatchStrategies(params = {}) {
     emitTelemetry?.("handleNextRoundDispatchFallback", fallbackDispatched);
   }
   emitResult(dispatched);
-  return dispatched;
+  return { dispatched, fallbackDispatched };
 }
 
 /**

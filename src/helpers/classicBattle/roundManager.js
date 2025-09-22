@@ -826,7 +826,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     getDebugBag,
     orchestrated
   });
-  const dispatched = await runReadyDispatchStrategies({
+  const { dispatched, fallbackDispatched } = await runReadyDispatchStrategies({
     alreadyDispatchedReady:
       options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown(),
     strategies,
@@ -836,8 +836,10 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       useGlobal: options?.useGlobalReadyFallback === true
     }
   });
-  if (dispatched) {
+  if (dispatched || fallbackDispatched) {
     setReadyDispatchedForCurrentCooldown(true);
+  }
+  if (dispatched) {
     safeRound(
       "handleNextRoundExpiration.traceDispatched",
       () => appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true }),
