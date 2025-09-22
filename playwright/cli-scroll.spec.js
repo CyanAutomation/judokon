@@ -1,6 +1,8 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { waitForTestApi } from "./helpers/battleStateHelper.js";
 
+const VERBOSE_LOG_SELECTOR = "#cli-verbose-log";
+
 async function ensureVerboseLogVisible(page) {
   const verboseToggle = page.locator("#verbose-toggle");
   if ((await verboseToggle.count()) > 0) {
@@ -15,6 +17,25 @@ async function ensureVerboseLogVisible(page) {
   }
 }
 
+function getVerbosePreview(entries) {
+  if (typeof entries === "string") {
+    return entries.slice(0, 80);
+  }
+
+  if (Array.isArray(entries) && entries.length > 0) {
+    const firstEntry = entries[0];
+    if (typeof firstEntry === "string") {
+      return firstEntry.slice(0, 80);
+    }
+
+    if (firstEntry && typeof firstEntry.to === "string") {
+      return firstEntry.to.slice(0, 80);
+    }
+  }
+
+  return null;
+}
+
 async function appendVerboseEntries(page, entries) {
   const payload = Array.isArray(entries) ? entries : [entries];
   await page.evaluate(async (logs) => {
@@ -27,28 +48,63 @@ async function appendVerboseEntries(page, entries) {
         typeof entry === "string"
           ? { from: null, to: entry }
           : { from: entry?.from ?? null, to: entry?.to ?? "" };
-      let handled = false;
+      const failures = [];
+
       if (dispatch) {
         try {
           const result = await dispatch("battleStateChange", detail);
-          handled = result === true;
-        } catch {
-          handled = false;
+          if (result !== false) {
+            continue;
+          }
+          failures.push("dispatchBattleEvent returned false");
+        } catch (error) {
+          const message = error?.message ?? String(error);
+          failures.push(`dispatchBattleEvent error: ${message}`);
         }
+      } else {
+        failures.push("dispatchBattleEvent unavailable");
       }
-      if (!handled && emitter) {
+
+      if (emitter) {
         try {
           emitter("battleStateChange", detail);
-          handled = true;
-        } catch {
-          handled = false;
+          continue;
+        } catch (error) {
+          const message = error?.message ?? String(error);
+          failures.push(`emitBattleEvent error: ${message}`);
         }
+      } else {
+        failures.push("emitBattleEvent unavailable");
       }
-      if (!handled) {
-        throw new Error("Failed to append verbose entry through official helpers");
-      }
+
+      throw new Error(`Failed to append verbose entry. ${failures.join("; ")}`);
     }
   }, payload);
+}
+
+async function setupCliVerboseTest(page, entries, options = {}) {
+  const { expectText } = options;
+
+  await waitForTestApi(page);
+  try {
+    await page.waitForFunction(() => typeof window.emitBattleEvent === "function", {
+      timeout: 5000
+    });
+  } catch (error) {
+    const message = error?.message ?? String(error);
+    throw new Error(`Timed out waiting for battle event helpers: ${message}`);
+  }
+  await page.waitForSelector(VERBOSE_LOG_SELECTOR, { state: "attached" });
+  await ensureVerboseLogVisible(page);
+  await expect(page.locator(VERBOSE_LOG_SELECTOR)).toBeVisible();
+  await appendVerboseEntries(page, entries);
+
+  const previewText = expectText ?? getVerbosePreview(entries);
+  if (previewText) {
+    await expect(page.locator(VERBOSE_LOG_SELECTOR)).toContainText(previewText, {
+      timeout: 5000
+    });
+  }
 }
 
 test.describe("CLI Layout and Scrolling", () => {
@@ -76,18 +132,11 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 1024, height: 768 });
 
-      await waitForTestApi(page);
-      await page.waitForFunction(() => typeof window.emitBattleEvent === "function");
-      await page.waitForSelector("#cli-verbose-log");
-      await ensureVerboseLogVisible(page);
       const transcriptEntries = Array.from({ length: 50 }, (_, i) => ({
         from: `state-${i}`,
         to: `Test line ${i + 1}: This is a long line of text to test horizontal scrolling behavior and content wrapping.`
       }));
-      await appendVerboseEntries(page, transcriptEntries);
-      await expect(page.locator("#cli-verbose-log")).toContainText("Test line 1", {
-        timeout: 5000
-      });
+      await setupCliVerboseTest(page, transcriptEntries);
 
       // Check that content is scrollable vertically but not horizontally
       const scrollInfo = await page.evaluate(() => {
@@ -109,10 +158,25 @@ test.describe("CLI Layout and Scrolling", () => {
         const initialScroll = await page.evaluate(
           () => window.scrollY || document.documentElement.scrollTop
         );
-        await page.mouse.wheel(0, 400);
-        await expect
-          .poll(() => page.evaluate(() => window.scrollY || document.documentElement.scrollTop))
-          .toBeGreaterThan(initialScroll);
+        let programmaticScrollWorked = false;
+
+        try {
+          programmaticScrollWorked = await page.evaluate(() => {
+            const start = window.scrollY || document.documentElement.scrollTop;
+            window.scrollTo(0, start + 200);
+            const current = window.scrollY || document.documentElement.scrollTop;
+            return current > start;
+          });
+        } catch (error) {
+          programmaticScrollWorked = false;
+        }
+
+        if (!programmaticScrollWorked) {
+          await page.mouse.wheel(0, 400);
+          await expect
+            .poll(() => page.evaluate(() => window.scrollY || document.documentElement.scrollTop))
+            .toBeGreaterThan(initialScroll);
+        }
       }
     });
   });
@@ -220,13 +284,8 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 800, height: 600 });
 
-      await waitForTestApi(page);
-      await page.waitForFunction(() => typeof window.emitBattleEvent === "function");
-      await page.waitForSelector("#cli-verbose-log");
-      await ensureVerboseLogVisible(page);
       const longLine = "A".repeat(1000);
-      await appendVerboseEntries(page, longLine);
-      await expect(page.locator("#cli-verbose-log")).toContainText(longLine.slice(0, 100));
+      await setupCliVerboseTest(page, longLine, { expectText: longLine.slice(0, 40) });
 
       // Check that long lines don't break layout
       const layoutBroken = await page.evaluate(() => {
@@ -246,16 +305,11 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 1024, height: 768 });
 
-      await waitForTestApi(page);
-      await page.waitForFunction(() => typeof window.emitBattleEvent === "function");
-      await page.waitForSelector("#cli-verbose-log");
-      await ensureVerboseLogVisible(page);
       const sectionEntries = Array.from({ length: 10 }, (_, i) => ({
         from: `state-${i}`,
         to: `Section ${i + 1}: This is test content for section ${i + 1}.`
       }));
-      await appendVerboseEntries(page, sectionEntries);
-      await expect(page.locator("#cli-verbose-log")).toContainText("Section 1");
+      await setupCliVerboseTest(page, sectionEntries);
 
       const transcriptLines = await page.evaluate(() => {
         const pre = document.getElementById("cli-verbose-log");

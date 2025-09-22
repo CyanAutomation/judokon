@@ -25,6 +25,9 @@ test.describe("View Judoka screen", () => {
     await expect(btn).toHaveText(/draw card/i);
     await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
 
+    // Wait for the draw operation to fully settle before the next interaction.
+    await expect(btn).not.toHaveAttribute("aria-busy");
+
     await btn.click();
     await expect(btn).toHaveText(/drawing/i);
     await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
