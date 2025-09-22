@@ -20,12 +20,32 @@ import { vi } from "vitest";
 export function useCanonicalTimers() {
   vi.useFakeTimers();
 
-  return {
-    cleanup: () => vi.useRealTimers(),
+  const timers = {
+    cleanup: () => {
+      vi.useRealTimers();
+      if (typeof globalThis !== "undefined") {
+        if (globalThis.timer === timers) {
+          delete globalThis.timer;
+        }
+        if (globalThis.timers === timers) {
+          delete globalThis.timers;
+        }
+      }
+    },
+    runAllTimers: () => vi.runAllTimers(),
     runAllTimersAsync: () => vi.runAllTimersAsync(),
+    advanceTimersByTime: (ms) => vi.advanceTimersByTime(ms),
     advanceTimersByTimeAsync: (ms) => vi.advanceTimersByTimeAsync(ms),
+    runOnlyPendingTimers: () => vi.runOnlyPendingTimers(),
     runOnlyPendingTimersAsync: () => vi.runOnlyPendingTimersAsync()
   };
+
+  if (typeof globalThis !== "undefined") {
+    globalThis.timer = timers;
+    globalThis.timers = timers;
+  }
+
+  return timers;
 }
 
 /**
