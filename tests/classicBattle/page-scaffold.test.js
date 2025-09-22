@@ -1041,8 +1041,8 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     const roundEnded = engineMock.listeners.get("roundEnded");
     roundEnded?.({ playerScore: 4, opponentScore: 1 });
 
-  // Ensure any RAF-scheduled UI updates have run
-  currentEnv.testController.advanceFrame();
+    // Ensure any RAF-scheduled UI updates have run
+    currentEnv.testController.advanceFrame();
 
     expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBeGreaterThan(initialRoundCalls);
     expect(scoreboardMock.updateScore.mock.calls.length).toBeGreaterThan(initialScoreCalls);

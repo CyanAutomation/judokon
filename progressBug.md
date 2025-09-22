@@ -435,13 +435,14 @@ Hypotheses / next experiments:
 Immediate next action (planned):
 
 1. Mark debugging todo (in the plan) as in-progress and run targeted experiments on `page-scaffold.test.js`:
-  - Advance multiple frames after `roundEnded`.
-  - Await a microtask tick before/after advancing frames.
-  - Log scoreboard mock call details and event emission timing to inspect ordering.
+
+- Advance multiple frames after `roundEnded`.
+- Await a microtask tick before/after advancing frames.
+- Log scoreboard mock call details and event emission timing to inspect ordering.
+
 2. If the issue stems from module mock rebinding, adjust the test harness to ensure `bridgeengineevents()` binds to the mocked engine facade used by the test spies.
 
 Once the failing test is fixed, resume migrating remaining tests that still use the legacy RAF helper and update this document with outcomes.
-
 
 ---
 
