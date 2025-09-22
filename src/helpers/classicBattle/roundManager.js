@@ -830,7 +830,9 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     alreadyDispatchedReady:
       options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown(),
     strategies,
-    emitTelemetry
+    emitTelemetry,
+    fallbackDispatcher: options?.dispatchBattleEvent,
+    useGlobalFallback: options?.useGlobalReadyFallback === true
   });
   if (dispatched) {
     setReadyDispatchedForCurrentCooldown(true);
