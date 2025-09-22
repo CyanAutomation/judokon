@@ -356,19 +356,23 @@ const timerApi = {
       if (typeof window === "undefined") return false;
 
       if (delayMs === null || delayMs === undefined) {
-        try {
+        if (Object.prototype.hasOwnProperty.call(window, "__OPPONENT_RESOLVE_DELAY_MS")) {
           delete window.__OPPONENT_RESOLVE_DELAY_MS;
-        } catch {
-          window.__OPPONENT_RESOLVE_DELAY_MS = 0;
         }
         return true;
       }
 
       const numeric = Number(delayMs);
-      const normalized = Number.isFinite(numeric) && numeric >= 0 ? numeric : 0;
-      window.__OPPONENT_RESOLVE_DELAY_MS = normalized;
+      if (!Number.isFinite(numeric) || numeric < 0) {
+        throw new Error(`Invalid delay value: ${delayMs}. Must be a non-negative finite number.`);
+      }
+
+      window.__OPPONENT_RESOLVE_DELAY_MS = numeric;
       return true;
-    } catch {
+    } catch (error) {
+      if (isDevelopmentEnvironment()) {
+        logDevWarning("Failed to set opponent resolve delay", error);
+      }
       return false;
     }
   },

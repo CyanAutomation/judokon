@@ -4,21 +4,29 @@ import { waitForBattleReady, waitForBattleState } from "../helpers/battleStateHe
 import { withMutedConsole } from "../../tests/utils/console.js";
 
 async function setOpponentResolveDelay(page, delayMs) {
-  const applied = await page.evaluate((value) => {
+  const result = await page.evaluate((value) => {
     const timerApi = window.__TEST_API?.timers;
     if (!timerApi || typeof timerApi.setOpponentResolveDelay !== "function") {
-      return null;
+      return { success: false, error: "API_UNAVAILABLE" };
     }
-    return timerApi.setOpponentResolveDelay(value);
+
+    try {
+      const applied = timerApi.setOpponentResolveDelay(value);
+      return { success: applied === true, error: null };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
   }, delayMs);
 
-  if (applied === null) {
-    throw new Error(
-      "Test API setOpponentResolveDelay unavailable - ensure test environment is properly initialized"
-    );
+  if (!result.success) {
+    const errorMsg =
+      result.error === "API_UNAVAILABLE"
+        ? "Test API setOpponentResolveDelay unavailable - ensure test environment is properly initialized"
+        : `Failed to set opponent resolve delay: ${result.error}`;
+    throw new Error(errorMsg);
   }
 
-  expect(applied).toBe(true);
+  expect(result.success).toBe(true);
 }
 
 async function getBattleSnapshot(page) {
@@ -34,43 +42,27 @@ async function getBattleSnapshot(page) {
     const store = inspectApi.getBattleStore?.();
     const debug = inspectApi.getDebugInfo?.() ?? null;
 
-    const roundsFromStore =
-      store && store.roundsPlayed !== undefined ? toNumber(store.roundsPlayed) : null;
-    const fallbackRounds =
-      debug?.store?.roundsPlayed !== undefined ? toNumber(debug.store.roundsPlayed) : null;
-
-    const selectionFromStore =
-      typeof store?.selectionMade === "boolean"
-        ? store.selectionMade
-        : typeof debug?.store?.selectionMade === "boolean"
-          ? debug.store.selectionMade
-          : null;
-
-    const playerScore =
-      store && store.playerScore !== undefined
-        ? toNumber(store.playerScore)
-        : debug?.store?.playerScore !== undefined
-          ? toNumber(debug.store.playerScore)
-          : null;
-
-    const opponentScore =
-      store && store.opponentScore !== undefined
-        ? toNumber(store.opponentScore)
-        : debug?.store?.opponentScore !== undefined
-          ? toNumber(debug.store.opponentScore)
-          : null;
+    const extractValue = (key, transform = (v) => v) => {
+      if (store && store[key] !== undefined) {
+        return transform(store[key]);
+      }
+      if (debug?.store?.[key] !== undefined) {
+        return transform(debug.store[key]);
+      }
+      return null;
+    };
 
     return {
-      roundsPlayed: roundsFromStore ?? fallbackRounds,
-      selectionMade: selectionFromStore,
-      playerScore,
-      opponentScore
+      roundsPlayed: extractValue("roundsPlayed", toNumber),
+      selectionMade: extractValue("selectionMade"),
+      playerScore: extractValue("playerScore", toNumber),
+      opponentScore: extractValue("opponentScore", toNumber)
     };
   });
 }
 
 async function waitForRoundsPlayed(page, minRounds, options = {}) {
-  const { timeout = 5000 } = options;
+  const { timeout = 5000, pollInterval = 50 } = options;
 
   await page.waitForFunction(
     ({ target }) => {
@@ -91,7 +83,7 @@ async function waitForRoundsPlayed(page, minRounds, options = {}) {
       }
     },
     { target: minRounds },
-    { timeout }
+    { timeout, polling: pollInterval }
   );
 }
 
@@ -426,14 +418,16 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await startMatch(page, "#round-select-1");
         await setOpponentResolveDelay(page, 50);
 
-        let attempts = 0;
-        while (attempts < 3) {
+        const maxAttempts = 3;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
           const stats = page.locator(selectors.statButton(0));
-          if ((await stats.count()) <= attempts) {
+          const statCount = await stats.count();
+
+          if (statCount <= attempt) {
             break;
           }
 
-          const stat = stats.nth(attempts);
+          const stat = stats.nth(attempt);
           await expect(stat).toBeVisible();
           await stat.click();
 
@@ -444,8 +438,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           await waitForRoundsPlayed(page, 1);
           await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
-          attempts += 1;
-          if (attempts < 3) {
+          if (attempt < maxAttempts - 1) {
             await page.reload();
             await startMatch(page, "#round-select-1");
             await setOpponentResolveDelay(page, 50);

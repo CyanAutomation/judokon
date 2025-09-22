@@ -15,15 +15,20 @@ import { vi } from "vitest";
  * Setup canonical fake timers with automatic teardown.
  * Use this instead of calling vi.useFakeTimers() directly.
  *
+ * @param {{ exposeGlobally?: boolean }} [options]
  * @returns {Object} Timer control object with cleanup method
  */
-export function useCanonicalTimers() {
+export function useCanonicalTimers(options = {}) {
+  const { exposeGlobally = false } = options;
   vi.useFakeTimers();
 
   const timers = {
     cleanup: () => {
       vi.useRealTimers();
-      if (typeof globalThis !== "undefined") {
+      if (exposeGlobally && typeof globalThis !== "undefined") {
+        if (globalThis.__JUDOKON_TIMERS === timers) {
+          delete globalThis.__JUDOKON_TIMERS;
+        }
         if (globalThis.timer === timers) {
           delete globalThis.timer;
         }
@@ -40,7 +45,8 @@ export function useCanonicalTimers() {
     runOnlyPendingTimersAsync: () => vi.runOnlyPendingTimersAsync()
   };
 
-  if (typeof globalThis !== "undefined") {
+  if (exposeGlobally && typeof globalThis !== "undefined") {
+    globalThis.__JUDOKON_TIMERS = timers;
     globalThis.timer = timers;
     globalThis.timers = timers;
   }
