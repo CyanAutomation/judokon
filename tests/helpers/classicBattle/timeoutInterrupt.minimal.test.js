@@ -91,4 +91,74 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
       timersControl?.cleanup?.();
     } catch {}
   });
+
+  it("auto-advances after timeout", async () => {
+    const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
+      "../../../src/helpers/classicBattle/orchestrator.js"
+    );
+    const { onBattleEvent, offBattleEvent } = await import(
+      "../../../src/helpers/classicBattle/battleEvents.js"
+    );
+    const store = { selectionMade: false, playerChoice: null };
+    await initClassicBattleOrchestrator(store, undefined, {});
+    const machine = getBattleStateMachine();
+
+    const transitions = [];
+    const recordTransition = (event) => {
+      if (event?.detail) transitions.push(event.detail);
+    };
+    onBattleEvent("battleStateChange", recordTransition);
+
+    try {
+      await machine.dispatch("matchStart");
+      await machine.dispatch("ready");
+      await machine.dispatch("ready");
+      await machine.dispatch("cardsRevealed");
+
+      await machine.dispatch("interruptRound");
+
+      const { dispatchBattleEvent } = await import(
+        "../../../src/helpers/classicBattle/eventDispatcher.js"
+      );
+      const readyCallsBeforeAdvance = dispatchBattleEvent.mock.calls.filter(
+        ([eventName]) => eventName === "ready"
+      );
+      expect(readyCallsBeforeAdvance).toHaveLength(0);
+
+      const transitionCheckpoint = transitions.length;
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      const readyCallsAfterAdvance = dispatchBattleEvent.mock.calls.filter(
+        ([eventName]) => eventName === "ready"
+      );
+      expect(readyCallsAfterAdvance).toHaveLength(1);
+      expect(readyDispatchTracker.events).toHaveLength(1);
+      expect(readyDispatchTracker.events[0]?.[0]).toBe("ready");
+      expect(readyDispatchTracker.events[0]).toEqual(["ready"]);
+
+      const readyDispatchesDuringAdvance =
+        readyCallsAfterAdvance.length - readyCallsBeforeAdvance.length;
+      expect(readyDispatchesDuringAdvance).toBe(1);
+      expect(readyCallsAfterAdvance).toEqual(readyDispatchTracker.events);
+
+      await vi.runOnlyPendingTimersAsync();
+      const readyCallsAfterFlushing = dispatchBattleEvent.mock.calls.filter(
+        ([eventName]) => eventName === "ready"
+      );
+      expect(readyCallsAfterFlushing).toEqual(readyDispatchTracker.events);
+
+      const recentTransitions = transitions.slice(transitionCheckpoint);
+      expect(recentTransitions).toEqual([
+        expect.objectContaining({ from: "cooldown", to: "roundStart", event: "ready" }),
+        expect.objectContaining({
+          from: "roundStart",
+          to: "waitingForPlayerAction",
+          event: "cardsRevealed"
+        })
+      ]);
+    } finally {
+      offBattleEvent("battleStateChange", recordTransition);
+    }
+  }, 10000);
 });
