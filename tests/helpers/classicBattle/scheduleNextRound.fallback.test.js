@@ -109,10 +109,13 @@ describe("startCooldown fallback timer", () => {
           resetDispatchHistory: vi.fn()
         }),
         // Mock debugHooks to return null for readDebugState
-        "../../../src/helpers/classicBattle/debugHooks.js": () => ({
-          readDebugState: vi.fn(() => null),
-          exposeDebugState: vi.fn()
-        }),
+        "../../../src/helpers/classicBattle/debugHooks.js": () => {
+          const debugHooksMock = {
+            readDebugState: vi.fn(() => null),
+            exposeDebugState: vi.fn()
+          };
+          return { ...debugHooksMock, default: debugHooksMock };
+        },
         // Mock debugPanel to avoid slow updateDebugPanel
         "../../../src/helpers/classicBattle/debugPanel.js": () => ({
           updateDebugPanel: vi.fn()
@@ -130,7 +133,6 @@ describe("startCooldown fallback timer", () => {
     // Mock the round timer to not expire for fallback testing
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
-    resetDispatchHistory();
   });
 
   afterEach(() => {
@@ -344,10 +346,21 @@ describe("bus propagation and deduplication", () => {
   it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
     dispatchReadyViaBusSpy?.mockClear();
     globalDispatchSpy.mockClear();
-    await expirationHandlersModule.dispatchReadyDirectly({ machineReader: () => machine });
-    expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
+    const directResult = await expirationHandlersModule.dispatchReadyDirectly({
+      machineReader: () => machine
+    });
+    const busResult = await expirationHandlersModule.dispatchReadyViaBus({
+      dispatchBattleEvent: globalDispatchSpy,
+      alreadyDispatched: directResult.dispatched && directResult.dedupeTracked
+    });
+    expect(busResult).toBe(true);
+    expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ alreadyDispatched: true })
+    );
     expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
     expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
+    expect(directResult).toEqual({ dispatched: true, dedupeTracked: true });
   });
 
   it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
@@ -356,14 +369,21 @@ describe("bus propagation and deduplication", () => {
     dispatchReadyViaBusSpy?.mockImplementation(createBusPropagationMock(globalDispatchSpy));
     globalDispatchSpy.mockImplementationOnce(() => false);
     globalDispatchSpy.mockImplementation(() => true);
-    await expirationHandlersModule.dispatchReadyDirectly({ machineReader: () => machine });
-    await expirationHandlersModule.dispatchReadyViaBus({ dispatchBattleEvent: globalDispatchSpy });
+    const directResult = await expirationHandlersModule.dispatchReadyDirectly({
+      machineReader: () => machine
+    });
+    const busResult = await expirationHandlersModule.dispatchReadyViaBus({
+      dispatchBattleEvent: globalDispatchSpy,
+      alreadyDispatched: directResult.dispatched && directResult.dedupeTracked
+    });
+    expect(busResult).toBe(true);
     expect(globalDispatchSpy).toHaveBeenCalledTimes(2);
     expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
     expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ dispatchBattleEvent: globalDispatchSpy })
+      expect.objectContaining({ dispatchBattleEvent: globalDispatchSpy, alreadyDispatched: false })
     );
+    expect(directResult).toEqual({ dispatched: true, dedupeTracked: false });
   });
 });

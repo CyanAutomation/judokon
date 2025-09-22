@@ -7,21 +7,14 @@
  * @module tests/helpers/integrationHarness
  */
 
-import { sep as PATH_SEPARATOR } from "node:path";
 import { pathToFileURL } from "node:url";
 import { vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import installRAFMock from "./rafMock.js";
 
-const REPO_ROOT_URL = pathToFileURL(
-  `${process.cwd()}${process.cwd().endsWith(PATH_SEPARATOR) ? "" : PATH_SEPARATOR}`
-);
+const REPO_ROOT_URL = new URL("../..", import.meta.url);
 const WINDOWS_DRIVE_PATH_PATTERN = /^[a-zA-Z]:[\\/]/;
 const URL_SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z\d+\-.]*:/;
-
-const CLASSIC_BATTLE_SNACKBAR_MODULE = resolveMockModuleSpecifier(
-  "../../../src/helpers/showSnackbar.js"
-);
 
 /**
  * Resolves mock module specifiers to repository-rooted URLs for consistent mock registration.
@@ -143,6 +136,10 @@ function isBareModuleSpecifier(specifier) {
 
   return true;
 }
+
+const CLASSIC_BATTLE_SNACKBAR_MODULE = resolveMockModuleSpecifier(
+  "../../../src/helpers/showSnackbar.js"
+);
 
 /**
  * Normalizes mock implementations for Vitest's factory contract.
