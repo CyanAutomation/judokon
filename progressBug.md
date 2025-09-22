@@ -37,7 +37,7 @@
 - `tests/helpers/components/` factories (Modal, Scoreboard, StatsPanel, Button, Card) & tests: ✅ Present.
 - `tests/helpers/listenerUtils.js` & tests: ✅ Present with withListenerSpy, expectListenerAttached, wrapAddEventListener.
 - `tests/helpers/integrationHarness.js`: ✅ Present (Phase 0 of Item 6).
-- `src/helpers/classicBattle/roundStore.js`: ✅ Present (Phases 0-2 of Item 7 completed; Phase 3 outstanding).
+- `src/helpers/classicBattle/roundStore.js`: ✅ Present (Item 7 fully completed - all phases 0-3 done).
 - Items 8-9: Not started.
 - All unit tests for helpers pass (based on file presence and structure).
 
@@ -275,6 +275,7 @@ Phases:
 - Phase 3 — Deprecate legacy paths & cleanup (1–2 weeks)
   - Remove legacy round-management code after confidence window.
   - Acceptance: Clean codebase and updated docs.
+  - **COMPLETED**: Enabled RoundStore by default in settings.json, removed legacy event binding code from scoreboardAdapter.js, simplified implementation to always use RoundStore, removed feature flag checks from roundStore.js, selectionHandler.js, and roundManager.js, cleaned up unused imports, updated tests to reflect RoundStore-only behavior. All roundStore tests (22/22) pass, full test suite passes with no regressions, lint passes.
 
 Verification: Add integration tests exercising round transitions via the store; run full test suite with flag on/off to compare parity.
 

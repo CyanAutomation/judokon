@@ -71,7 +71,7 @@
       "tooltipId": "settings.opponentDelayMessage"
     },
     "roundStore": {
-      "enabled": false,
+      "enabled": true,
       "tooltipId": "settings.roundStore"
     }
   }

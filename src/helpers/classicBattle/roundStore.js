@@ -12,7 +12,6 @@
  */
 
 import { emitBattleEvent } from "./battleEvents.js";
-import { isEnabled } from "../featureFlags.js";
 
 /**
  * @typedef {Object} RoundData
@@ -238,15 +237,10 @@ class RoundStore {
   }
 
   /**
-   * Wire RoundStore into scoreboard adapter when feature flag is enabled.
+   * Wire RoundStore into scoreboard adapter.
    * This replaces event-driven round number updates with direct store subscriptions.
    */
   wireIntoScoreboardAdapter() {
-    if (!isEnabled("roundStore")) {
-      // Feature flag disabled, use legacy event system but preserve async contract
-      return Promise.resolve().then(() => undefined);
-    }
-
     // Import scoreboard adapter dynamically to avoid circular dependencies
     return import("../setupScoreboard.js")
       .then(({ updateRoundCounter }) => {
