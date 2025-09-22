@@ -87,7 +87,9 @@ export function createIntegrationHarness(config = {}) {
 
     // Apply selective mocks for externalities only
     for (const [modulePath, mockImpl] of Object.entries(mocks)) {
-      vi.doMock(modulePath, () => mockImpl);
+      const mockFactory = typeof mockImpl === "function" ? mockImpl : () => mockImpl;
+
+      vi.doMock(modulePath, mockFactory);
     }
 
     // Inject fixtures into global scope or modules as needed
