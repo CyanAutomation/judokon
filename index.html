@@ -147,22 +147,25 @@
       <!-- <div class="home-helper-container">
         <img src="./src/assets/actionPortraits/actionPortrait-40.png" />
       </div> -->
-      <footer>
-        <nav class="bottom-navbar">
-          <ul>
-            <li><a href="./src/pages/battleClassic.html" data-testid="nav-1">Classic Battle</a></li>
-            <li><a href="./src/pages/browseJudoka.html" data-testid="nav-7">Browse Judoka</a></li>
-            <li><a href="./src/pages/updateJudoka.html" data-testid="nav-9">Update Judoka</a></li>
-            <li><a href="./src/pages/meditation.html" data-testid="nav-11">Meditation</a></li>
-            <li><a href="./src/pages/randomJudoka.html" data-testid="nav-12">Random Judoka</a></li>
-            <li><a href="./src/pages/settings.html" data-testid="nav-13">Settings</a></li>
-          </ul>
-        </nav>
-      </footer>
       <script type="module" src="./src/helpers/homePage.js"></script>
-      <script type="module" src="./src/helpers/setupBottomNavbar.js"></script>
       <script type="module" src="./src/helpers/setupHoverZoom.js"></script>
       <script type="module" src="./src/helpers/setupDisplaySettings.js"></script>
+
+      <script type="module" src="./src/helpers/tooltip.js"></script>
+
+      <noscript>
+        <p class="noscript-warning">
+          JU-DO-KON! requires JavaScript to run. Please enable JavaScript to play.
+        </p>
+      </noscript>
+
+      <script type="module" src="./src/gameBootstrap.js" defer></script>
+      <script nomodule>
+        alert(
+          "Your browser does not support modern JavaScript. Please update your browser to play JU-DO-KON!"
+        );
+      </script>
+      <script type="module" src="./src/helpers/setupSvgFallback.js"></script>
 
       <script type="module" src="./src/helpers/tooltip.js"></script>
 
