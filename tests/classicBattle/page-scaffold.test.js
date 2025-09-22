@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, describe, test, expect, vi } from "vitest";
 import * as scheduler from "../../src/utils/scheduler.js";
-import { flushAll } from "../helpers/rafMock.js";
+import { createTestController } from "../../src/utils/scheduler.js";
 
 const engineMock = vi.hoisted(() => ({
   listeners: new Map(),
@@ -968,6 +968,9 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     }
     currentEnv = getEnv();
     mountScaffoldDom();
+    // Create a per-test controller for deterministic RAF control
+    globalThis.__TEST__ = true;
+    currentEnv.testController = createTestController();
     window.__FF_OVERRIDES = {};
     modalMock.onStart = null;
     engineMock.listeners.clear();
@@ -992,6 +995,10 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     delete window.__lastRoundCycleTrigger;
     delete window.battleStore;
     delete global.localStorage;
+    try {
+      currentEnv?.testController?.dispose();
+    } catch {}
+    delete globalThis.__TEST__;
     currentEnv?.restoreRAF?.();
     engineMock.listeners.clear();
     modalMock.onStart = null;
@@ -1033,6 +1040,9 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
     const roundEnded = engineMock.listeners.get("roundEnded");
     roundEnded?.({ playerScore: 4, opponentScore: 1 });
+
+  // Ensure any RAF-scheduled UI updates have run
+  currentEnv.testController.advanceFrame();
 
     expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBeGreaterThan(initialRoundCalls);
     expect(scoreboardMock.updateScore.mock.calls.length).toBeGreaterThan(initialScoreCalls);
@@ -1242,8 +1252,8 @@ describe("Classic Battle page scaffold (behavioral)", () => {
       }
 
       statControls.enable();
-      // Flush any queued RAF callbacks to process scheduler updates
-      flushAll();
+      // Advance one frame to process any queued RAF callbacks from the scheduler
+      currentEnv.testController.advanceFrame();
       await (window.statButtonsReadyPromise ?? Promise.resolve());
       expect(button.disabled).toBe(false);
 
@@ -1256,8 +1266,8 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
       try {
         resetStatButtons();
-        // Flush RAF again after reset
-        flushAll();
+        // Advance one frame to process queued RAF callbacks after reset
+        currentEnv.testController.advanceFrame();
         await timerSpy.runAllTimersAsync();
         expect(button.disabled).toBe(false);
       } finally {

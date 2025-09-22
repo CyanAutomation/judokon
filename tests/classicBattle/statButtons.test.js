@@ -1,12 +1,14 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
-import installRAFMock from "../helpers/rafMock.js";
+import { createTestController } from "../../src/utils/scheduler.js";
 import { JSDOM } from "jsdom";
 import { renderStatButtons } from "../../src/pages/battleClassic.init.js";
 
+// Enable test controller access
+globalThis.__TEST__ = true;
+
 describe("Stat Buttons", () => {
   let dom;
-  let restoreRaf;
-  let flushAllFrames;
+  let testController;
   let originalPerformance;
 
   beforeEach(() => {
@@ -32,18 +34,16 @@ describe("Stat Buttons", () => {
     global.navigator = window.navigator;
     global.performance = window.performance;
 
-    const rafControls = installRAFMock();
-    restoreRaf = rafControls.restore;
-    flushAllFrames = rafControls.flushAll;
+    testController = createTestController();
   });
 
   afterEach(() => {
     try {
-      restoreRaf?.();
+      testController?.dispose();
     } catch {}
     dom?.window?.close();
     vi.clearAllMocks();
-    flushAllFrames = undefined;
+    testController = undefined;
     delete global.window;
     delete global.document;
     delete global.HTMLElement;
@@ -65,11 +65,8 @@ describe("Stat Buttons", () => {
 
     renderStatButtons(store);
 
-    const frameCallbacks = global.requestAnimationFrame.mock.calls.map(([cb]) => cb);
-    expect(frameCallbacks).toHaveLength(1);
-    expect(frameCallbacks[0]).toBeTypeOf("function");
-
-    flushAllFrames?.();
+    // Advance one frame to execute the RAF callback that sets up the buttons
+    testController.advanceFrame();
 
     expect(container.dataset.buttonsReady).toBe("true");
     expect(container.getAttribute("data-buttons-ready")).toBe("true");

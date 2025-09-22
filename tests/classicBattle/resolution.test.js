@@ -3,6 +3,10 @@
  */
 import { beforeEach, expect, test, vi } from "vitest";
 import { createClassicBattleHarness } from "../helpers/integrationHarness.js";
+import { createTestController } from "../../src/utils/scheduler.js";
+
+// Enable test controller access
+globalThis.__TEST__ = true;
 
 const STAT_KEYS = ["power", "speed", "technique", "kumikata", "newaza"];
 
@@ -222,26 +226,10 @@ test("scoreboard reconciles directly to round result", async () => {
     vi.doMock(modulePath, () => mockImpl);
   }
 
-  const harness = createClassicBattleHarness();
+  const harness = createClassicBattleHarness({ useRafMock: false });
   await harness.setup();
 
-  const originalRaf = globalThis.requestAnimationFrame;
-  const originalCancelRaf = globalThis.cancelAnimationFrame;
-  globalThis.requestAnimationFrame = (cb) => {
-    const id = setTimeout(() => {
-      try {
-        const now =
-          typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
-        cb(now);
-      } catch {
-        cb(0);
-      }
-    }, 0);
-    return id;
-  };
-  globalThis.cancelAnimationFrame = (id) => {
-    clearTimeout(id);
-  };
+  const testController = createTestController();
 
   const { updateScore } = await import("../../src/helpers/setupScoreboard.js");
   const mod = await import("../../src/pages/battleClassic.init.js");
@@ -254,6 +242,8 @@ test("scoreboard reconciles directly to round result", async () => {
   expect(buttons.length).toBeGreaterThan(0);
 
   buttons[0].click();
+  // Advance frames to execute any RAF callbacks from the click
+  testController.advanceFrame();
   await Promise.resolve();
   await Promise.resolve();
 
@@ -265,9 +255,8 @@ test("scoreboard reconciles directly to round result", async () => {
   expect(scoreEl.querySelector('[data-side="player"]')).not.toBeNull();
   expect(scoreEl.querySelector('[data-side="opponent"]')).not.toBeNull();
 
+  testController.dispose();
   harness.cleanup();
-  globalThis.requestAnimationFrame = originalRaf;
-  globalThis.cancelAnimationFrame = originalCancelRaf;
 });
 
 test("match end forwards outcome to end modal", async () => {

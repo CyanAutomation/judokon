@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import installRAFMock from "../rafMock.js";
+import { createTestController } from "../../../src/utils/scheduler.js";
 import { withListenerSpy } from "../listenerUtils.js";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
+
+// Enable test controller access
+globalThis.__TEST__ = true;
 
 describe("classicBattle stat selection failure recovery", () => {
   const ROUND_MANAGER_PATH = "../../../src/helpers/classicBattle/roundManager.js";
@@ -15,6 +18,7 @@ describe("classicBattle stat selection failure recovery", () => {
   let disableNextRoundButtonMock;
   let previousMinDuration;
   let originalLocalStorage;
+  let testController;
 
   /**
    * Flush pending microtasks to ensure async operations complete
@@ -59,9 +63,8 @@ describe("classicBattle stat selection failure recovery", () => {
       t: (key) => (key === "ui.opponentChoosing" ? "Opponent is choosing…" : key)
     }));
 
-    // Install queued RAF mock and allow tests to flush synchronously when needed
-    const raf = installRAFMock();
-    global.__statSelectionRafRestore = raf.restore;
+    // Create test controller for deterministic RAF control
+    testController = createTestController();
 
     originalLocalStorage = globalThis.localStorage;
     globalThis.localStorage = {
@@ -80,7 +83,7 @@ describe("classicBattle stat selection failure recovery", () => {
   afterEach(() => {
     document.body.innerHTML = "";
     try {
-      global.__statSelectionRafRestore?.();
+      testController?.dispose();
     } catch {}
     vi.useRealTimers();
     if (originalLocalStorage) {
@@ -98,6 +101,7 @@ describe("classicBattle stat selection failure recovery", () => {
     }
     vi.clearAllMocks();
     vi.resetModules();
+    testController = undefined;
   });
 
   it("starts cooldown, resets cooldown flag, and marks Next ready when selection handler rejects", async () => {
