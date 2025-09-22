@@ -1,17 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 describe("battleCLI start control", () => {
+  let timers;
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     vi.doMock("../../src/helpers/classicBattle/roundSelectModal.js", () => ({
       initRoundSelectModal: vi.fn().mockRejectedValue(new Error("fail"))
     }));
   });
 
   afterEach(async () => {
-    vi.useRealTimers();
+    timers.cleanup();
     vi.doUnmock("../../src/helpers/classicBattle/roundSelectModal.js");
     debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     await cleanupBattleCLI();

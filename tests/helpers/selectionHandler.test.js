@@ -4,7 +4,7 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
   STATS: ["power"],
   stopTimer: vi.fn()
-}));;
+}));
 
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn(),

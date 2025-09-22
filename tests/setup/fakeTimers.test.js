@@ -62,12 +62,13 @@ describe("Fake Timers Setup", () => {
   });
 
   describe("standalone helpers", () => {
+    let timers;
     beforeEach(() => {
-      vi.useFakeTimers();
+      timers = useCanonicalTimers();
     });
 
     afterEach(() => {
-      vi.useRealTimers();
+      timers.cleanup();
     });
 
     it("should provide runAllTimersAsync helper", async () => {

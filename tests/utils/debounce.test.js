@@ -1,20 +1,21 @@
 import { describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { debounce, DebounceError } from "../../src/utils/debounce.js";
 
 describe("debounce", () => {
   it("resolves with latest call after delay", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const fn = vi.fn().mockReturnValue("done");
     const debounced = debounce(fn, 100);
     const promise = debounced("first");
     vi.advanceTimersByTime(100);
     await expect(promise).resolves.toBe("done");
     expect(fn).toHaveBeenCalledWith("first");
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("rejects previous promise with DebounceError by default", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const fn = vi.fn();
     const debounced = debounce(fn, 100);
     const first = debounced("a");
@@ -24,11 +25,11 @@ describe("debounce", () => {
     await expect(second).resolves.toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(1);
     expect(fn).toHaveBeenCalledWith("b");
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("suppresses rejection and calls onCancel when configured", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const fn = vi.fn();
     const onCancel = vi.fn();
     const debounced = debounce(fn, 100, {
@@ -43,7 +44,7 @@ describe("debounce", () => {
     await expect(second).resolves.toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(1);
     expect(fn).toHaveBeenCalledWith("b");
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("flush runs pending work immediately", async () => {

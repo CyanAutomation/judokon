@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import statNamesData from "../../src/data/statNames.js";
 
 let cleanupSetAutoContinue;
@@ -258,27 +259,27 @@ describe("battleCLI event handlers", () => {
   });
 
   it("clears countdown on finish", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { handlers, getBottomLineText } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 1 } });
     handlers.handleCountdownFinished();
     expect(getBottomLineText()).toBe("");
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("captures remaining selection time when paused", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { handlers } = await setupHandlers();
     handlers.startSelectionCountdown(5);
     handlers.pauseTimers();
     const { selection, cooldown } = handlers.getPausedTimes();
     expect(selection).toBe(5);
     expect(cooldown).toBeNull();
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("captures remaining cooldown time when paused", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { handlers } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 7 } });
     const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
@@ -293,11 +294,11 @@ describe("battleCLI event handlers", () => {
     const { cooldown, selection } = handlers.getPausedTimes();
     expect(cooldown).toBe(7);
     expect(selection).toBeNull();
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("preserves remaining time when paused twice", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { handlers } = await setupHandlers();
     handlers.startSelectionCountdown(5);
     handlers.handleCountdownStart({ detail: { duration: 7 } });
@@ -314,7 +315,7 @@ describe("battleCLI event handlers", () => {
     const { selection, cooldown } = handlers.getPausedTimes();
     expect(selection).toBe(5);
     expect(cooldown).toBe(7);
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("buildStatRows returns empty array when stats missing", async () => {

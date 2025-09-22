@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
-import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createTimerNodes } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
@@ -92,3 +91,4 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
       timersControl?.cleanup?.();
     } catch {}
   });
+});
