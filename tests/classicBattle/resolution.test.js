@@ -108,36 +108,16 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     resolveStatButtonsReady: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/quitModal.js"] = {
-    quitMatch: vi.fn()
-  };
-
   mocks["../../src/helpers/classicBattle/uiEventHandlers.js"] = {
     bindUIHelperEventHandlersDynamic: vi.fn()
-  };
-
-  mocks["../../src/helpers/classicBattle/debugPanel.js"] = {
-    initDebugPanel: vi.fn()
   };
 
   mocks["../../src/helpers/classicBattle/endModal.js"] = {
     showEndModal: vi.fn()
   };
 
-  mocks["../../src/helpers/classicBattle/scoreboardAdapter.js"] = {
-    initScoreboardAdapter: vi.fn()
-  };
-
-  mocks["../../src/helpers/classicBattle/engineBridge.js"] = {
-    bridgeEngineEvents: vi.fn()
-  };
-
   mocks["../../src/helpers/featureFlags.js"] = {
     initFeatureFlags: vi.fn(async () => {})
-  };
-
-  mocks["../../src/helpers/testApi.js"] = {
-    exposeTestAPI: vi.fn()
   };
 
   mocks["../../src/helpers/showSnackbar.js"] = {
@@ -148,20 +128,9 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
     t: (key) => key
   };
 
-  mocks["../../src/helpers/classicBattle/uiHelpers.js"] = {
-    removeBackdrops: vi.fn(),
-    enableNextRoundButton: vi.fn(),
-    disableNextRoundButton: vi.fn(),
-    showFatalInitError: vi.fn()
-  };
-
   mocks["../../src/helpers/classicBattle/battleEvents.js"] = {
     onBattleEvent: vi.fn(),
     emitBattleEvent: vi.fn()
-  };
-
-  mocks["../../src/helpers/classicBattle/setupScheduler.js"] = {
-    default: vi.fn()
   };
 
   mocks["../../src/helpers/classicBattle/roundSelectModal.js"] = {
