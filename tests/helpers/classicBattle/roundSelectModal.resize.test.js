@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import installRAFMock from "../rafMock.js";
+import { createTestController } from "../../../src/utils/scheduler.js";
 
 let modalInstance;
 let modalCloseSpy;
-let rafControls;
+let testController;
+
+// Enable test controller access
+globalThis.__TEST__ = true;
 
 function mockModalReturning(backdrop) {
   modalCloseSpy = vi.fn();
@@ -22,17 +25,17 @@ describe("roundSelectModal responsive inset and cleanup", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.resetModules();
-    // Install queued RAF mock for deterministic control
-    rafControls = installRAFMock();
+    // Create test controller for deterministic RAF control
+    testController = createTestController();
     modalInstance = null;
     modalCloseSpy = null;
   });
 
   afterEach(() => {
     try {
-      rafControls?.restore();
+      testController?.dispose();
     } catch {}
-    rafControls = null;
+    testController = null;
     vi.restoreAllMocks();
   });
 
@@ -112,7 +115,7 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     window.dispatchEvent(new Event("resize"));
 
     // wait a tick for RAF
-    rafControls.flushAll();
+    testController.advanceFrame();
     expect(backdrop.style.getPropertyValue("--modal-inset-top")).toBe("80px");
 
     // simulate close (cleanup listeners)
@@ -121,7 +124,7 @@ describe("roundSelectModal responsive inset and cleanup", () => {
     // change again and resize; inset should remain at previous value
     Object.defineProperty(header, "offsetHeight", { value: 100, configurable: true });
     window.dispatchEvent(new Event("resize"));
-    rafControls.flushAll();
+    testController.advanceFrame();
     expect(backdrop.style.getPropertyValue("--modal-inset-top")).toBe("80px");
   });
 });

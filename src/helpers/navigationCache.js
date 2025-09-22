@@ -9,9 +9,9 @@ const NAVIGATION_KEY = "navigationItems";
  * 1. Read the stored value associated with `NAVIGATION_KEY`.
  * 2. Return the cached array when it is valid; otherwise return `null`.
  *
- * @returns {Promise<import("./types.js").NavigationItem[]|null>} Cached navigation items or null when absent.
+ * @returns {import("./types.js").NavigationItem[]|null} Cached navigation items or null when absent.
  */
-export async function load() {
+export function load() {
   const cached = getItem(NAVIGATION_KEY);
   return Array.isArray(cached) ? cached : null;
 }
@@ -24,9 +24,9 @@ export async function load() {
  * 2. Serialize the array via the shared storage helper.
  *
  * @param {import("./types.js").NavigationItem[]} items - Navigation entries to persist.
- * @returns {Promise<void>} Resolves when the data is stored.
+ * @returns {void}
  */
-export async function save(items) {
+export function save(items) {
   if (!Array.isArray(items)) {
     throw new TypeError("navigationCache.save expects an array");
   }

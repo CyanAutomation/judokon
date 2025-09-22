@@ -300,7 +300,7 @@ Phases:
 - Phase 1 — Implement minimal test hooks (1–2 weeks)
   - Implement hooks guarded by a `__TEST__` flag or exported behind an explicit test-only API surface.
   - Ensure default behavior remains unchanged.
-  - Acceptance: Unit tests using the test controller to deterministically advance frames.
+  - **COMPLETED**: Added `createTestController()` export to `src/utils/scheduler.js` with `advanceFrame()`, `advanceTime(ms)`, `getFrameCount()`, and `dispose()` methods. Implemented deterministic timing control without global monkey-patching. Created comprehensive unit tests (12/12 passing) covering frame advancement, time advancement, second boundary callbacks, pause state handling, and controller isolation. All tests pass with no regressions.
 
 - Phase 2 — Migrate tests to hooks (1–2 weeks)
   - Replace global RAF mocks in tests that need deterministic control with the new controller.
@@ -397,6 +397,51 @@ Risks & mitigations: False positives could block legitimate stress tests — mak
 - Further mock reduction possible in Phase 3, but core integration harness integration successful.
 
 **Next:** Proceed to Phase 3: Monitor and iterate on mock reduction or move to next priority test.
+
+---
+
+## Phase 2 (Item 8) — Scheduler migration progress
+
+**Goal:** Migrate timing-sensitive tests off the legacy global RAF mocks to the scheduler's per-test deterministic controller (`createTestController()`) so tests become isolated and deterministic.
+
+Files migrated so far (Phase 2 actions):
+
+- `tests/classicBattle/statButtons.test.js` — migrated to `createTestController()`; file-level run: PASS
+- `tests/helpers/classicBattle/roundSelectModal.resize.test.js` — migrated; file-level run: PASS
+- `tests/helpers/classicBattle/statSelection.failureFallback.test.js` — migrated; file-level run: PASS
+- `tests/classicBattle/resolution.test.js` — migrated; harness configured (`useRafMock: false`); file-level run: PASS
+- `tests/classicBattle/page-scaffold.test.js` — migrated to use `createTestController()`; replaced legacy `flushAll()` calls with `testController.advanceFrame()`; currently under investigation (one failing assertion)
+
+What changed in `page-scaffold.test.js`:
+
+- Tests now set `globalThis.__TEST__ = true` in `beforeEach()` and create a `testController = createTestController()` to control frames deterministically.
+- `afterEach()` disposes the controller and clears `globalThis.__TEST__`.
+- All previous `flushAll()` calls were replaced with `testController.advanceFrame()`.
+- For one failing test the agent added an explicit `testController.advanceFrame()` after invoking the mocked engine's `roundEnded` handler to force RAF-scheduled UI updates; test still failing — see details below.
+
+Failing test (current blocker):
+
+- File: `tests/classicBattle/page-scaffold.test.js`
+- Test: "updates scoreboard text when a mock round starts"
+- Symptom: Assertion failure `expected 3 to be greater than 3` — scoreboard mock call count did not increase after stimulating a mock round start and advancing frames once.
+- Attempts made: Added an explicit `currentEnv.testController.advanceFrame()` immediately after invoking the engine roundEnded handler; re-ran the single-file test — failure persisted. Lint/format hints from the insert were addressed in a follow-up small tidy (indentation).
+
+Hypotheses / next experiments:
+
+- The UI update may be scheduled across multiple RAF frames — try advancing multiple frames (2–3) before asserting.
+- The update might rely on microtask queue drainage (Promise microtasks) in addition to RAF; try `await Promise.resolve()` between advances.
+- The scoreboard wiring could be bound to a different event bridge instance due to module-mocking; verify `bridgeengineevents()` rebinding behavior in the init path and ensure the test-spied scoreboard instance is the one receiving `emitBattleEvent` calls.
+
+Immediate next action (planned):
+
+1. Mark debugging todo (in the plan) as in-progress and run targeted experiments on `page-scaffold.test.js`:
+  - Advance multiple frames after `roundEnded`.
+  - Await a microtask tick before/after advancing frames.
+  - Log scoreboard mock call details and event emission timing to inspect ordering.
+2. If the issue stems from module mock rebinding, adjust the test harness to ensure `bridgeengineevents()` binds to the mocked engine facade used by the test spies.
+
+Once the failing test is fixed, resume migrating remaining tests that still use the legacy RAF helper and update this document with outcomes.
+
 
 ---
 

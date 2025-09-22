@@ -71,6 +71,7 @@ export default [
     isHidden: true,
     gameModeId: 9
   },
+  // ID 10 intentionally left unused to preserve legacy references for removed content.
   {
     id: 11,
     url: "meditation.html",

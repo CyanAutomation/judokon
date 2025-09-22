@@ -98,7 +98,30 @@ export async function saveGameModes(modes) {
 }
 
 function cloneNavigationItems(items) {
+  if (items === null || items === undefined) {
+    return [];
+  }
   return Array.isArray(items) ? items.map((item) => ({ ...item })) : [];
+}
+
+async function resolveNavigationItems(schema) {
+  let navItems = null;
+
+  try {
+    const cached = navigationCache.load();
+    if (Array.isArray(cached)) {
+      navItems = cloneNavigationItems(cached);
+    }
+  } catch (error) {
+    console.error("Failed to load navigationItems from cache:", error);
+  }
+
+  if (!navItems) {
+    navItems = cloneNavigationItems(navigationFallback);
+  }
+
+  await validateWithSchema(navItems, schema);
+  return navItems;
 }
 
 /**
@@ -176,24 +199,13 @@ export async function loadNavigationItems() {
  */
 export async function updateNavigationItemHidden(gameModeId, hidden) {
   const schema = await getNavigationSchema();
-  let navItems;
-  try {
-    navItems = await navigationCache.load();
-  } catch (error) {
-    console.error("Failed to load navigationItems from cache:", error);
-    navItems = null;
-  }
-  if (!Array.isArray(navItems)) {
-    navItems = cloneNavigationItems(navigationFallback);
-  } else {
-    navItems = cloneNavigationItems(navItems);
-  }
+  const navItems = await resolveNavigationItems(schema);
 
   const updated = navItems.map((item) =>
     item.gameModeId === gameModeId ? { ...item, isHidden: hidden } : item
   );
 
   await validateWithSchema(updated, schema);
-  await navigationCache.save(updated);
+  navigationCache.save(updated);
   return updated;
 }
