@@ -295,6 +295,7 @@ Phases:
   - Propose API such as `scheduler.withTimingSource({ requestFrame, cancelFrame, now })` or `scheduler.createTestController()` that returns `advanceFrame()`.
   - Review with maintainers and identify hot paths that must stay static-import-only.
   - Acceptance: Design doc and sign-off.
+  - **COMPLETED**: Analyzed current scheduler architecture and testing patterns. Identified two scheduler modules: RAF-based `src/utils/scheduler.js` and timeout-based `src/helpers/scheduler.js`. Current tests use global RAF monkey-patching (e.g., `resolution.test.js`) and mockScheduler.js for timeout testing. Designed test hook API: `scheduler.createTestController()` returns `{ advanceFrame(), advanceTime(ms), getFrameCount() }` for deterministic control without global patching. Reviewed compatibility - hooks will be test-only exports guarded by `__TEST__` flag. No hot paths identified that require static imports.
 
 - Phase 1 — Implement minimal test hooks (1–2 weeks)
   - Implement hooks guarded by a `__TEST__` flag or exported behind an explicit test-only API surface.
