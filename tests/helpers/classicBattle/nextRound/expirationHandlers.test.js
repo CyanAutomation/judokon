@@ -255,6 +255,17 @@ describe("dispatchReadyDirectly", () => {
 });
 
 describe("runReadyDispatchStrategies", () => {
+  it("returns a boolean by default for backward compatibility", async () => {
+    const success = await runReadyDispatchStrategies({
+      strategies: [() => true]
+    });
+    const failure = await runReadyDispatchStrategies({
+      strategies: [() => false]
+    });
+    expect(success).toBe(true);
+    expect(failure).toBe(false);
+  });
+
   it("short-circuits once a strategy succeeds", async () => {
     const emit = vi.fn();
     const result = await runReadyDispatchStrategies({
@@ -265,7 +276,8 @@ describe("runReadyDispatchStrategies", () => {
           throw new Error("should not run");
         }
       ],
-      emitTelemetry: emit
+      emitTelemetry: emit,
+      returnOutcome: true
     });
     expect(result).toEqual({ dispatched: true, fallbackDispatched: false });
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
@@ -275,7 +287,8 @@ describe("runReadyDispatchStrategies", () => {
     const emit = vi.fn();
     const result = await runReadyDispatchStrategies({
       strategies: [() => false, () => false],
-      emitTelemetry: emit
+      emitTelemetry: emit,
+      returnOutcome: true
     });
     expect(result).toEqual({ dispatched: false, fallbackDispatched: false });
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", false);
@@ -295,7 +308,8 @@ describe("runReadyDispatchStrategies", () => {
           return true;
         }
       ],
-      emitTelemetry: emit
+      emitTelemetry: emit,
+      returnOutcome: true
     });
     expect(result).toEqual({ dispatched: true, fallbackDispatched: false });
     expect(calls).toEqual(["machine", "bus"]);
@@ -308,7 +322,8 @@ describe("runReadyDispatchStrategies", () => {
     const result = await runReadyDispatchStrategies({
       alreadyDispatchedReady: true,
       strategies,
-      emitTelemetry: emit
+      emitTelemetry: emit,
+      returnOutcome: true
     });
     expect(strategies[0]).not.toHaveBeenCalled();
     expect(result).toEqual({ dispatched: true, fallbackDispatched: false });
@@ -321,7 +336,8 @@ describe("runReadyDispatchStrategies", () => {
     const result = await runReadyDispatchStrategies({
       strategies: [() => false],
       emitTelemetry: emit,
-      fallback: { dispatcher: fallbackDispatcher }
+      fallback: { dispatcher: fallbackDispatcher },
+      returnOutcome: true
     });
     expect(result).toEqual({ dispatched: false, fallbackDispatched: true });
     expect(fallbackDispatcher).toHaveBeenCalledWith("ready");

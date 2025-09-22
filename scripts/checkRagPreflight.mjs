@@ -13,12 +13,38 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.join(rootDir, "src");
 
-const MODEL_FILE_THRESHOLDS = [
-  { relPath: "config.json", minBytes: 400 },
-  { relPath: "tokenizer.json", minBytes: 1_000 },
-  { relPath: "tokenizer_config.json", minBytes: 400 },
-  { relPath: path.join("onnx", "model_quantized.onnx"), minBytes: 300 * 1024 }
+const MODEL_THRESHOLD_CONFIG = [
+  { relPath: "config.json", envKey: "RAG_CONFIG_MIN_BYTES", defaultBytes: 400 },
+  { relPath: "tokenizer.json", envKey: "RAG_TOKENIZER_MIN_BYTES", defaultBytes: 1_000 },
+  {
+    relPath: "tokenizer_config.json",
+    envKey: "RAG_TOKENIZER_CONFIG_MIN_BYTES",
+    defaultBytes: 400
+  },
+  {
+    relPath: path.join("onnx", "model_quantized.onnx"),
+    envKey: "RAG_MODEL_MIN_BYTES",
+    defaultBytes: 300 * 1024
+  }
 ];
+
+function parseThresholdValue(value, fallback) {
+  if (value === undefined || value === null) return fallback;
+  const normalized = String(value).replace(/_/g, "");
+  const parsed = Number.parseInt(normalized, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
+}
+
+function getModelFileThresholds(env = process.env) {
+  const source = env ?? {};
+  return MODEL_THRESHOLD_CONFIG.map(({ relPath, envKey, defaultBytes }) => ({
+    relPath,
+    minBytes: parseThresholdValue(source[envKey], defaultBytes)
+  }));
+}
 
 const MODEL_PREP_COMMAND = "npm run rag:prepare:models -- --from-dir /path/to/minilm";
 
@@ -33,20 +59,23 @@ export async function checkStrictOfflineModel(env = process.env) {
   const undersized = [];
   const statFailures = [];
 
-  for (const { relPath, minBytes } of MODEL_FILE_THRESHOLDS) {
+  const thresholds = getModelFileThresholds(env);
+
+  for (const { relPath, minBytes } of thresholds) {
     const full = path.join(modelDir, relPath);
     try {
       const s = await stat(full);
-      if (typeof s.size !== "number" || Number.isNaN(s.size)) {
+      const size = Number(s.size);
+      if (!Number.isFinite(size)) {
         const rel = path.relative(rootDir, full);
         statFailures.push(`Failed to stat ${rel}: invalid size returned`);
         continue;
       }
 
-      if (s.size < minBytes) {
+      if (size < minBytes) {
         undersized.push({
           relPath: path.relative(rootDir, full),
-          size: s.size,
+          size,
           minBytes
         });
       }
@@ -62,25 +91,20 @@ export async function checkStrictOfflineModel(env = process.env) {
 
   if (undersized.length > 0 || statFailures.length > 0) {
     const guidance = `Run "${MODEL_PREP_COMMAND}" to download MiniLM model artifacts.`;
-    const truncatedErrors = undersized.map(
+    const truncatedMessages = undersized.map(
       ({ relPath, size, minBytes }) =>
-        `${strict ? "Strict offline: " : ""}Model file appears truncated: ${relPath} (${formatBytes(
-          size
-        )} < ${formatBytes(minBytes)}).`
+        `Model file appears truncated: ${relPath} (${formatBytes(size)} < ${formatBytes(minBytes)}).`
     );
-    const failureMessages = [...truncatedErrors, ...statFailures];
+    const failureMessages = [...truncatedMessages, ...statFailures];
 
     if (!strict) {
-      const warnLines = [
-        ...failureMessages.map((m) => m.replace(/^Strict offline: /, "")),
-        guidance
-      ];
+      const warnLines = [...failureMessages, guidance];
       console.warn(warnLines.join("\n"));
+      return { ok: true, errors: [] };
     }
 
-    const errorsWithGuidance = failureMessages.map((msg) => `${msg} ${guidance}`);
-
-    return { ok: false, errors: errorsWithGuidance };
+    const strictMessages = failureMessages.map((msg) => `Strict offline: ${msg}`);
+    return { ok: false, errors: [...strictMessages, guidance] };
   }
 
   if (missing.length === 0) {

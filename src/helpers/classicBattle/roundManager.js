@@ -834,7 +834,8 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     fallback: {
       dispatcher: options?.dispatchBattleEvent,
       useGlobal: options?.useGlobalReadyFallback === true
-    }
+    },
+    returnOutcome: true
   });
   if (dispatched || fallbackDispatched) {
     setReadyDispatchedForCurrentCooldown(true);
@@ -843,6 +844,16 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     safeRound(
       "handleNextRoundExpiration.traceDispatched",
       () => appendReadyTrace("handleNextRoundExpiration.dispatched", { dispatched: true }),
+      { suppressInProduction: true }
+    );
+  } else if (fallbackDispatched) {
+    safeRound(
+      "handleNextRoundExpiration.traceFallbackDispatched",
+      () =>
+        appendReadyTrace("handleNextRoundExpiration.fallbackDispatched", {
+          dispatched: false,
+          fallbackDispatched: true
+        }),
       { suppressInProduction: true }
     );
   } else {
@@ -858,7 +869,11 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
   finalizeReadyControls(controls, dispatched, { forceResolve: !dispatched });
   safeRound(
     "handleNextRoundExpiration.traceEnd",
-    () => appendReadyTrace("handleNextRoundExpiration.end", { dispatched: !!dispatched }),
+    () =>
+      appendReadyTrace("handleNextRoundExpiration.end", {
+        dispatched: !!dispatched,
+        fallbackDispatched: fallbackDispatched === true
+      }),
     { suppressInProduction: true }
   );
   return dispatched;

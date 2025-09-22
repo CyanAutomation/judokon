@@ -626,10 +626,20 @@ export async function dispatchReadyDirectly(params) {
  * @param {(type: string) => any} [params.fallback.dispatcher]
  * @param {boolean} [params.fallback.useGlobal]
  *   When `true`, invoke the shared global dispatcher after strategies fail.
- * @returns {Promise<{ dispatched: boolean, fallbackDispatched: boolean }>}
+ * @param {boolean} [params.returnOutcome=false]
+ *   When `true`, resolve with an object describing both primary and fallback
+ *   dispatch outcomes. Otherwise the promise resolves to a boolean for backward
+ *   compatibility.
+ * @returns {Promise<boolean | { dispatched: boolean, fallbackDispatched: boolean }>}
  */
 export async function runReadyDispatchStrategies(params = {}) {
-  const { alreadyDispatchedReady = false, strategies = [], emitTelemetry, fallback = {} } = params;
+  const {
+    alreadyDispatchedReady = false,
+    strategies = [],
+    emitTelemetry,
+    fallback = {},
+    returnOutcome = false
+  } = params;
   const { dispatcher: fallbackDispatcher, useGlobal: useGlobalFallback = false } = fallback;
   let resultEmitted = false;
   const emitResult = (value) => {
@@ -637,12 +647,18 @@ export async function runReadyDispatchStrategies(params = {}) {
     emitTelemetry?.("handleNextRoundDispatchResult", value);
     resultEmitted = true;
   };
-  if (alreadyDispatchedReady) {
-    emitResult(true);
-    return { dispatched: true, fallbackDispatched: false };
-  }
   let dispatched = false;
   let fallbackDispatched = false;
+  const finalizeResult = (value, fallbackValue = fallbackDispatched) => {
+    if (returnOutcome) {
+      return { dispatched: value, fallbackDispatched: fallbackValue === true };
+    }
+    return value;
+  };
+  if (alreadyDispatchedReady) {
+    emitResult(true);
+    return finalizeResult(true, false);
+  }
   const interpretResult = (value) => {
     if (value && typeof value === "object" && value !== null && !Array.isArray(value)) {
       const hasDispatchedProp = "dispatched" in value;
@@ -673,7 +689,7 @@ export async function runReadyDispatchStrategies(params = {}) {
         });
         if (!propagate) {
           emitResult(true);
-          return { dispatched: true, fallbackDispatched: false };
+          return finalizeResult(true, false);
         }
       }
     } catch {}
@@ -720,7 +736,7 @@ export async function runReadyDispatchStrategies(params = {}) {
     emitTelemetry?.("handleNextRoundDispatchFallback", fallbackDispatched);
   }
   emitResult(dispatched);
-  return { dispatched, fallbackDispatched };
+  return finalizeResult(dispatched);
 }
 
 /**

@@ -446,23 +446,28 @@ describe("fallback readiness flag discipline", () => {
 
     expect(runReadySpy).toHaveBeenCalledTimes(1);
     expect(capturedCalls[0]?.alreadyDispatchedReady).toBe(false);
+    expect(capturedCalls[0]?.returnOutcome).toBe(true);
     expect(setReadySpy).toHaveBeenCalledWith(true);
     expect(readyStateModule.hasReadyBeenDispatchedForCurrentCooldown()).toBe(true);
 
+    const emitTelemetry = vi.fn();
+    const guardStrategies = [vi.fn(() => true)];
     runReadySpy.mockRestore();
     setReadySpy.mockRestore();
 
-    const emitTelemetry = vi.fn();
-    const guardStrategies = [vi.fn(() => true)];
-    const guardResult = await expirationHandlersModule.runReadyDispatchStrategies({
-      alreadyDispatchedReady: readyStateModule.hasReadyBeenDispatchedForCurrentCooldown(),
-      strategies: guardStrategies,
-      emitTelemetry
-    });
-    expect(guardStrategies[0]).not.toHaveBeenCalled();
-    expect(guardResult).toEqual({ dispatched: true, fallbackDispatched: false });
-    expect(emitTelemetry).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
-
-    readyStateModule.setReadyDispatchedForCurrentCooldown(false);
+    try {
+      const guardResult = await expirationHandlersModule.runReadyDispatchStrategies({
+        alreadyDispatchedReady: readyStateModule.hasReadyBeenDispatchedForCurrentCooldown(),
+        strategies: guardStrategies,
+        emitTelemetry,
+        returnOutcome: true
+      });
+      expect(guardStrategies[0]).not.toHaveBeenCalled();
+      expect(guardResult).toEqual({ dispatched: true, fallbackDispatched: false });
+      expect(emitTelemetry).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
+    } finally {
+      readyStateModule.setReadyDispatchedForCurrentCooldown(false);
+      vi.restoreAllMocks();
+    }
   });
 });
