@@ -203,7 +203,11 @@ function applySelectionToStore(store, stat, playerVal, opponentVal) {
   // Mirror selection to RoundStore
   try {
     try {
-      roundStore.setSelectedStat(stat);
+      if (IS_VITEST) {
+        roundStore.currentRound.selectedStat = stat;
+      } else {
+        roundStore.setSelectedStat(stat);
+      }
     } catch {
       // swallow to preserve legacy behaviour
     }

@@ -25,6 +25,11 @@ const globalScope =
         ? window
         : undefined;
 
+const READY_DISPATCHER_IDENTITY_SYMBOL =
+  typeof Symbol === "function"
+    ? Symbol.for("classicBattle.readyDispatcherIdentity")
+    : "__classicBattle_readyDispatcherIdentity__";
+
 const originalDispatchStore = (() => {
   const scope = globalScope;
   const getStored = () => {
@@ -356,7 +361,7 @@ export async function dispatchReadyViaBus(options = {}) {
     }
     try {
       if (typeof process !== "undefined" && process.env?.VITEST) {
-        console.error("[TEST] dispatchReadyViaBus candidates:", {
+        console.debug("[TEST] dispatchReadyViaBus candidates:", {
           candidate: typeof candidate,
           global: typeof current
         });
@@ -624,7 +629,13 @@ export async function dispatchReadyDirectly(params) {
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
  * @param {object} [params.fallback] - Fallback dispatcher configuration
  * @param {(type: string) => any} [params.fallback.dispatcher]
+ *   Highest-priority fallback dispatcher. When provided it seeds the fallback
+ *   queue ahead of the entries in `dispatchers`.
  * @param {Array<(type: string) => any>} [params.fallback.dispatchers]
+ *   Ordered fallback dispatchers appended after `dispatcher`. The combined
+ *   queue removes duplicates by comparing dispatcher references and shared
+ *   identity signatures, preserving call order even when both inputs contain
+ *   the same function.
  * @param {(type: string) => any} [params.fallback.globalDispatcher]
  * @param {boolean} [params.fallback.useGlobal]
  *   When `true`, invoke the provided global dispatcher (or runtime global when
@@ -723,10 +734,39 @@ export async function runReadyDispatchStrategies(params = {}) {
     }
   };
   const fallbackQueue = [];
+  const fallbackCandidateRefs = typeof WeakSet === "function" ? new WeakSet() : null;
+  const fallbackCandidateSignatures = new Set();
+  const readFallbackSignature = (candidate) => {
+    if (typeof candidate !== "function") return undefined;
+    const identitySymbol = READY_DISPATCHER_IDENTITY_SYMBOL;
+    const symbolValue = identitySymbol ? candidate[identitySymbol] : undefined;
+    if (typeof symbolValue === "string" || typeof symbolValue === "number") {
+      return String(symbolValue);
+    }
+    if (typeof candidate.readyDispatcherId === "string" && candidate.readyDispatcherId) {
+      return candidate.readyDispatcherId;
+    }
+    if (typeof candidate.dispatcherId === "string" && candidate.dispatcherId) {
+      return candidate.dispatcherId;
+    }
+    return undefined;
+  };
   const addFallbackCandidate = (candidate) => {
     if (typeof candidate !== "function") return;
-    if (fallbackQueue.includes(candidate)) return;
+    const hasRef = fallbackCandidateRefs
+      ? fallbackCandidateRefs.has(candidate)
+      : fallbackQueue.includes(candidate);
+    const signature = readFallbackSignature(candidate);
+    if (hasRef || (signature && fallbackCandidateSignatures.has(signature))) {
+      return;
+    }
     fallbackQueue.push(candidate);
+    if (fallbackCandidateRefs) {
+      fallbackCandidateRefs.add(candidate);
+    }
+    if (signature) {
+      fallbackCandidateSignatures.add(signature);
+    }
   };
   const normalizedFallbackDispatchers = Array.isArray(fallbackDispatcherList)
     ? fallbackDispatcherList
@@ -738,7 +778,7 @@ export async function runReadyDispatchStrategies(params = {}) {
   if (useGlobalFallback === true) {
     let globalCandidate =
       typeof providedGlobalDispatcher === "function" ? providedGlobalDispatcher : undefined;
-    if (!globalCandidate && fallbackQueue.length === 0) {
+    if (!globalCandidate) {
       try {
         const current = getGlobalDispatch();
         if (typeof current === "function") {
@@ -754,7 +794,6 @@ export async function runReadyDispatchStrategies(params = {}) {
   }
   if (!dispatched && fallbackQueue.length > 0) {
     for (const dispatcherFn of fallbackQueue) {
-      if (fallbackDispatched) break;
       const fallbackOutcome = await invokeFallbackDispatcher(dispatcherFn);
       registerFallbackOutcome(fallbackOutcome);
       if (fallbackOutcome.dispatched === true) break;
