@@ -149,9 +149,7 @@ describe("startCooldown fallback timer", () => {
 
   it("resolves ready when dispatcher reports false and enables button", async () => {
     dispatchSpy.mockImplementation(() => false);
-    const { startCooldown } = await harness.importModule(
-      "/workspaces/judokon/src/helpers/classicBattle/roundManager.js"
-    );
+    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
     const btn = document.querySelector('[data-role="next-round"]');
     btn.disabled = true;
     const controls = startCooldown({}, scheduler);
