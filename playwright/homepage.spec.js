@@ -1,53 +1,20 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import {
-  verifyPageBasics,
-  NAV_RANDOM_JUDOKA,
-  NAV_CLASSIC_BATTLE
-} from "./fixtures/navigationChecks.js";
 
 test.describe("Homepage", () => {
-  // Navigation coverage: footer link visibility and ordering.
   test.beforeEach(async ({ page }) => {
     await page.goto("/index.html");
-    await page.evaluate(() => window.navReadyPromise);
   });
 
   test("homepage loads", async ({ page }) => {
-    await verifyPageBasics(page, [NAV_RANDOM_JUDOKA, NAV_CLASSIC_BATTLE]);
-    const footerLinks = page.locator("footer .bottom-navbar a");
-    await expect(footerLinks).not.toHaveCount(0);
+    await expect(page).toHaveTitle(/JU-DO-KON!/);
+    await expect(page.locator("h1")).toContainText("JU-DO-KON!");
   });
 
-  // Navigation: links render in expected order
-  test("navigation order and visibility", async ({ page }) => {
-    const classic = page.getByTestId(NAV_CLASSIC_BATTLE);
-    const random = page.getByTestId(NAV_RANDOM_JUDOKA);
-    const update = page.getByTestId("nav-9");
-
-    await expect(classic).not.toHaveClass(/hidden/);
-    await expect(random).not.toHaveClass(/hidden/);
-    await expect(update).toHaveClass(/hidden/);
-
-    const classicOrder = Number(await classic.evaluate((el) => getComputedStyle(el).order));
-    const randomOrder = Number(await random.evaluate((el) => getComputedStyle(el).order));
-    const updateOrder = Number(await update.evaluate((el) => getComputedStyle(el).order));
-
-    expect(classicOrder).toBeLessThan(updateOrder);
-    expect(updateOrder).toBeLessThan(randomOrder);
-  });
-  // Navigation: Random Judoka tile routes to dedicated page
-  test("view judoka link navigates", async ({ page }) => {
-    await page.getByTestId(NAV_RANDOM_JUDOKA).click();
-    await expect(page).toHaveURL(/randomJudoka\.html/);
-  });
-
-  test("keyboard navigation activates tiles", async ({ page }) => {
+  test("keyboard navigation focuses tiles", async ({ page }) => {
     const tiles = page.locator(".card");
 
     await page.keyboard.press("Tab");
     await expect(tiles.first()).toBeFocused();
-
-    await Promise.all([page.waitForURL("**/battleClassic.html"), tiles.first().press("Enter")]);
   });
 
   test("fallback icon applied on load failure", async ({ page }) => {

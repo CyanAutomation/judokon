@@ -30,12 +30,7 @@ async function expectToBeCollapsed(locator) {
 }
 
 async function movePointerAwayFromCards(page) {
-  const footerNav = page.locator("[data-testid='bottom-nav']");
-  if ((await footerNav.count()) > 0) {
-    await footerNav.hover({ position: { x: 10, y: 10 } });
-  } else {
-    await page.mouse.move(0, 0);
-  }
+  await page.mouse.move(0, 0);
 }
 
 test.afterEach(async ({ page }) => {

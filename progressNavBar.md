@@ -264,4 +264,43 @@ Await user approval of this implementation plan before proceeding with changes.
 - ✅ No remaining references to navigationItems or navigationCache in source code
 - ✅ Core functionality preserved (settings still loads game modes for toggles)
 
-**Next:** Awaiting user review before proceeding to Phase 5: Test Updates
+## Phase 5: Test Updates - COMPLETED ✅
+
+**Actions Taken:**
+
+- **Deleted navigation test files:**
+  - `tests/helpers/navigationCache.test.js` (tested deleted navigationCache.js)
+  - `tests/helpers/navigationTooltips.test.js` (tested tooltip coverage no longer needed)
+  - `playwright/navigation.spec.js` (tested navigation links that no longer exist)
+
+- **Updated settings-related code:**
+  - Removed tooltip functionality from `src/helpers/settings/gameModeSwitches.js` (no longer needed)
+  - Removed `navTooltipKey` import from `src/helpers/settings/gameModeSwitches.js`
+  - Updated `tests/helpers/settingsFormUtils.test.js` to not expect tooltip IDs on game mode switches
+  - Removed `navTooltipKey` import from `tests/helpers/settingsFormUtils.test.js`
+
+- **Updated playwright homepage tests:**
+  - Simplified `playwright/homepage.spec.js` by removing navigation-related imports and tests
+  - Removed navigation link verification, ordering, and navigation tests
+  - Updated keyboard navigation test to only check focus without expecting page navigation
+  - Removed `navReadyPromise` from test setup
+
+- **Updated playwright layout tests:**
+  - Simplified `playwright/homepage-layout.spec.js` by removing navigation-related tests
+  - Removed tests for grid/footer overlap and navbar single-row display
+  - Removed `navReadyPromise` from test setup
+
+- **Updated hover zoom tests:**
+  - Simplified `movePointerAwayFromCards()` in `playwright/hover-zoom.spec.js` to always move mouse to (0,0) instead of checking for navigation
+
+**Outcomes:**
+
+- ✅ All navigation-related test files removed
+- ✅ Settings page no longer uses navigation tooltips
+- ✅ Homepage tests simplified to focus on core functionality
+- ✅ Layout tests updated to remove navigation positioning checks
+- ✅ Hover zoom tests use simpler pointer positioning
+- ✅ No remaining references to deleted navigation functionality in tests
+- ✅ Test suite should run without navigation-related failures
+
+**Next:** Awaiting user review before proceeding to Phase 6: Validation

@@ -2,7 +2,6 @@ import { ToggleSwitch } from "../../components/ToggleSwitch.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
-import { navTooltipKey } from "./navigationService.js";
 
 /**
  * Handle a game mode toggle change.
@@ -92,12 +91,10 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
       }
       label = mode.id;
     }
-    const tooltipId = `mode.${navTooltipKey(label)}`;
     const toggle = new ToggleSwitch(label, {
       id: `mode-${mode.id}`,
       name: mode.id,
-      checked: isChecked,
-      tooltipId
+      checked: isChecked
     });
     const { element: wrapper, input } = toggle;
     if (mode.category) wrapper.dataset.category = mode.category;
