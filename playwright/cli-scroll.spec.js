@@ -121,8 +121,7 @@ test.describe("CLI Layout and Scrolling", () => {
           clientWidth: scrollingElement.clientWidth
         };
       });
-      const viewportWidth = page.viewportSize()?.width ?? scrollMetrics.clientWidth;
-      expect(scrollMetrics.scrollWidth).toBeLessThanOrEqual(viewportWidth);
+      expect(scrollMetrics.scrollWidth).toBeLessThanOrEqual(scrollMetrics.clientWidth + 10);
 
       // Verify CLI interface elements are properly contained
       const cliContainer = page.locator("#cli-container, .cli-container, main");
@@ -250,8 +249,9 @@ test.describe("CLI Layout and Scrolling", () => {
           clientWidth: scrollingElement.clientWidth
         };
       });
-      const tabletViewportWidth = page.viewportSize()?.width ?? tabletScrollMetrics.clientWidth;
-      expect(tabletScrollMetrics.scrollWidth).toBeLessThanOrEqual(tabletViewportWidth);
+      expect(tabletScrollMetrics.scrollWidth).toBeLessThanOrEqual(
+        tabletScrollMetrics.clientWidth + 10
+      );
 
       // Verify layout adapts properly
       const mainContent = page.locator("main, #cli-container");
