@@ -2,6 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://judokon.dev/schemas/navigationItems.schema.json",
   "type": "array",
+  "minItems": 1,
+  "uniqueItems": true,
   "items": {
     "$ref": "https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/NavigationItem"
   }
