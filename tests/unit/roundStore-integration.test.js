@@ -8,7 +8,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { roundStore } from "../../src/helpers/classicBattle/roundStore.js";
 import {
   initScoreboardAdapter,
-  disposeScoreboardAdapter
+  disposeScoreboardAdapter,
+  whenScoreboardReady
 } from "../../src/helpers/classicBattle/scoreboardAdapter.js";
 
 // Mock the feature flags module
@@ -90,8 +91,8 @@ describe("RoundStore Feature Flag Integration", () => {
       // Should have called isEnabled to check flag
       expect(mockIsEnabled).toHaveBeenCalledWith("roundStore");
 
-      // Wait for dynamic import to complete
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      // Wait for async wiring to complete deterministically
+      await whenScoreboardReady();
 
       // RoundStore should now have scoreboard callback
       expect(typeof roundStore.callbacks.onRoundNumberChange).toBe("function");
@@ -100,8 +101,8 @@ describe("RoundStore Feature Flag Integration", () => {
     it("should update scoreboard when round number changes", async () => {
       initScoreboardAdapter();
 
-      // Wait for dynamic import
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      // Wait for wiring to resolve
+      await whenScoreboardReady();
 
       // Set round number - should call updateRoundCounter
       roundStore.setRoundNumber(3);
@@ -115,8 +116,8 @@ describe("RoundStore Feature Flag Integration", () => {
 
       initScoreboardAdapter();
 
-      // Wait for dynamic import
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      // Wait for wiring promise to resolve
+      await whenScoreboardReady();
 
       // Should have called updateRoundCounter with initial value
       expect(mockUpdateRoundCounter).toHaveBeenCalledWith(2);
@@ -129,8 +130,8 @@ describe("RoundStore Feature Flag Integration", () => {
 
       initScoreboardAdapter();
 
-      // Wait for dynamic import
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      // Wait for wiring promise to resolve
+      await whenScoreboardReady();
 
       // This should not throw, errors should be caught internally
       expect(() => roundStore.setRoundNumber(1)).not.toThrow();
@@ -143,8 +144,8 @@ describe("RoundStore Feature Flag Integration", () => {
 
       initScoreboardAdapter();
 
-      // Wait for wiring
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      // Wait for deterministic wiring hook
+      await whenScoreboardReady();
 
       // Verify callback is set
       expect(typeof roundStore.callbacks.onRoundNumberChange).toBe("function");

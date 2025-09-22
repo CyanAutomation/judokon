@@ -243,11 +243,11 @@ class RoundStore {
    */
   wireIntoScoreboardAdapter() {
     if (!isEnabled("roundStore")) {
-      return; // Feature flag disabled, use legacy event system
+      return Promise.resolve(); // Feature flag disabled, use legacy event system
     }
 
     // Import scoreboard adapter dynamically to avoid circular dependencies
-    import("../setupScoreboard.js")
+    return import("../setupScoreboard.js")
       .then(({ updateRoundCounter }) => {
         // Subscribe to round number changes
         this.onRoundNumberChange((newNumber) => {
@@ -284,6 +284,13 @@ class RoundStore {
   }
 }
 
-// Export singleton instance
+/**
+ * Singleton round store instance for classic battles.
+ *
+ * @pseudocode
+ * 1. Create a RoundStore and reuse it across imports.
+ *
+ * @type {RoundStore}
+ */
 export const roundStore = new RoundStore();
 export default roundStore;

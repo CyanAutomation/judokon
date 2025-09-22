@@ -12,6 +12,19 @@ import { isEnabled } from "../featureFlags.js";
 
 let bound = false;
 const handlers = [];
+let scoreboardReadyPromise = Promise.resolve();
+
+/**
+ * Await the completion of scoreboard adapter wiring.
+ *
+ * @pseudocode
+ * 1. Return the promise tracking the scoreboard wiring lifecycle.
+ *
+ * @returns {Promise<void>} Resolves once scoreboard integration hooks are ready
+ */
+export function whenScoreboardReady() {
+  return scoreboardReadyPromise;
+}
 
 function bind(type, fn) {
   handlers.push({ type, fn });
@@ -36,12 +49,14 @@ export function initScoreboardAdapter() {
   }
   bound = true;
 
+  scoreboardReadyPromise = Promise.resolve();
+
   // Check if RoundStore feature flag is enabled
   const useRoundStore = isEnabled("roundStore");
 
   if (useRoundStore) {
     // Use RoundStore for round number updates instead of events
-    roundStore.wireIntoScoreboardAdapter();
+    scoreboardReadyPromise = Promise.resolve(roundStore.wireIntoScoreboardAdapter());
   } else {
     // Legacy event-driven approach
     // Round lifecycle
@@ -125,6 +140,7 @@ export function disposeScoreboardAdapter() {
   }
   handlers.length = 0;
   bound = false;
+  scoreboardReadyPromise = Promise.resolve();
 }
 
 export default initScoreboardAdapter;
