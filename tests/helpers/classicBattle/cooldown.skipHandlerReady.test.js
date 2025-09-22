@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 
@@ -9,8 +10,9 @@ describe("skip handler clears fallback timer", () => {
   /** @type {ReturnType<typeof vi.spyOn>} */
   let warnSpy;
   let timerMockRestore;
+  let timers;
   beforeEach(async () => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     scheduler = createMockScheduler();
     document.body.innerHTML = "";
     createTimerNodes();
@@ -87,7 +89,7 @@ describe("skip handler clears fallback timer", () => {
 
   afterEach(async () => {
     expect(errorSpy).not.toHaveBeenCalled();
-    vi.useRealTimers();
+    timers.cleanup();
     vi.restoreAllMocks();
     timerMockRestore?.unmock?.();
     timerMockRestore = null;

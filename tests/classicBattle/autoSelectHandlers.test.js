@@ -1,4 +1,5 @@
 import { vi, describe, test, expect, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { handleStatSelectionTimeout } from "../../src/helpers/classicBattle/autoSelectHandlers.js";
 import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
 
@@ -23,13 +24,14 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
 }));
 
 describe("handleStatSelectionTimeout", () => {
+  let timers;
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     setScheduler({ setTimeout, clearTimeout });
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
     setScheduler(realScheduler);
     vi.clearAllMocks();
   });

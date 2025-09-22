@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 const emitBattleEvent = vi.fn();
 let finished;
@@ -43,10 +44,11 @@ describe("initStartCooldown", () => {
   });
 
   it("dispatches ready via fallback timer", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { initStartCooldown } = await import("../../../src/helpers/classicBattle/cooldowns.js");
     await initStartCooldown(machine);
     await vi.runAllTimersAsync();
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
+    timers.cleanup();
   });
 });

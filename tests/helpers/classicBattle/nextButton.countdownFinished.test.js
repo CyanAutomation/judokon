@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 vi.mock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
   dispatchBattleEvent: vi.fn(() => Promise.resolve())
@@ -19,9 +20,10 @@ import { onNextButtonClick } from "../../../src/helpers/classicBattle/timerServi
 
 describe("Next button countdownFinished", () => {
   let warnSpy;
+  let timers;
 
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.clearAllMocks();
     document.body.innerHTML = "";
@@ -30,7 +32,7 @@ describe("Next button countdownFinished", () => {
   afterEach(() => {
     vi.runOnlyPendingTimers();
     warnSpy.mockRestore();
-    vi.useRealTimers();
+    timers.cleanup();
     document.body.innerHTML = "";
   });
 

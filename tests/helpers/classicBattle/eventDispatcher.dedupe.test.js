@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { withMutedConsole } from "../../utils/console.js";
 
 import { dispatchBattleEvent } from "../../../src/helpers/classicBattle/eventDispatcher.js";
 
 describe("dispatchBattleEvent dedupe", () => {
   let machine;
+  let timers;
 
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     machine = {
       dispatch: vi.fn(async () => "dispatched"),
       getState: vi.fn(() => "cooldown")
@@ -24,7 +26,7 @@ describe("dispatchBattleEvent dedupe", () => {
     // Ensure scheduled cleanup timers execute before leaving the test
     vi.advanceTimersByTime(100);
     await vi.runAllTimersAsync();
-    vi.useRealTimers();
+    timers.cleanup();
     delete globalThis.__classicBattleDebugRead;
   });
 

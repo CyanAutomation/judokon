@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { Scoreboard } from "../../src/components/Scoreboard.js";
 import { ScoreboardModel } from "../../src/components/ScoreboardModel.js";
 import { ScoreboardView } from "../../src/components/ScoreboardView.js";
@@ -43,7 +44,7 @@ describe("Scoreboard composition", () => {
   });
 
   it("locks outcome messages", () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const model = new ScoreboardModel();
     const messageEl = document.createElement("p");
     const view = new ScoreboardView(model, { messageEl });
@@ -54,6 +55,6 @@ describe("Scoreboard composition", () => {
     vi.advanceTimersByTime(1000);
     sb.showMessage("Next");
     expect(messageEl.textContent).toBe("Next");
-    vi.useRealTimers();
+    timers.cleanup();
   });
 });

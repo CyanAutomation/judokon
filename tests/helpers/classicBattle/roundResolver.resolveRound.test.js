@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 async function setup() {
   const mod = await import("../../../src/helpers/classicBattle/roundResolver.js");
@@ -8,13 +9,14 @@ async function setup() {
 }
 
 describe("resolveRound headless delays", () => {
+  let timers;
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     vi.resetModules();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
     vi.restoreAllMocks();
   });
 

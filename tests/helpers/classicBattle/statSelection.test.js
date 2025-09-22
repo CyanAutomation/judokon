@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
@@ -39,7 +40,7 @@ function expectDeselected(button) {
 }
 
 describe("classicBattle stat selection", () => {
-  let timerSpy;
+  let timers;
   let store;
   let selectStat;
   let simulateOpponentStat;
@@ -57,7 +58,7 @@ describe("classicBattle stat selection", () => {
     roundResult.setAttribute("aria-live", "polite");
     roundResult.setAttribute("aria-atomic", "true");
     document.body.append(playerCard, opponentCard, header, roundResult);
-    timerSpy = vi.useFakeTimers();
+    timers = useCanonicalTimers();
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (_data, _g, container, _pm, cb) => {
       container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
@@ -106,7 +107,7 @@ describe("classicBattle stat selection", () => {
   }
 
   afterEach(() => {
-    timerSpy.clearAllTimers();
+    timers.cleanup();
   });
 
   it("resets stat button state after selection", async () => {

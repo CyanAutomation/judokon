@@ -27,7 +27,7 @@ async function checkRagModel() {
     try {
       await stat(filePath);
       console.log(`  ✅ Found: ${file}`);
-    } catch (error) {
+    } catch {
       console.error(`  ❌ Missing: ${file}`);
       allFilesPresent = false;
     }

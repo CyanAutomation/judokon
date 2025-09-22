@@ -1,4 +1,5 @@
 import { describe, it, vi, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { __setStateSnapshot } from "../../../src/helpers/classicBattle/battleDebug.js";
 import { createBattleHeader } from "../../utils/testUtils.js";
 
@@ -7,14 +8,15 @@ vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
 }));
 
 describe("Next button manual click", () => {
+  let timers;
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.useRealTimers();
+    timers.cleanup();
     document.body.innerHTML = "";
   });
 
   it("dispatches ready when manually clicked", async () => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     const header = createBattleHeader();
     const button = document.createElement("button");
     button.id = "next-button";

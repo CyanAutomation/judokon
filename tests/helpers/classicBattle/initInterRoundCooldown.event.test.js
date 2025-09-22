@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 const emitBattleEvent = vi.fn();
 
@@ -92,7 +93,7 @@ describe("initInterRoundCooldown", () => {
   });
 
   it("reapplies readiness when reset before timeout", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { initInterRoundCooldown } = await import(
       "../../../src/helpers/classicBattle/cooldowns.js"
     );
@@ -104,10 +105,11 @@ describe("initInterRoundCooldown", () => {
     await vi.runAllTimersAsync();
     expect(btn.dataset.nextReady).toBe("true");
     expect(getDisabledSetCount()).toBe(2);
+    timers.cleanup();
   });
 
   it("does not reapply readiness when already ready", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { initInterRoundCooldown } = await import(
       "../../../src/helpers/classicBattle/cooldowns.js"
     );
@@ -116,5 +118,6 @@ describe("initInterRoundCooldown", () => {
     await initInterRoundCooldown(machine, { scheduler });
     await vi.runAllTimersAsync();
     expect(getDisabledSetCount()).toBe(1);
+    timers.cleanup();
   });
 });

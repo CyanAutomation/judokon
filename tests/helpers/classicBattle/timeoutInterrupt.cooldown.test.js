@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createTimerNodes } from "./domUtils.js";
 import { setupClassicBattleHooks } from "./setupTestEnv.js";
@@ -75,7 +76,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
   beforeEach(async () => {
     // Ensure fake timers are active so vi.advanceTimersByTimeAsync works
     // (many other tests in this suite call vi.useFakeTimers()).
-    timersControl = vi.useFakeTimers();
+    timersControl = useCanonicalTimers();
     readyDispatchTracker.events.length = 0;
     createTimerNodes();
     window.__NEXT_ROUND_COOLDOWN_MS = 1000;
@@ -87,7 +88,7 @@ describe("timeout → interruptRound → cooldown auto-advance", () => {
     readyDispatchTracker.events.length = 0;
     delete window.__NEXT_ROUND_COOLDOWN_MS;
     try {
-      timersControl?.useRealTimers?.();
+      timersControl?.cleanup?.();
     } catch {}
   });
 

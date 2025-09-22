@@ -1,5 +1,5 @@
-// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 
 let showMessage;
@@ -92,7 +92,7 @@ beforeEach(() => {
 
 describe("classicBattle opponent delay", () => {
   it("shows snackbar during opponent delay and clears before outcome", async () => {
-    const timer = vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { initClassicBattleTest } = await import("./initClassicBattle.js");
     await initClassicBattleTest({ afterMock: true });
     const mod = await import("../../../src/helpers/classicBattle.js");
@@ -121,7 +121,7 @@ describe("classicBattle opponent delay", () => {
     await vi.runAllTimersAsync();
     expect(showSnackbar).toHaveBeenCalledWith("Opponent is choosing…");
     await promise;
-    timer.clearAllTimers();
+    timers.cleanup();
     randomSpy.mockRestore();
   });
 });

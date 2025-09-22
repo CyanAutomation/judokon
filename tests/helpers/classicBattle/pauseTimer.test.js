@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { createRoundMessage } from "./domUtils.js";
@@ -10,7 +11,7 @@ let getRandomJudokaMock;
 let renderMock;
 
 describe("classicBattle timer pause", () => {
-  let timer;
+  let timers;
   let showMessage;
   let battleMod;
   let store;
@@ -28,7 +29,7 @@ describe("classicBattle timer pause", () => {
     statButtons.innerHTML = '<button data-stat="power"></button>';
     document.body.append(playerCard, opponentCard, header, roundResult, statButtons);
 
-    timer = vi.useFakeTimers();
+    timers = useCanonicalTimers();
     logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     fetchJsonMock = vi.fn(async (url) => {
@@ -74,7 +75,7 @@ describe("classicBattle timer pause", () => {
   });
 
   afterEach(() => {
-    timer.clearAllTimers();
+    timers.cleanup();
     logSpy.mockRestore();
   });
 

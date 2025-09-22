@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn().mockResolvedValue()
@@ -30,7 +31,7 @@ vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
 }));
 
 describe.sequential("classicBattle round resolver once", () => {
-  let timer;
+  let timers;
   let warnSpy;
   let handleStatSelection;
   let createBattleStore;
@@ -40,7 +41,7 @@ describe.sequential("classicBattle round resolver once", () => {
 
   beforeEach(async () => {
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    timer = vi.useFakeTimers();
+    timers = useCanonicalTimers();
     document.body.innerHTML = `
       <div id="player-card"><ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul></div>
       <div id="opponent-card"><ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul></div>
@@ -66,7 +67,7 @@ describe.sequential("classicBattle round resolver once", () => {
   });
 
   afterEach(() => {
-    timer.clearAllTimers();
+    timers.cleanup();
     warnSpy.mockRestore();
     document.body.innerHTML = "";
     delete document.body.dataset.battleState;

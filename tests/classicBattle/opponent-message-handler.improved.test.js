@@ -5,6 +5,7 @@
  */
 
 import { beforeAll, beforeEach, afterEach, describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 const showSnackbar = vi.fn();
 const markOpponentPromptNow = vi.fn();
@@ -50,6 +51,7 @@ describe("UI handlers: opponent message events", () => {
   let emitBattleEvent;
   let resetBattleEventTarget;
   let setTimeoutSpy;
+  let timers;
 
   beforeAll(async () => {
     await import("../../src/helpers/classicBattle/snackbar.js");
@@ -64,7 +66,7 @@ describe("UI handlers: opponent message events", () => {
   });
 
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
     showSnackbar.mockReset();
     markOpponentPromptNow.mockReset();
@@ -84,7 +86,7 @@ describe("UI handlers: opponent message events", () => {
 
   afterEach(() => {
     vi.clearAllTimers();
-    vi.useRealTimers();
+    timers.cleanup();
     vi.unstubAllGlobals();
     setTimeoutSpy?.mockRestore();
   });

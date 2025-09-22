@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { createRoundTimer } from "../../../src/helpers/timers/createRoundTimer.js";
 
 describe("createRoundTimer fallback (no starter) under fake timers", () => {
+  let timers;
   let timer;
   let tickSpy;
   let expiredSpy;
@@ -10,7 +12,7 @@ describe("createRoundTimer fallback (no starter) under fake timers", () => {
     // Use Vitest fake timers to simulate environments where RAF/engine loop
     // is not driving timer ticks. The createRoundTimer fallback should still
     // expire using setInterval/setTimeout semantics.
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     timer = createRoundTimer();
     tickSpy = vi.fn();
     expiredSpy = vi.fn();
@@ -22,7 +24,7 @@ describe("createRoundTimer fallback (no starter) under fake timers", () => {
     try {
       vi.runOnlyPendingTimers();
     } catch {}
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("emits tick and then expired when using fake timers", async () => {

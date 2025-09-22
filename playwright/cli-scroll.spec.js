@@ -167,7 +167,7 @@ test.describe("CLI Layout and Scrolling", () => {
             const current = window.scrollY || document.documentElement.scrollTop;
             return current > start;
           });
-        } catch (error) {
+        } catch {
           programmaticScrollWorked = false;
         }
 

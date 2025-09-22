@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { withMutedConsole } from "../utils/console.js";
 
 import {
@@ -8,7 +9,7 @@ import {
 
 describe("Classic Battle event dispatcher stdout guard", () => {
   it("does not throw when process.stdout is unavailable", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
 
     const originalDescriptor = Object.getOwnPropertyDescriptor(process, "stdout");
     Object.defineProperty(process, "stdout", {
@@ -40,7 +41,7 @@ describe("Classic Battle event dispatcher stdout guard", () => {
     } finally {
       vi.advanceTimersByTime(25);
       await vi.runAllTimersAsync();
-      vi.useRealTimers();
+      timers.cleanup();
       if (originalDescriptor) {
         Object.defineProperty(process, "stdout", originalDescriptor);
       } else {

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers, resetDom } from "../../utils/testUtils.js";
 import { applyMockSetup, mocks } from "./mockSetup.js";
@@ -9,13 +10,13 @@ let getRandomJudokaMock;
 let renderMock;
 
 describe.sequential("classicBattle card selection", () => {
-  let timerSpy;
+  let timers;
   beforeEach(() => {
     document.body.innerHTML = "";
     const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
     document.body.append(playerCard, opponentCard, header);
-    timerSpy = vi.useFakeTimers();
+    timers = useCanonicalTimers();
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
       container.innerHTML = "<ul></ul>";
@@ -33,7 +34,7 @@ describe.sequential("classicBattle card selection", () => {
 
   afterEach(() => {
     // Clear timers then fully reset DOM and module state between tests
-    timerSpy.clearAllTimers();
+    timers.cleanup();
     resetDom();
   });
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 vi.mock("../../../src/helpers/classicBattle/roundManager.js", () => {
   const setupFallbackTimer = vi.fn((ms, cb) => setTimeout(cb, ms));
@@ -53,10 +54,10 @@ vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
 import { cooldownEnter } from "../../../src/helpers/classicBattle/orchestratorHandlers.js";
 
 describe("cooldownEnter", () => {
-  let timerSpy;
+  let timers;
   let machine;
   beforeEach(() => {
-    timerSpy = vi.useFakeTimers();
+    timers = useCanonicalTimers();
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
     machine = { dispatch: vi.fn(), getState: vi.fn(() => "cooldown") };
@@ -68,13 +69,13 @@ describe("cooldownEnter", () => {
     machine.context = { store: { dispatch: machine.dispatch }, scheduler };
   });
   afterEach(() => {
-    timerSpy.clearAllTimers();
+    timers.cleanup();
     vi.restoreAllMocks();
   });
   it("auto dispatches ready after 1s timer", async () => {
     await cooldownEnter(machine);
     expect(machine.dispatch).not.toHaveBeenCalled();
-    await timerSpy.advanceTimersByTimeAsync(1200); // 1s duration + 200ms fallback
+    await timers.advanceTimersByTimeAsync(1200); // 1s duration + 200ms fallback
     expect(machine.dispatch).toHaveBeenCalledWith("ready");
   });
 });

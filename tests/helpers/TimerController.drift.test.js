@@ -1,9 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { TimerController } from "../../src/helpers/TimerController.js";
 
 describe("TimerController drift detection", () => {
   it("invokes onDrift when remaining drifts beyond threshold", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const callbacks = new Map();
     let nextId = 0;
     const onSecondTick = (cb) => {
@@ -30,6 +31,6 @@ describe("TimerController drift detection", () => {
       callbacks.get(2)?.();
     }
     expect(onDrift).toHaveBeenCalledWith(9);
-    vi.useRealTimers();
+    timers.cleanup();
   });
 });

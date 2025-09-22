@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { withMutedConsole } from "../../utils/console.js";
 
 const resetSpy = vi.fn(() => {
@@ -58,7 +59,7 @@ afterEach(() => {
 
 describe("roundResolved stat button reset", () => {
   it("clears stat selection via animation frame reset before timeout fallback", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const rafUtils = await import("../../../src/utils/rafUtils.js");
     const frameDelayMs = 1;
     const runAfterFramesSpy = vi
@@ -92,10 +93,11 @@ describe("roundResolved stat button reset", () => {
     await vi.advanceTimersByTimeAsync(32);
     expect(resetSpy).toHaveBeenCalledOnce();
     runAfterFramesSpy.mockRestore();
+    timers.cleanup();
   });
 
   it("falls back to timeout when animation frames are unavailable", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const rafUtils = await import("../../../src/utils/rafUtils.js");
     const runAfterFramesSpy = vi.spyOn(rafUtils, "runAfterFrames").mockImplementation(() => {
       throw new Error("Animation frames unavailable");
@@ -117,5 +119,6 @@ describe("roundResolved stat button reset", () => {
     expect(resetSpy).toHaveBeenCalledOnce();
     expect(btn.classList.contains("selected")).toBe(false);
     runAfterFramesSpy.mockRestore();
+    timers.cleanup();
   });
 });

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
   drawCards: vi.fn().mockResolvedValue({}),
@@ -16,15 +17,15 @@ vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
 }));
 
 describe.sequential("classicBattle player choice reset", () => {
-  let timer;
+  let timers;
   let battleMod;
   beforeEach(async () => {
-    timer = vi.useFakeTimers();
+    timers = useCanonicalTimers();
     battleMod = await import("../../../src/helpers/classicBattle.js");
   });
 
   afterEach(() => {
-    timer.clearAllTimers();
+    timers.cleanup();
   });
 
   it("clears store.playerChoice before each round", async () => {

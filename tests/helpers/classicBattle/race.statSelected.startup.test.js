@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 
 // Keep timers deterministic for resolveRound random delay
+let timers;
 beforeEach(() => {
-  vi.useFakeTimers();
+  timers = useCanonicalTimers();
   vi.spyOn(Math, "random").mockReturnValue(0);
 });
 
 afterEach(() => {
-  vi.useRealTimers();
+  timers.cleanup();
   vi.restoreAllMocks();
   document.body.innerHTML = "";
   delete document.body.dataset.battleState;

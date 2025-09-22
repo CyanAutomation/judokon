@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { createRoundMessage, createSnackbarContainer, createTimerNodes } from "./domUtils.js";
@@ -69,7 +70,7 @@ describe("countdown resets after stat selection", () => {
 
   it("shows snackbar countdown with sequential updates", async () => {
     populateCards();
-    const timer = vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { randomSpy } = await selectPower(battleMod, store);
     const snackbarEl = document.querySelector(".snackbar");
     expect(snackbarEl && snackbarEl.textContent).toMatch(/Next round in: [23]s/);
@@ -84,7 +85,7 @@ describe("countdown resets after stat selection", () => {
     expect(snackbarEl.textContent).toMatch(/Next round in: [10]s/);
     expect(document.querySelectorAll(".snackbar").length).toBe(1);
 
-    timer.clearAllTimers();
+    timers.cleanup();
     randomSpy.mockRestore();
   });
 });

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import "./commonMocks.js";
 import { createBattleHeader, createBattleCardContainers } from "../../utils/testUtils.js";
 import { applyMockSetup } from "./mockSetup.js";
@@ -27,13 +28,13 @@ let getRandomJudokaMock;
 let renderMock;
 
 describe("classicBattle stalled stat selection recovery", () => {
-  let timerSpy;
+  let timers;
   beforeEach(() => {
     document.body.innerHTML = "";
     const { playerCard, opponentCard } = createBattleCardContainers();
     const header = createBattleHeader();
     document.body.append(playerCard, opponentCard, header);
-    timerSpy = vi.useFakeTimers();
+    timers = useCanonicalTimers();
     fetchJsonMock = vi.fn(async () => []);
     generateRandomCardMock = vi.fn(async (_d, _g, container, _pm, cb) => {
       container.innerHTML = `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
@@ -56,7 +57,7 @@ describe("classicBattle stalled stat selection recovery", () => {
   });
 
   afterEach(() => {
-    timerSpy.clearAllTimers();
+    timers.cleanup();
     vi.restoreAllMocks();
   });
 

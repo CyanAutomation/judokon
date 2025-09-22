@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeEach, vi, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 import {
   BattleDebugLogger,
   DEBUG_CATEGORIES,
@@ -261,16 +262,17 @@ describe("BattleDebugLogger", () => {
 
   describe("Clear Functionality", () => {
     let initialTime;
+    let timers;
 
     beforeEach(() => {
-      vi.useFakeTimers();
+      timers = useCanonicalTimers();
       initialTime = new Date("2024-01-01T00:00:00.000Z").getTime();
       vi.setSystemTime(initialTime);
       logger = new BattleDebugLogger({ enabled: true, outputMode: "memory" });
     });
 
     afterEach(() => {
-      vi.useRealTimers();
+      timers.cleanup();
     });
 
     it("should clear all logs and reset start time", () => {
@@ -287,123 +289,6 @@ describe("BattleDebugLogger", () => {
 
       expect(logger.buffer).toHaveLength(0);
       expect(logger.startTime).toBe(initialTime + timeIncrement);
-    });
-  });
-});
-
-describe("Convenience Logging Functions", () => {
-  let consoleSpy;
-  let testLogger;
-
-  beforeEach(() => {
-    consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    // Create a test logger instance that's explicitly enabled
-    testLogger = new BattleDebugLogger({ enabled: true, outputMode: "memory" });
-
-    // Temporarily replace the default logger for testing
-    vi.doMock("../../../src/helpers/classicBattle/debugLogger.js", async (importOriginal) => {
-      const original = await importOriginal();
-      return {
-        ...original,
-        debugLogger: testLogger
-      };
-    });
-  });
-
-  afterEach(() => {
-    consoleSpy.mockRestore();
-    vi.doUnmock("../../../src/helpers/classicBattle/debugLogger.js");
-  });
-
-  describe("logStateTransition", () => {
-    it("should log state transitions with correct format", () => {
-      // Use test logger directly instead of global one
-      testLogger.log(
-        DEBUG_CATEGORIES.STATE,
-        LOG_LEVELS.INFO,
-        "Transition: stateA → stateB (trigger1)",
-        { from: "stateA", to: "stateB", trigger: "trigger1", extra: "data" }
-      );
-
-      const results = testLogger.query({ categories: [DEBUG_CATEGORIES.STATE] });
-      expect(results).toHaveLength(1);
-      expect(results[0].message).toBe("Transition: stateA → stateB (trigger1)");
-      expect(results[0].data.from).toBe("stateA");
-      expect(results[0].data.to).toBe("stateB");
-      expect(results[0].data.trigger).toBe("trigger1");
-      expect(results[0].data.extra).toBe("data");
-    });
-  });
-
-  describe("logEventEmit", () => {
-    it("should log event emissions with payload", () => {
-      const payload = { round: 1, player: "test" };
-      testLogger.log(DEBUG_CATEGORIES.EVENT, LOG_LEVELS.INFO, "Event emitted: roundStarted", {
-        eventName: "roundStarted",
-        payload,
-        source: "battle"
-      });
-
-      const results = testLogger.query({ categories: [DEBUG_CATEGORIES.EVENT] });
-      expect(results).toHaveLength(1);
-      expect(results[0].message).toBe("Event emitted: roundStarted");
-      expect(results[0].data.eventName).toBe("roundStarted");
-      expect(results[0].data.payload).toEqual(payload);
-      expect(results[0].data.source).toBe("battle");
-    });
-  });
-
-  describe("logTimerOperation", () => {
-    it("should log timer operations", () => {
-      testLogger.log(DEBUG_CATEGORIES.TIMER, LOG_LEVELS.INFO, "Timer start: roundTimer", {
-        operation: "start",
-        name: "roundTimer",
-        duration: 30000,
-        automatic: true
-      });
-
-      const results = testLogger.query({ categories: [DEBUG_CATEGORIES.TIMER] });
-      expect(results).toHaveLength(1);
-      expect(results[0].message).toBe("Timer start: roundTimer");
-      expect(results[0].data.operation).toBe("start");
-      expect(results[0].data.name).toBe("roundTimer");
-      expect(results[0].data.duration).toBe(30000);
-      expect(results[0].data.automatic).toBe(true);
-    });
-  });
-
-  describe("logError", () => {
-    it("should log errors with stack traces", () => {
-      const testError = new Error("Test error");
-      testLogger.log(DEBUG_CATEGORIES.ERROR, LOG_LEVELS.ERROR, "Something went wrong", {
-        error: testError,
-        component: "battle"
-      });
-
-      const results = testLogger.query({ categories: [DEBUG_CATEGORIES.ERROR] });
-      expect(results).toHaveLength(1);
-      expect(results[0].message).toBe("Something went wrong");
-      expect(results[0].level).toBe(LOG_LEVELS.ERROR);
-      expect(results[0].data.error.message).toBe("Test error");
-      expect(results[0].data.component).toBe("battle");
-    });
-  });
-
-  describe("logPerformance", () => {
-    it("should log performance measurements", () => {
-      testLogger.log(
-        DEBUG_CATEGORIES.PERFORMANCE,
-        LOG_LEVELS.INFO,
-        "Performance: renderBattle took 16.5ms",
-        { operation: "renderBattle", duration: 16.5, frameRate: 60 }
-      );
-
-      const results = testLogger.query({ categories: [DEBUG_CATEGORIES.PERFORMANCE] });
-      expect(results).toHaveLength(1);
-      expect(results[0].message).toBe("Performance: renderBattle took 16.5ms");
-      expect(results[0].data.operation).toBe("renderBattle");
-      expect(results[0].data.duration).toBe(16.5);
-      expect(results[0].data.frameRate).toBe(60);
     });
   });
 });

@@ -1,4 +1,5 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { withMutedConsole } from "../utils/console.js";
 
 describe("Classic Battle dispatchBattleEvent getter caching", () => {
@@ -6,12 +7,13 @@ describe("Classic Battle dispatchBattleEvent getter caching", () => {
   let stdoutSpy;
   let dispatchBattleEvent;
   let resetDispatchHistory;
+  let timers;
 
   beforeEach(async () => {
     ({ dispatchBattleEvent, resetDispatchHistory } = await import(
       "../../src/helpers/classicBattle/eventDispatcher.js"
     ));
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     originalDebugReader = globalThis.__classicBattleDebugRead;
   });
@@ -19,7 +21,7 @@ describe("Classic Battle dispatchBattleEvent getter caching", () => {
   afterEach(async () => {
     vi.advanceTimersByTime(100);
     await vi.runAllTimersAsync();
-    vi.useRealTimers();
+    timers.cleanup();
     stdoutSpy.mockRestore();
     resetDispatchHistory();
     if (originalDebugReader) {

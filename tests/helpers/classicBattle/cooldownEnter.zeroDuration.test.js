@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 vi.mock("../../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn(),
@@ -23,14 +24,14 @@ import { emitBattleEvent } from "../../../src/helpers/classicBattle/battleEvents
 import { createStateManager } from "../../../src/helpers/classicBattle/stateManager.js";
 
 describe("cooldownEnter zero duration", () => {
-  let timer;
+  let timers;
   beforeEach(() => {
-    timer = vi.useFakeTimers();
+    timers = useCanonicalTimers();
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
   });
   afterEach(() => {
-    timer.clearAllTimers();
+    timers.cleanup();
     vi.restoreAllMocks();
   });
 
@@ -53,7 +54,7 @@ describe("cooldownEnter zero duration", () => {
     await cooldownEnter(machine, { initial: true });
     expect(emitBattleEvent).toHaveBeenCalledWith("countdownStart", { duration: 1 });
 
-    await timer.advanceTimersByTimeAsync(1200);
+    await timers.advanceTimersByTimeAsync(1200);
     expect(emitBattleEvent).toHaveBeenCalledWith("statButtons:enable");
   });
 });
