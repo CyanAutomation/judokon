@@ -1,4 +1,55 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { waitForTestApi } from "./helpers/battleStateHelper.js";
+
+async function ensureVerboseLogVisible(page) {
+  const verboseToggle = page.locator("#verbose-toggle");
+  if ((await verboseToggle.count()) > 0) {
+    const isChecked = await verboseToggle.isChecked();
+    if (!isChecked) {
+      await verboseToggle.check();
+    }
+    const verboseSection = page.locator("#cli-verbose-section");
+    if ((await verboseSection.count()) > 0) {
+      await expect(verboseSection).toBeVisible();
+    }
+  }
+}
+
+async function appendVerboseEntries(page, entries) {
+  const payload = Array.isArray(entries) ? entries : [entries];
+  await page.evaluate(async (logs) => {
+    const dispatch =
+      window.__TEST_API?.state?.dispatchBattleEvent?.bind(window.__TEST_API.state) || null;
+    const emitter = typeof window.emitBattleEvent === "function" ? window.emitBattleEvent : null;
+
+    for (const entry of logs) {
+      const detail =
+        typeof entry === "string"
+          ? { from: null, to: entry }
+          : { from: entry?.from ?? null, to: entry?.to ?? "" };
+      let handled = false;
+      if (dispatch) {
+        try {
+          const result = await dispatch("battleStateChange", detail);
+          handled = result === true;
+        } catch {
+          handled = false;
+        }
+      }
+      if (!handled && emitter) {
+        try {
+          emitter("battleStateChange", detail);
+          handled = true;
+        } catch {
+          handled = false;
+        }
+      }
+      if (!handled) {
+        throw new Error("Failed to append verbose entry through official helpers");
+      }
+    }
+  }, payload);
+}
 
 test.describe("CLI Layout and Scrolling", () => {
   test.describe("Desktop Layout", () => {
@@ -25,17 +76,18 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 1024, height: 768 });
 
-      await page.waitForFunction(() => window.__test?.cli?.appendTranscript);
-
-      await page.evaluate(() =>
-        window.__test.cli.appendTranscript(
-          Array.from(
-            { length: 50 },
-            (_, i) =>
-              `Test line ${i + 1}: This is a long line of text to test horizontal scrolling behavior and content wrapping.`
-          )
-        )
-      );
+      await waitForTestApi(page);
+      await page.waitForFunction(() => typeof window.emitBattleEvent === "function");
+      await page.waitForSelector("#cli-verbose-log");
+      await ensureVerboseLogVisible(page);
+      const transcriptEntries = Array.from({ length: 50 }, (_, i) => ({
+        from: `state-${i}`,
+        to: `Test line ${i + 1}: This is a long line of text to test horizontal scrolling behavior and content wrapping.`
+      }));
+      await appendVerboseEntries(page, transcriptEntries);
+      await expect(page.locator("#cli-verbose-log")).toContainText("Test line 1", {
+        timeout: 5000
+      });
 
       // Check that content is scrollable vertically but not horizontally
       const scrollInfo = await page.evaluate(() => {
@@ -54,9 +106,13 @@ test.describe("CLI Layout and Scrolling", () => {
       // Should have vertical scroll if content is long
       if (scrollInfo.scrollHeight > scrollInfo.clientHeight) {
         // Verify scrolling works
-        await page.evaluate(() => window.scrollTo(0, 100));
-        const scrollTop = await page.evaluate(() => window.pageYOffset);
-        expect(scrollTop).toBeGreaterThan(0);
+        const initialScroll = await page.evaluate(
+          () => window.scrollY || document.documentElement.scrollTop
+        );
+        await page.mouse.wheel(0, 400);
+        await expect
+          .poll(() => page.evaluate(() => window.scrollY || document.documentElement.scrollTop))
+          .toBeGreaterThan(initialScroll);
       }
     });
   });
@@ -164,9 +220,13 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 800, height: 600 });
 
-      await page.waitForFunction(() => window.__test?.cli?.appendTranscript);
-
-      await page.evaluate(() => window.__test.cli.appendTranscript("A".repeat(1000)));
+      await waitForTestApi(page);
+      await page.waitForFunction(() => typeof window.emitBattleEvent === "function");
+      await page.waitForSelector("#cli-verbose-log");
+      await ensureVerboseLogVisible(page);
+      const longLine = "A".repeat(1000);
+      await appendVerboseEntries(page, longLine);
+      await expect(page.locator("#cli-verbose-log")).toContainText(longLine.slice(0, 100));
 
       // Check that long lines don't break layout
       const layoutBroken = await page.evaluate(() => {
@@ -186,16 +246,16 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
       await page.setViewportSize({ width: 1024, height: 768 });
 
-      await page.waitForFunction(() => window.__test?.cli?.appendTranscript);
-
-      await page.evaluate(() =>
-        window.__test.cli.appendTranscript(
-          Array.from({ length: 10 }, (_, i) => ({
-            from: `state-${i}`,
-            to: `Section ${i + 1}: This is test content for section ${i + 1}.`
-          }))
-        )
-      );
+      await waitForTestApi(page);
+      await page.waitForFunction(() => typeof window.emitBattleEvent === "function");
+      await page.waitForSelector("#cli-verbose-log");
+      await ensureVerboseLogVisible(page);
+      const sectionEntries = Array.from({ length: 10 }, (_, i) => ({
+        from: `state-${i}`,
+        to: `Section ${i + 1}: This is test content for section ${i + 1}.`
+      }));
+      await appendVerboseEntries(page, sectionEntries);
+      await expect(page.locator("#cli-verbose-log")).toContainText("Section 1");
 
       const transcriptLines = await page.evaluate(() => {
         const pre = document.getElementById("cli-verbose-log");
