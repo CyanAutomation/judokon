@@ -3,107 +3,124 @@ import { toggleCountryPanel } from "../countryPanel.js";
 import { handleKeyboardNavigation } from "./handleKeyboardNavigation.js";
 
 /**
- * Handle a click on the country toggle button.
+ * Build a DOM adapter that exposes the imperative interactions required by the
+ * country toggle controller.
  *
  * @pseudocode
- * 1. Determine if panel was open.
- * 2. Toggle the panel state.
- * 3. If opening for the first time, load country slider.
+ * 1. Derive helper functions for reading panel state and loading flag buttons.
+ * 2. Delegate to the concrete helpers from the browse module tree.
+ * 3. Return the adapter consumed by {@link createCountryToggleController}.
  *
- * @param {HTMLButtonElement} toggleButton
- * @param {Element} panel
- * @param {Element} listContainer
- * @returns {Promise<void>}
+ * @param {HTMLButtonElement} toggleButton - Toggle control for the panel.
+ * @param {Element} panel - Panel element that holds the country list.
+ * @param {Element} listContainer - Container that receives the lazily-created flag buttons.
+ * @param {object} [dependencies]
+ * @param {typeof toggleCountryPanel} [dependencies.toggleCountryPanelImpl]
+ * @param {typeof createCountrySlider} [dependencies.createCountrySliderImpl]
+ * @param {typeof handleKeyboardNavigation} [dependencies.handleKeyboardNavigationImpl]
+ * @returns {CountryToggleAdapter}
  */
-export async function handleToggleClick(toggleButton, panel, listContainer) {
-  const wasOpen = panel.classList.contains("open");
-  toggleCountryPanel(toggleButton, panel);
-  if (!wasOpen && listContainer.children.length === 0) {
-    await createCountrySlider(listContainer);
-  }
+export function createCountryToggleAdapter(
+  toggleButton,
+  panel,
+  listContainer,
+  {
+    toggleCountryPanelImpl = toggleCountryPanel,
+    createCountrySliderImpl = createCountrySlider,
+    handleKeyboardNavigationImpl = handleKeyboardNavigation
+  } = {}
+) {
+  return {
+    isPanelOpen: () => panel?.classList?.contains?.("open") ?? false,
+    togglePanel: (force) => toggleCountryPanelImpl(toggleButton, panel, force),
+    async loadFlags() {
+      if (!listContainer || listContainer.children.length > 0) {
+        return;
+      }
+      await createCountrySliderImpl(listContainer);
+    },
+    hasFlags: () => !!listContainer && listContainer.children.length > 0,
+    handleArrowNavigation: (event) => {
+      handleKeyboardNavigationImpl(event, listContainer, "flag-button");
+    }
+  };
 }
 
 /**
- * Handle keydown interactions within the country panel.
- *
- * @pseudocode
- * 1. If Escape, close the panel.
- * 2. If ArrowRight/ArrowLeft, delegate to keyboard navigation helper.
- *
- * @param {KeyboardEvent} event
- * @param {HTMLButtonElement} toggleButton
- * @param {Element} panel
- * @param {Element} listContainer
+ * @typedef {object} CountryToggleAdapter
+ * @property {() => boolean} isPanelOpen - Returns whether the panel is currently marked as open.
+ * @property {(force?: boolean) => void} togglePanel - Imperatively toggle the panel visibility.
+ * @property {() => Promise<void>} loadFlags - Lazily create the country slider contents.
+ * @property {() => boolean} [hasFlags] - Optional hook that reports whether the slider already contains flag buttons.
+ * @property {(event: KeyboardEvent) => void} handleArrowNavigation - Delegate keyboard navigation for the flag buttons.
  */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * @summary TODO: Add summary
- * @pseudocode
- * 1. TODO: Add pseudocode
- */
-/**
- * Handle keydown events inside the country panel.
- *
- * @summary Close the panel on Escape and delegate ArrowLeft/ArrowRight to keyboard navigation.
- * @pseudocode
- * 1. If Escape key, close the panel via `toggleCountryPanel(toggleButton, panel, false)`.
- * 2. If Arrow keys, call `handleKeyboardNavigation` with the list container and `flag-button`.
- *
- * @param {KeyboardEvent} event - The keydown event.
- * @param {HTMLButtonElement} toggleButton - Panel toggle button to control open/close.
- * @param {Element} panel - The panel element.
- * @param {Element} listContainer - Container that holds flag buttons.
- * @returns {void}
- */
-export function handlePanelKeydown(event, toggleButton, panel, listContainer) {
-  if (event.key === "Escape") {
-    toggleCountryPanel(toggleButton, panel, false);
-  }
 
-  if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-    handleKeyboardNavigation(event, listContainer, "flag-button");
-  }
+/**
+ * Create a controller that tracks the pure state for the country toggle.
+ *
+ * @pseudocode
+ * 1. Capture the initial "flags loaded" state using the adapter hook if available.
+ * 2. When the toggle handler runs:
+ *    a. Read the open state before toggling.
+ *    b. Toggle the panel through the adapter.
+ *    c. If opening for the first time, invoke the lazy flag loader and update the cached state.
+ * 3. When keydown events arrive:
+ *    a. Close the panel on Escape via the adapter.
+ *    b. Delegate Arrow navigation to the injected handler.
+ * 4. Expose a getter that lets callers inspect whether flags were loaded.
+ *
+ * @param {CountryToggleAdapter} adapter - Adapter providing imperative DOM hooks.
+ * @returns {{ handleToggle: () => Promise<void>, handleKeydown: (event: KeyboardEvent) => void, countriesLoaded: () => boolean }}
+ */
+export function createCountryToggleController(adapter) {
+  let flagsLoaded = adapter.hasFlags ? adapter.hasFlags() : false;
+
+  return {
+    async handleToggle() {
+      const wasOpen = adapter.isPanelOpen?.() ?? false;
+      adapter.togglePanel?.();
+      if (!wasOpen && !flagsLoaded) {
+        await adapter.loadFlags?.();
+        flagsLoaded = adapter.hasFlags ? adapter.hasFlags() : true;
+      }
+    },
+    handleKeydown(event) {
+      if (event.key === "Escape") {
+        adapter.togglePanel?.(false);
+        return;
+      }
+
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+        adapter.handleArrowNavigation?.(event);
+      }
+    },
+    countriesLoaded: () => flagsLoaded
+  };
 }
 
 /**
  * Set up the country selection panel toggle behavior.
  *
  * @pseudocode
- * 1. Attach click handler for toggle button.
- * 2. Attach keydown handler for panel interactions.
- * 3. Return a function indicating if countries are loaded.
+ * 1. Build or accept an adapter that knows how to mutate the DOM.
+ * 2. Instantiate the toggle controller to track lazy-loading state and event handlers.
+ * 3. Wire the controller handlers to the provided DOM nodes.
+ * 4. Expose a predicate so callers can check whether the slider was populated.
  *
- * @param {HTMLButtonElement} toggleButton
- * @param {Element} panel
- * @param {Element} listContainer
- * @returns {() => boolean} Function returning true when countries are loaded.
+ * @param {HTMLButtonElement} toggleButton - Toggle control for the panel.
+ * @param {Element} panel - Country panel element.
+ * @param {Element} listContainer - Container for flag buttons.
+ * @param {{ adapter?: CountryToggleAdapter }} [options] - Optional override adapter used primarily for tests.
+ * @returns {() => boolean} Function that reports whether the flag slider has been loaded.
  */
-export function setupCountryToggle(toggleButton, panel, listContainer) {
-  const countriesLoaded = () => listContainer.children.length > 0;
+export function setupCountryToggle(toggleButton, panel, listContainer, { adapter } = {}) {
+  const resolvedAdapter = adapter ?? createCountryToggleAdapter(toggleButton, panel, listContainer);
+  const controller = createCountryToggleController(resolvedAdapter);
 
-  toggleButton.addEventListener("click", () =>
-    handleToggleClick(toggleButton, panel, listContainer)
-  );
+  toggleButton?.addEventListener?.("click", controller.handleToggle);
+  panel?.addEventListener?.("keydown", controller.handleKeydown);
 
-  panel.addEventListener("keydown", (e) =>
-    handlePanelKeydown(e, toggleButton, panel, listContainer)
-  );
-
-  return countriesLoaded;
+  return controller.countriesLoaded;
 }
 
 export default setupCountryToggle;

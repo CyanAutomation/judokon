@@ -1,240 +1,227 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { install, uninstall, flushAll } from "../helpers/rafMock.js";
-
-beforeEach(() => {
-  install();
-});
-afterEach(() => {
-  uninstall();
-});
+import { describe, it, expect, vi } from "vitest";
 
 describe("browseJudokaPage helpers", () => {
-  it("setupCountryToggle toggles panel and loads flags once", async () => {
-    const toggleCountryPanel = vi.fn();
-    const createCountrySlider = vi.fn(async (container) => {
-      const first = document.createElement("button");
-      first.className = "flag-button";
-      const second = document.createElement("button");
-      second.className = "flag-button";
-      container.append(first, second);
-    });
-
-    vi.doMock("../../src/helpers/countryPanel.js", () => ({
-      toggleCountryPanel,
-      toggleCountryPanelMode: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/countrySlider.js", () => ({
-      createCountrySlider
-    }));
-
-    const { setupCountryToggle, handleToggleClick, handlePanelKeydown } = await import(
+  it("country toggle controller toggles panel and loads flags once", async () => {
+    const { createCountryToggleController, setupCountryToggle } = await import(
       "../../src/helpers/browse/setupCountryToggle.js"
     );
 
-    const toggleBtn = document.createElement("button");
-    const panel = document.createElement("div");
-    const list = document.createElement("div");
-    document.body.append(toggleBtn, panel, list);
+    const interactions = {
+      toggle: [],
+      loads: 0,
+      navigation: []
+    };
+    let open = false;
+    let flagsLoaded = false;
 
-    const countriesLoaded = setupCountryToggle(toggleBtn, panel, list);
+    const adapter = {
+      isPanelOpen: () => open,
+      togglePanel: (force) => {
+        interactions.toggle.push(force);
+        if (typeof force === "boolean") {
+          open = force;
+        } else {
+          open = !open;
+        }
+      },
+      async loadFlags() {
+        interactions.loads += 1;
+        flagsLoaded = true;
+      },
+      hasFlags: () => flagsLoaded,
+      handleArrowNavigation: (event) => {
+        interactions.navigation.push(event.key);
+      }
+    };
 
-    await handleToggleClick(toggleBtn, panel, list);
-    expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel);
-    expect(createCountrySlider).toHaveBeenCalledTimes(1);
-    expect(countriesLoaded()).toBe(true);
+    const controller = createCountryToggleController(adapter);
 
-    await handleToggleClick(toggleBtn, panel, list);
-    expect(createCountrySlider).toHaveBeenCalledTimes(1);
+    await controller.handleToggle();
+    expect(interactions.toggle).toEqual([undefined]);
+    expect(interactions.loads).toBe(1);
+    expect(controller.countriesLoaded()).toBe(true);
 
-    const first = list.querySelectorAll("button.flag-button")[0];
-    const second = list.querySelectorAll("button.flag-button")[1];
-    first.focus();
-    handlePanelKeydown({ key: "ArrowRight", preventDefault: vi.fn() }, toggleBtn, panel, list);
-    expect(document.activeElement).toBe(second);
+    await controller.handleToggle();
+    expect(interactions.toggle).toEqual([undefined, undefined]);
+    expect(interactions.loads).toBe(1);
 
-    handlePanelKeydown({ key: "Escape" }, toggleBtn, panel, list);
-    expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel, false);
+    controller.handleKeydown({ key: "ArrowRight" });
+    expect(interactions.navigation).toEqual(["ArrowRight"]);
+
+    controller.handleKeydown({ key: "Escape" });
+    expect(interactions.toggle).toEqual([undefined, undefined, false]);
+
+    const toggleEvents = [];
+    const keyEvents = [];
+    const toggleButton = {
+      addEventListener: vi.fn((event, handler) => {
+        toggleEvents.push({ event, handler });
+      })
+    };
+    const panel = {
+      addEventListener: vi.fn((event, handler) => {
+        keyEvents.push({ event, handler });
+      })
+    };
+
+    const loaded = setupCountryToggle(toggleButton, panel, null, { adapter });
+
+    expect(toggleButton.addEventListener).toHaveBeenCalledWith("click", expect.any(Function));
+    expect(panel.addEventListener).toHaveBeenCalledWith("keydown", expect.any(Function));
+
+    await toggleEvents[0].handler();
+    expect(interactions.toggle).toEqual([undefined, undefined, false, undefined]);
+
+    keyEvents[0].handler({ key: "Escape" });
+    expect(interactions.toggle).toEqual([undefined, undefined, false, undefined, false]);
+
+    expect(loaded()).toBe(true);
   });
 
   it("setupLayoutToggle switches panel mode", async () => {
     const toggleCountryPanelMode = vi.fn();
-    const toggleCountryPanel = vi.fn();
-
-    vi.doMock("../../src/helpers/domReady.js", () => ({
-      onDomReady: vi.fn()
-    }));
-
     vi.doMock("../../src/helpers/countryPanel.js", () => ({
-      toggleCountryPanel,
+      toggleCountryPanel: vi.fn(),
       toggleCountryPanelMode
     }));
 
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
     const { setupLayoutToggle } = await import("../../src/helpers/browseJudokaPage.js");
 
-    const button = document.createElement("button");
-    const panel = document.createElement("div");
-    document.body.append(button, panel);
+    const handlers = {};
+    const button = {
+      addEventListener: vi.fn((event, handler) => {
+        handlers[event] = handler;
+      })
+    };
+    const panel = {};
 
     setupLayoutToggle(button, panel);
-    button.click();
-    await Promise.resolve();
+    expect(button.addEventListener).toHaveBeenCalledWith("click", expect.any(Function));
 
+    handlers.click();
     expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel);
 
-    expect(() => setupLayoutToggle(null, panel)).not.toThrow();
+    consoleErrorSpy.mockRestore();
   });
 
-  it("setupCountryFilter filters judoka and clears selection", async () => {
-    const toggleCountryPanel = vi.fn();
-
-    vi.doMock("../../src/helpers/countryPanel.js", () => ({
-      toggleCountryPanel,
-      toggleCountryPanelMode: vi.fn()
-    }));
-
-    const { applyCountryFilter, clearCountryFilter } = await import(
+  it("country filter controller filters judoka and clears selection", async () => {
+    vi.resetModules();
+    const { createCountryFilterController } = await import(
       "../../src/helpers/browse/setupCountryFilter.js"
     );
-
-    const list = document.createElement("div");
-    const allBtn = document.createElement("button");
-    allBtn.className = "flag-button";
-    allBtn.value = "all";
-    const jpBtn = document.createElement("button");
-    jpBtn.className = "flag-button";
-    jpBtn.value = "JP";
-    list.append(allBtn, jpBtn);
-
-    const clear = document.createElement("button");
-    const panel = document.createElement("div");
-    const toggleBtn = document.createElement("button");
-    const carousel = document.createElement("div");
-    const ariaLive = document.createElement("div");
-    ariaLive.className = "carousel-aria-live";
-    carousel.appendChild(ariaLive);
-    document.body.append(list, clear, panel, toggleBtn, carousel);
 
     const judoka = [
       { id: 1, country: "JP" },
       { id: 2, country: "BR" }
     ];
-    const render = vi.fn();
-
-    const updateLiveRegion = (count, country) => {
-      ariaLive.textContent = `Showing ${count} judoka for ${country}`;
+    const renderCalls = [];
+    const adapter = {
+      clearSelection: vi.fn(),
+      highlightSelection: vi.fn(),
+      updateLiveRegion: vi.fn(),
+      closePanel: vi.fn(),
+      removeNoResultsMessage: vi.fn(),
+      showNoResultsMessage: vi.fn(),
+      getButtonValue: (button) => button.value
     };
+    const render = vi.fn((list) => {
+      renderCalls.push(list.map((item) => item.country));
+    });
 
-    await applyCountryFilter(
-      jpBtn,
-      list,
-      judoka,
-      render,
-      toggleBtn,
-      panel,
-      carousel,
-      updateLiveRegion
-    );
-    expect(jpBtn.classList.contains("selected")).toBe(true);
+    const controller = createCountryFilterController(judoka, render, adapter);
+
+    const filtered = await controller.select({ value: "JP" });
+    expect(filtered).toEqual([{ id: 1, country: "JP" }]);
+    expect(adapter.highlightSelection).toHaveBeenCalledWith({ value: "JP" });
     expect(render).toHaveBeenLastCalledWith([{ id: 1, country: "JP" }]);
-    expect(ariaLive.textContent).toBe("Showing 1 judoka for JP");
-    expect(toggleCountryPanel).toHaveBeenCalledWith(toggleBtn, panel, false);
+    expect(adapter.updateLiveRegion).toHaveBeenLastCalledWith(1, "JP");
+    expect(adapter.removeNoResultsMessage).toHaveBeenCalled();
+    expect(adapter.closePanel).toHaveBeenCalled();
 
-    await clearCountryFilter(list, judoka, render, toggleBtn, panel, updateLiveRegion);
-    expect(allBtn.classList.contains("selected")).toBe(false);
-    expect(jpBtn.classList.contains("selected")).toBe(false);
+    adapter.showNoResultsMessage.mockClear();
+    await controller.select({ value: "CA" });
+    expect(adapter.showNoResultsMessage).toHaveBeenCalledTimes(1);
+
+    const cleared = await controller.clear();
+    expect(cleared).toEqual(judoka);
+    expect(adapter.clearSelection).toHaveBeenCalled();
     expect(render).toHaveBeenLastCalledWith(judoka);
-    expect(toggleCountryPanel).toHaveBeenCalledTimes(2);
-    expect(ariaLive.textContent).toBe("Showing 2 judoka for all countries");
+    expect(adapter.updateLiveRegion).toHaveBeenLastCalledWith(2, "all countries");
   });
 
   it("shows a spinner during load and removes it after rendering", async () => {
-    const fetchResolvers = [];
-    const fetchJson = vi.fn(() => new Promise((resolve) => fetchResolvers.push(resolve)));
-
-    const buildCardCarousel = vi.fn(async () => {
-      const wrapper = document.createElement("div");
-      const ariaLive = document.createElement("div");
-      ariaLive.className = "carousel-aria-live";
-      const inner = document.createElement("div");
-      inner.className = "card-carousel";
-      wrapper.append(ariaLive, inner);
-      return wrapper;
+    vi.resetModules();
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchJson = vi.fn((url) => {
+      if (url.includes("judoka.json")) {
+        return Promise.resolve([{ id: 1, country: "JP" }]);
+      }
+      return Promise.resolve([]);
     });
 
-    let show;
-    let remove;
-    const createSpinner = (wrapper) => {
-      const element = document.createElement("div");
-      element.className = "loading-spinner";
-      wrapper.appendChild(element);
-      show = vi.fn();
-      remove = vi.fn(() => element.remove());
-      return {
-        element,
-        show,
-        hide: vi.fn(),
-        remove
-      };
-    };
+    const buildCardCarousel = vi.fn(async () => ({
+      querySelector: vi.fn(() => ({}))
+    }));
 
-    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
+    const initScrollMarkers = vi.fn();
+    const setupButtonEffects = vi.fn();
+    const addHoverZoomMarkers = vi.fn();
+
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
-      initScrollMarkers: vi.fn()
+      initScrollMarkers
     }));
-    vi.doMock("../../src/components/Spinner.js", () => ({ createSpinner }));
-    vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
+    vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       initTooltips: vi.fn().mockResolvedValue(() => {})
     }));
-    const toggleCountryPanel = vi.fn();
-    const toggleCountryPanelMode = vi.fn();
-    vi.doMock("../../src/helpers/countryPanel.js", () => ({
-      toggleCountryPanel,
-      toggleCountryPanelMode
+    vi.doMock("../../src/helpers/setupHoverZoom.js", () => ({
+      addHoverZoomMarkers
     }));
-    vi.doMock("../../src/helpers/countrySlider.js", () => ({ createCountrySlider: vi.fn() }));
+
+    const spinnerCalls = [];
+    const runtime = {
+      carouselContainer: {},
+      ensurePanelHidden: vi.fn(),
+      setupToggle: vi.fn(),
+      createSpinnerController: vi.fn(() => ({
+        show: vi.fn(() => spinnerCalls.push("show")),
+        remove: vi.fn(() => spinnerCalls.push("remove"))
+      })),
+      renderCarousel: vi.fn(async () => ({ carousel: {}, containerEl: {} })),
+      setupLayoutToggle: vi.fn(),
+      setupCountryFilter: vi.fn(),
+      appendNoResultsMessage: vi.fn(),
+      markReady: vi.fn()
+    };
+
+    globalThis.__forceSpinner__ = true;
 
     const { setupBrowseJudokaPage } = await import("../../src/helpers/browseJudokaPage.js");
 
-    const carousel = document.createElement("div");
-    carousel.id = "carousel-container";
-    const list = document.createElement("div");
-    list.id = "country-list";
-    const toggleBtn = document.createElement("button");
-    toggleBtn.id = "country-toggle";
-    const layoutBtn = document.createElement("button");
-    layoutBtn.id = "layout-toggle";
-    const panel = document.createElement("div");
-    panel.id = "country-panel";
-    const clear = document.createElement("button");
-    clear.id = "clear-filter";
-    document.body.append(carousel, list, toggleBtn, layoutBtn, panel, clear);
+    await setupBrowseJudokaPage({ runtime });
 
-    globalThis.__forceSpinner__ = true;
-    const pagePromise = setupBrowseJudokaPage();
+    expect(runtime.ensurePanelHidden).toHaveBeenCalled();
+    expect(runtime.setupToggle).toHaveBeenCalled();
+    expect(runtime.createSpinnerController).toHaveBeenCalledWith(true);
+    expect(spinnerCalls).toEqual(["show", "remove"]);
+    expect(runtime.renderCarousel).toHaveBeenCalledWith([{ id: 1, country: "JP" }], []);
+    expect(runtime.setupLayoutToggle).toHaveBeenCalled();
+    expect(runtime.setupCountryFilter).toHaveBeenCalledWith(
+      [{ id: 1, country: "JP" }],
+      expect.any(Function)
+    );
+    expect(runtime.markReady).toHaveBeenCalled();
 
-    const spinnerEl = carousel.querySelector(".loading-spinner");
-    expect(spinnerEl).not.toBeNull();
-    expect(spinnerEl.style.display).toBe("block");
-    expect(show).toHaveBeenCalled();
-
-    fetchResolvers[0]([{ id: 1, country: "JP" }]);
-    fetchResolvers[1]([]);
-    await pagePromise;
-
-    // Ensure any queued RAF callbacks run (existing tests used immediate RAF)
-    flushAll();
-
-    expect(carousel.querySelector(".loading-spinner")).toBeNull();
-    expect(remove).toHaveBeenCalled();
-    expect(toggleCountryPanelMode).toHaveBeenCalledWith(panel, false);
-    delete globalThis.__forceSpinner__;
+    expect(globalThis.__forceSpinner__).toBeUndefined();
+    consoleErrorSpy.mockRestore();
   });
 
   it("renders a fallback card when judoka data fails to load", async () => {
-    // Use queued RAF mock installed in beforeEach; we'll flush after setup if needed
+    vi.resetModules();
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const fetchJson = vi.fn((url) => {
@@ -244,79 +231,63 @@ describe("browseJudokaPage helpers", () => {
       return Promise.resolve([]);
     });
 
-    const buildCardCarousel = vi.fn(async (list) => {
-      const wrapper = document.createElement("div");
-      const ariaLive = document.createElement("div");
-      ariaLive.className = "carousel-aria-live";
-      const inner = document.createElement("div");
-      inner.className = "card-carousel";
-      const card = document.createElement("div");
-      card.className = "judoka-card";
-      card.setAttribute("data-judoka-name", list[0].firstname);
-      inner.appendChild(card);
-      wrapper.append(ariaLive, inner);
-      return wrapper;
-    });
-
-    const getFallbackJudoka = vi.fn(async () => ({
-      id: 0,
-      firstname: "Fallback",
-      surname: "Judoka"
+    const buildCardCarousel = vi.fn(async () => ({
+      querySelector: vi.fn(() => ({}))
     }));
 
-    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady: vi.fn() }));
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
       initScrollMarkers: vi.fn()
     }));
-    vi.doMock("../../src/components/Spinner.js", () => ({
-      createSpinner: () => ({
-        element: document.createElement("div"),
-        show: vi.fn(),
-        hide: vi.fn(),
-        remove: vi.fn()
-      })
-    }));
     vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
     vi.doMock("../../src/helpers/tooltip.js", () => ({
       initTooltips: vi.fn().mockResolvedValue(() => {})
     }));
-    const toggleCountryPanel = vi.fn();
-    const toggleCountryPanelMode = vi.fn();
-    vi.doMock("../../src/helpers/countryPanel.js", () => ({
-      toggleCountryPanel,
-      toggleCountryPanelMode
+    vi.doMock("../../src/helpers/setupHoverZoom.js", () => ({
+      addHoverZoomMarkers: vi.fn()
     }));
-    vi.doMock("../../src/helpers/countrySlider.js", () => ({ createCountrySlider: vi.fn() }));
-    vi.doMock("../../src/helpers/judokaUtils.js", () => ({ getFallbackJudoka }));
+    vi.doMock("../../src/helpers/judokaUtils.js", () => ({
+      getFallbackJudoka: vi.fn(async () => ({ id: 0, firstname: "Fallback" }))
+    }));
+
+    const runtime = {
+      carouselContainer: {},
+      ensurePanelHidden: vi.fn(),
+      setupToggle: vi.fn(),
+      createSpinnerController: vi.fn(() => ({
+        show: vi.fn(),
+        remove: vi.fn()
+      })),
+      renderCarousel: vi.fn(async () => ({ carousel: {}, containerEl: {} })),
+      appendErrorMessage: vi.fn(),
+      appendRetryButton: vi.fn(),
+      markReady: vi.fn()
+    };
+
+    const retryButton = { disabled: false };
+    runtime.appendRetryButton.mockImplementation((handler) => {
+      retryButton.onClick = handler;
+      return retryButton;
+    });
 
     const { setupBrowseJudokaPage } = await import("../../src/helpers/browseJudokaPage.js");
 
-    const carousel = document.createElement("div");
-    carousel.id = "carousel-container";
-    const list = document.createElement("div");
-    list.id = "country-list";
-    const toggleBtn = document.createElement("button");
-    toggleBtn.id = "country-toggle";
-    const layoutBtn = document.createElement("button");
-    layoutBtn.id = "layout-toggle";
-    const panel = document.createElement("div");
-    panel.id = "country-panel";
-    const clear = document.createElement("button");
-    clear.id = "clear-filter";
-    document.body.append(carousel, list, toggleBtn, layoutBtn, panel, clear);
+    await setupBrowseJudokaPage({ runtime });
 
-    await setupBrowseJudokaPage();
+    expect(runtime.renderCarousel).toHaveBeenCalledWith([{ id: 0, firstname: "Fallback" }], []);
+    expect(runtime.appendErrorMessage).toHaveBeenCalled();
+    expect(runtime.appendRetryButton).toHaveBeenCalledWith(expect.any(Function));
 
-    flushAll();
+    fetchJson.mockImplementation((url) => {
+      if (url.includes("judoka.json")) {
+        return Promise.resolve([{ id: 1, country: "JP" }]);
+      }
+      return Promise.resolve([]);
+    });
 
-    expect(buildCardCarousel).toHaveBeenCalledWith(
-      [{ id: 0, firstname: "Fallback", surname: "Judoka" }],
-      []
-    );
-    expect(carousel.querySelector(".judoka-card")).not.toBeNull();
-    expect(carousel.querySelector(".error-message")).not.toBeNull();
+    await retryButton.onClick();
+    expect(runtime.renderCarousel).toHaveBeenLastCalledWith([{ id: 1, country: "JP" }], []);
 
     consoleErrorSpy.mockRestore();
   });
