@@ -1,14 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 describe("battleCLI accessibility", () => {
   describe("focus management", () => {
+    let timers;
     beforeEach(() => {
-      vi.useFakeTimers();
+      timers = useCanonicalTimers();
     });
 
     afterEach(async () => {
-      vi.useRealTimers();
+      timers.cleanup();
       await cleanupBattleCLI();
     });
 

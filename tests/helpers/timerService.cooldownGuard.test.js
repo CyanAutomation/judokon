@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { mount, clearBody } from "./domUtils.js";
 
 let mockState = "cooldown";
@@ -27,9 +28,10 @@ vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
 describe("onNextButtonClick cooldown guard", () => {
   let btn;
   let consoleMocks;
+  let timers;
 
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     const { query } = mount('<button id="next-button" data-role="next-round"></button>');
     btn = query('[data-role="next-round"]');
     vi.clearAllMocks();
@@ -41,7 +43,7 @@ describe("onNextButtonClick cooldown guard", () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
     // Clean up console spies
     consoleMocks.warn.mockRestore();
     clearBody();

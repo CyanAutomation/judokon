@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 vi.mock("../../src/utils/scheduler.js", () => ({
   onFrame: (cb) => cb(),
   cancel: () => {},

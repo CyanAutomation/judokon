@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 describe("timerService with auto-select", () => {
   it("auto-selects and dispatches timeout", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     vi.resetModules();
 
     document.body.innerHTML =
@@ -58,5 +59,6 @@ describe("timerService with auto-select", () => {
 
     expect(autoSelectSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith("timeout");
+    timers.cleanup();
   });
 });

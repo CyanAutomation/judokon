@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 const SCOREBOARD_MODULE_PATH = "../../src/components/Scoreboard.js";
 const DOM_MODULE_PATH = "../../src/pages/battleCLI/dom.js";
@@ -20,6 +21,7 @@ async function tick() {
 
 describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   let mockSharedScoreboard;
+  let timers;
 
   async function importDomWithScoreboard(scoreboardModule) {
     const deferred = createDeferred();
@@ -44,7 +46,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
   beforeEach(async () => {
     window.__TEST__ = true;
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     // Mock the shared Scoreboard component functions
     mockSharedScoreboard = {
       showMessage: vi.fn(),
@@ -55,7 +57,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
   afterEach(async () => {
     document.body.innerHTML = "";
-    vi.useRealTimers();
+    timers.cleanup();
     vi.clearAllMocks();
     vi.doUnmock(SCOREBOARD_MODULE_PATH);
     vi.resetModules();

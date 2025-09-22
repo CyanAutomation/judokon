@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 vi.mock("../../src/utils/scheduler.js", () => ({
   onFrame: (cb) => cb(),
   cancel: () => {},
@@ -13,7 +14,7 @@ beforeEach(() => {
 
 describe("showSnackbar", () => {
   it("reuses container and resets timers on new calls", () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const container = document.getElementById("snackbar-container");
 
     showSnackbar("First");
@@ -33,10 +34,11 @@ describe("showSnackbar", () => {
     expect(second.classList.contains("show")).toBe(false);
     vi.advanceTimersByTime(SNACKBAR_REMOVE_MS - SNACKBAR_FADE_MS);
     expect(container.children).toHaveLength(0);
+    timers.cleanup();
   });
 
   it("updateSnackbar mutates current child and preserves ARIA", () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const container = document.getElementById("snackbar-container");
 
     showSnackbar("Hello");
@@ -46,5 +48,6 @@ describe("showSnackbar", () => {
     expect(bar.textContent).toBe("World");
     expect(container.getAttribute("role")).toBe("status");
     expect(container.getAttribute("aria-live")).toBe("polite");
+    timers.cleanup();
   });
 });

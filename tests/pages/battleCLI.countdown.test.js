@@ -1,14 +1,16 @@
 import * as battleEvents from "../../src/helpers/classicBattle/battleEvents.js";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
 
 describe("battleCLI countdown", () => {
+  let timers;
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
   });
 
   afterEach(async () => {
-    vi.useRealTimers();
+    timers.cleanup();
     await cleanupBattleCLI();
   });
 

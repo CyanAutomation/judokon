@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { createTestTooltipViewer } from "../utils/componentTestUtils.js";
 
 const originalReadyState = Object.getOwnPropertyDescriptor(document, "readyState");
@@ -222,7 +223,7 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     const showSnackbar = vi.fn();
     mod.setTooltipSnackbar(showSnackbar);
 
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     await init(mod);
 
     const item = document.querySelector("#tooltip-list li");
@@ -237,8 +238,9 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     expect(showSnackbar).toHaveBeenCalledWith("Copied");
     expect(btn.classList.contains("copied")).toBe(true);
 
-    vi.runAllTimers();
+    timers.runAllTimers();
     expect(btn.classList.contains("copied")).toBe(false);
+    timers.cleanup();
   });
 
   it("copies body text when body copy button is clicked", async () => {
@@ -337,7 +339,7 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
   it("cleans up search filter on pagehide", async () => {
     Object.defineProperty(document, "readyState", { value: "loading", configurable: true });
 
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const mod = await import("../../src/helpers/tooltipViewerPage.js");
     mod.setTooltipDataLoader(async () => ({ "ui.tip": "text" }));
 
@@ -360,5 +362,6 @@ describe("setupTooltipViewerPage (Legacy DOM)", () => {
     setSpy.mockRestore();
     clearSpy.mockRestore();
     removeSpy.mockRestore();
+    timers.cleanup();
   });
 });

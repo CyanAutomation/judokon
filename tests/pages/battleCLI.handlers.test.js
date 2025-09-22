@@ -246,7 +246,7 @@ describe("battleCLI event handlers", () => {
   });
 
   it("runs countdown and emits finished", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const { handlers, emitBattleEvent, getBottomLineText } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 2 } });
     expect(getBottomLineText()).toBe("Next round in: 2");
@@ -254,7 +254,7 @@ describe("battleCLI event handlers", () => {
     expect(getBottomLineText()).toBe("Next round in: 1");
     vi.advanceTimersByTime(1000);
     expect(emitBattleEvent).toHaveBeenCalledWith("countdownFinished");
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("clears countdown on finish", async () => {

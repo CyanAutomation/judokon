@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 describe("timerService without auto-select", () => {
   it("dispatches timeout when autoSelect disabled", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     vi.resetModules();
 
     document.body.innerHTML =
@@ -67,5 +68,6 @@ describe("timerService without auto-select", () => {
       "Stat selection stalled. Pick a stat or wait for auto-pick."
     );
     expect(autoSelectSpy).not.toHaveBeenCalled();
+    timers.cleanup();
   });
 });
