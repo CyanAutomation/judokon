@@ -1,5 +1,25 @@
 import { isNodeEnvironment } from "../env.js";
 
+const HYDRATION_GUIDANCE_MESSAGE =
+  "Network unreachable while loading remote MiniLM model. " +
+  "Fix: hydrate a local model at src/models/minilm via `npm run rag:prepare:models -- --from-dir <path>` " +
+  "or run with RAG_STRICT_OFFLINE=1 to avoid CDN attempts. " +
+  "Optionally enable degraded search with RAG_ALLOW_LEXICAL_FALLBACK=1.";
+
+const STRICT_OFFLINE_MESSAGE =
+  "Strict offline mode: local model missing at models/minilm. " +
+  "Provide a local MiniLM (quantized) or unset RAG_STRICT_OFFLINE.";
+
+function createHydrationGuidanceError(cause) {
+  const wrapped = new Error(HYDRATION_GUIDANCE_MESSAGE);
+  if (cause) {
+    try {
+      wrapped.cause = cause;
+    } catch {}
+  }
+  return wrapped;
+}
+
 let extractor;
 
 /**
@@ -96,18 +116,53 @@ export async function getExtractor() {
         env.backends.onnx.wasm.proxy = false;
         const modelDir = "models/minilm";
         const modelDirAbs = resolve(rootDir, modelDir);
+        const strictOffline = process?.env?.RAG_STRICT_OFFLINE === "1";
 
-        try {
-          await stat(resolve(modelDirAbs, "config.json"));
-          extractor = await pipeline("feature-extraction", modelDirAbs, { quantized: true });
-          console.log("RAG: Successfully loaded local MiniLM model.");
-        } catch {
-          if (process?.env?.RAG_STRICT_OFFLINE === "1") {
-            const msg =
-              "Strict offline mode: local model missing at models/minilm. " +
-              "Provide a local MiniLM (quantized) or unset RAG_STRICT_OFFLINE.";
-            // Do not proceed to remote fetch in strict mode
-            throw new Error(msg);
+        const assetDescriptors = [
+          { label: "config.json", path: resolve(modelDirAbs, "config.json"), minBytes: 200 },
+          { label: "tokenizer.json", path: resolve(modelDirAbs, "tokenizer.json"), minBytes: 1024 },
+          {
+            label: "tokenizer_config.json",
+            path: resolve(modelDirAbs, "tokenizer_config.json"),
+            minBytes: 200
+          },
+          {
+            label: "onnx/model_quantized.onnx",
+            path: resolve(modelDirAbs, "onnx/model_quantized.onnx"),
+            minBytes: 1_000_000
+          }
+        ];
+
+        const assetStats = await Promise.all(
+          assetDescriptors.map(async (asset) => {
+            try {
+              const info = await stat(asset.path);
+              return { asset, info };
+            } catch (error) {
+              return { asset, error };
+            }
+          })
+        );
+
+        const placeholderAssets = assetStats.filter(
+          ({ asset, info, error }) =>
+            !error && typeof asset.minBytes === "number" && info.size < asset.minBytes
+        );
+
+        if (placeholderAssets.length > 0) {
+          if (strictOffline) {
+            throw new Error(STRICT_OFFLINE_MESSAGE);
+          }
+          const details = placeholderAssets.map(({ asset }) => asset.label).join(", ");
+          const placeholderError = new Error(`MiniLM assets appear to be placeholders: ${details}`);
+          throw createHydrationGuidanceError(placeholderError);
+        }
+
+        const missingAssets = assetStats.filter(({ error }) => error);
+
+        if (missingAssets.length > 0) {
+          if (strictOffline) {
+            throw new Error(STRICT_OFFLINE_MESSAGE);
           }
           console.warn(
             "RAG: Local model not found or failed to load; falling back to Xenova/all-MiniLM-L6-v2 from CDN."
@@ -115,6 +170,9 @@ export async function getExtractor() {
           extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
             quantized: true
           });
+        } else {
+          extractor = await pipeline("feature-extraction", modelDirAbs, { quantized: true });
+          console.log("RAG: Successfully loaded local MiniLM model.");
         }
       } else {
         if (typeof process !== "undefined" && process?.env?.RAG_STRICT_OFFLINE === "1") {
@@ -133,18 +191,9 @@ export async function getExtractor() {
       // Provide actionable guidance when network is unavailable
       const msg = String(error?.message || error);
       if (/ENET(?:UNREACH|DOWN|RESET|REFUSED)/i.test(msg) || /fetch failed/i.test(msg)) {
-        const help =
-          "Network unreachable while loading remote MiniLM model. " +
-          "Fix: hydrate a local model at src/models/minilm via `npm run rag:prepare:models -- --from-dir <path>` " +
-          "or run with RAG_STRICT_OFFLINE=1 to avoid CDN attempts. " +
-          "Optionally enable degraded search with RAG_ALLOW_LEXICAL_FALLBACK=1.";
         console.error("Model failed to load (offline)", error);
         extractor = null;
-        const wrapped = new Error(help);
-        try {
-          wrapped.cause = error;
-        } catch {}
-        throw wrapped;
+        throw createHydrationGuidanceError(error);
       }
       console.error("Model failed to load", error);
       extractor = null;

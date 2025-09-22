@@ -32,4 +32,34 @@ describe("getExtractor offline guidance", () => {
     vi.doUnmock("@xenova/transformers");
     vi.doUnmock("fs/promises");
   });
+
+  it("surfaces hydration guidance when local MiniLM assets look like placeholders", async () => {
+    const pipelineMock = vi.fn();
+    vi.doMock("@xenova/transformers", () => ({
+      pipeline: pipelineMock,
+      env: { allowLocalModels: false, localModelPath: "", backends: { onnx: { wasm: {} } } }
+    }));
+    const statMock = vi.fn(async (path) => {
+      if (String(path).includes("ort-wasm")) {
+        return { size: 1024 };
+      }
+      return { size: 10 };
+    });
+    vi.doMock("fs/promises", () => ({
+      stat: statMock
+    }));
+
+    const { getExtractor } = await import("../../src/helpers/api/vectorSearchPage.js");
+
+    await withMutedConsole(async () => {
+      await expect(getExtractor()).rejects.toThrow(/hydrate a local model/i);
+    });
+
+    expect(pipelineMock).not.toHaveBeenCalled();
+    expect(statMock).toHaveBeenCalled();
+
+    vi.resetModules();
+    vi.doUnmock("@xenova/transformers");
+    vi.doUnmock("fs/promises");
+  });
 });
