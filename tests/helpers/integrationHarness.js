@@ -15,6 +15,7 @@ import installRAFMock from "./rafMock.js";
 const REPO_ROOT_URL = new URL("../..", import.meta.url);
 const WINDOWS_DRIVE_PATH_PATTERN = /^[a-zA-Z]:[\\/]/;
 const URL_SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z\d+\-.]*:/;
+const VITE_SRC_ALIAS_PREFIX = "/src/";
 
 /**
  * Resolves mock module specifiers to repository-rooted URLs for consistent mock registration.
@@ -22,6 +23,7 @@ const URL_SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z\d+\-.]*:/;
  * @pseudocode
  * ```
  * if modulePath is not string: return as-is
+ * if modulePath uses the Vite `/src/` alias: return as-is
  * if modulePath is Windows drive path: convert to file URL
  * if modulePath is absolute path: convert to file URL
  * if modulePath looks like URL or is bare: return as-is
@@ -34,6 +36,10 @@ const URL_SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z\d+\-.]*:/;
  */
 function resolveMockModuleSpecifier(modulePath) {
   if (typeof modulePath !== "string") {
+    return modulePath;
+  }
+
+  if (modulePath.startsWith(VITE_SRC_ALIAS_PREFIX)) {
     return modulePath;
   }
 

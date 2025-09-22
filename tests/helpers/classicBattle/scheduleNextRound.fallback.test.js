@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 import { createClassicBattleHarness } from "../integrationHarness.js";
-import { resetDispatchHistory } from "../../../src/helpers/classicBattle/eventDispatcher.js";
+import { resetDispatchHistory } from "/src/helpers/classicBattle/eventDispatcher.js";
 
 const READY_EVENT = "ready";
 const TEST_DIR = dirname(fileURLToPath(import.meta.url));
@@ -12,7 +12,8 @@ const REPO_ROOT = resolve(TEST_DIR, "../../..");
 const ROUND_MANAGER_MODULE = pathToFileURL(
   resolve(REPO_ROOT, "src/helpers/classicBattle/roundManager.js")
 ).href;
-const EVENT_DISPATCHER_MODULE = pathToFileURL(
+const EVENT_DISPATCHER_MODULE = "/src/helpers/classicBattle/eventDispatcher.js";
+const EVENT_DISPATCHER_FILE_URL = pathToFileURL(
   resolve(REPO_ROOT, "src/helpers/classicBattle/eventDispatcher.js")
 ).href;
 const EXPIRATION_HANDLERS_MODULE = pathToFileURL(
@@ -21,6 +22,14 @@ const EXPIRATION_HANDLERS_MODULE = pathToFileURL(
 const ROUND_READY_STATE_MODULE = pathToFileURL(
   resolve(REPO_ROOT, "src/helpers/classicBattle/roundReadyState.js")
 ).href;
+
+const EVENT_DISPATCHER_SPECIFIERS = [EVENT_DISPATCHER_MODULE, EVENT_DISPATCHER_FILE_URL];
+
+function createEventDispatcherMockEntries(factory) {
+  return Object.fromEntries(
+    EVENT_DISPATCHER_SPECIFIERS.map((specifier) => [specifier, factory])
+  );
+}
 
 /**
  * Create a dispatcher mock that replays candidate dispatchers before falling
@@ -107,10 +116,10 @@ describe("startCooldown fallback timer", () => {
           computeNextRoundCooldown: () => 0
         }),
         // Mock eventDispatcher to return true for dispatchBattleEvent
-        [EVENT_DISPATCHER_MODULE]: () => ({
+        ...createEventDispatcherMockEntries(() => ({
           dispatchBattleEvent: dispatchSpy,
           resetDispatchHistory: vi.fn()
-        }),
+        })),
         // Mock debugHooks to return null for readDebugState
         "../../../src/helpers/classicBattle/debugHooks.js": () => {
           const debugHooksMock = {
@@ -193,10 +202,10 @@ describe("startCooldown ready dispatch discipline", () => {
     harness = createClassicBattleHarness({
       mocks: {
         // Mock event dispatcher to track ready events
-        "../../../src/helpers/classicBattle/eventDispatcher.js": () => ({
+        ...createEventDispatcherMockEntries(() => ({
           dispatchBattleEvent: dispatchSpy,
           resetDispatchHistory: vi.fn()
-        }),
+        })),
         // Mock computeNextRoundCooldown to return 1 second
         "../../../src/helpers/timers/computeNextRoundCooldown.js": () => ({
           computeNextRoundCooldown: () => 1
@@ -208,6 +217,12 @@ describe("startCooldown ready dispatch discipline", () => {
     scheduler = createMockScheduler();
     document.body.innerHTML = "";
     createTimerNodes();
+
+    const dispatcherModule = await harness.importModule(EVENT_DISPATCHER_FILE_URL);
+    expect(dispatcherModule.dispatchBattleEvent).toBe(dispatchSpy);
+    const dispatcherAliasModule = await harness.importModule(EVENT_DISPATCHER_MODULE);
+    expect(dispatcherAliasModule.dispatchBattleEvent).toBe(dispatchSpy);
+    resetDispatchHistory();
   });
 
   afterEach(() => {
@@ -239,6 +254,7 @@ describe("startCooldown ready dispatch discipline", () => {
     expect(dispatchSpy).not.toHaveBeenCalled();
     scheduler.tick(1000);
     scheduler.tick(1000);
+    await vi.runAllTimersAsync();
     await controls.ready;
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy).toHaveBeenCalledWith("ready");
@@ -260,10 +276,10 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     harness = createClassicBattleHarness({
       mocks: {
         // Mock event dispatcher
-        "../../../src/helpers/classicBattle/eventDispatcher.js": () => ({
+        ...createEventDispatcherMockEntries(() => ({
           dispatchBattleEvent: dispatchSpy,
           resetDispatchHistory: vi.fn()
-        })
+        }))
       }
     });
 
@@ -271,6 +287,12 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     scheduler = createMockScheduler();
     document.body.innerHTML = "";
     createTimerNodes();
+
+    const dispatcherModule = await harness.importModule(EVENT_DISPATCHER_FILE_URL);
+    expect(dispatcherModule.dispatchBattleEvent).toBe(dispatchSpy);
+    const dispatcherAliasModule = await harness.importModule(EVENT_DISPATCHER_MODULE);
+    expect(dispatcherAliasModule.dispatchBattleEvent).toBe(dispatchSpy);
+    resetDispatchHistory();
   });
 
   afterEach(() => {
@@ -326,10 +348,10 @@ describe("bus propagation and deduplication", () => {
     harness = createClassicBattleHarness({
       mocks: {
         // Provide a controllable global dispatcher for readiness helpers
-        "../../../src/helpers/classicBattle/eventDispatcher.js": () => ({
+        ...createEventDispatcherMockEntries(() => ({
           dispatchBattleEvent: globalDispatchSpy,
           resetDispatchHistory: vi.fn()
-        })
+        }))
       }
     });
 
@@ -401,10 +423,10 @@ describe("fallback readiness flag discipline", () => {
     globalDispatchSpy = vi.fn(() => true);
     harness = createClassicBattleHarness({
       mocks: {
-        [EVENT_DISPATCHER_MODULE]: () => ({
+        ...createEventDispatcherMockEntries(() => ({
           dispatchBattleEvent: globalDispatchSpy,
           resetDispatchHistory: vi.fn()
-        })
+        }))
       }
     });
     await harness.setup();
