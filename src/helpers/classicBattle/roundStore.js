@@ -128,17 +128,24 @@ class RoundStore {
   /**
    * Set the selected stat for the current round.
    * @param {string} stat - Selected stat name
+   * @param {{ emitLegacyEvent?: boolean }} [options]
    */
-  setSelectedStat(stat) {
+  setSelectedStat(stat, options = {}) {
+    const { emitLegacyEvent = true } =
+      typeof options === "object" && options !== null ? options : {};
+
     this.currentRound.selectedStat = stat;
 
     // Notify subscribers
     if (this.callbacks.onStatSelected) {
       this.callbacks.onStatSelected(stat);
     }
-    // Emission of the legacy `statSelected` event now happens upstream in the
-    // selection handler. We intentionally avoid a duplicate emit here to
-    // prevent double notifications while still supporting legacy callbacks.
+
+    if (emitLegacyEvent) {
+      // Preserve backward compatibility for legacy listeners unless callers
+      // explicitly opt out (e.g., the selection handler which emits upstream).
+      emitBattleEvent("statSelected", { stat });
+    }
   }
 
   /**

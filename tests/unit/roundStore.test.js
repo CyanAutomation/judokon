@@ -95,15 +95,30 @@ describe("RoundStore", () => {
   });
 
   describe("stat selection", () => {
-    it("should set selected stat without emitting legacy event", async () => {
+    it("should emit legacy event by default when stat selected", async () => {
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+      emitBattleEvent.mockClear();
 
       roundStore.setSelectedStat("strength");
 
       const round = roundStore.getCurrentRound();
       expect(round.selectedStat).toBe("strength");
 
+      expect(emitBattleEvent).toHaveBeenCalledWith("statSelected", { stat: "strength" });
+    });
+
+    it("should support skipping legacy event while still invoking callbacks", async () => {
+      const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
+      emitBattleEvent.mockClear();
+
+      const callback = vi.fn();
+      roundStore.onStatSelected(callback);
+
+      roundStore.setSelectedStat("agility", { emitLegacyEvent: false });
+
       expect(emitBattleEvent).not.toHaveBeenCalled();
+      expect(callback).toHaveBeenCalledWith("agility");
+      expect(roundStore.getCurrentRound().selectedStat).toBe("agility");
     });
   });
 
