@@ -1,12 +1,15 @@
 import { fetchJson, validateWithSchema, importJsonModule } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 import { getItem, setItem, removeItem } from "./storage.js";
+import navigationFallback from "../data/navigationItems.js";
+import * as navigationCache from "./navigationCache.js";
 
 /**
  * The game modes JSON schema is loaded on demand. This avoids fetching the
  * schema during module initialization.
  */
 let schemaPromise;
+let navigationSchemaPromise;
 
 async function getSchema() {
   if (!schemaPromise) {
@@ -20,6 +23,22 @@ async function getSchema() {
       .catch(async () => importJsonModule("../schemas/gameModes.schema.json"));
   }
   return schemaPromise;
+}
+
+async function getNavigationSchema() {
+  if (!navigationSchemaPromise) {
+    navigationSchemaPromise = fetch(
+      new URL("../schemas/navigationItems.schema.json", import.meta.url)
+    )
+      .then(async (r) => {
+        if (!r.ok) {
+          throw new Error(`Failed to fetch navigation items schema: ${r.status}`);
+        }
+        return r.json();
+      })
+      .catch(async () => importJsonModule("../schemas/navigationItems.schema.json"));
+  }
+  return navigationSchemaPromise;
 }
 
 const GAMEMODES_KEY = "gameModes";
@@ -76,4 +95,95 @@ export async function loadGameModes() {
 export async function saveGameModes(modes) {
   await validateWithSchema(modes, await getSchema());
   setItem(GAMEMODES_KEY, modes);
+}
+
+function cloneNavigationItems(items) {
+  return Array.isArray(items) ? items.map((item) => ({ ...item })) : [];
+}
+
+/**
+ * Load navigation entries and enrich them with game mode metadata.
+ *
+ * @pseudocode
+ * 1. Resolve the navigation schema via `getNavigationSchema()`.
+ * 2. Attempt to load cached navigation items using `navigationCache.load()`.
+ *    - On failure, log the error and fall back to the bundled data.
+ *    - Validate the fallback data with the schema.
+ * 3. Read cached game modes from storage; fetch and persist them when absent.
+ * 4. Merge each navigation item with its corresponding game mode name/description.
+ * 5. Return the enriched navigation array sorted by the original order.
+ *
+ * @returns {Promise<Array<import("./types.js").NavigationItem & {name?: string, description?: string}>>}
+ */
+export async function loadNavigationItems() {
+  const schema = await getNavigationSchema();
+  let navItems;
+  try {
+    const cached = await navigationCache.load();
+    if (Array.isArray(cached)) {
+      navItems = cloneNavigationItems(cached);
+    } else {
+      navItems = null;
+    }
+  } catch (error) {
+    console.error("Failed to load navigationItems from cache:", error);
+    navItems = cloneNavigationItems(navigationFallback);
+    await validateWithSchema(navItems, schema);
+  }
+  if (!navItems) {
+    navItems = cloneNavigationItems(navigationFallback);
+    await validateWithSchema(navItems, schema);
+  }
+
+  let gameModes = getItem(GAMEMODES_KEY);
+  if (!Array.isArray(gameModes)) {
+    gameModes = await fetchJson(`${DATA_DIR}gameModes.json`);
+    setItem(GAMEMODES_KEY, gameModes);
+  }
+
+  return navItems.map((item) => {
+    const mode = gameModes.find((gm) => gm.id === item.gameModeId);
+    return {
+      ...item,
+      name: mode?.name,
+      description: mode?.description
+    };
+  });
+}
+
+/**
+ * Update the hidden state for a navigation item linked to a game mode.
+ *
+ * @pseudocode
+ * 1. Load navigation items via `navigationCache.load()`; fall back to bundled data when missing.
+ * 2. Clone the array and update the matching entry's `isHidden` flag.
+ * 3. Validate the updated collection against the navigation schema.
+ * 4. Persist the updated entries via `navigationCache.save()` and return them.
+ *
+ * @param {number} gameModeId - Identifier of the game mode to update.
+ * @param {boolean} hidden - Whether the associated navigation entry should be hidden.
+ * @returns {Promise<Array<import("./types.js").NavigationItem>>} Updated navigation items.
+ */
+export async function updateNavigationItemHidden(gameModeId, hidden) {
+  const schema = await getNavigationSchema();
+  let navItems;
+  try {
+    navItems = await navigationCache.load();
+  } catch (error) {
+    console.error("Failed to load navigationItems from cache:", error);
+    navItems = null;
+  }
+  if (!Array.isArray(navItems)) {
+    navItems = cloneNavigationItems(navigationFallback);
+  } else {
+    navItems = cloneNavigationItems(navItems);
+  }
+
+  const updated = navItems.map((item) =>
+    item.gameModeId === gameModeId ? { ...item, isHidden: hidden } : item
+  );
+
+  await validateWithSchema(updated, schema);
+  await navigationCache.save(updated);
+  return updated;
 }
