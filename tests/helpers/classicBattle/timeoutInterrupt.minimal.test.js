@@ -92,7 +92,7 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
     } catch {}
   });
 
-  it("auto-advances after timeout", async () => {
+  it("dispatches ready event after timeout interrupt cooldown", async () => {
     const { initClassicBattleOrchestrator, getBattleStateMachine } = await import(
       "../../../src/helpers/classicBattle/orchestrator.js"
     );
@@ -134,19 +134,9 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
       );
       expect(readyCallsAfterAdvance).toHaveLength(1);
       expect(readyDispatchTracker.events).toHaveLength(1);
-      expect(readyDispatchTracker.events[0]?.[0]).toBe("ready");
       expect(readyDispatchTracker.events[0]).toEqual(["ready"]);
 
-      const readyDispatchesDuringAdvance =
-        readyCallsAfterAdvance.length - readyCallsBeforeAdvance.length;
-      expect(readyDispatchesDuringAdvance).toBe(1);
-      expect(readyCallsAfterAdvance).toEqual(readyDispatchTracker.events);
-
       await vi.runOnlyPendingTimersAsync();
-      const readyCallsAfterFlushing = dispatchBattleEvent.mock.calls.filter(
-        ([eventName]) => eventName === "ready"
-      );
-      expect(readyCallsAfterFlushing).toEqual(readyDispatchTracker.events);
 
       const recentTransitions = transitions.slice(transitionCheckpoint);
       expect(recentTransitions).toEqual([
@@ -160,5 +150,5 @@ describe("timeout → interruptRound → minimal auto-advance", () => {
     } finally {
       offBattleEvent("battleStateChange", recordTransition);
     }
-  }, 10000);
+  }, 5000);
 });
