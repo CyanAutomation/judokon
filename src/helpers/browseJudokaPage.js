@@ -63,6 +63,7 @@ export function createBrowsePageRuntime(documentRef = document) {
   const layoutToggle = documentRef?.getElementById?.("layout-toggle") ?? null;
   const countryPanel = documentRef?.getElementById?.("country-panel") ?? null;
   const clearBtn = documentRef?.getElementById?.("clear-filter") ?? null;
+  const layoutToggleHandler = setupLayoutToggle;
 
   return {
     carouselContainer,
@@ -113,7 +114,7 @@ export function createBrowsePageRuntime(documentRef = document) {
       return carouselContainer?.querySelector?.(".carousel-aria-live") ?? null;
     },
     setupLayoutToggle() {
-      setupLayoutToggle(layoutToggle, countryPanel);
+      layoutToggleHandler(layoutToggle, countryPanel);
     },
     setupCountryFilter(judokaList, render) {
       const ariaLive = this.getAriaLive();

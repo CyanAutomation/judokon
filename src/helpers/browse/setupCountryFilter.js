@@ -41,11 +41,19 @@ export function createCountryFilterAdapter(
 
   return {
     clearSelection() {
-      const buttons = listContainer?.querySelectorAll?.("button.flag-button") ?? [];
+      if (!listContainer) {
+        console.warn("Country filter: listContainer is null, cannot clear selection");
+        return;
+      }
+      const buttons = listContainer.querySelectorAll("button.flag-button");
       buttons.forEach((btn) => btn.classList.remove("selected"));
     },
     highlightSelection(button) {
-      const buttons = listContainer?.querySelectorAll?.("button.flag-button") ?? [];
+      if (!listContainer) {
+        console.warn("Country filter: listContainer is null, cannot highlight selection");
+        return;
+      }
+      const buttons = listContainer.querySelectorAll("button.flag-button");
       buttons.forEach((btn) => btn.classList.toggle("selected", btn === button));
     },
     updateLiveRegion(count, label) {
@@ -109,7 +117,7 @@ export function createCountryFilterController(judokaList, render, adapter) {
     async clear() {
       adapter.clearSelection?.();
       await render(judokaList);
-      adapter.updateLiveRegion?.(judokaList.length, "all countries");
+      adapter.updateLiveRegion?.(judokaList.length, toLabel("all"));
       adapter.removeNoResultsMessage?.();
       adapter.closePanel?.();
       return judokaList;
