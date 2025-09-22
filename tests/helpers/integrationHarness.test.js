@@ -103,6 +103,17 @@ describe("createIntegrationHarness mocks", () => {
     expect(registeredPath).toBe(new URL("etc/passwd", REPO_ROOT_URL).href);
   });
 
+  it("normalizes deep relative module paths before registering mocks", async () => {
+    const deepRelativePath = "../../../src/helpers/classicBattle/eventDispatcher.js";
+    const { registeredPath, mockRegistrar } = await getRegisteredModuleSpecifier(deepRelativePath);
+
+    const expectedSpecifier = new URL("src/helpers/classicBattle/eventDispatcher.js", REPO_ROOT_URL)
+      .href;
+
+    expect(registeredPath).toBe(expectedSpecifier);
+    expect(mockRegistrar).toHaveBeenCalledWith(expectedSpecifier, expect.any(Function));
+  });
+
   it("normalizes Windows-style traversal attempts", async () => {
     const { registeredPath } = await getRegisteredModuleSpecifier("..\\\\..\\\\evil/module.js");
 

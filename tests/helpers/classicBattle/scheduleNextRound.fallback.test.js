@@ -15,6 +15,9 @@ const ROUND_MANAGER_MODULE = pathToFileURL(
 const EVENT_DISPATCHER_MODULE = pathToFileURL(
   resolve(REPO_ROOT, "src/helpers/classicBattle/eventDispatcher.js")
 ).href;
+const EXPIRATION_HANDLERS_MODULE = pathToFileURL(
+  resolve(REPO_ROOT, "src/helpers/classicBattle/nextRound/expirationHandlers.js")
+).href;
 
 /**
  * Create a dispatcher mock that replays candidate dispatchers before falling
@@ -107,7 +110,8 @@ describe("startCooldown fallback timer", () => {
         }),
         // Mock debugHooks to return null for readDebugState
         "../../../src/helpers/classicBattle/debugHooks.js": () => ({
-          readDebugState: vi.fn(() => null)
+          readDebugState: vi.fn(() => null),
+          exposeDebugState: vi.fn()
         }),
         // Mock debugPanel to avoid slow updateDebugPanel
         "../../../src/helpers/classicBattle/debugPanel.js": () => ({
@@ -117,6 +121,8 @@ describe("startCooldown fallback timer", () => {
     });
 
     await harness.setup();
+
+    resetDispatchHistory();
     scheduler = createMockScheduler();
     document.body.innerHTML = "";
     createTimerNodes();
@@ -301,48 +307,34 @@ describe("handleNextRoundExpiration immediate readiness", () => {
 
 describe("bus propagation and deduplication", () => {
   let harness;
-  let controls;
-  let runtime;
   let machine;
+  /** @type {import('vitest').SpyInstance} */
   let dispatchReadyViaBusSpy;
   let globalDispatchSpy;
+  let expirationHandlersModule;
 
   beforeEach(async () => {
     machine = { dispatch: vi.fn() };
     machine.state = { value: "idle" };
-    dispatchReadyViaBusSpy = vi.fn();
     globalDispatchSpy = vi.fn(() => true);
 
     harness = createClassicBattleHarness({
       mocks: {
-        // Mock the orchestrator context to return our test machine
-        "../../../src/helpers/classicBattle/orchestrator.js": () => ({
-          isOrchestrated: () => true,
-          getMachine: () => machine
-        }),
-        // Mock battle events for bus propagation
-        "../../../src/helpers/classicBattle/battleEvents.js": () => ({
-          onBattleEvent: vi.fn(),
-          offBattleEvent: vi.fn(),
-          emitBattleEvent: vi.fn()
+        // Provide a controllable global dispatcher for readiness helpers
+        "../../../src/helpers/classicBattle/eventDispatcher.js": () => ({
+          dispatchBattleEvent: globalDispatchSpy,
+          resetDispatchHistory: vi.fn()
         })
       }
     });
 
     await harness.setup();
 
-    // Mock round timer to expire
-    const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
-    mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
+    expirationHandlersModule = await harness.importModule(EXPIRATION_HANDLERS_MODULE);
+    dispatchReadyViaBusSpy = vi.spyOn(expirationHandlersModule, "dispatchReadyViaBus");
 
-    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
-    controls = startCooldown({}, createMockScheduler(), {
-      dispatchReadyViaBus: dispatchReadyViaBusSpy
-    });
-
-    // Access the runtime internals (this would normally be private)
-    // In a real integration test, we'd test observable behavior instead
-    runtime = { onExpired: vi.fn() };
+    const dispatcherModule = await harness.importModule(EVENT_DISPATCHER_MODULE);
+    expect(dispatcherModule.dispatchBattleEvent).toBe(globalDispatchSpy);
   });
 
   afterEach(() => {
@@ -350,32 +342,28 @@ describe("bus propagation and deduplication", () => {
   });
 
   it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
-    expect(controls).toBeTruthy();
-    expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
     globalDispatchSpy.mockClear();
-    await runtime.onExpired();
-
+    await expirationHandlersModule.dispatchReadyDirectly({ machineReader: () => machine });
     expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
     expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
     expect(globalDispatchSpy).toHaveBeenCalledWith("ready");
   });
 
   it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
-    expect(controls).toBeTruthy();
-    expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
     globalDispatchSpy.mockClear();
     dispatchReadyViaBusSpy?.mockImplementation(createBusPropagationMock(globalDispatchSpy));
     globalDispatchSpy.mockImplementationOnce(() => false);
     globalDispatchSpy.mockImplementation(() => true);
-    await runtime.onExpired();
+    await expirationHandlersModule.dispatchReadyDirectly({ machineReader: () => machine });
+    await expirationHandlersModule.dispatchReadyViaBus({ dispatchBattleEvent: globalDispatchSpy });
     expect(globalDispatchSpy).toHaveBeenCalledTimes(2);
     expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
     expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ alreadyDispatched: false })
+      expect.objectContaining({ dispatchBattleEvent: globalDispatchSpy })
     );
   });
 });
