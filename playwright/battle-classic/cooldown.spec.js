@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForBattleReady, waitForTestApi } from "../helpers/battleStateHelper.js";
+import { readRoundDiagnostics } from "../helpers/roundDiagnostics.js";
 
 async function waitForNextButtonReadyViaApi(page, timeout = 5000) {
   const ready = await page.evaluate(
@@ -15,49 +16,12 @@ async function waitForNextButtonReadyViaApi(page, timeout = 5000) {
   );
 
   if (ready === null) {
-    throw new Error("Test API waitForNextButtonReady unavailable");
+    throw new Error(
+      "Test API waitForNextButtonReady unavailable - ensure test environment is properly initialized"
+    );
   }
 
   expect(ready).toBe(true);
-}
-
-async function readRoundDiagnostics(page) {
-  return await page.evaluate(() => {
-    const toNumber = (value) => {
-      const numeric = Number(value);
-      return Number.isFinite(numeric) ? numeric : null;
-    };
-
-    const counter = document.getElementById("round-counter");
-    const text = counter ? String(counter.textContent ?? "") : "";
-    const match = text.match(/Round\s*(\d+)/i);
-    const datasetValue = counter?.dataset?.highestRound ?? null;
-    const debug = window.__TEST_API?.inspect?.getDebugInfo?.();
-    const stateApiState = window.__TEST_API?.state?.getBattleState?.() ?? null;
-
-    return {
-      text,
-      displayedRound: match ? Number(match[1]) : null,
-      highestAttr: datasetValue,
-      highestAttrNumber: toNumber(datasetValue),
-      highestGlobal: toNumber(window.__highestDisplayedRound),
-      lastContext:
-        typeof window.__lastRoundCounterContext === "string"
-          ? window.__lastRoundCounterContext
-          : null,
-      previousContext:
-        typeof window.__previousRoundCounterContext === "string"
-          ? window.__previousRoundCounterContext
-          : null,
-      roundsPlayed: toNumber(debug?.store?.roundsPlayed),
-      selectionMade:
-        typeof debug?.store?.selectionMade === "boolean" ? debug.store.selectionMade : null,
-      machineState: debug?.machine?.currentState ?? null,
-      snapshotState: debug?.snapshot?.state ?? null,
-      apiState: typeof stateApiState === "string" ? stateApiState : null,
-      error: debug?.error ?? null
-    };
-  });
 }
 
 test.describe("Classic Battle cooldown + Next", () => {
@@ -89,10 +53,12 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(nextButton).toBeEnabled();
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
+      // The counter label reflects the upcoming round once the previous round resolves.
       await expect(roundCounter).toHaveText(/Round\s*2/);
 
       const diagnosticsBeforeNext = await readRoundDiagnostics(page);
       expect(diagnosticsBeforeNext.displayedRound).toBe(2);
+      expect(diagnosticsBeforeNext.selectionMade).toBe(true);
 
       await nextButton.click();
 
@@ -101,10 +67,13 @@ test.describe("Classic Battle cooldown + Next", () => {
 
       const diagnosticsAfterNext = await readRoundDiagnostics(page);
       expect(diagnosticsAfterNext.displayedRound).toBe(2);
-      const allowedContexts = new Set(
-        [diagnosticsBeforeNext.lastContext, "advance"].filter(Boolean)
-      );
-      expect(allowedContexts.has(diagnosticsAfterNext.lastContext)).toBe(true);
+      expect(diagnosticsAfterNext.selectionMade).toBe(false);
+
+      const expectedContexts = ["advance"];
+      if (diagnosticsBeforeNext.lastContext) {
+        expectedContexts.push(diagnosticsBeforeNext.lastContext);
+      }
+      expect(expectedContexts).toContain(diagnosticsAfterNext.lastContext);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 
@@ -138,8 +107,9 @@ test.describe("Classic Battle cooldown + Next", () => {
       const nextButton = page.getByTestId("next-button");
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
-      const diagnosticsBeforeNext = await readRoundDiagnostics(page);
-      expect(diagnosticsBeforeNext.displayedRound).toBe(2);
+      const diagnosticsBeforeInterference = await readRoundDiagnostics(page);
+      expect(diagnosticsBeforeInterference.displayedRound).toBe(2);
+      expect(diagnosticsBeforeInterference.selectionMade).toBe(true);
 
       const interference = await page.evaluate(() => {
         return (
@@ -158,19 +128,21 @@ test.describe("Classic Battle cooldown + Next", () => {
 
       await expect(roundCounter).toHaveText(/Round\s*1/);
 
+      const diagnosticsAfterInterference = await readRoundDiagnostics(page);
+      expect(diagnosticsAfterInterference.displayedRound).toBe(1);
+      expect(diagnosticsAfterInterference.highestAttrNumber).toBe(1);
+      expect(diagnosticsAfterInterference.highestGlobal).toBeGreaterThanOrEqual(2);
+      expect(diagnosticsAfterInterference.selectionMade).toBe(true);
+
       await nextButton.click();
 
       await expect(roundCounter).toHaveText(/Round\s*2/);
 
       const diagnosticsAfterNext = await readRoundDiagnostics(page);
       expect(diagnosticsAfterNext.displayedRound).toBe(2);
-      expect(diagnosticsAfterNext.highestGlobal).toBeGreaterThanOrEqual(
-        diagnosticsBeforeNext.displayedRound ?? 2
-      );
-      expect(
-        diagnosticsAfterNext.lastContext === "advance" ||
-          diagnosticsAfterNext.lastContext === diagnosticsBeforeNext.lastContext
-      ).toBe(true);
+      expect(diagnosticsAfterNext.highestGlobal).toBeGreaterThanOrEqual(2);
+      expect(diagnosticsAfterNext.highestAttrNumber).toBe(2);
+      expect(diagnosticsAfterNext.selectionMade).toBe(false);
 
       await expect(nextButton).not.toHaveAttribute("data-next-ready", "true");
     }, ["log", "info", "warn", "error", "debug"]);
