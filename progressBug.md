@@ -332,7 +332,7 @@ Risks & mitigations: False positives could block legitimate stress tests — mak
 
 ## Suggested immediate next steps (quick wins)
 
-- Complete Item 6 phases 1-3: Rework priority tests to use integration harness instead of brittle mocks.
+- Complete Item 6 phases 1-3: Rework priority tests to use integration harness instead of brittle mocks (Phase 2 completed, but tests failing; need further mock reduction).
 - Complete Item 7 phase 3: Deprecate legacy round-management code after confidence window.
 - Run a targeted vitest run of the classic battle tests to validate existing helpers reduce flakes.
 
@@ -344,6 +344,27 @@ Risks & mitigations: False positives could block legitimate stress tests — mak
 - [ ] A set of 5 high-flakiness tests migrated to use helpers and pass reliably.
 - [x] Playbook doc added and referenced from `tests/README.md`.
 - [ ] Scheduler changes (if undertaken) are gated behind flags/test-only exports.
+
+---
+
+## Phase 2 Completion: Item 6 (Replace brittle inline mocks with integration-style refactors for priority tests)
+
+**Actions Taken:**
+
+- Refactored `resolution.test.js` to use `createClassicBattleHarness` instead of direct `vi.doMock` calls.
+- Moved all mocks from `mockModules` function to harness config object.
+- Updated all test functions to use `harness.setup()` and `harness.cleanup()`.
+- Attempted to reduce mocks by removing `timerService` mock and `createCountdownTimer` mock, but tests failed.
+- Kept essential mocks to maintain test functionality while using harness for environment setup.
+
+**Outcome:**
+
+- Tests now use the integration harness for environment setup (fake timers, RAF, DOM cleanup).
+- Mocks are centralized in harness config, improving organization and reusability.
+- Tests are failing, indicating that further work is needed to reduce brittle mocks and make tests more integration-style.
+- Acceptance criteria not met: Tests do not pass locally; require additional refactoring to reduce mock dependencies.
+
+**Next:** Further reduce mocks or adjust test logic to make them pass with integration harness, or identify additional priority tests for refactoring.
 
 ---
 
