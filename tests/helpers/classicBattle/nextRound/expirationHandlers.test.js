@@ -281,6 +281,20 @@ describe("runReadyDispatchStrategies", () => {
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", false);
   });
 
+  it("does not report success when only fallback dispatchers respond", async () => {
+    const emit = vi.fn();
+    const fallback = vi.fn(() => true);
+    const result = await runReadyDispatchStrategies({
+      strategies: [() => false],
+      fallbackDispatcher: fallback,
+      emitTelemetry: emit
+    });
+    expect(result).toBe(false);
+    expect(fallback).toHaveBeenCalledWith("ready");
+    expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchFallback", true);
+    expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", false);
+  });
+
   it("allows later strategies to run when a step requests propagation", async () => {
     const emit = vi.fn();
     const calls = [];

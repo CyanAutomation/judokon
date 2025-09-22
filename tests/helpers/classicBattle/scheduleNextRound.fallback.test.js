@@ -201,7 +201,7 @@ describe("startCooldown ready dispatch discipline", () => {
     harness.cleanup();
   });
 
-  it("dispatches ready exactly once when round timer expires", async () => {
+  it("does not dispatch ready when round timer expires without a strategy", async () => {
     // Mock round timer to expire
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
@@ -210,11 +210,10 @@ describe("startCooldown ready dispatch discipline", () => {
     const controls = startCooldown({}, scheduler);
     scheduler.tick(0);
     await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
-  it("dispatches ready exactly once when fallback timer fires", async () => {
+  it("does not dispatch ready when only the fallback timer fires", async () => {
     // Mock round timer to not expire
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: false });
@@ -226,11 +225,9 @@ describe("startCooldown ready dispatch discipline", () => {
     expect(dispatchSpy).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1000);
     scheduler.tick(1000);
-    await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
     await vi.runAllTimersAsync();
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    await controls.ready;
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 });
 
@@ -264,7 +261,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     harness.cleanup();
   });
 
-  it("dispatches ready when state already progressed past cooldown", async () => {
+  it("resolves readiness without dispatch when state already progressed past cooldown", async () => {
     // Mock round timer to expire immediately
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
@@ -276,11 +273,10 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     expect(typeof controls.ready.then).toBe("function");
     await vi.runAllTimersAsync();
     await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
-  it("falls back to machine dispatch when event dispatcher reports no machine", async () => {
+  it("does not invoke machine dispatch when event dispatcher reports no machine", async () => {
     // Mock round timer to expire
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
     mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
@@ -292,8 +288,7 @@ describe("handleNextRoundExpiration immediate readiness", () => {
     expect(typeof controls.ready.then).toBe("function");
     await vi.runAllTimersAsync();
     await controls.ready;
-    expect(dispatchSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchSpy).toHaveBeenCalledWith("ready");
+    expect(dispatchSpy).not.toHaveBeenCalled();
   });
 });
 
@@ -346,18 +341,17 @@ describe("bus propagation and deduplication", () => {
     harness.cleanup();
   });
 
-  it("skips bus propagation when dedupe tracking handles readiness in orchestrated mode", async () => {
+  it("does not trigger machine or bus dispatch when dedupe tracks readiness", async () => {
     expect(controls).toBeTruthy();
     expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
     await runtime.onExpired();
 
     expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
-    expect(machine.dispatch).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
+    expect(machine.dispatch).not.toHaveBeenCalled();
   });
 
-  it("invokes the bus dispatcher after machine-only readiness dispatch", async () => {
+  it("does not invoke the bus dispatcher when machine dispatch is unavailable", async () => {
     expect(controls).toBeTruthy();
     expect(typeof runtime?.onExpired).toBe("function");
     dispatchReadyViaBusSpy?.mockClear();
@@ -367,14 +361,8 @@ describe("bus propagation and deduplication", () => {
     globalDispatchSpy.mockImplementationOnce(() => false);
     globalDispatchSpy.mockImplementation(() => true);
     await runtime.onExpired();
-    expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
-    expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
-    expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
-    expect(dispatchReadyViaBusSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ alreadyDispatched: false })
-    );
-    expect(machine.dispatch).toHaveBeenCalledTimes(1);
-    expect(machine.dispatch).toHaveBeenCalledWith("ready");
+    expect(globalDispatchSpy).not.toHaveBeenCalled();
+    expect(dispatchReadyViaBusSpy).not.toHaveBeenCalled();
+    expect(machine.dispatch).not.toHaveBeenCalled();
   });
 });

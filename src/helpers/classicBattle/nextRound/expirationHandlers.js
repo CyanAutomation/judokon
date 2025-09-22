@@ -643,19 +643,17 @@ export async function runReadyDispatchStrategies(params = {}) {
       const fallbackResult = await Promise.resolve(dispatcher("ready"));
       if (fallbackResult !== false) {
         fallbackDispatched = true;
-        dispatched = true;
         return true;
       }
     } catch {}
     return false;
   };
-  if (!dispatched && (await invokeFallbackDispatcher(fallbackDispatcher))) {
-    emitTelemetry?.("handleNextRoundDispatchFallback", true);
-    emitResult(true);
-    return true;
+  if (!dispatched) {
+    await invokeFallbackDispatcher(fallbackDispatcher);
   }
   const shouldInvokeGlobalFallback =
     !dispatched &&
+    !fallbackDispatched &&
     useGlobalFallback === true &&
     typeof globalDispatchBattleEvent === "function" &&
     globalDispatchBattleEvent !== fallbackDispatcher;
@@ -664,10 +662,6 @@ export async function runReadyDispatchStrategies(params = {}) {
   }
   if (fallbackAttempted) {
     emitTelemetry?.("handleNextRoundDispatchFallback", fallbackDispatched);
-    if (fallbackDispatched) {
-      emitResult(true);
-      return true;
-    }
   }
   emitResult(dispatched);
   return dispatched;
