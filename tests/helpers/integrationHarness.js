@@ -206,6 +206,8 @@ export function createIntegrationHarness(config = {}) {
     useFakeTimers = true,
     useRafMock = true,
     fixtures = {},
+    mocks = {},
+    mockRegistrar = vi.doMock,
     setup: customSetup,
     teardown: customTeardown
   } = config;
@@ -220,6 +222,12 @@ export function createIntegrationHarness(config = {}) {
   async function setup() {
     // Reset modules to ensure clean state
     vi.resetModules();
+
+    // Apply mocks before importing any modules
+    for (const [modulePath, mockImpl] of Object.entries(mocks)) {
+      const resolvedPath = resolveMockModuleSpecifier(modulePath);
+      mockRegistrar(resolvedPath, createMockFactory(mockImpl));
+    }
 
     // Setup deterministic timers if requested
     if (useFakeTimers) {
@@ -362,7 +370,8 @@ export function createSettingsHarness(customConfig = {}) {
       localStorage: {
         getItem: vi.fn(() => null),
         setItem: vi.fn(),
-        removeItem: vi.fn()
+        removeItem: vi.fn(),
+        clear: vi.fn()
       },
       ...customFixtures
     },
