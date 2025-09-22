@@ -568,18 +568,34 @@ export async function dispatchReadyDirectly(params) {
  * 2. Iterate through each strategy function, awaiting its result.
  * 3. Emit success telemetry and return `true` the moment a strategy resolves
  *    truthy.
- * 4. After all strategies fail, emit failure telemetry and return `false`.
+ * 4. After all strategies fail, optionally attempt the global fallback before
+ *    emitting the final telemetry result.
  *
  * @param {object} params
  * @param {boolean} [params.alreadyDispatchedReady]
  * @param {Array<ReadyDispatchStrategy>} [params.strategies]
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
+ * @param {(type: string) => any} [params.fallbackDispatcher]
+ * @param {boolean} [params.useGlobalFallback]
+ *   When `true`, invoke the shared global dispatcher after strategies fail.
  * @returns {Promise<boolean>}
  */
 export async function runReadyDispatchStrategies(params = {}) {
-  const { alreadyDispatchedReady = false, strategies = [], emitTelemetry } = params;
+  const {
+    alreadyDispatchedReady = false,
+    strategies = [],
+    emitTelemetry,
+    fallbackDispatcher,
+    useGlobalFallback = false
+  } = params;
+  let resultEmitted = false;
+  const emitResult = (value) => {
+    if (resultEmitted) return;
+    emitTelemetry?.("handleNextRoundDispatchResult", value);
+    resultEmitted = true;
+  };
   if (alreadyDispatchedReady) {
-    emitTelemetry?.("handleNextRoundDispatchResult", true);
+    emitResult(true);
     return true;
   }
   let dispatched = false;
@@ -612,29 +628,48 @@ export async function runReadyDispatchStrategies(params = {}) {
           propagate
         });
         if (!propagate) {
-          emitTelemetry?.("handleNextRoundDispatchResult", true);
+          emitResult(true);
           return true;
         }
       }
     } catch {}
   }
-  emitTelemetry?.("handleNextRoundDispatchResult", dispatched);
-  // If no strategy dispatched the ready event, attempt a last-resort global
-  // dispatcher call. This preserves compatibility in test environments where
-  // the strategy list may not include the global dispatcher due to mocking
-  // or module boundary differences. Treat any non-false result as success.
-  if (!dispatched) {
+  let fallbackDispatched = false;
+  let fallbackAttempted = false;
+  const invokeFallbackDispatcher = async (dispatcher) => {
+    if (typeof dispatcher !== "function") return false;
+    fallbackAttempted = true;
     try {
-      if (typeof globalDispatchBattleEvent === "function") {
-        const fallbackResult = await Promise.resolve(globalDispatchBattleEvent("ready"));
-        if (fallbackResult !== false) {
-          emitTelemetry?.("handleNextRoundDispatchFallback", true);
-          return true;
-        }
+      const fallbackResult = await Promise.resolve(dispatcher("ready"));
+      if (fallbackResult !== false) {
+        fallbackDispatched = true;
+        dispatched = true;
+        return true;
       }
     } catch {}
+    return false;
+  };
+  if (!dispatched && (await invokeFallbackDispatcher(fallbackDispatcher))) {
+    emitTelemetry?.("handleNextRoundDispatchFallback", true);
+    emitResult(true);
+    return true;
   }
-
+  const shouldInvokeGlobalFallback =
+    !dispatched &&
+    useGlobalFallback === true &&
+    typeof globalDispatchBattleEvent === "function" &&
+    globalDispatchBattleEvent !== fallbackDispatcher;
+  if (shouldInvokeGlobalFallback) {
+    await invokeFallbackDispatcher(globalDispatchBattleEvent);
+  }
+  if (fallbackAttempted) {
+    emitTelemetry?.("handleNextRoundDispatchFallback", fallbackDispatched);
+    if (fallbackDispatched) {
+      emitResult(true);
+      return true;
+    }
+  }
+  emitResult(dispatched);
   return dispatched;
 }
 
