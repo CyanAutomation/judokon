@@ -203,6 +203,13 @@ export function resume() {
  * This function is only functional in test environments and allows tests to
  * control the scheduler's timing deterministically without global monkey-patching.
  *
+ * @summary Provide deterministic control over scheduler timing in tests by overriding RAF APIs.
+ * @pseudocode
+ * 1. Verify the test environment flag is enabled.
+ * 2. Capture original `requestAnimationFrame`/`cancelAnimationFrame` references.
+ * 3. Override RAF handlers to prevent automatic execution and manage IDs manually.
+ * 4. Expose helpers to advance frames/time and inspect execution state.
+ * 5. Restore original handlers when disposing the controller.
  * @throws {Error} If called outside of test environment
  * @returns {object} Test controller with methods to control timing
  * @property {() => void} advanceFrame - Advance the scheduler by one frame
