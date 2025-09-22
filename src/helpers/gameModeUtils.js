@@ -139,22 +139,48 @@ async function resolveNavigationItems(schema) {
  * @returns {Promise<Array<import("./types.js").NavigationItem & {name?: string, description?: string}>>}
  */
 export async function loadNavigationItems() {
-  const schema = await getNavigationSchema();
-  const navItems = await resolveNavigationItems(schema);
+  const navigationSchema = await getNavigationSchema();
+  let navItems = null;
+  try {
+    const cached = await navigationCache.load();
+    if (Array.isArray(cached)) {
+      navItems = cloneNavigationItems(cached);
+    }
+  } catch (error) {
+    console.error("Failed to load navigationItems from cache:", error);
+  }
+
+  if (!navItems) {
+    navItems = cloneNavigationItems(navigationFallback);
+    await validateWithSchema(navItems, navigationSchema);
+  }
 
   let gameModes = getItem(GAMEMODES_KEY);
   if (!Array.isArray(gameModes)) {
-    gameModes = await fetchJson(`${DATA_DIR}gameModes.json`);
+    try {
+      gameModes = await fetchJson(`${DATA_DIR}gameModes.json`);
+    } catch (error) {
+      console.warn("Failed to fetch game modes, falling back to import", error);
+      const gameModeSchema = await getSchema();
+      gameModes = await importJsonModule("../data/gameModes.json");
+      await validateWithSchema(gameModes, gameModeSchema);
+    }
     setItem(GAMEMODES_KEY, gameModes);
   }
 
+  const modesById = new Map(
+    (Array.isArray(gameModes) ? gameModes : []).map((mode) => [mode.id, mode])
+  );
+
   return navItems.map((item) => {
-    const mode = gameModes.find((gm) => gm.id === item.gameModeId);
-    return {
-      ...item,
-      name: mode?.name,
-      description: mode?.description
-    };
+    const mode = modesById.get(item.gameModeId);
+    return mode
+      ? {
+          ...item,
+          name: mode.name ?? item.name,
+          description: mode.description ?? item.description
+        }
+      : { ...item };
   });
 }
 
