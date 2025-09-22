@@ -1,4 +1,4 @@
-import { dispatchBattleEvent as globalDispatchBattleEvent } from "../eventDispatcher.js";
+import * as eventDispatcher from "../eventDispatcher.js";
 import { readDebugState as globalReadDebugState } from "../debugHooks.js";
 
 const hasMockIndicators = (fn) => {
@@ -38,28 +38,48 @@ const originalDispatchStore = (() => {
       scope[ORIGINAL_DISPATCH_SYMBOL] = fn;
     } catch {}
   };
-  if (
-    typeof globalDispatchBattleEvent === "function" &&
-    !hasMockIndicators(globalDispatchBattleEvent) &&
-    !getStored()
-  ) {
-    setStored(globalDispatchBattleEvent);
-  }
+  try {
+    // Avoid reading `eventDispatcher.dispatchBattleEvent` at module init time
+    // so test harnesses can mock the module before runtime lookup. The
+    // getter `getGlobalDispatch()` performs runtime access when needed.
+  } catch {}
   return { get: getStored, set: setStored };
 })();
 
 const getOriginalGlobalDispatchBattleEvent = () => {
   const stored = originalDispatchStore.get();
   if (stored) return stored;
-  if (
-    typeof globalDispatchBattleEvent === "function" &&
-    !hasMockIndicators(globalDispatchBattleEvent)
-  ) {
-    originalDispatchStore.set(globalDispatchBattleEvent);
-    return globalDispatchBattleEvent;
-  }
+  try {
+    const current = getGlobalDispatch();
+    if (typeof current === "function" && !hasMockIndicators(current)) {
+      originalDispatchStore.set(current);
+      return current;
+    }
+  } catch {}
   return null;
 };
+
+// Dynamic accessor so test module mocks replace the runtime dispatcher.
+function getGlobalDispatch() {
+  try {
+    const fn = eventDispatcher.dispatchBattleEvent;
+    try {
+      if (typeof process !== "undefined" && process.env?.VITEST) {
+        try {
+          console.debug &&
+            console.debug(
+              "[TEST] getGlobalDispatch ->",
+              typeof fn,
+              !!fn && (fn?.mock ? "mock" : "fn")
+            );
+        } catch {}
+      }
+    } catch {}
+    return fn;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Create a telemetry emitter for next-round expiration instrumentation.
@@ -329,9 +349,21 @@ export async function dispatchReadyViaBus(options = {}) {
   if (!skipCandidate && typeof candidate === "function") {
     dispatchers.push(candidate);
   }
-  if (typeof globalDispatchBattleEvent === "function" && globalDispatchBattleEvent !== candidate) {
-    dispatchers.push(globalDispatchBattleEvent);
-  }
+  try {
+    const current = getGlobalDispatch();
+    if (typeof current === "function" && current !== candidate) {
+      dispatchers.push(current);
+    }
+    try {
+      if (typeof process !== "undefined" && process.env?.VITEST) {
+        // eslint-disable-next-line no-console
+        console.error("[TEST] dispatchReadyViaBus candidates:", {
+          candidate: typeof candidate,
+          global: typeof current
+        });
+      }
+    } catch {}
+  } catch {}
   for (const dispatcher of dispatchers) {
     try {
       const result = dispatcher("ready");
@@ -381,6 +413,15 @@ export async function dispatchReadyWithOptions(params) {
       (bag.handleNextRound_dispatchViaOptions_count || 0) + 1;
   }
   try {
+    try {
+      if (typeof process !== "undefined" && process.env?.VITEST) {
+        // eslint-disable-next-line no-console
+        console.error("[TEST] dispatchReadyWithOptions calling provided dispatcher", {
+          name: dispatchBattleEvent?.name,
+          isMock: !!dispatchBattleEvent?.mock
+        });
+      }
+    } catch {}
     const result = dispatchBattleEvent("ready");
     const resolved = await Promise.resolve(result);
     const dispatched = resolved !== false;
@@ -481,49 +522,57 @@ export async function dispatchReadyDirectly(params) {
   let machineError = null;
   let dedupeTracked = false;
   const shouldInvokeMachineAfterShared = () => {
-    if (typeof globalDispatchBattleEvent !== "function") return false;
-    const original = getOriginalGlobalDispatchBattleEvent();
-    if (hasMockIndicators(globalDispatchBattleEvent)) return true;
-    let isTestEnv = false;
     try {
-      isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
-    } catch {
-      isTestEnv = false;
-    }
-    if (!isTestEnv) return false;
-    return Boolean(original && globalDispatchBattleEvent !== original);
-  };
-  if (typeof globalDispatchBattleEvent === "function") {
-    try {
-      const result = await globalDispatchBattleEvent("ready");
-      if (result !== false) {
-        dedupeTracked = true;
-        if (!shouldInvokeMachineAfterShared()) {
-          // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
-          return recordSuccess(true);
-        }
-        const machineStateBeforeDispatch = readMachineState();
-        if (
-          machineStateBeforeDispatch &&
-          machineStateBeforeDispatch !== "cooldown" &&
-          machineStateBeforeDispatch !== "roundOver"
-        ) {
-          return recordSuccess(true);
-        }
-        try {
-          await dispatchViaMachine();
-          return recordSuccess(true);
-        } catch (error) {
-          machineError = error;
-          emitTelemetry?.("handleNextRound_dispatchReadyDirectly_machineErrorAfterShared", {
-            message: error?.message ?? String(error)
-          });
-        }
+      const current = getGlobalDispatch();
+      if (typeof current !== "function") return false;
+      const original = getOriginalGlobalDispatchBattleEvent();
+      if (hasMockIndicators(current)) return true;
+      let isTestEnv = false;
+      try {
+        isTestEnv = typeof process !== "undefined" && Boolean(process.env?.VITEST);
+      } catch {
+        isTestEnv = false;
       }
-    } catch (error) {
-      fallbackError = error;
+      if (!isTestEnv) return false;
+      return Boolean(original && current !== original);
+    } catch {
+      return false;
     }
-  }
+  };
+  try {
+    const current = getGlobalDispatch();
+    if (typeof current === "function") {
+      try {
+        const result = await current("ready");
+        if (result !== false) {
+          dedupeTracked = true;
+          if (!shouldInvokeMachineAfterShared()) {
+            // Shared dispatcher handled the event; skip machine dispatch to match production behavior.
+            return recordSuccess(true);
+          }
+          const machineStateBeforeDispatch = readMachineState();
+          if (
+            machineStateBeforeDispatch &&
+            machineStateBeforeDispatch !== "cooldown" &&
+            machineStateBeforeDispatch !== "roundOver"
+          ) {
+            return recordSuccess(true);
+          }
+          try {
+            await dispatchViaMachine();
+            return recordSuccess(true);
+          } catch (error) {
+            machineError = error;
+            emitTelemetry?.("handleNextRound_dispatchReadyDirectly_machineErrorAfterShared", {
+              message: error?.message ?? String(error)
+            });
+          }
+        }
+      } catch (error) {
+        fallbackError = error;
+      }
+    }
+  } catch {}
   if (!machineAttempted) {
     try {
       await dispatchViaMachine();
@@ -656,16 +705,19 @@ export async function runReadyDispatchStrategies(params = {}) {
     const fallbackOutcome = await invokeFallbackDispatcher(fallbackDispatcher);
     registerFallbackOutcome(fallbackOutcome);
   }
-  const shouldInvokeGlobalFallback =
-    !dispatched &&
-    fallbackDispatched !== true &&
-    useGlobalFallback === true &&
-    typeof globalDispatchBattleEvent === "function" &&
-    globalDispatchBattleEvent !== fallbackDispatcher;
-  if (shouldInvokeGlobalFallback) {
-    const globalOutcome = await invokeFallbackDispatcher(globalDispatchBattleEvent);
-    registerFallbackOutcome(globalOutcome);
-  }
+  try {
+    const current = getGlobalDispatch();
+    const shouldInvokeGlobalFallback =
+      !dispatched &&
+      fallbackDispatched !== true &&
+      useGlobalFallback === true &&
+      typeof current === "function" &&
+      current !== fallbackDispatcher;
+    if (shouldInvokeGlobalFallback) {
+      const globalOutcome = await invokeFallbackDispatcher(current);
+      registerFallbackOutcome(globalOutcome);
+    }
+  } catch {}
   if (fallbackAttempted) {
     emitTelemetry?.("handleNextRoundDispatchFallback", fallbackDispatched);
   }
