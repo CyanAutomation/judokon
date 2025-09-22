@@ -18,6 +18,9 @@ const EVENT_DISPATCHER_MODULE = pathToFileURL(
 const EXPIRATION_HANDLERS_MODULE = pathToFileURL(
   resolve(REPO_ROOT, "src/helpers/classicBattle/nextRound/expirationHandlers.js")
 ).href;
+const ROUND_READY_STATE_MODULE = pathToFileURL(
+  resolve(REPO_ROOT, "src/helpers/classicBattle/roundReadyState.js")
+).href;
 
 /**
  * Create a dispatcher mock that replays candidate dispatchers before falling
@@ -385,5 +388,81 @@ describe("bus propagation and deduplication", () => {
       expect.objectContaining({ dispatchBattleEvent: globalDispatchSpy, alreadyDispatched: false })
     );
     expect(directResult).toEqual({ dispatched: true, dedupeTracked: false });
+  });
+});
+
+describe("fallback readiness flag discipline", () => {
+  let harness;
+  let scheduler;
+  /** @type {import('vitest').Mock} */
+  let globalDispatchSpy;
+
+  beforeEach(async () => {
+    globalDispatchSpy = vi.fn(() => true);
+    harness = createClassicBattleHarness({
+      mocks: {
+        [EVENT_DISPATCHER_MODULE]: () => ({
+          dispatchBattleEvent: globalDispatchSpy,
+          resetDispatchHistory: vi.fn()
+        })
+      }
+    });
+    await harness.setup();
+    scheduler = createMockScheduler();
+    document.body.innerHTML = "";
+    createTimerNodes();
+  });
+
+  afterEach(() => {
+    harness.cleanup();
+  });
+
+  it("marks readiness after fallback dispatch and short-circuits future attempts", async () => {
+    const expirationHandlersModule = await harness.importModule(EXPIRATION_HANDLERS_MODULE);
+    const readyStateModule = await harness.importModule(ROUND_READY_STATE_MODULE);
+    const capturedCalls = [];
+    const runReadySpy = vi
+      .spyOn(expirationHandlersModule, "runReadyDispatchStrategies")
+      .mockImplementation(async (options = {}) => {
+        capturedCalls.push(options);
+        return { dispatched: false, fallbackDispatched: true };
+      });
+    const setReadySpy = vi.spyOn(readyStateModule, "setReadyDispatchedForCurrentCooldown");
+    readyStateModule.setReadyDispatchedForCurrentCooldown(false);
+
+    const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
+    mockCreateRoundTimer({ scheduled: false, ticks: [], expire: true });
+
+    const { startCooldown } = await harness.importModule(ROUND_MANAGER_MODULE);
+    const controls = startCooldown({}, scheduler, {
+      dispatchBattleEvent: vi.fn(() => false),
+      useGlobalReadyFallback: true,
+      getClassicBattleMachine: () => ({ state: { value: "cooldown" } }),
+      isOrchestrated: () => true
+    });
+
+    await vi.runAllTimersAsync();
+    await controls.ready;
+
+    expect(runReadySpy).toHaveBeenCalledTimes(1);
+    expect(capturedCalls[0]?.alreadyDispatchedReady).toBe(false);
+    expect(setReadySpy).toHaveBeenCalledWith(true);
+    expect(readyStateModule.hasReadyBeenDispatchedForCurrentCooldown()).toBe(true);
+
+    runReadySpy.mockRestore();
+    setReadySpy.mockRestore();
+
+    const emitTelemetry = vi.fn();
+    const guardStrategies = [vi.fn(() => true)];
+    const guardResult = await expirationHandlersModule.runReadyDispatchStrategies({
+      alreadyDispatchedReady: readyStateModule.hasReadyBeenDispatchedForCurrentCooldown(),
+      strategies: guardStrategies,
+      emitTelemetry
+    });
+    expect(guardStrategies[0]).not.toHaveBeenCalled();
+    expect(guardResult).toEqual({ dispatched: true, fallbackDispatched: false });
+    expect(emitTelemetry).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
+
+    readyStateModule.setReadyDispatchedForCurrentCooldown(false);
   });
 });
