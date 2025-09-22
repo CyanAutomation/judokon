@@ -267,7 +267,7 @@ describe("runReadyDispatchStrategies", () => {
       ],
       emitTelemetry: emit
     });
-    expect(result).toBe(true);
+    expect(result).toEqual({ dispatched: true, fallbackDispatched: false });
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
   });
 
@@ -277,7 +277,7 @@ describe("runReadyDispatchStrategies", () => {
       strategies: [() => false, () => false],
       emitTelemetry: emit
     });
-    expect(result).toBe(false);
+    expect(result).toEqual({ dispatched: false, fallbackDispatched: false });
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", false);
   });
 
@@ -297,8 +297,21 @@ describe("runReadyDispatchStrategies", () => {
       ],
       emitTelemetry: emit
     });
-    expect(result).toBe(true);
+    expect(result).toEqual({ dispatched: true, fallbackDispatched: false });
     expect(calls).toEqual(["machine", "bus"]);
+    expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
+  });
+
+  it("surfaces prior readiness when already dispatched", async () => {
+    const emit = vi.fn();
+    const strategies = [vi.fn()];
+    const result = await runReadyDispatchStrategies({
+      alreadyDispatchedReady: true,
+      strategies,
+      emitTelemetry: emit
+    });
+    expect(strategies[0]).not.toHaveBeenCalled();
+    expect(result).toEqual({ dispatched: true, fallbackDispatched: false });
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", true);
   });
 
@@ -310,7 +323,7 @@ describe("runReadyDispatchStrategies", () => {
       emitTelemetry: emit,
       fallback: { dispatcher: fallbackDispatcher }
     });
-    expect(result).toBe(false);
+    expect(result).toEqual({ dispatched: false, fallbackDispatched: true });
     expect(fallbackDispatcher).toHaveBeenCalledWith("ready");
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchFallback", true);
     expect(emit).toHaveBeenCalledWith("handleNextRoundDispatchResult", false);
