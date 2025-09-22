@@ -78,8 +78,8 @@ describe("classicBattle stalled stat selection recovery", () => {
     await battleMod.startRound(store, battleMod.applyRoundUI);
     await battleMod.__triggerStallPromptNow(store);
     expect(document.querySelector("header #round-message").textContent).toMatch(/stalled/i);
-    timerSpy.advanceTimersByTime(5000);
-    await vi.runAllTimersAsync();
+    timers.advanceTimersByTime(5000);
+    await timers.runAllTimersAsync();
     const score = document.querySelector("header #score-display").textContent;
     expect(score).toBe("You: 1\nOpponent: 0");
   });
