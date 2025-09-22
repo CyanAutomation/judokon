@@ -96,10 +96,10 @@ describe("classicBattle timer pause", () => {
       playerVal,
       opponentVal
     });
-    await timer.runAllTimersAsync();
+    await timers.runAllTimersAsync();
     await promise;
-    timer.advanceTimersByTime(1000);
-    await timer.runAllTimersAsync();
+    timers.advanceTimersByTime(1000);
+    await timers.runAllTimersAsync();
     const messages = showMessage.mock.calls.map((c) => c[0]);
     expect(messages.some((m) => /Time's up! Auto-selecting/.test(m))).toBe(false);
   });
