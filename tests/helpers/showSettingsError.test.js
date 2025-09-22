@@ -19,7 +19,7 @@ afterEach(() => {
 
 describe("showSettingsError", () => {
   it("shows and then removes the error popup", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
 
     await withMutedConsole(() => {
       const errSpy = vi.spyOn(console, "error");
@@ -40,10 +40,11 @@ describe("showSettingsError", () => {
     vi.advanceTimersByTime(SETTINGS_REMOVE_MS - SETTINGS_FADE_MS);
     expect(document.querySelector(".settings-error-popup")).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
+    timers.cleanup();
   });
 
   it("replaces existing popup on subsequent calls", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
 
     await withMutedConsole(() => {
       const errSpy = vi.spyOn(console, "error");
@@ -64,5 +65,6 @@ describe("showSettingsError", () => {
     vi.advanceTimersByTime(SETTINGS_REMOVE_MS);
     expect(document.querySelector(".settings-error-popup")).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
+    timers.cleanup();
   });
 });

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 let debugHooks;
 
 let store;
@@ -20,7 +21,7 @@ afterEach(() => {
 
 describe("roundDecisionEnter", () => {
   it("schedules a decision guard when no selection exists", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
       emitBattleEvent: vi.fn(),
       onBattleEvent: vi.fn(),
@@ -40,11 +41,11 @@ describe("roundDecisionEnter", () => {
     await vi.runAllTimersAsync();
     await p;
     expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("interrupts when no player choice is made", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const emitBattleEvent = vi.fn();
     vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
       emitBattleEvent,
@@ -69,11 +70,11 @@ describe("roundDecisionEnter", () => {
       "No selection detected. Interrupting round."
     );
     expect(machine.dispatch).toHaveBeenCalledWith("interrupt", { reason: "noSelection" });
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("resolves immediately when selection is present", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
       emitBattleEvent: vi.fn(),
       onBattleEvent: vi.fn(),
@@ -100,11 +101,11 @@ describe("roundDecisionEnter", () => {
     expect(resolveRound).toHaveBeenCalledOnce();
     expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
     await vi.runAllTimersAsync();
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("handles errors during immediate resolution", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const emitBattleEvent = vi.fn();
     vi.doMock("../../src/helpers/classicBattle/battleEvents.js", () => ({
       emitBattleEvent,
@@ -139,6 +140,6 @@ describe("roundDecisionEnter", () => {
     });
     expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
     await vi.runAllTimersAsync();
-    vi.useRealTimers();
+    timers.cleanup();
   });
 });

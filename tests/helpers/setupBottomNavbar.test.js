@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 const originalReadyStateDescriptor = Object.getOwnPropertyDescriptor(document, "readyState");
 
@@ -15,6 +16,7 @@ vi.mock("../../src/helpers/navigation/navigationUI.js", async () => {
 });
 
 describe("setupBottomNavbar module", () => {
+  let timers;
   beforeEach(() => {
     vi.resetModules();
     window.matchMedia = vi.fn().mockImplementation((q) => ({
@@ -34,11 +36,11 @@ describe("setupBottomNavbar module", () => {
       </nav>
       <button id="test-btn"></button>
     `;
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
     if (originalReadyStateDescriptor) {
       Object.defineProperty(document, "readyState", originalReadyStateDescriptor);
     }

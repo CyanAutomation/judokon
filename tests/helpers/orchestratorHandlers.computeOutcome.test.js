@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { createTestBattleDom } from "./classicBattle/createTestBattleDom.js";
 let debugHooks;
 
@@ -38,7 +39,7 @@ afterEach(() => {
 
 describe("computeAndDispatchOutcome", () => {
   it("dispatches outcome and continue events", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
       getOpponentJudoka: vi.fn(() => ({ stats: { strength: 3 } }))
     }));
@@ -62,10 +63,11 @@ describe("computeAndDispatchOutcome", () => {
 
     expect(machine.dispatch).toHaveBeenCalledWith("outcome=winPlayer");
     expect(machine.dispatch).toHaveBeenCalledWith("continue");
+    timers.cleanup();
   });
 
   it("waits for user input when autoContinue is disabled", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     vi.doMock("../../src/helpers/classicBattle/cardSelection.js", () => ({
       getOpponentJudoka: vi.fn(() => ({ stats: { strength: 3 } }))
     }));
@@ -90,6 +92,7 @@ describe("computeAndDispatchOutcome", () => {
 
     expect(machine.dispatch).toHaveBeenCalledWith("outcome=winPlayer");
     expect(machine.dispatch).not.toHaveBeenCalledWith("continue");
+    timers.cleanup();
   });
 
   it("dispatches interrupt when no outcome is produced", async () => {

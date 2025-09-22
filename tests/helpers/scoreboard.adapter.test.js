@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { mount, clearBody } from "./domUtils.js";
 
 vi.mock("../../src/helpers/motionUtils.js", () => ({
@@ -11,8 +12,9 @@ import {
 } from "../../src/helpers/classicBattle/battleEvents.js";
 
 describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
+  let timers;
   beforeEach(async () => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     vi.resetModules();
     __resetBattleEventTarget();
     const { container } = mount();
@@ -35,6 +37,7 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
 
   afterEach(() => {
     clearBody();
+    timers.cleanup();
   });
 
   it("updates message, outcome lock, timer, round counter, and score", async () => {

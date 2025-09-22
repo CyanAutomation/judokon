@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 vi.mock("../../src/helpers/classicBattle/eventDispatcher.js", () => ({
   dispatchBattleEvent: vi.fn()
@@ -13,9 +14,10 @@ import * as roundResolver from "../../src/helpers/classicBattle/roundResolver.js
 describe("resolveRound", () => {
   let dispatchMock;
   let emitMock;
+  let timers;
 
   beforeEach(async () => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     dispatchMock = (await import("../../src/helpers/classicBattle/eventDispatcher.js"))
       .dispatchBattleEvent;
     emitMock = (await import("../../src/helpers/classicBattle/battleEvents.js")).emitBattleEvent;
@@ -24,8 +26,7 @@ describe("resolveRound", () => {
   });
 
   afterEach(() => {
-    vi.clearAllTimers();
-    vi.useRealTimers();
+    timers.cleanup();
     vi.restoreAllMocks();
     delete document.body.dataset.battleState;
   });

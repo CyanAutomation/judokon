@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { interactions } from "../utils/componentTestUtils.js";
 
 describe("onDomReady (Enhanced Natural Document Lifecycle)", () => {
+  let timers;
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
   });
   it("runs callback immediately when document is ready", async () => {
     // Set document ready state naturally

@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 describe("headless mode timing", () => {
+  let timers;
   beforeEach(() => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
     vi.restoreAllMocks();
   });
 

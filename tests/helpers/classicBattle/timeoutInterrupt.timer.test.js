@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 const countdownTimers = [];
 const countdownTickEvents = [];
@@ -65,13 +66,7 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
             timeoutId = null;
           }
         }),
-        pause: vi.fn(() => {
-          if (timeoutId !== null) {
-            clearTimeout(timeoutId);
-            activeCountdownTimeouts.delete(timeoutId);
-            timeoutId = null;
-          }
-        }),
+        pause: vi.fn(),
         resume: vi.fn()
       };
       countdownTimers.push(controls);
@@ -93,7 +88,7 @@ vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
 });
 
 beforeEach(async () => {
-  timersControl = vi.useFakeTimers();
+  timersControl = useCanonicalTimers();
   resetCountdownState();
   vi.resetModules();
   vi.clearAllMocks();
@@ -105,12 +100,10 @@ beforeEach(async () => {
 
 afterEach(() => {
   try {
-    timersControl?.clearAllTimers?.();
+    timersControl?.cleanup?.();
   } catch {}
-  timersControl?.useRealTimers?.();
   timersControl = null;
   battleMod = null;
-  vi.useRealTimers();
 });
 
 describe("timer behavior with mocks", () => {

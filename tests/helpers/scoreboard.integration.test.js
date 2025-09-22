@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 // Avoid matchMedia usage in jsdom via reduced motion stub
 vi.mock("../../src/helpers/motionUtils.js", () => ({
   shouldReduceMotionSync: () => true
@@ -32,8 +33,9 @@ vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
 }));
 
 describe("Scoreboard integration without setupScoreboard", () => {
+  let timers;
   beforeEach(async () => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     vi.resetModules();
     roundDrift = undefined;
     scoreboard = scoreboardStub;

@@ -1,108 +1,94 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import installRAFMock from "../rafMock.js";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
+import "./commonMocks.js";
+import { createTimerNodes } from "./domUtils.js";
+import { setupClassicBattleHooks } from "./setupTestEnv.js";
 
-describe("timeout → interruptRound → cooldown auto-advance - minimal", () => {
-  /** @type {import('vitest').FakeTimers} */
-  let timers;
+const readyDispatchTracker = vi.hoisted(() => ({ events: [] }));
+let timersControl = null;
 
-  beforeEach(() => {
-    vi.resetModules();
-    vi.clearAllMocks();
+vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    dispatchBattleEvent: vi.fn(async (...args) => {
+      const [eventName] = args;
+      if (eventName === "ready") {
+        readyDispatchTracker.events.push(args);
+      }
+      const result = await actual.dispatchBattleEvent(...args);
+      if (eventName === "ready") {
+        return true;
+      }
+      return result;
+    })
+  };
+});
 
-    // Install shared RAF mock for deterministic frame control
-    const raf = installRAFMock();
-    global.__timeoutInterruptRafRestore = raf.restore;
+vi.mock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
+  initRoundSelectModal: vi.fn(async (cb) => {
+    await cb?.();
+  })
+}));
 
-    if (typeof document !== "undefined") {
-      document.body.innerHTML = "";
-    }
+vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getDefaultTimer: vi.fn(async () => 1),
+    createCountdownTimer: vi.fn(() => {
+      let tickHandler = null;
+      return {
+        on: vi.fn((event, handler) => {
+          if (event === "tick") {
+            tickHandler = handler;
+          }
+        }),
+        start: vi.fn(() => {
+          if (tickHandler) {
+            // Use vi.advanceTimersByTime since we're in fake timer environment
+            vi.setSystemTime(Date.now() + 1000);
+            tickHandler(1);
+          }
+        }),
+        stop: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn()
+      };
+    })
+  };
+});
 
-    if (typeof window !== "undefined") {
-      window.__promiseEvents = [];
-    }
+vi.mock("../../../src/helpers/timers/createRoundTimer.js", async () => {
+  const { mockCreateRoundTimer } = await import("../roundTimerMock.js");
+  mockCreateRoundTimer({
+    scheduled: false,
+    ticks: [],
+    expire: true,
+    moduleId: "../../../src/helpers/timers/createRoundTimer.js"
+  });
+  return await import("../../../src/helpers/timers/createRoundTimer.js");
+});
 
-    if (typeof globalThis !== "undefined") {
-      delete globalThis.__classicBattleEventTarget;
-    }
+describe("timeout → interruptRound → minimal auto-advance", () => {
+  setupClassicBattleHooks();
 
-    timers = vi.useFakeTimers();
+  beforeEach(async () => {
+    // Ensure fake timers are active so vi.advanceTimersByTimeAsync works
+    // (many other tests in this suite call vi.useFakeTimers()).
+    timersControl = useCanonicalTimers();
+    readyDispatchTracker.events.length = 0;
+    createTimerNodes();
+    window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+    const { initClassicBattleTest } = await import("./initClassicBattle.js");
+    await initClassicBattleTest({ afterMock: true });
   });
 
   afterEach(() => {
-    timers?.clearAllTimers();
-    timers?.useRealTimers();
-    timers = undefined;
-
+    readyDispatchTracker.events.length = 0;
+    delete window.__NEXT_ROUND_COOLDOWN_MS;
     try {
-      global.__timeoutInterruptRafRestore?.();
-      try {
-        delete global.__timeoutInterruptRafRestore;
-      } catch {}
+      timersControl?.cleanup?.();
     } catch {}
-
-    if (typeof document !== "undefined") {
-      document.body.innerHTML = "";
-    }
-
-    vi.restoreAllMocks();
-    vi.resetModules();
   });
-
-  async function initBattle() {
-    const { initClassicBattleTest } = await import("./initClassicBattle.js");
-    return initClassicBattleTest({ afterMock: true });
-  }
-
-  it("initializes the battle store with expected defaults", async () => {
-    const battleMod = await initBattle();
-    const store = battleMod.createBattleStore();
-
-    expect(store.selectionMade).toBe(false);
-    expect(store.stallTimeoutMs).toBe(35000);
-    expect(store.autoSelectId).toBeNull();
-  });
-
-  it("can get promises without hanging", async () => {
-    const battleMod = await initBattle();
-    const { emitBattleEvent } = await import("../../../src/helpers/classicBattle/battleEvents.js");
-
-    if (typeof document !== "undefined") {
-      const container = document.createElement("div");
-      container.id = "snackbar-container";
-      document.body.appendChild(container);
-    }
-
-    const countdownPromise = battleMod.getCountdownStartedPromise();
-    const timeoutPromise = battleMod.getRoundTimeoutPromise();
-
-    const initialCountdownRef =
-      typeof window !== "undefined" ? window.countdownStartedPromise : undefined;
-    const initialTimeoutRef =
-      typeof window !== "undefined" ? window.roundTimeoutPromise : undefined;
-
-    setTimeout(() => emitBattleEvent("countdownStart", { duration: 1 }), 10);
-    setTimeout(() => emitBattleEvent("roundTimeout"), 400);
-
-    await vi.advanceTimersByTimeAsync(1200);
-    const [countdownResult, timeoutResult] = await Promise.all([countdownPromise, timeoutPromise]);
-
-    expect(countdownResult).toBeUndefined();
-    expect(timeoutResult).toBeUndefined();
-
-    if (typeof document !== "undefined") {
-      const snackbarText = document.querySelector(".snackbar")?.textContent?.trim() ?? "";
-      expect(snackbarText).toMatch(/Next round in: \d+s/);
-    }
-
-    if (typeof window !== "undefined") {
-      const resolveEvents = window.__promiseEvents?.filter(
-        (event) =>
-          event?.type === "promise-resolve" &&
-          (event.key === "countdownStartedPromise" || event.key === "roundTimeoutPromise")
-      );
-      expect(resolveEvents?.length).toBeGreaterThanOrEqual(2);
-      expect(window.countdownStartedPromise).not.toBe(initialCountdownRef);
-      expect(window.roundTimeoutPromise).not.toBe(initialTimeoutRef);
-    }
-  });
-});

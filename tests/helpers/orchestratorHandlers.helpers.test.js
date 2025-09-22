@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 let debugHooks;
 
 let store;
@@ -36,7 +37,7 @@ describe("recordEntry", () => {
 
 describe("guardSelectionResolution", () => {
   it("cancels scheduled outcome when invoked", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
     const outcomeSpy = vi.spyOn(mod, "computeAndDispatchOutcome").mockResolvedValue(undefined);
     const cancel = mod.guardSelectionResolution({}, {});
@@ -45,7 +46,7 @@ describe("guardSelectionResolution", () => {
     await vi.runAllTimersAsync();
     expect(outcomeSpy).not.toHaveBeenCalled();
     expect(debugHooks.readDebugState("roundDecisionGuard")).toBeNull();
-    vi.useRealTimers();
+    timers.cleanup();
   });
 });
 
@@ -59,7 +60,7 @@ describe("awaitPlayerChoice", () => {
 
 describe("schedulePostResolveWatchdog", () => {
   it("interrupts if state remains roundDecision", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     const mod = await import("../../src/helpers/classicBattle/orchestratorHandlers.js");
     const machine = {
       getState: vi.fn(() => "roundDecision"),
@@ -70,6 +71,6 @@ describe("schedulePostResolveWatchdog", () => {
     expect(machine.dispatch).toHaveBeenCalledWith("interrupt", {
       reason: "postResolveWatchdog"
     });
-    vi.useRealTimers();
+    timers.cleanup();
   });
 });

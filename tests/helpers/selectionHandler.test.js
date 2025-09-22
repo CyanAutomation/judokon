@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 vi.mock("../../src/helpers/battleEngineFacade.js", () => ({
   STATS: ["power"],
   stopTimer: vi.fn()
-}));
+}));;
 
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn(),
@@ -60,9 +61,10 @@ describe("handleStatSelection helpers", () => {
   let showSnackbar;
   let dispatchBattleEvent;
   let getBattleState;
+  let timers;
 
   beforeEach(async () => {
-    vi.useFakeTimers();
+    timers = useCanonicalTimers();
     store = { selectionMade: false, playerChoice: null, statTimeoutId: null, autoSelectId: null };
     ({ stopTimer } = await import("../../src/helpers/battleEngineFacade.js"));
     ({ emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js"));
@@ -73,7 +75,7 @@ describe("handleStatSelection helpers", () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("ignores repeated selections", async () => {
