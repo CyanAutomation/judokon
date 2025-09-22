@@ -95,7 +95,7 @@ describe("RoundStore", () => {
   });
 
   describe("stat selection", () => {
-    it("should set selected stat and emit events", async () => {
+    it("should set selected stat without emitting legacy event", async () => {
       const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
 
       roundStore.setSelectedStat("strength");
@@ -103,9 +103,7 @@ describe("RoundStore", () => {
       const round = roundStore.getCurrentRound();
       expect(round.selectedStat).toBe("strength");
 
-      expect(emitBattleEvent).toHaveBeenCalledWith("statSelected", {
-        stat: "strength"
-      });
+      expect(emitBattleEvent).not.toHaveBeenCalled();
     });
   });
 

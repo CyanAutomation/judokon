@@ -136,9 +136,9 @@ class RoundStore {
     if (this.callbacks.onStatSelected) {
       this.callbacks.onStatSelected(stat);
     }
-
-    // Emit legacy event for backward compatibility
-    emitBattleEvent("statSelected", { stat });
+    // Emission of the legacy `statSelected` event now happens upstream in the
+    // selection handler. We intentionally avoid a duplicate emit here to
+    // prevent double notifications while still supporting legacy callbacks.
   }
 
   /**
