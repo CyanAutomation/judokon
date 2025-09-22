@@ -12,12 +12,29 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import installRAFMock from "./rafMock.js";
 
 /**
+ * Normalizes mock implementations for Vitest's factory contract.
+ *
+ * @pseudocode
+ * ```
+ * if typeof mockImpl === "function":
+ *   return mockImpl
+ * return () => mockImpl
+ * ```
+ * @param {*} mockImpl - Value or factory used to mock a module
+ * @returns {Function} Mock factory compatible with `vi.doMock`
+ */
+export function createMockFactory(mockImpl) {
+  return typeof mockImpl === "function" ? mockImpl : () => mockImpl;
+}
+
+/**
  * Configuration options for the integration harness
  * @typedef {Object} HarnessConfig
  * @property {boolean} [useFakeTimers=true] - Whether to use fake timers
  * @property {boolean} [useRafMock=true] - Whether to use RAF mock
  * @property {Object} [fixtures={}] - Test fixtures to inject
  * @property {Object} [mocks={}] - Selective mocks for externalities only
+ * @property {Function} [mockRegistrar] - Custom registration function for mocks (defaults to vi.doMock)
  * @property {Function} [setup] - Custom setup function
  * @property {Function} [teardown] - Custom teardown function
  */
@@ -60,6 +77,7 @@ export function createIntegrationHarness(config = {}) {
     useRafMock = true,
     fixtures = {},
     mocks = {},
+    mockRegistrar = vi.doMock,
     setup: customSetup,
     teardown: customTeardown
   } = config;
@@ -87,9 +105,14 @@ export function createIntegrationHarness(config = {}) {
 
     // Apply selective mocks for externalities only
     for (const [modulePath, mockImpl] of Object.entries(mocks)) {
-      const mockFactory = typeof mockImpl === "function" ? mockImpl : () => mockImpl;
+      /**
+       * Vitest executes factories returned to `vi.doMock`. Function mocks are
+       * therefore passed through directly so they are returned as-is, while
+       * non-function mocks are wrapped in a factory closure.
+       */
+      const mockFactory = createMockFactory(mockImpl);
 
-      vi.doMock(modulePath, mockFactory);
+      mockRegistrar(modulePath, mockFactory);
     }
 
     // Inject fixtures into global scope or modules as needed

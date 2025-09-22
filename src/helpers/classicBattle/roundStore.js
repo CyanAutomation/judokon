@@ -243,7 +243,8 @@ class RoundStore {
    */
   wireIntoScoreboardAdapter() {
     if (!isEnabled("roundStore")) {
-      return Promise.resolve(); // Feature flag disabled, use legacy event system
+      // Feature flag disabled, use legacy event system but preserve async contract
+      return Promise.resolve().then(() => undefined);
     }
 
     // Import scoreboard adapter dynamically to avoid circular dependencies
@@ -290,7 +291,7 @@ class RoundStore {
  * @pseudocode
  * 1. Create a RoundStore and reuse it across imports.
  *
- * @type {RoundStore}
+ * @returns {RoundStore} Round store singleton instance shared across modules.
  */
 export const roundStore = new RoundStore();
 export default roundStore;

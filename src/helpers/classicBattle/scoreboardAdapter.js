@@ -49,15 +49,14 @@ export function initScoreboardAdapter() {
   }
   bound = true;
 
-  scoreboardReadyPromise = Promise.resolve();
-
   // Check if RoundStore feature flag is enabled
   const useRoundStore = isEnabled("roundStore");
 
-  if (useRoundStore) {
-    // Use RoundStore for round number updates instead of events
-    scoreboardReadyPromise = Promise.resolve(roundStore.wireIntoScoreboardAdapter());
-  } else {
+  scoreboardReadyPromise = useRoundStore
+    ? Promise.resolve(roundStore.wireIntoScoreboardAdapter())
+    : Promise.resolve();
+
+  if (!useRoundStore) {
     // Legacy event-driven approach
     // Round lifecycle
     bind("display.round.start", (e) => {
