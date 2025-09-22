@@ -583,10 +583,13 @@ function handleReadyDispatchEarlyExit({ context, controls, emitTelemetry, getDeb
  *    before fallbacks.
  * 4. Append custom dispatcher and bus strategies, then add the machine strategy again if not already present so manual flows
  *    still dispatch through the machine when earlier strategies short circuit.
- * 5. Return the assembled strategy list for `runReadyDispatchStrategies`.
+ * 5. Return the strategy list alongside fallback dispatchers for `runReadyDispatchStrategies`.
  *
  * @param {object} params - Strategy construction context.
- * @returns {Array<() => Promise<boolean>|boolean>} Ordered strategy list.
+ * @returns {{
+ *   strategies: Array<() => Promise<boolean>|boolean>,
+ *   fallbackDispatchers: Array<(type: string) => any>
+ * }} Ordered strategies and fallback dispatchers.
  */
 /**
  * Evaluate the machine dispatch results and determine whether additional
@@ -637,9 +640,17 @@ function createReadyDispatchStrategies({
   if (bus) {
     busStrategyOptions.eventBus = bus;
   }
+  /** @type {Array<(type: string) => any>} */
+  const fallbackDispatchers = [];
+  const registerFallbackDispatcher = (candidate) => {
+    if (typeof candidate !== "function") return;
+    if (fallbackDispatchers.includes(candidate)) return;
+    fallbackDispatchers.push(candidate);
+  };
   const hasCustomDispatcher =
     typeof options.dispatchBattleEvent === "function" &&
     options.dispatchBattleEvent !== dispatchBattleEvent;
+  registerFallbackDispatcher(options.dispatchBattleEvent);
   const shouldShortCircuitReadyDispatch = () => hasReadyBeenDispatchedForCurrentCooldown();
   const isOrchestratedActive = () => {
     if (typeof orchestrated === "function") {
@@ -729,6 +740,7 @@ function createReadyDispatchStrategies({
   } else if (typeof options.dispatchBattleEvent === "function") {
     busStrategyOptions.dispatchBattleEvent = options.dispatchBattleEvent;
   }
+  registerFallbackDispatcher(busStrategyOptions.dispatchBattleEvent);
   strategies.push(() => {
     if (shouldShortCircuitReadyDispatch()) return true;
     return dispatchReadyViaBus({
@@ -739,7 +751,7 @@ function createReadyDispatchStrategies({
     });
   });
   addMachineStrategy();
-  return strategies;
+  return { strategies, fallbackDispatchers };
 }
 
 function finalizeReadyControls(controls, dispatched, options = {}) {
@@ -815,7 +827,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       if (typeof updatePanel === "function") updatePanel();
     }
   });
-  const strategies = createReadyDispatchStrategies({
+  const { strategies, fallbackDispatchers } = createReadyDispatchStrategies({
     options,
     bus,
     machineReader,
@@ -823,15 +835,24 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
     getDebugBag,
     orchestrated
   });
+  const fallbackConfig = {
+    dispatcher:
+      Array.isArray(fallbackDispatchers) && fallbackDispatchers.length > 0
+        ? fallbackDispatchers[0]
+        : options?.dispatchBattleEvent,
+    dispatchers: fallbackDispatchers,
+    useGlobal: options?.useGlobalReadyFallback === true,
+    globalDispatcher:
+      typeof options?.dispatchBattleEvent === "function"
+        ? options.dispatchBattleEvent
+        : dispatchBattleEvent
+  };
   const { dispatched, fallbackDispatched } = await runReadyDispatchStrategies({
     alreadyDispatchedReady:
       options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown(),
     strategies,
     emitTelemetry,
-    fallback: {
-      dispatcher: options?.dispatchBattleEvent,
-      useGlobal: options?.useGlobalReadyFallback === true
-    },
+    fallback: fallbackConfig,
     returnOutcome: true
   });
   if (dispatched || fallbackDispatched) {
