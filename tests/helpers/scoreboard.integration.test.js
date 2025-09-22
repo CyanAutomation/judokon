@@ -33,9 +33,8 @@ vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
 }));
 
 describe("Scoreboard integration without setupScoreboard", () => {
-  let timers;
   beforeEach(async () => {
-    timers = useCanonicalTimers();
+    useCanonicalTimers();
     vi.resetModules();
     roundDrift = undefined;
     scoreboard = scoreboardStub;
