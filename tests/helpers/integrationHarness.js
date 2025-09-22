@@ -233,20 +233,6 @@ export function createIntegrationHarness(config = {}) {
       rafControl = installRAFMock();
     }
 
-    // Apply selective mocks for externalities only
-    for (const [modulePath, mockImpl] of Object.entries(mocks)) {
-      /**
-       * Vitest executes factories returned to `vi.doMock`. Function mocks are
-       * therefore passed through directly so they are returned as-is, while
-       * non-function mocks are wrapped in a factory closure.
-       */
-      const mockFactory = createMockFactory(mockImpl);
-
-      const resolvedModulePath = resolveMockModuleSpecifier(modulePath);
-
-      mockRegistrar(resolvedModulePath, mockFactory);
-    }
-
     // Inject fixtures into global scope or modules as needed
     for (const [key, value] of Object.entries(fixtures)) {
       // Inject fixtures - implementation depends on how fixtures are used

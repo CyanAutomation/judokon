@@ -184,6 +184,9 @@ test("score updates after auto-select on expiry", async () => {
   const playerStats = { power: 10, speed: 55, technique: 10, kumikata: 10, newaza: 10 };
   const opponentStats = { power: 8, speed: 30, technique: 8, kumikata: 8, newaza: 8 };
   const mocks = mockModules({ playerStats, opponentStats });
+  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
+    vi.doMock(modulePath, () => mockImpl);
+  }
   const harness = createClassicBattleHarness({ mocks });
   await harness.setup();
   const mod = await import("../../src/pages/battleClassic.init.js");
@@ -207,6 +210,9 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
     opponent: { speed: "?" }
   };
   const mocks = mockModules({ playerStats, opponentStats, domOverrides });
+  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
+    vi.doMock(modulePath, () => mockImpl);
+  }
   const harness = createClassicBattleHarness({ mocks });
   await harness.setup();
   const mod = await import("../../src/pages/battleClassic.init.js");
@@ -242,6 +248,10 @@ test("scoreboard reconciles directly to round result", async () => {
   };
 
   mocks["../../src/helpers/classicBattle/selectionHandler.js"] = mockedSelection;
+
+  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
+    vi.doMock(modulePath, () => mockImpl);
+  }
 
   const harness = createClassicBattleHarness({ mocks, useRafMock: false });
   await harness.setup();
@@ -296,6 +306,9 @@ test("match end forwards outcome to end modal", async () => {
   const playerStats = { power: 9, speed: 9, technique: 9, kumikata: 9, newaza: 9 };
   const opponentStats = { power: 1, speed: 1, technique: 1, kumikata: 1, newaza: 1 };
   const mocks = mockModules({ playerStats, opponentStats });
+  for (const [modulePath, mockImpl] of Object.entries(mocks)) {
+    vi.doMock(modulePath, () => mockImpl);
+  }
   const harness = createClassicBattleHarness({ mocks });
   await harness.setup();
   const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
