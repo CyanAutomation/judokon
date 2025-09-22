@@ -57,8 +57,21 @@ describe("prepareLocalModel", () => {
     }));
 
     // Ensure stat check passes regardless of environment peculiarities
+    const statMock = vi.fn(async (filePath) => {
+      const target = String(filePath);
+      if (target.includes("ort-wasm")) {
+        return { size: 1024 };
+      }
+      if (target.includes("model_quantized.onnx")) {
+        return { size: 1_500_000 };
+      }
+      if (target.includes("tokenizer.json")) {
+        return { size: 2_048 };
+      }
+      return { size: 512 };
+    });
     vi.doMock("fs/promises", () => ({
-      stat: vi.fn(async () => ({ size: 1 }))
+      stat: statMock
     }));
 
     // Act
@@ -71,5 +84,10 @@ describe("prepareLocalModel", () => {
     expect(args[0]).toBe("feature-extraction");
     // Second arg should be a path ending with models/minilm
     expect(String(args[1])).toMatch(/models[\\\/]minilm$/);
+    expect(statMock).toHaveBeenCalled();
+
+    vi.resetModules();
+    vi.doUnmock("@xenova/transformers");
+    vi.doUnmock("fs/promises");
   });
 });
