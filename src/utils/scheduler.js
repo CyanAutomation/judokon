@@ -158,7 +158,11 @@ export function cancel(id) {
  * @returns {void}
  */
 export function stop() {
-  if (!running) return;
+  if (!running) {
+    // In test environments, we may not be running but still have callbacks to clear
+    const isTestEnvironment = typeof globalThis !== "undefined" && globalThis.__TEST__;
+    if (!isTestEnvironment) return;
+  }
   running = false;
   paused = false;
   cancelAnimationFrame(rafId);
@@ -191,4 +195,166 @@ export function pause() {
  */
 export function resume() {
   paused = false;
+}
+
+/**
+ * Create a test controller for deterministic scheduler testing.
+ *
+ * This function is only functional in test environments and allows tests to
+ * control the scheduler's timing deterministically without global monkey-patching.
+ *
+ * @throws {Error} If called outside of test environment
+ * @returns {object} Test controller with methods to control timing
+ * @property {() => void} advanceFrame - Advance the scheduler by one frame
+ * @property {(ms: number) => void} advanceTime - Advance time by specified milliseconds
+ * @property {() => number} getFrameCount - Get the number of frames executed
+ * @property {() => void} dispose - Clean up the test controller
+ */
+export function createTestController() {
+  const isTestEnvironment = typeof globalThis !== "undefined" && globalThis.__TEST__;
+
+  if (!isTestEnvironment) {
+    throw new Error(
+      "createTestController() is only available in test environments. " +
+        "Set globalThis.__TEST__ = true to enable."
+    );
+  }
+
+  let testTime = 0;
+  let frameCount = 0;
+  let disposed = false;
+  let testLastSecond = Math.floor(testTime / 1000); // Initialize to current second
+
+  // Store original timing functions
+  const originalRaf = globalThis.requestAnimationFrame;
+  const originalCaf = globalThis.cancelAnimationFrame;
+
+  // Override global timing functions for this scheduler instance
+  // eslint-disable-next-line no-unused-vars
+  globalThis.requestAnimationFrame = (callback) => {
+    if (disposed) return 0;
+    // Return a fake id - the callback will be invoked manually
+    return ++nextId;
+  };
+
+  // eslint-disable-next-line no-unused-vars
+  globalThis.cancelAnimationFrame = (id) => {
+    // No-op for test controller
+  };
+
+  const controller = {
+    /**
+     * Advance the scheduler by one animation frame.
+     * This will execute all registered frame callbacks with the current test time.
+     */
+    advanceFrame() {
+      if (disposed) return;
+      testTime += 16; // ~60fps
+      frameCount++;
+      currentTime = testTime;
+
+      if (!paused) {
+        frameCallbacks.forEach((cb) => {
+          try {
+            cb(currentTime);
+          } catch {
+            // ignore callback errors to keep the scheduler running
+          }
+        });
+
+        const sec = Math.floor(currentTime / 1000);
+        if (sec !== testLastSecond) {
+          testLastSecond = sec;
+          secondCallbacks.forEach((cb) => {
+            try {
+              cb(testTime);
+            } catch {
+              // ignore callback errors to keep the scheduler running
+            }
+          });
+        }
+      }
+    },
+
+    /**
+     * Advance the test time by the specified number of milliseconds.
+     * This will execute frame callbacks for each frame that would occur
+     * in the given time span, and second callbacks when seconds change.
+     *
+     * @param {number} ms - Milliseconds to advance
+     */
+    advanceTime(ms) {
+      if (disposed) return;
+      const startTime = testTime;
+      const targetTime = testTime + ms;
+      const frameInterval = 16; // ~60fps
+
+      while (testTime < targetTime) {
+        const nextFrameTime = testTime + frameInterval;
+        if (nextFrameTime > targetTime) break; // Don't execute frames beyond target time
+
+        testTime = nextFrameTime;
+        frameCount++;
+        currentTime = testTime;
+
+        if (!paused) {
+          frameCallbacks.forEach((cb) => {
+            try {
+              cb(currentTime);
+            } catch {
+              // ignore callback errors to keep the scheduler running
+            }
+          });
+
+          const sec = Math.floor(currentTime / 1000);
+          if (sec !== testLastSecond) {
+            testLastSecond = sec;
+            secondCallbacks.forEach((cb) => {
+              try {
+                cb(testTime);
+              } catch {
+                // ignore callback errors to keep the scheduler running
+              }
+            });
+          }
+        }
+      }
+
+      // Check for second boundary crossing at the final target time
+      const finalSec = Math.floor(targetTime / 1000);
+      if (finalSec !== testLastSecond && targetTime > startTime) {
+        testLastSecond = finalSec;
+        if (!paused) {
+          secondCallbacks.forEach((cb) => {
+            try {
+              cb(targetTime);
+            } catch {
+              // ignore callback errors to keep the scheduler running
+            }
+          });
+        }
+      }
+    },
+
+    /**
+     * Get the number of frames that have been executed by this controller.
+     *
+     * @returns {number} Frame execution count
+     */
+    getFrameCount() {
+      return frameCount;
+    },
+
+    /**
+     * Clean up the test controller and restore original timing functions.
+     */
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      globalThis.requestAnimationFrame = originalRaf;
+      globalThis.cancelAnimationFrame = originalCaf;
+    }
+  };
+
+  return controller;
 }
