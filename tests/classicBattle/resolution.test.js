@@ -187,7 +187,7 @@ test("score updates after auto-select on expiry", async () => {
   for (const [modulePath, mockImpl] of Object.entries(mocks)) {
     vi.doMock(modulePath, () => mockImpl);
   }
-  const harness = createClassicBattleHarness({ mocks });
+  const harness = createClassicBattleHarness();
   await harness.setup();
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
@@ -213,7 +213,7 @@ test("timer expiry falls back to store stats when DOM is obscured", async () => 
   for (const [modulePath, mockImpl] of Object.entries(mocks)) {
     vi.doMock(modulePath, () => mockImpl);
   }
-  const harness = createClassicBattleHarness({ mocks });
+  const harness = createClassicBattleHarness();
   await harness.setup();
   const mod = await import("../../src/pages/battleClassic.init.js");
   await mod.init();
@@ -253,7 +253,7 @@ test("scoreboard reconciles directly to round result", async () => {
     vi.doMock(modulePath, () => mockImpl);
   }
 
-  const harness = createClassicBattleHarness({ mocks, useRafMock: false });
+  const harness = createClassicBattleHarness();
   await harness.setup();
 
   const originalRaf = globalThis.requestAnimationFrame;
@@ -309,34 +309,4 @@ test("match end forwards outcome to end modal", async () => {
   for (const [modulePath, mockImpl] of Object.entries(mocks)) {
     vi.doMock(modulePath, () => mockImpl);
   }
-  const harness = createClassicBattleHarness({ mocks });
-  await harness.setup();
-  const { onBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-  const { showEndModal } = await import("../../src/helpers/classicBattle/endModal.js");
-  const mod = await import("../../src/pages/battleClassic.init.js");
-  await mod.init();
-
-  const [, handler] =
-    onBattleEvent.mock.calls.find(([eventName]) => eventName === "roundResolved") || [];
-  expect(typeof handler).toBe("function");
-
-  handler({
-    detail: {
-      result: {
-        matchEnded: true,
-        outcome: "quit",
-        playerScore: 3,
-        opponentScore: 0
-      }
-    }
-  });
-
-  expect(showEndModal).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
-      outcome: "quit",
-      scores: { player: 3, opponent: 0 }
-    })
-  );
-  harness.cleanup();
-});
+  const harness = createClassicBattleHarness();

@@ -206,8 +206,6 @@ export function createIntegrationHarness(config = {}) {
     useFakeTimers = true,
     useRafMock = true,
     fixtures = {},
-    mocks = {},
-    mockRegistrar = vi.doMock,
     setup: customSetup,
     teardown: customTeardown
   } = config;
