@@ -417,14 +417,14 @@ export async function dispatchReadyWithOptions(params) {
       (bag.handleNextRound_dispatchViaOptions_count || 0) + 1;
   }
   try {
-    try {
-      if (typeof process !== "undefined" && process.env?.VITEST) {
-        console.error("[TEST] dispatchReadyWithOptions calling provided dispatcher", {
-          name: dispatchBattleEvent?.name,
-          isMock: !!dispatchBattleEvent?.mock
-        });
-      }
-    } catch {}
+    const invocationDetails = {
+      name: info.name,
+      isMock: Boolean(dispatchBattleEvent?.mock)
+    };
+    emitTelemetry?.("handleNextRound_dispatchViaOptions_invocation", invocationDetails);
+    if (bag) {
+      bag.handleNextRound_dispatchViaOptions_invocation = invocationDetails;
+    }
     const result = dispatchBattleEvent("ready");
     const resolved = await Promise.resolve(result);
     const dispatched = resolved !== false;
