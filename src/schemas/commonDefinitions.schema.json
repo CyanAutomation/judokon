@@ -57,6 +57,37 @@
         "+78"
       ],
       "description": "IJF weight class identifiers"
+    },
+    "NavigationItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Unique identifier for the navigation entry"
+        },
+        "url": {
+          "type": "string",
+          "description": "Destination URL for the navigation entry"
+        },
+        "category": {
+          "type": "string",
+          "description": "Navigation grouping identifier"
+        },
+        "order": {
+          "type": "integer",
+          "description": "Display order used for sorting"
+        },
+        "isHidden": {
+          "type": "boolean",
+          "description": "Whether the entry is hidden"
+        },
+        "gameModeId": {
+          "type": "integer",
+          "description": "Identifier linking the navigation entry to a game mode"
+        }
+      },
+      "required": ["id", "url", "category", "order", "isHidden", "gameModeId"],
+      "additionalProperties": false
     }
   }
 }
