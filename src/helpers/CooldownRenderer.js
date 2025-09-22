@@ -134,10 +134,9 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   const queueTickAfterPromptDelay = (normalized, suppressEvents, forceAsync = false) => {
     queuedTickPayload = { value: normalized, suppressEvents };
     const waitMs = getRemainingPromptDelayMs();
-    if (!forceAsync && waitMs <= 0) {
+    if (waitMs <= 0) {
       const payload = queuedTickPayload;
-      queuedTickPayload = null;
-      pendingDelayId = null;
+      clearCountdownDelay();
       if (payload) {
         processTick(payload.value, { suppressEvents: payload.suppressEvents });
       }
@@ -180,11 +179,7 @@ export function attachCooldownRenderer(timer, initialRemaining) {
     try {
       const normalizedInitial = normalizeRemaining(initialValue);
       const promptPending = Number(getOpponentPromptTimestamp()) <= 0;
-      if (promptPending || getRemainingPromptDelayMs() > 0) {
-        queueTickAfterPromptDelay(normalizedInitial, true, promptPending);
-      } else {
-        processTick(normalizedInitial, { suppressEvents: true });
-      }
+      queueTickAfterPromptDelay(normalizedInitial, true, promptPending);
     } catch {}
   }
   return () => {
