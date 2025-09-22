@@ -16,12 +16,21 @@ test.describe("View Judoka screen", () => {
     const btn = page.getByTestId("draw-button");
     await expect(btn).toHaveText(/draw card/i);
 
-    await page.waitForFunction(() => !!window.__TEST_API?.randomJudoka?.setDrawButtonLabel);
-    await page.evaluate(() => {
-      window.__TEST_API.randomJudoka.setDrawButtonLabel("Pick a random judoka");
-    });
+    await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
 
-    await expect(page.getByRole("button", { name: /draw a random judoka card/i })).toBeVisible();
+    await btn.click();
+    await expect(btn).toHaveText(/drawing/i);
+    await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
+
+    await expect(btn).toHaveText(/draw card/i);
+    await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
+
+    await btn.click();
+    await expect(btn).toHaveText(/drawing/i);
+    await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
+
+    await expect(btn).toHaveText(/draw card/i);
+    await expect(btn).toHaveAccessibleName(/draw a random judoka card/i);
   });
 
   test("draw card populates container", async ({ page }) => {
