@@ -1,15 +1,4 @@
 import {
-  clearMessage,
-  clearTimer,
-  showMessage,
-  updateRoundCounter,
-  updateScore,
-  updateTimer
-} from "../setupScoreboard.js";
-import { offBattleEvent, onBattleEvent } from "./battleEvents.js";
-import { roundStore } from "./roundStore.js";
-import { onBattleEvent, offBattleEvent } from "./battleEvents.js";
-import {
   showMessage,
   clearMessage,
   showTemporaryMessage,
@@ -20,6 +9,8 @@ import {
   clearRoundCounter,
   updateScore
 } from "../setupScoreboard.js";
+import { onBattleEvent, offBattleEvent } from "./battleEvents.js";
+import { roundStore } from "./roundStore.js";
 
 let bound = false;
 let scoreboardReadyPromise = Promise.resolve();
@@ -34,11 +25,24 @@ function removeAllListeners() {
   listenerRegistry.forEach((handler, type) => {
     try {
       offBattleEvent(type, handler);
-    } catch {}
+    } catch (error) {
+      if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
+        console.warn(
+          `[classicBattle][scoreboardAdapter] Failed to remove listener for ${type}`,
+          error
+        );
+      }
+    }
   });
   listenerRegistry.clear();
 }
 
+/**
+ * Extract the timer seconds from a battle event detail payload.
+ *
+ * @param {{ secondsRemaining?: number } | undefined} detail event payload detail
+ * @returns {number | null} seconds remaining when valid, otherwise null
+ */
 function extractSeconds(detail) {
   const seconds = detail?.secondsRemaining;
   return typeof seconds === "number" && Number.isFinite(seconds) ? seconds : null;
@@ -48,10 +52,16 @@ function handleRoundStart(event) {
   try {
     clearMessage();
   } catch {}
-  const roundNumber = event?.detail?.roundNumber;
+  const detail = event?.detail || {};
+  const roundNumber =
+    typeof detail.roundNumber === "number" ? detail.roundNumber : detail.roundIndex;
   if (typeof roundNumber === "number" && Number.isFinite(roundNumber)) {
     try {
       updateRoundCounter(roundNumber);
+    } catch {}
+  } else {
+    try {
+      clearRoundCounter();
     } catch {}
   }
 }
@@ -61,7 +71,11 @@ function handleRoundMessage(event) {
   if (typeof text === "undefined" || text === null) return;
   const messageText = typeof text === "string" ? text : String(text);
   try {
-    showMessage(messageText, { outcome: Boolean(lock) });
+    if (messageText.length > 0) {
+      showMessage(messageText, { outcome: Boolean(lock) });
+    } else {
+      clearMessage();
+    }
   } catch {}
 }
 
@@ -70,7 +84,7 @@ function handleRoundOutcome(event) {
   if (typeof text === "undefined" || text === null) return;
   const outcomeText = typeof text === "string" ? text : String(text);
   try {
-    showMessage(outcomeText, { outcome: true });
+    showMessage(outcomeText.length > 0 ? outcomeText : "", { outcome: true });
   } catch {}
 }
 
@@ -114,6 +128,22 @@ function handleScoreUpdate(event) {
   } catch {}
 }
 
+function handleAutoSelectShow(event) {
+  const stat = event?.detail?.stat;
+  if (typeof stat !== "string" || stat.length === 0) return;
+  try {
+    showAutoSelect(stat);
+  } catch {}
+}
+
+function handleTempMessage(event) {
+  const text = event?.detail?.text;
+  if (typeof text !== "string") return;
+  try {
+    showTemporaryMessage(text);
+  } catch {}
+}
+
 function wireScoreboardListeners() {
   registerListener("display.round.start", handleRoundStart);
   registerListener("display.round.message", handleRoundMessage);
@@ -123,8 +153,9 @@ function wireScoreboardListeners() {
   registerListener("display.timer.tick", handleTimerTick);
   registerListener("display.timer.hide", handleTimerHide);
   registerListener("display.score.update", handleScoreUpdate);
+  registerListener("display.autoSelect.show", handleAutoSelectShow);
+  registerListener("display.tempMessage", handleTempMessage);
 }
-let legacyHandlers = [];
 
 /**
  * Await the completion of scoreboard adapter wiring.
@@ -157,102 +188,9 @@ export function initScoreboardAdapter() {
 
   wireScoreboardListeners();
 
-  const roundStoreWiring = roundStore.wireIntoScoreboardAdapter();
-  scoreboardReadyPromise = Promise.resolve(roundStoreWiring).then(() => {});
-
-  const bind = (event, handler) => {
-    legacyHandlers.push([event, handler]);
-    onBattleEvent(event, handler);
-  };
-
-  bind("display.round.start", (e) => {
-    try {
-      clearMessage();
-      const detail = e?.detail || {};
-      const roundNumber =
-        typeof detail.roundNumber === "number" ? detail.roundNumber : detail.roundIndex;
-      if (typeof roundNumber === "number") {
-        updateRoundCounter(roundNumber);
-      } else {
-        clearRoundCounter();
-      }
-    } catch {}
-  });
-
-  bind("display.round.message", (e) => {
-    try {
-      const { text, lock } = e?.detail || {};
-      if (typeof text === "string" && text.length > 0) {
-        showMessage(text, { outcome: lock === true });
-      } else {
-        clearMessage();
-      }
-    } catch {}
-  });
-
-  bind("display.round.outcome", (e) => {
-    try {
-      const { text } = e?.detail || {};
-      showMessage(typeof text === "string" ? text : "", { outcome: true });
-    } catch {}
-  });
-
-  bind("display.message.clear", () => {
-    try {
-      clearMessage();
-    } catch {}
-  });
-
-  bind("display.timer.show", (e) => {
-    try {
-      const seconds = Number(e?.detail?.secondsRemaining);
-      if (Number.isFinite(seconds)) {
-        updateTimer(seconds);
-      }
-    } catch {}
-  });
-
-  bind("display.timer.tick", (e) => {
-    try {
-      const seconds = Number(e?.detail?.secondsRemaining);
-      if (Number.isFinite(seconds)) {
-        updateTimer(seconds);
-      }
-    } catch {}
-  });
-
-  bind("display.timer.hide", () => {
-    try {
-      clearTimer();
-    } catch {}
-  });
-
-  bind("display.score.update", (e) => {
-    try {
-      const { player, opponent } = e?.detail || {};
-      if (typeof player === "number" && typeof opponent === "number") {
-        updateScore(player, opponent);
-      }
-    } catch {}
-  });
-
-  bind("display.autoSelect.show", (e) => {
-    try {
-      const stat = e?.detail?.stat;
-      if (typeof stat === "string" && stat) {
-        showAutoSelect(stat);
-      }
-    } catch {}
-  });
-
-  bind("display.tempMessage", (e) => {
-    try {
-      const text = e?.detail?.text;
-      if (typeof text === "string") {
-        showTemporaryMessage(text);
-      }
-    } catch {}
-  });
+  scoreboardReadyPromise = Promise.resolve(
+    roundStore.wireIntoScoreboardAdapter()
+  );
 
   return disposeScoreboardAdapter;
 }
@@ -271,15 +209,6 @@ export function disposeScoreboardAdapter() {
   try {
     roundStore.disconnectFromScoreboardAdapter();
   } catch {}
-
-  if (legacyHandlers.length > 0) {
-    for (const [event, handler] of legacyHandlers) {
-      try {
-        offBattleEvent(event, handler);
-      } catch {}
-    }
-    legacyHandlers = [];
-  }
 
   bound = false;
   scoreboardReadyPromise = Promise.resolve();
