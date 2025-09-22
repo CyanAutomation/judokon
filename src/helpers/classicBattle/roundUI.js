@@ -299,6 +299,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
         }
       })();
       if (!orchestrated) {
+        const delayOpponentMessageFlag = !!store?.__delayOpponentMessage;
         const computeCooldown =
           typeof computeNextRoundCooldownFn === "function"
             ? computeNextRoundCooldownFn
@@ -323,7 +324,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
           } catch {}
         }
         const timer = typeof timerFactory === "function" ? timerFactory() : null;
-        if (timer) {
+        if (timer && !delayOpponentMessageFlag) {
           try {
             if (typeof renderer === "function") {
               renderer(timer, secs);
@@ -336,6 +337,11 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
           } catch {}
         }
       }
+    } catch {}
+  }
+  if (store && typeof store === "object") {
+    try {
+      delete store.__delayOpponentMessage;
     } catch {}
   }
   try {

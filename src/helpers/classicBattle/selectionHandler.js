@@ -496,10 +496,14 @@ export async function resolveWithFallback(
  */
 export async function syncResultDisplay(store, stat, playerVal, opponentVal, opts) {
   try {
-    if (IS_VITEST) {
+    if (IS_VITEST && !opts?.delayOpponentMessage) {
       showSnackbar(t("ui.opponentChoosing"));
     }
   } catch {}
+
+  if (store && typeof store === "object") {
+    store.__delayOpponentMessage = opts?.delayOpponentMessage === true;
+  }
 
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
 

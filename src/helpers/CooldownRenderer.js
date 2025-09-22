@@ -131,10 +131,10 @@ export function attachCooldownRenderer(timer, initialRemaining) {
     }
   };
 
-  const queueTickAfterPromptDelay = (normalized, suppressEvents) => {
+  const queueTickAfterPromptDelay = (normalized, suppressEvents, forceAsync = false) => {
     queuedTickPayload = { value: normalized, suppressEvents };
     const waitMs = getRemainingPromptDelayMs();
-    if (waitMs <= 0) {
+    if (!forceAsync && waitMs <= 0) {
       const payload = queuedTickPayload;
       queuedTickPayload = null;
       pendingDelayId = null;
@@ -143,6 +143,7 @@ export function attachCooldownRenderer(timer, initialRemaining) {
       }
       return;
     }
+    const delay = forceAsync ? 0 : waitMs;
     if (pendingDelayId !== null) {
       clearTimeoutFn(pendingDelayId);
     }
@@ -153,15 +154,16 @@ export function attachCooldownRenderer(timer, initialRemaining) {
       if (payload) {
         processTick(payload.value, { suppressEvents: payload.suppressEvents });
       }
-    }, waitMs);
+    }, delay);
   };
 
   const onTick = (remaining) => {
     const normalized = normalizeRemaining(remaining);
     if (!started) {
+      const promptPending = Number(getOpponentPromptTimestamp()) <= 0;
       const waitMs = getRemainingPromptDelayMs();
-      if (waitMs > 0) {
-        queueTickAfterPromptDelay(normalized, false);
+      if (promptPending || waitMs > 0) {
+        queueTickAfterPromptDelay(normalized, false, promptPending);
         return;
       }
     }
@@ -177,8 +179,9 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   if (Number.isFinite(initialValue)) {
     try {
       const normalizedInitial = normalizeRemaining(initialValue);
-      if (getRemainingPromptDelayMs() > 0) {
-        queueTickAfterPromptDelay(normalizedInitial, true);
+      const promptPending = Number(getOpponentPromptTimestamp()) <= 0;
+      if (promptPending || getRemainingPromptDelayMs() > 0) {
+        queueTickAfterPromptDelay(normalizedInitial, true, promptPending);
       } else {
         processTick(normalizedInitial, { suppressEvents: true });
       }
