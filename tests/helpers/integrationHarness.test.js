@@ -37,10 +37,7 @@ describe("createIntegrationHarness mocks", () => {
     const calls = mockRegistrar.mock.calls.slice();
     harness.cleanup();
 
-    const expectedModuleSpecifier = new URL(
-      "test/function-module",
-      REPO_ROOT_URL
-    ).href;
+    const expectedModuleSpecifier = new URL("test/function-module", REPO_ROOT_URL).href;
 
     expect(calls).toContainEqual([expectedModuleSpecifier, factoryMock]);
   });
@@ -59,10 +56,7 @@ describe("createIntegrationHarness mocks", () => {
     });
 
     await harness.setup();
-    const expectedModuleSpecifier = new URL(
-      "test/value-module",
-      REPO_ROOT_URL
-    ).href;
+    const expectedModuleSpecifier = new URL("test/value-module", REPO_ROOT_URL).href;
     const [, factory] = mockRegistrar.mock.calls.find(
       ([modulePath]) => modulePath === expectedModuleSpecifier
     );
