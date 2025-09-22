@@ -7,52 +7,33 @@
  * utilities from their modular locations.
  */
 
-import { renderGameModeSwitches as baseRenderGameModeSwitches } from "./settings/gameModeSwitches.js";
-import { renderFeatureFlagSwitches as baseRenderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
-
 /**
- * Legacy alias for {@link baseRenderGameModeSwitches}.
+ * Legacy alias for {@link import("./settings/gameModeSwitches.js").renderGameModeSwitches}.
  *
  * @pseudocode
- * 1. Invoke {@link baseRenderGameModeSwitches} with the provided arguments.
- * 2. Return the promise from the underlying implementation.
+ * 1. Import the modular `renderGameModeSwitches` implementation.
+ * 2. Re-export it so legacy consumers can continue importing from this module.
  *
  * @param {HTMLElement} container - DOM element that will receive toggle controls.
  * @param {Array<Object>} gameModes - Array of game mode definitions.
  * @param {() => Object} getCurrentSettings - Getter for the current settings snapshot.
  * @param {(key: string, value: any, onError?: Function) => Promise} handleUpdate - Persist callback for setting updates.
- * @returns {ReturnType<typeof baseRenderGameModeSwitches>} A promise that resolves when rendering side effects complete.
+ * @returns {void}
  */
-export function renderGameModeSwitches(container, gameModes, getCurrentSettings, handleUpdate) {
-  return baseRenderGameModeSwitches(container, gameModes, getCurrentSettings, handleUpdate);
-}
+export { renderGameModeSwitches } from "./settings/gameModeSwitches.js";
 
 /**
- * Legacy alias for {@link baseRenderFeatureFlagSwitches}.
+ * Legacy alias for {@link import("./settings/featureFlagSwitches.js").renderFeatureFlagSwitches}.
  *
  * @pseudocode
- * 1. Invoke {@link baseRenderFeatureFlagSwitches} with the provided arguments.
- * 2. Return the promise from the underlying implementation.
+ * 1. Import the modular `renderFeatureFlagSwitches` implementation.
+ * 2. Re-export it so legacy consumers can continue importing from this module.
  *
  * @param {HTMLElement} container - DOM element that will receive toggle controls.
  * @param {Record<string, { enabled: boolean, tooltipId?: string }>} flags - Map of feature flag definitions.
  * @param {() => Object} getCurrentSettings - Getter for the current settings snapshot.
  * @param {(key: string, value: any, onError?: Function) => Promise} handleUpdate - Persist callback for setting updates.
  * @param {Record<string, string>} [tooltipMap={}] - Optional localized tooltip copy map.
- * @returns {ReturnType<typeof baseRenderFeatureFlagSwitches>} A promise that resolves when rendering side effects complete.
+ * @returns {void}
  */
-export function renderFeatureFlagSwitches(
-  container,
-  flags,
-  getCurrentSettings,
-  handleUpdate,
-  tooltipMap = {}
-) {
-  return baseRenderFeatureFlagSwitches(
-    container,
-    flags,
-    getCurrentSettings,
-    handleUpdate,
-    tooltipMap
-  );
-}
+export { renderFeatureFlagSwitches } from "./settings/featureFlagSwitches.js";
