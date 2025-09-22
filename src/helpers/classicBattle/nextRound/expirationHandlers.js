@@ -649,20 +649,16 @@ export async function runReadyDispatchStrategies(params = {}) {
     fallbackAttempted = true;
     if (outcome.dispatched === true) {
       fallbackDispatched = true;
-      dispatched = true;
     }
   };
-  if (!dispatched) {
+  const shouldInvokeFallbackDispatcher = !dispatched && typeof fallbackDispatcher === "function";
+  if (shouldInvokeFallbackDispatcher) {
     const fallbackOutcome = await invokeFallbackDispatcher(fallbackDispatcher);
     registerFallbackOutcome(fallbackOutcome);
-    if (fallbackOutcome?.dispatched) {
-      emitTelemetry?.("handleNextRoundDispatchFallback", true);
-      emitResult(true);
-      return true;
-    }
   }
   const shouldInvokeGlobalFallback =
     !dispatched &&
+    fallbackDispatched !== true &&
     useGlobalFallback === true &&
     typeof globalDispatchBattleEvent === "function" &&
     globalDispatchBattleEvent !== fallbackDispatcher;
@@ -672,10 +668,6 @@ export async function runReadyDispatchStrategies(params = {}) {
   }
   if (fallbackAttempted) {
     emitTelemetry?.("handleNextRoundDispatchFallback", fallbackDispatched);
-    if (fallbackDispatched) {
-      emitResult(true);
-      return true;
-    }
   }
   emitResult(dispatched);
   return dispatched;
