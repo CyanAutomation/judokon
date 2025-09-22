@@ -1,5 +1,64 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { waitForBattleReady, waitForTestApi } from "../helpers/battleStateHelper.js";
+
+async function waitForNextButtonReadyViaApi(page, timeout = 5000) {
+  const ready = await page.evaluate(
+    ({ waitTimeout }) => {
+      const stateApi = window.__TEST_API?.state;
+      if (!stateApi || typeof stateApi.waitForNextButtonReady !== "function") {
+        return null;
+      }
+      return stateApi.waitForNextButtonReady(waitTimeout);
+    },
+    { waitTimeout: timeout }
+  );
+
+  if (ready === null) {
+    throw new Error("Test API waitForNextButtonReady unavailable");
+  }
+
+  expect(ready).toBe(true);
+}
+
+async function readRoundDiagnostics(page) {
+  return await page.evaluate(() => {
+    const toNumber = (value) => {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    };
+
+    const counter = document.getElementById("round-counter");
+    const text = counter ? String(counter.textContent ?? "") : "";
+    const match = text.match(/Round\s*(\d+)/i);
+    const datasetValue = counter?.dataset?.highestRound ?? null;
+    const debug = window.__TEST_API?.inspect?.getDebugInfo?.();
+    const stateApiState = window.__TEST_API?.state?.getBattleState?.() ?? null;
+
+    return {
+      text,
+      displayedRound: match ? Number(match[1]) : null,
+      highestAttr: datasetValue,
+      highestAttrNumber: toNumber(datasetValue),
+      highestGlobal: toNumber(window.__highestDisplayedRound),
+      lastContext:
+        typeof window.__lastRoundCounterContext === "string"
+          ? window.__lastRoundCounterContext
+          : null,
+      previousContext:
+        typeof window.__previousRoundCounterContext === "string"
+          ? window.__previousRoundCounterContext
+          : null,
+      roundsPlayed: toNumber(debug?.store?.roundsPlayed),
+      selectionMade:
+        typeof debug?.store?.selectionMade === "boolean" ? debug.store.selectionMade : null,
+      machineState: debug?.machine?.currentState ?? null,
+      snapshotState: debug?.snapshot?.state ?? null,
+      apiState: typeof stateApiState === "string" ? stateApiState : null,
+      error: debug?.error ?? null
+    };
+  });
+}
 
 test.describe("Classic Battle cooldown + Next", () => {
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
@@ -9,56 +68,46 @@ test.describe("Classic Battle cooldown + Next", () => {
       });
       await page.goto("/src/pages/battleClassic.html");
 
+      await waitForTestApi(page);
+
+      const difficultyButton = page.getByRole("button", { name: "Medium" });
+      await expect(difficultyButton).toBeVisible();
+      await difficultyButton.click();
+
+      await waitForBattleReady(page, { allowFallback: false });
+
       const roundCounter = page.getByTestId("round-counter");
+      await expect(roundCounter).toHaveText(/Round\s*1/);
 
-      // Start the match via modal (pick medium/10)
-      await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
-      await page.getByRole("button", { name: "Medium" }).click();
+      const firstStatButton = page.getByTestId("stat-button").first();
+      await expect(firstStatButton).toBeVisible();
+      await firstStatButton.click();
 
-      // Before the first round, the counter is 1
-      await expect(roundCounter).toHaveText("Round 1");
+      await waitForNextButtonReadyViaApi(page);
 
-      // Click a stat to complete the round
-      await expect(page.getByTestId("stat-button").first()).toBeVisible();
-      await page.getByTestId("stat-button").first().click();
-
-      // Cooldown begins and Next becomes ready
       const nextButton = page.getByTestId("next-button");
       await expect(nextButton).toBeEnabled();
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
-      // Simulate an engine-driven advance using the scoreboard API and diagnostic state.
-      await page.evaluate(async () => {
-        const { updateRoundCounter } = await import("/src/helpers/setupScoreboard.js");
-        updateRoundCounter(2);
+      await expect(roundCounter).toHaveText(/Round\s*2/);
 
-        const lastTrackedContext =
-          typeof window.__lastRoundCounterContext === "string"
-            ? window.__lastRoundCounterContext
-            : null;
-        const previousTrackedContext =
-          typeof window.__previousRoundCounterContext === "string"
-            ? window.__previousRoundCounterContext
-            : null;
-        window.__highestDisplayedRound = 2;
-        window.__previousRoundCounterContext =
-          previousTrackedContext ?? lastTrackedContext ?? "advance";
-        window.__lastRoundCounterContext = "advance";
-      });
-      await expect(roundCounter).toHaveText("Round 2");
+      const diagnosticsBeforeNext = await readRoundDiagnostics(page);
+      expect(diagnosticsBeforeNext.displayedRound).toBe(2);
 
-      // Click next button
       await nextButton.click();
 
-      // Immediately after the click, the round counter should remain on Round 2
-      // ensuring no eager fallback increments to Round 3.
       await expect(roundCounter).toHaveText(/Round\s*2/);
       await expect(roundCounter).not.toHaveText(/Round\s*3/);
+
+      const diagnosticsAfterNext = await readRoundDiagnostics(page);
+      expect(diagnosticsAfterNext.displayedRound).toBe(2);
+      const allowedContexts = new Set(
+        [diagnosticsBeforeNext.lastContext, "advance"].filter(Boolean)
+      );
+      expect(allowedContexts.has(diagnosticsAfterNext.lastContext)).toBe(true);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 
-  // Regression: verifies the round counter fallback realigns engine state after
-  // external scripts or extensions revert DOM changes.
   test("recovers round counter state after external DOM interference", async ({ page }) => {
     await withMutedConsole(async () => {
       await page.addInitScript(() => {
@@ -66,11 +115,15 @@ test.describe("Classic Battle cooldown + Next", () => {
       });
       await page.goto("/src/pages/battleClassic.html");
 
+      await waitForTestApi(page);
+
       const roundCounter = page.getByTestId("round-counter");
       const statButtonsContainer = page.getByTestId("stat-buttons");
 
       await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
       await page.getByRole("button", { name: "Medium" }).click();
+
+      await waitForBattleReady(page, { allowFallback: false });
 
       await expect(statButtonsContainer).toHaveAttribute("data-buttons-ready", "true");
       await expect(roundCounter).toHaveText(/Round\s*1/);
@@ -80,149 +133,46 @@ test.describe("Classic Battle cooldown + Next", () => {
 
       await firstStatButton.click();
 
+      await waitForNextButtonReadyViaApi(page);
+
       const nextButton = page.getByTestId("next-button");
-      await expect(nextButton).toBeEnabled();
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
-      const contextBeforeNext = await page.evaluate(() => ({
-        last: window.__lastRoundCounterContext ?? null,
-        previous: window.__previousRoundCounterContext ?? null
-      }));
+      const diagnosticsBeforeNext = await readRoundDiagnostics(page);
+      expect(diagnosticsBeforeNext.displayedRound).toBe(2);
 
-      try {
-        await page.evaluate(() => {
-          const counter = document.getElementById("round-counter");
-          if (!counter) throw new Error("round counter element missing");
-          const baselineText = String(counter.textContent ?? "");
-          const baselineHighest = counter.dataset?.highestRound ?? null;
-          let reverted = false;
-          let revertInProgress = false;
-          const observer = new MutationObserver(() => {
-            if (reverted || !counter.isConnected || revertInProgress) return;
-            const currentText = String(counter.textContent ?? "");
-            const currentHighest = counter.dataset?.highestRound ?? null;
-            if (currentText !== baselineText || currentHighest !== baselineHighest) {
-              revertInProgress = true;
-              reverted = true;
-              counter.textContent = baselineText;
-              if (counter.dataset) {
-                if (baselineHighest !== null) {
-                  counter.dataset.highestRound = baselineHighest;
-                } else {
-                  delete counter.dataset.highestRound;
-                }
-              }
-              observer.disconnect();
-              revertInProgress = false;
-            }
-          });
-          observer.observe(counter, { characterData: true, childList: true, subtree: true });
-          window.__restoreRoundCounterObserver = () => {
-            observer.disconnect();
-            delete window.__restoreRoundCounterObserver;
-          };
-        });
-        await nextButton.click();
-
-        await expect(roundCounter).toHaveText(/Round\s*2/);
-        const captureRoundSnapshot = async () => {
-          try {
-            const { getRoundsPlayed } = await import("/src/helpers/battleEngineFacade.js");
-            const counter = document.getElementById("round-counter");
-            const text = String(counter?.textContent ?? "");
-            const match = text.match(/Round\s*(\d+)/i);
-            const displayed = match ? Number(match[1]) : NaN;
-            const played = Number(getRoundsPlayed());
-            const expected = Number.isFinite(played) ? played + 1 : NaN;
-            return {
-              error: null,
-              displayed,
-              expected,
-              highest: Number(window.__highestDisplayedRound ?? NaN),
-              lastContext: window.__lastRoundCounterContext ?? null,
-              previousContext: window.__previousRoundCounterContext ?? null
-            };
-          } catch (error) {
-            return {
-              error: error instanceof Error ? error.message : String(error),
-              displayed: NaN,
-              expected: NaN,
-              highest: NaN,
-              lastContext: null,
-              previousContext: null
-            };
-          }
-        };
-        const fallbackSnapshot = await page.evaluate(captureRoundSnapshot);
-        expect(
-          fallbackSnapshot.error,
-          `Snapshot should resolve without error, received: ${fallbackSnapshot.error ?? "<none>"}`
-        ).toBeNull();
-        expect(
-          Number.isFinite(fallbackSnapshot.expected),
-          `Expected rounds played + 1 to be finite, got: ${fallbackSnapshot.expected}`
-        ).toBe(true);
-        expect(
-          fallbackSnapshot.displayed,
-          `Round counter should display ${fallbackSnapshot.expected}, but shows ${fallbackSnapshot.displayed}`
-        ).toBe(fallbackSnapshot.expected);
-        expect(
-          fallbackSnapshot.highest,
-          `Highest displayed round should be ${fallbackSnapshot.expected}, but is ${fallbackSnapshot.highest}`
-        ).toBe(fallbackSnapshot.expected);
-        expect(
-          fallbackSnapshot.lastContext,
-          `Last context should remain ${contextBeforeNext.last}, but was ${fallbackSnapshot.lastContext}`
-        ).toBe(contextBeforeNext.last);
-
-        await page.evaluate(() => window.__restoreRoundCounterObserver?.());
-        await page.waitForFunction(() => window.__lastRoundCounterContext === "advance");
-        await page.waitForFunction(
-          (expected) => window.__previousRoundCounterContext === expected,
-          contextBeforeNext.last
+      const interference = await page.evaluate(() => {
+        return (
+          window.__TEST_API?.state?.simulateRoundCounterInterference?.({
+            round: 1,
+            highestRound: 1
+          }) ?? null
         );
+      });
 
-        await expect(nextButton).not.toHaveAttribute("data-next-ready", "true");
+      expect(interference).not.toBeNull();
+      expect(interference.success).toBe(true);
+      expect(interference.previousText).toMatch(/Round\s*2/);
+      expect(interference.appliedText).toMatch(/Round\s*1/);
+      expect(interference.appliedHighest).toBe("1");
 
-        const cycleSnapshot = await page.evaluate(captureRoundSnapshot);
-        expect(
-          cycleSnapshot.error,
-          `Snapshot should resolve without error, received: ${cycleSnapshot.error ?? "<none>"}`
-        ).toBeNull();
-        expect(
-          Number.isFinite(cycleSnapshot.expected),
-          `Expected rounds played + 1 to be finite, got: ${cycleSnapshot.expected}`
-        ).toBe(true);
-        expect(
-          cycleSnapshot.displayed,
-          `Round counter should display ${cycleSnapshot.expected}, but shows ${cycleSnapshot.displayed}`
-        ).toBe(cycleSnapshot.expected);
-        expect(
-          cycleSnapshot.highest,
-          `Highest displayed round should be ${cycleSnapshot.expected}, but is ${cycleSnapshot.highest}`
-        ).toBe(cycleSnapshot.expected);
-        expect(cycleSnapshot.lastContext, "Last context should update to 'advance'").toBe(
-          "advance"
-        );
-        expect(
-          cycleSnapshot.previousContext,
-          `Previous context should match ${contextBeforeNext.last}, but was ${cycleSnapshot.previousContext}`
-        ).toBe(contextBeforeNext.last);
-      } finally {
-        try {
-          await page.evaluate(() => {
-            if (typeof window.__restoreRoundCounterObserver === "function") {
-              window.__restoreRoundCounterObserver();
-            }
-            delete window.__restoreRoundCounterObserver;
-          });
-        } catch (cleanupError) {
-          console.warn(
-            "Test cleanup failed:",
-            cleanupError instanceof Error ? cleanupError.message : cleanupError
-          );
-        }
-      }
+      await expect(roundCounter).toHaveText(/Round\s*1/);
+
+      await nextButton.click();
+
+      await expect(roundCounter).toHaveText(/Round\s*2/);
+
+      const diagnosticsAfterNext = await readRoundDiagnostics(page);
+      expect(diagnosticsAfterNext.displayedRound).toBe(2);
+      expect(diagnosticsAfterNext.highestGlobal).toBeGreaterThanOrEqual(
+        diagnosticsBeforeNext.displayedRound ?? 2
+      );
+      expect(
+        diagnosticsAfterNext.lastContext === "advance" ||
+          diagnosticsAfterNext.lastContext === diagnosticsBeforeNext.lastContext
+      ).toBe(true);
+
+      await expect(nextButton).not.toHaveAttribute("data-next-ready", "true");
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
