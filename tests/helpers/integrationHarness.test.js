@@ -41,8 +41,8 @@ describe("createIntegrationHarness mocks", () => {
       harness.cleanup();
     }
 
-    const [registeredPath] = calls.at(-1);
-    return { registeredPath, mockRegistrar };
+    const [registeredPath] = calls.at(-1) ?? [];
+    return { registeredPath, mockRegistrar, mockCalls: calls };
   }
 
   it("registers function-based mock factories transparently", async () => {
@@ -97,6 +97,13 @@ describe("createIntegrationHarness mocks", () => {
     expect(registeredPath).toBe(new URL("src/utils/example.js", REPO_ROOT_URL).href);
   });
 
+  it("preserves Vite `/src/` alias specifiers", async () => {
+    const specifier = "/src/helpers/example.js";
+    const { registeredPath } = await getRegisteredModuleSpecifier(specifier);
+
+    expect(registeredPath).toBe(specifier);
+  });
+
   it("normalizes traversal attempts to stay within the repository root", async () => {
     const { registeredPath } = await getRegisteredModuleSpecifier("../../../../etc/passwd");
 
@@ -105,13 +112,13 @@ describe("createIntegrationHarness mocks", () => {
 
   it("normalizes deep relative module paths before registering mocks", async () => {
     const deepRelativePath = "../../../src/helpers/classicBattle/eventDispatcher.js";
-    const { registeredPath, mockRegistrar } = await getRegisteredModuleSpecifier(deepRelativePath);
+    const { registeredPath, mockCalls } = await getRegisteredModuleSpecifier(deepRelativePath);
 
     const expectedSpecifier = new URL("src/helpers/classicBattle/eventDispatcher.js", REPO_ROOT_URL)
       .href;
 
     expect(registeredPath).toBe(expectedSpecifier);
-    expect(mockRegistrar).toHaveBeenCalledWith(expectedSpecifier, expect.any(Function));
+    expect(mockCalls).toContainEqual([expectedSpecifier, expect.any(Function)]);
   });
 
   it("normalizes Windows-style traversal attempts", async () => {
