@@ -26,9 +26,7 @@ const ROUND_READY_STATE_MODULE = pathToFileURL(
 const EVENT_DISPATCHER_SPECIFIERS = [EVENT_DISPATCHER_MODULE, EVENT_DISPATCHER_FILE_URL];
 
 function createEventDispatcherMockEntries(factory) {
-  return Object.fromEntries(
-    EVENT_DISPATCHER_SPECIFIERS.map((specifier) => [specifier, factory])
-  );
+  return Object.fromEntries(EVENT_DISPATCHER_SPECIFIERS.map((specifier) => [specifier, factory]));
 }
 
 /**
