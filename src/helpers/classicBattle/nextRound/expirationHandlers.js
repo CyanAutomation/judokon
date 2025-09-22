@@ -624,8 +624,11 @@ export async function dispatchReadyDirectly(params) {
  * @param {(key: string, value: any) => void} [params.emitTelemetry]
  * @param {object} [params.fallback] - Fallback dispatcher configuration
  * @param {(type: string) => any} [params.fallback.dispatcher]
+ * @param {Array<(type: string) => any>} [params.fallback.dispatchers]
+ * @param {(type: string) => any} [params.fallback.globalDispatcher]
  * @param {boolean} [params.fallback.useGlobal]
- *   When `true`, invoke the shared global dispatcher after strategies fail.
+ *   When `true`, invoke the provided global dispatcher (or runtime global when
+ *   unavailable) after strategies fail.
  * @param {boolean} [params.returnOutcome=false]
  *   When `true`, resolve with an object describing both primary and fallback
  *   dispatch outcomes. Otherwise the promise resolves to a boolean for backward
@@ -640,7 +643,12 @@ export async function runReadyDispatchStrategies(params = {}) {
     fallback = {},
     returnOutcome = false
   } = params;
-  const { dispatcher: fallbackDispatcher, useGlobal: useGlobalFallback = false } = fallback;
+  const {
+    dispatcher: fallbackDispatcher,
+    dispatchers: fallbackDispatcherList,
+    globalDispatcher: providedGlobalDispatcher,
+    useGlobal: useGlobalFallback = false
+  } = fallback;
   let resultEmitted = false;
   const emitResult = (value) => {
     if (resultEmitted) return;
@@ -714,24 +722,44 @@ export async function runReadyDispatchStrategies(params = {}) {
       fallbackDispatched = true;
     }
   };
-  const shouldInvokeFallbackDispatcher = !dispatched && typeof fallbackDispatcher === "function";
-  if (shouldInvokeFallbackDispatcher) {
-    const fallbackOutcome = await invokeFallbackDispatcher(fallbackDispatcher);
-    registerFallbackOutcome(fallbackOutcome);
+  const fallbackQueue = [];
+  const addFallbackCandidate = (candidate) => {
+    if (typeof candidate !== "function") return;
+    if (fallbackQueue.includes(candidate)) return;
+    fallbackQueue.push(candidate);
+  };
+  const normalizedFallbackDispatchers = Array.isArray(fallbackDispatcherList)
+    ? fallbackDispatcherList
+    : [];
+  for (const candidate of normalizedFallbackDispatchers) {
+    addFallbackCandidate(candidate);
   }
-  try {
-    const current = getGlobalDispatch();
-    const shouldInvokeGlobalFallback =
-      !dispatched &&
-      fallbackDispatched !== true &&
-      useGlobalFallback === true &&
-      typeof current === "function" &&
-      current !== fallbackDispatcher;
-    if (shouldInvokeGlobalFallback) {
-      const globalOutcome = await invokeFallbackDispatcher(current);
-      registerFallbackOutcome(globalOutcome);
+  addFallbackCandidate(fallbackDispatcher);
+  if (useGlobalFallback === true) {
+    let globalCandidate =
+      typeof providedGlobalDispatcher === "function" ? providedGlobalDispatcher : undefined;
+    if (!globalCandidate && fallbackQueue.length === 0) {
+      try {
+        const current = getGlobalDispatch();
+        if (typeof current === "function") {
+          globalCandidate = current;
+        }
+      } catch {
+        globalCandidate = undefined;
+      }
     }
-  } catch {}
+    if (globalCandidate) {
+      addFallbackCandidate(globalCandidate);
+    }
+  }
+  if (!dispatched && fallbackQueue.length > 0) {
+    for (const dispatcherFn of fallbackQueue) {
+      if (fallbackDispatched) break;
+      const fallbackOutcome = await invokeFallbackDispatcher(dispatcherFn);
+      registerFallbackOutcome(fallbackOutcome);
+      if (fallbackOutcome.dispatched === true) break;
+    }
+  }
   if (fallbackAttempted) {
     emitTelemetry?.("handleNextRoundDispatchFallback", fallbackDispatched);
   }
