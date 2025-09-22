@@ -114,8 +114,15 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.setViewportSize({ width: 1024, height: 768 });
 
       // Check no horizontal scroll
-      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-      expect(scrollWidth).toBeLessThanOrEqual(1024);
+      const scrollMetrics = await page.locator("html").evaluate((el) => {
+        const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
+        return {
+          scrollWidth: scrollingElement.scrollWidth,
+          clientWidth: scrollingElement.clientWidth
+        };
+      });
+      const viewportWidth = page.viewportSize()?.width ?? scrollMetrics.clientWidth;
+      expect(scrollMetrics.scrollWidth).toBeLessThanOrEqual(viewportWidth);
 
       // Verify CLI interface elements are properly contained
       const cliContainer = page.locator("#cli-container, .cli-container, main");
@@ -139,13 +146,14 @@ test.describe("CLI Layout and Scrolling", () => {
       await setupCliVerboseTest(page, transcriptEntries);
 
       // Check that content is scrollable vertically but not horizontally
-      const scrollInfo = await page.evaluate(() => {
-        const el = document.documentElement;
+      const scroller = page.locator("html");
+      const scrollInfo = await scroller.evaluate((el) => {
+        const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
         return {
-          scrollWidth: el.scrollWidth,
-          clientWidth: el.clientWidth,
-          scrollHeight: el.scrollHeight,
-          clientHeight: el.clientHeight
+          scrollWidth: scrollingElement.scrollWidth,
+          clientWidth: scrollingElement.clientWidth,
+          scrollHeight: scrollingElement.scrollHeight,
+          clientHeight: scrollingElement.clientHeight
         };
       });
 
@@ -154,29 +162,15 @@ test.describe("CLI Layout and Scrolling", () => {
 
       // Should have vertical scroll if content is long
       if (scrollInfo.scrollHeight > scrollInfo.clientHeight) {
-        // Verify scrolling works
-        const initialScroll = await page.evaluate(
-          () => window.scrollY || document.documentElement.scrollTop
-        );
-        let programmaticScrollWorked = false;
-
-        try {
-          programmaticScrollWorked = await page.evaluate(() => {
-            const start = window.scrollY || document.documentElement.scrollTop;
-            window.scrollTo(0, start + 200);
-            const current = window.scrollY || document.documentElement.scrollTop;
-            return current > start;
+        const getScrollTop = async () =>
+          scroller.evaluate((el) => {
+            const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
+            return scrollingElement.scrollTop ?? 0;
           });
-        } catch {
-          programmaticScrollWorked = false;
-        }
 
-        if (!programmaticScrollWorked) {
-          await page.mouse.wheel(0, 400);
-          await expect
-            .poll(() => page.evaluate(() => window.scrollY || document.documentElement.scrollTop))
-            .toBeGreaterThan(initialScroll);
-        }
+        const initialScroll = await getScrollTop();
+        await page.mouse.wheel(0, 400);
+        await expect.poll(() => getScrollTop()).toBeGreaterThan(initialScroll);
       }
     });
   });
@@ -201,22 +195,17 @@ test.describe("CLI Layout and Scrolling", () => {
       // Check touch target sizes (CLI may not be fully mobile-optimized)
       const touchTargets = page.locator("button, a, input, [role='button']");
       if ((await touchTargets.count()) > 0) {
-        const touchTargetInfo = await page.evaluate(() => {
-          const targets = document.querySelectorAll("button, a, input, [role='button']");
-          let smallCount = 0;
-          let totalCount = targets.length;
-          for (const target of targets) {
-            const rect = target.getBoundingClientRect();
-            if (rect.width < 44 || rect.height < 44) {
-              smallCount++;
-            }
+        let largeTargets = 0;
+        const targetCount = await touchTargets.count();
+        for (let index = 0; index < targetCount; index += 1) {
+          const box = await touchTargets.nth(index).boundingBox();
+          if (box && box.width >= 44 && box.height >= 44) {
+            largeTargets += 1;
           }
-          return { smallCount, totalCount };
-        });
+        }
 
         // CLI interface may not be fully mobile-optimized, be very lenient
         // Just ensure some targets are reasonably sized
-        const largeTargets = touchTargetInfo.totalCount - touchTargetInfo.smallCount;
         expect(largeTargets).toBeGreaterThan(0); // At least one properly sized target
       }
     });
@@ -254,27 +243,29 @@ test.describe("CLI Layout and Scrolling", () => {
       await page.setViewportSize({ width: 768, height: 1024 });
 
       // Check no horizontal scroll
-      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-      expect(scrollWidth).toBeLessThanOrEqual(768);
+      const tabletScrollMetrics = await page.locator("html").evaluate((el) => {
+        const scrollingElement = el.ownerDocument?.scrollingElement ?? el;
+        return {
+          scrollWidth: scrollingElement.scrollWidth,
+          clientWidth: scrollingElement.clientWidth
+        };
+      });
+      const tabletViewportWidth = page.viewportSize()?.width ?? tabletScrollMetrics.clientWidth;
+      expect(tabletScrollMetrics.scrollWidth).toBeLessThanOrEqual(tabletViewportWidth);
 
       // Verify layout adapts properly
       const mainContent = page.locator("main, #cli-container");
       await expect(mainContent).toBeVisible();
 
       // Check if content is properly sized for tablet
-      const contentDimensions = await page.evaluate(() => {
-        const content = document.querySelector("main, #cli-container, .cli-container");
-        if (content) {
-          const rect = content.getBoundingClientRect();
-          return { width: rect.width, height: rect.height };
+      const content = page.locator("main, #cli-container, .cli-container");
+      if ((await content.count()) > 0) {
+        const contentBox = await content.first().boundingBox();
+        if (contentBox) {
+          // Content should be reasonably sized for tablet
+          expect(contentBox.width).toBeGreaterThan(300);
+          expect(contentBox.height).toBeGreaterThan(200);
         }
-        return null;
-      });
-
-      if (contentDimensions) {
-        // Content should be reasonably sized for tablet
-        expect(contentDimensions.width).toBeGreaterThan(300);
-        expect(contentDimensions.height).toBeGreaterThan(200);
       }
     });
   });
@@ -288,17 +279,13 @@ test.describe("CLI Layout and Scrolling", () => {
       await setupCliVerboseTest(page, longLine, { expectText: longLine.slice(0, 40) });
 
       // Check that long lines don't break layout
-      const layoutBroken = await page.evaluate(() => {
-        const pre = document.getElementById("cli-verbose-log");
-        if (pre) {
-          const rect = pre.getBoundingClientRect();
-          // Check if content extends beyond reasonable bounds
-          return rect.right > window.innerWidth + 50;
-        }
-        return false;
-      });
-
-      expect(layoutBroken).toBe(false);
+      const verboseLog = page.locator(VERBOSE_LOG_SELECTOR);
+      const verboseBox = await verboseLog.boundingBox();
+      const viewport = page.viewportSize();
+      if (verboseBox && viewport) {
+        const layoutRightEdge = verboseBox.x + verboseBox.width;
+        expect(layoutRightEdge).toBeLessThanOrEqual(viewport.width + 50);
+      }
     });
 
     test("maintains usability with multiple content sections", async ({ page }) => {
@@ -311,30 +298,26 @@ test.describe("CLI Layout and Scrolling", () => {
       }));
       await setupCliVerboseTest(page, sectionEntries);
 
-      const transcriptLines = await page.evaluate(() => {
-        const pre = document.getElementById("cli-verbose-log");
-        if (!pre) return [];
-        return pre.textContent
-          .split("\n")
-          .map((line) => line.trim())
-          .filter(Boolean);
-      });
+      const transcriptText = await page.locator(VERBOSE_LOG_SELECTOR).innerText();
+      const transcriptLines = transcriptText
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
       expect(transcriptLines.length).toBeGreaterThanOrEqual(10);
 
-      const layoutIssues = await page.evaluate(() => {
-        const sections = document.querySelectorAll(".cli-block");
-        let issues = 0;
-        for (const section of sections) {
-          if (section.hidden || section.offsetParent === null) {
-            continue;
-          }
-          const rect = section.getBoundingClientRect();
-          if (rect.width <= 0 || rect.height <= 0) {
-            issues++;
-          }
+      const sections = page.locator(".cli-block");
+      let layoutIssues = 0;
+      const sectionCount = await sections.count();
+      for (let index = 0; index < sectionCount; index += 1) {
+        const section = sections.nth(index);
+        if (!(await section.isVisible())) {
+          continue;
         }
-        return issues;
-      });
+        const sectionBox = await section.boundingBox();
+        if (!sectionBox || sectionBox.width <= 0 || sectionBox.height <= 0) {
+          layoutIssues += 1;
+        }
+      }
 
       expect(layoutIssues).toBe(0);
     });
