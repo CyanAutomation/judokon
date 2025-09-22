@@ -176,7 +176,8 @@ describe("startCooldown ready dispatch discipline", () => {
   let dispatchSpy;
 
   beforeEach(async () => {
-    dispatchSpy = vi.fn().mockResolvedValue(undefined);
+    dispatchSpy = vi.fn();
+    dispatchSpy.mockResolvedValue(undefined);
 
     harness = createClassicBattleHarness({
       mocks: {
@@ -242,7 +243,8 @@ describe("handleNextRoundExpiration immediate readiness", () => {
   let dispatchSpy;
 
   beforeEach(async () => {
-    dispatchSpy = vi.fn().mockResolvedValue(undefined);
+    dispatchSpy = vi.fn();
+    dispatchSpy.mockResolvedValue(undefined);
 
     harness = createClassicBattleHarness({
       mocks: {
