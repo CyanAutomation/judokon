@@ -49,6 +49,27 @@ import {
   setReadyDispatchedForCurrentCooldown
 } from "./roundReadyState.js";
 
+const READY_DISPATCHER_IDENTITY_SYMBOL =
+  typeof Symbol === "function"
+    ? Symbol.for("classicBattle.readyDispatcherIdentity")
+    : "__classicBattle_readyDispatcherIdentity__";
+
+function readReadyDispatcherSignature(candidate) {
+  if (typeof candidate !== "function") return undefined;
+  const identitySymbol = READY_DISPATCHER_IDENTITY_SYMBOL;
+  const symbolValue = identitySymbol ? candidate[identitySymbol] : undefined;
+  if (typeof symbolValue === "string" || typeof symbolValue === "number") {
+    return String(symbolValue);
+  }
+  if (typeof candidate.readyDispatcherId === "string" && candidate.readyDispatcherId) {
+    return candidate.readyDispatcherId;
+  }
+  if (typeof candidate.dispatcherId === "string" && candidate.dispatcherId) {
+    return candidate.dispatcherId;
+  }
+  return undefined;
+}
+
 // Lazy-loaded debug panel updater
 let lazyUpdateDebugPanel = null;
 async function getLazyUpdateDebugPanel() {
@@ -574,24 +595,6 @@ function handleReadyDispatchEarlyExit({ context, controls, emitTelemetry, getDeb
 }
 
 /**
- * @summary Compose ready dispatch strategies with deterministic machine prioritization.
- *
- * @pseudocode
- * 1. Detect whether a custom dispatcher exists and configure bus dispatch options.
- * 2. Create a guarded helper for the machine strategy so it is registered once.
- * 3. When orchestrated without a custom dispatcher override, register the machine first so orchestration observes the event
- *    before fallbacks.
- * 4. Append custom dispatcher and bus strategies, then add the machine strategy again if not already present so manual flows
- *    still dispatch through the machine when earlier strategies short circuit.
- * 5. Return the strategy list alongside fallback dispatchers for `runReadyDispatchStrategies`.
- *
- * @param {object} params - Strategy construction context.
- * @returns {{
- *   strategies: Array<() => Promise<boolean>|boolean>,
- *   fallbackDispatchers: Array<(type: string) => any>
- * }} Ordered strategies and fallback dispatchers.
- */
-/**
  * Evaluate the machine dispatch results and determine whether additional
  * propagation steps are required.
  *
@@ -628,7 +631,25 @@ function evaluateMachineReadyPropagation({
   return { propagate, requiresPropagation };
 }
 
-function createReadyDispatchStrategies({
+/**
+ * @summary Compose ready dispatch strategies and fallback configuration with deterministic prioritization.
+ *
+ * @pseudocode
+ * 1. Detect whether a custom dispatcher exists and configure bus dispatch options.
+ * 2. Create a guarded helper for the machine strategy so it is registered once.
+ * 3. When orchestrated without a custom dispatcher override, register the machine first so orchestration observes the event
+ *    before fallbacks.
+ * 4. Append custom dispatcher and bus strategies, then add the machine strategy again if not already present so manual flows
+ *    still dispatch through the machine when earlier strategies short circuit.
+ * 5. Return the strategy list alongside normalized fallback dispatchers for `runReadyDispatchStrategies`.
+ *
+ * @param {object} params - Strategy construction context.
+ * @returns {{
+ *   strategies: Array<() => Promise<boolean>|boolean>,
+ *   fallbackDispatchers: Array<(type: string) => any>
+ * }} Ordered strategies and deduplicated fallback dispatchers.
+ */
+function createReadyDispatchConfiguration({
   options,
   bus,
   machineReader,
@@ -642,10 +663,24 @@ function createReadyDispatchStrategies({
   }
   /** @type {Array<(type: string) => any>} */
   const fallbackDispatchers = [];
+  const fallbackDispatcherRefs = typeof WeakSet === "function" ? new WeakSet() : null;
+  const fallbackDispatcherSignatures = new Set();
   const registerFallbackDispatcher = (candidate) => {
     if (typeof candidate !== "function") return;
-    if (fallbackDispatchers.includes(candidate)) return;
+    const hasRef = fallbackDispatcherRefs
+      ? fallbackDispatcherRefs.has(candidate)
+      : fallbackDispatchers.includes(candidate);
+    const signature = readReadyDispatcherSignature(candidate);
+    if (hasRef || (signature && fallbackDispatcherSignatures.has(signature))) {
+      return;
+    }
     fallbackDispatchers.push(candidate);
+    if (fallbackDispatcherRefs) {
+      fallbackDispatcherRefs.add(candidate);
+    }
+    if (signature) {
+      fallbackDispatcherSignatures.add(signature);
+    }
   };
   const hasCustomDispatcher =
     typeof options.dispatchBattleEvent === "function" &&
@@ -827,7 +862,7 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       if (typeof updatePanel === "function") updatePanel();
     }
   });
-  const { strategies, fallbackDispatchers } = createReadyDispatchStrategies({
+  const { strategies, fallbackDispatchers } = createReadyDispatchConfiguration({
     options,
     bus,
     machineReader,
@@ -847,6 +882,13 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
         ? options.dispatchBattleEvent
         : dispatchBattleEvent
   };
+  if (
+    typeof fallbackConfig.dispatcher === "function" &&
+    typeof fallbackConfig.globalDispatcher === "function" &&
+    fallbackConfig.dispatcher === fallbackConfig.globalDispatcher
+  ) {
+    fallbackConfig.globalDispatcher = undefined;
+  }
   const { dispatched, fallbackDispatched } = await runReadyDispatchStrategies({
     alreadyDispatchedReady:
       options?.alreadyDispatchedReady === true || hasReadyBeenDispatchedForCurrentCooldown(),
