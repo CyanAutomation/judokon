@@ -224,7 +224,7 @@ describe("startCooldown ready dispatch discipline", () => {
     scheduler.tick(0);
     scheduler.tick(20);
     expect(dispatchSpy).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(1000);
+    scheduler.tick(1000);
     scheduler.tick(1000);
     await controls.ready;
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
@@ -367,7 +367,7 @@ describe("bus propagation and deduplication", () => {
     globalDispatchSpy.mockImplementationOnce(() => false);
     globalDispatchSpy.mockImplementation(() => true);
     await runtime.onExpired();
-    expect(globalDispatchSpy).toHaveBeenCalledTimes(1);
+    expect(globalDispatchSpy).toHaveBeenCalledTimes(2);
     expect(globalDispatchSpy).toHaveBeenNthCalledWith(1, READY_EVENT);
     expect(globalDispatchSpy).toHaveBeenNthCalledWith(2, READY_EVENT);
     expect(dispatchReadyViaBusSpy).toHaveBeenCalledTimes(1);
