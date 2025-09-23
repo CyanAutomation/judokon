@@ -165,9 +165,15 @@ test.describe("Classic Battle Opponent Reveal", () => {
         try {
           await waitForBattleState(page, "roundOver");
         } catch {
+          // Fallback: poll both store.roundsPlayed and DOM score change
+          const score = page.locator(selectors.scoreDisplay());
+          const initialScore = (await score.textContent())?.trim();
           await expect
-            .poll(async () => (await getBattleSnapshot(page))?.roundsPlayed ?? 0)
+            .poll(async () => (await getBattleSnapshot(page))?.roundsPlayed ?? 0, {
+              intervals: [100, 150, 200, 250]
+            })
             .toBeGreaterThanOrEqual(1);
+          await expect(score).not.toHaveText(initialScore || "");
         }
 
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);

@@ -50,6 +50,8 @@ export async function interruptRoundEnter(machine, payload) {
   }
   if (payload?.adminTest) {
     await machine.dispatch("roundModification", payload);
+  } else if (payload?.reason === "quit") {
+    await machine.dispatch("abortMatch");
   } else {
     await machine.dispatch("restartRound");
   }
