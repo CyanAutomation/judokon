@@ -17,6 +17,17 @@ function clearOpponentSnackbarTimeout() {
   opponentSnackbarId = 0;
 }
 
+function displayOpponentChoosingPrompt() {
+  try {
+    showSnackbar(t("ui.opponentChoosing"));
+    markOpponentPromptNow();
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Error showing opponent choosing message:", error);
+    }
+  }
+}
+
 /**
  * Bind dynamic UI helper event handlers on the shared battle EventTarget.
  *
@@ -63,25 +74,17 @@ export function bindUIHelperEventHandlersDynamic() {
         const resolvedDelay = Number.isFinite(delay) && delay > 0 ? delay : 0;
         clearOpponentSnackbarTimeout();
         if (resolvedDelay <= 0) {
-          try {
-            showSnackbar(t("ui.opponentChoosing"));
-            markOpponentPromptNow();
-          } catch {}
+          // Handle immediate display when delay is zero or negative by skipping the timeout setup.
+          displayOpponentChoosingPrompt();
           return;
         }
         opponentSnackbarId = setTimeout(() => {
-          try {
-            showSnackbar(t("ui.opponentChoosing"));
-            markOpponentPromptNow();
-          } catch {}
+          displayOpponentChoosingPrompt();
         }, resolvedDelay);
       } else {
         clearOpponentSnackbarTimeout();
         // Cancel any pending delay to ensure the immediate snackbar wins.
-        try {
-          showSnackbar(t("ui.opponentChoosing"));
-          markOpponentPromptNow();
-        } catch {}
+        displayOpponentChoosingPrompt();
       }
     } catch {}
   });
