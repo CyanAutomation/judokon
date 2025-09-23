@@ -43,16 +43,34 @@ const toPositiveNumber = (value, fallback = 0) => {
   return numeric;
 };
 
-const normalizePromptDelayOptions = (options = {}) => ({
-  waitForPromptOption: options?.waitForOpponentPrompt === true,
-  promptPollInterval: toPositiveNumber(options?.promptPollIntervalMs, DEFAULT_PROMPT_POLL_INTERVAL),
-  maxPromptWait: toPositiveNumber(options?.maxPromptWaitMs, 0),
-  setTimeoutFn:
-    typeof options?.setTimeoutFn === "function" ? options.setTimeoutFn : defaultSetTimeout,
-  clearTimeoutFn:
-    typeof options?.clearTimeoutFn === "function" ? options.clearTimeoutFn : defaultClearTimeout,
-  now: typeof options?.now === "function" ? options.now : defaultNow
-});
+const derivePromptPollRetries = (maxPromptWait, promptPollInterval) => {
+  if (!Number.isFinite(maxPromptWait) || maxPromptWait <= 0) {
+    return 0;
+  }
+  if (!Number.isFinite(promptPollInterval) || promptPollInterval <= 0) {
+    return 0;
+  }
+  return Math.max(1, Math.ceil(maxPromptWait / promptPollInterval));
+};
+
+const normalizePromptDelayOptions = (options = {}) => {
+  const promptPollInterval = toPositiveNumber(
+    options?.promptPollIntervalMs,
+    DEFAULT_PROMPT_POLL_INTERVAL
+  );
+  const maxPromptWait = toPositiveNumber(options?.maxPromptWaitMs, 0);
+  return {
+    waitForPromptOption: options?.waitForOpponentPrompt === true,
+    promptPollInterval,
+    maxPromptWait,
+    maxPromptPollRetries: derivePromptPollRetries(maxPromptWait, promptPollInterval),
+    setTimeoutFn:
+      typeof options?.setTimeoutFn === "function" ? options.setTimeoutFn : defaultSetTimeout,
+    clearTimeoutFn:
+      typeof options?.clearTimeoutFn === "function" ? options.clearTimeoutFn : defaultClearTimeout,
+    now: typeof options?.now === "function" ? options.now : defaultNow
+  };
+};
 
 const hasActivePrompt = () => {
   try {
@@ -92,7 +110,8 @@ const createPromptDelayState = (config) => ({
    * } | null}
    */
   queuedPayload: null,
-  promptWaitDeadline: 0
+  promptWaitDeadline: 0,
+  promptWaitPollsRemaining: config.maxPromptPollRetries
 });
 
 const clearPendingTimeout = (state) => {
@@ -104,10 +123,15 @@ const clearPendingTimeout = (state) => {
   }
 };
 
+const resetPromptWaitState = (state) => {
+  state.promptWaitDeadline = 0;
+  state.promptWaitPollsRemaining = state.config.maxPromptPollRetries;
+};
+
 const flushQueue = (state) => {
   const payload = state.queuedPayload;
   state.queuedPayload = null;
-  state.promptWaitDeadline = 0;
+  resetPromptWaitState(state);
   clearPendingTimeout(state);
   if (payload?.onReady) {
     payload.onReady(payload.value, {
@@ -167,30 +191,45 @@ function schedulePromptPoll(state) {
 function handlePromptWaiting(state) {
   if (!state.config.waitForPromptOption) {
     if (state.promptWaitDeadline !== 0 && hasActivePrompt()) {
-      state.promptWaitDeadline = 0;
+      resetPromptWaitState(state);
     }
     return false;
   }
 
   if (hasActivePrompt()) {
-    if (state.promptWaitDeadline !== 0) {
-      state.promptWaitDeadline = 0;
-    }
+    resetPromptWaitState(state);
     return false;
   }
 
   const canWaitForPrompt = state.config.maxPromptWait > 0;
   if (canWaitForPrompt && state.promptWaitDeadline === 0) {
     state.promptWaitDeadline = state.config.now() + state.config.maxPromptWait;
+    state.promptWaitPollsRemaining = state.config.maxPromptPollRetries;
   }
+
+  const pollLimitReached =
+    canWaitForPrompt &&
+    state.config.maxPromptPollRetries > 0 &&
+    state.promptWaitPollsRemaining <= 0;
+
   const deadlineReached = !canWaitForPrompt
     ? true
     : state.promptWaitDeadline > 0 && state.config.now() >= state.promptWaitDeadline;
-  if (deadlineReached) {
+
+  if (deadlineReached || pollLimitReached) {
+    resetPromptWaitState(state);
     return false;
   }
 
-  return schedulePromptPoll(state);
+  if (!canWaitForPrompt) {
+    return false;
+  }
+
+  const scheduled = schedulePromptPoll(state);
+  if (scheduled && state.config.maxPromptPollRetries > 0) {
+    state.promptWaitPollsRemaining -= 1;
+  }
+  return scheduled;
 }
 
 function queueTickInternal(state, value, options = {}, onReady) {
@@ -203,7 +242,7 @@ function queueTickInternal(state, value, options = {}, onReady) {
 const clearState = (state) => {
   clearPendingTimeout(state);
   state.queuedPayload = null;
-  state.promptWaitDeadline = 0;
+  resetPromptWaitState(state);
 };
 
 const shouldDeferState = (state) => {
