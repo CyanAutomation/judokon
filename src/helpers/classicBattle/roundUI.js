@@ -55,6 +55,130 @@ function scheduleUiServicePreload() {
 }
 
 /**
+ * Resolve timer/renderer factories used for the round cooldown.
+ *
+ * @pseudocode
+ * 1. Prefer injected factories when provided via `overrides`.
+ * 2. Dynamically import missing factories to match the previous lazy path.
+ * 3. Instantiate the timer and return both timer and renderer handles.
+ *
+ * @param {object} store
+ * @param {{
+ *   createRoundTimer?: () => any,
+ *   attachCooldownRenderer?: (timer: any, secs: number, opts?: object) => void
+ * }} [overrides]
+ * @returns {Promise<{ timer: any, renderer: ((timer: any, secs: number, opts?: object) => void)|null }>}
+ */
+export async function resolveCooldownDependencies(store, overrides = {}) {
+  void store;
+  const createRoundTimerOverride = overrides?.createRoundTimer;
+  const attachCooldownRendererOverride = overrides?.attachCooldownRenderer;
+
+  let createRoundTimerFn =
+    typeof createRoundTimerOverride === "function" ? createRoundTimerOverride : null;
+  let attachRendererFn =
+    typeof attachCooldownRendererOverride === "function" ? attachCooldownRendererOverride : null;
+
+  if (!createRoundTimerFn || !attachRendererFn) {
+    try {
+      const [timerModule, rendererModule] = await Promise.all([
+        createRoundTimerFn
+          ? Promise.resolve({ createRoundTimer: createRoundTimerFn })
+          : import("../timers/createRoundTimer.js"),
+        attachRendererFn
+          ? Promise.resolve({ attachCooldownRenderer: attachRendererFn })
+          : import("../CooldownRenderer.js")
+      ]);
+      if (!createRoundTimerFn && typeof timerModule?.createRoundTimer === "function") {
+        createRoundTimerFn = timerModule.createRoundTimer;
+      }
+      if (!attachRendererFn && typeof rendererModule?.attachCooldownRenderer === "function") {
+        attachRendererFn = rendererModule.attachCooldownRenderer;
+      }
+    } catch {}
+  }
+
+  let timer = null;
+  if (typeof createRoundTimerFn === "function") {
+    try {
+      timer = createRoundTimerFn();
+    } catch {}
+  }
+
+  return {
+    timer,
+    renderer: typeof attachRendererFn === "function" ? attachRendererFn : null
+  };
+}
+
+/**
+ * Attach renderer and start the next-round countdown with optional gating.
+ *
+ * @pseudocode
+ * 1. Attach the renderer when both timer and renderer are available.
+ * 2. When delaying the opponent prompt, wait for the prompt visibility window.
+ * 3. Start the timer and swallow failures to keep UI responsive.
+ *
+ * @param {{ timer: any, renderer: ((timer: any, secs: number, opts?: object) => void)|null }} resolved
+ * @param {{
+ *   seconds: number,
+ *   delayOpponentMessage?: boolean,
+ *   rendererOptions?: object,
+ *   promptBudget?: { bufferMs: number, totalMs: number }|null,
+ *   waitForDelayedOpponentPromptDisplay?: typeof waitForDelayedOpponentPromptDisplay,
+ *   getOpponentPromptTimestamp?: typeof getOpponentPromptTimestamp
+ * }} [config]
+ * @returns {Promise<void>}
+ */
+export async function startRoundCooldown(resolved, config = {}) {
+  const { timer, renderer } = resolved || {};
+  const {
+    seconds,
+    delayOpponentMessage = false,
+    rendererOptions: rendererOptionsInput = {},
+    promptBudget = null,
+    waitForDelayedOpponentPromptDisplay: waitFn = waitForDelayedOpponentPromptDisplay,
+    getOpponentPromptTimestamp: getTimestamp = getOpponentPromptTimestamp
+  } = config;
+
+  if (!timer || typeof timer.start !== "function") return;
+
+  const rendererOptions = rendererOptionsInput || {};
+  try {
+    if (typeof renderer === "function") {
+      renderer(timer, seconds, rendererOptions);
+    }
+  } catch {}
+
+  if (delayOpponentMessage) {
+    let shouldWait = true;
+    if (typeof getTimestamp === "function") {
+      try {
+        const timestamp = Number(getTimestamp());
+        shouldWait = !Number.isFinite(timestamp) || timestamp <= 0;
+      } catch {
+        shouldWait = true;
+      }
+    }
+
+    if (shouldWait && typeof waitFn === "function") {
+      const waitArgs = promptBudget || undefined;
+      const intervalMs = Number(rendererOptions.promptPollIntervalMs);
+      const waitOptions = { intervalMs };
+      try {
+        await waitFn(waitArgs, waitOptions);
+      } catch {
+        await waitFn(waitArgs, waitOptions);
+      }
+    }
+  }
+
+  try {
+    await timer.start(seconds);
+  } catch {}
+}
+
+/**
  * Apply UI updates for a newly started round.
  *
  * Resets visible state for stat buttons, updates the round counter and score
@@ -342,94 +466,63 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
           } catch {}
           const resolvedSeconds = parseSecondsFromResult(cooldownResult);
           const secs = Math.max(3, resolvedSeconds);
-          let timerFactory =
-            typeof createRoundTimerFn === "function" ? createRoundTimerFn : undefined;
-          let renderer =
-            typeof attachCooldownRendererFn === "function" ? attachCooldownRendererFn : undefined;
-          if (!timerFactory || !renderer) {
-            try {
-              const [timerMod, rendererMod] = await Promise.all([
-                timerFactory
-                  ? Promise.resolve({ createRoundTimer: timerFactory })
-                  : import("../timers/createRoundTimer.js"),
-                renderer
-                  ? Promise.resolve({ attachCooldownRenderer: renderer })
-                  : import("../CooldownRenderer.js")
-              ]);
-              timerFactory = timerFactory || timerMod.createRoundTimer;
-              renderer = renderer || rendererMod.attachCooldownRenderer;
-            } catch {}
-          }
-          const timer = typeof timerFactory === "function" ? timerFactory() : null;
-          if (timer) {
-            const attachRendererOptions =
-              deps.attachCooldownRendererOptions &&
-              typeof deps.attachCooldownRendererOptions === "object"
-                ? { ...deps.attachCooldownRendererOptions }
-                : {};
-            let promptBudget = null;
-            if (delayOpponentMessageFlag) {
-              const resolvePromptBuffer = () => {
-                const candidates = [
-                  attachRendererOptions.opponentPromptBufferMs,
-                  cooldownResult?.opponentPromptBufferMs
-                ];
+          const attachRendererOptions =
+            deps.attachCooldownRendererOptions &&
+            typeof deps.attachCooldownRendererOptions === "object"
+              ? { ...deps.attachCooldownRendererOptions }
+              : {};
+          let promptBudget = null;
+          if (delayOpponentMessageFlag) {
+            const resolvePromptBuffer = () => {
+              const candidates = [
+                attachRendererOptions.opponentPromptBufferMs,
+                cooldownResult?.opponentPromptBufferMs
+              ];
 
-                for (const candidate of candidates) {
-                  const numeric = Number(candidate);
-                  if (Number.isFinite(numeric) && numeric >= 0) {
-                    return numeric;
-                  }
-                }
-                return DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
-              };
-
-              const resolvedBuffer = resolvePromptBuffer();
-              try {
-                promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
-              } catch {
-                promptBudget = computeOpponentPromptWaitBudget();
-              }
-              attachRendererOptions.opponentPromptBufferMs = promptBudget.bufferMs;
-              attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
-              const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
-              const resolvedPollInterval =
-                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 75;
-              attachRendererOptions.promptPollIntervalMs = Math.max(50, resolvedPollInterval);
-              attachRendererOptions.waitForOpponentPrompt = true;
-            } else {
-              attachRendererOptions.waitForOpponentPrompt = false;
-              attachRendererOptions.maxPromptWaitMs = 0;
-              const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
-              const resolvedPollInterval =
-                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 75;
-              attachRendererOptions.promptPollIntervalMs = Math.max(50, resolvedPollInterval);
-            }
-            try {
-              if (typeof renderer === "function") {
-                renderer(timer, secs, attachRendererOptions);
-              }
-            } catch {}
-            if (typeof timer.start === "function") {
-              if (delayOpponentMessageFlag) {
-                try {
-                  const timestamp = Number(getOpponentPromptTimestamp());
-                  if (!Number.isFinite(timestamp) || timestamp <= 0) {
-                    await waitForDelayedOpponentPromptDisplay(promptBudget || undefined, {
-                      intervalMs: attachRendererOptions.promptPollIntervalMs
-                    });
-                  }
-                } catch {
-                  await waitForDelayedOpponentPromptDisplay(promptBudget || undefined, {
-                    intervalMs: attachRendererOptions.promptPollIntervalMs
-                  });
+              for (const candidate of candidates) {
+                const numeric = Number(candidate);
+                if (Number.isFinite(numeric) && numeric >= 0) {
+                  return numeric;
                 }
               }
-              try {
-                await timer.start(secs);
-              } catch {}
+              return DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
+            };
+
+            const resolvedBuffer = resolvePromptBuffer();
+            try {
+              promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
+            } catch {
+              promptBudget = computeOpponentPromptWaitBudget();
             }
+            attachRendererOptions.opponentPromptBufferMs = promptBudget.bufferMs;
+            attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
+            const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
+            const resolvedPollInterval =
+              Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 75;
+            attachRendererOptions.promptPollIntervalMs = Math.max(50, resolvedPollInterval);
+            attachRendererOptions.waitForOpponentPrompt = true;
+          } else {
+            attachRendererOptions.waitForOpponentPrompt = false;
+            attachRendererOptions.maxPromptWaitMs = 0;
+            const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
+            const resolvedPollInterval =
+              Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 75;
+            attachRendererOptions.promptPollIntervalMs = Math.max(50, resolvedPollInterval);
           }
+
+          const resolvedDeps = await resolveCooldownDependencies(store, {
+            createRoundTimer: createRoundTimerFn,
+            attachCooldownRenderer: attachCooldownRendererFn
+          });
+
+          await startRoundCooldown(resolvedDeps, {
+            seconds: secs,
+            delayOpponentMessage: delayOpponentMessageFlag,
+            rendererOptions: attachRendererOptions,
+            promptBudget,
+            waitForDelayedOpponentPromptDisplay,
+            getOpponentPromptTimestamp
+          });
         }
       } catch {}
     }
