@@ -29,13 +29,12 @@
   1. Located that quit dispatches "interrupt" with reason "quit".
   2. Modified interruptRoundEnter to dispatch "abortMatch" for quit reason.
   3. Quit button now properly ends the match.
+- **Clear Start Control** ✅
+  1. Located the points-select change handler in restorePointsToWin.
+  2. Modified to dispatch "startClicked" automatically after selecting match length.
+  3. Removed the need for a second click on the start button.
 
 ### Remaining UI/UX Improvements
-
-- **Clear Start Control**
-  1. Locate the HTML and CSS for the yellow power icon.
-  2. Replace the icon with a clearly labeled "Start Match" button.
-  3. Modify the JavaScript to trigger the match start automatically after the match length is selected, removing the need for a second click.
 - **Timer Behavior**
   1. Define the desired behavior for timer expiration (e.g., auto-select highest stat, penalty, or loss).
   2. Implement the chosen behavior in the game logic.

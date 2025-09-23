@@ -1436,20 +1436,14 @@ export function restorePointsToWin() {
     }
     const round = Number(byId("cli-root")?.dataset.round || 0);
     updateRoundHeader(round, engineFacade.getPointsToWin?.());
-    let current = Number(select.value);
     select.addEventListener("change", async () => {
       const val = Number(select.value);
       if (!POINTS_TO_WIN_OPTIONS.includes(val)) return;
-      if (window.confirm("Changing win target resets scores. Start a new match?")) {
-        storage.set(val);
-        await resetMatch();
-        engineFacade.setPointsToWin?.(val);
-        updateRoundHeader(0, val);
-        await renderStartButton();
-        current = val;
-      } else {
-        select.value = String(current);
-      }
+      storage.set(val);
+      engineFacade.setPointsToWin?.(val);
+      updateRoundHeader(0, val);
+      // Automatically start the match after selecting points
+      await dispatchBattleEvent("startClicked");
     });
   } catch {}
 }
