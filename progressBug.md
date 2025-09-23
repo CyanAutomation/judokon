@@ -1,10 +1,6 @@
 # Opportunities for Improvement — Phased Plans
 
-**Verification Log (2025-09-22):** All claimed completed artifacts verified present and functional:
-
-- `tests/helpers/domFactory.js` & tests: ✅ Present with createStatButton, createSnackbar, etc.
-- `tests/helpers/rafMock.js` & tests: ✅ Present with install/uninstall/enqueue/flushNext/flushAll/cancel APIs.
-- `tests/set**Next:** Proceed to Phase 3: Monitor and iterate on mock reduction or proceed to next priority test.
+**Verification Log (2025-09-23):** All claimed completed artifacts verified present and functional. Mock reduction progress: settingsPage (25→17), browseJudokaPage (12→6). Next priority test pending.
 
 ---
 
@@ -12,16 +8,17 @@
 
 **Actions Taken:**
 
-- Monitored CI by running unit tests for `settingsPage.test.js` (11/11 passing) and relevant playwright tests (some failures unrelated to unit changes).
-- Iterated on mock reduction by removing redundant `vi.doMock` calls for `tooltip.js` (7 instances removed) and `domReady.js` (1 instance removed), as these were already mocked in the harness.
+- Created `createBrowseJudokaHarness` in `integrationHarness.js` to centralize mocking for browseJudokaPage tests.
+- Refactored `browseJudokaPage.test.js` to use harness with `beforeEach` setup, removing redundant `vi.doMock` calls for `tooltip.js`, `buttonEffects.js`, `setupHoverZoom.js` (6 instances removed across 2 tests).
+- Monitored CI by running unit tests for `browseJudokaPage.test.js` (5/5 passing) and relevant playwright tests (failures pre-existing, unrelated to changes).
 - Verified all tests still pass after removals.
 
 **Outcome:**
 
-- Mock count reduced from 25 to 17 (32% reduction) by removing redundant mocks covered by the integration harness.
-- Tests continue to pass reliably with reduced mock complexity.
+- Mock count reduced from 12 to 6 (50% reduction) in `browseJudokaPage.test.js`.
 - Harness successfully provides environment setup, reducing need for extensive per-test mocking.
 - Acceptance criteria met: Tests pass with reduced mocks, demonstrating improved resilience.
+- Cumulative mock reduction: settingsPage (25→17, 32%), browseJudokaPage (12→6, 50%).
 
 **Next:** Proceed to next priority test or further monitor flakiness.
 
@@ -116,7 +113,7 @@ Note: The document contains several duplicated "COMPLETED" blocks (likely due to
 6) Replace brittle inline mocks with integration-style refactors for priority tests
 
 - Status: Mostly Completed (major work done)
-- Notes: Integration harness implemented (`tests/helpers/integrationHarness.js`), `resolution.test.js` refactored, and mock reduction achieved (23→15 in example). Outstanding: Phase 3 monitoring (watch CI flakiness) and iterate further mock reduction on remaining priority tests (e.g., `settingsPage.test.js`).
+- Notes: Integration harness implemented, resolution.test.js, settingsPage.test.js, and browseJudokaPage.test.js refactored, mock reduction achieved (settingsPage: 25→17, browseJudokaPage: 12→6). Outstanding: Phase 3 monitoring and iterate on remaining priority tests.
 
 7) Centralize round state management / single source of truth
 

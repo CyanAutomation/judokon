@@ -391,3 +391,41 @@ export function createSettingsHarness(customConfig = {}) {
     }
   });
 }
+
+/**
+ * Pre-configured harness for browse judoka page integration tests
+ */
+export function createBrowseJudokaHarness(customConfig = {}) {
+  const { fixtures: customFixtures, mocks: customMocks, ...restConfig } = customConfig;
+  return createIntegrationHarness({
+    ...restConfig,
+    fixtures: {
+      ...customFixtures
+    },
+    mocks: {
+      // Mock tooltip system as external dependency
+      "../../src/helpers/tooltip.js": () => ({
+        initTooltips: vi.fn().mockResolvedValue(vi.fn()),
+        getTooltips: vi.fn()
+      }),
+      // Mock data utilities for fetching
+      "../../src/helpers/dataUtils.js": () => ({
+        fetchJson: vi.fn()
+      }),
+      // Mock button effects
+      "../../src/helpers/buttonEffects.js": () => ({
+        setupButtonEffects: vi.fn()
+      }),
+      // Mock hover zoom setup
+      "../../src/helpers/setupHoverZoom.js": () => ({
+        setupHoverZoom: vi.fn()
+      }),
+      // Mock judoka utilities
+      "../../src/helpers/judokaUtils.js": () => ({
+        getJudokaDisplayName: vi.fn(),
+        getJudokaStats: vi.fn()
+      }),
+      ...customMocks
+    }
+  });
+}

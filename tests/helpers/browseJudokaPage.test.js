@@ -1,4 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createBrowseJudokaHarness } from "./integrationHarness.js";
+
+const harness = createBrowseJudokaHarness();
+
+beforeEach(async () => {
+  await harness.setup();
+});
 
 describe("browseJudokaPage helpers", () => {
   it("country toggle controller toggles panel and loads flags once", async () => {
@@ -166,20 +173,11 @@ describe("browseJudokaPage helpers", () => {
     }));
 
     const initScrollMarkers = vi.fn();
-    const setupButtonEffects = vi.fn();
-    const addHoverZoomMarkers = vi.fn();
 
     vi.doMock("../../src/helpers/dataUtils.js", () => ({ fetchJson }));
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
       initScrollMarkers
-    }));
-    vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({
-      initTooltips: vi.fn().mockResolvedValue(() => {})
-    }));
-    vi.doMock("../../src/helpers/setupHoverZoom.js", () => ({
-      addHoverZoomMarkers
     }));
 
     const spinnerCalls = [];
@@ -239,13 +237,6 @@ describe("browseJudokaPage helpers", () => {
     vi.doMock("../../src/helpers/carouselBuilder.js", () => ({
       buildCardCarousel,
       initScrollMarkers: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/buttonEffects.js", () => ({ setupButtonEffects: vi.fn() }));
-    vi.doMock("../../src/helpers/tooltip.js", () => ({
-      initTooltips: vi.fn().mockResolvedValue(() => {})
-    }));
-    vi.doMock("../../src/helpers/setupHoverZoom.js", () => ({
-      addHoverZoomMarkers: vi.fn()
     }));
     vi.doMock("../../src/helpers/judokaUtils.js", () => ({
       getFallbackJudoka: vi.fn(async () => ({ id: 0, firstname: "Fallback" }))
