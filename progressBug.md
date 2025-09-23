@@ -14,6 +14,7 @@
 - Verified all tests still pass after removals.
 - Refactored `cooldown.test.js` to use `createClassicBattleHarness` for centralized mocking, removing 2 redundant `vi.doMock` calls for `showSnackbar.js` and adding harness setup with `beforeEach`.
 - Ran unit tests for `cooldown.test.js` (4/4 passing) to ensure no regressions.
+- Attempted to refactor `tooltip.test.js` and `battleCLI.handlers.test.js` but found that tests have complex custom mock requirements that require significant changes to harness API or test logic to fully adopt integration-style mocking.
 
 **Outcome:**
 
@@ -21,9 +22,10 @@
 - Mock count reduced from 11 to 9 (18% reduction) in `cooldown.test.js`.
 - Harnesses successfully provide environment setup, reducing need for extensive per-test mocking.
 - Acceptance criteria met: Tests pass with reduced mocks, demonstrating improved resilience.
-- Cumulative mock reduction: settingsPage (25→17, 32%), browseJudokaPage (12→6, 50%), timerService.drift (16→10, 37.5%), populateCountryList (14→7, 50%), randomJudokaPage.drawButton (11→8, 27%), cooldown (11→9, 18%).
+- Some tests have complex mock customization needs that would require more extensive refactoring to fully adopt harness-based mocking.
+- Cumulative mock reduction: settingsPage (32%), browseJudokaPage (50%), timerService.drift (37.5%), populateCountryList (50%), randomJudokaPage.drawButton (27%), cooldown (18%).
 
-**Next:** Identify and proceed with the next priority test file for mock reduction.
+**Next:** Item 6 Phase 3 largely complete with significant mock reductions achieved. Further reductions would require more extensive test refactoring for complex custom mock scenarios.
 
 - `tests/helpers/components/` factories (Modal, Scoreboard, StatsPanel, Button, Card) & tests: ✅ Present.
 - `tests/helpers/listenerUtils.js` & tests: ✅ Present with withListenerSpy, expectListenerAttached, wrapAddEventListener.
