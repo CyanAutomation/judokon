@@ -1,6 +1,6 @@
 # Opportunities for Improvement — Phased Plans
 
-**Verification Log (2025-09-23):** All claimed completed artifacts verified present and functional. Mock reduction progress: settingsPage (25→17), browseJudokaPage (12→6), timerService.drift (16→10), populateCountryList (14→7). Next priority test pending.
+**Verification Log (2025-09-23):** All claimed completed artifacts verified present and functional. Mock reduction progress: settingsPage (25→17), browseJudokaPage (12→6), timerService.drift (16→10), populateCountryList (14→7), randomJudokaPage.drawButton (11→8). Next priority test pending.
 
 ---
 
@@ -8,17 +8,20 @@
 
 **Actions Taken:**
 
-- Created `createPopulateCountryListHarness` in `integrationHarness.js` to centralize mocking for populateCountryList tests.
-- Refactored `populateCountryList.test.js` to use harness with `beforeEach` setup, removing 7 redundant `vi.doMock` calls for `constants.js` across all tests.
-- Monitored CI by running unit tests for `populateCountryList.test.js` (7/7 passing) and relevant playwright tests (failures pre-existing, unrelated to changes).
+- Created `createRandomJudokaPageHarness` in `integrationHarness.js` to centralize mocking for randomJudokaPage tests.
+- Refactored `randomJudokaPage.drawButton.test.js` to use harness with `beforeEach` setup, removing 3 redundant `vi.doMock` calls for `Button.js`, `constants.js`, `motionUtils.js`.
+- Monitored CI by running unit tests for `randomJudokaPage.drawButton.test.js` (2/2 passing) and relevant playwright tests (failures pre-existing, unrelated to changes).
 - Verified all tests still pass after removals.
+- Refactored `cooldown.test.js` to use `createClassicBattleHarness` for centralized mocking, removing 2 redundant `vi.doMock` calls for `showSnackbar.js` and adding harness setup with `beforeEach`.
+- Ran unit tests for `cooldown.test.js` (4/4 passing) to ensure no regressions.
 
 **Outcome:**
 
-- Mock count reduced from 14 to 7 (50% reduction) in `populateCountryList.test.js`.
+- Mock count reduced from 11 to 8 (27% reduction) in `randomJudokaPage.drawButton.test.js`.
+- Mock count reduced from 11 to 9 (18% reduction) in `cooldown.test.js`.
 - Harnesses successfully provide environment setup, reducing need for extensive per-test mocking.
 - Acceptance criteria met: Tests pass with reduced mocks, demonstrating improved resilience.
-- Cumulative mock reduction: settingsPage (25→17, 32%), browseJudokaPage (12→6, 50%), timerService.drift (16→10, 37.5%), populateCountryList (14→7, 50%).
+- Cumulative mock reduction: settingsPage (25→17, 32%), browseJudokaPage (12→6, 50%), timerService.drift (16→10, 37.5%), populateCountryList (14→7, 50%), randomJudokaPage.drawButton (11→8, 27%), cooldown (11→9, 18%).
 
 **Next:** Proceed to next priority test or further monitor flakiness.
 
