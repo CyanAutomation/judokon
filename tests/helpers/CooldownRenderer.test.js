@@ -128,13 +128,73 @@ describe("createPromptDelayController", () => {
     expect(onReady).not.toHaveBeenCalled();
     expect(controller.shouldDefer()).toBe(false);
   });
+
+  it("flushes queued tick immediately when prompt duration is non-positive", () => {
+    currentNow = 1000;
+    mockGetOpponentPromptTimestamp.mockReturnValue(1000);
+    mockGetOpponentPromptMinDuration.mockReturnValue(-50);
+
+    const controller = createPromptDelayController({ now });
+    const onReady = vi.fn();
+
+    controller.queueTick(4, {}, onReady);
+
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(onReady).toHaveBeenCalledWith(4, { suppressEvents: false });
+  });
+
+  it("handles timer functions that throw without propagating errors", () => {
+    const failingSetTimeout = vi.fn(() => {
+      throw new Error("boom");
+    });
+
+    const controller = createPromptDelayController({
+      now,
+      waitForOpponentPrompt: true,
+      maxPromptWaitMs: 100,
+      setTimeoutFn: failingSetTimeout,
+      clearTimeoutFn: () => {}
+    });
+    const onReady = vi.fn();
+
+    expect(() => controller.queueTick(2, {}, onReady)).not.toThrow();
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(onReady).toHaveBeenCalledWith(2, { suppressEvents: false });
+    expect(failingSetTimeout).toHaveBeenCalled();
+  });
+
+  it("clears timers safely even when clearTimeout throws", async () => {
+    currentNow = 200;
+    mockGetOpponentPromptTimestamp.mockReturnValue(100);
+    mockGetOpponentPromptMinDuration.mockReturnValue(400);
+
+    const failingClearTimeout = vi.fn(() => {
+      throw new Error("stop");
+    });
+
+    const controller = createPromptDelayController({
+      now,
+      setTimeoutFn: setTimeout,
+      clearTimeoutFn: failingClearTimeout
+    });
+    const onReady = vi.fn();
+
+    controller.queueTick(8, {}, onReady);
+
+    expect(() => controller.clear()).not.toThrow();
+    await timers.runAllTimersAsync();
+
+    expect(onReady).not.toHaveBeenCalled();
+    expect(failingClearTimeout).toHaveBeenCalled();
+  });
 });
 
 describe("attachCooldownRenderer", () => {
   let timer;
+  let timers;
 
   beforeEach(() => {
-    vi.useRealTimers();
+    timers = useCanonicalTimers();
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
     mockGetOpponentPromptMinDuration.mockReturnValue(0);
     timer = {
@@ -155,7 +215,7 @@ describe("attachCooldownRenderer", () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    timers.cleanup();
   });
 
   it("renders initial countdown and emits events on first tick", () => {

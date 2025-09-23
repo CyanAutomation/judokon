@@ -24,10 +24,14 @@ const defaultNow = () => {
     if (typeof performance !== "undefined" && typeof performance.now === "function") {
       return performance.now();
     }
-  } catch {}
+  } catch {
+    // performance.now() may not be available in certain runtimes (e.g. Node.js without perf hooks)
+  }
   try {
     return Date.now();
-  } catch {}
+  } catch {
+    // Date.now() can fail if the global Date object is unavailable or polyfilled incorrectly
+  }
   return 0;
 };
 
@@ -80,7 +84,13 @@ const computeRemainingPromptDelayMs = (nowFn) => {
 const createPromptDelayState = (config) => ({
   config,
   pendingDelayId: null,
-  /** @type {{ value: number, suppressEvents: boolean, onReady: Function } | null} */
+  /**
+   * @type {{
+   *   value: number,
+   *   suppressEvents: boolean,
+   *   onReady: (value: number, options: { suppressEvents: boolean }) => void
+   * } | null}
+   */
   queuedPayload: null,
   promptWaitDeadline: 0
 });
@@ -112,13 +122,49 @@ const scheduleDelay = (state, delay) => {
     return;
   }
   clearPendingTimeout(state);
-  state.pendingDelayId = state.config.setTimeoutFn(() => {
+  try {
+    state.pendingDelayId = state.config.setTimeoutFn(() => {
+      state.pendingDelayId = null;
+      flushQueue(state);
+    }, delay);
+  } catch {
     state.pendingDelayId = null;
     flushQueue(state);
-  }, delay);
+  }
 };
 
-const handlePromptWaiting = (state, value, suppressEvents, onReady) => {
+function processQueue(state) {
+  if (!state.queuedPayload) {
+    return;
+  }
+
+  if (handlePromptWaiting(state)) {
+    return;
+  }
+
+  const delay = Math.max(0, computeRemainingPromptDelayMs(state.config.now));
+  scheduleDelay(state, delay);
+}
+
+function schedulePromptPoll(state) {
+  if (typeof state.config.setTimeoutFn !== "function") {
+    return false;
+  }
+
+  clearPendingTimeout(state);
+  try {
+    state.pendingDelayId = state.config.setTimeoutFn(() => {
+      state.pendingDelayId = null;
+      processQueue(state);
+    }, state.config.promptPollInterval);
+    return true;
+  } catch {
+    state.pendingDelayId = null;
+    return false;
+  }
+}
+
+function handlePromptWaiting(state) {
   if (!state.config.waitForPromptOption) {
     if (state.promptWaitDeadline !== 0 && hasActivePrompt()) {
       state.promptWaitDeadline = 0;
@@ -143,27 +189,15 @@ const handlePromptWaiting = (state, value, suppressEvents, onReady) => {
   if (deadlineReached) {
     return false;
   }
-  if (typeof state.config.setTimeoutFn === "function") {
-    clearPendingTimeout(state);
-    state.pendingDelayId = state.config.setTimeoutFn(() => {
-      state.pendingDelayId = null;
-      queueTickInternal(state, value, { suppressEvents }, onReady);
-    }, state.config.promptPollInterval);
-    return true;
-  }
-  return false;
-};
+
+  return schedulePromptPoll(state);
+}
 
 function queueTickInternal(state, value, options = {}, onReady) {
   const suppressEvents = options?.suppressEvents === true;
   state.queuedPayload = { value, suppressEvents, onReady };
 
-  if (handlePromptWaiting(state, value, suppressEvents, onReady)) {
-    return;
-  }
-
-  const delay = Math.max(0, computeRemainingPromptDelayMs(state.config.now));
-  scheduleDelay(state, delay);
+  processQueue(state);
 }
 
 const clearState = (state) => {
@@ -204,13 +238,15 @@ const shouldDeferState = (state) => {
 export function createPromptDelayController(options = {}) {
   const config = normalizePromptDelayOptions(options);
   const state = createPromptDelayState(config);
-  return {
-    queueTick: (value, queueOptions = {}, onReady) =>
-      queueTickInternal(state, value, queueOptions, onReady),
-    clear: () => clearState(state),
-    shouldDefer: () => shouldDeferState(state)
-  };
+  return createControllerInterface(state);
 }
+
+const createControllerInterface = (state) => ({
+  queueTick: (value, queueOptions = {}, onReady) =>
+    queueTickInternal(state, value, queueOptions, onReady),
+  clear: () => clearState(state),
+  shouldDefer: () => shouldDeferState(state)
+});
 
 /**
  * Attach snackbar + scoreboard rendering to a timer.
