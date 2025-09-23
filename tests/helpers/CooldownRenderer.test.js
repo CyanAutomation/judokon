@@ -284,4 +284,17 @@ describe("attachCooldownRenderer", () => {
     expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 0s");
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
   });
+
+  it("renders initial countdown immediately when prompt delay has elapsed", () => {
+    const detach = attachCooldownRenderer(timer, 4, {
+      waitForOpponentPrompt: true,
+      maxPromptWaitMs: 0
+    });
+
+    expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 4s");
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(4);
+    expect(emitBattleEvent).not.toHaveBeenCalled();
+
+    detach();
+  });
 });
