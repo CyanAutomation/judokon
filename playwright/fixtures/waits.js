@@ -209,6 +209,90 @@ export async function waitForBattleState(page, stateName, timeout = 10000) {
 }
 
 /**
+ * Wait for a snackbar to appear with specific text content.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} [expectedText] - Optional text to match in the snackbar
+ * @param {number} [timeout=5000]
+ */
+export async function waitForSnackbar(page, expectedText, timeout = 5000) {
+  await page.waitForFunction(
+    (text) => {
+      const el = document.getElementById("snackbar-container");
+      if (!el) return false;
+      const content = el.textContent || "";
+      if (text) {
+        return content.toLowerCase().includes(text.toLowerCase());
+      }
+      return content.trim().length > 0;
+    },
+    expectedText,
+    { timeout }
+  );
+}
+
+/**
+ * Wait for a modal to be open and visible.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} [modalSelector="#match-end-modal"] - CSS selector for the modal
+ * @param {number} [timeout=5000]
+ */
+export async function waitForModalOpen(page, modalSelector = "#match-end-modal", timeout = 5000) {
+  await page.waitForFunction(
+    (selector) => {
+      const modal = document.querySelector(selector);
+      if (!modal) return false;
+      // Check if modal is visible (not hidden by aria-hidden or CSS)
+      const ariaHidden = modal.getAttribute("aria-hidden");
+      if (ariaHidden === "true") return false;
+      // Check if it's not hidden by CSS
+      const style = window.getComputedStyle(modal);
+      return style.display !== "none" && style.visibility !== "hidden";
+    },
+    modalSelector,
+    { timeout }
+  );
+}
+
+/**
+ * Wait for a countdown to start or reach a specific value.
+ * @param {import('@playwright/test').Page} page
+ * @param {string|number} [expectedValue] - Expected countdown value or text
+ * @param {number} [timeout=10000]
+ */
+export async function waitForCountdown(page, expectedValue, timeout = 10000) {
+  await page.waitForFunction(
+    (value) => {
+      // Check CLI countdown
+      const cliCountdown = document.getElementById("cli-countdown");
+      if (cliCountdown) {
+        const dataRemaining = cliCountdown.getAttribute("data-remaining-time");
+        if (dataRemaining !== null) {
+          if (value !== undefined) {
+            return dataRemaining === String(value);
+          }
+          return true;
+        }
+      }
+      // Check battle timer
+      const timerEl = document.querySelector('[data-testid="next-round-timer"]');
+      if (timerEl) {
+        const text = timerEl.textContent || "";
+        const match = text.match(/Time Left:\s*(\d+)s/);
+        if (match) {
+          if (value !== undefined) {
+            return parseInt(match[1], 10) === parseInt(value, 10);
+          }
+          return true;
+        }
+      }
+      return false;
+    },
+    expectedValue,
+    { timeout }
+  );
+}
+
+/**
  * Wait until the UI surfaces the next-round countdown text in the snackbar.
  * Uses text matching on `#snackbar-container` to avoid tight coupling to
  * internal timers or event buses in CI.

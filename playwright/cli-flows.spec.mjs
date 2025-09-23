@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
 import { waitForBattleState, waitForTestApi } from "./helpers/battleStateHelper.js";
+import { waitForSnackbar } from "./fixtures/waits.js";
 
 const buildCliUrl = (testInfo) => {
   const fallbackBase = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5000";
@@ -120,6 +121,7 @@ test.describe("CLI Keyboard Flows", () => {
       const selectedStat = page.locator("#cli-stats .cli-stat.selected");
       await expect(selectedStat).toHaveCount(1, { timeout: 8000 });
       await expect(selectedStat).toHaveAttribute("aria-selected", "true");
+      await waitForSnackbar(page, "You Picked:");
       await expect(page.locator("#snackbar-container .snackbar")).toContainText("You Picked:");
       await expect(page.locator("#cli-stats")).toHaveAttribute("data-selected-index", "1");
       await expect(selectedStat.first()).toContainText("[1]");

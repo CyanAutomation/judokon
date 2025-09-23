@@ -1,5 +1,6 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { waitForModalOpen } from "../fixtures/waits.js";
 
 async function waitForBattleInitialization(page) {
   await page.waitForFunction(
@@ -301,8 +302,8 @@ test.describe("Classic Battle End Game Flow", () => {
         await expect(scoreDisplay).toContainText(/Opponent:\s*0/);
 
         // Confirm the match end modal is presented to the user
+        await waitForModalOpen(page);
         const matchEndModal = page.locator("#match-end-modal").first();
-        await matchEndModal.waitFor({ state: "visible" });
         await expect(matchEndModal).toBeVisible();
 
         // Wait for and verify end modal appears
@@ -372,8 +373,7 @@ test.describe("Classic Battle End Game Flow", () => {
         if ((await replayButton.count()) > 0) {
           await expect(replayButton).toBeVisible();
 
-          const modalOverlay = page.locator("#match-end-modal").first();
-          await modalOverlay.waitFor({ state: "visible" });
+          await waitForModalOpen(page);
 
           // Test replay functionality if button is available
           await replayButton.focus();

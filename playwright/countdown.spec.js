@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
+import { waitForCountdown } from "./fixtures/waits.js";
 
 // Improved countdown test using direct Test API access instead of waiting for timers
 
@@ -17,21 +18,25 @@ test.describe("Battle CLI countdown timing", () => {
 
       // Use Test API to set countdown - no waiting required!
       await page.evaluate(() => window.__TEST_API.timers.setCountdown(3));
+      await waitForCountdown(page, 3);
 
       let remaining = await page.locator("#cli-countdown").getAttribute("data-remaining-time");
       expect(remaining).toBe("3");
 
       // Test countdown progression using Test API - instant updates!
       await page.evaluate(() => window.__TEST_API.timers.setCountdown(2));
+      await waitForCountdown(page, 2);
       remaining = await page.locator("#cli-countdown").getAttribute("data-remaining-time");
       expect(remaining).toBe("2");
 
       await page.evaluate(() => window.__TEST_API.timers.setCountdown(1));
+      await waitForCountdown(page, 1);
       remaining = await page.locator("#cli-countdown").getAttribute("data-remaining-time");
       expect(remaining).toBe("1");
 
       // Test countdown expiration
       await page.evaluate(() => window.__TEST_API.timers.setCountdown(0));
+      await waitForCountdown(page, 0);
       remaining = await page.locator("#cli-countdown").getAttribute("data-remaining-time");
       expect(remaining).toBe("0");
     }, ["log", "warn", "error"]));

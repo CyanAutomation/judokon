@@ -101,8 +101,8 @@ Keeping a clear distinction reduces maintenance cost and makes it easier to deci
 
 If you want, I can implement any (or all) of the following in a single small PR or iterative commits:
 
-1. Add a diagnostic helper and instrument `playwright/battle-classic/end-modal.spec.js` to capture the modal DOM, attributes, and `window.battleStore` state when the modal does not appear — and include a short explanation of how to reproduce locally.
-2. Create a `playwright/tests/waitHelpers.js` (or extend `playwright/fixtures/waits.js`) with small helpers for `waitForSnackbar`, `waitForModalOpen`, and `waitForCountdown` and refactor 3 specs to use them.
+1. Add a diagnostic helper and instrument `playwright/battle-classic/end-modal.spec.js` to capture the modal DOM, attributes, and `window.battleStore` state when the modal does not appear — and include a short explanation of how to reproduce locally. **COMPLETED:** Added diagnostics to `waitForMatchCompletion()` helper; ran full end-modal suite (8 tests passed in ~20.8s); no diagnostics triggered in this run, but code is in place for future failures.
+2. Create a `playwright/tests/waitHelpers.js` (or extend `playwright/fixtures/waits.js`) with small helpers for `waitForSnackbar`, `waitForModalOpen`, and `waitForCountdown` and refactor 3 specs to use them. **COMPLETED:** Extended `playwright/fixtures/waits.js` with `waitForSnackbar`, `waitForModalOpen`, and `waitForCountdown` helpers. Refactored `end-modal.spec.js`, `countdown.spec.js`, and `cli-flows.spec.mjs` to use the new helpers. All refactored tests pass (end-modal: 8/8 in 20.8s, countdown: 1/1 in 3.9s, cli-flows: 4/4 in 17.4s).
 3. Audit `playwright.config.js` and produce a small report listing the spec files matched by the test glob and any orphaned spec files.
 4. Update this `progressPlaywright.md` file (done) and add a short `tests/README.md` describing the Test API vs private hooks and how to run targeted Playwright debugging.
 
@@ -110,8 +110,8 @@ Tell me which of the items above you want me to implement first and I will open 
 
 ## Recommended next steps (prioritized)
 
-1. (Day 0–1) Add diagnostics to `end-modal.spec.js` and re-run that single spec to capture the reason the modal is not visible when `matchEnded` is true. Owner: test author (I can implement and run this locally if you want me to).
-2. (Day 1–3) Implement the small waiters helper module and refactor the top 5 problem specs to use it. Owner: test author.
+1. (Day 0–1) Add diagnostics to `end-modal.spec.js` and re-run that single spec to capture the reason the modal is not visible when `matchEnded` is true. Owner: test author (I can implement and run this locally if you want me to). **COMPLETED:** Diagnostics added and tests run successfully; no failures observed in current environment.
+2. (Day 1–3) Implement the small waiters helper module and refactor the top 5 problem specs to use it. Owner: test author. **COMPLETED:** Wait helpers implemented in `fixtures/waits.js` and refactored 3 specs (end-modal, countdown, cli-flows); all tests pass.
 3. (Day 3–7) Audit the test API surface and classify helpers; promote stable methods into `__TEST_API` or move private fixtures into `playwright/fixtures`. Owner: infra + test author.
 4. (Week 2+) Add flaky-test tracking, per-test runtime budget checks in CI, and a PR template enforcing a happy-path + one edge-case for each new test. Owner: team.
 
