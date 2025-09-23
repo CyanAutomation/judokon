@@ -28,9 +28,19 @@ vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
   computeNextRoundCooldown: () => 3
 }));
 
-vi.mock("../../../src/helpers/classicBattle/snackbar.js", () => ({
-  showSelectionPrompt: vi.fn()
-}));
+const snackbarMock = {
+  showSelectionPrompt: vi.fn(),
+  getOpponentDelay: vi.fn(() => 0)
+};
+vi.mock("../../../src/helpers/classicBattle/snackbar.js", () => snackbarMock);
+const opponentPromptTrackerMock = {
+  getOpponentPromptTimestamp: vi.fn(() => 0),
+  getOpponentPromptMinDuration: vi.fn(() => 0)
+};
+vi.mock(
+  "../../../src/helpers/classicBattle/opponentPromptTracker.js",
+  () => opponentPromptTrackerMock
+);
 vi.mock("../../../src/helpers/classicBattle/timerService.js", () => ({
   startTimer: vi.fn(),
   handleStatSelectionTimeout: vi.fn()
@@ -96,5 +106,118 @@ describe("round UI handlers", () => {
     });
     const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
     expect(scoreboard.showMessage).toHaveBeenCalledWith("Win", { outcome: true });
+  });
+
+  it("uses shared opponent prompt buffer when scheduling cooldown", async () => {
+    vi.resetModules();
+    snackbarMock.getOpponentDelay.mockReturnValue(120);
+    opponentPromptTrackerMock.getOpponentPromptMinDuration.mockReturnValue(380);
+    opponentPromptTrackerMock.getOpponentPromptTimestamp.mockReturnValue(42);
+    const attachCooldownRenderer = vi.fn(() => () => {});
+    const createRoundTimer = vi.fn(() => ({
+      on: vi.fn(),
+      off: vi.fn(),
+      start: vi.fn(async () => {})
+    }));
+    const { handleRoundResolvedEvent, DEFAULT_OPPONENT_PROMPT_BUFFER_MS } = await import(
+      "../../../src/helpers/classicBattle/roundUI.js"
+    );
+    await handleRoundResolvedEvent(
+      {
+        detail: {
+          store: { __delayOpponentMessage: true },
+          result: { matchEnded: false, message: "", playerScore: 0, opponentScore: 0 }
+        }
+      },
+      {
+        attachCooldownRenderer,
+        createRoundTimer
+      }
+    );
+    expect(attachCooldownRenderer).toHaveBeenCalledTimes(1);
+    const [, , options] = attachCooldownRenderer.mock.calls[0];
+    expect(options).toMatchObject({
+      waitForOpponentPrompt: true,
+      opponentPromptBufferMs: DEFAULT_OPPONENT_PROMPT_BUFFER_MS,
+      maxPromptWaitMs: 120 + 380 + DEFAULT_OPPONENT_PROMPT_BUFFER_MS,
+      promptPollIntervalMs: 32
+    });
+  });
+
+  it("allows overriding the opponent prompt buffer via renderer options", async () => {
+    vi.resetModules();
+    snackbarMock.getOpponentDelay.mockReturnValue(0);
+    opponentPromptTrackerMock.getOpponentPromptMinDuration.mockReturnValue(0);
+    opponentPromptTrackerMock.getOpponentPromptTimestamp.mockReturnValue(99);
+    const attachCooldownRenderer = vi.fn(() => () => {});
+    const createRoundTimer = vi.fn(() => ({
+      on: vi.fn(),
+      off: vi.fn(),
+      start: vi.fn(async () => {})
+    }));
+    const { handleRoundResolvedEvent } = await import(
+      "../../../src/helpers/classicBattle/roundUI.js"
+    );
+    await handleRoundResolvedEvent(
+      {
+        detail: {
+          store: { __delayOpponentMessage: true },
+          result: { matchEnded: false, message: "", playerScore: 0, opponentScore: 0 }
+        }
+      },
+      {
+        attachCooldownRenderer,
+        createRoundTimer,
+        attachCooldownRendererOptions: { opponentPromptBufferMs: 90, promptPollIntervalMs: 48 }
+      }
+    );
+    const [, , options] = attachCooldownRenderer.mock.calls[0];
+    expect(options).toMatchObject({
+      waitForOpponentPrompt: true,
+      opponentPromptBufferMs: 90,
+      maxPromptWaitMs: 90,
+      promptPollIntervalMs: 48
+    });
+  });
+
+  it("accepts prompt buffer overrides returned from computeNextRoundCooldown", async () => {
+    vi.resetModules();
+    snackbarMock.getOpponentDelay.mockReturnValue(0);
+    opponentPromptTrackerMock.getOpponentPromptMinDuration.mockReturnValue(0);
+    opponentPromptTrackerMock.getOpponentPromptTimestamp.mockReturnValue(50);
+    const attachCooldownRenderer = vi.fn(() => () => {});
+    const createRoundTimer = vi.fn(() => ({
+      on: vi.fn(),
+      off: vi.fn(),
+      start: vi.fn(async () => {})
+    }));
+    const computeNextRoundCooldown = vi.fn(() => ({
+      seconds: 4,
+      opponentPromptBufferMs: 75
+    }));
+    const { handleRoundResolvedEvent } = await import(
+      "../../../src/helpers/classicBattle/roundUI.js"
+    );
+    await handleRoundResolvedEvent(
+      {
+        detail: {
+          store: { __delayOpponentMessage: true },
+          result: { matchEnded: false, message: "", playerScore: 0, opponentScore: 0 }
+        }
+      },
+      {
+        attachCooldownRenderer,
+        createRoundTimer,
+        computeNextRoundCooldown
+      }
+    );
+    const [, , options] = attachCooldownRenderer.mock.calls[0];
+    expect(options).toMatchObject({
+      waitForOpponentPrompt: true,
+      opponentPromptBufferMs: 75,
+      maxPromptWaitMs: 75,
+      promptPollIntervalMs: 32
+    });
+    expect(computeNextRoundCooldown).toHaveBeenCalledTimes(1);
   });
 });
