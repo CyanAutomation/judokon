@@ -18,52 +18,52 @@
 ### High-Priority Fixes
 
 - **Fix Scoring Bug**
-  1.  Identify the code responsible for updating scores in the scoreboard.
-  2.  Debug why the score update logic is not being triggered or is incorrectly calculating scores.
-  3.  Implement the necessary changes to ensure scores are updated in real-time after each round.
-  4.  Verify that the scoreboard correctly reflects win/loss outcomes.
+  1. Identify the code responsible for updating scores in the scoreboard.
+  2. Debug why the score update logic is not being triggered or is incorrectly calculating scores.
+  3. Implement the necessary changes to ensure scores are updated in real-time after each round.
+  4. Verify that the scoreboard correctly reflects win/loss outcomes.
 - **Visible Outcome Feedback**
-  1.  Modify the UI logic to pause the display of the round outcome message.
-  2.  Implement an event listener for user confirmation (e.g., `Enter` or `Space` key press).
-  3.  Clear the outcome message and proceed to the next round only after user confirmation.
+  1. Modify the UI logic to pause the display of the round outcome message.
+  2. Implement an event listener for user confirmation (e.g., `Enter` or `Space` key press).
+  3. Clear the outcome message and proceed to the next round only after user confirmation.
 - **Quit Workflow**
-  1.  Locate the event handler for the "Quit" button in the quit dialog.
-  2.  Implement the logic to terminate the current match and navigate back to the main menu.
-  3.  (Optional) Add a keydown listener for 'Q' when the quit dialog is active to trigger the quit action.
+  1. Locate the event handler for the "Quit" button in the quit dialog.
+  2. Implement the logic to terminate the current match and navigate back to the main menu.
+  3. (Optional) Add a keydown listener for 'Q' when the quit dialog is active to trigger the quit action.
 
 ### UI/UX Improvements
 
 - **Clear Start Control**
-  1.  Locate the HTML and CSS for the yellow power icon.
-  2.  Replace the icon with a clearly labeled "Start Match" button.
-  3.  Modify the JavaScript to trigger the match start automatically after the match length is selected, removing the need for a second click.
+  1. Locate the HTML and CSS for the yellow power icon.
+  2. Replace the icon with a clearly labeled "Start Match" button.
+  3. Modify the JavaScript to trigger the match start automatically after the match length is selected, removing the need for a second click.
 - **Timer Behavior**
-  1.  Define the desired behavior for timer expiration (e.g., auto-select highest stat, penalty, or loss).
-  2.  Implement the chosen behavior in the game logic.
-  3.  Add a clear visual or textual cue in the UI to inform the player about the consequence of the timer expiring.
+  1. Define the desired behavior for timer expiration (e.g., auto-select highest stat, penalty, or loss).
+  2. Implement the chosen behavior in the game logic.
+  3. Add a clear visual or textual cue in the UI to inform the player about the consequence of the timer expiring.
 - **Keyboard Hints**
-  1.  Add a UI element to display the keyboard hint (e.g., "Press 1–5 to choose a stat").
-  2.  Ensure this hint is visible only when the game is waiting for stat selection.
-  3.  Implement ARIA-live region to announce the hint to screen readers.
+  1. Add a UI element to display the keyboard hint (e.g., "Press 1–5 to choose a stat").
+  2. Ensure this hint is visible only when the game is waiting for stat selection.
+  3. Implement ARIA-live region to announce the hint to screen readers.
 - **Match Length Selection**
-  1.  Modify the UI logic to hide the settings panel immediately after the match length is selected.
-  2.  Implement a mechanism to disable match length changes once a match has started.
+  1. Modify the UI logic to hide the settings panel immediately after the match length is selected.
+  2. Implement a mechanism to disable match length changes once a match has started.
 
 ### Technical & Accessibility Enhancements
 
 - **Verbose Flag**
-  1.  Identify the code path for the "Verbose" flag.
-  2.  When the flag is enabled, modify the game's output to display detailed breakdowns of stat comparisons and remaining health.
-  3.  Determine the best location for this information (e.g., main log, dedicated verbose panel, or below stat cards).
+  1. Identify the code path for the "Verbose" flag.
+  2. When the flag is enabled, modify the game's output to display detailed breakdowns of stat comparisons and remaining health.
+  3. Determine the best location for this information (e.g., main log, dedicated verbose panel, or below stat cards).
 - **Accessible Labels**
-  1.  Add `aria-label` attributes to the power button and match-length selection elements with descriptive text.
-  2.  Ensure proper CSS focus outlines are applied to interactive elements for keyboard navigation.
-  3.  Add descriptive `alt-text` to any images used for the timer and scoreboard.
+  1. Add `aria-label` attributes to the power button and match-length selection elements with descriptive text.
+  2. Ensure proper CSS focus outlines are applied to interactive elements for keyboard navigation.
+  3. Add descriptive `alt-text` to any images used for the timer and scoreboard.
 - **Expose Feature Flags**
-  1.  Implement UI toggles (e.g., checkboxes in a debug/settings panel) for `battleStateBadge`, `observabilityMode`, and `autoSelect`.
-  2.  Alternatively, implement URL parameter parsing to enable/disable these flags (e.g., `?battleStateBadge=true`).
-  3.  Ensure these flags correctly control the visibility and behavior of their respective features.
+  1. Implement UI toggles (e.g., checkboxes in a debug/settings panel) for `battleStateBadge`, `observabilityMode`, and `autoSelect`.
+  2. Alternatively, implement URL parameter parsing to enable/disable these flags (e.g., `?battleStateBadge=true`).
+  3. Ensure these flags correctly control the visibility and behavior of their respective features.
 - **Test Automation Hooks**
-  1.  Identify key game actions and state variables that would be useful for automated testing.
-  2.  Create a `window.testHooks` object (or similar) to expose functions like `startRound()`, `resolveRound()`, `getInternalState()`.
-  3.  Ensure these functions are deterministic and do not interfere with normal gameplay.
+  1. Identify key game actions and state variables that would be useful for automated testing.
+  2. Create a `window.testHooks` object (or similar) to expose functions like `startRound()`, `resolveRound()`, `getInternalState()`.
+  3. Ensure these functions are deterministic and do not interfere with normal gameplay.
