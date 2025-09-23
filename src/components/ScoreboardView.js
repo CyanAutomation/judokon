@@ -139,14 +139,17 @@ export class ScoreboardView {
     if (startVals.p === endVals.p && startVals.o === endVals.o) return;
     const duration = 400;
     const id = ++this._scoreAnimId;
-    const t0 = t;
+    // Set final text immediately for determinism; animate as a cosmetic overlay
+    this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
+    const t0 = performance.now();
     const step = (t) => {
       if (id !== this._scoreAnimId) return;
-      const now = t;
+      const now = typeof t === "number" ? t : performance.now();
       const k = Math.min(1, (now - t0) / duration);
-      const curP = Math.round(startVals.p + (endVals.p - startVals.p) * k);
-      const curO = Math.round(startVals.o + (endVals.o - startVals.o) * k);
-      this.scoreEl.innerHTML = `<span data-side="player">You: ${curP}</span>\n<span data-side="opponent">Opponent: ${curO}</span>`;
+      // No-op write once at end to keep DOM in sync; content already set above
+      if (k >= 1) {
+        this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
+      }
       if (k >= 1) {
         cancel(this._scoreRaf);
         this._scoreRaf = null;
