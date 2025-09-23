@@ -1822,6 +1822,13 @@ function handleRoundResolved(e) {
     const display = statDisplayNames[stat] || String(stat || "").toUpperCase();
     setRoundMessage(`${result.message} (${display} – You: ${playerVal} Opponent: ${opponentVal})`);
     updateScoreLine();
+    // Ensure cli-score is updated with the correct scores from the result
+    const cliScore = document.getElementById("cli-score");
+    if (cliScore) {
+      cliScore.textContent = `You: ${result.playerScore} Opponent: ${result.opponentScore}`;
+      cliScore.dataset.scorePlayer = String(result.playerScore);
+      cliScore.dataset.scoreOpponent = String(result.opponentScore);
+    }
   }
 }
 

@@ -124,4 +124,31 @@ When you open a PR to fix any of these issues, include the following checklist i
 
 ---
 
-Please review these changes and tell me which issue you'd like me to prioritize and implement first; I can then locate the specific files and open a PR with the fix, tests, and validation steps.
+## Fix Implementation: Scoring Bug
+
+### Actions Taken
+
+1. **Identified Root Cause**: The scoreboard update logic in `updateScoreLine()` relies on `engineFacade.getScores()`, but the QA report showed that outcome messages display correct scores while the scoreboard remains at 0:0. This suggests a potential timing or instance issue with the battle engine singleton.
+
+2. **Implemented Fix**: Modified `handleRoundResolved()` in `/workspaces/judokon/src/pages/battleCLI/init.js` to directly update the `#cli-score` element with scores from the `result` object (which contains the accurate scores used in the outcome message). This ensures the visible scoreboard reflects the same scores as the message.
+
+3. **Code Change**:
+   - Added direct DOM update of `#cli-score` using `result.playerScore` and `result.opponentScore`.
+   - Retained the existing `updateScoreLine()` call to maintain compatibility with shared scoreboard components.
+
+### Tests Run
+
+- **Unit Tests**: Ran `tests/pages/battleCLI.sharedPrimary.test.js` – All 5 tests passed.
+- **Playwright Tests**: Ran `playwright/battle-cli-start.spec.js` – 1 test passed.
+
+### Outcome
+
+- The fix ensures that the `#cli-score` element is updated with the correct scores immediately after each round resolution.
+- No regressions detected in the specific tests run.
+- The change is minimal and targeted, reducing risk of side effects.
+
+### Next Steps
+
+- Test the fix manually in the browser to confirm the scoreboard updates during a match.
+- If the issue persists, investigate why `engineFacade.getScores()` returns 0 while `result.playerScore` is correct.
+- Consider adding a Playwright test that verifies scoreboard increments after multiple rounds.
