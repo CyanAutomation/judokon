@@ -18,7 +18,8 @@ describe("battleCLI onKeyDown", () => {
     });
     vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
     dispatchSpy = vi.fn();
-    emitSpy = vi.spyOn(emitBattleEvent);
+    const { emitBattleEvent: emitFn } = await import("../../src/helpers/classicBattle/battleEvents.js");
+    emitSpy = vi.spyOn(emitFn);
     vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
       dispatchBattleEvent: dispatchSpy
     }));
