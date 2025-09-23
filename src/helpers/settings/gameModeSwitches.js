@@ -4,7 +4,7 @@ import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
 
-const NAVIGABLE_MODE_IDS = new Set(
+const NAVIGATION_ENABLED_MODE_IDS = new Set(
   navigationItems.map((item) => item.gameModeId).filter((id) => typeof id === "number")
 );
 
@@ -22,7 +22,7 @@ const NAVIGABLE_MODE_IDS = new Set(
  */
 function resolveNavigationModeId(modeId) {
   if (typeof modeId === "number") {
-    if (Number.isSafeInteger(modeId) && NAVIGABLE_MODE_IDS.has(modeId)) {
+    if (Number.isSafeInteger(modeId) && NAVIGATION_ENABLED_MODE_IDS.has(modeId)) {
       return modeId;
     }
     return null;
@@ -30,7 +30,7 @@ function resolveNavigationModeId(modeId) {
 
   if (typeof modeId === "string") {
     const parsed = Number.parseInt(modeId, 10);
-    if (Number.isSafeInteger(parsed) && NAVIGABLE_MODE_IDS.has(parsed)) {
+    if (Number.isSafeInteger(parsed) && NAVIGATION_ENABLED_MODE_IDS.has(parsed)) {
       return parsed;
     }
   }

@@ -256,7 +256,8 @@ const getRemainingPromptDelayMsState = (state) => {
     if (state.promptWaitDeadline > 0) {
       return Math.max(0, state.promptWaitDeadline - state.config.now());
     }
-    return state.config.maxPromptWait;
+    // No wait period established yet; report zero remaining delay until a deadline is scheduled.
+    return 0;
   }
 
   return baseRemaining;
@@ -302,6 +303,11 @@ const createControllerInterface = (state) => ({
     queueTickInternal(state, value, queueOptions, onReady),
   clear: () => clearState(state),
   shouldDefer: () => shouldDeferState(state),
+  /**
+   * Report the remaining milliseconds before queued ticks should execute.
+   *
+   * @returns {number}
+   */
   getRemainingPromptDelayMs: () => getRemainingPromptDelayMsState(state)
 });
 
@@ -329,6 +335,7 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   let lastRendered = -1;
   let rendered = false;
   const waitForPromptOption = options?.waitForOpponentPrompt === true;
+  const maxPromptWaitMs = Number(options?.maxPromptWaitMs);
   const promptController = createPromptDelayController({
     waitForOpponentPrompt: waitForPromptOption,
     promptPollIntervalMs: options?.promptPollIntervalMs,
@@ -411,21 +418,24 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
     return 0;
   };
 
-  const queueTickAfterPromptDelay = (value, queueOptions = {}, { forceAsync = false } = {}) => {
+  const processTickWithPromptDelay = (value, queueOptions = {}, { respectDelay = false } = {}) => {
     const normalized = normalizeRemaining(value);
     const suppressEvents = queueOptions?.suppressEvents === true;
     const normalizedOptions = { suppressEvents };
-    const shouldDelay = !started && promptController.shouldDefer();
+    const remainingRaw = Number(getRemainingPromptDelayMs());
+    const remainingDelay = Number.isFinite(remainingRaw) ? Math.max(0, remainingRaw) : 0;
+    const canWaitForPrompt =
+      !started && waitForPromptOption && Number.isFinite(maxPromptWaitMs) && maxPromptWaitMs > 0;
+    const waitingForPrompt = canWaitForPrompt && !hasActivePrompt();
+    const shouldDelay = !started && (waitingForPrompt || remainingDelay > 0);
 
-    if (!shouldDelay && !forceAsync) {
+    if (!shouldDelay && !respectDelay) {
       promptController.clear();
       processTick(normalized, normalizedOptions);
       return;
     }
 
-    const remainingRaw = Number(getRemainingPromptDelayMs());
-    const remainingDelay = Number.isFinite(remainingRaw) ? Math.max(0, remainingRaw) : 0;
-    if (remainingDelay <= 0) {
+    if (!waitingForPrompt && remainingDelay <= 0) {
       promptController.clear();
       processTick(normalized, normalizedOptions);
       return;
@@ -435,7 +445,7 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   };
 
   const onTick = (remaining) => {
-    queueTickAfterPromptDelay(remaining);
+    processTickWithPromptDelay(remaining);
   };
 
   const onExpired = () => onTick(0);
@@ -445,7 +455,7 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   const initialValue = Number(initialRemaining);
   if (Number.isFinite(initialValue)) {
     try {
-      queueTickAfterPromptDelay(initialValue, { suppressEvents: true }, { forceAsync: true });
+      processTickWithPromptDelay(initialValue, { suppressEvents: true }, { respectDelay: true });
     } catch {}
   }
   return () => {

@@ -285,7 +285,7 @@ describe("attachCooldownRenderer", () => {
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
   });
 
-  it("renders initial countdown immediately when prompt delay has elapsed", () => {
+  it("renders initial countdown immediately when maxPromptWaitMs is zero", () => {
     const detach = attachCooldownRenderer(timer, 4, {
       waitForOpponentPrompt: true,
       maxPromptWaitMs: 0
