@@ -62,6 +62,13 @@ export function bindUIHelperEventHandlersDynamic() {
         const delay = Number(getOpponentDelay());
         const resolvedDelay = Number.isFinite(delay) && delay > 0 ? delay : 0;
         clearOpponentSnackbarTimeout();
+        if (resolvedDelay <= 0) {
+          try {
+            showSnackbar(t("ui.opponentChoosing"));
+            markOpponentPromptNow();
+          } catch {}
+          return;
+        }
         opponentSnackbarId = setTimeout(() => {
           try {
             showSnackbar(t("ui.opponentChoosing"));
