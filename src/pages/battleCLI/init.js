@@ -334,7 +334,7 @@ export const __test = {
     try {
       // Directly simulate expiry to make tests deterministic
       if (isEnabled("autoSelect")) {
-        await autoSelectStat(selectStat);
+        await autoSelectStat(selectStat, undefined, store.userJudoka?.stats);
       } else {
         emitBattleEvent("statSelectionStalled");
       }
@@ -1073,7 +1073,7 @@ function startSelectionCountdown(seconds = 30) {
     stopSelectionCountdown();
     try {
       if (isEnabled("autoSelect")) {
-        await autoSelectStat(selectStat);
+        await autoSelectStat(selectStat, undefined, store.userJudoka?.stats);
       } else {
         emitBattleEvent("statSelectionStalled");
       }

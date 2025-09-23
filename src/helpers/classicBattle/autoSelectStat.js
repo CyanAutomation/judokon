@@ -13,35 +13,53 @@ const DEFAULT_FEEDBACK_DELAY_MS =
  * Avoids snackbar to prevent race conditions with the cooldown countdown.
  *
  * @pseudocode
- * pick random stat from STATS
+ * if userStats provided: pick stat with highest value from userStats
+ * else: pick random stat from STATS
  * mark corresponding button as selected
  * wait `feedbackDelayMs`
  * dispatch "statSelected" battle event
- * invoke onSelect with random stat and delayOpponentMessage true
+ * invoke onSelect with selected stat and delayOpponentMessage true
  *
  * @param {(stat: string, opts?: { delayOpponentMessage?: boolean }) => Promise<void>|void} onSelect
  * - Callback to handle the chosen stat.
  * @param {number} [feedbackDelayMs=DEFAULT_FEEDBACK_DELAY_MS] - Visual delay before dispatch.
+ * @param {object} [userStats] - User's judoka stats object to select the highest stat.
  * @returns {Promise<void>} Resolves after feedback completes.
  */
-export async function autoSelectStat(onSelect, feedbackDelayMs = DEFAULT_FEEDBACK_DELAY_MS) {
-  const randomStat = STATS[Math.floor(seededRandom() * STATS.length)];
-  // Defensive: ensure randomStat is a string before using it in a selector
+export async function autoSelectStat(
+  onSelect,
+  feedbackDelayMs = DEFAULT_FEEDBACK_DELAY_MS,
+  userStats
+) {
+  let selectedStat;
+  if (userStats && typeof userStats === "object") {
+    // Select the stat with the highest value
+    const entries = Object.entries(userStats);
+    if (entries.length > 0) {
+      const [stat] = entries.reduce((a, b) => (a[1] > b[1] ? a : b));
+      selectedStat = stat;
+    } else {
+      selectedStat = STATS[Math.floor(seededRandom() * STATS.length)];
+    }
+  } else {
+    selectedStat = STATS[Math.floor(seededRandom() * STATS.length)];
+  }
+  // Defensive: ensure selectedStat is a string before using it in a selector
   let btn = null;
   try {
-    if (typeof randomStat !== "string") {
+    if (typeof selectedStat !== "string") {
       try {
         if (typeof window !== "undefined")
-          window.__classicBattleQuerySelectorError = { randomStat, where: "autoSelectStat" };
+          window.__classicBattleQuerySelectorError = { selectedStat, where: "autoSelectStat" };
       } catch {}
     } else {
-      btn = document.querySelector(`#stat-buttons button[data-stat="${randomStat}"]`);
+      btn = document.querySelector(`#stat-buttons button[data-stat="${selectedStat}"]`);
     }
   } catch (e) {
     try {
       if (typeof window !== "undefined")
         window.__classicBattleQuerySelectorError = {
-          randomStat,
+          selectedStat,
           where: "autoSelectStat",
           err: String(e)
         };
@@ -51,9 +69,9 @@ export async function autoSelectStat(onSelect, feedbackDelayMs = DEFAULT_FEEDBAC
   // Announce in the scoreboard header (capitalize for readability)
   try {
     const label =
-      typeof randomStat === "string"
-        ? randomStat.charAt(0).toUpperCase() + randomStat.slice(1)
-        : String(randomStat);
+      typeof selectedStat === "string"
+        ? selectedStat.charAt(0).toUpperCase() + selectedStat.slice(1)
+        : String(selectedStat);
     showAutoSelect(label);
   } catch {}
   if (feedbackDelayMs > 0) {
@@ -63,5 +81,5 @@ export async function autoSelectStat(onSelect, feedbackDelayMs = DEFAULT_FEEDBAC
   // This sets store.playerChoice before the round is resolved and
   // `roundResolved` is dispatched, preventing a race where
   // roundDecisionEnter sees no selection and interrupts.
-  await onSelect(randomStat, { delayOpponentMessage: true });
+  await onSelect(selectedStat, { delayOpponentMessage: true });
 }
