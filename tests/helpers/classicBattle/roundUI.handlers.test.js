@@ -140,7 +140,7 @@ describe("round UI handlers", () => {
       waitForOpponentPrompt: true,
       opponentPromptBufferMs: DEFAULT_OPPONENT_PROMPT_BUFFER_MS,
       maxPromptWaitMs: 120 + 380 + DEFAULT_OPPONENT_PROMPT_BUFFER_MS,
-      promptPollIntervalMs: 32
+      promptPollIntervalMs: 75
     });
   });
 
@@ -176,7 +176,7 @@ describe("round UI handlers", () => {
       waitForOpponentPrompt: true,
       opponentPromptBufferMs: 90,
       maxPromptWaitMs: 90,
-      promptPollIntervalMs: 48
+      promptPollIntervalMs: 50
     });
   });
 
@@ -216,7 +216,7 @@ describe("round UI handlers", () => {
       waitForOpponentPrompt: true,
       opponentPromptBufferMs: 75,
       maxPromptWaitMs: 75,
-      promptPollIntervalMs: 32
+      promptPollIntervalMs: 75
     });
     expect(computeNextRoundCooldown).toHaveBeenCalledTimes(1);
   });

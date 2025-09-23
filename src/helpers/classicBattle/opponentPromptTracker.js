@@ -1,3 +1,5 @@
+import { emitBattleEvent } from "./battleEvents.js";
+
 /**
  * @summary Default minimum display duration for the opponent prompt message in milliseconds.
  * @returns {number} The DEFAULT_MIN_PROMPT_DURATION_MS constant.
@@ -28,12 +30,22 @@ function now() {
  * 1. Get the current timestamp if not provided.
  * 2. Validate that the timestamp is a finite, non-negative number.
  * 3. If valid, update the module-scoped `lastPromptTimestamp`.
+ * 4. Emit the `opponentPromptReady` battle event with the recorded timestamp.
  */
 export function recordOpponentPromptTimestamp(timestamp = now()) {
   const value = Number(timestamp);
   if (Number.isFinite(value) && value >= 0) {
     lastPromptTimestamp = value;
+    notifyPromptReady(value);
   }
+}
+
+function notifyPromptReady(timestamp) {
+  try {
+    if (typeof emitBattleEvent === "function") {
+      emitBattleEvent("opponentPromptReady", { timestamp });
+    }
+  } catch {}
 }
 
 /**

@@ -1,5 +1,5 @@
 import { updateDebugPanel } from "./debugPanel.js";
-import { showSelectionPrompt, getOpponentDelay } from "./snackbar.js";
+import { showSelectionPrompt } from "./snackbar.js";
 // Use index re-exports so tests can vi.mock("../battle/index.js") and spy
 import { resetStatButtons } from "../battle/index.js";
 import { startTimer } from "./timerService.js";
@@ -16,24 +16,19 @@ import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js"
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { runAfterFrames } from "../../utils/rafUtils.js";
+import { getOpponentPromptTimestamp } from "./opponentPromptTracker.js";
 import {
-  getOpponentPromptTimestamp,
-  getOpponentPromptMinDuration
-} from "./opponentPromptTracker.js";
+  computeOpponentPromptWaitBudget,
+  waitForDelayedOpponentPromptDisplay,
+  DEFAULT_OPPONENT_PROMPT_BUFFER_MS as INTERNAL_DEFAULT_OPPONENT_PROMPT_BUFFER_MS
+} from "./opponentPromptWaiter.js";
 
 /**
- * Extra guard time to ensure the opponent prompt renders before cooldown ticks.
- *
- * Keeps the countdown in sync with the snackbar animation even when browsers
- * throttle timers or delay DOM updates. Tune within 0-500ms: lower values may
- * cause the countdown to start before the prompt is visible, while higher ones
- * risk noticeable pauses between rounds.
- * @summary Safety buffer to keep opponent prompt and cooldown visuals aligned.
+ * @summary Safety buffer exported for backward compatibility with existing imports.
  * @pseudocode DEFAULT_OPPONENT_PROMPT_BUFFER_MS = 250
- * @type {number}
- * @constant
  */
-export const DEFAULT_OPPONENT_PROMPT_BUFFER_MS = 250;
+export const DEFAULT_OPPONENT_PROMPT_BUFFER_MS = INTERNAL_DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
+
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 let showMatchSummaryModal = null;
 // Reference to avoid unused-import lint complaint when the function is re-exported
@@ -56,66 +51,6 @@ function scheduleUiServicePreload() {
     try {
       preloadUiService();
     } catch {}
-  }
-}
-
-function safeNow() {
-  try {
-    if (typeof performance !== "undefined" && typeof performance.now === "function") {
-      return performance.now();
-    }
-  } catch {}
-  try {
-    return Date.now();
-  } catch {}
-  return 0;
-}
-
-function computeOpponentPromptWaitBudget(bufferOverride = DEFAULT_OPPONENT_PROMPT_BUFFER_MS) {
-  const numeric = Number(bufferOverride);
-  const normalizedBuffer =
-    Number.isFinite(numeric) && numeric >= 0 ? numeric : DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
-  let delayMs = 0;
-  let minVisibleMs = 0;
-  try {
-    const configuredDelay = Number(getOpponentDelay());
-    if (Number.isFinite(configuredDelay) && configuredDelay > 0) {
-      delayMs = configuredDelay;
-    }
-  } catch {}
-  try {
-    const configuredMin = Number(getOpponentPromptMinDuration());
-    if (Number.isFinite(configuredMin) && configuredMin > 0) {
-      minVisibleMs = configuredMin;
-    }
-  } catch {}
-  const totalMs = Math.max(0, delayMs + minVisibleMs + normalizedBuffer);
-  return { delayMs, minVisibleMs, bufferMs: normalizedBuffer, totalMs };
-}
-
-async function waitForDelayedOpponentPromptDisplay(budget = computeOpponentPromptWaitBudget()) {
-  const { totalMs } = budget || {};
-  if (!Number.isFinite(totalMs) || totalMs <= 0) {
-    return;
-  }
-  const start = safeNow();
-  while (safeNow() - start < totalMs) {
-    try {
-      const timestamp = Number(getOpponentPromptTimestamp());
-      if (Number.isFinite(timestamp) && timestamp > 0) {
-        return;
-      }
-    } catch {}
-    if (typeof setTimeout !== "function") {
-      break;
-    }
-    await new Promise((resolve) => {
-      try {
-        setTimeout(resolve, 16);
-      } catch {
-        resolve();
-      }
-    });
   }
 }
 
@@ -458,15 +393,17 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
               attachRendererOptions.opponentPromptBufferMs = promptBudget.bufferMs;
               attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
               const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
-              attachRendererOptions.promptPollIntervalMs =
-                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 32;
+              const resolvedPollInterval =
+                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 75;
+              attachRendererOptions.promptPollIntervalMs = Math.max(50, resolvedPollInterval);
               attachRendererOptions.waitForOpponentPrompt = true;
             } else {
               attachRendererOptions.waitForOpponentPrompt = false;
               attachRendererOptions.maxPromptWaitMs = 0;
               const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
-              attachRendererOptions.promptPollIntervalMs =
-                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 32;
+              const resolvedPollInterval =
+                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 75;
+              attachRendererOptions.promptPollIntervalMs = Math.max(50, resolvedPollInterval);
             }
             try {
               if (typeof renderer === "function") {
@@ -478,10 +415,14 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
                 try {
                   const timestamp = Number(getOpponentPromptTimestamp());
                   if (!Number.isFinite(timestamp) || timestamp <= 0) {
-                    await waitForDelayedOpponentPromptDisplay(promptBudget || undefined);
+                    await waitForDelayedOpponentPromptDisplay(promptBudget || undefined, {
+                      intervalMs: attachRendererOptions.promptPollIntervalMs
+                    });
                   }
                 } catch {
-                  await waitForDelayedOpponentPromptDisplay(promptBudget || undefined);
+                  await waitForDelayedOpponentPromptDisplay(promptBudget || undefined, {
+                    intervalMs: attachRendererOptions.promptPollIntervalMs
+                  });
                 }
               }
               try {
