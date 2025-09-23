@@ -291,5 +291,3 @@ Validation: After the deletions I will run formatting and JSDoc checks to ensure
   - `docs/battleCLI.md` (content present in `prdBattleCLI.md`)
   - `docs/round-selection.md` (content present in `prdRoundSelection.md`)
   - `design/battleMarkup.md` (content present in `prdBattleMarkup.md`)
-
-If you'd like, I can now create a feature branch and apply deletions there so you can review the changes as a single PR. Otherwise I will continue processing the next mapped entries per `reports/prd-mapping-report.json` (triage unmapped docs or create stubs) — tell me which you prefer.

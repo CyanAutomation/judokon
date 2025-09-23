@@ -118,10 +118,3 @@ rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwri
 
 ---
 
-If you want, I can:
-
-- open a PR that implements the quick linter checks and replaces sleeps in `hover-zoom.spec.js` and `timer.spec.js` (I can prepare a focused change set), or
-- produce the helper wait utilities and apply them to the top 3 specs.
-
-Choose one and I'll mark the next todo in-progress and start implementing it.
-
