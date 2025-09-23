@@ -23,7 +23,7 @@
 - Acceptance criteria met: Tests pass with reduced mocks, demonstrating improved resilience.
 - Cumulative mock reduction: settingsPage (25→17, 32%), browseJudokaPage (12→6, 50%), timerService.drift (16→10, 37.5%), populateCountryList (14→7, 50%), randomJudokaPage.drawButton (11→8, 27%), cooldown (11→9, 18%).
 
-**Next:** Proceed to next priority test or further monitor flakiness.
+**Next:** Identify and proceed with the next priority test file for mock reduction.
 
 - `tests/helpers/components/` factories (Modal, Scoreboard, StatsPanel, Button, Card) & tests: ✅ Present.
 - `tests/helpers/listenerUtils.js` & tests: ✅ Present with withListenerSpy, expectListenerAttached, wrapAddEventListener.

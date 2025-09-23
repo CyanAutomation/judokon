@@ -91,7 +91,6 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
