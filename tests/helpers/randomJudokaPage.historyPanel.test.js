@@ -1,5 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createRandomJudokaPageHarness } from "./integrationHarness.js";
 import { createRandomCardDom } from "../utils/testUtils.js";
+
+const harness = createRandomJudokaPageHarness();
+
+beforeEach(async () => {
+  await harness.setup();
+});
 
 const baseSettings = {
   motionEffects: true,
@@ -33,12 +40,7 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/constants.js", async () => ({
-      ...(await vi.importActual("../../src/helpers/constants.js")),
-      DATA_DIR: ""
     }));
-    vi.doMock("../../src/components/Button.js", () => ({ createButton }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
@@ -90,12 +92,7 @@ describe("randomJudokaPage history panel", () => {
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/constants.js", async () => ({
-      ...(await vi.importActual("../../src/helpers/constants.js")),
-      DATA_DIR: ""
     }));
-    vi.doMock("../../src/components/Button.js", () => ({ createButton }));
-    vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();

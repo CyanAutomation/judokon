@@ -511,3 +511,59 @@ export function createPopulateCountryListHarness(customConfig = {}) {
     }
   });
 }
+
+/**
+ * Pre-configured harness for random judoka page integration tests
+ */
+export function createRandomJudokaPageHarness(customConfig = {}) {
+  const { fixtures: customFixtures, mocks: customMocks, ...restConfig } = customConfig;
+  return createIntegrationHarness({
+    ...restConfig,
+    fixtures: {
+      matchMedia: () => ({ matches: false }),
+      ...customFixtures
+    },
+    mocks: {
+      // Mock random card generation
+      "../../src/helpers/randomCard.js": () => ({
+        generateRandomCard: vi.fn()
+      }),
+      // Mock data utilities
+      "../../src/helpers/dataUtils.js": () => ({
+        fetchJson: vi.fn()
+      }),
+      // Mock constants
+      "../../src/helpers/constants.js": () => ({
+        DATA_DIR: ""
+      }),
+      // Mock Button component
+      "../../src/components/Button.js": () => ({
+        createButton: vi.fn((_, opts = {}) => {
+          const btn = document.createElement("button");
+          if (opts.id) btn.id = opts.id;
+          return btn;
+        })
+      }),
+      // Mock settings storage
+      "../../src/helpers/settingsStorage.js": () => ({
+        loadSettings: vi.fn().mockResolvedValue({
+          motionEffects: true,
+          typewriterEffect: true,
+          tooltips: true,
+          displayMode: "light",
+          fullNavigationMap: true,
+          gameModes: {},
+          featureFlags: {
+            enableTestMode: { enabled: false },
+            enableCardInspector: { enabled: false }
+          }
+        })
+      }),
+      // Mock motion utils
+      "../../src/helpers/motionUtils.js": () => ({
+        applyMotionPreference: vi.fn()
+      }),
+      ...customMocks
+    }
+  });
+}
