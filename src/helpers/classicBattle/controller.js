@@ -1,6 +1,7 @@
 import { createBattleStore, startRound } from "./roundManager.js";
 import { initClassicBattleOrchestrator } from "./orchestrator.js";
 import { initFeatureFlags, isEnabled, featureFlagsEmitter } from "../featureFlags.js";
+import { setTestMode } from "../testModeUtils.js";
 import {
   startCoolDown,
   pauseTimer,
@@ -41,8 +42,13 @@ export class ClassicBattleController extends EventTarget {
    */
   async init() {
     await initFeatureFlags();
+    this.#syncTestMode();
     this.#emitFeatureFlags();
-    featureFlagsEmitter.addEventListener("change", () => this.#emitFeatureFlags());
+    const handleFeatureFlagsChange = () => {
+      this.#syncTestMode();
+      this.#emitFeatureFlags();
+    };
+    featureFlagsEmitter.addEventListener("change", handleFeatureFlagsChange);
 
     // Create the battle engine and assign it to the store
     createBattleEngine();
@@ -66,6 +72,10 @@ export class ClassicBattleController extends EventTarget {
    */
   #emitFeatureFlags() {
     this.dispatchEvent(new CustomEvent("featureFlagsChange", { detail: { isEnabled } }));
+  }
+
+  #syncTestMode() {
+    setTestMode({ enabled: isEnabled("enableTestMode") });
   }
 
   /**
