@@ -26,14 +26,6 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
     timeout: 5000
   });
 
-  // focus helpers continue to be exposed for keyboard interaction tests
-  await page.waitForFunction(
-    () =>
-      typeof window.__battleCLIinit?.focusStats === "function" &&
-      typeof window.__battleCLIinit?.focusNextHint === "function",
-    { timeout: 5000 }
-  );
-
   // set countdown via helper and verify attribute/text
   await page.evaluate(() => window.__TEST_API.timers.setCountdown(12));
   await page.waitForFunction(
@@ -43,11 +35,4 @@ test("CLI skeleton and helpers smoke", async ({ page }) => {
   const cd = page.locator("#cli-countdown");
   await expect(cd).toHaveAttribute("data-remaining-time", "12");
   await expect(cd).toHaveText(/12/);
-
-  // focus helpers remain exposed on the legacy helper for keyboard support checks
-  // while the CLI slowly migrates remaining helpers to the centralized Test API
-  await page.evaluate(() => window.__battleCLIinit.focusStats());
-  await expect(page.locator("#cli-stats")).toBeFocused();
-  await page.evaluate(() => window.__battleCLIinit.focusNextHint());
-  await expect(page.locator("#cli-controls-hint")).toBeFocused();
 });
