@@ -21,11 +21,7 @@ function displayOpponentChoosingPrompt() {
   try {
     showSnackbar(t("ui.opponentChoosing"));
     markOpponentPromptNow();
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("Error showing opponent choosing message:", error);
-    }
-  }
+  } catch {}
 }
 
 /**
