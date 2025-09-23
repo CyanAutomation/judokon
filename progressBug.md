@@ -22,3 +22,14 @@
 *   **Keyboard hint** – Display a prompt such as Press 1–5 to choose a stat near the stat cards when waiting for input. Use ARIA‑live to announce this to screen readers.
 *   **Timer behaviour** – Clarify in the UI what happens if the timer expires. Either auto‑select the highest stat or mark it as a loss; communicate this to the player.
 *   **Match length selection** – After choosing match length, hide the settings panel to focus on the match. Consider allowing match length to be changed only before starting, not mid‑match.
+
+Recommendations
+Fix scoring and outcome persistence – Investigate whether the round resolution events (battleRoundWon, battleRoundLost) are being emitted and handled in the CLI. Update the scoreboard and maintain the outcome message until the next input.
+Simplify the start flow – Combine match‑length selection and match start into one interaction or provide clear instructions. Consider a dedicated modal with step‑by‑step prompts.
+Improve quit and escape handling – The quit dialog should be fully functional and accessible. Pressing Q twice or clicking Quit should reliably exit. Esc should show confirmation instead of instantly exiting.
+Expose and document feature flags – Provide toggles or URL parameters for battleStateBadge, observabilityMode and autoSelect per the PRD. Use them to aid debugging and automated testing.
+Enhance accessibility – Add screen‑reader labels to all interactive controls, ensure ARIA‑live regions announce state changes, and support focus management when dialogs open/close. Provide high‑contrast outlines for selected stat cards.
+Timer behaviour – Define behaviour for timeout clearly (auto‑select, forfeit or random). If it auto‑selects, display which stat was chosen. If it results in a loss, display a message and update the score accordingly.
+Test automation hooks – As recommended in the PRD, expose deterministic callbacks (e.g., to start a round, resolve a round, or fetch the internal state) on window to facilitate automated QA. Logging hooks can output the current state, timers and event payloads.
+
+
