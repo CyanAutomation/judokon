@@ -272,6 +272,7 @@ describe("initializeSettingsPage", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     const showSettingsError = vi.fn();
     const onDomReady = vi.fn();
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady }));
     vi.doMock("../../src/helpers/showSettingsError.js", () => ({
       showSettingsError
     }));
