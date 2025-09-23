@@ -20,10 +20,16 @@ const TOOLTIP_DATA = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"
  * @returns {{sortedNames: string[], flagLabels: string[], expectedLabels: string[]}}
  */
 function getLabelData() {
-  const sortedNames = NAV_ITEMS.slice()
+  const navModeNames = NAV_ITEMS.slice()
     .sort((a, b) => a.order - b.order)
     .map((item) => GAME_MODES.find((m) => m.id === item.gameModeId)?.name)
     .filter(Boolean);
+
+  const extraModes = GAME_MODES.map((mode) => mode.name)
+    .filter(Boolean)
+    .filter((name) => !navModeNames.includes(name));
+
+  const sortedNames = [...navModeNames, ...extraModes];
 
   const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags)
     .filter((flag) => DEFAULT_SETTINGS.featureFlags[flag].enabled)
