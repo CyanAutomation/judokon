@@ -1,6 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createRandomJudokaPageHarness } from "./integrationHarness.js";
 import { createRandomCardDom } from "../utils/testUtils.js";
 import { withMutedConsole } from "../utils/console.js";
+
+const harness = createRandomJudokaPageHarness();
+
+beforeEach(async () => {
+  await harness.setup();
+});
 
 const baseSettings = {
   motionEffects: true,
