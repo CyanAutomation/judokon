@@ -282,7 +282,6 @@ describe("initializeSettingsPage", () => {
     vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
       loadNavigationItems: vi.fn().mockRejectedValueOnce(new Error("nav fail"))
     }));
-    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady }));
     const testHarness = createSettingsHarness();
     await testHarness.setup();
     document.body.appendChild(

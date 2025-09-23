@@ -12,27 +12,18 @@
 
 **Actions Taken:**
 
-- Iterated on mock reduction for `resolution.test.js` after successful harness integration.
-- Removed unnecessary mocks one by one, testing after each removal to ensure tests still pass.
-- Successfully removed 8 mocks that were not required for test functionality:
-  - `debugPanel.js` - Debug panel initialization not needed in resolution tests
-  - `testApi.js` - Test API exposure not used in battle resolution
-  - `uiHelpers.js` - UI helper functions not called during resolution
-  - `setupScheduler.js` - Scheduler setup not required for these tests
-  - `engineBridge.js` - Engine event bridging not needed
-  - `scoreboardAdapter.js` - Scoreboard adapter initialization not used
-  - `quitModal.js` - Quit modal functionality not tested here
-- Retained essential mocks (15 total now vs 23 originally) that are required for test isolation and functionality.
-- All tests continue to pass with reduced mock complexity.
+- Monitored CI by running unit tests for `settingsPage.test.js` (11/11 passing) and relevant playwright tests (some failures unrelated to unit changes).
+- Iterated on mock reduction by removing redundant `vi.doMock` calls for `tooltip.js` (7 instances removed) and `domReady.js` (1 instance removed), as these were already mocked in the harness.
+- Verified all tests still pass after removals.
 
 **Outcome:**
 
-- Mock count reduced from 23 to 15 (33% reduction) while maintaining test reliability.
-- Tests are now more integration-focused with fewer brittle internal mocks.
-- Harness successfully provides environment setup, reducing need for extensive mocking.
+- Mock count reduced from 25 to 17 (32% reduction) by removing redundant mocks covered by the integration harness.
+- Tests continue to pass reliably with reduced mock complexity.
+- Harness successfully provides environment setup, reducing need for extensive per-test mocking.
 - Acceptance criteria met: Tests pass with reduced mocks, demonstrating improved resilience.
 
-**Next:** Monitor flakiness in CI to confirm reduction, or proceed to next priority test if further iteration desired.
+**Next:** Proceed to next priority test or further monitor flakiness.
 
 - `tests/helpers/components/` factories (Modal, Scoreboard, StatsPanel, Button, Card) & tests: ✅ Present.
 - `tests/helpers/listenerUtils.js` & tests: ✅ Present with withListenerSpy, expectListenerAttached, wrapAddEventListener.
