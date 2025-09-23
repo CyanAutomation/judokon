@@ -1610,10 +1610,15 @@ export function handleRoundOverKey(key) {
       emitBattleEvent("outcomeConfirmed");
     } catch {}
     try {
-      // Attempt to dispatch to the live machine or orchestrator so tests
-      // that mock the orchestrator's `dispatchBattleEvent` will receive the
-      // "continue" event.
-      safeDispatch("continue");
+      // Try to synchronously call the orchestrator dispatch when available
+      // so tests that mock `dispatchBattleEvent` observe the call immediately.
+      const fn = battleOrchestrator?.dispatchBattleEvent;
+      if (typeof fn === "function") {
+        fn("continue");
+      } else {
+        // Fallback to safe async dispatch when orchestrator isn't available
+        safeDispatch("continue");
+      }
     } catch {}
     return true;
   }

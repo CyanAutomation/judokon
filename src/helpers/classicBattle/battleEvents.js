@@ -203,7 +203,6 @@ export default getTarget;
 // Expose for tests and external consumers that may access the emitter globally.
 try {
   if (typeof globalThis !== "undefined") {
-    globalThis.emitBattleEvent = emitBattleEvent;
-    globalThis.__resetBattleEventTarget = __resetBattleEventTarget;
+    // Intentionally avoid polluting globalThis to keep module imports deterministic
   }
 } catch {}
