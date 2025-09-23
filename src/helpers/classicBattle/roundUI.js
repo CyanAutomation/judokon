@@ -493,7 +493,21 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
                 Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 32;
               attachRendererOptions.promptPollIntervalMs = Math.max(32, resolvedPollInterval);
               attachRendererOptions.waitForOpponentPrompt = true;
-            } else {
+            };
+
+            try {
+              promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
+            } catch {
+              promptBudget = computeOpponentPromptWaitBudget();
+            }
+            attachRendererOptions.opponentPromptBufferMs = promptBudget.bufferMs;
+            attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
+            const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
+            const resolvedPollInterval =
+              Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 75;
+            attachRendererOptions.promptPollIntervalMs = Math.max(50, resolvedPollInterval);
+            attachRendererOptions.waitForOpponentPrompt = true;
+          } else {
               attachRendererOptions.waitForOpponentPrompt = false;
               attachRendererOptions.maxPromptWaitMs = 0;
               const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
