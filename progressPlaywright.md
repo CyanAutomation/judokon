@@ -100,21 +100,19 @@ Keeping a clear distinction reduces maintenance cost and makes it easier to deci
 
 If you want, I can implement any (or all) of the following in a single small PR or iterative commits:
 
-1. Add a `scripts/check-playwright-tests.sh` (or `npm` script) and CI step that greps for banned patterns and fails on matches. This is quick (single script + one-line CI change).
-2. Add a diagnostic helper and instrument `playwright/battle-classic/end-modal.spec.js` to capture the modal DOM, attributes, and `window.battleStore` state when the modal does not appear — and include a short explanation of how to reproduce locally.
-3. Create a `playwright/tests/waitHelpers.js` (or extend `playwright/fixtures/waits.js`) with small helpers for `waitForSnackbar`, `waitForModalOpen`, and `waitForCountdown` and refactor 3 specs to use them.
-4. Audit `playwright.config.js` and produce a small report listing the spec files matched by the test glob and any orphaned spec files.
-5. Update this `progressPlaywright.md` file (done) and add a short `tests/README.md` describing the Test API vs private hooks and how to run targeted Playwright debugging.
+1. Add a diagnostic helper and instrument `playwright/battle-classic/end-modal.spec.js` to capture the modal DOM, attributes, and `window.battleStore` state when the modal does not appear — and include a short explanation of how to reproduce locally.
+2. Create a `playwright/tests/waitHelpers.js` (or extend `playwright/fixtures/waits.js`) with small helpers for `waitForSnackbar`, `waitForModalOpen`, and `waitForCountdown` and refactor 3 specs to use them.
+3. Audit `playwright.config.js` and produce a small report listing the spec files matched by the test glob and any orphaned spec files.
+4. Update this `progressPlaywright.md` file (done) and add a short `tests/README.md` describing the Test API vs private hooks and how to run targeted Playwright debugging.
 
 Tell me which of the items above you want me to implement first and I will open a small branch + PR (or make the changes directly in `main` if you prefer).
 
 ## Recommended next steps (prioritized)
 
-1. (Day 0) Add the grep/lint CI check to block banned patterns. Owner: test owner / infra. This is low-risk and prevents regressions.
-2. (Day 0–1) Add diagnostics to `end-modal.spec.js` and re-run that single spec to capture the reason the modal is not visible when `matchEnded` is true. Owner: test author (I can implement and run this locally if you want me to).
-3. (Day 1–3) Implement the small waiters helper module and refactor the top 5 problem specs to use it. Owner: test author.
-4. (Day 3–7) Audit the test API surface and classify helpers; promote stable methods into `__TEST_API` or move private fixtures into `playwright/fixtures`. Owner: infra + test author.
-5. (Week 2+) Add flaky-test tracking, per-test runtime budget checks in CI, and a PR template enforcing a happy-path + one edge-case for each new test. Owner: team.
+1. (Day 0–1) Add diagnostics to `end-modal.spec.js` and re-run that single spec to capture the reason the modal is not visible when `matchEnded` is true. Owner: test author (I can implement and run this locally if you want me to).
+2. (Day 1–3) Implement the small waiters helper module and refactor the top 5 problem specs to use it. Owner: test author.
+3. (Day 3–7) Audit the test API surface and classify helpers; promote stable methods into `__TEST_API` or move private fixtures into `playwright/fixtures`. Owner: infra + test author.
+4. (Week 2+) Add flaky-test tracking, per-test runtime budget checks in CI, and a PR template enforcing a happy-path + one edge-case for each new test. Owner: team.
 
 ## How to validate changes (commands)
 
@@ -130,19 +128,8 @@ rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwri
 
 ## Next steps (who/what)
 
-1. Add the lint/grep checks to CI and fail the build on matches. (owner: test owner / infra)
-2. Add diagnostics and attempt to reproduce the `end-modal` failure locally; if reproducible, iterate a small fix. (owner: test author — I can take this on)
-3. Re-audit the runner to ensure `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are included and remove old duplicates. (owner: infra)
+1. Add diagnostics and attempt to reproduce the `end-modal` failure locally; if reproducible, iterate a small fix. (owner: test author — I can take this on)
+2. Re-audit the runner to ensure `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are included and remove old duplicates. (owner: infra)
 
 ---
 
-## Completion summary
-
-I reviewed the Playwright specs mentioned in this document and verified the repo state. Key updates:
-
-
-- The Playwright tests in this workspace already follow many recommended practices (semantic waits, `__TEST_API`, no `waitForTimeout` or trivial placeholder assertions found).
-- I clarified the distinction between the public Test API (`__TEST_API`) and private test hooks and added prioritized, actionable next steps and quick wins.
-- I proposed a short set of small, low-risk changes I can implement (grep CI check, diagnostics for `end-modal`, wait helpers, and a test-runner audit).
-
-Tell me which of the suggested items you'd like me to implement first and I'll open a small PR (or commit directly to `main`) and run the targeted test(s) to validate.
