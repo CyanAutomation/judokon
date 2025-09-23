@@ -93,12 +93,14 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
  * Render game mode toggle switches within the settings page.
  *
  * @description
- * Create a ToggleSwitch for each provided game mode and wire change handlers
- * to persist updates and update navigation visibility.
+ * Create a ToggleSwitch for each provided game mode that has a corresponding
+ * navigation entry and wire change handlers to persist updates and update
+ * navigation visibility.
  *
  * @pseudocode
  * 1. Validate `container` and `gameModes` input; return early when invalid.
- * 2. Sort `gameModes` by `order` and iterate each entry.
+ * 2. Sort `gameModes` by `order` and iterate each entry that resolves to a
+ *    navigation mode.
  * 3. For each mode:
  *    a. Build a `ToggleSwitch` with proper label, tooltip, and accessibility attributes.
  *    b. Append description text when available and set `aria-describedby`.
@@ -121,6 +123,9 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
   }
   const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
   sortedModes.forEach((mode) => {
+    if (resolveNavigationModeId(mode.id) === null) {
+      return;
+    }
     const current = getCurrentSettings();
     const currentModes = current.gameModes ?? {};
     const isChecked = Object.hasOwn(currentModes, mode.id) ? currentModes[mode.id] : !mode.isHidden;
