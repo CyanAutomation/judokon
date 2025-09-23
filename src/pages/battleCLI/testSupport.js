@@ -10,8 +10,13 @@
 /**
  * Coerce the first numeric-like value in the provided list.
  *
- * @param {...any} values
- * @returns {number}
+ * @param {...any} values - Values to check for numeric conversion
+ * @returns {number} First valid numeric value or 0 as fallback
+ * @pseudocode
+ * for each value in values:
+ *   if value is finite number: return value
+ *   if value can be parsed as number: return parsed value
+ * return 0 as fallback
  */
 function coerceScoreForTest(...values) {
   for (const value of values) {
@@ -107,7 +112,11 @@ export async function resolveRoundForTest(eventLike = {}, options = {}) {
     try {
       const result = await dispatch(detail);
       dispatched = result !== false;
-    } catch {}
+    } catch (error) {
+      if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+        console.debug("Test dispatch error (ignored):", error);
+      }
+    }
   }
 
   let emitted = false;
@@ -115,7 +124,11 @@ export async function resolveRoundForTest(eventLike = {}, options = {}) {
     try {
       emit(detail);
       emitted = true;
-    } catch {}
+    } catch (error) {
+      if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+        console.debug("Test emit error (ignored):", error);
+      }
+    }
   }
 
   return { detail, dispatched, emitted };

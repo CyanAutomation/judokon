@@ -732,7 +732,10 @@ const cliApi = {
     const getStore = () => {
       try {
         return typeof window !== "undefined" ? window.battleStore : null;
-      } catch {
+      } catch (error) {
+        if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
+          console.debug("Failed to access battleStore:", error);
+        }
         return null;
       }
     };
