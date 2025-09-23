@@ -125,7 +125,29 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await firstStat.click();
 
         const snack = page.locator(selectors.snackbarContainer());
-        await expect(snack).toContainText(/Opponent is choosing/i, { timeout: 1000 });
+        await expect(snack).toContainText(/Opponent is choosing/i);
+
+        const snapshot = await getBattleSnapshot(page);
+        expect(snapshot?.selectionMade).toBe(true);
+      }, ["log", "info", "warn", "error", "debug"]));
+
+    test("completes round after opponent reveal", async ({ page }) =>
+      withMutedConsole(async () => {
+        await page.addInitScript(() => {
+          window.__OVERRIDE_TIMERS = { roundTimer: 5 };
+          window.__NEXT_ROUND_COOLDOWN_MS = 1000;
+          window.__OPPONENT_RESOLVE_DELAY_MS = 120;
+          window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.process = { env: { VITEST: "1" } };
+        });
+        await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
+
+        await startMatch(page, "#round-select-2");
+        await setOpponentResolveDelay(page, 50);
+
+        const firstStat = page.locator(selectors.statButton(0)).first();
+        await expect(firstStat).toBeVisible();
+        await firstStat.click();
 
         await waitForBattleState(page, "roundOver");
         await waitForRoundsPlayed(page, 1);

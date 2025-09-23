@@ -18,10 +18,11 @@ test.describe("Battle CLI - Restart", () => {
       // Click the first stat button to win the round and the match
       await page.locator(".cli-stat").first().click();
 
-      // Manually trigger match over for testing purposes due to application bug
-      await page.evaluate(() => {
-        window.__test.handleMatchOver();
-      });
+      // Wait for Test API to be available
+      await page.waitForFunction(() => window.__TEST_API?.state?.dispatchBattleEvent);
+
+      // Dispatch matchOver event using public Test API instead of internal hook
+      await page.evaluate(() => window.__TEST_API.state.dispatchBattleEvent("matchOver"));
 
       // Wait for the "Play Again" button to be visible
       const playAgainButton = page.getByRole("button", { name: "Play Again" });
