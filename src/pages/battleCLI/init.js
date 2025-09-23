@@ -1262,6 +1262,10 @@ function buildStatRows(stats, judoka) {
       div.dataset.statIndex = String(idx);
       const val = Number(judoka?.stats?.[key]);
       div.textContent = Number.isFinite(val) ? `[${idx}] ${s.name}: ${val}` : `[${idx}] ${s.name}`;
+      div.setAttribute(
+        "aria-label",
+        Number.isFinite(val) ? `Select ${s.name} with value ${val}` : `Select ${s.name}`
+      );
       rows.push(div);
     });
   return rows;

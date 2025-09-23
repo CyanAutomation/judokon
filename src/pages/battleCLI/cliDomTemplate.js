@@ -41,6 +41,7 @@ export const CLI_DOM_TEMPLATE = `
               data-testid="settings-button"
               aria-expanded="true"
               aria-controls="cli-settings-body"
+              aria-label="Toggle settings panel"
               class="button-reset"
             >
               Settings ▾

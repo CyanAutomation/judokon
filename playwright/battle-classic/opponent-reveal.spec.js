@@ -572,11 +572,12 @@ test.describe("Classic Battle Opponent Reveal", () => {
           await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
           if (attempt < maxAttempts - 1) {
-            await page.reload();
-            // Re-initialize after reload and ensure readiness via stat visibility
-            await startMatch(page, "#round-select-1");
-            await setOpponentResolveDelay(page, 50);
+            // Advance using in-app flow to avoid reload races
+            const nextButton = page.locator('#next-button');
+            await expect(nextButton).toBeEnabled();
+            await nextButton.click();
             await expect(page.locator(selectors.statButton(0)).first()).toBeVisible();
+            await setOpponentResolveDelay(page, 50);
           }
         }
       }, ["log", "info", "warn", "error", "debug"]));
