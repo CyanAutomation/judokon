@@ -81,5 +81,3 @@ This document summarizes the analysis, steps taken so far, and proposed next ste
 
 - Assumption: The harness registers mocks before imports (confirmed by reading `tests/helpers/integrationHarness.js`), so when the module specifiers match, `vi.doMock` will replace the target module.
 - If canonical module identity cannot be trivially discovered, an alternative is to refactor production code to dynamically resolve the event dispatcher by file path or to expose a small setter used only in tests to inject the mock dispatcher (but prefer aligning specifiers first).
-
-
