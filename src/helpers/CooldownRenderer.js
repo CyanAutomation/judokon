@@ -7,6 +7,211 @@ import {
 } from "./classicBattle/opponentPromptTracker.js";
 import { t } from "./i18n.js";
 
+const DEFAULT_PROMPT_POLL_INTERVAL = 16;
+
+const defaultSetTimeout =
+  typeof window !== "undefined" && typeof window.setTimeout === "function"
+    ? window.setTimeout.bind(window)
+    : setTimeout;
+
+const defaultClearTimeout =
+  typeof window !== "undefined" && typeof window.clearTimeout === "function"
+    ? window.clearTimeout.bind(window)
+    : clearTimeout;
+
+const defaultNow = () => {
+  try {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") {
+      return performance.now();
+    }
+  } catch {}
+  try {
+    return Date.now();
+  } catch {}
+  return 0;
+};
+
+const toPositiveNumber = (value, fallback = 0) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return fallback;
+  }
+  return numeric;
+};
+
+const normalizePromptDelayOptions = (options = {}) => ({
+  waitForPromptOption: options?.waitForOpponentPrompt === true,
+  promptPollInterval: toPositiveNumber(options?.promptPollIntervalMs, DEFAULT_PROMPT_POLL_INTERVAL),
+  maxPromptWait: toPositiveNumber(options?.maxPromptWaitMs, 0),
+  setTimeoutFn:
+    typeof options?.setTimeoutFn === "function" ? options.setTimeoutFn : defaultSetTimeout,
+  clearTimeoutFn:
+    typeof options?.clearTimeoutFn === "function" ? options.clearTimeoutFn : defaultClearTimeout,
+  now: typeof options?.now === "function" ? options.now : defaultNow
+});
+
+const hasActivePrompt = () => {
+  try {
+    const timestamp = Number(getOpponentPromptTimestamp());
+    return Number.isFinite(timestamp) && timestamp > 0;
+  } catch {}
+  return false;
+};
+
+const computeRemainingPromptDelayMs = (nowFn) => {
+  try {
+    const minDuration = Number(getOpponentPromptMinDuration());
+    if (!Number.isFinite(minDuration) || minDuration <= 0) {
+      return 0;
+    }
+    const lastPrompt = Number(getOpponentPromptTimestamp());
+    if (!Number.isFinite(lastPrompt) || lastPrompt <= 0) {
+      return 0;
+    }
+    const elapsed = nowFn() - lastPrompt;
+    if (!Number.isFinite(elapsed)) {
+      return 0;
+    }
+    return Math.max(0, minDuration - elapsed);
+  } catch {}
+  return 0;
+};
+
+const createPromptDelayState = (config) => ({
+  config,
+  pendingDelayId: null,
+  /** @type {{ value: number, suppressEvents: boolean, onReady: Function } | null} */
+  queuedPayload: null,
+  promptWaitDeadline: 0
+});
+
+const clearPendingTimeout = (state) => {
+  if (state.pendingDelayId !== null) {
+    try {
+      state.config.clearTimeoutFn(state.pendingDelayId);
+    } catch {}
+    state.pendingDelayId = null;
+  }
+};
+
+const flushQueue = (state) => {
+  const payload = state.queuedPayload;
+  state.queuedPayload = null;
+  state.promptWaitDeadline = 0;
+  clearPendingTimeout(state);
+  if (payload?.onReady) {
+    payload.onReady(payload.value, {
+      suppressEvents: payload.suppressEvents === true
+    });
+  }
+};
+
+const scheduleDelay = (state, delay) => {
+  if (delay <= 0 || typeof state.config.setTimeoutFn !== "function") {
+    flushQueue(state);
+    return;
+  }
+  clearPendingTimeout(state);
+  state.pendingDelayId = state.config.setTimeoutFn(() => {
+    state.pendingDelayId = null;
+    flushQueue(state);
+  }, delay);
+};
+
+const handlePromptWaiting = (state, value, suppressEvents, onReady) => {
+  if (!state.config.waitForPromptOption) {
+    if (state.promptWaitDeadline !== 0 && hasActivePrompt()) {
+      state.promptWaitDeadline = 0;
+    }
+    return false;
+  }
+
+  if (hasActivePrompt()) {
+    if (state.promptWaitDeadline !== 0) {
+      state.promptWaitDeadline = 0;
+    }
+    return false;
+  }
+
+  const canWaitForPrompt = state.config.maxPromptWait > 0;
+  if (canWaitForPrompt && state.promptWaitDeadline === 0) {
+    state.promptWaitDeadline = state.config.now() + state.config.maxPromptWait;
+  }
+  const deadlineReached = !canWaitForPrompt
+    ? true
+    : state.promptWaitDeadline > 0 && state.config.now() >= state.promptWaitDeadline;
+  if (deadlineReached) {
+    return false;
+  }
+  if (typeof state.config.setTimeoutFn === "function") {
+    clearPendingTimeout(state);
+    state.pendingDelayId = state.config.setTimeoutFn(() => {
+      state.pendingDelayId = null;
+      queueTickInternal(state, value, { suppressEvents }, onReady);
+    }, state.config.promptPollInterval);
+    return true;
+  }
+  return false;
+};
+
+function queueTickInternal(state, value, options = {}, onReady) {
+  const suppressEvents = options?.suppressEvents === true;
+  state.queuedPayload = { value, suppressEvents, onReady };
+
+  if (handlePromptWaiting(state, value, suppressEvents, onReady)) {
+    return;
+  }
+
+  const delay = Math.max(0, computeRemainingPromptDelayMs(state.config.now));
+  scheduleDelay(state, delay);
+}
+
+const clearState = (state) => {
+  clearPendingTimeout(state);
+  state.queuedPayload = null;
+  state.promptWaitDeadline = 0;
+};
+
+const shouldDeferState = (state) => {
+  if (state.config.waitForPromptOption && !hasActivePrompt()) {
+    return true;
+  }
+  return computeRemainingPromptDelayMs(state.config.now) > 0;
+};
+
+/**
+ * Create a controller that defers countdown ticks until prompt constraints finish.
+ *
+ * @pseudocode
+ * 1. Normalize timing options and capture shared state.
+ * 2. Queue ticks until prompts or minimum delays finish, reusing helper functions.
+ * 3. Expose `queueTick`, `clear`, and `shouldDefer` to the renderer.
+ *
+ * @param {{
+ *   waitForOpponentPrompt?: boolean,
+ *   promptPollIntervalMs?: number,
+ *   maxPromptWaitMs?: number,
+ *   setTimeoutFn?: typeof setTimeout,
+ *   clearTimeoutFn?: typeof clearTimeout,
+ *   now?: () => number
+ * }} [options]
+ * @returns {{
+ *   queueTick: (value: number, options: { suppressEvents?: boolean }, onReady: Function) => void,
+ *   clear: () => void,
+ *   shouldDefer: () => boolean
+ * }}
+ */
+export function createPromptDelayController(options = {}) {
+  const config = normalizePromptDelayOptions(options);
+  const state = createPromptDelayState(config);
+  return {
+    queueTick: (value, queueOptions = {}, onReady) =>
+      queueTickInternal(state, value, queueOptions, onReady),
+    clear: () => clearState(state),
+    shouldDefer: () => shouldDeferState(state)
+  };
+}
+
 /**
  * Attach snackbar + scoreboard rendering to a timer.
  *
@@ -29,67 +234,12 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   let started = false;
   let lastRendered = -1;
   let rendered = false;
-  let pendingDelayId = null;
-  /** @type {{value: number, suppressEvents: boolean}|null} */
-  let queuedTickPayload = null;
-  const setTimeoutFn =
-    typeof window !== "undefined" && typeof window.setTimeout === "function"
-      ? window.setTimeout.bind(window)
-      : setTimeout;
-  const clearTimeoutFn =
-    typeof window !== "undefined" && typeof window.clearTimeout === "function"
-      ? window.clearTimeout.bind(window)
-      : clearTimeout;
   const waitForPromptOption = options?.waitForOpponentPrompt === true;
-  const promptPollInterval =
-    Number.isFinite(options?.promptPollIntervalMs) && options.promptPollIntervalMs > 0
-      ? Number(options.promptPollIntervalMs)
-      : 16;
-  const maxPromptWait =
-    Number.isFinite(options?.maxPromptWaitMs) && options.maxPromptWaitMs > 0
-      ? Number(options.maxPromptWaitMs)
-      : 0;
-  let promptWaitDeadline = 0;
-
-  const now = () => {
-    try {
-      if (typeof performance !== "undefined" && typeof performance.now === "function") {
-        return performance.now();
-      }
-    } catch {}
-    try {
-      return Date.now();
-    } catch {}
-    return 0;
-  };
-
-  const clearCountdownDelay = () => {
-    if (pendingDelayId !== null) {
-      clearTimeoutFn(pendingDelayId);
-      pendingDelayId = null;
-    }
-    queuedTickPayload = null;
-    promptWaitDeadline = 0;
-  };
-
-  const getRemainingPromptDelayMs = () => {
-    try {
-      const minDuration = Number(getOpponentPromptMinDuration());
-      if (!Number.isFinite(minDuration) || minDuration <= 0) {
-        return 0;
-      }
-      const lastPrompt = Number(getOpponentPromptTimestamp());
-      if (!Number.isFinite(lastPrompt) || lastPrompt <= 0) {
-        return 0;
-      }
-      const elapsed = now() - lastPrompt;
-      if (!Number.isFinite(elapsed)) {
-        return 0;
-      }
-      return Math.max(0, minDuration - elapsed);
-    } catch {}
-    return 0;
-  };
+  const promptController = createPromptDelayController({
+    waitForOpponentPrompt: waitForPromptOption,
+    promptPollIntervalMs: options?.promptPollIntervalMs,
+    maxPromptWaitMs: options?.maxPromptWaitMs
+  });
   // In unit tests, if a snackbar already shows a countdown value, treat that
   // as the initial render and skip the first decrement to avoid off-by-one
   // perception when timers begin very soon after the outcome.
@@ -133,7 +283,6 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   };
 
   const processTick = (normalized, { suppressEvents = false } = {}) => {
-    promptWaitDeadline = 0;
     if (!started && rendered && lastRendered >= 0 && normalized === lastRendered) {
       if (!suppressEvents) {
         started = true;
@@ -152,80 +301,17 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
     }
   };
 
-  const hasActivePrompt = () => {
-    try {
-      const timestamp = Number(getOpponentPromptTimestamp());
-      return Number.isFinite(timestamp) && timestamp > 0;
-    } catch {}
-    return false;
-  };
-
-  const queueTickAfterPromptDelay = (
-    normalized,
-    suppressEvents,
-    { waitForPrompt = false } = {}
-  ) => {
-    queuedTickPayload = { value: normalized, suppressEvents };
-    const activePrompt = hasActivePrompt();
-    if (waitForPrompt && waitForPromptOption && !activePrompt) {
-      const canWaitForPrompt = maxPromptWait > 0;
-      if (canWaitForPrompt && promptWaitDeadline === 0) {
-        promptWaitDeadline = now() + maxPromptWait;
-      }
-      const deadlineReached = !canWaitForPrompt
-        ? true
-        : promptWaitDeadline > 0 && now() >= promptWaitDeadline;
-      if (!deadlineReached && typeof setTimeoutFn === "function") {
-        if (pendingDelayId !== null) {
-          clearTimeoutFn(pendingDelayId);
-        }
-        pendingDelayId = setTimeoutFn(() => {
-          pendingDelayId = null;
-          queueTickAfterPromptDelay(normalized, suppressEvents, { waitForPrompt: true });
-        }, promptPollInterval);
-        return;
-      }
-    } else if (activePrompt && promptWaitDeadline !== 0) {
-      promptWaitDeadline = 0;
-    }
-    const effectiveDelay = Math.max(0, getRemainingPromptDelayMs());
-    if (effectiveDelay === 0) {
-      const payload = queuedTickPayload;
-      queuedTickPayload = null;
-      pendingDelayId = null;
-      promptWaitDeadline = 0;
-      if (payload) {
-        processTick(payload.value, { suppressEvents: payload.suppressEvents });
-      }
-      return;
-    }
-    if (pendingDelayId !== null) {
-      clearTimeoutFn(pendingDelayId);
-    }
-    pendingDelayId = setTimeoutFn(() => {
-      pendingDelayId = null;
-      const payload = queuedTickPayload;
-      queuedTickPayload = null;
-      promptWaitDeadline = 0;
-      if (payload) {
-        processTick(payload.value, { suppressEvents: payload.suppressEvents });
-      }
-    }, effectiveDelay);
+  const deliverTick = (value, { suppressEvents }) => {
+    processTick(value, { suppressEvents });
   };
 
   const onTick = (remaining) => {
     const normalized = normalizeRemaining(remaining);
-    if (!started) {
-      const promptActive = hasActivePrompt();
-      const waitMs = getRemainingPromptDelayMs();
-      if ((waitForPromptOption && !promptActive) || waitMs > 0) {
-        queueTickAfterPromptDelay(normalized, false, {
-          waitForPrompt: waitForPromptOption && !promptActive
-        });
-        return;
-      }
+    if (!started && promptController.shouldDefer()) {
+      promptController.queueTick(normalized, { suppressEvents: false }, deliverTick);
+      return;
     }
-    clearCountdownDelay();
+    promptController.clear();
     processTick(normalized);
   };
 
@@ -237,19 +323,16 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   if (Number.isFinite(initialValue)) {
     try {
       const normalizedInitial = normalizeRemaining(initialValue);
-      const promptActive = hasActivePrompt();
-      if ((waitForPromptOption && !promptActive) || getRemainingPromptDelayMs() > 0) {
-        queueTickAfterPromptDelay(normalizedInitial, true, {
-          waitForPrompt: waitForPromptOption && !promptActive
-        });
-      } else {
+      if (!promptController.shouldDefer()) {
         processTick(normalizedInitial, { suppressEvents: true });
+      } else {
+        promptController.queueTick(normalizedInitial, { suppressEvents: true }, deliverTick);
       }
     } catch {}
   }
   return () => {
     timer.off("tick", onTick);
     timer.off("expired", onExpired);
-    clearCountdownDelay();
+    promptController.clear();
   };
 }
