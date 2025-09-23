@@ -47,7 +47,6 @@ describe("battleCLI points select", () => {
     );
     setPointsToWin.mockClear();
 
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
 
     select.value = "15";
