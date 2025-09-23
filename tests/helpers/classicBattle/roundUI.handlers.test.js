@@ -81,6 +81,21 @@ describe("resolveCooldownDependencies", () => {
     expect(resolved.renderer).toBe(attachCooldownRenderer);
     expect(createRoundTimer).toHaveBeenCalledTimes(1);
   });
+
+  it("returns null timer when the factory throws", async () => {
+    vi.resetModules();
+    const createRoundTimer = vi.fn(() => {
+      throw new Error("factory boom");
+    });
+    const { resolveCooldownDependencies } = await import(
+      "../../../src/helpers/classicBattle/roundUI.js"
+    );
+
+    const resolved = await resolveCooldownDependencies({}, { createRoundTimer });
+
+    expect(resolved.timer).toBeNull();
+    expect(createRoundTimer).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("startRoundCooldown", () => {
@@ -138,6 +153,57 @@ describe("startRoundCooldown", () => {
 
     expect(waitForDelayedOpponentPromptDisplay).not.toHaveBeenCalled();
     expect(timer.start).toHaveBeenCalledWith(7);
+  });
+
+  it("waits for opponent prompt when timestamp retrieval throws", async () => {
+    vi.resetModules();
+    const waitForDelayedOpponentPromptDisplay = vi.fn(async () => {});
+    const getOpponentPromptTimestamp = vi.fn(() => {
+      throw new Error("timestamp fail");
+    });
+    const timer = { start: vi.fn(async () => {}) };
+    const renderer = vi.fn();
+    const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    await startRoundCooldown(
+      { timer, renderer },
+      {
+        seconds: 6,
+        delayOpponentMessage: true,
+        rendererOptions: { promptPollIntervalMs: 45 },
+        waitForDelayedOpponentPromptDisplay,
+        getOpponentPromptTimestamp
+      }
+    );
+
+    expect(waitForDelayedOpponentPromptDisplay).toHaveBeenCalledWith(undefined, { intervalMs: 45 });
+    expect(timer.start).toHaveBeenCalledWith(6);
+  });
+
+  it("retries waiting once when the wait helper rejects", async () => {
+    vi.resetModules();
+    const waitForDelayedOpponentPromptDisplay = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("first"))
+      .mockResolvedValueOnce(undefined);
+    const getOpponentPromptTimestamp = vi.fn(() => NaN);
+    const timer = { start: vi.fn(async () => {}) };
+    const renderer = vi.fn();
+    const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    await startRoundCooldown(
+      { timer, renderer },
+      {
+        seconds: 8,
+        delayOpponentMessage: true,
+        rendererOptions: { promptPollIntervalMs: 33 },
+        waitForDelayedOpponentPromptDisplay,
+        getOpponentPromptTimestamp
+      }
+    );
+
+    expect(waitForDelayedOpponentPromptDisplay).toHaveBeenCalledTimes(2);
+    expect(timer.start).toHaveBeenCalledWith(8);
   });
 });
 
