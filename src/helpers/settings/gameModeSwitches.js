@@ -5,9 +5,7 @@ import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
 
 const NAVIGABLE_MODE_IDS = new Set(
-  navigationItems
-    .map((item) => item.gameModeId)
-    .filter((id) => typeof id === "number")
+  navigationItems.map((item) => item.gameModeId).filter((id) => typeof id === "number")
 );
 
 /**

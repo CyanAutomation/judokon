@@ -1236,6 +1236,7 @@ function setActiveStatRow(row, { focus = true } = {}) {
   const rows = Array.from(list.querySelectorAll(".cli-stat"));
   rows.forEach((el) => {
     el.tabIndex = el === row ? 0 : -1;
+    el.setAttribute("aria-selected", el === row ? "true" : "false");
   });
   if (!row.id) {
     row.id = `cli-stat-${row.dataset.statIndex || rows.indexOf(row) + 1}`;
@@ -1323,7 +1324,7 @@ function buildStatRows(stats, judoka) {
       const div = document.createElement("div");
       div.className = "cli-stat";
       div.id = `cli-stat-${idx}`;
-      div.setAttribute("role", "button");
+      div.setAttribute("role", "option");
       div.setAttribute("tabindex", "-1");
       div.setAttribute("aria-selected", "false");
       div.dataset.statIndex = String(idx);
