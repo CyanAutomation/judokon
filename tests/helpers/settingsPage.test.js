@@ -288,6 +288,7 @@ describe("initializeSettingsPage", () => {
       Object.assign(document.createElement("div"), { id: "settings-error-popup" })
     );
     await import("../../src/helpers/settingsPage.js");
+    expect(onDomReady).toHaveBeenCalledTimes(1);
     const init = onDomReady.mock.calls[0][0];
     await init();
     const popup = document.getElementById("settings-error-popup");
