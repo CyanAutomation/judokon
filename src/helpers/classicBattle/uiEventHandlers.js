@@ -20,10 +20,14 @@ function clearOpponentSnackbarTimeout() {
 function displayOpponentChoosingPrompt() {
   try {
     showSnackbar(t("ui.opponentChoosing"));
-  } catch {}
+  } catch {
+    // Intentionally ignore snackbar failures so battle flow is never interrupted.
+  }
   try {
     markOpponentPromptNow();
-  } catch {}
+  } catch {
+    // Marking failures are non-critical; keep the UX resilient to prompt tracker issues.
+  }
 }
 
 /**
@@ -62,10 +66,7 @@ export function bindUIHelperEventHandlersDynamic() {
       const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
       if (!hasOpts) {
         clearOpponentSnackbarTimeout();
-        try {
-          showSnackbar(t("ui.opponentChoosing"));
-          markOpponentPromptNow();
-        } catch {}
+        displayOpponentChoosingPrompt();
         return;
       }
 
@@ -78,12 +79,7 @@ export function bindUIHelperEventHandlersDynamic() {
         clearOpponentSnackbarTimeout();
         if (resolvedDelay <= 0) {
           // Handle immediate display when delay is zero or negative by skipping the timeout setup.
-          try {
-            showSnackbar(t("ui.opponentChoosing"));
-          } catch {}
-          try {
-            markOpponentPromptNow();
-          } catch {}
+          displayOpponentChoosingPrompt();
           return;
         }
         opponentSnackbarId = setTimeout(() => {

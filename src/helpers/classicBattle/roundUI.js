@@ -530,10 +530,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
             typeof deps.attachCooldownRendererOptions === "object"
               ? { ...deps.attachCooldownRendererOptions }
               : {};
-          const resolvedBuffer = resolveOpponentPromptBuffer(
-            cooldownResult,
-            deps.attachCooldownRendererOptions
-          );
+          const resolvedBuffer = resolveOpponentPromptBuffer(cooldownResult, attachRendererOptions);
           let promptBudget = null;
           if (delayOpponentMessageFlag) {
             try {
