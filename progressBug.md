@@ -65,10 +65,12 @@ All UI/UX improvements under "Remaining UI/UX Improvements" have been completed.
   2. Function sets flags like `battleStateBadge`, `cliVerbose`, `battleStateProgress`, etc., based on URL params.
   3. Called `parseUrlFlags()` in the `init()` function before `setupFlags()` to apply URL overrides early.
   4. Existing flag behaviors (e.g., cliVerbose controlling verbose log visibility) are preserved and now controllable via URL.
-- **Test Automation Hooks**
-  1. Identify key game actions and state variables that would be useful for automated testing.
-  2. Create a `window.testHooks` object (or similar) to expose functions like `startRound()`, `resolveRound()`, `getInternalState()`.
-  3. Ensure these functions are deterministic and do not interfere with normal gameplay.
+- **Test Automation Hooks** ✅
+  1. Created `window.testHooks` object in `init.js` with `startRound()`, `resolveRound()`, and `getInternalState()` functions for automated testing.
+  2. `startRound()`: Calls `startRoundCore(store)` to initiate a new round deterministically.
+  3. `resolveRound()`: Emits 'roundResolved' event to force round resolution without user interaction.
+  4. `getInternalState()`: Returns key state variables (store, currentRound, scores, matchLength) for test assertions.
+  5. Hooks are exposed only in browser environment and do not interfere with normal gameplay when not used.
 
 ## Assessment, Feasibility, and Engineering Notes
 

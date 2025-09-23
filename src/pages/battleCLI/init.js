@@ -2050,7 +2050,7 @@ function parseUrlFlags() {
     "opponentDelayMessage",
     "roundStore"
   ];
-  flags.forEach(flag => {
+  flags.forEach((flag) => {
     if (urlParams.has(flag)) {
       const value = urlParams.get(flag) === "true";
       setFlag(flag, value);
@@ -2310,6 +2310,28 @@ export async function init() {
   // Expose test API for testing direct access
   try {
     exposeTestAPI();
+  } catch {}
+
+  // Expose test hooks for automation
+  try {
+    if (typeof window !== "undefined") {
+      window.testHooks = {
+        startRound: async () => {
+          await startRoundCore(store);
+        },
+        resolveRound: async () => {
+          emitBattleEvent("roundResolved", {});
+        },
+        getInternalState: () => {
+          return {
+            store: store,
+            currentRound: store.currentRound,
+            scores: store.scores,
+            matchLength: store.matchLength
+          };
+        }
+      };
+    }
   } catch {}
 
   await renderStatList();

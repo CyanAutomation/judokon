@@ -560,7 +560,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
           if (attempt < maxAttempts - 1) {
             // Advance using in-app flow to avoid reload races
-            const nextButton = page.locator('#next-button');
+            const nextButton = page.locator("#next-button");
             await expect(nextButton).toBeEnabled();
             await nextButton.click();
             await expect(page.locator(selectors.statButton(0)).first()).toBeVisible();
