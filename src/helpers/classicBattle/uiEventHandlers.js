@@ -68,12 +68,20 @@ export function bindUIHelperEventHandlersDynamic() {
         const resolvedDelay = Number.isFinite(delay) && delay > 0 ? delay : 0;
         clearOpponentSnackbarTimeout();
         if (resolvedDelay > 0) {
-          opponentSnackbarId = setTimeout(() => {
+          const delayFn = typeof setTimeout === "function" ? setTimeout : undefined;
+          if (delayFn) {
+            opponentSnackbarId = delayFn(() => {
+              try {
+                showSnackbar(t("ui.opponentChoosing"));
+                markOpponentPromptNow();
+              } catch {}
+            }, resolvedDelay);
+          } else {
             try {
               showSnackbar(t("ui.opponentChoosing"));
               markOpponentPromptNow();
             } catch {}
-          }, resolvedDelay);
+          }
         } else {
           try {
             showSnackbar(t("ui.opponentChoosing"));

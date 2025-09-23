@@ -57,8 +57,17 @@ function safeNow() {
   return 0;
 }
 
-function computeOpponentPromptWaitBudget() {
-  const bufferMs = 250;
+// Provide a small buffer so the prompt remains visible briefly after the
+// configured minimum duration completes. This avoids flicker when timers resume
+// immediately after the prompt appears.
+const DEFAULT_OPPONENT_PROMPT_BUFFER_MS = 250;
+
+function computeOpponentPromptWaitBudget(options = {}) {
+  const configuredBuffer = Number(options?.bufferMs);
+  const bufferMs =
+    Number.isFinite(configuredBuffer) && configuredBuffer >= 0
+      ? configuredBuffer
+      : DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
   let delayMs = 0;
   let minVisibleMs = 0;
   try {
@@ -77,30 +86,70 @@ function computeOpponentPromptWaitBudget() {
   return { delayMs, minVisibleMs, bufferMs, totalMs };
 }
 
-async function waitForDelayedOpponentPromptDisplay(budget = computeOpponentPromptWaitBudget()) {
+async function waitForDelayedOpponentPromptDisplay(
+  budget = computeOpponentPromptWaitBudget(),
+  { pollIntervalMs = 50 } = {}
+) {
   const { totalMs } = budget || {};
   if (!Number.isFinite(totalMs) || totalMs <= 0) {
     return;
   }
+  if (typeof setTimeout !== "function") {
+    return;
+  }
+  const interval = Number.isFinite(pollIntervalMs) && pollIntervalMs > 0 ? pollIntervalMs : 50;
   const start = safeNow();
-  while (safeNow() - start < totalMs) {
-    try {
-      const timestamp = Number(getOpponentPromptTimestamp());
-      if (Number.isFinite(timestamp) && timestamp > 0) {
+  await new Promise((resolve) => {
+    const checkPrompt = () => {
+      try {
+        const timestamp = Number(getOpponentPromptTimestamp());
+        if (Number.isFinite(timestamp) && timestamp > 0) {
+          resolve();
+          return;
+        }
+      } catch {}
+      if (safeNow() - start >= totalMs) {
+        resolve();
         return;
       }
-    } catch {}
-    if (typeof setTimeout !== "function") {
-      break;
-    }
-    await new Promise((resolve) => {
       try {
-        setTimeout(resolve, 16);
+        setTimeout(checkPrompt, interval);
       } catch {
         resolve();
       }
-    });
+    };
+    checkPrompt();
+  });
+}
+
+function hasVisibleOpponentPrompt() {
+  try {
+    const timestamp = Number(getOpponentPromptTimestamp());
+    return Number.isFinite(timestamp) && timestamp > 0;
+  } catch {}
+  return false;
+}
+
+async function startRoundTimerWithPromptGate(
+  timer,
+  seconds,
+  {
+    requirePromptVisibility = false,
+    promptBudget,
+    waitForPromptDisplay = waitForDelayedOpponentPromptDisplay
+  } = {}
+) {
+  if (!timer || typeof timer.start !== "function") {
+    return;
   }
+  if (requirePromptVisibility && !hasVisibleOpponentPrompt()) {
+    try {
+      await waitForPromptDisplay(promptBudget || undefined);
+    } catch {}
+  }
+  try {
+    await timer.start(seconds);
+  } catch {}
 }
 
 /**
@@ -404,21 +453,10 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
                 });
               }
             } catch {}
-            if (typeof timer.start === "function") {
-              if (delayOpponentMessageFlag) {
-                try {
-                  const timestamp = Number(getOpponentPromptTimestamp());
-                  if (!Number.isFinite(timestamp) || timestamp <= 0) {
-                    await waitForDelayedOpponentPromptDisplay(promptBudget || undefined);
-                  }
-                } catch {
-                  await waitForDelayedOpponentPromptDisplay(promptBudget || undefined);
-                }
-              }
-              try {
-                await timer.start(secs);
-              } catch {}
-            }
+            await startRoundTimerWithPromptGate(timer, secs, {
+              requirePromptVisibility: delayOpponentMessageFlag,
+              promptBudget
+            });
           }
         }
       } catch {}
