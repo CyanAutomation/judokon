@@ -39,15 +39,31 @@ describe("formUtils ARIA", () => {
 
   it("adds data-tooltip-id for game mode switches", () => {
     const container = document.createElement("div");
-    const modes = [{ id: "classicBattle", name: "Classic Battle", order: 1 }];
+    const modes = [{ id: 1, name: "Classic Battle", order: 1 }];
     renderGameModeSwitches(
       container,
       modes,
       () => ({ gameModes: {} }),
       () => {}
     );
-    const input = container.querySelector("#mode-classicBattle");
-    expect(input).toBeTruthy();
+    const input = container.querySelector("#mode-1");
+    expect(input).toHaveAttribute("data-tooltip-id", "mode.1");
+  });
+
+  it("skips modes without navigation entries", () => {
+    const container = document.createElement("div");
+    const modes = [
+      { id: 1, name: "Classic", order: 1 },
+      { id: 999, name: "Unsupported", order: 2 }
+    ];
+    renderGameModeSwitches(
+      container,
+      modes,
+      () => ({ gameModes: {} }),
+      () => {}
+    );
+    expect(container.querySelector("#mode-1")).toBeTruthy();
+    expect(container.querySelector("#mode-999")).toBeNull();
   });
 });
 
