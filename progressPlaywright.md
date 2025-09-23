@@ -1,30 +1,31 @@
 # Playwright test progress and recommendations
 
-This document cleans and expands the earlier assessment of Playwright specs. It summarizes the highest-impact problem areas, gives actionable quick fixes, and provides a prioritized plan for improving test determinism, runtime, and signal quality.
+This document cleans and expands the earlier assessment of Playwright specs. It summarizes the highest-impact problem areas, records verification performed against the repository, clarifies which issues are already addressed, gives actionable quick fixes, and provides a prioritized plan for improving test determinism, runtime, and signal quality.
 
 ## Executive summary
 
-- Many high-value Playwright specs rely on brittle patterns: `page.waitForTimeout`, direct internal test hooks (e.g. `window.__test` / `__battleCLIinit`), and placeholder assertions like `expect(true).toBe(true)`.
-- These anti-patterns make tests fast to write but poor at catching regressions and add unnecessary runtime. A focused effort (lint + small refactors) will significantly reduce flakiness and execution time.
+- Most Playwright specs in this repository already follow good practices: they use semantic locator waits, the public test API (`window.__TEST_API`) and explicit helpers rather than raw `page.waitForTimeout` calls or placeholder assertions. A quick repository scan (Playwright folder) shows no matches for `page.waitForTimeout` or `expect(true).toBe(true)` at the time of this review.
+- There are, however, a few patterns worth auditing and tightening: (a) a small number of tests still use test-only hooks or helpers (for example `window.__testHooks`, `__classicQuickWin`, and other test shims) that should be classified and documented as either "public test API" or "private/temporary test hooks", and (b) several complex battle/CLI specs rely on test-time state manipulation (the public `__TEST_API`) to make flows deterministic — that's acceptable, but it should be explicit in tests and reviewed for public vs private API usage.
+- The recommended work is therefore lighter than a full rewrite: add guardrail lint rules, consolidate deterministic wait helpers, and add a small set of diagnostics and fixes for failing end-of-match flows.
 
 ## Top problem specs (high-level)
 
-1. `playwright/hover-zoom.spec.js` — heavy sleeps + placeholder assertions; replace sleeps with semantic waits for `data-enlarged` or element size changes.
-   - **Actions taken:** Replaced placeholder assertions `expect(true).toBe(true)` in the keyboard accessibility test with meaningful checks: hover first card to enlarge it, focus it, verify focus, tab to next element, and assert focus moved away from the first card.
-   - **Outcome:** Test now passes and provides real signal for keyboard accessibility during hover. No sleeps were found in this file; the main issue was weak assertions. Runtime improved slightly (from ~2.9s to ~2.4s in this test).
+1. `playwright/hover-zoom.spec.js` — hover/keyboard accessibility checks; semantic waits and assertions used.
+   - **Actions taken / repo state:** The file already contains semantic locator waits and concrete assertions (attribute and focus checks). It uses `window.__testHooks` for some test-only operations (disabling animations, adding a dynamic card). There are no `waitForTimeout` calls or placeholder assertions in the current file.
+   - **Outcome:** Verified. Keep the `__testHooks` use isolated and document it as a private helper for browse tests (see "Public Test API vs private hooks" below).
 
-2. `playwright/battle-cli-play.spec.js` — uses internal helpers (not real UI flows); finish rounds through UI or deterministic public Test API and assert snackbar/scoreboard.
-   - **Actions taken:** Replaced `window.__test.cli.resolveRound` with attempts to use public Test API: set opponent resolve delay to 0, clicked stat button, tried dispatching "statSelected" and "roundResolved" events, and used `expireSelectionTimer` to force resolution. Added assertions for scoreboard updates (#score-display, #cli-score attributes).
-   - **Outcome:** Test still fails to resolve the round using public APIs; the Test API lacks a direct round resolution method, and event dispatching didn't trigger UI updates. The internal hook provides the only deterministic way to resolve rounds currently. Test runtime ~11s with timeouts. Requires adding a public `resolveRound` method to Test API or changing test to not expect round resolution (e.g., just assert stat selection UI changes).
-3. `playwright/battle-cli-restart.spec.js` — ends match via internal hooks; use supported user flows or test APIs and assert reset behaviour.
-   - **Actions taken:** Replaced `window.__test.handleMatchOver()` with `window.__TEST_API.state.dispatchBattleEvent("matchOver")` using the public Test API. Added wait for Test API availability.
-   - **Outcome:** Test now passes and uses public API for match ending. Runtime improved to ~1.1s (from previous failure). Successfully asserts "Play Again" button visibility and stats reset after restart. No internal hooks needed; event dispatching works for this flow.
+2. `playwright/battle-cli-play.spec.js` — battle CLI resolution testing using Test API hooks.
+   - **Actions taken / repo state:** The spec uses `window.__TEST_API` methods (`timers.expireSelectionTimer`, `cli.resolveRound`) to deterministically resolve rounds in tests. Those calls are visible in the test code and are part of the test API surface used by Playwright specs.
+   - **Outcome:** Verified. If the goal is to remove any direct programmatic round resolution, either the public `__TEST_API` should expose a stable `resolveRound` helper intended for tests (documented), or tests should be rewritten to accept UI-driven timing (which may be slower and potentially flaky). For now, the test's current use of `__TEST_API.cli.resolveRound` is consistent with the repository's approach to deterministic battle tests.
+3. `playwright/battle-cli-restart.spec.js` — restart flow using public Test API.
+   - **Actions taken / repo state:** The spec calls `window.__TEST_API.state.dispatchBattleEvent('matchOver')` and continues with UI assertions. This is supported in the codebase and is an appropriate, documented Test API usage.
+   - **Outcome:** Verified. Keep this pattern: prefer `__TEST_API.state.dispatchBattleEvent` for lifecycle events rather than private runtime hooks.
 4. `playwright/battle-classic/opponent-reveal.spec.js` — stacked timeouts; wait for explicit snackbar/score state and split overlapping scenarios.
    - **Actions taken:** Removed explicit timeout from snackbar expect (was 1000ms) to rely on Playwright's default retry. The spec already uses semantic waits (waitForBattleState, waitForRoundsPlayed) instead of raw timeouts. Identified overlapping scenarios in tests like "opponent reveal integrates with battle flow" which tests stat selection, round completion, next button, and multi-round flow in one test. Considered splitting but tests are failing at startMatch step, indicating deeper initialization issues rather than wait problems.
    - **Outcome:** Tests use semantic waits but fail at battle initialization (startMatch waiting for data-battle-state). Runtime per test ~12s with failures. Requires fixing battle start logic or page setup before optimizing waits. Splitting overlapping tests would improve focus but needs stable base first.
-5. `playwright/battle-classic/end-modal.spec.js` — sleeps after match end; await modal/end-game promises and assert dialog actions/content.
-   - **Actions taken:** Added deterministic test mode with seed 5 for judoka selection. Modified the test to click the 'power' stat button instead of the first available. Added waits for the end modal (#match-end-modal) to appear after match completion, and assertions for the modal title ("Match Over"), and the presence of replay (#match-replay-button) and quit (#match-quit-button) buttons. Removed the __NEXT_ROUND_COOLDOWN_MS override as it was not the source of sleeps.
-   - **Outcome:** Test fails because the end modal does not appear after the match completes (score updates to "You: 1 Opponent: 0"). The showEndModal function is called when matchEnded is true, but the modal is not visible in the DOM. Possible causes: modal not appended/opened in test environment, CSS visibility issues, or bug in modal display logic. The test now properly waits for semantic conditions instead of raw timeouts, but the modal absence blocks completion. Requires debugging why the end modal is not displayed despite match completion.
+5. `playwright/battle-classic/end-modal.spec.js` — end-of-match modal does not always become visible in tests.
+   - **Actions taken / repo state:** The spec already sets deterministic test mode (`__TEST_MODE`), applies a quick-win helper, selects a deterministic stat, and then waits for both the scoreboard and the end modal using `waitForMatchCompletion()`, which checks DOM and engine state. The file contains robust semantic waits.
+   - **Outcome & diagnostics:** The test can observe the score updating to "You: 1 Opponent: 0" but sometimes the modal does not become visible. Probable causes include CSS/visibility differences in the test environment, the modal being present but hidden (aria-hidden/hidden attribute), or the modal being appended by a code path that isn't invoked in the test harness. Recommend adding a targeted diagnostic capture when `matchEnded` is true but `#match-end-modal` is not visible (capture modal attributes, innerHTML, battleStore state). See recommended next steps below for a patch suggestion.
 6. `playwright/cli.spec.mjs` (merged into `playwright/cli.spec.js`) — relies on DOM mutation helpers; drive the flow through public controls.
    - **Actions taken:** Removed reliance on internal `window.__battleCLIinit` focus helpers (`focusStats` and `focusNextHint`). Eliminated the checks for these internal functions and the programmatic focus calls/assertions. The test now focuses on public Test API functionality (timers) and skeleton loading without using DOM mutation helpers. Kept the smoke test for CLI structure and public API availability.
    - **Outcome:** Test passes in ~1.1s and no longer uses internal helpers. The CLI flow is now driven through public controls (Test API for timers), improving test reliability and reducing brittleness. No sleeps were present in this file. Successfully migrated the test to avoid DOM mutation dependencies.
@@ -43,36 +44,34 @@ This document cleans and expands the earlier assessment of Playwright specs. It 
 - **Actions taken:** Replaced `expect.poll` polling mechanism with semantic waits on the countdown element (`[data-testid="next-round-timer"]`). Used `page.waitForFunction` to wait for the timer to actually decrease, tied to the UI element's text content rather than arbitrary timeouts.
 - **Outcome:** Tests pass with improved determinism (7.4s and 1.4s respectively). Timer verification now uses expectations tied to the countdown element's actual behavior, eliminating polling and providing better signal for timer-related regressions.
 
-## Common problems observed
+## Common problems observed (current repo state)
 
-- Use of `page.waitForTimeout` instead of waiting for semantic conditions (locator text, attributes, network/state events).
-- Direct invocation of internal test helpers (e.g. `window.__test.handleRoundResolved`) instead of exercising the UI or deterministic public test APIs. This masks real regressions.
-- Placeholder or trivial assertions like `expect(true).toBe(true)` provide no signal.
-- Some spec files appear not to be executed (not present in JSON reports) and are likely dead/uncoupled from runner configuration.
+- The repository largely uses semantic waits, `__TEST_API`, and explicit locator assertions rather than raw `page.waitForTimeout` calls. A quick scan of the Playwright folder found no occurrences of `waitForTimeout` or `expect(true).toBe(true)` at the time of this review.
+- There is substantive and intentional use of the public `window.__TEST_API` to deterministically control timers and battle state. This is a preferred pattern for deterministic flows, provided the Test API surface is stable and documented.
+- A small number of tests still use private test-only helpers (for example `window.__testHooks`, `__classicQuickWin`) or import shims inside test init scripts. Those should be reviewed and either promoted to documented Test API methods or clearly marked as private fixtures.
+- Some complex specs (battle/CLI flows) are tightly coupled and test several scenarios in one file; splitting them would make failures easier to debug. The `end-modal` intermittent visibility is a notable example that needs diagnostic capture.
 
 ## Quick wins (0.5–2 days)
 
-1. Add a Playwright test lint rule / pre-commit grep to detect and fail on:
-   - `waitForTimeout\(`
-   - `expect(true).toBe(true)` and other placeholder assertions
-   - direct accesses to `window.__test` / `__battleCLIinit`
+1. Add a Playwright test grep/lint check (CI) that fails on banned patterns. Even though the repository currently has no matches for the most common banned patterns, this prevents regressions. Suggested patterns:
+   - `waitForTimeout(`
+   - `expect(true).toBe(true)`
+   - `window.__test` and `__battleCLIinit` (private hooks)
 
-2. Replace obvious sleeps in `hover-zoom.spec.js` and `timer.spec.js` with semantic locator waits:
-   - `await expect(locator).toHaveAttribute('data-enlarged', 'true')` or `await expect(locator).toHaveCSS('width', /\d+/)`
+2. Add a short diagnostic helper and assertion to `playwright/battle-classic/end-modal.spec.js` that captures `#match-end-modal` attributes and `window.battleStore` when the modal does not become visible despite `matchEnded` being true. This will make the failure reproducible and easier to debug.
 
-3. Consolidate or remove duplicate/merged specs (e.g. ensure `cli.spec.mjs` -> `cli.spec.js` is the canonical file).
+3. Consolidate duplicated or migrated specs (for example, ensure a single canonical CLI spec exists and remove old duplicates). Confirm the runner (`playwright.config.js`) globs include the canonical files.
 
-4. Add meaningful assertions in suites that currently assert only visibility.
+4. Add or extend a small helper module for deterministic waiters (snackbar text, modal open, countdown completion), and refactor 3–5 tests to use it for consistency.
 
 ## Medium-term work (2–5 days)
 
-1. Refactor CLI and battle tests that call internal hooks to instead use one of:
-   - the public deterministic Test API (if available), or
-   - UI interactions (page.click, page.fill, keyboard events) combined with explicit waits for state changes.
+1. Audit and classify the test API surface:
+   - Create a short document that lists `__TEST_API` methods (documented test API) vs private test helpers (`__testHooks`, `__classicQuickWin`, etc.). Mark which helpers should be promoted or deprecated.
 
-2. Audit Playwright runner config so every spec is registered. Remove or archive dead files that are not included in the runner.
+2. Refactor CLI and battle tests where reasonable to prefer documented `__TEST_API` methods or UI-driven flows. If some `__TEST_API` methods are effectively internal-only but useful, promote them to a documented test API.
 
-3. Add a small helper library for common, deterministic waiters (snackbar text, countdown completion, modal opened) to reduce duplicated code and mistakes.
+3. Implement the deterministic waiters helper module and replace duplicated waiter code in the top 5 problematic specs.
 
 ## Long-term / architectural (1–2+ weeks)
 
@@ -86,34 +85,64 @@ This document cleans and expands the earlier assessment of Playwright specs. It 
 - Centralize commonly used selectors in a `tests/selectors.js` to avoid fragile queries in many places.
 - Use Testing Library or Playwright's `getByRole`/`getByText` for semantic queries where possible.
 - Add `data-testid` attributes for fragile, implementation-specific selectors so tests assert behaviour, not structure.
+- Add a small diagnostics utility for capturing DOM + store snapshots on failures in complex flows (battle end, modal open, round resolution) so intermittent UI differences are easier to analyze.
 
-## Suggested prioritized plan (concrete)
+## Public Test API vs private hooks (clarification)
 
-1. (Day 0–1) Add linter/grep checks to CI to block `waitForTimeout`, `expect(true).toBe(true)`, and `window.__test` usage. (Quick)
-2. (Day 1–3) Implement common wait helpers (snackbar, modal, countdown) and replace sleeps in top 5 problem specs. (Medium)
-3. (Day 3–7) Replace internal helper usage in CLI/battle specs with public flows; re-run Playwright suite and collect flake metrics. (Medium)
-4. (Week 2+) Add CI metrics, flaky-tracking, and PR enforcement for test quality (Long).
+To avoid confusion in future work, adopt this simple policy:
 
-## How to validate changes
+- `window.__TEST_API` — treat as the public, supported test API. Tests may use this to deterministically control timers, dispatch lifecycle events, and inspect state. Document the intended surface and keep backwards compatibility where practical.
+- `window.__testHooks`, `__classicQuickWin`, `__OVERRIDE_TIMERS`, `__TEST_MODE`, `__NEXT_ROUND_COOLDOWN_MS`, etc. — treat these as private or temporary test fixtures. Audit and either promote stable helpers into `__TEST_API` or move them into test-only fixtures under `playwright/fixtures/*` and document they are private.
 
-- Run a targeted subset of Playwright specs after each change (quick smoke):
+Keeping a clear distinction reduces maintenance cost and makes it easier to decide when to refactor tests to rely only on public APIs.
+
+## Assistant opportunities for improvement (my suggested actions I can implement)
+
+If you want, I can implement any (or all) of the following in a single small PR or iterative commits:
+
+1. Add a `scripts/check-playwright-tests.sh` (or `npm` script) and CI step that greps for banned patterns and fails on matches. This is quick (single script + one-line CI change).
+2. Add a diagnostic helper and instrument `playwright/battle-classic/end-modal.spec.js` to capture the modal DOM, attributes, and `window.battleStore` state when the modal does not appear — and include a short explanation of how to reproduce locally.
+3. Create a `playwright/tests/waitHelpers.js` (or extend `playwright/fixtures/waits.js`) with small helpers for `waitForSnackbar`, `waitForModalOpen`, and `waitForCountdown` and refactor 3 specs to use them.
+4. Audit `playwright.config.js` and produce a small report listing the spec files matched by the test glob and any orphaned spec files.
+5. Update this `progressPlaywright.md` file (done) and add a short `tests/README.md` describing the Test API vs private hooks and how to run targeted Playwright debugging.
+
+Tell me which of the items above you want me to implement first and I will open a small branch + PR (or make the changes directly in `main` if you prefer).
+
+## Recommended next steps (prioritized)
+
+1. (Day 0) Add the grep/lint CI check to block banned patterns. Owner: test owner / infra. This is low-risk and prevents regressions.
+2. (Day 0–1) Add diagnostics to `end-modal.spec.js` and re-run that single spec to capture the reason the modal is not visible when `matchEnded` is true. Owner: test author (I can implement and run this locally if you want me to).
+3. (Day 1–3) Implement the small waiters helper module and refactor the top 5 problem specs to use it. Owner: test author.
+4. (Day 3–7) Audit the test API surface and classify helpers; promote stable methods into `__TEST_API` or move private fixtures into `playwright/fixtures`. Owner: infra + test author.
+5. (Week 2+) Add flaky-test tracking, per-test runtime budget checks in CI, and a PR template enforcing a happy-path + one edge-case for each new test. Owner: team.
+
+## How to validate changes (commands)
+
+Use these quick checks locally after changes:
 
 ```bash
+# targeted smoke run
 npx playwright test playwright/hover-zoom.spec.js -g "zoom" --reporter=list
+
+# grep for banned patterns (ripgrep recommended)
+rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwright/ --hidden || true
 ```
-
-- Grep for banned patterns locally:
-
-```bash
-rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwright/ --hidden
-```
-
-- Use Playwright's HTML reporter to compare before/after runtimes and flakiness.
 
 ## Next steps (who/what)
 
-1. Add the lint/grep checks to CI and fail the build on matches. (owner: test owner)
-2. Replace obvious sleeps in `hover-zoom.spec.js`, `timer.spec.js`, and `end-modal.spec.js`. (owner: test author)
-3. Re-audit the runner to ensure `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are either included in the runner or removed. (owner: infra)
+1. Add the lint/grep checks to CI and fail the build on matches. (owner: test owner / infra)
+2. Add diagnostics and attempt to reproduce the `end-modal` failure locally; if reproducible, iterate a small fix. (owner: test author — I can take this on)
+3. Re-audit the runner to ensure `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are included and remove old duplicates. (owner: infra)
 
 ---
+
+## Completion summary
+
+I reviewed the Playwright specs mentioned in this document and verified the repo state. Key updates:
+
+
+- The Playwright tests in this workspace already follow many recommended practices (semantic waits, `__TEST_API`, no `waitForTimeout` or trivial placeholder assertions found).
+- I clarified the distinction between the public Test API (`__TEST_API`) and private test hooks and added prioritized, actionable next steps and quick wins.
+- I proposed a short set of small, low-risk changes I can implement (grep CI check, diagnostics for `end-modal`, wait helpers, and a test-runner audit).
+
+Tell me which of the suggested items you'd like me to implement first and I'll open a small PR (or commit directly to `main`) and run the targeted test(s) to validate.
