@@ -12,7 +12,9 @@ import { onBattleEvent, emitBattleEvent, getBattleEventTarget } from "./battleEv
 import { getCardStatValue } from "./cardStatUtils.js";
 import { getOpponentJudoka } from "./cardSelection.js";
 import { showSnackbar, updateSnackbar as _updateSnackbar } from "../showSnackbar.js";
+import { createRoundTimer as defaultCreateRoundTimer } from "../timers/createRoundTimer.js";
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
+import { attachCooldownRenderer as defaultAttachCooldownRenderer } from "../CooldownRenderer.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { runAfterFrames } from "../../utils/rafUtils.js";
@@ -59,7 +61,7 @@ function scheduleUiServicePreload() {
  *
  * @pseudocode
  * 1. Prefer injected factories when provided via `overrides`.
- * 2. Dynamically import missing factories to match the previous lazy path.
+ * 2. Fallback to statically imported factories when overrides are missing.
  * 3. Instantiate the timer and return both timer and renderer handles.
  *
  * @param {object} store
@@ -71,44 +73,39 @@ function scheduleUiServicePreload() {
  */
 export async function resolveCooldownDependencies(store, overrides = {}) {
   void store;
-  const createRoundTimerOverride = overrides?.createRoundTimer;
-  const attachCooldownRendererOverride = overrides?.attachCooldownRenderer;
-
-  let createRoundTimerFn =
-    typeof createRoundTimerOverride === "function" ? createRoundTimerOverride : null;
-  let attachRendererFn =
-    typeof attachCooldownRendererOverride === "function" ? attachCooldownRendererOverride : null;
-
-  if (!createRoundTimerFn || !attachRendererFn) {
-    try {
-      const [timerModule, rendererModule] = await Promise.all([
-        createRoundTimerFn
-          ? Promise.resolve({ createRoundTimer: createRoundTimerFn })
-          : import("../timers/createRoundTimer.js"),
-        attachRendererFn
-          ? Promise.resolve({ attachCooldownRenderer: attachRendererFn })
-          : import("../CooldownRenderer.js")
-      ]);
-      if (!createRoundTimerFn && typeof timerModule?.createRoundTimer === "function") {
-        createRoundTimerFn = timerModule.createRoundTimer;
-      }
-      if (!attachRendererFn && typeof rendererModule?.attachCooldownRenderer === "function") {
-        attachRendererFn = rendererModule.attachCooldownRenderer;
-      }
-    } catch {}
-  }
-
-  let timer = null;
-  if (typeof createRoundTimerFn === "function") {
-    try {
-      timer = createRoundTimerFn();
-    } catch {}
-  }
+  const timerFactory = selectTimerFactory(overrides?.createRoundTimer);
+  const renderer = selectRendererFactory(overrides?.attachCooldownRenderer);
 
   return {
-    timer,
-    renderer: typeof attachRendererFn === "function" ? attachRendererFn : null
+    timer: instantiateTimer(timerFactory),
+    renderer
   };
+}
+
+function selectTimerFactory(override) {
+  if (typeof override === "function") {
+    return override;
+  }
+  return typeof defaultCreateRoundTimer === "function" ? defaultCreateRoundTimer : null;
+}
+
+function selectRendererFactory(override) {
+  if (typeof override === "function") {
+    return override;
+  }
+  return typeof defaultAttachCooldownRenderer === "function"
+    ? defaultAttachCooldownRenderer
+    : null;
+}
+
+function instantiateTimer(factory) {
+  if (typeof factory !== "function") {
+    return null;
+  }
+  try {
+    return factory();
+  } catch {}
+  return null;
 }
 
 /**
@@ -131,48 +128,95 @@ export async function resolveCooldownDependencies(store, overrides = {}) {
  * @returns {Promise<void>}
  */
 export async function startRoundCooldown(resolved, config = {}) {
-  const { timer, renderer } = resolved || {};
-  const {
-    seconds,
-    delayOpponentMessage = false,
-    rendererOptions: rendererOptionsInput = {},
-    promptBudget = null,
-    waitForDelayedOpponentPromptDisplay: waitFn = waitForDelayedOpponentPromptDisplay,
-    getOpponentPromptTimestamp: getTimestamp = getOpponentPromptTimestamp
-  } = config;
+  const timer = extractTimer(resolved);
+  if (!timer) return;
 
-  if (!timer || typeof timer.start !== "function") return;
+  const renderer = selectRenderer(resolved);
+  const seconds = config?.seconds;
+  const rendererOptions = normalizeRendererOptions(config?.rendererOptions);
 
-  const rendererOptions = rendererOptionsInput || {};
-  try {
-    if (typeof renderer === "function") {
-      renderer(timer, seconds, rendererOptions);
-    }
-  } catch {}
+  attachRendererSafely(renderer, timer, seconds, rendererOptions);
 
-  if (delayOpponentMessage) {
-    let shouldWait = true;
-    if (typeof getTimestamp === "function") {
-      try {
-        const timestamp = Number(getTimestamp());
-        shouldWait = !Number.isFinite(timestamp) || timestamp <= 0;
-      } catch {
-        shouldWait = true;
-      }
-    }
-
-    if (shouldWait && typeof waitFn === "function") {
-      const waitArgs = promptBudget || undefined;
-      const intervalMs = Number(rendererOptions.promptPollIntervalMs);
-      const waitOptions = { intervalMs };
-      try {
-        await waitFn(waitArgs, waitOptions);
-      } catch {
-        await waitFn(waitArgs, waitOptions);
-      }
+  if (config?.delayOpponentMessage) {
+    const waitFn = config?.waitForDelayedOpponentPromptDisplay || waitForDelayedOpponentPromptDisplay;
+    const getTimestamp = config?.getOpponentPromptTimestamp || getOpponentPromptTimestamp;
+    if (shouldWaitForOpponentPrompt(getTimestamp)) {
+      const waitArgs = config?.promptBudget || undefined;
+      const waitOptions = derivePromptWaitOptions(rendererOptions);
+      await waitForOpponentPrompt(waitFn, waitArgs, waitOptions);
     }
   }
 
+  await startTimerSafely(timer, seconds);
+}
+
+function extractTimer(resolved) {
+  const timer = resolved?.timer;
+  return timer && typeof timer.start === "function" ? timer : null;
+}
+
+function selectRenderer(resolved) {
+  const renderer = resolved?.renderer;
+  return typeof renderer === "function" ? renderer : null;
+}
+
+function normalizeRendererOptions(options) {
+  if (options && typeof options === "object") {
+    return options;
+  }
+  return {};
+}
+
+function attachRendererSafely(renderer, timer, seconds, options) {
+  if (typeof renderer !== "function") {
+    return;
+  }
+  try {
+    renderer(timer, seconds, options);
+  } catch {}
+}
+
+function shouldWaitForOpponentPrompt(getTimestamp) {
+  if (typeof getTimestamp !== "function") {
+    return true;
+  }
+  try {
+    const timestamp = Number(getTimestamp());
+    return !Number.isFinite(timestamp) || timestamp <= 0;
+  } catch {}
+  return true;
+}
+
+function derivePromptWaitOptions(rendererOptions) {
+  const intervalMs = Number(rendererOptions?.promptPollIntervalMs);
+  return { intervalMs };
+}
+
+async function waitForOpponentPrompt(waitFn, waitArgs, waitOptions) {
+  if (typeof waitFn !== "function") {
+    return;
+  }
+  await runWithRetry(() => waitFn(waitArgs, waitOptions), 1);
+}
+
+async function runWithRetry(executor, retries = 0) {
+  if (typeof executor !== "function") {
+    return;
+  }
+  let attempt = 0;
+  while (attempt <= retries) {
+    try {
+      return await executor();
+    } catch {
+      attempt += 1;
+      if (attempt > retries) {
+        return;
+      }
+    }
+  }
+}
+
+async function startTimerSafely(timer, seconds) {
   try {
     await timer.start(seconds);
   } catch {}
