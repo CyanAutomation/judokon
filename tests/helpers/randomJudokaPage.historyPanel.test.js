@@ -39,7 +39,7 @@ describe("randomJudokaPage history panel", () => {
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
-    });
+    }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
