@@ -1848,9 +1848,24 @@ function handleRoundResolved(e) {
     // Ensure cli-score is updated with the correct scores from the result
     const cliScore = document.getElementById("cli-score");
     if (cliScore) {
-      cliScore.textContent = `You: ${result.playerScore} Opponent: ${result.opponentScore}`;
-      cliScore.dataset.scorePlayer = String(result.playerScore);
-      cliScore.dataset.scoreOpponent = String(result.opponentScore);
+      // Prefer explicit values from the result when available, otherwise
+      // fall back to the canonical engine scores to avoid writing "undefined".
+      let playerScore = result.playerScore;
+      let opponentScore = result.opponentScore;
+      try {
+        if (playerScore === undefined || opponentScore === undefined) {
+          const gs = engineFacade.getScores?.();
+          if (gs) {
+            if (playerScore === undefined) playerScore = gs.playerScore;
+            if (opponentScore === undefined) opponentScore = gs.opponentScore;
+          }
+        }
+      } catch {}
+      playerScore = playerScore === undefined || playerScore === null ? 0 : playerScore;
+      opponentScore = opponentScore === undefined || opponentScore === null ? 0 : opponentScore;
+      cliScore.textContent = `You: ${playerScore} Opponent: ${opponentScore}`;
+      cliScore.dataset.scorePlayer = String(playerScore);
+      cliScore.dataset.scoreOpponent = String(opponentScore);
     }
     // Add detailed info to verbose log if enabled
     if (isEnabled("cliVerbose")) {

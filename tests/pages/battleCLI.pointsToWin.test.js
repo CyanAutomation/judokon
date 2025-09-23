@@ -16,6 +16,8 @@ function getListener(spy, type) {
 }
 
 describe("battleCLI points select", () => {
+  let confirmSpy;
+
   beforeEach(() => {
     const machine = { dispatch: vi.fn() };
     debugHooks.exposeDebugState(
@@ -23,11 +25,13 @@ describe("battleCLI points select", () => {
       vi.fn(() => machine)
     );
     window.__TEST_MACHINE__ = machine;
+    confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
   });
 
   afterEach(async () => {
     debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     delete window.__TEST_MACHINE__;
+    confirmSpy.mockRestore();
     await cleanupBattleCLI();
   });
 
