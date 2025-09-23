@@ -219,29 +219,57 @@ async function waitForMatchCompletion(page, timeout = 15000) {
   await page.waitForFunction(
     () => {
       const modal = document.querySelector("#match-end-modal");
+      const store = window.battleStore;
+      const engine = store?.engine;
+      const matchEnded = engine?.matchEnded === true;
+      const round = store?.round;
+      const roundResolving = round?.resolving === true;
+
+      // Check if modal is visible
+      let modalVisible = false;
       if (modal) {
         const ariaHidden = modal.getAttribute("aria-hidden");
         if (ariaHidden !== "true") {
-          return true;
-        }
-        if (typeof modal.matches === "function" && modal.matches(":not([hidden])")) {
-          return true;
+          modalVisible = true;
+        } else if (typeof modal.matches === "function" && modal.matches(":not([hidden])")) {
+          modalVisible = true;
         }
       }
 
-      const store = window.battleStore;
-      if (!store || typeof store !== "object") {
-        return false;
+      // If match ended but modal not visible, capture diagnostics
+      if (matchEnded && !modalVisible && !roundResolving) {
+        // Capture diagnostics for debugging
+        const diagnostics = {
+          modalExists: !!modal,
+          modalAttributes: modal ? {
+            id: modal.id,
+            className: modal.className,
+            style: modal.style.cssText,
+            ariaHidden: modal.getAttribute("aria-hidden"),
+            hidden: modal.hidden,
+            innerHTML: modal.innerHTML.substring(0, 500) // Truncate for readability
+          } : null,
+          battleStore: {
+            matchEnded: engine?.matchEnded,
+            pointsToWin: engine?.pointsToWin,
+            currentRound: store?.currentRound,
+            round: round ? {
+              resolving: round.resolving,
+              state: round.state
+            } : null
+          },
+          timestamp: new Date().toISOString()
+        };
+
+        // Store diagnostics on window for retrieval
+        window.__endModalDiagnostics = diagnostics;
+
+        // Log to console for immediate visibility
+        console.warn("[TEST DIAGNOSTIC] Match ended but end modal not visible:", diagnostics);
       }
-      const engine = store.engine;
-      if (engine?.matchEnded !== true) {
-        return false;
-      }
-      const round = store.round;
-      if (round && round.resolving === true) {
-        return false;
-      }
-      return true;
+
+      // Return true if modal is visible or match ended and round not resolving
+      return modalVisible || (matchEnded && !roundResolving);
     },
     undefined,
     { timeout }
