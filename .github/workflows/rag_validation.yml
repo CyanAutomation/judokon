@@ -1,10 +1,10 @@
-name: "RAG Validation"
+name: RAG Validation
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: "0 2 * * *" # Runs at 3:00 AM UTC every day
+  # Allows manual triggering
+  workflow_dispatch: {}
 
 jobs:
   rag-validation:
