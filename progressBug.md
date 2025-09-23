@@ -263,3 +263,48 @@ The current flow requires two clicks: first to open settings and select match le
 
 - Test the fix manually to ensure selecting match length immediately starts the match.
 - Verify that the start button is no longer rendered or needed.
+
+## Outstanding follow-ups
+
+The fixes above have been implemented and validated against targeted tests, but the following follow-ups remain recommended to complete verification and guard against regressions. These are actionable items you can pick up or include in PRs.
+
+- Add unit tests (Vitest):
+  - Purpose: cover round resolution logic (happy path) and the timer-expire edge case (auto-select vs interrupt).
+  - Suggested files to add/update: `tests/unit/roundResolution.test.js` or extend `tests/pages/battleCLI.sharedPrimary.test.js`.
+  - Quick command to run the specific tests:
+
+```bash
+npx vitest run tests/unit/roundResolution.test.js
+```
+
+- Add Playwright integration tests:
+  - Purpose: verify scoreboard increments across multiple rounds and that the Quit workflow ends the match.
+  - Suggested test paths: `playwright/scoreboard-increment.spec.js` and `playwright/quit-workflow.spec.js`.
+  - Run the new tests only:
+
+```bash
+npx playwright test playwright/scoreboard-increment.spec.js
+npx playwright test playwright/quit-workflow.spec.js
+```
+
+- Automated accessibility checks:
+  - Purpose: snapshot ARIA attributes, run pa11y or Playwright accessibility snapshot to detect regressions.
+  - Suggested tools: `pa11y`, Playwright a11y snapshot, or `axe-core` integrations.
+  - Example (pa11y):
+
+```bash
+# Install once: npm install -D pa11y
+pa11y http://localhost:5000/pages/battleCLI.html
+```
+
+- Manual screen reader verification:
+  - Purpose: validate ARIA-live announcements and keyboard navigation with a real screen reader (NVDA, VoiceOver, or Orca).
+  - Steps: open the CLI page, enable the `battleStateBadge` and `cliVerbose` flags (or pass via URL), step through the flow, and confirm announcements at outcome and state changes.
+
+- Documentation / PR checklist completion:
+  - Ensure any PR includes the task contract, updated tests, linting/formatting, and accessibility test results (per the Suggested next steps section).
+
+- Minor markdown lint fix (optional):
+  - The reproduction steps in the table use inline `<br>` tags which trigger MD033 in some linters. Consider replacing the inline `<br>` with a compact list or moving the reproduction steps out of the table to keep linting clean.
+
+If you want, I can implement any of the follow-ups above now (add tests, add Playwright specs, run a11y checks, or fix the markdown lint). Tell me which one to prioritize and I'll proceed (I will show the plan, implement, run the targeted tests, and update `progressBug.md` with results).
