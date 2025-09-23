@@ -245,6 +245,23 @@ const clearState = (state) => {
   resetPromptWaitState(state);
 };
 
+const getRemainingPromptDelayMsState = (state) => {
+  const computed = Number(computeRemainingPromptDelayMs(state.config.now));
+  const baseRemaining = Number.isFinite(computed) ? Math.max(0, computed) : 0;
+  if (baseRemaining > 0) {
+    return baseRemaining;
+  }
+
+  if (state.config.waitForPromptOption && state.config.maxPromptWait > 0 && !hasActivePrompt()) {
+    if (state.promptWaitDeadline > 0) {
+      return Math.max(0, state.promptWaitDeadline - state.config.now());
+    }
+    return state.config.maxPromptWait;
+  }
+
+  return baseRemaining;
+};
+
 const shouldDeferState = (state) => {
   if (state.config.waitForPromptOption && !hasActivePrompt()) {
     return true;
@@ -284,7 +301,8 @@ const createControllerInterface = (state) => ({
   queueTick: (value, queueOptions = {}, onReady) =>
     queueTickInternal(state, value, queueOptions, onReady),
   clear: () => clearState(state),
-  shouldDefer: () => shouldDeferState(state)
+  shouldDefer: () => shouldDeferState(state),
+  getRemainingPromptDelayMs: () => getRemainingPromptDelayMsState(state)
 });
 
 /**
@@ -381,14 +399,43 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
     processTick(value, { suppressEvents });
   };
 
-  const onTick = (remaining) => {
-    const normalized = normalizeRemaining(remaining);
-    if (!started && promptController.shouldDefer()) {
-      promptController.queueTick(normalized, { suppressEvents: false }, deliverTick);
+  const getRemainingPromptDelayMs = () => {
+    try {
+      if (typeof promptController.getRemainingPromptDelayMs === "function") {
+        const remaining = Number(promptController.getRemainingPromptDelayMs());
+        if (Number.isFinite(remaining)) {
+          return remaining;
+        }
+      }
+    } catch {}
+    return 0;
+  };
+
+  const queueTickAfterPromptDelay = (value, queueOptions = {}, { forceAsync = false } = {}) => {
+    const normalized = normalizeRemaining(value);
+    const suppressEvents = queueOptions?.suppressEvents === true;
+    const normalizedOptions = { suppressEvents };
+    const shouldDelay = !started && promptController.shouldDefer();
+
+    if (!shouldDelay && !forceAsync) {
+      promptController.clear();
+      processTick(normalized, normalizedOptions);
       return;
     }
-    promptController.clear();
-    processTick(normalized);
+
+    const remainingRaw = Number(getRemainingPromptDelayMs());
+    const remainingDelay = Number.isFinite(remainingRaw) ? Math.max(0, remainingRaw) : 0;
+    if (remainingDelay <= 0) {
+      promptController.clear();
+      processTick(normalized, normalizedOptions);
+      return;
+    }
+
+    promptController.queueTick(normalized, normalizedOptions, deliverTick);
+  };
+
+  const onTick = (remaining) => {
+    queueTickAfterPromptDelay(remaining);
   };
 
   const onExpired = () => onTick(0);
@@ -398,12 +445,7 @@ export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   const initialValue = Number(initialRemaining);
   if (Number.isFinite(initialValue)) {
     try {
-      const normalizedInitial = normalizeRemaining(initialValue);
-      if (!promptController.shouldDefer()) {
-        processTick(normalizedInitial, { suppressEvents: true });
-      } else {
-        promptController.queueTick(normalizedInitial, { suppressEvents: true }, deliverTick);
-      }
+      queueTickAfterPromptDelay(initialValue, { suppressEvents: true }, { forceAsync: true });
     } catch {}
   }
   return () => {
