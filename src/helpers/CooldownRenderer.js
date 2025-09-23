@@ -18,9 +18,14 @@ import { t } from "./i18n.js";
  *
  * @param {{on: Function, off: Function}} timer - Timer with event API.
  * @param {number} [initialRemaining] - Seconds remaining to render initially.
+ * @param {{
+ *   waitForOpponentPrompt?: boolean,
+ *   maxPromptWaitMs?: number,
+ *   promptPollIntervalMs?: number
+ * }} [options] - Optional countdown delay configuration.
  * @returns {() => void} Detach function.
  */
-export function attachCooldownRenderer(timer, initialRemaining) {
+export function attachCooldownRenderer(timer, initialRemaining, options = {}) {
   let started = false;
   let lastRendered = -1;
   let rendered = false;
@@ -35,6 +40,16 @@ export function attachCooldownRenderer(timer, initialRemaining) {
     typeof window !== "undefined" && typeof window.clearTimeout === "function"
       ? window.clearTimeout.bind(window)
       : clearTimeout;
+  const waitForPromptOption = options?.waitForOpponentPrompt === true;
+  const promptPollInterval =
+    Number.isFinite(options?.promptPollIntervalMs) && options.promptPollIntervalMs > 0
+      ? Number(options.promptPollIntervalMs)
+      : 16;
+  const maxPromptWait =
+    Number.isFinite(options?.maxPromptWaitMs) && options.maxPromptWaitMs > 0
+      ? Number(options.maxPromptWaitMs)
+      : 0;
+  let promptWaitDeadline = 0;
 
   const now = () => {
     try {
@@ -54,6 +69,7 @@ export function attachCooldownRenderer(timer, initialRemaining) {
       pendingDelayId = null;
     }
     queuedTickPayload = null;
+    promptWaitDeadline = 0;
   };
 
   const getRemainingPromptDelayMs = () => {
@@ -113,6 +129,7 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   };
 
   const processTick = (normalized, { suppressEvents = false } = {}) => {
+    promptWaitDeadline = 0;
     if (!started && rendered && lastRendered >= 0 && normalized === lastRendered) {
       if (!suppressEvents) {
         started = true;
@@ -131,19 +148,53 @@ export function attachCooldownRenderer(timer, initialRemaining) {
     }
   };
 
-  const queueTickAfterPromptDelay = (normalized, suppressEvents, forceAsync = false) => {
+  const hasActivePrompt = () => {
+    try {
+      const timestamp = Number(getOpponentPromptTimestamp());
+      return Number.isFinite(timestamp) && timestamp > 0;
+    } catch {}
+    return false;
+  };
+
+  const queueTickAfterPromptDelay = (
+    normalized,
+    suppressEvents,
+    { waitForPrompt = false } = {}
+  ) => {
     queuedTickPayload = { value: normalized, suppressEvents };
-    const waitMs = getRemainingPromptDelayMs();
-    if (!forceAsync && waitMs <= 0) {
+    const activePrompt = hasActivePrompt();
+    if (waitForPrompt && waitForPromptOption && !activePrompt) {
+      const canWaitForPrompt = maxPromptWait > 0;
+      if (canWaitForPrompt && promptWaitDeadline === 0) {
+        promptWaitDeadline = now() + maxPromptWait;
+      }
+      const deadlineReached = !canWaitForPrompt
+        ? true
+        : promptWaitDeadline > 0 && now() >= promptWaitDeadline;
+      if (!deadlineReached && typeof setTimeoutFn === "function") {
+        if (pendingDelayId !== null) {
+          clearTimeoutFn(pendingDelayId);
+        }
+        pendingDelayId = setTimeoutFn(() => {
+          pendingDelayId = null;
+          queueTickAfterPromptDelay(normalized, suppressEvents, { waitForPrompt: true });
+        }, promptPollInterval);
+        return;
+      }
+    } else if (activePrompt && promptWaitDeadline !== 0) {
+      promptWaitDeadline = 0;
+    }
+    const effectiveDelay = Math.max(0, getRemainingPromptDelayMs());
+    if (effectiveDelay === 0) {
       const payload = queuedTickPayload;
       queuedTickPayload = null;
       pendingDelayId = null;
+      promptWaitDeadline = 0;
       if (payload) {
         processTick(payload.value, { suppressEvents: payload.suppressEvents });
       }
       return;
     }
-    const delay = forceAsync ? 0 : waitMs;
     if (pendingDelayId !== null) {
       clearTimeoutFn(pendingDelayId);
     }
@@ -151,19 +202,22 @@ export function attachCooldownRenderer(timer, initialRemaining) {
       pendingDelayId = null;
       const payload = queuedTickPayload;
       queuedTickPayload = null;
+      promptWaitDeadline = 0;
       if (payload) {
         processTick(payload.value, { suppressEvents: payload.suppressEvents });
       }
-    }, delay);
+    }, effectiveDelay);
   };
 
   const onTick = (remaining) => {
     const normalized = normalizeRemaining(remaining);
     if (!started) {
-      const promptPending = Number(getOpponentPromptTimestamp()) <= 0;
+      const promptActive = hasActivePrompt();
       const waitMs = getRemainingPromptDelayMs();
-      if (promptPending || waitMs > 0) {
-        queueTickAfterPromptDelay(normalized, false, promptPending);
+      if ((waitForPromptOption && !promptActive) || waitMs > 0) {
+        queueTickAfterPromptDelay(normalized, false, {
+          waitForPrompt: waitForPromptOption && !promptActive
+        });
         return;
       }
     }
@@ -179,9 +233,11 @@ export function attachCooldownRenderer(timer, initialRemaining) {
   if (Number.isFinite(initialValue)) {
     try {
       const normalizedInitial = normalizeRemaining(initialValue);
-      const promptPending = Number(getOpponentPromptTimestamp()) <= 0;
-      if (promptPending || getRemainingPromptDelayMs() > 0) {
-        queueTickAfterPromptDelay(normalizedInitial, true, promptPending);
+      const promptActive = hasActivePrompt();
+      if ((waitForPromptOption && !promptActive) || getRemainingPromptDelayMs() > 0) {
+        queueTickAfterPromptDelay(normalizedInitial, true, {
+          waitForPrompt: waitForPromptOption && !promptActive
+        });
       } else {
         processTick(normalizedInitial, { suppressEvents: true });
       }

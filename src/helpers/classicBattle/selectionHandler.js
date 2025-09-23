@@ -501,8 +501,8 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
     }
   } catch {}
 
-  if (store && typeof store === "object") {
-    store.__delayOpponentMessage = opts?.delayOpponentMessage === true;
+  if (store && typeof store === "object" && opts?.delayOpponentMessage === true) {
+    store.__delayOpponentMessage = true;
   }
 
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
