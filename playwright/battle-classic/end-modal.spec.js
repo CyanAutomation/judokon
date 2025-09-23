@@ -22,6 +22,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 500;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__TEST_MODE = { enabled: true, seed: 42 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
@@ -42,6 +43,14 @@ test.describe("Classic Battle End Game Flow", () => {
         // Verify match completion
         await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
 
+        // Wait for and verify end modal appears
+        await page.waitForSelector("#match-end-title");
+        await expect(page.locator("#match-end-title")).toHaveText("Match Over");
+
+        // Verify modal has replay and quit buttons
+        await expect(page.locator("#match-end-modal [data-role='replay']")).toBeVisible();
+        await expect(page.locator("#match-end-modal [data-role='quit']")).toBeVisible();
+
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
         await expect(page.locator("header, .header")).toBeVisible();
@@ -53,6 +62,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 500;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__TEST_MODE = { enabled: true, seed: 42 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
@@ -89,6 +99,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 500;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__TEST_MODE = { enabled: true, seed: 42 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
@@ -125,6 +136,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 500;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__TEST_MODE = { enabled: true, seed: 42 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
@@ -160,6 +172,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 500;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__TEST_MODE = { enabled: true, seed: 42 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
@@ -191,6 +204,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 500;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__TEST_MODE = { enabled: true, seed: 42 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
@@ -226,6 +240,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 500;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__TEST_MODE = { enabled: true, seed: 42 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
@@ -255,6 +270,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 300;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__TEST_MODE = { enabled: true, seed: 42 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
