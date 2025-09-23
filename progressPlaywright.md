@@ -40,8 +40,8 @@ This document cleans and expands the earlier assessment of Playwright specs. It 
 
 10. `playwright/battle-classic/timer.spec.js` — swaps `waitForTimeout` polls for expectations tied to countdown element / test API hooks.
 
-   - **Actions taken:** Replaced `expect.poll` polling mechanism with semantic waits on the countdown element (`[data-testid="next-round-timer"]`). Used `page.waitForFunction` to wait for the timer to actually decrease, tied to the UI element's text content rather than arbitrary timeouts.
-   - **Outcome:** Tests pass with improved determinism (7.4s and 1.4s respectively). Timer verification now uses expectations tied to the countdown element's actual behavior, eliminating polling and providing better signal for timer-related regressions.
+- **Actions taken:** Replaced `expect.poll` polling mechanism with semantic waits on the countdown element (`[data-testid="next-round-timer"]`). Used `page.waitForFunction` to wait for the timer to actually decrease, tied to the UI element's text content rather than arbitrary timeouts.
+- **Outcome:** Tests pass with improved determinism (7.4s and 1.4s respectively). Timer verification now uses expectations tied to the countdown element's actual behavior, eliminating polling and providing better signal for timer-related regressions.
 
 ## Common problems observed
 
@@ -117,11 +117,3 @@ rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwri
 3. Re-audit the runner to ensure `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are either included in the runner or removed. (owner: infra)
 
 ---
-
-If you want, I can:
-
-- open a PR that implements the quick linter checks and replaces sleeps in `hover-zoom.spec.js` and `timer.spec.js` (I can prepare a focused change set), or
-- produce the helper wait utilities and apply them to the top 3 specs.
-
-Choose one and I'll mark the next todo in-progress and start implementing it.
-

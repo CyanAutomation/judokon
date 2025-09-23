@@ -124,7 +124,7 @@ async function expireSelectionTimer(page) {
 
 test.describe("Classic Battle Opponent Reveal", () => {
   test.describe("Basic Opponent Reveal Functionality", () => {
-    test("shows opponent choosing message after stat selection", async ({ page }) =>
+    test("shows opponent choosing snackbar immediately after stat selection", async ({ page }) =>
       withMutedConsole(async () => {
         await page.addInitScript(() => {
           window.__OVERRIDE_TIMERS = { roundTimer: 5 };
@@ -169,9 +169,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
             .poll(async () => (await getBattleSnapshot(page))?.roundsPlayed ?? 0)
             .toBeGreaterThanOrEqual(1);
         }
+
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
         const snapshot = await getBattleSnapshot(page);
+        expect(snapshot?.roundsPlayed ?? 0).toBeGreaterThanOrEqual(1);
         expect(snapshot?.selectionMade).toBe(true);
         expect(snapshot?.roundsPlayed ?? 0).toBeGreaterThanOrEqual(1);
       }, ["log", "info", "warn", "error", "debug"]));
@@ -198,6 +200,8 @@ test.describe("Classic Battle Opponent Reveal", () => {
             .poll(async () => (await getBattleSnapshot(page))?.roundsPlayed ?? 0)
             .toBeGreaterThanOrEqual(1);
         }
+
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
         const nextButton = page.locator("#next-button");
         await expect(nextButton).toHaveAttribute("data-next-ready", "true");

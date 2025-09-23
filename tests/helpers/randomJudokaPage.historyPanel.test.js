@@ -8,19 +8,6 @@ beforeEach(async () => {
   await harness.setup();
 });
 
-const baseSettings = {
-  motionEffects: true,
-  typewriterEffect: true,
-  tooltips: true,
-  displayMode: "light",
-  fullNavigationMap: true,
-  gameModes: {},
-  featureFlags: {
-    enableTestMode: { enabled: false },
-    enableCardInspector: { enabled: false }
-  }
-};
-
 describe("randomJudokaPage history panel", () => {
   it("toggles history panel visibility", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });

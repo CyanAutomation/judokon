@@ -2,7 +2,7 @@ name: RAG Validation
 
 on:
   schedule:
-    - cron: "0 2 * * *" # Runs at 3:00 AM UTC every day
+    - cron: "0 4 * * *" # Runs at 4:00 AM UTC every day
   # Allows manual triggering
   workflow_dispatch: {}
 
