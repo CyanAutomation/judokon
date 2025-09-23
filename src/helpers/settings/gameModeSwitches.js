@@ -8,6 +8,21 @@ const NAVIGABLE_MODE_IDS = new Set(
   navigationItems.map((item) => item.gameModeId).filter((id) => typeof id === "number")
 );
 
+function resolveNavigationModeId(modeId) {
+  if (NAVIGABLE_MODE_IDS.has(modeId)) {
+    return modeId;
+  }
+
+  if (typeof modeId === "string") {
+    const parsed = Number.parseInt(modeId, 10);
+    if (!Number.isNaN(parsed) && NAVIGABLE_MODE_IDS.has(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Handle a game mode toggle change.
  *
@@ -33,6 +48,8 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
     [mode.id]: input.checked
   };
 
+  const navigationModeId = resolveNavigationModeId(mode.id);
+
   const updatePromise = Promise.resolve(
     handleUpdate("gameModes", updated, () => {
       input.checked = prev;
@@ -43,7 +60,12 @@ export function handleGameModeChange({ input, mode, label, getCurrentSettings, h
     })
     .catch(() => {});
 
-  const navPromise = updateNavigationItemHidden(mode.id, !input.checked).catch((err) => {
+  const navPromiseSource =
+    navigationModeId === null
+      ? Promise.resolve()
+      : updateNavigationItemHidden(navigationModeId, !input.checked);
+
+  const navPromise = navPromiseSource.catch((err) => {
     console.error("Failed to update navigation item", err);
     input.checked = prev;
     showSettingsError();
@@ -84,9 +106,6 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
   }
   const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
   sortedModes.forEach((mode) => {
-    if (!NAVIGABLE_MODE_IDS.has(mode.id)) {
-      return;
-    }
     const current = getCurrentSettings();
     const currentModes = current.gameModes ?? {};
     const isChecked = Object.hasOwn(currentModes, mode.id) ? currentModes[mode.id] : !mode.isHidden;
@@ -102,7 +121,8 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
     const toggle = new ToggleSwitch(label, {
       id: `mode-${mode.id}`,
       name: mode.id,
-      checked: isChecked
+      checked: isChecked,
+      tooltipId: mode.tooltipId ?? `mode.${mode.id}`
     });
     const { element: wrapper, input } = toggle;
     if (mode.category) wrapper.dataset.category = mode.category;
