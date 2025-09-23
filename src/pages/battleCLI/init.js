@@ -2030,6 +2030,35 @@ function installEventBindings() {
 }
 
 /**
+ * Parse URL parameters to set feature flags.
+ *
+ * @pseudocode
+ * 1. Get URL search params.
+ * 2. For each known flag, if present in URL, set the flag to the boolean value.
+ */
+function parseUrlFlags() {
+  if (typeof window === "undefined") return;
+  const urlParams = new URLSearchParams(window.location.search);
+  const flags = [
+    "battleStateBadge",
+    "cliVerbose",
+    "battleStateProgress",
+    "skipRoundCooldown",
+    "statHotkeys",
+    "cliShortcuts",
+    "autoSelect",
+    "opponentDelayMessage",
+    "roundStore"
+  ];
+  flags.forEach(flag => {
+    if (urlParams.has(flag)) {
+      const value = urlParams.get(flag) === "true";
+      setFlag(flag, value);
+    }
+  });
+}
+
+/**
  * Initialize feature flags and verbose UI bindings.
  *
  * @pseudocode
@@ -2285,6 +2314,7 @@ export async function init() {
 
   await renderStatList();
   restorePointsToWin();
+  parseUrlFlags();
   await setupFlags();
   subscribeEngine();
 

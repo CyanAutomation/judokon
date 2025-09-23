@@ -60,9 +60,11 @@ All UI/UX improvements under "Remaining UI/UX Improvements" have been completed.
   2. Added `aria-label="Toggle settings panel"` to the settings toggle button in `cliDomTemplate.js`.
   3. Verified that interactive elements (buttons, inputs) have proper focus outlines via default browser styles; stat divs have `role="button"` for accessibility.
   4. No images found in CLI interface, so no alt-text needed.
-- **Expose Feature Flags**
-  1. Implement URL parameter parsing to enable/disable these flags (e.g., `?battleStateBadge=true`).
-  2. Ensure these flags correctly control the visibility and behavior of their respective features.
+- **Expose Feature Flags** ✅
+  1. Added `parseUrlFlags()` function in `init.js` to parse URL parameters and set feature flags accordingly (e.g., `?cliVerbose=true&battleStateBadge=true`).
+  2. Function sets flags like `battleStateBadge`, `cliVerbose`, `battleStateProgress`, etc., based on URL params.
+  3. Called `parseUrlFlags()` in the `init()` function before `setupFlags()` to apply URL overrides early.
+  4. Existing flag behaviors (e.g., cliVerbose controlling verbose log visibility) are preserved and now controllable via URL.
 - **Test Automation Hooks**
   1. Identify key game actions and state variables that would be useful for automated testing.
   2. Create a `window.testHooks` object (or similar) to expose functions like `startRound()`, `resolveRound()`, `getInternalState()`.
