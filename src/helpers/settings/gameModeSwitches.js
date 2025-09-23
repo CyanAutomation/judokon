@@ -8,14 +8,29 @@ const NAVIGABLE_MODE_IDS = new Set(
   navigationItems.map((item) => item.gameModeId).filter((id) => typeof id === "number")
 );
 
+/**
+ * Resolve a mode ID to a valid navigation mode ID.
+ *
+ * @pseudocode
+ * 1. Validate numeric IDs directly against the navigable set.
+ * 2. Parse string IDs as integers when possible.
+ * 3. Ensure the parsed number is a safe integer before lookup.
+ * 4. Return the resolved ID or null when not navigable.
+ *
+ * @param {string|number} modeId - The mode identifier to resolve.
+ * @returns {number|null} The resolved navigation mode ID or null if not navigable.
+ */
 function resolveNavigationModeId(modeId) {
-  if (NAVIGABLE_MODE_IDS.has(modeId)) {
-    return modeId;
+  if (typeof modeId === "number") {
+    if (Number.isSafeInteger(modeId) && NAVIGABLE_MODE_IDS.has(modeId)) {
+      return modeId;
+    }
+    return null;
   }
 
   if (typeof modeId === "string") {
     const parsed = Number.parseInt(modeId, 10);
-    if (!Number.isNaN(parsed) && NAVIGABLE_MODE_IDS.has(parsed)) {
+    if (Number.isSafeInteger(parsed) && NAVIGABLE_MODE_IDS.has(parsed)) {
       return parsed;
     }
   }
@@ -118,11 +133,29 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
       }
       label = mode.id;
     }
+    const fallbackTooltipId = (() => {
+      if (typeof mode.id === "string") {
+        const trimmedId = mode.id.trim();
+        return trimmedId.length > 0 ? `mode.${trimmedId}` : undefined;
+      }
+
+      if (typeof mode.id === "number" && Number.isFinite(mode.id)) {
+        return `mode.${mode.id}`;
+      }
+
+      return undefined;
+    })();
+
+    const tooltipId =
+      typeof mode.tooltipId === "string" && mode.tooltipId.length > 0
+        ? mode.tooltipId
+        : fallbackTooltipId;
+
     const toggle = new ToggleSwitch(label, {
       id: `mode-${mode.id}`,
       name: mode.id,
       checked: isChecked,
-      tooltipId: mode.tooltipId ?? `mode.${mode.id}`
+      tooltipId
     });
     const { element: wrapper, input } = toggle;
     if (mode.category) wrapper.dataset.category = mode.category;
