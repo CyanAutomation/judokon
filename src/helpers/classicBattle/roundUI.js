@@ -93,9 +93,7 @@ function selectRendererFactory(override) {
   if (typeof override === "function") {
     return override;
   }
-  return typeof defaultAttachCooldownRenderer === "function"
-    ? defaultAttachCooldownRenderer
-    : null;
+  return typeof defaultAttachCooldownRenderer === "function" ? defaultAttachCooldownRenderer : null;
 }
 
 function instantiateTimer(factory) {
@@ -104,7 +102,9 @@ function instantiateTimer(factory) {
   }
   try {
     return factory();
-  } catch {}
+  } catch {
+    // Silently handle factory failures to maintain UI responsiveness
+  }
   return null;
 }
 
@@ -138,7 +138,8 @@ export async function startRoundCooldown(resolved, config = {}) {
   attachRendererSafely(renderer, timer, seconds, rendererOptions);
 
   if (config?.delayOpponentMessage) {
-    const waitFn = config?.waitForDelayedOpponentPromptDisplay || waitForDelayedOpponentPromptDisplay;
+    const waitFn =
+      config?.waitForDelayedOpponentPromptDisplay || waitForDelayedOpponentPromptDisplay;
     const getTimestamp = config?.getOpponentPromptTimestamp || getOpponentPromptTimestamp;
     if (shouldWaitForOpponentPrompt(getTimestamp)) {
       const waitArgs = config?.promptBudget || undefined;
@@ -190,6 +191,20 @@ function shouldWaitForOpponentPrompt(getTimestamp) {
 function derivePromptWaitOptions(rendererOptions) {
   const intervalMs = Number(rendererOptions?.promptPollIntervalMs);
   return { intervalMs };
+}
+
+function resolveOpponentPromptBuffer(cooldownResult, rendererOptions) {
+  const optionsBuffer = Number(rendererOptions?.opponentPromptBufferMs);
+  if (Number.isFinite(optionsBuffer) && optionsBuffer >= 0) {
+    return optionsBuffer;
+  }
+  if (cooldownResult && typeof cooldownResult === "object") {
+    const resultBuffer = Number(cooldownResult.opponentPromptBufferMs);
+    if (Number.isFinite(resultBuffer) && resultBuffer >= 0) {
+      return resultBuffer;
+    }
+  }
+  return undefined;
 }
 
 async function waitForOpponentPrompt(waitFn, waitArgs, waitOptions) {
@@ -515,10 +530,14 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
             typeof deps.attachCooldownRendererOptions === "object"
               ? { ...deps.attachCooldownRendererOptions }
               : {};
+          const promptBufferOverride = resolveOpponentPromptBuffer(
+            cooldownResult,
+            attachRendererOptions
+          );
           let promptBudget = null;
           if (delayOpponentMessageFlag) {
             try {
-              promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
+              promptBudget = computeOpponentPromptWaitBudget(promptBufferOverride);
             } catch {
               promptBudget = computeOpponentPromptWaitBudget();
             }
