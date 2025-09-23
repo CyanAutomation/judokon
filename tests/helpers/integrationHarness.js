@@ -429,3 +429,39 @@ export function createBrowseJudokaHarness(customConfig = {}) {
     }
   });
 }
+
+/**
+ * Pre-configured harness for timer service integration tests
+ */
+export function createTimerServiceHarness(customConfig = {}) {
+  const { fixtures: customFixtures, mocks: customMocks, ...restConfig } = customConfig;
+  return createClassicBattleHarness({
+    ...restConfig,
+    fixtures: {
+      ...customFixtures
+    },
+    mocks: {
+      // Mock timer service dependencies
+      "../../src/helpers/classicBattle/orchestrator.js": () => ({
+        dispatchBattleEvent: vi.fn()
+      }),
+      "../../src/helpers/setupScoreboard.js": () => ({
+        showMessage: vi.fn(),
+        showTemporaryMessage: vi.fn(() => () => {}),
+        showAutoSelect: vi.fn(),
+        clearTimer: vi.fn(),
+        updateTimer: vi.fn()
+      }),
+      "../../src/helpers/timerUtils.js": () => ({
+        getDefaultTimer: () => 30
+      }),
+      "../../src/helpers/classicBattle/uiHelpers.js": () => ({
+        skipRoundCooldownIfEnabled: vi.fn()
+      }),
+      "../../src/helpers/battleEngineFacade.js": () => ({
+        startRound: vi.fn()
+      }),
+      ...customMocks
+    }
+  });
+}

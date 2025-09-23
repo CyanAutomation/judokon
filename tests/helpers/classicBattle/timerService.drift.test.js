@@ -1,14 +1,18 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createTimerServiceHarness } from "../integrationHarness.js";
 import { createTimerNodes } from "./domUtils.js";
 import { createMockScheduler } from "../mockScheduler.js";
 import { createDriftStarter } from "./driftStarter.js";
 
+const harness = createTimerServiceHarness();
+
+beforeEach(async () => {
+  await harness.setup();
+});
+
 describe("timerService drift handling", () => {
   it("startTimer shows fallback on drift", async () => {
     vi.resetModules();
-    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
-      dispatchBattleEvent: vi.fn()
-    }));
     const showMessage = vi.fn();
     vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,
@@ -36,9 +40,6 @@ describe("timerService drift handling", () => {
 
   it("startCooldown shows fallback on drift", async () => {
     vi.resetModules();
-    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
-      dispatchBattleEvent: vi.fn()
-    }));
     const showMessage = vi.fn();
     vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
       showMessage,
@@ -105,28 +106,11 @@ describe("timerService drift handling", () => {
       const actual = await vi.importActual("../../../src/helpers/battleEngineFacade.js");
       return { ...actual, requireEngine: () => engine };
     });
-    vi.doMock("../../../src/helpers/setupScoreboard.js", () => ({
-      showMessage: vi.fn(),
-      showTemporaryMessage: () => () => {},
-      showAutoSelect: vi.fn(),
-      clearTimer: vi.fn(),
-      updateTimer: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
-    }));
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
       enableNextRoundButton: vi.fn(),
       disableNextRoundButton: vi.fn(),
       syncScoreDisplay: vi.fn(),
       skipRoundCooldownIfEnabled: vi.fn(() => false)
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
-      updateDebugPanel: vi.fn()
-    }));
-    vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
-      dispatchBattleEvent: vi.fn()
     }));
     vi.doMock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
       computeNextRoundCooldown: () => 1
