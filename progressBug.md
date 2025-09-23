@@ -67,3 +67,61 @@
   1. Identify key game actions and state variables that would be useful for automated testing.
   2. Create a `window.testHooks` object (or similar) to expose functions like `startRound()`, `resolveRound()`, `getInternalState()`.
   3. Ensure these functions are deterministic and do not interfere with normal gameplay.
+
+## Assessment, Feasibility, and Engineering Notes
+
+This section evaluates the accuracy of the QA findings, the likely root causes, feasibility of fixes, estimated effort, risk level, and recommended verification steps. Use this as a guide when opening implementation PRs.
+
+### Summary assessment
+
+- The issues listed above are coherent and reproducible from the QA notes; they align with common UI/game-loop problems (timing, event wiring, state not propagated to view). Confidence: high for most items, medium for ARIA/live-region behaviors which need assistive tech testing.
+
+### Per-issue feasibility & estimates
+
+- Difficult Start Flow — Feasibility: High. Likely cause: start-click handler and match-length-selection flow not chaining. Estimate: 1–2 dev hours to fix + 1 hour QA. Risk: low.
+- Score Does Not Update — Feasibility: Medium. Likely cause: scoreboard UI not subscribed to state changes, or state mutation happening off the UI thread. Estimate: 3–6 dev hours to diagnose & fix + 2–4 hours QA and tests. Risk: medium (affects game state logic).
+- Outcome Messages Disappear Too Quickly — Feasibility: High. UI timing or immediate next-round trigger. Estimate: 1–3 dev hours to add configurable delay or require confirmation + 1–2 hours QA. Risk: low.
+- Quit Confirmation Fails — Feasibility: High. Likely cause: modal button handler not invoking match termination. Estimate: 1–2 dev hours + 1 hour QA. Risk: low.
+- Verbose Mode Unclear — Feasibility: High. Likely cause: feature flag present but UI output path not implemented. Estimate: 2–4 dev hours to add a verbose panel or console output + 1–2 hours QA. Risk: low.
+- Timer Resets Unexpectedly — Feasibility: Medium. Likely cause: round lifecycle mismanaged (round index not incremented when auto-resolving). Estimate: 3–6 dev hours + 2–4 hours QA. Risk: medium (affects UX and automated flows).
+- State Badge/Observability Hidden — Feasibility: High. Likely cause: feature flag not exposed or badge binding missing. Estimate: 1–2 dev hours + 1 hour QA. Risk: low.
+- Accessibility & ARIA — Feasibility: High for labels; medium for ARIA-live validation because it requires assistive tech testing. Estimate: 1–3 dev hours for attributes and focus styles + 2–4 hours QA with a screen reader. Risk: low-to-medium (accessibility regressions if mislabeled).
+
+### Likely code locations to inspect
+
+- Start/controls: look for entry HTML (root `battleCLI.html` or `src/pages/*`), and click handlers in `src/components` or `src/helpers` (search for `power`/`start` button). The project's `AGENTS.md` and `docs` point to `src/helpers/classicBattle.js` and `src/helpers/showSnackbar.js` as hot paths to avoid dynamic imports.
+- Score & round resolution: `classicBattle`, `battleEngineFacade`, or `Scoreboard` components/files. Search for functions that resolve round outcomes and where scoreboard state is mutated.
+- Timer/round lifecycle: scheduler or timer utilities (search for `statTimeoutId`, `autoSelectId`, `requestAnimationFrame` in `src/helpers` per repo conventions).
+- Quit dialog: UI modal component or dialog implementation and its event handlers in pages or components.
+
+### Tests and validation to add
+
+- Unit tests: add small deterministic tests for round resolution logic (happy path + timer-expire edge case). Use existing test patterns (vitest) and the `tests/utils/console.js` helpers for muted console behavior.
+- Integration tests: Playwright flows for starting a match, selecting stats, and verifying scoreboard increments (happy path + timeout path). Add test(s) that assert the quit dialog actually ends the match.
+- Accessibility checks: automated a11y assertion (pa11y or Playwright accessibility snapshot) and at least one manual run with a screen reader for ARIA-live announcements.
+- Regression guards: add test hooks (prefer `window.testHooks` as suggested) that return internal state to help deterministically test lifecycle transitions.
+
+### Risk & rollout guidance
+
+- Keep changes small and isolated: prefer wiring UI to existing state rather than large refactors.
+- When changing round-scoring logic, add unit tests to avoid score regressions.
+- For accessibility and feature flags, expose toggles behind a debug panel or URL params to avoid accidentally shipping debug UI to production users.
+
+## Suggested next steps and PR checklist
+
+When you open a PR to fix any of these issues, include the following checklist in the description:
+
+- Task contract: files changed, short description, and targeted issues from this QA report.
+- Unit tests added/updated for changed logic (happy path + 1 edge case).
+- Playwright test(s) added or updated to cover the end-to-end flow.
+- ESLint/Prettier: run and fix formatting/lint issues.
+- Accessibility: list ARIA changes and results of an automated a11y check; add manual steps for a screen reader check.
+- Risk note: describe potential regressions and how they were mitigated.
+
+## Changes made to this document
+
+- Added "Assessment, Feasibility, and Engineering Notes" section with per-issue estimates, likely code locations, test suggestions, risk guidance, and a PR checklist to make fixes actionable for developers and QA.
+
+---
+
+Please review these changes and tell me which issue you'd like me to prioritize and implement first; I can then locate the specific files and open a PR with the fix, tests, and validation steps.
