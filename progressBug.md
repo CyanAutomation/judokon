@@ -35,6 +35,7 @@
   3. Removed the need for a second click on the start button.
 
 ### Remaining UI/UX Improvements
+
 - **Timer Behavior**
   1. Define the desired behavior for timer expiration (e.g., auto-select highest stat, penalty, or loss).
   2. Implement the chosen behavior in the game logic.
@@ -119,37 +120,6 @@ When you open a PR to fix any of these issues, include the following checklist i
 ## Changes made to this document
 
 - Added "Assessment, Feasibility, and Engineering Notes" section with per-issue estimates, likely code locations, test suggestions, risk guidance, and a PR checklist to make fixes actionable for developers and QA.
-
----
-
-## Fix Implementation: Scoring Bug
-
-### Actions Taken
-
-1. **Identified Root Cause**: The scoreboard update logic in `updateScoreLine()` relies on `engineFacade.getScores()`, but the QA report showed that outcome messages display correct scores while the scoreboard remains at 0:0. This suggests a potential timing or instance issue with the battle engine singleton.
-
-2. **Implemented Fix**: Modified `handleRoundResolved()` in `/workspaces/judokon/src/pages/battleCLI/init.js` to directly update the `#cli-score` element with scores from the `result` object (which contains the accurate scores used in the outcome message). This ensures the visible scoreboard reflects the same scores as the message.
-
-3. **Code Change**:
-   - Added direct DOM update of `#cli-score` using `result.playerScore` and `result.opponentScore`.
-   - Retained the existing `updateScoreLine()` call to maintain compatibility with shared scoreboard components.
-
-### Tests Run
-
-- **Unit Tests**: Ran `tests/pages/battleCLI.sharedPrimary.test.js` – All 5 tests passed.
-- **Playwright Tests**: Ran `playwright/battle-cli-start.spec.js` – 1 test passed.
-
-### Outcome
-
-- The fix ensures that the `#cli-score` element is updated with the correct scores immediately after each round resolution.
-- No regressions detected in the specific tests run.
-- The change is minimal and targeted, reducing risk of side effects.
-
-### Next Steps
-
-- Test the fix manually in the browser to confirm the scoreboard updates during a match.
-- If the issue persists, investigate why `engineFacade.getScores()` returns 0 while `result.playerScore` is correct.
-- Consider adding a Playwright test that verifies scoreboard increments after multiple rounds.
 
 ---
 
@@ -254,3 +224,37 @@ The quit button dispatches "interrupt" with reason "quit", which transitions to 
 
 - Test the fix manually to ensure quit button ends the match and navigates to lobby.
 - Verify that other interrupt reasons (e.g., timeout) still restart the round as expected.
+
+---
+
+## Fix Implementation: Clear Start Control
+
+### Clear Start Control Root Cause
+
+The current flow requires two clicks: first to open settings and select match length, then a second click on the start button to begin the match.
+
+### Clear Start Control Implementation
+
+- Modified the `change` event handler for the `points-select` element in `restorePointsToWin()` in `/workspaces/judokon/src/pages/battleCLI/init.js` to automatically dispatch `"startClicked"` when the match length is selected, eliminating the need for a separate start button.
+- Removed the confirmation dialog and manual start button rendering, streamlining the user experience.
+
+### Clear Start Control Changes
+
+- Updated the points-select change handler to dispatch "startClicked" immediately upon selection.
+- Removed the renderStartButton call and confirmation logic.
+
+### Clear Start Control Validation
+
+- **Unit Tests**: Ran `tests/pages/battleCLI.sharedPrimary.test.js` – All 5 tests passed.
+- **Playwright Tests**: Ran `playwright/battle-cli-start.spec.js` – 1 test passed.
+
+### Clear Start Control Status
+
+- Selecting a match length now automatically starts the match without requiring an additional click.
+- No regressions detected in the specific tests run.
+- The change simplifies the start flow for better usability.
+
+### Clear Start Control Follow-up
+
+- Test the fix manually to ensure selecting match length immediately starts the match.
+- Verify that the start button is no longer rendered or needed.
