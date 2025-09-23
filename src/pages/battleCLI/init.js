@@ -2057,8 +2057,12 @@ const battleEventHandlers = {
 };
 
 function installEventBindings() {
-  Object.entries(battleEventHandlers).forEach(([event, handler]) => onBattleEvent(event, handler));
-  onBattleEvent("battleStateChange", handleBattleState);
+  try {
+    if (typeof onBattleEvent === "function") {
+      Object.entries(battleEventHandlers).forEach(([event, handler]) => onBattleEvent(event, handler));
+      onBattleEvent("battleStateChange", handleBattleState);
+    }
+  } catch {}
 }
 
 /**
