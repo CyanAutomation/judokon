@@ -110,4 +110,23 @@ This document records verification of the QA observations in `src/pages/battleCL
 
 **Outcome**: The scoreboard duplication issue is resolved. Legacy CLI scoreboard elements are now hidden after initialization, ensuring a single scoreboard is displayed. Tests confirm the behavior and no breaking changes were introduced.
 
-_File updated with implementation details and test outcomes. Ready for review._
+---
+
+## Audit dynamic announcements completed
+
+**Actions taken:**
+
+- **Inspected `src/pages/battleCLI.html` and `src/components/Scoreboard.js`**: Identified live regions with `aria-live` or `role="status"`.
+  - CLI elements: `round-message` (aria-live="polite", aria-atomic="true"), `cli-countdown` (aria-live="polite"), `cli-status` (aria-live="polite", aria-atomic="true").
+  - Shared scoreboard elements: messageEl, timerEl, roundCounterEl, scoreEl (all set to aria-live="polite" via JS).
+- **Potential overlaps identified**: Both CLI `round-message` and shared scoreboard message may announce similar texts (e.g., round outcomes), as `setRoundMessage` updates CLI element and shared `showMessage` is called in parallel. Countdowns may also overlap if both CLI and shared timer announce.
+- **Fix applied**: Added `aria-atomic="true"` to `cli-countdown` in `src/pages/battleCLI.html` for consistent atomic announcements.
+- **Assessment**: No immediate duplicates removed, as CLI and shared announcements may serve different purposes. Recommend monitoring for actual overlaps in user testing or adding a Playwright test with screen reader simulation if needed.
+- **Test results**:
+  - **Vitest**: All 5 tests in `dualWrite.test.js` pass.
+  - **Playwright**: `battle-cli-start.spec.js` passes (1 test, 1.7s).
+  - No regressions detected.
+
+**Outcome**: Live regions audited; added `aria-atomic` to countdown for better a11y. Potential overlaps noted but not critical; no changes to announcement logic to avoid breaking dual-write behavior.
+
+_File updated with audit details and test outcomes. Ready for review._
