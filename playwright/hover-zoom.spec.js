@@ -195,19 +195,25 @@ test.describe("Hover Zoom Functionality", () => {
       await firstCard.hover();
       await expectToBeEnlarged(firstCard);
 
-      // Try to tab to second card (may not work if focus is trapped)
-      try {
-        await page.keyboard.press("Tab");
-        // If we get here, check if focus moved
-        const focusedElement = page.locator(":focus");
-        if ((await focusedElement.count()) > 0) {
-          // Focus moved somewhere, which is good
-          expect(true).toBe(true);
-        }
-      } catch {
-        // Tab might not work, which is also acceptable
-        expect(true).toBe(true);
-      }
+      // Focus first card
+      await firstCard.focus();
+
+      // Verify first card is focused
+      const isFirstFocused = await firstCard.evaluate((el) => el === document.activeElement);
+      expect(isFirstFocused).toBe(true);
+
+      // Try to tab to second card
+      await page.keyboard.press("Tab");
+
+      // Check that focus moved away from the first card (keyboard navigation works)
+      const isFirstStillFocusedAfterTab = await firstCard.evaluate(
+        (el) => el === document.activeElement
+      );
+      expect(isFirstStillFocusedAfterTab).toBe(false);
+
+      // And that some element is focused
+      const activeElementTag = await page.evaluate(() => document.activeElement?.tagName);
+      expect(activeElementTag).toBeDefined();
     });
   });
 
