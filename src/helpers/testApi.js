@@ -42,19 +42,62 @@ function isAutomationNavigator(nav) {
   if (!nav) return false;
 
   try {
-    if (nav.webdriver === true) return true;
-
-    const userAgent = typeof nav.userAgent === "string" ? nav.userAgent : "";
-    if (userAgent.includes("Playwright/Headless")) {
+    if (nav.webdriver === true) {
       return true;
     }
-  } catch {}
+  } catch {
+    // Ignore property access errors – fall back to user agent heuristics.
+  }
+
+  let userAgent = "";
+
+  try {
+    if (typeof nav.userAgent === "string") {
+      userAgent = nav.userAgent;
+    }
+  } catch {
+    userAgent = "";
+  }
+
+  if (!userAgent) {
+    try {
+      const brands = nav.userAgentData?.brands;
+      if (Array.isArray(brands)) {
+        userAgent = brands.map((brand) => brand.brand).join(" ");
+      }
+    } catch {
+      userAgent = "";
+    }
+  }
+
+  if (!userAgent) return false;
+
+  const normalizedAgent = userAgent.toLowerCase();
+  if (normalizedAgent.includes("playwright")) {
+    return true;
+  }
+
+  if (normalizedAgent.includes("headless")) {
+    return true;
+  }
 
   return false;
 }
 
 // Test mode detection
-function isTestMode() {
+/**
+ * Determine whether the runtime should expose the test API helpers.
+ *
+ * @pseudocode
+ * 1. Check Node-based test flags (NODE_ENV, VITEST) for early exit.
+ * 2. Inspect browser globals for explicit test flags or localhost URLs.
+ * 3. Evaluate navigator automation hints (webdriver, headless UAs).
+ * 4. Fallback to the enableTestMode feature flag toggle.
+ *
+ * @returns {boolean} True when test-only helpers should be mounted.
+ * @internal
+ */
+export function isTestMode() {
   // Check for common test environment indicators
   if (typeof process !== "undefined") {
     if (process.env?.NODE_ENV === "test") return true;
@@ -73,7 +116,11 @@ function isTestMode() {
     if (isAutomationNavigator(window.navigator)) return true;
   }
 
-  if (typeof navigator !== "undefined" && isAutomationNavigator(navigator)) {
+  if (
+    typeof window === "undefined" &&
+    typeof navigator !== "undefined" &&
+    isAutomationNavigator(navigator)
+  ) {
     return true;
   }
 
@@ -820,7 +867,5 @@ export function getTestAPI() {
 if (isTestMode()) {
   exposeTestAPI();
 }
-
-export const __test = { isTestMode };
 
 export default testApi;
