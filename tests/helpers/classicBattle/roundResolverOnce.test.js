@@ -27,7 +27,8 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   _resetForTest: vi.fn()
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
-  updateScore: vi.fn()
+  updateScore: vi.fn(),
+  updateTimer: vi.fn()
 }));
 
 describe.sequential("classicBattle round resolver once", () => {
