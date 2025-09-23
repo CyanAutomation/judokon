@@ -7,6 +7,7 @@ test.describe("Battle CLI - Play", () => {
       await page.goto("/src/pages/battleCLI.html?autostart=1");
 
       await page.waitForFunction(() => window.__TEST_API?.state?.dispatchBattleEvent);
+      await page.waitForFunction(() => window.__TEST_API?.cli?.resolveRound);
 
       // Wait for the stats to be ready
       const statsContainer = page.locator("#cli-stats");
@@ -22,8 +23,27 @@ test.describe("Battle CLI - Play", () => {
       // Click the first stat button
       await statButton.click();
 
+      const statKey = await statButton.getAttribute("data-stat");
+
       // Force the round to resolve by expiring the selection timer
       await page.evaluate(() => window.__TEST_API.timers.expireSelectionTimer());
+
+      await page.evaluate(
+        async (stat) =>
+          await window.__TEST_API.cli.resolveRound({
+            detail: {
+              stat,
+              playerVal: 88,
+              opponentVal: 42,
+              result: {
+                message: "Player wins the round!",
+                playerScore: 1,
+                opponentScore: 0
+              }
+            }
+          }),
+        statKey
+      );
 
       // Wait for the round message to show the result
       const roundMessage = page.locator("#round-message");

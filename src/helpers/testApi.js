@@ -16,6 +16,7 @@ import { getBattleStateMachine } from "./classicBattle/orchestrator.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 import { isEnabled } from "./featureFlags.js";
+import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
 
 function isDevelopmentEnvironment() {
   if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
@@ -712,9 +713,42 @@ const inspectionApi = {
   }
 };
 
+// Battle CLI API
+const cliApi = {
+  /**
+   * Resolve the active round through the classic battle machine.
+   *
+   * @param {object} [eventLike]
+   * @returns {Promise<{ detail: object, dispatched: boolean, emitted: boolean }>}
+   * @pseudocode
+   * dispatch = detail => stateApi.dispatchBattleEvent("roundResolved", detail)
+   * emit = detail => emitBattleEvent("roundResolved", detail)
+   * getStore = () => window.battleStore when available
+   * return resolveRoundForCliTest(eventLike, { dispatch, emit, getStore })
+   */
+  async resolveRound(eventLike = {}) {
+    const dispatch = (detail) => stateApi.dispatchBattleEvent("roundResolved", detail);
+    const emit = (detail) => emitBattleEvent("roundResolved", detail);
+    const getStore = () => {
+      try {
+        return typeof window !== "undefined" ? window.battleStore : null;
+      } catch {
+        return null;
+      }
+    };
+
+    return resolveRoundForCliTest(eventLike, {
+      dispatch,
+      emit,
+      getStore
+    });
+  }
+};
+
 // Main test API object
 const testApi = {
   state: stateApi,
+  cli: cliApi,
   timers: timerApi,
   init: initApi,
   inspect: inspectionApi,
