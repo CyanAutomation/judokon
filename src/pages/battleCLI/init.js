@@ -1447,7 +1447,7 @@ export function restorePointsToWin() {
       engineFacade.setPointsToWin?.(val);
       updateRoundHeader(0, val);
       // Automatically start the match after selecting points
-      await dispatchBattleEvent("startClicked");
+      await safeDispatch("startClicked");
       // Hide and disable settings after selection
       const toggle = byId("cli-settings-toggle");
       const body = byId("cli-settings-body");
