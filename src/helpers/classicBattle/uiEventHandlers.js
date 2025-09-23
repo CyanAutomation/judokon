@@ -79,7 +79,7 @@ export function bindUIHelperEventHandlersDynamic() {
             showSnackbar(t("ui.opponentChoosing"));
             markOpponentPromptNow();
           } catch {}
-        }
+        }, resolvedDelay);
       } else {
         clearOpponentSnackbarTimeout();
         // Cancel any pending delay to ensure the immediate snackbar wins.
