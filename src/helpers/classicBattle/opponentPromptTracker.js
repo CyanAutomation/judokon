@@ -45,7 +45,15 @@ function notifyPromptReady(timestamp) {
     if (typeof emitBattleEvent === "function") {
       emitBattleEvent("opponentPromptReady", { timestamp });
     }
-  } catch {}
+  } catch (error) {
+    const isProduction =
+      typeof process !== "undefined" && typeof process.env !== "undefined"
+        ? process.env.NODE_ENV === "production"
+        : false;
+    if (!isProduction && typeof console !== "undefined" && typeof console.warn === "function") {
+      console.warn("Failed to emit opponentPromptReady event:", error);
+    }
+  }
 }
 
 /**

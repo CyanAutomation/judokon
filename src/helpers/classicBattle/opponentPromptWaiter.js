@@ -107,7 +107,7 @@ async function resolveWaitResult(waitPromise, subscription) {
       waitPromise.then((timerUsed) => ({ type: "timer", timerUsed }))
     ]);
     if (outcome.type === "event") {
-      return { event: true, usedTimer: true };
+      return { event: true, usedTimer: false };
     }
     return { event: false, usedTimer: outcome.timerUsed };
   }
@@ -116,10 +116,8 @@ async function resolveWaitResult(waitPromise, subscription) {
 }
 
 async function runPromptWaitLoop(deadline, throttle, subscription) {
-  while (safeNow() < deadline) {
-    if (hasPromptTimestamp()) {
-      return;
-    }
+  let promptDetected = hasPromptTimestamp();
+  while (!promptDetected && safeNow() < deadline) {
     const now = safeNow();
     const remaining = deadline - now;
     if (remaining <= 0) {
@@ -131,12 +129,16 @@ async function runPromptWaitLoop(deadline, throttle, subscription) {
     if (result.event) {
       return;
     }
-    if (hasPromptTimestamp()) {
+    promptDetected = hasPromptTimestamp();
+    if (promptDetected) {
       return;
     }
     if (!result.usedTimer) {
       break;
     }
+  }
+  if (promptDetected || hasPromptTimestamp()) {
+    return;
   }
 }
 
@@ -231,8 +233,16 @@ export async function waitForDelayedOpponentPromptDisplay(
   if (hasPromptTimestamp()) {
     return;
   }
+  let intervalOverride = undefined;
+  if (options.intervalMs !== undefined) {
+    const intervalMs = Number(options.intervalMs);
+    if (!Number.isFinite(intervalMs) || intervalMs <= 0) {
+      throw new Error("intervalMs must be a positive number");
+    }
+    intervalOverride = intervalMs;
+  }
   const throttle = createPollingThrottle({
-    intervalMs: options.intervalMs,
+    intervalMs: intervalOverride,
     scheduler: options.scheduler
   });
   const subscription = createPromptReadySubscription(options);

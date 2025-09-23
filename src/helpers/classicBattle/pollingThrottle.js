@@ -17,7 +17,7 @@ function resolveScheduler(candidate) {
  * Create a throttled wait helper backed by the shared scheduler.
  *
  * @pseudocode
- * 1. Normalize `intervalMs` to a minimum of 50ms (default 75ms).
+ * 1. Normalize `intervalMs` to a minimum of 32ms (default 32ms).
  * 2. Resolve an available scheduler via the injected candidate, shared scheduler, or `realScheduler`.
  * 3. Provide a `wait(delayMs?)` function that schedules a timeout and resolves `true` when timers are available.
  * 4. If scheduling fails, resolve `false` after a microtask so callers can gracefully fall back.
@@ -28,8 +28,8 @@ function resolveScheduler(candidate) {
 export function createPollingThrottle(options = {}) {
   const numericInterval = Number(options.intervalMs);
   const defaultInterval =
-    Number.isFinite(numericInterval) && numericInterval > 0 ? numericInterval : 75;
-  const intervalMs = Math.max(50, defaultInterval);
+    Number.isFinite(numericInterval) && numericInterval > 0 ? numericInterval : 32;
+  const intervalMs = Math.max(32, defaultInterval);
   const scheduler = resolveScheduler(options.scheduler);
 
   const wait = (delayOverride) =>
@@ -60,7 +60,7 @@ export function createPollingThrottle(options = {}) {
           return;
         }
       } catch {}
-      finish(false);
+      Promise.resolve().then(() => finish(false));
     });
 
   return { wait, intervalMs };
