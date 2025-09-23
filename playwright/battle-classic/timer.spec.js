@@ -30,22 +30,31 @@ test.describe("Classic Battle timer", () => {
         window.__TEST_API?.state?.waitForBattleState?.("waitingForPlayerAction")
       );
 
-      const readTimerText = async () => (await timerLocator.textContent()) ?? "";
-      const waitForTimerUpdate = async (previousText) => {
-        await expect.poll(readTimerText, { timeout: 5000 }).not.toBe(previousText);
-        return readTimerText();
-      };
+      // Use Test API to verify timer is active and get initial time
+      const initialTime = await page.evaluate(() => {
+        const timer = window.__TEST_API?.timers?.getActiveTimer?.();
+        return timer ? timer.remaining : null;
+      });
 
-      const initialTimerText = await readTimerText();
-      const timerText1 = await waitForTimerUpdate(initialTimerText);
-      const timerText2 = await waitForTimerUpdate(timerText1);
+      expect(initialTime).toBeGreaterThan(0);
 
-      // Timer should have decreased (unless it reached 0)
-      if (timerText1 !== "" && timerText2 !== "") {
-        const time1 = parseInt(timerText1.match(/Time Left: (\d+)s/)?.[1] || "0");
-        const time2 = parseInt(timerText2.match(/Time Left: (\d+)s/)?.[1] || "0");
-        expect(time2).toBeLessThanOrEqual(time1);
-      }
+      // Wait for timer to tick down using Test API hook
+      await page.waitForFunction(
+        () => {
+          const timer = window.__TEST_API?.timers?.getActiveTimer?.();
+          return timer && timer.remaining < initialTime;
+        },
+        { timeout: 5000 }
+      );
+
+      // Verify timer has decreased
+      const updatedTime = await page.evaluate(() => {
+        const timer = window.__TEST_API?.timers?.getActiveTimer?.();
+        return timer ? timer.remaining : null;
+      });
+
+      expect(updatedTime).toBeLessThan(initialTime);
+      expect(updatedTime).toBeGreaterThanOrEqual(0);
 
       // Verify battle state is properly initialized
       await expect(page.locator("body")).toHaveAttribute("data-target", "10");
