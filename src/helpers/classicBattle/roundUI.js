@@ -530,18 +530,20 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
             typeof deps.attachCooldownRendererOptions === "object"
               ? { ...deps.attachCooldownRendererOptions }
               : {};
-          const promptBufferOverride = resolveOpponentPromptBuffer(
+          const resolvedBuffer = resolveOpponentPromptBuffer(
             cooldownResult,
-            attachRendererOptions
+            deps.attachCooldownRendererOptions
           );
           let promptBudget = null;
           if (delayOpponentMessageFlag) {
             try {
-              promptBudget = computeOpponentPromptWaitBudget(promptBufferOverride);
+              promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
             } catch {
               promptBudget = computeOpponentPromptWaitBudget();
             }
-            attachRendererOptions.opponentPromptBufferMs = promptBudget.bufferMs;
+            const rendererBuffer =
+              resolvedBuffer !== undefined ? resolvedBuffer : promptBudget.bufferMs;
+            attachRendererOptions.opponentPromptBufferMs = rendererBuffer;
             attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
             const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
             const resolvedPollInterval =
