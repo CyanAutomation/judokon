@@ -1,7 +1,14 @@
 import { ToggleSwitch } from "../../components/ToggleSwitch.js";
+import navigationItems from "../../data/navigationItems.js";
 import { updateNavigationItemHidden } from "../gameModeUtils.js";
 import { showSettingsError } from "../showSettingsError.js";
 import { showSnackbar } from "../showSnackbar.js";
+
+const NAVIGABLE_MODE_IDS = new Set(
+  navigationItems
+    .map((item) => item.gameModeId)
+    .filter((id) => typeof id === "number")
+);
 
 /**
  * Handle a game mode toggle change.
@@ -79,6 +86,9 @@ export function renderGameModeSwitches(container, gameModes, getCurrentSettings,
   }
   const sortedModes = [...gameModes].sort((a, b) => a.order - b.order);
   sortedModes.forEach((mode) => {
+    if (!NAVIGABLE_MODE_IDS.has(mode.id)) {
+      return;
+    }
     const current = getCurrentSettings();
     const currentModes = current.gameModes ?? {};
     const isChecked = Object.hasOwn(currentModes, mode.id) ? currentModes[mode.id] : !mode.isHidden;
