@@ -1,75 +1,100 @@
+
 # QA Report & Improvement Plan: `src/pages/battleCLI.html`
 
-This document records the verification of the QA observations for `src/pages/battleCLI.html` and refines the follow-up actions.
+This document records verification of the QA observations in `src/pages/battleCLI.html`, refines the follow-up actions, and adds feasibility and verification guidance for implementers and reviewers.
 
-## Verification Summary
+## Verification summary (updated)
 
-- ✅ **Confirmed**: Issue #4 — The CLI header renders duplicate scoreboard elements after initialisation.
-- ⚠️ **Clarify**: Issue #6 — The timer already exposes `aria-live="polite"`, but a broader a11y audit remains worthwhile.
-- ❌ **Not reproduced / outdated**: Issues #1, #2, #3/#7, and #8.
+- ✅ Issue #4 — Duplicate scoreboard in header: confirmed, actionable.
+- ⚠️ Issue #6 — Countdown `aria-live`: current markup provides `role="status"` and `aria-live="polite"`, so this specific assertion is outdated; recommend a focused live-region audit alongside other DOM changes.
+- ❌ Issues #1, #2, #3/#7, #8 — Not reproduced on main; behaviour appears consistent with current code paths and tests.
 
-## Detailed Findings
+## Detailed findings and feasibility notes
 
-### Issue #4 – Duplicate & Misaligned Scoreboard (**valid**)
+### Issue #4 — Duplicate & misaligned scoreboard (Confirmed)
 
-- The CLI header keeps the legacy scoreboard (`#cli-round`, `#cli-score`) alongside the shared scoreboard nodes that are unhidden during `init()` (`src/pages/battleCLI/init.js:2339`).
-- Because both sets stay visible inside the flex header defined in the page markup (`src/pages/battleCLI.html:509`), users see “Round 0…” / “You: 0…” twice and layout alignment varies by viewport.
-- **Action**: The scoreboard should use the standard scoreboard component, but styled specifically for the battleCLI page. The scoreboard component (as described
-  in design/productRequirementsDocuments/prdBattleScoreboard.md) is a standard component that is shared between all battle modes, and should be a standard
-  implementation. The only difference should be the visual styling. Therefore, there is work to adapt the CLI template and styles to use the new scoreboard component while preserving the old CLI look through CSS. This involves
-  restructuring the header markup, updating CSS classes like .cli-scoreboard, and ensuring ARIA and dataset attributes remain accessible. Also need to handle
-  scoreboard messages, timers, and events to fit CLI style without changing the shared scoreboard logic, likely by CSS overrides. Finally, check and update
-  tests that refer to removed CLI-specific elements. This includes: move scoreboard elements like round-message from main to header, aligning CLI and standard scoreboard designs. This means restructuring
-  HTML to centralize scoreboard in header with CLI-specific styling, removing CLI duplicates, and updating CLI scripts to rely fully on scoreboard elements,
-  while ensuring existing functions and datasets remain compatible. And planning CSS tweaks for CLI look and checking scoreboard component expectations for
-  element IDs and structure.
+- Symptom: The page shows the legacy CLI scoreboard (IDs like `#cli-round`, `#cli-score`) and the shared scoreboard component at the same time after `init()` runs. Both are visible within the header, causing duplicated text and layout misalignment.
+- Where to look: `src/pages/battleCLI.html` (header markup), `src/pages/battleCLI/init.js` (initialisation code around line ~2339 where shared scoreboard nodes are unhidden), and the shared scoreboard component implementation (search `scoreboard`).
+- Root cause hypothesis: The CLI page markup retained legacy scoreboard nodes for backward compatibility. The initialisation code un-hides the shared scoreboard but doesn't remove or hide the legacy nodes, resulting in duplicate visible elements.
+- Feasibility & effort: High feasibility, low-to-medium effort. The safest approach is to prefer the shared scoreboard component and hide/remove the legacy CLI-specific nodes during init. Updating tests will be required (`tests/pages/battleCLI.dualWrite.test.js` and any tests referencing CLI-specific IDs).
+- Concrete steps:
+  1. Identify the legacy CLI scoreboard nodes in `src/pages/battleCLI.html` (IDs/classes like `#cli-round`, `#cli-score`) and confirm where tests reference them.
+  2. Update `src/pages/battleCLI/init.js` to hide (or remove) the legacy nodes once the shared scoreboard is initialised, e.g. set `hidden` or add a `cli-scoreboard--legacy` class with `display: none` toggled after the shared scoreboard becomes active.
+  3. Prefer CSS overrides over structural changes where possible to keep public IDs available for tests during a transition, then remove legacy nodes in a follow-up breaking-change PR if desired.
+  4. Update or add unit/integration tests to assert a single scoreboard present and to avoid flakiness during initialisation (adjust `tests/pages/battleCLI.dualWrite.test.js`).
+  5. Run the test suite (vitest + playwright smoke) to confirm no regressions.
 
-### Issue #1 – Battle fails to start (**not reproduced**)
+### Issue #1 — Battle fails to start (Not reproduced)
 
-- Selecting a match length through the modal calls `handleRoundSelect`, which persists the value, closes and destroys the modal, and dispatches `startClicked` to the orchestrator (`src/helpers/classicBattle/roundSelectModal.js:259`).
-- If the modal cannot load, the CLI falls back to a dedicated “Start match” button that also emits `startClicked` (`src/pages/battleCLI/init.js:537`), and tests cover the fallback (`tests/pages/battleCLI.pointsToWin.startOnce.test.js:6`).
-- **Conclusion**: The reported blocker is not reproducible in the current codebase.
+- Findings: Round selection works through the modal (`src/helpers/classicBattle/roundSelectModal.js`) and the fallback start button also dispatches the start event. Existing tests cover the fallback flow.
+- Feasibility: No action needed. If a flaky failure appears in CI, capture a failing run and instrument the modal lifecycle with additional logs or transient-state guards.
 
-### Issues #3 / #7 – Seed input triggers “Invalid key” warnings (**not reproduced**)
+### Issue #3 / #7 — Seed input triggers invalid-key warnings (Not reproduced)
 
-- The global key handler ignores events that originate from form controls (`src/pages/battleCLI/events.js:57`), so typing in the seed input cannot surface the warning banner.
-- **Conclusion**: Behaviour matches expectations; no change needed.
+- Findings: Global key handler ignores key events from form inputs (`src/pages/battleCLI/events.js`), preventing spurious warnings while typing in the seed input.
+- Feasibility: No change required. If a UX improvement is desired, add an inline help text or input-specific validation that provides clearer messaging.
 
-### Issue #2 – Modal artefacts persist after close (**not reproduced**)
+### Issue #2 — Modal artefacts persist after close (Not reproduced)
 
-- `handleRoundSelect` explicitly calls `modal.close()`, fires a `close` event, invokes tooltip/keyboard clean-up callbacks, and finally removes the modal backdrop via `modal.destroy()` (`src/helpers/classicBattle/roundSelectModal.js:259`).
-- The component implementation of `Modal.destroy()` detaches the element from the DOM (`src/components/Modal.js:120`).
-- **Conclusion**: The described overlap cannot be reproduced with the current lifecycle.
+- Findings: `handleRoundSelect` calls `modal.close()` and `modal.destroy()` and `Modal.destroy()` removes the DOM node; current lifecycle appears correct.
+- Feasibility: No immediate change required. If modal backdrops are observed in specific browsers, add a focused e2e test reproducing the issue and instrument modal close/destroy paths.
 
-### Issue #8 – Verbose mode is missing (**not reproduced**)
+### Issue #8 — Verbose mode missing (Not reproduced)
 
-- The verbose checkbox is wired through `setupFlags()`, which syncs the checkbox state, toggles section visibility, and streams battle events into the log when enabled (`src/pages/battleCLI/init.js:2088`).
-- **Conclusion**: Verbose logging already works; no engineering effort required beyond potential UX refinements.
+- Findings: `setupFlags()` wires the verbose toggle and streams events; functionality exists.
+- Feasibility: No code change necessary. Consider small UX polish (show an initial example log or hint) if users expect a different behaviour.
 
-### Issue #6 – Countdown `aria-live` assertion (**clarify**)
+### Issue #6 — Countdown `aria-live` (Clarify & audit)
 
-- The countdown element ships with `role="status"` and `aria-live="polite"` (`src/pages/battleCLI.html:533`), so the specific concern is outdated.
-- Nevertheless, a holistic review of live regions is advisable while addressing the scoreboard changes.
+- Findings: The countdown element already includes `role="status"` and `aria-live="polite"` in the markup (`src/pages/battleCLI.html`). The issue is outdated for that element specifically.
+- Recommendation: While remediating the scoreboard duplication, run a quick audit for all live regions (score, round messages, snackbar) to avoid double announcements. Use `aria-atomic` where appropriate and ensure only one live region announces the same data.
 
-## Updated Improvement Opportunities
+## Updated improvement opportunities (with priorities & verification guidance)
 
-1. **Resolve scoreboard duplication (High Feasibility)**  
-   Hide or repurpose the legacy CLI scoreboard once the shared scoreboard initialises (`src/pages/battleCLI/init.js:2339`). Update related tests such as `tests/pages/battleCLI.dualWrite.test.js` to reflect the chosen primary UI.
-2. **Audit dynamic announcements (Medium Feasibility)**  
-   Reconfirm `aria-live` / `aria-atomic` settings for score, round, and snackbar updates after the scoreboard changes to avoid double announcements.
-3. **Align stat list semantics (Medium Feasibility)**  
-   Update `buildStatRows` to emit `role="option"` rows under the `role="listbox"` container and ensure the active descendant logic still applies (`src/pages/battleCLI/init.js:1313`).
-4. **Modularise inline styles (Medium Feasibility)**  
-   Move the large `<style>` block into a dedicated stylesheet to improve maintainability and caching (`src/pages/battleCLI.html:16`).
-5. **Stabilise test hooks (Low Feasibility)**  
-   Expand the existing `data-testid` coverage for key CLI controls (e.g., stats grid, verbose toggle) to support future Playwright coverage without depending on structural selectors.
+1) Resolve scoreboard duplication — High priority, high feasibility
+   - Approach: Hide legacy CLI scoreboard nodes after the shared scoreboard is available during `init()`.
+   - Files to change: `src/pages/battleCLI/init.js`, optionally `src/pages/battleCLI.html` (if removing nodes), and CSS (a small class to hide legacy nodes).
+   - Tests: Update `tests/pages/battleCLI.dualWrite.test.js` and any tests that assert the legacy scoreboard text. Add an assertion that only one scoreboard is visible after init.
+   - Verification: Run `vitest` for unit tests and a Playwright smoke test that loads the CLI page and checks for a single scoreboard element.
 
-## Reference Files
+2) Audit dynamic announcements — Medium priority
+   - Approach: Identify elements using `aria-live` or `role=status`, ensure `aria-atomic` is correct, and prevent overlapping announcements (e.g., scoreboard update and snackbar both announcing the same text). Consolidate announcements when practical.
+   - Files to inspect: `src/pages/battleCLI.html`, `src/pages/battleCLI/init.js`, shared scoreboard component.
+   - Verification: Manual a11y check with NVDA/VoiceOver or an automated scan plus Playwright test verifying no duplicate spoken text in sequence.
 
-- `src/pages/battleCLI.html`
-- `src/pages/battleCLI/init.js`
-- `src/helpers/classicBattle/roundSelectModal.js`
-- `src/pages/battleCLI/events.js`
-- `src/components/Modal.js`
-- `tests/pages/battleCLI.pointsToWin.startOnce.test.js`
-- `tests/pages/battleCLI.dualWrite.test.js`
+3) Align stat list semantics — Medium priority
+   - Approach: Ensure `buildStatRows` emits semantic roles (container `role=listbox`, rows `role=option`) and that ARIA active-descendant management remains correct for keyboard navigation.
+   - Files to change: `src/pages/battleCLI/init.js` (where stat rows are built) and any helper functions that manage focus/active descendant.
+   - Verification: Unit tests for keyboard navigation and a Playwright integration asserting correct `aria-selected`/`aria-activedescendant` behaviour.
+
+4) Modularise inline styles — Low-medium priority
+   - Approach: Extract the large `<style>` block from `src/pages/battleCLI.html` into `src/pages/battleCLI.css` (or the project's CSS convention). Keep CSS class names stable and update the HTML to include the new stylesheet link.
+   - Verification: Visual smoke test and `npx prettier --check` / `npx eslint` as part of the validation flow.
+
+5) Stabilise test hooks — Low priority
+   - Approach: Add `data-testid` attributes to key interactive elements (stats grid, verbose toggle, start button) to make tests resilient to markup changes. Keep these attributes small and stable.
+   - Verification: Update Playwright tests to use `data-testid` and run the suite.
+
+## Quick implementation contract
+
+- Inputs: `src/pages/battleCLI.html`, `src/pages/battleCLI/init.js`, `tests/pages/battleCLI.dualWrite.test.js`
+- Outputs: Updated `init.js` (hide/remove legacy nodes), small CSS entry (optional), and updated tests.
+- Success criteria: Only one scoreboard visible after init; vitest & Playwright smoke tests pass locally.
+
+## Verification checklist (for PR reviewers)
+
+- [ ] Single scoreboard present after `init()` (manual + automated test)
+- [ ] No duplicate live-region announcements when score/round updates occur
+- [ ] Unit tests updated & passing (vitest)
+- [ ] Playwright smoke test for CLI page passes
+- [ ] No unsilenced console.warn/error in tests
+
+## Next steps
+
+1. Implement the minimal change in `src/pages/battleCLI/init.js` to hide legacy scoreboard nodes after the shared scoreboard initialises. Keep the change small and reversible.
+2. Update `tests/pages/battleCLI.dualWrite.test.js` to assert a single scoreboard. Run `vitest` and a Playwright smoke test.
+3. If visual alignment requires CSS changes, extract the inline styles and apply a `cli-scoreboard--legacy` hide rule, then re-run tests.
+
+---
+
+_File updated by code review automation: verified QA observations, added concrete steps, feasibility, and verification guidance. Awaiting manual review._
