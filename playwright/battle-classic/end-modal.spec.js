@@ -242,22 +242,26 @@ async function waitForMatchCompletion(page, timeout = 15000) {
         // Capture diagnostics for debugging
         const diagnostics = {
           modalExists: !!modal,
-          modalAttributes: modal ? {
-            id: modal.id,
-            className: modal.className,
-            style: modal.style.cssText,
-            ariaHidden: modal.getAttribute("aria-hidden"),
-            hidden: modal.hidden,
-            innerHTML: modal.innerHTML.substring(0, 500) // Truncate for readability
-          } : null,
+          modalAttributes: modal
+            ? {
+                id: modal.id,
+                className: modal.className,
+                style: modal.style.cssText,
+                ariaHidden: modal.getAttribute("aria-hidden"),
+                hidden: modal.hidden,
+                innerHTML: modal.innerHTML.substring(0, 500) // Truncate for readability
+              }
+            : null,
           battleStore: {
             matchEnded: engine?.matchEnded,
             pointsToWin: engine?.pointsToWin,
             currentRound: store?.currentRound,
-            round: round ? {
-              resolving: round.resolving,
-              state: round.state
-            } : null
+            round: round
+              ? {
+                  resolving: round.resolving,
+                  state: round.state
+                }
+              : null
           },
           timestamp: new Date().toISOString()
         };

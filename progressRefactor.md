@@ -190,7 +190,6 @@ Deliverables for Phase 1:
 - updated PRD headers with authority + owner
 - Phase-1 PR (branch) with validation checks passing
 
-
 ### Phase 1 — Execution (current state)
 
 Status: Phase 1 tooling and mapping artifacts were produced; assimilation work has started in PRDs (appendices added for several topics). Importantly, the repository still contains most original source files — deletions described in earlier drafts were not committed to `main`. This file has been updated to reflect that reality.
@@ -255,7 +254,6 @@ Validation checklist (to run on the migration branch before merging):
 - markdown link check on changed files
 
 ---
-
 
 Please confirm which option you want (A/B/C) and I will implement it.
 
