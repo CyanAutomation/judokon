@@ -59,6 +59,88 @@ vi.mock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
   getOpponentJudoka: () => ({ stats: {} })
 }));
 
+describe("resolveCooldownDependencies", () => {
+  it("returns provided timer and renderer overrides", async () => {
+    vi.resetModules();
+    const timer = { start: vi.fn() };
+    const createRoundTimer = vi.fn(() => timer);
+    const attachCooldownRenderer = vi.fn();
+    const { resolveCooldownDependencies } = await import(
+      "../../../src/helpers/classicBattle/roundUI.js"
+    );
+
+    const resolved = await resolveCooldownDependencies(
+      {},
+      {
+        createRoundTimer,
+        attachCooldownRenderer
+      }
+    );
+
+    expect(resolved.timer).toBe(timer);
+    expect(resolved.renderer).toBe(attachCooldownRenderer);
+    expect(createRoundTimer).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("startRoundCooldown", () => {
+  it("waits for delayed opponent prompt when timestamp is missing", async () => {
+    vi.resetModules();
+    const waitForDelayedOpponentPromptDisplay = vi.fn(async () => {});
+    const getOpponentPromptTimestamp = vi.fn(() => NaN);
+    const timer = { start: vi.fn(async () => {}) };
+    const renderer = vi.fn();
+    const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    await startRoundCooldown(
+      { timer, renderer },
+      {
+        seconds: 5,
+        delayOpponentMessage: true,
+        rendererOptions: { promptPollIntervalMs: 90 },
+        promptBudget: { bufferMs: 50, totalMs: 190 },
+        waitForDelayedOpponentPromptDisplay,
+        getOpponentPromptTimestamp
+      }
+    );
+
+    expect(renderer).toHaveBeenCalledWith(
+      timer,
+      5,
+      expect.objectContaining({ promptPollIntervalMs: 90 })
+    );
+    expect(waitForDelayedOpponentPromptDisplay).toHaveBeenCalledWith(
+      { bufferMs: 50, totalMs: 190 },
+      { intervalMs: 90 }
+    );
+    expect(timer.start).toHaveBeenCalledWith(5);
+  });
+
+  it("skips waiting when opponent prompt timestamp is already recorded", async () => {
+    vi.resetModules();
+    const waitForDelayedOpponentPromptDisplay = vi.fn(async () => {});
+    const getOpponentPromptTimestamp = vi.fn(() => Date.now());
+    const timer = { start: vi.fn(async () => {}) };
+    const renderer = vi.fn();
+    const { startRoundCooldown } = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+    await startRoundCooldown(
+      { timer, renderer },
+      {
+        seconds: 7,
+        delayOpponentMessage: true,
+        rendererOptions: { promptPollIntervalMs: 60 },
+        promptBudget: null,
+        waitForDelayedOpponentPromptDisplay,
+        getOpponentPromptTimestamp
+      }
+    );
+
+    expect(waitForDelayedOpponentPromptDisplay).not.toHaveBeenCalled();
+    expect(timer.start).toHaveBeenCalledWith(7);
+  });
+});
+
 describe("round UI handlers", () => {
   it("calls applyRoundUI on roundStarted", async () => {
     vi.resetModules();
