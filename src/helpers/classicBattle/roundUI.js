@@ -28,11 +28,10 @@ import {
  * throttle timers or delay DOM updates. Tune within 0-500ms: lower values may
  * cause the countdown to start before the prompt is visible, while higher ones
  * risk noticeable pauses between rounds.
- * @pseudocode DEFAULT_OPPONENT_PROMPT_BUFFER_MS = 250
  * @summary Safety buffer to keep opponent prompt and cooldown visuals aligned.
+ * @pseudocode DEFAULT_OPPONENT_PROMPT_BUFFER_MS = 250
  * @type {number}
  * @constant
- * @returns {number} Milliseconds to extend the opponent prompt wait budget.
  */
 export const DEFAULT_OPPONENT_PROMPT_BUFFER_MS = 250;
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
@@ -73,13 +72,9 @@ function safeNow() {
 }
 
 function computeOpponentPromptWaitBudget(bufferOverride = DEFAULT_OPPONENT_PROMPT_BUFFER_MS) {
-  const normalizedBuffer = (() => {
-    const numeric = Number(bufferOverride);
-    if (!Number.isFinite(numeric) || numeric < 0) {
-      return DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
-    }
-    return numeric;
-  })();
+  const numeric = Number(bufferOverride);
+  const normalizedBuffer =
+    Number.isFinite(numeric) && numeric >= 0 ? numeric : DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
   let delayMs = 0;
   let minVisibleMs = 0;
   try {
@@ -98,10 +93,8 @@ function computeOpponentPromptWaitBudget(bufferOverride = DEFAULT_OPPONENT_PROMP
   return { delayMs, minVisibleMs, bufferMs: normalizedBuffer, totalMs };
 }
 
-async function waitForDelayedOpponentPromptDisplay(budget) {
-  const resolvedBudget =
-    budget && typeof budget === "object" ? budget : computeOpponentPromptWaitBudget();
-  const { totalMs } = resolvedBudget || {};
+async function waitForDelayedOpponentPromptDisplay(budget = computeOpponentPromptWaitBudget()) {
+  const { totalMs } = budget || {};
   if (!Number.isFinite(totalMs) || totalMs <= 0) {
     return;
   }
@@ -394,25 +387,25 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
             typeof computeNextRoundCooldownFn === "function"
               ? computeNextRoundCooldownFn
               : computeNextRoundCooldown;
+          const parseSecondsFromResult = (result) => {
+            const direct = Number(result);
+            if (Number.isFinite(direct)) return direct;
+
+            if (result && typeof result === "object") {
+              const candidates = [result.seconds, result.value];
+              for (const candidate of candidates) {
+                const numeric = Number(candidate);
+                if (Number.isFinite(numeric)) return numeric;
+              }
+            }
+            return direct;
+          };
+
           let cooldownResult;
           try {
             cooldownResult = computeCooldown();
           } catch {}
-          const resolvedSeconds = (() => {
-            const direct = Number(cooldownResult);
-            if (Number.isFinite(direct)) return direct;
-            if (cooldownResult && typeof cooldownResult === "object") {
-              if (Object.prototype.hasOwnProperty.call(cooldownResult, "seconds")) {
-                const candidate = Number(cooldownResult.seconds);
-                if (Number.isFinite(candidate)) return candidate;
-              }
-              if (Object.prototype.hasOwnProperty.call(cooldownResult, "value")) {
-                const candidate = Number(cooldownResult.value);
-                if (Number.isFinite(candidate)) return candidate;
-              }
-            }
-            return direct;
-          })();
+          const resolvedSeconds = parseSecondsFromResult(cooldownResult);
           const secs = Math.max(3, resolvedSeconds);
           let timerFactory =
             typeof createRoundTimerFn === "function" ? createRoundTimerFn : undefined;
@@ -441,20 +434,22 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
                 : {};
             let promptBudget = null;
             if (delayOpponentMessageFlag) {
-              let resolvedBuffer = DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
-              const bufferCandidates = [
-                attachRendererOptions.opponentPromptBufferMs,
-                cooldownResult && typeof cooldownResult === "object"
-                  ? cooldownResult.opponentPromptBufferMs
-                  : undefined
-              ];
-              for (const candidate of bufferCandidates) {
-                const numeric = Number(candidate);
-                if (Number.isFinite(numeric) && numeric >= 0) {
-                  resolvedBuffer = numeric;
-                  break;
+              const resolvePromptBuffer = () => {
+                const candidates = [
+                  attachRendererOptions.opponentPromptBufferMs,
+                  cooldownResult?.opponentPromptBufferMs
+                ];
+
+                for (const candidate of candidates) {
+                  const numeric = Number(candidate);
+                  if (Number.isFinite(numeric) && numeric >= 0) {
+                    return numeric;
+                  }
                 }
-              }
+                return DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
+              };
+
+              const resolvedBuffer = resolvePromptBuffer();
               try {
                 promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
               } catch {

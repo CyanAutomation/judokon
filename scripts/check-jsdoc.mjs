@@ -60,7 +60,7 @@ export function findExportedSymbols(content) {
   return results;
 }
 
-export function validateJsDoc(lines, index) {
+export function validateJsDoc(lines, index, symbolType = "function") {
   let j = index - 1;
   while (j >= 0 && (/^\s*$/.test(lines[j]) || /^\s*\/\//.test(lines[j]))) j--;
   if (j < 0) return false;
@@ -79,9 +79,10 @@ export function validateJsDoc(lines, index) {
   const signature = lines[index];
   const hasParams = /\(([^)]*)\)/.exec(signature)?.[1].trim().length > 0;
   const returnsValue =
-    (!/=>\s*\{/.test(signature) &&
+    symbolType !== "variable" &&
+    ((!/=>\s*\{/.test(signature) &&
       !/function\s+[A-Za-z0-9_$]+\s*\([^)]*\)\s*\{\}/.test(signature)) ||
-    /return\s+/.test(signature);
+      /return\s+/.test(signature));
 
   const hasParamTag = /@param\b/.test(block);
   const hasReturnTag = /@returns\b/.test(block);
@@ -105,7 +106,7 @@ export async function checkFiles(files) {
     const lines = src.split(/\n/);
     for (const sym of symbols) {
       const idx = sym.line - 1;
-      const ok = validateJsDoc(lines, idx);
+      const ok = validateJsDoc(lines, idx, sym.type);
       if (!ok) problems.push({ file: rel, name: sym.name, line: sym.line });
     }
   }
