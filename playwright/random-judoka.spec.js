@@ -12,7 +12,8 @@ test.describe("View Judoka screen", () => {
     await expect(page.getByTestId("draw-button")).toBeVisible();
   });
 
-  /* Accessibility-focused test deferred for later
+  // Removed accessibility-focused test
+  /*
   test("draw button accessible name constant", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
     await expect(btn).toHaveText(/draw card/i);
@@ -46,7 +47,8 @@ test.describe("View Judoka screen", () => {
     await expect(flag).toHaveAttribute("alt", /(Portugal|USA|Japan) flag/i);
   });
 
-  /* Accessibility attribute assertion deferred
+  // Removed accessibility attribute assertion test
+  /*
   test("draw button shows loading state", async ({ page }) => {
     const btn = page.getByTestId("draw-button");
     await btn.click();

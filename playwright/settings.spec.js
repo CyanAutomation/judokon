@@ -65,7 +65,8 @@ test.describe("Settings page", () => {
     await expect(page.getByRole("radiogroup", { name: /display mode/i })).toBeVisible();
   });
 
-  /* Accessibility-focused labels test deferred for later
+  // Removed accessibility-focused labels test
+  /*
   test("controls expose correct labels", async ({ page }) => {
     const { sortedNames, flagLabels } = getLabelData();
 

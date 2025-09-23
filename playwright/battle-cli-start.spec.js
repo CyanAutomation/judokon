@@ -11,7 +11,7 @@ test.describe("Battle CLI - Start", () => {
         name: "Select a stat with number keys 1–5"
       });
       await expect(statsContainer).toBeVisible();
-    // Accessibility assertion deferred
+    // Removed accessibility assertion
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
