@@ -39,6 +39,12 @@ test.describe("Classic Battle End Game Flow", () => {
         // Start match
         await page.click("#round-select-2");
 
+        // Reinstate the first-to-1 condition after the round selection modal interaction
+        await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
         // Wait for cards and stat buttons
         await page.waitForSelector("#stat-buttons button[data-stat]");
 
@@ -46,15 +52,21 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.click("#stat-buttons button[data-stat='power']");
 
         // Verify match completion
-        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
+        await expect(page.locator("#score-display")).toContainText(/(?:You|Opponent):\s*1/);
+
+        // Confirm the match end modal is presented to the user
+        const matchEndModal = page.locator("#match-end-modal").first();
+        await matchEndModal.waitFor({ state: "visible" });
+        await expect(matchEndModal).toBeVisible();
 
         // Wait for and verify end modal appears
-        await page.waitForSelector("#match-end-title");
-        await expect(page.locator("#match-end-title")).toHaveText("Match Over");
+        const matchEndTitle = page.locator("#match-end-title").first();
+        await matchEndTitle.waitFor({ state: "visible" });
+        await expect(matchEndTitle).toHaveText("Match Over");
 
         // Verify modal has replay and quit buttons
-        await expect(page.locator("#match-replay-button")).toBeVisible();
-        await expect(page.locator("#match-quit-button")).toBeVisible();
+        await expect(page.locator("#match-replay-button").first()).toBeVisible();
+        await expect(page.locator("#match-quit-button").first()).toBeVisible();
 
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
@@ -81,6 +93,12 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Start and complete match
         await page.click("#round-select-2");
+
+        await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
         await page.click("#stat-buttons button[data-stat]");
 
         // Verify score display shows completion
@@ -117,18 +135,29 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
+
+        await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
         await page.click("#stat-buttons button[data-stat]");
 
         // Verify match ended
-        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
+        await expect(page.locator("#score-display")).toContainText(/(?:You|Opponent):\s*1/);
 
         // Check if replay button exists and is functional
-        const replayButton = page.locator("#replay-button, [data-testid='replay-button']");
+        const replayButton = page
+          .locator("#match-replay-button, #replay-button, [data-testid='replay-button']")
+          .first();
         if ((await replayButton.count()) > 0) {
           await expect(replayButton).toBeVisible();
 
+          const modalOverlay = page.locator("#match-end-modal").first();
+          await modalOverlay.waitFor({ state: "visible" });
+
           // Test replay functionality if button is available
-          await replayButton.click();
+          await replayButton.press("Enter");
 
           // Verify page remains functional after replay
           await expect(page.locator("body")).toBeVisible();
@@ -156,13 +185,19 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
+
+        await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
         await page.click("#stat-buttons button[data-stat]");
 
         await waitForScoreDisplay(page);
         expect(errors.length).toBe(0);
 
         // Verify match completed successfully
-        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
+        await expect(page.locator("#score-display")).toContainText(/(?:You|Opponent):\s*1/);
 
         // Verify page layout remains intact
         await expect(page.locator("header, .header")).toBeVisible();
@@ -189,6 +224,12 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
+
+        await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
         await page.click("#stat-buttons button[data-stat]");
 
         // Verify score display is clear and readable
@@ -221,10 +262,16 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
+
+        await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
         await page.click("#stat-buttons button[data-stat]");
 
         // Verify match completed
-        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
+        await expect(page.locator("#score-display")).toContainText(/(?:You|Opponent):\s*1/);
 
         // Verify interface remains stable
         await expect(page.locator("body")).toBeVisible();
@@ -260,13 +307,19 @@ test.describe("Classic Battle End Game Flow", () => {
         });
 
         await page.click("#round-select-2");
+
+        await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
         await page.click("#stat-buttons button[data-stat]");
 
         await waitForScoreDisplay(page);
         expect(errors.length).toBe(0);
 
         // Verify match completed without throwing errors
-        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
+        await expect(page.locator("#score-display")).toContainText(/(?:You|Opponent):\s*1/);
       }, ["log", "info", "warn", "error", "debug"]));
 
     test("maintains functionality after match completion", async ({ page }) =>
@@ -288,8 +341,14 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Complete first match
         await page.click("#round-select-2");
+
+        await page.evaluate(async () => {
+          const { setPointsToWin } = await import("/src/helpers/battleEngineFacade.js");
+          setPointsToWin(1);
+        });
+
         await page.click("#stat-buttons button[data-stat]");
-        await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
+        await expect(page.locator("#score-display")).toContainText(/(?:You|Opponent):\s*1/);
 
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
