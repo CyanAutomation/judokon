@@ -68,6 +68,7 @@ import {
   clearVerboseLog
 } from "./dom.js";
 import { createCliDomFragment } from "./cliDomTemplate.js";
+import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -214,93 +215,24 @@ function ensureCliDomForTest({ reset = false } = {}) {
   return document.getElementById("cli-root");
 }
 
-function coerceScoreForTest(...values) {
-  for (const value of values) {
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return value;
-    }
-
-    if (value !== undefined && value !== null) {
-      const parsed = Number(value);
-      if (!Number.isNaN(parsed)) {
-        return parsed;
-      }
-    }
-  }
-
-  return 0;
-}
-
-/**
- * Normalize event-like input into a round detail object.
- *
- * @param {object} [eventLike]
- * @returns {object}
- * @pseudocode
- * if eventLike has detail → use detail, else clone eventLike
- * ensure result object exists with message/playerScore/opponentScore defaults
- * ensure store fallback is present when available
- * return normalized object
- */
-function normalizeRoundDetailForTest(eventLike = {}) {
-  const source =
-    eventLike && typeof eventLike === "object" && "detail" in eventLike
-      ? eventLike.detail || {}
-      : eventLike || {};
-  const normalized = { ...source };
-  const resultSource = source && typeof source.result === "object" ? { ...source.result } : {};
-  const message = resultSource.message ?? source.resultMessage ?? source.message ?? "";
-  const playerScore = coerceScoreForTest(
-    resultSource.playerScore,
-    source.playerScore,
-    source.resultPlayerScore
-  );
-  const opponentScore = coerceScoreForTest(
-    resultSource.opponentScore,
-    source.opponentScore,
-    source.resultOpponentScore
-  );
-
-  normalized.result = {
-    ...resultSource,
-    message,
-    playerScore,
-    opponentScore
-  };
-
-  if (!normalized.store && store) {
-    normalized.store = store;
-  }
-
-  return normalized;
-}
-
 /**
  * Resolve the active round through the orchestrator for deterministic tests.
  *
  * @param {object} [eventLike]
  * @returns {Promise<{ detail: object, dispatched: boolean, emitted: boolean }>}
  * @pseudocode
- * detail = normalizeRoundDetailForTest(eventLike)
- * dispatched = await safeDispatch("roundResolved", detail)
- * emitBattleEvent("roundResolved", detail)
- * return { detail, dispatched: dispatched !== false, emitted: true on success }
+ * return resolveRoundForTestHelper(eventLike, {
+ *   dispatch: detail => safeDispatch("roundResolved", detail),
+ *   emit: detail => emitBattleEvent("roundResolved", detail),
+ *   getStore: () => store
+ * })
  */
 async function resolveRoundForTest(eventLike = {}) {
-  const detail = normalizeRoundDetailForTest(eventLike);
-  let dispatched = false;
-  try {
-    const result = await safeDispatch("roundResolved", detail);
-    dispatched = result !== false;
-  } catch {}
-
-  let emitted = false;
-  try {
-    emitBattleEvent("roundResolved", detail);
-    emitted = true;
-  } catch {}
-
-  return { detail, dispatched, emitted };
+  return resolveRoundForTestHelper(eventLike, {
+    dispatch: (detail) => safeDispatch("roundResolved", detail),
+    emit: (detail) => emitBattleEvent("roundResolved", detail),
+    getStore: () => store
+  });
 }
 
 /**
