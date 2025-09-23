@@ -6,7 +6,7 @@ test.describe("Battle CLI - Play", () => {
     await withMutedConsole(async () => {
       await page.goto("/src/pages/battleCLI.html?autostart=1");
 
-      await page.waitForFunction(() => window.__test?.cli?.resolveRound);
+      await page.waitForFunction(() => window.__TEST_API?.state?.dispatchBattleEvent);
 
       // Wait for the stats to be ready
       const statsContainer = page.locator("#cli-stats");
@@ -16,21 +16,18 @@ test.describe("Battle CLI - Play", () => {
       const statButton = page.locator(".cli-stat").first();
       await expect(statButton).toBeVisible();
 
+      // Set opponent resolve delay to 0 for deterministic testing
+      await page.evaluate(() => window.__TEST_API.timers.setOpponentResolveDelay(0));
+
       // Click the first stat button
       await statButton.click();
 
-      await page.evaluate(() =>
-        window.__test.cli.resolveRound({
-          stat: "speed",
-          playerVal: 5,
-          opponentVal: 3,
-          result: { message: "Round Over", playerScore: 1, opponentScore: 0 }
-        })
-      );
+      // Force the round to resolve by expiring the selection timer
+      await page.evaluate(() => window.__TEST_API.timers.expireSelectionTimer());
 
       // Wait for the round message to show the result
       const roundMessage = page.locator("#round-message");
-      await expect(roundMessage).not.toBeEmpty({ timeout: 10000 }); // Increased timeout
+      await expect(roundMessage).not.toBeEmpty({ timeout: 10000 });
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });

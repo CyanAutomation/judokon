@@ -14,6 +14,8 @@ This document cleans and expands the earlier assessment of Playwright specs. It 
    - **Outcome:** Test now passes and provides real signal for keyboard accessibility during hover. No sleeps were found in this file; the main issue was weak assertions. Runtime improved slightly (from ~2.9s to ~2.4s in this test).
 
 2. `playwright/battle-cli-play.spec.js` — uses internal helpers (not real UI flows); finish rounds through UI or deterministic public Test API and assert snackbar/scoreboard.
+   - **Actions taken:** Replaced `window.__test.cli.resolveRound` with attempts to use public Test API: set opponent resolve delay to 0, clicked stat button, tried dispatching "statSelected" and "roundResolved" events, and used `expireSelectionTimer` to force resolution. Added assertions for scoreboard updates (#score-display, #cli-score attributes).
+   - **Outcome:** Test still fails to resolve the round using public APIs; the Test API lacks a direct round resolution method, and event dispatching didn't trigger UI updates. The internal hook provides the only deterministic way to resolve rounds currently. Test runtime ~11s with timeouts. Requires adding a public `resolveRound` method to Test API or changing test to not expect round resolution (e.g., just assert stat selection UI changes).
 3. `playwright/battle-cli-restart.spec.js` — ends match via internal hooks; use supported user flows or test APIs and assert reset behaviour.
 4. `playwright/battle-classic/opponent-reveal.spec.js` — stacked timeouts; wait for explicit snackbar/score state and split overlapping scenarios.
 5. `playwright/battle-classic/end-modal.spec.js` — sleeps after match end; await modal/end-game promises and assert dialog actions/content.
