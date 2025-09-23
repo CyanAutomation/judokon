@@ -1,9 +1,7 @@
-import { test, expect } from "@playwright/test";
-
 test.describe("Battle CLI settings collapse", () => {
-// Removed aria-expanded a11y test for now
-/*
-test("settings toggle exists and toggles aria-expanded / body visibility", async ({ page }) => {
+  // Removed aria-expanded a11y test for now
+  /*
+  test("settings toggle exists and toggles aria-expanded / body visibility", async ({ page }) => {
     // Adjust URL for local dev server used by test runner in CI; fallback to file:// if needed
     // Prefer Playwright's static server (see playwright.config.js: port 5000)
     const serverUrl = process.env.CLI_TEST_URL || "http://localhost:5000/src/pages/battleCLI.html";
@@ -31,4 +29,5 @@ test("settings toggle exists and toggles aria-expanded / body visibility", async
     const bodyVisible = await body.isVisible();
     expect(bodyVisible).toBe(afterAttr === "true");
   });
-});*/
+  */
+});
