@@ -27,10 +27,108 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
   emitBattleEvent: vi.fn()
 }));
 
-import { attachCooldownRenderer } from "../../src/helpers/CooldownRenderer.js";
+import {
+  createPromptDelayController,
+  attachCooldownRenderer
+} from "../../src/helpers/CooldownRenderer.js";
 import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
 import * as snackbar from "../../src/helpers/showSnackbar.js";
 import * as scoreboard from "../../src/helpers/setupScoreboard.js";
+
+describe("createPromptDelayController", () => {
+  let timers;
+  let currentNow;
+  const now = () => currentNow;
+
+  beforeEach(() => {
+    timers = useCanonicalTimers();
+    currentNow = 0;
+    mockGetOpponentPromptTimestamp.mockReturnValue(0);
+    mockGetOpponentPromptMinDuration.mockReturnValue(0);
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    timers.cleanup();
+  });
+
+  it("delays queued tick until opponent prompt duration elapses", async () => {
+    currentNow = 1000;
+    mockGetOpponentPromptTimestamp.mockReturnValue(800);
+    mockGetOpponentPromptMinDuration.mockReturnValue(500);
+
+    const controller = createPromptDelayController({
+      now,
+      setTimeoutFn: setTimeout,
+      clearTimeoutFn: clearTimeout
+    });
+    const onReady = vi.fn();
+
+    expect(controller.shouldDefer()).toBe(true);
+
+    controller.queueTick(3, {}, onReady);
+
+    expect(onReady).not.toHaveBeenCalled();
+
+    currentNow = 1300;
+    await timers.advanceTimersByTimeAsync(300);
+
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(onReady).toHaveBeenCalledWith(3, { suppressEvents: false });
+    expect(controller.shouldDefer()).toBe(false);
+  });
+
+  it("polls for opponent prompt before delivering tick when waiting is enabled", async () => {
+    currentNow = 0;
+    mockGetOpponentPromptTimestamp.mockReturnValue(0);
+
+    const controller = createPromptDelayController({
+      waitForOpponentPrompt: true,
+      promptPollIntervalMs: 25,
+      maxPromptWaitMs: 100,
+      now,
+      setTimeoutFn: setTimeout,
+      clearTimeoutFn: clearTimeout
+    });
+    const onReady = vi.fn();
+
+    controller.queueTick(9, {}, onReady);
+
+    expect(controller.shouldDefer()).toBe(true);
+    expect(onReady).not.toHaveBeenCalled();
+
+    currentNow = 25;
+    mockGetOpponentPromptTimestamp.mockReturnValue(25);
+
+    await timers.advanceTimersByTimeAsync(25);
+
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(onReady).toHaveBeenCalledWith(9, { suppressEvents: false });
+    expect(controller.shouldDefer()).toBe(false);
+  });
+
+  it("clears pending prompt delay and prevents queued callback", async () => {
+    currentNow = 500;
+    mockGetOpponentPromptTimestamp.mockReturnValue(200);
+    mockGetOpponentPromptMinDuration.mockReturnValue(900);
+
+    const controller = createPromptDelayController({
+      now,
+      setTimeoutFn: setTimeout,
+      clearTimeoutFn: clearTimeout
+    });
+    const onReady = vi.fn();
+
+    controller.queueTick(6, {}, onReady);
+    controller.clear();
+
+    currentNow = 1100;
+    await timers.runAllTimersAsync();
+
+    expect(onReady).not.toHaveBeenCalled();
+    expect(controller.shouldDefer()).toBe(false);
+  });
+});
 
 describe("attachCooldownRenderer", () => {
   let timer;
@@ -48,7 +146,9 @@ describe("attachCooldownRenderer", () => {
         this.handlers[event] = this.handlers[event].filter((h) => h !== fn);
       },
       emit(event, value) {
-        for (const fn of this.handlers[event]) fn(value);
+        for (const fn of this.handlers[event]) {
+          fn(value);
+        }
       }
     };
     vi.clearAllMocks();
@@ -58,71 +158,37 @@ describe("attachCooldownRenderer", () => {
     vi.useRealTimers();
   });
 
-  it("defers countdown-start until timer ticks", async () => {
-    const timers = useCanonicalTimers();
-    try {
-      attachCooldownRenderer(timer, 5);
+  it("renders initial countdown and emits events on first tick", () => {
+    const detach = attachCooldownRenderer(timer, 5);
 
-      expect(emitBattleEvent).not.toHaveBeenCalled();
+    expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 5s");
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
+    expect(emitBattleEvent).not.toHaveBeenCalled();
 
-      await timers.runAllTimersAsync();
+    mockGetOpponentPromptTimestamp.mockReturnValue(100);
 
-      expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 5s");
-      expect(scoreboard.updateTimer).toHaveBeenCalledWith(5);
-      expect(emitBattleEvent).not.toHaveBeenCalled();
+    timer.emit("tick", 5);
 
-      mockGetOpponentPromptTimestamp.mockReturnValue(100);
-
-      timer.emit("tick", 5);
-
-      await timers.runAllTimersAsync();
-
-      expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundCountdownStarted");
-      expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundCountdownTick", { remaining: 5 });
-    } finally {
-      timers.cleanup();
-    }
+    expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundCountdownStarted");
+    expect(emitBattleEvent).toHaveBeenCalledWith("nextRoundCountdownTick", { remaining: 5 });
+    detach();
   });
 
-  it("updates snackbar on tick and clears timer at zero", async () => {
-    const timers = useCanonicalTimers();
-    try {
-      mockGetOpponentPromptTimestamp.mockReturnValue(100);
+  it("updates snackbar and scoreboard on tick changes and expiration", () => {
+    attachCooldownRenderer(timer);
 
-      attachCooldownRenderer(timer);
+    mockGetOpponentPromptTimestamp.mockReturnValue(100);
 
-      timer.emit("tick", 3);
-      expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
-      expect(scoreboard.updateTimer).toHaveBeenCalledWith(3);
+    timer.emit("tick", 3);
+    expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 3s");
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(3);
 
-      timer.emit("tick", 2);
-      expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 2s");
-      expect(scoreboard.updateTimer).toHaveBeenCalledWith(2);
+    timer.emit("tick", 1);
+    expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 1s");
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(1);
 
-      timer.emit("tick", 0);
-      expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 0s");
-      expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
-    } finally {
-      timers.cleanup();
-    }
-  });
-
-  it("performs zero-delay updates asynchronously when forcing async prompt handling", async () => {
-    const timers = useCanonicalTimers();
-    try {
-      attachCooldownRenderer(timer, 4);
-
-      expect(snackbar.showSnackbar).not.toHaveBeenCalled();
-      expect(scoreboard.updateTimer).not.toHaveBeenCalled();
-      expect(vi.getTimerCount()).toBe(1);
-
-      await timers.runAllTimersAsync();
-
-      expect(snackbar.showSnackbar).toHaveBeenCalledWith("Next round in: 4s");
-      expect(scoreboard.updateTimer).toHaveBeenCalledWith(4);
-      expect(vi.getTimerCount()).toBe(0);
-    } finally {
-      timers.cleanup();
-    }
+    timer.emit("expired");
+    expect(snackbar.updateSnackbar).toHaveBeenCalledWith("Next round in: 0s");
+    expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
   });
 });
