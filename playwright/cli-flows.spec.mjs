@@ -99,6 +99,13 @@ test.describe("CLI Keyboard Flows", () => {
       await expect(shortcuts).toBeVisible();
       await expect(countdown).not.toContainText("Invalid key, press H for help");
 
+      // Assert help text content
+      const helpList = page.locator("#cli-help");
+      await expect(helpList).toContainText("[1–5] Select Stat");
+      await expect(helpList).toContainText("[Enter]/[Space] Next");
+      await expect(helpList).toContainText("[Q] Quit");
+      await expect(helpList).toContainText("[H] Toggle Help");
+
       await page.keyboard.press("h");
       await expect(shortcuts).toHaveAttribute("hidden", "");
     }, ["log", "warn", "error"]);
