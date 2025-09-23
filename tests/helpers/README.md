@@ -10,6 +10,7 @@ The helpers in this directory provide:
 - **Event Utilities**: Tools for testing event handling and listener wiring
 - **Console Management**: Helpers for muting console output during tests
 - **RAF Mocking**: Deterministic control over `requestAnimationFrame` for timing-sensitive tests
+- **Scheduler Control**: Test-friendly hooks for deterministic scheduler behavior
 
 ## Quick Start
 
@@ -160,6 +161,47 @@ await withMutedConsole(async () => {
 });
 ```
 
+### Scheduler Test Controller
+
+For tests involving the RAF-based scheduler (`src/utils/scheduler.js`), use `createTestController()` for deterministic control without global monkey-patching.
+
+```javascript
+import { createTestController } from "../../src/utils/scheduler.js";
+
+// Enable test mode
+globalThis.__TEST__ = true;
+
+describe("My Component", () => {
+  let controller;
+
+  beforeEach(() => {
+    controller = createTestController();
+  });
+
+  afterEach(() => {
+    controller?.dispose();
+  });
+
+  it("handles RAF callbacks deterministically", () => {
+    // Code that schedules RAF callbacks
+    scheduleSomething();
+
+    // Advance one frame
+    controller.advanceFrame();
+
+    // Verify effects
+    expect(someEffect).toHaveBeenCalled();
+  });
+});
+```
+
+**API:**
+
+- `advanceFrame()`: Execute pending RAF callbacks
+- `advanceTime(ms)`: Advance time and execute callbacks
+- `getFrameCount()`: Get number of frames processed
+- `dispose()`: Clean up controller
+
 ## Migration Guide
 
 When migrating existing tests:
@@ -183,3 +225,4 @@ When adding new helpers:
 - `domFactory.js`: Core DOM factories and utilities
 - `domFactory.test.js`: Unit tests for all helpers
 - `rafMock.js`: RequestAnimationFrame mocking utilities
+- `src/utils/scheduler.js`: Scheduler with test controller API

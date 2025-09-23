@@ -58,7 +58,7 @@ const harness = createSettingsHarness({
       initFeatureFlags: vi.fn().mockResolvedValue(baseSettings)
     }),
     "../../src/helpers/gameModeUtils.js": () => ({
-      loadNavigationItems: vi.fn().mockResolvedValue([])
+      loadGameModes: vi.fn().mockRejectedValueOnce(new Error("nav fail"))
     })
   }
 });
@@ -279,9 +279,8 @@ describe("initializeSettingsPage", () => {
       initFeatureFlags: vi.fn().mockResolvedValue(baseSettings),
       isEnabled: vi.fn()
     }));
-    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-      loadNavigationItems: vi.fn().mockRejectedValueOnce(new Error("nav fail"))
-    }));
+    vi.doMock("../../src/helpers/domReady.js", () => ({ onDomReady }));
+    vi.doMock("../../src/helpers/gameModeUtils.js", () => ({}));
     const testHarness = createSettingsHarness();
     await testHarness.setup();
     document.body.appendChild(
