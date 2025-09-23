@@ -3,6 +3,7 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 const SCOREBOARD_MODULE_PATH = "../../src/components/Scoreboard.js";
 const DOM_MODULE_PATH = "../../src/pages/battleCLI/dom.js";
+const INIT_MODULE_PATH = "../../src/pages/battleCLI/init.js";
 
 function createDeferred() {
   let resolve;
@@ -53,6 +54,10 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
       updateScore: vi.fn(),
       updateRoundCounter: vi.fn()
     };
+    // Mock battleEngineFacade for init
+    vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
+      getPointsToWin: () => 5
+    }));
   });
 
   afterEach(async () => {
@@ -72,46 +77,62 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   it("should update both CLI and standard elements when setting round message", async () => {
     const { setRoundMessage } = await importDomWithScoreboard();
     await ensureCliDom();
+    const { init } = await import(INIT_MODULE_PATH);
+    await init(() => {}); // Dummy startCallback
 
     const testMessage = "Player wins this round!";
     setRoundMessage(testMessage);
 
     expect(mockSharedScoreboard.showMessage).toHaveBeenCalledWith(testMessage, { outcome: false });
 
-    // Verify CLI element updated
+    // Verify CLI element updated (even if hidden)
     const cliMessage = document.getElementById("round-message");
     expect(cliMessage.textContent).toBe(testMessage);
+
+    // Verify legacy CLI scoreboard elements are hidden after init
+    const cliRound = document.getElementById("cli-round");
+    expect(cliRound.style.display).toBe("none");
+    const cliScore = document.getElementById("cli-score");
+    expect(cliScore.style.display).toBe("none");
   });
 
   it("should update both CLI and standard elements when updating score", async () => {
     // Mock the engine facade
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
-      getScores: () => ({ playerScore: 2, opponentScore: 1 })
+      getScores: () => ({ playerScore: 2, opponentScore: 1 }),
+      getPointsToWin: () => 5
     }));
 
     const { updateScoreLine } = await importDomWithScoreboard();
     await ensureCliDom();
+    const { init } = await import(INIT_MODULE_PATH);
+    await init(() => {}); // Dummy startCallback
 
     updateScoreLine();
 
     expect(mockSharedScoreboard.updateScore).toHaveBeenCalledWith(2, 1);
 
-    // Verify CLI element updated
+    // Verify CLI element updated (even if hidden)
     const cliScore = document.getElementById("cli-score");
     expect(cliScore.textContent).toBe("You: 2 Opponent: 1");
     expect(cliScore.dataset.scorePlayer).toBe("2");
     expect(cliScore.dataset.scoreOpponent).toBe("1");
+
+    // Verify legacy elements are hidden
+    expect(cliScore.style.display).toBe("none");
   });
 
   it("should update both CLI and standard elements when updating round header", async () => {
     const { updateRoundHeader } = await importDomWithScoreboard();
     await ensureCliDom();
+    const { init } = await import(INIT_MODULE_PATH);
+    await init(() => {}); // Dummy startCallback
 
     updateRoundHeader(3, 5);
 
     expect(mockSharedScoreboard.updateRoundCounter).toHaveBeenCalledWith(3);
 
-    // Verify CLI element updated
+    // Verify CLI element updated (even if hidden)
     const cliRound = document.getElementById("cli-round");
     expect(cliRound.textContent).toBe("Round 3 Target: 5");
 
@@ -121,6 +142,9 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
       expect(root.dataset.round).toBe("3");
       expect(root.dataset.target).toBe("5");
     }
+
+    // Verify legacy elements are hidden
+    expect(cliRound.style.display).toBe("none");
   });
 
   it("should have standard scoreboard nodes visible after Phase 2", async () => {
@@ -139,6 +163,8 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   it("should gracefully handle missing shared scoreboard helpers", async () => {
     const { setRoundMessage } = await importDomWithScoreboard({});
     await ensureCliDom();
+    const { init } = await import(INIT_MODULE_PATH);
+    await init(() => {}); // Dummy startCallback
 
     // Should not throw error even if shared component methods are missing
     expect(() => setRoundMessage("Test message")).not.toThrow();
@@ -147,5 +173,11 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     const cliMessage = document.getElementById("round-message");
     expect(cliMessage.textContent).toBe("Test message");
     expect(mockSharedScoreboard.showMessage).not.toHaveBeenCalled();
+
+    // Verify legacy elements are hidden
+    const cliRound = document.getElementById("cli-round");
+    expect(cliRound.style.display).toBe("none");
+    const cliScore = document.getElementById("cli-score");
+    expect(cliScore.style.display).toBe("none");
   });
 });

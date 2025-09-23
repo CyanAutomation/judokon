@@ -97,4 +97,17 @@ This document records verification of the QA observations in `src/pages/battleCL
 
 ---
 
-_File updated by code review automation: verified QA observations, added concrete steps, feasibility, and verification guidance. Awaiting manual review._
+## Implementation completed
+
+**Actions taken:**
+
+- **Modified `src/pages/battleCLI/init.js`**: Added code after the shared scoreboard initialization to hide legacy CLI scoreboard nodes (`#cli-round` and `#cli-score`) by setting `style.display = "none"`. This ensures only the shared scoreboard is visible after init, resolving the duplication issue.
+- **Updated `tests/pages/battleCLI.dualWrite.test.js`**: Modified all test cases to call `init()` with a dummy callback, and added assertions to verify that legacy elements are hidden (`style.display === "none"`). Also added necessary mocks for `battleEngineFacade.getPointsToWin` to prevent init failures.
+- **Test results**:
+  - **Vitest**: All 5 tests in `dualWrite.test.js` pass.
+  - **Playwright**: `battle-cli-start.spec.js` passes (1 test, 25.2s).
+  - No regressions detected in the relevant tests.
+
+**Outcome**: The scoreboard duplication issue is resolved. Legacy CLI scoreboard elements are now hidden after initialization, ensuring a single scoreboard is displayed. Tests confirm the behavior and no breaking changes were introduced.
+
+_File updated with implementation details and test outcomes. Ready for review._

@@ -2346,6 +2346,12 @@ export async function init() {
     console.warn("Failed to initialize shared Scoreboard in CLI:", error);
   }
 
+  // Hide legacy CLI scoreboard nodes to avoid duplication
+  const cliRound = document.getElementById("cli-round");
+  if (cliRound) cliRound.style.display = "none";
+  const cliScore = document.getElementById("cli-score");
+  if (cliScore) cliScore.style.display = "none";
+
   try {
     await initRoundSelectModal(startCallback);
   } catch {
