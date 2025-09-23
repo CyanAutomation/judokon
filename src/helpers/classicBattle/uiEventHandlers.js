@@ -52,6 +52,11 @@ export function bindUIHelperEventHandlersDynamic() {
       const detail = (e && e.detail) || {};
       const hasOpts = Object.prototype.hasOwnProperty.call(detail, "opts");
       if (!hasOpts) {
+        clearOpponentSnackbarTimeout();
+        try {
+          showSnackbar(t("ui.opponentChoosing"));
+          markOpponentPromptNow();
+        } catch {}
         return;
       }
 
@@ -74,7 +79,7 @@ export function bindUIHelperEventHandlersDynamic() {
             showSnackbar(t("ui.opponentChoosing"));
             markOpponentPromptNow();
           } catch {}
-        }, resolvedDelay);
+        }
       } else {
         clearOpponentSnackbarTimeout();
         // Cancel any pending delay to ensure the immediate snackbar wins.

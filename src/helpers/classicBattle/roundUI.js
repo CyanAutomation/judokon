@@ -1,5 +1,5 @@
 import { updateDebugPanel } from "./debugPanel.js";
-import { showSelectionPrompt } from "./snackbar.js";
+import { showSelectionPrompt, getOpponentDelay } from "./snackbar.js";
 // Use index re-exports so tests can vi.mock("../battle/index.js") and spy
 import { resetStatButtons } from "../battle/index.js";
 import { startTimer } from "./timerService.js";
@@ -16,6 +16,10 @@ import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js"
 import { syncScoreDisplay } from "./uiHelpers.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { runAfterFrames } from "../../utils/rafUtils.js";
+import {
+  getOpponentPromptTimestamp,
+  getOpponentPromptMinDuration
+} from "./opponentPromptTracker.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 let showMatchSummaryModal = null;
 // Reference to avoid unused-import lint complaint when the function is re-exported
@@ -38,6 +42,64 @@ function scheduleUiServicePreload() {
     try {
       preloadUiService();
     } catch {}
+  }
+}
+
+function safeNow() {
+  try {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") {
+      return performance.now();
+    }
+  } catch {}
+  try {
+    return Date.now();
+  } catch {}
+  return 0;
+}
+
+function computeOpponentPromptWaitBudget() {
+  const bufferMs = 250;
+  let delayMs = 0;
+  let minVisibleMs = 0;
+  try {
+    const configuredDelay = Number(getOpponentDelay());
+    if (Number.isFinite(configuredDelay) && configuredDelay > 0) {
+      delayMs = configuredDelay;
+    }
+  } catch {}
+  try {
+    const configuredMin = Number(getOpponentPromptMinDuration());
+    if (Number.isFinite(configuredMin) && configuredMin > 0) {
+      minVisibleMs = configuredMin;
+    }
+  } catch {}
+  const totalMs = Math.max(0, delayMs + minVisibleMs + bufferMs);
+  return { delayMs, minVisibleMs, bufferMs, totalMs };
+}
+
+async function waitForDelayedOpponentPromptDisplay(budget = computeOpponentPromptWaitBudget()) {
+  const { totalMs } = budget || {};
+  if (!Number.isFinite(totalMs) || totalMs <= 0) {
+    return;
+  }
+  const start = safeNow();
+  while (safeNow() - start < totalMs) {
+    try {
+      const timestamp = Number(getOpponentPromptTimestamp());
+      if (Number.isFinite(timestamp) && timestamp > 0) {
+        return;
+      }
+    } catch {}
+    if (typeof setTimeout !== "function") {
+      break;
+    }
+    await new Promise((resolve) => {
+      try {
+        setTimeout(resolve, 16);
+      } catch {
+        resolve();
+      }
+    });
   }
 }
 
@@ -277,72 +339,96 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   } else if (!frameSchedulingSucceeded) {
     runResetOnce();
   }
-  if (result.matchEnded) {
-    try {
-      scoreboardApi?.clearRoundCounter?.();
-    } catch {}
-    try {
-      await showMatchSummary?.(result, async () => {
-        if (typeof handleReplayFn === "function") {
-          await handleReplayFn(store);
-        }
-      });
-    } catch {}
-    emitBattleEvent("matchOver");
-  } else {
-    try {
-      const orchestrated = (() => {
-        try {
-          return typeof isOrchestratedFn === "function" && isOrchestratedFn();
-        } catch {
-          return false;
-        }
-      })();
-      if (!orchestrated) {
-        const delayOpponentMessageFlag = !!store?.__delayOpponentMessage;
-        const computeCooldown =
-          typeof computeNextRoundCooldownFn === "function"
-            ? computeNextRoundCooldownFn
-            : computeNextRoundCooldown;
-        const secs = Math.max(3, Number(computeCooldown()));
-        let timerFactory =
-          typeof createRoundTimerFn === "function" ? createRoundTimerFn : undefined;
-        let renderer =
-          typeof attachCooldownRendererFn === "function" ? attachCooldownRendererFn : undefined;
-        if (!timerFactory || !renderer) {
+  const shouldCleanupDelayFlag = !!(store && typeof store === "object");
+  try {
+    if (result.matchEnded) {
+      try {
+        scoreboardApi?.clearRoundCounter?.();
+      } catch {}
+      try {
+        await showMatchSummary?.(result, async () => {
+          if (typeof handleReplayFn === "function") {
+            await handleReplayFn(store);
+          }
+        });
+      } catch {}
+      emitBattleEvent("matchOver");
+    } else {
+      try {
+        const orchestrated = (() => {
           try {
-            const [timerMod, rendererMod] = await Promise.all([
-              timerFactory
-                ? Promise.resolve({ createRoundTimer: timerFactory })
-                : import("../timers/createRoundTimer.js"),
-              renderer
-                ? Promise.resolve({ attachCooldownRenderer: renderer })
-                : import("../CooldownRenderer.js")
-            ]);
-            timerFactory = timerFactory || timerMod.createRoundTimer;
-            renderer = renderer || rendererMod.attachCooldownRenderer;
-          } catch {}
-        }
-        const timer = typeof timerFactory === "function" ? timerFactory() : null;
-        if (timer && !delayOpponentMessageFlag) {
-          try {
-            if (typeof renderer === "function") {
-              renderer(timer, secs);
-            }
-          } catch {}
-          try {
+            return typeof isOrchestratedFn === "function" && isOrchestratedFn();
+          } catch {
+            return false;
+          }
+        })();
+        if (!orchestrated) {
+          const delayOpponentMessageFlag =
+            shouldCleanupDelayFlag &&
+            Object.prototype.hasOwnProperty.call(store, "__delayOpponentMessage") &&
+            store.__delayOpponentMessage === true;
+          const computeCooldown =
+            typeof computeNextRoundCooldownFn === "function"
+              ? computeNextRoundCooldownFn
+              : computeNextRoundCooldown;
+          const secs = Math.max(3, Number(computeCooldown()));
+          let timerFactory =
+            typeof createRoundTimerFn === "function" ? createRoundTimerFn : undefined;
+          let renderer =
+            typeof attachCooldownRendererFn === "function" ? attachCooldownRendererFn : undefined;
+          if (!timerFactory || !renderer) {
+            try {
+              const [timerMod, rendererMod] = await Promise.all([
+                timerFactory
+                  ? Promise.resolve({ createRoundTimer: timerFactory })
+                  : import("../timers/createRoundTimer.js"),
+                renderer
+                  ? Promise.resolve({ attachCooldownRenderer: renderer })
+                  : import("../CooldownRenderer.js")
+              ]);
+              timerFactory = timerFactory || timerMod.createRoundTimer;
+              renderer = renderer || rendererMod.attachCooldownRenderer;
+            } catch {}
+          }
+          const timer = typeof timerFactory === "function" ? timerFactory() : null;
+          if (timer) {
+            const promptBudget = delayOpponentMessageFlag
+              ? computeOpponentPromptWaitBudget()
+              : null;
+            try {
+              if (typeof renderer === "function") {
+                renderer(timer, secs, {
+                  waitForOpponentPrompt: delayOpponentMessageFlag,
+                  maxPromptWaitMs: promptBudget?.totalMs || 0,
+                  promptPollIntervalMs: 32
+                });
+              }
+            } catch {}
             if (typeof timer.start === "function") {
-              timer.start(secs);
+              if (delayOpponentMessageFlag) {
+                try {
+                  const timestamp = Number(getOpponentPromptTimestamp());
+                  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+                    await waitForDelayedOpponentPromptDisplay(promptBudget || undefined);
+                  }
+                } catch {
+                  await waitForDelayedOpponentPromptDisplay(promptBudget || undefined);
+                }
+              }
+              try {
+                await timer.start(secs);
+              } catch {}
             }
-          } catch {}
+          }
         }
-      }
-    } catch {}
-  }
-  if (store && typeof store === "object") {
-    try {
-      delete store.__delayOpponentMessage;
-    } catch {}
+      } catch {}
+    }
+  } finally {
+    if (shouldCleanupDelayFlag) {
+      try {
+        delete store.__delayOpponentMessage;
+      } catch {}
+    }
   }
   try {
     if (typeof updateDebugPanelFn === "function") updateDebugPanelFn();
