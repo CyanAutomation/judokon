@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createTooltipHarness } from "./integrationHarness.js";
 
-beforeEach(() => {
+const harness = createTooltipHarness();
+
+beforeEach(async () => {
   document.body.innerHTML = "";
-  vi.resetModules();
-  vi.doMock("../../src/helpers/settingsStorage.js", () => ({
-    loadSettings: vi.fn().mockResolvedValue({ tooltips: true })
-  }));
+  await harness.setup();
 });
 
 describe("initTooltips", () => {

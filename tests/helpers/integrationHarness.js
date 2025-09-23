@@ -465,3 +465,49 @@ export function createTimerServiceHarness(customConfig = {}) {
     }
   });
 }
+
+/**
+ * Pre-configured harness for tooltip integration tests
+ */
+export function createTooltipHarness(customConfig = {}) {
+  const { fixtures: customFixtures, mocks: customMocks, ...restConfig } = customConfig;
+  return createIntegrationHarness({
+    ...restConfig,
+    fixtures: {
+      ...customFixtures
+    },
+    mocks: {
+      // Mock settings storage for tooltip preferences
+      "../../src/helpers/settingsStorage.js": () => ({
+        loadSettings: vi.fn().mockResolvedValue({ tooltips: true })
+      }),
+      // Mock data utilities for tooltip content
+      "../../src/helpers/dataUtils.js": () => ({
+        fetchJson: vi.fn()
+      }),
+      ...customMocks
+    }
+  });
+}
+
+/**
+ * Pre-configured harness for populate country list integration tests
+ */
+export function createPopulateCountryListHarness(customConfig = {}) {
+  const { fixtures: customFixtures, mocks: customMocks, ...restConfig } = customConfig;
+  return createIntegrationHarness({
+    ...restConfig,
+    fixtures: {
+      ...customFixtures
+    },
+    mocks: {
+      // Mock data utilities for judoka data
+      "../../src/helpers/dataUtils.js": () => ({
+        fetchJson: vi.fn()
+      }),
+      // Mock constants for data directory
+      "../../src/helpers/constants.js": () => ({ DATA_DIR: "" }),
+      ...customMocks
+    }
+  });
+}

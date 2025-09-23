@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { createPopulateCountryListHarness } from "./integrationHarness.js";
 
 vi.mock("../../src/helpers/api/countryService.js", () => ({
   loadCountryMapping: vi.fn(),
@@ -7,12 +8,14 @@ vi.mock("../../src/helpers/api/countryService.js", () => ({
 
 import { loadCountryMapping, getFlagUrl } from "../../src/helpers/api/countryService.js";
 
-beforeEach(() => {
+const harness = createPopulateCountryListHarness();
+
+beforeEach(async () => {
   getFlagUrl.mockImplementation((code) => `https://flagcdn.com/w320/${code}.png`);
+  await harness.setup();
 });
 
 afterEach(() => {
-  vi.resetModules();
   vi.clearAllMocks();
   localStorage.clear();
 });
@@ -28,7 +31,6 @@ describe("populateCountryList", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(judoka)
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
 
     const mapping = {
       br: { country: "Brazil", code: "br", active: true },
@@ -53,7 +55,6 @@ describe("populateCountryList", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(judoka)
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
 
     const mapping = {
       jp: { country: "Japan", code: "jp", active: true }
@@ -76,7 +77,6 @@ describe("populateCountryList", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(judoka)
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
 
     const mapping = {
       jp: { country: "Japan", code: "jp", active: true }
@@ -105,7 +105,6 @@ describe("populateCountryList", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(judoka)
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
 
     const codeMap = new Map(
       judoka.map((j, i) => {
@@ -148,7 +147,6 @@ describe("populateCountryList", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockRejectedValue(new Error("network error"))
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     loadCountryMapping.mockResolvedValue({});
 
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
@@ -168,7 +166,6 @@ describe("populateCountryList", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue(judoka)
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     const mapping = {
       jp: { country: "Japan", code: "jp", active: true }
     };
@@ -186,7 +183,6 @@ describe("populateCountryList", () => {
     vi.doMock("../../src/helpers/dataUtils.js", () => ({
       fetchJson: vi.fn().mockResolvedValue([])
     }));
-    vi.doMock("../../src/helpers/constants.js", () => ({ DATA_DIR: "" }));
     loadCountryMapping.mockResolvedValue({});
     const { populateCountryList } = await import("../../src/helpers/country/list.js");
     const container = document.createElement("div");
