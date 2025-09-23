@@ -301,7 +301,8 @@ const createControllerInterface = (state) => ({
  * @param {{
  *   waitForOpponentPrompt?: boolean,
  *   maxPromptWaitMs?: number,
- *   promptPollIntervalMs?: number
+ *   promptPollIntervalMs?: number,
+ *   opponentPromptBufferMs?: number
  * }} [options] - Optional countdown delay configuration.
  * @returns {() => void} Detach function.
  */
