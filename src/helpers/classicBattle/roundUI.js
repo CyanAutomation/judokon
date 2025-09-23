@@ -473,49 +473,6 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
               : {};
           let promptBudget = null;
           if (delayOpponentMessageFlag) {
-            const resolvePromptBuffer = () => {
-              const candidates = [
-                attachRendererOptions.opponentPromptBufferMs,
-                cooldownResult?.opponentPromptBufferMs
-              ];
-
-              for (const candidate of candidates) {
-                const numeric = Number(candidate);
-                if (Number.isFinite(numeric) && numeric >= 0) {
-                  return numeric;
-                }
-              }
-
-              attachRendererOptions.opponentPromptBufferMs = promptBudget.bufferMs;
-              attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
-              const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
-              const resolvedPollInterval =
-                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 32;
-              attachRendererOptions.promptPollIntervalMs = Math.max(32, resolvedPollInterval);
-              attachRendererOptions.waitForOpponentPrompt = true;
-            };
-
-            try {
-              promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
-            } catch {
-              promptBudget = computeOpponentPromptWaitBudget();
-            }
-            attachRendererOptions.opponentPromptBufferMs = promptBudget.bufferMs;
-            attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
-            const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
-            const resolvedPollInterval =
-              Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 75;
-            attachRendererOptions.promptPollIntervalMs = Math.max(50, resolvedPollInterval);
-            attachRendererOptions.waitForOpponentPrompt = true;
-          } else {
-              attachRendererOptions.waitForOpponentPrompt = false;
-              attachRendererOptions.maxPromptWaitMs = 0;
-              const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
-              const resolvedPollInterval =
-                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 32;
-              attachRendererOptions.promptPollIntervalMs = Math.max(32, resolvedPollInterval);
-            }
-
             try {
               promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
             } catch {
