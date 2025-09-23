@@ -41,15 +41,6 @@
 
 ### Remaining UI/UX Improvements
 
-- **Timer Behavior** ✅
-  1. Defined behavior: if autoSelect flag enabled, auto-select the highest stat from user's judoka; else interrupt round.
-  2. Modified autoSelectStat to select highest stat when userStats provided.
-  3. Updated calls to pass store.userJudoka?.stats.
-  4. UI shows "Auto-selected [stat]" message for clarity.
-- **Keyboard Hints**
-  1. Add a UI element to display the keyboard hint (e.g., "Press 1–5 to choose a stat").
-  2. Ensure this hint is visible only when the game is waiting for stat selection.
-  3. Implement ARIA-live region to announce the hint to screen readers.
 - **Match Length Selection**
   1. Modify the UI logic to hide the settings panel immediately after the match length is selected.
   2. Implement a mechanism to disable match length changes once a match has started.

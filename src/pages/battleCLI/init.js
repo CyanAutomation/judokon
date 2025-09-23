@@ -2182,8 +2182,25 @@ export function subscribeEngine() {
  *
  * @returns {void}
  */
+
+/**
+ * Handle battle state changes to show/hide keyboard hint.
+ *
+ * @param {object} detail - Event detail with from and to states.
+ */
+function handleBattleStateChange({ from, to }) {
+  const hint = byId("cli-controls-hint");
+  if (!hint) return;
+  if (to === "waitingForPlayerAction") {
+    hint.style.display = "block";
+  } else if (from === "waitingForPlayerAction") {
+    hint.style.display = "none";
+  }
+}
+
 export function wireEvents() {
   installEventBindings();
+  onBattleEvent("battleStateChange", handleBattleStateChange);
   if (typeof window !== "undefined") {
     window.addEventListener("keydown", onKeyDown);
   }

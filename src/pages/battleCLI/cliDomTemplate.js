@@ -132,7 +132,7 @@ export const CLI_DOM_TEMPLATE = `
       </div>
     </main>
     <footer class="cli-footer" role="contentinfo">
-      <div id="cli-controls-hint" aria-hidden="true">[1–5] Stats · [Enter/Space] Next · [H] Help · [Q] Quit</div>
+      <div id="cli-controls-hint" aria-live="polite" style="display: none">Press 1-5 to choose a stat</div>
       <div id="snackbar-container" role="status" aria-live="polite"></div>
     </footer>
     <div id="player-card" style="display: none"></div>
