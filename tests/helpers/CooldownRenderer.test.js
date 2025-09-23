@@ -107,6 +107,39 @@ describe("createPromptDelayController", () => {
     expect(controller.shouldDefer()).toBe(false);
   });
 
+  it("resumes queued countdown after exceeding max prompt wait", async () => {
+    currentNow = 0;
+    mockGetOpponentPromptTimestamp.mockReturnValue(0);
+
+    const controller = createPromptDelayController({
+      waitForOpponentPrompt: true,
+      promptPollIntervalMs: 40,
+      maxPromptWaitMs: 120,
+      now,
+      setTimeoutFn: setTimeout,
+      clearTimeoutFn: clearTimeout
+    });
+    const onReady = vi.fn();
+
+    controller.queueTick(7, {}, onReady);
+
+    await timers.advanceTimersByTimeAsync(80);
+    expect(onReady).not.toHaveBeenCalled();
+
+    await timers.advanceTimersByTimeAsync(40);
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(onReady).toHaveBeenCalledWith(7, { suppressEvents: false });
+
+    controller.queueTick(5, {}, onReady);
+
+    await timers.advanceTimersByTimeAsync(80);
+    expect(onReady).toHaveBeenCalledTimes(1);
+
+    await timers.advanceTimersByTimeAsync(40);
+    expect(onReady).toHaveBeenCalledTimes(2);
+    expect(onReady).toHaveBeenLastCalledWith(5, { suppressEvents: false });
+  });
+
   it("clears pending prompt delay and prevents queued callback", async () => {
     currentNow = 500;
     mockGetOpponentPromptTimestamp.mockReturnValue(200);
