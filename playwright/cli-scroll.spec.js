@@ -174,10 +174,6 @@ test.describe("CLI Layout and Scrolling", () => {
     });
   });
 
-  
-
-  
-
   test.describe("Content Overflow Handling", () => {
     test("handles very long lines gracefully", async ({ page }) => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
