@@ -30,31 +30,28 @@ test.describe("Classic Battle timer", () => {
         window.__TEST_API?.state?.waitForBattleState?.("waitingForPlayerAction")
       );
 
-      // Use Test API to verify timer is active and get initial time
-      const initialTime = await page.evaluate(() => {
-        const timer = window.__TEST_API?.timers?.getActiveTimer?.();
-        return timer ? timer.remaining : null;
-      });
+      // Wait for timer to update using semantic expectation on the countdown element
+      await expect(timerLocator).toContainText(/Time Left: [1-9]\d*s/, { timeout: 5000 });
 
-      expect(initialTime).toBeGreaterThan(0);
+      // Verify timer shows a decreasing value by checking it updates
+      const initialText = await timerLocator.textContent();
+      const initialMatch = initialText?.match(/Time Left: (\d+)s/);
+      expect(initialMatch).toBeTruthy();
 
-      // Wait for timer to tick down using Test API hook
+      // Wait for the timer to tick down at least once
       await page.waitForFunction(
-        () => {
-          const timer = window.__TEST_API?.timers?.getActiveTimer?.();
-          return timer && timer.remaining < initialTime;
+        (initialTime) => {
+          const timerEl = document.querySelector('[data-testid="next-round-timer"]');
+          if (!timerEl) return false;
+          const currentText = timerEl.textContent || "";
+          const match = currentText.match(/Time Left: (\d+)s/);
+          if (!match) return false;
+          const currentTime = parseInt(match[1], 10);
+          return currentTime < initialTime;
         },
+        parseInt(initialMatch[1], 10),
         { timeout: 5000 }
       );
-
-      // Verify timer has decreased
-      const updatedTime = await page.evaluate(() => {
-        const timer = window.__TEST_API?.timers?.getActiveTimer?.();
-        return timer ? timer.remaining : null;
-      });
-
-      expect(updatedTime).toBeLessThan(initialTime);
-      expect(updatedTime).toBeGreaterThanOrEqual(0);
 
       // Verify battle state is properly initialized
       await expect(page.locator("body")).toHaveAttribute("data-target", "10");

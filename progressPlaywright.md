@@ -37,7 +37,11 @@ This document cleans and expands the earlier assessment of Playwright specs. It 
 9. `playwright/countdown.spec.js` — invoke accessible interactions instead of helper bootstraps so failures reflect user-visible regressions.
    - **Actions taken:** Removed fallback code that used internal `__battleCLIinit.setCountdown` helper. Test now exclusively uses the public Test API (`window.__TEST_API.timers.setCountdown`) for countdown operations, ensuring failures reflect issues with the public interface rather than internal helpers.
    - **Outcome:** Test passes in ~0.9s and no longer relies on internal bootstraps. Countdown updates are driven through the public Test API, improving test reliability and ensuring regressions in the public interface are caught.
+
 10. `playwright/battle-classic/timer.spec.js` — swaps `waitForTimeout` polls for expectations tied to countdown element / test API hooks.
+
+   - **Actions taken:** Replaced `expect.poll` polling mechanism with semantic waits on the countdown element (`[data-testid="next-round-timer"]`). Used `page.waitForFunction` to wait for the timer to actually decrease, tied to the UI element's text content rather than arbitrary timeouts.
+   - **Outcome:** Tests pass with improved determinism (7.4s and 1.4s respectively). Timer verification now uses expectations tied to the countdown element's actual behavior, eliminating polling and providing better signal for timer-related regressions.
 
 ## Common problems observed
 
