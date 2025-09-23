@@ -6,7 +6,7 @@ import {
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
 describe("battleCLI onKeyDown", () => {
-  let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy;
+  let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy, emitSpy;
 
   beforeEach(async () => {
     vi.resetModules();
@@ -18,6 +18,7 @@ describe("battleCLI onKeyDown", () => {
     });
     vi.spyOn(debugHooks, "readDebugState").mockImplementation((k) => store[k]);
     dispatchSpy = vi.fn();
+    emitSpy = vi.spyOn(emitBattleEvent);
     vi.doMock("../../src/helpers/classicBattle/orchestrator.js", () => ({
       dispatchBattleEvent: dispatchSpy
     }));
@@ -204,7 +205,7 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches continue in roundOver state", () => {
     document.body.dataset.battleState = "roundOver";
     onKeyDown(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(dispatchSpy).toHaveBeenCalledWith("continue");
+    expect(emitSpy).toHaveBeenCalledWith("outcomeConfirmed");
   });
 
   it("dispatches ready in cooldown state for Enter and Space", () => {

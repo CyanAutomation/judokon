@@ -1609,6 +1609,12 @@ export function handleRoundOverKey(key) {
     try {
       emitBattleEvent("outcomeConfirmed");
     } catch {}
+    try {
+      // Attempt to dispatch to the live machine or orchestrator so tests
+      // that mock the orchestrator's `dispatchBattleEvent` will receive the
+      // "continue" event.
+      safeDispatch("continue");
+    } catch {}
     return true;
   }
   return false;
