@@ -19,7 +19,7 @@ const MODEL_THRESHOLD_CONFIG = [
   {
     relPath: "tokenizer_config.json",
     envKey: "RAG_TOKENIZER_CONFIG_MIN_BYTES",
-    defaultBytes: 400
+    defaultBytes: 300
   },
   {
     relPath: path.join("onnx", "model_quantized.onnx"),

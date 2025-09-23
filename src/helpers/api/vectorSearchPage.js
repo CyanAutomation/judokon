@@ -179,7 +179,7 @@ export async function getExtractor() {
           const placeholderError = new Error(`MiniLM assets appear to be placeholders: ${details}`);
           throw createHydrationGuidanceError(placeholderError);
         } else {
-          extractor = await pipeline("feature-extraction", modelDirAbs, { quantized: true });
+          extractor = await pipeline("feature-extraction", modelDir, { quantized: true });
           console.log("RAG: Successfully loaded local MiniLM model.");
         }
       } else {

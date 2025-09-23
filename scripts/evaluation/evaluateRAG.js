@@ -49,7 +49,7 @@ export async function evaluate(baseline = null, options = {}) {
   for (const { query, expected_source } of queries) {
     // Use the centralized queryRag function
     const t0 = hrtime();
-    const results = await queryFn(query);
+    const results = await queryFn(query, { allowLexicalFallback: true });
     const t1 = hrtime();
     const latency = Math.max(0, t1 - t0);
     latencies.push(latency);

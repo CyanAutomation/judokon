@@ -89,7 +89,7 @@ Phases:
 
 ## Assessment Summary (automated review)
 
-- Total items listed: 9
+- Total items listed: 8
 - Items fully completed: 1,2,3,4,5,6 (phases completed as documented), 7 (phases completed) — see per-item details below.
 - Items partially completed / outstanding: 6 (Phase 3 monitoring), 8 (design & implementation complete but adoption/migration outstanding)
 
@@ -128,10 +128,6 @@ Note: The document contains several duplicated "COMPLETED" blocks (likely due to
 8) Scheduler test-friendly hooks & deterministic control
 - Status: Partially Completed
 - Notes: Design and `createTestController()` implemented in `src/utils/scheduler.js` with unit tests. Outstanding: full migration of tests to use the controller and documentation finalization.
-
-9) Add scheduler safeguards to detect/prevent infinite loops (watchdog)
-- Status: Design Completed, Implementation Outstanding
-- Notes: Heuristics and policy defined; watchdog implementation was planned but not clearly marked as completed. Recommend making this opt-in for tests and enabling in CI to catch runaway loops.
 
 ## Quick recommendations (next work)
 
@@ -392,7 +388,6 @@ Risks: Changing scheduler surfaces risks production behavior. Mitigate by keepin
 6. Replace brittle inline mocks with integration-style refactors for priority tests (score: 3) [Phase 0 ✅]
 7. Centralize round state management / single source of truth (score: 4) [Phases 1-2 ✅]
 8. Scheduler test-friendly hooks & deterministic control (score: 4)
-9. Add scheduler safeguards to detect/prevent infinite loops (score: 5)
 
 ---
 
