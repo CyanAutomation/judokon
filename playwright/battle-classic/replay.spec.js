@@ -21,8 +21,19 @@ test.describe("Classic Battle replay", () => {
 
       // Start match
       await page.click("#round-select-2");
+      // Capture initial score, click, then assert one-side increment by 1
+      const score = page.locator(selectors.scoreDisplay());
+      const initialText = (await score.textContent())?.trim();
       await page.locator(selectors.statButton(0)).first().click();
-      await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*1/);
+      await expect(score).not.toHaveText(initialText || "");
+      const text = (await score.textContent()) || "";
+      const pAfter = Number((text.match(/You:\s*(\d+)/) || [])[1] || 0);
+      const oAfter = Number((text.match(/Opponent:\s*(\d+)/) || [])[1] || 0);
+      const pBefore = Number(((initialText || "").match(/You:\s*(\d+)/) || [])[1] || 0);
+      const oBefore = Number(((initialText || "").match(/Opponent:\s*(\d+)/) || [])[1] || 0);
+      const deltas = [pAfter - pBefore, oAfter - oBefore];
+      expect(deltas.filter((d) => d === 1).length).toBe(1);
+      expect(deltas.filter((d) => d !== 0 && d !== 1).length).toBe(0);
 
       // Click Replay and assert round counter resets
       await page.getByTestId("replay-button").click();

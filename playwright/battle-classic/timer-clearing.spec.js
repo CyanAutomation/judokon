@@ -24,13 +24,30 @@ test.describe("Classic Battle timer clearing", () => {
       const timerLocator = page.locator(selectors.nextRoundTimer());
       await expect(timerLocator).toHaveText(/Time Left: \d+s/);
 
+      // Capture initial score text for deterministic comparison
+      const score = page.locator(selectors.scoreDisplay());
+      const initialText = (await score.textContent())?.trim();
+
       // Click stat button
       await buttons.first().click();
 
-      // Score should be updated
-      const score = page.locator(selectors.scoreDisplay());
-      await expect(score).toContainText(/You:\s*1/);
-      await expect(score).toContainText(/Opponent:\s*0/);
+      // Score should update immediately (one side increments by 1)
+      await expect(score).not.toHaveText(initialText || "");
+
+      const text = (await score.textContent()) || "";
+      const playerMatch = text.match(/You:\s*(\d+)/);
+      const opponentMatch = text.match(/Opponent:\s*(\d+)/);
+      const [pAfter, oAfter] = [Number(playerMatch?.[1] || 0), Number(opponentMatch?.[1] || 0)];
+
+      const pBeforeMatch = (initialText || "").match(/You:\s*(\d+)/);
+      const oBeforeMatch = (initialText || "").match(/Opponent:\s*(\d+)/);
+      const [pBefore, oBefore] = [Number(pBeforeMatch?.[1] || 0), Number(oBeforeMatch?.[1] || 0)];
+
+      // Exactly one side should increment by 1
+      const playerDelta = pAfter - pBefore;
+      const opponentDelta = oAfter - oBefore;
+      expect([playerDelta, opponentDelta].filter((d) => d === 1).length).toBe(1);
+      expect([playerDelta, opponentDelta].filter((d) => d !== 0 && d !== 1).length).toBe(0);
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });

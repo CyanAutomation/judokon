@@ -152,3 +152,40 @@ When you open a PR to fix any of these issues, include the following checklist i
 - Test the fix manually in the browser to confirm the scoreboard updates during a match.
 - If the issue persists, investigate why `engineFacade.getScores()` returns 0 while `result.playerScore` is correct.
 - Consider adding a Playwright test that verifies scoreboard increments after multiple rounds.
+
+---
+
+## Fix Implementation: Visible Outcome Feedback
+
+#### Root Cause Analysis
+
+Outcome messages disappear too quickly because the orchestrator immediately transitions to the next round after resolving the current round, without waiting for user confirmation.
+
+#### Implementation Details
+
+- Modified `roundOverEnter()` in `/workspaces/judokon/src/helpers/classicBattle/stateHandlers/roundOverEnter.js` to wait for an `outcomeConfirmed` event if `waitForOutcomeConfirmation` is enabled in the context.
+- Added `waitForOutcomeConfirmation: true` to the battle store in `battleCLI/init.js` to enable the pause for battleCLI.
+- Modified `handleRoundOverKey()` in `battleCLI/init.js` to emit `outcomeConfirmed` when Enter or Space is pressed during the round over state.
+
+#### Code Changes Summary
+
+- Added event listener logic in `roundOverEnter` to pause until `outcomeConfirmed` is emitted.
+- Enabled the flag in battleCLI store initialization.
+- Updated key handler to emit the confirmation event.
+
+#### Validation Results
+
+- **Unit Tests**: Ran `tests/pages/battleCLI.sharedPrimary.test.js` – All 5 tests passed.
+- **Playwright Tests**: Ran `playwright/battle-cli-start.spec.js` – 1 test passed.
+
+#### Status
+
+- The fix pauses the round progression after displaying the outcome message, requiring user confirmation (Enter or Space) to proceed.
+- No regressions detected in the specific tests run.
+- The change is isolated to battleCLI and doesn't affect other modes.
+
+#### Follow-up Tasks
+
+- Test the fix manually to ensure outcome messages persist until user presses Enter/Space.
+- Verify that the flow resumes correctly after confirmation.
+- Consider adding UI hints (e.g., "Press Enter to continue") during the pause.

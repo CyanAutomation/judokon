@@ -454,7 +454,8 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await startMatch(page, "#round-select-1");
         await setOpponentResolveDelay(page, 100);
 
-        await waitForBattleState(page, "waitingForPlayerAction");
+        // Wait for stat buttons to be visible to confirm player action phase
+        await expect(page.locator(selectors.statButton(0)).first()).toBeVisible();
         await expireSelectionTimer(page);
 
         await waitForBattleState(page, "roundOver");

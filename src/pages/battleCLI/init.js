@@ -1601,7 +1601,7 @@ export function handleWaitingForPlayerActionKey(key) {
 export function handleRoundOverKey(key) {
   if (key === "enter" || key === " ") {
     try {
-      safeDispatch("continue");
+      emitBattleEvent("outcomeConfirmed");
     } catch {}
     return true;
   }
@@ -2238,6 +2238,8 @@ export function wireEvents() {
 export async function init() {
   initSeed();
   store = createBattleStore();
+  // Enable outcome confirmation pause for better UX
+  store.waitForOutcomeConfirmation = true;
   try {
     if (typeof window !== "undefined") {
       window.battleStore = store;
