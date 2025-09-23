@@ -543,12 +543,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         const maxAttempts = 3;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          // Re-acquire locators each loop to avoid stale handles across reloads
           const stats = page.locator(selectors.statButton(0));
           const statCount = await stats.count();
 
-          if (statCount <= attempt) {
-            break;
-          }
+          if (statCount <= attempt) break;
 
           const stat = stats.nth(attempt);
           await expect(stat).toBeVisible();
@@ -570,13 +569,14 @@ test.describe("Classic Battle Opponent Reveal", () => {
               }
             });
           }
-          // Rely on scoreboard text rather than roundsPlayed counter
           await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
           if (attempt < maxAttempts - 1) {
             await page.reload();
+            // Re-initialize after reload and ensure readiness via stat visibility
             await startMatch(page, "#round-select-1");
             await setOpponentResolveDelay(page, 50);
+            await expect(page.locator(selectors.statButton(0)).first()).toBeVisible();
           }
         }
       }, ["log", "info", "warn", "error", "debug"]));

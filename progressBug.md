@@ -50,18 +50,18 @@ All UI/UX improvements under "Remaining UI/UX Improvements" have been completed.
 
 ### Technical & Accessibility Enhancements
 
-- **Verbose Flag**
-  1. Identify the code path for the "Verbose" flag.
-  2. When the flag is enabled, modify the game's output to display detailed breakdowns of stat comparisons and remaining health.
-  3. Determine the best location for this information (e.g., main log, dedicated verbose panel, or below stat cards).
+- **Verbose Flag** ✅
+  1. Identified that verbose flag controls visibility of #cli-verbose-section via updateVerbose function.
+  2. Modified handleRoundResolved in init.js to append detailed round info to #cli-verbose-log when cliVerbose flag is enabled.
+  3. Details include round number, outcome message, stat values, and current scores.
+  4. Verbose log is cleared on match reset and scrolls to bottom when shown.
 - **Accessible Labels**
   1. Add `aria-label` attributes to the power button and match-length selection elements with descriptive text.
   2. Ensure proper CSS focus outlines are applied to interactive elements for keyboard navigation.
   3. Add descriptive `alt-text` to any images used for the timer and scoreboard.
 - **Expose Feature Flags**
-  1. Implement UI toggles (e.g., checkboxes in a debug/settings panel) for `battleStateBadge`, `observabilityMode`, and `autoSelect`.
-  2. Alternatively, implement URL parameter parsing to enable/disable these flags (e.g., `?battleStateBadge=true`).
-  3. Ensure these flags correctly control the visibility and behavior of their respective features.
+  1. Implement URL parameter parsing to enable/disable these flags (e.g., `?battleStateBadge=true`).
+  2. Ensure these flags correctly control the visibility and behavior of their respective features.
 - **Test Automation Hooks**
   1. Identify key game actions and state variables that would be useful for automated testing.
   2. Create a `window.testHooks` object (or similar) to expose functions like `startRound()`, `resolveRound()`, `getInternalState()`.

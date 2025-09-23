@@ -1831,6 +1831,15 @@ function handleRoundResolved(e) {
       cliScore.dataset.scorePlayer = String(result.playerScore);
       cliScore.dataset.scoreOpponent = String(result.opponentScore);
     }
+    // Add detailed info to verbose log if enabled
+    if (isEnabled("cliVerbose")) {
+      const verboseLog = byId("cli-verbose-log");
+      if (verboseLog) {
+        const round = Number(byId("cli-root")?.dataset.round || 0);
+        const entry = `Round ${round}: ${result.message} (${display} – You: ${playerVal}, Opponent: ${opponentVal}). Scores: You ${result.playerScore}, Opponent ${result.opponentScore}\n`;
+        verboseLog.textContent += entry;
+      }
+    }
   }
 }
 
