@@ -56,10 +56,24 @@ export function handleFeatureFlagChange({
     .catch(() => {});
 }
 
+const ROUND_STORE_FLAG = "roundStore";
+const ROUND_STORE_EXPERIMENTAL_LABEL = "Round Store (Experimental)";
+
 function formatFlagLabel(flag) {
   return String(flag)
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/^./, (c) => c.toUpperCase());
+}
+
+function resolveFlagLabel(flag, tipId, tooltipMap) {
+  const tooltipLabel = tooltipMap[`${tipId}.label`];
+  if (tooltipLabel) {
+    return tooltipLabel;
+  }
+  if (flag === ROUND_STORE_FLAG) {
+    return ROUND_STORE_EXPERIMENTAL_LABEL;
+  }
+  return formatFlagLabel(flag);
 }
 
 /**
@@ -95,7 +109,7 @@ export function renderFeatureFlagSwitches(
     const kebab = flag.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
     const info = flags[flag];
     const tipId = info.tooltipId || `settings.${flag}`;
-    const label = tooltipMap[`${tipId}.label`] || formatFlagLabel(flag);
+    const label = resolveFlagLabel(flag, tipId, tooltipMap);
     const getDescription = () => tooltipMap[`${tipId}.description`] || "";
     const description = getDescription();
     const toggle = new ToggleSwitch(label, {
@@ -129,7 +143,7 @@ export function renderFeatureFlagSwitches(
         input,
         flag,
         info,
-        label: tooltipMap[`${tipId}.label`] || flag,
+        label,
         getCurrentSettings,
         handleUpdate
       })
