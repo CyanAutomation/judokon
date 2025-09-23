@@ -1,6 +1,6 @@
 # Opportunities for Improvement — Phased Plans
 
-**Verification Log (2025-09-23):** All claimed completed artifacts verified present and functional. Mock reduction progress: settingsPage (25→17), browseJudokaPage (12→6), timerService.drift (16→10). Next priority test pending.
+**Verification Log (2025-09-23):** All claimed completed artifacts verified present and functional. Mock reduction progress: settingsPage (25→17), browseJudokaPage (12→6), timerService.drift (16→10), populateCountryList (14→7). Next priority test pending.
 
 ---
 
@@ -8,17 +8,17 @@
 
 **Actions Taken:**
 
-- Created `createBrowseJudokaHarness` and `createTimerServiceHarness` in `integrationHarness.js` to centralize mocking for browseJudokaPage and timerService tests.
-- Refactored `browseJudokaPage.test.js` and `timerService.drift.test.js` to use harnesses with `beforeEach` setup, removing redundant `vi.doMock` calls (6 instances in browseJudokaPage, 6 in timerService.drift).
-- Monitored CI by running unit tests for both files (5/5 and 3/3 passing) and relevant playwright tests (failures pre-existing, unrelated to changes).
+- Created `createPopulateCountryListHarness` in `integrationHarness.js` to centralize mocking for populateCountryList tests.
+- Refactored `populateCountryList.test.js` to use harness with `beforeEach` setup, removing 7 redundant `vi.doMock` calls for `constants.js` across all tests.
+- Monitored CI by running unit tests for `populateCountryList.test.js` (7/7 passing) and relevant playwright tests (failures pre-existing, unrelated to changes).
 - Verified all tests still pass after removals.
 
 **Outcome:**
 
-- Mock count reduced from 12 to 6 (50% reduction) in `browseJudokaPage.test.js`, from 16 to 10 (37.5% reduction) in `timerService.drift.test.js`.
+- Mock count reduced from 14 to 7 (50% reduction) in `populateCountryList.test.js`.
 - Harnesses successfully provide environment setup, reducing need for extensive per-test mocking.
 - Acceptance criteria met: Tests pass with reduced mocks, demonstrating improved resilience.
-- Cumulative mock reduction: settingsPage (25→17, 32%), browseJudokaPage (12→6, 50%), timerService.drift (16→10, 37.5%).
+- Cumulative mock reduction: settingsPage (25→17, 32%), browseJudokaPage (12→6, 50%), timerService.drift (16→10, 37.5%), populateCountryList (14→7, 50%).
 
 **Next:** Proceed to next priority test or further monitor flakiness.
 
