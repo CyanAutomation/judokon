@@ -1,6 +1,13 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
+import { createBattleCLIHandlersHarness } from "../helpers/integrationHarness.js";
 import statNamesData from "../../src/data/statNames.js";
+
+const harness = createBattleCLIHandlersHarness();
+
+beforeEach(async () => {
+  await harness.setup();
+});
 
 let cleanupSetAutoContinue;
 let cleanupBattleStateListener;
@@ -71,9 +78,6 @@ async function loadHandlers({ autoSelect = false, skipCooldown = false } = {}) {
     get autoContinue() {
       return autoContinue;
     }
-  }));
-  vi.doMock("../../src/helpers/classicBattle/autoSelectStat.js", () => ({
-    autoSelectStat: vi.fn()
   }));
   vi.doMock("../../src/helpers/classicBattle/debugHooks.js", () => ({
     readDebugState: vi.fn(() => () => ({ dispatch: mockDispatch }))
