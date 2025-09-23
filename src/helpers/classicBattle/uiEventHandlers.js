@@ -20,6 +20,8 @@ function clearOpponentSnackbarTimeout() {
 function displayOpponentChoosingPrompt() {
   try {
     showSnackbar(t("ui.opponentChoosing"));
+  } catch {}
+  try {
     markOpponentPromptNow();
   } catch {}
 }
@@ -76,7 +78,12 @@ export function bindUIHelperEventHandlersDynamic() {
         clearOpponentSnackbarTimeout();
         if (resolvedDelay <= 0) {
           // Handle immediate display when delay is zero or negative by skipping the timeout setup.
-          displayOpponentChoosingPrompt();
+          try {
+            showSnackbar(t("ui.opponentChoosing"));
+          } catch {}
+          try {
+            markOpponentPromptNow();
+          } catch {}
           return;
         }
         opponentSnackbarId = setTimeout(() => {
