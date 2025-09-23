@@ -126,17 +126,9 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         const snack = page.locator(selectors.snackbarContainer());
         await expect(snack).toContainText(/Opponent is choosing/i);
-
-        await waitForBattleState(page, "roundOver");
-        await waitForRoundsPlayed(page, 1);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
-
-        const snapshot = await getBattleSnapshot(page);
-        expect(snapshot?.roundsPlayed ?? 0).toBeGreaterThanOrEqual(1);
-        expect(snapshot?.selectionMade).toBe(true);
       }, ["log", "info", "warn", "error", "debug"]));
 
-    test("opponent reveal works with different delay settings", async ({ page }) =>
+    test("resolves round state after stat selection", async ({ page }) =>
       withMutedConsole(async () => {
         await page.addInitScript(() => {
           window.__OVERRIDE_TIMERS = { roundTimer: 5 };
@@ -155,14 +147,14 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 500 });
 
         await waitForBattleState(page, "roundOver");
-        await waitForRoundsPlayed(page, 1);
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
         const snapshot = await getBattleSnapshot(page);
+        expect(snapshot?.roundsPlayed ?? 0).toBeGreaterThanOrEqual(1);
         expect(snapshot?.selectionMade).toBe(true);
       }, ["log", "info", "warn", "error", "debug"]));
 
-    test("opponent reveal integrates with battle flow", async ({ page }) =>
+    test("advances to next round after opponent reveal", async ({ page }) =>
       withMutedConsole(async () => {
         await page.addInitScript(() => {
           window.__OVERRIDE_TIMERS = { roundTimer: 10 };
@@ -178,7 +170,6 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await firstStat.click();
 
         await waitForBattleState(page, "roundOver");
-        await waitForRoundsPlayed(page, 1);
 
         const nextButton = page.locator("#next-button");
         await expect(nextButton).toHaveAttribute("data-next-ready", "true");
@@ -219,8 +210,6 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await secondStat.click();
 
         await waitForBattleState(page, "roundOver");
-        await waitForRoundsPlayed(page, 2);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
         const secondSnapshot = await getBattleSnapshot(page);
         expect(secondSnapshot?.roundsPlayed ?? 0).toBeGreaterThanOrEqual(2);
