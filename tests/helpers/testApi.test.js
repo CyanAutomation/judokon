@@ -19,10 +19,15 @@ const originalWebdriverDescriptor = Object.getOwnPropertyDescriptor(window.navig
 const originalUserAgentDescriptor = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
 
 function setNavigatorWebdriver(value) {
-  Object.defineProperty(window.navigator, "webdriver", {
-    configurable: true,
-    get: () => value
-  });
+  try {
+    Object.defineProperty(window.navigator, "webdriver", {
+      configurable: true,
+      get: () => value
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function restoreWindowProperty(key, value) {
@@ -102,24 +107,33 @@ describe("testApi.isTestMode", () => {
   });
 
   it("treats webdriver automation as test mode and exposes the API", async () => {
+    vi.resetModules();
     const mod = await import("../../src/helpers/testApi.js");
-    const { __test, exposeTestAPI, getTestAPI } = mod;
+    const { exposeTestAPI, getTestAPI, isTestMode } = mod;
 
-    expect(__test.isTestMode()).toBe(false);
+    expect(isTestMode()).toBe(false);
     expect(window.__TEST_API).toBeUndefined();
 
     setNavigatorWebdriver(true);
 
-    expect(__test.isTestMode()).toBe(true);
+    expect(isTestMode()).toBe(true);
 
     exposeTestAPI();
 
     expect(window.__TEST_API).toBe(getTestAPI());
     expect(window.__INIT_API).toBeDefined();
 
+    const originalInitCalled = window.__initCalled;
     window.__initCalled = true;
-    await expect(window.__INIT_API.waitForBattleReady(5)).resolves.toBe(true);
-    delete window.__initCalled;
+    try {
+      await expect(window.__INIT_API.waitForBattleReady(5)).resolves.toBe(true);
+    } finally {
+      if (originalInitCalled === undefined) {
+        delete window.__initCalled;
+      } else {
+        window.__initCalled = originalInitCalled;
+      }
+    }
 
     expect(window.__TEST_API.timers.setOpponentResolveDelay(25)).toBe(true);
     expect(window.__OPPONENT_RESOLVE_DELAY_MS).toBe(25);
