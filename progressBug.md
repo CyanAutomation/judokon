@@ -41,9 +41,12 @@
 
 ### Remaining UI/UX Improvements
 
-- **Match Length Selection**
-  1. Modify the UI logic to hide the settings panel immediately after the match length is selected.
-  2. Implement a mechanism to disable match length changes once a match has started.
+- **Match Length Selection** ✅
+  1. Modified `restorePointsToWin` in `init.js` to hide the settings panel and disable the points select after selection.
+  2. Added code to set `aria-expanded="false"` on toggle, hide the body, and disable the select.
+  3. Settings panel collapses immediately after match length is selected, preventing further changes.
+
+All UI/UX improvements under "Remaining UI/UX Improvements" have been completed.
 
 ### Technical & Accessibility Enhancements
 

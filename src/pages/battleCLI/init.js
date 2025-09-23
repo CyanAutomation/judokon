@@ -1444,6 +1444,14 @@ export function restorePointsToWin() {
       updateRoundHeader(0, val);
       // Automatically start the match after selecting points
       await dispatchBattleEvent("startClicked");
+      // Hide and disable settings after selection
+      const toggle = byId("cli-settings-toggle");
+      const body = byId("cli-settings-body");
+      if (toggle && body) {
+        toggle.setAttribute("aria-expanded", "false");
+        body.hidden = true;
+      }
+      select.disabled = true;
     });
   } catch {}
 }
