@@ -1,6 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createRandomJudokaPageHarness } from "./integrationHarness.js";
 import { createRandomCardDom } from "../utils/testUtils.js";
 import { withMutedConsole } from "../utils/console.js";
+
+const harness = createRandomJudokaPageHarness();
+
+beforeEach(async () => {
+  await harness.setup();
+});
 
 const baseSettings = {
   motionEffects: true,
@@ -19,10 +26,6 @@ describe("randomJudokaPage draw button", () => {
   it("updates loading state on draw button while drawing", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
 
-    vi.doMock("../../src/components/Button.js", async () => {
-      return await vi.importActual("../../src/components/Button.js");
-    });
-
     const generateRandomCard = vi.fn().mockImplementation(async (_c, _g, container) => {
       const card = document.createElement("div");
       card.className = "card-container";
@@ -30,19 +33,13 @@ describe("randomJudokaPage draw button", () => {
     });
     const fetchJson = vi.fn().mockResolvedValue([]);
     const loadSettings = vi.fn().mockResolvedValue(baseSettings);
-    const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
     }));
-    vi.doMock("../../src/helpers/constants.js", async () => ({
-      ...(await vi.importActual("../../src/helpers/constants.js")),
-      DATA_DIR: ""
-    }));
     vi.doMock("../../src/helpers/settingsStorage.js", () => ({ loadSettings }));
-    vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
     const { section, container, placeholderTemplate } = createRandomCardDom();
     document.body.append(section, container, placeholderTemplate);

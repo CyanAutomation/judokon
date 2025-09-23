@@ -27,19 +27,13 @@ describe("randomJudokaPage history panel", () => {
 
     const generateRandomCard = vi.fn();
     const fetchJson = vi.fn().mockResolvedValue([]);
-    const createButton = vi.fn((_, opts = {}) => {
-      const btn = document.createElement("button");
-      if (opts.id) btn.id = opts.id;
-      return btn;
-    });
-    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
-    }));
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 
@@ -79,19 +73,13 @@ describe("randomJudokaPage history panel", () => {
         idx += 1;
       });
     const fetchJson = vi.fn().mockResolvedValue([]);
-    const createButton = vi.fn((_, opts = {}) => {
-      const btn = document.createElement("button");
-      if (opts.id) btn.id = opts.id;
-      return btn;
-    });
-    const loadSettings = vi.fn().mockResolvedValue(baseSettings);
+
     const applyMotionPreference = vi.fn();
 
     vi.doMock("../../src/helpers/randomCard.js", () => ({ generateRandomCard }));
     vi.doMock("../../src/helpers/dataUtils.js", async () => ({
       ...(await vi.importActual("../../src/helpers/dataUtils.js")),
       fetchJson
-    }));
     }));
     vi.doMock("../../src/helpers/motionUtils.js", () => ({ applyMotionPreference }));
 

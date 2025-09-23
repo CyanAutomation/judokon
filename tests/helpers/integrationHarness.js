@@ -567,3 +567,73 @@ export function createRandomJudokaPageHarness(customConfig = {}) {
     }
   });
 }
+
+/**
+ * Pre-configured harness for battle CLI handlers integration tests
+ */
+export function createBattleCLIHandlersHarness(customConfig = {}) {
+  const { fixtures: customFixtures, mocks: customMocks, ...restConfig } = customConfig;
+  return createIntegrationHarness({
+    ...restConfig,
+    fixtures: {
+      ...customFixtures
+    },
+    mocks: {
+      // Mock feature flags
+      "../../src/helpers/featureFlags.js": () => ({
+        initFeatureFlags: vi.fn(),
+        isEnabled: vi.fn(),
+        setFlag: vi.fn(),
+        featureFlagsEmitter: new EventTarget()
+      }),
+      // Mock UI helpers
+      "../../src/helpers/classicBattle/uiHelpers.js": () => ({
+        skipRoundCooldownIfEnabled: vi.fn(),
+        updateBattleStateBadge: vi.fn()
+      }),
+      // Mock battle events
+      "../../src/helpers/classicBattle/battleEvents.js": () => ({
+        onBattleEvent: vi.fn(),
+        offBattleEvent: vi.fn(),
+        emitBattleEvent: vi.fn()
+      }),
+      // Mock round manager
+      "../../src/helpers/classicBattle/roundManager.js": () => ({
+        createBattleStore: vi.fn(() => ({}))
+      }),
+      // Mock orchestrator
+      "../../src/helpers/classicBattle/orchestrator.js": () => ({
+        getOrchestrator: vi.fn(() => ({}))
+      }),
+      // Mock battle engine
+      "../../src/helpers/BattleEngine.js": () => ({
+        BattleEngine: vi.fn()
+      }),
+      // Mock battle engine facade
+      "../../src/helpers/battleEngineFacade.js": () => ({
+        createBattleEngineFacade: vi.fn(() => ({}))
+      }),
+      // Mock orchestrator handlers
+      "../../src/helpers/classicBattle/orchestratorHandlers.js": () => ({
+        registerOrchestratorHandlers: vi.fn()
+      }),
+      // Mock auto select
+      "../../src/helpers/classicBattle/autoSelectStat.js": () => ({
+        initAutoSelect: vi.fn()
+      }),
+      // Mock debug hooks
+      "../../src/helpers/classicBattle/debugHooks.js": () => ({
+        initDebugHooks: vi.fn()
+      }),
+      // Mock round timer
+      "../../src/helpers/timers/createRoundTimer.js": () => ({
+        createRoundTimer: vi.fn()
+      }),
+      // Mock Button component
+      "../../src/components/Button.js": () => ({
+        Button: vi.fn()
+      }),
+      ...customMocks
+    }
+  });
+}

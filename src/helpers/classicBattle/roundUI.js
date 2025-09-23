@@ -485,10 +485,23 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
                   return numeric;
                 }
               }
-              return DEFAULT_OPPONENT_PROMPT_BUFFER_MS;
-            };
 
-            const resolvedBuffer = resolvePromptBuffer();
+              attachRendererOptions.opponentPromptBufferMs = promptBudget.bufferMs;
+              attachRendererOptions.maxPromptWaitMs = promptBudget.totalMs;
+              const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
+              const resolvedPollInterval =
+                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 32;
+              attachRendererOptions.promptPollIntervalMs = Math.max(32, resolvedPollInterval);
+              attachRendererOptions.waitForOpponentPrompt = true;
+            } else {
+              attachRendererOptions.waitForOpponentPrompt = false;
+              attachRendererOptions.maxPromptWaitMs = 0;
+              const pollNumeric = Number(attachRendererOptions.promptPollIntervalMs);
+              const resolvedPollInterval =
+                Number.isFinite(pollNumeric) && pollNumeric > 0 ? pollNumeric : 32;
+              attachRendererOptions.promptPollIntervalMs = Math.max(32, resolvedPollInterval);
+            }
+
             try {
               promptBudget = computeOpponentPromptWaitBudget(resolvedBuffer);
             } catch {

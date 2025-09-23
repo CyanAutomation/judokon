@@ -1,6 +1,12 @@
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
+import { createClassicBattleHarness } from "../helpers/integrationHarness.js";
+
+const harness = createClassicBattleHarness();
 
 describe("Classic Battle inter-round cooldown + Next", () => {
+  beforeEach(async () => {
+    await harness.setup();
+  });
   test("enables Next during cooldown and advances on click", async () => {
     // Deterministic: no real waits, no full-page DOM. Use fake timers and
     // wire minimal DOM nodes that the cooldown logic expects.
@@ -22,10 +28,6 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       showAutoSelect: vi.fn(),
       showTemporaryMessage: () => () => {},
       updateTimer: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
     }));
 
     // Keep engine timers out of the path; use shared deterministic timer mock
@@ -128,10 +130,6 @@ describe("Classic Battle inter-round cooldown + Next", () => {
       showAutoSelect: () => {},
       showTemporaryMessage: () => () => {},
       updateTimer: vi.fn()
-    }));
-    vi.doMock("../../src/helpers/showSnackbar.js", () => ({
-      showSnackbar: vi.fn(),
-      updateSnackbar: vi.fn()
     }));
     vi.doMock("../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel: vi.fn()
