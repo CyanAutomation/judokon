@@ -38,6 +38,21 @@ function logDevWarning(message, error) {
   } catch {}
 }
 
+function isAutomationNavigator(nav) {
+  if (!nav) return false;
+
+  try {
+    if (nav.webdriver === true) return true;
+
+    const userAgent = typeof nav.userAgent === "string" ? nav.userAgent : "";
+    if (userAgent.includes("Playwright/Headless")) {
+      return true;
+    }
+  } catch {}
+
+  return false;
+}
+
 // Test mode detection
 function isTestMode() {
   // Check for common test environment indicators
@@ -54,6 +69,12 @@ function isTestMode() {
       window.location?.href?.includes("localhost")
     )
       return true;
+
+    if (isAutomationNavigator(window.navigator)) return true;
+  }
+
+  if (typeof navigator !== "undefined" && isAutomationNavigator(navigator)) {
+    return true;
   }
 
   // Check feature flag
@@ -799,5 +820,7 @@ export function getTestAPI() {
 if (isTestMode()) {
   exposeTestAPI();
 }
+
+export const __test = { isTestMode };
 
 export default testApi;
