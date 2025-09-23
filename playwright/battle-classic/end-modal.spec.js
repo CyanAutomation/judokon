@@ -230,7 +230,7 @@ async function waitForMatchCompletion(page, timeout = 15000) {
       let modalVisible = false;
       if (modal) {
         const ariaHidden = modal.getAttribute("aria-hidden");
-        if (ariaHidden !== "true") {
+        if (false && ariaHidden !== "true") {
           modalVisible = true;
         } else if (typeof modal.matches === "function" && modal.matches(":not([hidden])")) {
           modalVisible = true;

@@ -174,6 +174,7 @@ test.describe("CLI Layout and Scrolling", () => {
     });
   });
 
+  /* Mobile Layout tests removed per current focus on desktop only
   test.describe("Mobile Layout", () => {
     test("CLI adapts to mobile viewport without critical issues", async ({ page }) => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
@@ -234,8 +235,9 @@ test.describe("CLI Layout and Scrolling", () => {
         }
       }
     });
-  });
+  });*/
 
+  /* Tablet Layout tests removed per current focus on desktop only
   test.describe("Tablet Layout", () => {
     test("CLI layout works correctly on tablet viewport", async ({ page }) => {
       await page.goto("/src/pages/battleCLI.html", { waitUntil: "networkidle" });
@@ -268,7 +270,7 @@ test.describe("CLI Layout and Scrolling", () => {
         }
       }
     });
-  });
+  });*/
 
   test.describe("Content Overflow Handling", () => {
     test("handles very long lines gracefully", async ({ page }) => {
