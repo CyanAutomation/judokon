@@ -99,6 +99,17 @@ async function startMatchAndAwaitStats(page, selector) {
   try {
     await startMatch(page, selector);
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const isTimingIssue =
+      typeof message === "string" &&
+      (/timeout/i.test(message) ||
+        message.includes("waitForBattleState") ||
+        message.includes("waitForBattleReady"));
+
+    if (!isTimingIssue) {
+      throw error;
+    }
+
     const statsReady = await page
       .locator(selectors.statButton(0))
       .first()
