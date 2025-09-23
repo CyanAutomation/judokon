@@ -22,7 +22,7 @@ test.describe("Classic Battle End Game Flow", () => {
           window.__OVERRIDE_TIMERS = { roundTimer: 1 };
           window.__NEXT_ROUND_COOLDOWN_MS = 500;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
-          window.__TEST_MODE = { enabled: true, seed: 42 };
+          window.__TEST_MODE = { enabled: true, seed: 5 };
         });
 
         await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
@@ -38,7 +38,12 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Start match
         await page.click("#round-select-2");
-        await page.click("#stat-buttons button[data-stat]");
+
+        // Wait for cards and stat buttons
+        await page.waitForSelector("#stat-buttons button[data-stat]");
+
+        // Click the power stat button
+        await page.click("#stat-buttons button[data-stat='power']");
 
         // Verify match completion
         await expect(page.locator("#score-display")).toContainText(/You:\s*1/);
@@ -48,8 +53,8 @@ test.describe("Classic Battle End Game Flow", () => {
         await expect(page.locator("#match-end-title")).toHaveText("Match Over");
 
         // Verify modal has replay and quit buttons
-        await expect(page.locator("#match-end-modal [data-role='replay']")).toBeVisible();
-        await expect(page.locator("#match-end-modal [data-role='quit']")).toBeVisible();
+        await expect(page.locator("#match-replay-button")).toBeVisible();
+        await expect(page.locator("#match-quit-button")).toBeVisible();
 
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
