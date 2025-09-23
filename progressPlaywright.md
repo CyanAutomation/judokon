@@ -1,27 +1,104 @@
-| rank | file                                                   | total | segment      | intent | relevance | assertion | robustness | cost | duration(ms) | retries | quick_fix                                                                                                                                                                                                                                                                 |
-| ---- | ------------------------------------------------------ | ----- | ------------ | ------ | --------- | --------- | ---------- | ---- | ------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | `playwright/hover-zoom.spec.js`                        | 1     | REMOVE/MERGE | 1      | 0         | 0         | 0          | 0    | 551          | 0       | Relies on `waitForTimeout` sleeps and even `expect(true).toBe(true)` fallbacks, so the zoom never has to work; wait on `data-enlarged`/size changes with semantic locators and drop the hard sleeps to assert real hover growth.\:codex-file-citation:codex-file-citation |
-| 2    | `playwright/battle-cli-play.spec.js`                   | 1     | REMOVE/MERGE | 1      | 0         | 0         | 0          | 0    | –            | –       | Finish a round through the real UI or deterministic test API instead of calling `window.__test.handleRoundResolved`, then assert the scoreboard/snackbar text for that round.\:codex-file-citation                                                                        |
-| 3    | `playwright/battle-cli-restart.spec.js`                | 2     | REMOVE/MERGE | 1      | 0         | 1         | 0          | 0    | –            | –       | End the match via supported user flows (or Test API) rather than `window.__test.handleMatchOver`, and verify the new match resets scores and hides the replay prompt.\:codex-file-citation                                                                                |
-| 4    | `playwright/battle-classic/opponent-reveal.spec.js`    | 3     | REMOVE/MERGE | 1      | 1         | 1         | 0          | 0    | 2037         | 0       | Replace layered `waitForTimeout` delays with waits on snackbar/score state and prune overlapping scenarios so each case validates a distinct user-visible opponent reveal path.\:codex-file-citation:codex-file-citation                                                  |
-| 5    | `playwright/battle-classic/end-modal.spec.js`          | 3     | REMOVE/MERGE | 1      | 1         | 1         | 0          | 0    | 1751         | 0       | Stop sleeping for seconds after match end; instead await the modal/end-game promise and assert the replay dialog content and actions rather than generic body/header visibility.\:codex-file-citation:codex-file-citation                                                 |
-| 6    | `playwright/cli.spec.mjs`                              | 3     | REMOVE/MERGE | 1      | 0         | 1         | 1          | 0    | 230          | 0       | Exercise countdown/focus through public controls instead of mutating DOM or relying on `__battleCLIinit` fallbacks so regressions surface through user behavior.\:codex-file-citation                                                                                     |
-| 7    | `playwright/cli-flows.spec.mjs`                        | 3     | REMOVE/MERGE | 1      | 0         | 1         | 1          | 0    | 226          | 0       | Expand keyboard flow checks to expect concrete UI effects (help text, quit modal, verbose output) instead of merely verifying `#cli-root` stays visible after each key press.\:codex-file-citation                                                                        |
-| 8    | `playwright/battle-next-skip.non-orchestrated.spec.js` | 4     | REMOVE/MERGE | 2      | 0         | 1         | 1          | 0    | 662          | 0       | Recreate cooldown skipping through the normal orchestrated flow and public events rather than injecting event targets and enabling the Next button manually.\:codex-file-citation                                                                                         |
-| 9    | `playwright/cli.spec.js`                               | 4     | REMOVE/MERGE | 1      | 0         | 1         | 2          | 0    | 573          | 0       | Drive countdown/focus with accessible UI interactions rather than invoking `window.__battleCLIinit` helpers so failures reflect user-visible regressions.\:codex-file-citation                                                                                            |
-| 10   | `playwright/battle-classic/timer.spec.js`              | 5     | REFACTOR     | 2      | 1         | 1         | 0          | 1    | 449          | 0       | Swap the two `waitForTimeout` polls for expectations tied to the countdown element or test API hooks so the timer is asserted deterministically without idle delays.\:codex-file-citation                                                                                 |
+# Playwright test progress and recommendations
 
-Merged suites
+This document cleans and expands the earlier assessment of Playwright specs. It summarizes the highest-impact problem areas, gives actionable quick fixes, and provides a prioritized plan for improving test determinism, runtime, and signal quality.
 
-- `playwright/cli.spec.mjs` was consolidated into `playwright/cli.spec.js` after porting the stat row assertion so the CLI smoke coverage now lives in a single server-backed spec.
+## Executive summary
 
-Common problems
-Many CLI specs bypass real behavior by calling internal helpers like window.**test or**battleCLIinit, so they never prove the user flow works end-to-end.
-Heavy use of page.waitForTimeout introduces brittle timing and multi-second runtimes without asserting the actual events that should unblock the flow.
-Several tests assert only generic visibility or placeholder truths (expect(true).toBe(true)), so real regressions could slip by unnoticed.
-Two CLI specs (battle-cli-play and battle-cli-restart) didn’t appear in the latest Playwright JSON report, suggesting they’re excluded from the executed suite and lack runtime signal entirely.
-Repo-wide fixes
-Standardize on the deterministic Test API/public UI interactions for battle/CLI flows and forbid direct use of window.**test/**battleCLIinit in tests, so coverage matches what users experience.
-Enforce a lint or helper wrapper to eliminate page.waitForTimeout, replacing it with expect/promise-based waits tied to actual UI state (snackbar text, timers, modals).
-Require meaningful assertions (text/ARIA/URL) and forbid placeholder expectations, especially in hover/CLI suites, so each test fails on genuine regressions.
-Ensure every spec is registered with the Playwright runner (or delete dead files) so the JSON report covers the entire Playwright surface and slow/flake metrics stay trustworthy.
+- Many high-value Playwright specs rely on brittle patterns: `page.waitForTimeout`, direct internal test hooks (e.g. `window.__test` / `__battleCLIinit`), and placeholder assertions like `expect(true).toBe(true)`.
+- These anti-patterns make tests fast to write but poor at catching regressions and add unnecessary runtime. A focused effort (lint + small refactors) will significantly reduce flakiness and execution time.
+
+## Top problem specs (high-level)
+
+1. `playwright/hover-zoom.spec.js` — heavy sleeps + placeholder assertions; replace sleeps with semantic waits for `data-enlarged` or element size changes.
+2. `playwright/battle-cli-play.spec.js` — uses internal helpers (not real UI flows); finish rounds through UI or deterministic public Test API and assert snackbar/scoreboard.
+3. `playwright/battle-cli-restart.spec.js` — ends match via internal hooks; use supported user flows or test APIs and assert reset behaviour.
+4. `playwright/battle-classic/opponent-reveal.spec.js` — stacked timeouts; wait for explicit snackbar/score state and split overlapping scenarios.
+5. `playwright/battle-classic/end-modal.spec.js` — sleeps after match end; await modal/end-game promises and assert dialog actions/content.
+6. `playwright/cli.spec.mjs` (merged into `playwright/cli.spec.js`) — relies on DOM mutation helpers; drive the flow through public controls.
+7. `playwright/cli-flows.spec.mjs` — keyflow checks assert only visibility; expand checks to assert help text, modals, or state changes.
+8. `playwright/battle-next-skip.non-orchestrated.spec.js` — builds flow by injecting events; recreate via orchestrated flow and public events.
+9. `playwright/cli.spec.js` — invoke accessible interactions instead of helper bootstraps so failures reflect user-visible regressions.
+10. `playwright/battle-classic/timer.spec.js` — swaps `waitForTimeout` polls for expectations tied to countdown element / test API hooks.
+
+## Common problems observed
+
+- Use of `page.waitForTimeout` instead of waiting for semantic conditions (locator text, attributes, network/state events).
+- Direct invocation of internal test helpers (e.g. `window.__test.handleRoundResolved`) instead of exercising the UI or deterministic public test APIs. This masks real regressions.
+- Placeholder or trivial assertions like `expect(true).toBe(true)` provide no signal.
+- Some spec files appear not to be executed (not present in JSON reports) and are likely dead/uncoupled from runner configuration.
+
+## Quick wins (0.5–2 days)
+
+1. Add a Playwright test lint rule / pre-commit grep to detect and fail on:
+   - `waitForTimeout\(`
+   - `expect(true).toBe(true)` and other placeholder assertions
+   - direct accesses to `window.__test` / `__battleCLIinit`
+
+2. Replace obvious sleeps in `hover-zoom.spec.js` and `timer.spec.js` with semantic locator waits:
+   - `await expect(locator).toHaveAttribute('data-enlarged', 'true')` or `await expect(locator).toHaveCSS('width', /\d+/)`
+
+3. Consolidate or remove duplicate/merged specs (e.g. ensure `cli.spec.mjs` -> `cli.spec.js` is the canonical file).
+
+4. Add meaningful assertions in suites that currently assert only visibility.
+
+## Medium-term work (2–5 days)
+
+1. Refactor CLI and battle tests that call internal hooks to instead use one of:
+   - the public deterministic Test API (if available), or
+   - UI interactions (page.click, page.fill, keyboard events) combined with explicit waits for state changes.
+
+2. Audit Playwright runner config so every spec is registered. Remove or archive dead files that are not included in the runner.
+
+3. Add a small helper library for common, deterministic waiters (snackbar text, countdown completion, modal opened) to reduce duplicated code and mistakes.
+
+## Long-term / architectural (1–2+ weeks)
+
+1. Create CI gates for test-level metrics: per-spec runtime budget, flakiness threshold, and test coverage (report missing critical flows).
+2. Add flaky-test tracking and alerts (use Playwright reporter integration or a simple artifact with failing-statistics over time).
+3. Consider stricter test contracts: require a happy-path + one edge-case for each new spec and enforce via PR template / CI check.
+
+## Opportunities / additional suggestions
+
+- Replace raw timeouts with `page.waitForResponse` or test API event hooks when the UI triggers network requests.
+- Centralize commonly used selectors in a `tests/selectors.js` to avoid fragile queries in many places.
+- Use Testing Library or Playwright's `getByRole`/`getByText` for semantic queries where possible.
+- Add `data-testid` attributes for fragile, implementation-specific selectors so tests assert behaviour, not structure.
+
+## Suggested prioritized plan (concrete)
+
+1. (Day 0–1) Add linter/grep checks to CI to block `waitForTimeout`, `expect(true).toBe(true)`, and `window.__test` usage. (Quick)
+2. (Day 1–3) Implement common wait helpers (snackbar, modal, countdown) and replace sleeps in top 5 problem specs. (Medium)
+3. (Day 3–7) Replace internal helper usage in CLI/battle specs with public flows; re-run Playwright suite and collect flake metrics. (Medium)
+4. (Week 2+) Add CI metrics, flaky-tracking, and PR enforcement for test quality (Long).
+
+## How to validate changes
+
+- Run a targeted subset of Playwright specs after each change (quick smoke):
+
+```bash
+npx playwright test playwright/hover-zoom.spec.js -g "zoom" --reporter=list
+```
+
+- Grep for banned patterns locally:
+
+```bash
+rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwright/ --hidden
+```
+
+- Use Playwright's HTML reporter to compare before/after runtimes and flakiness.
+
+## Next steps (who/what)
+
+1. Add the lint/grep checks to CI and fail the build on matches. (owner: test owner)
+2. Replace obvious sleeps in `hover-zoom.spec.js`, `timer.spec.js`, and `end-modal.spec.js`. (owner: test author)
+3. Re-audit the runner to ensure `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are either included in the runner or removed. (owner: infra)
+
+---
+
+If you want, I can:
+
+- open a PR that implements the quick linter checks and replaces sleeps in `hover-zoom.spec.js` and `timer.spec.js` (I can prepare a focused change set), or
+- produce the helper wait utilities and apply them to the top 3 specs.
+
+Choose one and I'll mark the next todo in-progress and start implementing it.
+
