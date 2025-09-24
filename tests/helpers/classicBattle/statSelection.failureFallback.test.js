@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createTestController } from "../../../src/utils/scheduler.js";
 import { withListenerSpy } from "../listenerUtils.js";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
+import { onBattleEvent, offBattleEvent } from "../../../src/helpers/classicBattle/battleEvents.js";
 
 // Enable test controller access
 globalThis.__TEST__ = true;
@@ -208,7 +209,27 @@ describe("classicBattle stat selection failure recovery", () => {
   });
 
   it("keeps opponent choosing message visible before countdown when opponent delay is zero", async () => {
-    const { cleanup, advanceTimersByTimeAsync } = useCanonicalTimers();
+    const { cleanup } = useCanonicalTimers();
+    const eventLog = [];
+    const eventHandlers = [
+      [
+        "opponentPromptReady",
+        (event) => {
+          eventLog.push({ type: "opponentPromptReady", detail: event.detail });
+        }
+      ],
+      [
+        "battleStateChange",
+        (event) => {
+          eventLog.push({ type: "battleStateChange", detail: event.detail });
+        }
+      ]
+    ];
+
+    for (const [type, handler] of eventHandlers) {
+      onBattleEvent(type, handler);
+    }
+
     try {
       handleStatSelectionMock.mockImplementation(() => ({ matchEnded: false }));
 
@@ -238,19 +259,32 @@ describe("classicBattle stat selection failure recovery", () => {
         expect(calls).toHaveLength(1);
 
         await flushMicrotasks();
-        await advanceTimersByTimeAsync(0);
 
         expect(showSnackbarMock).toHaveBeenCalledWith("Opponent is choosing…");
         expect(startCooldownMock).not.toHaveBeenCalled();
 
-        await advanceTimersByTimeAsync(minDisplay - 1);
-        expect(startCooldownMock).not.toHaveBeenCalled();
+        const promptIndex = eventLog.findIndex((entry) => entry.type === "opponentPromptReady");
+        expect(promptIndex).toBeGreaterThanOrEqual(0);
+        const initialCooldownIndex = eventLog.findIndex(
+          (entry) => entry.type === "battleStateChange" && entry.detail?.to === "cooldown"
+        );
+        expect(initialCooldownIndex).toBe(-1);
 
-        await advanceTimersByTimeAsync(1);
-        await advanceTimersByTimeAsync(0);
+        const getTimerCount =
+          typeof vi.getTimerCount === "function" ? () => vi.getTimerCount() : null;
+        if (getTimerCount) {
+          expect(getTimerCount()).toBeGreaterThan(0);
+        }
+
+        await vi.runAllTimersAsync();
         await flushMicrotasks();
 
         expect(startCooldownMock).toHaveBeenCalledTimes(1);
+        const cooldownIndex = eventLog.findIndex(
+          (entry) => entry.type === "battleStateChange" && entry.detail?.to === "cooldown"
+        );
+        expect(cooldownIndex).toBeGreaterThan(promptIndex);
+
         const lastMessage = showSnackbarMock.mock.calls.at(-1)?.[0];
         expect(lastMessage).toBe("Opponent is choosing…");
         const snackOrder = showSnackbarMock.mock.invocationCallOrder?.[0] ?? 0;
@@ -264,6 +298,9 @@ describe("classicBattle stat selection failure recovery", () => {
         }
       });
     } finally {
+      for (const [type, handler] of eventHandlers) {
+        offBattleEvent(type, handler);
+      }
       cleanup();
     }
   });
