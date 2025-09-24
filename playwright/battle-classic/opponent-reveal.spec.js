@@ -61,32 +61,6 @@ async function getBattleSnapshot(page) {
   });
 }
 
-async function waitForRoundsPlayed(page, minRounds, options = {}) {
-  const { timeout = 5000, pollInterval = 50 } = options;
-
-  await page.waitForFunction(
-    ({ target }) => {
-      try {
-        const inspectApi = window.__TEST_API?.inspect;
-        if (!inspectApi || typeof inspectApi.getBattleStore !== "function") {
-          return false;
-        }
-        const store = inspectApi.getBattleStore();
-        if (!store) return false;
-
-        const numeric = Number(store.roundsPlayed ?? 0);
-        if (!Number.isFinite(numeric)) return false;
-
-        return numeric >= target;
-      } catch {
-        return false;
-      }
-    },
-    { target: minRounds },
-    { timeout, polling: pollInterval }
-  );
-}
-
 async function startMatch(page, selector) {
   const button = page.locator(selector);
   await expect(button).toBeVisible();
@@ -160,6 +134,22 @@ async function resolveRoundDeterministic(page) {
   } catch {}
 }
 
+async function ensureRoundResolved(page, options = {}) {
+  const { deadline = 650 } = options;
+
+  try {
+    await waitForBattleState(page, "roundOver", { timeout: deadline, allowFallback: false });
+    return true;
+  } catch (error) {
+    const waitErrorMessage = error instanceof Error ? error.message : String(error);
+    console.debug(
+      `[opponent-reveal] ensureRoundResolved fallback after error: ${waitErrorMessage}`
+    );
+    await resolveRoundDeterministic(page);
+    return false;
+  }
+}
+
 test.describe("Classic Battle Opponent Reveal", () => {
   test.describe("Basic Opponent Reveal Functionality", () => {
     test("shows opponent choosing snackbar immediately after stat selection", async ({ page }) =>
@@ -200,24 +190,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const snackbar = page.locator(selectors.snackbarContainer());
         await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 500 });
 
-        try {
-          await waitForBattleState(page, "roundOver");
-        } catch (error) {
-          const waitErrorMessage = error instanceof Error ? error.message : String(error);
-          console.debug(
-            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
-          );
-          // Prefer internal API over DOM waits: force resolution deterministically
-          await page.evaluate(async () => {
-            const api = window.__TEST_API;
-            if (!api) throw new Error("Test API unavailable");
-            if (typeof api.cli?.resolveRound === "function") {
-              await api.cli.resolveRound();
-            } else if (typeof api.state?.triggerStateTransition === "function") {
-              api.state.triggerStateTransition("roundResolved");
-            }
-          });
-        }
+        await ensureRoundResolved(page);
 
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
@@ -241,24 +214,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const firstStat = page.locator(selectors.statButton(0)).first();
         await firstStat.click();
 
-        try {
-          await waitForBattleState(page, "roundOver");
-        } catch (error) {
-          const waitErrorMessage = error instanceof Error ? error.message : String(error);
-          console.debug(
-            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
-          );
-          // Fallback: force resolution via Test API instead of DOM polling
-          await page.evaluate(async () => {
-            const api = window.__TEST_API;
-            if (!api) throw new Error("Test API unavailable");
-            if (typeof api.cli?.resolveRound === "function") {
-              await api.cli.resolveRound();
-            } else if (typeof api.state?.triggerStateTransition === "function") {
-              api.state.triggerStateTransition("roundResolved");
-            }
-          });
-        }
+        await ensureRoundResolved(page);
 
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
 
@@ -313,37 +269,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const snackbar = page.locator(selectors.snackbarContainer());
         await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 200 });
 
-        try {
-          await waitForBattleState(page, "roundOver");
-        } catch (error) {
-          const waitErrorMessage = error instanceof Error ? error.message : String(error);
-          console.debug(
-            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
-          );
-          await page.evaluate(async () => {
-            const api = window.__TEST_API;
-            if (!api) throw new Error("Test API unavailable");
-            if (typeof api.cli?.resolveRound === "function") {
-              await api.cli.resolveRound();
-            } else {
-              api.state?.triggerStateTransition?.("roundResolved");
-            }
-          });
-        }
-        // Use internal API fallback if roundsPlayed lags
-        try {
-          await waitForRoundsPlayed(page, 1);
-        } catch {
-          await page.evaluate(async () => {
-            const api = window.__TEST_API;
-            if (!api) throw new Error("Test API unavailable");
-            if (typeof api.cli?.resolveRound === "function") {
-              await api.cli.resolveRound();
-            } else {
-              api.state?.triggerStateTransition?.("roundResolved");
-            }
-          });
-        }
+        await ensureRoundResolved(page);
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
       }, ["log", "info", "warn", "error", "debug"]));
 
@@ -365,23 +291,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const snackbar = page.locator(selectors.snackbarContainer());
         await expect(snackbar).toContainText(/Opponent is choosing/i);
 
-        try {
-          await waitForBattleState(page, "roundOver", { timeout: 6000 });
-        } catch (error) {
-          const waitErrorMessage = error instanceof Error ? error.message : String(error);
-          console.debug(
-            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
-          );
-          await page.evaluate(async () => {
-            const api = window.__TEST_API;
-            if (!api) throw new Error("Test API unavailable");
-            if (typeof api.cli?.resolveRound === "function") {
-              await api.cli.resolveRound();
-            } else {
-              api.state?.triggerStateTransition?.("roundResolved");
-            }
-          });
-        }
+        await ensureRoundResolved(page);
         // roundsPlayed via Test API may lag; rely on score update instead
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
       }, ["log", "info", "warn", "error", "debug"]));
@@ -404,23 +314,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await stats.first().click();
         await stats.nth(1).click();
 
-        try {
-          await waitForBattleState(page, "roundOver");
-        } catch (error) {
-          const waitErrorMessage = error instanceof Error ? error.message : String(error);
-          console.debug(
-            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
-          );
-          await page.evaluate(async () => {
-            const api = window.__TEST_API;
-            if (!api) throw new Error("Test API unavailable");
-            if (typeof api.cli?.resolveRound === "function") {
-              await api.cli.resolveRound();
-            } else {
-              api.state?.triggerStateTransition?.("roundResolved");
-            }
-          });
-        }
+        await ensureRoundResolved(page);
         // roundsPlayed can lag in CI; rely on internal resolution already forced above
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
       }, ["log", "info", "warn", "error", "debug"]));
@@ -464,23 +358,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(firstStat).toBeVisible();
         await firstStat.click();
 
-        try {
-          await waitForBattleState(page, "roundOver");
-        } catch (error) {
-          const waitErrorMessage = error instanceof Error ? error.message : String(error);
-          console.debug(
-            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
-          );
-          await page.evaluate(async () => {
-            const api = window.__TEST_API;
-            if (!api) throw new Error("Test API unavailable");
-            if (typeof api.cli?.resolveRound === "function") {
-              await api.cli.resolveRound();
-            } else {
-              api.state?.triggerStateTransition?.("roundResolved");
-            }
-          });
-        }
+        await ensureRoundResolved(page);
         // Skip roundsPlayed wait; verify via score update which is user-visible
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
       }, ["log", "info", "warn", "error", "debug"]));
@@ -538,23 +416,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const snackbar = page.locator("#snackbar-container");
         await expect(snackbar).toContainText(/Opponent is choosing/i);
 
-        try {
-          await waitForBattleState(page, "roundOver");
-        } catch (error) {
-          const waitErrorMessage = error instanceof Error ? error.message : String(error);
-          console.debug(
-            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
-          );
-          await page.evaluate(async () => {
-            const api = window.__TEST_API;
-            if (!api) throw new Error("Test API unavailable");
-            if (typeof api.cli?.resolveRound === "function") {
-              await api.cli.resolveRound();
-            } else {
-              api.state?.triggerStateTransition?.("roundResolved");
-            }
-          });
-        }
+        await ensureRoundResolved(page);
         // Skip roundsPlayed wait; scoreboard assertion follows
         await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
         await expect(snackbar).not.toContainText(/Next round in/i);
