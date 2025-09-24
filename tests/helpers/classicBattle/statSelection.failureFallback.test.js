@@ -265,6 +265,9 @@ describe("classicBattle stat selection failure recovery", () => {
 
         const promptIndex = eventLog.findIndex((entry) => entry.type === "opponentPromptReady");
         expect(promptIndex).toBeGreaterThanOrEqual(0);
+        const promptEvent = eventLog[promptIndex];
+        expect(promptEvent.detail).toBeDefined();
+        expect(promptEvent.detail).toEqual(expect.any(Object));
         const initialCooldownIndex = eventLog.findIndex(
           (entry) => entry.type === "battleStateChange" && entry.detail?.to === "cooldown"
         );
@@ -273,6 +276,7 @@ describe("classicBattle stat selection failure recovery", () => {
         const getTimerCount =
           typeof vi.getTimerCount === "function" ? () => vi.getTimerCount() : null;
         if (getTimerCount) {
+          // Verify timers are scheduled before advancing them (opponent delay timer should be active)
           expect(getTimerCount()).toBeGreaterThan(0);
         }
 
@@ -280,9 +284,14 @@ describe("classicBattle stat selection failure recovery", () => {
         await flushMicrotasks();
 
         expect(startCooldownMock).toHaveBeenCalledTimes(1);
+        const cooldownEvents = eventLog.filter(
+          (entry) => entry.type === "battleStateChange" && entry.detail?.to === "cooldown"
+        );
+        expect(cooldownEvents).toHaveLength(1);
         const cooldownIndex = eventLog.findIndex(
           (entry) => entry.type === "battleStateChange" && entry.detail?.to === "cooldown"
         );
+        expect(cooldownIndex).toBeGreaterThanOrEqual(0);
         expect(cooldownIndex).toBeGreaterThan(promptIndex);
 
         const lastMessage = showSnackbarMock.mock.calls.at(-1)?.[0];
@@ -298,8 +307,22 @@ describe("classicBattle stat selection failure recovery", () => {
         }
       });
     } finally {
+      const cleanupErrors = [];
       for (const [type, handler] of eventHandlers) {
-        offBattleEvent(type, handler);
+        try {
+          offBattleEvent(type, handler);
+        } catch (error) {
+          cleanupErrors.push({ type, error });
+        }
+      }
+      if (cleanupErrors.length > 0) {
+        const details = cleanupErrors
+          .map(({ type, error }) => `${type}: ${error?.message ?? error}`)
+          .join(", ");
+        throw new AggregateError(
+          cleanupErrors.map(({ error }) => error),
+          `Failed to remove battle event handlers (${details})`
+        );
       }
       cleanup();
     }
