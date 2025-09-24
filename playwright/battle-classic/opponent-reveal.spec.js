@@ -202,7 +202,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         try {
           await waitForBattleState(page, "roundOver");
-        } catch {
+        } catch (error) {
+          const waitErrorMessage = error instanceof Error ? error.message : String(error);
+          console.debug(
+            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
+          );
           // Prefer internal API over DOM waits: force resolution deterministically
           await page.evaluate(async () => {
             const api = window.__TEST_API;
@@ -239,7 +243,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         try {
           await waitForBattleState(page, "roundOver");
-        } catch {
+        } catch (error) {
+          const waitErrorMessage = error instanceof Error ? error.message : String(error);
+          console.debug(
+            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
+          );
           // Fallback: force resolution via Test API instead of DOM polling
           await page.evaluate(async () => {
             const api = window.__TEST_API;
@@ -261,7 +269,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         try {
           await waitForBattleState(page, "waitingForPlayerAction");
-        } catch {
+        } catch (error) {
+          const waitErrorMessage = error instanceof Error ? error.message : String(error);
+          console.debug(
+            `[opponent-reveal] waitForBattleState('waitingForPlayerAction') fallback after error: ${waitErrorMessage}`
+          );
           await expect
             .poll(async () => (await getBattleSnapshot(page))?.selectionMade === false)
             .toBe(true);
@@ -298,7 +310,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         try {
           await waitForBattleState(page, "roundOver");
-        } catch {
+        } catch (error) {
+          const waitErrorMessage = error instanceof Error ? error.message : String(error);
+          console.debug(
+            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
+          );
           await page.evaluate(async () => {
             const api = window.__TEST_API;
             if (!api) throw new Error("Test API unavailable");
@@ -346,7 +362,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         try {
           await waitForBattleState(page, "roundOver", { timeout: 6000 });
-        } catch {
+        } catch (error) {
+          const waitErrorMessage = error instanceof Error ? error.message : String(error);
+          console.debug(
+            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
+          );
           await page.evaluate(async () => {
             const api = window.__TEST_API;
             if (!api) throw new Error("Test API unavailable");
@@ -381,7 +401,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         try {
           await waitForBattleState(page, "roundOver");
-        } catch {
+        } catch (error) {
+          const waitErrorMessage = error instanceof Error ? error.message : String(error);
+          console.debug(
+            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
+          );
           await page.evaluate(async () => {
             const api = window.__TEST_API;
             if (!api) throw new Error("Test API unavailable");
@@ -437,7 +461,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         try {
           await waitForBattleState(page, "roundOver");
-        } catch {
+        } catch (error) {
+          const waitErrorMessage = error instanceof Error ? error.message : String(error);
+          console.debug(
+            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
+          );
           await page.evaluate(async () => {
             const api = window.__TEST_API;
             if (!api) throw new Error("Test API unavailable");
@@ -507,7 +535,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         try {
           await waitForBattleState(page, "roundOver");
-        } catch {
+        } catch (error) {
+          const waitErrorMessage = error instanceof Error ? error.message : String(error);
+          console.debug(
+            `[opponent-reveal] waitForBattleState('roundOver') fallback after error: ${waitErrorMessage}`
+          );
           await page.evaluate(async () => {
             const api = window.__TEST_API;
             if (!api) throw new Error("Test API unavailable");
