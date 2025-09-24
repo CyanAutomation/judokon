@@ -3,11 +3,13 @@ import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForModalOpen, waitForNextRoundReadyEvent } from "../fixtures/waits.js";
 
 async function waitForBattleInitialization(page) {
-  await page.waitForFunction(
-    () => typeof window !== "undefined" && Boolean(window.battleStore),
-    undefined,
-    { timeout: 20000 }
-  );
+  const getBattleStoreReady = () =>
+    page.evaluate(() => {
+      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+      return Boolean(store && typeof store === "object");
+    });
+
+  await expect.poll(getBattleStoreReady, { timeout: 20000 }).toBeTruthy();
 }
 
 async function applyQuickWinTarget(page, { waitForEngine = true, timeout = 5000 } = {}) {
@@ -30,24 +32,25 @@ async function applyQuickWinTarget(page, { waitForEngine = true, timeout = 5000 
     return;
   }
 
-  await page.waitForFunction(
-    () => {
+  const ensureTargetApplied = () =>
+    page.evaluate(() => {
       const helper = window.__classicQuickWin;
       if (helper && typeof helper.readTarget === "function") {
         return helper.readTarget() === 1;
       }
-      const store = window.battleStore;
+
+      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
       const engine = store?.engine;
       if (!engine) {
         return false;
       }
+
       const getter =
         typeof engine.getPointsToWin === "function" ? engine.getPointsToWin() : engine.pointsToWin;
       return Number(getter) === 1;
-    },
-    undefined,
-    { timeout }
-  );
+    });
+
+  await expect.poll(ensureTargetApplied, { timeout }).toBeTruthy();
 }
 
 async function prepareClassicBattle(page, { seed = 42, cooldown = 500 } = {}) {
@@ -135,27 +138,27 @@ async function prepareClassicBattle(page, { seed = 42, cooldown = 500 } = {}) {
   await applyQuickWinTarget(page, { waitForEngine: false });
 }
 
-async function waitForRoundStats(page, timeout = 5000) {
-  await page.waitForFunction(
-    () => {
-      const store = window.battleStore;
-      if (!store || typeof store !== "object") return false;
+async function selectAdvantagedStat(page) {
+  const waitForStatsReady = () =>
+    page.evaluate(() => {
+      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+      if (!store || typeof store !== "object") {
+        return false;
+      }
       const playerStats = store.currentPlayerJudoka?.stats;
       const opponentStats = store.currentOpponentJudoka?.stats;
-      if (!playerStats || !opponentStats) return false;
+      if (!playerStats || !opponentStats) {
+        return false;
+      }
       const playerKeys = Object.keys(playerStats || {});
       const opponentKeys = Object.keys(opponentStats || {});
       return playerKeys.length > 0 && opponentKeys.length > 0;
-    },
-    undefined,
-    { timeout }
-  );
-}
+    });
 
-async function selectAdvantagedStat(page) {
-  await waitForRoundStats(page);
+  await expect.poll(waitForStatsReady, { timeout: 5000 }).toBeTruthy();
+
   const statKey = await page.evaluate(() => {
-    const store = window.battleStore;
+    const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
     if (!store || typeof store !== "object") {
       return null;
     }
@@ -232,31 +235,91 @@ async function selectAdvantagedStat(page) {
 }
 
 async function waitForScoreDisplay(page, { timeout = 10000, previousObservation = null } = {}) {
-  const handle = await page.waitForFunction(
-    (previous) => {
-      const scoreNode = document.getElementById("score-display");
-      if (!scoreNode) return null;
+  const readScores = () =>
+    page.evaluate(async (previous) => {
+      const helper = window.__classicQuickWin;
+      let facade = helper?.facade ?? null;
 
-      const text = scoreNode.textContent || "";
-      const match = text.match(/You:\s*(\d+)[\s\S]*Opponent:\s*(\d+)/i);
-      if (!match) return null;
+      if (!facade && helper?.ensureFacade) {
+        try {
+          facade = await helper.ensureFacade();
+        } catch {}
+      }
 
-      const player = Number(match[1]);
-      const opponent = Number(match[2]);
-      if (!Number.isFinite(player) || !Number.isFinite(opponent)) return null;
-
-      let roundNumber = null;
-      const roundNode = document.getElementById("round-counter");
-      if (roundNode) {
-        const roundText = roundNode.textContent || "";
-        const roundMatch = roundText.match(/(\d+)/);
-        if (roundMatch) {
-          const value = Number(roundMatch[1]);
-          if (Number.isFinite(value)) {
-            roundNumber = value;
+      if (!facade) {
+        try {
+          facade = await import("/src/helpers/battleEngineFacade.js");
+          if (helper) {
+            helper.facade = facade;
           }
+        } catch {
+          facade = null;
         }
       }
+
+      const getScores = typeof facade?.getScores === "function" ? facade.getScores : null;
+      if (!getScores) {
+        return false;
+      }
+
+      let engineScores = null;
+      let matchEnded = false;
+      try {
+        engineScores = getScores();
+        matchEnded =
+          typeof facade?.isMatchEnded === "function"
+            ? facade.isMatchEnded()
+            : (() => {
+                try {
+                  return facade.requireEngine?.().matchEnded === true;
+                } catch {
+                  return false;
+                }
+              })();
+      } catch {
+        return false;
+      }
+
+      let player = Number(engineScores?.playerScore ?? engineScores?.player ?? NaN);
+      let opponent = Number(engineScores?.opponentScore ?? engineScores?.opponent ?? NaN);
+
+      if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
+        try {
+          const scoreNode = document.getElementById("score-display");
+          if (!scoreNode) {
+            return false;
+          }
+          const text = scoreNode.textContent || "";
+          const match = text.match(/You:\s*(\d+)[\s\S]*Opponent:\s*(\d+)/i);
+          if (!match) {
+            return false;
+          }
+          player = Number(match[1]);
+          opponent = Number(match[2]);
+        } catch {
+          return false;
+        }
+      }
+
+      let roundNumber = null;
+      try {
+        const counter = document.getElementById("round-counter");
+        if (counter) {
+          const roundMatch = counter.textContent?.match(/(\d+)/);
+          if (roundMatch) {
+            const parsed = Number(roundMatch[1]);
+            if (Number.isFinite(parsed)) {
+              roundNumber = parsed;
+            }
+          }
+          if (roundNumber === null) {
+            const highest = Number(counter.dataset?.highestRound);
+            if (Number.isFinite(highest)) {
+              roundNumber = highest;
+            }
+          }
+        }
+      } catch {}
 
       if (
         previous &&
@@ -266,85 +329,107 @@ async function waitForScoreDisplay(page, { timeout = 10000, previousObservation 
         player === previous.player &&
         opponent === previous.opponent
       ) {
-        return false;
+        return previous.matchEnded ? previous : false;
       }
 
-      return { player, opponent, roundNumber };
-    },
-    previousObservation,
-    { timeout }
-  );
+      return { player, opponent, roundNumber, matchEnded };
+    }, previousObservation);
 
-  try {
-    return await handle.jsonValue();
-  } finally {
-    await handle.dispose();
+  let snapshot = null;
+  const pollScores = async () => {
+    const result = await readScores();
+    if (result && typeof result === "object") {
+      snapshot = result;
+      return true;
+    }
+    return false;
+  };
+
+  await expect.poll(pollScores, { timeout }).toBeTruthy();
+
+  if (!snapshot) {
+    const fallback = await readScores();
+    if (fallback && typeof fallback === "object") {
+      snapshot = fallback;
+    }
   }
+
+  if (!snapshot) {
+    throw new Error("Failed to observe score update from battle engine.");
+  }
+
+  return snapshot;
 }
 
 async function waitForMatchCompletion(page, timeout = 15000) {
-  await page.waitForFunction(
-    () => {
-      const modal = document.querySelector("#match-end-modal");
-      const store = window.battleStore;
-      const engine = store?.engine;
-      const matchEnded = engine?.matchEnded === true;
-      const round = store?.round;
-      const roundResolving = round?.resolving === true;
+  const waitForEndState = () =>
+    page.evaluate(async () => {
+      const helper = window.__classicQuickWin;
+      let facade = helper?.facade ?? null;
 
-      // Check if modal is visible
-      let modalVisible = false;
-      if (modal) {
-        const ariaHidden = modal.getAttribute("aria-hidden");
-        if (false && ariaHidden !== "true") {
-          modalVisible = true;
-        } else if (typeof modal.matches === "function" && modal.matches(":not([hidden])")) {
-          modalVisible = true;
+      if (!facade && helper?.ensureFacade) {
+        try {
+          facade = await helper.ensureFacade();
+        } catch {}
+      }
+
+      if (!facade) {
+        try {
+          facade = await import("/src/helpers/battleEngineFacade.js");
+          if (helper) {
+            helper.facade = facade;
+          }
+        } catch {
+          facade = null;
         }
       }
 
-      // If match ended but modal not visible, capture diagnostics
-      if (matchEnded && !modalVisible && !roundResolving) {
-        // Capture diagnostics for debugging
-        const diagnostics = {
-          modalExists: !!modal,
-          modalAttributes: modal
-            ? {
-                id: modal.id,
-                className: modal.className,
-                style: modal.style.cssText,
-                ariaHidden: modal.getAttribute("aria-hidden"),
-                hidden: modal.hidden,
-                innerHTML: modal.innerHTML.substring(0, 500) // Truncate for readability
-              }
-            : null,
-          battleStore: {
-            matchEnded: engine?.matchEnded,
-            pointsToWin: engine?.pointsToWin,
-            currentRound: store?.currentRound,
-            round: round
-              ? {
-                  resolving: round.resolving,
-                  state: round.state
+      const isMatchEnded =
+        typeof facade?.isMatchEnded === "function"
+          ? facade.isMatchEnded()
+          : facade?.getScores
+            ? (() => {
+                try {
+                  return facade.requireEngine?.().matchEnded === true;
+                } catch {
+                  return false;
                 }
-              : null
-          },
-          timestamp: new Date().toISOString()
-        };
+              })()
+            : false;
 
-        // Store diagnostics on window for retrieval
-        window.__endModalDiagnostics = diagnostics;
+      let roundResolving = false;
+      try {
+        const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+        const round = store?.round ?? store?.currentRound ?? null;
+        roundResolving = round?.resolving === true;
+      } catch {}
 
-        // Log to console for immediate visibility
-        console.warn("[TEST DIAGNOSTIC] Match ended but end modal not visible:", diagnostics);
+      const modal = document.querySelector("#match-end-modal");
+      let modalVisible = false;
+      if (modal) {
+        const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
+        const opacity = style ? Number(style.opacity) : NaN;
+        modalVisible =
+          modal.hidden !== true &&
+          style !== null &&
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          style.pointerEvents !== "none" &&
+          (!Number.isFinite(opacity) || opacity > 0);
       }
 
-      // Return true if modal is visible or match ended and round not resolving
-      return modalVisible || (matchEnded && !roundResolving);
-    },
-    undefined,
-    { timeout }
-  );
+      if (!isMatchEnded) {
+        return false;
+      }
+
+      if (modalVisible) {
+        return true;
+      }
+
+      return !roundResolving;
+    });
+
+  await expect.poll(waitForEndState, { timeout }).toBeTruthy();
 }
 
 /**
@@ -358,46 +443,118 @@ async function waitForMatchCompletion(page, timeout = 15000) {
  */
 async function resolveMatchFromCurrentRound(page, { maxRounds = 5, nextTimeout = 5000 } = {}) {
   let lastScores = await waitForScoreDisplay(page);
+
+  const resolveIfDecisive = (snapshot = lastScores) => {
+    if (!snapshot) {
+      return null;
+    }
+    if (snapshot.matchEnded || snapshot.player + snapshot.opponent >= 1) {
+      return { player: snapshot.player, opponent: snapshot.opponent };
+    }
+    return null;
+  };
+
+  const initialResolution = resolveIfDecisive(lastScores);
+  if (initialResolution) {
+    return initialResolution;
+  }
+
   for (let attempt = 0; attempt < maxRounds; attempt += 1) {
+    const scores = await waitForScoreDisplay(page, { previousObservation: lastScores });
+    if (scores) {
+      lastScores = scores;
+      const roundResult = resolveIfDecisive(scores);
+      if (roundResult) {
+        return roundResult;
+      }
+    } else {
+      const fallbackResolution = resolveIfDecisive();
+      if (fallbackResolution) {
+        return fallbackResolution;
+      }
+    }
+
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const modal = document.getElementById("match-end-modal");
+            if (!modal) return true;
+            if (modal.hidden) return true;
+            const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
+            if (!style) return false;
+            const opacity = Number(style.opacity);
+            const fullyTransparent = Number.isFinite(opacity) && opacity === 0;
+            const inert =
+              style.display === "none" ||
+              style.visibility === "hidden" ||
+              style.pointerEvents === "none" ||
+              fullyTransparent;
+            return inert;
+          }),
+        { timeout: nextTimeout }
+      )
+      .toBeTruthy();
+
+    const postModalResolution = resolveIfDecisive();
+    if (postModalResolution) {
+      return postModalResolution;
+    }
+
     await page.evaluate(() => {
       if (typeof window !== "undefined") {
         window.__nextReadySeen = false;
         window.__nextReadyInit = false;
       }
     });
-    await waitForNextRoundReadyEvent(page, nextTimeout);
-    const scores = await waitForScoreDisplay(page, { previousObservation: lastScores });
-    if (scores) {
-      lastScores = scores;
-      if (scores.player + scores.opponent >= 1) {
-        return { player: scores.player, opponent: scores.opponent };
+
+    const matchEndedBeforeNext = await page.evaluate(() => {
+      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+      const engine = store?.engine;
+      if (!engine) {
+        return false;
       }
+      try {
+        if (typeof engine.isMatchEnded === "function") {
+          return engine.isMatchEnded();
+        }
+      } catch {}
+      return engine.matchEnded === true;
+    });
+
+    if (matchEndedBeforeNext) {
+      return (
+        resolveIfDecisive() ?? {
+          player: lastScores?.player ?? 0,
+          opponent: lastScores?.opponent ?? 0
+        }
+      );
     }
-    await page
-      .waitForFunction(
-        () => {
-          const modal = document.getElementById("match-end-modal");
-          if (!modal) return true;
-          if (modal.hidden) return true;
-          const ariaHidden = modal.getAttribute("aria-hidden");
-          if (ariaHidden === "true") return true;
-          const style = window.getComputedStyle(modal);
-          if (!style) return true;
-          if (style.display === "none" || style.visibility === "hidden") return true;
-          if (style.pointerEvents === "none") return true;
-          const opacity = Number(style.opacity);
-          return Number.isFinite(opacity) && opacity === 0;
-        },
-        undefined,
-        { timeout: nextTimeout }
-      )
-      .catch(() => {});
+
+    await waitForNextRoundReadyEvent(page, nextTimeout);
     const nextButton = page
       .locator("#next-button, [data-role='next-round'], [data-testid='next-button']")
       .first();
     await expect(nextButton).toBeVisible();
     await expect(nextButton).toBeEnabled();
     await nextButton.click();
+
+    const nextReadySettled = await page.evaluate(async (limit) => {
+      const waitForReady = window.__TEST_API?.state?.waitForNextButtonReady;
+      if (typeof waitForReady === "function") {
+        return waitForReady(limit);
+      }
+      return null;
+    }, nextTimeout);
+
+    const postClickResolution = resolveIfDecisive();
+    if (postClickResolution) {
+      return postClickResolution;
+    }
+
+    if (nextReadySettled === false) {
+      throw new Error("Next round button did not become ready before timeout.");
+    }
 
     await page.waitForSelector("#stat-buttons button[data-stat]");
     await selectAdvantagedStat(page);
