@@ -908,9 +908,7 @@ function showQuitModal() {
       id: "cancel-quit-button",
       className: "secondary-button"
     });
-    cancel.tabIndex = 0;
     const quit = createButton("Quit", { id: "confirm-quit-button" });
-    quit.tabIndex = 0;
     actions.append(cancel, quit);
 
     const frag = document.createDocumentFragment();
