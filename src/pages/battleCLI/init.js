@@ -797,7 +797,13 @@ function pauseTimer(type) {
   const interval = isSelection ? selectionInterval : cooldownInterval;
   if (!timer && !interval) return null;
   try {
-    if (timer) clearTimeout(timer);
+    if (timer) {
+      if (typeof timer.stop === "function") {
+        timer.stop();
+      } else {
+        clearTimeout(timer);
+      }
+    }
   } catch {}
   try {
     if (interval) clearInterval(interval);

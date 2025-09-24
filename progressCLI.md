@@ -18,6 +18,8 @@ This updated report provides a cleaner, more readable format and offers specific
 - **Verification:** The `showQuitModal()` function correctly calls `pauseTimers()`, which is intended to clear the timer intervals. However, the UI continues to update. This suggests that while the core logic might be paused, the UI-level countdown is not, or that the `pauseTimers` function is not working as expected. The timer logic is complex, with multiple `setInterval` and `setTimeout` calls, making it susceptible to such bugs.
 - **Recommendation:** Refactor the timer logic to use a single, pausable timer object instead of separate `interval` and `timeout` variables. This will simplify the code and make it easier to reliably pause and resume. At a minimum, `pauseTimers` needs to be debugged to ensure it stops all timer-related activity, including UI updates.
 
+**Resolution:** Fixed the `pauseTimer` function in `src/pages/battleCLI/init.js` to properly call `timer.stop()` on the round timer object for selection timers, instead of incorrectly using `clearTimeout` on the object. This ensures the timer is fully paused, preventing UI updates during modals. Unit tests (`battleCLI.countdown.test.js`, `battleCLI.handlers.test.js`) and Playwright tests (`battle-cli-start.spec.js`, `countdown.spec.js`) all pass, confirming no regressions.
+
 ## 2. HIGH: Timer Resets After Cancelling Quit
 
 - **Finding:** After opening the "Quit" modal and then closing it (by pressing "Escape" or clicking "Cancel"), the round timer resets to its full duration (e.g., 30 seconds) instead of resuming from where it was paused.
