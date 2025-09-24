@@ -2251,30 +2251,6 @@ export function subscribeEngine() {
 }
 
 /**
- * Attaches global event listeners for the CLI, managing user input and page
- * visibility to control battle timers.
- *
- * @summary This function sets up the primary event handling for the CLI,
- * ensuring responsiveness to user actions and proper timer management
- * during page lifecycle events.
- *
- * @pseudocode
- * 1. Call `installEventBindings()` to set up battle-specific event handlers.
- * 2. Add a `keydown` event listener to `window` that delegates to `onKeyDown()` for keyboard input processing.
- * 3. Add a `click` event listener to `document` that delegates to `onClickAdvance()` for handling clicks outside interactive areas.
- * 4. Set up `visibilitychange` listener on `document`:
- *    a. If the document becomes hidden (`document.hidden` is true), `pauseTimers()` is called.
- *    b. If the document becomes visible, `resumeTimers()` is called.
- * 5. Add a `pageshow` event listener to `window`:
- *    a. If the page is shown from the bfcache (`ev.persisted` is true), `resumeTimers()` is called.
- * 6. Add a `pagehide` event listener to `window`:
- *    a. When the page is hidden, `pauseTimers()` is called.
- * 7. Wrap page lifecycle event listeners in a `try...catch` block to prevent errors from disrupting the application.
- *
- * @returns {void}
- */
-
-/**
  * Handle battle state changes to show/hide keyboard hint.
  *
  * @param {object} detail - Event detail with from and to states.
@@ -2290,15 +2266,19 @@ function handleBattleStateChange({ from, to }) {
 }
 
 /**
- * Attach CLI event bindings and lifecycle listeners.
+ * Bind classic battle CLI interactions and lifecycle hooks to the page.
+ *
+ * @summary Install CLI-specific DOM bindings and lifecycle listeners so the
+ * interface reacts to battle state changes, keyboard shortcuts, and page
+ * visibility updates.
+ *
+ * @pseudocode
+ * 1. Call `installEventBindings()` to connect DOM event helpers.
+ * 2. Subscribe to `battleStateChange` to toggle the keyboard hint.
+ * 3. Attach keyboard and click handlers for advance controls.
+ * 4. Register visibility lifecycle listeners to pause or resume timers.
  *
  * @returns {void}
- * @pseudocode
- * installEventBindings()
- * onBattleEvent("battleStateChange", handleBattleStateChange)
- * if window → add keydown listener
- * if document → add click + visibility listeners with pause/resume timers
- * if window → add pageshow/pagehide listeners with timer guards
  */
 export function wireEvents() {
   installEventBindings();
