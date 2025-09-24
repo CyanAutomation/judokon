@@ -33,6 +33,19 @@ async function movePointerAwayFromCards(page) {
   await page.mouse.move(0, 0);
 }
 
+async function waitForBrowseReady(page) {
+  await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
+}
+
+async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
+  await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
+  await waitForBrowseReady(page);
+
+  if (disableAnimations) {
+    await callBrowseHook(page, "disableHoverAnimations");
+  }
+}
+
 test.afterEach(async ({ page }) => {
   await resetBrowseHooks(page);
 });
@@ -40,10 +53,7 @@ test.afterEach(async ({ page }) => {
 test.describe("Hover Zoom Functionality", () => {
   test.describe("Basic Hover Interactions", () => {
     test("judoka card enlarges on hover", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-
-      // Wait for cards to load
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -66,11 +76,7 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("multiple cards can be hovered independently", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
-
-      // Disable animations for deterministic testing
-      await callBrowseHook(page, "disableHoverAnimations");
+      await gotoBrowsePage(page, { disableAnimations: true });
 
       const cards = page.locator(".judoka-card");
 
@@ -103,8 +109,7 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("hover zoom works with keyboard navigation", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -134,8 +139,7 @@ test.describe("Hover Zoom Functionality", () => {
       // Set reduced motion preference
       await page.emulateMedia({ reducedMotion: "reduce" });
 
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -155,8 +159,7 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("handles test disable animations attribute", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
       await callBrowseHook(page, "disableHoverAnimations");
 
       const firstCard = page.locator(".judoka-card").first();
@@ -177,8 +180,7 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("cards remain keyboard accessible during hover", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       const firstCard = page.locator(".judoka-card").first();
       const secondCard = page.locator(".judoka-card").nth(1);
@@ -219,9 +221,7 @@ test.describe("Hover Zoom Functionality", () => {
 
   test.describe("Animation and Timing", () => {
     test("handles rapid hover interactions", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
-      await callBrowseHook(page, "disableHoverAnimations");
+      await gotoBrowsePage(page, { disableAnimations: true });
 
       const firstCard = page.locator(".judoka-card").first();
       const secondCard = page.locator(".judoka-card").nth(1);
@@ -251,8 +251,7 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("handles transition end events properly", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -276,8 +275,7 @@ test.describe("Hover Zoom Functionality", () => {
 
   test.describe("Edge Cases and Error Handling", () => {
     test("handles cards added after initialization", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       // Add a new card dynamically via the production card factory
       await callBrowseHook(page, "addCard", {
@@ -308,10 +306,7 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("handles missing DOM elements gracefully", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-
-      // Wait for page to load (even if no cards are present)
-      await page.waitForLoadState("networkidle");
+      await gotoBrowsePage(page);
 
       // Verify page doesn't crash if no cards exist
       await expect(page.locator("body")).toBeVisible();
@@ -324,8 +319,7 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("handles page navigation during hover", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -350,8 +344,7 @@ test.describe("Hover Zoom Functionality", () => {
 
   test.describe("Integration with Card Features", () => {
     test("hover zoom works with card flip functionality", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       const firstCard = page.locator(".judoka-card").first();
 
@@ -373,8 +366,7 @@ test.describe("Hover Zoom Functionality", () => {
     });
 
     test("hover zoom works with different card types", async ({ page }) => {
-      await page.goto("/src/pages/browseJudoka.html", { waitUntil: "networkidle" });
-      await page.waitForSelector(".judoka-card", { timeout: 10000 });
+      await gotoBrowsePage(page);
 
       // Test different card types (common, rare, epic, legendary)
       const cardTypes = [".common", ".rare", ".epic", ".legendary"];
