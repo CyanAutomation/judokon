@@ -14,6 +14,10 @@
 export async function applyDeterministicCooldown(page, options = {}) {
   const { cooldownMs = 0, roundTimerMs = 1, showRoundSelectModal = true } = options;
 
+  if (typeof cooldownMs !== "number" || Number.isNaN(cooldownMs) || cooldownMs < 0) {
+    throw new Error("cooldownMs must be a non-negative number");
+  }
+
   await page.addInitScript(
     ({ cooldown, roundTimer, showModal }) => {
       if (typeof window === "undefined") {
@@ -27,7 +31,10 @@ export async function applyDeterministicCooldown(page, options = {}) {
       window.__NEXT_ROUND_COOLDOWN_MS = cooldown;
 
       if (showModal) {
-        const existingOverrides = window.__FF_OVERRIDES || {};
+        const existingOverrides =
+          window.__FF_OVERRIDES && typeof window.__FF_OVERRIDES === "object"
+            ? window.__FF_OVERRIDES
+            : {};
         window.__FF_OVERRIDES = { ...existingOverrides, showRoundSelectModal: true };
       }
     },

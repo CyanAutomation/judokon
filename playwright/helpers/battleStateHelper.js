@@ -153,7 +153,9 @@ export async function waitForNextButtonReady(page, options = {}) {
         if (stateApi && typeof stateApi.waitForNextButtonReady === "function") {
           return stateApi.waitForNextButtonReady.call(stateApi, waitTimeout);
         }
-      } catch {}
+      } catch {
+        return false;
+      }
       return null;
     },
     { waitTimeout: timeout }
