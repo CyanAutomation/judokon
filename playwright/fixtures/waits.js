@@ -262,51 +262,63 @@ export async function waitForModalOpen(page, modalSelector = "#match-end-modal",
 export async function waitForCountdown(page, expectedValue, timeout = 10000) {
   await page.waitForFunction(
     (value) => {
+      const logParseFailure = (raw) => {
+        if (console?.debug)
+          console.debug(`[waitForCountdown] Failed to parse as integer: "${raw}"`);
+      };
       const toInt = (raw) => {
+        if (raw === null || raw === undefined) return null;
         const parsed = parseInt(raw, 10);
-        return Number.isNaN(parsed) ? null : parsed;
+        if (Number.isNaN(parsed)) {
+          logParseFailure(raw);
+          return null;
+        }
+        return parsed;
+      };
+      const getRemainingTime = (element) =>
+        element?.getAttribute("data-remaining-time") ?? element?.dataset?.remainingTime ?? null;
+      const compareValues = (actual, expected, expectedNumber) => {
+        const actualNumber = toInt(actual);
+        return actualNumber !== null && expectedNumber !== null
+          ? actualNumber === expectedNumber
+          : actual === String(expected);
+      };
+      const extractCountdownFromText = (text) => {
+        if (!text) return null;
+        const normalized = text.replace(/\s+/g, " ");
+        const patterns = [
+          /\b(?:in|:)\s*(\d{1,3})\s*(?:s(?:ec(?:onds?)?)?)?\b/i,
+          /\b(\d{1,3})\s*(?:s(?:ec(?:onds?)?)?)\b/i
+        ];
+        for (const pattern of patterns) {
+          const match = normalized.match(pattern);
+          if (match) {
+            return match[1];
+          }
+        }
+        return null;
       };
       const expectedNumber = value === undefined ? null : toInt(value);
-      const cliCountdown = document.getElementById("cli-countdown");
-      if (cliCountdown) {
-        const dataRemaining =
-          cliCountdown.getAttribute("data-remaining-time") ??
-          cliCountdown.dataset?.remainingTime ??
-          null;
-        if (dataRemaining !== null) {
-          if (value !== undefined) {
-            const numeric = toInt(dataRemaining);
-            return numeric !== null && expectedNumber !== null
-              ? numeric === expectedNumber
-              : dataRemaining === String(value);
-          }
-          return true;
-        }
-        const textMatch = (cliCountdown.textContent || "").match(/(\d+)/);
-        if (textMatch) {
-          if (value !== undefined) {
-            const textNumber = toInt(textMatch[1]);
-            return textNumber !== null && expectedNumber !== null
-              ? textNumber === expectedNumber
-              : textMatch[1] === String(value);
-          }
-          return true;
-        }
-      }
-      const timerEl = document.querySelector('[data-testid="next-round-timer"]');
-      if (timerEl) {
-        const match = (timerEl.textContent || "").match(/Time Left:\s*(\d+)s/);
-        if (match) {
-          if (value !== undefined) {
-            if (expectedNumber !== null) {
-              return parseInt(match[1], 10) === expectedNumber;
-            }
-            return match[1] === String(value);
-          }
-          return true;
-        }
-      }
-      return false;
+      const verifyCountdownMatch = (actualValue) => {
+        if (value === undefined) return actualValue !== null;
+        if (actualValue === null) return false;
+        return compareValues(actualValue, value, expectedNumber);
+      };
+      const checkCliCountdown = () => {
+        const cliCountdown = document.getElementById("cli-countdown");
+        if (!cliCountdown) return false;
+        const dataRemaining = getRemainingTime(cliCountdown);
+        if (dataRemaining !== null && verifyCountdownMatch(dataRemaining)) return true;
+        const textValue = extractCountdownFromText(cliCountdown.textContent || "");
+        return textValue !== null && verifyCountdownMatch(textValue);
+      };
+      const checkBattleTimer = () => {
+        const timerEl = document.querySelector('[data-testid="next-round-timer"]');
+        if (!timerEl) return false;
+        const textValue = extractCountdownFromText(timerEl.textContent || "");
+        return textValue !== null && verifyCountdownMatch(textValue);
+      };
+      return checkCliCountdown() || checkBattleTimer();
     },
     expectedValue,
     { timeout }
