@@ -135,7 +135,25 @@ async function prepareClassicBattle(page, { seed = 42, cooldown = 500 } = {}) {
   await applyQuickWinTarget(page, { waitForEngine: false });
 }
 
+async function waitForRoundStats(page, timeout = 5000) {
+  await page.waitForFunction(
+    () => {
+      const store = window.battleStore;
+      if (!store || typeof store !== "object") return false;
+      const playerStats = store.currentPlayerJudoka?.stats;
+      const opponentStats = store.currentOpponentJudoka?.stats;
+      if (!playerStats || !opponentStats) return false;
+      const playerKeys = Object.keys(playerStats || {});
+      const opponentKeys = Object.keys(opponentStats || {});
+      return playerKeys.length > 0 && opponentKeys.length > 0;
+    },
+    undefined,
+    { timeout }
+  );
+}
+
 async function selectAdvantagedStat(page) {
+  await waitForRoundStats(page);
   const statKey = await page.evaluate(() => {
     const store = window.battleStore;
     if (!store || typeof store !== "object") {
@@ -178,7 +196,17 @@ async function selectAdvantagedStat(page) {
     }
 
     if (!bestKey) {
-      return null;
+      const defaultKey = "power";
+      if (typeof playerStats === "object" && playerStats) {
+        const boost = 5;
+        playerStats[defaultKey] = boost;
+        playerStats[defaultKey.toLowerCase()] = boost;
+      }
+      if (typeof opponentStats === "object" && opponentStats) {
+        opponentStats[defaultKey] = 0;
+        opponentStats[defaultKey.toLowerCase()] = 0;
+      }
+      return defaultKey;
     }
 
     if (bestDelta <= 0) {
