@@ -77,6 +77,8 @@ This updated report provides a cleaner, more readable format and offers specific
 - **Verification:** The `handleMatchOver()` function, which is called at the end of a match, does not trigger any `aria-live` announcements.
 - **Recommendation:** Add an `aria-live` region to the page and use it to announce the final result of the match (e.g., "Match over. You win!").
 
+**Resolution:** Added a dedicated `aria-live` region with `aria-live="assertive"` for match end announcements in `src/pages/battleCLI/cliDomTemplate.js`. Updated the `matchEnded` event handler in `src/pages/battleCLI/init.js` to populate the announcement element with user-friendly messages ("Match over. You win!", "Opponent wins.", or "It's a draw."). Added unit test in `tests/pages/battleCLI.helpers.test.js` to verify the announcement text. Unit tests (`battleCLI.helpers.test.js`) and Playwright tests (`battle-classic/end-modal.spec.js`) pass, confirming no regressions and proper screen reader support.
+
 ## 9. LOW: Seed Validation Is Not Real-Time
 
 - **Finding:** The original report stated there was no validation for the seed input. This is incorrect. Validation exists, but it only triggers on the `change` event (when the user clicks away from the input), not in real-time.

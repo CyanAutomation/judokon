@@ -168,11 +168,14 @@ describe("Battle CLI Helpers", () => {
         (call) => call[0] === "matchEnded"
       )[1];
       const roundMessage = document.getElementById("round-message");
+      const matchAnnouncement = document.getElementById("match-announcement");
       expect(roundMessage.textContent).toBe("");
+      expect(matchAnnouncement.textContent).toBe("");
 
       matchEndedCallback({ outcome: "playerWin" });
 
       expect(roundMessage.textContent).toContain("Match over: playerWin");
+      expect(matchAnnouncement.textContent).toBe("Match over. You win!");
     });
   });
 });
