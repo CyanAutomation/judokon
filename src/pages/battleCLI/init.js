@@ -1440,29 +1440,32 @@ export function restorePointsToWin() {
     }
     const round = Number(byId("cli-root")?.dataset.round || 0);
     updateRoundHeader(round, engineFacade.getPointsToWin?.());
-      let current = Number(select.value);
-      select.addEventListener("change", async () => {
-        const val = Number(select.value);
-        if (!POINTS_TO_WIN_OPTIONS.includes(val)) return;
-        try {
-          const confirmed = typeof window !== "undefined" ? window.confirm("Changing win target resets scores. Start a new match?") : true;
-          if (confirmed) {
-            storage.set(val);
-            // Reset the match and reinitialize orchestrator before applying new target
-            try {
-              await resetMatch();
-            } catch {}
-            engineFacade.setPointsToWin?.(val);
-            updateRoundHeader(0, val);
-            try {
-              await renderStartButton();
-            } catch {}
-            current = val;
-          } else {
-            select.value = String(current);
-          }
-        } catch {}
-      });
+    let current = Number(select.value);
+    select.addEventListener("change", async () => {
+      const val = Number(select.value);
+      if (!POINTS_TO_WIN_OPTIONS.includes(val)) return;
+      try {
+        const confirmed =
+          typeof window !== "undefined"
+            ? window.confirm("Changing win target resets scores. Start a new match?")
+            : true;
+        if (confirmed) {
+          storage.set(val);
+          // Reset the match and reinitialize orchestrator before applying new target
+          try {
+            await resetMatch();
+          } catch {}
+          engineFacade.setPointsToWin?.(val);
+          updateRoundHeader(0, val);
+          try {
+            await renderStartButton();
+          } catch {}
+          current = val;
+        } else {
+          select.value = String(current);
+        }
+      } catch {}
+    });
   } catch {}
 }
 
@@ -2059,7 +2062,9 @@ const battleEventHandlers = {
 function installEventBindings() {
   try {
     if (typeof onBattleEvent === "function") {
-      Object.entries(battleEventHandlers).forEach(([event, handler]) => onBattleEvent(event, handler));
+      Object.entries(battleEventHandlers).forEach(([event, handler]) =>
+        onBattleEvent(event, handler)
+      );
       onBattleEvent("battleStateChange", handleBattleState);
     }
   } catch {}
