@@ -1236,16 +1236,7 @@ export function handleStatListArrowKey(key) {
  */
 async function loadStatDefs() {
   if (!cachedStatDefs) {
-    try {
-      const fetched = await fetchJson("statNames.json");
-      if (Array.isArray(fetched) && fetched.length) {
-        cachedStatDefs = fetched;
-      } else {
-        cachedStatDefs = statNamesData;
-      }
-    } catch {
-      cachedStatDefs = statNamesData;
-    }
+    cachedStatDefs = statNamesData;
   }
   return Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
 }
@@ -1378,7 +1369,6 @@ function ensureStatClickBinding(list) {
  * @returns {Promise<void>} Resolves when the stat list has been rendered.
  */
 export async function renderStatList(judoka) {
-  console.log('[DEBUG] renderStatList() called');
   try {
     const list = byId("cli-stats");
     const stats = await loadStatDefs();
@@ -2402,7 +2392,6 @@ export function wireEvents() {
  * wireEvents()
  */
 export async function init() {
-  console.log('[DEBUG] init() called');
   initSeed();
   store = createBattleStore();
   // Enable outcome confirmation pause for better UX

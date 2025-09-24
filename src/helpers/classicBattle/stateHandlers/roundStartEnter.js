@@ -33,6 +33,7 @@ function invokeRoundStart(ctx) {
  * @returns {Promise<void>}
  */
 export async function roundStartEnter(machine) {
+  console.log('[DEBUG] roundStartEnter() called');
   const fallback = installRoundStartFallback(machine);
   try {
     await invokeRoundStart(machine.context);

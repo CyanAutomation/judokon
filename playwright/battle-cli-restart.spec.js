@@ -12,9 +12,8 @@ test.describe("Battle CLI - Restart", () => {
       await page.goto("/src/pages/battleCLI.html?autostart=1");
 
       // Wait for the stats to be ready
-      await page.waitForSelector('#cli-stats[aria-busy="false"]', { timeout: 10000 });
-
       const statsContainer = page.locator("#cli-stats");
+      await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
 
       // Click the first stat button to win the round and the match
       await page.locator(".cli-stat").first().click();
