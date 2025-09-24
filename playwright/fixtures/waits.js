@@ -262,25 +262,46 @@ export async function waitForModalOpen(page, modalSelector = "#match-end-modal",
 export async function waitForCountdown(page, expectedValue, timeout = 10000) {
   await page.waitForFunction(
     (value) => {
-      // Check CLI countdown
+      const toInt = (raw) => {
+        const parsed = parseInt(raw, 10);
+        return Number.isNaN(parsed) ? null : parsed;
+      };
+      const expectedNumber = value === undefined ? null : toInt(value);
       const cliCountdown = document.getElementById("cli-countdown");
       if (cliCountdown) {
-        const dataRemaining = cliCountdown.getAttribute("data-remaining-time");
+        const dataRemaining =
+          cliCountdown.getAttribute("data-remaining-time") ??
+          cliCountdown.dataset?.remainingTime ??
+          null;
         if (dataRemaining !== null) {
           if (value !== undefined) {
-            return dataRemaining === String(value);
+            const numeric = toInt(dataRemaining);
+            return numeric !== null && expectedNumber !== null
+              ? numeric === expectedNumber
+              : dataRemaining === String(value);
+          }
+          return true;
+        }
+        const textMatch = (cliCountdown.textContent || "").match(/(\d+)/);
+        if (textMatch) {
+          if (value !== undefined) {
+            const textNumber = toInt(textMatch[1]);
+            return textNumber !== null && expectedNumber !== null
+              ? textNumber === expectedNumber
+              : textMatch[1] === String(value);
           }
           return true;
         }
       }
-      // Check battle timer
       const timerEl = document.querySelector('[data-testid="next-round-timer"]');
       if (timerEl) {
-        const text = timerEl.textContent || "";
-        const match = text.match(/Time Left:\s*(\d+)s/);
+        const match = (timerEl.textContent || "").match(/Time Left:\s*(\d+)s/);
         if (match) {
           if (value !== undefined) {
-            return parseInt(match[1], 10) === parseInt(value, 10);
+            if (expectedNumber !== null) {
+              return parseInt(match[1], 10) === expectedNumber;
+            }
+            return match[1] === String(value);
           }
           return true;
         }
