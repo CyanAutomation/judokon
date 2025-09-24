@@ -1,11 +1,86 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../../setup/fakeTimers.js";
-
+import { describe, it, expect, vi, beforeEach } from "vitest";
 let timestamp = 0;
 let minDuration = 0;
 let opponentDelayMs = 0;
-let timersControl = null;
 const eventHandlers = new Map();
+
+function createManualTimingControls() {
+  let now = 0;
+  const scheduled = [];
+  const scheduler = {
+    setTimeout: vi.fn((handler, delay) => {
+      const numericDelay = Number(delay);
+      const normalizedDelay = Number.isFinite(numericDelay) && numericDelay > 0 ? numericDelay : 0;
+      scheduled.push({ handler, delay: normalizedDelay });
+    })
+  };
+
+  async function runTask(task) {
+    now += task.delay;
+    task.handler();
+    await Promise.resolve();
+  }
+
+  return {
+    scheduler,
+    mockTime() {
+      const spies = [];
+      if (globalThis.performance && typeof globalThis.performance.now === "function") {
+        spies.push(vi.spyOn(globalThis.performance, "now").mockImplementation(() => now));
+      }
+      spies.push(vi.spyOn(Date, "now").mockImplementation(() => now));
+      return () => {
+        for (const spy of spies) {
+          spy.mockRestore();
+        }
+      };
+    },
+    async runNext() {
+      if (!scheduled.length) return;
+      const task = scheduled.shift();
+      await runTask(task);
+    },
+    async runAll(limit = 50) {
+      let iterations = 0;
+      while (scheduled.length) {
+        iterations += 1;
+        if (iterations > limit) {
+          throw new Error(`Manual scheduler exceeded iteration limit (${limit})`);
+        }
+        const task = scheduled.shift();
+        await runTask(task);
+      }
+    },
+    async runUntilResolved(promise, limit = 50) {
+      let settled = false;
+      promise.finally(() => {
+        settled = true;
+      });
+      let iterations = 0;
+      let idleIterations = 0;
+      while (!settled) {
+        if (scheduled.length) {
+          iterations += 1;
+          idleIterations = 0;
+          if (iterations > limit) {
+            throw new Error(
+              `Manual scheduler exceeded iteration limit (${limit}) while awaiting promise resolution`
+            );
+          }
+          const task = scheduled.shift();
+          await runTask(task);
+          continue;
+        }
+        idleIterations += 1;
+        if (idleIterations > limit) {
+          throw new Error("Manual scheduler remained idle while the promise was pending");
+        }
+        await Promise.resolve();
+      }
+      await promise;
+    }
+  };
+}
 
 const trackerMock = {
   getOpponentPromptTimestamp: vi.fn(() => timestamp),
@@ -52,26 +127,30 @@ describe("waitForDelayedOpponentPromptDisplay", () => {
     eventHandlers.clear();
     onBattleEventMock.mockClear();
     offBattleEventMock.mockClear();
-    timersControl = useCanonicalTimers();
-  });
-
-  afterEach(() => {
-    timersControl?.cleanup();
-    timersControl = null;
   });
 
   it("resolves once a prompt-ready event fires within the budget", async () => {
     const { waitForDelayedOpponentPromptDisplay, computeOpponentPromptWaitBudget } = await import(
       "../../../src/helpers/classicBattle/opponentPromptWaiter.js"
     );
-    const budget = computeOpponentPromptWaitBudget(120);
-    const waiterPromise = waitForDelayedOpponentPromptDisplay(budget, { intervalMs: 60 });
-    await Promise.resolve();
-    const handlers = Array.from(eventHandlers.get("opponentPromptReady") || []);
-    expect(handlers.length).toBeGreaterThan(0);
-    timestamp = 42;
-    emitEvent("opponentPromptReady", { timestamp });
-    await waiterPromise;
+    const timing = createManualTimingControls();
+    const restoreTime = timing.mockTime();
+    let handlers = [];
+    try {
+      const budget = computeOpponentPromptWaitBudget(120);
+      const waiterPromise = waitForDelayedOpponentPromptDisplay(budget, {
+        intervalMs: 60,
+        scheduler: timing.scheduler
+      });
+      await timing.runNext();
+      handlers = Array.from(eventHandlers.get("opponentPromptReady") || []);
+      expect(handlers.length).toBeGreaterThan(0);
+      timestamp = 42;
+      emitEvent("opponentPromptReady", { timestamp });
+      await waiterPromise;
+    } finally {
+      restoreTime();
+    }
     expect(trackerMock.getOpponentPromptTimestamp.mock.calls.length).toBeGreaterThan(1);
     handlers.forEach((handler) => {
       expect(offBattleEventMock).toHaveBeenCalledWith("opponentPromptReady", handler);
@@ -82,10 +161,18 @@ describe("waitForDelayedOpponentPromptDisplay", () => {
     const { waitForDelayedOpponentPromptDisplay, computeOpponentPromptWaitBudget } = await import(
       "../../../src/helpers/classicBattle/opponentPromptWaiter.js"
     );
-    const budget = computeOpponentPromptWaitBudget(150);
-    const waiterPromise = waitForDelayedOpponentPromptDisplay(budget, { intervalMs: 70 });
-    await timersControl.advanceTimersByTimeAsync(budget.totalMs + 10);
-    await waiterPromise;
+    const timing = createManualTimingControls();
+    const restoreTime = timing.mockTime();
+    try {
+      const budget = computeOpponentPromptWaitBudget(150);
+      const waiterPromise = waitForDelayedOpponentPromptDisplay(budget, {
+        intervalMs: 70,
+        scheduler: timing.scheduler
+      });
+      await timing.runUntilResolved(waiterPromise);
+    } finally {
+      restoreTime();
+    }
     expect(trackerMock.getOpponentPromptTimestamp.mock.calls.length).toBeGreaterThan(0);
     expect(eventHandlers.get("opponentPromptReady")?.size ?? 0).toBe(0);
   });
@@ -112,31 +199,41 @@ describe("waitForDelayedOpponentPromptDisplay", () => {
     const { waitForDelayedOpponentPromptDisplay } = await import(
       "../../../src/helpers/classicBattle/opponentPromptWaiter.js"
     );
-    const waiterPromise = waitForDelayedOpponentPromptDisplay({ totalMs: 40 }, { intervalMs: 20 });
-    await timersControl.advanceTimersByTimeAsync(45);
-    await waiterPromise;
+    const timing = createManualTimingControls();
+    const restoreTime = timing.mockTime();
+    try {
+      const waiterPromise = waitForDelayedOpponentPromptDisplay(
+        { totalMs: 40 },
+        { intervalMs: 20, scheduler: timing.scheduler }
+      );
+      await timing.runUntilResolved(waiterPromise);
+    } finally {
+      restoreTime();
+    }
     expect(eventHandlers.get("opponentPromptReady")?.size ?? 0).toBe(0);
     emitEvent("opponentPromptReady", { timestamp: 99 });
     expect(eventHandlers.get("opponentPromptReady")?.size ?? 0).toBe(0);
   });
 
   it("uses an injected scheduler when provided", async () => {
-    const scheduler = {
-      setTimeout: vi.fn((handler, delay) => setTimeout(handler, delay))
-    };
     const { waitForDelayedOpponentPromptDisplay, computeOpponentPromptWaitBudget } = await import(
       "../../../src/helpers/classicBattle/opponentPromptWaiter.js"
     );
-    const budget = computeOpponentPromptWaitBudget(80);
-    const waiterPromise = waitForDelayedOpponentPromptDisplay(budget, {
-      intervalMs: 40,
-      scheduler
-    });
-    await Promise.resolve();
-    expect(scheduler.setTimeout).toHaveBeenCalled();
-    timestamp = 123;
-    await timersControl.advanceTimersByTimeAsync(45);
-    await waiterPromise;
+    const timing = createManualTimingControls();
+    const restoreTime = timing.mockTime();
+    try {
+      const budget = computeOpponentPromptWaitBudget(80);
+      const waiterPromise = waitForDelayedOpponentPromptDisplay(budget, {
+        intervalMs: 40,
+        scheduler: timing.scheduler
+      });
+      expect(timing.scheduler.setTimeout).toHaveBeenCalled();
+      timestamp = 123;
+      await timing.runNext();
+      await waiterPromise;
+    } finally {
+      restoreTime();
+    }
   });
 
   it("falls back gracefully when prompt-ready subscription registration fails", async () => {
