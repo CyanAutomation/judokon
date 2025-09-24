@@ -1612,6 +1612,20 @@ export function handleWaitingForPlayerActionKey(key) {
     selectStat(stat);
     return true;
   }
+  if (key === "enter") {
+    const active = document.activeElement?.closest?.(".cli-stat");
+    if (active) {
+      const idx = active.dataset.statIndex;
+      if (idx) {
+        const stat = getStatByIndex(idx);
+        if (stat) {
+          selectStat(stat);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
   return false;
 }
 

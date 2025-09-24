@@ -45,6 +45,8 @@ This updated report provides a cleaner, more readable format and offers specific
 - **Verification:** The `handleWaitingForPlayerActionKey()` function only checks for numeric keys.
 - **Recommendation:** Modify `handleWaitingForPlayerActionKey()` to also handle the "Enter" key. When "Enter" is pressed, it should select the currently highlighted stat (which can be tracked in the application state).
 
+**Resolution:** Updated `handleWaitingForPlayerActionKey` in `src/pages/battleCLI/init.js` to handle "Enter" key by detecting the currently focused stat row (via `document.activeElement`) and selecting the corresponding stat using `getStatByIndex` and `selectStat`. This enables keyboard navigation with arrow keys followed by Enter to confirm selection. Unit tests (`battleCLI.onKeyDown.test.js`, `battleCLI.handlers.test.js`) pass, confirming no regressions in key handling.
+
 ## 5. MEDIUM: Poor Focus Management in Quit Modal
 
 - **Finding:** In the "Quit" modal, only the "Cancel" button has a visible focus ring. The "Quit" button is not focusable via the Tab key, making it inaccessible to keyboard-only users.
