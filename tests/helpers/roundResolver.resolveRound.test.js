@@ -16,6 +16,17 @@ describe("resolveRound", () => {
   let emitMock;
   let timers;
 
+  const createDeferred = () => {
+    let resolve;
+    const promise = new Promise((res) => {
+      resolve = res;
+    });
+    return {
+      promise,
+      resolve: () => resolve()
+    };
+  };
+
   beforeEach(async () => {
     timers = useCanonicalTimers();
     dispatchMock = (await import("../../src/helpers/classicBattle/eventDispatcher.js"))
@@ -33,18 +44,28 @@ describe("resolveRound", () => {
 
   it("prevents concurrent resolution", async () => {
     const store = {};
-    const opts = { delayMs: 10, sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
+    const opts = { delayMs: 0, sleep: async () => {} };
+    const originalDelay = roundResolver.delayAndRevealOpponent;
+    const delayGate = createDeferred();
+    let callCount = 0;
+    vi.spyOn(roundResolver, "delayAndRevealOpponent").mockImplementation(async (...args) => {
+      callCount += 1;
+      if (callCount === 1) {
+        await delayGate.promise;
+      }
+      return originalDelay(...args);
+    });
+
     const first = roundResolver.resolveRound(store, "power", 1, 2, opts);
     const second = await roundResolver.resolveRound(store, "power", 1, 2, opts);
     expect(second).toBeUndefined();
-    await vi.advanceTimersByTimeAsync(10);
+    delayGate.resolve();
     await first;
     const evalCalls = dispatchMock.mock.calls.filter(([evt]) => evt === "evaluate").length;
     expect(evalCalls).toBe(1);
     const revealCalls = emitMock.mock.calls.filter(([evt]) => evt === "opponentReveal").length;
     expect(revealCalls).toBe(1);
     const third = roundResolver.resolveRound(store, "power", 1, 2, opts);
-    await vi.advanceTimersByTimeAsync(10);
     await third;
     const totalEvalCalls = dispatchMock.mock.calls.filter(([evt]) => evt === "evaluate").length;
     expect(totalEvalCalls).toBe(2);
