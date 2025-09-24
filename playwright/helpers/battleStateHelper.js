@@ -174,6 +174,12 @@ export async function waitForNextButtonReady(page, options = {}) {
 
 /**
  * Get current battle state using Test API or DOM fallback
+ * @pseudocode
+ * QUERY the battle state from the Test API helper when available.
+ * RETURN the Test API state when it is a non-empty string.
+ * READ the mirrored DOM dataset battle state when available.
+ * RESOLVE waiting-for-action → round-over transitions when a selection is completed.
+ * FALL BACK to the raw API value (possibly nullish) or the mirrored DOM value.
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @returns {Promise<string|null>} Current battle state
  */
@@ -190,7 +196,17 @@ export async function getCurrentBattleState(page) {
     const dataset = document.body?.dataset;
     const mirroredState = dataset?.battleState;
     if (typeof mirroredState === "string" && mirroredState) {
-      if (mirroredState === "waitingForPlayerAction") {
+      return resolveWaitingForPlayerAction(mirroredState);
+    }
+
+    if (viaApi !== undefined) {
+      return viaApi;
+    }
+
+    return mirroredState ?? null;
+
+    function resolveWaitingForPlayerAction(state) {
+      if (state === "waitingForPlayerAction") {
         try {
           const selectionMade =
             window.__TEST_API?.inspect?.getBattleStore?.()?.selectionMade ??
@@ -199,16 +215,12 @@ export async function getCurrentBattleState(page) {
           if (selectionMade === true) {
             return "roundOver";
           }
-        } catch {}
+        } catch {
+          // Ignore inspection errors because store access may throw before initialization.
+        }
       }
-      return mirroredState;
+      return state;
     }
-
-    if (viaApi !== undefined) {
-      return viaApi;
-    }
-
-    return mirroredState ?? null;
   });
 }
 
