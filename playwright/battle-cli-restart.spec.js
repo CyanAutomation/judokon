@@ -12,10 +12,11 @@ test.describe("Battle CLI - Restart", () => {
 
       await page.goto("/src/pages/battleCLI.html?autostart=1");
 
-      await page.pause();
-      // Wait for the stats to be ready
-      const statsContainer = page.locator("#cli-stats");
-      await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
+      // After loading, the stats should be visible
+      const statsContainer = page.getByRole("listbox", {
+        name: "Select a stat with number keys 1–5"
+      });
+      await expect(statsContainer).toBeVisible();
 
       // Click the first stat button to win the round and the match
       await page.locator(".cli-stat").first().click();
