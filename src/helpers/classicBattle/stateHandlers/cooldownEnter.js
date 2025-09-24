@@ -13,7 +13,7 @@ import { exposeDebugState } from "../debugHooks.js";
  * 2. Otherwise schedule inter-round cooldown.
  */
 export async function cooldownEnter(machine, payload) {
-  console.log('[DEBUG] cooldownEnter() called');
+  console.log("[DEBUG] cooldownEnter() called");
   console.log("[DEBUG] cooldownEnter invoked!");
   if (typeof window !== "undefined") window.__cooldownEnterInvoked = true;
   exposeDebugState("cooldownEnterInvoked", true);

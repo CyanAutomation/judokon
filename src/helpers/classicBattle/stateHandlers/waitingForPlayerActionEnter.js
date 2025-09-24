@@ -27,7 +27,7 @@ const stateLogger = createComponentLogger("WaitingForPlayerAction");
  * 3. Timer will emit "roundTimeout" on expiry and dispatch "timeout" to state machine.
  */
 export async function waitingForPlayerActionEnter(machine) {
-  console.log('[DEBUG] waitingForPlayerActionEnter() called');
+  console.log("[DEBUG] waitingForPlayerActionEnter() called");
   // Debug logging for state handler entry
   logStateHandlerEnter("waitingForPlayerAction", machine?.currentState, {
     hasStore: !!machine?.context?.store,

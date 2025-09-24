@@ -7,7 +7,7 @@
  * 1. Dispatch `ready` with `{ initial: true }` to advance.
  */
 export async function matchStartEnter(machine) {
-  console.log('[DEBUG] matchStartEnter() called');
+  console.log("[DEBUG] matchStartEnter() called");
   await machine.dispatch("ready", { initial: true });
 }
 

@@ -269,7 +269,7 @@ export async function initClassicBattleOrchestrator(
   dependencies = {},
   hooks = {}
 ) {
-  console.log('[DEBUG] initClassicBattleOrchestrator() called');
+  console.log("[DEBUG] initClassicBattleOrchestrator() called");
   if (machine) {
     return machine;
   }

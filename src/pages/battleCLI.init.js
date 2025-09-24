@@ -42,7 +42,7 @@ function setCountdown(value) {
   // atomically set attribute then text
   el.dataset.remainingTime = String(value ?? 0);
   if (el.dataset.status === "error") return;
-  el.textContent = value !== null ? `Timer: ${String(value).padStart(2, "0")}` : "";
+  el.textContent = value !== null ? `Time remaining: ${String(value).padStart(2, "0")}` : "";
   // Briefly freeze countdown UI so test writes are observable before engine overrides
   try {
     if (!window.__battleCLIinit) window.__battleCLIinit = {};

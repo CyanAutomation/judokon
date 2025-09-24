@@ -1235,8 +1235,10 @@ export function handleStatListArrowKey(key) {
  */
 async function loadStatDefs() {
   if (!cachedStatDefs) {
+    console.log("[DEBUG] Using local statNamesData");
     cachedStatDefs = statNamesData;
   }
+  console.log("[DEBUG] cachedStatDefs:", cachedStatDefs);
   return Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
 }
 
