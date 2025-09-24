@@ -1,7 +1,8 @@
 import { vi, describe, test, expect, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { handleStatSelectionTimeout } from "../../src/helpers/classicBattle/autoSelectHandlers.js";
 import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
+import { showSnackbar } from "../../src/helpers/showSnackbar.js";
+import { autoSelectStat } from "../../src/helpers/classicBattle/autoSelectStat.js";
 
 // Mock dependencies
 vi.mock("../../src/helpers/showSnackbar.js", () => ({
@@ -24,45 +25,63 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
 }));
 
 describe("handleStatSelectionTimeout", () => {
-  let timers;
+  let scheduledCallbacks;
+  let fakeScheduler;
+
   beforeEach(() => {
-    timers = useCanonicalTimers();
-    setScheduler({ setTimeout, clearTimeout });
+    scheduledCallbacks = new Map();
+    fakeScheduler = {
+      setTimeout: vi.fn((callback, delay) => {
+        const id = Symbol(delay);
+        scheduledCallbacks.set(id, callback);
+        return id;
+      }),
+      clearTimeout: vi.fn((id) => scheduledCallbacks.delete(id))
+    };
+
+    setScheduler(fakeScheduler);
   });
 
   afterEach(() => {
-    timers.cleanup();
+    scheduledCallbacks.clear();
     setScheduler(realScheduler);
     vi.clearAllMocks();
   });
 
-  test("should show messages and auto-select in a correct, sequential order", async () => {
-    const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");
-    const { autoSelectStat } = await import("../../src/helpers/classicBattle/autoSelectStat.js");
-
+  test("should show messages and auto-select in a correct, sequential order", () => {
     const store = { selectionMade: false };
     const onSelect = vi.fn();
 
     handleStatSelectionTimeout(store, onSelect, 5000);
 
-    // 1. Advance past the main timeout
-    await vi.advanceTimersByTimeAsync(5000);
+    // 1. The initial timeout should be registered for the provided delay.
+    expect(fakeScheduler.setTimeout).toHaveBeenNthCalledWith(1, expect.any(Function), 5000);
+    const mainTimeout = fakeScheduler.setTimeout.mock.calls[0][0];
 
-    // 2. Check for the "stalled" message
+    // Execute the main timeout callback to simulate the timer expiring.
+    mainTimeout();
+
+    // 2. The stalled message should be shown and no auto-select should occur yet.
     expect(showSnackbar).toHaveBeenCalledWith("ui.statSelectionStalled");
     expect(autoSelectStat).not.toHaveBeenCalled();
 
-    // 3. Advance past the first nested timeout
-    await vi.advanceTimersByTimeAsync(800);
+    // 3. The countdown announcement should be scheduled for 800ms later.
+    expect(fakeScheduler.setTimeout).toHaveBeenNthCalledWith(2, expect.any(Function), 800);
+    const countdownTimeout = fakeScheduler.setTimeout.mock.calls[1][0];
 
-    // 4. Check for the "next round" message
+    // Execute the countdown callback.
+    countdownTimeout();
+
+    // 4. The next-round message should be shown, still without auto-select.
     expect(showSnackbar).toHaveBeenCalledWith("ui.nextRoundIn");
     expect(autoSelectStat).not.toHaveBeenCalled();
 
-    // 5. Advance past the final timeout
-    await vi.advanceTimersByTimeAsync(250);
+    // 5. Auto-select should be scheduled 250ms after the countdown announcement.
+    expect(fakeScheduler.setTimeout).toHaveBeenNthCalledWith(3, expect.any(Function), 250);
+    const autoSelectTimeout = fakeScheduler.setTimeout.mock.calls[2][0];
 
-    // 6. Check that autoSelectStat was finally called
+    // 6. Trigger the final callback and verify the auto-select is invoked once.
+    autoSelectTimeout();
     expect(autoSelectStat).toHaveBeenCalledTimes(1);
   });
 });
