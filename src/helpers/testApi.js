@@ -375,10 +375,8 @@ const timerApi = {
 
         try {
           battleCLI.setCountdown(seconds);
-        } finally {
-          try {
-            battleCLI.__freezeUntil = 0;
-          } catch {}
+        } catch (err) {
+          logDevWarning("Failed to delegate countdown to battleCLI", err);
         }
 
         applyCountdown(seconds);
