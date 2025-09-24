@@ -3,21 +3,43 @@ import * as engineFacade from "../../helpers/battleEngineFacade.js";
 // Phase 4: Simplified scoreboard helpers - now primarily rely on shared Scoreboard adapter
 // Dynamic import kept for fallback scenarios only
 let sharedScoreboardHelpers = null;
+let sharedScoreboardReady = Promise.resolve(null);
+
+const assignSharedScoreboardHelpers = (module) => {
+  sharedScoreboardHelpers = {
+    showMessage: module.showMessage,
+    updateScore: module.updateScore,
+    updateRoundCounter: module.updateRoundCounter
+  };
+  return sharedScoreboardHelpers;
+};
+
 try {
-  import("../../components/Scoreboard.js")
-    .then((module) => {
-      sharedScoreboardHelpers = {
-        showMessage: module.showMessage,
-        updateScore: module.updateScore,
-        updateRoundCounter: module.updateRoundCounter
-      };
-    })
+  sharedScoreboardReady = import("../../components/Scoreboard.js")
+    .then((module) => assignSharedScoreboardHelpers(module))
     .catch(() => {
       // Graceful fallback if shared Scoreboard not available or methods missing
       sharedScoreboardHelpers = null;
+      return null;
     });
 } catch {
   // Graceful fallback if shared Scoreboard not available
+  sharedScoreboardReady = Promise.resolve(null);
+}
+
+/**
+ * Await the completion of the shared Scoreboard hydration.
+ *
+ * @returns {Promise<null | {
+ * showMessage?: typeof import("../../components/Scoreboard.js")["showMessage"];
+ * updateScore?: typeof import("../../components/Scoreboard.js")["updateScore"];
+ * updateRoundCounter?: typeof import("../../components/Scoreboard.js")["updateRoundCounter"];
+ * }>}
+ * @pseudocode
+ * return sharedScoreboardReady.catch(() => null)
+ */
+export function waitForSharedScoreboard() {
+  return sharedScoreboardReady.catch(() => null);
 }
 
 /**
