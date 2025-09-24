@@ -17,6 +17,7 @@ import { onBattleEvent, emitBattleEvent } from "../../helpers/classicBattle/batt
 import { STATS } from "../../helpers/BattleEngine.js";
 import * as engineFacade from "../../helpers/battleEngineFacade.js";
 import statNamesData from "../../data/statNames.js";
+import { fetchJson } from "../../helpers/dataUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import {
@@ -1234,6 +1235,19 @@ export function handleStatListArrowKey(key) {
  * @returns {Promise<Array>} Cached stat definition objects.
  */
 async function loadStatDefs() {
+  // In test environments we prefer to honour the test's fetchJson mock and
+  // avoid reusing a module-level cache which can leak state between tests.
+  // Outside tests, keep the original caching behaviour for performance.
+  if (typeof window !== "undefined" && window.__TEST__) {
+    try {
+      const fetched = await fetchJson("statNames.json");
+      if (Array.isArray(fetched) && fetched.length) {
+        return fetched;
+      }
+    } catch {}
+    return Array.isArray(statNamesData) ? statNamesData : [];
+  }
+
   if (!cachedStatDefs) {
     try {
       const fetched = await fetchJson("statNames.json");
