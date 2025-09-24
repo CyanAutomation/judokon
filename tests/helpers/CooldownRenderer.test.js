@@ -1,5 +1,55 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useCanonicalTimers } from "../setup/fakeTimers.js";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const createDeterministicScheduler = () => {
+  let nextId = 1;
+  const tasks = new Map();
+
+  const schedule = (fn, delay = 0) => {
+    const id = nextId++;
+    tasks.set(id, { fn, delay });
+    return id;
+  };
+
+  const clear = (id) => {
+    tasks.delete(id);
+  };
+
+  const runNextTask = () => {
+    if (tasks.size === 0) {
+      return false;
+    }
+
+    let chosenId = null;
+    let chosenTask = null;
+
+    for (const [id, task] of tasks.entries()) {
+      if (
+        chosenTask === null ||
+        task.delay < chosenTask.delay ||
+        (task.delay === chosenTask.delay && id < chosenId)
+      ) {
+        chosenId = id;
+        chosenTask = task;
+      }
+    }
+
+    tasks.delete(chosenId);
+    chosenTask.fn();
+    return true;
+  };
+
+  return {
+    setTimeout: vi.fn(schedule),
+    clearTimeout: vi.fn(clear),
+    runNext: () => runNextTask(),
+    runAll: () => {
+      while (runNextTask()) {
+        // Keep draining until all scheduled callbacks run.
+      }
+    },
+    peekDelays: () => Array.from(tasks.values()).map((task) => task.delay)
+  };
+};
 
 const promptTrackerMocks = vi.hoisted(() => ({
   getOpponentPromptTimestamp: vi.fn(() => 0),
@@ -36,31 +86,26 @@ import * as snackbar from "../../src/helpers/showSnackbar.js";
 import * as scoreboard from "../../src/helpers/setupScoreboard.js";
 
 describe("createPromptDelayController", () => {
-  let timers;
   let currentNow;
   const now = () => currentNow;
 
   beforeEach(() => {
-    timers = useCanonicalTimers();
     currentNow = 0;
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
     mockGetOpponentPromptMinDuration.mockReturnValue(0);
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    timers.cleanup();
-  });
-
-  it("delays queued tick until opponent prompt duration elapses", async () => {
+  it("delays queued tick until opponent prompt duration elapses", () => {
+    const scheduler = createDeterministicScheduler();
     currentNow = 1000;
     mockGetOpponentPromptTimestamp.mockReturnValue(800);
     mockGetOpponentPromptMinDuration.mockReturnValue(500);
 
     const controller = createPromptDelayController({
       now,
-      setTimeoutFn: setTimeout,
-      clearTimeoutFn: clearTimeout
+      setTimeoutFn: scheduler.setTimeout,
+      clearTimeoutFn: scheduler.clearTimeout
     });
     const onReady = vi.fn();
 
@@ -69,16 +114,18 @@ describe("createPromptDelayController", () => {
     controller.queueTick(3, {}, onReady);
 
     expect(onReady).not.toHaveBeenCalled();
+    expect(scheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 300);
 
     currentNow = 1300;
-    await timers.advanceTimersByTimeAsync(300);
+    scheduler.runNext();
 
     expect(onReady).toHaveBeenCalledTimes(1);
     expect(onReady).toHaveBeenCalledWith(3, { suppressEvents: false });
     expect(controller.shouldDefer()).toBe(false);
   });
 
-  it("polls for opponent prompt before delivering tick when waiting is enabled", async () => {
+  it("polls for opponent prompt before delivering tick when waiting is enabled", () => {
+    const scheduler = createDeterministicScheduler();
     currentNow = 0;
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
 
@@ -87,8 +134,8 @@ describe("createPromptDelayController", () => {
       promptPollIntervalMs: 25,
       maxPromptWaitMs: 100,
       now,
-      setTimeoutFn: setTimeout,
-      clearTimeoutFn: clearTimeout
+      setTimeoutFn: scheduler.setTimeout,
+      clearTimeoutFn: scheduler.clearTimeout
     });
     const onReady = vi.fn();
 
@@ -96,18 +143,20 @@ describe("createPromptDelayController", () => {
 
     expect(controller.shouldDefer()).toBe(true);
     expect(onReady).not.toHaveBeenCalled();
+    expect(scheduler.peekDelays()).toEqual([25]);
 
     currentNow = 25;
     mockGetOpponentPromptTimestamp.mockReturnValue(25);
 
-    await timers.advanceTimersByTimeAsync(25);
+    scheduler.runNext();
 
     expect(onReady).toHaveBeenCalledTimes(1);
     expect(onReady).toHaveBeenCalledWith(9, { suppressEvents: false });
     expect(controller.shouldDefer()).toBe(false);
   });
 
-  it("resumes queued countdown after exceeding max prompt wait", async () => {
+  it("resumes queued countdown after exceeding max prompt wait", () => {
+    const scheduler = createDeterministicScheduler();
     currentNow = 0;
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
 
@@ -116,39 +165,53 @@ describe("createPromptDelayController", () => {
       promptPollIntervalMs: 40,
       maxPromptWaitMs: 120,
       now,
-      setTimeoutFn: setTimeout,
-      clearTimeoutFn: clearTimeout
+      setTimeoutFn: scheduler.setTimeout,
+      clearTimeoutFn: scheduler.clearTimeout
     });
     const onReady = vi.fn();
 
     controller.queueTick(7, {}, onReady);
 
-    await timers.advanceTimersByTimeAsync(80);
+    currentNow = 40;
+    scheduler.runNext();
     expect(onReady).not.toHaveBeenCalled();
 
-    await timers.advanceTimersByTimeAsync(40);
+    currentNow = 80;
+    scheduler.runNext();
+    expect(onReady).not.toHaveBeenCalled();
+    expect(scheduler.peekDelays()).toEqual([40]);
+
+    currentNow = 120;
+    scheduler.runNext();
     expect(onReady).toHaveBeenCalledTimes(1);
     expect(onReady).toHaveBeenCalledWith(7, { suppressEvents: false });
 
     controller.queueTick(5, {}, onReady);
 
-    await timers.advanceTimersByTimeAsync(80);
+    currentNow = 160;
+    scheduler.runNext();
     expect(onReady).toHaveBeenCalledTimes(1);
 
-    await timers.advanceTimersByTimeAsync(40);
+    currentNow = 200;
+    scheduler.runNext();
+    expect(onReady).toHaveBeenCalledTimes(1);
+
+    currentNow = 240;
+    scheduler.runNext();
     expect(onReady).toHaveBeenCalledTimes(2);
     expect(onReady).toHaveBeenLastCalledWith(5, { suppressEvents: false });
   });
 
-  it("clears pending prompt delay and prevents queued callback", async () => {
+  it("clears pending prompt delay and prevents queued callback", () => {
+    const scheduler = createDeterministicScheduler();
     currentNow = 500;
     mockGetOpponentPromptTimestamp.mockReturnValue(200);
     mockGetOpponentPromptMinDuration.mockReturnValue(900);
 
     const controller = createPromptDelayController({
       now,
-      setTimeoutFn: setTimeout,
-      clearTimeoutFn: clearTimeout
+      setTimeoutFn: scheduler.setTimeout,
+      clearTimeoutFn: scheduler.clearTimeout
     });
     const onReady = vi.fn();
 
@@ -156,7 +219,7 @@ describe("createPromptDelayController", () => {
     controller.clear();
 
     currentNow = 1100;
-    await timers.runAllTimersAsync();
+    scheduler.runAll();
 
     expect(onReady).not.toHaveBeenCalled();
     expect(controller.shouldDefer()).toBe(false);
@@ -196,7 +259,8 @@ describe("createPromptDelayController", () => {
     expect(failingSetTimeout).toHaveBeenCalled();
   });
 
-  it("clears timers safely even when clearTimeout throws", async () => {
+  it("clears timers safely even when clearTimeout throws", () => {
+    const scheduler = createDeterministicScheduler();
     currentNow = 200;
     mockGetOpponentPromptTimestamp.mockReturnValue(100);
     mockGetOpponentPromptMinDuration.mockReturnValue(400);
@@ -207,7 +271,7 @@ describe("createPromptDelayController", () => {
 
     const controller = createPromptDelayController({
       now,
-      setTimeoutFn: setTimeout,
+      setTimeoutFn: scheduler.setTimeout,
       clearTimeoutFn: failingClearTimeout
     });
     const onReady = vi.fn();
@@ -215,7 +279,7 @@ describe("createPromptDelayController", () => {
     controller.queueTick(8, {}, onReady);
 
     expect(() => controller.clear()).not.toThrow();
-    await timers.runAllTimersAsync();
+    scheduler.runAll();
 
     expect(onReady).not.toHaveBeenCalled();
     expect(failingClearTimeout).toHaveBeenCalled();
@@ -224,10 +288,8 @@ describe("createPromptDelayController", () => {
 
 describe("attachCooldownRenderer", () => {
   let timer;
-  let timers;
 
   beforeEach(() => {
-    timers = useCanonicalTimers();
     mockGetOpponentPromptTimestamp.mockReturnValue(0);
     mockGetOpponentPromptMinDuration.mockReturnValue(0);
     timer = {
@@ -245,10 +307,6 @@ describe("attachCooldownRenderer", () => {
       }
     };
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    timers.cleanup();
   });
 
   it("renders initial countdown and emits events on first tick", () => {
