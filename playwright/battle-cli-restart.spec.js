@@ -36,3 +36,4 @@ test.describe("Battle CLI - Restart", () => {
       // Removed aria-busy accessibility assertion
     }, ["log", "info", "warn", "error", "debug"]);
   });
+});
