@@ -1,86 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createManualTimingControls } from "../../utils/manualTimingControls.js";
 let timestamp = 0;
 let minDuration = 0;
 let opponentDelayMs = 0;
 const eventHandlers = new Map();
-
-function createManualTimingControls() {
-  let now = 0;
-  const scheduled = [];
-  const scheduler = {
-    setTimeout: vi.fn((handler, delay) => {
-      const numericDelay = Number(delay);
-      const normalizedDelay = Number.isFinite(numericDelay) && numericDelay > 0 ? numericDelay : 0;
-      scheduled.push({ handler, delay: normalizedDelay });
-    })
-  };
-
-  async function runTask(task) {
-    now += task.delay;
-    task.handler();
-    await Promise.resolve();
-  }
-
-  return {
-    scheduler,
-    mockTime() {
-      const spies = [];
-      if (globalThis.performance && typeof globalThis.performance.now === "function") {
-        spies.push(vi.spyOn(globalThis.performance, "now").mockImplementation(() => now));
-      }
-      spies.push(vi.spyOn(Date, "now").mockImplementation(() => now));
-      return () => {
-        for (const spy of spies) {
-          spy.mockRestore();
-        }
-      };
-    },
-    async runNext() {
-      if (!scheduled.length) return;
-      const task = scheduled.shift();
-      await runTask(task);
-    },
-    async runAll(limit = 50) {
-      let iterations = 0;
-      while (scheduled.length) {
-        iterations += 1;
-        if (iterations > limit) {
-          throw new Error(`Manual scheduler exceeded iteration limit (${limit})`);
-        }
-        const task = scheduled.shift();
-        await runTask(task);
-      }
-    },
-    async runUntilResolved(promise, limit = 50) {
-      let settled = false;
-      promise.finally(() => {
-        settled = true;
-      });
-      let iterations = 0;
-      let idleIterations = 0;
-      while (!settled) {
-        if (scheduled.length) {
-          iterations += 1;
-          idleIterations = 0;
-          if (iterations > limit) {
-            throw new Error(
-              `Manual scheduler exceeded iteration limit (${limit}) while awaiting promise resolution`
-            );
-          }
-          const task = scheduled.shift();
-          await runTask(task);
-          continue;
-        }
-        idleIterations += 1;
-        if (idleIterations > limit) {
-          throw new Error("Manual scheduler remained idle while the promise was pending");
-        }
-        await Promise.resolve();
-      }
-      await promise;
-    }
-  };
-}
 
 const trackerMock = {
   getOpponentPromptTimestamp: vi.fn(() => timestamp),
