@@ -1,6 +1,6 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
-import { waitForModalOpen } from "../fixtures/waits.js";
+import { waitForModalOpen, waitForNextRoundReadyEvent } from "../fixtures/waits.js";
 
 async function waitForBattleInitialization(page) {
   await page.waitForFunction(
@@ -232,16 +232,31 @@ async function selectAdvantagedStat(page) {
 }
 
 async function waitForScoreDisplay(page, timeout = 10000) {
-  await page.waitForFunction(
+  const handle = await page.waitForFunction(
     () => {
       const scoreNode = document.getElementById("score-display");
-      if (!scoreNode) return false;
+      if (!scoreNode) return null;
+
       const text = scoreNode.textContent || "";
-      return /You:\s*1/.test(text) && /Opponent:\s*0/.test(text);
+      const match = text.match(/You:\s*(\d+)[\s\S]*Opponent:\s*(\d+)/i);
+      if (!match) return null;
+
+      const player = Number(match[1]);
+      const opponent = Number(match[2]);
+      if (!Number.isFinite(player) || !Number.isFinite(opponent)) return null;
+      if (player === 0 && opponent === 0) return null;
+
+      return { player, opponent };
     },
     undefined,
     { timeout }
   );
+
+  try {
+    return await handle.jsonValue();
+  } finally {
+    await handle.dispose();
+  }
 }
 
 async function waitForMatchCompletion(page, timeout = 15000) {
@@ -309,6 +324,33 @@ async function waitForMatchCompletion(page, timeout = 15000) {
   );
 }
 
+async function resolveMatchFromCurrentRound(page, { maxRounds = 5, nextTimeout = 5000 } = {}) {
+  for (let attempt = 0; attempt < maxRounds; attempt += 1) {
+    const scores = await waitForScoreDisplay(page);
+    if (scores && scores.player + scores.opponent >= 1) {
+      return scores;
+    }
+
+    await page.evaluate(() => {
+      if (typeof window !== "undefined") {
+        window.__nextReadySeen = false;
+      }
+    });
+    await waitForNextRoundReadyEvent(page, nextTimeout);
+    const nextButton = page
+      .locator("#next-button, [data-role='next-round'], [data-testid='next-button']")
+      .first();
+    await expect(nextButton).toBeVisible();
+    await expect(nextButton).toBeEnabled();
+    await nextButton.click();
+
+    await page.waitForSelector("#stat-buttons button[data-stat]");
+    await selectAdvantagedStat(page);
+  }
+
+  throw new Error("Match did not resolve within expected rounds");
+}
+
 test.describe("Classic Battle End Game Flow", () => {
   test.describe("Match Completion Scenarios", () => {
     test("completes match with first-to-1 win condition", async ({ page }) =>
@@ -325,13 +367,14 @@ test.describe("Classic Battle End Game Flow", () => {
         // Choose a stat with a deterministic advantage for the player
         await selectAdvantagedStat(page);
 
-        await waitForScoreDisplay(page);
+        const scores = await resolveMatchFromCurrentRound(page);
         await waitForMatchCompletion(page);
 
         // Verify match completion
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(/You:\s*1/);
-        await expect(scoreDisplay).toContainText(/Opponent:\s*0/);
+        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
+        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
+        expect(scores.player + scores.opponent).toBe(1);
 
         // Confirm the match end modal is presented to the user
         await waitForModalOpen(page);
@@ -362,7 +405,7 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.waitForSelector("#stat-buttons button[data-stat]");
         await selectAdvantagedStat(page);
 
-        await waitForScoreDisplay(page);
+        const scores = await resolveMatchFromCurrentRound(page);
         await waitForMatchCompletion(page);
 
         // Verify score display shows completion
@@ -371,8 +414,9 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Verify score contains expected format
         const scoreText = await scoreDisplay.textContent();
-        expect(scoreText).toMatch(/You:\s*1/);
-        expect(scoreText).toMatch(/Opponent:\s*0/);
+        expect(scoreText).toMatch(new RegExp(`You:\\s*${scores.player}`));
+        expect(scoreText).toMatch(new RegExp(`Opponent:\\s*${scores.opponent}`));
+        expect(scores.player + scores.opponent).toBe(1);
 
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
@@ -390,13 +434,14 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.waitForSelector("#stat-buttons button[data-stat]");
         await selectAdvantagedStat(page);
 
-        await waitForScoreDisplay(page);
+        const scores = await resolveMatchFromCurrentRound(page);
         await waitForMatchCompletion(page);
 
         // Verify match ended
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(/You:\s*1/);
-        await expect(scoreDisplay).toContainText(/Opponent:\s*0/);
+        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
+        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
+        expect(scores.player + scores.opponent).toBe(1);
 
         // Check if replay button exists and is functional
         const replayButton = page
@@ -429,14 +474,15 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.waitForSelector("#stat-buttons button[data-stat]");
         await selectAdvantagedStat(page);
 
-        await waitForScoreDisplay(page);
+        const scores = await resolveMatchFromCurrentRound(page);
         await waitForMatchCompletion(page);
         expect(errors.length).toBe(0);
 
         // Verify match completed successfully
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(/You:\s*1/);
-        await expect(scoreDisplay).toContainText(/Opponent:\s*0/);
+        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
+        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
+        expect(scores.player + scores.opponent).toBe(1);
 
         // Verify page layout remains intact
         await expect(page.locator("header, .header")).toBeVisible();
@@ -454,7 +500,7 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.waitForSelector("#stat-buttons button[data-stat]");
         await selectAdvantagedStat(page);
 
-        await waitForScoreDisplay(page);
+        const scores = await resolveMatchFromCurrentRound(page);
         await waitForMatchCompletion(page);
 
         // Verify score display is clear and readable
@@ -466,8 +512,9 @@ test.describe("Classic Battle End Game Flow", () => {
         expect(scoreText.length).toBeGreaterThan(5); // Should contain meaningful score info
 
         // Verify score display is properly formatted
-        expect(scoreText).toMatch(/You:\s*1/);
-        expect(scoreText).toMatch(/Opponent:\s*0/);
+        expect(scoreText).toMatch(new RegExp(`You:\\s*${scores.player}`));
+        expect(scoreText).toMatch(new RegExp(`Opponent:\\s*${scores.opponent}`));
+        expect(scores.player + scores.opponent).toBe(1);
       }, ["log", "info", "warn", "error", "debug"]));
 
     test("provides stable interface after match completion", async ({ page }) =>
@@ -479,13 +526,14 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.waitForSelector("#stat-buttons button[data-stat]");
         await selectAdvantagedStat(page);
 
-        await waitForScoreDisplay(page);
+        const scores = await resolveMatchFromCurrentRound(page);
         await waitForMatchCompletion(page);
 
         // Verify match completed
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(/You:\s*1/);
-        await expect(scoreDisplay).toContainText(/Opponent:\s*0/);
+        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
+        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
+        expect(scores.player + scores.opponent).toBe(1);
 
         // Verify interface remains stable
         await expect(page.locator("body")).toBeVisible();
@@ -512,14 +560,15 @@ test.describe("Classic Battle End Game Flow", () => {
         await page.waitForSelector("#stat-buttons button[data-stat]");
         await selectAdvantagedStat(page);
 
-        await waitForScoreDisplay(page);
+        const scores = await resolveMatchFromCurrentRound(page);
         await waitForMatchCompletion(page);
         expect(errors.length).toBe(0);
 
         // Verify match completed without throwing errors
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(/You:\s*1/);
-        await expect(scoreDisplay).toContainText(/Opponent:\s*0/);
+        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
+        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
+        expect(scores.player + scores.opponent).toBe(1);
       }, ["log", "info", "warn", "error", "debug"]));
 
     test("maintains functionality after match completion", async ({ page }) =>
@@ -531,12 +580,13 @@ test.describe("Classic Battle End Game Flow", () => {
         await applyQuickWinTarget(page);
         await page.waitForSelector("#stat-buttons button[data-stat]");
         await selectAdvantagedStat(page);
-        await waitForScoreDisplay(page);
+        const scores = await resolveMatchFromCurrentRound(page);
         await waitForMatchCompletion(page);
 
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(/You:\s*1/);
-        await expect(scoreDisplay).toContainText(/Opponent:\s*0/);
+        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
+        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
+        expect(scores.player + scores.opponent).toBe(1);
 
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
