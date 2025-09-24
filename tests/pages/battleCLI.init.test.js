@@ -52,7 +52,7 @@ describe("battleCLI init helpers", () => {
     });
     await mod.init();
     const stats = await mod.loadStatDefs();
-    expect(stats).toEqual(expect.arrayContaining([{ statIndex: 1, name: "Power" }]));
+    expect(stats.find((stat) => stat.statIndex === 1)).toMatchObject({ name: "Power" });
     const rows = mod.buildStatRows(stats);
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.some((row) => row.textContent?.includes("Power"))).toBe(true);

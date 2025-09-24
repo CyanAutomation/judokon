@@ -69,6 +69,8 @@ This updated report provides a cleaner, more readable format and offers specific
 - **Verification:** The feature is controlled by the `cliVerbose` feature flag and is hidden by default.
 - **Recommendation:** Add a small, visible indicator (e.g., "Verbose ON") to the UI when this mode is active. Consider automatically showing the log pane when it's enabled.
 
+**Resolution:** Added a "Verbose ON" indicator badge in the page header next to the title, styled with yellow background for visibility. The indicator is shown/hidden dynamically when the `cliVerbose` flag changes via the existing `updateVerbose()` function. The badge appears in the CLI title area and provides clear visual feedback when verbose logging is active. Unit tests (`battleCLI.init.test.js`, `battleCLI.verbose.test.js`) and Playwright tests (`settings.spec.js`) pass, confirming the indicator works correctly without regressions.
+
 ## 8. LOW: No Screen Reader Announcement on Match End
 
 - **Finding:** When a match ends, there is no announcement for screen reader users to indicate the outcome.
