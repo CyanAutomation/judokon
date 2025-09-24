@@ -26,27 +26,76 @@ test.describe("Classic Battle timer clearing", () => {
 
       // Capture initial score text for deterministic comparison
       const score = page.locator(selectors.scoreDisplay());
-      const initialText = (await score.textContent())?.trim();
+      const parseScores = (value) => {
+        const playerMatch = value.match(/You:\s*(\d+)/i);
+        const opponentMatch = value.match(/Opponent:\s*(\d+)/i);
+        return {
+          player: playerMatch ? Number(playerMatch[1]) : Number.NaN,
+          opponent: opponentMatch ? Number(opponentMatch[1]) : Number.NaN
+        };
+      };
+      const initialText = (await score.textContent())?.trim() || "";
+      const initialScores = parseScores(initialText);
+      const pBefore = Number.isFinite(initialScores.player) ? initialScores.player : 0;
+      const oBefore = Number.isFinite(initialScores.opponent) ? initialScores.opponent : 0;
+      const initialScorePattern = new RegExp(`You:\\s*${pBefore}\\s+Opponent:\\s*${oBefore}`, "i");
 
       // Click stat button
       await buttons.first().click();
 
-      // Score should update immediately (one side increments by 1)
-      await expect(score).not.toHaveText(initialText || "");
+      const roundMessage = page.locator(selectors.roundMessage());
+      let outcomeSnapshot = {
+        messageText: "",
+        scores: { player: pBefore, opponent: oBefore },
+        text: initialText
+      };
+      await expect
+        .poll(async () => {
+          const currentText = ((await score.textContent()) || "").trim();
+          const messageText = ((await roundMessage.textContent()) || "").trim();
+          const parsedScores = parseScores(currentText);
+          const playerScore = Number.isFinite(parsedScores.player) ? parsedScores.player : pBefore;
+          const opponentScore = Number.isFinite(parsedScores.opponent)
+            ? parsedScores.opponent
+            : oBefore;
+          const scoreChanged = playerScore !== pBefore || opponentScore !== oBefore;
+          const messageIndicatesTie = /tie|no score/i.test(messageText);
 
-      const text = (await score.textContent()) || "";
-      const playerMatch = text.match(/You:\s*(\d+)/);
-      const opponentMatch = text.match(/Opponent:\s*(\d+)/);
-      const [pAfter, oAfter] = [Number(playerMatch?.[1] || 0), Number(opponentMatch?.[1] || 0)];
+          outcomeSnapshot = {
+            messageText,
+            text: currentText,
+            scores: { player: playerScore, opponent: opponentScore }
+          };
 
-      const pBeforeMatch = (initialText || "").match(/You:\s*(\d+)/);
-      const oBeforeMatch = (initialText || "").match(/Opponent:\s*(\d+)/);
-      const [pBefore, oBefore] = [Number(pBeforeMatch?.[1] || 0), Number(oBeforeMatch?.[1] || 0)];
+          return scoreChanged || messageIndicatesTie;
+        })
+        .toBeTruthy();
 
-      // Exactly one side should increment by 1
+      const playerSpan = score.locator('[data-side="player"]');
+      const opponentSpan = score.locator('[data-side="opponent"]');
+      if ((await playerSpan.count()) > 0 && (await opponentSpan.count()) > 0) {
+        await expect(playerSpan).toHaveText(/You:\s*\d+/i);
+        await expect(opponentSpan).toHaveText(/Opponent:\s*\d+/i);
+      } else {
+        await expect(score).toHaveText(/You:\s*\d+/i);
+        await expect(score).toHaveText(/Opponent:\s*\d+/i);
+      }
+
+      const { scores: resolvedScores, messageText } = outcomeSnapshot;
+      const pAfter = Number.isFinite(resolvedScores.player) ? resolvedScores.player : pBefore;
+      const oAfter = Number.isFinite(resolvedScores.opponent) ? resolvedScores.opponent : oBefore;
+      const tieResolved = /tie|no score/i.test(messageText);
+
+      // Exactly one side should increment by 1 when the stat values differ
       const playerDelta = pAfter - pBefore;
       const opponentDelta = oAfter - oBefore;
-      expect([playerDelta, opponentDelta].filter((d) => d === 1).length).toBe(1);
+      if (!tieResolved && (playerDelta !== 0 || opponentDelta !== 0)) {
+        expect([playerDelta, opponentDelta].filter((d) => d === 1).length).toBe(1);
+        await expect(score).not.toHaveText(initialScorePattern);
+      } else if (tieResolved) {
+        expect(playerDelta).toBe(0);
+        expect(opponentDelta).toBe(0);
+      }
       expect([playerDelta, opponentDelta].filter((d) => d !== 0 && d !== 1).length).toBe(0);
     }, ["log", "info", "warn", "error", "debug"]);
   });
