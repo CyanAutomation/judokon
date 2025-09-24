@@ -13,33 +13,16 @@ import NAV_ITEMS from "../tests/fixtures/navigationItems.js";
 const GAME_MODES = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
 const TOOLTIP_DATA = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
 
-const NAVIGATION_ENABLED_MODE_IDS = new Set(
-  NAV_ITEMS.map((item) => {
-    if (typeof item.gameModeId === "number" && Number.isSafeInteger(item.gameModeId)) {
-      return item.gameModeId;
-    }
+function parseNavigationModeId(input) {
+  const modeId = typeof input === "object" && input !== null ? input.gameModeId : input;
 
-    if (typeof item.gameModeId === "string") {
-      const parsed = Number.parseInt(item.gameModeId, 10);
-      if (Number.isSafeInteger(parsed)) {
-        return parsed;
-      }
-    }
-
-    return null;
-  }).filter((id) => id !== null)
-);
-
-function resolveNavigationModeId(modeId) {
-  if (typeof modeId === "number") {
-    return Number.isSafeInteger(modeId) && NAVIGATION_ENABLED_MODE_IDS.has(modeId)
-      ? modeId
-      : null;
+  if (typeof modeId === "number" && Number.isSafeInteger(modeId)) {
+    return modeId;
   }
 
   if (typeof modeId === "string") {
     const parsed = Number.parseInt(modeId, 10);
-    if (Number.isSafeInteger(parsed) && NAVIGATION_ENABLED_MODE_IDS.has(parsed)) {
+    if (Number.isSafeInteger(parsed)) {
       return parsed;
     }
   }
@@ -47,17 +30,52 @@ function resolveNavigationModeId(modeId) {
   return null;
 }
 
+const NAVIGATION_ENABLED_MODE_IDS = new Set(
+  NAV_ITEMS.map(parseNavigationModeId).filter((id) => id !== null)
+);
+
+/**
+ * Resolves a game mode ID into one of the navigation-enabled IDs.
+ *
+ * @pseudocode
+ * SET parsed TO parseNavigationModeId(modeId)
+ * IF parsed IS null
+ *   RETURN null
+ * IF NAVIGATION_ENABLED_MODE_IDS has parsed
+ *   RETURN parsed
+ * RETURN null
+ *
+ * @param {number|string|{gameModeId: number|string}} modeId - Game mode ID to validate
+ * @returns {number|null} Navigation-enabled mode ID or null when absent
+ */
+function resolveNavigationModeId(modeId) {
+  const parsed = parseNavigationModeId(modeId);
+  if (parsed === null) {
+    return null;
+  }
+
+  return NAVIGATION_ENABLED_MODE_IDS.has(parsed) ? parsed : null;
+}
+
 /**
  * Gather sorted game mode names, enabled feature flag labels, and the expected
  * tab order labels for the settings page.
  *
+ * The returned mode names only include navigation-enabled entries to mirror the
+ * UI guard that prevents non-navigable modes from rendering in the settings
+ * view.
+ *
  * @returns {{sortedNames: string[], flagLabels: string[], expectedLabels: string[]}}
  */
 function getLabelData() {
-  const modeNameById = GAME_MODES.reduce((map, mode) => {
-    const resolvedId = resolveNavigationModeId(mode.id);
-    if (resolvedId !== null && typeof mode.name === "string" && mode.name.length > 0) {
-      map.set(resolvedId, mode.name);
+  const navigationEnabledModes = GAME_MODES.map((mode) => ({
+    mode,
+    parsedId: resolveNavigationModeId(mode.id)
+  })).filter(({ parsedId }) => parsedId !== null);
+
+  const modeNameById = navigationEnabledModes.reduce((map, { mode, parsedId }) => {
+    if (typeof mode.name === "string" && mode.name.length > 0) {
+      map.set(parsedId, mode.name);
     }
     return map;
   }, new Map());

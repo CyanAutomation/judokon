@@ -1255,6 +1255,7 @@ function buildStatRows(stats, judoka) {
       const div = document.createElement("div");
       if (key) {
         statDisplayNames[key] = s.name;
+        // Provide semantic identification for automation and accessibility helpers.
         div.dataset.stat = key;
       }
       div.className = "cli-stat";

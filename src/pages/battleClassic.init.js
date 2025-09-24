@@ -82,45 +82,104 @@ let lastRoundCycleTriggerTimestamp = 0;
 const POST_SELECTION_READY_DELAY_MS = 48;
 
 let lastBroadcastState = null;
-let lastBroadcastPrevState = null;
 
+function resolveFallbackMachine() {
+  if (typeof getBattleStateMachine !== "function") {
+    return null;
+  }
+  try {
+    return getBattleStateMachine();
+  } catch {
+    return null;
+  }
+}
+
+function isOrchestratorHandlingState(machine) {
+  if (!machine || typeof machine !== "object") {
+    return false;
+  }
+
+  try {
+    const { isActive } = machine;
+    if (typeof isActive === "function") {
+      const active = isActive.call(machine);
+      if (active !== undefined) {
+        return Boolean(active);
+      }
+    }
+  } catch {
+    return true;
+  }
+
+  try {
+    const state = typeof machine.getState === "function" ? machine.getState() : null;
+    if (typeof state === "string" && state) {
+      return true;
+    }
+  } catch {
+    return true;
+  }
+
+  const context = machine?.context;
+  if (context && typeof context === "object") {
+    if (context.orchestrated || context.engine || context.store) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function updateBattleStateDataset(nextState, previousState) {
+  if (typeof document === "undefined" || !document?.body) {
+    return;
+  }
+  try {
+    document.body.dataset.battleState = String(nextState);
+  } catch {}
+  if (previousState) {
+    try {
+      document.body.dataset.prevBattleState = String(previousState);
+    } catch {}
+  } else {
+    try {
+      delete document.body.dataset.prevBattleState;
+    } catch {}
+  }
+}
+
+function emitFallbackStateChange(prevState, nextState) {
+  try {
+    emitBattleEvent("battleStateChange", { from: prevState ?? null, to: nextState });
+  } catch {}
+}
+
+/**
+ * @summary Mirror battle state transitions when the orchestrator is inactive.
+ * @param {string} nextState - The state identifier to broadcast.
+ * @pseudocode
+ * 1. Exit early when `nextState` is falsy.
+ * 2. Resolve the orchestrator machine; skip broadcasting if it reports active.
+ * 3. Ignore duplicate sequential broadcasts of the same state.
+ * 4. Persist the previous/next states on `document.body.dataset` for UI fallbacks.
+ * 5. Emit a `battleStateChange` event on the classic battle event bus.
+ */
 function broadcastBattleState(nextState) {
   if (!nextState) return;
 
-  try {
-    const machine = typeof getBattleStateMachine === "function" ? getBattleStateMachine() : null;
-    if (machine) {
-      return;
-    }
-  } catch {}
+  const machine = resolveFallbackMachine();
+  if (isOrchestratorHandlingState(machine)) {
+    return;
+  }
 
   if (lastBroadcastState === nextState) {
     return;
   }
 
   const prevState = lastBroadcastState;
-  lastBroadcastPrevState = prevState;
   lastBroadcastState = nextState;
 
-  if (typeof document !== "undefined" && document?.body) {
-    try {
-      document.body.dataset.battleState = String(nextState);
-    } catch {}
-    const previous = lastBroadcastPrevState;
-    if (previous) {
-      try {
-        document.body.dataset.prevBattleState = String(previous);
-      } catch {}
-    } else {
-      try {
-        delete document.body.dataset.prevBattleState;
-      } catch {}
-    }
-  }
-
-  try {
-    emitBattleEvent("battleStateChange", { from: prevState ?? null, to: nextState });
-  } catch {}
+  updateBattleStateDataset(nextState, prevState);
+  emitFallbackStateChange(prevState, nextState);
 }
 
 /**
@@ -597,6 +656,32 @@ function finalizeSelectionReady(store, options = {}) {
 }
 
 /**
+ * @summary Apply a computed round decision and emit transition broadcasts.
+ * @param {ReturnType<typeof createBattleStore>} store - Battle store reference.
+ * @param {any} result - Result payload returned from selection or computation helpers.
+ * @returns {Promise<{applied: boolean, matchEnded: boolean}>} Application outcome metadata.
+ * @pseudocode
+ * 1. Exit early when no result payload is provided.
+ * 2. Attempt to apply the result via `applySelectionResult()`.
+ * 3. On success, broadcast `roundOver` and return `{ applied: true, matchEnded }`.
+ * 4. On failure, invoke `handleStatSelectionError()` and return `{ applied: false, matchEnded: false }`.
+ */
+async function applyRoundDecisionResult(store, result) {
+  if (!result) {
+    return { applied: false, matchEnded: false };
+  }
+
+  try {
+    const matchEnded = await applySelectionResult(store, result);
+    broadcastBattleState("roundOver");
+    return { applied: true, matchEnded: Boolean(matchEnded) };
+  } catch (err) {
+    handleStatSelectionError(store, err);
+    return { applied: false, matchEnded: false };
+  }
+}
+
+/**
  * Stop the active selection timer and clear the timer display.
  *
  * @pseudocode
@@ -962,7 +1047,6 @@ async function handleStatButtonClick(store, stat, btn) {
   if (!btn || btn.disabled) return;
   const delayOverride = prepareUiBeforeSelection();
   const { playerVal, opponentVal } = resolveStatValues(store, stat);
-  broadcastBattleState("roundDecision");
   let result;
   try {
     result = await handleStatSelection(store, String(stat), {
@@ -972,28 +1056,16 @@ async function handleStatButtonClick(store, stat, btn) {
     });
   } catch (err) {
     handleStatSelectionError(store, err);
+    finalizeSelectionReady(store, { shouldStartCooldown: false });
     return;
   }
 
-  let shouldStartCooldown = true;
-  let appliedResult = false;
-  try {
-    if (result) {
-      const matchEnded = await applySelectionResult(store, result);
-      appliedResult = true;
-      shouldStartCooldown = !matchEnded;
-    } else {
-      shouldStartCooldown = false;
-    }
-  } catch (err) {
-    handleStatSelectionError(store, err);
-    shouldStartCooldown = false;
-  } finally {
-    if (appliedResult) {
-      broadcastBattleState("roundOver");
-    }
-    finalizeSelectionReady(store, { shouldStartCooldown });
+  if (result) {
+    broadcastBattleState("roundDecision");
   }
+
+  const { applied, matchEnded } = await applyRoundDecisionResult(store, result);
+  finalizeSelectionReady(store, { shouldStartCooldown: applied && !matchEnded });
 }
 
 /**
@@ -1068,7 +1140,6 @@ async function beginSelectionTimer(store) {
         }
         let result;
         try {
-          broadcastBattleState("roundDecision");
           const { playerVal, opponentVal } = resolveStatValues(store, "speed");
           result = await computeRoundResult(store, "speed", playerVal, opponentVal);
         } catch (err) {
@@ -1080,19 +1151,10 @@ async function beginSelectionTimer(store) {
             scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
           }
         } catch {}
-        let matchEnded = false;
-        let appliedResult = false;
         if (result) {
-          try {
-            matchEnded = await applySelectionResult(store, result);
-            appliedResult = true;
-          } catch (err) {
-            handleStatSelectionError(store, err);
-          }
+          broadcastBattleState("roundDecision");
         }
-        if (appliedResult) {
-          broadcastBattleState("roundOver");
-        }
+        const { matchEnded } = await applyRoundDecisionResult(store, result);
         if (!matchEnded) {
           triggerCooldownOnce(store, "vitestTimerExpired");
         } else {
@@ -1119,7 +1181,6 @@ async function beginSelectionTimer(store) {
       console.debug("battleClassic: set autoSelected (timer) failed", err);
     }
     try {
-      broadcastBattleState("roundDecision");
       const { playerVal, opponentVal } = resolveStatValues(store, String(stat || "speed"));
       const result = await computeRoundResult(
         store,
@@ -1134,19 +1195,10 @@ async function beginSelectionTimer(store) {
           scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
         }
       } catch {}
-      let matchEnded = false;
-      let appliedResult = false;
       if (result) {
-        try {
-          matchEnded = await applySelectionResult(store, result);
-          appliedResult = true;
-        } catch (err) {
-          handleStatSelectionError(store, err);
-        }
+        broadcastBattleState("roundDecision");
       }
-      if (appliedResult) {
-        broadcastBattleState("roundOver");
-      }
+      const { matchEnded } = await applyRoundDecisionResult(store, result);
       if (!matchEnded) {
         const manualTrigger = triggerCooldownOnce(store, "selectionTimerAutoResolve");
         if (manualTrigger) {
@@ -1178,7 +1230,6 @@ async function beginSelectionTimer(store) {
         const needsScore = scoreEl && /You:\s*0\s*Opponent:\s*0/.test(scoreEl.textContent || "");
         const notReady = btn && (btn.disabled || btn.getAttribute("data-next-ready") !== "true");
         if (needsScore || notReady) {
-          broadcastBattleState("roundDecision");
           const { playerVal, opponentVal } = resolveStatValues(store, "speed");
           const result = await computeRoundResult(store, "speed", playerVal, opponentVal);
           try {
@@ -1186,19 +1237,10 @@ async function beginSelectionTimer(store) {
               scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
             }
           } catch {}
-          let matchEnded = false;
-          let appliedResult = false;
           if (result) {
-            try {
-              matchEnded = await applySelectionResult(store, result);
-              appliedResult = true;
-            } catch (err) {
-              handleStatSelectionError(store, err);
-            }
+            broadcastBattleState("roundDecision");
           }
-          if (appliedResult) {
-            broadcastBattleState("roundOver");
-          }
+          const { matchEnded } = await applyRoundDecisionResult(store, result);
           if (!matchEnded) {
             const fallbackTriggered = triggerCooldownOnce(store, "selectionFailSafe");
             if (fallbackTriggered) {

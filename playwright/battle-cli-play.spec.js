@@ -11,6 +11,7 @@ test.describe("Battle CLI - Play", () => {
 
       // Wait for the stats to be ready
       const statsContainer = page.locator("#cli-stats");
+      await expect(statsContainer).toBeVisible();
       // Removed aria-busy accessibility assertion
 
       // The stat buttons should be visible
