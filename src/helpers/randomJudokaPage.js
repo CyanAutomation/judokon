@@ -356,6 +356,22 @@ export async function setupRandomJudokaPage() {
       if (typeof labelText !== "string" || !labelText.trim()) return;
       updateDrawButtonLabel(drawButton, labelText);
     };
+    randomJudokaApi.resolveDrawPipeline = async () => {
+      if (!drawButton.drawPromise) return false;
+
+      await Promise.resolve();
+
+      try {
+        const cardContainer = document.getElementById("card-container");
+        const cardEl = cardContainer?.querySelector(".card-container");
+        if (cardEl) {
+          cardEl.dispatchEvent(new Event("animationend"));
+        }
+      } catch {}
+
+      await drawButton.drawPromise.catch(() => {});
+      return true;
+    };
   }
 
   const onSelect = (j) => addToHistory(historyManager, historyList, j);
