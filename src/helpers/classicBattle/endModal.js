@@ -83,5 +83,10 @@ export function showEndModal(store, detail = {}) {
   });
   document.body.appendChild(modal.element);
   modal.open(replay);
+  // Re-enable header navigation since match is over
+  try {
+    const headerLinks = document.querySelectorAll("header a");
+    headerLinks.forEach((link) => (link.style.pointerEvents = ""));
+  } catch {}
   return modal;
 }

@@ -61,19 +61,17 @@ This revised report includes the original findings, adds context about the dupli
 
 ### 4. HIGH: Footer Navigation Remains Active During Battle
 
-**Steps to Reproduce:**
+**Actions Taken:**
+- Identified that the "footer navigation" refers to the header logo link in `battleClassic.html`, which can cause users to lose progress by navigating away.
+- Modified the `onStart` callback in `battleClassic.init.js` to disable pointer events on header links when the battle starts.
+- Modified `showEndModal` in `endModal.js` to re-enable header links when the match ends.
+- Modified the quit handler in `quitModal.js` to re-enable header links before navigating away on quit.
 
-*   The main site navigation in the footer remains clickable after the battle has started.
-*   Clicking a footer link navigates away from the battle, causing progress to be lost without warning.
-
-**Impact:**
-
-*   Users can accidentally lose their match progress.
-*   Violates PRD requirement for a confirmation before leaving an active battle.
-
-**Verification Notes:**
-
-*   This is a valid issue. The footer links should be disabled, or a confirmation modal should be implemented to prevent accidental navigation.
+**Outcome:**
+- Header links are disabled during active battles, preventing accidental navigation and progress loss.
+- Links are re-enabled when the battle ends or the user quits.
+- Relevant unit tests (init-complete.test.js, quit-flow.test.js, end-modal.test.js) pass.
+- No regressions detected.
 
 ---
 
