@@ -640,10 +640,7 @@ function finalizeSelectionReady(store, options = {}) {
         }
       } catch (contextErr) {
         try {
-          console.debug(
-            "battleClassic: marking next button finalized failed",
-            contextErr
-          );
+          console.debug("battleClassic: marking next button finalized failed", contextErr);
         } catch {}
       }
     } catch (err) {
