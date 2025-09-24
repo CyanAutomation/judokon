@@ -17,7 +17,6 @@ import { onBattleEvent, emitBattleEvent } from "../../helpers/classicBattle/batt
 import { STATS } from "../../helpers/BattleEngine.js";
 import * as engineFacade from "../../helpers/battleEngineFacade.js";
 import statNamesData from "../../data/statNames.js";
-import { fetchJson } from "../../helpers/dataUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import {

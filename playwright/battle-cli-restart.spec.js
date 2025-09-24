@@ -3,6 +3,7 @@ import { withMutedConsole } from "../tests/utils/console.js";
 
 test.describe("Battle CLI - Restart", () => {
   test("should be able to restart a match", async ({ page }) => {
+    page.on('console', msg => console.log(msg.text()));
     await withMutedConsole(async () => {
       // Set points to win to 1 to end the match quickly
       await page.addInitScript(() => {
@@ -11,6 +12,7 @@ test.describe("Battle CLI - Restart", () => {
 
       await page.goto("/src/pages/battleCLI.html?autostart=1");
 
+      await page.pause();
       // Wait for the stats to be ready
       const statsContainer = page.locator("#cli-stats");
       await expect(statsContainer).toHaveAttribute("aria-busy", "false", { timeout: 10000 });
