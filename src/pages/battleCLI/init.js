@@ -1235,10 +1235,17 @@ export function handleStatListArrowKey(key) {
  */
 async function loadStatDefs() {
   if (!cachedStatDefs) {
-    console.log("[DEBUG] Using local statNamesData");
-    cachedStatDefs = statNamesData;
+    try {
+      const fetched = await fetchJson("statNames.json");
+      if (Array.isArray(fetched) && fetched.length) {
+        cachedStatDefs = fetched;
+      } else {
+        cachedStatDefs = statNamesData;
+      }
+    } catch {
+      cachedStatDefs = statNamesData;
+    }
   }
-  console.log("[DEBUG] cachedStatDefs:", cachedStatDefs);
   return Array.isArray(cachedStatDefs) ? cachedStatDefs : [];
 }
 
