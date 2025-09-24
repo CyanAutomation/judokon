@@ -1,173 +1,111 @@
-QA r# QA Report for `src/pages/battleClassic.html`
+# QA Report for `src/pages/battleClassic.html`
 
 This report documents issues found during manual testing of the Classic Battle page. Issues are prioritized by impact, with critical defects first.
 
+**Reviewer:** Gemini
+
+## Summary of Findings
+
+The most critical issue is that the **battle never starts**, preventing any gameplay. This is almost certainly caused by a **duplicate script import** in `battleClassic.html`, which causes the initialization logic in `battleClassic.init.js` to run twice, leading to a broken state.
+
+Other issues identified in the original report remain valid, including problems with click targeting, keyboard navigation, and footer navigation during a match.
+
+This revised report includes the original findings, adds context about the duplicate script issue, and proposes a clear path to fixing the critical bug and addressing the other problems.
+
+---
+
 ## Issues
 
-### 1. Battle Never Starts – Stuck at "Waiting…"
+### 1. CRITICAL: Battle Never Starts – Stuck at "Waiting…"
+
+**Cause:** The `battleClassic.init.js` script is imported twice in `src/pages/battleClassic.html`. This causes the entire initialization logic to run a second time, corrupting the application's state and preventing the battle from starting.
 
 **Steps to Reproduce:**
 
-1. Navigate to `battleClassic.html`.
-2. Select any match length (Quick, Medium, or Long). The modal closes, and a blue label indicates the chosen win target.
-3. Observe the scoreboard: it displays "Waiting… Round 0" and shows "You: 0 Opponent: 0". No cards appear in the battle area, and the **Next** button remains disabled; the game never progresses beyond this state.
+1.  Navigate to `battleClassic.html`.
+2.  Select any match length (Quick, Medium, or Long). The modal closes.
+3.  **Observed:** The scoreboard displays "Waiting… Round 0", but no cards appear, and the **Next** button remains disabled. The game is frozen.
 
 **Impact:**
 
-- Critical defect preventing the core gameplay loop (draw card → select stat → resolve round).
-- Blocks verification of stat selection, scoring, AI difficulty, timers, and end-game conditions.
-- Likely caused by a JavaScript error, missing resource, or initialization failure.
+*   **Critical Defect:** Prevents the core gameplay loop.
+*   Blocks all testing of battle functionality (stat selection, scoring, timers, etc.).
 
 **Verification Notes:**
 
-- Code review shows `startRoundCycle` should be called after modal selection, drawing cards and rendering stat buttons.
-- Possible failure points: errors in `drawCards`, missing judoka data, or rendering failures in `JudokaCard.render()`.
-- Recommend adding console logging in `startRoundCycle` and `drawCards` to identify where it fails. Check browser console for uncaught errors.
+*   Removing the duplicate `<script type="module" src="./battleClassic.init.js"></script>` line in `battleClassic.html` should resolve this issue.
+*   The original report correctly identified that `startRoundCycle` was failing, and this is the root cause.
 
-### 2. Clickable Area Mis-Targets
+### 2. HIGH: Clickable Area Mis-Targets in Modal
 
 **Steps to Reproduce:**
 
-- When selecting the match length in the modal, clicking near the bottom of the Quick button sometimes navigates to an unrelated page (e.g., opens `judoka.json` via raw.githubusercontent.com).
-- This occurred when a click at y≈530 mis-fired and loaded a different page.
+*   When selecting the match length, clicking near the bottom of a button (e.g., "Quick") can sometimes trigger an unexpected navigation.
 
 **Impact:**
 
-- Unexpected navigation confuses users and suggests overlapping UI elements or invisible links capturing clicks.
-- Complicates mouse targeting, especially for children.
+*   Confusing user experience.
+*   Suggests CSS `z-index` issues or invisible clickable elements.
 
 **Verification Notes:**
 
-- Inspect modal HTML and CSS for z-index issues, pointer-events, or overlapping elements.
-- Ensure modal backdrop properly intercepts clicks.
+*   The proposed fix is feasible: Inspect the modal's HTML and CSS for overlapping elements and ensure the modal backdrop correctly intercepts clicks.
 
-### 3. Keyboard Selection Does Not Work
+### 3. MEDIUM: Keyboard Navigation in Modal Not Working
 
 **Steps to Reproduce:**
 
-- The modal instructions state that number keys (1–3) or arrow keys can select an option.
-- Pressing "1" or arrow keys has no effect; only mouse clicks dismiss the modal.
+*   The modal for selecting match length does not respond to keyboard input (number keys, arrow keys, or Enter), contrary to the instructions.
 
 **Impact:**
 
-- Reduces accessibility for users who cannot use a mouse.
-- Violates PRD requirements for keyboard navigation.
+*   Reduces accessibility for keyboard-only users.
+*   Fails to meet PRD requirements.
 
 **Verification Notes:**
 
-- Code review confirms keyboard handlers are implemented in `setupKeyboardNavigation` (numbers 1-3, arrows, Enter).
-- Modal focuses the first button on open, so handlers should work.
-- Possible issues: event not attached, modal not focused, or default prevention failing.
-- Test in browser; check if focus is on modal.
+*   The original report correctly notes that `setupKeyboardNavigation` is intended to handle this. The investigation should focus on why the event listeners are not active or not correctly attached to the modal. This is a feasible fix.
 
-### 4. Missing Stat Buttons and Card Visuals
+### 4. HIGH: Footer Navigation Remains Active During Battle
 
 **Steps to Reproduce:**
 
-- After closing the modal, neither player's nor opponent's cards render.
-- The `#stat-buttons` container remains empty, and `data-buttons-ready` never sets to `true`.
+*   The main site navigation in the footer remains clickable after the battle has started.
+*   Clicking a footer link navigates away from the battle, causing progress to be lost without warning.
 
 **Impact:**
 
-- Players cannot select stats without visible buttons.
-- Screen readers cannot describe stats, hindering accessibility testing.
+*   Users can accidentally lose their match progress.
+*   Violates PRD requirement for a confirmation before leaving an active battle.
 
 **Verification Notes:**
 
-- `renderStatButtons` is called in `startRoundCycle`, which creates buttons and sets `data-buttons-ready`.
-- Cards are rendered in `drawCards` via `generateRandomCard` and `renderOpponentPlaceholder`.
-- Check for errors in `JudokaCard.render()` or missing data.
+*   This is a valid issue. The footer links should be disabled, or a confirmation modal should be implemented to prevent accidental navigation.
 
-### 5. Scoreboard Timer Never Displays
+---
 
-**Steps to Reproduce:**
-
-- The `#next-round-timer` region remains blank.
-- Scoreboard header stays "Waiting…".
-- 30s stat selection timer and countdown/cooldown flows are not shown.
-
-**Impact:**
-
-- Cannot verify auto-select on timeout, timer pausing, or drift detection.
-
-**Verification Notes:**
-
-- `beginSelectionTimer` is called in `startRoundCycle`.
-- Timer updates `#next-round-timer` with "Time Left: Xs".
-- If battle doesn't start, timer isn't reached.
-
-### 6. No Opponent Action Feedback
-
-**Steps to Reproduce:**
-
-- Since rounds never start, no "Opponent is choosing…" message or reveal delay appears.
-
-**Impact:**
-
-- Cannot validate opponent behavior or AI difficulty.
-
-**Verification Notes:**
-
-- Feedback is shown via `showSelectionPrompt` and event handlers.
-- Depends on battle starting.
-
-### 7. Quit Flow Unreachable
-
-**Steps to Reproduce:**
-
-- "Quit" button is displayed, but since match doesn't begin, no confirmation modal or return logic triggers.
-
-**Impact:**
-
-- Cannot confirm PRD-required quit confirmation.
-
-**Verification Notes:**
-
-- Quit handler is wired in `battleClassic.init.js`.
-- Depends on battle starting.
-
-### 8. Footer Navigation Accessible but Breakable
-
-**Steps to Reproduce:**
-
-- Bottom navigation bar remains active during match.
-- Clicking it navigates away without confirmation, despite PRD requiring confirmation.
-
-**Impact:**
-
-- Users can accidentally lose progress.
-
-**Verification Notes:**
-
-- Footer is not disabled; no interceptors.
-- Add confirmation or disable during battles.
-
-## Improvement Opportunities
+## Proposed Fixes & Improvements
 
 ### High Priority
 
-- **Fix Battle Initialization Bug:** Add comprehensive error handling in `startRoundCycle`, `drawCards`, and `renderStatButtons`. Surface errors via snackbar with retry option. Log initialization steps to console for debugging.
-- **Add Card Rendering Verification:** Ensure `JudokaCard.render()` succeeds; add fallbacks for missing images or data. Verify `player-card` and `opponent-card` elements exist.
-- **Implement Error Recovery:** Add user-facing error screens for data load failures or initialization errors. Include "Retry" button to reload without full refresh.
-- **Disable Footer Navigation During Battles:** Hide or disable bottom nav bar once match starts, or add confirmation modal on navigation attempts.
+*   **Fix Battle Initialization:**
+    1.  **Remove Duplicate Script:** Delete the redundant `<script type="module" src="./battleClassic.init.js"></script>` from `src/pages/battleClassic.html`.
+    2.  **Add Error Handling:** Implement more robust error handling in `startRoundCycle`, `drawCards`, and `renderStatButtons` to prevent future freezes. Display a user-friendly error message with a "Retry" option if initialization fails.
+
+*   **Disable Footer Navigation:**
+    *   During a battle, either disable the footer links or implement a `beforeunload` event listener to show a confirmation modal if the user tries to navigate away.
 
 ### Medium Priority
 
-- **Ensure Keyboard Support:** Verify and fix modal keyboard navigation. Ensure modal is focused and events are attached. Test with screen readers.
-- **Improve Click Targeting:** Increase button spacing and ensure modal backdrop captures all clicks. Meet PRD touch target size (≥44px).
-- **Add Accessible Descriptions:** Include `aria-describedby` on stat buttons explaining stat meanings. Ensure screen reader announcements for selections.
-- **Visual Feedback for Stat Selection:** Highlight selected buttons and announce choices via scoreboard and ARIA live regions.
-- **Expose Test Hooks:** Document query parameters or overrides for `enableTestMode` and deterministic outcomes.
+*   **Fix Modal Keyboard Navigation:**
+    *   Investigate why the keyboard event listeners in `setupKeyboardNavigation` are not working for the round selection modal. Ensure the modal has focus and the events are correctly bound.
+
+*   **Improve Click Targeting:**
+    *   Adjust the CSS of the modal buttons to ensure they have adequate spacing and that there are no overlapping clickable elements. Ensure all buttons meet the minimum touch-target size of 44x44 pixels.
 
 ### Low Priority
 
-- **Audio Cues:** Add optional sound effects for wins/losses/ties with mute toggle.
-- **Performance Optimization:** Use CSS transitions for animations, compress assets, respect `prefers-reduced-motion`.
-- **Robust Timer Handling:** Detect and handle timer drift (>2s) with user notifications.
+*   **Audio Cues:** Add optional sound effects for win/loss/tie events.
+*   **Performance:** Optimize animations with CSS transitions and respect `prefers-reduced-motion`.
 
-### Additional Suggestions
-
-- **Console Error Monitoring:** Check browser console for uncaught errors during initialization.
-- **Data Validation:** Ensure `judoka.json` and `gokyo.json` load correctly; add checksums or validation.
-- **State Debugging:** Add debug panel or query params to expose internal state for QA.
-- **Cross-Browser Testing:** Verify behavior in different browsers, especially mobile.
+---
