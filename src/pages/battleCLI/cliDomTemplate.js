@@ -6,6 +6,7 @@ export const CLI_DOM_TEMPLATE = `
       <div class="cli-title">
         <a href="../../index.html" data-testid="home-link" aria-label="Return to home">Home</a>
         &nbsp;|&nbsp; Classic Battle (CLI)
+        <span id="verbose-indicator" class="verbose-indicator" style="display: none">Verbose ON</span>
         <span id="battle-state-badge" data-flag="battleStateBadge" class="state-badge" style="display: none">State: —</span>
       </div>
       <div class="cli-status" aria-live="polite" aria-atomic="true">
