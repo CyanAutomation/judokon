@@ -47,7 +47,6 @@ describe("battleCLI init helpers", () => {
 
   it("renders stats list", async () => {
     const mod = await loadBattleCLI({
-      stats: [{ statIndex: 1, name: "Speed" }],
       mockBattleEvents: false
     });
     await mod.init();

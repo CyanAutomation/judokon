@@ -17,6 +17,7 @@ import { getStateSnapshot } from "./classicBattle/battleDebug.js";
 import { emitBattleEvent } from "./classicBattle/battleEvents.js";
 import { isEnabled } from "./featureFlags.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
+import { getRoundsPlayed } from "./battleEngineFacade.js";
 
 function isDevelopmentEnvironment() {
   if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
@@ -799,7 +800,7 @@ const inspectionApi = {
           ? {
               selectionMade: store.selectionMade,
               playerChoice: store.playerChoice,
-              roundsPlayed: store.roundsPlayed || 0
+              roundsPlayed: getRoundsPlayed()
             }
           : null,
         machine: machine
