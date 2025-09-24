@@ -26,6 +26,8 @@ This updated report provides a cleaner, more readable format and offers specific
 - **Verification:** The `resumeTimers()` function is called on modal close. It attempts to restart the countdown with the `pausedSelectionRemaining` value. The fact that it resets suggests that `pausedSelectionRemaining` is either not being captured correctly in `pauseTimers()` or that `startSelectionCountdown()` is not using the provided value correctly.
 - **Recommendation:** Debug the `pauseTimers` and `resumeTimers` functions. Ensure that the remaining time is correctly captured, stored, and then used to resume the countdown.
 
+**Resolution:** The fix for Issue #1 (properly stopping the round timer in `pauseTimer`) also resolves this issue. By ensuring the timer is fully paused and the remaining time is accurately captured from the UI dataset, `resumeTimers` now correctly resumes the countdown from the paused point instead of resetting. Unit tests (`battleCLI.handlers.test.js`) pass, confirming the timer resumes properly after modal cancel.
+
 ## 3. HIGH: Confusing and Inconsistent Match Start Flow
 
 - **Finding:** The match does not start in a clear or consistent way. The "Select Match Length" modal sometimes fails to appear, leaving the user with no clear instructions. Pressing "Enter" (a common way to start) results in an "Invalid key" error.
