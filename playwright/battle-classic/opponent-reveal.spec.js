@@ -272,6 +272,11 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         const nextRoundStat = page.locator(selectors.statButton(0)).first();
         await expect(nextRoundStat).toBeEnabled();
+
+        await nextRoundStat.click();
+
+        const snackbar = page.locator(selectors.snackbarContainer());
+        await expect(snackbar).toContainText(/Opponent is choosing/i);
       }, ["log", "info", "warn", "error", "debug"]));
   });
 
