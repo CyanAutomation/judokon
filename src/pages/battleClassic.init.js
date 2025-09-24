@@ -565,6 +565,16 @@ function scheduleNextReadyAfterSelection(store) {
   const scheduleNextReady = () => {
     const cooldownStarted = triggerCooldownOnce(store, "statSelectionResolved");
     const nextBtn = prepareNextButtonForUse("selection");
+    try {
+      updateRoundCounterFromEngine({ expectAdvance: true, forceEqualVisible: true });
+    } catch (err) {
+      try {
+        console.debug(
+          "battleClassic: updateRoundCounterFromEngine during next-ready scheduling failed",
+          err
+        );
+      } catch {}
+    }
     logNextButtonRecovery("selection", nextBtn, { cooldownStarted });
   };
   try {
@@ -599,7 +609,7 @@ async function applySelectionResult(store, result) {
 }
 
 function finalizeSelectionReady(store, options = {}) {
-  const { shouldStartCooldown = true } = options;
+  const { shouldStartCooldown = true, expectAdvanceUpdate = false } = options;
   const finalizeRoundReady = () => {
     if (shouldStartCooldown) {
       try {
@@ -616,7 +626,11 @@ function finalizeSelectionReady(store, options = {}) {
       console.debug("battleClassic: enableNextRoundButton after selection failed", err);
     }
     try {
-      updateRoundCounterFromEngine();
+      if (expectAdvanceUpdate) {
+        forceRoundAdvanceFromVisible();
+      } else {
+        updateRoundCounterFromEngine();
+      }
     } catch (err) {
       console.debug("battleClassic: updateRoundCounterFromEngine after selection failed", err);
     }
@@ -864,13 +878,23 @@ function shouldForceAdvancement(
   hasVisibleRound,
   hasEngineRound,
   engineRound,
-  visibleRound
+  visibleRound,
+  forceEqualVisible
 ) {
+  if (!(expectAdvance && hasVisibleRound)) {
+    return false;
+  }
+
+  const visibleValue = Number(visibleRound);
+  const engineLagging = !hasEngineRound
+    ? true
+    : forceEqualVisible
+      ? engineRound <= visibleValue
+      : engineRound < visibleValue;
+
   return (
-    expectAdvance &&
-    hasVisibleRound &&
-    (!hasEngineRound || engineRound < Number(visibleRound)) &&
-    (lastForcedTargetRound === null || Number(visibleRound) < lastForcedTargetRound)
+    engineLagging &&
+    (lastForcedTargetRound === null || visibleValue < lastForcedTargetRound)
   );
 }
 
@@ -902,7 +926,8 @@ function resolveNextRound({
   hasEngineRound,
   engineRound,
   visibleRound,
-  baselineRound
+  baselineRound,
+  forceEqualVisible
 }) {
   let nextRound = hasEngineRound ? engineRound : baselineRound;
   const forceAdvance = shouldForceAdvancement(
@@ -910,7 +935,8 @@ function resolveNextRound({
     hasVisibleRound,
     hasEngineRound,
     engineRound,
-    visibleRound
+    visibleRound,
+    forceEqualVisible
   );
 
   if (forceAdvance) {
@@ -968,7 +994,7 @@ function updateRoundCounterState({
  * 4. Fall back to the last known round (or 1) when engine data is unavailable.
  */
 function updateRoundCounterFromEngine(options = {}) {
-  const { expectAdvance = false } = options;
+  const { expectAdvance = false, forceEqualVisible = false } = options;
   const visibleRound = getVisibleRoundNumber();
   const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
 
@@ -995,7 +1021,8 @@ function updateRoundCounterFromEngine(options = {}) {
       hasEngineRound,
       engineRound,
       visibleRound,
-      baselineRound
+      baselineRound,
+      forceEqualVisible
     });
 
     updateRoundCounter(nextRound);
@@ -1012,6 +1039,27 @@ function updateRoundCounterFromEngine(options = {}) {
     handleRoundCounterFallback(visibleRound);
     lastRoundCounterUpdateContext = "fallback";
   }
+}
+
+function forceRoundAdvanceFromVisible() {
+  const priorContext = lastRoundCounterUpdateContext;
+  const visibleRound = getVisibleRoundNumber();
+  const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
+  const baseline = Number.isFinite(highestDisplayedRound) && highestDisplayedRound >= 1
+    ? highestDisplayedRound
+    : 1;
+  const targetFromVisible = hasVisibleRound ? Number(visibleRound) + 1 : baseline;
+  const nextRound = Math.max(targetFromVisible, baseline);
+
+  updateRoundCounter(nextRound);
+  updateRoundCounterState({
+    nextRound,
+    expectAdvance: true,
+    shouldForceAdvance: true,
+    hasEngineRound: false,
+    engineRound: null,
+    priorContext
+  });
 }
 
 function calculateEngineRound() {
@@ -1056,7 +1104,7 @@ async function handleStatButtonClick(store, stat, btn) {
     });
   } catch (err) {
     handleStatSelectionError(store, err);
-    finalizeSelectionReady(store, { shouldStartCooldown: false });
+    finalizeSelectionReady(store, { shouldStartCooldown: false, expectAdvanceUpdate: false });
     return;
   }
 
@@ -1065,7 +1113,11 @@ async function handleStatButtonClick(store, stat, btn) {
   }
 
   const { applied, matchEnded } = await applyRoundDecisionResult(store, result);
-  finalizeSelectionReady(store, { shouldStartCooldown: applied && !matchEnded });
+  const shouldAdvance = Boolean(store?.selectionMade) && !matchEnded;
+  finalizeSelectionReady(store, {
+    shouldStartCooldown: applied && !matchEnded,
+    expectAdvanceUpdate: shouldAdvance
+  });
 }
 
 /**
