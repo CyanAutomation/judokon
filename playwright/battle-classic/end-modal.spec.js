@@ -407,7 +407,8 @@ async function waitForMatchCompletion(page, timeout = 15000) {
       const modal = document.querySelector("#match-end-modal");
       let modalVisible = false;
       if (modal) {
-        const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
+        const style =
+          typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
         const opacity = style ? Number(style.opacity) : NaN;
         modalVisible =
           modal.hidden !== true &&
@@ -481,7 +482,8 @@ async function resolveMatchFromCurrentRound(page, { maxRounds = 5, nextTimeout =
             const modal = document.getElementById("match-end-modal");
             if (!modal) return true;
             if (modal.hidden) return true;
-            const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
+            const style =
+              typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
             if (!style) return false;
             const opacity = Number(style.opacity);
             const fullyTransparent = Number.isFinite(opacity) && opacity === 0;
