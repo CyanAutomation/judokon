@@ -151,20 +151,30 @@ export async function getCurrentBattleState(page) {
  * @returns {Promise<boolean>} Success status
  */
 export async function triggerStateTransition(page, event) {
-  return await page.evaluate((eventName) => {
-    if (
-      window.__TEST_API &&
-      window.__TEST_API.state &&
-      window.__TEST_API.state.triggerStateTransition
-    ) {
+  return await page.evaluate(async (eventName) => {
+    const stateApi = window.__TEST_API?.state;
+    if (!stateApi) {
+      return false;
+    }
+
+    if (typeof stateApi.triggerStateTransition === "function") {
       try {
-        window.__TEST_API.state.triggerStateTransition(eventName);
+        stateApi.triggerStateTransition(eventName);
         return true;
       } catch {
-        // console.log("State transition failed:", error);
         return false;
       }
     }
+
+    if (typeof stateApi.dispatchBattleEvent === "function") {
+      try {
+        const result = await stateApi.dispatchBattleEvent(eventName);
+        return result !== false;
+      } catch {
+        return false;
+      }
+    }
+
     return false;
   }, event);
 }

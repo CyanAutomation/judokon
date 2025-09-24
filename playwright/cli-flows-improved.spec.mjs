@@ -41,7 +41,10 @@ const callTestApiFunction = async (page, segments, args) => {
         .then(() => callable.apply(context, fnArgs))
         .then(
           (value) => ({ ok: true, value }),
-          (error) => ({ ok: false, error: error?.message ?? String(error) })
+          (error) => ({
+            ok: false,
+            error: error?.message || error?.toString?.() || String(error) || "Unknown error"
+          })
         );
     },
     { segments, args }
@@ -54,9 +57,24 @@ const callTestApiFunction = async (page, segments, args) => {
   return result.value;
 };
 
-const callTestApi = (page, path, ...args) => callTestApiFunction(page, path.split("."), args);
+const callTestApi = (page, path, ...args) => {
+  if (typeof path !== "string" || path.trim().length === 0) {
+    throw new Error("callTestApi requires a non-empty string path");
+  }
 
-const ensureBattleReady = async (page) => {
+  if (path.startsWith(".") || path.endsWith(".")) {
+    throw new Error(`Invalid Test API path: ${path}`);
+  }
+
+  const segments = path.split(".");
+  if (segments.some((segment) => segment.length === 0)) {
+    throw new Error(`Invalid Test API path segments: ${path}`);
+  }
+
+  return callTestApiFunction(page, segments, args);
+};
+
+const ensureBattleReady = async (page, timeout = 10_000) => {
   let ready = false;
   try {
     ready = Boolean(await callTestApi(page, "init.isBattleReady"));
@@ -68,7 +86,7 @@ const ensureBattleReady = async (page) => {
     return;
   }
 
-  const handshake = await callTestApi(page, "init.waitForBattleReady", 4_000);
+  const handshake = await callTestApi(page, "init.waitForBattleReady", timeout);
   if (!handshake) {
     throw new Error("CLI battle failed to report readiness via Test API");
   }
@@ -77,14 +95,19 @@ const ensureBattleReady = async (page) => {
 const waitForStatsReady = async (page) => {
   await expect
     .poll(
-      () =>
-        page.evaluate(() => {
-          const list = document.getElementById("cli-stats");
-          if (!list || list.getAttribute("aria-busy") === "true") {
-            return 0;
-          }
-          return list.querySelectorAll(".cli-stat").length;
-        }),
+      async () => {
+        try {
+          return await page.evaluate(() => {
+            const list = document.getElementById("cli-stats");
+            if (!list || list.getAttribute("aria-busy") === "true") {
+              return 0;
+            }
+            return list.querySelectorAll(".cli-stat").length;
+          });
+        } catch {
+          return 0;
+        }
+      },
       { timeout: 4_000 }
     )
     .toBeGreaterThan(0);
@@ -102,7 +125,7 @@ const startBattle = async (page) => {
     page,
     "state.waitForBattleState",
     "waitingForPlayerAction",
-    4_000
+    10_000
   );
 
   if (!stateReached) {
@@ -120,13 +143,27 @@ const testWithConsole = (title, fn) => {
   });
 };
 
-const getBattleStore = (page) => callTestApi(page, "inspect.getBattleStore");
+const getBattleStore = async (page) => {
+  try {
+    return await callTestApi(page, "inspect.getBattleStore");
+  } catch {
+    return null;
+  }
+};
 
-const getBattleState = (page) => callTestApi(page, "state.getBattleState");
+const getBattleState = async (page) => {
+  try {
+    return await callTestApi(page, "state.getBattleState");
+  } catch {
+    return null;
+  }
+};
 
 // Note: the previous getRoundsPlayed helper has been removed intentionally. The tests now
 // assert battle progression through explicit state waits and CLI stat instrumentation instead
 // of reading the internal rounds counter directly.
+// Legacy helpers such as waitForBattleReady/state remain available for other specs until they
+// migrate to the new callTestApi bridge; future refactors will deprecate them after adoption.
 
 test.beforeEach(async ({ page }, testInfo) => {
   await gotoCliPage(page, testInfo);

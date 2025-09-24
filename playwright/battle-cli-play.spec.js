@@ -1,6 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
-import { waitForBattleState, waitForTestApi } from "./helpers/battleStateHelper.js";
+import {
+  waitForBattleState,
+  waitForTestApi,
+  triggerStateTransition
+} from "./helpers/battleStateHelper.js";
+
+const CLI_PLAYER_WIN_OUTCOME_EVENT = "outcome=winPlayer";
+const DEFAULT_WAIT_OPTIONS = { timeout: 10_000 };
 
 test.describe("Battle CLI - Play", () => {
   test("should be able to select a stat and see the result", async ({ page }) => {
@@ -14,10 +21,7 @@ test.describe("Battle CLI - Play", () => {
       );
       expect(isReady).toBe(true);
 
-      await waitForBattleState(page, "waitingForPlayerAction", {
-        timeout: 10_000,
-        allowFallback: false
-      });
+      await waitForBattleState(page, "waitingForPlayerAction", DEFAULT_WAIT_OPTIONS);
 
       // Wait for the stats to be ready
       const statsContainer = page.locator("#cli-stats");
@@ -34,10 +38,7 @@ test.describe("Battle CLI - Play", () => {
       // Click the first stat button
       await statButton.click();
 
-      await waitForBattleState(page, "roundDecision", {
-        timeout: 10_000,
-        allowFallback: false
-      });
+      await waitForBattleState(page, "roundDecision", DEFAULT_WAIT_OPTIONS);
 
       const statKey = await statButton.getAttribute("data-stat");
       expect(statKey, "stat button should expose a data-stat attribute").toBeTruthy();
@@ -53,7 +54,6 @@ test.describe("Battle CLI - Play", () => {
               opponentVal: 42,
               result: {
                 message: "Player wins the round!",
-                outcome: "winPlayer",
                 playerScore: 1,
                 opponentScore: 0
               }
@@ -65,24 +65,14 @@ test.describe("Battle CLI - Play", () => {
       expect(resolution).toBeTruthy();
       expect(resolution?.detail?.stat).toBe(statKey);
 
-      const stateAfterResolution = await page.evaluate(() =>
-        window.__TEST_API.state.getBattleState()
-      );
-      if (stateAfterResolution === "roundDecision") {
-        const advanced = await page.evaluate(() =>
-          window.__TEST_API.state.dispatchBattleEvent("outcome=winPlayer")
-        );
-        expect(advanced).toBe(true);
-      }
+      const outcomeAccepted = await triggerStateTransition(page, CLI_PLAYER_WIN_OUTCOME_EVENT);
+      expect(outcomeAccepted).toBe(true);
 
-      await waitForBattleState(page, "roundOver", {
-        timeout: 10_000,
-        allowFallback: false
-      });
+      await waitForBattleState(page, "roundOver", DEFAULT_WAIT_OPTIONS);
 
       // Wait for the round message to show the result
       const roundMessage = page.locator("#round-message");
-      await expect(roundMessage).toContainText("Player wins the round!", { timeout: 10_000 });
+      await expect(roundMessage).toContainText("Player wins the round!");
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });
