@@ -270,7 +270,10 @@ const stateApi = {
         const ariaDisabled =
           typeof btn.getAttribute === "function" ? btn.getAttribute("aria-disabled") : null;
         return (
-          btn.dataset?.nextReady === "true" && btn.disabled !== true && ariaDisabled !== "true"
+          btn.dataset?.nextReady === "true" &&
+          btn.dataset?.nextFinalized === "true" &&
+          btn.disabled !== true &&
+          ariaDisabled !== "true"
         );
       };
 

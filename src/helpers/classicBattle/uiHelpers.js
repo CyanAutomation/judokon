@@ -293,6 +293,7 @@ export function disableNextRoundButton() {
   if (!btn) return;
   btn.disabled = true;
   delete btn.dataset.nextReady;
+  delete btn.dataset.nextFinalized;
   try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       console.debug(`[test] disableNextRoundButton: disabled=${btn.disabled}`);
