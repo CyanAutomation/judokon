@@ -61,6 +61,8 @@ This updated report provides a cleaner, more readable format and offers specific
 - **Verification:** The code confirms this. `setCountdown()` in `battleCLI.init.js` uses "Timer:", while `startSelectionCountdown()` and the `timerTick` event handler in `battleCLI/init.js` use "Time remaining:".
 - **Recommendation:** Standardize on a single, consistent label for the timer across the entire application. "Time remaining:" is a good choice.
 
+**Resolution:** Standardized all timer labels to "Time remaining:" by updating `setCountdown()` in `src/pages/battleCLI/init.js` to use consistent terminology. This ensures a uniform user experience across all timer displays. Unit tests (`battleCLI.countdown.test.js`) pass, confirming no regressions.
+
 ## 7. LOW: Verbose Log Feature is Hidden
 
 - **Finding:** The verbose log feature is difficult to discover and use. There is no UI indicator to show that it is active.
