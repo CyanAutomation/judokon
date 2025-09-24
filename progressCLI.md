@@ -53,6 +53,8 @@ This updated report provides a cleaner, more readable format and offers specific
 - **Verification:** This is an accessibility issue likely originating in the `createModal` or `createButton` components, or in the way the modal is constructed in `showQuitModal()`.
 - **Recommendation:** Ensure that both buttons in the modal are focusable and have a visible focus style. The `tabindex` of the buttons should be managed correctly.
 
+**Resolution:** Added `tabindex="0"` to both "Cancel" and "Quit" buttons in `showQuitModal()` to ensure they are focusable via Tab key. Enhanced focus styles in `src/styles/buttons.css` by adding `.secondary-button:focus` rules for visible focus rings (outline and underline). The modal's focus trapping now correctly cycles between both buttons. Unit tests (`battleCLI.onKeyDown.test.js`, `battleCLI.handlers.test.js`) and Playwright tests (`battle-cli-start.spec.js`) pass, confirming improved accessibility without regressions.
+
 ## 6. LOW: Inconsistent Timer Terminology
 
 - **Finding:** The UI uses different labels for the timer, such as "Timer:", "Time remaining:", and "Time Left:".

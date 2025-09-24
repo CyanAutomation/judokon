@@ -908,7 +908,9 @@ function showQuitModal() {
       id: "cancel-quit-button",
       className: "secondary-button"
     });
+    cancel.tabIndex = 0;
     const quit = createButton("Quit", { id: "confirm-quit-button" });
+    quit.tabIndex = 0;
     actions.append(cancel, quit);
 
     const frag = document.createDocumentFragment();
@@ -1637,6 +1639,16 @@ export function handleWaitingForPlayerActionKey(key) {
  *   emit 'startClicked'
  *   return true
  * return false
+ */
+/**
+ * Handles key presses when waiting for the match to start.
+ *
+ * @pseudocode
+ * 1. If the key is "enter", emit the "startClicked" event to start the match.
+ * 2. Return true if the key was handled, false otherwise.
+ *
+ * @param {string} key - The key that was pressed.
+ * @returns {boolean} True if the key was handled, false otherwise.
  */
 export function handleWaitingForMatchStartKey(key) {
   if (key === "enter") {
