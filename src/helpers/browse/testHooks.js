@@ -8,7 +8,9 @@ const state = {
   gokyoLookup: {},
   addedNodes: new Set(),
   animationsDisabled: false,
-  previousAnimationValue: null
+  previousAnimationValue: null,
+  readyResolvers: new Set(),
+  isCarouselReady: false
 };
 
 function ensureBrowseHookContainer() {
@@ -18,7 +20,60 @@ function ensureBrowseHookContainer() {
     disableHoverAnimations,
     enableHoverAnimations,
     addCard: addTestCard,
+    whenCarouselReady,
     reset: resetState
+  });
+}
+
+function createReadySnapshot() {
+  return {
+    isReady: state.isCarouselReady && !!state.container,
+    cardCount: state.container?.querySelectorAll?.(".judoka-card").length ?? 0
+  };
+}
+
+function resolveReadyResolvers() {
+  if (!state.container) {
+    state.isCarouselReady = false;
+    return;
+  }
+  state.isCarouselReady = true;
+  const snapshot = createReadySnapshot();
+  for (const resolver of Array.from(state.readyResolvers)) {
+    try {
+      resolver(snapshot);
+    } finally {
+      state.readyResolvers.delete(resolver);
+    }
+  }
+}
+
+function registerReadyResolver(resolve) {
+  const resolver = (snapshot) => {
+    state.readyResolvers.delete(resolver);
+    resolve(snapshot);
+  };
+  state.readyResolvers.add(resolver);
+}
+
+/**
+ * Provide a promise that resolves when the browse carousel has rendered.
+ *
+ * @pseudocode
+ * 1. If the carousel is already marked ready, resolve immediately with a snapshot.
+ * 2. Otherwise register a resolver that will be triggered the next time the
+ *    carousel context updates with a rendered container.
+ *
+ * @returns {Promise<{ isReady: boolean, cardCount: number }>} Snapshot metadata
+ * when the carousel is available.
+ */
+function whenCarouselReady() {
+  return new Promise((resolve) => {
+    if (state.isCarouselReady && state.container) {
+      resolve(createReadySnapshot());
+      return;
+    }
+    registerReadyResolver(resolve);
   });
 }
 
@@ -127,6 +182,11 @@ function resetState() {
     }
   }
   state.addedNodes.clear();
+  state.container = null;
+  state.gokyoData = [];
+  state.gokyoLookup = {};
+  state.isCarouselReady = false;
+  state.readyResolvers.clear();
 }
 
 /**
@@ -148,6 +208,11 @@ export function updateBrowseTestHooksContext({ container, gokyoData }) {
   state.gokyoLookup = state.gokyoData.length ? createGokyoLookup(state.gokyoData) : {};
   state.addedNodes.clear();
   ensureBrowseHookContainer();
+  if (state.container) {
+    resolveReadyResolvers();
+  } else {
+    state.isCarouselReady = false;
+  }
 }
 
 /**

@@ -9,6 +9,21 @@ const COUNTRY_TOGGLE_LOCATOR = "country-toggle";
 const EXPECTED_COUNTRY_SLIDE_COUNT =
   new Set(judoka.map((j) => j.countryCode).filter((code) => countryCodeMapping[code])).size + 1; // include 'All' slide
 
+async function callBrowseHook(page, name, ...args) {
+  await page.waitForFunction(
+    (hookName) => typeof window.__testHooks?.browse?.[hookName] === "function",
+    name
+  );
+  return page.evaluate(
+    ([hookName, params]) => window.__testHooks?.browse?.[hookName]?.(...params),
+    [name, args]
+  );
+}
+
+async function waitForCarouselReady(page) {
+  await callBrowseHook(page, "whenCarouselReady");
+}
+
 test.describe("Browse Judoka screen", () => {
   test.beforeEach(async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -48,7 +63,7 @@ test.describe("Browse Judoka screen", () => {
   test("filters judoka by country and resets", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
 
-    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
+    await waitForCarouselReady(page);
     const allCards = page.locator("[data-testid=carousel-container] .judoka-card");
     const initialCount = await allCards.count();
 
@@ -68,9 +83,9 @@ test.describe("Browse Judoka screen", () => {
 
   test("displays country flags", async ({ page }) => {
     const toggle = page.getByTestId(COUNTRY_TOGGLE_LOCATOR);
+    await waitForCarouselReady(page);
     await toggle.click();
     const slides = page.locator("#country-list .slide");
-    await slides.first().waitFor();
 
     const slideCount = await slides.count();
     expect(slideCount).toBeGreaterThanOrEqual(4);
@@ -85,7 +100,7 @@ test.describe("Browse Judoka screen", () => {
     );
     await page.setViewportSize({ width: 320, height: 800 });
     await page.reload();
-    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
+    await waitForCarouselReady(page);
     const container = page.locator('[data-testid="carousel"]');
 
     await container.focus();
@@ -245,7 +260,7 @@ test.describe("Browse Judoka screen", () => {
 
     const spinner = page.locator(".loading-spinner");
     await expect(spinner).toBeVisible();
-    await page.locator('body[data-browse-judoka-ready="true"]').waitFor();
+    await waitForCarouselReady(page);
     await expect(spinner).toBeHidden();
   });
 }); // Closing brace for test.describe.parallel
