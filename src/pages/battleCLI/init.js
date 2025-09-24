@@ -965,6 +965,7 @@ function stopSelectionCountdown() {
   selectionInterval = null;
   const el = byId("cli-countdown");
   if (el) {
+    delete el.dataset.status;
     // Respect any short-lived UI freeze requested by the outer CLI helper
     try {
       const freezeUntil = window.__battleCLIinit?.__freezeUntil || 0;
@@ -1080,12 +1081,16 @@ function startSelectionCountdown(seconds = 30) {
     } catch {}
   };
   selectionFinishFn = finish;
+  const applyCountdownText = (value) => {
+    el.dataset.remainingTime = String(value);
+    if (el.dataset.status === "error") return;
+    el.textContent = `Time remaining: ${value}`;
+  };
   // Render initial
   if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
     window.__battleCLIinit.setCountdown(remaining);
   } else {
-    el.dataset.remainingTime = String(remaining);
-    el.textContent = `Time remaining: ${remaining}`;
+    applyCountdownText(remaining);
   }
   // Create and wire a round timer so tests behave consistently
   try {
@@ -1108,8 +1113,7 @@ function startSelectionCountdown(seconds = 30) {
         if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
           window.__battleCLIinit.setCountdown(remaining);
         } else {
-          el.dataset.remainingTime = String(remaining);
-          el.textContent = `Time remaining: ${remaining}`;
+          applyCountdownText(remaining);
         }
       }
     }, 1000);
@@ -2244,7 +2248,12 @@ export function subscribeEngine() {
       engineFacade.on("timerTick", ({ remaining, phase }) => {
         if (phase === "round") {
           const el = byId("cli-countdown");
-          if (el) el.textContent = `Time remaining: ${remaining}`;
+          if (el) {
+            el.dataset.remainingTime = String(remaining);
+            if (el.dataset.status !== "error") {
+              el.textContent = `Time remaining: ${remaining}`;
+            }
+          }
         }
       });
       engineFacade.on("matchEnded", ({ outcome }) => {
