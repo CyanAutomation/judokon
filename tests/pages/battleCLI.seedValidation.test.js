@@ -1,20 +1,4 @@
-import { describe, it, expect, beforeEach, afterEac  it("clears error after recovery", async () => {
-    const mod = await loadBattleCLI({
-      url: "http://localhost/battleCLI.html?seed=3",
-      html: seedHtml
-    });
-    await mod.init();
-    const input = document.getElementById("seed-input");
-    input.value = "abc";
-    input.dispatchEvent(new Event("input"));
-    expect(window.__testMode).toBe(false);
-    input.value = "4";
-    input.dispatchEvent(new Event("input"));
-    expect(document.getElementById("seed-error").textContent).toBe("");
-    expect(input.value).toBe("4");
-    expect(localStorage.getItem("battleCLI.seed")).toBe("4");
-    expect(window.__testMode).toBe(true);
-  });est";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
@@ -45,7 +29,7 @@ describe("battleCLI seed validation", () => {
     await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "9";
-    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new Event("change"));
     expect(localStorage.getItem("battleCLI.seed")).toBe("9");
     expect(document.getElementById("seed-error").textContent).toBe("");
   });
@@ -58,7 +42,7 @@ describe("battleCLI seed validation", () => {
     await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "abc";
-    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new Event("change"));
     expect(input.value).toBe("");
     expect(document.getElementById("seed-error").textContent).toBe("Invalid seed. Using default.");
     expect(localStorage.getItem("battleCLI.seed")).toBeNull();
@@ -73,10 +57,10 @@ describe("battleCLI seed validation", () => {
     await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "abc";
-    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new Event("change"));
     expect(window.__testMode).toBe(false);
     input.value = "4";
-    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new Event("change"));
     expect(document.getElementById("seed-error").textContent).toBe("");
     expect(input.value).toBe("4");
     expect(localStorage.getItem("battleCLI.seed")).toBe("4");
