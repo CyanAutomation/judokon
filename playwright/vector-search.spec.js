@@ -1,35 +1,171 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 
+const harnessStore = new WeakMap();
+
 /**
- * Wait for the vector search results promise to be initialized and resolve.
+ * @typedef {import("@playwright/test").Route} PlaywrightRoute
+ * @typedef {Parameters<PlaywrightRoute["fulfill"]>[0]} RouteFulfillOptions
+ */
+
+/**
+ * Install a deterministic harness that resolves when the search promise settles.
  *
  * @param {import("@playwright/test").Page} page
  */
-async function waitForVectorSearchResults(page) {
-  const result = await page.evaluate(async () => {
-    const promise = window.vectorSearchResultsPromise;
-    if (!promise || typeof promise.then !== "function") {
-      return { status: "missing" };
-    }
+async function ensureVectorSearchHarness(page) {
+  if (harnessStore.has(page)) {
+    return harnessStore.get(page);
+  }
 
-    try {
-      await promise;
-      return { status: "resolved" };
-    } catch (error) {
-      if (error instanceof Error) {
-        return { status: "rejected", message: error.message };
-      }
-      return { status: "rejected", message: String(error) };
-    }
+  await page.addInitScript(() => {
+    window.__vectorSearchTestHarness = (() => {
+      let readyResolve = () => {};
+      let readyPromise = Promise.resolve();
+      let currentPromise = Promise.resolve();
+
+      const createReadyPromise = () => {
+        readyPromise = new Promise((resolve) => {
+          readyResolve = resolve;
+        });
+      };
+
+      createReadyPromise();
+
+      Object.defineProperty(window, "vectorSearchResultsPromise", {
+        configurable: true,
+        get() {
+          return currentPromise;
+        },
+        set(value) {
+          currentPromise = Promise.resolve(value);
+          createReadyPromise();
+          currentPromise
+            .catch(() => {})
+            .finally(() => {
+              readyResolve();
+            });
+        }
+      });
+
+      return {
+        waitForResults() {
+          return readyPromise;
+        }
+      };
+    })();
   });
 
-  if (result.status === "missing") {
-    throw new Error("vectorSearchResultsPromise was not initialized.");
+  const harness = {
+    async waitForResults() {
+      await page.evaluate(() => window.__vectorSearchTestHarness.waitForResults());
+    },
+    async submit(query, options = {}) {
+      const { viaKeyboard = false } = options;
+      const searchInput = page.getByRole("searchbox");
+      if (query !== undefined) {
+        await searchInput.fill(query);
+      }
+
+      if (viaKeyboard) {
+        await page.keyboard.press("Enter");
+      } else {
+        await page.getByRole("button", { name: /search/i }).click();
+      }
+
+      await this.waitForResults();
+    }
+  };
+
+  harnessStore.set(page, harness);
+  return harness;
+}
+
+/**
+ * Retrieve the previously installed harness.
+ *
+ * @param {import("@playwright/test").Page} page
+ */
+function getVectorSearchHarness(page) {
+  const harness = harnessStore.get(page);
+  if (!harness) {
+    throw new Error(
+      "Vector search harness was not initialized. Call prepareVectorSearchPage first."
+    );
+  }
+  return harness;
+}
+
+/**
+ * Configure network mocks and navigate to the vector search page.
+ *
+ * @param {import("@playwright/test").Page} page
+ * @param {object} [overrides]
+ * @param {RouteFulfillOptions | ((route: PlaywrightRoute) => unknown)} [overrides.embeddings]
+ * @param {RouteFulfillOptions | ((route: PlaywrightRoute) => unknown)} [overrides.transformer]
+ * @param {RouteFulfillOptions | ((route: PlaywrightRoute) => unknown) | false} [overrides.context]
+ */
+async function prepareVectorSearchPage(page, overrides = {}) {
+  const { embeddings, transformer, context } = overrides;
+  await ensureVectorSearchHarness(page);
+
+  await page.route("**/client_embeddings.json", (route) => {
+    if (typeof embeddings === "function") {
+      return embeddings(route);
+    }
+    if (embeddings) {
+      return route.fulfill(embeddings);
+    }
+    return route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" });
+  });
+
+  await page.route("**/transformers.min.js", (route) => {
+    if (typeof transformer === "function") {
+      return transformer(route);
+    }
+    if (transformer) {
+      return route.fulfill(transformer);
+    }
+    return route.fulfill({
+      contentType: "application/javascript",
+      body: "export async function pipeline(){return async()=>({data:[1,0]});}"
+    });
+  });
+
+  if (context !== false) {
+    await page.route("**/design/productRequirementsDocuments/docA.md", (route) => {
+      if (typeof context === "function") {
+        return context(route);
+      }
+      if (context) {
+        return route.fulfill(context);
+      }
+      return route.fulfill({ path: "tests/fixtures/docA.md" });
+    });
   }
 
-  if (result.status === "rejected") {
-    throw new Error(`vectorSearchResultsPromise rejected: ${result.message}`);
-  }
+  await page.goto("/src/pages/vectorSearch.html");
+}
+
+/**
+ * Submit the search form and wait for completion.
+ *
+ * @param {import("@playwright/test").Page} page
+ * @param {string|undefined} query
+ * @param {{ viaKeyboard?: boolean }} [options]
+ */
+async function submitSearch(page, query, options) {
+  const harness = getVectorSearchHarness(page);
+  await harness.submit(query, options);
+}
+
+/**
+ * Wait for the current search promise to settle without triggering a new search.
+ *
+ * @param {import("@playwright/test").Page} page
+ */
+async function waitForSearchCompletion(page) {
+  const harness = getVectorSearchHarness(page);
+  await harness.waitForResults();
 }
 
 /**
@@ -38,19 +174,7 @@ async function waitForVectorSearchResults(page) {
 test.describe("Vector Search Page", () => {
   test.describe("Basic Search Functionality", () => {
     test.beforeEach(async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      await page.route("**/design/productRequirementsDocuments/docA.md", (route) =>
-        route.fulfill({ path: "tests/fixtures/docA.md" })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page);
     });
 
     test("page loads with proper structure", async ({ page }) => {
@@ -90,27 +214,11 @@ test.describe("Vector Search Page", () => {
 
   test.describe("Search Execution and Results", () => {
     test.beforeEach(async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      await page.route("**/design/productRequirementsDocuments/docA.md", (route) =>
-        route.fulfill({ path: "tests/fixtures/docA.md" })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page);
     });
 
     test("successful search shows results table", async ({ page }) => {
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-
-      // Wait for search to complete
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       // Verify results table has content
       const resultsTable = page.locator("#vector-results-table tbody");
@@ -126,9 +234,7 @@ test.describe("Vector Search Page", () => {
     });
 
     test("search results contain expected data", async ({ page }) => {
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
 
@@ -141,9 +247,7 @@ test.describe("Vector Search Page", () => {
     });
 
     test("clicking result loads context", async ({ page }) => {
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
       await firstRow.click();
@@ -157,9 +261,7 @@ test.describe("Vector Search Page", () => {
     });
 
     test("context loads only once per result", async ({ page }) => {
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
 
@@ -175,19 +277,11 @@ test.describe("Vector Search Page", () => {
 
   test.describe("Edge Cases and Error Handling", () => {
     test("empty search shows appropriate message", async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page);
 
       // Submit empty search
       await page.getByRole("button", { name: /search/i }).click();
+      await waitForSearchCompletion(page);
 
       // Should show results state (empty query handling)
       const messageEl = page.locator("#search-results-message");
@@ -196,17 +290,9 @@ test.describe("Vector Search Page", () => {
 
     test("handles embedding load failure gracefully", async ({ page }) => {
       // Mock failed embedding load
-      await page.route("**/client_embeddings.json", (route) => route.fulfill({ status: 404 }));
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page, { embeddings: { status: 404 } });
 
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
+      await submitSearch(page, "query");
 
       // Should show error message
       const messageEl = page.locator("#search-results-message");
@@ -214,15 +300,9 @@ test.describe("Vector Search Page", () => {
     });
 
     test("handles transformer failure gracefully", async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      // Mock failed transformer load
-      await page.route("**/transformers.min.js", (route) => route.fulfill({ status: 404 }));
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page, { transformer: { status: 404 } });
 
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
+      await submitSearch(page, "query");
 
       // Should handle gracefully (may show error or empty results)
       const messageEl = page.locator("#search-results-message");
@@ -230,24 +310,9 @@ test.describe("Vector Search Page", () => {
     });
 
     test("handles context load failure gracefully", async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      // Mock failed context fetch
-      await page.route("**/design/productRequirementsDocuments/docA.md", (route) =>
-        route.fulfill({ status: 404 })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page, { context: { status: 404 } });
 
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
       await firstRow.click();
@@ -260,19 +325,7 @@ test.describe("Vector Search Page", () => {
 
   test.describe("UI Interactions and States", () => {
     test.beforeEach(async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      await page.route("**/design/productRequirementsDocuments/docA.md", (route) =>
-        route.fulfill({ path: "tests/fixtures/docA.md" })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page);
     });
 
     test("search form prevents default submission", async ({ page }) => {
@@ -282,20 +335,13 @@ test.describe("Vector Search Page", () => {
 
       const initialUrl = page.url();
 
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       await expect(page).toHaveURL(initialUrl);
     });
 
     test("search input handles keyboard submission", async ({ page }) => {
-      await page.getByRole("searchbox").fill("query");
-      await page.keyboard.press("Enter");
-
-      // Wait for search to complete
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query", { viaKeyboard: true });
 
       // Verify results are shown
       const resultsTable = page.locator("#vector-results-table tbody");
@@ -304,17 +350,13 @@ test.describe("Vector Search Page", () => {
 
     test("multiple searches work correctly", async ({ page }) => {
       // First search
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       const firstResult = page.locator("#vector-results-table tbody tr").first();
       await expect(firstResult).toBeVisible();
 
       // Second search
-      await page.getByRole("searchbox").fill("different query");
-      await page.getByRole("button", { name: /search/i }).click();
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "different query");
 
       // Results should still be visible (may be same or different)
       const secondResult = page.locator("#vector-results-table tbody tr").first();
@@ -330,19 +372,7 @@ test.describe("Vector Search Page", () => {
 
   test.describe("Accessibility Features", () => {
     test.beforeEach(async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      await page.route("**/design/productRequirementsDocuments/docA.md", (route) =>
-        route.fulfill({ path: "tests/fixtures/docA.md" })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page);
     });
 
     test("search form has proper ARIA labels", async ({ page }) => {
@@ -362,9 +392,7 @@ test.describe("Vector Search Page", () => {
     });
 
     test("results table has proper accessibility attributes", async ({ page }) => {
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       const resultsTable = page.locator("#vector-results-table");
       await expect(resultsTable).toHaveAttribute("aria-label", "Search results");
@@ -385,19 +413,7 @@ test.describe("Vector Search Page", () => {
 
   test.describe("Loading and Spinner States", () => {
     test("shows loading state during search", async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      await page.route("**/design/productRequirementsDocuments/docA.md", (route) =>
-        route.fulfill({ path: "tests/fixtures/docA.md" })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page);
 
       await page.getByRole("searchbox").fill("query");
 
@@ -409,26 +425,13 @@ test.describe("Vector Search Page", () => {
       // The loading state may be brief, so we just verify the element exists
       await expect(messageEl).toBeAttached();
       await expect(messageEl).toHaveAttribute("aria-live", "polite");
+      await waitForSearchCompletion(page);
     });
 
     test("context loading shows appropriate message", async ({ page }) => {
-      await page.route("**/client_embeddings.json", (route) =>
-        route.fulfill({ path: "tests/fixtures/client_embeddings_vector.json" })
-      );
-      await page.route("**/transformers.min.js", (route) =>
-        route.fulfill({
-          contentType: "application/javascript",
-          body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-        })
-      );
-      await page.route("**/design/productRequirementsDocuments/docA.md", (route) =>
-        route.fulfill({ path: "tests/fixtures/docA.md" })
-      );
-      await page.goto("/src/pages/vectorSearch.html");
+      await prepareVectorSearchPage(page);
 
-      await page.getByRole("searchbox").fill("query");
-      await page.getByRole("button", { name: /search/i }).click();
-      await waitForVectorSearchResults(page);
+      await submitSearch(page, "query");
 
       const firstRow = page.locator("#vector-results-table tbody tr").first();
       await firstRow.click();
