@@ -104,9 +104,7 @@ describe("randomJudokaPage feature flags", () => {
     drawBtn.fallbackDelayMs = 0;
     drawBtn.timers = { setTimeout: () => 0, clearTimeout: () => {} };
     drawBtn.click();
-    await Promise.resolve();
-    container.querySelector(".card-container")?.dispatchEvent(new Event("animationend"));
-    await drawBtn.drawPromise;
+    await window.__TEST_API.randomJudoka.resolveDrawPipeline();
 
     expect(container.querySelector(".debug-panel")).toBeNull();
 
