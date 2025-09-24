@@ -2,6 +2,7 @@ import { isEnabled } from "../../helpers/featureFlags.js";
 import {
   handleGlobalKey,
   handleWaitingForPlayerActionKey,
+  handleWaitingForMatchStartKey,
   handleRoundOverKey,
   handleCooldownKey,
   handleStatListArrowKey
@@ -11,6 +12,7 @@ const byId = (id) => document.getElementById(id);
 const arrowKeys = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 const stateHandlers = {
   waitingForPlayerAction: handleWaitingForPlayerActionKey,
+  waitingForMatchStart: handleWaitingForMatchStartKey,
   roundOver: handleRoundOverKey,
   cooldown: handleCooldownKey
 };

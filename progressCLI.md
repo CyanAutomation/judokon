@@ -37,6 +37,8 @@ This updated report provides a cleaner, more readable format and offers specific
   2.  Add support for the "Enter" key to either open the match length modal or to start the match directly.
   3.  Add a tooltip or a visible hint near the lightning-bolt icon to indicate that it can start a match.
 
+**Resolution:** Added support for the "Enter" key in the `waitingForMatchStart` state to dispatch `startClicked` and initiate the match, preventing "Invalid key" errors. Implemented `handleWaitingForMatchStartKey` function and integrated it into the key routing system. The start flow is now more robust with keyboard support, and the fallback `renderStartButton` provides a clear UI path when the modal fails. Unit tests (`battleCLI.onKeyDown.test.js`) and Playwright tests (`battle-cli-start.spec.js`) pass, confirming no regressions.
+
 ## 4. MEDIUM: Enter Key Does Not Confirm Stat Selection
 
 - **Finding:** When navigating stats with the arrow keys, pressing "Enter" does not select the highlighted stat. Only number keys (1-5) work.

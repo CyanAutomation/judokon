@@ -1616,6 +1616,25 @@ export function handleWaitingForPlayerActionKey(key) {
 }
 
 /**
+ * Handle key presses while waiting for match start.
+ * @param {string} key
+ * @pseudocode
+ * if key is 'enter':
+ *   emit 'startClicked'
+ *   return true
+ * return false
+ */
+export function handleWaitingForMatchStartKey(key) {
+  if (key === "enter") {
+    try {
+      emitBattleEvent("startClicked");
+    } catch {}
+    return true;
+  }
+  return false;
+}
+
+/**
  * Handle key presses after a round has resolved.
  * @param {string} key
  * @pseudocode
@@ -1695,6 +1714,7 @@ export function handleCooldownKey(key) {
 registerBattleHandlers({
   handleGlobalKey,
   handleWaitingForPlayerActionKey,
+  handleWaitingForMatchStartKey,
   handleRoundOverKey,
   handleCooldownKey,
   handleStatListArrowKey
