@@ -1,35 +1,17 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
-import { waitForBattleReady, waitForTestApi } from "../helpers/battleStateHelper.js";
+import {
+  waitForBattleReady,
+  waitForNextButtonReady,
+  waitForTestApi
+} from "../helpers/battleStateHelper.js";
 import { readRoundDiagnostics } from "../helpers/roundDiagnostics.js";
-
-async function waitForNextButtonReadyViaApi(page, timeout = 5000) {
-  const ready = await page.evaluate(
-    ({ waitTimeout }) => {
-      const stateApi = window.__TEST_API?.state;
-      if (!stateApi || typeof stateApi.waitForNextButtonReady !== "function") {
-        return null;
-      }
-      return stateApi.waitForNextButtonReady(waitTimeout);
-    },
-    { waitTimeout: timeout }
-  );
-
-  if (ready === null) {
-    throw new Error(
-      "Test API waitForNextButtonReady unavailable - ensure test environment is properly initialized"
-    );
-  }
-
-  expect(ready).toBe(true);
-}
+import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
 
 test.describe("Classic Battle cooldown + Next", () => {
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
     await withMutedConsole(async () => {
-      await page.addInitScript(() => {
-        window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      });
+      await applyDeterministicCooldown(page, { cooldownMs: 0 });
       await page.goto("/src/pages/battleClassic.html");
 
       await waitForTestApi(page);
@@ -47,7 +29,7 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(firstStatButton).toBeVisible();
       await firstStatButton.click();
 
-      await waitForNextButtonReadyViaApi(page);
+      await waitForNextButtonReady(page);
 
       const nextButton = page.getByTestId("next-button");
       await expect(nextButton).toBeEnabled();
@@ -79,9 +61,7 @@ test.describe("Classic Battle cooldown + Next", () => {
 
   test("recovers round counter state after external DOM interference", async ({ page }) => {
     await withMutedConsole(async () => {
-      await page.addInitScript(() => {
-        window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      });
+      await applyDeterministicCooldown(page, { cooldownMs: 0 });
       await page.goto("/src/pages/battleClassic.html");
 
       await waitForTestApi(page);
@@ -102,7 +82,7 @@ test.describe("Classic Battle cooldown + Next", () => {
 
       await firstStatButton.click();
 
-      await waitForNextButtonReadyViaApi(page);
+      await waitForNextButtonReady(page);
 
       const nextButton = page.getByTestId("next-button");
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
