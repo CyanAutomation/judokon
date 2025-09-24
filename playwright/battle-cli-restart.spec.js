@@ -28,7 +28,7 @@ test.describe("Battle CLI - Restart", () => {
       await page.evaluate(() => window.__TEST_API.state.dispatchBattleEvent("matchOver"));
 
       // Wait for the "Play Again" button to be visible
-      const playAgainButton = page.getByRole("button", { name: "Play Again" });
+      const playAgainButton = page.getByRole("button", { name: "Play again" });
       await expect(playAgainButton).toBeVisible({ timeout: 10000 }); // Increased timeout
 
       // Click the "Play Again" button
