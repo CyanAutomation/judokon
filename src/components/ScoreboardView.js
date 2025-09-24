@@ -137,9 +137,13 @@ export class ScoreboardView {
         this._scoreRaf = null;
       }
       this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
+      // Force DOM update before querying for the newly inserted spans.
+      const forceLayout = this.scoreEl.offsetHeight;
+      void forceLayout;
       playerSpan = this.scoreEl.querySelector('span[data-side="player"]');
       opponentSpan = this.scoreEl.querySelector('span[data-side="opponent"]');
       if (!playerSpan || !opponentSpan) {
+        console.warn("ScoreboardView: Failed to create score spans after DOM rebuild");
         return;
       }
     }
