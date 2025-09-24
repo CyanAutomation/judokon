@@ -419,9 +419,35 @@ export async function resolveWithFallback(
   handledByOrchestrator
 ) {
   try {
-    const orchestrated =
-      typeof document !== "undefined" &&
-      !!(document.body && document.body.dataset && document.body.dataset.battleState);
+    const orchestrated = (() => {
+      if (!store || typeof store !== "object" || !store.orchestrator) {
+        return false;
+      }
+
+      if (typeof document === "undefined") {
+        return false;
+      }
+
+      const hasDataset = !!(
+        document.body &&
+        document.body.dataset &&
+        document.body.dataset.battleState
+      );
+      if (!hasDataset) {
+        return false;
+      }
+
+      try {
+        const currentState = getBattleState?.();
+        if (typeof currentState !== "string" || !currentState) {
+          return false;
+        }
+      } catch {
+        return false;
+      }
+
+      return true;
+    })();
     if (orchestrated && handledByOrchestrator !== true) {
       const delay = resolveDelay();
       const fallbackDelay = IS_VITEST ? 0 : Math.max(delay + 100, 800);
@@ -465,13 +491,15 @@ export async function resolveWithFallback(
       return true;
     }
 
-    const current = typeof getBattleState === "function" ? getBattleState() : null;
-    if (current && current !== "roundDecision") {
-      if (IS_VITEST)
-        try {
-          console.log("[test] handleStatSelection: machine in non-decision state", current);
-        } catch {}
-      return true;
+    if (orchestrated) {
+      const current = typeof getBattleState === "function" ? getBattleState() : null;
+      if (current && current !== "roundDecision") {
+        if (IS_VITEST)
+          try {
+            console.log("[test] handleStatSelection: machine in non-decision state", current);
+          } catch {}
+        return true;
+      }
     }
   } catch {}
 

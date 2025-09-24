@@ -586,6 +586,10 @@ async function applySelectionResult(store, result) {
   } catch {}
   ensureScoreboardReflectsResult(result);
   const matchEnded = await confirmMatchOutcome(store, result);
+  if (!matchEnded && store && typeof store === "object" && !store.orchestrator) {
+    const played = Number(store.roundsPlayed) || 0;
+    store.roundsPlayed = played + 1;
+  }
   if (!matchEnded) {
     scheduleNextReadyAfterSelection(store);
   } else {
