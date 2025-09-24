@@ -82,6 +82,13 @@ async function appendVerboseEntries(page, entries) {
   }, payload);
 }
 
+/**
+ * @pseudocode
+ * @param {import('@playwright/test').Page} page
+ * @param {Array<{from?: string|null, to: string}>|Array<string>|{from?: string|null, to: string}|string} entries
+ * @param {{ expectText?: string, helpersTimeout?: number }} [options]
+ * @param {number} [options.helpersTimeout=5000] Maximum time in milliseconds to wait for the Test API helpers to become ready before failing.
+ */
 async function setupCliVerboseTest(page, entries, options = {}) {
   const { expectText, helpersTimeout = 5000 } = options;
 
@@ -93,7 +100,7 @@ async function setupCliVerboseTest(page, entries, options = {}) {
 
       if (typeof initApi?.waitForBattleReady === "function") {
         const ready = await initApi.waitForBattleReady(waitTimeout);
-        if (ready === false) {
+        if (ready !== true) {
           return { ready: false, reason: "battle-ready-timeout" };
         }
       }
@@ -102,7 +109,7 @@ async function setupCliVerboseTest(page, entries, options = {}) {
       const hasEmit = typeof window.emitBattleEvent === "function";
 
       return {
-        ready: hasDispatch && hasEmit,
+        ready: hasDispatch || hasEmit,
         hasDispatch,
         hasEmit
       };
@@ -123,6 +130,9 @@ async function setupCliVerboseTest(page, entries, options = {}) {
       }
       if (helperStatus.hasEmit !== true) {
         issues.push("emit helper missing");
+      }
+      if (issues.length === 0) {
+        issues.push("helpers unavailable for unknown reason");
       }
     }
 

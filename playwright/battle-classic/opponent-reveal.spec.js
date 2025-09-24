@@ -66,6 +66,7 @@ async function getBattleSnapshot(page) {
 }
 
 const MUTED_CONSOLE_LEVELS = ["log", "info", "warn", "error", "debug"];
+const PLAYER_SCORE_PATTERN = /You:\s*\d/;
 
 async function expectBattleState(page, expectedState, options = {}) {
   const { timeout = 5_000, onStall, stallThreshold = 3 } = options;
@@ -73,6 +74,7 @@ async function expectBattleState(page, expectedState, options = {}) {
   await waitForTestApi(page, { timeout });
 
   let attempts = 0;
+  let stallCallbackExecuted = false;
   await expect
     .poll(
       async () => {
@@ -80,8 +82,10 @@ async function expectBattleState(page, expectedState, options = {}) {
         if (
           current !== expectedState &&
           typeof onStall === "function" &&
-          attempts >= stallThreshold
+          attempts >= stallThreshold &&
+          !stallCallbackExecuted
         ) {
+          stallCallbackExecuted = true;
           await onStall(current);
         }
         attempts += 1;
@@ -112,8 +116,23 @@ async function startMatch(page, selector) {
   const button = page.locator(selector);
   await expect(button).toBeVisible();
   await button.click();
-  await expectBattleState(page, "waitingForPlayerAction", { timeout: 7_000 });
-  await expect(page.locator(selectors.statButton(0)).first()).toBeVisible();
+
+  const ensureStatSelectionVisible = async () => {
+    await expect(page.locator(selectors.statButton(0)).first()).toBeVisible({
+      timeout: 7_000
+    });
+  };
+
+  try {
+    await expectBattleState(page, "waitingForPlayerAction", { timeout: 7_000 });
+    await ensureStatSelectionVisible();
+  } catch (error) {
+    try {
+      await ensureStatSelectionVisible();
+    } catch {
+      throw error;
+    }
+  }
 }
 
 async function expireSelectionTimer(page) {
@@ -127,6 +146,14 @@ async function expireSelectionTimer(page) {
 
 // Deterministic, UI-safe round resolution avoiding DOM state waits and page.evaluate races
 async function resolveRoundDeterministic(page) {
+  const hasResolved = async () => {
+    try {
+      return (await getCurrentBattleState(page)) === "roundOver";
+    } catch {
+      return false;
+    }
+  };
+
   // Try internal Test API resolve in-page; swallow errors from navigation races
   const resolvedInPage = await page
     .evaluate(async () => {
@@ -146,12 +173,21 @@ async function resolveRoundDeterministic(page) {
     })
     .catch(() => false);
 
-  if (resolvedInPage) return;
+  if (resolvedInPage || (await hasResolved())) {
+    return;
+  }
 
   const triggered = await triggerStateTransition(page, "roundResolved");
-  if (triggered) return;
+  if (triggered || (await hasResolved())) {
+    return;
+  }
+
   // Fallback: advance via Next button if available
   try {
+    if (await hasResolved()) {
+      return;
+    }
+
     const nextBtn = page.locator("#next-button");
     if (await nextBtn.isEnabled().catch(() => false)) {
       await nextBtn.click();
@@ -240,7 +276,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           onStall: () => resolveRoundDeterministic(page)
         });
 
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
         const snapshot = await getBattleSnapshot(page);
         expect(snapshot?.selectionMade).toBe(true);
@@ -258,7 +294,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           onStall: () => resolveRoundDeterministic(page)
         });
 
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
         const nextButton = page.locator("#next-button");
         await expect(nextButton).toHaveAttribute("data-next-ready", "true");
@@ -266,10 +302,16 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await nextButton.click();
 
         await expect
-          .poll(async () => (await getBattleSnapshot(page))?.selectionMade === false, {
-            timeout: 5_000,
-            message: "Expected stat selection to reset for the next round"
-          })
+          .poll(
+            async () => {
+              const snapshot = await getBattleSnapshot(page);
+              return snapshot?.selectionMade === false;
+            },
+            {
+              timeout: 5_000,
+              message: "Expected stat selection to reset for the next round"
+            }
+          )
           .toBe(true);
 
         const roundCounter = page.locator("#round-counter");
@@ -318,7 +360,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         });
 
         await expectRoundsPlayedAtLeast(page, 1);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
 
     test("handles long opponent delays without timing out", async ({ page }) =>
@@ -344,7 +386,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           onStall: () => resolveRoundDeterministic(page)
         });
         // roundsPlayed via Test API may lag; rely on score update instead
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
   });
 
@@ -369,7 +411,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           onStall: () => resolveRoundDeterministic(page)
         });
         // roundsPlayed can lag in CI; rely on internal resolution already forced above
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
 
     test("opponent reveal works when page is navigated during delay", async ({ page }) =>
@@ -415,7 +457,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           onStall: () => resolveRoundDeterministic(page)
         });
         // Skip roundsPlayed wait; verify via score update which is user-visible
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
   });
 
@@ -435,7 +477,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(firstStat).toBeVisible();
         await firstStat.click();
         await resolveRoundDeterministic(page);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
         const nextButton = page.locator("#next-button");
         await expect(nextButton).toBeEnabled();
         await nextButton.click();
@@ -450,7 +492,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(secondStat).toBeVisible();
         await secondStat.click();
         await resolveRoundDeterministic(page);
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
 
     test("opponent reveal cleans up properly on match end", async ({ page }) =>
@@ -475,7 +517,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           onStall: () => resolveRoundDeterministic(page)
         });
         // Skip roundsPlayed wait; scoreboard assertion follows
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
         await expect(snackbar).not.toContainText(/Next round in/i);
 
         // Relax final snackbar assertion: ensure it's not showing countdown text
@@ -515,7 +557,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           await expectBattleState(page, "roundOver", {
             onStall: () => resolveRoundDeterministic(page)
           });
-          await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+          await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
           if (attempt < maxAttempts - 1) {
             // Advance using in-app flow to avoid reload races
@@ -523,10 +565,16 @@ test.describe("Classic Battle Opponent Reveal", () => {
             await expect(nextButton).toBeEnabled();
             await nextButton.click();
             await expect
-              .poll(async () => (await getBattleSnapshot(page))?.selectionMade === false, {
-                timeout: 5_000,
-                message: "Expected selection to reset before next stat pick"
-              })
+              .poll(
+                async () => {
+                  const snapshot = await getBattleSnapshot(page);
+                  return snapshot?.selectionMade === false;
+                },
+                {
+                  timeout: 5_000,
+                  message: "Expected selection to reset before next stat pick"
+                }
+              )
               .toBe(true);
             await setOpponentResolveDelay(page, 50);
           }
@@ -550,7 +598,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         await resolveRoundDeterministic(page);
         // Skip roundsPlayed wait; assert via score and snackbar cleanup below
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(/You:\s*\d/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
   });
 });

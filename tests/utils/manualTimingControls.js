@@ -31,14 +31,10 @@ function createMockTime(state) {
   };
 }
 
-function shiftTask(state) {
-  return state.scheduled.shift();
-}
-
 function createRunNext(state) {
   return async function runNext() {
     if (!state.scheduled.length) return;
-    const task = shiftTask(state);
+    const task = state.scheduled.shift();
     await runTask(state, task);
   };
 }
@@ -51,7 +47,7 @@ function createRunAll(state) {
       if (iterations > limit) {
         throw new Error(`Manual scheduler exceeded iteration limit (${limit})`);
       }
-      const task = shiftTask(state);
+      const task = state.scheduled.shift();
       await runTask(state, task);
     }
   };
@@ -74,7 +70,7 @@ function createRunUntilResolved(state) {
             `Manual scheduler exceeded iteration limit (${limit}) while awaiting promise resolution`
           );
         }
-        const task = shiftTask(state);
+        const task = state.scheduled.shift();
         await runTask(state, task);
         continue;
       }
@@ -88,6 +84,24 @@ function createRunUntilResolved(state) {
   };
 }
 
+/**
+ * Creates manual timing controls for deterministic testing of async operations.
+ *
+ * @pseudocode
+ * 1. Initialize state with current time and scheduled tasks
+ * 2. Return object with scheduler, time mocking, and task execution methods
+ * 3. Scheduler captures setTimeout calls without executing them
+ * 4. Time mocking overrides Date.now and performance.now
+ * 5. Task execution methods allow controlled advancement of time and task processing
+ *
+ * @returns {Object} Manual timing controls with scheduler, mockTime, runNext, runAll, runUntilResolved
+ * @example
+ * const timing = createManualTimingControls();
+ * const restoreTime = timing.mockTime();
+ * // Use timing.scheduler in place of real setTimeout
+ * await timing.runNext(); // Execute next scheduled task
+ * restoreTime(); // Restore original time functions
+ */
 export function createManualTimingControls() {
   const state = {
     now: 0,
