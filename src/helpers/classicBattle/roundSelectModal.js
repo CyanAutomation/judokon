@@ -316,6 +316,7 @@ class RoundSelectPositioner {
     this.isActive = true;
     this.updateInset();
     this.attachListeners();
+    this.disableHeaderLinks();
     this.patchLifecycle();
   }
 
@@ -446,6 +447,14 @@ class RoundSelectPositioner {
     }
   }
 
+  disableHeaderLinks() {
+    if (this.headerRef) {
+      const links = this.headerRef.querySelectorAll("a");
+      this.disabledLinks = Array.from(links);
+      this.disabledLinks.forEach((link) => (link.style.pointerEvents = "none"));
+    }
+  }
+
   cleanup() {
     if (!this.backdrop || this.backdrop[this.closedProp]) {
       return;
@@ -467,6 +476,10 @@ class RoundSelectPositioner {
       try {
         this.backdrop.dispatchEvent = this.originalDispatchEvent;
       } catch {}
+    }
+
+    if (this.disabledLinks) {
+      this.disabledLinks.forEach((link) => (link.style.pointerEvents = ""));
     }
 
     this.headerRef = null;

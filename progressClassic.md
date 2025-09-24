@@ -31,18 +31,19 @@ This revised report includes the original findings, adds context about the dupli
 
 ### 2. HIGH: Clickable Area Mis-Targets in Modal
 
-**Steps to Reproduce:**
+**Actions Taken:**
+- Investigated the modal's HTML and CSS structure in `roundSelectModal.js` and `Modal.js`.
+- Identified that the modal backdrop starts below the header (`--modal-inset-top` set to header height), leaving the header clickable.
+- Modified `RoundSelectPositioner` in `roundSelectModal.js` to disable pointer events on header links when the modal is open, preventing accidental navigation.
+- Added `disableHeaderLinks()` method to set `pointerEvents = "none"` on header links during modal display.
+- Added re-enabling of pointer events in the `cleanup()` method when the modal closes.
 
-*   When selecting the match length, clicking near the bottom of a button (e.g., "Quick") can sometimes trigger an unexpected navigation.
-
-**Impact:**
-
-*   Confusing user experience.
-*   Suggests CSS `z-index` issues or invisible clickable elements.
-
-**Verification Notes:**
-
-*   The proposed fix is feasible: Inspect the modal's HTML and CSS for overlapping elements and ensure the modal backdrop correctly intercepts clicks.
+**Outcome:**
+- Header links are now disabled during modal display, preventing unexpected navigation.
+- Modal functionality remains intact.
+- Relevant unit tests (roundSelectModal.test.js) pass.
+- Relevant Playwright tests (round-select.spec.js) pass.
+- No regressions detected.
 
 ### 3. MEDIUM: Keyboard Navigation in Modal Not Working
 
