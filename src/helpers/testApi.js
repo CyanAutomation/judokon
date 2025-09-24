@@ -834,6 +834,68 @@ const cliApi = {
       emit,
       getStore
     });
+  },
+
+  /**
+   * Deterministically complete the active CLI round without long waits.
+   *
+   * @param {object} [roundInput] - Event-like payload forwarded to resolveRound.
+   * @param {{
+   *   outcomeEvent?: string|null,
+   *   expireSelection?: boolean,
+   *   opponentResolveDelayMs?: number|undefined
+   * }} [options]
+   * @returns {Promise<{
+   *   detail: object,
+   *   outcomeEvent: string|null,
+   *   outcomeDispatched: boolean,
+   *   finalState: string|null,
+   *   dispatched: boolean,
+   *   emitted: boolean
+   * }>}
+   * @pseudocode
+   * if options.expireSelection -> timerApi.expireSelectionTimer()
+   * if options.opponentResolveDelayMs defined -> timerApi.setOpponentResolveDelay(value)
+   * resolution = await resolveRound(roundInput)
+   * if options.outcomeEvent -> dispatch outcome event with resolution.detail
+   * return detail + dispatch flags + current battle state
+   */
+  async completeRound(roundInput = {}, options = {}) {
+    const { outcomeEvent = null, expireSelection = true, opponentResolveDelayMs } = options ?? {};
+
+    if (expireSelection && typeof timerApi.expireSelectionTimer === "function") {
+      try {
+        timerApi.expireSelectionTimer();
+      } catch {}
+    }
+
+    if (opponentResolveDelayMs !== undefined) {
+      try {
+        timerApi.setOpponentResolveDelay(opponentResolveDelayMs);
+      } catch {}
+    }
+
+    const resolution = await this.resolveRound(roundInput);
+    const detail = resolution?.detail ?? {};
+
+    let outcomeDispatched = false;
+    if (outcomeEvent) {
+      try {
+        const dispatched = await stateApi.dispatchBattleEvent(outcomeEvent, detail);
+        outcomeDispatched = dispatched !== false;
+      } catch {
+        outcomeDispatched = false;
+      }
+    }
+
+    return {
+      detail,
+      outcomeEvent,
+      outcomeDispatched,
+      finalState: stateApi.getBattleState(),
+      dispatched: resolution?.dispatched ?? false,
+      emitted: resolution?.emitted ?? false
+    };
   }
 };
 
