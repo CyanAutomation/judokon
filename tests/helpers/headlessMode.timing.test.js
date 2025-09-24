@@ -56,7 +56,8 @@ describe("headless mode timing", () => {
       return { ...actual, resolveDelay: () => 250 };
     });
 
-    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout").mockImplementation((cb) => {
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout").mockImplementation((cb, _ms) => {
+      void _ms;
       cb?.();
       return 1;
     });
