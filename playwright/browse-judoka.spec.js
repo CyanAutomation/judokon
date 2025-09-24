@@ -12,7 +12,8 @@ const EXPECTED_COUNTRY_SLIDE_COUNT =
 async function callBrowseHook(page, name, ...args) {
   await page.waitForFunction(
     (hookName) => typeof window.__testHooks?.browse?.[hookName] === "function",
-    name
+    name,
+    { timeout: 10_000 }
   );
   return page.evaluate(
     ([hookName, params]) => window.__testHooks?.browse?.[hookName]?.(...params),
@@ -86,6 +87,7 @@ test.describe("Browse Judoka screen", () => {
     await waitForCarouselReady(page);
     await toggle.click();
     const slides = page.locator("#country-list .slide");
+    await slides.first().waitFor();
 
     const slideCount = await slides.count();
     expect(slideCount).toBeGreaterThanOrEqual(4);

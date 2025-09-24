@@ -48,33 +48,49 @@ test.describe("Battle CLI - Play", () => {
 
       const roundCompletion = await page.evaluate(
         async ({ stat, outcomeEvent }) => {
-          const api = window.__TEST_API;
-          if (!api?.cli?.completeRound) {
-            return { ok: false, reason: "completeRound-unavailable" };
-          }
+          try {
+            const api = window.__TEST_API;
+            if (!api?.cli?.completeRound) {
+              return { ok: false, reason: "completeRound-unavailable" };
+            }
 
-          const resolution = await api.cli.completeRound(
-            {
-              detail: {
-                stat,
-                playerVal: 88,
-                opponentVal: 42,
-                result: {
-                  message: "Player wins the round!",
-                  playerScore: 1,
-                  opponentScore: 0
+            const resolution = await api.cli.completeRound(
+              {
+                detail: {
+                  stat,
+                  playerVal: 88,
+                  opponentVal: 42,
+                  result: {
+                    message: "Player wins the round!",
+                    playerScore: 1,
+                    opponentScore: 0
+                  }
                 }
-              }
-            },
-            { outcomeEvent, opponentResolveDelayMs: 0 }
-          );
+              },
+              { outcomeEvent, opponentResolveDelayMs: 0 }
+            );
 
-          return { ok: true, resolution };
+            return { ok: true, resolution };
+          } catch (error) {
+            return {
+              ok: false,
+              reason: error?.message ?? "completeRound-unknown-error",
+              stack: error?.stack ?? null
+            };
+          }
         },
         { stat: statKey, outcomeEvent: CLI_PLAYER_WIN_OUTCOME_EVENT }
       );
 
-      expect(roundCompletion?.ok).toBe(true);
+      if (!roundCompletion?.ok) {
+        const reason = roundCompletion?.reason ?? "completeRound-failed";
+        const stack = roundCompletion?.stack;
+        throw new Error(
+          stack
+            ? `Failed to complete CLI round via test API: ${reason}\n${stack}`
+            : `Failed to complete CLI round via test API: ${reason}`
+        );
+      }
 
       const { resolution } = roundCompletion;
       expect(resolution?.detail?.stat).toBe(statKey);

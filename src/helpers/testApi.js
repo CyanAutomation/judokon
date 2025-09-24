@@ -866,13 +866,17 @@ const cliApi = {
     if (expireSelection && typeof timerApi.expireSelectionTimer === "function") {
       try {
         timerApi.expireSelectionTimer();
-      } catch {}
+      } catch (error) {
+        logDevDebug("Failed to expire selection timer", error);
+      }
     }
 
     if (opponentResolveDelayMs !== undefined) {
       try {
         timerApi.setOpponentResolveDelay(opponentResolveDelayMs);
-      } catch {}
+      } catch (error) {
+        logDevDebug("Failed to set opponent resolve delay", error);
+      }
     }
 
     const resolution = await this.resolveRound(roundInput);

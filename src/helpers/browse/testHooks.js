@@ -50,10 +50,10 @@ function resolveReadyResolvers() {
 
 function registerReadyResolver(resolve) {
   const resolver = (snapshot) => {
-    state.readyResolvers.delete(resolver);
     resolve(snapshot);
   };
   state.readyResolvers.add(resolver);
+  return resolver;
 }
 
 /**
@@ -69,11 +69,13 @@ function registerReadyResolver(resolve) {
  */
 function whenCarouselReady() {
   return new Promise((resolve) => {
+    const resolver = registerReadyResolver(resolve);
+
     if (state.isCarouselReady && state.container) {
+      state.readyResolvers.delete(resolver);
       resolve(createReadySnapshot());
       return;
     }
-    registerReadyResolver(resolve);
   });
 }
 
@@ -186,6 +188,13 @@ function resetState() {
   state.gokyoData = [];
   state.gokyoLookup = {};
   state.isCarouselReady = false;
+  for (const resolver of Array.from(state.readyResolvers)) {
+    try {
+      resolver({ isReady: false, cardCount: 0, error: "Test reset before carousel ready" });
+    } catch {
+      // Ignore resolver errors during cleanup
+    }
+  }
   state.readyResolvers.clear();
 }
 
