@@ -3,7 +3,9 @@ import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 describe("headless mode timing", () => {
   let timers;
+
   beforeEach(() => {
+    vi.resetModules();
     timers = useCanonicalTimers();
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -14,73 +16,61 @@ describe("headless mode timing", () => {
     vi.restoreAllMocks();
   });
 
-  it("schedules round cooldown without delay in headless mode", async () => {
+  it("returns zero cooldown seconds when headless", async () => {
     const { setHeadlessMode } = await import("../../src/helpers/headlessMode.js");
     const { computeNextRoundCooldown } = await import(
       "../../src/helpers/timers/computeNextRoundCooldown.js"
     );
+
     setHeadlessMode(true);
-    const secs = computeNextRoundCooldown();
-    expect(secs).toBe(0);
-    let elapsed = -1;
-    const start = Date.now();
-    setTimeout(() => {
-      elapsed = Date.now() - start;
-    }, secs * 1000);
-    await vi.runAllTimersAsync();
-    expect(elapsed).toBe(0);
+    expect(computeNextRoundCooldown()).toBe(0);
     setHeadlessMode(false);
   });
 
-  it("honors default round cooldown when headless disabled", async () => {
+  it("uses default cooldown seconds when headless is disabled", async () => {
     const { setHeadlessMode } = await import("../../src/helpers/headlessMode.js");
     const { computeNextRoundCooldown } = await import(
       "../../src/helpers/timers/computeNextRoundCooldown.js"
     );
+
     setHeadlessMode(false);
-    const secs = computeNextRoundCooldown();
-    expect(secs).toBe(3);
-    let elapsed = -1;
-    const start = Date.now();
-    setTimeout(() => {
-      elapsed = Date.now() - start;
-    }, secs * 1000);
-    await vi.advanceTimersByTimeAsync(secs * 1000 - 1);
-    expect(elapsed).toBe(-1);
-    await vi.advanceTimersByTimeAsync(1);
-    expect(elapsed).toBe(secs * 1000);
+    expect(computeNextRoundCooldown()).toBe(3);
   });
 
-  it("reveals opponent immediately in headless mode", async () => {
+  it("avoids scheduling timers during headless round resolution", async () => {
+    const setTimeoutSpy = vi
+      .spyOn(globalThis, "setTimeout")
+      .mockImplementation(() => 1);
+
     const { setHeadlessMode } = await import("../../src/helpers/headlessMode.js");
-    const rrMod = await import("../../src/helpers/classicBattle/roundResolver.js");
-    vi.spyOn(rrMod, "ensureRoundDecisionState").mockResolvedValue();
-    vi.spyOn(rrMod, "finalizeRoundResult").mockResolvedValue({});
+    const roundResolver = await import("../../src/helpers/classicBattle/roundResolver.js");
+
     setHeadlessMode(true);
-    let elapsed = -1;
-    const start = Date.now();
-    const p = rrMod.resolveRound({}, "power", 1, 2).then(() => {
-      elapsed = Date.now() - start;
-    });
-    await vi.runAllTimersAsync();
-    await p;
-    expect(elapsed).toBe(0);
+    await roundResolver.resolveRound({}, "power", 1, 2);
+
+    expect(setTimeoutSpy).not.toHaveBeenCalled();
     setHeadlessMode(false);
   });
 
-  it("reveals opponent immediately when headless disabled in tests", async () => {
-    const { setHeadlessMode } = await import("../../src/helpers/headlessMode.js");
-    const rrMod = await import("../../src/helpers/classicBattle/roundResolver.js");
-    vi.spyOn(rrMod, "ensureRoundDecisionState").mockResolvedValue();
-    vi.spyOn(rrMod, "finalizeRoundResult").mockResolvedValue({});
-    setHeadlessMode(false);
-    let elapsed = -1;
-    const start = Date.now();
-    const p = rrMod.resolveRound({}, "power", 1, 2).then(() => {
-      elapsed = Date.now() - start;
+  it("schedules timers based on resolved delay when not headless", async () => {
+    vi.doMock("../../src/helpers/classicBattle/timerUtils.js", async () => {
+      const actual = await vi.importActual("../../src/helpers/classicBattle/timerUtils.js");
+      return { ...actual, resolveDelay: () => 250 };
     });
-    await vi.runAllTimersAsync();
-    await p;
-    expect(elapsed).toBe(0);
+
+    const setTimeoutSpy = vi
+      .spyOn(globalThis, "setTimeout")
+      .mockImplementation((cb, ms) => {
+        cb?.();
+        return 1;
+      });
+
+    const { setHeadlessMode } = await import("../../src/helpers/headlessMode.js");
+    const roundResolver = await import("../../src/helpers/classicBattle/roundResolver.js");
+
+    setHeadlessMode(false);
+    await roundResolver.resolveRound({}, "power", 1, 2);
+
+    expect(setTimeoutSpy.mock.calls.map(([, ms]) => ms)).toContain(250);
   });
 });
