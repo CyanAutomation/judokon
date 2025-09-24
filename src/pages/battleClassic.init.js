@@ -26,9 +26,10 @@ import {
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
-import { onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
+import { emitBattleEvent, onBattleEvent } from "../helpers/classicBattle/battleEvents.js";
 import { initScoreboardAdapter } from "../helpers/classicBattle/scoreboardAdapter.js";
 import { bridgeEngineEvents } from "../helpers/classicBattle/engineBridge.js";
+import { getBattleStateMachine } from "../helpers/classicBattle/orchestrator.js";
 import { initFeatureFlags } from "../helpers/featureFlags.js";
 import { exposeTestAPI } from "../helpers/testApi.js";
 import { showSnackbar } from "../helpers/showSnackbar.js";
@@ -79,6 +80,48 @@ let lastRoundCycleTriggerTimestamp = 0;
  * Ensures UI state transitions are visible to users.
  */
 const POST_SELECTION_READY_DELAY_MS = 48;
+
+let lastBroadcastState = null;
+let lastBroadcastPrevState = null;
+
+function broadcastBattleState(nextState) {
+  if (!nextState) return;
+
+  try {
+    const machine = typeof getBattleStateMachine === "function" ? getBattleStateMachine() : null;
+    if (machine) {
+      return;
+    }
+  } catch {}
+
+  if (lastBroadcastState === nextState) {
+    return;
+  }
+
+  const prevState = lastBroadcastState;
+  lastBroadcastPrevState = prevState;
+  lastBroadcastState = nextState;
+
+  if (typeof document !== "undefined" && document?.body) {
+    try {
+      document.body.dataset.battleState = String(nextState);
+    } catch {}
+    const previous = lastBroadcastPrevState;
+    if (previous) {
+      try {
+        document.body.dataset.prevBattleState = String(previous);
+      } catch {}
+    } else {
+      try {
+        delete document.body.dataset.prevBattleState;
+      } catch {}
+    }
+  }
+
+  try {
+    emitBattleEvent("battleStateChange", { from: prevState ?? null, to: nextState });
+  } catch {}
+}
 
 /**
  * Buffer time added to opponent delay to ensure snackbar message is visible.
@@ -296,11 +339,21 @@ function triggerCooldownOnce(store, reason) {
   const remaining = calculateRemainingOpponentMessageTime();
   const shouldForceImmediate = reason === "statSelectionFailed";
 
-  if (!shouldForceImmediate && remaining > 0 && scheduleDelayedCooldown(remaining, store, reason)) {
-    return true;
+  let triggered = false;
+
+  if (!shouldForceImmediate && remaining > 0) {
+    triggered = scheduleDelayedCooldown(remaining, store, reason);
   }
 
-  return invokeStartCooldown(store, reason);
+  if (!triggered) {
+    triggered = invokeStartCooldown(store, reason);
+  }
+
+  if (triggered) {
+    broadcastBattleState("cooldown");
+  }
+
+  return triggered;
 }
 
 function getNextRoundButton() {
@@ -909,6 +962,7 @@ async function handleStatButtonClick(store, stat, btn) {
   if (!btn || btn.disabled) return;
   const delayOverride = prepareUiBeforeSelection();
   const { playerVal, opponentVal } = resolveStatValues(store, stat);
+  broadcastBattleState("roundDecision");
   let result;
   try {
     result = await handleStatSelection(store, String(stat), {
@@ -922,13 +976,22 @@ async function handleStatButtonClick(store, stat, btn) {
   }
 
   let shouldStartCooldown = true;
+  let appliedResult = false;
   try {
-    const matchEnded = await applySelectionResult(store, result);
-    shouldStartCooldown = !matchEnded;
+    if (result) {
+      const matchEnded = await applySelectionResult(store, result);
+      appliedResult = true;
+      shouldStartCooldown = !matchEnded;
+    } else {
+      shouldStartCooldown = false;
+    }
   } catch (err) {
     handleStatSelectionError(store, err);
     shouldStartCooldown = false;
   } finally {
+    if (appliedResult) {
+      broadcastBattleState("roundOver");
+    }
     finalizeSelectionReady(store, { shouldStartCooldown });
   }
 }
@@ -1005,6 +1068,7 @@ async function beginSelectionTimer(store) {
         }
         let result;
         try {
+          broadcastBattleState("roundDecision");
           const { playerVal, opponentVal } = resolveStatValues(store, "speed");
           result = await computeRoundResult(store, "speed", playerVal, opponentVal);
         } catch (err) {
@@ -1016,8 +1080,25 @@ async function beginSelectionTimer(store) {
             scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
           }
         } catch {}
-        if (!result?.matchEnded) {
+        let matchEnded = false;
+        let appliedResult = false;
+        if (result) {
+          try {
+            matchEnded = await applySelectionResult(store, result);
+            appliedResult = true;
+          } catch (err) {
+            handleStatSelectionError(store, err);
+          }
+        }
+        if (appliedResult) {
+          broadcastBattleState("roundOver");
+        }
+        if (!matchEnded) {
           triggerCooldownOnce(store, "vitestTimerExpired");
+        } else {
+          try {
+            showSnackbar("");
+          } catch {}
         }
       },
       pauseOnHidden: false
@@ -1038,6 +1119,7 @@ async function beginSelectionTimer(store) {
       console.debug("battleClassic: set autoSelected (timer) failed", err);
     }
     try {
+      broadcastBattleState("roundDecision");
       const { playerVal, opponentVal } = resolveStatValues(store, String(stat || "speed"));
       const result = await computeRoundResult(
         store,
@@ -1052,7 +1134,20 @@ async function beginSelectionTimer(store) {
           scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
         }
       } catch {}
-      if (!result?.matchEnded) {
+      let matchEnded = false;
+      let appliedResult = false;
+      if (result) {
+        try {
+          matchEnded = await applySelectionResult(store, result);
+          appliedResult = true;
+        } catch (err) {
+          handleStatSelectionError(store, err);
+        }
+      }
+      if (appliedResult) {
+        broadcastBattleState("roundOver");
+      }
+      if (!matchEnded) {
         const manualTrigger = triggerCooldownOnce(store, "selectionTimerAutoResolve");
         if (manualTrigger) {
           // If something interferes with the cooldown wiring, ensure Next is usable
@@ -1083,6 +1178,7 @@ async function beginSelectionTimer(store) {
         const needsScore = scoreEl && /You:\s*0\s*Opponent:\s*0/.test(scoreEl.textContent || "");
         const notReady = btn && (btn.disabled || btn.getAttribute("data-next-ready") !== "true");
         if (needsScore || notReady) {
+          broadcastBattleState("roundDecision");
           const { playerVal, opponentVal } = resolveStatValues(store, "speed");
           const result = await computeRoundResult(store, "speed", playerVal, opponentVal);
           try {
@@ -1090,7 +1186,20 @@ async function beginSelectionTimer(store) {
               scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
             }
           } catch {}
-          if (!result?.matchEnded) {
+          let matchEnded = false;
+          let appliedResult = false;
+          if (result) {
+            try {
+              matchEnded = await applySelectionResult(store, result);
+              appliedResult = true;
+            } catch (err) {
+              handleStatSelectionError(store, err);
+            }
+          }
+          if (appliedResult) {
+            broadcastBattleState("roundOver");
+          }
+          if (!matchEnded) {
             const fallbackTriggered = triggerCooldownOnce(store, "selectionFailSafe");
             if (fallbackTriggered) {
               try {
@@ -1136,12 +1245,20 @@ async function startRoundCycle(store, options = {}) {
       stopActiveSelectionTimer();
     } catch {}
 
-    if (!skipStartRound) {
+    let roundStarted = false;
+    if (skipStartRound) {
+      roundStarted = true;
+    } else {
       try {
         await startRound(store);
+        roundStarted = true;
       } catch (err) {
         console.debug("battleClassic: startRound failed", err);
       }
+    }
+
+    if (roundStarted) {
+      broadcastBattleState("roundStart");
     }
 
     updateRoundCounterFromEngine({ expectAdvance: true });
@@ -1159,6 +1276,8 @@ async function startRoundCycle(store, options = {}) {
     try {
       await beginSelectionTimer(store);
     } catch {}
+
+    broadcastBattleState("waitingForPlayerAction");
   } finally {
     isStartingRoundCycle = false;
   }
@@ -1438,6 +1557,7 @@ async function init() {
           document.body.setAttribute("data-battle-active", "true");
         } catch {}
         // Begin first round
+        broadcastBattleState("matchStart");
         await startRoundCycle(store);
       });
     } catch (err) {
