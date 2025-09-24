@@ -21,10 +21,7 @@ const createDeterministicScheduler = () => {
 
     const [chosenId, chosenTask] = Array.from(tasks.entries()).reduce(
       ([bestId, bestTask], [id, task]) => {
-        if (
-          task.delay < bestTask.delay ||
-          (task.delay === bestTask.delay && id < bestId)
-        ) {
+        if (task.delay < bestTask.delay || (task.delay === bestTask.delay && id < bestId)) {
           return [id, task];
         }
         return [bestId, bestTask];

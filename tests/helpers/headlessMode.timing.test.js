@@ -38,9 +38,7 @@ describe("headless mode timing", () => {
   });
 
   it("avoids scheduling timers during headless round resolution", async () => {
-    const setTimeoutSpy = vi
-      .spyOn(globalThis, "setTimeout")
-      .mockImplementation(() => 1);
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout").mockImplementation(() => 1);
 
     const { setHeadlessMode } = await import("../../src/helpers/headlessMode.js");
     const roundResolver = await import("../../src/helpers/classicBattle/roundResolver.js");
@@ -58,12 +56,10 @@ describe("headless mode timing", () => {
       return { ...actual, resolveDelay: () => 250 };
     });
 
-    const setTimeoutSpy = vi
-      .spyOn(globalThis, "setTimeout")
-      .mockImplementation((cb, ms) => {
-        cb?.();
-        return 1;
-      });
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout").mockImplementation((cb, ms) => {
+      cb?.();
+      return 1;
+    });
 
     const { setHeadlessMode } = await import("../../src/helpers/headlessMode.js");
     const roundResolver = await import("../../src/helpers/classicBattle/roundResolver.js");
