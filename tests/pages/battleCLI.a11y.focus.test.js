@@ -54,7 +54,7 @@ describe("battleCLI accessibility", () => {
       onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
       expect(document.activeElement).toBe(rows[0]);
       onKeyDown(new KeyboardEvent("keydown", { key: "ArrowUp" }));
-      expect(document.activeElement).toBe(rows[2]);
+      expect(document.activeElement).toBe(rows[rows.length - 1]);
       onKeyDown(new KeyboardEvent("keydown", { key: "ArrowDown" }));
       expect(document.activeElement).toBe(rows[0]);
       expect(list.getAttribute("aria-activedescendant")).toBe(rows[0].id);
