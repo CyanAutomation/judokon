@@ -15,11 +15,6 @@ function createDeferred() {
   return { promise, resolve, reject };
 }
 
-async function tick() {
-  await Promise.resolve();
-  await vi.advanceTimersByTimeAsync(0);
-}
-
 describe("battleCLI dual-write scoreboard (Phase 2)", () => {
   let mockSharedScoreboard;
   let timers;
@@ -30,9 +25,8 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     const modulePromise = import(DOM_MODULE_PATH);
     const exports = scoreboardModule ?? mockSharedScoreboard;
     deferred.resolve({ __esModule: true, ...exports });
-    await tick();
     const module = await modulePromise;
-    await tick();
+    await module.waitForSharedScoreboard();
     return module;
   }
 
