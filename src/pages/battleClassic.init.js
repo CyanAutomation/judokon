@@ -616,7 +616,12 @@ function finalizeSelectionReady(store, options = {}) {
       console.debug("battleClassic: enableNextRoundButton after selection failed", err);
     }
     try {
-      updateRoundCounterFromEngine();
+      const selectionMade = Boolean(store?.selectionMade);
+      const expectAdvance = shouldStartCooldown || selectionMade;
+      updateRoundCounterFromEngine({
+        expectAdvance,
+        forceWhenEngineMatchesVisible: selectionMade
+      });
     } catch (err) {
       console.debug("battleClassic: updateRoundCounterFromEngine after selection failed", err);
     }
@@ -864,12 +869,15 @@ function shouldForceAdvancement(
   hasVisibleRound,
   hasEngineRound,
   engineRound,
-  visibleRound
+  visibleRound,
+  forceWhenEqual
 ) {
+  const engineLagging = !hasEngineRound || engineRound < Number(visibleRound);
+  const engineMatching = forceWhenEqual && engineRound === Number(visibleRound);
   return (
     expectAdvance &&
     hasVisibleRound &&
-    (!hasEngineRound || engineRound < Number(visibleRound)) &&
+    (engineLagging || engineMatching) &&
     (lastForcedTargetRound === null || Number(visibleRound) < lastForcedTargetRound)
   );
 }
@@ -902,7 +910,8 @@ function resolveNextRound({
   hasEngineRound,
   engineRound,
   visibleRound,
-  baselineRound
+  baselineRound,
+  forceWhenEngineMatchesVisible = false
 }) {
   let nextRound = hasEngineRound ? engineRound : baselineRound;
   const forceAdvance = shouldForceAdvancement(
@@ -910,7 +919,8 @@ function resolveNextRound({
     hasVisibleRound,
     hasEngineRound,
     engineRound,
-    visibleRound
+    visibleRound,
+    forceWhenEngineMatchesVisible
   );
 
   if (forceAdvance) {
@@ -968,7 +978,7 @@ function updateRoundCounterState({
  * 4. Fall back to the last known round (or 1) when engine data is unavailable.
  */
 function updateRoundCounterFromEngine(options = {}) {
-  const { expectAdvance = false } = options;
+  const { expectAdvance = false, forceWhenEngineMatchesVisible = false } = options;
   const visibleRound = getVisibleRoundNumber();
   const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
 
@@ -995,7 +1005,8 @@ function updateRoundCounterFromEngine(options = {}) {
       hasEngineRound,
       engineRound,
       visibleRound,
-      baselineRound
+      baselineRound,
+      forceWhenEngineMatchesVisible
     });
 
     updateRoundCounter(nextRound);
