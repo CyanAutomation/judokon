@@ -26,7 +26,8 @@ test.describe("Classic Battle stat selection", () => {
 
       // Click the first stat button
       const score = page.getByTestId("score-display");
-      await expect(score.locator('[data-side="player"]')).toHaveCount(0);
+      await expect(score.locator('[data-side="player"]')).toHaveText(/You:\s*0/);
+      await expect(score.locator('[data-side="opponent"]')).toHaveText(/Opponent:\s*0/);
       await buttons.first().click();
 
       // Timer should be cleared or show 0s after stat selection
