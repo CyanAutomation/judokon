@@ -1252,8 +1252,11 @@ function buildStatRows(stats, judoka) {
       const idx = Number(s.statIndex) || 0;
       if (!idx) return;
       const key = STATS[idx - 1];
-      if (key) statDisplayNames[key] = s.name;
       const div = document.createElement("div");
+      if (key) {
+        statDisplayNames[key] = s.name;
+        div.dataset.stat = key;
+      }
       div.className = "cli-stat";
       div.id = `cli-stat-${idx}`;
       div.setAttribute("role", "option");
