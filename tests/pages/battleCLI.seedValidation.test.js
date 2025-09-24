@@ -29,7 +29,7 @@ describe("battleCLI seed validation", () => {
     await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "9";
-    input.dispatchEvent(new Event("change"));
+    input.dispatchEvent(new Event("input"));
     expect(localStorage.getItem("battleCLI.seed")).toBe("9");
     expect(document.getElementById("seed-error").textContent).toBe("");
   });
@@ -42,7 +42,7 @@ describe("battleCLI seed validation", () => {
     await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "abc";
-    input.dispatchEvent(new Event("change"));
+    input.dispatchEvent(new Event("input"));
     expect(input.value).toBe("");
     expect(document.getElementById("seed-error").textContent).toBe("Invalid seed. Using default.");
     expect(localStorage.getItem("battleCLI.seed")).toBeNull();
@@ -57,10 +57,10 @@ describe("battleCLI seed validation", () => {
     await mod.init();
     const input = document.getElementById("seed-input");
     input.value = "abc";
-    input.dispatchEvent(new Event("change"));
+    input.dispatchEvent(new Event("input"));
     expect(window.__testMode).toBe(false);
     input.value = "4";
-    input.dispatchEvent(new Event("change"));
+    input.dispatchEvent(new Event("input"));
     expect(document.getElementById("seed-error").textContent).toBe("");
     expect(input.value).toBe("4");
     expect(localStorage.getItem("battleCLI.seed")).toBe("4");
