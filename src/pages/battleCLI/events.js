@@ -137,9 +137,19 @@ export function onKeyDown(e) {
   if (!shouldProcessKey(lower)) return;
   const handled = routeKeyByState(lower);
   const countdown = byId("cli-countdown");
+  if (!countdown) return;
+
   if (handled === false && lower !== "tab") {
-    if (countdown) countdown.textContent = "Invalid key, press H for help";
-  } else if (countdown && countdown.textContent) {
+    countdown.textContent = "Invalid key, press H for help";
+    countdown.dataset.status = "error";
+    return;
+  }
+
+  if (countdown.dataset.status === "error") {
+    delete countdown.dataset.status;
+  }
+
+  if (countdown.textContent) {
     countdown.textContent = "";
   }
 }
