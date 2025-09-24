@@ -2182,6 +2182,8 @@ export async function setupFlags() {
   const updateVerbose = () => {
     if (checkbox) checkbox.checked = !!verboseEnabled;
     if (section) section.hidden = !verboseEnabled;
+    const indicator = byId("verbose-indicator");
+    if (indicator) indicator.style.display = verboseEnabled ? "inline" : "none";
     if (verboseEnabled) {
       try {
         const pre = byId("cli-verbose-log");
