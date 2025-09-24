@@ -220,18 +220,70 @@ async function handleWaitForBattleStateError({ testInfo, expectedState, error, f
 
 test.describe("Classic Battle Opponent Reveal", () => {
   test.describe("Basic Opponent Reveal Functionality", () => {
-    test("shows opponent choosing snackbar immediately after stat selection", async ({ page }) =>
-      withMutedConsole(async () => {
-        await page.addInitScript(() => {
-          window.__OVERRIDE_TIMERS = { roundTimer: 5 };
-          window.__NEXT_ROUND_COOLDOWN_MS = 1000;
-          window.__OPPONENT_RESOLVE_DELAY_MS = 120;
+    const BASIC_MUTED_CONSOLE_LEVELS = ["log", "info", "warn", "error", "debug"];
+    const DEFAULT_BASIC_CONFIG = {
+      matchSelector: "#round-select-2",
+      timerOverrides: { roundTimer: 5 },
+      nextRoundCooldown: undefined,
+      resolveDelay: 120
+    };
+
+    const buildBasicConfig = (overrides = {}) => ({
+      matchSelector: overrides.matchSelector ?? DEFAULT_BASIC_CONFIG.matchSelector,
+      timerOverrides: {
+        ...DEFAULT_BASIC_CONFIG.timerOverrides,
+        ...(overrides.timerOverrides ?? {})
+      },
+      nextRoundCooldown: overrides.nextRoundCooldown ?? DEFAULT_BASIC_CONFIG.nextRoundCooldown,
+      resolveDelay: overrides.resolveDelay ?? DEFAULT_BASIC_CONFIG.resolveDelay
+    });
+
+    const basicConfigOverrides = new Map();
+    let activeBasicConfig = buildBasicConfig();
+
+    const createBasicTest = (title, testFn, overrides) => {
+      if (overrides && Object.keys(overrides).length > 0) {
+        basicConfigOverrides.set(title, overrides);
+      }
+
+      test(title, async ({ page }) =>
+        withMutedConsole(async () => {
+          await testFn({ page });
+        }, BASIC_MUTED_CONSOLE_LEVELS)
+      );
+    };
+
+    test.beforeEach(async ({ page }, testInfo) => {
+      const overrides = basicConfigOverrides.get(testInfo.title) ?? {};
+      activeBasicConfig = buildBasicConfig(overrides);
+
+      await page.addInitScript(
+        ({ timers, cooldown, resolveDelay }) => {
+          window.__OVERRIDE_TIMERS = timers;
+          if (typeof cooldown === "number") {
+            window.__NEXT_ROUND_COOLDOWN_MS = cooldown;
+          }
+          window.__OPPONENT_RESOLVE_DELAY_MS = resolveDelay;
           window.__FF_OVERRIDES = { showRoundSelectModal: true };
           window.process = { env: { VITEST: "1" } };
-        });
-        await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
+        },
+        {
+          timers: activeBasicConfig.timerOverrides,
+          cooldown: activeBasicConfig.nextRoundCooldown,
+          resolveDelay: activeBasicConfig.resolveDelay
+        }
+      );
 
-        await startMatchAndAwaitStats(page, "#round-select-2");
+      await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
+
+      await startMatchAndAwaitStats(page, activeBasicConfig.matchSelector);
+
+      await setOpponentResolveDelay(page, activeBasicConfig.resolveDelay);
+    });
+
+    createBasicTest(
+      "shows opponent choosing snackbar immediately after stat selection",
+      async ({ page }) => {
         await setOpponentResolveDelay(page, 50);
 
         const firstStat = page.locator(selectors.statButton(0)).first();
@@ -239,17 +291,13 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         const snack = page.locator(selectors.snackbarContainer());
         await expect(snack).toContainText(/Opponent is choosing/i);
-      }, ["log", "info", "warn", "error", "debug"]));
+      },
+      { nextRoundCooldown: 1000 }
+    );
 
-    test("resolves the round and updates score after opponent reveal", async ({ page }) =>
-      withMutedConsole(async () => {
-        await page.addInitScript(() => {
-          window.__OVERRIDE_TIMERS = { roundTimer: 5 };
-          window.__FF_OVERRIDES = { showRoundSelectModal: true };
-        });
-        await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
-
-        await startMatchAndAwaitStats(page, "#round-select-2");
+    createBasicTest(
+      "resolves the round and updates score after opponent reveal",
+      async ({ page }) => {
         await setOpponentResolveDelay(page, 1);
 
         const firstStat = page.locator(selectors.statButton(0)).first();
@@ -273,19 +321,12 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         const snapshot = await getBattleSnapshot(page);
         expect(snapshot?.selectionMade).toBe(true);
-        // Do not assert roundsPlayed here; some environments lag updating this counter.
-      }, ["log", "info", "warn", "error", "debug"]));
+      }
+    );
 
-    test("advances to the next round after opponent reveal", async ({ page }) =>
-      withMutedConsole(async () => {
-        await page.addInitScript(() => {
-          window.__OVERRIDE_TIMERS = { roundTimer: 10 };
-          window.__NEXT_ROUND_COOLDOWN_MS = 1000;
-          window.__FF_OVERRIDES = { showRoundSelectModal: true };
-        });
-        await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
-
-        await startMatchAndAwaitStats(page, "#round-select-3");
+    createBasicTest(
+      "advances to the next round after opponent reveal",
+      async ({ page }) => {
         await setOpponentResolveDelay(page, 100);
 
         const firstStat = page.locator(selectors.statButton(0)).first();
@@ -333,7 +374,13 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         const snackbar = page.locator(selectors.snackbarContainer());
         await expect(snackbar).toContainText(/Opponent is choosing/i);
-      }, ["log", "info", "warn", "error", "debug"]));
+      },
+      {
+        matchSelector: "#round-select-3",
+        timerOverrides: { roundTimer: 10 },
+        nextRoundCooldown: 1000
+      }
+    );
   });
 
   test.describe("Opponent Delay Scenarios", () => {
