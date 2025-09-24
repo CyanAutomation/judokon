@@ -2289,6 +2289,17 @@ function handleBattleStateChange({ from, to }) {
   }
 }
 
+/**
+ * Attach CLI event bindings and lifecycle listeners.
+ *
+ * @returns {void}
+ * @pseudocode
+ * installEventBindings()
+ * onBattleEvent("battleStateChange", handleBattleStateChange)
+ * if window → add keydown listener
+ * if document → add click + visibility listeners with pause/resume timers
+ * if window → add pageshow/pagehide listeners with timer guards
+ */
 export function wireEvents() {
   installEventBindings();
   onBattleEvent("battleStateChange", handleBattleStateChange);
