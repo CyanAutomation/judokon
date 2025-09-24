@@ -13,6 +13,40 @@ import NAV_ITEMS from "../tests/fixtures/navigationItems.js";
 const GAME_MODES = JSON.parse(fs.readFileSync("tests/fixtures/gameModes.json", "utf8"));
 const TOOLTIP_DATA = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"));
 
+const NAVIGATION_ENABLED_MODE_IDS = new Set(
+  NAV_ITEMS.map((item) => {
+    if (typeof item.gameModeId === "number" && Number.isSafeInteger(item.gameModeId)) {
+      return item.gameModeId;
+    }
+
+    if (typeof item.gameModeId === "string") {
+      const parsed = Number.parseInt(item.gameModeId, 10);
+      if (Number.isSafeInteger(parsed)) {
+        return parsed;
+      }
+    }
+
+    return null;
+  }).filter((id) => id !== null)
+);
+
+function resolveNavigationModeId(modeId) {
+  if (typeof modeId === "number") {
+    return Number.isSafeInteger(modeId) && NAVIGATION_ENABLED_MODE_IDS.has(modeId)
+      ? modeId
+      : null;
+  }
+
+  if (typeof modeId === "string") {
+    const parsed = Number.parseInt(modeId, 10);
+    if (Number.isSafeInteger(parsed) && NAVIGATION_ENABLED_MODE_IDS.has(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Gather sorted game mode names, enabled feature flag labels, and the expected
  * tab order labels for the settings page.
@@ -20,16 +54,23 @@ const TOOLTIP_DATA = JSON.parse(fs.readFileSync("src/data/tooltips.json", "utf8"
  * @returns {{sortedNames: string[], flagLabels: string[], expectedLabels: string[]}}
  */
 function getLabelData() {
+  const modeNameById = GAME_MODES.reduce((map, mode) => {
+    const resolvedId = resolveNavigationModeId(mode.id);
+    if (resolvedId !== null && typeof mode.name === "string" && mode.name.length > 0) {
+      map.set(resolvedId, mode.name);
+    }
+    return map;
+  }, new Map());
+
   const navModeNames = NAV_ITEMS.slice()
     .sort((a, b) => a.order - b.order)
-    .map((item) => GAME_MODES.find((m) => m.id === item.gameModeId)?.name)
+    .map((item) => {
+      const resolvedId = resolveNavigationModeId(item.gameModeId);
+      return resolvedId === null ? null : modeNameById.get(resolvedId);
+    })
     .filter(Boolean);
 
-  const extraModes = GAME_MODES.map((mode) => mode.name)
-    .filter(Boolean)
-    .filter((name) => !navModeNames.includes(name));
-
-  const sortedNames = [...navModeNames, ...extraModes];
+  const sortedNames = [...navModeNames];
 
   const flagLabels = Object.keys(DEFAULT_SETTINGS.featureFlags)
     .filter((flag) => DEFAULT_SETTINGS.featureFlags[flag].enabled)
