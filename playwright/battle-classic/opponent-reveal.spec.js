@@ -238,25 +238,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
       resolveDelay: overrides.resolveDelay ?? DEFAULT_BASIC_CONFIG.resolveDelay
     });
 
-    const basicConfigOverrides = new Map();
-    let activeBasicConfig = buildBasicConfig();
-
-    const createBasicTest = (title, testFn, overrides) => {
-      if (overrides && Object.keys(overrides).length > 0) {
-        basicConfigOverrides.set(title, overrides);
-      }
-
-      test(title, async ({ page }) =>
-        withMutedConsole(async () => {
-          await testFn({ page });
-        }, BASIC_MUTED_CONSOLE_LEVELS)
-      );
-    };
-
-    test.beforeEach(async ({ page }, testInfo) => {
-      const overrides = basicConfigOverrides.get(testInfo.title) ?? {};
-      activeBasicConfig = buildBasicConfig(overrides);
-
+    const bootstrapBasicTest = async ({ page }, config) => {
       await page.addInitScript(
         ({ timers, cooldown, resolveDelay }) => {
           window.__OVERRIDE_TIMERS = timers;
@@ -268,38 +250,46 @@ test.describe("Classic Battle Opponent Reveal", () => {
           window.process = { env: { VITEST: "1" } };
         },
         {
-          timers: activeBasicConfig.timerOverrides,
-          cooldown: activeBasicConfig.nextRoundCooldown,
-          resolveDelay: activeBasicConfig.resolveDelay
+          timers: config.timerOverrides,
+          cooldown: config.nextRoundCooldown,
+          resolveDelay: config.resolveDelay
         }
       );
 
       await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
 
-      await startMatchAndAwaitStats(page, activeBasicConfig.matchSelector);
+      await startMatchAndAwaitStats(page, config.matchSelector);
 
-      await setOpponentResolveDelay(page, activeBasicConfig.resolveDelay);
-    });
+      await setOpponentResolveDelay(page, config.resolveDelay);
+    };
+
+    const createBasicTest = (title, testFn, overrides = {}) => {
+      test(title, async ({ page }, testInfo) =>
+        withMutedConsole(async () => {
+          const config = buildBasicConfig(overrides);
+
+          await bootstrapBasicTest({ page }, config);
+
+          await testFn({ page, config, testInfo });
+        }, BASIC_MUTED_CONSOLE_LEVELS)
+      );
+    };
 
     createBasicTest(
       "shows opponent choosing snackbar immediately after stat selection",
       async ({ page }) => {
-        await setOpponentResolveDelay(page, 50);
-
         const firstStat = page.locator(selectors.statButton(0)).first();
         await firstStat.click();
 
         const snack = page.locator(selectors.snackbarContainer());
         await expect(snack).toContainText(/Opponent is choosing/i);
       },
-      { nextRoundCooldown: 1000 }
+      { nextRoundCooldown: 1000, resolveDelay: 50 }
     );
 
     createBasicTest(
       "resolves the round and updates score after opponent reveal",
-      async ({ page }) => {
-        await setOpponentResolveDelay(page, 1);
-
+      async ({ page, testInfo }) => {
         const firstStat = page.locator(selectors.statButton(0)).first();
         await firstStat.click();
 
@@ -310,7 +300,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           await waitForBattleState(page, "roundOver");
         } catch (error) {
           await handleWaitForBattleStateError({
-            testInfo: test.info(),
+            testInfo,
             expectedState: "roundOver",
             error,
             fallback: () => resolveRoundDeterministic(page)
@@ -321,14 +311,13 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         const snapshot = await getBattleSnapshot(page);
         expect(snapshot?.selectionMade).toBe(true);
-      }
+      },
+      { resolveDelay: 1 }
     );
 
     createBasicTest(
       "advances to the next round after opponent reveal",
-      async ({ page }) => {
-        await setOpponentResolveDelay(page, 100);
-
+      async ({ page, testInfo }) => {
         const firstStat = page.locator(selectors.statButton(0)).first();
         await firstStat.click();
 
@@ -336,7 +325,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           await waitForBattleState(page, "roundOver");
         } catch (error) {
           await handleWaitForBattleStateError({
-            testInfo: test.info(),
+            testInfo,
             expectedState: "roundOver",
             error,
             fallback: () => resolveRoundDeterministic(page)
@@ -354,7 +343,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           await waitForBattleState(page, "waitingForPlayerAction");
         } catch (error) {
           await handleWaitForBattleStateError({
-            testInfo: test.info(),
+            testInfo,
             expectedState: "waitingForPlayerAction",
             error,
             fallback: () =>
@@ -378,7 +367,8 @@ test.describe("Classic Battle Opponent Reveal", () => {
       {
         matchSelector: "#round-select-3",
         timerOverrides: { roundTimer: 10 },
-        nextRoundCooldown: 1000
+        nextRoundCooldown: 1000,
+        resolveDelay: 100
       }
     );
   });
