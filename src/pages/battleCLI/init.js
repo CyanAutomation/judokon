@@ -1081,6 +1081,15 @@ function startSelectionCountdown(seconds = 30) {
     } catch {}
   };
   selectionFinishFn = finish;
+  /**
+   * Apply countdown text while respecting existing error messaging.
+   *
+   * @param {number} value - The remaining countdown seconds to display.
+   * @pseudocode
+   * set el.dataset.remainingTime to String(value)
+   * if el.dataset.status is "error": return
+   * set el.textContent to formatted countdown message
+   */
   const applyCountdownText = (value) => {
     el.dataset.remainingTime = String(value);
     if (el.dataset.status === "error") return;
