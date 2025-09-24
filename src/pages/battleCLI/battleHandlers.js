@@ -56,6 +56,15 @@ export const handleWaitingForPlayerActionKey = (key) =>
   handlers.handleWaitingForPlayerActionKey(key);
 
 /**
+ * Wrapper for the 'waitingForMatchStart' state key handler.
+ *
+ * @param {string} key - Key string.
+ * @returns {boolean}
+ */
+export const handleWaitingForMatchStartKey = (key) =>
+  handlers.handleWaitingForMatchStartKey(key);
+
+/**
  * Wrapper for the 'roundOver' state key handler.
  *
  * @param {string} key - Key string.
