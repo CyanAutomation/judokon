@@ -126,10 +126,23 @@ export class ScoreboardView {
       return;
     }
     // Immediate set for determinism, optional animate when prior spans exist
-    const playerSpan = this.scoreEl.querySelector('span[data-side="player"]');
-    const opponentSpan = this.scoreEl.querySelector('span[data-side="opponent"]');
     const endVals = { p: Number(player) || 0, o: Number(opponent) || 0 };
-    if (!playerSpan || !opponentSpan) return;
+    let playerSpan = this.scoreEl.querySelector('span[data-side="player"]');
+    let opponentSpan = this.scoreEl.querySelector('span[data-side="opponent"]');
+    if (!playerSpan || !opponentSpan) {
+      // Ensure deterministic text content even if initial markup lacks spans.
+      this._scoreAnimId += 1;
+      if (this._scoreRaf) {
+        cancel(this._scoreRaf);
+        this._scoreRaf = null;
+      }
+      this.scoreEl.innerHTML = `<span data-side="player">You: ${endVals.p}</span>\n<span data-side="opponent">Opponent: ${endVals.o}</span>`;
+      playerSpan = this.scoreEl.querySelector('span[data-side="player"]');
+      opponentSpan = this.scoreEl.querySelector('span[data-side="opponent"]');
+      if (!playerSpan || !opponentSpan) {
+        return;
+      }
+    }
     const parse = (el) => {
       if (!el) return 0;
       const m = el.textContent && el.textContent.match(/(\d+)/);
