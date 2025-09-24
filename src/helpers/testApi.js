@@ -38,6 +38,18 @@ function logDevWarning(message, error) {
   } catch {}
 }
 
+function logDevDebug(message, error) {
+  if (!isDevelopmentEnvironment()) return;
+
+  try {
+    if (typeof console.debug === "function") {
+      console.debug(message, error);
+    } else {
+      console.log(message, error);
+    }
+  } catch {}
+}
+
 function isAutomationNavigator(nav) {
   if (!nav) return false;
 
@@ -369,14 +381,25 @@ const timerApi = {
       // Use existing battleCLI helper if available
       if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
         const battleCLI = window.__battleCLIinit;
+        let delegationSucceeded = false;
+
         try {
-          battleCLI.__freezeUntil = 0;
+          if (battleCLI.__freezeUntil !== undefined) {
+            battleCLI.__freezeUntil = 0;
+          }
         } catch {}
 
         try {
           battleCLI.setCountdown(seconds);
+          delegationSucceeded = true;
         } catch (err) {
-          logDevWarning("Failed to delegate countdown to battleCLI", err);
+          logDevDebug("Failed to delegate countdown to battleCLI", err);
+        } finally {
+          try {
+            if (battleCLI.__freezeUntil !== undefined) {
+              battleCLI.__freezeUntil = delegationSucceeded ? 0 : Date.now() + 500;
+            }
+          } catch {}
         }
 
         applyCountdown(seconds);
