@@ -2,30 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 const countdownTimers = [];
-const countdownTickEvents = [];
-const pendingTickResolvers = [];
 const activeCountdownTimeouts = new Set();
 let timersControl = null;
 let battleMod = null;
 
-function waitForNextCountdownTick() {
-  return new Promise((resolve) => {
-    pendingTickResolvers.push(resolve);
-  });
-}
-
-function recordCountdownTick(event) {
-  countdownTickEvents.push(event);
-  while (pendingTickResolvers.length) {
-    const resolve = pendingTickResolvers.shift();
-    resolve(event);
-  }
-}
-
 function resetCountdownState() {
   countdownTimers.length = 0;
-  countdownTickEvents.length = 0;
-  pendingTickResolvers.length = 0;
   activeCountdownTimeouts.clear();
 }
 
@@ -55,7 +37,6 @@ vi.mock("../../../src/helpers/timerUtils.js", async (importOriginal) => {
             if (tickHandler) {
               tickHandler(0);
             }
-            recordCountdownTick({ timer: controls, remaining: 0 });
           }, 1000);
           activeCountdownTimeouts.add(timeoutId);
         }),
@@ -115,17 +96,13 @@ describe("timer behavior with mocks", () => {
 
     expect(countdownTimers.length).toBeGreaterThan(0);
 
-    const tickPromise = waitForNextCountdownTick();
-
     timer.start();
 
     await vi.advanceTimersByTimeAsync(1000);
 
-    const { timer: tickedTimer } = await tickPromise;
-
     expect(tickSpy).toHaveBeenCalledTimes(1);
-    expect(tickedTimer).toBe(timer);
-    expect(countdownTickEvents.length).toBeGreaterThan(0);
+    expect(tickSpy).toHaveBeenCalledWith(0);
+    expect(countdownTimers).toContain(timer);
     expect(activeCountdownTimeouts.size).toBe(0);
   });
 
