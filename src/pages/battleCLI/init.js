@@ -1378,6 +1378,7 @@ function ensureStatClickBinding(list) {
  * @returns {Promise<void>} Resolves when the stat list has been rendered.
  */
 export async function renderStatList(judoka) {
+  console.log('[DEBUG] renderStatList() called');
   try {
     const list = byId("cli-stats");
     const stats = await loadStatDefs();
@@ -2401,6 +2402,7 @@ export function wireEvents() {
  * wireEvents()
  */
 export async function init() {
+  console.log('[DEBUG] init() called');
   initSeed();
   store = createBattleStore();
   // Enable outcome confirmation pause for better UX
