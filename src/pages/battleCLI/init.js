@@ -2318,6 +2318,10 @@ export function subscribeEngine() {
       });
       engineFacade.on("matchEnded", ({ outcome }) => {
         setRoundMessage(`Match over: ${outcome}`);
+        const announcementEl = byId("match-announcement");
+        if (announcementEl) {
+          announcementEl.textContent = `Match over. ${outcome === "playerWin" ? "You win!" : outcome === "opponentWin" ? "Opponent wins." : "It's a draw."}`;
+        }
       });
     }
   } catch {}

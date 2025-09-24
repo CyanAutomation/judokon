@@ -30,6 +30,7 @@ export const CLI_DOM_TEMPLATE = `
     <main id="cli-main" class="cli-main" role="main">
       <section aria-label="Round Status" class="cli-block">
         <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
+        <div id="match-announcement" aria-live="assertive" aria-atomic="true" style="position: absolute; left: -10000px;"></div>
         <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
       </section>
       <div class="ascii-sep">────────────────────────</div>
