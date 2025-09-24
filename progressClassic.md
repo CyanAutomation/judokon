@@ -19,11 +19,13 @@ This revised report includes the original findings, adds context about the dupli
 ### 1. CRITICAL: Battle Never Starts – Stuck at "Waiting…"
 
 **Actions Taken:**
+
 - Investigated `src/pages/battleClassic.html` for duplicate `<script type="module" src="./battleClassic.init.js"></script>` tags.
 - Found only one instance of the script import (line 99).
 - No duplicate script import exists in the HTML file.
 
 **Outcome:**
+
 - No duplicate script to remove. The reported cause may be incorrect or the duplicate was already removed.
 - Relevant unit tests (init-complete.test.js, bootstrap.test.js) pass.
 - Relevant Playwright tests (round-select.spec.js, stat-selection.spec.js, smoke.spec.js) pass.
@@ -32,6 +34,7 @@ This revised report includes the original findings, adds context about the dupli
 ### 2. HIGH: Clickable Area Mis-Targets in Modal
 
 **Actions Taken:**
+
 - Investigated the modal's HTML and CSS structure in `roundSelectModal.js` and `Modal.js`.
 - Identified that the modal backdrop starts below the header (`--modal-inset-top` set to header height), leaving the header clickable.
 - Modified `RoundSelectPositioner` in `roundSelectModal.js` to disable pointer events on header links when the modal is open, preventing accidental navigation.
@@ -39,6 +42,7 @@ This revised report includes the original findings, adds context about the dupli
 - Added re-enabling of pointer events in the `cleanup()` method when the modal closes.
 
 **Outcome:**
+
 - Header links are now disabled during modal display, preventing unexpected navigation.
 - Modal functionality remains intact.
 - Relevant unit tests (roundSelectModal.test.js) pass.
@@ -48,51 +52,33 @@ This revised report includes the original findings, adds context about the dupli
 ### 3. MEDIUM: Keyboard Navigation in Modal Not Working
 
 **Actions Taken:**
+
 - Investigated the `setupKeyboardNavigation` function in `roundSelectModal.js`, which handles number keys (1-3), arrow keys, and Enter.
 - Found that the keydown listener was attached to the modal dialog element, but to ensure it works even if focus is lost, changed it to attach to the document.
 - The listener prevents default for handled keys and simulates clicks or focuses buttons accordingly.
 - Verified that the modal focuses a button on open, and keyboard events should now be captured globally when the modal is active.
 
 **Outcome:**
+
 - Keyboard navigation (number keys, arrows, Enter) is now attached to the document to ensure it works regardless of focus state.
 - Relevant unit tests (roundSelectModal.test.js) pass.
 - Relevant Playwright tests (round-select-keyboard.spec.js) pass.
 - No regressions detected.
 
-### 4. HIGH: Footer Navigation Remains Active During Battle
+### 5. HIGH: Error Handling in Battle Initialization
 
 **Actions Taken:**
-- Identified that the "footer navigation" refers to the header logo link in `battleClassic.html`, which can cause users to lose progress by navigating away.
-- Modified the `onStart` callback in `battleClassic.init.js` to disable pointer events on header links when the battle starts.
-- Modified `showEndModal` in `endModal.js` to re-enable header links when the match ends.
-- Modified the quit handler in `quitModal.js` to re-enable header links before navigating away on quit.
+
+- Added try-catch around `await startRoundCycle(store);` in the `onStart` callback of `initRoundSelectModal` in `battleClassic.init.js`.
+- If `startRoundCycle` fails, it now calls `showFatalInitError(err)` to display a user-friendly error message with a "Retry" button that reloads the page.
+- Modified `startRoundCycle` to re-throw errors from `startRound` and `renderStatButtons` instead of just logging them, ensuring they propagate to the top-level error handler.
+- This prevents the battle from freezing on initialization failures and provides a recovery mechanism.
 
 **Outcome:**
-- Header links are disabled during active battles, preventing accidental navigation and progress loss.
-- Links are re-enabled when the battle ends or the user quits.
-- Relevant unit tests (init-complete.test.js, quit-flow.test.js, end-modal.test.js) pass.
+
+- Battle initialization failures now show a clear error message with retry option instead of freezing.
+- Errors in `startRound` (including `drawCards`) and `renderStatButtons` are properly handled.
+- Relevant unit tests (init-complete.test.js, bootstrap.test.js) pass.
 - No regressions detected.
-
----
-
-## Proposed Fixes & Improvements
-
-### High Priority
-
-*   **Fix Battle Initialization:**
-    1.  **Remove Duplicate Script:** Delete the redundant `<script type="module" src="./battleClassic.init.js"></script>` from `src/pages/battleClassic.html`.
-    2.  **Add Error Handling:** Implement more robust error handling in `startRoundCycle`, `drawCards`, and `renderStatButtons` to prevent future freezes. Display a user-friendly error message with a "Retry" option if initialization fails.
-
-*   **Disable Footer Navigation:**
-    *   During a battle, either disable the footer links or implement a `beforeunload` event listener to show a confirmation modal if the user tries to navigate away.
-
-### Medium Priority
-
-*   **Fix Modal Keyboard Navigation:**
-    *   Investigate why the keyboard event listeners in `setupKeyboardNavigation` are not working for the round selection modal. Ensure the modal has focus and the events are correctly bound.
-
-*   **Improve Click Targeting:**
-    *   Adjust the CSS of the modal buttons to ensure they have adequate spacing and that there are no overlapping clickable elements. Ensure all buttons meet the minimum touch-target size of 44x44 pixels.
-
 
 ---

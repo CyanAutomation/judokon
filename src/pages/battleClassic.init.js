@@ -1327,7 +1327,8 @@ async function startRoundCycle(store, options = {}) {
         await startRound(store);
         roundStarted = true;
       } catch (err) {
-        console.debug("battleClassic: startRound failed", err);
+        console.error("battleClassic: startRound failed", err);
+        throw err; // Re-throw to propagate to caller
       }
     }
 
@@ -1340,7 +1341,8 @@ async function startRoundCycle(store, options = {}) {
     try {
       renderStatButtons(store);
     } catch (err) {
-      console.debug("battleClassic: renderStatButtons failed", err);
+      console.error("battleClassic: renderStatButtons failed", err);
+      throw err; // Re-throw to propagate to caller
     }
     try {
       showSelectionPrompt();
@@ -1637,7 +1639,12 @@ async function init() {
         } catch {}
         // Begin first round
         broadcastBattleState("matchStart");
-        await startRoundCycle(store);
+        try {
+          await startRoundCycle(store);
+        } catch (err) {
+          console.error("battleClassic: startRoundCycle failed", err);
+          showFatalInitError(err);
+        }
       });
     } catch (err) {
       console.debug("battleClassic: initRoundSelectModal failed", err);
