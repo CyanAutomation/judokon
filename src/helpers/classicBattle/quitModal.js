@@ -69,6 +69,11 @@ function createQuitConfirmation(store, onConfirm) {
     // Navigate to home (robust to varying base paths like GH Pages)
     modal.destroy();
     store.quitModal = null;
+    // Re-enable header navigation
+    try {
+      const headerLinks = document.querySelectorAll("header a");
+      headerLinks.forEach((link) => (link.style.pointerEvents = ""));
+    } catch {}
     navigateToHome();
   });
   document.body.appendChild(modal.element);

@@ -1630,6 +1630,11 @@ async function init() {
         try {
           document.body.setAttribute("data-battle-active", "true");
         } catch {}
+        // Disable header navigation during battle
+        try {
+          const headerLinks = document.querySelectorAll("header a");
+          headerLinks.forEach((link) => (link.style.pointerEvents = "none"));
+        } catch {}
         // Begin first round
         broadcastBattleState("matchStart");
         await startRoundCycle(store);

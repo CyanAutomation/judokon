@@ -96,9 +96,5 @@ This revised report includes the original findings, adds context about the dupli
 *   **Improve Click Targeting:**
     *   Adjust the CSS of the modal buttons to ensure they have adequate spacing and that there are no overlapping clickable elements. Ensure all buttons meet the minimum touch-target size of 44x44 pixels.
 
-### Low Priority
-
-*   **Audio Cues:** Add optional sound effects for win/loss/tie events.
-*   **Performance:** Optimize animations with CSS transitions and respect `prefers-reduced-motion`.
 
 ---
