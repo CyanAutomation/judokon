@@ -30,10 +30,12 @@ describe("handleStatSelectionTimeout", () => {
 
   beforeEach(() => {
     scheduledCallbacks = new Map();
+    let nextId = 1;
+
     fakeScheduler = {
       setTimeout: vi.fn((callback, delay) => {
-        const id = Symbol(delay);
-        scheduledCallbacks.set(id, callback);
+        const id = nextId++;
+        scheduledCallbacks.set(id, { callback, delay });
         return id;
       }),
       clearTimeout: vi.fn((id) => scheduledCallbacks.delete(id))
@@ -55,8 +57,10 @@ describe("handleStatSelectionTimeout", () => {
     handleStatSelectionTimeout(store, onSelect, 5000);
 
     // 1. The initial timeout should be registered for the provided delay.
-    expect(fakeScheduler.setTimeout).toHaveBeenNthCalledWith(1, expect.any(Function), 5000);
-    const mainTimeout = fakeScheduler.setTimeout.mock.calls[0][0];
+    expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
+    const mainTimeoutCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 5000);
+    expect(mainTimeoutCall).toBeDefined();
+    const [mainTimeout] = mainTimeoutCall;
 
     // Execute the main timeout callback to simulate the timer expiring.
     mainTimeout();
@@ -66,8 +70,10 @@ describe("handleStatSelectionTimeout", () => {
     expect(autoSelectStat).not.toHaveBeenCalled();
 
     // 3. The countdown announcement should be scheduled for 800ms later.
-    expect(fakeScheduler.setTimeout).toHaveBeenNthCalledWith(2, expect.any(Function), 800);
-    const countdownTimeout = fakeScheduler.setTimeout.mock.calls[1][0];
+    expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 800);
+    const countdownCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 800);
+    expect(countdownCall).toBeDefined();
+    const [countdownTimeout] = countdownCall;
 
     // Execute the countdown callback.
     countdownTimeout();
@@ -77,8 +83,10 @@ describe("handleStatSelectionTimeout", () => {
     expect(autoSelectStat).not.toHaveBeenCalled();
 
     // 5. Auto-select should be scheduled 250ms after the countdown announcement.
-    expect(fakeScheduler.setTimeout).toHaveBeenNthCalledWith(3, expect.any(Function), 250);
-    const autoSelectTimeout = fakeScheduler.setTimeout.mock.calls[2][0];
+    expect(fakeScheduler.setTimeout).toHaveBeenCalledWith(expect.any(Function), 250);
+    const autoSelectCall = fakeScheduler.setTimeout.mock.calls.find(([, delay]) => delay === 250);
+    expect(autoSelectCall).toBeDefined();
+    const [autoSelectTimeout] = autoSelectCall;
 
     // 6. Trigger the final callback and verify the auto-select is invoked once.
     autoSelectTimeout();

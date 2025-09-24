@@ -22,10 +22,15 @@ describe("battleCLI countdown", () => {
     emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
     const cd = document.getElementById("cli-countdown");
     expect(cd.dataset.remainingTime).toBe("30");
-    mod.startSelectionCountdown?.(30);
-    const finishSelection = mod.getSelectionFinishFn?.();
+    expect(mod.startSelectionCountdown).toBeDefined();
+    expect(typeof mod.startSelectionCountdown).toBe("function");
+    mod.startSelectionCountdown(30);
+    expect(mod.getSelectionFinishFn).toBeDefined();
+    expect(typeof mod.getSelectionFinishFn).toBe("function");
+    const finishSelection = mod.getSelectionFinishFn();
+    expect(finishSelection).toBeDefined();
     expect(typeof finishSelection).toBe("function");
-    await finishSelection?.();
+    await finishSelection();
     // Either the auto-select helper is invoked, or the UI shows a selection result
     const bar = document.querySelector("#snackbar-container .snackbar");
     expect(
@@ -40,10 +45,15 @@ describe("battleCLI countdown", () => {
     const emitSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const { autoSelectStat } = await import("../../src/helpers/classicBattle/autoSelectStat.js");
     battleEvents.emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
-    mod.startSelectionCountdown?.(30);
-    const finishSelection = mod.getSelectionFinishFn?.();
+    expect(mod.startSelectionCountdown).toBeDefined();
+    expect(typeof mod.startSelectionCountdown).toBe("function");
+    mod.startSelectionCountdown(30);
+    expect(mod.getSelectionFinishFn).toBeDefined();
+    expect(typeof mod.getSelectionFinishFn).toBe("function");
+    const finishSelection = mod.getSelectionFinishFn();
+    expect(finishSelection).toBeDefined();
     expect(typeof finishSelection).toBe("function");
-    await finishSelection?.();
+    await finishSelection();
     expect(autoSelectStat).not.toHaveBeenCalled();
     expect(emitSpy).toHaveBeenCalledWith("statSelectionStalled");
     emitSpy.mockRestore();

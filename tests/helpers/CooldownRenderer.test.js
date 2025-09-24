@@ -19,19 +19,17 @@ const createDeterministicScheduler = () => {
       return false;
     }
 
-    let chosenId = null;
-    let chosenTask = null;
-
-    for (const [id, task] of tasks.entries()) {
-      if (
-        chosenTask === null ||
-        task.delay < chosenTask.delay ||
-        (task.delay === chosenTask.delay && id < chosenId)
-      ) {
-        chosenId = id;
-        chosenTask = task;
+    const [chosenId, chosenTask] = Array.from(tasks.entries()).reduce(
+      ([bestId, bestTask], [id, task]) => {
+        if (
+          task.delay < bestTask.delay ||
+          (task.delay === bestTask.delay && id < bestId)
+        ) {
+          return [id, task];
+        }
+        return [bestId, bestTask];
       }
-    }
+    );
 
     tasks.delete(chosenId);
     chosenTask.fn();
@@ -175,6 +173,7 @@ describe("createPromptDelayController", () => {
     currentNow = 40;
     scheduler.runNext();
     expect(onReady).not.toHaveBeenCalled();
+    expect(scheduler.peekDelays()).toEqual([40]);
 
     currentNow = 80;
     scheduler.runNext();
@@ -185,6 +184,7 @@ describe("createPromptDelayController", () => {
     scheduler.runNext();
     expect(onReady).toHaveBeenCalledTimes(1);
     expect(onReady).toHaveBeenCalledWith(7, { suppressEvents: false });
+    expect(scheduler.peekDelays()).toEqual([]);
 
     controller.queueTick(5, {}, onReady);
 
