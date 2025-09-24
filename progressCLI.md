@@ -1,89 +1,70 @@
-# QA Report — `src/pages/battleCLI.html`# QA Report — `src/pages/battleCLI.html`
+# QA Report for `src/pages/battleCLI.html`
 
-| Issue | Steps to reproduce | Evidence | Verification & Feasibility || Issue | Steps to reproduce | Evidence | Verification & Feasibility |
+**Reviewer:** Gemini
 
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------- || ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------- |
+## Reviewer's Summary
 
-| **Quit confirmation does not pause timer** (violates PRD requirement for pausing timers during modals) | Start a match; press **Q** to open "Quit the match?" modal. Observe that the countdown continues to decrease while the modal is displayed. In our test the time left decreased from 9 s to 3 s while the quit modal remained open. | Screenshot shows timer decreasing in the background of the quit modal. | **Verified:** Code calls `pauseTimers()` on modal open, which clears intervals. Possible UI update bug or test error. **Feasible:** Investigate timer UI updates during pause. || **Quit confirmation does not pause timer** (violates PRD requirement for pausing timers during modals) | Start a match; press **Q** to open "Quit the match?" modal. Observe that the countdown continues to decrease while the modal is displayed. In our test the time left decreased from 9 s to 3 s while the quit modal remained open. | Screenshot shows timer decreasing in the background of the quit modal. | **Verified:** Code calls `pauseTimers()` on modal open, which clears intervals. Possible UI update bug or test error. **Feasible:** Investigate timer UI updates during pause. |
+This report has been revised to clarify the issues found during testing of the Classic Battle CLI page. The original report's findings are largely accurate, though some verification notes have been updated based on a direct code review.
 
-| **Timer resets after cancel** | In the same quit modal, press **Esc** or click **Cancel**. The round timer resets to full (29 s), effectively giving extra time. This deviates from the requirement that cancelling should resume (not reset) the timer. | Evidence of timer resetting to 29 s after cancelling. | **Verified:** Code calls `resumeTimers()` with paused value. Possible bug in resume logic. **Feasible:** Debug resumeTimers function. || **Timer resets after cancel** | In the same quit modal, press **Esc** or click **Cancel**. The round timer resets to full (29 s), effectively giving extra time. This deviates from the requirement that cancelling should resume (not reset) the timer. | Evidence of timer resetting to 29 s after cancelling. | **Verified:** Code calls `resumeTimers()` with paused value. Possible bug in resume logic. **Feasible:** Debug resumeTimers function. |
+The most significant issues are related to **timer management during modals** and a **confusing match start flow**. The timer logic appears to be complex and prone to bugs, leading to a poor user experience and deviations from PRD requirements.
 
-| **Game start is unclear and inconsistent** | On first load, a match‑length modal appears after a short delay, but sometimes the modal does not appear at all. The user must click the tiny lightning‑bolt/power icon without any prompt. Pressing Enter/Space shows "Invalid key, press H for help", which confuses players expecting Enter to start. | Evidence: pressing Enter before starting shows "Invalid key" message with no guidance. | **Verified:** Modal should appear via `initRoundSelectModal()`. Fallback to start button if fails. Enter not handled in waitingForMatchStart. **Feasible:** Add Enter handler for modal or start. || **Game start is unclear and inconsistent** | On first load, a match‑length modal appears after a short delay, but sometimes the modal does not appear at all. The user must click the tiny lightning‑bolt/power icon without any prompt. Pressing Enter/Space shows "Invalid key, press H for help", which confuses players expecting Enter to start. | Evidence: pressing Enter before starting shows "Invalid key" message with no guidance. | **Verified:** Modal should appear via `initRoundSelectModal()`. Fallback to start button if fails. Enter not handled in waitingForMatchStart. **Feasible:** Add Enter handler for modal or start. |
+This updated report provides a cleaner, more readable format and offers specific, actionable recommendations for each issue.
 
-| **Enter key cannot be used to confirm stat selection** | The help panel indicates Enter/Space is used for "Next" (between rounds), but some users expect Enter to confirm a stat when it is highlighted via arrow keys. Pressing Enter while a stat is highlighted does nothing, and eventually produces an "Invalid key" message. Only number keys or clicking work for stat selection. | During testing, arrow keys moved focus, but Enter had no effect; number keys were required. | **Verified:** Key handler only accepts 1-5. No Enter support. **Feasible:** Add Enter key support in `handleWaitingForPlayerActionKey`. || **Enter key cannot be used to confirm stat selection** | The help panel indicates Enter/Space is used for "Next" (between rounds), but some users expect Enter to confirm a stat when it is highlighted via arrow keys. Pressing Enter while a stat is highlighted does nothing, and eventually produces an "Invalid key" message. Only number keys or clicking work for stat selection. | During testing, arrow keys moved focus, but Enter had no effect; number keys were required. | **Verified:** Key handler only accepts 1-5. No Enter support. **Feasible:** Add Enter key support in `handleWaitingForPlayerActionKey`. |
+---
 
-| **Quit modal focus control** | When the quit modal appears, keyboard focus is on the **Cancel** button, but there is no visible focus ring on the **Quit** button. Navigating between buttons using Tab is not possible; users must click with the pointer. | Screenshot shows only **Cancel** with a focus indicator; **Quit** lacks one. | **Verified:** Modal focuses cancel. Tab navigation may be blocked. **Feasible:** Ensure both buttons are focusable and visible. || **Quit modal focus control** | When the quit modal appears, keyboard focus is on the **Cancel** button, but there is no visible focus ring on the **Quit** button. Navigating between buttons using Tab is not possible; users must click with the pointer. | Screenshot shows only **Cancel** with a focus indicator; **Quit** lacks one. | **Verified:** Modal focuses cancel. Tab navigation may be blocked. **Feasible:** Ensure both buttons are focusable and visible. |
+## 1. CRITICAL: Timer Does Not Pause During Quit Modal
 
-| **Verbose log feature hard to discover/test** | Ticking the "Verbose" checkbox before starting a match did not make any visible change; due to start‑flow bugs it was difficult to verify whether verbose logs appear. There is no indicator in the UI to show that verbose mode is enabled. | – | **Verified:** Verbose section hidden by default, shown via feature flag. No UI indicator. **Feasible:** Add indicator and auto-show on enable. || **Verbose log feature hard to discover/test** | Ticking the "Verbose" checkbox before starting a match did not make any visible change; due to start‑flow bugs it was difficult to verify whether verbose logs appear. There is no indicator in the UI to show that verbose mode is enabled. | – | **Verified:** Verbose section hidden by default, shown via feature flag. No UI indicator. **Feasible:** Add indicator and auto-show on enable. |
+*   **Finding:** When the "Quit" modal is open, the round timer continues to count down in the background. This violates the PRD requirement that timers must pause when a modal is active.
+*   **Verification:** The `showQuitModal()` function correctly calls `pauseTimers()`, which is intended to clear the timer intervals. However, the UI continues to update. This suggests that while the core logic might be paused, the UI-level countdown is not, or that the `pauseTimers` function is not working as expected. The timer logic is complex, with multiple `setInterval` and `setTimeout` calls, making it susceptible to such bugs.
+*   **Recommendation:** Refactor the timer logic to use a single, pausable timer object instead of separate `interval` and `timeout` variables. This will simplify the code and make it easier to reliably pause and resume. At a minimum, `pauseTimers` needs to be debugged to ensure it stops all timer-related activity, including UI updates.
 
-| **Inconsistent message vocabulary** | At times the timer label changes from "**Timer: xx**" to "**Time remaining: xx**" or "**Time Left: xx**"; consistency would help readability. | Example screenshot with "Time remaining: 23" message. | **Verified:** Different labels in `setCountdown` ("Timer:") and `startSelectionCountdown` ("Time remaining:"). **Feasible:** Standardize to one label. || **Inconsistent message vocabulary** | At times the timer label changes from "**Timer: xx**" to "**Time remaining: xx**" or "**Time Left: xx**"; consistency would help readability. | Example screenshot with "Time remaining: 23" message. | **Verified:** Different labels in `setCountdown` ("Timer:") and `startSelectionCountdown` ("Time remaining:"). **Feasible:** Standardize to one label. |
+## 2. HIGH: Timer Resets After Cancelling Quit
 
-| **Lack of announcement when match ends** | After quitting, the scoreboard resets and a "Play again / Return to lobby" link appears, but the screen‑reader announcement (aria‑live) doesn't explicitly state that the match has ended or who won. | – | **Verified:** No aria-live announcement on match end. **Feasible:** Add aria-live region for match results. || **Lack of announcement when match ends** | After quitting, the scoreboard resets and a "Play again / Return to lobby" link appears, but the screen‑reader announcement (aria‑live) doesn't explicitly state that the match has ended or who won. | – | **Verified:** No aria-live announcement on match end. **Feasible:** Add aria-live region for match results. |
+*   **Finding:** After opening the "Quit" modal and then closing it (by pressing "Escape" or clicking "Cancel"), the round timer resets to its full duration (e.g., 30 seconds) instead of resuming from where it was paused.
+*   **Verification:** The `resumeTimers()` function is called on modal close. It attempts to restart the countdown with the `pausedSelectionRemaining` value. The fact that it resets suggests that `pausedSelectionRemaining` is either not being captured correctly in `pauseTimers()` or that `startSelectionCountdown()` is not using the provided value correctly.
+*   **Recommendation:** Debug the `pauseTimers` and `resumeTimers` functions. Ensure that the remaining time is correctly captured, stored, and then used to resume the countdown.
 
-| **Missing error handling for invalid seeds** | The PRD mentions invalid seeds should reset to default; there is no validation feedback when entering non‑numeric seeds. | – | **Verified:** Validation exists on change event, shows "Invalid seed. Using default." **Feasible:** Add real-time validation if needed. || **Missing error handling for invalid seeds** | The PRD mentions invalid seeds should reset to default; there is no validation feedback when entering non‑numeric seeds. | – | **Verified:** Validation exists on change event, shows "Invalid seed. Using default." **Feasible:** Add real-time validation if needed. |
+## 3. HIGH: Confusing and Inconsistent Match Start Flow
 
-## Improvement Opportunities## Improvement Opportunities
+*   **Finding:** The match does not start in a clear or consistent way. The "Select Match Length" modal sometimes fails to appear, leaving the user with no clear instructions. Pressing "Enter" (a common way to start) results in an "Invalid key" error.
+*   **Verification:** The `init()` function calls `initRoundSelectModal()`, with `renderStartButton()` as a fallback if it fails. The inconsistency suggests that `initRoundSelectModal` is error-prone. The key handler in the `waitingForMatchStart` state does not handle "Enter".
+*   **Recommendation:**
+    1.  Make the start flow more robust. If `initRoundSelectModal` fails, `renderStartButton` should provide a very clear, prominent button to start the match.
+    2.  Add support for the "Enter" key to either open the match length modal or to start the match directly.
+    3.  Add a tooltip or a visible hint near the lightning-bolt icon to indicate that it can start a match.
 
-- **Improve match start flow** – Provide a clear call‑to‑action to start the match. On first load, automatically display the "Select Match Length" modal and block inputs until a choice is made. Add a tool‑tip or message near the lightning‑bolt icon explaining that it starts a match. Permit the Enter/Space key to open the match‑length modal.- **Improve match start flow** – Provide a clear call‑to‑action to start the match. On first load, automatically display the "Select Match Length" modal and block inputs until a choice is made. Add a tool‑tip or message near the lightning‑bolt icon explaining that it starts a match. Permit the Enter/Space key to open the match‑length modal.
+## 4. MEDIUM: Enter Key Does Not Confirm Stat Selection
 
-- **Allow Enter to confirm stat selection** – When a stat is highlighted via keyboard (using arrow keys), pressing Enter should trigger the selection instead of showing an "Invalid key" message. This would match common CLI conventions.- **Allow Enter to confirm stat selection** – When a stat is highlighted via keyboard (using arrow keys), pressing Enter should trigger the selection instead of showing an "Invalid key" message. This would match common CLI conventions.
+*   **Finding:** When navigating stats with the arrow keys, pressing "Enter" does not select the highlighted stat. Only number keys (1-5) work.
+*   **Verification:** The `handleWaitingForPlayerActionKey()` function only checks for numeric keys.
+*   **Recommendation:** Modify `handleWaitingForPlayerActionKey()` to also handle the "Enter" key. When "Enter" is pressed, it should select the currently highlighted stat (which can be tracked in the application state).
 
-- **Pause timers during modals** – When the quit confirmation or other modals appear, freeze the selection timer (and inter‑round countdown) and resume with the same remaining time after cancellation. This behaviour is explicitly required in the PRD and improves fairness.- **Pause timers during modals** – When the quit confirmation or other modals appear, freeze the selection timer (and inter‑round countdown) and resume with the same remaining time after cancellation. This behaviour is explicitly required in the PRD and improves fairness.
+## 5. MEDIUM: Poor Focus Management in Quit Modal
 
-- **Maintain countdown values on resume** – Cancelling a quit modal should not reset the timer; resume from the paused value.- **Maintain countdown values on resume** – Cancelling a quit modal should not reset the timer; resume from the paused value.
+*   **Finding:** In the "Quit" modal, only the "Cancel" button has a visible focus ring. The "Quit" button is not focusable via the Tab key, making it inaccessible to keyboard-only users.
+*   **Verification:** This is an accessibility issue likely originating in the `createModal` or `createButton` components, or in the way the modal is constructed in `showQuitModal()`.
+*   **Recommendation:** Ensure that both buttons in the modal are focusable and have a visible focus style. The `tabindex` of the buttons should be managed correctly.
 
-- **Improve focus management in modals** – Ensure both Cancel and Quit buttons are focusable and reachable via Tab; provide visible focus rings on both. Include ARIA labels on buttons for screen readers.- **Improve focus management in modals** – Ensure both Cancel and Quit buttons are focusable and reachable via Tab; provide visible focus rings on both. Include ARIA labels on buttons for screen readers.
+## 6. LOW: Inconsistent Timer Terminology
 
-- **Verbose mode feedback** – When verbose logging is enabled, display a small indicator (e.g., "Verbose ON") and open the log pane automatically. Provide keyboard shortcuts to toggle its visibility.- **Verbose mode feedback** – When verbose logging is enabled, display a small indicator (e.g., "Verbose ON") and open the log pane automatically. Provide keyboard shortcuts to toggle its visibility.
+*   **Finding:** The UI uses different labels for the timer, such as "Timer:", "Time remaining:", and "Time Left:".
+*   **Verification:** The code confirms this. `setCountdown()` in `battleCLI.init.js` uses "Timer:", while `startSelectionCountdown()` and the `timerTick` event handler in `battleCLI/init.js` use "Time remaining:".
+*   **Recommendation:** Standardize on a single, consistent label for the timer across the entire application. "Time remaining:" is a good choice.
 
-- **Consistent terminology** – Use consistent labels ("Timer:" vs "Time Left:" vs "Time remaining:") throughout the UI.- **Consistent terminology** – Use consistent labels ("Timer:" vs "Time Left:" vs "Time remaining:") throughout the UI.
+## 7. LOW: Verbose Log Feature is Hidden
 
-- **Better accessibility feedback on match end** – Announce via aria‑live region when the match ends, summarise the final score, and provide keyboard‑focusable buttons for replay or returning to lobby.- **Better accessibility feedback on match end** – Announce via aria‑live region when the match ends, summarise the final score, and provide keyboard‑focusable buttons for replay or returning to lobby.
+*   **Finding:** The verbose log feature is difficult to discover and use. There is no UI indicator to show that it is active.
+*   **Verification:** The feature is controlled by the `cliVerbose` feature flag and is hidden by default.
+*   **Recommendation:** Add a small, visible indicator (e.g., "Verbose ON") to the UI when this mode is active. Consider automatically showing the log pane when it's enabled.
 
-- **Validate seeds and show errors** – Provide inline feedback when the user enters an invalid seed (non‑numeric), matching the PRD's error‑handling requirement.- **Validate seeds and show errors** – Provide inline feedback when the user enters an invalid seed (non‑numeric), matching the PRD's error‑handling requirement.
+## 8. LOW: No Screen Reader Announcement on Match End
 
-- **More robust error messages** – Replace "Invalid key, press H for help" with context‑sensitive guidance (e.g., "Select match length first", "Use keys 1‑5 to choose a stat").- **More robust error messages** – Replace "Invalid key, press H for help" with context‑sensitive guidance (e.g., "Select match length first", "Use keys 1‑5 to choose a stat").
+*   **Finding:** When a match ends, there is no announcement for screen reader users to indicate the outcome.
+*   **Verification:** The `handleMatchOver()` function, which is called at the end of a match, does not trigger any `aria-live` announcements.
+*   **Recommendation:** Add an `aria-live` region to the page and use it to announce the final result of the match (e.g., "Match over. You win!").
 
-- **Terminal authenticity** – Use of monospace fonts, heavy ASCII separators and Unicode icons matches the visual spec. However, some enhancements like gradient title bar and improved line‑height could further polish the look.- **Terminal authenticity** – Use of monospace fonts, heavy ASCII separators and Unicode icons matches the visual spec. However, some enhancements like gradient title bar and improved line‑height could further polish the look.
+## 9. LOW: Seed Validation Is Not Real-Time
 
-- **Determinism via seeds** – Seed input exists but needs better validation and user feedback. There is no visible indicator that a deterministic run is in effect.- **Determinism via seeds** – Seed input exists but needs better validation and user feedback. There is no visible indicator that a deterministic run is in effect.
-
-- **Observability & test hooks** – Data attributes like data-round and data-remaining-time exist in the DOM, supporting test automation. Verbose log mode is present behind a feature flag, but enabling it lacks UI feedback.- **Observability & test hooks** – Data attributes like data-round and data-remaining-time exist in the DOM, supporting test automation. Verbose log mode is present behind a feature flag, but enabling it lacks UI feedback.
-
-## Further Improvement Opportunities## Additional Opportunities for Improvement
-
-- **Timer Pause Verification:** Add logging or UI indicator when timers are paused/resumed to confirm behavior.- **Timer Pause Verification:** Add logging or UI indicator when timers are paused/resumed to confirm behavior.
-
-- **Modal Accessibility Audit:** Conduct full accessibility audit for modals, including screen reader testing.- **Modal Accessibility Audit:** Conduct full accessibility audit for modals, including screen reader testing.
-
-- **Keyboard Navigation Enhancement:** Implement full keyboard navigation for all interactive elements, including arrow key support for modals.- **Keyboard Navigation Enhancement:** Implement full keyboard navigation for all interactive elements, including arrow key support for modals.
-
-- **User Testing Feedback Loop:** Incorporate user testing results to validate UX assumptions about Enter key usage.- **User Testing Feedback Loop:** Incorporate user testing results to validate UX assumptions about Enter key usage.
-
-- **Performance Monitoring:** Add performance metrics for timer operations to detect any lag in pause/resume.- **Performance Monitoring:** Add performance metrics for timer operations to detect any lag in pause/resume.
-
-- **Error Recovery:** Implement automatic error recovery for failed modal initializations to prevent inconsistent start flows.- **Error Recovery:** Implement automatic error recovery for failed modal initializations to prevent inconsistent start flows..
-
-## Additional Opportunities for Improvement
-
-- **Timer Pause Verification:** Add logging or UI indicator when timers are paused/resumed to confirm behavior.
-- **Modal Accessibility Audit:** Conduct full accessibility audit for modals, including screen reader testing.
-- **Keyboard Navigation Enhancement:** Implement full keyboard navigation for all interactive elements, including arrow key support for modals.
-- **User Testing Feedback Loop:** Incorporate user testing results to validate UX assumptions about Enter key usage.
-- **Performance Monitoring:** Add performance metrics for timer operations to detect any lag in pause/resume.
-- **Error Recovery:** Implement automatic error recovery for failed modal initializations to prevent inconsistent start flows.
-
-Improvement opportunities
-Improve match start flow – Provide a clear call‑to‑action to start the match. On first load, automatically display the “Select Match Length” modal and block inputs until a choice is made. Add a tool‑tip or message near the lightning‑bolt icon explaining that it starts a match. Permit the Enter/Space key to open the match‑length modal.
-Allow Enter to confirm stat selection – When a stat is highlighted via keyboard (using arrow keys), pressing Enter should trigger the selection instead of showing an “Invalid key” message. This would match common CLI conventions.
-Pause timers during modals – When the quit confirmation or other modals appear, freeze the selection timer (and inter‑round countdown) and resume with the same remaining time after cancellation. This behaviour is explicitly required in the PRD and improves fairness.
-Maintain countdown values on resume – Cancelling a quit modal should not reset the timer; resume from the paused value.
-Improve focus management in modals – Ensure both Cancel and Quit buttons are focusable and reachable via Tab; provide visible focus rings on both. Include ARIA labels on buttons for screen readers.
-Verbose mode feedback – When verbose logging is enabled, display a small indicator (e.g., “Verbose ON”) and open the log pane automatically. Provide keyboard shortcuts to toggle its visibility.
-Consistent terminology – Use consistent labels (“Timer:” vs “Time Left:” vs “Time remaining:”) throughout the UI.
-Better accessibility feedback on match end – Announce via aria‑live region when the match ends, summarise the final score, and provide keyboard‑focusable buttons for replay or returning to lobby.
-Validate seeds and show errors – Provide inline feedback when the user enters an invalid seed (non‑numeric), matching the PRD’s error‑handling requirement.
-More robust error messages – Replace “Invalid key, press H for help” with context‑sensitive guidance (e.g., “Select match length first”, “Use keys 1‑5 to choose a stat”).
-Terminal authenticity – Use of monospace fonts, heavy ASCII separators and Unicode icons matches the visual spec. However, some enhancements like gradient title bar and improved line‑height could further polish the look.
-Determinism via seeds – Seed input exists but needs better validation and user feedback. There is no visible indicator that a deterministic run is in effect.
-Observability & test hooks – Data attributes like data-round and data-remaining-time exist in the DOM, supporting test automation. Verbose log mode is present behind a feature flag, but enabling it lacks UI feedback
+*   **Finding:** The original report stated there was no validation for the seed input. This is incorrect. Validation exists, but it only triggers on the `change` event (when the user clicks away from the input), not in real-time.
+*   **Verification:** The `initSeed()` function attaches a `change` event listener to the seed input.
+*   **Recommendation:** For a better user experience, change the event listener from `change` to `input` to provide real-time validation as the user types.
