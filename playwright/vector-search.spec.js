@@ -37,17 +37,22 @@ async function ensureVectorSearchHarness(page) {
           return currentPromise;
         },
         set(value) {
-          currentPromise = Promise.resolve(value);
           createReadyPromise();
+          const currentReadyResolve = readyResolve;
+          currentPromise = Promise.resolve(value);
           currentPromise
             .catch(() => {})
             .finally(() => {
-              readyResolve();
+              currentReadyResolve();
             });
         }
       });
 
       return {
+        /**
+         * Wait for the current vector search promise to settle.
+         * @returns {Promise<void>}
+         */
         waitForResults() {
           return readyPromise;
         }
@@ -56,9 +61,20 @@ async function ensureVectorSearchHarness(page) {
   });
 
   const harness = {
+    /**
+     * Wait for the current vector search promise to resolve or reject.
+     * @returns {Promise<void>}
+     */
     async waitForResults() {
       await page.evaluate(() => window.__vectorSearchTestHarness.waitForResults());
     },
+    /**
+     * Submit a search query and wait for completion.
+     * @param {string|undefined} query - Search query to submit. If undefined, submits current input value.
+     * @param {{ viaKeyboard?: boolean }} [options] - Submission options.
+     * @param {boolean} [options.viaKeyboard=false] - Whether to submit via Enter key instead of button click.
+     * @returns {Promise<void>}
+     */
     async submit(query, options = {}) {
       const { viaKeyboard = false } = options;
       const searchInput = page.getByRole("searchbox");
@@ -105,6 +121,9 @@ function getVectorSearchHarness(page) {
  * @param {RouteFulfillOptions | ((route: PlaywrightRoute) => unknown) | false} [overrides.context]
  */
 async function prepareVectorSearchPage(page, overrides = {}) {
+  if (overrides && typeof overrides !== "object") {
+    throw new TypeError("overrides must be an object");
+  }
   const { embeddings, transformer, context } = overrides;
   await ensureVectorSearchHarness(page);
 
@@ -119,16 +138,24 @@ async function prepareVectorSearchPage(page, overrides = {}) {
   });
 
   await page.route("**/transformers.min.js", (route) => {
-    if (typeof transformer === "function") {
-      return transformer(route);
+    try {
+      if (typeof transformer === "function") {
+        return transformer(route);
+      }
+      if (transformer) {
+        return route.fulfill(transformer);
+      }
+      return route.fulfill({
+        contentType: "application/javascript",
+        body: "export async function pipeline(){return async()=>({data:[1,0]});}"
+      });
+    } catch (error) {
+      return route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "Transformer route handler failed", error: String(error) })
+      });
     }
-    if (transformer) {
-      return route.fulfill(transformer);
-    }
-    return route.fulfill({
-      contentType: "application/javascript",
-      body: "export async function pipeline(){return async()=>({data:[1,0]});}"
-    });
   });
 
   if (context !== false) {
