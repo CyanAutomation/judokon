@@ -1,10 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { withMutedConsole } from "../tests/utils/console.js";
-import {
-  waitForBattleReady,
-  waitForBattleState,
-  waitForTestApi
-} from "./helpers/battleStateHelper.js";
+import { waitForTestApi } from "./helpers/battleStateHelper.js";
 
 const buildCliUrl = (testInfo) => {
   const fallbackBase = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:5000";
@@ -16,12 +12,82 @@ const gotoCliPage = async (page, testInfo) => {
   await page.goto(buildCliUrl(testInfo));
 };
 
+const callTestApiFunction = async (page, segments, args) => {
+  const result = await page.evaluate(
+    ({ segments: pathSegments, args: fnArgs }) => {
+      const root = window.__TEST_API;
+      if (!root) {
+        return { ok: false, error: "window.__TEST_API unavailable" };
+      }
+
+      let context = root;
+      for (let index = 0; index < pathSegments.length - 1; index += 1) {
+        context = context?.[pathSegments[index]];
+        if (context === null || typeof context === "undefined") {
+          return {
+            ok: false,
+            error: `__TEST_API segment missing: ${pathSegments.slice(0, index + 1).join(".")}`
+          };
+        }
+      }
+
+      const fnName = pathSegments[pathSegments.length - 1];
+      const callable = context?.[fnName];
+      if (typeof callable !== "function") {
+        return { ok: false, error: `__TEST_API.${pathSegments.join(".")} is not callable` };
+      }
+
+      return Promise.resolve()
+        .then(() => callable.apply(context, fnArgs))
+        .then(
+          (value) => ({ ok: true, value }),
+          (error) => ({ ok: false, error: error?.message ?? String(error) })
+        );
+    },
+    { segments, args }
+  );
+
+  if (!result.ok) {
+    throw new Error(result.error);
+  }
+
+  return result.value;
+};
+
+const callTestApi = (page, path, ...args) => callTestApiFunction(page, path.split("."), args);
+
 const ensureBattleReady = async (page) => {
-  await waitForBattleReady(page, { timeout: 10_000 });
+  let ready = false;
+  try {
+    ready = Boolean(await callTestApi(page, "init.isBattleReady"));
+  } catch {
+    ready = false;
+  }
+
+  if (ready) {
+    return;
+  }
+
+  const handshake = await callTestApi(page, "init.waitForBattleReady", 4_000);
+  if (!handshake) {
+    throw new Error("CLI battle failed to report readiness via Test API");
+  }
 };
 
 const waitForStatsReady = async (page) => {
-  await page.waitForSelector('#cli-stats[aria-busy="false"]', { timeout: 10_000 });
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const list = document.getElementById("cli-stats");
+          if (!list || list.getAttribute("aria-busy") === "true") {
+            return 0;
+          }
+          return list.querySelectorAll(".cli-stat").length;
+        }),
+      { timeout: 4_000 }
+    )
+    .toBeGreaterThan(0);
 };
 
 const startBattle = async (page) => {
@@ -32,10 +98,16 @@ const startBattle = async (page) => {
   }
 
   await waitForStatsReady(page);
-  await waitForBattleState(page, "waitingForPlayerAction", {
-    timeout: 10_000,
-    allowFallback: false
-  });
+  const stateReached = await callTestApi(
+    page,
+    "state.waitForBattleState",
+    "waitingForPlayerAction",
+    4_000
+  );
+
+  if (!stateReached) {
+    throw new Error("CLI battle did not reach waitingForPlayerAction via Test API");
+  }
 };
 
 const runWithConsoleDiscipline = (callback) => withMutedConsole(callback, ["log", "warn", "error"]);
@@ -48,11 +120,9 @@ const testWithConsole = (title, fn) => {
   });
 };
 
-const getBattleStore = (page) =>
-  page.evaluate(() => window.__TEST_API?.inspect?.getBattleStore?.() ?? null);
+const getBattleStore = (page) => callTestApi(page, "inspect.getBattleStore");
 
-const getBattleState = (page) =>
-  page.evaluate(() => window.__TEST_API?.state?.getBattleState?.() ?? null);
+const getBattleState = (page) => callTestApi(page, "state.getBattleState");
 
 // Note: the previous getRoundsPlayed helper has been removed intentionally. The tests now
 // assert battle progression through explicit state waits and CLI stat instrumentation instead
@@ -408,7 +478,7 @@ test.describe("CLI Battle Interface", () => {
         expect(storeInfo.selectionMade).toBe(false);
       }
 
-      const debugInfo = await page.evaluate(() => window.__TEST_API.inspect.getDebugInfo());
+      const debugInfo = await callTestApi(page, "inspect.getDebugInfo");
       expect(debugInfo.error).toBeUndefined();
       await expect(page).toHaveURL(/battleCLI.html/);
     });
