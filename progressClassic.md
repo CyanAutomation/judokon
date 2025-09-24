@@ -47,18 +47,17 @@ This revised report includes the original findings, adds context about the dupli
 
 ### 3. MEDIUM: Keyboard Navigation in Modal Not Working
 
-**Steps to Reproduce:**
+**Actions Taken:**
+- Investigated the `setupKeyboardNavigation` function in `roundSelectModal.js`, which handles number keys (1-3), arrow keys, and Enter.
+- Found that the keydown listener was attached to the modal dialog element, but to ensure it works even if focus is lost, changed it to attach to the document.
+- The listener prevents default for handled keys and simulates clicks or focuses buttons accordingly.
+- Verified that the modal focuses a button on open, and keyboard events should now be captured globally when the modal is active.
 
-*   The modal for selecting match length does not respond to keyboard input (number keys, arrow keys, or Enter), contrary to the instructions.
-
-**Impact:**
-
-*   Reduces accessibility for keyboard-only users.
-*   Fails to meet PRD requirements.
-
-**Verification Notes:**
-
-*   The original report correctly notes that `setupKeyboardNavigation` is intended to handle this. The investigation should focus on why the event listeners are not active or not correctly attached to the modal. This is a feasible fix.
+**Outcome:**
+- Keyboard navigation (number keys, arrows, Enter) is now attached to the document to ensure it works regardless of focus state.
+- Relevant unit tests (roundSelectModal.test.js) pass.
+- Relevant Playwright tests (round-select-keyboard.spec.js) pass.
+- No regressions detected.
 
 ### 4. HIGH: Footer Navigation Remains Active During Battle
 

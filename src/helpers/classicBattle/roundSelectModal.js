@@ -226,10 +226,10 @@ function setupKeyboardNavigation(modalElement, buttons) {
     }
   };
 
-  modalElement.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
 
   return () => {
-    modalElement.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("keydown", handleKeyDown);
   };
 }
 
@@ -525,7 +525,7 @@ export async function initRoundSelectModal(onStart) {
   const modalElement = modal.element;
   document.body.appendChild(modalElement);
 
-  cleanupRegistry.keyboard = setupKeyboardNavigation(modalElement, buttons);
+  cleanupRegistry.keyboard = setupKeyboardNavigation(modal.dialog, buttons);
 
   const tooltipLifecycle = setupTooltipLifecycle(modalElement);
   cleanupRegistry.tooltips = tooltipLifecycle.cleanup;
