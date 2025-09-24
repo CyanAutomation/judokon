@@ -130,6 +130,47 @@ export async function waitForBattleState(page, expectedState, options = {}) {
 }
 
 /**
+ * Wait for the Next button readiness using the Test API when available.
+ * @pseudocode
+ * WAIT for the Playwright Test API bootstrap.
+ * QUERY the state helper for `waitForNextButtonReady` with the provided timeout.
+ * THROW when the helper reports a timeout or is unavailable.
+ * RETURN success otherwise.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {object} options - Options object
+ * @param {number} options.timeout - Timeout in ms (default: 5_000)
+ * @returns {Promise<void>}
+ */
+export async function waitForNextButtonReady(page, options = {}) {
+  const { timeout = 5_000 } = options;
+
+  await waitForTestApi(page, { timeout });
+
+  const readyStatus = await page.evaluate(
+    ({ waitTimeout }) => {
+      try {
+        const stateApi = window.__TEST_API?.state;
+        if (stateApi && typeof stateApi.waitForNextButtonReady === "function") {
+          return stateApi.waitForNextButtonReady.call(stateApi, waitTimeout);
+        }
+      } catch {}
+      return null;
+    },
+    { waitTimeout: timeout }
+  );
+
+  if (readyStatus === true) {
+    return;
+  }
+
+  if (readyStatus === false) {
+    throw new Error(`Next button did not report ready within ${timeout}ms via Test API`);
+  }
+
+  throw new Error("Test API waitForNextButtonReady unavailable in current context");
+}
+
+/**
  * Get current battle state using Test API or DOM fallback
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @returns {Promise<string|null>} Current battle state
