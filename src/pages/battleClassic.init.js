@@ -435,7 +435,10 @@ function setNextButtonReadyAttributes(btn) {
   } catch {}
   try {
     btn.setAttribute("data-next-ready", "true");
-    if (btn.dataset) btn.dataset.nextReady = "true";
+    if (btn.dataset) {
+      btn.dataset.nextReady = "true";
+      btn.dataset.nextFinalized = "pending";
+    }
   } catch {}
 }
 
@@ -481,6 +484,9 @@ function handleStatSelectionError(store, err) {
     resetCooldownFlag(store);
   } catch {}
   const btn = prepareNextButtonForUse("selection failure");
+  if (btn?.dataset) {
+    btn.dataset.nextFinalized = "true";
+  }
   logNextButtonRecovery("selection failure", btn, { cooldownStarted });
 }
 
@@ -622,10 +628,24 @@ function finalizeSelectionReady(store, options = {}) {
     try {
       const selectionMade = Boolean(store?.selectionMade);
       const expectAdvance = shouldStartCooldown || selectionMade;
+      const shouldForceVisibleAdvance = selectionMade || shouldStartCooldown;
       updateRoundCounterFromEngine({
         expectAdvance,
-        forceWhenEngineMatchesVisible: selectionMade
+        forceWhenEngineMatchesVisible: shouldForceVisibleAdvance
       });
+      try {
+        const finalizedBtn = getNextRoundButton();
+        if (finalizedBtn?.dataset) {
+          finalizedBtn.dataset.nextFinalized = "true";
+        }
+      } catch (contextErr) {
+        try {
+          console.debug(
+            "battleClassic: marking next button finalized failed",
+            contextErr
+          );
+        } catch {}
+      }
     } catch (err) {
       console.debug("battleClassic: updateRoundCounterFromEngine after selection failed", err);
     }
