@@ -329,6 +329,9 @@ async function waitForScoreDisplay(page, { timeout = 10000, previousObservation 
         player === previous.player &&
         opponent === previous.opponent
       ) {
+        if (matchEnded) {
+          return { player, opponent, roundNumber, matchEnded };
+        }
         return previous.matchEnded ? previous : false;
       }
 
