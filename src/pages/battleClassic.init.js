@@ -862,6 +862,8 @@ function resetRoundCounterTracking() {
  * @param {boolean} hasEngineRound - Whether the engine reported a round.
  * @param {number} engineRound - Round value read from the engine.
  * @param {number|null} visibleRound - Round value currently shown.
+ * @param {boolean} forceWhenEngineMatchesVisible - Whether to advance when the
+ * engine round matches the visible round (post-selection forcing).
  * @returns {boolean} True when the UI should coerce the next round.
  */
 function shouldForceAdvancement(
@@ -870,10 +872,12 @@ function shouldForceAdvancement(
   hasEngineRound,
   engineRound,
   visibleRound,
-  forceWhenEqual
+  forceWhenEngineMatchesVisible
 ) {
+  // Engine hasn't caught up to the visible round yet (normal lag scenario)
   const engineLagging = !hasEngineRound || engineRound < Number(visibleRound);
-  const engineMatching = forceWhenEqual && engineRound === Number(visibleRound);
+  // Engine matches visible round but we want to force advancement (post-selection scenario)
+  const engineMatching = forceWhenEngineMatchesVisible && engineRound === Number(visibleRound);
   return (
     expectAdvance &&
     hasVisibleRound &&
@@ -901,8 +905,19 @@ function computeBaselineRound(hasHighestRound, highestRound, hasVisibleRound, vi
  *
  * @pseudocode
  * 1. Start from the engine-reported round when available.
- * 2. Apply forced advancement rules when the engine lags behind.
+ * 2. Apply forced advancement rules when the engine lags behind or matches the
+ *    visible round when forced.
  * 3. Guarantee the result is never below the calculated baseline.
+ *
+ * @param {Object} options - Configuration options
+ * @param {boolean} options.expectAdvance - Whether advancement is expected
+ * @param {boolean} options.hasVisibleRound - Whether a round is currently displayed
+ * @param {boolean} options.hasEngineRound - Whether the engine reported a round
+ * @param {number} options.engineRound - Round value from the engine
+ * @param {number|null} options.visibleRound - Currently displayed round
+ * @param {number} options.baselineRound - Minimum acceptable round
+ * @param {boolean} [options.forceWhenEngineMatchesVisible=false] - Force advancement when engine matches visible round (used after selections)
+ * @returns {Object} Object with nextRound and forceAdvance properties
  */
 function resolveNextRound({
   expectAdvance,
@@ -975,7 +990,13 @@ function updateRoundCounterState({
  * 2. Track the highest round shown so far and never render a lower value.
  * 3. When `expectAdvance` is true and the engine still reports the prior total,
  *    increment from the visible round so early `round.start` signals progress.
- * 4. Fall back to the last known round (or 1) when engine data is unavailable.
+ * 4. When a selection was just made, force advancement even if the engine still
+ *    matches the visible round.
+ * 5. Fall back to the last known round (or 1) when engine data is unavailable.
+ *
+ * @param {Object} [options={}] - Configuration flags for this update.
+ * @param {boolean} [options.expectAdvance=false] - Whether the caller expects an advance.
+ * @param {boolean} [options.forceWhenEngineMatchesVisible=false] - Force advancement when engine matches visible round (post-selection handling).
  */
 function updateRoundCounterFromEngine(options = {}) {
   const { expectAdvance = false, forceWhenEngineMatchesVisible = false } = options;

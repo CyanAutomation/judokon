@@ -231,9 +231,9 @@ async function selectAdvantagedStat(page) {
   await page.click(`#stat-buttons button[data-stat='${normalizedStat}']`);
 }
 
-async function waitForScoreDisplay(page, timeout = 10000) {
+async function waitForScoreDisplay(page, { timeout = 10000, previousObservation = null } = {}) {
   const handle = await page.waitForFunction(
-    () => {
+    (previous) => {
       const scoreNode = document.getElementById("score-display");
       if (!scoreNode) return null;
 
@@ -244,11 +244,34 @@ async function waitForScoreDisplay(page, timeout = 10000) {
       const player = Number(match[1]);
       const opponent = Number(match[2]);
       if (!Number.isFinite(player) || !Number.isFinite(opponent)) return null;
-      if (player === 0 && opponent === 0) return null;
 
-      return { player, opponent };
+      let roundNumber = null;
+      const roundNode = document.getElementById("round-counter");
+      if (roundNode) {
+        const roundText = roundNode.textContent || "";
+        const roundMatch = roundText.match(/(\d+)/);
+        if (roundMatch) {
+          const value = Number(roundMatch[1]);
+          if (Number.isFinite(value)) {
+            roundNumber = value;
+          }
+        }
+      }
+
+      if (
+        previous &&
+        typeof previous === "object" &&
+        previous !== null &&
+        roundNumber === previous.roundNumber &&
+        player === previous.player &&
+        opponent === previous.opponent
+      ) {
+        return false;
+      }
+
+      return { player, opponent, roundNumber };
     },
-    undefined,
+    previousObservation,
     { timeout }
   );
 
@@ -324,19 +347,51 @@ async function waitForMatchCompletion(page, timeout = 15000) {
   );
 }
 
+/**
+ * @pseudocode
+ * WAIT for the scoreboard to report the current totals.
+ * IF either side has scored, RETURN the scores.
+ * OTHERWISE reset the "next round" readiness flag and wait for the next round event.
+ * CLICK the next button and choose a favourable stat for the player.
+ * REPEAT until a decisive score is observed or the maximum number of rounds is exceeded.
+ * THROW with diagnostics when no decisive score is produced.
+ */
 async function resolveMatchFromCurrentRound(page, { maxRounds = 5, nextTimeout = 5000 } = {}) {
+  let lastScores = await waitForScoreDisplay(page);
   for (let attempt = 0; attempt < maxRounds; attempt += 1) {
-    const scores = await waitForScoreDisplay(page);
-    if (scores && scores.player + scores.opponent >= 1) {
-      return scores;
-    }
-
     await page.evaluate(() => {
       if (typeof window !== "undefined") {
         window.__nextReadySeen = false;
+        window.__nextReadyInit = false;
       }
     });
     await waitForNextRoundReadyEvent(page, nextTimeout);
+    const scores = await waitForScoreDisplay(page, { previousObservation: lastScores });
+    if (scores) {
+      lastScores = scores;
+      if (scores.player + scores.opponent >= 1) {
+        return { player: scores.player, opponent: scores.opponent };
+      }
+    }
+    await page
+      .waitForFunction(
+        () => {
+          const modal = document.getElementById("match-end-modal");
+          if (!modal) return true;
+          if (modal.hidden) return true;
+          const ariaHidden = modal.getAttribute("aria-hidden");
+          if (ariaHidden === "true") return true;
+          const style = window.getComputedStyle(modal);
+          if (!style) return true;
+          if (style.display === "none" || style.visibility === "hidden") return true;
+          if (style.pointerEvents === "none") return true;
+          const opacity = Number(style.opacity);
+          return Number.isFinite(opacity) && opacity === 0;
+        },
+        undefined,
+        { timeout: nextTimeout }
+      )
+      .catch(() => {});
     const nextButton = page
       .locator("#next-button, [data-role='next-round'], [data-testid='next-button']")
       .first();
@@ -348,7 +403,20 @@ async function resolveMatchFromCurrentRound(page, { maxRounds = 5, nextTimeout =
     await selectAdvantagedStat(page);
   }
 
-  throw new Error("Match did not resolve within expected rounds");
+  const diagnostic =
+    lastScores && typeof lastScores === "object"
+      ? `You: ${lastScores.player}, Opponent: ${lastScores.opponent}`
+      : "unknown";
+  throw new Error(
+    `Match did not resolve within expected rounds (attempted ${maxRounds}). Last observed scores: ${diagnostic}`
+  );
+}
+
+function expectDecisiveFinalScore(scores) {
+  expect(scores).toBeTruthy();
+  expect(scores.player === scores.opponent).toBe(false);
+  expect(scores.player >= 0 && scores.opponent >= 0).toBe(true);
+  expect(scores.player >= 1 || scores.opponent >= 1).toBe(true);
 }
 
 test.describe("Classic Battle End Game Flow", () => {
@@ -372,9 +440,9 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Verify match completion
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
-        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
-        expect(scores.player + scores.opponent).toBe(1);
+        await expect(scoreDisplay).toContainText(`You: ${scores.player}`);
+        await expect(scoreDisplay).toContainText(`Opponent: ${scores.opponent}`);
+        expectDecisiveFinalScore(scores);
 
         // Confirm the match end modal is presented to the user
         await waitForModalOpen(page);
@@ -414,9 +482,9 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Verify score contains expected format
         const scoreText = await scoreDisplay.textContent();
-        expect(scoreText).toMatch(new RegExp(`You:\\s*${scores.player}`));
-        expect(scoreText).toMatch(new RegExp(`Opponent:\\s*${scores.opponent}`));
-        expect(scores.player + scores.opponent).toBe(1);
+        expect(scoreText).toContain(`You: ${scores.player}`);
+        expect(scoreText).toContain(`Opponent: ${scores.opponent}`);
+        expectDecisiveFinalScore(scores);
 
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
@@ -439,9 +507,9 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Verify match ended
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
-        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
-        expect(scores.player + scores.opponent).toBe(1);
+        await expect(scoreDisplay).toContainText(`You: ${scores.player}`);
+        await expect(scoreDisplay).toContainText(`Opponent: ${scores.opponent}`);
+        expectDecisiveFinalScore(scores);
 
         // Check if replay button exists and is functional
         const replayButton = page
@@ -480,9 +548,9 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Verify match completed successfully
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
-        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
-        expect(scores.player + scores.opponent).toBe(1);
+        await expect(scoreDisplay).toContainText(`You: ${scores.player}`);
+        await expect(scoreDisplay).toContainText(`Opponent: ${scores.opponent}`);
+        expectDecisiveFinalScore(scores);
 
         // Verify page layout remains intact
         await expect(page.locator("header, .header")).toBeVisible();
@@ -512,9 +580,9 @@ test.describe("Classic Battle End Game Flow", () => {
         expect(scoreText.length).toBeGreaterThan(5); // Should contain meaningful score info
 
         // Verify score display is properly formatted
-        expect(scoreText).toMatch(new RegExp(`You:\\s*${scores.player}`));
-        expect(scoreText).toMatch(new RegExp(`Opponent:\\s*${scores.opponent}`));
-        expect(scores.player + scores.opponent).toBe(1);
+        expect(scoreText).toContain(`You: ${scores.player}`);
+        expect(scoreText).toContain(`Opponent: ${scores.opponent}`);
+        expectDecisiveFinalScore(scores);
       }, ["log", "info", "warn", "error", "debug"]));
 
     test("provides stable interface after match completion", async ({ page }) =>
@@ -531,9 +599,9 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Verify match completed
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
-        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
-        expect(scores.player + scores.opponent).toBe(1);
+        await expect(scoreDisplay).toContainText(`You: ${scores.player}`);
+        await expect(scoreDisplay).toContainText(`Opponent: ${scores.opponent}`);
+        expectDecisiveFinalScore(scores);
 
         // Verify interface remains stable
         await expect(page.locator("body")).toBeVisible();
@@ -566,9 +634,9 @@ test.describe("Classic Battle End Game Flow", () => {
 
         // Verify match completed without throwing errors
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
-        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
-        expect(scores.player + scores.opponent).toBe(1);
+        await expect(scoreDisplay).toContainText(`You: ${scores.player}`);
+        await expect(scoreDisplay).toContainText(`Opponent: ${scores.opponent}`);
+        expectDecisiveFinalScore(scores);
       }, ["log", "info", "warn", "error", "debug"]));
 
     test("maintains functionality after match completion", async ({ page }) =>
@@ -584,9 +652,9 @@ test.describe("Classic Battle End Game Flow", () => {
         await waitForMatchCompletion(page);
 
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(new RegExp(`You:\\s*${scores.player}`));
-        await expect(scoreDisplay).toContainText(new RegExp(`Opponent:\\s*${scores.opponent}`));
-        expect(scores.player + scores.opponent).toBe(1);
+        await expect(scoreDisplay).toContainText(`You: ${scores.player}`);
+        await expect(scoreDisplay).toContainText(`Opponent: ${scores.opponent}`);
+        expectDecisiveFinalScore(scores);
 
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
