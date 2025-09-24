@@ -179,11 +179,36 @@ export async function waitForNextButtonReady(page, options = {}) {
  */
 export async function getCurrentBattleState(page) {
   return await page.evaluate(() => {
-    if (window.__TEST_API && window.__TEST_API.state) {
-      return window.__TEST_API.state.getBattleState();
+    const stateApi = window.__TEST_API?.state;
+    const viaApi =
+      typeof stateApi?.getBattleState === "function" ? stateApi.getBattleState() : undefined;
+
+    if (typeof viaApi === "string" && viaApi) {
+      return viaApi;
     }
-    // Fallback to DOM
-    return document.body?.dataset?.battleState || null;
+
+    const dataset = document.body?.dataset;
+    const mirroredState = dataset?.battleState;
+    if (typeof mirroredState === "string" && mirroredState) {
+      if (mirroredState === "waitingForPlayerAction") {
+        try {
+          const selectionMade =
+            window.__TEST_API?.inspect?.getBattleStore?.()?.selectionMade ??
+            window.__TEST_API?.inspect?.getDebugInfo?.()?.store?.selectionMade ??
+            null;
+          if (selectionMade === true) {
+            return "roundOver";
+          }
+        } catch {}
+      }
+      return mirroredState;
+    }
+
+    if (viaApi !== undefined) {
+      return viaApi;
+    }
+
+    return mirroredState ?? null;
   });
 }
 
