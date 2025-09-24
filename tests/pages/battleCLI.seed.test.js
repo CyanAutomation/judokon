@@ -49,7 +49,7 @@ describe("battleCLI deterministic seed", () => {
     emitBattleEvent.mockClear();
     const input = document.getElementById("seed-input");
     input.value = "12";
-    input.dispatchEvent(new Event("change"));
+    input.dispatchEvent(new Event("input"));
     expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
   });
 });

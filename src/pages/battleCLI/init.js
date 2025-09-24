@@ -567,7 +567,7 @@ function initSeed() {
       if (input) input.value = String(num);
     }
   }
-  input?.addEventListener("change", () => {
+  input?.addEventListener("input", () => {
     const val = Number(input.value);
     if (input.value.trim() === "" || Number.isNaN(val)) {
       input.value = "";

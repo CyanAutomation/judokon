@@ -84,3 +84,5 @@ This updated report provides a cleaner, more readable format and offers specific
 - **Finding:** The original report stated there was no validation for the seed input. This is incorrect. Validation exists, but it only triggers on the `change` event (when the user clicks away from the input), not in real-time.
 - **Verification:** The `initSeed()` function attaches a `change` event listener to the seed input.
 - **Recommendation:** For a better user experience, change the event listener from `change` to `input` to provide real-time validation as the user types.
+
+**Resolution:** Changed the event listener in `initSeed()` from "change" to "input" to enable real-time validation as the user types. Updated the corresponding unit test in `tests/pages/battleCLI.seed.test.js` to dispatch "input" events instead of "change". Unit tests (`battleCLI.seed.test.js`) and Playwright tests (`settings.spec.js`) pass, confirming real-time validation works without regressions.
