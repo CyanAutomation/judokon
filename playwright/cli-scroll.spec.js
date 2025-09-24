@@ -83,16 +83,50 @@ async function appendVerboseEntries(page, entries) {
 }
 
 async function setupCliVerboseTest(page, entries, options = {}) {
-  const { expectText } = options;
+  const { expectText, helpersTimeout = 5000 } = options;
 
   await waitForTestApi(page);
-  try {
-    await page.waitForFunction(() => typeof window.emitBattleEvent === "function", {
-      timeout: 5000
-    });
-  } catch (error) {
-    const message = error?.message ?? String(error);
-    throw new Error(`Timed out waiting for battle event helpers: ${message}`);
+  const helperStatus = await page.evaluate(
+    async ({ waitTimeout }) => {
+      const initApi = window.__TEST_API?.init;
+      const stateApi = window.__TEST_API?.state;
+
+      if (typeof initApi?.waitForBattleReady === "function") {
+        const ready = await initApi.waitForBattleReady(waitTimeout);
+        if (ready === false) {
+          return { ready: false, reason: "battle-ready-timeout" };
+        }
+      }
+
+      const hasDispatch = typeof stateApi?.dispatchBattleEvent === "function";
+      const hasEmit = typeof window.emitBattleEvent === "function";
+
+      return {
+        ready: hasDispatch && hasEmit,
+        hasDispatch,
+        hasEmit
+      };
+    },
+    { waitTimeout: helpersTimeout }
+  );
+
+  if (!helperStatus?.ready) {
+    const issues = [];
+    if (!helperStatus) {
+      issues.push("test API unavailable");
+    } else {
+      if (helperStatus.reason === "battle-ready-timeout") {
+        issues.push("battle init timeout");
+      }
+      if (helperStatus.hasDispatch !== true) {
+        issues.push("dispatch helper missing");
+      }
+      if (helperStatus.hasEmit !== true) {
+        issues.push("emit helper missing");
+      }
+    }
+
+    throw new Error(`Battle event helpers not ready: ${issues.join(", ") || "unknown error"}`);
   }
   await page.waitForSelector(VERBOSE_LOG_SELECTOR, { state: "attached" });
   await ensureVerboseLogVisible(page);
