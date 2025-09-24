@@ -356,21 +356,44 @@ export async function setupRandomJudokaPage() {
       if (typeof labelText !== "string" || !labelText.trim()) return;
       updateDrawButtonLabel(drawButton, labelText);
     };
+    /**
+     * Resolves the draw pipeline for testing by triggering animation completion.
+     *
+     * @summary Helper function for tests to deterministically complete the card draw
+     * animation and promise resolution without relying on real timers or events.
+     *
+     * @pseudocode
+     * 1. Check if drawButton.drawPromise exists, return false if not.
+     * 2. Wait for next tick with Promise.resolve().
+     * 3. Find card element and dispatch animationend event to trigger completion.
+     * 4. Await the draw promise to ensure full resolution.
+     * 5. Return true on success, rethrow on failure.
+     *
+     * @returns {Promise<boolean>} Resolves to true when the draw pipeline completes.
+     * @throws {Error} Re-throws if the draw pipeline rejects.
+     */
     randomJudokaApi.resolveDrawPipeline = async () => {
       if (!drawButton.drawPromise) return false;
 
       await Promise.resolve();
 
       try {
-        const cardContainer = document.getElementById("card-container");
-        const cardEl = cardContainer?.querySelector(".card-container");
+        const cardContainerEl = document.getElementById("card-container");
+        const cardEl = cardContainerEl?.querySelector(".card-container");
         if (cardEl) {
           cardEl.dispatchEvent(new Event("animationend"));
         }
-      } catch {}
+      } catch (error) {
+        console.warn("resolveDrawPipeline: Failed to dispatch animationend event:", error);
+      }
 
-      await drawButton.drawPromise.catch(() => {});
-      return true;
+      try {
+        await drawButton.drawPromise;
+        return true;
+      } catch (error) {
+        console.warn("resolveDrawPipeline: Draw promise rejected:", error);
+        throw error;
+      }
     };
   }
 
