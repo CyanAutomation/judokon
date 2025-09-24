@@ -153,10 +153,29 @@ const stateApi = {
   getBattleState() {
     try {
       const machine = getBattleStateMachine();
-      return machine?.getState?.() || null;
-    } catch {
-      return null;
-    }
+      const state = machine?.getState?.();
+      if (typeof state === "string" && state) {
+        return state;
+      }
+    } catch {}
+
+    try {
+      const bodyState = document.body?.dataset?.battleState;
+      if (typeof bodyState === "string" && bodyState) {
+        return bodyState;
+      }
+    } catch {}
+
+    try {
+      const attrState = document
+        .querySelector("[data-battle-state]")
+        ?.getAttribute("data-battle-state");
+      if (typeof attrState === "string" && attrState) {
+        return attrState;
+      }
+    } catch {}
+
+    return null;
   },
 
   /**

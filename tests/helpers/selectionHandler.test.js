@@ -147,6 +147,8 @@ describe("handleStatSelection helpers", () => {
 
   it("passes zero delay to resolveRoundDirect during orchestrator fallback", async () => {
     document.body.dataset.battleState = "active";
+    store.orchestrator = {};
+    getBattleState.mockReturnValue("roundDecision");
     dispatchBattleEvent.mockResolvedValue(false);
 
     const timerUtils = await import("../../src/helpers/classicBattle/timerUtils.js");
@@ -165,5 +167,6 @@ describe("handleStatSelection helpers", () => {
     expect(timerUtils.resolveDelay).toHaveBeenCalledTimes(1);
 
     delete document.body.dataset.battleState;
+    getBattleState.mockReturnValue(null);
   });
 });

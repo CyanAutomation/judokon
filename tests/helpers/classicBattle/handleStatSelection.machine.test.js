@@ -36,19 +36,26 @@ describe("handleStatSelection machine interaction", () => {
       selectionMade: false,
       playerChoice: null,
       statTimeoutId: null,
-      autoSelectId: null
+      autoSelectId: null,
+      orchestrator: {}
     };
     dispatchMock = (await import("../../../src/helpers/classicBattle/eventDispatcher.js"))
       .dispatchBattleEvent;
     dispatchCalls = [];
-    dispatchMock.mockImplementation((...args) => {
+    dispatchMock.mockImplementation(async (...args) => {
       dispatchCalls.push(args);
+      if (args[0] === "statSelected") {
+        return true;
+      }
+      return false;
     });
     resolveSpy = vi.spyOn(selection, "resolveRoundDirect");
+    document.body.dataset.battleState = "roundDecision";
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    delete document.body.dataset.battleState;
   });
 
   it("dispatches statSelected once without resolving", async () => {
