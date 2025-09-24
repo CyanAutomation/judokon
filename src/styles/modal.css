@@ -83,6 +83,6 @@
 
 .modal-backdrop.classic-modal .round-select-buttons {
   display: grid;
-  gap: var(--space-sm, 8px);
+  gap: var(--space-md, 16px);
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
