@@ -65,11 +65,35 @@ function focusNextHint() {
   setTimeout(() => hint.removeAttribute("tabindex"), 200);
 }
 
+/**
+ * Apply the Classic Battle retro theme classes and persist the current state.
+ *
+ * The CLI root element is injected on the CLI screen, but this helper is also
+ * reused in tests where the element may be absent. The document body always
+ * receives the toggle so other UI shell chrome can mirror the theme.
+ *
+ * @pseudocode
+ * applyRetroTheme(enabled):
+ *   shouldEnable ← Boolean(enabled)
+ *   cliRoot ← document.getElementById("cli-root")
+ *   if cliRoot exists:
+ *     cliRoot.classList.toggle("cli-retro", shouldEnable)
+ *   document.body.classList.toggle("cli-retro", shouldEnable)
+ *   try:
+ *     localStorage.setItem("battleCLI.retro", shouldEnable ? "1" : "0")
+ *   catch { }
+ *
+ * @param {unknown} enabled - Desired retro theme state.
+ * @returns {void}
+ */
 function applyRetroTheme(enabled) {
-  // #cli-root is guaranteed to exist in the CLI page
-  const host = document.getElementById("cli-root") || document.body;
-  if (!host) return;
-  host.classList.toggle("cli-retro", Boolean(enabled));
+  const shouldEnable = Boolean(enabled);
+  const cliRoot = document.getElementById("cli-root");
+  if (cliRoot) {
+    // The CLI root is guaranteed on the classic battle CLI screen; guard for shared helpers/tests.
+    cliRoot.classList.toggle("cli-retro", shouldEnable);
+  }
+  document.body.classList.toggle("cli-retro", shouldEnable);
   try {
     localStorage.setItem("battleCLI.retro", shouldEnable ? "1" : "0");
   } catch {}
