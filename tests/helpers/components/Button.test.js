@@ -86,4 +86,13 @@ describe("createButton", () => {
     button.setDisabled(false);
     expect(button.element.disabled).toBe(false);
   });
+
+  it("warns on invalid SVG icon", async () => {
+    const { withMutedConsole } = await import("../../utils/console.js");
+
+    await withMutedConsole(async () => {
+      const button = createButton("Test", { icon: "invalid svg" });
+      expect(button.element.querySelector("svg")).toBeNull();
+    });
+  });
 });
