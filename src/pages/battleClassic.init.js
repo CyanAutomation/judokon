@@ -1053,6 +1053,12 @@ function updateRoundCounterFromEngine(options = {}) {
   try {
     const engineRound = calculateEngineRound();
     const hasEngineRound = Number.isFinite(engineRound) && engineRound >= 1;
+    console.log(
+      "updateRoundCounterFromEngine: engineRound =",
+      engineRound,
+      "hasEngineRound =",
+      hasEngineRound
+    );
     const hasHighestRound = Number.isFinite(highestDisplayedRound) && highestDisplayedRound >= 1;
     const baselineRound = computeBaselineRound(
       hasHighestRound,
