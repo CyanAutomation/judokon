@@ -70,4 +70,28 @@ describe("battleCLI deterministic seed", () => {
     // Should be identical due to seed reapplication
     expect(seq1).toEqual(seq2);
   });
+
+  it("persists and applies stored seed on reload", async () => {
+    // Simulate previous session stored seed
+    localStorage.setItem("battleCLI.seed", "99");
+    const mod = await loadBattleCLI({
+      url: "http://localhost/battleCLI.html", // no seed param
+      html: seedInputHtml
+    });
+    await mod.init();
+    const { seededRandom } = await import("../../src/helpers/testModeUtils.js");
+    const first = seededRandom();
+    const expected = (start, count) => {
+      const out = [];
+      let s = start;
+      for (let i = 0; i < count; i++) {
+        const x = Math.sin(s++) * 10000;
+        out.push(x - Math.floor(x));
+      }
+      return out;
+    };
+    const [e1] = expected(99, 1);
+    expect(first).toBeCloseTo(e1);
+    expect(localStorage.getItem("battleCLI.seed")).toBe("99");
+  });
 });

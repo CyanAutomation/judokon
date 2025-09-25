@@ -148,6 +148,17 @@ Notes on verification terminology:
   - Playwright test `battle-cli-start.spec.js` passed without regression.
 - **Outcome:** Seeds are now reliably applied on each match reset, ensuring deterministic behavior for QA and automation purposes.
 
+## Implementation of Issue 4: Incomplete Settings Persistence
+
+- **Actions taken:**
+  - Modified `initSeed()` in `src/pages/battleCLI/init.js` to apply stored seed to the engine via `setTestMode()` instead of just updating the input field.
+  - Updated `restorePointsToWin()` to ensure reliable localStorage read/write and UI/engine updates.
+  - Added unit tests in `tests/pages/battleCLI.seed.test.js` and `tests/pages/battleCLI.pointsToWin.test.js` to simulate reloads and assert persisted state.
+- **Test outcomes:**
+  - Updated unit tests in `tests/pages/battleCLI.seed.test.js` and `tests/pages/battleCLI.pointsToWin.test.js` passed, confirming settings persist across simulated reloads.
+  - Playwright test `battle-cli-start.spec.js` passed without regression.
+- **Outcome:** Settings (seed and win-target) now persist across reloads and are properly applied to the engine state.
+
 ## Opportunities for improvement (cross-cutting)
 
 - Add automated tests for each behavioral requirement: seed determinism, settings persistence, timer pause/resume, verbose log visibility, and keyboard shortcut state. Prefer unit tests with fake timers + small integration tests.
@@ -167,7 +178,7 @@ Acceptance criteria for this work:
 - ✅ Start button is visible, keyboard-accessible, and triggers a match start.
 - ✅ Win-target options include [3,5,10] and default to 5.
 - ✅ Seed determinism is reproducible: same seed → same first-round stats across fresh matches.
-- Settings persist across reloads and are applied to the engine.
+- ✅ Settings persist across reloads and are applied to the engine.
 - Timers pause on tab hide and resume accurately.
 
 ## What I changed in this document

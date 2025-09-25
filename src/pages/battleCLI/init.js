@@ -408,6 +408,28 @@ export const __test = {
  * // Callers should await the returned promise to ensure the reset is finished.
  */
 let resetPromise = Promise.resolve();
+
+/**
+ * Reset the match and reinitialize the battle orchestrator.
+ *
+ * @pseudocode
+ * stopSelectionCountdown()
+ * handleCountdownFinished()
+ * roundResolving = false
+ * clearVerboseLog()
+ * remove play-again/start buttons
+ * resetPromise = async () => {
+ *   disposeClassicBattleOrchestrator()
+ *   await resetGame(store)
+ *   updateRoundHeader(0, engineFacade.getPointsToWin?.())
+ *   updateScoreLine()
+ *   setRoundMessage("")
+ * }
+ * await initClassicBattleOrchestrator()
+ * // Return a promise that resolves after both reset and orchestrator initialization are complete.
+ * // Callers should await the returned promise to ensure the reset is finished.
+ * @returns {Promise<void>} A promise that resolves when the reset is complete.
+ */
 export async function resetMatch() {
   stopSelectionCountdown();
   handleCountdownFinished();
@@ -569,7 +591,8 @@ function initSeed() {
   } else if (storedSeed) {
     const num = Number(storedSeed);
     if (!Number.isNaN(num)) {
-      // Populate the input from previous choice without enabling test mode implicitly.
+      // Apply stored seed to the engine for persistence.
+      apply(num);
       if (input) input.value = String(num);
     }
   }

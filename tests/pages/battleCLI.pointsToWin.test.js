@@ -49,23 +49,23 @@ describe("battleCLI points select", () => {
 
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
 
-    select.value = "15";
+    select.value = "10";
     const changeHandler = getListener(changeSpy, "change");
     await changeHandler(new Event("change"));
 
     expect(confirmSpy).toHaveBeenCalled();
-    expect(setPointsToWin).toHaveBeenCalledWith(15);
-    expect(getPointsToWin()).toBe(15);
+    expect(setPointsToWin).toHaveBeenCalledWith(10);
+    expect(getPointsToWin()).toBe(10);
     expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
-    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("15");
+    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("10");
 
     setPointsToWin.mockClear();
     await mod.restorePointsToWin();
-    expect(setPointsToWin).toHaveBeenCalledWith(15);
+    expect(setPointsToWin).toHaveBeenCalledWith(10);
     confirmSpy.mockRestore();
   });
 
-  it.each([5, 15])("selecting %i updates engine state and header", async (target) => {
+  it.each([5, 10])("selecting %i updates engine state and header", async (target) => {
     localStorage.setItem(BATTLE_POINTS_TO_WIN, "10");
     const mod = await loadBattleCLI();
     const root = mod.ensureCliDomForTest();
@@ -111,10 +111,10 @@ describe("battleCLI points select", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const selectChange = getListener(selectSpy, "change");
-    select.value = "15";
+    select.value = "10";
     await selectChange(new Event("change"));
 
-    expect(getPointsToWin()).toBe(15);
+    expect(getPointsToWin()).toBe(10);
 
     setPointsToWin.mockClear();
     updateRoundHeaderSpy.mockClear();
@@ -125,8 +125,8 @@ describe("battleCLI points select", () => {
     checkbox.checked = false;
     await checkboxChange(new Event("change"));
 
-    expect(setPointsToWin.mock.calls.map(([value]) => value)).toEqual([15, 15]);
-    expect(updateRoundHeaderSpy.mock.calls.every(([, value]) => value === 15)).toBe(true);
+    expect(setPointsToWin.mock.calls.map(([value]) => value)).toEqual([10, 10]);
+    expect(updateRoundHeaderSpy.mock.calls.every(([, value]) => value === 10)).toBe(true);
     expect(updateRoundHeaderSpy.mock.calls.length).toBeGreaterThan(0);
 
     confirmSpy.mockRestore();
