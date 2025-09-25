@@ -46,7 +46,6 @@ function logOnce(cache, level, message, error) {
 }
 
 /**
-
  * Determine the fallback return value for a scoreboard helper.
  *
  * @param {string} name - Helper name.
@@ -90,7 +89,7 @@ function getScoreboardMethod(name) {
     }
   } catch {}
 
-  return () => {};
+  return noop;
 }
 
 try {
