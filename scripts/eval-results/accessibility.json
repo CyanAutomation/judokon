@@ -1,10 +1,10 @@
 {
   "role": "WebArea",
-  "name": "JU-DO-KON! – Classic Battle CLI",
+  "name": "JU-DO-KON! - Classic Battle CLI",
   "children": [
     {
       "role": "text",
-      "name": "bash — JU-DO-KON"
+      "name": "bash - JU-DO-KON"
     },
     {
       "role": "link",
@@ -28,7 +28,7 @@
     },
     {
       "role": "text",
-      "name": "---"
+      "name": "------------------------"
     },
     {
       "role": "text",
@@ -36,7 +36,7 @@
     },
     {
       "role": "button",
-      "name": "Settings ▾",
+      "name": "Settings [v]",
       "expanded": true
     },
     {
@@ -86,25 +86,25 @@
     },
     {
       "role": "text",
-      "name": "---"
+      "name": "------------------------"
     },
     {
       "role": "listbox",
-      "name": "Select a stat with number keys 1–5",
+      "name": "Select a stat with number keys 1-5",
       "orientation": "vertical"
     },
     {
       "role": "text",
-      "name": "---"
+      "name": "------------------------"
     },
     {
       "role": "text",
-      "name": "---"
+      "name": "------------------------"
     },
     {
       "role": "textbox",
       "name": "Command prompt",
-      "value": "> ▌"
+      "value": "> _"
     }
   ]
 }

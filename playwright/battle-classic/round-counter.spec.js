@@ -6,7 +6,7 @@ test.describe("Classic Battle round counter", () => {
     await withMutedConsole(async () => {
       await page.addInitScript(() => {
         // Speed timers for test: short round and cooldown
-        window.__OVERRIDE_TIMERS = { roundTimer: 1 };
+        window.__OVERRIDE_TIMERS = { roundTimer: 5 };
         window.__NEXT_ROUND_COOLDOWN_MS = 500;
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
         window.__DEBUG_ROUND_TRACKING = true;
@@ -46,7 +46,7 @@ test.describe("Classic Battle round counter", () => {
   }) => {
     await withMutedConsole(async () => {
       await page.addInitScript(() => {
-        window.__OVERRIDE_TIMERS = { roundTimer: 1 };
+        window.__OVERRIDE_TIMERS = { roundTimer: 5 };
         window.__NEXT_ROUND_COOLDOWN_MS = 0;
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
       });

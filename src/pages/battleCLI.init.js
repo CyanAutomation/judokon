@@ -13,7 +13,7 @@ function renderSkeletonStats(count = 5) {
     const div = document.createElement("div");
     div.className = "cli-stat skeleton";
     div.setAttribute("aria-hidden", "true");
-    div.textContent = `(${i}) —: —`;
+    div.textContent = `(${i}) --------------------`;
     div.id = `stat-skel-${i}`;
     stats.appendChild(div);
   }
@@ -88,11 +88,11 @@ function initSettingsCollapse() {
     if (c) {
       body.style.display = "none";
       toggle.setAttribute("aria-expanded", "false");
-      toggle.textContent = "Settings ▸";
+      toggle.textContent = "Settings [>]";
     } else {
       body.style.display = "";
       toggle.setAttribute("aria-expanded", "true");
-      toggle.textContent = "Settings ▾";
+      toggle.textContent = "Settings [v]";
     }
   };
   apply(collapsed);
@@ -155,11 +155,11 @@ function init() {
       if (collapsed) {
         body.style.display = "none";
         toggle.setAttribute("aria-expanded", "false");
-        toggle.textContent = "Settings ▸";
+        toggle.textContent = "Settings [>]";
       } else {
         body.style.display = "";
         toggle.setAttribute("aria-expanded", "true");
-        toggle.textContent = "Settings ▾";
+        toggle.textContent = "Settings [v]";
       }
       return true;
     };
