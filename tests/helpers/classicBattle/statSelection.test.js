@@ -157,15 +157,6 @@ describe("classicBattle stat selection", () => {
     }
   );
 
-  it("shows stat comparison after selection", async () => {
-    document.getElementById("player-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>5</span></li></ul>`;
-    document.getElementById("opponent-card").innerHTML =
-      `<ul><li class="stat"><strong>Power</strong> <span>3</span></li></ul>`;
-    await selectStat("power");
-    expect(document.getElementById("round-result").textContent).toBe("Power – You: 5 Opponent: 3");
-  });
-
   it("advances machine to cooldown after stat selection", async () => {
     const eventDispatcher = await import("../../../src/helpers/classicBattle/eventDispatcher.js");
     document.getElementById("player-card").innerHTML =

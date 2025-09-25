@@ -6,20 +6,14 @@ vi.mock("../../src/helpers/battle/battleUI.js", () => ({
 }));
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
-  scoreboard: {
-    showMessage: vi.fn()
-  }
+  showMessage: vi.fn()
 }));
 
-describe("showRoundOutcome", () => {
-  let showResult;
-  let showMessage;
+import { showResult } from "../../src/helpers/battle/battleUI.js";
+import { showMessage } from "../../src/helpers/setupScoreboard.js";
 
+describe("showRoundOutcome", () => {
   beforeEach(() => {
-    const battleUI = vi.importMock("../../src/helpers/battle/battleUI.js");
-    const scoreboard = vi.importMock("../../src/helpers/setupScoreboard.js");
-    showResult = battleUI.showResult;
-    showMessage = scoreboard.scoreboard.showMessage;
     vi.clearAllMocks();
   });
 

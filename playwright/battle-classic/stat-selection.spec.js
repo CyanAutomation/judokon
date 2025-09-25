@@ -62,11 +62,13 @@ test.describe("Classic Battle stat selection", () => {
       const buttons = page.getByTestId("stat-button");
       await buttons.first().click();
 
-      // Check that round message shows consolidated stat comparison
-      const roundMessage = page.getByTestId("round-message");
+      // Wait for round resolution and check that round message shows consolidated stat comparison
+      const roundMessage = page.locator("header #round-message");
+      await expect(roundMessage).toBeVisible();
       await expect(roundMessage).toContainText("You picked: Power");
       await expect(roundMessage).toContainText("Opponent picked: Power");
-      await expect(roundMessage).toMatch(
+      const messageText = await roundMessage.textContent();
+      expect(messageText).toMatch(
         /You picked: Power \(\d+\) — Opponent picked: Power \(\d+\) — (You win the round!|Opponent wins the round!|Tie)/
       );
     }, ["log", "info", "warn", "error", "debug"]);
