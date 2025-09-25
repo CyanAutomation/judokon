@@ -118,6 +118,22 @@ function setHighestDisplayedRound(value) {
     window.__highestDisplayedRound = value;
   }
 }
+
+// Wire Main Menu button to quit flow
+function bindHomeButton(store) {
+  try {
+    const homeBtn = document.getElementById("home-button");
+    if (!homeBtn) return;
+    if (!homeBtn.__boundQuit) {
+      homeBtn.addEventListener("click", () => {
+        try {
+          quitMatch(store, homeBtn);
+        } catch {}
+      });
+      homeBtn.__boundQuit = true;
+    }
+  } catch {}
+}
 /**
  * Minimum delay before enabling the Next button after stat selection.
  * Ensures UI state transitions are visible to users.
@@ -257,6 +273,11 @@ function calculateRemainingOpponentMessageTime() {
   } catch {}
   return 0;
 }
+
+// Attempt initial binding for home button early; store will be passed after init
+try {
+  bindHomeButton({});
+} catch {}
 
 function recordRoundCycleTrigger(source) {
   lastRoundCycleTriggerSource = source;

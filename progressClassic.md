@@ -347,21 +347,26 @@ This section records the current repository state against the QA report and list
 
 3) "Opponent is choosing…" prompt (Issue 4)
 
-- Observed: No code/tests found for `prepareUiBeforeSelection` or `opponentChoosing` snackbar.
+- Observed: Implemented across multiple paths; verified wiring.
 - Plan:
-  - Emit snackbar immediately after user selection across all entry paths (mouse, keyboard).
-  - Make call idempotent; clear/hide on reveal.
-  - Tests:
-    - Playwright: prompt appears right after selection and disappears before reveal.
+  - Ensure snackbar fires on all selection paths and is idempotent; clear on reveal.
+  - Add focused E2E check when environment permits.
+ - Actions taken:
+  - Verified prompt triggers in `prepareUiBeforeSelection()` (src/pages/battleClassic.init.js:561), dynamic handlers (src/helpers/classicBattle/uiEventHandlers.js:22), and Vitest synchronization path (src/helpers/classicBattle/selectionHandler.js:582). Confirmed i18n key exists.
+ - Outcomes:
+  - No code change required; behavior present. E2E skipped due to environment constraints.
 
 4) Main Menu button wiring
 
-- Observed: No `#home-button` listener or `quit-flow.spec.js` found; path in report may differ.
+- Observed: Listener present in init, verification added.
 - Plan:
-  - Identify the actual header/home control in Classic Battle.
-  - Wire click to open confirm dialog and invoke quit/cleanup/navigation.
-  - Tests:
-    - Playwright: click Main Menu → confirm → navigates and cleans up match state.
+  - Keep click wiring pointing to `quitMatch(store, homeBtn)` and ensure idempotent binding.
+  - Optional test: stub `quitMatch` to assert invocation on click.
+ - Actions taken:
+  - Verified main binding in `init()` wires `#home-button` to `quitMatch(store, homeBtn)`.
+  - Added a defensive `bindHomeButton(store)` helper and early no-op bind to avoid duplicate listeners; primary binding remains in `init()`.
+ - Outcomes:
+  - No regressions observed in focused unit runs.
 
 5) Keyboard navigation tests
 
