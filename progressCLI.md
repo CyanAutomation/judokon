@@ -291,3 +291,23 @@ Notes/Risks:
 - Emission occurs before round resolution to let UI clear stale summary state ahead of updates. This is additive and should not alter public APIs.
 
 Status: Completed; ready for review.
+
+## Progress Log — Task 7: Input latency test hardening
+
+Activity:
+- Added a small, non-production seam to assert microtask deferral deterministically without relying on jsdom focus quirks.
+
+Changes:
+- `src/pages/battleCLI/init.js`:
+  - Exported `__scheduleMicrotask` used by the key handler; tests can stub it to control timing.
+  - Exported `selectStat`, `ensureStartButtonFocus`, `ensureCliDomForTest`, and re-exported existing `getStatByIndex` for targeted testing.
+- Tests:
+  - `tests/pages/battleCLI/inputLatencyHardened.spec.js` — verifies handler uses the scheduling seam and defers side-effects — PASS
+
+Validation (targeted only):
+- Vitest: hardened input latency test passed.
+
+Notes/Risks:
+- Exposed functions are small test seams; behavior unchanged in production. No dynamic imports added.
+
+Status: Completed; ready for review.

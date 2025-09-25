@@ -1124,10 +1124,19 @@ export function selectStat(stat) {
       .then(async () => {
         try {
           const m = await import("./init.js");
+          try {
+            // eslint-disable-next-line no-console
+            console.log("[TEST LOG] imported safeDispatch isMock=", !!m.safeDispatch?.mock);
+          } catch {}
           if (m && typeof m.safeDispatch === "function") {
             await m.safeDispatch("statSelected");
           }
-        } catch {}
+        } catch (err) {
+          try {
+            // eslint-disable-next-line no-console
+            console.error("[TEST LOG] dynamic import dispatch error", err);
+          } catch {}
+        }
       })
       .catch(() => {});
   } catch (err) {
@@ -1637,6 +1646,7 @@ async function startRoundWrapper() {
   updateRoundHeader(roundNumber, engineFacade.getPointsToWin?.());
 }
 
+// Deprecated internal alias retained for backward-compat within module
 function getStatByIndex(index1Based) {
   const i = Number(index1Based) - 1;
   return STATS[i] || null;
@@ -1731,12 +1741,7 @@ export function handleGlobalKey(key) {
 // Expose a tiny seam to control scheduling in tests without touching behavior.
 export const __scheduleMicrotask = (fn) => Promise.resolve().then(fn);
 
-export function getStatByIndex(idx) {
-  const n = Number(idx);
-  if (!Number.isFinite(n)) return null;
-  const index = n >= 1 && n <= STATS.length ? n - 1 : -1;
-  return index >= 0 ? STATS[index] : null;
-}
+export { getStatByIndex };
 
 export function handleWaitingForPlayerActionKey(key) {
   try {
