@@ -605,17 +605,30 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
     }
   } catch {}
 
+  let playerScore = Number(result?.playerScore);
+  let opponentScore = Number(result?.opponentScore);
+  const scoresAreNumbers = Number.isFinite(playerScore) && Number.isFinite(opponentScore);
+
+  if (!scoresAreNumbers) {
+    try {
+      const engineScores = getScores();
+      playerScore = Number(engineScores?.playerScore);
+      opponentScore = Number(engineScores?.opponentScore);
+    } catch {}
+  }
+
+  playerScore = Number.isFinite(playerScore) ? playerScore : 0;
+  opponentScore = Number.isFinite(opponentScore) ? opponentScore : 0;
+
   try {
-    const { playerScore, opponentScore } = getScores();
-    try {
-      scoreboard.updateScore(Number(playerScore) || 0, Number(opponentScore) || 0);
-    } catch {}
-    try {
-      const el = document.getElementById("score-display");
-      if (el) {
-        el.innerHTML = `<span data-side=\"player\">You: ${Number(playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(opponentScore) || 0}</span>`;
-      }
-    } catch {}
+    scoreboard.updateScore(playerScore, opponentScore);
+  } catch {}
+
+  try {
+    const el = document.getElementById("score-display");
+    if (el) {
+      el.innerHTML = `<span data-side=\"player\">You: ${playerScore}</span>\n<span data-side=\"opponent\">Opponent: ${opponentScore}</span>`;
+    }
   } catch {}
 
   try {
