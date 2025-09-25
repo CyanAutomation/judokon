@@ -614,7 +614,12 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
       const engineScores = getScores();
       playerScore = Number(engineScores?.playerScore);
       opponentScore = Number(engineScores?.opponentScore);
-    } catch {}
+      playerScore = Number.isFinite(playerScore) ? playerScore : 0;
+      opponentScore = Number.isFinite(opponentScore) ? opponentScore : 0;
+    } catch {
+      playerScore = 0;
+      opponentScore = 0;
+    }
   }
 
   playerScore = Number.isFinite(playerScore) ? playerScore : 0;
