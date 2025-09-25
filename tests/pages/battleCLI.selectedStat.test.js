@@ -20,9 +20,8 @@ describe("battleCLI stat interactions", () => {
     await mod.renderStatList();
     mod.handleWaitingForPlayerActionKey("1");
     await Promise.resolve();
-    expect(document.querySelector('[data-stat-index="1"]').classList.contains("selected")).toBe(
-      true
-    );
+    const statEl = document.querySelector('[data-stat-index="1"]');
+    expect(statEl.classList.contains("selected")).toBe(true);
   });
 
   it("sets data-selected-index on cli-stats", async () => {
@@ -30,7 +29,8 @@ describe("battleCLI stat interactions", () => {
     await mod.renderStatList();
     mod.handleWaitingForPlayerActionKey("2");
     await Promise.resolve();
-    expect(document.getElementById("cli-stats").dataset.selectedIndex).toBe("2");
+    const cliStats = document.getElementById("cli-stats");
+    expect(cliStats.dataset.selectedIndex).toBe("2");
   });
 
   it("shows stat values and responds to selection", async () => {
