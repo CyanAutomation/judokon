@@ -639,6 +639,11 @@ async function applySelectionResult(store, result) {
     });
   } catch {}
   ensureScoreboardReflectsResult(result);
+  try {
+    showSnackbar("");
+  } catch (err) {
+    console.debug("battleClassic: failed to clear snackbar after result", err);
+  }
   const matchEnded = await confirmMatchOutcome(store, result);
   if (!matchEnded && store && typeof store === "object" && !isOrchestratorActive(store)) {
     const played = Number(store.roundsPlayed) || 0;

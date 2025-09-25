@@ -10,8 +10,8 @@ import { onDomReady } from "./domReady.js";
  *    a. If `data-enlarge-listener-attached` is present, skip to avoid duplicate listeners.
  *    b. Mark the element as having listeners attached.
  *    c. Add a `mouseenter` listener that clears `data-enlarged` and checks
- *       for reduced-motion or a test-disable attribute; if either is true,
- *       set `data-enlarged="true"` immediately so no animation is needed.
+ *       for reduced-motion, a test-disable attribute, or existing keyboard focus;
+ *       if any are true, set `data-enlarged="true"` immediately so no animation is needed.
  *    d. Add a `mouseleave` listener that removes the `data-enlarged` marker.
  *    e. Add a `transitionend` listener that, when the `transform` property finishes,
  *       sets `data-enlarged="true"` to indicate enlargement completed.
@@ -37,6 +37,19 @@ export function addHoverZoomMarkers() {
     const reset = () => {
       delete card.dataset.enlarged;
     };
+
+    // Keyboard users should immediately see the enlarged state once they hover a focused card.
+    const hasKeyboardFocus = () => {
+      try {
+        if (card.matches(":focus-visible")) return true;
+      } catch {}
+      try {
+        return card === document.activeElement && card.matches(":focus");
+      } catch {
+        return card === document.activeElement;
+      }
+    };
+
     card.addEventListener("mouseenter", () => {
       reset();
       try {
@@ -46,7 +59,12 @@ export function addHoverZoomMarkers() {
         if (reduceMotion || disableAnimations) {
           card.dataset.enlarged = "true";
         }
-      } catch {}
+      } catch {
+        // If reduced-motion or test flags can't be read, still honor keyboard focus for accessibility.
+        if (hasKeyboardFocus()) {
+          setEnlarged();
+        }
+      }
     });
     card.addEventListener("mouseleave", reset);
     card.addEventListener("transitionend", (event) => {
