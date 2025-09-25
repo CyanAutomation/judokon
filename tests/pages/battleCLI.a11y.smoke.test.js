@@ -20,7 +20,7 @@ describe("battleCLI accessibility smoke tests", () => {
     expect(hint).toBeTruthy();
     expect(hint?.getAttribute("aria-hidden")).toBe("true");
     expect(hint?.textContent?.trim()).toBe(
-      "[1-5] Stats | [Enter] or [Space] Next | [H] Help | [Q] Quit"
+      "[1–5] Stats | [Enter] or [Space] Next | [H] Help | [Q] Quit"
     );
   });
 
