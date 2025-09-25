@@ -1,5 +1,25 @@
 import { test, expect } from "@playwright/test";
 
+const ALLOWED_CLI_BACKGROUND_COLORS = [
+  "rgb(11,12,12)",
+  "rgb(5,5,5)",
+  "rgb(0,0,0)",
+  "#0b0c0c",
+  "#050505",
+  "#000"
+];
+
+const ALLOWED_CLI_TEXT_COLORS = [
+  "rgb(242,242,242)",
+  "rgb(214,245,214)",
+  "rgb(140,255,107)",
+  "#f2f2f2",
+  "#d6f5d6",
+  "#8cff6b"
+];
+
+const normalizeColorValue = (colorValue) => colorValue.replace(/\s+/g, "").toLowerCase();
+
 test.describe("CLI Layout Assessment - Desktop Focused", () => {
   test.beforeEach(async ({ page }) => {
     // Set standard desktop resolution for consistent testing
@@ -72,26 +92,17 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     });
 
     // Allow for both standard and CLI immersive themes (normalize to avoid spacing/format drift)
-    const normalizedBackground = bodyStyles.background.replace(/\s+/g, "").toLowerCase();
-    const normalizedColor = bodyStyles.color.replace(/\s+/g, "").toLowerCase();
+    const normalizedBackground = normalizeColorValue(bodyStyles.background);
+    const normalizedColor = normalizeColorValue(bodyStyles.color);
 
     expect(
-      ["rgb(11,12,12)", "rgb(5,5,5)", "rgb(0,0,0)", "#0b0c0c", "#050505", "#000"].includes(
-        normalizedBackground
-      ),
-      `Unexpected CLI background color: ${bodyStyles.background}`
+      ALLOWED_CLI_BACKGROUND_COLORS.includes(normalizedBackground),
+      `Unexpected CLI background color: ${bodyStyles.background} (normalized: ${normalizedBackground})`
     ).toBe(true);
 
     expect(
-      [
-        "rgb(242,242,242)",
-        "rgb(214,245,214)",
-        "rgb(140,255,107)",
-        "#f2f2f2",
-        "#d6f5d6",
-        "#8cff6b"
-      ].includes(normalizedColor),
-      `Unexpected CLI text color: ${bodyStyles.color}`
+      ALLOWED_CLI_TEXT_COLORS.includes(normalizedColor),
+      `Unexpected CLI text color: ${bodyStyles.color} (normalized: ${normalizedColor})`
     ).toBe(true);
   });
 });
