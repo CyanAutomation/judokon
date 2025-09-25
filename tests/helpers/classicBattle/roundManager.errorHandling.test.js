@@ -151,22 +151,22 @@ describe("roundManager error handling integration", () => {
   it("hides opponent card at start of round", async () => {
     const mockElement = { classList: { add: vi.fn() } };
     const getElementByIdSpy = vi.spyOn(document, "getElementById").mockReturnValue(mockElement);
-    
+
     // Mock drawCards to avoid rendering
     vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
       drawCards: vi.fn().mockResolvedValue({ playerJudoka: {}, opponentJudoka: {} })
     }));
-    
+
     const { startRound, createBattleStore } = await import(
       "../../../src/helpers/classicBattle/roundManager.js"
     );
     const store = createBattleStore();
-    
+
     await startRound(store);
-    
+
     expect(getElementByIdSpy).toHaveBeenCalledWith("opponent-card");
     expect(mockElement.classList.add).toHaveBeenCalledWith("opponent-hidden");
-    
+
     getElementByIdSpy.mockRestore();
   });
 });
