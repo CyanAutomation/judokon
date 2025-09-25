@@ -452,7 +452,7 @@ const timerApi = {
           logDevDebug("Failed to delegate countdown to battleCLI", err);
         } finally {
           try {
-            if (battleCLI.__freezeUntil !== undefined && !delegationSucceeded) {
+            if (battleCLI && battleCLI.__freezeUntil !== undefined && !delegationSucceeded) {
               battleCLI.__freezeUntil = Date.now() + 500;
             }
           } catch {}
