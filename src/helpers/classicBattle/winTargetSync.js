@@ -83,8 +83,31 @@ export function syncWinTargetDropdown() {
     const select = byId("points-select");
     if (!select) return;
 
-    const currentTarget = readPointsToWin();
+    let currentTarget = readPointsToWin();
+    if (typeof currentTarget !== "number" || !Number.isFinite(currentTarget)) {
+      try {
+        const fallback =
+          typeof document !== "undefined" && document?.body
+            ? Number(document.body.dataset?.target)
+            : NaN;
+        if (Number.isFinite(fallback)) {
+          currentTarget = fallback;
+        }
+      } catch {}
+    }
     if (typeof currentTarget !== "number" || !Number.isFinite(currentTarget)) return;
+
+    try {
+      const hasOption = Array.from(select.options || []).some(
+        (option) => Number(option.value) === currentTarget
+      );
+      if (!hasOption && typeof document !== "undefined") {
+        const option = document.createElement("option");
+        option.value = String(currentTarget);
+        option.textContent = String(currentTarget);
+        select.appendChild(option);
+      }
+    } catch {}
 
     select.value = String(currentTarget);
     const round = getCurrentRoundNumber();
