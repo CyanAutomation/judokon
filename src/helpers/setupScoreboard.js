@@ -8,6 +8,37 @@ try {
   sharedScoreboardModule = null;
 }
 
+function getScoreboardMethod(name) {
+  const directMethod =
+    sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
+      ? sharedScoreboardModule[name]
+      : null;
+
+  if (directMethod) {
+    return directMethod;
+  }
+
+  try {
+    if (typeof window !== "undefined") {
+      const globalGetter = window.getScoreboardMethod;
+      if (typeof globalGetter === "function" && globalGetter !== getScoreboardMethod) {
+        const resolved = globalGetter(name);
+        if (typeof resolved === "function") {
+          return resolved;
+        }
+      }
+    }
+  } catch {}
+
+  return () => {};
+}
+
+try {
+  if (typeof window !== "undefined" && typeof window.getScoreboardMethod !== "function") {
+    window.getScoreboardMethod = getScoreboardMethod;
+  }
+} catch {}
+
 const invokeSharedHelper = (name, args) => {
   const helper =
     sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
