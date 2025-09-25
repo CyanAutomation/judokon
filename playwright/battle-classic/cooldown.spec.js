@@ -11,13 +11,8 @@ import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
 test.describe("Classic Battle cooldown + Next", () => {
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
     await withMutedConsole(async () => {
-      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: 1 });
+      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: null });
       await page.goto("/src/pages/battleClassic.html");
-
-      // Override the timer to null after page load to prevent automatic selection
-      await page.evaluate(() => {
-        window.__OVERRIDE_TIMERS = { roundTimer: null };
-      });
 
       await waitForTestApi(page);
 
@@ -61,12 +56,17 @@ test.describe("Classic Battle cooldown + Next", () => {
         expectedContexts.push(diagnosticsBeforeNext.lastContext);
       }
       expect(expectedContexts).toContain(diagnosticsAfterNext.lastContext);
+
+      // Clear the timer override so it doesn't affect other tests
+      await page.evaluate(() => {
+        delete window.__OVERRIDE_TIMERS;
+      });
     }, ["log", "info", "warn", "error", "debug"]);
   });
 
   test("recovers round counter state after external DOM interference", async ({ page }) => {
     await withMutedConsole(async () => {
-      await applyDeterministicCooldown(page, { cooldownMs: 0 });
+      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: null });
       await page.goto("/src/pages/battleClassic.html");
 
       await waitForTestApi(page);

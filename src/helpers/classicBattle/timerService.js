@@ -576,6 +576,28 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
             pushRTrace(rtraceInfo);
           } catch {}
         }
+        // Prevent jumping more than a single round ahead when engine data is unavailable.
+        // This avoids using a stale recordedHighest that would skip expected intermediate rounds.
+        try {
+          if (!hasEngineNextRound && Number.isFinite(displayedRoundBefore)) {
+            const maxAllowed = Number(displayedRoundBefore) + 1;
+            if (fallbackTarget > maxAllowed) {
+              const capped = maxAllowed;
+              try {
+                pushRTrace({
+                  tag: "timerService.fallback.cap",
+                  originalFallbackTarget: fallbackTarget,
+                  cappedTo: capped,
+                  recordedHighest,
+                  displayedRoundBefore,
+                  stack: new Error().stack
+                });
+              } catch {}
+              fallbackTarget = capped;
+            }
+          }
+        } catch {}
+
         writeRoundCounter(root, fallbackTarget);
         const nextRecordedHighest = hasRecordedHighest
           ? Math.max(recordedHighest, fallbackTarget)
