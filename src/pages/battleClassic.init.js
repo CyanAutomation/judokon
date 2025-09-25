@@ -567,20 +567,25 @@ function prepareUiBeforeSelection() {
 function ensureScoreboardReflectsResult(result) {
   try {
     if (result) {
-      const rawPlayer = Number(result.playerScore);
-      const rawOpponent = Number(result.opponentScore);
-      const playerScore = Number.isFinite(rawPlayer) ? rawPlayer : 0;
-      const opponentScore = Number.isFinite(rawOpponent) ? rawOpponent : 0;
+      const rawPlayerScore = Number(result.playerScore);
+      const rawOpponentScore = Number(result.opponentScore);
+      const normalizedPlayerScore = Number.isFinite(rawPlayerScore) ? rawPlayerScore : 0;
+      const normalizedOpponentScore = Number.isFinite(rawOpponentScore) ? rawOpponentScore : 0;
 
-      updateScore(playerScore, opponentScore);
+      updateScore(normalizedPlayerScore, normalizedOpponentScore);
 
       try {
-        emitBattleEvent("display.score.update", { player: playerScore, opponent: opponentScore });
-      } catch {}
+        emitBattleEvent("display.score.update", {
+          player: normalizedPlayerScore,
+          opponent: normalizedOpponentScore
+        });
+      } catch (err) {
+        console.debug("battleClassic: failed to emit display.score.update event", err);
+      }
 
       const scoreEl = document.getElementById("score-display");
       if (scoreEl) {
-        scoreEl.innerHTML = `<span data-side=\"player\">You: ${playerScore}</span>\n<span data-side=\"opponent\">Opponent: ${opponentScore}</span>`;
+        scoreEl.innerHTML = `<span data-side=\"player\">You: ${normalizedPlayerScore}</span>\n<span data-side=\"opponent\">Opponent: ${normalizedOpponentScore}</span>`;
       }
     }
   } catch {}
