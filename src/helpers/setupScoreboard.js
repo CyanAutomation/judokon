@@ -19,15 +19,35 @@ try {
  * @returns {Function|null} The requested helper or null when unavailable.
  */
 function getScoreboardMethod(name) {
-  if (
-    sharedScoreboardModule &&
-    typeof sharedScoreboardModule[name] === "function"
-  ) {
-    return sharedScoreboardModule[name];
+  const directMethod =
+    sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
+      ? sharedScoreboardModule[name]
+      : null;
+
+  if (directMethod) {
+    return directMethod;
   }
 
-  return null;
+  try {
+    if (typeof window !== "undefined") {
+      const globalGetter = window.getScoreboardMethod;
+      if (typeof globalGetter === "function" && globalGetter !== getScoreboardMethod) {
+        const resolved = globalGetter(name);
+        if (typeof resolved === "function") {
+          return resolved;
+        }
+      }
+    }
+  } catch {}
+
+  return () => {};
 }
+
+try {
+  if (typeof window !== "undefined" && typeof window.getScoreboardMethod !== "function") {
+    window.getScoreboardMethod = getScoreboardMethod;
+  }
+} catch {}
 
 const invokeSharedHelper = (name, args) => {
   const helper = getScoreboardMethod(name);

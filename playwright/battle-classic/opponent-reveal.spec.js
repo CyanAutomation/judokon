@@ -120,8 +120,6 @@ async function expectRoundsPlayedAtLeast(page, minRounds, options = {}) {
 
 async function startMatch(page, selector) {
   const button = page.locator(selector);
-  await expect(button).toBeVisible();
-  await button.click();
 
   const ensureStatSelectionVisible = async () => {
     await expect(page.locator(selectors.statButton(0)).first()).toBeVisible({
@@ -129,14 +127,37 @@ async function startMatch(page, selector) {
     });
   };
 
-  try {
+  const ensureBattleReady = async () => {
     await expectBattleState(page, "waitingForPlayerAction", { timeout: 7_000 });
     await ensureStatSelectionVisible();
+  };
+
+  let ensuredDuringFallback = false;
+
+  try {
+    await expect(button).toBeVisible({ timeout: 7_000 });
+    await button.click();
   } catch (error) {
-    try {
-      await ensureStatSelectionVisible();
-    } catch {
+    const readyWithoutClick = await ensureBattleReady()
+      .then(() => true)
+      .catch(() => false);
+
+    if (readyWithoutClick) {
+      ensuredDuringFallback = true;
+    } else {
       throw error;
+    }
+  }
+
+  if (!ensuredDuringFallback) {
+    try {
+      await ensureBattleReady();
+    } catch (error) {
+      try {
+        await ensureStatSelectionVisible();
+      } catch {
+        throw error;
+      }
     }
   }
 }
