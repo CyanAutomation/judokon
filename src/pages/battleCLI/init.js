@@ -1118,8 +1118,10 @@ function selectStat(stat) {
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     state.roundResolving = true;
+    // Visible log for test debugging
     try {
-      console.debug("[TEST DEBUG] calling safeDispatch binding type=", typeof safeDispatch);
+      // eslint-disable-next-line no-console
+      console.log("[TEST LOG] selectStat dispatching statSelected");
     } catch {}
     safeDispatch("statSelected");
   } catch (err) {
@@ -1721,6 +1723,10 @@ export function handleGlobalKey(key) {
  * return false
  */
 export function handleWaitingForPlayerActionKey(key) {
+  try {
+    // eslint-disable-next-line no-console
+    console.log('[TEST LOG] handleWaitingForPlayerActionKey called with', key);
+  } catch {}
   if (key >= "0" && key <= "9") {
     const stat = getStatByIndex(key);
     if (!stat) {

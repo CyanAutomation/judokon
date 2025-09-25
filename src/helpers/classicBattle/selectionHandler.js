@@ -341,6 +341,12 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
     } catch {}
   }
 
+  // Emit a roundReset signal immediately after selection to allow UI to clear
+  // previous-round artifacts deterministically before resolution proceeds.
+  try {
+    emitBattleEvent("roundReset", { reason: "playerSelection" });
+  } catch {}
+
   try {
     if (IS_VITEST) {
       try {

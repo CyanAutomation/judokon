@@ -271,3 +271,23 @@ Notes/Risks:
 - This wires cleanup on the UI service layer without changing public APIs. If a more specific RoundSummary component exists elsewhere, it can also subscribe to `ui.roundReset`.
 
 Status: Completed; ready for review.
+
+## Progress Log — Task 6: RoundReset emission source
+
+Activity:
+- Ensured the battle flow emits `roundReset` at a deterministic boundary so UI cleanup is reliable.
+
+Changes:
+- `src/helpers/classicBattle/selectionHandler.js`:
+  - Emit `roundReset` immediately after player selection is registered (pre-resolution) with `{ reason: "playerSelection" }`.
+- Tests:
+  - `tests/helpers/roundResetEmission.spec.js` — verifies `roundReset` is emitted on selection — PASS
+  - Re-ran `tests/helpers/roundSummaryReset.spec.js` to confirm UI cleanup reacts — PASS
+
+Validation (targeted only):
+- Vitest: 2 files, 2 tests — PASS
+
+Notes/Risks:
+- Emission occurs before round resolution to let UI clear stale summary state ahead of updates. This is additive and should not alter public APIs.
+
+Status: Completed; ready for review.
