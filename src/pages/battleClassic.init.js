@@ -567,10 +567,20 @@ function prepareUiBeforeSelection() {
 function ensureScoreboardReflectsResult(result) {
   try {
     if (result) {
-      updateScore(Number(result.playerScore) || 0, Number(result.opponentScore) || 0);
+      const rawPlayer = Number(result.playerScore);
+      const rawOpponent = Number(result.opponentScore);
+      const playerScore = Number.isFinite(rawPlayer) ? rawPlayer : 0;
+      const opponentScore = Number.isFinite(rawOpponent) ? rawOpponent : 0;
+
+      updateScore(playerScore, opponentScore);
+
+      try {
+        emitBattleEvent("display.score.update", { player: playerScore, opponent: opponentScore });
+      } catch {}
+
       const scoreEl = document.getElementById("score-display");
       if (scoreEl) {
-        scoreEl.innerHTML = `<span data-side=\"player\">You: ${Number(result.playerScore) || 0}</span>\n<span data-side=\"opponent\">Opponent: ${Number(result.opponentScore) || 0}</span>`;
+        scoreEl.innerHTML = `<span data-side=\"player\">You: ${playerScore}</span>\n<span data-side=\"opponent\">Opponent: ${opponentScore}</span>`;
       }
     }
   } catch {}
