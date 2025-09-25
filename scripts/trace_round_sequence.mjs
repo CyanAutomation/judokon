@@ -18,7 +18,7 @@ import playwright from "playwright";
   await page.waitForSelector("#stat-buttons button[data-stat]", { timeout: 5000 });
   await page.click("#stat-buttons button[data-stat]");
   // wait for next to be ready
-  await page.waitForSelector("#next-button[data-next-ready=\"true\"]", { timeout: 5000 });
+  await page.waitForSelector('#next-button[data-next-ready="true"]', { timeout: 5000 });
   // dump rtrace logs and some globals
   const logs = await page.evaluate(() => ({
     rtrace: window.__RTRACE_LOGS || [],

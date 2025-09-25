@@ -110,7 +110,9 @@ export async function prepareLocalModel(options = {}) {
         } catch {} // Ignore error if file doesn't exist
 
         if (existingFileNonEmpty) {
-          console.warn(`Skipping placeholder for existing non-empty file: ${rel}. Use --force to overwrite.`);
+          console.warn(
+            `Skipping placeholder for existing non-empty file: ${rel}. Use --force to overwrite.`
+          );
           continue;
         }
       }

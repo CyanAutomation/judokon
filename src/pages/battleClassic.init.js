@@ -98,13 +98,10 @@ function setHighestDisplayedRound(value) {
     try {
       if (window.__DEBUG_ROUND_TRACKING) {
         try {
-          console.debug(
-            "[round-tracking] setHighestDisplayedRound",
-            {
-              value,
-              previous: window.__highestDisplayedRound
-            }
-          );
+          console.debug("[round-tracking] setHighestDisplayedRound", {
+            value,
+            previous: window.__highestDisplayedRound
+          });
         } catch {}
         try {
           if (!window.__RTRACE_LOGS) window.__RTRACE_LOGS = [];

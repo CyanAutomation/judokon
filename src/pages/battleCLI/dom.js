@@ -103,7 +103,10 @@ export function updateRoundHeader(round, target) {
 export function setRoundMessage(text) {
   // Helper: strip common emoji/unicode pictographs for CLI-only output
   const stripEmoji = (s) =>
-    String(s || "").replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E6}-\u{1F1FF}]/gu, "");
+    String(s || "").replace(
+      /[\u{1F300}-\u{1F6FF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E6}-\u{1F1FF}]/gu,
+      ""
+    );
 
   const isCliActive = Boolean(byId("cli-root"));
   const out = isCliActive ? stripEmoji(text) : text || "";
