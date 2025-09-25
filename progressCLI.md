@@ -192,6 +192,19 @@ Acceptance criteria for this work:
 - ✅ Timers pause on tab hide and resume accurately.
 - ✅ Timer displays are consolidated - only CLI countdown shows in CLI mode.
 
+## Implementation of Issue 5: Timer Doesn't Pause on Tab Hide
+
+- Actions taken:
+  - Reviewed CLI visibility lifecycle in `src/pages/battleCLI/init.js` and confirmed pause/resume logic hooks `document.visibilitychange`, `window.pageshow`, and `window.pagehide` to trigger `pauseTimers()`/`resumeTimers()` and engine `handleTabInactive/Active` when available.
+  - Verified pause/resume helpers: `pauseTimer`, `pauseTimers`, and `resumeTimers` manage selection and cooldown timers and preserve remaining time from DOM/state.
+- Targeted tests executed:
+  - Ran focused unit tests for visibility/pause behavior: `vitest run tests/pages/battleCLI.visibility.test.js -t pauseTimers` and `-t resumeTimers`.
+  - Outcomes: PASS for targeted tests; remaining tests in that file were skipped per selection to keep scope focused.
+- Outcomes:
+  - Existing implementation and targeted tests confirm timers pause on tab hide and resume on show without regression.
+- Follow-ups:
+  - Consider adding an explicit test that simulates `document.hidden` toggling with active cooldown selection to assert remaining time drift stays within 1s.
+
 ## Implementation of Issue 1: Unintuitive Match Start
 
 - Actions taken:
