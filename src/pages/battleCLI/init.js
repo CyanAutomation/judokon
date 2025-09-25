@@ -421,6 +421,8 @@ export async function resetMatch() {
   updateRoundHeader(0, engineFacade.getPointsToWin?.());
   updateScoreLine();
   setRoundMessage("");
+  // Re-apply seed for deterministic behavior on match reset
+  initSeed();
   // Perform asynchronous reset work
   const next = (async () => {
     disposeClassicBattleOrchestrator();

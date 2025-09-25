@@ -52,4 +52,21 @@ describe("battleCLI deterministic seed", () => {
     input.dispatchEvent(new Event("input"));
     expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
   });
+
+  it("resetMatch reapplies seed for deterministic behavior", async () => {
+    const mod = await loadBattleCLI({
+      url: "http://localhost/battleCLI.html?seed=42",
+      html: seedInputHtml
+    });
+    await mod.init();
+    const { seededRandom } = await import("../../src/helpers/testModeUtils.js");
+    // Get initial sequence
+    const seq1 = [seededRandom(), seededRandom(), seededRandom()];
+    // Reset match
+    await mod.resetMatch();
+    // Get sequence after reset
+    const seq2 = [seededRandom(), seededRandom(), seededRandom()];
+    // Should be identical due to seed reapplication
+    expect(seq1).toEqual(seq2);
+  });
 });

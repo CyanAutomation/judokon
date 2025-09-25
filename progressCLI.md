@@ -142,9 +142,7 @@ Notes on verification terminology:
 
 - Add automated tests for each behavioral requirement: seed determinism, settings persistence, timer pause/resume, verbose log visibility, and keyboard shortcut state. Prefer unit tests with fake timers + small integration tests.
 - Centralize feature flags and UI wiring: ensure that toggles like "Verbose" only change the presentation layer through a single well-tested API.
-- Introduce short smoke/e2e tests (Playwright) for the CLI flows to catch regressions (start match, restart, quit, visibility change).
 - Add `data-testid` attributes to key UI elements (start button, timer, verbose log) to make tests robust.
-- Consider adding a simple visual regression snapshot test for the initial page layout to detect missing elements like the Start button.
 
 ## Next steps and acceptance criteria
 
