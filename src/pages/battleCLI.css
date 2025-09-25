@@ -12,9 +12,11 @@
 }
 
 :focus {
-	outline: none;
-	box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.12), 0 0 0 1px var(--cli-focus);
-	border-radius: 3px;
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 209, 102, 0.12),
+    0 0 0 1px var(--cli-focus);
+  border-radius: 3px;
 }
 html,
 body {
@@ -221,6 +223,7 @@ body {
 #cli-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-auto-rows: minmax(44px, auto);
   gap: 8px;
   min-height: 8rem; /* Reserve space for layout stability and touch targets */
 }
@@ -467,6 +470,7 @@ select:focus,
   }
   #cli-stats {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-auto-rows: minmax(44px, auto);
     min-height: 8rem; /* Maintain reservation on mobile */
   }
   .ascii-sep {
@@ -498,5 +502,9 @@ select:focus,
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.cli-caret, .cli-anim { animation: none !important; transition: none !important; }
+  .cli-caret,
+  .cli-anim {
+    animation: none !important;
+    transition: none !important;
+  }
 }
