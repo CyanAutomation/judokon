@@ -1,5 +1,17 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from "vitest";
 import { readFileSync } from "node:fs";
+
+let battleCLI;
+
+beforeAll(async () => {
+  window.__TEST__ = true;
+  ({ battleCLI } = await import("../../src/pages/index.js"));
+});
+
+afterAll(() => {
+  vi.resetModules();
+  delete window.__TEST__;
+});
 
 describe("battleCLI accessibility smoke tests", () => {
   beforeEach(() => {
@@ -19,6 +31,7 @@ describe("battleCLI accessibility smoke tests", () => {
     const hint = document.getElementById("cli-controls-hint");
     expect(hint).toBeTruthy();
     expect(hint?.getAttribute("aria-hidden")).toBe("true");
+    battleCLI.normalizeShortcutCopy();
     expect(hint?.textContent?.trim()).toBe(
       "[1–5] Stats | [Enter] or [Space] Next | [H] Help | [Q] Quit"
     );
