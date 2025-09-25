@@ -1,75 +1,198 @@
-# QA Report for `src/pages/battleClassic.html`
+# QA Report — src/pages/battleClassic.html
 
-This report details issues found during quality assurance testing of the Classic Battle interface.
+This document reviews the QA findings for the Classic Battle UI, confirms accuracy where possible, evaluates feasibility of fixes, and adds improvement suggestions and follow-up steps. Each reported issue below contains:
 
-| Issue                                        | Steps to Reproduce                                                                                                                                                                                                              | Expected (from PRD)                                                                                                                   | Actual Behaviour                                                                                                                             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Opponent Card Exposed Prematurely**        | Occasionally, when starting a match (especially after pressing **Next** without selecting match length), the opponent’s card is immediately visible, revealing their stats before the player has acted.                               | The opponent’s card should remain hidden until the player selects a stat.                                                             | The opponent's card sometimes loads already revealed, defeating the suspense of the round.                                                 |
-| **Stat Buttons Not Disabled After Selection**  | Select a stat (e.g., Power). The selected button turns blue, but all other stat buttons remain red and clickable. Repeated clicks can advance the round counter multiple times or cause inconsistent state.                      | After choosing a stat, all stat buttons should be disabled until the next round.                                                      | Buttons remain active after selection, allowing for multiple unintended inputs.                                                              |
-| **Missing Stat Choice Feedback**             | Pick a stat. The scoreboard only shows the round outcome (e.g., “You win the round!”) and updates the score. There is no message indicating which stats were compared.                                                          | The PRD requires a message indicating the player's and opponent's stat choices and values (e.g., "You picked Speed (8) – Opponent picked Technique (6)"). | The game does not provide context for why a round was won or lost, reducing clarity.                                                       |
-| **Missing "Opponent is Choosing" Prompt**    | After selecting a stat, there is no message indicating that the AI is making its choice. The opponent's card simply flips after a short delay.                                                                                | The scoreboard should display “Opponent is choosing…” during the AI's decision delay.                                                 | The delay feels abrupt and uninformative, as there is no feedback explaining the pause.                                                    |
-| **"Next" Button State Inconsistent**         | After a round resolves, the **Next** button is greyed out, suggesting it is disabled. However, clicking it still skips to the next round.                                                                                  | The **Next** button should clearly indicate its state (enabled/disabled) and only be clickable when enabled.                          | The button's appearance and behavior are mismatched, which is confusing for the user.                                                      |
-| **Main Menu Button Not Functional**          | Clicking the **Main Menu** button in the header has no effect.                                                                                                                                                                | The button should show a confirmation modal and, if confirmed, return the user to the home screen.                                    | The user cannot exit the match via the Main Menu button.                                                                                     |
-| **Lacking Keyboard Navigation**              | Pressing **Tab** repeatedly does not cycle through in-game buttons; focus jumps to the browser’s address bar instead. Stat buttons cannot be selected with the keyboard.                                                          | All interactive controls, including stat buttons, should be navigable and operable via the keyboard.                                    | Players who rely on keyboard navigation cannot interact with the game.                                                                     |
-| **Timer Does Not Pause on Tab Hide**           | Start a round and switch to another browser tab. The stat-selection timer continues to count down even when the tab is not active.                                                                                         | The timer should pause when the page loses focus and resume when it regains focus.                                                    | Players may inadvertently lose their turn or have a random stat selected for them if they switch tabs.                                     |
+- A short reproduction summary
+- Verification (whether the issue is plausible/corroborated by code review)
+- Fix feasibility and recommended changes (concrete implementation notes)
+- Suggested tests and follow-ups
 
 ---
 
-## Agent Verification & Improvement Plan
+## Summary of findings
 
-After reviewing the code, I can confirm the accuracy of most of the reported issues and propose the following plan to address them.
+All eight issues reported are plausible and consistent with the code areas mentioned in the original report (hot paths: `battleClassic.init.js`, `uiHelpers.js`, `statButtons.js`, and timer helpers). Most fixes are low-to-medium risk and can be implemented with focused changes and tests. The highest-value quick wins are: disabling stat buttons after selection, adding the "Opponent is choosing…" feedback, clarifying the Next button state, and wiring the Main Menu action.
 
-### 1. Opponent Card Exposed Prematurely
+---
 
-*   **Verification**: Plausible. This is likely a race condition or state management issue, where the UI is rendered before the game state is fully initialized, especially when the match setup flow is bypassed.
-*   **Plan**:
-    *   Introduce a state flag (e.g., `uiReady`) to ensure the opponent's card is hidden by default.
-    *   Only reveal the opponent's card after the `roundResolved` event has fired and the appropriate animations are complete.
+## 1) Opponent card exposed prematurely
 
-### 2. Stat Buttons Not Disabled After Selection
+Repro: Starting a match (or pressing Next without setting match length) sometimes reveals the opponent's card immediately.
 
-*   **Verification**: Correct. The `handleStatButtonClick` function in `src/pages/battleClassic.init.js` does not call a function to disable the stat buttons after a selection is made.
-*   **Plan**:
-    *   In `handleStatButtonClick`, after a stat is selected, immediately call `disableStatButtons` to make all stat buttons unclickable.
-    *   The buttons should be re-enabled by `renderStatButtons` at the start of the next round.
+Verification: Plausible. Likely a state/race issue where the opponent card render path runs before the UI/game state reaches the expected pre-selection state. Suspect files: `battleClassic.init.js`, data initializers, and rendering code for the opponent card.
 
-### 3. Missing Stat Choice Feedback
+Feasibility & recommended fix:
 
-*   **Verification**: The `showStatComparison` function in `src/helpers/classicBattle/uiHelpers.js` is supposed to show this, but it may not be firing correctly. The `selectStat` function also shows a "You picked" snackbar.
-*   **Plan**:
-    *   Ensure `showStatComparison` is reliably called after every round resolution.
-    *   Consolidate feedback logic to show a single, clear message in the snackbar, formatted as: "You picked: [Your Stat] ([Your Value]) – Opponent picked: [Opponent's Stat] ([Opponent's Value]) – [Outcome]!"
+- Feasibility: Medium — low code risk.
+- Add a defensive UI flag (e.g., `uiReady` or `opponentHidden`) and ensure opponent card markup has a default hidden state. Only flip/reveal after selection or when the round resolves.
+- Ensure initialization flow (match setup → round start → enable selection) sets that flag deterministically. Prefer state checks over timing-based delays.
 
-### 4. Missing "Opponent is Choosing" Prompt
+Tests / follow-ups:
 
-*   **Verification**: Correct. The code to display this message exists in `prepareUiBeforeSelection` within `battleClassic.init.js`, but it appears a bug is preventing it from being displayed reliably.
-*   **Plan**:
-    *   Debug the `prepareUiBeforeSelection` function to ensure `showSnackbar(t("ui.opponentChoosing"))` is always called and the snackbar is visible.
+- Unit test for render path: when match is in pre-selection state, opponent card element has `hidden` or `aria-hidden="true"`.
+- Integration test: reproduce the "Next without choosing match length" flow and assert opponent card remains hidden until after selection.
 
-### 5. "Next" Button State Inconsistent
+---
 
-*   **Verification**: Correct. The button has a `disabled` attribute in the HTML, but its visual state is not consistently updated. This is likely a CSS issue.
-*   **Plan**:
-    *   Add explicit styles in `src/styles/battleClassic.css` for `button[disabled]` to ensure a consistent, visibly disabled state (e.g., `opacity: 0.5; cursor: not-allowed;`).
+## 2) Stat buttons remain enabled after selection
 
-### 6. Main Menu Button Not Functional
+Repro: After choosing a stat (button turns blue), other stat buttons remain clickable and repeated clicks can change state multiple times.
 
-*   **Verification**: Correct. No event listener is attached to the `#home-button` in `battleClassic.init.js`.
-*   **Plan**:
-    *   Add an event listener to the "Main Menu" button that calls the `quitMatch` function, providing a consistent exit flow.
+Verification: Confirmed likely. The click handler (`handleStatButtonClick` in `src/pages/battleClassic.init.js`) should call a method to disable the stat buttons but appears not to.
 
-### 7. Lacking Keyboard Navigation
+Feasibility & recommended fix:
 
-*   **Verification**: Partially correct. `enableStatButtons` in `statButtons.js` does set `tabIndex = 0`, but this may not be applied in all states. The `statHotkeys` feature flag is also not enabled by default.
-*   **Plan**:
-    *   Ensure `enableStatButtons` is called at the start of every round to make buttons tabbable.
-    *   Enable the `statHotkeys` feature flag by default to allow selection with number keys `1-5`.
-    *   Ensure all interactive elements have clear focus states (e.g., a prominent outline).
+- Feasibility: High — low risk, small change.
+- Immediately call an existing `disableStatButtons()` (or implement one) inside the stat click handler. Ensure re-enable happens at the start of the next round via `renderStatButtons()` or similar.
+- Guard double-clicks server-side if there's an API call or event emission to avoid duplicate processing.
 
-### 8. Timer Does Not Pause on Tab Hide
+Tests / follow-ups:
 
-*   **Verification**: Correct. The timer logic in `createRoundTimer.js` and `timerService.js` lacks a `visibilitychange` event listener.
-*   **Plan**:
-    *   Add a `visibilitychange` event listener to the page that calls `timer.stop()` when the tab is hidden and `timer.start()` when it becomes visible again.
+- Unit test: after invoking the stat select handler, assert all stat buttons are disabled and further click events are ignored.
+- E2E: select a stat and assert round state transitions exactly once.
 
-I will now await your review of this plan before proceeding with the fixes.
+---
+
+## 3) Missing stat choice feedback
+
+Repro: Score updates and a round outcome message appear, but there's no message indicating the stat values compared.
+
+Verification: Likely. Code mentions `showStatComparison` in `src/helpers/classicBattle/uiHelpers.js` and a `selectStat` snackbar; behavior suggests the comparison message isn't consistently shown.
+
+Feasibility & recommended fix:
+
+- Feasibility: High — straightforward consolidation.
+- Consolidate feedback so a single snackbar or scoreboard region shows: "You picked: SPEED (8) — Opponent picked: TECHNIQUE (6) — You win the round!".
+- Ensure `showStatComparison` is called during round resolution and not suppressed by race conditions or multiple message calls.
+
+Tests / follow-ups:
+
+- Unit tests for the message formatting utility.
+- Integration test that asserts snackbar text after round resolution contains both choices and the outcome.
+
+---
+
+## 4) Missing "Opponent is choosing…" prompt
+
+Repro: After the player selects a stat, there is an unexplained delay before the opponent card flips.
+
+Verification: Confirmed likely. The function `prepareUiBeforeSelection` in `battleClassic.init.js` contains the snackbar call, but it may not fire in all code paths.
+
+Feasibility & recommended fix:
+
+- Feasibility: High — small change.
+- Ensure `prepareUiBeforeSelection()` is executed on all selection code paths. Make the call idempotent and explicit: call `showSnackbar(t('ui.opponentChoosing'))` immediately after player selection and before triggering the AI decision delay.
+
+Tests / follow-ups:
+
+- E2E test: select a stat and assert a temporary "Opponent is choosing…" message appears and disappears before reveal.
+
+---
+
+## 5) "Next" button visual state inconsistent with behavior
+
+Repro: After a round resolves the Next button looks disabled but is still clickable.
+
+Verification: Plausible. The HTML may toggle the `disabled` attribute inconsistently, or CSS styles for `button[disabled]` are missing/overridden.
+
+Feasibility & recommended fix:
+
+- Feasibility: High — mostly a presentation fix.
+- Ensure the Next button's `disabled` attribute is set/unset in the game state logic and add clear `button[disabled]` CSS rules (opacity, cursor: not-allowed, pointer-events: none) to prevent clicks when visually disabled.
+- Also verify there's no JavaScript click handler that ignores `disabled` and acts regardless — if present, early-return on `.disabled` state.
+
+Tests / follow-ups:
+
+- Unit test: confirm `disabled` is set when expected.
+- E2E: click the greyed-out Next button and assert no state change.
+
+---
+
+## 6) Main Menu button not wired
+
+Repro: Clicking the Main Menu button in the header does nothing.
+
+Verification: Confirmed likely. No event listener attached to `#home-button` in `battleClassic.init.js` was found during the review.
+
+Feasibility & recommended fix:
+
+- Feasibility: High — trivial wiring.
+- Attach a click handler that opens a confirmation modal and, on confirm, calls `quitMatch()` or navigates the user to the home route while cleaning up match state. Keep modals accessible (focus trap, Escape to cancel).
+
+Tests / follow-ups:
+
+- E2E test: click Main Menu, confirm the modal, and assert navigation and cleanup occurred.
+
+---
+
+## 7) Keyboard navigation not functioning
+
+Repro: Tab does not focus in-game controls; stat buttons aren't keyboard-selectable.
+
+Verification: Partially confirmed. There are helpers like `enableStatButtons` that set `tabIndex`, but those may not be called at the right times. A feature flag `statHotkeys` may also be disabled by default.
+
+Feasibility & recommended fix:
+
+- Feasibility: Medium — needs careful attention to accessibility and focus management.
+- Ensure `tabIndex` is set for all interactive controls at round start. Call `element.focus()` where appropriate for first-action focus.
+- Revisit feature flag decision: keyboard hotkeys can be enabled by default or behind a user setting, but keyboard focus/tab order must always work regardless of hotkeys.
+- Add visible focus styles and ARIA labels. Implement number key handlers (`1-5`) as a progressive enhancement, but keep keyboard tab navigation as a baseline requirement.
+
+Tests / follow-ups:
+
+- Automated a11y checks (axe/pa11y) for focus order and keyboard operability.
+- Unit/integration tests that simulate Tab navigation and keyboard selection.
+
+---
+
+## 8) Timer continues while tab is hidden
+
+Repro: If the player switches browser tabs during stat selection, the timer continues counting down.
+
+Verification: Confirmed likely. Timer code (`createRoundTimer.js` / `timerService.js`) lacks `visibilitychange` handling.
+
+Feasibility & recommended fix:
+
+- Feasibility: High — small, careful change.
+- Add a `document.addEventListener('visibilitychange', ...)` handler that pauses the timer when `document.hidden` is true and resumes when visible. Make sure to preserve remaining time and avoid time-drift issues.
+
+Tests / follow-ups:
+
+- Unit test for the timer service verifying pause/resume updates remaining time correctly.
+- E2E test: start timer, hide tab (or simulate), assert timer pauses and resumes.
+
+---
+
+## Prioritization & next steps
+
+Suggested order of fixes (fast wins first):
+
+1. Disable stat buttons after selection (prevents incorrect state transitions).
+2. Show "Opponent is choosing…" messaging (improves feedback and perceived latency).
+3. Fix Next button disabled state (presentation + guard against click handlers).
+4. Wire Main Menu button and confirm/cleanup flow.
+5. Add timer visibilitypause/resume.
+6. Ensure opponent card is reliably hidden until reveal (state gating).
+7. Keyboard navigation and hotkeys (accessibility focused).
+8. Consolidate stat comparison snackbar/message.
+
+Each change should be accompanied by at least one unit test and one integration/E2E test where appropriate.
+
+---
+
+## Quality gates and verification
+
+Before merge, run these checks:
+
+- npx prettier . --check
+- npx eslint .
+- npm run validate:data (if data schema changes)
+- npx vitest run (unit tests)
+- npx playwright test (integration/E2E)
+- pa11y/axe accessibility audit for keyboard and focus issues
+
+---
+
+## Completion
+
+I have reviewed the report, confirmed plausibility for all items, and updated this file with verification, actionable fixes, and tests. If you want, I can now open PRs with the highest-priority fixes one-by-one (starting with disabling stat buttons + opponent-choosing messaging). What would you like me to do next?
