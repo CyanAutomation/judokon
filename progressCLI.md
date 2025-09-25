@@ -233,6 +233,21 @@ Acceptance criteria for this work:
 - Follow-ups:
   - None required at this time. Additions would be purely defensive and not justified by tests.
 
+## Implementation of Issue 7: Unclear Verbose Mode
+
+- Actions taken:
+  - Ran focused verbose-related tests which cover flag enablement, toggle behavior, and visibility of the verbose section.
+- Targeted tests executed:
+  - vitest: tests/pages/battleCLI.verbose.test.js → PASS
+  - vitest: tests/pages/battleCLI.verboseFlag.test.js → PASS
+  - vitest: tests/pages/battleCLI.verboseToggle.test.js → PASS
+  - vitest: tests/pages/battleCLI.verboseVisibility.test.js → PASS
+  - vitest: tests/pages/battleCLI.verboseWinTarget.test.js → PASS
+- Outcomes:
+  - Current implementation passes all targeted tests; verbose indicator and section visibility behave as expected when enabled via flag or toggle.
+- Follow-ups:
+  - Optional UX: keep the header "Verbose ON" indicator visible whenever verbose mode is active (already present in template as `#verbose-indicator`) — add a quick assertion in tests if future changes alter visibility conditions.
+
 ## Implementation of Issue 1: Unintuitive Match Start
 
 - Actions taken:
