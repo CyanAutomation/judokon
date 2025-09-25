@@ -426,6 +426,11 @@ function getNextRoundButton() {
   }
 }
 
+const NEXT_FINALIZED_STATE = Object.freeze({
+  PENDING: "pending",
+  COMPLETE: "true"
+});
+
 function setNextButtonReadyAttributes(btn) {
   if (!btn) return;
   try {
@@ -438,7 +443,7 @@ function setNextButtonReadyAttributes(btn) {
     btn.setAttribute("data-next-ready", "true");
     if (btn.dataset) {
       btn.dataset.nextReady = "true";
-      btn.dataset.nextFinalized = "pending";
+      btn.dataset.nextFinalized = NEXT_FINALIZED_STATE.PENDING;
     }
   } catch {}
 }
@@ -486,7 +491,7 @@ function handleStatSelectionError(store, err) {
   } catch {}
   const btn = prepareNextButtonForUse("selection failure");
   if (btn?.dataset) {
-    btn.dataset.nextFinalized = "true";
+    btn.dataset.nextFinalized = NEXT_FINALIZED_STATE.COMPLETE;
   }
   logNextButtonRecovery("selection failure", btn, { cooldownStarted });
 }
@@ -628,21 +633,18 @@ function finalizeSelectionReady(store, options = {}) {
     }
     try {
       const selectionMade = Boolean(store?.selectionMade);
-      const expectAdvance = shouldStartCooldown || selectionMade;
-      const shouldForceVisibleAdvance = selectionMade || shouldStartCooldown;
+      const shouldExpectRoundAdvance = shouldStartCooldown || selectionMade;
       updateRoundCounterFromEngine({
-        expectAdvance,
-        forceWhenEngineMatchesVisible: shouldForceVisibleAdvance
+        expectAdvance: shouldExpectRoundAdvance,
+        forceWhenEngineMatchesVisible: shouldExpectRoundAdvance
       });
       try {
         const finalizedBtn = getNextRoundButton();
         if (finalizedBtn?.dataset) {
-          finalizedBtn.dataset.nextFinalized = "true";
+          finalizedBtn.dataset.nextFinalized = NEXT_FINALIZED_STATE.COMPLETE;
         }
       } catch (contextErr) {
-        try {
-          console.debug("battleClassic: marking next button finalized failed", contextErr);
-        } catch {}
+        console.debug("battleClassic: marking next button finalized failed", contextErr);
       }
     } catch (err) {
       console.debug("battleClassic: updateRoundCounterFromEngine after selection failed", err);
