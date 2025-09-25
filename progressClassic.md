@@ -302,6 +302,7 @@ Before merge, run these checks:
 This section records the current repository state against the QA report and lists concrete, verifiable next actions. Each item includes a short implementation plan.
 
 -1) Disable stat buttons after selection (Issue 2)
+
 - Observed: Disabling is wired via events and helpers (see `src/helpers/classicBattle/roundUI.js:369` emits `statButtons:disable`, and `src/helpers/classicBattle/setupUIBindings.js:46` disables via `statButtonControls`). However, there was no explicit assertion ensuring idempotency against repeated clicks/keys.
 - Actions taken:
   - Added targeted unit test `tests/helpers/classicBattle/statButtons.disableAfterSelection.test.js` to verify: chosen button gets `selected`, siblings are disabled with `tabIndex=-1`, and re-emitting selection does not re-enable or change selection.
@@ -323,6 +324,7 @@ This section records the current repository state against the QA report and list
     - Playwright: user cannot change selection via repeated clicks/keys; only one selection processed.
 
 2) Consolidate stat comparison feedback (Issue 3)
+
 - Observed: No references to a consolidated `showRoundOutcome` helper or tests; unclear messaging remains.
 - Plan:
   - Implement a helper to compose a single snackbar/message with: player stat, opponent stat, outcome.
@@ -344,6 +346,7 @@ This section records the current repository state against the QA report and list
    - Wire the consolidated helper in the round resolve path if not already used by orchestrator handlers, and add a focused Playwright test to assert exactly one consolidated message after reveal when the E2E environment is available.
 
 3) "Opponent is choosing…" prompt (Issue 4)
+
 - Observed: No code/tests found for `prepareUiBeforeSelection` or `opponentChoosing` snackbar.
 - Plan:
   - Emit snackbar immediately after user selection across all entry paths (mouse, keyboard).
@@ -352,6 +355,7 @@ This section records the current repository state against the QA report and list
     - Playwright: prompt appears right after selection and disappears before reveal.
 
 4) Main Menu button wiring
+
 - Observed: No `#home-button` listener or `quit-flow.spec.js` found; path in report may differ.
 - Plan:
   - Identify the actual header/home control in Classic Battle.
@@ -360,12 +364,14 @@ This section records the current repository state against the QA report and list
     - Playwright: click Main Menu → confirm → navigates and cleans up match state.
 
 5) Keyboard navigation tests
+
 - Observed: No `playwright/battle-classic/keyboard-navigation.spec.js` present.
 - Plan:
   - Add E2E tests covering: tab order to stat buttons, Enter activation, visible focus ring, ARIA labelling.
   - Ensure feature flags don’t block baseline keyboard operability.
 
 6) Timer pause/resume implementation verification
+
 - Observed: Tests reference visibility changes, but source updates for `pause()/resume()` and a `visibilitychange` listener were not confirmed in `src/helpers/timers/createRoundTimer.js` and `src/helpers/classicBattle/timerService.js`.
 - Plan:
   - Verify presence of `pause()`/`resume()` in round timer; add if missing preserving remaining time without drift.
@@ -375,6 +381,7 @@ This section records the current repository state against the QA report and list
     - Playwright (or integration): simulated tab hide causes countdown to pause/resume.
 
 7) File path reconciliation
+
 - Observed: Several referenced files in the report (e.g., `src/pages/battleClassic.init.js`, classicBattle `uiEventHandlers.js`, `roundManager.js`) did not surface in search; repo may use different names/locations.
 - Plan:
   - Map actual file paths for Classic Battle initialization, event handlers, round management, and stat buttons.
