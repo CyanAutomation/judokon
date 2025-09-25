@@ -194,6 +194,7 @@ function ensureCliDomForTest({ reset = false } = {}) {
 
   body.replaceChildren(fragment);
   body.className = "";
+  normalizeShortcutCopy();
   try {
     const keys = Object.keys(body.dataset || {});
     for (const key of keys) {
@@ -1339,6 +1340,34 @@ function renderHelpMapping(stats) {
 }
 
 /**
+ * Ensure shortcut hint copy uses the en dash variant for the stat range.
+ *
+ * @pseudocode
+ * help = #cli-help → replace `[1-5]` tokens in first item with `[1–5]`
+ * hint = #cli-controls-hint → replace `[1-5]` tokens with `[1–5]`
+ * gracefully ignore missing nodes
+ *
+ * @returns {void}
+ */
+function normalizeShortcutCopy() {
+  const EN_DASH_TOKEN = "[1–5]";
+  const HYPHEN_PATTERN = /\[1-5\]/g;
+
+  const help = byId("cli-help");
+  if (help) {
+    const firstItem = help.querySelector("li");
+    if (firstItem?.textContent?.includes("[1-5]")) {
+      firstItem.textContent = firstItem.textContent.replace(HYPHEN_PATTERN, EN_DASH_TOKEN);
+    }
+  }
+
+  const controlsHint = byId("cli-controls-hint");
+  if (controlsHint?.textContent?.includes("[1-5]")) {
+    controlsHint.textContent = controlsHint.textContent.replace(HYPHEN_PATTERN, EN_DASH_TOKEN);
+  }
+}
+
+/**
  * Ensure stat list has a click handler bound once.
  *
  * @pseudocode
@@ -2429,6 +2458,7 @@ export function wireEvents() {
 export async function init() {
   initSeed();
   store = createBattleStore();
+  normalizeShortcutCopy();
   // Enable outcome confirmation pause for better UX
   store.waitForOutcomeConfirmation = true;
   try {
