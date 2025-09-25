@@ -140,8 +140,7 @@ This document reviews the current CLI Battle Mode QA findings, validates the acc
 
 ## Validation / Quality Gates
 
-- Pre-merge checks: npx prettier . --check && npx eslint . && npm run check:jsdoc (if present) && npx vitest run --run.
-- Post-fix verification: run affected Playwright specs (or the small smoke tests added in the repo) and validate no unsuppressed console errors (follow `AGENTS.md` guidance to use `withMutedConsole` in tests where warnings are expected).
+- Post-fix verification: run affected Playwright specs (or the small smoke tests added in the repo) and validate no unsuppressed console errors (follow `AGENTS.md` guidance to use `withMutedConsole` in tests where warnings are expected). Please note that Playwright tests might require requested elevated permissions.
 
 ## Edge cases to test
 
@@ -162,10 +161,3 @@ This document reviews the current CLI Battle Mode QA findings, validates the acc
 2. Create small PRs each containing one focused change and accompanying unit + integration tests.
 3. Run lint, vitest, and Playwright smoke tests locally before merge; add CI jobs if not present.
 4. Re-run QA scenarios and close issues once reproducibility drops to ≤1/10 for intermittent bugs.
-
-## Completion summary
-
-What changed in this document:
-
-- Validated original findings and expanded each with concrete, implementable steps, tests, validation gates, and risk notes.
-- Added assumptions, a mini-contract, test names, and a prioritized next-steps list to make handoff to engineers simple.
