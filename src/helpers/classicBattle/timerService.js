@@ -561,14 +561,19 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
           engineNextRoundAvailable: hasEngineNextRound
         });
         if (typeof globalThis !== "undefined" && globalThis.__DEBUG_ROUND_TRACKING) {
+          const rtraceInfo = {
+            tag: "timerService.fallback.writeRoundCounter",
+            fallbackTarget,
+            recordedHighest,
+            lastContext,
+            previousContext,
+            stack: new Error().stack
+          };
           try {
-            console.debug("[RTRACE] timerService fallback -> writeRoundCounter", {
-              fallbackTarget,
-              recordedHighest,
-              lastContext,
-              previousContext,
-              stack: new Error().stack
-            });
+            console.debug("[RTRACE] timerService fallback -> writeRoundCounter", rtraceInfo);
+          } catch {}
+          try {
+            pushRTrace(rtraceInfo);
           } catch {}
         }
         writeRoundCounter(root, fallbackTarget);
