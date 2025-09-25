@@ -347,6 +347,7 @@ export const __test = {
   loadStatDefs,
   buildStatRows,
   renderHelpMapping,
+  normalizeShortcutCopy,
   ensureStatClickBinding,
   restorePointsToWin,
   startRoundWrapper,
@@ -1351,19 +1352,22 @@ function renderHelpMapping(stats) {
  */
 function normalizeShortcutCopy() {
   const EN_DASH_TOKEN = "[1–5]";
-  const HYPHEN_PATTERN = /\[1-5\]/g;
+  const TOKEN_BOUNDARY = /(^|[\s|·])\[1-5](?=($|[\s|·]))/g;
+
+  const replaceRangeToken = (text) =>
+    text.replace(TOKEN_BOUNDARY, (match, prefix = "") => `${prefix}${EN_DASH_TOKEN}`);
 
   const help = byId("cli-help");
   if (help) {
     const firstItem = help.querySelector("li");
     if (firstItem?.textContent?.includes("[1-5]")) {
-      firstItem.textContent = firstItem.textContent.replace(HYPHEN_PATTERN, EN_DASH_TOKEN);
+      firstItem.textContent = replaceRangeToken(firstItem.textContent);
     }
   }
 
   const controlsHint = byId("cli-controls-hint");
   if (controlsHint?.textContent?.includes("[1-5]")) {
-    controlsHint.textContent = controlsHint.textContent.replace(HYPHEN_PATTERN, EN_DASH_TOKEN);
+    controlsHint.textContent = replaceRangeToken(controlsHint.textContent);
   }
 }
 

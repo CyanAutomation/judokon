@@ -66,14 +66,10 @@ function focusNextHint() {
 }
 
 function applyRetroTheme(enabled) {
-  const shouldEnable = Boolean(enabled);
-  const cliRoot = document.getElementById("cli-root");
-  if (cliRoot) {
-    cliRoot.classList.toggle("cli-retro", shouldEnable);
-  }
-  if (document.body) {
-    document.body.classList.toggle("cli-retro", shouldEnable);
-  }
+  // #cli-root is guaranteed to exist in the CLI page
+  const host = document.getElementById("cli-root") || document.body;
+  if (!host) return;
+  host.classList.toggle("cli-retro", Boolean(enabled));
   try {
     localStorage.setItem("battleCLI.retro", shouldEnable ? "1" : "0");
   } catch {}
