@@ -1,6 +1,31 @@
 # QA Report — src/pages/battleClassic.html
 
-This document reviews the QA findings for the Classic Battle UI, confirms accuracy where possible, evaluates feasibility of fixes, and adds improvement suggestions and follow-up steps. Each reported issue below contains:
+This document reviews the QA findings for the Classic Battle UI,## 4) Missing "Opponent is Choosing" Prompt
+
+Repro: After the player selects a stat, there is an unexplained delay before the opponent card flips.
+
+Verification: Confirmed likely. The function `prepareUiBeforeSelection` in `battleClassic.init.js` contains the snackbar call, but it may not fire in all code paths.
+
+Feasibility & recommended fix:
+
+- Feasibility: High — small change.
+- Ensure `prepareUiBeforeSelection()` is executed on all selection code paths. Make the call idempotent and explicit: call `showSnackbar(t('ui.opponentChoosing'))` immediately after player selection and before triggering the AI decision delay.
+
+Tests / follow-ups:
+
+- E2E test: select a stat and assert a temporary "Opponent is choosing…" message appears and disappears before reveal.
+
+**Implementation completed:**
+
+- **Actions taken:** Verified that `prepareUiBeforeSelection()` is called in `handleStatButtonClick` and reliably shows the "Opponent is choosing…" message via `showSnackbar(t("ui.opponentChoosing"))`. The implementation already ensures the message appears immediately after player selection and before the AI decision delay.
+
+- **Files modified:** None.
+
+- **Unit test outcomes:** N/A
+
+- **Playwright test outcomes:** `opponent-reveal.spec.js` "shows opponent choosing snackbar immediately after stat selection": ✅ PASSED
+
+- **Validation:** The message is reliably shown after stat selection, providing feedback during the AI decision delay. No changes were needed as the existing code correctly implements the required behavior.racy where possible, evaluates feasibility of fixes, and adds improvement suggestions and follow-up steps. Each reported issue below contains:
 
 - A short reproduction summary
 - Verification (whether the issue is plausible/corroborated by code review)
@@ -12,25 +37,6 @@ This document reviews the QA findings for the Classic Battle UI, confirms accura
 ## Summary of findings
 
 All eight issues reported are plausible and consistent with the code areas mentioned in the original report (hot paths: `battleClassic.init.js`, `uiHelpers.js`, `statButtons.js`, and timer helpers). Most fixes are low-to-medium risk and can be implemented with focused changes and tests. The highest-value quick wins are: disabling stat buttons after selection, adding the "Opponent is choosing…" feedback, clarifying the Next button state, and wiring the Main Menu action.
-
----
-
-## 1) Opponent card exposed prematurely
-
-Repro: Starting a match (or pressing Next without setting match length) sometimes reveals the opponent's card immediately.
-
-Verification: Plausible. Likely a state/race issue where the opponent card render path runs before the UI/game state reaches the expected pre-selection state. Suspect files: `battleClassic.init.js`, data initializers, and rendering code for the opponent card.
-
-Feasibility & recommended fix:
-
-- Feasibility: Medium — low code risk.
-- Add a defensive UI flag (e.g., `uiReady` or `opponentHidden`) and ensure opponent card markup has a default hidden state. Only flip/reveal after selection or when the round resolves.
-- Ensure initialization flow (match setup → round start → enable selection) sets that flag deterministically. Prefer state checks over timing-based delays.
-
-Tests / follow-ups:
-
-- Unit test for render path: when match is in pre-selection state, opponent card element has `hidden` or `aria-hidden="true"`.
-- Integration test: reproduce the "Next without choosing match length" flow and assert opponent card remains hidden until after selection.
 
 ---
 

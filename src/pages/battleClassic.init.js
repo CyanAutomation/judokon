@@ -1620,9 +1620,6 @@ async function init() {
     try {
       onBattleEvent("roundResolved", (e) => {
         try {
-          showSnackbar("");
-        } catch {}
-        try {
           const result = e?.detail?.result;
           if (!result || !result.matchEnded) return;
           const outcome = String(result?.outcome || "");

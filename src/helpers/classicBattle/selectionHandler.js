@@ -590,10 +590,6 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
   const result = await resolveRoundDirect(store, stat, playerVal, opponentVal, opts);
 
   try {
-    showSnackbar("");
-  } catch {}
-
-  try {
     if (typeof process !== "undefined" && process.env && process.env.VITEST) {
       const messageEl = document.querySelector("header #round-message");
       const scoreEl = document.querySelector("header #score-display");
@@ -623,7 +619,7 @@ export async function syncResultDisplay(store, stat, playerVal, opponentVal, opt
   } catch {}
 
   try {
-    setTimeout(() => dispatchBattleEvent("roundResolved"), 100);
+    await dispatchBattleEvent("roundResolved");
   } catch {}
 
   return result;
