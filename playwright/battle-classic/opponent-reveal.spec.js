@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import selectors from "../helpers/selectors.js";
 import {
   waitForTestApi,
+  waitForBattleState,
   getCurrentBattleState,
   triggerStateTransition
 } from "../helpers/battleStateHelper.js";
@@ -72,6 +73,11 @@ async function expectBattleState(page, expectedState, options = {}) {
   const { timeout = 5_000, onStall, stallThreshold = 3 } = options;
 
   await waitForTestApi(page, { timeout });
+
+  try {
+    await waitForBattleState(page, expectedState, { timeout });
+    return;
+  } catch {}
 
   let attempts = 0;
   let stallCallbackExecuted = false;

@@ -14,7 +14,7 @@
 
 import { getBattleStateMachine } from "./classicBattle/orchestrator.js";
 import { getStateSnapshot } from "./classicBattle/battleDebug.js";
-import { emitBattleEvent } from "./classicBattle/battleEvents.js";
+import { emitBattleEvent, onBattleEvent, offBattleEvent } from "./classicBattle/battleEvents.js";
 import { isEnabled } from "./featureFlags.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
 import { getRoundsPlayed } from "./battleEngineFacade.js";
@@ -211,26 +211,60 @@ const stateApi = {
    * @param {string} stateName - Target state name
    * @param {number} timeout - Timeout in milliseconds
    * @returns {Promise<boolean>} Resolves true when state reached, false on timeout
+   * @pseudocode
+   * 1. Resolve immediately when the requested state is already active.
+   * 2. Subscribe to `battleStateChange` to observe upcoming transitions.
+   * 3. Poll the state as a safety net while tracking the timeout window.
+   * 4. Resolve `true` on observation, otherwise resolve `false` when time expires.
    */
   async waitForBattleState(stateName, timeout = 5000) {
     return new Promise((resolve) => {
       const startTime = Date.now();
-
-      const check = () => {
-        if (this.getBattleState() === stateName) {
-          resolve(true);
-          return;
+      let finished = false,
+        pollId,
+        timeoutId,
+        listener;
+      const cleanup = (result) => {
+        if (finished) return;
+        finished = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        if (pollId) clearInterval(pollId);
+        if (listener) {
+          try {
+            offBattleEvent("battleStateChange", listener);
+          } catch {}
         }
-
-        if (Date.now() - startTime > timeout) {
-          resolve(false);
-          return;
-        }
-
-        setTimeout(check, 50);
+        resolve(result);
       };
-
-      check();
+      const currentMatches = () => {
+        try {
+          return this.getBattleState() === stateName;
+        } catch {
+          return false;
+        }
+      };
+      if (currentMatches()) {
+        cleanup(true);
+        return;
+      }
+      listener = (event) => {
+        const detail = event?.detail ?? null;
+        const nextState =
+          typeof detail === "string"
+            ? detail
+            : (detail?.to ?? detail?.state ?? detail?.next ?? null);
+        if (nextState === stateName) cleanup(true);
+      };
+      try {
+        onBattleEvent("battleStateChange", listener);
+      } catch {
+        listener = undefined;
+      }
+      pollId = setInterval(() => {
+        if (currentMatches()) cleanup(true);
+        else if (Date.now() - startTime > timeout) cleanup(false);
+      }, 50);
+      timeoutId = setTimeout(() => cleanup(false), timeout);
     });
   },
 
