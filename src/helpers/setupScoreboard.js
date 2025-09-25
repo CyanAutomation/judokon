@@ -8,31 +8,30 @@ try {
   sharedScoreboardModule = null;
 }
 
+const noop = () => {};
+
 /**
  * Retrieve a scoreboard helper method by name.
  *
  * @pseudocode
  * 1. Verify the shared module exists and exposes the requested method.
- * 2. Return the method when available; otherwise return null.
+ * 2. Return the method when available; otherwise return a noop fallback.
  *
  * @param {string} name - The helper method name to retrieve.
- * @returns {Function|null} The requested helper or null when unavailable.
+ * @returns {Function} The requested helper or a noop fallback when unavailable.
  */
 function getScoreboardMethod(name) {
-  if (
-    sharedScoreboardModule &&
-    typeof sharedScoreboardModule[name] === "function"
-  ) {
+  if (sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function") {
     return sharedScoreboardModule[name];
   }
 
-  return null;
+  return noop;
 }
 
 const invokeSharedHelper = (name, args) => {
   const helper = getScoreboardMethod(name);
 
-  if (!helper) {
+  if (typeof helper !== "function") {
     return undefined;
   }
 
