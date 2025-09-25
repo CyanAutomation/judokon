@@ -1752,6 +1752,8 @@ export function handleWaitingForPlayerActionKey(key) {
       return true;
     }
     // Trigger stat selection immediately so DOM reflects the change synchronously.
+    // This trades the prior microtask defer for instant feedback—keep selectStat light
+    // enough to avoid introducing input lag in this hot path.
     selectStat(stat);
     return true;
   }
@@ -1770,6 +1772,8 @@ export function handleWaitingForPlayerActionKey(key) {
         const stat = getStatByIndex(idx);
         console.debug("[TEST DEBUG] resolved stat=", stat);
         if (stat) {
+          // Keep the immediate selection trade-off in mind here as well; synchronous
+          // updates improve feedback but depend on selectStat staying lightweight.
           selectStat(stat);
           return true;
         }
