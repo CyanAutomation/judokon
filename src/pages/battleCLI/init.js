@@ -2323,6 +2323,13 @@ export function subscribeEngine() {
         if (phase === "round") {
           const el = byId("cli-countdown");
           if (el) {
+            // Respect any short-lived UI freeze requested by the outer CLI helper
+            try {
+              const freezeUntil = window.__battleCLIinit?.__freezeUntil || 0;
+              if (freezeUntil && Date.now() < freezeUntil) {
+                return;
+              }
+            } catch {}
             el.dataset.remainingTime = String(remaining);
             if (el.dataset.status !== "error") {
               el.textContent = `Time remaining: ${remaining}`;
