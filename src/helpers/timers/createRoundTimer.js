@@ -36,6 +36,9 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
   };
   let retries = 0;
   let fallbackTimeoutId = null;
+  let paused = false;
+  let pausedRemaining = 0;
+  let currentRemaining = 0;
 
   function emit(event, payload) {
     for (const fn of listeners[event]) {
@@ -78,12 +81,14 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
       return emitExpired();
     }
     let remaining = Math.ceil(total);
+    currentRemaining = remaining;
     emitTick(remaining);
     const tick = () => {
       try {
         // Decrement remaining and emit tick/expired accordingly. Use a
         // simple setTimeout chain to work reliably with fake timers.
         remaining -= 1;
+        currentRemaining = remaining;
         if (remaining > 0) {
           emitTick(remaining);
           fallbackTimeoutId = setTimeout(tick, 1000);
@@ -143,5 +148,25 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     // triggering cooldown) when a user actively selects a stat or skips.
   }
 
-  return { start, stop, on, off };
+  function pause() {
+    if (paused || currentRemaining <= 0) return;
+    paused = true;
+    pausedRemaining = currentRemaining;
+    if (fallbackTimeoutId !== null) {
+      clearTimeout(fallbackTimeoutId);
+      fallbackTimeoutId = null;
+    }
+    try {
+      stopTimer();
+    } catch {}
+  }
+
+  function resume() {
+    if (!paused || pausedRemaining <= 0) return;
+    paused = false;
+    start(pausedRemaining, { resetRetries: false });
+    pausedRemaining = 0;
+  }
+
+  return { start, stop, pause, resume, on, off };
 }

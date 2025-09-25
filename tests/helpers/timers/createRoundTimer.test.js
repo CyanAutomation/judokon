@@ -1,7 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRoundTimer } from "../../../src/helpers/timers/createRoundTimer.js";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 describe("createRoundTimer events", () => {
+  let timers;
+
+  beforeEach(() => {
+    timers = useCanonicalTimers();
+  });
+
+  afterEach(() => {
+    timers.cleanup();
+  });
   it("emits tick and expired", () => {
     const events = [];
     const timer = createRoundTimer({
@@ -68,5 +78,22 @@ describe("createRoundTimer events", () => {
     await onDrift(4);
 
     expect(onDriftFail).toHaveBeenCalledTimes(1);
+  });
+
+  it("supports pause and resume", () => {
+    const events = [];
+    const timer = createRoundTimer();
+    timer.on("tick", (r) => events.push(["tick", r]));
+    timer.on("expired", () => events.push(["expired"]));
+
+    timer.start(3);
+    // First tick is emitted synchronously
+    expect(events).toEqual([["tick", 3]]);
+    timer.pause();
+    timers.runAllTimers(); // Should not advance while paused
+    expect(events).toEqual([["tick", 3]]);
+    timer.resume();
+    timers.runAllTimers(); // Should resume and complete
+    expect(events).toEqual([["tick", 3], ["tick", 2], ["tick", 1], ["expired"]]);
   });
 });

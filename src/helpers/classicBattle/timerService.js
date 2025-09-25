@@ -984,8 +984,26 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
     documentRef: root
   });
 
+  // Add visibility change handler to pause/resume timer
+  const visibilityHandler = () => {
+    if (document.hidden) {
+      timer.pause();
+    } else {
+      timer.resume();
+    }
+  };
+  document.addEventListener("visibilitychange", visibilityHandler);
+
+  // Return a cleanup function or store the handler for later removal
+  const cleanup = () => {
+    document.removeEventListener("visibilitychange", visibilityHandler);
+  };
+
   try {
-    setSkip?.(() => timer.stop());
+    setSkip?.(() => {
+      cleanup();
+      timer.stop();
+    });
   } catch {}
 
   timer.start(duration);
