@@ -138,3 +138,32 @@ Acceptance criteria for this work:
 
 ---
 
+## Verified code references (quick grep results)
+
+I ran quick searches in the workspace to confirm the files and key symbols mentioned in the QA report. Below are the relevant files and line locations (these are grep hits; open the files to review surrounding context before editing source):
+
+- Points-to-win options
+  - `src/config/battleDefaults.js` — export: `POINTS_TO_WIN_OPTIONS = [5, 10, 15]` (hit at line ~12).
+  - Also referenced from `src/helpers/classicBattle/roundSelectModal.js` and `src/pages/battleCLI/init.js` where the UI validates and applies the selected value.
+
+- Seed initialization
+  - `src/pages/battleCLI/init.js` — `function initSeed()` (hit at line ~543) and `initSeed();` is invoked during bootstrap (calls found at ~line 2463 in the file / init flow).
+
+- Match reset
+  - `src/pages/battleCLI/init.js` — `async function resetMatch()` (hit at line ~411) with multiple `await resetMatch();` usages across the file.
+
+- Restore / persist points-to-win
+  - `src/pages/battleCLI/init.js` — `export function restorePointsToWin()` (hit at line ~1500). The implementation reads/writes localStorage and calls `resetMatch()` and `renderStartButton()` when the user changes the value.
+
+- Start button (render/start fallback)
+  - `src/pages/battleCLI/init.js` — `async function renderStartButton()` (hit at line ~471). Bootstrap (`init()`) calls `initRoundSelectModal()` and falls back to `renderStartButton()` if the modal fails.
+
+- Global keyboard handler
+  - `src/pages/battleCLI/events.js` — `export function onKeyDown(e)` (hit at line ~136).
+  - `src/pages/battleCLI/init.js` wires it up: `window.addEventListener("keydown", onKeyDown);` (hit at ~line 2418).
+
+- Page visibility / timers
+  - `src/pages/battleCLI/init.js` — `document.addEventListener("visibilitychange", ...)` wiring (hit at ~line 2423) which calls `pausetimers()` / `resumetimers()`.
+  - Timer utilities and scheduler helpers also add `visibilitychange` listeners (examples: `src/helpers/timerUtils.js`, `src/helpers/classicBattle/setupScheduler.js`, `src/helpers/classicBattle/orchestrator.js`).
+
+
