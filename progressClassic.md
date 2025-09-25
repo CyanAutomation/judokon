@@ -301,8 +301,8 @@ Before merge, run these checks:
 
 This section records the current repository state against the QA report and lists concrete, verifiable next actions. Each item includes a short implementation plan.
 
-1) Disable stat buttons after selection (Issue 2)
-- Observed: No code/tests found that disable other stat buttons post-selection; risk of multiple selections/race conditions remains.
+-1) Disable stat buttons after selection (Issue 2)
+- Observed: Disabling is wired via events and helpers (see `src/helpers/classicBattle/roundUI.js:369` emits `statButtons:disable`, and `src/helpers/classicBattle/setupUIBindings.js:46` disables via `statButtonControls`). However, there is no explicit assertion ensuring idempotency against repeated clicks/keys in this repo, so we will add targeted tests to lock this down and patch any gaps discovered.
 - Plan:
   - Locate stat selection handler(s) in Classic Battle (mouse and keyboard paths).
   - After the first valid selection:
@@ -358,4 +358,3 @@ This section records the current repository state against the QA report and list
 - Plan:
   - Map actual file paths for Classic Battle initialization, event handlers, round management, and stat buttons.
   - Update this report to use canonical paths and avoid drift.
-
