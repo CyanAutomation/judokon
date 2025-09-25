@@ -75,6 +75,7 @@ describe("Stat Buttons", () => {
     expect(statButtons.length).toBeGreaterThan(0);
     statButtons.forEach((button) => {
       expect(button.getAttribute("aria-describedby")).toBe("round-message");
+      expect(button.getAttribute("aria-label")).toMatch(/^Select \w+ stat for battle$/);
     });
   });
 });

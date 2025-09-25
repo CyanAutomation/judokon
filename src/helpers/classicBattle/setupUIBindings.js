@@ -35,7 +35,14 @@ export async function setupUIBindings(view) {
 
   setupNextButton();
   const statButtonControls = initStatButtons(store);
-  onBattleEvent("statButtons:enable", () => statButtonControls?.enable());
+  onBattleEvent("statButtons:enable", () => {
+    statButtonControls?.enable();
+    // Focus the first stat button for keyboard navigation
+    const firstButton = document.querySelector("#stat-buttons button[data-stat]");
+    if (firstButton) {
+      firstButton.focus();
+    }
+  });
   onBattleEvent("statButtons:disable", () => statButtonControls?.disable());
 
   if (isEnabled("battleStateProgress")) {

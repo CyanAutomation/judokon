@@ -62,6 +62,12 @@
   min-height: var(--touch-target-size);
 }
 
+/* Focus styles for keyboard navigation */
+#stat-buttons button:focus {
+  outline: 2px solid var(--color-focus, #007acc);
+  outline-offset: 2px;
+}
+
 .battle-controls {
   display: flex;
   gap: var(--space-sm);

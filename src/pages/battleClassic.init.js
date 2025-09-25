@@ -1229,6 +1229,7 @@ function renderStatButtons(store) {
     btn.setAttribute("data-player", "0");
     btn.setAttribute("data-testid", "stat-button");
     btn.setAttribute("aria-describedby", "round-message");
+    btn.setAttribute("aria-label", `Select ${stat} stat for battle`);
     btn.addEventListener("click", () => {
       void handleStatButtonClick(store, stat, btn);
     });
