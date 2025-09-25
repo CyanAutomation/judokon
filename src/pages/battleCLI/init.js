@@ -99,7 +99,7 @@ function disposeClassicBattleOrchestrator() {
  * 2. Fallback to orchestrator's `dispatchBattleEvent` if available (when not mocked).
  * 3. Swallow any errors to keep CLI responsive during tests.
  */
-async function safeDispatch(eventName, payload) {
+export async function safeDispatch(eventName, payload) {
   try {
     const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
     const m = typeof getter === "function" ? getter() : getter;
@@ -1724,7 +1724,9 @@ export function handleWaitingForPlayerActionKey(key) {
       showHint("Use 1-5, press H for help");
       return true;
     }
-    selectStat(stat);
+    // Defer non-critical work to keep key handler responsive.
+    // Selection side effects may be heavy; schedule on microtask.
+    Promise.resolve().then(() => selectStat(stat));
     return true;
   }
   if (key === "enter") {
@@ -1734,7 +1736,7 @@ export function handleWaitingForPlayerActionKey(key) {
       if (idx) {
         const stat = getStatByIndex(idx);
         if (stat) {
-          selectStat(stat);
+          Promise.resolve().then(() => selectStat(stat));
           return true;
         }
       }
