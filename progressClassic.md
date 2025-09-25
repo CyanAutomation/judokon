@@ -227,6 +227,3 @@ Before merge, run these checks:
 
 ---
 
-## Completion
-
-I have reviewed the report, confirmed plausibility for all items, and updated this file with verification, actionable fixes, and tests. If you want, I can now open PRs with the highest-priority fixes one-by-one (starting with disabling stat buttons + opponent-choosing messaging). What would you like me to do next?
