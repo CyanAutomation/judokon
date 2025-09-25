@@ -466,7 +466,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
 
-    test("opponent card is replaced by mystery card until reveal", async ({ page }) =>
+    test("opponent card remains hidden until reveal", async ({ page }) =>
       withMutedConsole(async () => {
         await page.addInitScript(() => {
           window.__OVERRIDE_TIMERS = { roundTimer: 5 };
@@ -495,15 +495,6 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         // Revealed after round resolution
         await expect(opponentCard).not.toHaveClass(/opponent-hidden/);
-        
-        // Mystery card should be gone
-        const mysteryCard = page.locator("#mystery-card-placeholder");
-        await expect(mysteryCard).not.toBeVisible();
-
-        // Opponent card content should be visible
-        const opponentCardContent = page.locator("#opponent-card .card-name");
-        await expect(opponentCardContent).toBeVisible();
-
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
   });

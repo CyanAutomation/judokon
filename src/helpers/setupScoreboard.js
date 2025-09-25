@@ -118,19 +118,6 @@ const scoreboardFunctions = {
   clearRoundCounter: getScoreboardExport("clearRoundCounter") ?? (() => {})
 };
 
-const {
-  initScoreboard,
-  showMessage,
-  updateScore,
-  clearMessage,
-  showTemporaryMessage,
-  clearTimer,
-  updateTimer,
-  showAutoSelect,
-  updateRoundCounter,
-  clearRoundCounter
-} = scoreboardFunctions;
-
 const scoreboardApi = {
   setupScoreboard,
   showMessage,
