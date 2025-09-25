@@ -192,6 +192,15 @@ const roundTrackingState = {
   write({ counterEl, highest, lastContext, previousContext }) {
     if (Number.isFinite(highest) && highest >= 1) {
       try {
+        if (typeof globalThis !== "undefined" && globalThis.__DEBUG_ROUND_TRACKING) {
+          try {
+            console.debug("[RTRACE] roundTrackingState.write -> highest", {
+              highest,
+              counterDataset: counterEl?.dataset?.highestRound,
+              stack: new Error().stack
+            });
+          } catch {}
+        }
         globalThis.__highestDisplayedRound = highest;
       } catch {}
       if (counterEl && counterEl.dataset) {
@@ -543,6 +552,17 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
           engineAdvanced: engineAlreadyAdvanced,
           engineNextRoundAvailable: hasEngineNextRound
         });
+        if (typeof globalThis !== "undefined" && globalThis.__DEBUG_ROUND_TRACKING) {
+          try {
+            console.debug("[RTRACE] timerService fallback -> writeRoundCounter", {
+              fallbackTarget,
+              recordedHighest,
+              lastContext,
+              previousContext,
+              stack: new Error().stack
+            });
+          } catch {}
+        }
         writeRoundCounter(root, fallbackTarget);
         const nextRecordedHighest = hasRecordedHighest
           ? Math.max(recordedHighest, fallbackTarget)

@@ -95,6 +95,11 @@ function getHighestDisplayedRound() {
 function setHighestDisplayedRound(value) {
   highestDisplayedRound = value;
   if (typeof window !== "undefined") {
+    try {
+      if (window.__DEBUG_ROUND_TRACKING) {
+        console.debug("[round-tracking] setHighestDisplayedRound", { value, previous: window.__highestDisplayedRound });
+      }
+    } catch {}
     window.__highestDisplayedRound = value;
   }
 }
@@ -1097,6 +1102,16 @@ function updateRoundCounterFromEngine(options = {}) {
       forceWhenEngineMatchesVisible
     });
 
+    if (typeof window !== "undefined" && window.__DEBUG_ROUND_TRACKING) {
+      try {
+        console.debug("[RTRACE] updateRoundCounterFromEngine -> nextRound", {
+          nextRound,
+          engineRound,
+          getRoundsPlayed: typeof getRoundsPlayed === "function" ? getRoundsPlayed() : undefined,
+          stack: new Error().stack
+        });
+      } catch {}
+    }
     updateRoundCounter(nextRound);
     updateRoundCounterState({
       nextRound,
@@ -1115,16 +1130,7 @@ function updateRoundCounterFromEngine(options = {}) {
 
 function calculateEngineRound() {
   const played = Number(getRoundsPlayed?.() || 0);
-  const result = Number.isFinite(played) ? played + 1 : NaN;
-  // For debugging: force return 2 to see if this fixes the test
-  console.log(
-    "calculateEngineRound: getRoundsPlayed() returned",
-    played,
-    "normal result would be",
-    result,
-    "but returning 2 for debugging"
-  );
-  return 2; // Force return 2 for debugging
+  return Number.isFinite(played) ? played + 1 : NaN;
 }
 
 function handleRoundCounterFallback(visibleRound) {

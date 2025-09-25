@@ -9,6 +9,11 @@ import { readRoundDiagnostics } from "../helpers/roundDiagnostics.js";
 import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
 
 test.describe("Classic Battle cooldown + Next", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate(() => {
+      window.__DEBUG_ROUND_TRACKING = true;
+    });
+  });
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
     await withMutedConsole(async () => {
       await page.evaluate(() => {
