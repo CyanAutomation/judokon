@@ -192,6 +192,20 @@ Acceptance criteria for this work:
 - ✅ Timers pause on tab hide and resume accurately.
 - ✅ Timer displays are consolidated - only CLI countdown shows in CLI mode.
 
+## Implementation of Issue 1: Unintuitive Match Start
+
+- Actions taken:
+  - Added a prominent Start button directly in the CLI template so it is always visible as an entry point: `src/pages/battleCLI/cliDomTemplate.js` (button id `start-match`, `data-testid="start-battle-button"`).
+  - Updated init logic to prefer wiring the static Start button (avoids duplicate injection) inside `renderStartButton()` in `src/pages/battleCLI/init.js`.
+  - Kept the existing modal flow; the Start button simply dispatches the existing `startClicked` event so behavior is consistent.
+- Targeted tests executed:
+  - No dedicated tests existed for the Start button. Performed a smoke check verifying presence of `data-testid="start-battle-button"` in the CLI template and ensured `renderStartButton()` wires it.
+- Outcomes:
+  - Start control is now immediately discoverable and focusable without relying on the modal fallback. Modal path remains supported.
+- Follow-ups:
+  - Consider a small unit test that mounts the CLI DOM via `createCliDomFragment()` and asserts that clicking `#start-match` dispatches the `startClicked` flow (using debug hooks or spies on `emitBattleEvent`).
+
+
 ## Implementation of Issue 2: Missing "3-Point" Match Length
 
 - Actions taken:

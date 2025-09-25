@@ -69,6 +69,7 @@ import {
 } from "./dom.js";
 import { createCliDomFragment } from "./cliDomTemplate.js";
 import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
+import { bindStartHandlers } from "./startHandlers.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -214,6 +215,25 @@ function ensureCliDomForTest({ reset = false } = {}) {
   }
 
   return document.getElementById("cli-root");
+}
+
+/**
+ * Ensure the Start Match button exists and is focus-first.
+ * @returns {void}
+ * @pseudocode
+ * btn = byId('start-match'); if btn -> set tabindex=0 and focus it if page just initialized
+ */
+function ensureStartButtonFocus() {
+  try {
+    const btn = byId("start-match");
+    if (btn) {
+      btn.tabIndex = 0;
+      // Do not steal focus during tests unless explicitly requested
+      if (typeof window !== "undefined" && !window.__TEST__) {
+        btn.focus();
+      }
+    }
+  } catch {}
 }
 
 /**
@@ -476,7 +496,26 @@ async function startCallback() {
 async function renderStartButton() {
   await resetPromise;
   const main = byId("cli-main");
-  if (!main || byId("start-match-button")) return;
+  if (!main) return;
+  // If the static Start button exists in the template, prefer wiring it rather than injecting a duplicate
+  const staticBtn = document.getElementById("start-match");
+  if (staticBtn) {
+    try {
+      staticBtn.addEventListener("click", async () => {
+        try {
+          emitBattleEvent("startClicked");
+        } catch {}
+        try {
+          const getter = debugHooks.readDebugState("getClassicBattleMachine");
+          const machine = typeof getter === "function" ? getter() : getter;
+          if (machine) machine.dispatch("startClicked");
+          else await safeDispatch("startClicked");
+        } catch {}
+      }, { once: true });
+    } catch {}
+    return;
+  }
+  if (byId("start-match-button")) return;
   const section = document.createElement("section");
   section.className = "cli-block";
   const btn = createButton("Start match", {
