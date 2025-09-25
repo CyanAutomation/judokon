@@ -69,7 +69,6 @@ import {
 } from "./dom.js";
 import { createCliDomFragment } from "./cliDomTemplate.js";
 import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
-import { bindStartHandlers } from "./startHandlers.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -530,6 +529,7 @@ async function renderStartButton() {
         { once: true }
       );
     } catch {}
+    ensureStartButtonFocus();
     return;
   }
   if (byId("start-match-button")) return;
@@ -585,6 +585,7 @@ async function renderStartButton() {
   });
   section.append(btn);
   main.insertBefore(section, main.firstChild);
+  ensureStartButtonFocus();
 }
 
 /**
