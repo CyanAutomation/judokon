@@ -215,6 +215,16 @@ Tests / follow-ups:
 - Automated a11y checks (axe/pa11y) for focus order and keyboard operability.
 - Unit/integration tests that simulate Tab navigation and keyboard selection.
 
+**Implementation (unit tests):**
+
+- **Actions taken:** Added a focused unit test that asserts the first stat button receives keyboard focus when the `statButtons:enable` event is emitted. The new test file is `tests/helpers/classicBattle/keyboardNavigation.test.js`. It mocks the event registration used by `setupUIBindings` and simulates the DOM containing stat buttons, then invokes the registered `statButtons:enable` handler and verifies `document.activeElement` is the first stat button.
+- **Files modified/added:** `tests/helpers/classicBattle/keyboardNavigation.test.js`
+- **Unit test outcomes:** Ran the new unit test with Vitest: ✅ PASSED (1/1).
+- **Related unit checks:** Also ran `tests/helpers/classicBattle/view.initHelpers.test.js` as part of verifying bindings: ✅ PASSED (4/4).
+- **Playwright (relevant) test:** Ran the Playwright `playwright/battle-classic/stat-selection.spec.js` test that covers stat rendering and interaction: ✅ PASSED (1/1).
+
+**Validation:** Focus management for stat buttons is now covered by a unit test which passes. E2E stat selection behavior that depends on the stat-buttons flow still passes. Next step (after your review) will be to add Playwright keyboard/tab-order tests to verify focus behavior in a real browser environment.
+
 ---
 
 ## 8) Timer continues while tab is hidden
