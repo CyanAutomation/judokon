@@ -242,7 +242,7 @@ test.describe("CLI Battle Interface", () => {
 
       const controlsHint = page.locator("#cli-controls-hint");
       await expect(controlsHint).toContainText("[1-5] Stats");
-      await expect(controlsHint).toContainText("[Enter/Space] Next");
+      await expect(controlsHint).toContainText("[Enter] or [Space] Next");
       await expect(controlsHint).toContainText("[H] Help");
       await expect(controlsHint).toContainText("[Q] Quit");
       await expect(controlsHint).toHaveAttribute("aria-hidden", "true");

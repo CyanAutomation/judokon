@@ -7,11 +7,12 @@ import {
 } from "../helpers/battleStateHelper.js";
 import { readRoundDiagnostics } from "../helpers/roundDiagnostics.js";
 import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
+import { TEST_ROUND_TIMER_MS } from "../helpers/testTiming.js";
 
 test.describe("Classic Battle cooldown + Next", () => {
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
     await withMutedConsole(async () => {
-      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: 5 });
+      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: TEST_ROUND_TIMER_MS });
       await page.goto("/src/pages/battleClassic.html");
 
       await waitForTestApi(page);
@@ -66,7 +67,7 @@ test.describe("Classic Battle cooldown + Next", () => {
 
   test("recovers round counter state after external DOM interference", async ({ page }) => {
     await withMutedConsole(async () => {
-      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: 5 });
+      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: TEST_ROUND_TIMER_MS });
       await page.goto("/src/pages/battleClassic.html");
 
       await waitForTestApi(page);

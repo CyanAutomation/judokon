@@ -1,16 +1,20 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
+import { TEST_ROUND_TIMER_MS } from "../helpers/testTiming.js";
 
 test.describe("Classic Battle round counter", () => {
   test("shows Round 1 after start and increments after Next", async ({ page }) => {
     await withMutedConsole(async () => {
-      await page.addInitScript(() => {
-        // Speed timers for test: short round and cooldown
-        window.__OVERRIDE_TIMERS = { roundTimer: 5 };
-        window.__NEXT_ROUND_COOLDOWN_MS = 500;
-        window.__FF_OVERRIDES = { showRoundSelectModal: true };
-        window.__DEBUG_ROUND_TRACKING = true;
-      });
+      await page.addInitScript(
+        ({ roundTimerMs }) => {
+          // Speed timers for test: short round and cooldown
+          window.__OVERRIDE_TIMERS = { roundTimer: roundTimerMs };
+          window.__NEXT_ROUND_COOLDOWN_MS = 500;
+          window.__FF_OVERRIDES = { showRoundSelectModal: true };
+          window.__DEBUG_ROUND_TRACKING = true;
+        },
+        { roundTimerMs: TEST_ROUND_TIMER_MS }
+      );
       await page.goto("/src/pages/battleClassic.html");
 
       const roundCounter = page.locator("#round-counter");
@@ -45,11 +49,14 @@ test.describe("Classic Battle round counter", () => {
     page
   }) => {
     await withMutedConsole(async () => {
-      await page.addInitScript(() => {
-        window.__OVERRIDE_TIMERS = { roundTimer: 5 };
-        window.__NEXT_ROUND_COOLDOWN_MS = 0;
-        window.__FF_OVERRIDES = { showRoundSelectModal: true };
-      });
+      await page.addInitScript(
+        ({ roundTimerMs }) => {
+          window.__OVERRIDE_TIMERS = { roundTimer: roundTimerMs };
+          window.__NEXT_ROUND_COOLDOWN_MS = 0;
+          window.__FF_OVERRIDES = { showRoundSelectModal: true };
+        },
+        { roundTimerMs: TEST_ROUND_TIMER_MS }
+      );
       await page.goto("/src/pages/battleClassic.html");
 
       await page.waitForSelector("#round-select-2", { state: "visible" });
