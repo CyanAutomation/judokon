@@ -2,6 +2,8 @@
  * Helper functions for replacing DOM state polling with direct Test API access
  */
 
+export const STAT_WAIT_TIMEOUT_MS = 5_000;
+
 /**
  * Wait for the Playwright Test API bootstrap to be available on the page.
  * @param {import('@playwright/test').Page} page - Playwright page object
@@ -127,6 +129,73 @@ export async function waitForBattleState(page, expectedState, options = {}) {
   }
 
   await page.waitForSelector(`[data-battle-state="${expectedState}"]`, { timeout });
+}
+
+/**
+ * Wait for round stats availability using the Test API battle store.
+ * @pseudocode
+ * WAIT for the Playwright Test API bootstrap to be ready.
+ * POLL the battle store for both fighters' stat objects.
+ * NORMALIZE each observed stat key by trimming and lower-casing before reading values.
+ * RESOLVE when both fighters report at least one finite numeric stat value.
+ * RAISE a timeout error when no such stats are observed within the allotted time.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {object} [options] - Options object.
+ * @param {number} [options.timeout=STAT_WAIT_TIMEOUT_MS] - Timeout in ms.
+ * @returns {Promise<void>} Resolves once both fighters expose at least one finite stat.
+ */
+export async function waitForRoundStats(page, { timeout = STAT_WAIT_TIMEOUT_MS } = {}) {
+  await waitForTestApi(page, { timeout });
+
+  await page.waitForFunction(
+    () => {
+      try {
+        const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+        if (!store || typeof store !== "object") {
+          return false;
+        }
+
+        const playerStats = store.currentPlayerJudoka?.stats ?? null;
+        const opponentStats = store.currentOpponentJudoka?.stats ?? null;
+        if (!playerStats || !opponentStats) {
+          return false;
+        }
+
+        const keys = Array.from(
+          new Set([...Object.keys(playerStats ?? {}), ...Object.keys(opponentStats ?? {})])
+        );
+        if (keys.length === 0) {
+          return false;
+        }
+
+        const readStatValue = (stats, key) => {
+          if (!stats || typeof stats !== "object") {
+            return Number.NaN;
+          }
+
+          const normalizedKey = String(key).trim().toLowerCase();
+          const direct = stats[key];
+          if (Number.isFinite(Number(direct))) {
+            return Number(direct);
+          }
+
+          if (normalizedKey !== key && Number.isFinite(Number(stats[normalizedKey]))) {
+            return Number(stats[normalizedKey]);
+          }
+
+          return Number.NaN;
+        };
+
+        const hasFiniteStat = (stats) =>
+          keys.some((key) => Number.isFinite(readStatValue(stats, key)));
+
+        return hasFiniteStat(playerStats) && hasFiniteStat(opponentStats);
+      } catch {
+        return false;
+      }
+    },
+    { timeout }
+  );
 }
 
 /**

@@ -1,6 +1,7 @@
 import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForModalOpen, waitForNextRoundReadyEvent } from "../fixtures/waits.js";
+import { waitForRoundStats } from "../helpers/battleStateHelper.js";
 
 async function waitForBattleInitialization(page) {
   const getBattleStoreReady = () =>
@@ -139,28 +140,7 @@ async function prepareClassicBattle(page, { seed = 42, cooldown = 500 } = {}) {
 }
 
 async function selectAdvantagedStat(page) {
-  const waitForStatsReady = () =>
-    page.evaluate(() => {
-      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
-      if (!store || typeof store !== "object") {
-        return false;
-      }
-      const playerStats = store.currentPlayerJudoka?.stats;
-      const opponentStats = store.currentOpponentJudoka?.stats;
-      const hasFiniteStat = (stats) => {
-        if (!stats || typeof stats !== "object") {
-          return false;
-        }
-        return Object.values(stats).some((value) => Number.isFinite(Number(value)));
-      };
-
-      if (!hasFiniteStat(playerStats) || !hasFiniteStat(opponentStats)) {
-        return false;
-      }
-      return true;
-    });
-
-  await expect.poll(waitForStatsReady, { timeout: 5000 }).toBeTruthy();
+  await waitForRoundStats(page);
 
   const statKey = await page.evaluate(() => {
     const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
