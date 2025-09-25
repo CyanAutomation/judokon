@@ -1,47 +1,90 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";import { describe, it, expect, beforeEach, afterEach } from "vitest";import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+
+import { initBattleScoreboardAdapter } from "../../src/helpers/battleScoreboard.js";import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+
+import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
 
 import { initBattleScoreboardAdapter } from "../../src/helpers/battleScoreboard.js";import { initBattleScoreboardAdapter } from "../../src/helpers/battleScoreboard.js";
 
-import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
+describe("battleCLI timer consolidation", () => {
+
+  beforeEach(async () => {import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js";
+
+    await cleanupBattleCLI();
+
+  });
 
 
 
-describe("battleCLI timer consolidation", () => {describe("battleCLI timer consolidation", () => {
+  afterEach(async () => {describe("battleCLI timer consolidation", () => {describe("battleCLI timer consolidation", () => {
 
-  beforeEach(async () => {  beforeEach(async () => {
+    await cleanupBattleCLI();
 
-    await cleanupBattleCLI();    await cleanupBattleCLI();
-
-  });  });
+  });  beforeEach(async () => {  beforeEach(async () => {
 
 
 
-  afterEach(async () => {  afterEach(async () => {
+  it("only updates cli-countdown timer in CLI mode, not shared scoreboard timer", async () => {    await cleanupBattleCLI();    await cleanupBattleCLI();
 
-    await cleanupBattleCLI();    await cleanupBattleCLI();
+    // Load battleCLI which creates the cli-countdown element
 
-  });  });
+    const mod = await loadBattleCLI();  });  });
 
-
-
-  it("only updates cli-countdown timer in CLI mode, not shared scoreboard timer", async () => {  it("only updates cli-countdown timer in CLI mode, not shared scoreboard timer", async () => {
-
-    // Load battleCLI which creates the cli-countdown element    // Load battleCLI which creates the cli-countdown element
-
-    const mod = await loadBattleCLI();    const mod = await loadBattleCLI();
-
-    await mod.init();    await mod.init();
+    await mod.init();
 
 
 
-    // Verify cli-countdown element exists    // Initialize the battle scoreboard adapter (this should skip timer updates in CLI mode)
+    // Verify cli-countdown element exists
 
-    const cliCountdown = document.getElementById("cli-countdown");    const dispose = initBattleScoreboardAdapter();
+    const cliCountdown = document.getElementById("cli-countdown");  afterEach(async () => {  afterEach(async () => {
 
     expect(cliCountdown).toBeTruthy();
 
+    await cleanupBattleCLI();    await cleanupBattleCLI();
+
+    // Initialize the battle scoreboard adapter (this should skip timer updates in CLI mode)
+
+    const dispose = initBattleScoreboardAdapter();  });  });
+
+
+
+    // Check that next-round-timer remains empty (not updated by shared scoreboard)
+
+    const sharedTimer = document.getElementById("next-round-timer");
+
+    expect(sharedTimer).toBeTruthy();  it("only updates cli-countdown timer in CLI mode, not shared scoreboard timer", async () => {  it("only updates cli-countdown timer in CLI mode, not shared scoreboard timer", async () => {
+
+    expect(sharedTimer.textContent).toBe("");
+
+    // Load battleCLI which creates the cli-countdown element    // Load battleCLI which creates the cli-countdown element
+
+    // Emit a timer tick event
+
+    emitBattleEvent("round.timer.tick", { detail: { remainingMs: 5000 } });    const mod = await loadBattleCLI();    const mod = await loadBattleCLI();
+
+
+
+    // Wait for event processing    await mod.init();    await mod.init();
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+
+
+    // The shared timer should still be empty (not updated in CLI mode)
+
+    expect(sharedTimer.textContent).toBe("");    // Verify cli-countdown element exists    // Initialize the battle scoreboard adapter (this should skip timer updates in CLI mode)
+
+
+
+    // Clean up    const cliCountdown = document.getElementById("cli-countdown");    const dispose = initBattleScoreboardAdapter();
+
+    dispose();
+
+  });    expect(cliCountdown).toBeTruthy();
+
+});
     // Verify cli-countdown element exists
 
     // Initialize the battle scoreboard adapter (this should skip timer updates in CLI mode)    const cliCountdown = document.getElementById("cli-countdown");
