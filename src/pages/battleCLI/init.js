@@ -863,6 +863,7 @@ function pauseTimer(type) {
  *   pausedCooldownRemaining = newCooldown
  */
 function pauseTimers() {
+  console.log("[TIMER] pauseTimers called");
   const newSelection = pauseTimer("selection");
   if (newSelection !== null) pausedSelectionRemaining = newSelection;
   const newCooldown = pauseTimer("cooldown");
@@ -880,6 +881,7 @@ function pauseTimers() {
  * reset stored remaining values
  */
 function resumeTimers() {
+  console.log("[TIMER] resumeTimers called");
   if (
     document.body?.dataset?.battleState === "waitingForPlayerAction" &&
     pausedSelectionRemaining
@@ -2447,8 +2449,27 @@ export function wireEvents() {
     document.addEventListener("click", onClickAdvance);
     try {
       document.addEventListener("visibilitychange", () => {
-        if (document.hidden) pauseTimers();
-        else resumeTimers();
+        if (document.hidden) {
+          pauseTimers();
+          // Also pause engine timer if available
+          try {
+            if (store?.engine?.handleTabInactive) {
+              store.engine.handleTabInactive();
+            }
+          } catch (err) {
+            console.log("[TIMER] Engine pause failed:", err.message);
+          }
+        } else {
+          resumeTimers();
+          // Also resume engine timer if available
+          try {
+            if (store?.engine?.handleTabActive) {
+              store.engine.handleTabActive();
+            }
+          } catch (err) {
+            console.log("[TIMER] Engine resume failed:", err.message);
+          }
+        }
       });
       if (typeof window !== "undefined") {
         window.addEventListener("pageshow", (ev) => {
