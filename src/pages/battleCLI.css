@@ -200,10 +200,6 @@ body[data-theme="retro"] .cli-stat.selected {
 }
 /* Add prompt indicator for stat selection */
 .cli-block[aria-label="Stat Selection"]:before {
-  content: ">> Choose your stat:";
-
-/* Add prompt indicator for stat selection */
-.cli-block[aria-label="Stat Selection"]:before {
   content: "-> Choose your stat:";
   display: block;
   color: #9cffcf;
