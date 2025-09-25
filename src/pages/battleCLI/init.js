@@ -2249,13 +2249,24 @@ export async function setupFlags() {
     if (indicator) indicator.style.display = verboseEnabled ? "inline" : "none";
     if (verboseEnabled) {
       try {
-        // Scroll the verbose section into view
-        if (section) section.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        // Scroll the verbose section into view when supported
+        if (section && typeof section.scrollIntoView === "function") {
+          section.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
         // Focus the verbose log for keyboard navigation
         const pre = byId("cli-verbose-log");
         if (pre) {
+          if (pre.tabIndex !== -1) {
+            pre.tabIndex = -1;
+          }
           pre.scrollTop = pre.scrollHeight;
-          pre.focus({ preventScroll: true });
+          try {
+            pre.focus({ preventScroll: true });
+          } catch {
+            try {
+              pre.focus();
+            } catch {}
+          }
         }
       } catch {}
     }

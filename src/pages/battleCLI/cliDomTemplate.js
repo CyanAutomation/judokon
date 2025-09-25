@@ -128,7 +128,12 @@ export const CLI_DOM_TEMPLATE = `
       </section>
       <div class="ascii-sep">------------------------</div>
       <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" data-flag="cliVerbose" hidden>
-        <pre id="cli-verbose-log" aria-atomic="false" class="pre-wrap"></pre>
+        <pre
+          id="cli-verbose-log"
+          aria-atomic="false"
+          class="pre-wrap"
+          tabindex="-1"
+        ></pre>
       </section>
       <div id="cli-prompt" role="status" aria-label="Command prompt">
         &gt; <span id="cli-cursor" aria-hidden="true">_</span>
