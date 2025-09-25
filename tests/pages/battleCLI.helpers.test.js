@@ -178,4 +178,17 @@ describe("Battle CLI Helpers", () => {
       expect(matchAnnouncement.textContent).toBe("Match over. You win!");
     });
   });
+
+  describe("resetMatch", () => {
+    it("synchronously resets round counter to 0", async () => {
+      const initModule = await import("../../src/pages/battleCLI/init.js");
+      const { resetMatch } = initModule;
+
+      // Call resetMatch
+      await resetMatch();
+
+      // Assert that updateRoundHeader was called with 0 synchronously
+      expect(updateRoundHeaderMock).toHaveBeenCalledWith(0, undefined);
+    });
+  });
 });

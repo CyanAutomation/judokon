@@ -408,7 +408,7 @@ export const __test = {
  * // Callers should await the returned promise to ensure the reset is finished.
  */
 let resetPromise = Promise.resolve();
-async function resetMatch() {
+export async function resetMatch() {
   stopSelectionCountdown();
   handleCountdownFinished();
   state.roundResolving = false;
@@ -417,13 +417,14 @@ async function resetMatch() {
     document.getElementById("play-again-button")?.remove();
     document.getElementById("start-match-button")?.remove();
   } catch {}
-  // Perform synchronous reset work
+  // Perform synchronous UI reset to prevent glitches
+  updateRoundHeader(0, engineFacade.getPointsToWin?.());
+  updateScoreLine();
+  setRoundMessage("");
+  // Perform asynchronous reset work
   const next = (async () => {
     disposeClassicBattleOrchestrator();
     await resetGame(store);
-    updateRoundHeader(0, engineFacade.getPointsToWin?.());
-    updateScoreLine();
-    setRoundMessage("");
   })();
   // Initialize orchestrator after sync work without blocking callers
   resetPromise = next.then(async () => {
