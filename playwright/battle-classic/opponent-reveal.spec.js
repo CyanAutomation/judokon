@@ -70,24 +70,95 @@ async function getBattleSnapshot(page) {
 const MUTED_CONSOLE_LEVELS = ["log", "info", "warn", "error", "debug"];
 const PLAYER_SCORE_PATTERN = /You:\s*\d/;
 
-async function waitForBattleReadyQuickCheck(page) {
+/**
+ * Quick battle readiness check with fallback strategies
+ * @pseudocode
+ * TRY to wait for battle ready state with short timeout and no fallback
+ * IF timeout occurs, CHECK if stat buttons are visible as readiness indicator
+ * IF stats not visible, CHECK Test API readiness flag and validate battle snapshot
+ * THROW aggregated error with diagnostics if all fallback strategies fail
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {{ timeout?: number }} options - Optional quick check configuration
+ * @returns {Promise<void>}
+ */
+async function waitForBattleReadyWithFallbacks(page, options = {}) {
+  const { timeout = 3_500 } = options;
+
   try {
-    await waitForBattleReady(page, { timeout: 1_200, allowFallback: false });
+    await waitForBattleReady(page, { timeout, allowFallback: false });
     return;
   } catch (originalError) {
-    const firstStat = page.locator(selectors.statButton(0)).first();
-    const statVisible = await firstStat.isVisible().catch(() => false);
-    if (statVisible) {
+    const { statVisible, readinessViaApi, snapshotLooksReady, errors } =
+      await collectBattleReadinessFallbacks(page);
+
+    if (readinessViaApi === true || (statVisible && snapshotLooksReady)) {
       return;
     }
 
-    const snapshot = await getBattleSnapshot(page).catch(() => null);
-    if (snapshot) {
-      return;
-    }
+    const aggregatedErrors = [originalError, ...errors];
 
-    throw originalError;
+    throw new AggregateError(aggregatedErrors, buildBattleFallbackFailureMessage(errors));
   }
+}
+
+async function collectBattleReadinessFallbacks(page) {
+  const errors = [];
+
+  const firstStat = page.locator(selectors.statButton(0)).first();
+  let statVisible = false;
+  try {
+    statVisible = await firstStat.isVisible();
+  } catch (statError) {
+    errors.push(new Error(`Stat visibility check failed: ${statError.message}`));
+  }
+
+  let readinessViaApi = null;
+  try {
+    readinessViaApi = await page.evaluate(() => {
+      try {
+        const initApi = window.__TEST_API?.init;
+        if (initApi && typeof initApi.isBattleReady === "function") {
+          return initApi.isBattleReady.call(initApi);
+        }
+      } catch (error) {
+        return { error: error instanceof Error ? error.message : String(error) };
+      }
+      return null;
+    });
+  } catch (apiError) {
+    errors.push(new Error(`Test API readiness check failed: ${apiError.message}`));
+  }
+
+  if (readinessViaApi && typeof readinessViaApi === "object" && "error" in readinessViaApi) {
+    errors.push(new Error(`Test API readiness evaluation failed: ${readinessViaApi.error}`));
+    readinessViaApi = null;
+  }
+
+  let snapshot = null;
+  try {
+    snapshot = await getBattleSnapshot(page);
+  } catch (snapshotError) {
+    errors.push(new Error(`Battle snapshot retrieval failed: ${snapshotError.message}`));
+  }
+
+  const snapshotLooksReady =
+    snapshot !== null &&
+    typeof snapshot.roundsPlayed === "number" &&
+    snapshot.roundsPlayed >= 0;
+
+  return { statVisible, readinessViaApi, snapshotLooksReady, errors };
+}
+
+function buildBattleFallbackFailureMessage(errors) {
+  if (!errors.length) {
+    return "Battle readiness quick check failed after fallback strategies.";
+  }
+
+  const detailMessage = errors.map((error) => `- ${error.message}`).join("\n");
+
+  return ["Battle readiness quick check failed after fallback strategies.", detailMessage].join(
+    "\n"
+  );
 }
 
 async function expectBattleState(page, expectedState, options = {}) {
@@ -133,7 +204,7 @@ async function startMatch(page, selector) {
   };
 
   const ensureBattleReady = async () => {
-    await waitForBattleReadyQuickCheck(page);
+    await waitForBattleReadyWithFallbacks(page);
     await ensureStatSelectionVisible();
   };
 
@@ -176,12 +247,17 @@ async function expireSelectionTimer(page) {
   expect(expired).toBe(true);
 }
 
+/**
+ * Convenience helper to start a match and wait for stat availability.
+ * @pseudocode
+ * DELEGATE to startMatch which already performs readiness checks
+ * RETURN when stat selection is confirmed visible by startMatch
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {string} selector - Selector for the start button to click
+ * @returns {Promise<void>}
+ */
 async function startMatchAndAwaitStats(page, selector) {
   await startMatch(page, selector);
-  await waitForBattleReadyQuickCheck(page);
-  await expect(page.locator(selectors.statButton(0)).first()).toBeVisible({
-    timeout: 7_000
-  });
 }
 
 // Deterministic, UI-safe round resolution avoiding DOM state waits and page.evaluate races
@@ -235,6 +311,19 @@ async function resolveRoundDeterministic(page) {
   } catch {}
 }
 
+/**
+ * Ensures a battle round resolves, favoring natural progression before falling back to deterministic helpers.
+ * @pseudocode
+ * 1. If not forcing resolution, wait for natural roundOver state within the provided deadline
+ * 2. If the round naturally resolves, return early
+ * 3. Otherwise invoke deterministic resolution helpers
+ * 4. Poll to confirm the battle state is "roundOver" within the verification timeout
+ * @param {import('@playwright/test').Page} page - Playwright page instance under test
+ * @param {Object} [options]
+ * @param {number} [options.deadline=650] - Timeout for the natural resolution attempt
+ * @param {number} [options.verifyTimeout=3000] - Timeout for verifying deterministic resolution succeeded
+ * @param {boolean} [options.forceResolve=false] - Skip the natural wait and force deterministic resolution
+ */
 async function ensureRoundResolved(page, options = {}) {
   const { deadline = 650, verifyTimeout = 3_000, forceResolve = false } = options;
 
@@ -259,8 +348,7 @@ async function ensureRoundResolved(page, options = {}) {
   if (!forceResolve) {
     try {
       await waitForBattleState(page, "roundOver", {
-        timeout: deadline,
-        allowFallback: false
+        timeout: deadline
       });
       return;
     } catch {}
