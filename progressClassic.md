@@ -122,6 +122,18 @@ Tests / follow-ups:
 - Unit tests for the message formatting utility.
 - Integration test that asserts snackbar text after round resolution contains both choices and the outcome.
 
+**Implementation completed:**
+
+- **Actions taken:** Modified `showRoundOutcome` in `src/helpers/classicBattle/uiHelpers.js` to accept stat parameters (`stat`, `playerVal`, `opponentVal`) and consolidate feedback into a single message showing both stat choices and the round outcome. Updated the `roundResolved` event handler in `src/helpers/classicBattle/uiEventHandlers.js` to pass stat data to `showRoundOutcome` and removed the separate `showStatComparison` call.
+
+- **Files modified:** `src/helpers/classicBattle/uiHelpers.js` (enhanced showRoundOutcome), `src/helpers/classicBattle/uiEventHandlers.js` (updated roundResolved handler), `tests/helpers/uiHelpers.showRoundOutcome.test.js` (added unit tests), `playwright/battle-classic/stat-selection.spec.js` (added integration test).
+
+- **Unit test outcomes:** `uiHelpers.showRoundOutcome.test.js`: ✅ PASSED (6/6 tests, including message consolidation tests)
+
+- **Playwright test outcomes:** `stat-selection.spec.js`: ✅ PASSED (2/2 tests, including consolidated feedback test)
+
+- **Validation:** Stat choice feedback is now consolidated into a single, clear message showing both player and opponent stat selections along with the round outcome.
+
 ---
 
 ## 4) Missing "Opponent is choosing…" prompt
