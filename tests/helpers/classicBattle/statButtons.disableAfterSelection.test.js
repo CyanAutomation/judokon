@@ -23,7 +23,7 @@ describe("Classic Battle - disable stat buttons after selection", () => {
     const buttons = Array.from(document.querySelectorAll('#stat-buttons button[data-stat]'));
     // Enable via event to simulate ready state
     const setup = await import("../../../src/helpers/classicBattle/setupUIBindings.js");
-    const view = { controller: { battleStore: {} } };
+    const view = { controller: { battleStore: {} }, applyBattleOrientation: () => {} };
     const controls = await setup.setupUIBindings(view);
     // Ensure enable handler ran
     emitBattleEvent("statButtons:enable");
@@ -47,4 +47,3 @@ describe("Classic Battle - disable stat buttons after selection", () => {
     controls?.disable?.();
   });
 });
-

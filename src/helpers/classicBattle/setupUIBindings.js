@@ -5,8 +5,7 @@ import {
   watchBattleOrientation,
   setupNextButton,
   initStatButtons,
-  applyStatLabels,
-  maybeShowStatHint
+  applyStatLabels
 } from "./uiHelpers.js";
 import { onBattleEvent } from "./battleEvents.js";
 import { initBattleStateProgress } from "../battleStateProgress.js";
@@ -62,7 +61,6 @@ export async function setupUIBindings(view) {
       console.debug("initTooltips failed", error);
     } catch {}
   }
-  maybeShowStatHint();
 
   return statButtonControls;
 }

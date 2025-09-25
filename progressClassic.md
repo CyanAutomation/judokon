@@ -302,7 +302,16 @@ Before merge, run these checks:
 This section records the current repository state against the QA report and lists concrete, verifiable next actions. Each item includes a short implementation plan.
 
 -1) Disable stat buttons after selection (Issue 2)
-- Observed: Disabling is wired via events and helpers (see `src/helpers/classicBattle/roundUI.js:369` emits `statButtons:disable`, and `src/helpers/classicBattle/setupUIBindings.js:46` disables via `statButtonControls`). However, there is no explicit assertion ensuring idempotency against repeated clicks/keys in this repo, so we will add targeted tests to lock this down and patch any gaps discovered.
+- Observed: Disabling is wired via events and helpers (see `src/helpers/classicBattle/roundUI.js:369` emits `statButtons:disable`, and `src/helpers/classicBattle/setupUIBindings.js:46` disables via `statButtonControls`). However, there was no explicit assertion ensuring idempotency against repeated clicks/keys.
+- Actions taken:
+  - Added targeted unit test `tests/helpers/classicBattle/statButtons.disableAfterSelection.test.js` to verify: chosen button gets `selected`, siblings are disabled with `tabIndex=-1`, and re-emitting selection does not re-enable or change selection.
+  - Fixed merge artifact in `src/helpers/setupScoreboard.js` to restore buildability for focused testing (removed conflict markers, retained safe helper execution path).
+  - Removed missing import usage `maybeShowStatHint` from `src/helpers/classicBattle/setupUIBindings.js` to prevent test-time TypeError.
+- Outcomes:
+  - Unit: `vitest run tests/helpers/classicBattle/statButtons.disableAfterSelection.test.js` → PASS.
+  - No app logic changes were required for disabling; behavior is now locked by tests.
+- Next steps:
+  - Optionally add an E2E check that repeated clicks/keys do not change the selection once made.
 - Plan:
   - Locate stat selection handler(s) in Classic Battle (mouse and keyboard paths).
   - After the first valid selection:
