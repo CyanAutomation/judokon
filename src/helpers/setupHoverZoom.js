@@ -34,6 +34,11 @@ export function addHoverZoomMarkers() {
   cards.forEach((card) => {
     if (card.dataset.enlargeListenerAttached) return;
     card.dataset.enlargeListenerAttached = "true";
+
+    const setEnlarged = () => {
+      card.dataset.enlarged = "true";
+    };
+
     const reset = () => {
       delete card.dataset.enlarged;
     };
@@ -56,8 +61,8 @@ export function addHoverZoomMarkers() {
         const reduceMotion =
           window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const disableAnimations = document.body?.hasAttribute("data-test-disable-animations");
-        if (reduceMotion || disableAnimations) {
-          card.dataset.enlarged = "true";
+        if (reduceMotion || disableAnimations || hasKeyboardFocus()) {
+          setEnlarged();
         }
       } catch {
         // If reduced-motion or test flags can't be read, still honor keyboard focus for accessibility.
@@ -69,7 +74,7 @@ export function addHoverZoomMarkers() {
     card.addEventListener("mouseleave", reset);
     card.addEventListener("transitionend", (event) => {
       if (event.propertyName === "transform") {
-        card.dataset.enlarged = "true";
+        setEnlarged();
       }
     });
   });
