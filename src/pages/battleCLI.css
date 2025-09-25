@@ -10,8 +10,8 @@ body {
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
-  background: #0b0c0c;
-  color: #f2f2f2;
+  background: #050505;
+  color: #d6f5d6;
   line-height: 1.45; /* Enhanced readability for monospace */
   font-size: 14px; /* Consistent base size */
 }
@@ -26,7 +26,7 @@ body {
 }
 .cli-header {
   padding: 12px 16px; /* Increased for better touch targets */
-  border-bottom: 1px solid #3a3a3a;
+  border-bottom: 1px solid #1f1f1f;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -34,12 +34,12 @@ body {
   box-sizing: border-box; /* include padding in fixed height */
   height: 64px; /* Slightly increased for better proportions */
   position: relative; /* allow absolute-centering children like #cli-round */
-  background: #0d0d0d; /* Subtle background variation */
+  background: #040404;
 }
 .cli-title {
   font-weight: 600; /* Slightly reduced for cleaner look */
   font-size: 15px;
-  color: #ffffff; /* Enhanced contrast */
+  color: #d6f5d6; /* Terminal green */
 }
 .verbose-indicator {
   background: #ffcc00;
@@ -54,10 +54,10 @@ body {
 #cli-countdown {
   min-height: 1.2em !important; /* Force em units for PRD compliance */
   font-weight: 600;
-  color: #ffcc00; /* Warning color for timer */
+  color: #9cff9c; /* Warning color for timer */
 }
 #cli-countdown:before {
-  content: "⏱ "; /* Timer icon for visual clarity */
+  content: "[TIMER] "; /* ASCII timer indicator */
   opacity: 0.8;
 }
 .state-badge {
@@ -104,14 +104,14 @@ body[data-theme="retro"] .cli-stat.selected {
 }
 .cli-block {
   padding: 12px 16px; /* Consistent 8px rhythm */
-  border: 1px solid #333;
-  background: #0f0f0f;
-  border-radius: 4px; /* Subtle rounding */
+  border: 1px solid #1f1f1f;
+  background: #030303;
+  border-radius: 0; /* Flat panels for terminal feel */
   margin-bottom: 4px; /* Better section separation */
 }
 .cli-settings {
-  background: #0d0d0d;
-  color: #cfcfcf;
+  background: #050505;
+  color: #c8ecc8;
   font-size: 13px;
 }
 .cli-settings:not([hidden]) {
@@ -131,11 +131,11 @@ body[data-theme="retro"] .cli-stat.selected {
 /* Terminal-style separators with enhanced visual hierarchy */
 .ascii-sep {
   font-family: inherit;
-  color: #4a4a4a; /* Subtle separator color */
+  color: #1f401f; /* Subtle separator color */
   padding: 8px 0;
   text-align: center;
   font-size: 12px;
-  letter-spacing: 2px; /* Spaced out for visual effect */
+  letter-spacing: 1px; /* Reduced spacing for authenticity */
   opacity: 0.7;
 }
 /* Enhanced round message styling */
@@ -145,9 +145,9 @@ body[data-theme="retro"] .cli-stat.selected {
   color: #ffffff; /* Enhanced contrast for important messages */
 }
 #round-message:not(:empty):before {
-  content: "→ "; /* Arrow indicator for results */
+  content: ">> "; /* ASCII indicator for results */
   opacity: 0.8;
-  color: #9ad1ff;
+  color: #9cffcf;
 }
 
 /* Standard Scoreboard nodes - Phase 1: Hidden but styled for CLI theme */
@@ -166,22 +166,22 @@ body[data-theme="retro"] .cli-stat.selected {
   border: none;
 }
 .standard-scoreboard-nodes #next-round-timer:not(:empty):before {
-  content: "⏱ ";
-  color: #fbbf24;
+  content: "[TIMER] ";
+  color: #9cffcf;
 }
 .standard-scoreboard-nodes #round-counter:not(:empty):before {
-  content: "🥋 ";
-  color: #22c55e;
+  content: "[ROUND] ";
+  color: #9cffcf;
 }
 .standard-scoreboard-nodes #score-display:not(:empty):before {
-  content: "📊 ";
-  color: #3b82f6;
+  content: "[SCORE] ";
+  color: #9cffcf;
 }
 /* Add prompt indicator for stat selection */
 .cli-block[aria-label="Stat Selection"]:before {
-  content: "→ Choose your stat:";
+  content: ">> Choose your stat:";
   display: block;
-  color: #9ad1ff;
+  color: #9cffcf;
   font-weight: 500;
   margin-bottom: 8px;
   opacity: 0.9;
@@ -199,41 +199,42 @@ body[data-theme="retro"] .cli-stat.selected {
 }
 .cli-stat {
   padding: 8px 12px; /* Enhanced padding for better touch targets */
-  background: #121212;
-  border: 1px solid #3a3a3a;
-  min-height: 44px; /* PRD requirement: touch targets ≥44px */
+  background: #050505;
+  border: 1px solid #1f1f1f;
+  min-height: 44px; /* PRD requirement: touch targets >=44px */
   display: flex;
   align-items: center;
   justify-content: space-between; /* Better alignment for terminal look */
   gap: 8px;
   font-family: inherit;
   font-size: 14px;
-  border-radius: 3px; /* Subtle rounding for modern feel */
-  transition: background-color 0.15s ease; /* Smooth hover feedback */
+  border-radius: 0; /* Flat rows */
+  transition: background-color 0.1s ease; /* Subtle hover feedback */
+  color: inherit;
 }
 .cli-stat.skeleton {
   opacity: 0.5;
-  color: #666;
+  color: #4d754d;
   font-style: italic; /* Subtle indicator for placeholder state */
 }
 .cli-stat.selected {
-  border-color: #9ad1ff;
-  background: #1a1a1a;
-  box-shadow: 0 0 0 1px #9ad1ff33; /* Subtle glow effect */
+  border-color: #3cff9b;
+  background: #082508;
+  box-shadow: none;
 }
 .cli-stat:hover {
-  background: #181818; /* Subtle hover feedback */
-  border-color: #4a4a4a;
+  background: #0b2a0b; /* Subtle hover feedback */
+  border-color: #2f6f2f;
 }
 /* High-contrast focus state for stat rows */
 .cli-stat:focus {
-  background: #103a56; /* dark navy to ensure strong text contrast */
-  border-color: #9ad1ff;
-  outline: 2px solid #9ad1ff;
+  background: #103a28; /* deep green to ensure strong text contrast */
+  border-color: #3cff9b;
+  outline: 2px solid #3cff9b;
   outline-offset: 2px;
   box-shadow:
-    0 0 0 2px #0b0c0c,
-    0 0 0 4px #9ad1ff;
+    0 0 0 2px #050505,
+    0 0 0 4px #3cff9b;
 }
 .cli-controls {
   /* make controls lay out horizontally and center-aligned */
@@ -252,7 +253,7 @@ body[data-theme="retro"] .cli-stat.selected {
   white-space: pre;
   gap: 4px; /* Consistent 8px rhythm */
   font-size: 13px; /* Slightly smaller for hierarchy */
-  color: #e0e0e0; /* Enhanced contrast */
+  color: #c4e8c4; /* Enhanced contrast */
 }
 .cli-status > div {
   line-height: 1.2;
@@ -284,34 +285,34 @@ body[data-theme="retro"] .cli-stat.selected {
   padding: 8px 16px; /* Consistent spacing */
   font-size: 12px;
   text-align: center;
-  background: #0b0c0c;
-  color: #cccccc; /* Enhanced contrast */
+  background: #050505;
+  color: #c4e8c4; /* Enhanced contrast */
   opacity: 0.9;
-  border-top: 1px solid #222; /* Subtle separation */
+  border-top: 1px solid #1f1f1f; /* Subtle separation */
   font-family: inherit;
 }
 #cli-controls-hint:before {
-  content: "│ "; /* Terminal-style separator */
+  content: "| "; /* Terminal-style separator */
   opacity: 0.6;
 }
 /* Enhanced CLI prompt styling */
 #cli-prompt {
   padding: 8px 16px;
   font-family: inherit;
-  color: #9ad1ff;
-  background: #111;
-  border-top: 1px solid #333;
+  color: #8cffaa;
+  background: #040404;
+  border-top: 1px solid #1f1f1f;
   font-weight: 500;
 }
 #cli-cursor {
-  color: #9ad1ff;
+  color: #8cffaa;
   font-weight: bold;
 }
 /* Terminal-style snackbar line at the bottom */
 #snackbar-container {
   padding: 8px 12px;
-  background: #111;
-  color: #e6e6e6;
+  background: #040404;
+  color: #d6f5d6;
 }
 #snackbar-container .snackbar {
   display: block;
@@ -331,15 +332,15 @@ body[data-theme="retro"] .cli-stat.selected {
   float: none;
   background: none;
   border: 0;
-  color: #f2f2f2;
+  color: inherit;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   display: inline-block;
   margin-left: auto;
 }
 /* Ensure good contrast for links if any appear */
 a {
-  color: #9ad1ff;
+  color: #8cffaa;
 }
 a:focus,
 button:focus,
@@ -347,19 +348,19 @@ input:focus,
 select:focus,
 [tabindex]:focus {
   /* Enhanced, high-visibility focus indicator */
-  outline: 3px solid #9ad1ff;
+  outline: 3px solid #3cff9b;
   outline-offset: 2px;
   /* Add a subtle ring to improve contrast separation on dark bg */
   box-shadow:
-    0 0 0 2px #0b0c0c,
-    0 0 0 4px #9ad1ff;
+    0 0 0 2px #050505,
+    0 0 0 4px #3cff9b;
 }
 .skip-link {
   position: absolute;
   top: -40px;
   left: 0;
-  background: #0b0c0c;
-  color: #f2f2f2;
+  background: #050505;
+  color: #d6f5d6;
   padding: 8px;
 }
 .skip-link:focus {

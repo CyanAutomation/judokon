@@ -72,7 +72,11 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
     });
 
     // Allow for both standard and CLI immersive themes
-    expect(bodyStyles.background).toMatch(/rgb\(11, 12, 12\)|#0b0c0c|rgb\(0, 0, 0\)|#000/);
-    expect(bodyStyles.color).toMatch(/rgb\(242, 242, 242\)|#f2f2f2|rgb\(140, 255, 107\)|#8cff6b/);
+    expect(bodyStyles.background).toMatch(
+      /rgb\((?:11, 12, 12|5, 5, 5)\)|#0b0c0c|#050505|rgb\(0, 0, 0\)|#000/
+    );
+    expect(bodyStyles.color).toMatch(
+      /rgb\((?:242, 242, 242|214, 245, 214)\)|#f2f2f2|#d6f5d6|rgb\(140, 255, 107\)|#8cff6b/
+    );
   });
 });

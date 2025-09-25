@@ -1,5 +1,5 @@
 export const CLI_DOM_TEMPLATE = `
-  <div class="terminal-title-bar">bash — JU-DO-KON</div>
+  <div class="terminal-title-bar">bash - JU-DO-KON</div>
   <a href="#cli-main" class="skip-link">Skip to main content</a>
   <div id="cli-root" class="cli-root" data-round="0" data-target="0" data-test="cli-root">
     <header id="cli-header" class="cli-header" role="banner">
@@ -7,7 +7,7 @@ export const CLI_DOM_TEMPLATE = `
         <a href="../../index.html" data-testid="home-link" aria-label="Return to home">Home</a>
         &nbsp;|&nbsp; Classic Battle (CLI)
         <span id="verbose-indicator" class="verbose-indicator" style="display: none">Verbose ON</span>
-        <span id="battle-state-badge" data-flag="battleStateBadge" class="state-badge" style="display: none">State: —</span>
+        <span id="battle-state-badge" data-flag="battleStateBadge" class="state-badge" style="display: none">State: -</span>
       </div>
       <div class="cli-status" aria-live="polite" aria-atomic="true">
         <div id="cli-round">Round 0 Target: 10</div>
@@ -33,7 +33,7 @@ export const CLI_DOM_TEMPLATE = `
         <div id="match-announcement" aria-live="assertive" aria-atomic="true" style="position: absolute; left: -10000px;"></div>
         <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
       </section>
-      <div class="ascii-sep">────────────────────────</div>
+      <div class="ascii-sep">------------------------</div>
       <section aria-label="Match Settings" class="cli-block cli-settings">
         <div class="cli-settings-header d-flex align-items-center justify-content-between">
           <div class="fw-600">Match Settings</div>
@@ -46,7 +46,7 @@ export const CLI_DOM_TEMPLATE = `
               aria-label="Toggle settings panel"
               class="button-reset"
             >
-              Settings ▾
+              Settings [v]
             </button>
           </div>
         </div>
@@ -84,24 +84,24 @@ export const CLI_DOM_TEMPLATE = `
           </div>
         </div>
       </section>
-      <div class="ascii-sep">────────────────────────</div>
+      <div class="ascii-sep">------------------------</div>
       <section aria-label="Stat Selection" class="cli-block">
         <div
           id="cli-stats"
           role="listbox"
           tabindex="0"
-          aria-label="Select a stat with number keys 1–5"
+          aria-label="Select a stat with number keys 1-5"
           aria-busy="true"
           data-skeleton="true"
         >
-          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(1) ─────────────── ─</div>
-          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(2) ─────────────── ─</div>
-          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(3) ─────────────── ─</div>
-          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(4) ─────────────── ─</div>
-          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(5) ─────────────── ─</div>
+          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(1) --------------------</div>
+          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(2) --------------------</div>
+          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(3) --------------------</div>
+          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(4) --------------------</div>
+          <div class="cli-stat skeleton" role="presentation" style="display: flex; min-height: 44px">(5) --------------------</div>
         </div>
       </section>
-      <div class="ascii-sep">────────────────────────</div>
+      <div class="ascii-sep">------------------------</div>
       <section aria-label="Shortcuts" id="cli-shortcuts" class="cli-block cli-settings" data-flag="cliShortcuts" hidden>
         <div class="cli-settings-header d-flex align-items-center justify-content-between">
           <div class="fw-600">Shortcuts</div>
@@ -113,29 +113,29 @@ export const CLI_DOM_TEMPLATE = `
               aria-expanded="false"
               class="button-reset"
             >
-              ×
+              [X]
             </button>
           </div>
         </div>
         <div id="cli-shortcuts-body">
           <ul id="cli-help">
-            <li>[1–5] Select Stat</li>
-            <li>[Enter]/[Space] Next</li>
+            <li>[1-5] Select Stat</li>
+            <li>[Enter] or [Space] Next</li>
             <li>[Q] Quit</li>
             <li>[H] Toggle Help</li>
           </ul>
         </div>
       </section>
-      <div class="ascii-sep">────────────────────────</div>
+      <div class="ascii-sep">------------------------</div>
       <section aria-label="Verbose Log" id="cli-verbose-section" class="cli-block" data-flag="cliVerbose" hidden>
         <pre id="cli-verbose-log" aria-atomic="false" class="pre-wrap"></pre>
       </section>
       <div id="cli-prompt" role="status" aria-label="Command prompt">
-        &gt; <span id="cli-cursor" aria-hidden="true">▌</span>
+        &gt; <span id="cli-cursor" aria-hidden="true">_</span>
       </div>
     </main>
     <footer class="cli-footer" role="contentinfo">
-      <div id="cli-controls-hint" aria-live="polite" style="display: none">Press 1-5 to choose a stat</div>
+      <div id="cli-controls-hint" aria-live="polite" style="display: none">[1-5] Stats | [Enter/Space] Next | [H] Help | [Q] Quit</div>
       <div id="snackbar-container" role="status" aria-live="polite"></div>
     </footer>
     <div id="player-card" style="display: none"></div>
@@ -150,7 +150,7 @@ export const CLI_DOM_TEMPLATE = `
  * @param {Document} [doc=document] - Document used to create the fragment.
  * @returns {DocumentFragment|null}
  * @pseudocode
- * if !doc → return null
+ * if !doc -> return null
  * template = doc.createElement("template")
  * template.innerHTML = CLI_DOM_TEMPLATE
  * return template.content.cloneNode(true)

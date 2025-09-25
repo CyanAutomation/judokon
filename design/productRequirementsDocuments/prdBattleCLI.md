@@ -111,31 +111,31 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 ### Layout (single column, desktop & mobile)
 
 ```text
-┌─────────────────────────────────────────┐
-│ bash — JU-DO-KON                        │
-├─────────────────────────────────────────┤
-│ Classic Battle — CLI │ Round 2 │ You: 1 │
-│                      │  of 5   │ CPU: 1 │
-├─────────────────────────────────────────┤
-│ ⏱ Timer: 07s                            │
-│ → Choose your stat:                     │
-│   (1) Power ……………………… 8               │
-│   (2) Speed ……………………… 7               │
-│   (3) Technique ………………… 9               │
-│   (4) Kumi-kata ……………… 6               │
-│   (5) Ne-waza …………………… 7               │
-│─────────────────────────────────────────│
-│ → Last: You WON (Technique 9 vs 7)      │
-│─────────────────────────────────────────│
-│ [1-5] Select │ [↵/Space] Next │ [H] Help│
-└─────────────────────────────────────────┘
++-----------------------------------------+
+| bash - JU-DO-KON                        |
++-----------------------------------------+
+| Classic Battle - CLI | Round 2 | You: 1 |
+|                      |  of 5   | CPU: 1 |
++-----------------------------------------+
+| [TIMER] 07s                             |
+| >> Choose your stat:                    |
+|   (1) Power ................. 8         |
+|   (2) Speed ................. 7         |
+|   (3) Technique ............. 9         |
+|   (4) Kumi-kata ............. 6         |
+|   (5) Ne-waza ............... 7         |
+|-----------------------------------------|
+| >> Last: You WON (Technique 9 vs 7)     |
+|-----------------------------------------|
+| [1-5] Select | [Enter/Space] Next | [H] |
++-----------------------------------------+
 ```
 
 **Enhancements**
 
 - **Terminal Title Bar**: Enhanced gradient styling with authentic terminal appearance.
-- **Unicode Indicators**: ⏱ for timer, → for prompts and results, │ for separators.
-- **Professional Separators**: Proper `────────────────────` instead of simple `---`.
+- **ASCII Indicators**: `[TIMER]` for timer, `>>` for prompts and results, `|` for separators.
+- **Professional Separators**: Explicit hyphenated separators instead of box drawing glyphs.
 - **Typography Excellence**: Consistent 8px rhythm, improved line-height 1.45.
 - **Enhanced Stat List**: Refined padding, hover states, and visual feedback.
 - **Terminal Colors**: Command prompt styling with proper terminal background.
@@ -341,7 +341,7 @@ This section captures developer-facing module structure and helpers from the for
 ### Terminal Authenticity Improvements
 
 - **Professional Title Bar**: Implemented gradient terminal title bar with authentic styling
-- **Unicode Enhancement**: Added semantic indicators (⏱ timer, → prompts/results, │ separators)
+- **ASCII Enhancement**: Added semantic indicators ([TIMER] timer, >> prompts/results, | separators)
 - **Separator Upgrade**: Replaced basic `---` with professional `────────────────────────`
 - **Command Styling**: Enhanced prompt appearance with proper terminal colors and backgrounds
 
