@@ -1604,12 +1604,12 @@ async function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
   setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
 
-  // Hide opponent card until reveal to prevent premature exposure
+  // Ensure opponent card area remains visible so the Mystery placeholder shows pre-reveal
   try {
     const opponentCard = document.getElementById("opponent-card");
-    if (opponentCard) opponentCard.classList.add("opponent-hidden");
+    if (opponentCard) opponentCard.classList.remove("opponent-hidden");
   } catch (err) {
-    console.debug("battleClassic: hiding opponent card failed", err);
+    console.debug("battleClassic: adjusting opponent card visibility failed", err);
   }
 
   // Initialize scoreboard adapter to handle display.score.update events

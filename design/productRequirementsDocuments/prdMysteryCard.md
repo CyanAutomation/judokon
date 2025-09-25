@@ -75,6 +75,8 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 
 The Mystery Card is intentionally minimal. It uses the "Common" rarity border and color scheme. The only element on the card is a large "?" SVG icon, centered both vertically and horizontally.
 
+Implementation note (Classic Battle): On `battleClassic.html`, a static placeholder (`#mystery-card-placeholder`) resides inside `#opponent-card`. It is visible during the opponent-choosing phase. When the engine emits `opponentReveal`, the UI clears the placeholder and renders the actual opponent card in the same container. This avoids hot-path complexity and layout shifts.
+
 ```text
 +————————————————+
 | [ COMMON BORDER ]                              |
