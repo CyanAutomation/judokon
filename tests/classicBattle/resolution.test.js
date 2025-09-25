@@ -109,7 +109,8 @@ function mockModules({ playerStats, opponentStats, domOverrides } = {}) {
 
   mocks["../../src/helpers/classicBattle/statButtons.js"] = {
     setStatButtonsEnabled: vi.fn(),
-    resolveStatButtonsReady: vi.fn()
+    resolveStatButtonsReady: vi.fn(),
+    disableStatButtons: vi.fn()
   };
 
   mocks["../../src/helpers/classicBattle/uiEventHandlers.js"] = {
