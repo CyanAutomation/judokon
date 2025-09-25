@@ -76,6 +76,8 @@ const READY_SUPPRESSION_WINDOW_MS = (() => {
 })();
 let lastRoundCycleTriggerSource = null;
 let lastRoundCycleTriggerTimestamp = 0;
+// Track the highest round number displayed to the user
+let highestDisplayedRound = 0;
 /**
  * Minimum delay before enabling the Next button after stat selection.
  * Ensures UI state transitions are visible to users.
@@ -848,7 +850,13 @@ function getVisibleRoundNumber() {
  *    increment from the visible round so early `round.start` signals progress.
  * 4. Fall back to the last known round (or 1) when engine data is unavailable.
  */
-let highestDisplayedRound = 0;
+// Initialize highestDisplayedRound from window or default to 0
+if (typeof window !== "undefined") {
+  window.__highestDisplayedRound = window.__highestDisplayedRound || 0;
+}
+
+// Reset highestDisplayedRound for tests
+window.__highestDisplayedRound = 0;
 let lastForcedTargetRound = null;
 let lastRoundCounterUpdateContext = "init";
 
@@ -861,12 +869,13 @@ let lastRoundCounterUpdateContext = "init";
  * 3. Sync diagnostic globals for test introspection.
  */
 function resetRoundCounterTracking() {
+  window.__highestDisplayedRound = 0;
   highestDisplayedRound = 0;
   lastForcedTargetRound = null;
   lastRoundCounterUpdateContext = "init";
   if (typeof window !== "undefined") {
     try {
-      window.__highestDisplayedRound = highestDisplayedRound;
+      window.__highestDisplayedRound = window.__highestDisplayedRound;
       window.__lastRoundCounterContext = lastRoundCounterUpdateContext;
       window.__previousRoundCounterContext = null;
     } catch {}
@@ -988,6 +997,7 @@ function updateRoundCounterState({
   engineRound,
   priorContext
 }) {
+  window.__highestDisplayedRound = Math.max(window.__highestDisplayedRound, nextRound);
   highestDisplayedRound = Math.max(highestDisplayedRound, nextRound);
 
   if (shouldForceAdvance) {
@@ -999,7 +1009,7 @@ function updateRoundCounterState({
   lastRoundCounterUpdateContext = expectAdvance ? "advance" : "regular";
   if (typeof window !== "undefined") {
     try {
-      window.__highestDisplayedRound = highestDisplayedRound;
+      window.__highestDisplayedRound = window.__highestDisplayedRound;
       window.__lastRoundCounterContext = lastRoundCounterUpdateContext;
       window.__previousRoundCounterContext = priorContext;
     } catch {}
@@ -1024,8 +1034,15 @@ function updateRoundCounterState({
  */
 function updateRoundCounterFromEngine(options = {}) {
   const { expectAdvance = false, forceWhenEngineMatchesVisible = false } = options;
+  console.log("updateRoundCounterFromEngine called with options:", options);
   const visibleRound = getVisibleRoundNumber();
   const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
+  console.log(
+    "updateRoundCounterFromEngine: visibleRound =",
+    visibleRound,
+    "hasVisibleRound =",
+    hasVisibleRound
+  );
 
   if (hasVisibleRound) {
     highestDisplayedRound = Math.max(highestDisplayedRound, Number(visibleRound));
@@ -1072,6 +1089,12 @@ function updateRoundCounterFromEngine(options = {}) {
 
 function calculateEngineRound() {
   const played = Number(getRoundsPlayed?.() || 0);
+  console.log(
+    "calculateEngineRound: getRoundsPlayed() returned",
+    played,
+    "so calculateEngineRound returns",
+    played + 1
+  );
   return Number.isFinite(played) ? played + 1 : NaN;
 }
 
@@ -1504,7 +1527,7 @@ async function init() {
 
   // Initialize the battle engine and present the round selection modal.
   try {
-    createBattleEngine();
+    createBattleEngine(window.__ENGINE_CONFIG || {});
 
     // Initialize engine event bridge after engine is created
     try {

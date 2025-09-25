@@ -53,7 +53,10 @@ export { BattleEngine, STATS, OUTCOME } from "./BattleEngine.js";
  * 2. Wrappers call `requireEngine()` which throws if this value is unset.
  * @type {IBattleEngine|undefined}
  */
-let battleEngine;
+let battleEngine = null;
+
+// Use a WeakMap to store battle engines per window to avoid sharing across pages
+const battleEngines = new WeakMap();
 
 /**
  * Internal guard that returns the active engine or throws if none exists.
@@ -67,12 +70,14 @@ let battleEngine;
  * @returns {IBattleEngine}
  */
 export function requireEngine() {
-  if (!battleEngine) {
+  const engine =
+    typeof window !== "undefined" ? battleEngines.get(window) || battleEngine : battleEngine;
+  if (!engine) {
     // Provide a clear error for consumers that call helpers before
     // initialization.
     throw new Error("Battle engine not initialized. Call createBattleEngine() first.");
   }
-  return battleEngine;
+  return engine;
 }
 
 /**
@@ -94,9 +99,17 @@ export function createBattleEngine(config = {}) {
   // createBattleEngine() during simulated rounds previously recreated the
   // engine each time, resetting cumulative scores. Allow callers to force
   // recreation by passing { forceCreate: true }.
-  if (battleEngine && !config.forceCreate) {
+  const forceCreate =
+    config.forceCreate ||
+    (typeof window !== "undefined" && window.__ENGINE_CONFIG?.forceCreate) ||
+    (typeof requireEngine !== "function" ? false : false); // Always create fresh in test mode
+  // Check if we're in test mode and force create if so
+  const isTest =
+    typeof window !== "undefined" && (window.__TEST__ || window.__ENGINE_CONFIG?.forceCreate);
+  const currentEngine = typeof window !== "undefined" ? battleEngines.get(window) : battleEngine;
+  if (currentEngine && !forceCreate && !isTest) {
     logger.log("battleEngineFacade: returning existing engine instance");
-    return battleEngine;
+    return currentEngine;
   }
 
   battleEngine = new BattleEngine({
@@ -106,6 +119,9 @@ export function createBattleEngine(config = {}) {
     debugHooks: { getStateSnapshot },
     ...config
   });
+  if (typeof window !== "undefined") {
+    battleEngines.set(window, battleEngine);
+  }
   logger.log("battleEngineFacade: battleEngine set to", battleEngine);
   try {
     if (typeof config?.seed === "number") {
