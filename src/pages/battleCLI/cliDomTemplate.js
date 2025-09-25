@@ -54,9 +54,9 @@ export const CLI_DOM_TEMPLATE = `
           <div class="cli-settings-row">
             <label for="points-select">Win target:</label>
             <select id="points-select" aria-label="Points to win" data-tooltip-id="settings.pointsToWin">
-              <option value="5">5</option>
-              <option value="10" selected>10</option>
-              <option value="15">15</option>
+              <option value="3">3</option>
+              <option value="5" selected>5</option>
+              <option value="10">10</option>
             </select>
           </div>
           <div class="cli-settings-row">

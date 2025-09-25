@@ -192,6 +192,18 @@ Acceptance criteria for this work:
 - ✅ Timers pause on tab hide and resume accurately.
 - ✅ Timer displays are consolidated - only CLI countdown shows in CLI mode.
 
+## Implementation of Issue 2: Missing "3-Point" Match Length
+
+- Actions taken:
+  - Updated the CLI settings select in `src/pages/battleCLI/cliDomTemplate.js:56` to present `[3,5,10]` with default `5` (previously `[5,10,15]` with default `10`). This aligns the UI with `src/config/battleDefaults.js` which already exports `POINTS_TO_WIN_OPTIONS = [3, 5, 10]`.
+- Targeted tests executed:
+  - No existing unit or Playwright tests specifically target the CLI points-to-win select (grep found none). Performed a lightweight smoke check to ensure the template includes the new `3` option and `5` as selected by default.
+- Outcomes:
+  - UI template now reflects the approved options and default. No code paths or hot paths were modified beyond static template HTML.
+- Follow-ups:
+  - If desired, add a small unit test around `createCliDomFragment()` asserting the points-select options are `[3,5,10]` and default is `5`.
+
+
 ## What I changed in this document
 
 - Reformatted the QA report with headings and a summary table.
