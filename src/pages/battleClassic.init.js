@@ -1034,15 +1034,8 @@ function updateRoundCounterState({
  */
 function updateRoundCounterFromEngine(options = {}) {
   const { expectAdvance = false, forceWhenEngineMatchesVisible = false } = options;
-  console.log("updateRoundCounterFromEngine called with options:", options);
   const visibleRound = getVisibleRoundNumber();
   const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
-  console.log(
-    "updateRoundCounterFromEngine: visibleRound =",
-    visibleRound,
-    "hasVisibleRound =",
-    hasVisibleRound
-  );
 
   if (hasVisibleRound) {
     highestDisplayedRound = Math.max(highestDisplayedRound, Number(visibleRound));
@@ -1053,12 +1046,6 @@ function updateRoundCounterFromEngine(options = {}) {
   try {
     const engineRound = calculateEngineRound();
     const hasEngineRound = Number.isFinite(engineRound) && engineRound >= 1;
-    console.log(
-      "updateRoundCounterFromEngine: engineRound =",
-      engineRound,
-      "hasEngineRound =",
-      hasEngineRound
-    );
     const hasHighestRound = Number.isFinite(highestDisplayedRound) && highestDisplayedRound >= 1;
     const baselineRound = computeBaselineRound(
       hasHighestRound,
@@ -1095,12 +1082,6 @@ function updateRoundCounterFromEngine(options = {}) {
 
 function calculateEngineRound() {
   const played = Number(getRoundsPlayed?.() || 0);
-  console.log(
-    "calculateEngineRound: getRoundsPlayed() returned",
-    played,
-    "so calculateEngineRound returns",
-    played + 1
-  );
   return Number.isFinite(played) ? played + 1 : NaN;
 }
 
