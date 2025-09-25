@@ -71,12 +71,27 @@ test.describe("CLI Layout Assessment - Desktop Focused", () => {
       };
     });
 
-    // Allow for both standard and CLI immersive themes
-    expect(bodyStyles.background).toMatch(
-      /rgb\((?:11, 12, 12|5, 5, 5)\)|#0b0c0c|#050505|rgb\(0, 0, 0\)|#000/
-    );
-    expect(bodyStyles.color).toMatch(
-      /rgb\((?:242, 242, 242|214, 245, 214)\)|#f2f2f2|#d6f5d6|rgb\(140, 255, 107\)|#8cff6b/
-    );
+    // Allow for both standard and CLI immersive themes (normalize to avoid spacing/format drift)
+    const normalizedBackground = bodyStyles.background.replace(/\s+/g, "").toLowerCase();
+    const normalizedColor = bodyStyles.color.replace(/\s+/g, "").toLowerCase();
+
+    expect(
+      ["rgb(11,12,12)", "rgb(5,5,5)", "rgb(0,0,0)", "#0b0c0c", "#050505", "#000"].includes(
+        normalizedBackground
+      ),
+      `Unexpected CLI background color: ${bodyStyles.background}`
+    ).toBe(true);
+
+    expect(
+      [
+        "rgb(242,242,242)",
+        "rgb(214,245,214)",
+        "rgb(140,255,107)",
+        "#f2f2f2",
+        "#d6f5d6",
+        "#8cff6b"
+      ].includes(normalizedColor),
+      `Unexpected CLI text color: ${bodyStyles.color}`
+    ).toBe(true);
   });
 });
