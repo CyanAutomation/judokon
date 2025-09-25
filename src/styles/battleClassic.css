@@ -107,3 +107,8 @@
   padding: var(--space-sm) var(--space-md);
   z-index: 1000;
 }
+
+/* Hide opponent card until reveal */
+.opponent-hidden {
+  display: none;
+}

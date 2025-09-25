@@ -219,6 +219,13 @@ export async function handleReplay(store) {
 export async function startRound(store, onRoundStart) {
   store.selectionMade = false;
   store.playerChoice = null;
+  // Hide opponent card at start of round to prevent premature reveal
+  try {
+    const opponentCard = document.getElementById("opponent-card");
+    if (opponentCard) opponentCard.classList.add("opponent-hidden");
+  } catch {
+    // Ignore DOM errors
+  }
   // Propagate scheduler from store.context if present
   const scheduler = store?.context?.scheduler || store?.scheduler;
   const cards = await drawCards();

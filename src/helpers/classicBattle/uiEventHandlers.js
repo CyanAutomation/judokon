@@ -52,6 +52,8 @@ export function bindUIHelperEventHandlersDynamic() {
   onBattleEvent("opponentReveal", async () => {
     const container = document.getElementById("opponent-card");
     try {
+      // Reveal the opponent card by removing the hidden class
+      if (container) container.classList.remove("opponent-hidden");
       const j = await getOpponentCardData();
       if (j) await renderOpponentCard(j, container);
     } catch {}

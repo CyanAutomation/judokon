@@ -57,6 +57,18 @@ Tests / follow-ups:
 - Unit test for render path: when match is in pre-selection state, opponent card element has `hidden` or `aria-hidden="true"`.
 - Integration test: reproduce the "Next without choosing match length" flow and assert opponent card remains hidden until after selection.
 
+**Implementation completed:**
+
+- **Actions taken:** Added `.opponent-hidden { display: none; }` CSS class in `src/styles/battleClassic.css`. Applied `opponent-hidden` class to `#opponent-card` in `battleClassic.init.js` during initialization and at the start of each round in `roundManager.js`. Removed the class on `opponentReveal` event in `uiEventHandlers.js`.
+
+- **Files modified:** `src/styles/battleClassic.css` (added CSS rule), `src/pages/battleClassic.init.js` (added class on init), `src/helpers/classicBattle/roundManager.js` (added class at round start), `src/helpers/classicBattle/uiEventHandlers.js` (removed class on reveal), `tests/helpers/classicBattle/roundManager.errorHandling.test.js` (added unit test), `playwright/battle-classic/opponent-reveal.spec.js` (added Playwright test).
+
+- **Unit test outcomes:** `roundManager.errorHandling.test.js`: ✅ PASSED (6/6 tests, including new opponent card hiding test)
+
+- **Playwright test outcomes:** `opponent-reveal.spec.js` "opponent card remains hidden until reveal": ✅ PASSED
+
+- **Validation:** Opponent card is now hidden by default and only revealed after the `opponentReveal` event, preventing premature exposure.
+
 ---
 
 ## 2) Stat buttons remain enabled after selection

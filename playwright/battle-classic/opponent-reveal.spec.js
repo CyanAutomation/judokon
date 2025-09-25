@@ -465,6 +465,38 @@ test.describe("Classic Battle Opponent Reveal", () => {
         // Skip roundsPlayed wait; verify via score update which is user-visible
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
+
+    test("opponent card remains hidden until reveal", async ({ page }) =>
+      withMutedConsole(async () => {
+        await page.addInitScript(() => {
+          window.__OVERRIDE_TIMERS = { roundTimer: 5 };
+          window.__FF_OVERRIDES = { showRoundSelectModal: true };
+        });
+        await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
+
+        await startMatch(page, "#round-select-1");
+
+        // Opponent card should be hidden initially
+        const opponentCard = page.locator("#opponent-card");
+        await expect(opponentCard).toHaveClass(/opponent-hidden/);
+
+        await setOpponentResolveDelay(page, 50);
+
+        const firstStat = page.locator("#stat-buttons button[data-stat]").first();
+        await expect(firstStat).toBeVisible();
+        await firstStat.click();
+
+        // Still hidden during opponent choosing delay
+        await expect(opponentCard).toHaveClass(/opponent-hidden/);
+
+        await expectBattleState(page, "roundOver", {
+          onStall: () => resolveRoundDeterministic(page)
+        });
+
+        // Revealed after round resolution
+        await expect(opponentCard).not.toHaveClass(/opponent-hidden/);
+        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+      }, MUTED_CONSOLE_LEVELS));
   });
 
   test.describe("State Management and Cleanup", () => {
