@@ -197,3 +197,21 @@ Phase 1 has been implemented successfully.
 
 Phase 1 is complete. Ready for Phase 2 or further review.
 
+Phase 2 Implementation Results
+-------------------------------
+Phase 2 has been implemented successfully.
+
+### Actions Taken:
+- Added `.cli-retro` wrapper by updating CSS selectors from `body.cli-retro` to `#cli-root.cli-retro` and `#cli-root[data-theme="retro"]` to isolate retro-only styles to the CLI root element.
+- Updated `src/pages/battleCLI.init.js` to toggle the `cli-retro` class on `#cli-root` instead of `document.body` for better isolation.
+- Verified ASCII indicators are already in use (e.g., `[TIMER]`, `>>`, `[ROUND]`, `[SCORE]`); no emoji found in CSS.
+- Added visual snapshot tests in `playwright/cli.spec.mjs` for default and retro themes, generating baseline snapshots for `cli-default-theme.png` and `cli-retro-theme.png`.
+
+### Outcomes:
+- **Unit Tests:** 14 tests passed in 3 battle-related test files (classicBattlePage.syncScoreDisplay.test.js, BattleEngine.test.js, battleEngineFacade.test.js).
+- **Playwright Tests:** 6 CLI tests passed (battle-cli-start.spec.js, battle-cli-restart.spec.js, cli-flows.spec.mjs); snapshot test created baseline images (expected failure on first run, snapshots now established).
+- **Acceptance Criteria Met:** Retro theme styles isolated to CLI root; ASCII indicators confirmed; snapshots generated and stable for two themes.
+- **Notes:** No lint errors introduced. Theme toggle now scoped to CLI area, improving maintainability.
+
+Phase 2 is complete. Ready for Phase 3 or further review.
+

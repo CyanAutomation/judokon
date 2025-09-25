@@ -101,25 +101,25 @@ body {
   max-width: 100%;
 }
 /* Retro theme: green-on-black optional class and global retro theme */
-body.cli-retro,
-body[data-theme="retro"] {
+#cli-root.cli-retro,
+#cli-root[data-theme="retro"] {
   background: #000 !important;
   color: #8cff6b !important;
 }
-body.cli-retro a,
-body[data-theme="retro"] a {
+#cli-root.cli-retro a,
+#cli-root[data-theme="retro"] a {
   color: #8cff6b;
 }
-body.cli-retro .cli-stat,
-body.cli-retro .cli-block,
-body[data-theme="retro"] .cli-stat,
-body[data-theme="retro"] .cli-block {
+#cli-root.cli-retro .cli-stat,
+#cli-root.cli-retro .cli-block,
+#cli-root[data-theme="retro"] .cli-stat,
+#cli-root[data-theme="retro"] .cli-block {
   background: #000;
   color: #8cff6b;
   border-color: #8cff6b;
 }
-body.cli-retro .cli-stat.selected,
-body[data-theme="retro"] .cli-stat.selected {
+#cli-root.cli-retro .cli-stat.selected,
+#cli-root[data-theme="retro"] .cli-stat.selected {
   background: #001900;
   border-color: #8cff6b;
 }
