@@ -1718,6 +1718,13 @@ async function init() {
     } catch (err) {
       console.debug("battleClassic: wiring quit button failed", err);
     }
+    // Wire Main Menu button to open confirmation modal
+    try {
+      const homeBtn = document.getElementById("home-button");
+      if (homeBtn) homeBtn.addEventListener("click", () => quitMatch(store, homeBtn));
+    } catch (err) {
+      console.debug("battleClassic: wiring home button failed", err);
+    }
     try {
       await initRoundSelectModal(async () => {
         try {

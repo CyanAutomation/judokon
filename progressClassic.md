@@ -173,7 +173,17 @@ Tests / follow-ups:
 
 - E2E test: click Main Menu, confirm the modal, and assert navigation and cleanup occurred.
 
----
+**Implementation completed:**
+
+- **Actions taken:** Added a click event listener to the `#home-button` in `battleClassic.init.js` that calls `quitMatch(store, homeBtn)`, which opens a confirmation modal and handles quitting the match with cleanup.
+
+- **Files modified:** `src/pages/battleClassic.init.js` (added event listener for home-button), `playwright/battle-classic/quit-flow.spec.js` (added test for Main Menu button).
+
+- **Unit test outcomes:** `controlState.test.js`: ✅ PASSED (8/8 tests, existing quit functionality unaffected)
+
+- **Playwright test outcomes:** `quit-flow.spec.js`: ✅ PASSED (2/2 tests, including new Main Menu button test)
+
+- **Validation:** Main Menu button now opens the quit confirmation modal, allowing users to confirm and quit the match with proper cleanup.
 
 ## 7) Keyboard navigation not functioning
 
