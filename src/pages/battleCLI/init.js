@@ -1125,7 +1125,6 @@ export function selectStat(stat) {
         try {
           const m = await import("./init.js");
           try {
-            // eslint-disable-next-line no-console
             console.log("[TEST LOG] imported safeDispatch isMock=", !!m.safeDispatch?.mock);
           } catch {}
           if (m && typeof m.safeDispatch === "function") {
@@ -1133,7 +1132,6 @@ export function selectStat(stat) {
           }
         } catch (err) {
           try {
-            // eslint-disable-next-line no-console
             console.error("[TEST LOG] dynamic import dispatch error", err);
           } catch {}
         }
@@ -1745,8 +1743,7 @@ export { getStatByIndex };
 
 export function handleWaitingForPlayerActionKey(key) {
   try {
-    // eslint-disable-next-line no-console
-    console.log('[TEST LOG] handleWaitingForPlayerActionKey called with', key);
+    console.log("[TEST LOG] handleWaitingForPlayerActionKey called with", key);
   } catch {}
   if (key >= "0" && key <= "9") {
     const stat = getStatByIndex(key);
@@ -1761,13 +1758,18 @@ export function handleWaitingForPlayerActionKey(key) {
   }
   if (key === "enter") {
     const active = document.activeElement?.closest?.(".cli-stat");
-    console.debug('[TEST DEBUG] handleWaitingForPlayerActionKey enter active=', !!active, 'activeElem=', document.activeElement);
+    console.debug(
+      "[TEST DEBUG] handleWaitingForPlayerActionKey enter active=",
+      !!active,
+      "activeElem=",
+      document.activeElement
+    );
     if (active) {
       const idx = active.dataset.statIndex;
-      console.debug('[TEST DEBUG] active.dataset.statIndex=', idx);
+      console.debug("[TEST DEBUG] active.dataset.statIndex=", idx);
       if (idx) {
         const stat = getStatByIndex(idx);
-        console.debug('[TEST DEBUG] resolved stat=', stat);
+        console.debug("[TEST DEBUG] resolved stat=", stat);
         if (stat) {
           __scheduleMicrotask(() => selectStat(stat));
           return true;

@@ -33,4 +33,3 @@ describe("CLI input latency hardened test", () => {
     dispatchSpy.mockRestore();
   });
 });
-

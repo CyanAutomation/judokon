@@ -171,20 +171,24 @@ This document reviews the current CLI Battle Mode QA findings, validates the acc
 Activity: Assess existing facade and UI components for stat update wiring; identify minimal change.
 
 Findings:
+
 - `src/helpers/battleEngineFacade.js` already exposes `on(type, handler)` and `off(type, handler)` for engine events.
 - No dedicated `StatDisplay` component exists; stats UI is built by `src/components/StatsPanel.js` and used via `createStatsPanel()` in render helpers.
 
 Actions taken:
+
 - Added `getCurrentStats()` snapshot helper in `src/helpers/battleEngineFacade.js` (frozen shallow copy; uses engine method if present, else empty object).
 - Wired `src/components/StatsPanel.js` to subscribe to `engineFacade.on("statsUpdated", ...)` and added `destroy()` to unsubscribe via `off`.
 - Fallback: if event payload lacks `stats`, `StatsPanel` calls `engineFacade.getCurrentStats()` to update.
 
 Validation (targeted only):
+
 - Vitest unit/integration: `tests/cli/statDisplay.spec.js` (2 tests) — PASS
   - verifies DOM updates when `statsUpdated` event fires with payload
   - verifies snapshot fallback via `getCurrentStats()` when payload lacks stats
 
 Notes/Risks:
+
 - The engine currently does not emit `statsUpdated`; UI will now be ready to react once engine-side event is added in later tasks (non-breaking).
 - No dynamic imports introduced in hot paths.
 
@@ -193,9 +197,11 @@ Status: Completed for UI wiring + tests; awaiting review before engine-side emit
 ## Progress Log — Task 2: Engine emits `statsUpdated`
 
 Activity:
+
 - Locate engine stat change points and emit a `statsUpdated` event so `StatsPanel` can react.
 
 Changes:
+
 - `src/helpers/BattleEngine.js`:
   - Emit `statsUpdated` after `handleStatSelection()` applies outcome.
   - Emit `statsUpdated` after `roundModification()` applies changes.
@@ -204,9 +210,11 @@ Changes:
   - Re-ran `tests/cli/statDisplay.spec.js` to ensure UI wiring responds — PASS
 
 Validation (targeted only):
+
 - Vitest: 2 files, 4 tests — PASS
 
 Notes/Risks:
+
 - Payload intentionally allows missing `stats`; UI uses facade snapshot fallback.
 - No dynamic imports added; hot paths maintained.
 
@@ -215,24 +223,30 @@ Status: Completed; awaiting review.
 ## Progress Log — Task 3: Input handling latency audit (scoping)
 
 Activity:
+
 - Located CLI key handling paths: `src/pages/battleCLI/events.js` (global keydown routing) and `src/pages/battleCLI/battleHandlers.js` (delegation to registered handlers). No monolithic `inputHandler.js` exists.
 
 Findings:
+
 - The global handler in `events.js` does minimal work (routing + DOM message). Latency is likely in downstream handlers (registered via orchestrator), not in the router itself.
 - Next step should focus on the concrete handler implementations wired by the classic battle orchestrator for `waitingForPlayerAction` and related states.
 
 Decision and next action:
+
 - Inspect orchestrator-wired handlers for heavy synchronous work and refactor to defer non-critical tasks using microtasks/idle callbacks while keeping decision paths responsive. Add targeted tests around key press-to-effect latency.
 
 Actions taken:
+
 - Deferred heavy work in `handleWaitingForPlayerActionKey` by scheduling `selectStat(stat)` on a microtask for both digit and Enter-on-focused-stat paths in `src/pages/battleCLI/init.js`.
 - Attempted to add a targeted latency test; due to module-scoped functions and jsdom focus limitations, settled on DOM-focused test scaffolding. Will refine with component test utils in a subsequent pass if needed.
 
 Validation (targeted only):
+
 - Re-ran impacted unit tests for CLI stat display and engine events — PASS
 - A new latency test scaffold was added but remains flaky under jsdom focus; excluded from suite until stabilized (no regression introduced).
 
 Notes/Risks:
+
 - Behavior unchanged functionally; only scheduling shifted to microtask to reduce handler blocking time.
 - No hot-path dynamic imports introduced.
 
@@ -241,15 +255,19 @@ Status: Implemented microtask deferral; ready for review.
 ## Progress Log — Task 4: Countdown consistency improvements
 
 Activity:
+
 - Audited countdown paths: TimerController orchestrates logical time; CLI page mirrors display via intervals. Focused on testable consistency rather than broad refactor.
 
 Changes:
+
 - Added targeted unit test `tests/helpers/countdown.spec.js` to validate TimerController deterministic ticks and onExpired behavior under a fake scheduler.
 
 Validation (targeted only):
+
 - Vitest: `tests/helpers/countdown.spec.js` — PASS (1 test)
 
 Notes/Risks:
+
 - No runtime code changes were required for TimerController; existing logic already separates logical clock (scheduler) from UI display.
 - Next follow-up could add a small Playwright smoke exercising countdown start → finish on the CLI page to ensure UI mirror stays in sync under interaction.
 
@@ -258,18 +276,22 @@ Status: Unit-level validation added and passing; ready for review.
 ## Progress Log — Task 5: Post-round summary cleanup
 
 Activity:
+
 - Implemented a cleanup path triggered by a `roundReset` event to avoid stale summary UI bleeding into the next round.
 
 Changes:
+
 - `src/helpers/classicBattle/uiService.js`:
   - Listen for `roundReset` and close any open modal, clear scoreboard message, and emit `ui.roundReset` for UI components.
 - Tests:
   - `tests/helpers/roundSummaryReset.spec.js` — verifies modal is closed and no errors occur — PASS
 
 Validation (targeted only):
+
 - Vitest: summary reset test passed.
 
 Notes/Risks:
+
 - This wires cleanup on the UI service layer without changing public APIs. If a more specific RoundSummary component exists elsewhere, it can also subscribe to `ui.roundReset`.
 
 Status: Completed; ready for review.
@@ -277,9 +299,11 @@ Status: Completed; ready for review.
 ## Progress Log — Task 6: RoundReset emission source
 
 Activity:
+
 - Ensured the battle flow emits `roundReset` at a deterministic boundary so UI cleanup is reliable.
 
 Changes:
+
 - `src/helpers/classicBattle/selectionHandler.js`:
   - Emit `roundReset` immediately after player selection is registered (pre-resolution) with `{ reason: "playerSelection" }`.
 - Tests:
@@ -287,9 +311,11 @@ Changes:
   - Re-ran `tests/helpers/roundSummaryReset.spec.js` to confirm UI cleanup reacts — PASS
 
 Validation (targeted only):
+
 - Vitest: 2 files, 2 tests — PASS
 
 Notes/Risks:
+
 - Emission occurs before round resolution to let UI clear stale summary state ahead of updates. This is additive and should not alter public APIs.
 
 Status: Completed; ready for review.
@@ -297,9 +323,11 @@ Status: Completed; ready for review.
 ## Progress Log — Task 7: Input latency test hardening
 
 Activity:
+
 - Added a small, non-production seam to assert microtask deferral deterministically without relying on jsdom focus quirks.
 
 Changes:
+
 - `src/pages/battleCLI/init.js`:
   - Exported `__scheduleMicrotask` used by the key handler; tests can stub it to control timing.
   - Exported `selectStat`, `ensureStartButtonFocus`, `ensureCliDomForTest`, and re-exported existing `getStatByIndex` for targeted testing.
@@ -307,9 +335,11 @@ Changes:
   - `tests/pages/battleCLI/inputLatencyHardened.spec.js` — verifies handler uses the scheduling seam and defers side-effects — PASS
 
 Validation (targeted only):
+
 - Vitest: hardened input latency test passed.
 
 Notes/Risks:
+
 - Exposed functions are small test seams; behavior unchanged in production. No dynamic imports added.
 
 Status: Completed; ready for review.

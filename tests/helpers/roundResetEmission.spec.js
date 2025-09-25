@@ -21,4 +21,3 @@ describe("roundReset emission", () => {
     expect(received[0]).toHaveProperty("reason", "playerSelection");
   });
 });
-

@@ -4,7 +4,8 @@ import { emitBattleEvent } from "../../src/helpers/classicBattle/battleEvents.js
 
 describe("Round summary cleanup on roundReset", () => {
   beforeEach(() => {
-    document.body.innerHTML = '<div class="modal" id="dummy-modal"></div><div id="score-display">You: 1 Opponent: 0</div>';
+    document.body.innerHTML =
+      '<div class="modal" id="dummy-modal"></div><div id="score-display">You: 1 Opponent: 0</div>';
     bindUIServiceEventHandlersOnce();
   });
   afterEach(() => {
@@ -25,4 +26,3 @@ describe("Round summary cleanup on roundReset", () => {
     expect(document.querySelector("#score-display")).toBeTruthy();
   });
 });
-
