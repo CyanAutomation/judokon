@@ -1188,6 +1188,13 @@ async function handleStatButtonClick(store, stat, btn) {
     return;
   }
 
+  // Disable stat buttons after selection to prevent multiple clicks
+  const container = document.getElementById("stat-buttons");
+  if (container) {
+    const buttons = container.querySelectorAll("button[data-stat]");
+    disableStatButtons(buttons, container);
+  }
+
   if (result) {
     broadcastBattleState("roundDecision");
   }
