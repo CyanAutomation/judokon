@@ -209,3 +209,17 @@ Notes/Risks:
 - No dynamic imports added; hot paths maintained.
 
 Status: Completed; awaiting review.
+
+## Progress Log — Task 3: Input handling latency audit (scoping)
+
+Activity:
+- Located CLI key handling paths: `src/pages/battleCLI/events.js` (global keydown routing) and `src/pages/battleCLI/battleHandlers.js` (delegation to registered handlers). No monolithic `inputHandler.js` exists.
+
+Findings:
+- The global handler in `events.js` does minimal work (routing + DOM message). Latency is likely in downstream handlers (registered via orchestrator), not in the router itself.
+- Next step should focus on the concrete handler implementations wired by the classic battle orchestrator for `waitingForPlayerAction` and related states.
+
+Decision and next action:
+- Inspect orchestrator-wired handlers for heavy synchronous work and refactor to defer non-critical tasks using microtasks/idle callbacks while keeping decision paths responsive. Add targeted tests around key press-to-effect latency.
+
+Status: Scoping completed; ready to proceed with handler inspection in next task.
