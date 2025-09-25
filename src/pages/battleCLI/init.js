@@ -523,7 +523,7 @@ async function renderStartButton() {
     }
   });
   section.append(btn);
-  main.append(section);
+  main.insertBefore(section, main.firstChild);
 }
 
 /**
@@ -2547,6 +2547,8 @@ export async function init() {
   } catch {
     await renderStartButton();
   }
+  // Always show the start button as a prominent, accessible entry point
+  await renderStartButton();
   wireEvents();
 }
 

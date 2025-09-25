@@ -106,6 +106,16 @@ Notes on verification terminology:
 
 ---
 
+## Implementation of Issue 1: Unintuitive Match Start
+
+- **Actions taken:**
+  - Modified `src/pages/battleCLI/init.js` to always call `renderStartButton()` after attempting `initRoundSelectModal()`.
+  - Changed `renderStartButton()` to insert the start button section at the top of `#cli-main` for prominence.
+- **Test outcomes:**
+  - Playwright test `battle-cli-start.spec.js` passed.
+  - Unit test `tests/pages/battleCLI.retroTheme.test.js` passed.
+- **Outcome:** The Start Match button is now always visible and prominent on the initial screen, providing a clear entry point for users. The modal remains as an alternative for selecting win targets.
+
 ## Opportunities for improvement (cross-cutting)
 
 - Add automated tests for each behavioral requirement: seed determinism, settings persistence, timer pause/resume, verbose log visibility, and keyboard shortcut state. Prefer unit tests with fake timers + small integration tests.
@@ -118,14 +128,14 @@ Notes on verification terminology:
 
 Recommended next actions:
 
-1. Implement the easy fixes first: (1) Start button visibility and accessibility, (2) update win-target options to include 3, (3) immediate UI fix for round counter.
+1. Implement the easy fixes first: update win-target options to include 3, immediate UI fix for round counter.
 2. Add unit tests for seed determinism and settings persistence before changing engine wiring.
 3. Instrument timers with logging and write fake-timer tests for visibility behavior.
 4. After changes, run the project's validation checklist (prettier, eslint, vitest, Playwright) and include results in the PR body.
 
 Acceptance criteria for this work:
 
-- Start button is visible, keyboard-accessible, and triggers a match start.
+- ✅ Start button is visible, keyboard-accessible, and triggers a match start.
 - Win-target options include [3,5,10] and default to 5.
 - Seed determinism is reproducible: same seed → same first-round stats across fresh matches.
 - Settings persist across reloads and are applied to the engine.
