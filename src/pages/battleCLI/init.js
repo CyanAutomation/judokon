@@ -387,27 +387,30 @@ export const __test = {
   }
 };
 
+let resetPromise = Promise.resolve();
+
 /**
  * Reset the match and reinitialize the battle orchestrator.
  *
  * @pseudocode
- * stopSelectionCountdown()
- * handleCountdownFinished()
- * roundResolving = false
- * clearVerboseLog()
- * remove play-again/start buttons
- * resetPromise = async () => {
- *   disposeClassicBattleOrchestrator()
- *   await resetGame(store)
- *   updateRoundHeader(0, engineFacade.getPointsToWin?.())
- *   updateScoreLine()
- *   setRoundMessage("")
- * }
- * await initClassicBattleOrchestrator()
- * // Return a promise that resolves after both reset and orchestrator initialization are complete.
- * // Callers should await the returned promise to ensure the reset is finished.
+ * 1. stopSelectionCountdown()
+ * 2. handleCountdownFinished()
+ * 3. roundResolving = false
+ * 4. clearVerboseLog()
+ * 5. remove play-again/start buttons
+ * 6. resetPromise = async () => {
+ *    disposeClassicBattleOrchestrator()
+ *    await resetGame(store)
+ *    updateRoundHeader(0, engineFacade.getPointsToWin?.())
+ *    updateScoreLine()
+ *    setRoundMessage("")
+ *   }
+ * 7. await initClassicBattleOrchestrator()
+ * 8. Return a promise that resolves after both reset and orchestrator initialization are complete.
+ * 9. Callers should await the returned promise to ensure the reset is finished.
+ *
+ * @returns {Promise<void>}
  */
-let resetPromise = Promise.resolve();
 export async function resetMatch() {
   stopSelectionCountdown();
   handleCountdownFinished();
@@ -1495,7 +1498,7 @@ function renderHiddenPlayerStats(judoka) {
  * @summary Read the saved points-to-win value, apply it, and prompt the user on change.
  * @pseudocode
  * 1. Locate `#points-select` and read stored value using the provided storage wrapper.
- * 2. If a stored value is valid, apply it and update the select control.
+ * 2. Build the allowed targets from defaults + select options, then apply any saved value.
  * 3. On user change: validate the chosen value, confirm reset, persist and reset when confirmed.
  *
  * @returns {void}
@@ -1504,9 +1507,13 @@ export function restorePointsToWin() {
   try {
     const select = byId("points-select");
     if (!select) return;
+    const optionValues = Array.from(select.options || [])
+      .map((option) => Number(option.value))
+      .filter((value) => Number.isFinite(value));
+    const validTargets = new Set([...POINTS_TO_WIN_OPTIONS, ...optionValues]);
     const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
     const saved = Number(storage.get());
-    if (POINTS_TO_WIN_OPTIONS.includes(saved)) {
+    if (validTargets.has(saved)) {
       engineFacade.setPointsToWin?.(saved);
       select.value = String(saved);
     }
@@ -1515,7 +1522,7 @@ export function restorePointsToWin() {
     let current = Number(select.value);
     select.addEventListener("change", async () => {
       const val = Number(select.value);
-      if (!POINTS_TO_WIN_OPTIONS.includes(val)) return;
+      if (!validTargets.has(val)) return;
       try {
         const confirmed =
           typeof window !== "undefined"

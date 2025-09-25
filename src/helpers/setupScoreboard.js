@@ -1,6 +1,46 @@
 import * as scoreboardModule from "../components/Scoreboard.js";
 import { realScheduler } from "./scheduler.js";
 
+const noop = () => {};
+
+const scoreboardFunctionNames = [
+  "initScoreboard",
+  "showMessage",
+  "updateScore",
+  "clearMessage",
+  "showTemporaryMessage",
+  "clearTimer",
+  "updateTimer",
+  "showAutoSelect",
+  "updateRoundCounter",
+  "clearRoundCounter"
+];
+
+const missingScoreboardExports = [];
+
+const scoreboardFunctions = scoreboardFunctionNames.reduce((functions, name) => {
+  let candidate;
+  try {
+    candidate = scoreboardModule?.[name];
+  } catch {
+    candidate = undefined;
+  }
+  if (typeof candidate === "function") {
+    functions[name] = candidate;
+  } else {
+    functions[name] = noop;
+    missingScoreboardExports.push(name);
+  }
+  return functions;
+}, {});
+
+if (missingScoreboardExports.length > 0) {
+  console.warn(
+    "[setupScoreboard] Using fallback implementations for Scoreboard exports:",
+    missingScoreboardExports.join(", ")
+  );
+}
+
 /**
  * Locate the page header and initialize scoreboard element references.
  *
@@ -11,14 +51,15 @@ import { realScheduler } from "./scheduler.js";
  *
  * @param {object} controls - Timer control callbacks.
  * @param {object} [scheduler=realScheduler] - Timer scheduler.
+ * @returns {void}
  */
-function setupScoreboard(controls, scheduler = realScheduler) {
+export function setupScoreboard(controls, scheduler = realScheduler) {
   const header = document.querySelector("header");
   controls.scheduler = scheduler;
   if (!header) {
-    initScoreboard(null, controls);
+    scoreboardFunctions.initScoreboard(null, controls);
   } else {
-    initScoreboard(header, controls);
+    scoreboardFunctions.initScoreboard(header, controls);
   }
 
   // Handle visibility changes for timer pause/resume
@@ -59,40 +100,116 @@ function setupScoreboard(controls, scheduler = realScheduler) {
     }
   } catch {}
 }
-const getScoreboardExport = (name) => {
-  try {
-    return scoreboardModule?.[name];
-  } catch {
-    return undefined;
-  }
-};
 
-const scoreboardFunctions = {
-  initScoreboard: getScoreboardExport("initScoreboard") ?? (() => {}),
-  showMessage: getScoreboardExport("showMessage") ?? (() => {}),
-  updateScore: getScoreboardExport("updateScore") ?? (() => {}),
-  clearMessage: getScoreboardExport("clearMessage") ?? (() => {}),
-  showTemporaryMessage: getScoreboardExport("showTemporaryMessage") ?? (() => {}),
-  clearTimer: getScoreboardExport("clearTimer") ?? (() => {}),
-  updateTimer: getScoreboardExport("updateTimer") ?? (() => {}),
-  showAutoSelect: getScoreboardExport("showAutoSelect") ?? (() => {}),
-  updateRoundCounter: getScoreboardExport("updateRoundCounter") ?? (() => {}),
-  clearRoundCounter: getScoreboardExport("clearRoundCounter") ?? (() => {})
-};
+/**
+ * Forward the Scoreboard module's `showMessage` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `showMessage` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.showMessage}
+ */
+export const showMessage = scoreboardFunctions.showMessage;
 
-const {
-  initScoreboard,
-  showMessage,
-  updateScore,
-  clearMessage,
-  showTemporaryMessage,
-  clearTimer,
-  updateTimer,
-  showAutoSelect,
-  updateRoundCounter,
-  clearRoundCounter
-} = scoreboardFunctions;
+/**
+ * Forward the Scoreboard module's `updateScore` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `updateScore` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.updateScore}
+ */
+export const updateScore = scoreboardFunctions.updateScore;
 
+/**
+ * Forward the Scoreboard module's `clearMessage` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `clearMessage` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.clearMessage}
+ */
+export const clearMessage = scoreboardFunctions.clearMessage;
+
+/**
+ * Forward the Scoreboard module's `showTemporaryMessage` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `showTemporaryMessage` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.showTemporaryMessage}
+ */
+export const showTemporaryMessage = scoreboardFunctions.showTemporaryMessage;
+
+/**
+ * Forward the Scoreboard module's `clearTimer` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `clearTimer` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.clearTimer}
+ */
+export const clearTimer = scoreboardFunctions.clearTimer;
+
+/**
+ * Forward the Scoreboard module's `updateTimer` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `updateTimer` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.updateTimer}
+ */
+export const updateTimer = scoreboardFunctions.updateTimer;
+
+/**
+ * Forward the Scoreboard module's `showAutoSelect` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `showAutoSelect` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.showAutoSelect}
+ */
+export const showAutoSelect = scoreboardFunctions.showAutoSelect;
+
+/**
+ * Forward the Scoreboard module's `updateRoundCounter` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `updateRoundCounter` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.updateRoundCounter}
+ */
+export const updateRoundCounter = scoreboardFunctions.updateRoundCounter;
+
+/**
+ * Forward the Scoreboard module's `clearRoundCounter` helper.
+ *
+ * @pseudocode
+ * 1. Invoke the namespace export `clearRoundCounter` with the provided arguments.
+ *
+ * @type {typeof scoreboardFunctions.clearRoundCounter}
+ */
+export const clearRoundCounter = scoreboardFunctions.clearRoundCounter;
+
+/**
+ * Aggregate the scoreboard helpers for consumers expecting an object export.
+ *
+ * @pseudocode
+ * 1. Collect `setupScoreboard` and the forwarded helper functions in a single object.
+ *
+ * @type {{
+ *   setupScoreboard: typeof setupScoreboard,
+ *   showMessage: typeof showMessage,
+ *   updateScore: typeof updateScore,
+ *   clearMessage: typeof clearMessage,
+ *   showTemporaryMessage: typeof showTemporaryMessage,
+ *   clearTimer: typeof clearTimer,
+ *   updateTimer: typeof updateTimer,
+ *   showAutoSelect: typeof showAutoSelect,
+ *   updateRoundCounter: typeof updateRoundCounter,
+ *   clearRoundCounter: typeof clearRoundCounter
+ * }}
+ */
 const scoreboardApi = {
   setupScoreboard,
   showMessage,
@@ -106,16 +223,12 @@ const scoreboardApi = {
   clearRoundCounter
 };
 
-export {
-  setupScoreboard,
-  showMessage,
-  updateScore,
-  clearMessage,
-  showTemporaryMessage,
-  clearTimer,
-  updateTimer,
-  showAutoSelect,
-  updateRoundCounter,
-  clearRoundCounter,
-  scoreboardApi as scoreboard
-};
+/**
+ * Publicly exposed scoreboard helper bundle for convenience imports.
+ *
+ * @pseudocode
+ * 1. Provide the composed scoreboard helper object to consumers.
+ *
+ * @type {typeof scoreboardApi}
+ */
+export const scoreboard = scoreboardApi;
