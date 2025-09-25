@@ -66,10 +66,16 @@ function focusNextHint() {
 }
 
 function applyRetroTheme(enabled) {
-  // #cli-root is guaranteed to exist in the CLI page
-  document.getElementById("cli-root").classList.toggle("cli-retro", Boolean(enabled));
+  const shouldEnable = Boolean(enabled);
+  const cliRoot = document.getElementById("cli-root");
+  if (cliRoot) {
+    cliRoot.classList.toggle("cli-retro", shouldEnable);
+  }
+  if (document.body) {
+    document.body.classList.toggle("cli-retro", shouldEnable);
+  }
   try {
-    localStorage.setItem("battleCLI.retro", enabled ? "1" : "0");
+    localStorage.setItem("battleCLI.retro", shouldEnable ? "1" : "0");
   } catch {}
 }
 
