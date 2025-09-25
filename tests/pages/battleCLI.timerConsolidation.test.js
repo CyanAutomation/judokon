@@ -29,6 +29,8 @@ describe("battleCLI timer consolidation", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 10));
 
+    // CLI mode renders its own countdown element, so the shared scoreboard adapter intentionally
+    // skips binding the timer listener. Verify that the shared timer remains untouched here.
     expect(updateTimerSpy).not.toHaveBeenCalled();
     expect(sharedTimer?.textContent).toBe("");
 
@@ -49,7 +51,10 @@ describe("battleCLI timer consolidation", () => {
     const scoreboardModule = await import("../../src/components/Scoreboard.js");
     const updateTimerSpy = vi.spyOn(scoreboardModule, "updateTimer");
 
-    const { initBattleScoreboardAdapter } = await import("../../src/helpers/battleScoreboard.js");
+    const { initBattleScoreboardAdapter, disposeBattleScoreboardAdapter } = await import(
+      "../../src/helpers/battleScoreboard.js"
+    );
+    disposeBattleScoreboardAdapter();
     const dispose = initBattleScoreboardAdapter();
 
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
