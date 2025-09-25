@@ -1,7 +1,6 @@
 import { test, expect } from "@playwright/test";
 import selectors from "../helpers/selectors.js";
 import {
-  waitForTestApi,
   waitForBattleState,
   waitForBattleReady,
   getCurrentBattleState,
@@ -157,39 +156,6 @@ function buildBattleFallbackFailureMessage(errors) {
   return ["Battle readiness quick check failed after fallback strategies.", detailMessage].join(
     "\n"
   );
-}
-
-async function expectBattleState(page, expectedState, options = {}) {
-  const { timeout = 5_000, onStall, stallThreshold = 3 } = options;
-
-  await waitForTestApi(page, { timeout });
-
-  try {
-    await waitForBattleState(page, expectedState, { timeout });
-    return;
-  } catch {}
-
-  let attempts = 0;
-  let stallCallbackExecuted = false;
-  await expect
-    .poll(
-      async () => {
-        const current = await getCurrentBattleState(page);
-        if (
-          current !== expectedState &&
-          typeof onStall === "function" &&
-          attempts >= stallThreshold &&
-          !stallCallbackExecuted
-        ) {
-          stallCallbackExecuted = true;
-          await onStall(current);
-        }
-        attempts += 1;
-        return current;
-      },
-      { timeout, message: `Expected battle state to be "${expectedState}"` }
-    )
-    .toBe(expectedState);
 }
 
 async function startMatch(page, selector) {
