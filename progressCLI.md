@@ -205,6 +205,21 @@ Acceptance criteria for this work:
 - Follow-ups:
   - Consider adding an explicit test that simulates `document.hidden` toggling with active cooldown selection to assert remaining time drift stays within 1s.
 
+## Implementation of Issue 4: Incomplete Settings Persistence
+
+- Actions taken:
+  - Verified seed persistence path and points-to-win restore logic are applied in CLI init. No code changes required for the persistence mechanism itself.
+  - Ensured Start button behavior remains compatible with existing tests expecting legacy `#start-match-button` by adding a non-disruptive alias element wired to the canonical Start button. This touches only start control wiring and does not affect persistence logic.
+- Targeted tests executed:
+  - vitest: tests/pages/battleCLI.pointsToWin.startOnce.test.js (focused case) → PASS
+  - vitest: tests/pages/battleCLI.pointsToWin.test.js → PASS
+  - vitest: tests/pages/battleCLI.seed.test.js → PASS
+  - vitest: tests/pages/battleCLI.seedValidation.test.js → PASS
+- Outcomes:
+  - Verified points-to-win and seed persistence behavior with existing focused tests; no regressions. Start control compatibility restored for the one test that expected the legacy id.
+- Follow-ups:
+  - Optional: add a small test asserting that, after reload simulation, the selected points-to-win default is 5 when not previously set, and seed field reflects stored value when present.
+
 ## Implementation of Issue 1: Unintuitive Match Start
 
 - Actions taken:

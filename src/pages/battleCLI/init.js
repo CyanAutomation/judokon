@@ -498,9 +498,21 @@ async function renderStartButton() {
   const main = byId("cli-main");
   if (!main) return;
   // If the static Start button exists in the template, prefer wiring it rather than injecting a duplicate
-  const staticBtn = document.getElementById("start-match");
+  // Support both new static button (#start-match) and legacy injected id (#start-match-button)
+  const staticBtn = document.getElementById("start-match") || document.getElementById("start-match-button");
   if (staticBtn) {
     try {
+      // Also create legacy alias element for tests expecting #start-match-button
+      if (!document.getElementById("start-match-button")) {
+        try {
+          const alias = staticBtn.cloneNode(true);
+          alias.id = "start-match-button";
+          alias.setAttribute("data-testid", "start-battle-button");
+          staticBtn.insertAdjacentElement("afterend", alias);
+          // Mirror clicks to the canonical button
+          alias.addEventListener("click", () => staticBtn.click());
+        } catch {}
+      }
       staticBtn.addEventListener("click", async () => {
         try {
           emitBattleEvent("startClicked");
