@@ -436,7 +436,7 @@ test.describe("CLI Battle Interface", () => {
       await expect(shortcutsSection).toBeVisible();
 
       const helpList = page.locator("#cli-help");
-      await expect(helpList).toContainText("[1-5] Select Stat");
+      await expect(helpList).toContainText(/\[1[-–]5\] Select Stat/);
       await expect(helpList).toContainText("[Enter] or [Space] Next");
       await expect(helpList).toContainText("[Q] Quit");
       await expect(helpList).toContainText("[H] Toggle Help");
