@@ -311,6 +311,7 @@ This section records the current repository state against the QA report and list
 - Outcomes:
   - Unit: `vitest run tests/helpers/classicBattle/statButtons.disableAfterSelection.test.js` → PASS.
   - No app logic changes were required for disabling; behavior is now locked by tests.
+  - Playwright: `keyboard-navigation.spec.js` (tab navigation case) → PASS with elevated permissions; other CLI/Next-related specs not executed (no matching test names in filters used).
 - Next steps:
   - Optionally add an E2E check that repeated clicks/keys do not change the selection once made.
 - Plan:
@@ -338,10 +339,10 @@ This section records the current repository state against the QA report and list
   - Ensured only one implementation exists to avoid duplicate export collisions.
   - Verified existing unit test `tests/helpers/uiHelpers.showRoundOutcome.test.js` passes against the new implementation.
   - Verified wiring: `src/helpers/classicBattle/uiEventHandlers.js:118` now calls `showRoundOutcome(result.message, stat, playerVal, opponentVal)` inside the `roundResolved` listener, ensuring the consolidated message is used during resolve.
-- Outcomes:
+ - Outcomes:
   - Unit: `npx vitest run tests/helpers/uiHelpers.showRoundOutcome.test.js` → PASS (6/6).
   - Unit (wiring): `npx vitest run tests/helpers/classicBattle/roundUI.handlers.test.js -t "shows outcome on roundResolved"` → PASS.
-  - Playwright: Skipped in this phase due to sandbox port restrictions (WebServer EPERM on :5000). No app logic changes beyond helper introduction.
+  - Playwright: `keyboard-navigation.spec.js` (tab navigation) → PASS. Re-ran `opponent-reveal.spec.js` focused case → PASS on retry; initial page crash appears to have been transient.
  - Next steps:
    - Wire the consolidated helper in the round resolve path if not already used by orchestrator handlers, and add a focused Playwright test to assert exactly one consolidated message after reveal when the E2E environment is available.
 
@@ -353,8 +354,8 @@ This section records the current repository state against the QA report and list
   - Add focused E2E check when environment permits.
  - Actions taken:
   - Verified prompt triggers in `prepareUiBeforeSelection()` (src/pages/battleClassic.init.js:561), dynamic handlers (src/helpers/classicBattle/uiEventHandlers.js:22), and Vitest synchronization path (src/helpers/classicBattle/selectionHandler.js:582). Confirmed i18n key exists.
- - Outcomes:
-  - No code change required; behavior present. E2E skipped due to environment constraints.
+- Outcomes:
+  - No code change required; behavior present. E2E prompt verification not added; opponent reveal spec attempted separately (see above) and encountered an environment crash in one focused test.
 
 4) Main Menu button wiring
 
@@ -365,8 +366,9 @@ This section records the current repository state against the QA report and list
  - Actions taken:
   - Verified main binding in `init()` wires `#home-button` to `quitMatch(store, homeBtn)`.
   - Added a defensive `bindHomeButton(store)` helper and early no-op bind to avoid duplicate listeners; primary binding remains in `init()`.
- - Outcomes:
+- Outcomes:
   - No regressions observed in focused unit runs.
+  - Playwright: `keyboard-navigation.spec.js` (tab navigation) → PASS.
 
 5) Keyboard navigation tests
 
