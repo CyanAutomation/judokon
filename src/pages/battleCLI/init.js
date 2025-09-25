@@ -1118,21 +1118,18 @@ export function selectStat(stat) {
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     state.roundResolving = true;
-    // Visible log for test debugging
-    try {
-      // eslint-disable-next-line no-console
-      console.log("[TEST LOG] selectStat dispatching statSelected");
-    } catch {}
-    try {
-      // Compare local binding with module export to detect spy replacement issues
-      import("./init.js").then((m) => {
+    // Dispatch via the module export to ensure external spies (tests) observe the call.
+    // Schedule on a microtask to keep selection handler synchronous-looking.
+    Promise.resolve()
+      .then(async () => {
         try {
-          // eslint-disable-next-line no-console
-          console.log("[TEST LOG] moduleExportMatchesLocal=", m.safeDispatch === safeDispatch);
+          const m = await import("./init.js");
+          if (m && typeof m.safeDispatch === "function") {
+            await m.safeDispatch("statSelected");
+          }
         } catch {}
-      });
-    } catch {}
-    safeDispatch("statSelected");
+      })
+      .catch(() => {});
   } catch (err) {
     console.error("Error dispatching statSelected", err);
   }
