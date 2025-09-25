@@ -1751,9 +1751,8 @@ export function handleWaitingForPlayerActionKey(key) {
       showHint("Use 1-5, press H for help");
       return true;
     }
-    // Defer non-critical work to keep key handler responsive.
-    // Selection side effects may be heavy; schedule on microtask.
-    __scheduleMicrotask(() => selectStat(stat));
+    // Trigger stat selection immediately so DOM reflects the change synchronously.
+    selectStat(stat);
     return true;
   }
   if (key === "enter") {
@@ -1771,7 +1770,7 @@ export function handleWaitingForPlayerActionKey(key) {
         const stat = getStatByIndex(idx);
         console.debug("[TEST DEBUG] resolved stat=", stat);
         if (stat) {
-          __scheduleMicrotask(() => selectStat(stat));
+          selectStat(stat);
           return true;
         }
       }
