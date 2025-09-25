@@ -34,6 +34,25 @@ Tests / follow-ups:
 
 ---
 
+## 1) Opponent card exposed prematurely
+
+Repro: Starting a match (or pressing Next without setting match length) sometimes reveals the opponent's card immediately.
+
+Verification: Plausible. Likely a state/race issue where the opponent card render path runs before the UI/game state reaches the expected pre-selection state. Suspect files: `battleClassic.init.js`, data initializers, and rendering code for the opponent card.
+
+Feasibility & recommended fix:
+
+- Feasibility: Medium — low code risk.
+- Add a defensive UI flag (e.g., `uiReady` or `opponentHidden`) and ensure opponent card markup has a default hidden state. Only flip/reveal after selection or when the round resolves.
+- Ensure initialization flow (match setup → round start → enable selection) sets that flag deterministically. Prefer state checks over timing-based delays.
+
+Tests / follow-ups:
+
+- Unit test for render path: when match is in pre-selection state, opponent card element has `hidden` or `aria-hidden="true"`.
+- Integration test: reproduce the "Next without choosing match length" flow and assert opponent card remains hidden until after selection.
+
+---
+
 ## 2) Stat buttons remain enabled after selection
 
 Repro: After choosing a stat (button turns blue), other stat buttons remain clickable and repeated clicks can change state multiple times.
@@ -50,6 +69,21 @@ Tests / follow-ups:
 
 - Unit test: after invoking the stat select handler, assert all stat buttons are disabled and further click events are ignored.
 - E2E: select a stat and assert round state transitions exactly once.
+
+**Implementation completed:**
+
+- **Actions taken:** Added `disableStatButtons(buttons, container)` call in `handleStatButtonClick` after `handleStatSelection` succeeds. Added `disableStatButtons` to imports from `statButtons.js`.
+- **Files modified:** `src/pages/battleClassic.init.js` (added import and call), `tests/classicBattle/page-scaffold.test.js` (added mock).
+**Implementation completed:**
+
+- **Actions taken:** Added `disableStatButtons(buttons, container)` call in `handleStatButtonClick` after `handleStatSelection` succeeds. Added `disableStatButtons` to imports from `statButtons.js`.
+- **Files modified:** `src/pages/battleClassic.init.js` (added import and call), `tests/classicBattle/page-scaffold.test.js` (added mock).
+- **Unit test outcomes:**
+  - `statDoubleClick.test.js`: ✅ PASSED (1/1)
+  - `statSelection.failureFallback.test.js`: ✅ PASSED (5/5) after fixing import
+  - `page-scaffold.test.js`: ✅ PASSED (8/8) after adding mock
+- **Playwright test outcomes:** `stat-selection.spec.js`: ✅ PASSED (1/1)
+- **Validation:** No lint errors, tests pass, button disabling confirmed in E2E flow.
 
 ---
 

@@ -8,6 +8,7 @@ import {
 import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 // Removed duplicate import of handleStatSelection
 import {
+  disableStatButtons,
   setStatButtonsEnabled,
   resolveStatButtonsReady
 } from "../helpers/classicBattle/statButtons.js";

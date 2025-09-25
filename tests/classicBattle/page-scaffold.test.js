@@ -274,6 +274,7 @@ vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => {
 });
 
 vi.mock("../../src/helpers/classicBattle/statButtons.js", () => ({
+  disableStatButtons: vi.fn(),
   setStatButtonsEnabled: vi.fn(),
   resolveStatButtonsReady: vi.fn()
 }));
