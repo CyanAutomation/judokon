@@ -73,7 +73,7 @@ function readPointsToWin() {
  * @pseudocode
  * 1. Lookup `#points-select`; exit when missing.
  * 2. Read the current points-to-win from the battle engine.
- * 3. When valid, set the dropdown value to match.
+ * 3. When valid, ensure the dropdown exposes the sanitized target option.
  * 4. Refresh the CLI header metadata using the stored round number.
  *
  * @returns {void}
@@ -97,20 +97,26 @@ export function syncWinTargetDropdown() {
     }
     if (typeof currentTarget !== "number" || !Number.isFinite(currentTarget)) return;
 
+    const normalizedTarget = Math.trunc(currentTarget);
+    if (!Number.isFinite(normalizedTarget) || normalizedTarget <= 0) {
+      return;
+    }
+
     try {
       const hasOption = Array.from(select.options || []).some(
-        (option) => Number(option.value) === currentTarget
+        (option) => Number(option.value) === normalizedTarget
       );
       if (!hasOption && typeof document !== "undefined") {
         const option = document.createElement("option");
-        option.value = String(currentTarget);
-        option.textContent = String(currentTarget);
+        option.value = String(normalizedTarget);
+        option.textContent = String(normalizedTarget);
         select.appendChild(option);
       }
     } catch {}
 
-    select.value = String(currentTarget);
+    const normalizedValue = String(normalizedTarget);
+    select.value = normalizedValue;
     const round = getCurrentRoundNumber();
-    updateRoundHeader(round, currentTarget);
+    updateRoundHeader(round, normalizedTarget);
   } catch {}
 }
