@@ -339,12 +339,12 @@ This section records the current repository state against the QA report and list
   - Ensured only one implementation exists to avoid duplicate export collisions.
   - Verified existing unit test `tests/helpers/uiHelpers.showRoundOutcome.test.js` passes against the new implementation.
   - Verified wiring: `src/helpers/classicBattle/uiEventHandlers.js:118` now calls `showRoundOutcome(result.message, stat, playerVal, opponentVal)` inside the `roundResolved` listener, ensuring the consolidated message is used during resolve.
- - Outcomes:
-  - Unit: `npx vitest run tests/helpers/uiHelpers.showRoundOutcome.test.js` → PASS (6/6).
-  - Unit (wiring): `npx vitest run tests/helpers/classicBattle/roundUI.handlers.test.js -t "shows outcome on roundResolved"` → PASS.
-  - Playwright: `keyboard-navigation.spec.js` (tab navigation) → PASS. Re-ran `opponent-reveal.spec.js` focused case → PASS on retry; initial page crash appears to have been transient.
- - Next steps:
-   - Wire the consolidated helper in the round resolve path if not already used by orchestrator handlers, and add a focused Playwright test to assert exactly one consolidated message after reveal when the E2E environment is available.
+- Outcomes:
+- Unit: `npx vitest run tests/helpers/uiHelpers.showRoundOutcome.test.js` → PASS (6/6).
+- Unit (wiring): `npx vitest run tests/helpers/classicBattle/roundUI.handlers.test.js -t "shows outcome on roundResolved"` → PASS.
+- Playwright: `keyboard-navigation.spec.js` (tab navigation) → PASS. Re-ran `opponent-reveal.spec.js` focused case → PASS on retry; initial page crash appears to have been transient.
+- Next steps:
+  - Wire the consolidated helper in the round resolve path if not already used by orchestrator handlers, and add a focused Playwright test to assert exactly one consolidated message after reveal when the E2E environment is available.
 
 3) "Opponent is choosing…" prompt (Issue 4)
 
@@ -352,8 +352,8 @@ This section records the current repository state against the QA report and list
 - Plan:
   - Ensure snackbar fires on all selection paths and is idempotent; clear on reveal.
   - Add focused E2E check when environment permits.
- - Actions taken:
-  - Verified prompt triggers in `prepareUiBeforeSelection()` (src/pages/battleClassic.init.js:561), dynamic handlers (src/helpers/classicBattle/uiEventHandlers.js:22), and Vitest synchronization path (src/helpers/classicBattle/selectionHandler.js:582). Confirmed i18n key exists.
+- Actions taken:
+- Verified prompt triggers in `prepareUiBeforeSelection()` (src/pages/battleClassic.init.js:561), dynamic handlers (src/helpers/classicBattle/uiEventHandlers.js:22), and Vitest synchronization path (src/helpers/classicBattle/selectionHandler.js:582). Confirmed i18n key exists.
 - Outcomes:
   - No code change required; behavior present. E2E prompt verification not added; opponent reveal spec attempted separately (see above) and encountered an environment crash in one focused test.
 
@@ -363,9 +363,9 @@ This section records the current repository state against the QA report and list
 - Plan:
   - Keep click wiring pointing to `quitMatch(store, homeBtn)` and ensure idempotent binding.
   - Optional test: stub `quitMatch` to assert invocation on click.
- - Actions taken:
-  - Verified main binding in `init()` wires `#home-button` to `quitMatch(store, homeBtn)`.
-  - Added a defensive `bindHomeButton(store)` helper and early no-op bind to avoid duplicate listeners; primary binding remains in `init()`.
+- Actions taken:
+- Verified main binding in `init()` wires `#home-button` to `quitMatch(store, homeBtn)`.
+- Added a defensive `bindHomeButton(store)` helper and early no-op bind to avoid duplicate listeners; primary binding remains in `init()`.
 - Outcomes:
   - No regressions observed in focused unit runs.
   - Playwright: `keyboard-navigation.spec.js` (tab navigation) → PASS.
