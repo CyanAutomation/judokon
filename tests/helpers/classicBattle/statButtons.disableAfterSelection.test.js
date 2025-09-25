@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Bind battle event helpers
-import { emitBattleEvent, __resetBattleEventTarget } from "../../../src/helpers/classicBattle/battleEvents.js";
+import {
+  emitBattleEvent,
+  __resetBattleEventTarget
+} from "../../../src/helpers/classicBattle/battleEvents.js";
 
 describe("Classic Battle - disable stat buttons after selection", () => {
   beforeEach(() => {
@@ -20,7 +23,7 @@ describe("Classic Battle - disable stat buttons after selection", () => {
     const ui = await import("../../../src/helpers/classicBattle/roundUI.js");
     ui.bindStatSelected?.();
 
-    const buttons = Array.from(document.querySelectorAll('#stat-buttons button[data-stat]'));
+    const buttons = Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
     // Enable via event to simulate ready state
     const setup = await import("../../../src/helpers/classicBattle/setupUIBindings.js");
     const view = { controller: { battleStore: {} }, applyBattleOrientation: () => {} };
