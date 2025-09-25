@@ -93,7 +93,7 @@ export function requireEngine() {
  * @returns {IBattleEngine}
  */
 export function createBattleEngine(config = {}) {
-  logger.log("battleEngineFacade: createBattleEngine called");
+  logger.log("battleEngineFacade: createBattleEngine called with config:", config);
   // If an engine already exists and the caller didn't explicitly request a
   // fresh one, return the existing instance. Tests that repeatedly call
   // createBattleEngine() during simulated rounds previously recreated the
@@ -213,7 +213,10 @@ export const resumeTimer = () => requireEngine().resumeTimer();
  * @param {...any} args
  * @returns {{delta: number, outcome: keyof typeof OUTCOME, matchEnded: boolean, playerScore: number, opponentScore: number}}
  */
-export const handleStatSelection = (...args) => requireEngine().handleStatSelection(...args);
+export const handleStatSelection = (...args) => {
+  logger.log("battleEngineFacade: handleStatSelection called with args:", args);
+  return requireEngine().handleStatSelection(...args);
+};
 
 /**
  * Quit the current match via the engine.
