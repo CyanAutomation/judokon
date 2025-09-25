@@ -1,15 +1,4 @@
-import {
-  initScoreboard,
-  showMessage,
-  updateScore,
-  clearMessage,
-  showTemporaryMessage,
-  clearTimer,
-  updateTimer,
-  showAutoSelect,
-  updateRoundCounter,
-  clearRoundCounter
-} from "../components/Scoreboard.js";
+import * as scoreboardModule from "../components/Scoreboard.js";
 import { realScheduler } from "./scheduler.js";
 
 /**
@@ -70,6 +59,40 @@ function setupScoreboard(controls, scheduler = realScheduler) {
     }
   } catch {}
 }
+const getScoreboardExport = (name) => {
+  try {
+    return scoreboardModule?.[name];
+  } catch {
+    return undefined;
+  }
+};
+
+const scoreboardFunctions = {
+  initScoreboard: getScoreboardExport("initScoreboard") ?? (() => {}),
+  showMessage: getScoreboardExport("showMessage") ?? (() => {}),
+  updateScore: getScoreboardExport("updateScore") ?? (() => {}),
+  clearMessage: getScoreboardExport("clearMessage") ?? (() => {}),
+  showTemporaryMessage: getScoreboardExport("showTemporaryMessage") ?? (() => {}),
+  clearTimer: getScoreboardExport("clearTimer") ?? (() => {}),
+  updateTimer: getScoreboardExport("updateTimer") ?? (() => {}),
+  showAutoSelect: getScoreboardExport("showAutoSelect") ?? (() => {}),
+  updateRoundCounter: getScoreboardExport("updateRoundCounter") ?? (() => {}),
+  clearRoundCounter: getScoreboardExport("clearRoundCounter") ?? (() => {})
+};
+
+const {
+  initScoreboard,
+  showMessage,
+  updateScore,
+  clearMessage,
+  showTemporaryMessage,
+  clearTimer,
+  updateTimer,
+  showAutoSelect,
+  updateRoundCounter,
+  clearRoundCounter
+} = scoreboardFunctions;
+
 const scoreboardApi = {
   setupScoreboard,
   showMessage,
