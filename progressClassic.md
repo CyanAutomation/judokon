@@ -324,7 +324,7 @@ This section records the current repository state against the QA report and list
     - Unit: selecting a stat disables siblings; subsequent clicks do not invoke selection logic.
     - Playwright: user cannot change selection via repeated clicks/keys; only one selection processed.
 
-2) Consolidate stat comparison feedback (Issue 3)
+2. Consolidate stat comparison feedback (Issue 3)
 
 - Observed: No references to a consolidated `showRoundOutcome` helper or tests; unclear messaging remains.
 - Plan:
@@ -346,7 +346,7 @@ This section records the current repository state against the QA report and list
 - Next steps:
   - Wire the consolidated helper in the round resolve path if not already used by orchestrator handlers, and add a focused Playwright test to assert exactly one consolidated message after reveal when the E2E environment is available.
 
-3) "Opponent is choosing…" prompt (Issue 4)
+3. "Opponent is choosing…" prompt (Issue 4)
 
 - Observed: Implemented across multiple paths; verified wiring.
 - Plan:
@@ -357,7 +357,7 @@ This section records the current repository state against the QA report and list
 - Outcomes:
   - No code change required; behavior present. E2E prompt verification not added; opponent reveal spec attempted separately (see above) and encountered an environment crash in one focused test.
 
-4) Main Menu button wiring
+4. Main Menu button wiring
 
 - Observed: Listener present in init, verification added.
 - Plan:
@@ -370,14 +370,14 @@ This section records the current repository state against the QA report and list
   - No regressions observed in focused unit runs.
   - Playwright: `keyboard-navigation.spec.js` (tab navigation) → PASS.
 
-5) Keyboard navigation tests
+5. Keyboard navigation tests
 
 - Observed: No `playwright/battle-classic/keyboard-navigation.spec.js` present.
 - Plan:
   - Add E2E tests covering: tab order to stat buttons, Enter activation, visible focus ring, ARIA labelling.
   - Ensure feature flags don’t block baseline keyboard operability.
 
-6) Timer pause/resume implementation verification
+6. Timer pause/resume implementation verification
 
 - Observed: Tests reference visibility changes, but source updates for `pause()/resume()` and a `visibilitychange` listener were not confirmed in `src/helpers/timers/createRoundTimer.js` and `src/helpers/classicBattle/timerService.js`.
 - Plan:
@@ -387,7 +387,7 @@ This section records the current repository state against the QA report and list
     - Unit: pause/resume accuracy with fake timers.
     - Playwright (or integration): simulated tab hide causes countdown to pause/resume.
 
-7) File path reconciliation
+7. File path reconciliation
 
 - Observed: Several referenced files in the report (e.g., `src/pages/battleClassic.init.js`, classicBattle `uiEventHandlers.js`, `roundManager.js`) did not surface in search; repo may use different names/locations.
 - Plan:
