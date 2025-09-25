@@ -19,6 +19,7 @@ describe("battleCLI stat interactions", () => {
     const mod = await loadBattleCLI(baseOpts);
     await mod.renderStatList();
     mod.handleWaitingForPlayerActionKey("1");
+    await Promise.resolve();
     expect(document.querySelector('[data-stat-index="1"]').classList.contains("selected")).toBe(
       true
     );
@@ -28,6 +29,7 @@ describe("battleCLI stat interactions", () => {
     const mod = await loadBattleCLI(baseOpts);
     await mod.renderStatList();
     mod.handleWaitingForPlayerActionKey("2");
+    await Promise.resolve();
     expect(document.getElementById("cli-stats").dataset.selectedIndex).toBe("2");
   });
 
@@ -46,6 +48,7 @@ describe("battleCLI stat interactions", () => {
     const hiddenVal = document.querySelector("#player-card li.stat span")?.textContent;
     expect(hiddenVal).toBe("5");
     mod.handleWaitingForPlayerActionKey("1");
+    await Promise.resolve();
     expect(statEl.classList.contains("selected")).toBe(true);
   });
 });
