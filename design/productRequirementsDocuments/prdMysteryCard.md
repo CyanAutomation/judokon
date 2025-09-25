@@ -34,11 +34,11 @@ Currently, the opponent’s card is visible before the player chooses a stat. Th
 
 ## Functional Requirements
 
-| Priority | Feature                  | Description                                                                                                 |
-| :------: | :----------------------- | :---------------------------------------------------------------------------------------------------------- |
-|  **P1**  | Placeholder Mystery Card | Show a card with a "Common" border and a large, centered "?" SVG icon at the start of each opponent round.    |
-|  **P1**  | Card Swap on Stat Selection | Reveal opponent card via animated swap within 400ms, no layout shift                                        |
-|  **P3**  | Accessibility Compliance | Ensure the card is properly identified for screen readers.                                                  |
+| Priority | Feature                     | Description                                                                                                |
+| :------: | :-------------------------- | :--------------------------------------------------------------------------------------------------------- |
+|  **P1**  | Placeholder Mystery Card    | Show a card with a "Common" border and a large, centered "?" SVG icon at the start of each opponent round. |
+|  **P1**  | Card Swap on Stat Selection | Reveal opponent card via animated swap within 400ms, no layout shift                                       |
+|  **P3**  | Accessibility Compliance    | Ensure the card is properly identified for screen readers.                                                 |
 
 ---
 

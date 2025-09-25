@@ -499,7 +499,8 @@ async function renderStartButton() {
   if (!main) return;
   // If the static Start button exists in the template, prefer wiring it rather than injecting a duplicate
   // Support both new static button (#start-match) and legacy injected id (#start-match-button)
-  const staticBtn = document.getElementById("start-match") || document.getElementById("start-match-button");
+  const staticBtn =
+    document.getElementById("start-match") || document.getElementById("start-match-button");
   if (staticBtn) {
     try {
       // Also create legacy alias element for tests expecting #start-match-button
@@ -513,17 +514,21 @@ async function renderStartButton() {
           alias.addEventListener("click", () => staticBtn.click());
         } catch {}
       }
-      staticBtn.addEventListener("click", async () => {
-        try {
-          emitBattleEvent("startClicked");
-        } catch {}
-        try {
-          const getter = debugHooks.readDebugState("getClassicBattleMachine");
-          const machine = typeof getter === "function" ? getter() : getter;
-          if (machine) machine.dispatch("startClicked");
-          else await safeDispatch("startClicked");
-        } catch {}
-      }, { once: true });
+      staticBtn.addEventListener(
+        "click",
+        async () => {
+          try {
+            emitBattleEvent("startClicked");
+          } catch {}
+          try {
+            const getter = debugHooks.readDebugState("getClassicBattleMachine");
+            const machine = typeof getter === "function" ? getter() : getter;
+            if (machine) machine.dispatch("startClicked");
+            else await safeDispatch("startClicked");
+          } catch {}
+        },
+        { once: true }
+      );
     } catch {}
     return;
   }

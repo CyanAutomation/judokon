@@ -274,7 +274,6 @@ Acceptance criteria for this work:
 - Follow-ups:
   - Consider a small unit test that mounts the CLI DOM via `createCliDomFragment()` and asserts that clicking `#start-match` dispatches the `startClicked` flow (using debug hooks or spies on `emitBattleEvent`).
 
-
 ## Implementation of Issue 2: Missing "3-Point" Match Length
 
 - Actions taken:
@@ -297,7 +296,6 @@ Acceptance criteria for this work:
   - Seed determinism logic is present. No code changes required for this task.
 - Follow-ups:
   - Add a unit test that sets a seed, calls `resetMatch()`, starts a round twice across fresh matches, and asserts first-round stats are identical.
-
 
 ## What I changed in this document
 

@@ -114,7 +114,7 @@ Currently, only ~45% of new players complete their first battle across all modes
 | **P1**   | Stat Selection         | Player chooses from visible stats; buttons disabled after selection.                             |
 | **P1**   | Stat Selection Timer   | 30 s countdown; auto-selects on expiry if `autoSelect = true`. Pauses on tab sleep/inactivity.   |
 | **P1**   | Scoring & Results      | +1 point for win, 0 for tie/loss; update `#score-display`. Show “You picked: X” + outcome.       |
-| **P1**   | End Conditions         | End when player reaches target (3/5/10) or after 25 rounds.                                     |
+| **P1**   | End Conditions         | End when player reaches target (3/5/10) or after 25 rounds.                                      |
 | **P1**   | Scoreboard Integration | Use shared Scoreboard component for all messages, counters, timers, and accessibility.           |
 | **P2**   | Opponent AI            | Difficulty settings: Easy = random; Medium = ≥ average stat; Hard = highest stat. Default: Easy. |
 | **P2**   | Quit Flow              | Quit button and header logo prompt confirmation; if confirmed, end match and return home.        |

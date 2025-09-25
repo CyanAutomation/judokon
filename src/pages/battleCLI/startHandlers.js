@@ -31,4 +31,3 @@ export function bindStartHandlers(doc = typeof document !== "undefined" ? docume
     });
   } catch {}
 }
-
