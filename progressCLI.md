@@ -220,6 +220,19 @@ Acceptance criteria for this work:
 - Follow-ups:
   - Optional: add a small test asserting that, after reload simulation, the selected points-to-win default is 5 when not previously set, and seed field reflects stored value when present.
 
+## Implementation of Issue 9: Incorrect Keyboard Shortcut State
+
+- Actions taken:
+  - Reviewed `src/pages/battleCLI/events.js` key routing. It already suppresses stat keys in `waitingForMatchStart` state and ignores keys when focus is inside form controls, preventing accidental settings mutation.
+- Targeted tests executed:
+  - vitest: tests/pages/battleCLI.onKeyDown.test.js → PASS
+  - vitest: tests/pages/battleCLI.handlers.test.js → PASS
+  - vitest: tests/pages/battleCLI.invalidNumber.test.js → PASS
+- Outcomes:
+  - Keyboard handling is correct with no regressions. Number keys do not mutate settings outside proper contexts.
+- Follow-ups:
+  - None required at this time. Additions would be purely defensive and not justified by tests.
+
 ## Implementation of Issue 1: Unintuitive Match Start
 
 - Actions taken:
