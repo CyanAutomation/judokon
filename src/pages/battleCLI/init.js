@@ -2256,13 +2256,23 @@ export async function setupFlags() {
   const section = byId("cli-verbose-section");
   const updateVerbose = () => {
     if (checkbox) checkbox.checked = !!verboseEnabled;
-    if (section) section.hidden = !verboseEnabled;
+    if (section) {
+      section.hidden = !verboseEnabled;
+      // Update aria-expanded for accessibility
+      section.setAttribute("aria-expanded", verboseEnabled ? "true" : "false");
+    }
     const indicator = byId("verbose-indicator");
     if (indicator) indicator.style.display = verboseEnabled ? "inline" : "none";
     if (verboseEnabled) {
       try {
+        // Scroll the verbose section into view
+        if (section) section.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        // Focus the verbose log for keyboard navigation
         const pre = byId("cli-verbose-log");
-        if (pre) pre.scrollTop = pre.scrollHeight;
+        if (pre) {
+          pre.scrollTop = pre.scrollHeight;
+          pre.focus({ preventScroll: true });
+        }
       } catch {}
     }
   };
