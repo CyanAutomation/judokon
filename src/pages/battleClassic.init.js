@@ -97,7 +97,24 @@ function setHighestDisplayedRound(value) {
   if (typeof window !== "undefined") {
     try {
       if (window.__DEBUG_ROUND_TRACKING) {
-        console.debug("[round-tracking] setHighestDisplayedRound", { value, previous: window.__highestDisplayedRound });
+        try {
+          console.debug(
+            "[round-tracking] setHighestDisplayedRound",
+            {
+              value,
+              previous: window.__highestDisplayedRound
+            }
+          );
+        } catch {}
+        try {
+          if (!window.__RTRACE_LOGS) window.__RTRACE_LOGS = [];
+          window.__RTRACE_LOGS.push({
+            tag: "setHighestDisplayedRound",
+            value,
+            previous: window.__highestDisplayedRound,
+            stack: new Error().stack
+          });
+        } catch {}
       }
     } catch {}
     window.__highestDisplayedRound = value;
