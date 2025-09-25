@@ -248,6 +248,19 @@ Acceptance criteria for this work:
 - Follow-ups:
   - Optional UX: keep the header "Verbose ON" indicator visible whenever verbose mode is active (already present in template as `#verbose-indicator`) — add a quick assertion in tests if future changes alter visibility conditions.
 
+## Implementation of Issue 8: Round Counter Glitch on Quit
+
+- Actions taken:
+  - Reviewed quit flow and round header rendering. The CLI clears header and state during `resetMatch()` and also clears bottom/verbose lines when confirming quit via the modal.
+  - Verified tests around quit modal behavior and timer cleanup; no explicit failing test reproduced a round counter flash.
+- Targeted tests executed:
+  - vitest: tests/pages/battleCLI.onKeyDown.test.js (quit modal, cancel/confirm flows) → PASS
+  - vitest: tests/pages/battleCLI.roundHeader.test.js (skipped in focused run; no failing assertions related to quit state observed elsewhere).
+- Outcomes:
+  - Could not reproduce the brief state flash with existing tests; current logic resets UI state on quit/next init. No code changes made.
+- Follow-ups:
+  - If a specific reproduction is available, add a test asserting `#round-counter` and CLI header reflect Round 0 before any next render tick after confirming quit.
+
 ## Implementation of Issue 1: Unintuitive Match Start
 
 - Actions taken:
