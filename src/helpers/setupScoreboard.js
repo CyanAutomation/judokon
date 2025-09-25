@@ -46,7 +46,9 @@ const clearRoundCounter = (...args) => invokeSharedHelper("clearRoundCounter", a
  * @param {object} controls - Timer control callbacks.
  * @param {object} [scheduler=realScheduler] - Timer scheduler.
  * @returns {void}
+ * @returns {void}
  */
+export function setupScoreboard(controls, scheduler = realScheduler) {
 export function setupScoreboard(controls, scheduler = realScheduler) {
   const header = document.querySelector("header");
   controls.scheduler = scheduler;
