@@ -159,16 +159,15 @@ Notes on verification terminology:
   - Playwright test `battle-cli-start.spec.js` passed without regression.
 - **Outcome:** Settings (seed and win-target) now persist across reloads and are properly applied to the engine state.
 
-## Implementation of Issue 5: Timer Doesn't Pause on Tab Hide
+## Implementation of Issue 6: Confusing Dual Timers
 
 - **Actions taken:**
-  - Added diagnostic logging to `pauseTimers()` and `resumeTimers()` in `src/pages/battleCLI/init.js` to confirm invocation.
-  - Modified the `visibilitychange` event handler to also call the engine's `handleTabInactive()` and `handleTabActive()` methods when available.
-  - Added comprehensive unit tests in `tests/pages/battleCLI.visibility.test.js` to verify visibility change handling calls the appropriate timer pause/resume functions.
+  - Modified `initBattleScoreboardAdapter()` in `src/helpers/battleScoreboard.js` to conditionally skip timer event listeners when the `#cli-countdown` element exists, indicating CLI mode.
+  - This prevents the shared scoreboard from updating the `#next-round-timer` element in CLI mode, consolidating timer display to the CLI's `#cli-countdown` element only.
 - **Test outcomes:**
-  - New unit tests in `tests/pages/battleCLI.visibility.test.js` passed, confirming visibility change events trigger timer pause/resume and engine methods.
+  - Existing unit tests in `tests/pages/battleCLI.visibility.test.js` passed (4/4).
   - Playwright test `battle-cli-start.spec.js` passed without regression.
-- **Outcome:** Timers now pause when the tab is hidden and resume when it becomes visible, preventing players from losing time during tab switches.
+- **Outcome:** Timer displays are now consolidated in CLI mode - only the `#cli-countdown` element shows timer information, eliminating the confusing dual timer displays that were updated from different code paths.
 
 ## Opportunities for improvement (cross-cutting)
 
@@ -191,6 +190,7 @@ Acceptance criteria for this work:
 - ✅ Seed determinism is reproducible: same seed → same first-round stats across fresh matches.
 - ✅ Settings persist across reloads and are applied to the engine.
 - ✅ Timers pause on tab hide and resume accurately.
+- ✅ Timer displays are consolidated - only CLI countdown shows in CLI mode.
 
 ## What I changed in this document
 

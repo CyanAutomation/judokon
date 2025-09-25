@@ -8,6 +8,16 @@ try {
   sharedScoreboardModule = null;
 }
 
+/**
+ * Retrieve a scoreboard helper method by name.
+ *
+ * @pseudocode
+ * 1. Verify the shared module exists and exposes the requested method.
+ * 2. Return the method when available; otherwise return null.
+ *
+ * @param {string} name - The helper method name to retrieve.
+ * @returns {Function|null} The requested helper or null when unavailable.
+ */
 function getScoreboardMethod(name) {
   const directMethod =
     sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
@@ -40,10 +50,7 @@ try {
 } catch {}
 
 const invokeSharedHelper = (name, args) => {
-  const helper =
-    sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
-      ? sharedScoreboardModule[name]
-      : null;
+  const helper = getScoreboardMethod(name);
 
   if (!helper) {
     return undefined;

@@ -387,6 +387,8 @@ export const __test = {
   }
 };
 
+let resetPromise = Promise.resolve();
+
 /**
  * Reset the match and reinitialize the battle orchestrator.
  *
@@ -1520,7 +1522,7 @@ function renderHiddenPlayerStats(judoka) {
  * @summary Read the saved points-to-win value, apply it, and prompt the user on change.
  * @pseudocode
  * 1. Locate `#points-select` and read stored value using the provided storage wrapper.
- * 2. If a stored value is valid, apply it and update the select control.
+ * 2. Build the allowed targets from defaults + select options, then apply any saved value.
  * 3. On user change: validate the chosen value, confirm reset, persist and reset when confirmed.
  *
  * @returns {void}
@@ -1529,9 +1531,13 @@ export function restorePointsToWin() {
   try {
     const select = byId("points-select");
     if (!select) return;
+    const optionValues = Array.from(select.options || [])
+      .map((option) => Number(option.value))
+      .filter((value) => Number.isFinite(value));
+    const validTargets = new Set([...POINTS_TO_WIN_OPTIONS, ...optionValues]);
     const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
     const saved = Number(storage.get());
-    if (POINTS_TO_WIN_OPTIONS.includes(saved)) {
+    if (validTargets.has(saved)) {
       engineFacade.setPointsToWin?.(saved);
       select.value = String(saved);
     }
@@ -1540,7 +1546,7 @@ export function restorePointsToWin() {
     let current = Number(select.value);
     select.addEventListener("change", async () => {
       const val = Number(select.value);
-      if (!POINTS_TO_WIN_OPTIONS.includes(val)) return;
+      if (!validTargets.has(val)) return;
       try {
         const confirmed =
           typeof window !== "undefined"
@@ -2256,13 +2262,23 @@ export async function setupFlags() {
   const section = byId("cli-verbose-section");
   const updateVerbose = () => {
     if (checkbox) checkbox.checked = !!verboseEnabled;
-    if (section) section.hidden = !verboseEnabled;
+    if (section) {
+      section.hidden = !verboseEnabled;
+      // Update aria-expanded for accessibility
+      section.setAttribute("aria-expanded", verboseEnabled ? "true" : "false");
+    }
     const indicator = byId("verbose-indicator");
     if (indicator) indicator.style.display = verboseEnabled ? "inline" : "none";
     if (verboseEnabled) {
       try {
+        // Scroll the verbose section into view
+        if (section) section.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        // Focus the verbose log for keyboard navigation
         const pre = byId("cli-verbose-log");
-        if (pre) pre.scrollTop = pre.scrollHeight;
+        if (pre) {
+          pre.scrollTop = pre.scrollHeight;
+          pre.focus({ preventScroll: true });
+        }
       } catch {}
     }
   };
