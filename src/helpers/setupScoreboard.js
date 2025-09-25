@@ -1,16 +1,40 @@
-import {
-  initScoreboard,
-  showMessage,
-  updateScore,
-  clearMessage,
-  showTemporaryMessage,
-  clearTimer,
-  updateTimer,
-  showAutoSelect,
-  updateRoundCounter,
-  clearRoundCounter
-} from "../components/Scoreboard.js";
 import { realScheduler } from "./scheduler.js";
+
+let sharedScoreboardModule = null;
+
+try {
+  sharedScoreboardModule = await import("../components/Scoreboard.js");
+} catch {
+  sharedScoreboardModule = null;
+}
+
+const invokeSharedHelper = (name, args) => {
+  const helper =
+    sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
+      ? sharedScoreboardModule[name]
+      : null;
+
+  if (!helper) {
+    return undefined;
+  }
+
+  try {
+    return helper(...args);
+  } catch {
+    return undefined;
+  }
+};
+
+const initScoreboard = (...args) => invokeSharedHelper("initScoreboard", args);
+const showMessage = (...args) => invokeSharedHelper("showMessage", args);
+const updateScore = (...args) => invokeSharedHelper("updateScore", args);
+const clearMessage = (...args) => invokeSharedHelper("clearMessage", args);
+const showTemporaryMessage = (...args) => invokeSharedHelper("showTemporaryMessage", args);
+const clearTimer = (...args) => invokeSharedHelper("clearTimer", args);
+const updateTimer = (...args) => invokeSharedHelper("updateTimer", args);
+const showAutoSelect = (...args) => invokeSharedHelper("showAutoSelect", args);
+const updateRoundCounter = (...args) => invokeSharedHelper("updateRoundCounter", args);
+const clearRoundCounter = (...args) => invokeSharedHelper("clearRoundCounter", args);
 
 /**
  * Locate the page header and initialize scoreboard element references.
