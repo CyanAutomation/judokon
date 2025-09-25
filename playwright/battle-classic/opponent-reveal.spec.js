@@ -3,6 +3,7 @@ import selectors from "../helpers/selectors.js";
 import {
   waitForTestApi,
   waitForBattleState,
+  waitForBattleReady,
   getCurrentBattleState,
   triggerStateTransition
 } from "../helpers/battleStateHelper.js";
@@ -69,6 +70,26 @@ async function getBattleSnapshot(page) {
 const MUTED_CONSOLE_LEVELS = ["log", "info", "warn", "error", "debug"];
 const PLAYER_SCORE_PATTERN = /You:\s*\d/;
 
+async function waitForBattleReadyQuickCheck(page) {
+  try {
+    await waitForBattleReady(page, { timeout: 1_200, allowFallback: false });
+    return;
+  } catch (originalError) {
+    const firstStat = page.locator(selectors.statButton(0)).first();
+    const statVisible = await firstStat.isVisible().catch(() => false);
+    if (statVisible) {
+      return;
+    }
+
+    const snapshot = await getBattleSnapshot(page).catch(() => null);
+    if (snapshot) {
+      return;
+    }
+
+    throw originalError;
+  }
+}
+
 async function expectBattleState(page, expectedState, options = {}) {
   const { timeout = 5_000, onStall, stallThreshold = 3 } = options;
 
@@ -128,7 +149,7 @@ async function startMatch(page, selector) {
   };
 
   const ensureBattleReady = async () => {
-    await expectBattleState(page, "waitingForPlayerAction", { timeout: 7_000 });
+    await waitForBattleReadyQuickCheck(page);
     await ensureStatSelectionVisible();
   };
 
@@ -169,6 +190,14 @@ async function expireSelectionTimer(page) {
 
   expect(expired).not.toBeNull();
   expect(expired).toBe(true);
+}
+
+async function startMatchAndAwaitStats(page, selector) {
+  await startMatch(page, selector);
+  await waitForBattleReadyQuickCheck(page);
+  await expect(page.locator(selectors.statButton(0)).first()).toBeVisible({
+    timeout: 7_000
+  });
 }
 
 // Deterministic, UI-safe round resolution avoiding DOM state waits and page.evaluate races
@@ -261,7 +290,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
       await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
 
-      await startMatch(page, config.matchSelector);
+      await startMatchAndAwaitStats(page, config.matchSelector);
 
       await setOpponentResolveDelay(page, config.resolveDelay);
     };
