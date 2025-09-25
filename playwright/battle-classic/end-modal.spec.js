@@ -202,7 +202,7 @@ async function selectAdvantagedStat(page) {
       const playerValue = readStatValue(playerStats, key);
       const opponentValue = readStatValue(opponentStats, key);
 
-      if (!Number.isFinite(playerValue) && !Number.isFinite(opponentValue)) {
+      if (!Number.isFinite(playerValue) || !Number.isFinite(opponentValue)) {
         continue;
       }
 
@@ -230,7 +230,7 @@ async function selectAdvantagedStat(page) {
 
   if (typeof statKey === "string" && statKey) {
     const normalizedStat = statKey.trim();
-    const escapedStat = normalizedStat.replace(/'/g, "\\'");
+    const escapedStat = normalizedStat.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     const statButton = page.locator(`#stat-buttons button[data-stat='${escapedStat}']`);
     await expect(statButton).toBeVisible();
     await statButton.click();
