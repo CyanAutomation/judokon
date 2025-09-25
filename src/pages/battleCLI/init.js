@@ -1118,6 +1118,9 @@ function selectStat(stat) {
   showBottomLine(`You Picked: ${stat.charAt(0).toUpperCase()}${stat.slice(1)}`);
   try {
     state.roundResolving = true;
+    try {
+      console.debug("[TEST DEBUG] calling safeDispatch binding type=", typeof safeDispatch);
+    } catch {}
     safeDispatch("statSelected");
   } catch (err) {
     console.error("Error dispatching statSelected", err);
@@ -1731,10 +1734,13 @@ export function handleWaitingForPlayerActionKey(key) {
   }
   if (key === "enter") {
     const active = document.activeElement?.closest?.(".cli-stat");
+    console.debug('[TEST DEBUG] handleWaitingForPlayerActionKey enter active=', !!active, 'activeElem=', document.activeElement);
     if (active) {
       const idx = active.dataset.statIndex;
+      console.debug('[TEST DEBUG] active.dataset.statIndex=', idx);
       if (idx) {
         const stat = getStatByIndex(idx);
+        console.debug('[TEST DEBUG] resolved stat=', stat);
         if (stat) {
           Promise.resolve().then(() => selectStat(stat));
           return true;

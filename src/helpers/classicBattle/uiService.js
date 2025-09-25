@@ -5,7 +5,7 @@ import { createButton } from "../../components/Button.js";
 import { navigateToHome } from "../navUtils.js";
 import * as uiHelpers from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
-import { onBattleEvent, getBattleEventTarget } from "./battleEvents.js";
+import { onBattleEvent, getBattleEventTarget, emitBattleEvent } from "./battleEvents.js";
 import * as battleEvents from "./battleEvents.js";
 import { attachCooldownRenderer } from "../CooldownRenderer.js";
 import { createRoundTimer } from "../timers/createRoundTimer.js";
@@ -168,6 +168,19 @@ function bindUIServiceEventHandlers() {
     } catch (err) {
       console.error("Error updating debug panel:", err);
     }
+  });
+
+  // Ensure any summary or per-round UI cleans up correctly between rounds
+  onBattleEvent("roundReset", () => {
+    try {
+      // Close any open summary modals to avoid stale data bleed
+      const modalEl = document.querySelector(".modal");
+      if (modalEl?.close) modalEl.close();
+      // Clear scoreboard messages
+      scoreboard.clearMessage?.();
+      // Broadcast a UI reset for components that subscribe
+      emitBattleEvent("ui.roundReset");
+    } catch {}
   });
 
   onBattleEvent("countdownStart", (e) => {

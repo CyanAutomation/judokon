@@ -252,3 +252,22 @@ Notes/Risks:
 - Next follow-up could add a small Playwright smoke exercising countdown start → finish on the CLI page to ensure UI mirror stays in sync under interaction.
 
 Status: Unit-level validation added and passing; ready for review.
+
+## Progress Log — Task 5: Post-round summary cleanup
+
+Activity:
+- Implemented a cleanup path triggered by a `roundReset` event to avoid stale summary UI bleeding into the next round.
+
+Changes:
+- `src/helpers/classicBattle/uiService.js`:
+  - Listen for `roundReset` and close any open modal, clear scoreboard message, and emit `ui.roundReset` for UI components.
+- Tests:
+  - `tests/helpers/roundSummaryReset.spec.js` — verifies modal is closed and no errors occur — PASS
+
+Validation (targeted only):
+- Vitest: summary reset test passed.
+
+Notes/Risks:
+- This wires cleanup on the UI service layer without changing public APIs. If a more specific RoundSummary component exists elsewhere, it can also subscribe to `ui.roundReset`.
+
+Status: Completed; ready for review.
