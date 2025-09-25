@@ -1,88 +1,187 @@
-# QA Report for `src/pages/battleCLI.html`
 
-**Reviewer:** Gemini
+## Quick CSS snippets (drop-in)
 
-## Reviewer's Summary
+```css
+# Progress: CLI Styling Improvements
 
-This report has been revised to clarify the issues found during testing of the Classic Battle CLI page. The original report's findings are largely accurate, though some verification notes have been updated based on a direct code review.
+This document collects focused styling suggestions for the legacy CLI page (`src/pages/battleCLI.html` and `src/pages/battleCLI.css`) and a phased action plan to implement them safely.
 
-The most significant issues are related to **timer management during modals** and a **confusing match start flow**. The timer logic appears to be complex and prone to bugs, leading to a poor user experience and deviations from PRD requirements.
 
-This updated report provides a cleaner, more readable format and offers specific, actionable recommendations for each issue.
+## Summary
 
----
+- Goal: improve accessibility, maintainability, and terminal-authentic visuals for the CLI surface while keeping deterministic test output.
+- Scope: CSS and small DOM-friendly enhancements only (no behavioral changes to the engine).
 
-## 1. CRITICAL: Timer Does Not Pause During Quit Modal
+## Phased approach (high level)
 
-- **Finding:** When the "Quit" modal is open, the round timer continues to count down in the background. This violates the PRD requirement that timers must pause when a modal is active.
-- **Verification:** The `showQuitModal()` function correctly calls `pauseTimers()`, which is intended to clear the timer intervals. However, the UI continues to update. This suggests that while the core logic might be paused, the UI-level countdown is not, or that the `pauseTimers` function is not working as expected. The timer logic is complex, with multiple `setInterval` and `setTimeout` calls, making it susceptible to such bugs.
-- **Recommendation:** Refactor the timer logic to use a single, pausable timer object instead of separate `interval` and `timeout` variables. This will simplify the code and make it easier to reliably pause and resume. At a minimum, `pauseTimers` needs to be debugged to ensure it stops all timer-related activity, including UI updates.
+### Phase 1 — High-impact, low-risk (safe to land quickly)
 
-**Resolution:** Fixed the `pauseTimer` function in `src/pages/battleCLI/init.js` to properly call `timer.stop()` on the round timer object for selection timers, instead of incorrectly using `clearTimeout` on the object. This ensures the timer is fully paused, preventing UI updates during modals. Unit tests (`battleCLI.countdown.test.js`, `battleCLI.handlers.test.js`) and Playwright tests (`battle-cli-start.spec.js`, `countdown.spec.js`) all pass, confirming no regressions.
+- Centralize theme tokens (colors, spacing, font-stack) using CSS variables.
+- Enforce a robust monospace font stack and central line-height.
+- Strengthen focus styles for keyboard-only users.
+- Respect `prefers-reduced-motion` for caret/animations.
+- Ensure `.cli-stat` rows meet 44px tap target minimum.
 
-## 2. HIGH: Timer Resets After Cancelling Quit
+### Phase 2 — Maintainability and consistency
 
-- **Finding:** After opening the "Quit" modal and then closing it (by pressing "Escape" or clicking "Cancel"), the round timer resets to its full duration (e.g., 30 seconds) instead of resuming from where it was paused.
-- **Verification:** The `resumeTimers()` function is called on modal close. It attempts to restart the countdown with the `pausedSelectionRemaining` value. The fact that it resets suggests that `pausedSelectionRemaining` is either not being captured correctly in `pauseTimers()` or that `startSelectionCountdown()` is not using the provided value correctly.
-- **Recommendation:** Debug the `pauseTimers` and `resumeTimers` functions. Ensure that the remaining time is correctly captured, stored, and then used to resume the countdown.
+- Add a `.cli-retro` theme wrapper to isolate retro-only styles.
+- Move ASCII/Unicode indicators into content pseudo-elements or HTML text (avoid emoji).
+- Consolidate the caret/cursor implementation to a single class with accessible attributes.
 
-**Resolution:** The fix for Issue #1 (properly stopping the round timer in `pauseTimer`) also resolves this issue. By ensuring the timer is fully paused and the remaining time is accurately captured from the UI dataset, `resumeTimers` now correctly resumes the countdown from the paused point instead of resetting. Unit tests (`battleCLI.handlers.test.js`) pass, confirming the timer resumes properly after modal cancel.
+### Phase 3 — Extras & QA
 
-## 3. HIGH: Confusing and Inconsistent Match Start Flow
+- Add an optional high-contrast / amber retro theme toggle.
+- Add visual regression snapshots for CLI views (two themes, deterministic viewport/font stack).
+- Run accessibility audits (axe/pa11y) and add checks to CI for CLI route.
 
-- **Finding:** The match does not start in a clear or consistent way. The "Select Match Length" modal sometimes fails to appear, leaving the user with no clear instructions. Pressing "Enter" (a common way to start) results in an "Invalid key" error.
-- **Verification:** The `init()` function calls `initRoundSelectModal()`, with `renderStartButton()` as a fallback if it fails. The inconsistency suggests that `initRoundSelectModal` is error-prone. The key handler in the `waitingForMatchStart` state does not handle "Enter".
-- **Recommendation:**
-  1.  Make the start flow more robust. If `initRoundSelectModal` fails, `renderStartButton` should provide a very clear, prominent button to start the match.
-  2.  Add support for the "Enter" key to either open the match length modal or to start the match directly.
-  3.  Add a tooltip or a visible hint near the lightning-bolt icon to indicate that it can start a match.
 
-**Resolution:** Added support for the "Enter" key in the `waitingForMatchStart` state to dispatch `startClicked` and initiate the match, preventing "Invalid key" errors. Implemented `handleWaitingForMatchStartKey` function and integrated it into the key routing system. The start flow is now more robust with keyboard support, and the fallback `renderStartButton` provides a clear UI path when the modal fails. Unit tests (`battleCLI.onKeyDown.test.js`) and Playwright tests (`battle-cli-start.spec.js`) pass, confirming no regressions.
+## Detailed suggestions & why
 
-## 4. MEDIUM: Enter Key Does Not Confirm Stat Selection
+### Centralize tokens and font stack
 
-- **Finding:** When navigating stats with the arrow keys, pressing "Enter" does not select the highlighted stat. Only number keys (1-5) work.
-- **Verification:** The `handleWaitingForPlayerActionKey()` function only checks for numeric keys.
-- **Recommendation:** Modify `handleWaitingForPlayerActionKey()` to also handle the "Enter" key. When "Enter" is pressed, it should select the currently highlighted stat (which can be tracked in the application state).
+- Add a root token block in `src/pages/battleCLI.css` with a small set of variables:
+  - `--cli-font`, `--cli-font-size`, `--cli-line-height`, `--cli-spacing` (8px rhythm)
+  - color tokens: `--cli-bg`, `--cli-text`, `--cli-accent`, `--cli-warning`, `--cli-focus`
 
-**Resolution:** Updated `handleWaitingForPlayerActionKey` in `src/pages/battleCLI/init.js` to handle "Enter" key by detecting the currently focused stat row (via `document.activeElement`) and selecting the corresponding stat using `getStatByIndex` and `selectStat`. This enables keyboard navigation with arrow keys followed by Enter to confirm selection. Unit tests (`battleCLI.onKeyDown.test.js`, `battleCLI.handlers.test.js`) pass, confirming no regressions in key handling.
+**Why:** Single place for adjustments, consistent cross-platform look, easier theming and accessibility tweaks.
 
-## 5. MEDIUM: Poor Focus Management in Quit Modal
+### Stronger focus ring
 
-- **Finding:** In the "Quit" modal, only the "Cancel" button has a visible focus ring. The "Quit" button is not focusable via the Tab key, making it inaccessible to keyboard-only users.
-- **Verification:** This is an accessibility issue likely originating in the `createModal` or `createButton` components, or in the way the modal is constructed in `showQuitModal()`.
-- **Recommendation:** Ensure that both buttons in the modal are focusable and have a visible focus style. The `tabindex` of the buttons should be managed correctly.
+- Implement a visible box-shadow-based focus ring (avoid thin outlines). Use `:focus { outline: none; box-shadow: ... }` and ensure it applies to `.cli-stat`, links, buttons.
 
-**Resolution:** Added `tabindex="0"` to both "Cancel" and "Quit" buttons in `showQuitModal()` to ensure they are focusable via Tab key. Enhanced focus styles in `src/styles/buttons.css` by adding `.secondary-button:focus` rules for visible focus rings (outline and underline). The modal's focus trapping now correctly cycles between both buttons. Unit tests (`battleCLI.onKeyDown.test.js`, `battleCLI.handlers.test.js`) and Playwright tests (`battle-cli-start.spec.js`) pass, confirming improved accessibility without regressions.
+**Why:** Terminal UI relies on keyboard. A clear focus is essential for keyboard users and tests that check focus states.
 
-## 6. LOW: Inconsistent Timer Terminology
+### Respect reduced motion
 
-- **Finding:** The UI uses different labels for the timer, such as "Timer:", "Time remaining:", and "Time Left:".
-- **Verification:** The code confirms this. `setCountdown()` in `battleCLI.init.js` uses "Timer:", while `startSelectionCountdown()` and the `timerTick` event handler in `battleCLI/init.js` use "Time remaining:".
-- **Recommendation:** Standardize on a single, consistent label for the timer across the entire application. "Time remaining:" is a good choice.
+- Add `@media (prefers-reduced-motion: reduce)` guard to disable caret blink/animations and transitions.
 
-**Resolution:** Standardized all timer labels to "Time remaining:" by updating `setCountdown()` in `src/pages/battleCLI/init.js` to use consistent terminology. This ensures a uniform user experience across all timer displays. Unit tests (`battleCLI.countdown.test.js`) pass, confirming no regressions.
+**Why:** Improves accessibility and test determinism.
 
-## 7. LOW: Verbose Log Feature is Hidden
+### Tap targets and spacing
 
-- **Finding:** The verbose log feature is difficult to discover and use. There is no UI indicator to show that it is active.
-- **Verification:** The feature is controlled by the `cliVerbose` feature flag and is hidden by default.
-- **Recommendation:** Add a small, visible indicator (e.g., "Verbose ON") to the UI when this mode is active. Consider automatically showing the log pane when it's enabled.
+- Ensure `.cli-stat` has `min-height: 44px` and center-aligned content. Use a consistent padding and `gap` for per-row elements.
 
-**Resolution:** Added a "Verbose ON" indicator badge in the page header next to the title, styled with yellow background for visibility. The indicator is shown/hidden dynamically when the `cliVerbose` flag changes via the existing `updateVerbose()` function. The badge appears in the CLI title area and provides clear visual feedback when verbose logging is active. Unit tests (`battleCLI.init.test.js`, `battleCLI.verbose.test.js`) and Playwright tests (`settings.spec.js`) pass, confirming the indicator works correctly without regressions.
+**Why:** Required for mobile usability and Playwright tactile checks.
 
-## 8. LOW: No Screen Reader Announcement on Match End
+### ASCII-first visual indicators
 
-- **Finding:** When a match ends, there is no announcement for screen reader users to indicate the outcome.
-- **Verification:** The `handleMatchOver()` function, which is called at the end of a match, does not trigger any `aria-live` announcements.
-- **Recommendation:** Add an `aria-live` region to the page and use it to announce the final result of the match (e.g., "Match over. You win!").
+- Remove emoji from `content:` pseudo-elements. Use ASCII tags like `->`, `[T]`, `[S]` — these are already applied in CSS but continue this style in any new UI additions.
 
-**Resolution:** Added a dedicated `aria-live` region with `aria-live="assertive"` for match end announcements in `src/pages/battleCLI/cliDomTemplate.js`. Updated the `matchEnded` event handler in `src/pages/battleCLI/init.js` to populate the announcement element with user-friendly messages ("Match over. You win!", "Opponent wins.", or "It's a draw."). Added unit test in `tests/pages/battleCLI.helpers.test.js` to verify the announcement text. Unit tests (`battleCLI.helpers.test.js`) and Playwright tests (`battle-classic/end-modal.spec.js`) pass, confirming no regressions and proper screen reader support.
+**Why:** Deterministic snapshots and terminal authenticity.
 
-## 9. LOW: Seed Validation Is Not Real-Time
+### Isolated retro theme
 
-- **Finding:** The original report stated there was no validation for the seed input. This is incorrect. Validation exists, but it only triggers on the `change` event (when the user clicks away from the input), not in real-time.
-- **Verification:** The `initSeed()` function attaches a `change` event listener to the seed input.
-- **Recommendation:** For a better user experience, change the event listener from `change` to `input` to provide real-time validation as the user types.
+- Wrap retro-only rules under `.cli-retro { ... }`. Keep base styles minimal and accessible.
 
-**Resolution:** Changed the event listener in `initSeed()` from "change" to "input" to enable real-time validation as the user types. Updated the corresponding unit test in `tests/pages/battleCLI.seed.test.js` to dispatch "input" events instead of "change". Unit tests (`battleCLI.seed.test.js`) and Playwright tests (`settings.spec.js`) pass, confirming real-time validation works without regressions.
+**Why:** Makes toggling themes safe and reversable without refactoring markup.
+
+### Verbose log container
+
+- Use `<pre id="cli-verbose-log">` or `white-space: pre-wrap` and ensure copying preserves timestamps.
+
+**Why:** Debugging and automation tooling benefits from deterministic, newline-preserving logs.
+
+Quick CSS snippets (drop-in)
+---------------------------
+Add to top of `src/pages/battleCLI.css`:
+
+:root {
+	--cli-font: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Noto Mono", monospace;
+	--cli-font-size: 14px;
+	--cli-line-height: 1.45;
+	--cli-spacing: 8px;
+	--cli-bg: #0b0f12;
+	--cli-text: #e6edf3;
+	--cli-accent: #9bdcff;
+	--cli-warning: #ffcc00;
+	--cli-focus: #ffd166;
+}
+
+#cli-root {
+	font-family: var(--cli-font);
+	font-size: var(--cli-font-size);
+	line-height: var(--cli-line-height);
+	color: var(--cli-text);
+	background: var(--cli-bg);
+	padding: calc(var(--cli-spacing) * 2);
+}
+
+.cli-stat {
+	min-height: 44px;
+	display: flex;
+	align-items: center;
+	padding: 6px 10px;
+	gap: 8px;
+}
+
+:focus {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.12), 0 0 0 1px var(--cli-focus);
+	border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cli-caret, .cli-anim { animation: none !important; transition: none !important; }
+}
+```
+
+## Phased tasks (concrete)
+
+### Phase 1 (1–2 days):
+
+**Acceptance:** Visual smoke test passes; Playwright CLI tests don't regress; unit test suite green.
+
+### Phase 2 (1–3 days):
+
+**Acceptance:** Theme toggle works; snapshots stable.
+
+### Phase 3 (2–4 days):
+
+**Acceptance:** CI includes accessibility check and passes; docs updated.
+
+## Risks & mitigations
+
+- Risk: Theme changes inadvertently affect visual mode. Mitigation: Keep rules scoped to `#cli-root` and `.cli-retro`, and avoid global token changes without reviewing other pages.
+- Risk: Snapshot flakiness due to fonts. Mitigation: Pin Playwright snapshots to a deterministic viewport and set a fallback font stack for headless runs.
+:focus{outline:none;box-shadow:0 0 0 3px rgba(255,209,102,0.12),0 0 0 1px var(--cli-focus);border-radius:3px}
+
+@media (prefers-reduced-motion: reduce){.cli-caret,.cli-anim{animation:none!important;transition:none!important}}
+```
+
+Phased tasks (concrete)
+----------------------
+
+Phase 1 (1–2 days):
+- Create PR that adds token block and applies minimal refactor to use tokens in `src/pages/battleCLI.css`.
+- Add focus ring rules and update `.cli-stat` for min-height.
+- Add reduced-motion guard and caret class adjustments.
+- Run unit tests and Playwright CLI tests locally.
+
+Acceptance: Visual smoke test passes; Playwright CLI tests don't regress; unit test suite green.
+
+Phase 2 (1–3 days):
+- Add `.cli-retro` wrapper and migrate retro-only styles under it.
+- Ensure all ASCII indicators are used and patch any remaining emoji in the CLI area.
+- Add small snapshot tests for CLI render (two themes).
+
+Acceptance: Theme toggle works; snapshots stable.
+
+Phase 3 (2–4 days):
+- Add optional high-contrast theme and wire small UI control to toggle for QA.
+- Add pa11y/axe assertions to CI for the CLI page.
+- Update docs (PRD note already added) and developer README with how to tweak CLI tokens.
+
+Acceptance: CI includes accessibility check and passes; docs updated.
+
+Risks & mitigations
+-------------------
+- Risk: Theme changes inadvertently affect visual mode. Mitigation: Keep rules scoped to `#cli-root` and `.cli-retro`, and avoid global token changes without reviewing other pages.
+- Risk: Snapshot flakiness due to fonts. Mitigation: Pin Playwright snapshots to a deterministic viewport and set a fallback font stack for headless runs.
+
+Next steps for me
+-----------------
+1. If you'd like, I can implement Phase 1 changes now: add variables, focus rule, reduced-motion guard, and `min-height` for `.cli-stat`. I'll run the unit tests and the CLI Playwright tests and report results.
+2. Or, I can create a PR with just the CSS token block and a short README update describing how to tweak colors and the CLI theme.
+
+Please review this plan and tell me whether to implement Phase 1 now or make a small PR first.
+

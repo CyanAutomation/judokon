@@ -29,6 +29,8 @@ export async function applyDeterministicCooldown(page, options = {}) {
       }
 
       window.__NEXT_ROUND_COOLDOWN_MS = cooldown;
+      window.__ENGINE_CONFIG = { forceCreate: true };
+      window.__highestDisplayedRound = 0;
 
       if (showModal) {
         const existingOverrides =

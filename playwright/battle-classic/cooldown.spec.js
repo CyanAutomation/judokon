@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { withMutedConsole } from "../../tests/utils/console.js";
+import { withMutedConsole, withAllowedConsole } from "../../tests/utils/console.js";
 import {
   waitForBattleReady,
   waitForNextButtonReady,
@@ -56,6 +56,11 @@ test.describe("Classic Battle cooldown + Next", () => {
         expectedContexts.push(diagnosticsBeforeNext.lastContext);
       }
       expect(expectedContexts).toContain(diagnosticsAfterNext.lastContext);
+
+      // Clear the timer override so it doesn't affect other tests
+      await page.evaluate(() => {
+        delete window.__OVERRIDE_TIMERS;
+      });
     }, ["log", "info", "warn", "error", "debug"]);
   });
 
@@ -88,6 +93,18 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
       const diagnosticsBeforeInterference = await readRoundDiagnostics(page);
+      // Dump trace for debugging if things are out-of-order
+      const rtraceBeforeInterference = await page.evaluate(() => ({
+        logs: window.__RTRACE_LOGS || [],
+        highest: window.__highestDisplayedRound
+      }));
+      // Surface trace into test output (allow console temporarily)
+      await withAllowedConsole(
+        async () => {
+          console.log("RTRACE before interference:", JSON.stringify(rtraceBeforeInterference));
+        },
+        ["log", "info", "warn", "error", "debug"]
+      );
       expect(diagnosticsBeforeInterference.displayedRound).toBe(2);
       expect(diagnosticsBeforeInterference.selectionMade).toBe(true);
 

@@ -76,6 +76,14 @@ function getRoundCounterElement(root) {
   }
 }
 
+function pushRTrace(obj) {
+  try {
+    if (typeof globalThis === "undefined") return;
+    if (!globalThis.__RTRACE_LOGS) globalThis.__RTRACE_LOGS = [];
+    globalThis.__RTRACE_LOGS.push(obj);
+  } catch {}
+}
+
 /**
  * Read the currently displayed round number from the DOM.
  *
@@ -192,6 +200,15 @@ const roundTrackingState = {
   write({ counterEl, highest, lastContext, previousContext }) {
     if (Number.isFinite(highest) && highest >= 1) {
       try {
+        if (typeof globalThis !== "undefined" && globalThis.__DEBUG_ROUND_TRACKING) {
+          try {
+            console.debug("[RTRACE] roundTrackingState.write -> highest", {
+              highest,
+              counterDataset: counterEl?.dataset?.highestRound,
+              stack: new Error().stack
+            });
+          } catch {}
+        }
         globalThis.__highestDisplayedRound = highest;
       } catch {}
       if (counterEl && counterEl.dataset) {
@@ -543,6 +560,44 @@ export async function onNextButtonClick(_evt, controls = getNextRoundControls(),
           engineAdvanced: engineAlreadyAdvanced,
           engineNextRoundAvailable: hasEngineNextRound
         });
+        if (typeof globalThis !== "undefined" && globalThis.__DEBUG_ROUND_TRACKING) {
+          const rtraceInfo = {
+            tag: "timerService.fallback.writeRoundCounter",
+            fallbackTarget,
+            recordedHighest,
+            lastContext,
+            previousContext,
+            stack: new Error().stack
+          };
+          try {
+            console.debug("[RTRACE] timerService fallback -> writeRoundCounter", rtraceInfo);
+          } catch {}
+          try {
+            pushRTrace(rtraceInfo);
+          } catch {}
+        }
+        // Prevent jumping more than a single round ahead when engine data is unavailable.
+        // This avoids using a stale recordedHighest that would skip expected intermediate rounds.
+        try {
+          if (!hasEngineNextRound && Number.isFinite(displayedRoundBefore)) {
+            const maxAllowed = Number(displayedRoundBefore) + 1;
+            if (fallbackTarget > maxAllowed) {
+              const capped = maxAllowed;
+              try {
+                pushRTrace({
+                  tag: "timerService.fallback.cap",
+                  originalFallbackTarget: fallbackTarget,
+                  cappedTo: capped,
+                  recordedHighest,
+                  displayedRoundBefore,
+                  stack: new Error().stack
+                });
+              } catch {}
+              fallbackTarget = capped;
+            }
+          }
+        } catch {}
+
         writeRoundCounter(root, fallbackTarget);
         const nextRecordedHighest = hasRecordedHighest
           ? Math.max(recordedHighest, fallbackTarget)

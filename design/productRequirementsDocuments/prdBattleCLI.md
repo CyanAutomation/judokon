@@ -17,7 +17,7 @@ Styling and layout embrace **terminal authenticity**: monospace font, visible fo
 The animated Classic Battle UI can be heavy for low-spec devices and noisy for power users or automated tests.
 We need a **lightweight, deterministic surface** that preserves gameplay logic and timers while maximizing **readability, accessibility, and observability**.
 
-**Personas**
+### Personas
 
 - **Low-spec user:** Needs fast loading and low memory usage.
 - **Keyboard-only user:** Must finish a match without a mouse.
@@ -25,7 +25,7 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 - **Automation pipeline:** Needs deterministic, stable DOM hooks.
 - **QA engineer:** Requires observability and reliable selectors.
 
-**Success looks like:**
+### Success looks like
 
 - Opens fast, runs on modest hardware, navigable by keyboard alone.
 - Mirrors Classic Battle mechanics exactly.
@@ -44,6 +44,8 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 5. Pass WCAG 2.1 AA; >95% correct announcements.
 6. Tap/click targets ≥44px tall.
 7. **Terminal Authenticity**: Design matches CLI conventions with enhanced visual elements.
+   
+  Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; visual indicators should use ASCII or simple Unicode alternatives to preserve terminal authenticity, readability, and deterministic test output.
 8. **Typography Excellence**: Monospace font with improved line-height (1.45) and consistent 8px rhythm.
 
 ### Dev/Test Goals
@@ -96,7 +98,7 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 | **P2** | Observability Mode  | Verbose log view echoing transitions and events.                                                      |
 | **P2** | Interrupt Handling  | Quit confirmation pauses timers; cancel resumes.                                                      |
 
-**Feature Flags**
+### Feature Flags
 
 - `cliVerbose` — show log panel.
 - `cliShortcuts` — enable single-key shortcuts.
@@ -131,7 +133,7 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 +-----------------------------------------+
 ```
 
-**Enhancements**
+### Enhancements
 
 - **Terminal Title Bar**: Enhanced gradient styling with authentic terminal appearance.
 - **ASCII Indicators**: `[TIMER]` for timer, `>>` for prompts and results, `|` for separators.

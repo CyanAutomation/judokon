@@ -36,6 +36,8 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a === "--from-dir" && argv[i + 1]) {
       out.fromDir = argv[++i];
+    } else if (a === "--force") {
+      out.force = true;
     }
   }
   return out;
@@ -101,6 +103,17 @@ export async function prepareLocalModel(options = {}) {
     try {
       if (!(await fileNonEmpty(full))) throw new Error("empty");
     } catch {
+      if (!options.force) {
+        let existingFileNonEmpty = false;
+        try {
+          existingFileNonEmpty = await fileNonEmpty(full);
+        } catch {} // Ignore error if file doesn't exist
+
+        if (existingFileNonEmpty) {
+          console.warn(`Skipping placeholder for existing non-empty file: ${rel}. Use --force to overwrite.`);
+          continue;
+        }
+      }
       // As a minimal fallback, create placeholder files to satisfy presence checks
       // (Note: real inference still requires actual weights; this is for dev scaffolding only.)
       await ensureDir(path.dirname(full));

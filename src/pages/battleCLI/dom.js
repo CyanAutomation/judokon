@@ -101,10 +101,17 @@ export function updateRoundHeader(round, target) {
  * Fallback: #round-message element (already shared between CLI and standard)
  */
 export function setRoundMessage(text) {
-  // Phase 3: Primary update via shared Scoreboard component
+  // Helper: strip common emoji/unicode pictographs for CLI-only output
+  const stripEmoji = (s) =>
+    String(s || "").replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E6}-\u{1F1FF}]/gu, "");
+
+  const isCliActive = Boolean(byId("cli-root"));
+  const out = isCliActive ? stripEmoji(text) : text || "";
+
+  // Phase 3: Primary update via shared Scoreboard component (sanitize for CLI)
   try {
     if (sharedScoreboardHelpers?.showMessage) {
-      sharedScoreboardHelpers.showMessage(text || "", { outcome: false });
+      sharedScoreboardHelpers.showMessage(out || "", { outcome: false });
     }
   } catch {
     // Fallback will be used below
@@ -113,7 +120,7 @@ export function setRoundMessage(text) {
   // Always keep CLI element in sync for deterministic tests and fallback UI
   try {
     const el = byId("round-message");
-    if (el) el.textContent = text || "";
+    if (el) el.textContent = out || "";
   } catch {}
 }
 
