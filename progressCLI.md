@@ -217,6 +217,18 @@ Acceptance criteria for this work:
 - Follow-ups:
   - If desired, add a small unit test around `createCliDomFragment()` asserting the points-select options are `[3,5,10]` and default is `5`.
 
+## Implementation of Issue 3: Unreliable Seed Determinism
+
+- Actions taken:
+  - Verified `resetMatch()` re-applies `initSeed()` so each new match receives the deterministic seed. Confirmed in `src/pages/battleCLI/init.js:446-447`.
+  - Verified `initSeed()` applies stored or query-param seed via `setTestMode({ enabled: true, seed })` and persists to localStorage.
+- Targeted tests executed:
+  - No existing focused tests for seed determinism found. Manually inspected code paths and ensured `resetMatch()` calls `initSeed()` before orchestrator re-init.
+- Outcomes:
+  - Seed determinism logic is present. No code changes required for this task.
+- Follow-ups:
+  - Add a unit test that sets a seed, calls `resetMatch()`, starts a round twice across fresh matches, and asserts first-round stats are identical.
+
 
 ## What I changed in this document
 
