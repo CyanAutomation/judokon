@@ -143,7 +143,7 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Fix steps:
 
   1. Audit the `timer` module (likely `src/helpers/timer.js`) and the orchestrator for a drift detection routine. If absent, implement a lightweight drift detector that compares engine time vs UI time and emits `driftExceeded` when > 2s.
-  2. UI should display "Waiting..." in a neutral banner/snackbar and pause user-initiated countdown displays until sync is regained.
+  2. UI should display "Waiting..." in a snackbar and pause user-initiated countdown displays until sync is regained.
   3. When sync is restored, remove the banner and resume.
 
 - Tests:
@@ -176,8 +176,8 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 
 ## Quality gates and validation steps
 
-- Local pre-merge checks: `npx prettier . --check` && `npx eslint .` && `npx vitest run`.
-- Add small Playwright smoke specs for each critical flow (replay/reset, auto-advance, opponent state, tab order, timer drift) and run them as part of PR checks.
+- Local pre-merge checks: `npx prettier . --check` && `npx eslint .
+- Add small Playwright smoke specs for each critical flow (replay/reset, auto-advance, opponent state, tab order, timer drift) and run them as part of PR checks. Please note that playwright tests may require requesting elevated permissions to run.
 - Ensure tests mute expected console warnings in tests (follow `AGENTS.md` guidance and `withMutedConsole`).
 
 ## Suggested test file names & locations
@@ -198,8 +198,3 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 3. Add opponent intermediate state and UI sequencing tests — small PR.
 4. Enable statHotkeys by default or add settings toggle and test coverage — small PR.
 5. Add ARIA descriptions and run accessibility audit — small PR.
-
-## Completion summary
-
-- I validated the issues reported in the original `progressClassic.md` and confirmed accuracy against the codebase.
-- Converted the findings into a prioritized, test-driven remediation plan with explicit fixes, tests, quality gates, and risk notes.

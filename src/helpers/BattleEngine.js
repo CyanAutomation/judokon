@@ -289,6 +289,12 @@ export class BattleEngine {
       logger.debug("BattleEngine.determineOutcome", outcome);
     } catch {}
     applyOutcome(this, outcome);
+    // Notify listeners that stats-related values used for UI may need refresh.
+    try {
+      this.emit("statsUpdated", {
+        stats: undefined // UI may query snapshots; payload optional by design
+      });
+    } catch {}
     try {
       logger.debug("BattleEngine.applyOutcome.scores", {
         playerScore: this.playerScore,
@@ -420,12 +426,16 @@ export class BattleEngine {
       this.roundInterrupted = false;
     }
     this.lastModification = modification;
-    return {
+    const result = {
       outcome: OUTCOME.ROUND_MODIFIED,
       matchEnded: this.matchEnded,
       playerScore: this.playerScore,
       opponentScore: this.opponentScore
     };
+    try {
+      this.emit("statsUpdated", { stats: undefined });
+    } catch {}
+    return result;
   }
 
   /**

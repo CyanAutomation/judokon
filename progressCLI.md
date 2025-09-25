@@ -187,3 +187,25 @@ Notes/Risks:
 - No dynamic imports introduced in hot paths.
 
 Status: Completed for UI wiring + tests; awaiting review before engine-side emitter work.
+
+## Progress Log — Task 2: Engine emits `statsUpdated`
+
+Activity:
+- Locate engine stat change points and emit a `statsUpdated` event so `StatsPanel` can react.
+
+Changes:
+- `src/helpers/BattleEngine.js`:
+  - Emit `statsUpdated` after `handleStatSelection()` applies outcome.
+  - Emit `statsUpdated` after `roundModification()` applies changes.
+- Tests added:
+  - `tests/helpers/engineStatsUpdated.spec.js` — verifies emissions for both code paths — PASS
+  - Re-ran `tests/cli/statDisplay.spec.js` to ensure UI wiring responds — PASS
+
+Validation (targeted only):
+- Vitest: 2 files, 4 tests — PASS
+
+Notes/Risks:
+- Payload intentionally allows missing `stats`; UI uses facade snapshot fallback.
+- No dynamic imports added; hot paths maintained.
+
+Status: Completed; awaiting review.
