@@ -70,7 +70,7 @@ function setupScoreboard(controls, scheduler = realScheduler) {
     }
   } catch {}
 }
-export {
+const scoreboardApi = {
   setupScoreboard,
   showMessage,
   updateScore,
@@ -81,4 +81,18 @@ export {
   showAutoSelect,
   updateRoundCounter,
   clearRoundCounter
+};
+
+export {
+  setupScoreboard,
+  showMessage,
+  updateScore,
+  clearMessage,
+  showTemporaryMessage,
+  clearTimer,
+  updateTimer,
+  showAutoSelect,
+  updateRoundCounter,
+  clearRoundCounter,
+  scoreboardApi as scoreboard
 };
