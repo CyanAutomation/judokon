@@ -11,14 +11,16 @@ import { realScheduler } from "./scheduler.js";
  *
  * @param {object} controls - Timer control callbacks.
  * @param {object} [scheduler=realScheduler] - Timer scheduler.
+ * @returns {void}
  */
-function setupScoreboard(controls, scheduler = realScheduler) {
+export function setupScoreboard(controls, scheduler = realScheduler) {
   const header = document.querySelector("header");
   controls.scheduler = scheduler;
+  const init = getScoreboardMethod("initScoreboard");
   if (!header) {
-    initScoreboard(null, controls);
+    init(null, controls);
   } else {
-    initScoreboard(header, controls);
+    init(header, controls);
   }
 
   // Handle visibility changes for timer pause/resume
