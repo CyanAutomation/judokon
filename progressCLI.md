@@ -150,10 +150,9 @@ Notes on verification terminology:
 
 Recommended next actions:
 
-1. Implement the easy fixes first: immediate UI fix for round counter.
-2. Add unit tests for seed determinism and settings persistence before changing engine wiring.
-3. Instrument timers with logging and write fake-timer tests for visibility behavior.
-4. After changes, run the project's validation checklist (prettier, eslint, vitest, Playwright) and include results in the PR body.
+1. Add unit tests for seed determinism and settings persistence before changing engine wiring.
+2. Instrument timers with logging and write fake-timer tests for visibility behavior.
+3. After changes, run the project's validation checklist (prettier, eslint, vitest, Playwright) and include results in the PR body.
 
 Acceptance criteria for this work:
 
