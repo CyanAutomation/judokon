@@ -408,7 +408,29 @@ export const __test = {
  * // Callers should await the returned promise to ensure the reset is finished.
  */
 let resetPromise = Promise.resolve();
-async function resetMatch() {
+
+/**
+ * Reset the match and reinitialize the battle orchestrator.
+ *
+ * @pseudocode
+ * stopSelectionCountdown()
+ * handleCountdownFinished()
+ * roundResolving = false
+ * clearVerboseLog()
+ * remove play-again/start buttons
+ * resetPromise = async () => {
+ *   disposeClassicBattleOrchestrator()
+ *   await resetGame(store)
+ *   updateRoundHeader(0, engineFacade.getPointsToWin?.())
+ *   updateScoreLine()
+ *   setRoundMessage("")
+ * }
+ * await initClassicBattleOrchestrator()
+ * // Return a promise that resolves after both reset and orchestrator initialization are complete.
+ * // Callers should await the returned promise to ensure the reset is finished.
+ * @returns {Promise<void>} A promise that resolves when the reset is complete.
+ */
+export async function resetMatch() {
   stopSelectionCountdown();
   handleCountdownFinished();
   state.roundResolving = false;
@@ -417,13 +439,16 @@ async function resetMatch() {
     document.getElementById("play-again-button")?.remove();
     document.getElementById("start-match-button")?.remove();
   } catch {}
-  // Perform synchronous reset work
+  // Perform synchronous UI reset to prevent glitches
+  updateRoundHeader(0, engineFacade.getPointsToWin?.());
+  updateScoreLine();
+  setRoundMessage("");
+  // Re-apply seed for deterministic behavior on match reset
+  initSeed();
+  // Perform asynchronous reset work
   const next = (async () => {
     disposeClassicBattleOrchestrator();
     await resetGame(store);
-    updateRoundHeader(0, engineFacade.getPointsToWin?.());
-    updateScoreLine();
-    setRoundMessage("");
   })();
   // Initialize orchestrator after sync work without blocking callers
   resetPromise = next.then(async () => {
@@ -523,7 +548,7 @@ async function renderStartButton() {
     }
   });
   section.append(btn);
-  main.append(section);
+  main.insertBefore(section, main.firstChild);
 }
 
 /**
@@ -566,7 +591,8 @@ function initSeed() {
   } else if (storedSeed) {
     const num = Number(storedSeed);
     if (!Number.isNaN(num)) {
-      // Populate the input from previous choice without enabling test mode implicitly.
+      // Apply stored seed to the engine for persistence.
+      apply(num);
       if (input) input.value = String(num);
     }
   }
@@ -2547,6 +2573,8 @@ export async function init() {
   } catch {
     await renderStartButton();
   }
+  // Always show the start button as a prominent, accessible entry point
+  await renderStartButton();
   wireEvents();
 }
 

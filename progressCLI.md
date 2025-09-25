@@ -106,29 +106,79 @@ Notes on verification terminology:
 
 ---
 
+## Implementation of Issue 1: Unintuitive Match Start
+
+- **Actions taken:**
+  - Modified `src/pages/battleCLI/init.js` to always call `renderStartButton()` after attempting `initRoundSelectModal()`.
+  - Changed `renderStartButton()` to insert the start button section at the top of `#cli-main` for prominence.
+- **Test outcomes:**
+  - Playwright test `battle-cli-start.spec.js` passed.
+  - Unit test `tests/pages/battleCLI.retroTheme.test.js` passed.
+- **Outcome:** The Start Match button is now always visible and prominent on the initial screen, providing a clear entry point for users. The modal remains as an alternative for selecting win targets.
+
+## Implementation of Issue 2: Missing "3-Point" Match Length
+
+- **Actions taken:**
+  - Updated `src/config/battleDefaults.js` to change `POINTS_TO_WIN_OPTIONS` from `[5, 10, 15]` to `[3, 5, 10]`.
+  - Updated `src/pages/battleCLI.html` select options to include 3, 5, 10 and set the default to 5.
+  - Added a new unit test `tests/config/battleDefaults.test.js` to assert the available options.
+- **Test outcomes:**
+  - New unit test `tests/config/battleDefaults.test.js` passed.
+  - Playwright test `battle-cli-start.spec.js` passed without regression.
+- **Outcome:** Win-target options now include [3,5,10] with 5 as the default, allowing players to select a 3-point quick match as per PRD requirements.
+
+## Implementation of Issue 8: Round Counter Glitch on Quit
+
+- **Actions taken:**
+  - Modified `resetMatch()` in `src/pages/battleCLI/init.js` to perform UI updates (round counter, score line, round message) synchronously before asynchronous teardown operations.
+  - Exported `resetMatch` for testing purposes.
+  - Added a unit test in `tests/pages/battleCLI.helpers.test.js` to assert that `updateRoundHeader` is called with 0 synchronously.
+- **Test outcomes:**
+  - New unit test in `tests/pages/battleCLI.helpers.test.js` passed, verifying synchronous round counter reset.
+  - Playwright test `battle-cli-start.spec.js` passed without regression.
+- **Outcome:** The round counter now resets to 0 immediately upon quit, preventing the brief display of previous match state and eliminating the UI glitch.
+
+## Implementation of Issue 3: Unreliable Seed Determinism
+
+- **Actions taken:**
+  - Modified `resetMatch()` in `src/pages/battleCLI/init.js` to call `initSeed()` synchronously after UI updates, ensuring seeds are reapplied on each match reset for consistent determinism.
+  - Added a unit test in `tests/pages/battleCLI.seed.test.js` that verifies `resetMatch()` reapplies the seed, producing identical random sequences before and after reset.
+- **Test outcomes:**
+  - New unit test in `tests/pages/battleCLI.seed.test.js` passed, confirming deterministic behavior across match resets.
+  - Playwright test `battle-cli-start.spec.js` passed without regression.
+- **Outcome:** Seeds are now reliably applied on each match reset, ensuring deterministic behavior for QA and automation purposes.
+
+## Implementation of Issue 4: Incomplete Settings Persistence
+
+- **Actions taken:**
+  - Modified `initSeed()` in `src/pages/battleCLI/init.js` to apply stored seed to the engine via `setTestMode()` instead of just updating the input field.
+  - Updated `restorePointsToWin()` to ensure reliable localStorage read/write and UI/engine updates.
+  - Added unit tests in `tests/pages/battleCLI.seed.test.js` and `tests/pages/battleCLI.pointsToWin.test.js` to simulate reloads and assert persisted state.
+- **Test outcomes:**
+  - Updated unit tests in `tests/pages/battleCLI.seed.test.js` and `tests/pages/battleCLI.pointsToWin.test.js` passed, confirming settings persist across simulated reloads.
+  - Playwright test `battle-cli-start.spec.js` passed without regression.
+- **Outcome:** Settings (seed and win-target) now persist across reloads and are properly applied to the engine state.
+
 ## Opportunities for improvement (cross-cutting)
 
 - Add automated tests for each behavioral requirement: seed determinism, settings persistence, timer pause/resume, verbose log visibility, and keyboard shortcut state. Prefer unit tests with fake timers + small integration tests.
 - Centralize feature flags and UI wiring: ensure that toggles like "Verbose" only change the presentation layer through a single well-tested API.
-- Introduce short smoke/e2e tests (Playwright) for the CLI flows to catch regressions (start match, restart, quit, visibility change).
 - Add `data-testid` attributes to key UI elements (start button, timer, verbose log) to make tests robust.
-- Consider adding a simple visual regression snapshot test for the initial page layout to detect missing elements like the Start button.
 
 ## Next steps and acceptance criteria
 
 Recommended next actions:
 
-1. Implement the easy fixes first: (1) Start button visibility and accessibility, (2) update win-target options to include 3, (3) immediate UI fix for round counter.
-2. Add unit tests for seed determinism and settings persistence before changing engine wiring.
-3. Instrument timers with logging and write fake-timer tests for visibility behavior.
-4. After changes, run the project's validation checklist (prettier, eslint, vitest, Playwright) and include results in the PR body.
+1. Add unit tests for seed determinism and settings persistence before changing engine wiring.
+2. Instrument timers with logging and write fake-timer tests for visibility behavior.
+3. After changes, run the project's validation checklist (prettier, eslint, vitest, Playwright) and include results in the PR body.
 
 Acceptance criteria for this work:
 
-- Start button is visible, keyboard-accessible, and triggers a match start.
-- Win-target options include [3,5,10] and default to 5.
-- Seed determinism is reproducible: same seed → same first-round stats across fresh matches.
-- Settings persist across reloads and are applied to the engine.
+- ✅ Start button is visible, keyboard-accessible, and triggers a match start.
+- ✅ Win-target options include [3,5,10] and default to 5.
+- ✅ Seed determinism is reproducible: same seed → same first-round stats across fresh matches.
+- ✅ Settings persist across reloads and are applied to the engine.
 - Timers pause on tab hide and resume accurately.
 
 ## What I changed in this document

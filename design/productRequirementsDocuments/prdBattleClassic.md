@@ -56,7 +56,7 @@ Currently, only ~45% of new players complete their first battle across all modes
 ## Non-Goals
 
 - Online multiplayer.
-- Customizable timers or win conditions beyond 5/10/15 points.
+- Customizable timers or win conditions beyond 3/5/10 points.
 - Alternate rulesets, stat weighting, or advanced scoring.
 
 ---
@@ -73,14 +73,14 @@ Currently, only ~45% of new players complete their first battle across all modes
 
 ## Gameplay Basics
 
-- On first visit to `battleJudoka.html`, a modal prompts the player to select a win target of **5, 10, or 15 points** (default 10). After a choice is made, the modal closes and the match begins.
+- On first visit to `battleJudoka.html`, a modal prompts the player to select a win target of **3, 5, or 10 points** (default 5). After a choice is made, the modal closes and the match begins.
 - The standard deck contains **99 unique cards**.
 - Each match begins with both sides receiving **25 random cards**.
 - At the start of each round, both players draw their top card.
 - The player selects one stat (Power, Speed, Technique, etc.).
 - Stat buttons stay disabled until the selection phase and turn off after a choice is made.
 - The higher value wins the round and scores **1 point**; used cards are discarded.
-- The match ends when a player reaches a **user-selected win target of 5, 10, or 15 points** (default 10) or after **25 rounds** (draw).
+- The match ends when a player reaches a **user-selected win target of 3, 5, or 10 points** (default 5) or after **25 rounds** (draw).
 
 ---
 
@@ -114,7 +114,7 @@ Currently, only ~45% of new players complete their first battle across all modes
 | **P1**   | Stat Selection         | Player chooses from visible stats; buttons disabled after selection.                             |
 | **P1**   | Stat Selection Timer   | 30 s countdown; auto-selects on expiry if `autoSelect = true`. Pauses on tab sleep/inactivity.   |
 | **P1**   | Scoring & Results      | +1 point for win, 0 for tie/loss; update `#score-display`. Show “You picked: X” + outcome.       |
-| **P1**   | End Conditions         | End when player reaches target (5/10/15) or after 25 rounds.                                     |
+| **P1**   | End Conditions         | End when player reaches target (3/5/10) or after 25 rounds.                                     |
 | **P1**   | Scoreboard Integration | Use shared Scoreboard component for all messages, counters, timers, and accessibility.           |
 | **P2**   | Opponent AI            | Difficulty settings: Easy = random; Medium = ≥ average stat; Hard = highest stat. Default: Easy. |
 | **P2**   | Quit Flow              | Quit button and header logo prompt confirmation; if confirmed, end match and return home.        |
@@ -185,8 +185,8 @@ Currently, only ~45% of new players complete their first battle across all modes
 
 - `ROUND_SELECTION_MS = 30_000`
 - `MAX_ROUNDS = 25`
-- `POINTS_TO_WIN_OPTIONS = [5, 10, 15]`
-- `DEFAULT_POINTS_TO_WIN = 10`
+- `POINTS_TO_WIN_OPTIONS = [3, 5, 10]`
+- `DEFAULT_POINTS_TO_WIN = 5`
 - `COOLDOWN_MS = 3_000`
 
 ---
@@ -210,7 +210,7 @@ Currently, only ~45% of new players complete their first battle across all modes
 ## Tasks
 
 - [ ] 1.0 Match Setup
-  - [ ] 1.1 Implement points-to-win selection (5/10/15 with default 10).
+  - [ ] 1.1 Implement points-to-win selection (3/5/10 with default 5).
   - [ ] 1.2 Randomly draw 25 unique cards per player from `judoka.json`.
   - [ ] 1.3 Ensure no duplicates within a round.
   - [ ] 1.4 Integrate deck draw with shared Random Card Draw module.

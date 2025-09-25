@@ -9,7 +9,7 @@
  * Note on feature flag names: canonical keys use camelCase (e.g., `autoSelect`,
  * `statHotkeys`). Older docs may reference FF_* names; prefer camelCase going forward.
  */
-export const POINTS_TO_WIN_OPTIONS = [5, 10, 15];
+export const POINTS_TO_WIN_OPTIONS = [3, 5, 10];
 /**
  * Default points-to-win used when no prior value is stored.
  *

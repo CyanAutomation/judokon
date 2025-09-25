@@ -52,4 +52,46 @@ describe("battleCLI deterministic seed", () => {
     input.dispatchEvent(new Event("input"));
     expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");
   });
+
+  it("resetMatch reapplies seed for deterministic behavior", async () => {
+    const mod = await loadBattleCLI({
+      url: "http://localhost/battleCLI.html?seed=42",
+      html: seedInputHtml
+    });
+    await mod.init();
+    const { seededRandom } = await import("../../src/helpers/testModeUtils.js");
+    // Get initial sequence
+    const seq1 = [seededRandom(), seededRandom(), seededRandom()];
+    // Import resetMatch and call it
+    const { resetMatch } = await import("../../src/pages/battleCLI/init.js");
+    await resetMatch();
+    // Get sequence after reset
+    const seq2 = [seededRandom(), seededRandom(), seededRandom()];
+    // Should be identical due to seed reapplication
+    expect(seq1).toEqual(seq2);
+  });
+
+  it("persists and applies stored seed on reload", async () => {
+    // Simulate previous session stored seed
+    localStorage.setItem("battleCLI.seed", "99");
+    const mod = await loadBattleCLI({
+      url: "http://localhost/battleCLI.html", // no seed param
+      html: seedInputHtml
+    });
+    await mod.init();
+    const { seededRandom } = await import("../../src/helpers/testModeUtils.js");
+    const first = seededRandom();
+    const expected = (start, count) => {
+      const out = [];
+      let s = start;
+      for (let i = 0; i < count; i++) {
+        const x = Math.sin(s++) * 10000;
+        out.push(x - Math.floor(x));
+      }
+      return out;
+    };
+    const [e1] = expected(99, 1);
+    expect(first).toBeCloseTo(e1);
+    expect(localStorage.getItem("battleCLI.seed")).toBe("99");
+  });
 });
