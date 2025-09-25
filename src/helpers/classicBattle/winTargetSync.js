@@ -86,7 +86,16 @@ export function syncWinTargetDropdown() {
     const currentTarget = readPointsToWin();
     if (typeof currentTarget !== "number" || !Number.isFinite(currentTarget)) return;
 
-    select.value = String(currentTarget);
+    const value = String(currentTarget);
+    const hasOption = Array.from(select.options || []).some((option) => option.value === value);
+    if (!hasOption) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    }
+
+    select.value = value;
     const round = getCurrentRoundNumber();
     updateRoundHeader(round, currentTarget);
   } catch {}

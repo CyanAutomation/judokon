@@ -1507,10 +1507,10 @@ export function restorePointsToWin() {
   try {
     const select = byId("points-select");
     if (!select) return;
-    const optionValues = Array.from(select.options || [])
+    const selectOptionValues = Array.from(select.options || [])
       .map((option) => Number(option.value))
       .filter((value) => Number.isFinite(value));
-    const validTargets = new Set([...POINTS_TO_WIN_OPTIONS, ...optionValues]);
+    const validTargets = new Set([...POINTS_TO_WIN_OPTIONS, ...selectOptionValues]);
     const storage = wrap(BATTLE_POINTS_TO_WIN, { fallback: "none" });
     const saved = Number(storage.get());
     if (validTargets.has(saved)) {

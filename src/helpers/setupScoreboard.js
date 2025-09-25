@@ -18,7 +18,8 @@ const scoreboardFunctionNames = [
 
 const missingScoreboardExports = [];
 
-const scoreboardFunctions = scoreboardFunctionNames.reduce((functions, name) => {
+const scoreboardFunctions = {};
+for (const name of scoreboardFunctionNames) {
   let candidate;
   try {
     candidate = scoreboardModule?.[name];
@@ -26,15 +27,18 @@ const scoreboardFunctions = scoreboardFunctionNames.reduce((functions, name) => 
     candidate = undefined;
   }
   if (typeof candidate === "function") {
-    functions[name] = candidate;
+    scoreboardFunctions[name] = candidate;
   } else {
-    functions[name] = noop;
+    scoreboardFunctions[name] = noop;
     missingScoreboardExports.push(name);
   }
-  return functions;
-}, {});
+}
 
-if (missingScoreboardExports.length > 0) {
+if (
+  missingScoreboardExports.length > 0 &&
+  typeof process !== "undefined" &&
+  process.env.NODE_ENV === "development"
+) {
   console.warn(
     "[setupScoreboard] Using fallback implementations for Scoreboard exports:",
     missingScoreboardExports.join(", ")
@@ -107,7 +111,7 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
  * @pseudocode
  * 1. Invoke the namespace export `showMessage` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.showMessage}
+ * @function
  */
 export const showMessage = scoreboardFunctions.showMessage;
 
@@ -117,7 +121,7 @@ export const showMessage = scoreboardFunctions.showMessage;
  * @pseudocode
  * 1. Invoke the namespace export `updateScore` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.updateScore}
+ * @function
  */
 export const updateScore = scoreboardFunctions.updateScore;
 
@@ -127,7 +131,7 @@ export const updateScore = scoreboardFunctions.updateScore;
  * @pseudocode
  * 1. Invoke the namespace export `clearMessage` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.clearMessage}
+ * @function
  */
 export const clearMessage = scoreboardFunctions.clearMessage;
 
@@ -137,7 +141,7 @@ export const clearMessage = scoreboardFunctions.clearMessage;
  * @pseudocode
  * 1. Invoke the namespace export `showTemporaryMessage` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.showTemporaryMessage}
+ * @function
  */
 export const showTemporaryMessage = scoreboardFunctions.showTemporaryMessage;
 
@@ -147,7 +151,7 @@ export const showTemporaryMessage = scoreboardFunctions.showTemporaryMessage;
  * @pseudocode
  * 1. Invoke the namespace export `clearTimer` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.clearTimer}
+ * @function
  */
 export const clearTimer = scoreboardFunctions.clearTimer;
 
@@ -157,7 +161,7 @@ export const clearTimer = scoreboardFunctions.clearTimer;
  * @pseudocode
  * 1. Invoke the namespace export `updateTimer` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.updateTimer}
+ * @function
  */
 export const updateTimer = scoreboardFunctions.updateTimer;
 
@@ -167,7 +171,7 @@ export const updateTimer = scoreboardFunctions.updateTimer;
  * @pseudocode
  * 1. Invoke the namespace export `showAutoSelect` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.showAutoSelect}
+ * @function
  */
 export const showAutoSelect = scoreboardFunctions.showAutoSelect;
 
@@ -177,7 +181,7 @@ export const showAutoSelect = scoreboardFunctions.showAutoSelect;
  * @pseudocode
  * 1. Invoke the namespace export `updateRoundCounter` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.updateRoundCounter}
+ * @function
  */
 export const updateRoundCounter = scoreboardFunctions.updateRoundCounter;
 
@@ -187,7 +191,7 @@ export const updateRoundCounter = scoreboardFunctions.updateRoundCounter;
  * @pseudocode
  * 1. Invoke the namespace export `clearRoundCounter` with the provided arguments.
  *
- * @type {typeof scoreboardFunctions.clearRoundCounter}
+ * @function
  */
 export const clearRoundCounter = scoreboardFunctions.clearRoundCounter;
 
@@ -196,19 +200,6 @@ export const clearRoundCounter = scoreboardFunctions.clearRoundCounter;
  *
  * @pseudocode
  * 1. Collect `setupScoreboard` and the forwarded helper functions in a single object.
- *
- * @type {{
- *   setupScoreboard: typeof setupScoreboard,
- *   showMessage: typeof showMessage,
- *   updateScore: typeof updateScore,
- *   clearMessage: typeof clearMessage,
- *   showTemporaryMessage: typeof showTemporaryMessage,
- *   clearTimer: typeof clearTimer,
- *   updateTimer: typeof updateTimer,
- *   showAutoSelect: typeof showAutoSelect,
- *   updateRoundCounter: typeof updateRoundCounter,
- *   clearRoundCounter: typeof clearRoundCounter
- * }}
  */
 const scoreboardApi = {
   setupScoreboard,
