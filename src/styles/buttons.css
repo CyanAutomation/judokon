@@ -41,6 +41,7 @@ button:disabled,
   background-image: var(--button-disabled-pattern);
   color: var(--button-text-color);
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 #stat-buttons button {

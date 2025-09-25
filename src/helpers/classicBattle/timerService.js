@@ -459,6 +459,12 @@ export async function cancelTimerOrAdvance(_btn, timer, resolveReady) {
  * @returns {Promise<void>}
  */
 export async function onNextButtonClick(_evt, controls = getNextRoundControls(), options = {}) {
+  const btn =
+    _evt?.target ||
+    document.getElementById("next-button") ||
+    document.querySelector('[data-role="next-round"]');
+  if (btn?.disabled) return;
+
   if (nextClickInFlight) {
     timerLogger.debug("[next] click ignored while advance in flight");
     return;

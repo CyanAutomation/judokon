@@ -146,7 +146,17 @@ Tests / follow-ups:
 - Unit test: confirm `disabled` is set when expected.
 - E2E: click the greyed-out Next button and assert no state change.
 
----
+**Implementation completed:**
+
+- **Actions taken:** Added `pointer-events: none` to `button:disabled` and `primary-button:disabled` CSS rules in `src/styles/buttons.css` to prevent clicks on disabled buttons. Added a guard in `onNextButtonClick` function in `src/helpers/classicBattle/timerService.js` to early-return if the button is disabled. Added a unit test to verify the guard works.
+
+- **Files modified:** `src/styles/buttons.css` (added pointer-events: none), `src/helpers/classicBattle/timerService.js` (added disabled check), `tests/helpers/timerService.onNextButtonClick.test.js` (added test for disabled button).
+
+- **Unit test outcomes:** `timerService.onNextButtonClick.test.js`: ✅ PASSED (6/6 tests, including new disabled guard test)
+
+- **Playwright test outcomes:** `battle-next-skip.non-orchestrated.spec.js`: ✅ PASSED (1/1)
+
+- **Validation:** Disabled Next button now prevents clicks via CSS and JavaScript guard, ensuring consistent visual and behavioral state.
 
 ## 6) Main Menu button not wired
 

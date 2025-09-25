@@ -194,4 +194,17 @@ describe("onNextButtonClick", () => {
       expect(firstSettled).toBe(true);
     });
   });
+
+  it("ignores clicks when button is disabled", async () => {
+    const { onNextButtonClick } = await import("../../src/helpers/classicBattle/timerService.js");
+    const dispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
+    const events = await import("../../src/helpers/classicBattle/battleEvents.js");
+
+    btn.disabled = true;
+
+    await onNextButtonClick(new MouseEvent("click"), { timer: null, resolveReady: null });
+
+    expect(dispatcher.dispatchBattleEvent).not.toHaveBeenCalled();
+    expect(events.emitBattleEvent).not.toHaveBeenCalled();
+  });
 });
