@@ -639,11 +639,6 @@ async function applySelectionResult(store, result) {
     });
   } catch {}
   ensureScoreboardReflectsResult(result);
-  try {
-    showSnackbar("");
-  } catch (err) {
-    console.debug("battleClassic: failed to clear snackbar after result", err);
-  }
   const matchEnded = await confirmMatchOutcome(store, result);
   if (!matchEnded && store && typeof store === "object" && !isOrchestratorActive(store)) {
     const played = Number(store.roundsPlayed) || 0;
@@ -1624,6 +1619,9 @@ async function init() {
     // Show modal when a round resolves with matchEnded=true (covers direct-resolve path)
     try {
       onBattleEvent("roundResolved", (e) => {
+        try {
+          showSnackbar("");
+        } catch {}
         try {
           const result = e?.detail?.result;
           if (!result || !result.matchEnded) return;
