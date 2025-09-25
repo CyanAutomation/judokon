@@ -132,29 +132,19 @@ async function startMatch(page, selector) {
     await ensureStatSelectionVisible();
   };
 
-  let ensuredDuringFallback = false;
-
   try {
     await expect(button).toBeVisible({ timeout: 7_000 });
     await button.click();
+    await ensureBattleReady();
+    return;
   } catch (error) {
-    const readyWithoutClick = await ensureBattleReady()
-      .then(() => true)
-      .catch(() => false);
-
-    if (readyWithoutClick) {
-      ensuredDuringFallback = true;
-    } else {
-      throw error;
-    }
-  }
-
-  if (!ensuredDuringFallback) {
     try {
       await ensureBattleReady();
-    } catch (error) {
+      return;
+    } catch {
       try {
         await ensureStatSelectionVisible();
+        return;
       } catch {
         throw error;
       }

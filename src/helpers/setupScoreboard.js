@@ -1,12 +1,19 @@
 import { realScheduler } from "./scheduler.js";
 
 let sharedScoreboardModule = null;
+let externalScoreboardGetter = null;
 
 try {
   sharedScoreboardModule = await import("../components/Scoreboard.js");
 } catch {
   sharedScoreboardModule = null;
 }
+
+try {
+  if (typeof window !== "undefined" && typeof window.getScoreboardMethod === "function") {
+    externalScoreboardGetter = window.getScoreboardMethod;
+  }
+} catch {}
 
 /**
  * Retrieve a scoreboard helper method by name.
@@ -28,19 +35,41 @@ function getScoreboardMethod(name) {
     return directMethod;
   }
 
+  const resolveFromGetter = (getter) => {
+    if (typeof getter !== "function") {
+      return null;
+    }
+
+    try {
+      const resolved = getter(name);
+      return typeof resolved === "function" ? resolved : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const externalResolved = resolveFromGetter(externalScoreboardGetter);
+  if (externalResolved) {
+    return externalResolved;
+  }
+
   try {
     if (typeof window !== "undefined") {
       const globalGetter = window.getScoreboardMethod;
-      if (typeof globalGetter === "function" && globalGetter !== getScoreboardMethod) {
-        const resolved = globalGetter(name);
-        if (typeof resolved === "function") {
+      if (
+        globalGetter &&
+        globalGetter !== getScoreboardMethod &&
+        globalGetter !== externalScoreboardGetter
+      ) {
+        const resolved = resolveFromGetter(globalGetter);
+        if (resolved) {
           return resolved;
         }
       }
     }
   } catch {}
 
-  return () => {};
+  return null;
 }
 
 try {
@@ -52,7 +81,7 @@ try {
 const invokeSharedHelper = (name, args) => {
   const helper = getScoreboardMethod(name);
 
-  if (!helper) {
+  if (typeof helper !== "function") {
     return undefined;
   }
 
@@ -89,10 +118,12 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
   const header = document.querySelector("header");
   controls.scheduler = scheduler;
   const init = getScoreboardMethod("initScoreboard");
-  if (!header) {
-    init(null, controls);
-  } else {
-    init(header, controls);
+  if (typeof init === "function") {
+    if (!header) {
+      init(null, controls);
+    } else {
+      init(header, controls);
+    }
   }
 
   // Handle visibility changes for timer pause/resume
