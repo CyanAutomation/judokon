@@ -161,3 +161,29 @@ This document reviews the current CLI Battle Mode QA findings, validates the acc
 2. Create small PRs each containing one focused change and accompanying unit + integration tests.
 3. Run lint, vitest, and Playwright smoke tests locally before merge; add CI jobs if not present.
 4. Re-run QA scenarios and close issues once reproducibility drops to ≤1/10 for intermittent bugs.
+
+---
+
+## Progress Log — Task 1: StatDisplay state sync
+
+Activity: Assess existing facade and UI components for stat update wiring; identify minimal change.
+
+Findings:
+- `src/helpers/battleEngineFacade.js` already exposes `on(type, handler)` and `off(type, handler)` for engine events.
+- No dedicated `StatDisplay` component exists; stats UI is built by `src/components/StatsPanel.js` and used via `createStatsPanel()` in render helpers.
+
+Actions taken:
+- Added `getCurrentStats()` snapshot helper in `src/helpers/battleEngineFacade.js` (frozen shallow copy; uses engine method if present, else empty object).
+- Wired `src/components/StatsPanel.js` to subscribe to `engineFacade.on("statsUpdated", ...)` and added `destroy()` to unsubscribe via `off`.
+- Fallback: if event payload lacks `stats`, `StatsPanel` calls `engineFacade.getCurrentStats()` to update.
+
+Validation (targeted only):
+- Vitest unit/integration: `tests/cli/statDisplay.spec.js` (2 tests) — PASS
+  - verifies DOM updates when `statsUpdated` event fires with payload
+  - verifies snapshot fallback via `getCurrentStats()` when payload lacks stats
+
+Notes/Risks:
+- The engine currently does not emit `statsUpdated`; UI will now be ready to react once engine-side event is added in later tasks (non-breaking).
+- No dynamic imports introduced in hot paths.
+
+Status: Completed for UI wiring + tests; awaiting review before engine-side emitter work.

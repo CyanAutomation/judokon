@@ -252,6 +252,22 @@ export const interruptMatch = (reason) => requireEngine().interruptMatch(reason)
 export const getScores = () => requireEngine().getScores();
 
 /**
+ * Get a shallow, immutable snapshot of current stat values if exposed.
+ *
+ * @pseudocode
+ * 1. Prefer engine.getCurrentStats if present.
+ * 2. Otherwise, return an empty object to avoid null checks in consumers.
+ * 3. Freeze a shallow copy to prevent external mutation.
+ *
+ * @returns {Readonly<object>} Frozen snapshot object.
+ */
+export const getCurrentStats = () => {
+  const engine = requireEngine();
+  const raw = engine.getCurrentStats?.() || {};
+  return Object.freeze({ ...raw });
+};
+
+/**
  * Retrieve how many rounds have been played.
  *
  * @pseudocode

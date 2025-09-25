@@ -21,6 +21,7 @@
 import { escapeHTML } from "../helpers/utils.js";
 import { loadStatNames } from "../helpers/stats.js";
 import { STATS } from "../helpers/battleEngineFacade.js";
+import * as engineFacade from "../helpers/battleEngineFacade.js";
 
 export class StatsPanel {
   /**
@@ -45,7 +46,20 @@ export class StatsPanel {
 
     this.list = document.createElement("ul");
     this.element.appendChild(this.list);
+
+    // Subscribe to engine stat updates if available. This keeps the panel
+    // synchronized with the authoritative state without relying on initial props.
+    this.#onStatsUpdated = async (payload) => {
+      // Prefer payload.stats if provided; otherwise pull a snapshot from facade.
+      const next = (payload && payload.stats) || engineFacade.getCurrentStats();
+      await this.update(next);
+    };
+    if (typeof engineFacade.on === "function") {
+      engineFacade.on("statsUpdated", this.#onStatsUpdated);
+    }
   }
+  // Private handler reference for unsubscribe
+  #onStatsUpdated;
 
   /**
    * Populate the stats list with current values.
@@ -78,6 +92,18 @@ export class StatsPanel {
       li.append(strong, span);
       this.list.appendChild(li);
     });
+  }
+
+  /**
+   * Unsubscribe listeners and release references.
+   */
+  destroy() {
+    if (this.#onStatsUpdated && typeof engineFacade.off === "function") {
+      try {
+        engineFacade.off("statsUpdated", this.#onStatsUpdated);
+      } catch {}
+    }
+    this.#onStatsUpdated = undefined;
   }
 }
 

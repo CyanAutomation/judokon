@@ -72,12 +72,12 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Reproducibility: Reproducible.
 - Likely root cause:
 
-  - No intermediate state between player selection and reveal. The reveal flow performs immediate resolution rather than an explicit staged sequence.
+  - No intermediate state between player selection and reveal. The reveal flow performs immediate resolution rather than an explicit staged sequence. Please note that a snackbar should be used for this information - not the scoreboard.
 
 - Concrete fix steps:
 
   1. Introduce an explicit `opponentSelecting` intermediate state emitted by the orchestration layer after the player selects a stat.
-  2. UI: disable stat buttons, set scoreboard text to "Opponent is choosing..." and start a short (configurable) delay (e.g., 300–600ms) before revealing the opponent.
+  2. UI: disable stat buttons, use Snackbar to show "Opponent is choosing..." and start a short (configurable) delay (e.g., 300–600ms) before revealing the opponent.
   3. Ensure the reveal logic reads from authoritative engine output (not from UI caches).
 
 - Tests:
@@ -138,7 +138,7 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Symptom: Spec requires displaying "Waiting..." when drift > 2s; tests observed minor drifts but no message.
 - Likely root cause:
 
-  - Either the drift detection is unimplemented or the UI path to display the message isn't connected.
+  - Either the drift detection is unimplemented or the UI path to display the message isn't connected. Please note that this info should be shown via a Snackbar, not the Scoreboard.
 
 - Fix steps:
 
