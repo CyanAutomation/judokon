@@ -1,26 +1,15 @@
-import {
-  initScoreboard as initScoreboardImpl,
-  showMessage as showMessageImpl,
-  updateScore as updateScoreImpl,
-  clearMessage as clearMessageImpl,
-  showTemporaryMessage as showTemporaryMessageImpl,
-  clearTimer as clearTimerImpl,
-  updateTimer as updateTimerImpl,
-  showAutoSelect as showAutoSelectImpl,
-  updateRoundCounter as updateRoundCounterImpl,
-  clearRoundCounter as clearRoundCounterImpl
-} from "../components/Scoreboard.js";
 import { realScheduler } from "./scheduler.js";
+import logger from "./logger.js";
 
 const noop = () => {};
 const domAvailable =
   typeof window !== "undefined" && typeof document !== "undefined" && document !== null;
-const isTestEnv = typeof process !== "undefined" && process.env?.NODE_ENV === "test";
 const loggedWarnings = new Set();
 const loggedErrors = new Set();
+let sharedScoreboardModule = null;
 
 /**
- * Log a warning or error exactly once when outside of the test environment.
+ * Log a warning or error exactly once.
  *
  * @param {Set<string>} cache - Storage for previously emitted messages.
  * @param {"warn"|"error"} level - Console method to use.
@@ -29,24 +18,23 @@ const loggedErrors = new Set();
  * @returns {void}
  */
 function logOnce(cache, level, message, error) {
-  if (isTestEnv || cache.has(message)) {
+  if (cache.has(message)) {
     return;
   }
   cache.add(message);
   try {
-    const logger = typeof console !== "undefined" ? console[level] : undefined;
-    if (typeof logger === "function") {
+    const logFn = level === "warn" ? logger.warn : logger.error;
+    if (typeof logFn === "function") {
       if (typeof error !== "undefined") {
-        logger(message, error);
+        logFn(message, error);
       } else {
-        logger(message);
+        logFn(message);
       }
     }
   } catch {}
 }
 
 /**
-
  * Determine the fallback return value for a scoreboard helper.
  *
  * @param {string} name - Helper name.
@@ -56,8 +44,10 @@ function fallbackValue(name) {
   if (name === "showTemporaryMessage") {
     return noop;
   }
+  return undefined;
 }
-    
+
+/**
  * Retrieve a scoreboard helper method by name.
  *
  * @pseudocode
@@ -89,7 +79,7 @@ function getScoreboardMethod(name) {
     }
   } catch {}
 
-  return () => {};
+  return null;
 }
 
 try {
@@ -97,15 +87,6 @@ try {
     window.getScoreboardMethod = getScoreboardMethod;
   }
 } catch {}
-
-const invokeSharedHelper = (name, args) => {
-  const helper = getScoreboardMethod(name);
-
-  if (!helper) {
-    return undefined;
-  }
-  return undefined;
-}
 
 /**
  * Safely execute a scoreboard helper, providing resilience and diagnostics.
@@ -148,7 +129,7 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
   const safeControls = controls ?? {};
   safeControls.scheduler = scheduler;
   const headerTarget = domAvailable ? document.querySelector("header") : null;
-  runHelper("initScoreboard", initScoreboardImpl, [headerTarget, safeControls]);
+  runHelper("initScoreboard", getScoreboardMethod("initScoreboard"), [headerTarget, safeControls]);
 
   if (!domAvailable) {
     return;
@@ -204,7 +185,7 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
  * @returns {void}
  */
 export function showMessage(...args) {
-  return runHelper("showMessage", showMessageImpl, args);
+  return runHelper("showMessage", getScoreboardMethod("showMessage"), args);
 }
 
 /**
@@ -218,7 +199,7 @@ export function showMessage(...args) {
  * @returns {void}
  */
 export function updateScore(...args) {
-  return runHelper("updateScore", updateScoreImpl, args);
+  return runHelper("updateScore", getScoreboardMethod("updateScore"), args);
 }
 
 /**
@@ -232,7 +213,7 @@ export function updateScore(...args) {
  * @returns {void}
  */
 export function clearMessage(...args) {
-  return runHelper("clearMessage", clearMessageImpl, args);
+  return runHelper("clearMessage", getScoreboardMethod("clearMessage"), args);
 }
 
 /**
@@ -245,7 +226,7 @@ export function clearMessage(...args) {
  * @returns {() => void} Restore callback from the helper or a noop fallback.
  */
 export function showTemporaryMessage(...args) {
-  return runHelper("showTemporaryMessage", showTemporaryMessageImpl, args);
+  return runHelper("showTemporaryMessage", getScoreboardMethod("showTemporaryMessage"), args);
 }
 
 /**
@@ -258,7 +239,7 @@ export function showTemporaryMessage(...args) {
  * @returns {void}
  */
 export function clearTimer(...args) {
-  return runHelper("clearTimer", clearTimerImpl, args);
+  return runHelper("clearTimer", getScoreboardMethod("clearTimer"), args);
 }
 
 /**
@@ -271,7 +252,7 @@ export function clearTimer(...args) {
  * @returns {void}
  */
 export function updateTimer(...args) {
-  return runHelper("updateTimer", updateTimerImpl, args);
+  return runHelper("updateTimer", getScoreboardMethod("updateTimer"), args);
 }
 
 /**
@@ -284,7 +265,7 @@ export function updateTimer(...args) {
  * @returns {void}
  */
 export function showAutoSelect(...args) {
-  return runHelper("showAutoSelect", showAutoSelectImpl, args);
+  return runHelper("showAutoSelect", getScoreboardMethod("showAutoSelect"), args);
 }
 
 /**
@@ -297,7 +278,7 @@ export function showAutoSelect(...args) {
  * @returns {void}
  */
 export function updateRoundCounter(...args) {
-  return runHelper("updateRoundCounter", updateRoundCounterImpl, args);
+  return runHelper("updateRoundCounter", getScoreboardMethod("updateRoundCounter"), args);
 }
 
 /**
@@ -310,7 +291,7 @@ export function updateRoundCounter(...args) {
  * @returns {void}
  */
 export function clearRoundCounter(...args) {
-  return runHelper("clearRoundCounter", clearRoundCounterImpl, args);
+  return runHelper("clearRoundCounter", getScoreboardMethod("clearRoundCounter"), args);
 }
 
 export const scoreboard = {
@@ -325,3 +306,18 @@ export const scoreboard = {
   updateRoundCounter,
   clearRoundCounter
 };
+
+async function ensureScoreboardModule() {
+  if (sharedScoreboardModule) {
+    return sharedScoreboardModule;
+  }
+  try {
+    sharedScoreboardModule = await import("../components/Scoreboard.js");
+  } catch (error) {
+    logOnce(loggedErrors, "error", "[scoreboard] Failed to load scoreboard module.", error);
+    sharedScoreboardModule = null;
+  }
+  return sharedScoreboardModule;
+}
+
+await ensureScoreboardModule();
