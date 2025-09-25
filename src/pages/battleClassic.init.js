@@ -1016,8 +1016,21 @@ function updateRoundCounterState({
   engineRound,
   priorContext
 }) {
+  try {
+    if (typeof window !== "undefined" && window.__DEBUG_ROUND_TRACKING) {
+      console.debug("[round-tracking] updateRoundCounterState", {
+        nextRound,
+        prevGlobal: window.__highestDisplayedRound,
+        highestDisplayedRoundBefore: highestDisplayedRound,
+        expectAdvance,
+        shouldForceAdvance,
+        engineRound,
+        priorContext
+      });
+    }
+  } catch {}
+
   setHighestDisplayedRound(Math.max(getHighestDisplayedRound(), nextRound));
-  highestDisplayedRound = Math.max(highestDisplayedRound, nextRound);
 
   if (shouldForceAdvance) {
     lastForcedTargetRound = nextRound;
@@ -1058,7 +1071,6 @@ function updateRoundCounterFromEngine(options = {}) {
 
   if (hasVisibleRound) {
     setHighestDisplayedRound(Math.max(getHighestDisplayedRound(), Number(visibleRound)));
-    highestDisplayedRound = Math.max(highestDisplayedRound, Number(visibleRound));
   }
 
   const priorContext = lastRoundCounterUpdateContext;
@@ -1066,10 +1078,11 @@ function updateRoundCounterFromEngine(options = {}) {
   try {
     const engineRound = calculateEngineRound();
     const hasEngineRound = Number.isFinite(engineRound) && engineRound >= 1;
-    const hasHighestRound = Number.isFinite(highestDisplayedRound) && highestDisplayedRound >= 1;
+    const hasHighestRound =
+      Number.isFinite(getHighestDisplayedRound()) && getHighestDisplayedRound() >= 1;
     const baselineRound = computeBaselineRound(
       hasHighestRound,
-      highestDisplayedRound,
+      getHighestDisplayedRound(),
       hasVisibleRound,
       visibleRound
     );
@@ -1109,8 +1122,8 @@ function handleRoundCounterFallback(visibleRound) {
   try {
     const hasVisibleRound = Number.isFinite(visibleRound) && visibleRound >= 1;
     const baseline =
-      Number.isFinite(highestDisplayedRound) && highestDisplayedRound >= 1
-        ? highestDisplayedRound
+      Number.isFinite(getHighestDisplayedRound()) && getHighestDisplayedRound() >= 1
+        ? getHighestDisplayedRound()
         : 1;
     const fallback = hasVisibleRound ? Math.max(Number(visibleRound), baseline) : baseline;
     updateRoundCounter(fallback);
