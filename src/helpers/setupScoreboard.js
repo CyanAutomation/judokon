@@ -8,23 +8,31 @@ try {
   sharedScoreboardModule = null;
 }
 
+/**
+ * Retrieve a scoreboard helper method by name.
+ *
+ * @pseudocode
+ * 1. Verify the shared module exists and exposes the requested method.
+ * 2. Return the method when available; otherwise return null.
+ *
+ * @param {string} name - The helper method name to retrieve.
+ * @returns {Function|null} The requested helper or null when unavailable.
+ */
 function getScoreboardMethod(name) {
-  const helper =
-    sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
-      ? sharedScoreboardModule[name]
-      : null;
-
-  if (helper) {
-    return helper;
+  if (
+    sharedScoreboardModule &&
+    typeof sharedScoreboardModule[name] === "function"
+  ) {
+    return sharedScoreboardModule[name];
   }
 
-  return () => {};
+  return null;
 }
 
 const invokeSharedHelper = (name, args) => {
   const helper = getScoreboardMethod(name);
 
-  if (typeof helper !== "function") {
+  if (!helper) {
     return undefined;
   }
 
@@ -56,9 +64,7 @@ const clearRoundCounter = (...args) => invokeSharedHelper("clearRoundCounter", a
  * @param {object} controls - Timer control callbacks.
  * @param {object} [scheduler=realScheduler] - Timer scheduler.
  * @returns {void}
- * @returns {void}
  */
-export function setupScoreboard(controls, scheduler = realScheduler) {
 export function setupScoreboard(controls, scheduler = realScheduler) {
   const header = document.querySelector("header");
   controls.scheduler = scheduler;
