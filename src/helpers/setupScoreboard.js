@@ -26,7 +26,6 @@ const invokeSharedHelper = (name, args) => {
   }
 };
 
-const initScoreboard = (...args) => invokeSharedHelper("initScoreboard", args);
 const showMessage = (...args) => invokeSharedHelper("showMessage", args);
 const updateScore = (...args) => invokeSharedHelper("updateScore", args);
 const clearMessage = (...args) => invokeSharedHelper("clearMessage", args);
@@ -132,7 +131,6 @@ const scoreboardApi = {
 };
 
 export {
-  setupScoreboard,
   showMessage,
   updateScore,
   clearMessage,
