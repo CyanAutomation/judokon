@@ -62,8 +62,9 @@ describe("battleCLI deterministic seed", () => {
     const { seededRandom } = await import("../../src/helpers/testModeUtils.js");
     // Get initial sequence
     const seq1 = [seededRandom(), seededRandom(), seededRandom()];
-    // Reset match
-    await mod.resetMatch();
+    // Import resetMatch and call it
+    const { resetMatch } = await import("../../src/pages/battleCLI/init.js");
+    await resetMatch();
     // Get sequence after reset
     const seq2 = [seededRandom(), seededRandom(), seededRandom()];
     // Should be identical due to seed reapplication

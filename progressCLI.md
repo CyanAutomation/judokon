@@ -138,6 +138,16 @@ Notes on verification terminology:
   - Playwright test `battle-cli-start.spec.js` passed without regression.
 - **Outcome:** The round counter now resets to 0 immediately upon quit, preventing the brief display of previous match state and eliminating the UI glitch.
 
+## Implementation of Issue 3: Unreliable Seed Determinism
+
+- **Actions taken:**
+  - Modified `resetMatch()` in `src/pages/battleCLI/init.js` to call `initSeed()` synchronously after UI updates, ensuring seeds are reapplied on each match reset for consistent determinism.
+  - Added a unit test in `tests/pages/battleCLI.seed.test.js` that verifies `resetMatch()` reapplies the seed, producing identical random sequences before and after reset.
+- **Test outcomes:**
+  - New unit test in `tests/pages/battleCLI.seed.test.js` passed, confirming deterministic behavior across match resets.
+  - Playwright test `battle-cli-start.spec.js` passed without regression.
+- **Outcome:** Seeds are now reliably applied on each match reset, ensuring deterministic behavior for QA and automation purposes.
+
 ## Opportunities for improvement (cross-cutting)
 
 - Add automated tests for each behavioral requirement: seed determinism, settings persistence, timer pause/resume, verbose log visibility, and keyboard shortcut state. Prefer unit tests with fake timers + small integration tests.
@@ -156,7 +166,7 @@ Acceptance criteria for this work:
 
 - ✅ Start button is visible, keyboard-accessible, and triggers a match start.
 - ✅ Win-target options include [3,5,10] and default to 5.
-- Seed determinism is reproducible: same seed → same first-round stats across fresh matches.
+- ✅ Seed determinism is reproducible: same seed → same first-round stats across fresh matches.
 - Settings persist across reloads and are applied to the engine.
 - Timers pause on tab hide and resume accurately.
 
