@@ -46,6 +46,7 @@ function logOnce(cache, level, message, error) {
 }
 
 /**
+
  * Determine the fallback return value for a scoreboard helper.
  *
  * @param {string} name - Helper name.
@@ -54,6 +55,54 @@ function logOnce(cache, level, message, error) {
 function fallbackValue(name) {
   if (name === "showTemporaryMessage") {
     return noop;
+  }
+}
+    
+ * Retrieve a scoreboard helper method by name.
+ *
+ * @pseudocode
+ * 1. Verify the shared module exists and exposes the requested method.
+ * 2. Return the method when available; otherwise return null.
+ *
+ * @param {string} name - The helper method name to retrieve.
+ * @returns {Function|null} The requested helper or null when unavailable.
+ */
+function getScoreboardMethod(name) {
+  const directMethod =
+    sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
+      ? sharedScoreboardModule[name]
+      : null;
+
+  if (directMethod) {
+    return directMethod;
+  }
+
+  try {
+    if (typeof window !== "undefined") {
+      const globalGetter = window.getScoreboardMethod;
+      if (typeof globalGetter === "function" && globalGetter !== getScoreboardMethod) {
+        const resolved = globalGetter(name);
+        if (typeof resolved === "function") {
+          return resolved;
+        }
+      }
+    }
+  } catch {}
+
+  return () => {};
+}
+
+try {
+  if (typeof window !== "undefined" && typeof window.getScoreboardMethod !== "function") {
+    window.getScoreboardMethod = getScoreboardMethod;
+  }
+} catch {}
+
+const invokeSharedHelper = (name, args) => {
+  const helper = getScoreboardMethod(name);
+
+  if (!helper) {
+    return undefined;
   }
   return undefined;
 }

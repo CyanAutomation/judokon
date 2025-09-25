@@ -95,13 +95,16 @@ export function initBattleScoreboardAdapter() {
   });
 
   // round.timer.tick → header timer (seconds)
-  on("round.timer.tick", (e) => {
-    _cancelWaiting();
-    try {
-      const ms = Number(e?.detail?.remainingMs);
-      if (Number.isFinite(ms)) updateTimer(Math.max(0, Math.round(ms / 1000)));
-    } catch {}
-  });
+  // Skip timer updates in CLI mode (battleCLI handles its own timer display)
+  if (!document.getElementById("cli-countdown")) {
+    on("round.timer.tick", (e) => {
+      _cancelWaiting();
+      try {
+        const ms = Number(e?.detail?.remainingMs);
+        if (Number.isFinite(ms)) updateTimer(Math.max(0, Math.round(ms / 1000)));
+      } catch {}
+    });
+  }
 
   // round.evaluated → scores (+ optional message)
   on("round.evaluated", (e) => {

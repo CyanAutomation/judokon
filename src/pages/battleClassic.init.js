@@ -1583,8 +1583,6 @@ async function init() {
   // Initialize scoreboard with no-op timer controls; orchestrator will provide real controls later
   setupScoreboard({ pauseTimer() {}, resumeTimer() {}, startCooldown() {} });
 
-
-
   // Hide opponent card until reveal to prevent premature exposure
   try {
     const opponentCard = document.getElementById("opponent-card");
