@@ -402,7 +402,8 @@ async function readDomScoreSnapshot(page) {
       return { player, opponent, matchEnded: ended, domInferred: ended };
     }
 
-    const match = (node.textContent || "").match(/You:\s*(\d+)[\s\S]*Opponent:\s*(\d+)/i);
+    const textContent = node.textContent || "";
+    const match = textContent.match(/You:[^0-9]*([0-9]+)[\s\S]*?Opponent:[^0-9]*([0-9]+)/i);
     if (match) {
       return {
         player: Number(match[1]),
@@ -429,7 +430,7 @@ function normalizeStoreSnapshot(rawSnapshot) {
     typeof rawSnapshot.ended === "boolean"
       ? rawSnapshot.ended
       : typeof rawSnapshot.ended === "string"
-        ? rawSnapshot.ended.trim().toLowerCase() === "true"
+        ? /^(true|1|yes|on)$/i.test(rawSnapshot.ended.trim())
         : null;
   return { player, opponent, matchEnded, domInferred: null };
 }
@@ -439,24 +440,30 @@ async function readStoreScoreSnapshot(page) {
     try {
       const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
       if (!store || typeof store !== "object") return null;
+
       const pickFirst = (source, keys) => {
+        if (!source || typeof source !== "object") return null;
         for (const key of keys) {
-          const value = source?.[key];
+          const value = source[key];
           if (value !== undefined && value !== null) {
             return value;
           }
         }
         return null;
       };
-      for (const candidate of [
+
+      const scoreCandidates = [
         store.scoreboard,
         store.scores,
         store.score,
         store.currentScore,
         store.engine?.scoreboard,
         store.engine?.scores
-      ]) {
+      ];
+
+      for (const candidate of scoreCandidates) {
         if (!candidate || typeof candidate !== "object") continue;
+
         const player = pickFirst(candidate, [
           "player",
           "playerScore",
@@ -471,18 +478,22 @@ async function readStoreScoreSnapshot(page) {
           "enemy",
           "opponentPoints"
         ]);
-        if (player === null || opponent === null) {
-          continue;
+
+        if (player !== null && opponent !== null) {
+          const ended =
+            candidate.matchEnded ??
+            candidate.completed ??
+            candidate.matchComplete ??
+            candidate.finished ??
+            null;
+          return { player, opponent, ended };
         }
-        const ended =
-          candidate.matchEnded ??
-          candidate.completed ??
-          candidate.matchComplete ??
-          candidate.finished ??
-          null;
-        return { player, opponent, ended };
       }
-    } catch {}
+    } catch (error) {
+      if (typeof console !== "undefined" && typeof console.debug === "function") {
+        console.debug("[test] readStoreScoreSnapshot failed:", error?.message ?? error);
+      }
+    }
     return null;
   });
 
@@ -525,7 +536,7 @@ async function readModalVisibility(page) {
       return false;
     }
     const opacity = Number(style.opacity);
-    const fullyTransparent = Number.isFinite(opacity) && opacity === 0;
+    const fullyTransparent = Number.isFinite(opacity) && opacity <= 0.01;
     return (
       modal.hidden !== true &&
       style.display !== "none" &&
@@ -577,26 +588,17 @@ async function readRoundOutcomeState(page, { previousScores = null } = {}) {
     readRoundResolvingFlag(page)
   ]);
 
-  let matchEnded =
-    typeof scoreState.domInferred === "boolean"
-      ? scoreState.domInferred
-      : typeof scoreState.matchEnded === "boolean"
-        ? scoreState.matchEnded
-        : null;
+  let matchEnded = false;
 
-  if (matchEnded === null && modalVisible) {
+  if (typeof scoreState.domInferred === "boolean") {
+    matchEnded = scoreState.domInferred;
+  } else if (typeof scoreState.matchEnded === "boolean") {
+    matchEnded = scoreState.matchEnded;
+  } else if (modalVisible) {
     matchEnded = true;
-  }
-
-  if (matchEnded === null) {
+  } else {
     const engineEnded = await readEngineMatchEndState(page);
-    if (engineEnded !== null) {
-      matchEnded = engineEnded === true;
-    }
-  }
-
-  if (matchEnded === null) {
-    matchEnded = false;
+    matchEnded = engineEnded === true;
   }
 
   const hasScores = Number.isFinite(scoreState.player) && Number.isFinite(scoreState.opponent);
@@ -675,13 +677,14 @@ async function resolveMatchFromCurrentRound(page, { maxRounds = 5, nextTimeout =
       .poll(
         async () => {
           const state = await readRoundOutcomeState(page, { previousScores: lastScores });
-          if (state.scores) {
+          if (
+            state.scores &&
+            Number.isFinite(state.scores.player) &&
+            Number.isFinite(state.scores.opponent)
+          ) {
             lastScores = state.scores;
           }
-          if (!state.matchEnded) {
-            return false;
-          }
-          return !state.modalVisible;
+          return !state.modalVisible && !state.roundResolving;
         },
         { timeout: nextTimeout }
       )
