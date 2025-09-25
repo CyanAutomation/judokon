@@ -466,7 +466,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
 
-    test("opponent card remains hidden until reveal", async ({ page }) =>
+    test("opponent card is replaced by mystery card until reveal", async ({ page }) =>
       withMutedConsole(async () => {
         await page.addInitScript(() => {
           window.__OVERRIDE_TIMERS = { roundTimer: 5 };
@@ -476,9 +476,13 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         await startMatch(page, "#round-select-1");
 
-        // Opponent card should be hidden initially
-        const opponentCard = page.locator("#opponent-card");
-        await expect(opponentCard).toHaveClass(/opponent-hidden/);
+        // Mystery card should be visible initially
+        const mysteryCard = page.locator("#mystery-card-placeholder");
+        await expect(mysteryCard).toBeVisible();
+
+        // Opponent card content should be absent
+        const opponentCardContent = page.locator("#opponent-card .card-name");
+        await expect(opponentCardContent).not.toBeVisible();
 
         await setOpponentResolveDelay(page, 50);
 
@@ -486,15 +490,18 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(firstStat).toBeVisible();
         await firstStat.click();
 
-        // Still hidden during opponent choosing delay
-        await expect(opponentCard).toHaveClass(/opponent-hidden/);
+        // Mystery card should still be visible during opponent choosing delay
+        await expect(mysteryCard).toBeVisible();
 
         await expectBattleState(page, "roundOver", {
           onStall: () => resolveRoundDeterministic(page)
         });
 
-        // Revealed after round resolution
-        await expect(opponentCard).not.toHaveClass(/opponent-hidden/);
+        // Mystery card should be hidden after round resolution
+        await expect(mysteryCard).not.toBeVisible();
+
+        // Opponent card content should be visible
+        await expect(opponentCardContent).toBeVisible();
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
   });
