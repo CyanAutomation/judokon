@@ -8,7 +8,7 @@ test.describe("Battle CLI - Start", () => {
 
       // After loading, the stats should be visible and not busy
       const statsContainer = page.getByRole("listbox", {
-        name: "Select a stat with number keys 1–5"
+        name: "Select a stat with number keys 1-5"
       });
       await expect(statsContainer).toBeVisible();
       // Removed accessibility assertion

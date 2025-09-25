@@ -11,7 +11,7 @@ import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
 test.describe("Classic Battle cooldown + Next", () => {
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
     await withMutedConsole(async () => {
-      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: null });
+      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: 5 });
       await page.goto("/src/pages/battleClassic.html");
 
       await waitForTestApi(page);
@@ -66,7 +66,7 @@ test.describe("Classic Battle cooldown + Next", () => {
 
   test("recovers round counter state after external DOM interference", async ({ page }) => {
     await withMutedConsole(async () => {
-      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: null });
+      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: 5 });
       await page.goto("/src/pages/battleClassic.html");
 
       await waitForTestApi(page);
