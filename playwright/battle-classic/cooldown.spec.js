@@ -15,6 +15,11 @@ test.describe("Classic Battle cooldown + Next", () => {
     });
   });
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
+    const logs = [];
+    page.on("console", (msg) => {
+      logs.push(msg.text());
+    });
+    
     await withMutedConsole(async () => {
       await page.evaluate(() => {
         window.__DEBUG_ROUND_TRACKING = true;
@@ -44,6 +49,22 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
       // The counter label reflects the upcoming round once the previous round resolves.
+      // Debug: log the current engine state
+      await page.evaluate(() => {
+        try {
+          console.log("Debug: window.__ENGINE_CONFIG =", window.__ENGINE_CONFIG);
+          console.log("Debug: window.__highestDisplayedRound =", window.__highestDisplayedRound);
+          if (window.__TEST_API && window.__TEST_API.engine) {
+            console.log("Debug: engine roundsPlayed =", window.__TEST_API.engine.getRoundsPlayed());
+          }
+        } catch (e) {
+          console.log("Debug error:", e);
+        }
+      });
+      
+      // Print captured logs
+      console.log("Captured logs:", logs);
+      
       await expect(roundCounter).toHaveText(/Round\s*2/);
 
       const diagnosticsBeforeNext = await readRoundDiagnostics(page);

@@ -76,6 +76,14 @@ function getRoundCounterElement(root) {
   }
 }
 
+function pushRTrace(obj) {
+  try {
+    if (typeof globalThis === "undefined") return;
+    if (!globalThis.__RTRACE_LOGS) globalThis.__RTRACE_LOGS = [];
+    globalThis.__RTRACE_LOGS.push(obj);
+  } catch {}
+}
+
 /**
  * Read the currently displayed round number from the DOM.
  *
