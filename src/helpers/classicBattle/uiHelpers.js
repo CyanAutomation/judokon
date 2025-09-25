@@ -198,6 +198,37 @@ export async function renderOpponentCard(judoka, container) {
 }
 
 /**
+ * Show the round outcome, optionally consolidating stat selections into the message.
+ *
+ * @param {string} outcomeMessage - The base outcome text (e.g., "You win the round!").
+ * @param {string} [stat] - The stat key selected (e.g., "power").
+ * @param {number} [playerVal] - Player's value for the stat.
+ * @param {number} [opponentVal] - Opponent's value for the stat.
+ * @returns {void}
+ * @pseudocode
+ * 1. When `stat` and both values are valid numbers, compose a consolidated message:
+ *    "You picked: Stat (P) — Opponent picked: Stat (O) — <outcome>" with capitalized stat.
+ * 2. Otherwise, use the base `outcomeMessage`.
+ * 3. Call `showResult(message)` and `scoreboard.showMessage(message, { outcome: true })`.
+ */
+export function showRoundOutcome(outcomeMessage, stat, playerVal, opponentVal) {
+  let message = outcomeMessage || "";
+  const hasStat = typeof stat === "string" && stat.trim();
+  const pOk = Number.isFinite(playerVal);
+  const oOk = Number.isFinite(opponentVal);
+  if (hasStat && pOk && oOk) {
+    const label = stat.charAt(0).toUpperCase() + stat.slice(1);
+    message = `You picked: ${label} (${playerVal}) — Opponent picked: ${label} (${opponentVal}) — ${outcomeMessage}`;
+  }
+  try {
+    showResult(message);
+  } catch {}
+  try {
+    scoreboard.showMessage(message, { outcome: true });
+  } catch {}
+}
+
+/**
  * Mark the Next round button ready and enabled.
  *
  * @pseudocode
@@ -327,18 +358,7 @@ export function disableNextRoundButton() {
  * @param {number} [opponentVal] - Optional opponent's stat value.
  * @returns {void}
  */
-export function showRoundOutcome(message, stat, playerVal, opponentVal) {
-  // Consolidate stat comparison into the outcome message
-  let fullMessage = message;
-  if (stat && typeof playerVal === "number" && typeof opponentVal === "number") {
-    const statLabel = stat.charAt(0).toUpperCase() + stat.slice(1);
-    fullMessage = `You picked: ${statLabel} (${playerVal}) — Opponent picked: ${statLabel} (${opponentVal}) — ${message}`;
-  }
-  showResult(fullMessage);
-  scoreboard.showMessage(fullMessage, { outcome: true });
-  // Outcome messages belong in the round message region; avoid using snackbar
-  // here so countdowns and hints can occupy it consistently.
-}
+// Note: removed older duplicate implementation to avoid multiple declaration errors in tests.
 
 /**
  * Animate or update the stat comparison area after a round resolves.

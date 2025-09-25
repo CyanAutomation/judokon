@@ -331,6 +331,16 @@ This section records the current repository state against the QA report and list
     - Unit: helper composes correct strings for win/lose/draw with localized labels.
     - Playwright: after selection and reveal, exactly one consolidated message is shown.
 
+ - Actions taken:
+   - Implemented `showRoundOutcome(outcomeMessage, stat?, playerVal?, opponentVal?)` in `src/helpers/classicBattle/uiHelpers.js` to consolidate stat comparison into one message and forward to result area and scoreboard.
+   - Ensured only one implementation exists to avoid duplicate export collisions.
+   - Verified existing unit test `tests/helpers/uiHelpers.showRoundOutcome.test.js` passes against the new implementation.
+ - Outcomes:
+   - Unit: `npx vitest run tests/helpers/uiHelpers.showRoundOutcome.test.js` → PASS (6/6).
+   - Playwright: Skipped in this phase due to sandbox port restrictions (WebServer EPERM on :5000). No app logic changes beyond helper introduction.
+ - Next steps:
+   - Wire the consolidated helper in the round resolve path if not already used by orchestrator handlers, and add a focused Playwright test to assert exactly one consolidated message after reveal when the E2E environment is available.
+
 3) "Opponent is choosing…" prompt (Issue 4)
 - Observed: No code/tests found for `prepareUiBeforeSelection` or `opponentChoosing` snackbar.
 - Plan:
