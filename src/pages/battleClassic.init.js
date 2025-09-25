@@ -43,7 +43,8 @@ import {
 } from "../helpers/classicBattle/uiHelpers.js";
 import {
   handleStatSelection,
-  getPlayerAndOpponentValues
+  getPlayerAndOpponentValues,
+  isOrchestratorActive
 } from "../helpers/classicBattle/selectionHandler.js";
 import setupScheduler from "../helpers/classicBattle/setupScheduler.js";
 import {
@@ -592,7 +593,7 @@ async function applySelectionResult(store, result) {
   } catch {}
   ensureScoreboardReflectsResult(result);
   const matchEnded = await confirmMatchOutcome(store, result);
-  if (!matchEnded && store && typeof store === "object" && !store.orchestrator) {
+  if (!matchEnded && store && typeof store === "object" && !isOrchestratorActive(store)) {
     const played = Number(store.roundsPlayed) || 0;
     store.roundsPlayed = played + 1;
   }

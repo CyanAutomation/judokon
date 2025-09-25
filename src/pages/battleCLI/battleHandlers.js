@@ -13,20 +13,6 @@ const handlers = {};
  * 2. Merge the provided handlers into the internal `handlers` registry.
  *
  * @param {Object} h - Object with handler functions (e.g., handleGlobalKey).
- */
-/**
- * Register battle CLI key handlers.
- *
- * @description
- * The orchestrator initializes the concrete handlers and calls this function
- * to provide implementations. The registered handlers are stored in a
- * private `handlers` object used by the exported wrapper functions.
- *
- * @pseudocode
- * 1. Accept an object `h` containing handler functions for various battle states.
- * 2. Merge the provided handlers into the internal `handlers` registry.
- *
- * @param {Object} h - Object with handler functions (e.g., handleGlobalKey).
  * @returns {void}
  */
 export function registerBattleHandlers(h) {
@@ -60,15 +46,11 @@ export const handleWaitingForPlayerActionKey = (key) =>
  *
  * @param {string} key - Key string.
  * @returns {boolean}
+ * @pseudocode
+ * 1. Call the registered `handleWaitingForMatchStartKey` with `key` and return its result.
  */
 export const handleWaitingForMatchStartKey = (key) => handlers.handleWaitingForMatchStartKey(key);
 
-/**
- * Wrapper for the 'roundOver' state key handler.
- *
- * @param {string} key - Key string.
- * @returns {boolean}
- */
 /**
  * Delegate wrapper for the 'roundOver' state key handler.
  *
@@ -81,12 +63,6 @@ export const handleWaitingForMatchStartKey = (key) => handlers.handleWaitingForM
 export const handleRoundOverKey = (key) => handlers.handleRoundOverKey(key);
 
 /**
- * Wrapper for the 'cooldown' state key handler.
- *
- * @param {string} key - Key string.
- * @returns {boolean}
- */
-/**
  * Delegate wrapper for the 'cooldown' state key handler.
  *
  * @param {string} key - Key string.
@@ -97,12 +73,6 @@ export const handleRoundOverKey = (key) => handlers.handleRoundOverKey(key);
  */
 export const handleCooldownKey = (key) => handlers.handleCooldownKey(key);
 
-/**
- * Wrapper for arrow navigation inside the stat list.
- *
- * @param {string} key - Arrow key string.
- * @returns {boolean}
- */
 /**
  * Delegate wrapper for arrow navigation inside the stat list.
  *

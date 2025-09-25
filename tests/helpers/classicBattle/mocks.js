@@ -64,7 +64,8 @@ export function mockSelectionHandler() {
     validateAndApplySelection: vi.fn(),
     dispatchStatSelected: vi.fn(),
     resolveWithFallback: vi.fn(),
-    syncResultDisplay: vi.fn()
+    syncResultDisplay: vi.fn(),
+    isOrchestratorActive: vi.fn(() => false)
   }));
 }
 

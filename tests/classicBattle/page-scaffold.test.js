@@ -266,7 +266,11 @@ vi.mock("../../src/helpers/classicBattle/selectionHandler.js", () => {
       opponentVal: resolve(opponentVal, store.currentOpponentJudoka?.stats, store.lastOpponentStats)
     };
   });
-  return { handleStatSelection, getPlayerAndOpponentValues };
+  return {
+    handleStatSelection,
+    getPlayerAndOpponentValues,
+    isOrchestratorActive: vi.fn(() => false)
+  };
 });
 
 vi.mock("../../src/helpers/classicBattle/statButtons.js", () => ({

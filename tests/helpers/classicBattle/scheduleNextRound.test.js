@@ -117,7 +117,8 @@ vi.mock("../../../src/helpers/timerService.js", () => ({
 vi.mock("../../../src/helpers/selectionHandler.js", () => ({
   handleStatSelection: vi.fn(async () => {
     return Promise.resolve();
-  })
+  }),
+  isOrchestratorActive: vi.fn(() => false)
 }));
 
 vi.mock("../../../src/helpers/cardStatUtils.js", () => ({

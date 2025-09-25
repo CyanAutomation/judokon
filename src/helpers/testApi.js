@@ -152,29 +152,28 @@ const stateApi = {
    * @returns {string|null} Current state name
    */
   getBattleState() {
-    try {
+    const tryGetState = (getter) => {
+      try {
+        const state = getter();
+        return typeof state === "string" && state ? state : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const machineState = tryGetState(() => {
       const machine = getBattleStateMachine();
-      const state = machine?.getState?.();
-      if (typeof state === "string" && state) {
-        return state;
-      }
-    } catch {}
+      return machine?.getState?.();
+    });
+    if (machineState) return machineState;
 
-    try {
-      const bodyState = document.body?.dataset?.battleState;
-      if (typeof bodyState === "string" && bodyState) {
-        return bodyState;
-      }
-    } catch {}
+    const bodyState = tryGetState(() => document.body?.dataset?.battleState);
+    if (bodyState) return bodyState;
 
-    try {
-      const attrState = document
-        .querySelector("[data-battle-state]")
-        ?.getAttribute("data-battle-state");
-      if (typeof attrState === "string" && attrState) {
-        return attrState;
-      }
-    } catch {}
+    const attrState = tryGetState(() =>
+      document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state")
+    );
+    if (attrState) return attrState;
 
     return null;
   },

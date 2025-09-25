@@ -51,7 +51,10 @@ vi.mock("../../src/helpers/i18n.js", () => ({
 }));
 
 import { handleStatSelection } from "../../src/helpers/classicBattle.js";
-import { cleanupTimers } from "../../src/helpers/classicBattle/selectionHandler.js";
+import {
+  cleanupTimers,
+  isOrchestratorActive
+} from "../../src/helpers/classicBattle/selectionHandler.js";
 import { setFlag } from "../../src/helpers/featureFlags.js";
 
 describe("handleStatSelection helpers", () => {
@@ -168,5 +171,33 @@ describe("handleStatSelection helpers", () => {
 
     delete document.body.dataset.battleState;
     getBattleState.mockReturnValue(null);
+  });
+});
+
+describe("isOrchestratorActive", () => {
+  let getBattleState;
+
+  beforeEach(async () => {
+    ({ getBattleState } = await import("../../src/helpers/classicBattle/eventBus.js"));
+    getBattleState.mockReturnValue(null);
+    delete document.body.dataset.battleState;
+  });
+
+  afterEach(() => {
+    delete document.body.dataset.battleState;
+  });
+
+  it("returns false when orchestrator details are missing", () => {
+    expect(isOrchestratorActive({})).toBe(false);
+  });
+
+  it("detects orchestrator when machine state is available", () => {
+    getBattleState.mockReturnValue("roundDecision");
+    expect(isOrchestratorActive({ orchestrator: {} })).toBe(true);
+  });
+
+  it("detects orchestrator using DOM dataset markers", () => {
+    document.body.dataset.battleState = "roundDecision";
+    expect(isOrchestratorActive({ orchestrator: {} })).toBe(true);
   });
 });

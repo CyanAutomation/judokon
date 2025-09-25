@@ -14,6 +14,60 @@ import { roundStore } from "./roundStore.js";
 const IS_VITEST = typeof process !== "undefined" && !!process.env?.VITEST;
 
 /**
+ * Determine whether the classic battle orchestrator is actively managing state.
+ *
+ * @pseudocode
+ * 1. Check for a battle store orchestrator object.
+ * 2. Query the event bus for the current machine state when possible.
+ * 3. Inspect DOM dataset markers that indicate orchestrator control.
+ * 4. Fall back to scanning for data attributes when body dataset is absent.
+ * 5. Return true when any signal indicates orchestrator activity.
+ *
+ * @param {ReturnType<typeof createBattleStore>|Record<string, any>|null|undefined} store
+ * @param {string|null|undefined} currentState
+ * @returns {boolean}
+ */
+export function isOrchestratorActive(store, currentState = undefined) {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  const hasStore = store && typeof store === "object";
+  const orchestratorCandidate = hasStore ? store.orchestrator : null;
+  const hasOrchestratorObject = orchestratorCandidate && typeof orchestratorCandidate === "object";
+
+  if (hasStore && !hasOrchestratorObject) {
+    return false;
+  }
+
+  let state = currentState;
+  if (state === undefined) {
+    try {
+      state = typeof getBattleState === "function" ? getBattleState() : null;
+    } catch {
+      state = null;
+    }
+  }
+  const hasMachineState = typeof state === "string" && state.length > 0;
+
+  const datasetState = document.body?.dataset?.battleState;
+  const hasDatasetMarker = typeof datasetState === "string" && datasetState.length > 0;
+
+  if (hasOrchestratorObject || hasMachineState || hasDatasetMarker) {
+    return true;
+  }
+
+  try {
+    const attrState = document
+      .querySelector("[data-battle-state]")
+      ?.getAttribute("data-battle-state");
+    return typeof attrState === "string" && attrState.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Determine the opponent's stat choice based on difficulty.
  *
  * @pseudocode
@@ -419,51 +473,60 @@ export async function resolveWithFallback(
   handledByOrchestrator
 ) {
   try {
-    const orchestrated = (() => {
-      if (!store || typeof store !== "object" || !store.orchestrator) {
-        return false;
-      }
+    let currentState = null;
+    try {
+      currentState = typeof getBattleState === "function" ? getBattleState() : null;
+    } catch {
+      currentState = null;
+    }
 
-      if (typeof document === "undefined") {
-        return false;
-      }
+    const orchestrated = isOrchestratorActive(store, currentState);
 
-      const hasDataset = !!(
-        document.body &&
-        document.body.dataset &&
-        document.body.dataset.battleState
-      );
-      if (!hasDataset) {
-        return false;
-      }
-
-      try {
-        const currentState = getBattleState?.();
-        if (typeof currentState !== "string" || !currentState) {
-          return false;
-        }
-      } catch {
-        return false;
-      }
-
+    if (handledByOrchestrator === true) {
+      if (IS_VITEST)
+        try {
+          console.log("[test] handleStatSelection: handledByOrchestrator true");
+        } catch {}
       return true;
-    })();
+    }
+
     if (orchestrated && handledByOrchestrator !== true) {
       const delay = resolveDelay();
       const fallbackDelay = IS_VITEST ? 0 : Math.max(delay + 100, 800);
       const timeoutId = setTimeout(async () => {
-        if (store.playerChoice !== null) {
-          try {
-            await resolveRoundDirect(store, stat, playerVal, opponentVal, {
-              ...opts,
-              delayMs: 0
-            });
-          } catch {}
-          try {
-            await dispatchBattleEvent("roundResolved");
-          } catch {}
-          store.playerChoice = null;
+        try {
+          await syncResultDisplay(store, stat, playerVal, opponentVal, {
+            ...opts,
+            delayMs: 0
+          });
+        } catch {}
+
+        let previousState = null;
+        try {
+          previousState = typeof getBattleState === "function" ? getBattleState() : currentState;
+        } catch {
+          previousState = currentState;
         }
+
+        if (typeof document !== "undefined" && document.body) {
+          try {
+            document.body.dataset.battleState = "roundOver";
+          } catch {}
+          try {
+            if (previousState) {
+              document.body.dataset.prevBattleState = String(previousState);
+            } else {
+              delete document.body.dataset.prevBattleState;
+            }
+          } catch {}
+        }
+
+        try {
+          emitBattleEvent("battleStateChange", {
+            from: previousState ?? null,
+            to: "roundOver"
+          });
+        } catch {}
       }, fallbackDelay);
       try {
         getRoundResolvedPromise()
@@ -479,24 +542,15 @@ export async function resolveWithFallback(
       return true;
     }
 
-    if (handledByOrchestrator === true) {
-      if (IS_VITEST)
-        try {
-          console.log("[test] handleStatSelection: handledByOrchestrator true");
-        } catch {}
-      return true;
-    }
-
     if (store.playerChoice === null) {
       return true;
     }
 
     if (orchestrated) {
-      const current = typeof getBattleState === "function" ? getBattleState() : null;
-      if (current && current !== "roundDecision") {
+      if (currentState && currentState !== "roundDecision") {
         if (IS_VITEST)
           try {
-            console.log("[test] handleStatSelection: machine in non-decision state", current);
+            console.log("[test] handleStatSelection: machine in non-decision state", currentState);
           } catch {}
         return true;
       }

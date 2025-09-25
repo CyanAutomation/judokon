@@ -30,6 +30,7 @@ describe("handleStatSelection machine interaction", () => {
   let dispatchMock;
   let dispatchCalls = [];
   let resolveSpy;
+  let getBattleState;
 
   beforeEach(async () => {
     store = {
@@ -50,6 +51,8 @@ describe("handleStatSelection machine interaction", () => {
       return false;
     });
     resolveSpy = vi.spyOn(selection, "resolveRoundDirect");
+    ({ getBattleState } = await import("../../../src/helpers/classicBattle/eventBus.js"));
+    getBattleState.mockReturnValue("roundDecision");
     document.body.dataset.battleState = "roundDecision";
   });
 
@@ -65,5 +68,19 @@ describe("handleStatSelection machine interaction", () => {
     expect(resolveSpy).not.toHaveBeenCalled();
     expect(dispatchCalls.length).toBe(1);
     expect(dispatchCalls[0][0]).toBe("statSelected");
+  });
+
+  it("resolves directly when orchestrator context is missing", async () => {
+    delete store.orchestrator;
+    dispatchMock.mockImplementationOnce(async (...args) => {
+      dispatchCalls.push(args);
+      return false;
+    });
+    getBattleState.mockReturnValue("roundDecision");
+
+    await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
+
+    expect(dispatchCalls[0][0]).toBe("statSelected");
+    expect(store.playerChoice).toBeNull();
   });
 });

@@ -217,7 +217,8 @@ test("scoreboard reconciles directly to round result", async () => {
       playerScore: 4,
       opponentScore: 1
     })),
-    getPlayerAndOpponentValues: vi.fn(() => ({ playerVal: 9, opponentVal: 3 }))
+    getPlayerAndOpponentValues: vi.fn(() => ({ playerVal: 9, opponentVal: 3 })),
+    isOrchestratorActive: vi.fn(() => false)
   };
 
   mocks["../../src/helpers/classicBattle/selectionHandler.js"] = mockedSelection;

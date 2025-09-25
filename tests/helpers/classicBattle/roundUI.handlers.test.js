@@ -50,7 +50,8 @@ vi.mock("../../../src/helpers/classicBattle/selectionHandler.js", () => ({
   validateAndApplySelection: vi.fn(),
   dispatchStatSelected: vi.fn(),
   resolveWithFallback: vi.fn(),
-  syncResultDisplay: vi.fn()
+  syncResultDisplay: vi.fn(),
+  isOrchestratorActive: vi.fn(() => false)
 }));
 vi.mock("../../../src/helpers/classicBattle/cardStatUtils.js", () => ({
   getCardStatValue: () => 0
