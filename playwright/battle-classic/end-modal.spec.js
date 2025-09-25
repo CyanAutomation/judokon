@@ -364,76 +364,269 @@ async function waitForScoreDisplay(page, { timeout = 10000, previousObservation 
   return snapshot;
 }
 
-async function waitForMatchCompletion(page, timeout = 15000) {
-  const waitForEndState = () =>
-    page.evaluate(async () => {
-      const helper = window.__classicQuickWin;
-      let facade = helper?.facade ?? null;
-
-      if (!facade && helper?.ensureFacade) {
-        try {
-          facade = await helper.ensureFacade();
-        } catch {}
+async function readDomScoreSnapshot(page) {
+  return page.evaluate(() => {
+    const parseScore = (value) => {
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+      if (typeof value === "string") {
+        const parsed = Number(value.trim());
+        return Number.isFinite(parsed) ? parsed : null;
       }
+      return null;
+    };
 
-      if (!facade) {
-        try {
-          facade = await import("/src/helpers/battleEngineFacade.js");
-          if (helper) {
-            helper.facade = facade;
+    const pickNumber = (source, keys) => {
+      if (!source || typeof source !== "object") return null;
+      for (const key of keys) {
+        const parsed = parseScore(source[key]);
+        if (parsed !== null) return parsed;
+      }
+      return null;
+    };
+
+    const node = document.getElementById("score-display");
+    if (!node) return null;
+
+    const dataset = node.dataset ?? {};
+    const player = pickNumber(dataset, ["player", "playerScore", "you", "user"]);
+    const opponent = pickNumber(dataset, ["opponent", "opponentScore", "cpu", "enemy"]);
+
+    if (player !== null && opponent !== null) {
+      const endedAttr = dataset.matchEnded ?? node.getAttribute?.("data-match-ended");
+      const ended =
+        typeof endedAttr === "boolean"
+          ? endedAttr
+          : typeof endedAttr === "string"
+            ? endedAttr.trim().toLowerCase() === "true"
+            : null;
+      return { player, opponent, matchEnded: ended, domInferred: ended };
+    }
+
+    const match = (node.textContent || "").match(/You:\s*(\d+)[\s\S]*Opponent:\s*(\d+)/i);
+    if (match) {
+      return {
+        player: Number(match[1]),
+        opponent: Number(match[2]),
+        matchEnded: null,
+        domInferred: null
+      };
+    }
+
+    return null;
+  });
+}
+
+function normalizeStoreSnapshot(rawSnapshot) {
+  if (!rawSnapshot || typeof rawSnapshot !== "object") {
+    return null;
+  }
+  const player = Number(rawSnapshot.player);
+  const opponent = Number(rawSnapshot.opponent);
+  if (!Number.isFinite(player) || !Number.isFinite(opponent)) {
+    return null;
+  }
+  const matchEnded =
+    typeof rawSnapshot.ended === "boolean"
+      ? rawSnapshot.ended
+      : typeof rawSnapshot.ended === "string"
+        ? rawSnapshot.ended.trim().toLowerCase() === "true"
+        : null;
+  return { player, opponent, matchEnded, domInferred: null };
+}
+
+async function readStoreScoreSnapshot(page) {
+  const rawSnapshot = await page.evaluate(() => {
+    try {
+      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+      if (!store || typeof store !== "object") return null;
+      const pickFirst = (source, keys) => {
+        for (const key of keys) {
+          const value = source?.[key];
+          if (value !== undefined && value !== null) {
+            return value;
           }
-        } catch {
-          facade = null;
         }
+        return null;
+      };
+      for (const candidate of [
+        store.scoreboard,
+        store.scores,
+        store.score,
+        store.currentScore,
+        store.engine?.scoreboard,
+        store.engine?.scores
+      ]) {
+        if (!candidate || typeof candidate !== "object") continue;
+        const player = pickFirst(candidate, [
+          "player",
+          "playerScore",
+          "you",
+          "user",
+          "playerPoints"
+        ]);
+        const opponent = pickFirst(candidate, [
+          "opponent",
+          "opponentScore",
+          "cpu",
+          "enemy",
+          "opponentPoints"
+        ]);
+        if (player === null || opponent === null) {
+          continue;
+        }
+        const ended =
+          candidate.matchEnded ??
+          candidate.completed ??
+          candidate.matchComplete ??
+          candidate.finished ??
+          null;
+        return { player, opponent, ended };
       }
+    } catch {}
+    return null;
+  });
 
-      const isMatchEnded =
-        typeof facade?.isMatchEnded === "function"
-          ? facade.isMatchEnded()
-          : facade?.getScores
-            ? (() => {
-                try {
-                  return facade.requireEngine?.().matchEnded === true;
-                } catch {
-                  return false;
-                }
-              })()
-            : false;
+  return normalizeStoreSnapshot(rawSnapshot);
+}
 
-      let roundResolving = false;
-      try {
-        const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
-        const round = store?.round ?? store?.currentRound ?? null;
-        roundResolving = round?.resolving === true;
-      } catch {}
+async function readScoreSnapshot(page, previousScores = null) {
+  const domSnapshot = await readDomScoreSnapshot(page);
+  if (domSnapshot) {
+    return domSnapshot;
+  }
 
-      const modal = document.querySelector("#match-end-modal");
-      let modalVisible = false;
-      if (modal) {
-        const style =
-          typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
-        const opacity = style ? Number(style.opacity) : NaN;
-        modalVisible =
-          modal.hidden !== true &&
-          style !== null &&
-          style.display !== "none" &&
-          style.visibility !== "hidden" &&
-          style.pointerEvents !== "none" &&
-          (!Number.isFinite(opacity) || opacity > 0);
+  if (previousScores && typeof previousScores === "object") {
+    const player = Number(previousScores.player);
+    const opponent = Number(previousScores.opponent);
+    if (Number.isFinite(player) && Number.isFinite(opponent)) {
+      const ended =
+        typeof previousScores.matchEnded === "boolean" ? previousScores.matchEnded : null;
+      return { player, opponent, matchEnded: ended, domInferred: null };
+    }
+  }
+
+  const storeSnapshot = await readStoreScoreSnapshot(page);
+  if (storeSnapshot) {
+    return storeSnapshot;
+  }
+
+  return { player: null, opponent: null, matchEnded: null, domInferred: null };
+}
+
+async function readModalVisibility(page) {
+  return page.evaluate(() => {
+    const modal = document.getElementById("match-end-modal");
+    if (!modal) {
+      return false;
+    }
+    const style =
+      typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
+    if (!style) {
+      return false;
+    }
+    const opacity = Number(style.opacity);
+    const fullyTransparent = Number.isFinite(opacity) && opacity === 0;
+    return (
+      modal.hidden !== true &&
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      style.pointerEvents !== "none" &&
+      !fullyTransparent
+    );
+  });
+}
+
+async function readRoundResolvingFlag(page) {
+  return page.evaluate(() => {
+    try {
+      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+      const round = store?.round ?? store?.currentRound ?? null;
+      return round?.resolving === true;
+    } catch {
+      return false;
+    }
+  });
+}
+
+async function readEngineMatchEndState(page) {
+  return page.evaluate(() => {
+    try {
+      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
+      const engine = store?.engine;
+      if (!engine) {
+        return null;
       }
-
-      if (!isMatchEnded) {
-        return false;
+      if (typeof engine.isMatchEnded === "function") {
+        return engine.isMatchEnded() === true;
       }
-
-      if (modalVisible) {
-        return true;
+      if (typeof engine.matchEnded === "boolean") {
+        return engine.matchEnded;
       }
+      if (typeof store?.matchEnded === "boolean") {
+        return store.matchEnded;
+      }
+    } catch {}
+    return null;
+  });
+}
 
-      return !roundResolving;
-    });
+async function readRoundOutcomeState(page, { previousScores = null } = {}) {
+  const scoreState = await readScoreSnapshot(page, previousScores);
+  const [modalVisible, roundResolving] = await Promise.all([
+    readModalVisibility(page),
+    readRoundResolvingFlag(page)
+  ]);
 
-  await expect.poll(waitForEndState, { timeout }).toBeTruthy();
+  let matchEnded =
+    typeof scoreState.domInferred === "boolean"
+      ? scoreState.domInferred
+      : typeof scoreState.matchEnded === "boolean"
+        ? scoreState.matchEnded
+        : null;
+
+  if (matchEnded === null && modalVisible) {
+    matchEnded = true;
+  }
+
+  if (matchEnded === null) {
+    const engineEnded = await readEngineMatchEndState(page);
+    if (engineEnded !== null) {
+      matchEnded = engineEnded === true;
+    }
+  }
+
+  if (matchEnded === null) {
+    matchEnded = false;
+  }
+
+  const hasScores = Number.isFinite(scoreState.player) && Number.isFinite(scoreState.opponent);
+  const scores = hasScores
+    ? {
+        player: Number(scoreState.player),
+        opponent: Number(scoreState.opponent),
+        matchEnded
+      }
+    : null;
+
+  return { matchEnded, modalVisible, roundResolving, scores };
+}
+
+async function waitForMatchCompletion(page, timeout = 15000) {
+  await expect
+    .poll(
+      async () => {
+        const state = await readRoundOutcomeState(page);
+        if (!state.matchEnded) {
+          return false;
+        }
+        if (state.modalVisible) {
+          return true;
+        }
+        return !state.roundResolving;
+      },
+      { timeout }
+    )
+    .toBeTruthy();
 }
 
 /**
@@ -480,28 +673,21 @@ async function resolveMatchFromCurrentRound(page, { maxRounds = 5, nextTimeout =
 
     await expect
       .poll(
-        () =>
-          page.evaluate(() => {
-            const modal = document.getElementById("match-end-modal");
-            if (!modal) return true;
-            if (modal.hidden) return true;
-            const style =
-              typeof window.getComputedStyle === "function" ? window.getComputedStyle(modal) : null;
-            if (!style) return false;
-            const opacity = Number(style.opacity);
-            const fullyTransparent = Number.isFinite(opacity) && opacity === 0;
-            const inert =
-              style.display === "none" ||
-              style.visibility === "hidden" ||
-              style.pointerEvents === "none" ||
-              fullyTransparent;
-            return inert;
-          }),
+        async () => {
+          const state = await readRoundOutcomeState(page, { previousScores: lastScores });
+          if (state.scores) {
+            lastScores = state.scores;
+          }
+          if (!state.matchEnded) {
+            return false;
+          }
+          return !state.modalVisible;
+        },
         { timeout: nextTimeout }
       )
       .toBeTruthy();
 
-    const postModalResolution = resolveIfDecisive();
+    const postModalResolution = resolveIfDecisive(lastScores);
     if (postModalResolution) {
       return postModalResolution;
     }
@@ -513,23 +699,14 @@ async function resolveMatchFromCurrentRound(page, { maxRounds = 5, nextTimeout =
       }
     });
 
-    const matchEndedBeforeNext = await page.evaluate(() => {
-      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
-      const engine = store?.engine;
-      if (!engine) {
-        return false;
-      }
-      try {
-        if (typeof engine.isMatchEnded === "function") {
-          return engine.isMatchEnded();
-        }
-      } catch {}
-      return engine.matchEnded === true;
-    });
+    const outcomeState = await readRoundOutcomeState(page, { previousScores: lastScores });
+    if (outcomeState.scores) {
+      lastScores = outcomeState.scores;
+    }
 
-    if (matchEndedBeforeNext) {
+    if (outcomeState.matchEnded) {
       return (
-        resolveIfDecisive() ?? {
+        resolveIfDecisive(lastScores) ?? {
           player: lastScores?.player ?? 0,
           opponent: lastScores?.opponent ?? 0
         }
