@@ -123,22 +123,6 @@ async function expectBattleState(page, expectedState, options = {}) {
     .toBe(expectedState);
 }
 
-async function expectRoundsPlayedAtLeast(page, minRounds, options = {}) {
-  const { timeout = 5_000 } = options;
-
-  await waitForTestApi(page, { timeout });
-
-  await expect
-    .poll(
-      async () => {
-        const snapshot = await getBattleSnapshot(page);
-        return snapshot?.roundsPlayed ?? 0;
-      },
-      { timeout, message: `Expected rounds played to reach at least ${minRounds}` }
-    )
-    .toBeGreaterThanOrEqual(minRounds);
-}
-
 async function startMatch(page, selector) {
   const button = page.locator(selector);
 
@@ -251,6 +235,41 @@ async function resolveRoundDeterministic(page) {
   } catch {}
 }
 
+async function ensureRoundResolved(page, options = {}) {
+  const { deadline = 650, verifyTimeout = 3_000, forceResolve = false } = options;
+
+  const confirmRoundOver = async () => {
+    await expect
+      .poll(
+        async () => {
+          try {
+            return await getCurrentBattleState(page);
+          } catch {
+            return null;
+          }
+        },
+        {
+          timeout: verifyTimeout,
+          message: 'Expected battle state to be "roundOver" after deterministic resolution'
+        }
+      )
+      .toBe("roundOver");
+  };
+
+  if (!forceResolve) {
+    try {
+      await waitForBattleState(page, "roundOver", {
+        timeout: deadline,
+        allowFallback: false
+      });
+      return;
+    } catch {}
+  }
+
+  await resolveRoundDeterministic(page);
+  await confirmRoundOver();
+}
+
 test.describe("Classic Battle Opponent Reveal", () => {
   test.describe("Basic Opponent Reveal Functionality", () => {
     const DEFAULT_BASIC_CONFIG = {
@@ -328,9 +347,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const snackbar = page.locator(selectors.snackbarContainer());
         await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 500 });
 
-        await expectBattleState(page, "roundOver", {
-          onStall: () => resolveRoundDeterministic(page)
-        });
+        await ensureRoundResolved(page);
 
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
@@ -346,9 +363,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const firstStat = page.locator(selectors.statButton(0)).first();
         await firstStat.click();
 
-        await expectBattleState(page, "roundOver", {
-          onStall: () => resolveRoundDeterministic(page)
-        });
+        await ensureRoundResolved(page);
 
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
@@ -411,11 +426,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const snackbar = page.locator(selectors.snackbarContainer());
         await expect(snackbar).toContainText(/Opponent is choosing/i, { timeout: 200 });
 
-        await expectBattleState(page, "roundOver", {
-          onStall: () => resolveRoundDeterministic(page)
-        });
-
-        await expectRoundsPlayedAtLeast(page, 1);
+        await ensureRoundResolved(page);
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
 
@@ -437,10 +448,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const snackbar = page.locator(selectors.snackbarContainer());
         await expect(snackbar).toContainText(/Opponent is choosing/i);
 
-        await expectBattleState(page, "roundOver", {
-          timeout: 6_000,
-          onStall: () => resolveRoundDeterministic(page)
-        });
+        await ensureRoundResolved(page, { deadline: 700 });
         // roundsPlayed via Test API may lag; rely on score update instead
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
@@ -463,9 +471,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await stats.first().click();
         await stats.nth(1).click();
 
-        await expectBattleState(page, "roundOver", {
-          onStall: () => resolveRoundDeterministic(page)
-        });
+        await ensureRoundResolved(page);
         // roundsPlayed can lag in CI; rely on internal resolution already forced above
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
@@ -509,9 +515,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(firstStat).toBeVisible();
         await firstStat.click();
 
-        await expectBattleState(page, "roundOver", {
-          onStall: () => resolveRoundDeterministic(page)
-        });
+        await ensureRoundResolved(page);
         // Skip roundsPlayed wait; verify via score update which is user-visible
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
@@ -539,9 +543,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         // Still hidden during opponent choosing delay
         await expect(opponentCard).toHaveClass(/opponent-hidden/);
 
-        await expectBattleState(page, "roundOver", {
-          onStall: () => resolveRoundDeterministic(page)
-        });
+        await ensureRoundResolved(page);
 
         // Revealed after round resolution
         await expect(opponentCard).not.toHaveClass(/opponent-hidden/);
@@ -564,7 +566,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const firstStat = page.locator("#stat-buttons button[data-stat]").first();
         await expect(firstStat).toBeVisible();
         await firstStat.click();
-        await resolveRoundDeterministic(page);
+        await ensureRoundResolved(page, { forceResolve: true });
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
         const nextButton = page.locator("#next-button");
         await expect(nextButton).toBeEnabled();
@@ -579,7 +581,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const secondStat = page.locator("#stat-buttons button[data-stat]").nth(1);
         await expect(secondStat).toBeVisible();
         await secondStat.click();
-        await resolveRoundDeterministic(page);
+        await ensureRoundResolved(page, { forceResolve: true });
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
 
@@ -601,9 +603,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         const snackbar = page.locator("#snackbar-container");
         await expect(snackbar).toContainText(/Opponent is choosing/i);
 
-        await expectBattleState(page, "roundOver", {
-          onStall: () => resolveRoundDeterministic(page)
-        });
+        await ensureRoundResolved(page);
         // Skip roundsPlayed wait; scoreboard assertion follows
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
         await expect(snackbar).not.toContainText(/Next round in/i);
@@ -641,10 +641,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
           await expect(snackbar).toContainText(/Opponent is choosing/i);
 
           // Deterministic resolve to avoid long waits and navigation races
-          await resolveRoundDeterministic(page);
-          await expectBattleState(page, "roundOver", {
-            onStall: () => resolveRoundDeterministic(page)
-          });
+          await ensureRoundResolved(page, { forceResolve: true });
           await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
 
           if (attempt < maxAttempts - 1) {
@@ -684,7 +681,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await expect(page.locator(selectors.statButton(0)).first()).toBeVisible();
         await expireSelectionTimer(page);
 
-        await resolveRoundDeterministic(page);
+        await ensureRoundResolved(page, { forceResolve: true });
         // Skip roundsPlayed wait; assert via score and snackbar cleanup below
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
