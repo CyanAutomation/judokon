@@ -57,12 +57,13 @@ function fallbackValue(name) {
     return noop;
   }
 }
-    
+/**
  * Retrieve a scoreboard helper method by name.
  *
  * @pseudocode
- * 1. Verify the shared module exists and exposes the requested method.
- * 2. Return the method when available; otherwise return null.
+ * 1. Verify the shared module exposes the requested helper.
+ * 2. Attempt to resolve the helper from the global getter when absent locally.
+ * 3. Return a noop fallback when no helper is available.
  *
  * @param {string} name - The helper method name to retrieve.
  * @returns {Function|null} The requested helper or null when unavailable.
@@ -97,15 +98,6 @@ try {
     window.getScoreboardMethod = getScoreboardMethod;
   }
 } catch {}
-
-const invokeSharedHelper = (name, args) => {
-  const helper = getScoreboardMethod(name);
-
-  if (!helper) {
-    return undefined;
-  }
-  return undefined;
-}
 
 /**
  * Safely execute a scoreboard helper, providing resilience and diagnostics.
@@ -197,8 +189,8 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
  * Display a message on the shared scoreboard.
  *
  * @pseudocode
- * 1. Execute the scoreboard helper with resilience safeguards.
- * 2. Return the helper result (void).
+ * 1. Invoke `runHelper` with the helper name, implementation, and arguments.
+ * 2. Return the result produced by `runHelper` (void in normal operation).
  *
  * @param {...unknown} args - Arguments forwarded to the scoreboard helper.
  * @returns {void}
@@ -211,8 +203,8 @@ export function showMessage(...args) {
  * Update the scoreboard score counters.
  *
  * @pseudocode
- * 1. Forward the score arguments to the scoreboard helper safely.
- * 2. Return the helper result (void).
+ * 1. Pass the score update arguments through `runHelper` for safe execution.
+ * 2. Return the result produced by `runHelper` (void in normal operation).
  *
  * @param {...unknown} args - Helper arguments.
  * @returns {void}
@@ -225,8 +217,8 @@ export function updateScore(...args) {
  * Clear any visible scoreboard message.
  *
  * @pseudocode
- * 1. Invoke the scoreboard helper with runtime safeguards.
- * 2. Return the helper result (void).
+ * 1. Call `runHelper` to execute the clear message helper safely.
+ * 2. Return the result produced by `runHelper` (void in normal operation).
  *
  * @param {...unknown} args - Helper arguments (unused).
  * @returns {void}
@@ -239,7 +231,8 @@ export function clearMessage(...args) {
  * Show a temporary scoreboard message and return a restore handler.
  *
  * @pseudocode
- * 1. Execute the helper; on failure, return a noop restore function.
+ * 1. Execute the temporary message helper through `runHelper`.
+ * 2. Return the helper's restore callback or the noop fallback when unavailable.
  *
  * @param {...unknown} args - Helper arguments.
  * @returns {() => void} Restore callback from the helper or a noop fallback.
@@ -252,7 +245,8 @@ export function showTemporaryMessage(...args) {
  * Clear the scoreboard timer display.
  *
  * @pseudocode
- * 1. Forward the request to the scoreboard helper with safeguards.
+ * 1. Use `runHelper` to forward the clear timer request safely.
+ * 2. Return the result produced by `runHelper` (void in normal operation).
  *
  * @param {...unknown} args - Helper arguments (unused).
  * @returns {void}
@@ -265,7 +259,8 @@ export function clearTimer(...args) {
  * Update the scoreboard timer with the provided values.
  *
  * @pseudocode
- * 1. Call the scoreboard helper safely with the timer arguments.
+ * 1. Forward the timer arguments through `runHelper` for guarded execution.
+ * 2. Return the result produced by `runHelper` (void in normal operation).
  *
  * @param {...unknown} args - Helper arguments.
  * @returns {void}
@@ -278,7 +273,8 @@ export function updateTimer(...args) {
  * Highlight an auto-selected stat on the scoreboard.
  *
  * @pseudocode
- * 1. Delegate to the scoreboard helper with resilience handling.
+ * 1. Delegate to the helper via `runHelper` to highlight the auto-selected stat.
+ * 2. Return the result produced by `runHelper` (void in normal operation).
  *
  * @param {...unknown} args - Helper arguments.
  * @returns {void}
@@ -291,7 +287,8 @@ export function showAutoSelect(...args) {
  * Update the scoreboard round counter.
  *
  * @pseudocode
- * 1. Execute the scoreboard helper with safeguards.
+ * 1. Route the round counter update through `runHelper` safely.
+ * 2. Return the result produced by `runHelper` (void in normal operation).
  *
  * @param {...unknown} args - Helper arguments.
  * @returns {void}
@@ -304,7 +301,8 @@ export function updateRoundCounter(...args) {
  * Clear the scoreboard round counter.
  *
  * @pseudocode
- * 1. Safely invoke the scoreboard helper to clear the display.
+ * 1. Use `runHelper` to safely invoke the round counter clearing helper.
+ * 2. Return the result produced by `runHelper` (void in normal operation).
  *
  * @param {...unknown} args - Helper arguments (unused).
  * @returns {void}
