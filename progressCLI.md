@@ -159,6 +159,17 @@ Notes on verification terminology:
   - Playwright test `battle-cli-start.spec.js` passed without regression.
 - **Outcome:** Settings (seed and win-target) now persist across reloads and are properly applied to the engine state.
 
+## Implementation of Issue 5: Timer Doesn't Pause on Tab Hide
+
+- **Actions taken:**
+  - Added diagnostic logging to `pauseTimers()` and `resumeTimers()` in `src/pages/battleCLI/init.js` to confirm invocation.
+  - Modified the `visibilitychange` event handler to also call the engine's `handleTabInactive()` and `handleTabActive()` methods when available.
+  - Added comprehensive unit tests in `tests/pages/battleCLI.visibility.test.js` to verify visibility change handling calls the appropriate timer pause/resume functions.
+- **Test outcomes:**
+  - New unit tests in `tests/pages/battleCLI.visibility.test.js` passed, confirming visibility change events trigger timer pause/resume and engine methods.
+  - Playwright test `battle-cli-start.spec.js` passed without regression.
+- **Outcome:** Timers now pause when the tab is hidden and resume when it becomes visible, preventing players from losing time during tab switches.
+
 ## Opportunities for improvement (cross-cutting)
 
 - Add automated tests for each behavioral requirement: seed determinism, settings persistence, timer pause/resume, verbose log visibility, and keyboard shortcut state. Prefer unit tests with fake timers + small integration tests.
@@ -179,7 +190,7 @@ Acceptance criteria for this work:
 - ✅ Win-target options include [3,5,10] and default to 5.
 - ✅ Seed determinism is reproducible: same seed → same first-round stats across fresh matches.
 - ✅ Settings persist across reloads and are applied to the engine.
-- Timers pause on tab hide and resume accurately.
+- ✅ Timers pause on tab hide and resume accurately.
 
 ## What I changed in this document
 
