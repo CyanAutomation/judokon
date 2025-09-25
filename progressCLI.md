@@ -4,17 +4,17 @@ This document contains a reviewed and reformatted QA report for the Classic Batt
 
 ## Summary of issues
 
-| # | Issue | Impact |
-|---:|------|--------|
-| 1 | Unintuitive Match Start | Poor discoverability; keyboard-only users may be confused or blocked. |
-| 2 | Missing "3-Point" Match Length | Divergence from PRD; players cannot select a 3-point quick match. |
-| 3 | Unreliable Seed Determinism | Violates deterministic seed requirement; undermines repeatability for QA and automation. |
-| 4 | Incomplete Settings Persistence | Settings reset on reload; tests and users can't rely on stored preferences. |
-| 5 | Timer Doesn't Pause on Tab Hide | Players can lose time while the tab is hidden. |
-| 6 | Confusing Dual Timers | Redundant, inconsistent timer displays confuse players and assistive tech. |
-| 7 | Unclear Verbose Mode | Verbose log is not visible/obvious — reduces observability. |
-| 8 | Round Counter Glitch on Quit | UI briefly shows previous match state — minor UX confusion. |
-| 9 | Incorrect Keyboard Shortcut State | Number keys may change settings unexpectedly. |
+|   # | Issue                             | Impact                                                                                   |
+| --: | --------------------------------- | ---------------------------------------------------------------------------------------- |
+|   1 | Unintuitive Match Start           | Poor discoverability; keyboard-only users may be confused or blocked.                    |
+|   2 | Missing "3-Point" Match Length    | Divergence from PRD; players cannot select a 3-point quick match.                        |
+|   3 | Unreliable Seed Determinism       | Violates deterministic seed requirement; undermines repeatability for QA and automation. |
+|   4 | Incomplete Settings Persistence   | Settings reset on reload; tests and users can't rely on stored preferences.              |
+|   5 | Timer Doesn't Pause on Tab Hide   | Players can lose time while the tab is hidden.                                           |
+|   6 | Confusing Dual Timers             | Redundant, inconsistent timer displays confuse players and assistive tech.               |
+|   7 | Unclear Verbose Mode              | Verbose log is not visible/obvious — reduces observability.                              |
+|   8 | Round Counter Glitch on Quit      | UI briefly shows previous match state — minor UX confusion.                              |
+|   9 | Incorrect Keyboard Shortcut State | Number keys may change settings unexpectedly.                                            |
 
 ---
 
@@ -117,6 +117,7 @@ Notes on verification terminology:
 ## Next steps and acceptance criteria
 
 Recommended next actions:
+
 1. Implement the easy fixes first: (1) Start button visibility and accessibility, (2) update win-target options to include 3, (3) immediate UI fix for round counter.
 2. Add unit tests for seed determinism and settings persistence before changing engine wiring.
 3. Instrument timers with logging and write fake-timer tests for visibility behavior.
@@ -165,5 +166,3 @@ I ran quick searches in the workspace to confirm the files and key symbols menti
 - Page visibility / timers
   - `src/pages/battleCLI/init.js` — `document.addEventListener("visibilitychange", ...)` wiring (hit at ~line 2423) which calls `pausetimers()` / `resumetimers()`.
   - Timer utilities and scheduler helpers also add `visibilitychange` listeners (examples: `src/helpers/timerUtils.js`, `src/helpers/classicBattle/setupScheduler.js`, `src/helpers/classicBattle/orchestrator.js`).
-
-

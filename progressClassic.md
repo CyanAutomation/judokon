@@ -92,7 +92,7 @@ Tests / follow-ups:
 
 - **Actions taken:** Added `disableStatButtons(buttons, container)` call in `handleStatButtonClick` after `handleStatSelection` succeeds. Added `disableStatButtons` to imports from `statButtons.js`.
 - **Files modified:** `src/pages/battleClassic.init.js` (added import and call), `tests/classicBattle/page-scaffold.test.js` (added mock).
-**Implementation completed:**
+  **Implementation completed:**
 
 - **Actions taken:** Added `disableStatButtons(buttons, container)` call in `handleStatButtonClick` after `handleStatSelection` succeeds. Added `disableStatButtons` to imports from `statButtons.js`.
 - **Files modified:** `src/pages/battleClassic.init.js` (added import and call), `tests/classicBattle/page-scaffold.test.js` (added mock).
@@ -284,4 +284,3 @@ Before merge, run these checks:
 - pa11y/axe accessibility audit for keyboard and focus issues
 
 ---
-

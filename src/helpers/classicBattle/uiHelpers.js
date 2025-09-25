@@ -316,16 +316,26 @@ export function disableNextRoundButton() {
  * transient countdown/hint flows remain unaffected.
  *
  * @pseudocode
- * 1. Call `showResult(message)` to render the main outcome.
- * 2. Call `scoreboard.showMessage(message, { outcome: true })`.
- * 3. Avoid showing a snackbar for outcome messages.
+ * 1. If stat comparison data is provided, prepend it to the message.
+ * 2. Call `showResult(fullMessage)` to render the consolidated outcome.
+ * 3. Call `scoreboard.showMessage(fullMessage, { outcome: true })`.
+ * 4. Avoid showing a snackbar for outcome messages.
  *
  * @param {string} message - Outcome text to display (e.g. "You Win").
+ * @param {string} [stat] - Optional stat name that was compared.
+ * @param {number} [playerVal] - Optional player's stat value.
+ * @param {number} [opponentVal] - Optional opponent's stat value.
  * @returns {void}
  */
-export function showRoundOutcome(message) {
-  showResult(message);
-  scoreboard.showMessage(message, { outcome: true });
+export function showRoundOutcome(message, stat, playerVal, opponentVal) {
+  // Consolidate stat comparison into the outcome message
+  let fullMessage = message;
+  if (stat && typeof playerVal === "number" && typeof opponentVal === "number") {
+    const statLabel = stat.charAt(0).toUpperCase() + stat.slice(1);
+    fullMessage = `You picked: ${statLabel} (${playerVal}) — Opponent picked: ${statLabel} (${opponentVal}) — ${message}`;
+  }
+  showResult(fullMessage);
+  scoreboard.showMessage(fullMessage, { outcome: true });
   // Outcome messages belong in the round message region; avoid using snackbar
   // here so countdowns and hints can occupy it consistently.
 }

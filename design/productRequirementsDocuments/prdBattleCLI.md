@@ -44,9 +44,8 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 5. Pass WCAG 2.1 AA; >95% correct announcements.
 6. Tap/click targets ≥44px tall.
 7. **Terminal Authenticity**: Design matches CLI conventions with enhanced visual elements.
-   
-  Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; visual indicators should use ASCII or simple Unicode alternatives to preserve terminal authenticity, readability, and deterministic test output.
-8. **Typography Excellence**: Monospace font with improved line-height (1.45) and consistent 8px rhythm.
+
+Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; visual indicators should use ASCII or simple Unicode alternatives to preserve terminal authenticity, readability, and deterministic test output. 8. **Typography Excellence**: Monospace font with improved line-height (1.45) and consistent 8px rhythm.
 
 ### Dev/Test Goals
 

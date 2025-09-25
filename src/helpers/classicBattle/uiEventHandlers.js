@@ -3,7 +3,7 @@ import { getOpponentCardData } from "./opponentController.js";
 import * as scoreboard from "../setupScoreboard.js";
 import { showSnackbar } from "../showSnackbar.js";
 import { t } from "../i18n.js";
-import { renderOpponentCard, showRoundOutcome, showStatComparison } from "./uiHelpers.js";
+import { renderOpponentCard, showRoundOutcome } from "./uiHelpers.js";
 import { updateDebugPanel } from "./debugPanel.js";
 import { getOpponentDelay } from "./snackbar.js";
 import { markOpponentPromptNow } from "./opponentPromptTracker.js";
@@ -97,11 +97,10 @@ export function bindUIHelperEventHandlersDynamic() {
 
   onBattleEvent("roundResolved", async (e) => {
     clearOpponentSnackbarTimeout();
-    const { store, stat, playerVal, opponentVal, result } = e.detail || {};
+    const { stat, playerVal, opponentVal, result } = e.detail || {};
     if (!result) return;
     try {
-      showRoundOutcome(result.message || "");
-      showStatComparison(store, stat, playerVal, opponentVal);
+      showRoundOutcome(result.message || "", stat, playerVal, opponentVal);
       updateDebugPanel();
     } catch {}
   });

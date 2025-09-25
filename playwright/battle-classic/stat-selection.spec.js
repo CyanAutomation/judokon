@@ -42,4 +42,33 @@ test.describe("Classic Battle stat selection", () => {
       await expect(next).toHaveAttribute("data-next-ready", "true");
     }, ["log", "info", "warn", "error", "debug"]);
   });
+
+  test("round message shows consolidated stat comparison after selection", async ({ page }) => {
+    await withMutedConsole(async () => {
+      await page.addInitScript(() => {
+        window.__FF_OVERRIDES = { showRoundSelectModal: true };
+      });
+      await page.goto("/src/pages/battleClassic.html");
+
+      // Start the match via modal
+      await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
+      await page.getByRole("button", { name: "Medium" }).click();
+
+      // Wait for stat buttons to be ready
+      const container = page.getByTestId("stat-buttons");
+      await expect(container).toHaveAttribute("data-buttons-ready", "true");
+
+      // Click the first stat button (Power)
+      const buttons = page.getByTestId("stat-button");
+      await buttons.first().click();
+
+      // Check that round message shows consolidated stat comparison
+      const roundMessage = page.getByTestId("round-message");
+      await expect(roundMessage).toContainText("You picked: Power");
+      await expect(roundMessage).toContainText("Opponent picked: Power");
+      await expect(roundMessage).toMatch(
+        /You picked: Power \(\d+\) — Opponent picked: Power \(\d+\) — (You win the round!|Opponent wins the round!|Tie)/
+      );
+    }, ["log", "info", "warn", "error", "debug"]);
+  });
 });
