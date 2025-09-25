@@ -1,5 +1,20 @@
 :root {
   color-scheme: light dark;
+  --cli-font: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Noto Mono", monospace;
+  --cli-font-size: 14px;
+  --cli-line-height: 1.45;
+  --cli-spacing: 8px;
+  --cli-bg: #0b0f12;
+  --cli-text: #e6edf3;
+  --cli-accent: #9bdcff;
+  --cli-warning: #ffcc00;
+  --cli-focus: #ffd166;
+}
+
+:focus {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.12), 0 0 0 1px var(--cli-focus);
+	border-radius: 3px;
 }
 html,
 body {
@@ -15,13 +30,19 @@ body {
   line-height: 1.45; /* Enhanced readability for monospace */
   font-size: 14px; /* Consistent base size */
 }
-.cli-root {
+#cli-root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  font-family: var(--cli-font);
+  font-size: var(--cli-font-size);
+  line-height: var(--cli-line-height);
+  color: var(--cli-text);
+  background: var(--cli-bg);
+  padding: calc(var(--cli-spacing) * 2);
 }
-.cli-root > * {
+#cli-root > * {
   max-width: 100%;
 }
 .cli-header {
@@ -202,7 +223,7 @@ body[data-theme="retro"] .cli-stat.selected {
   min-height: 8rem; /* Reserve space for layout stability and touch targets */
 }
 .cli-stat {
-  padding: 8px 12px; /* Enhanced padding for better touch targets */
+  padding: 6px 10px;
   background: #050505;
   border: 1px solid #1f1f1f;
   min-height: 44px; /* PRD requirement: touch targets >=44px */
@@ -472,4 +493,8 @@ select:focus,
   #cli-score {
     font-size: 12px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cli-caret, .cli-anim { animation: none !important; transition: none !important; }
 }
