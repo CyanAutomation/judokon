@@ -1,15 +1,11 @@
-import {
-  initScoreboard,
-  showMessage,
-  updateScore,
-  clearMessage,
-  showTemporaryMessage,
-  clearTimer,
-  updateTimer,
-  showAutoSelect,
-  updateRoundCounter,
-  clearRoundCounter
-} from "../components/Scoreboard.js";
+import * as scoreboardComponents from "../components/Scoreboard.js";
+
+const noop = () => {};
+
+function getScoreboardMethod(name) {
+  const method = scoreboardComponents[name];
+  return typeof method === "function" ? method : noop;
+}
 import { realScheduler } from "./scheduler.js";
 
 /**
@@ -22,14 +18,16 @@ import { realScheduler } from "./scheduler.js";
  *
  * @param {object} controls - Timer control callbacks.
  * @param {object} [scheduler=realScheduler] - Timer scheduler.
+ * @returns {void}
  */
-function setupScoreboard(controls, scheduler = realScheduler) {
+export function setupScoreboard(controls, scheduler = realScheduler) {
   const header = document.querySelector("header");
   controls.scheduler = scheduler;
+  const init = getScoreboardMethod("initScoreboard");
   if (!header) {
-    initScoreboard(null, controls);
+    init(null, controls);
   } else {
-    initScoreboard(header, controls);
+    init(header, controls);
   }
 
   // Handle visibility changes for timer pause/resume
@@ -70,29 +68,34 @@ function setupScoreboard(controls, scheduler = realScheduler) {
     }
   } catch {}
 }
-const scoreboardApi = {
-  setupScoreboard,
-  showMessage,
-  updateScore,
-  clearMessage,
-  showTemporaryMessage,
-  clearTimer,
-  updateTimer,
-  showAutoSelect,
-  updateRoundCounter,
-  clearRoundCounter
-};
+/**
+ * Bundled scoreboard helper exports for scenarios that need a single entry point
+ * (for example, unit tests mocking multiple helpers simultaneously).
+ * Functions missing from the shared scoreboard module degrade to no-ops so tests
+ * can safely mock a subset of helpers.
+ *
+ * @type {{
+ *   setupScoreboard: typeof setupScoreboard
+ * } & Record<string, (...args: any[]) => unknown>}
+ *
+ * @pseudocode
+ * 1. Provide `setupScoreboard` directly from this module.
+ * 2. Delegate helper lookups to `Scoreboard.js`, falling back to a no-op when a
+ *    helper is not supplied by the mock.
+ */
+export const scoreboard = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      if (prop === "setupScoreboard") {
+        return setupScoreboard;
+      }
+      if (typeof prop !== "string") {
+        return Reflect.get(scoreboardComponents, prop);
+      }
+      return getScoreboardMethod(prop);
+    }
+  }
+);
 
-export {
-  setupScoreboard,
-  showMessage,
-  updateScore,
-  clearMessage,
-  showTemporaryMessage,
-  clearTimer,
-  updateTimer,
-  showAutoSelect,
-  updateRoundCounter,
-  clearRoundCounter,
-  scoreboardApi as scoreboard
-};
+export * from "../components/Scoreboard.js";
