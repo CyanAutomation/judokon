@@ -221,7 +221,17 @@ Tests / follow-ups:
 - Unit test for the timer service verifying pause/resume updates remaining time correctly.
 - E2E test: start timer, hide tab (or simulate), assert timer pauses and resumes.
 
----
+**Implementation completed:**
+
+- **Actions taken:** Added `pause()` and `resume()` methods to `createRoundTimer` in `src/helpers/timers/createRoundTimer.js` to support pausing and resuming the timer. Added a `visibilitychange` event listener in `startTimer` function in `src/helpers/classicBattle/timerService.js` that calls `timer.pause()` when the tab is hidden and `timer.resume()` when visible. Ensured remaining time is preserved during pause/resume to avoid time-drift.
+
+- **Files modified:** `src/helpers/timers/createRoundTimer.js` (added pause/resume logic and currentRemaining tracking), `src/helpers/classicBattle/timerService.js` (added visibilitychange listener), `tests/helpers/timers/createRoundTimer.test.js` (added pause/resume unit test).
+
+- **Unit test outcomes:** `createRoundTimer.test.js`: ✅ PASSED (4/4 tests, including new pause/resume test)
+
+- **Playwright test outcomes:** `opponent-reveal.spec.js`: ✅ PASSED (12/12 tests, timer functionality unaffected)
+
+- **Validation:** Timer now pauses when the browser tab is hidden and resumes when visible, preserving remaining time accurately.
 
 ## Prioritization & next steps
 

@@ -82,7 +82,11 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
     }
     let remaining = Math.ceil(total);
     currentRemaining = remaining;
-    emitTick(remaining);
+    if (!resetRetries) {
+      // Resuming, don't emit initial tick
+    } else {
+      emitTick(remaining);
+    }
     const tick = () => {
       try {
         // Decrement remaining and emit tick/expired accordingly. Use a
@@ -105,8 +109,9 @@ export function createRoundTimer({ starter = null, onDriftFail } = {}) {
         } catch {}
       }
     };
-    // Start the tick loop after 1 second
-    fallbackTimeoutId = setTimeout(tick, 1000);
+    // Start the tick loop after 1 second, or immediately if resuming
+    const delay = resetRetries ? 1000 : 0;
+    fallbackTimeoutId = setTimeout(tick, delay);
   }
 
   function emitTick(remaining) {
