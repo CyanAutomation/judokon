@@ -51,11 +51,11 @@ describe("battleCLI verbose win target", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const changeHandler = getListener(changeSpy, "change");
-    select.value = "15";
+    select.value = "10";
     await changeHandler(new Event("change"));
 
-    expect(getPointsToWin()).toBe(15);
-    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("15");
+    expect(getPointsToWin()).toBe(10);
+    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("10");
     confirmSpy.mockRestore();
     changeSpy.mockRestore();
 
@@ -65,9 +65,9 @@ describe("battleCLI verbose win target", () => {
     await toggleVerbose(false);
 
     expect(setPointsToWinSpy).toHaveBeenCalledTimes(2);
-    expect(setPointsToWinSpy).toHaveBeenNthCalledWith(1, 15);
-    expect(setPointsToWinSpy).toHaveBeenNthCalledWith(2, 15);
-    expect(getPointsToWin()).toBe(15);
+    expect(setPointsToWinSpy).toHaveBeenNthCalledWith(1, 10);
+    expect(setPointsToWinSpy).toHaveBeenNthCalledWith(2, 10);
+    expect(getPointsToWin()).toBe(10);
     setPointsToWinSpy.mockRestore();
   });
 });
