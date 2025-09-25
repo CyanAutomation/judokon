@@ -147,12 +147,17 @@ async function selectAdvantagedStat(page) {
       }
       const playerStats = store.currentPlayerJudoka?.stats;
       const opponentStats = store.currentOpponentJudoka?.stats;
-      if (!playerStats || !opponentStats) {
+      const hasFiniteStat = (stats) => {
+        if (!stats || typeof stats !== "object") {
+          return false;
+        }
+        return Object.values(stats).some((value) => Number.isFinite(Number(value)));
+      };
+
+      if (!hasFiniteStat(playerStats) || !hasFiniteStat(opponentStats)) {
         return false;
       }
-      const playerKeys = Object.keys(playerStats || {});
-      const opponentKeys = Object.keys(opponentStats || {});
-      return playerKeys.length > 0 && opponentKeys.length > 0;
+      return true;
     });
 
   await expect.poll(waitForStatsReady, { timeout: 5000 }).toBeTruthy();
@@ -170,68 +175,71 @@ async function selectAdvantagedStat(page) {
 
     const playerStats = player.stats;
     const opponentStats = opponent.stats;
-    const keys = Object.keys(playerStats);
+    const keys = Array.from(
+      new Set([...Object.keys(playerStats ?? {}), ...Object.keys(opponentStats ?? {})])
+    );
 
-    let bestKey = null;
     let bestNormalized = null;
     let bestDelta = Number.NEGATIVE_INFINITY;
 
+    const readStatValue = (stats, key) => {
+      if (!stats || typeof stats !== "object") {
+        return Number.NaN;
+      }
+      const normalizedKey = String(key).trim().toLowerCase();
+      const direct = stats[key];
+      if (Number.isFinite(Number(direct))) {
+        return Number(direct);
+      }
+      if (normalizedKey !== key && Number.isFinite(Number(stats[normalizedKey]))) {
+        return Number(stats[normalizedKey]);
+      }
+      return Number.NaN;
+    };
+
     for (const key of keys) {
       const normalized = String(key).trim().toLowerCase();
-      const playerRaw = playerStats[key] ?? playerStats[normalized] ?? 0;
-      const opponentRaw = opponentStats[key] ?? opponentStats[normalized] ?? 0;
+      const playerValue = readStatValue(playerStats, key);
+      const opponentValue = readStatValue(opponentStats, key);
 
-      const playerValue =
-        typeof playerRaw === "number" && !Number.isNaN(playerRaw)
-          ? playerRaw
-          : Number(playerRaw) || 0;
-      const opponentValue =
-        typeof opponentRaw === "number" && !Number.isNaN(opponentRaw)
-          ? opponentRaw
-          : Number(opponentRaw) || 0;
+      if (!Number.isFinite(playerValue) && !Number.isFinite(opponentValue)) {
+        continue;
+      }
 
       const delta = playerValue - opponentValue;
       if (delta > bestDelta) {
         bestDelta = delta;
-        bestKey = key;
         bestNormalized = normalized;
       }
     }
 
-    if (!bestKey) {
-      const defaultKey = "power";
-      if (typeof playerStats === "object" && playerStats) {
-        const boost = 5;
-        playerStats[defaultKey] = boost;
-        playerStats[defaultKey.toLowerCase()] = boost;
-      }
-      if (typeof opponentStats === "object" && opponentStats) {
-        opponentStats[defaultKey] = 0;
-        opponentStats[defaultKey.toLowerCase()] = 0;
-      }
-      return defaultKey;
+    if (bestNormalized && Number.isFinite(bestDelta) && bestDelta > 0) {
+      return bestNormalized;
     }
 
-    if (bestDelta <= 0) {
-      const boost = Math.abs(bestDelta) + 1;
-      const normalizedKey = String(bestKey).trim().toLowerCase();
-      const baseValue =
-        typeof playerStats[bestKey] === "number" && !Number.isNaN(playerStats[bestKey])
-          ? playerStats[bestKey]
-          : Number(playerStats[bestKey]) || 0;
-
-      playerStats[bestKey] = baseValue + boost;
-      playerStats[normalizedKey] = playerStats[bestKey];
-      opponentStats[bestKey] = 0;
-      opponentStats[normalizedKey] = opponentStats[bestKey];
-      return normalizedKey;
+    const firstButton = document.querySelector("#stat-buttons button[data-stat]");
+    if (!firstButton) {
+      return null;
     }
-
-    return bestNormalized;
+    const datasetValue = firstButton.getAttribute("data-stat") ?? firstButton.dataset?.stat;
+    if (typeof datasetValue === "string" && datasetValue.trim()) {
+      return datasetValue.trim();
+    }
+    return null;
   });
 
-  const normalizedStat = typeof statKey === "string" && statKey ? statKey : "power";
-  await page.click(`#stat-buttons button[data-stat='${normalizedStat}']`);
+  if (typeof statKey === "string" && statKey) {
+    const normalizedStat = statKey.trim();
+    const escapedStat = normalizedStat.replace(/'/g, "\\'");
+    const statButton = page.locator(`#stat-buttons button[data-stat='${escapedStat}']`);
+    await expect(statButton).toBeVisible();
+    await statButton.click();
+    return;
+  }
+
+  const fallbackButton = page.locator("#stat-buttons button[data-stat]").first();
+  await expect(fallbackButton).toBeVisible();
+  await fallbackButton.click();
 }
 
 async function waitForScoreDisplay(page, { timeout = 10000, previousObservation = null } = {}) {
