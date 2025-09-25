@@ -142,9 +142,7 @@ async function collectBattleReadinessFallbacks(page) {
   }
 
   const snapshotLooksReady =
-    snapshot !== null &&
-    typeof snapshot.roundsPlayed === "number" &&
-    snapshot.roundsPlayed >= 0;
+    snapshot !== null && typeof snapshot.roundsPlayed === "number" && snapshot.roundsPlayed >= 0;
 
   return { statVisible, readinessViaApi, snapshotLooksReady, errors };
 }

@@ -39,4 +39,3 @@ describe("TimerController countdown consistency", () => {
     expect(expired).toHaveBeenCalled();
   });
 });
-

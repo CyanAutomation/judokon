@@ -235,3 +235,20 @@ Notes/Risks:
 - No hot-path dynamic imports introduced.
 
 Status: Implemented microtask deferral; ready for review.
+
+## Progress Log — Task 4: Countdown consistency improvements
+
+Activity:
+- Audited countdown paths: TimerController orchestrates logical time; CLI page mirrors display via intervals. Focused on testable consistency rather than broad refactor.
+
+Changes:
+- Added targeted unit test `tests/helpers/countdown.spec.js` to validate TimerController deterministic ticks and onExpired behavior under a fake scheduler.
+
+Validation (targeted only):
+- Vitest: `tests/helpers/countdown.spec.js` — PASS (1 test)
+
+Notes/Risks:
+- No runtime code changes were required for TimerController; existing logic already separates logical clock (scheduler) from UI display.
+- Next follow-up could add a small Playwright smoke exercising countdown start → finish on the CLI page to ensure UI mirror stays in sync under interaction.
+
+Status: Unit-level validation added and passing; ready for review.

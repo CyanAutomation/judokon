@@ -22,7 +22,9 @@ describe("CLI StatDisplay sync via StatsPanel", () => {
     await panel.update();
 
     // Find initial text values
-    const before = Array.from(panel.element.querySelectorAll("li.stat span")).map((n) => n.textContent);
+    const before = Array.from(panel.element.querySelectorAll("li.stat span")).map(
+      (n) => n.textContent
+    );
     expect(before.join(",")).toContain("1");
 
     // Capture the subscribed handler and call it
@@ -30,7 +32,9 @@ describe("CLI StatDisplay sync via StatsPanel", () => {
     const handler = onSpy.mock.calls.find((c) => c[0] === "statsUpdated")[1];
     await handler({ stats: { power: 9, speed: 8, technique: 7, kumikata: 6, newaza: 5 } });
 
-    const after = Array.from(panel.element.querySelectorAll("li.stat span")).map((n) => n.textContent);
+    const after = Array.from(panel.element.querySelectorAll("li.stat span")).map(
+      (n) => n.textContent
+    );
     expect(after.join(",")).toContain("9");
 
     panel.destroy();
@@ -54,11 +58,12 @@ describe("CLI StatDisplay sync via StatsPanel", () => {
     const handler = onSpy.mock.calls.find((c) => c[0] === "statsUpdated")[1];
     await handler({});
 
-    const values = Array.from(panel.element.querySelectorAll("li.stat span")).map((n) => n.textContent);
+    const values = Array.from(panel.element.querySelectorAll("li.stat span")).map(
+      (n) => n.textContent
+    );
     expect(values).toEqual(["10", "20", "30", "40", "50"]);
 
     panel.destroy();
     getSnap.mockRestore();
   });
 });
-

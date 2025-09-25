@@ -24,4 +24,3 @@ describe("BattleEngine statsUpdated emission", () => {
     expect(handler).toHaveBeenCalled();
   });
 });
-
