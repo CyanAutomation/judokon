@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { withMutedConsole } from "../../tests/utils/console.js";
+import { withMutedConsole, withAllowedConsole } from "../../tests/utils/console.js";
 import {
   waitForBattleReady,
   waitForNextButtonReady,
@@ -9,23 +9,15 @@ import { readRoundDiagnostics } from "../helpers/roundDiagnostics.js";
 import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
 
 test.describe("Classic Battle cooldown + Next", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.evaluate(() => {
-      window.__DEBUG_ROUND_TRACKING = true;
-    });
-  });
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
-    const logs = [];
-    page.on("console", (msg) => {
-      logs.push(msg.text());
-    });
-    
     await withMutedConsole(async () => {
-      await page.evaluate(() => {
-        window.__DEBUG_ROUND_TRACKING = true;
-      });
-      await applyDeterministicCooldown(page, { cooldownMs: 0 });
+      await applyDeterministicCooldown(page, { cooldownMs: 0, roundTimerMs: 1 });
       await page.goto("/src/pages/battleClassic.html");
+
+      // Override the timer to null after page load to prevent automatic selection
+      await page.evaluate(() => {
+        window.__OVERRIDE_TIMERS = { roundTimer: null };
+      });
 
       await waitForTestApi(page);
 
@@ -49,22 +41,6 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
       // The counter label reflects the upcoming round once the previous round resolves.
-      // Debug: log the current engine state
-      await page.evaluate(() => {
-        try {
-          console.log("Debug: window.__ENGINE_CONFIG =", window.__ENGINE_CONFIG);
-          console.log("Debug: window.__highestDisplayedRound =", window.__highestDisplayedRound);
-          if (window.__TEST_API && window.__TEST_API.engine) {
-            console.log("Debug: engine roundsPlayed =", window.__TEST_API.engine.getRoundsPlayed());
-          }
-        } catch (e) {
-          console.log("Debug error:", e);
-        }
-      });
-      
-      // Print captured logs
-      console.log("Captured logs:", logs);
-      
       await expect(roundCounter).toHaveText(/Round\s*2/);
 
       const diagnosticsBeforeNext = await readRoundDiagnostics(page);
@@ -117,6 +93,18 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
       const diagnosticsBeforeInterference = await readRoundDiagnostics(page);
+      // Dump trace for debugging if things are out-of-order
+      const rtraceBeforeInterference = await page.evaluate(() => ({
+        logs: window.__RTRACE_LOGS || [],
+        highest: window.__highestDisplayedRound
+      }));
+      // Surface trace into test output (allow console temporarily)
+      await withAllowedConsole(
+        async () => {
+          console.log("RTRACE before interference:", JSON.stringify(rtraceBeforeInterference));
+        },
+        ["log", "info", "warn", "error", "debug"]
+      );
       expect(diagnosticsBeforeInterference.displayedRound).toBe(2);
       expect(diagnosticsBeforeInterference.selectionMade).toBe(true);
 

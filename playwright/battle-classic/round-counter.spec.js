@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { withMutedConsole } from "../../tests/utils/console.js";
+import { withMutedConsole, withAllowedConsole } from "../../tests/utils/console.js";
 
 test.describe("Classic Battle round counter", () => {
   test("shows Round 1 after start and increments after Next", async ({ page }) => {
@@ -33,7 +33,15 @@ test.describe("Classic Battle round counter", () => {
 
       // Click Next to start the next round and verify increment to Round 2
       await next.click();
-      await expect(roundCounter).toHaveText(/Round\s*2/);
+      // Dump trace for debugging if round counter shows unexpected value
+      const rtraceAfterNext = await page.evaluate(() => ({
+        logs: window.__RTRACE_LOGS || [],
+        highest: window.__highestDisplayedRound
+      }));
+      await withAllowedConsole(async () => {
+        console.log("RTRACE after next:", JSON.stringify(rtraceAfterNext));
+      }, ["log", "info", "warn", "error", "debug"]);
+  await expect(roundCounter).toHaveText(/Round\s*2/);
       await expect(roundCounter).not.toHaveText(/Round\s*3/);
       // Timer should be visible again for the new round
       await expect(page.locator("#next-round-timer")).toContainText(/Time Left:/);
