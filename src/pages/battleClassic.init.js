@@ -1115,6 +1115,12 @@ function updateRoundCounterFromEngine(options = {}) {
 
 function calculateEngineRound() {
   const played = Number(getRoundsPlayed?.() || 0);
+  console.log(
+    "calculateEngineRound: getRoundsPlayed() returned",
+    played,
+    "so calculateEngineRound returns",
+    played + 1
+  );
   return Number.isFinite(played) ? played + 1 : NaN;
 }
 
@@ -1128,11 +1134,10 @@ function handleRoundCounterFallback(visibleRound) {
     const fallback = hasVisibleRound ? Math.max(Number(visibleRound), baseline) : baseline;
     updateRoundCounter(fallback);
     setHighestDisplayedRound(Math.max(getHighestDisplayedRound(), fallback));
-    highestDisplayedRound = Math.max(highestDisplayedRound, fallback);
     lastForcedTargetRound = null;
     if (typeof window !== "undefined") {
       try {
-        window.__highestDisplayedRound = highestDisplayedRound;
+        window.__highestDisplayedRound = getHighestDisplayedRound();
         window.__lastRoundCounterContext = "fallback";
         window.__previousRoundCounterContext = lastRoundCounterUpdateContext;
       } catch {}

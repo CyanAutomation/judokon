@@ -9,6 +9,7 @@ test.describe("Classic Battle round counter", () => {
         window.__OVERRIDE_TIMERS = { roundTimer: 1 };
         window.__NEXT_ROUND_COOLDOWN_MS = 500;
         window.__FF_OVERRIDES = { showRoundSelectModal: true };
+        window.__DEBUG_ROUND_TRACKING = true;
       });
       await page.goto("/src/pages/battleClassic.html");
 

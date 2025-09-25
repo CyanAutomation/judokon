@@ -11,6 +11,9 @@ import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
 test.describe("Classic Battle cooldown + Next", () => {
   test("Next becomes ready after resolution and advances on click", async ({ page }) => {
     await withMutedConsole(async () => {
+      await page.evaluate(() => {
+        window.__DEBUG_ROUND_TRACKING = true;
+      });
       await applyDeterministicCooldown(page, { cooldownMs: 0 });
       await page.goto("/src/pages/battleClassic.html");
 
