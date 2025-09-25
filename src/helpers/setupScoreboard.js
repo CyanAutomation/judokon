@@ -8,13 +8,23 @@ try {
   sharedScoreboardModule = null;
 }
 
-const invokeSharedHelper = (name, args) => {
+function getScoreboardMethod(name) {
   const helper =
     sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
       ? sharedScoreboardModule[name]
       : null;
 
-  if (!helper) {
+  if (helper) {
+    return helper;
+  }
+
+  return () => {};
+}
+
+const invokeSharedHelper = (name, args) => {
+  const helper = getScoreboardMethod(name);
+
+  if (typeof helper !== "function") {
     return undefined;
   }
 
