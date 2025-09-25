@@ -17,7 +17,7 @@ Styling and layout embrace **terminal authenticity**: monospace font, visible fo
 The animated Classic Battle UI can be heavy for low-spec devices and noisy for power users or automated tests.
 We need a **lightweight, deterministic surface** that preserves gameplay logic and timers while maximizing **readability, accessibility, and observability**.
 
-**Personas**
+### Personas
 
 - **Low-spec user:** Needs fast loading and low memory usage.
 - **Keyboard-only user:** Must finish a match without a mouse.
@@ -25,7 +25,7 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 - **Automation pipeline:** Needs deterministic, stable DOM hooks.
 - **QA engineer:** Requires observability and reliable selectors.
 
-**Success looks like:**
+### Success looks like
 
 - Opens fast, runs on modest hardware, navigable by keyboard alone.
 - Mirrors Classic Battle mechanics exactly.
@@ -98,7 +98,7 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 | **P2** | Observability Mode  | Verbose log view echoing transitions and events.                                                      |
 | **P2** | Interrupt Handling  | Quit confirmation pauses timers; cancel resumes.                                                      |
 
-**Feature Flags**
+### Feature Flags
 
 - `cliVerbose` — show log panel.
 - `cliShortcuts` — enable single-key shortcuts.
@@ -133,7 +133,7 @@ We need a **lightweight, deterministic surface** that preserves gameplay logic a
 └─────────────────────────────────────────┘
 ```
 
-**Enhancements**
+### Enhancements
 
 - **Terminal Title Bar**: Enhanced gradient styling with authentic terminal appearance.
 - **Unicode Indicators**: ⏱ for timer, → for prompts and results, │ for separators.
