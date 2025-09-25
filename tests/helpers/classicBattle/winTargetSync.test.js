@@ -4,23 +4,37 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   getPointsToWin: vi.fn()
 }));
 
+function renderCliDom() {
+  const cliRoot = document.createElement("div");
+  cliRoot.id = "cli-root";
+  cliRoot.dataset.round = "3";
+  cliRoot.dataset.target = "5";
+
+  const cliRound = document.createElement("div");
+  cliRound.id = "cli-round";
+  cliRound.textContent = "Round 3 Target: 5";
+
+  const select = document.createElement("select");
+  select.id = "points-select";
+  [3, 5].forEach((value) => {
+    const option = document.createElement("option");
+    option.value = String(value);
+    option.textContent = String(value);
+    select.append(option);
+  });
+  select.value = "5";
+
+  document.body.replaceChildren(cliRoot, cliRound, select);
+  document.body.dataset.target = "5";
+
+  return { cliRoot, cliRound, select };
+}
+
 describe("syncWinTargetDropdown", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    document.body.innerHTML = `
-      <div id="cli-root" data-round="3" data-target="5"></div>
-      <div id="cli-round"></div>
-      <select id="points-select">
-        <option value="3">3</option>
-        <option value="5">5</option>
-      </select>
-    `;
-    document.body.dataset.target = "5";
-    const select = document.getElementById("points-select");
-    if (select) {
-      select.value = "5";
-    }
+    renderCliDom();
   });
 
   it("injects missing target option and updates header metadata", async () => {

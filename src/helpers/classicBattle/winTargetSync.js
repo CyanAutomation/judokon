@@ -97,6 +97,8 @@ export function syncWinTargetDropdown() {
     }
     if (typeof currentTarget !== "number" || !Number.isFinite(currentTarget)) return;
 
+    // Normalize to an integer so dropdown values stay in sync when the engine
+    // emits floats or other non-integer numerics (e.g. Infinity).
     const normalizedTarget = Math.trunc(currentTarget);
     if (!Number.isFinite(normalizedTarget) || normalizedTarget <= 0) {
       return;

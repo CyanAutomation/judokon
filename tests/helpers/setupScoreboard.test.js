@@ -43,6 +43,20 @@ describe("setupScoreboard", () => {
     };
   }
 
+  async function withNonDomEnvironment(callback) {
+    const originalWindow = global.window;
+    const originalDocument = global.document;
+
+    try {
+      global.window = undefined;
+      global.document = undefined;
+      await callback();
+    } finally {
+      global.window = originalWindow;
+      global.document = originalDocument;
+    }
+  }
+
   it("initializes scoreboard and proxies component methods", async () => {
     const scheduler = createMockScheduler();
     const controls = createControls();
@@ -107,6 +121,8 @@ describe("setupScoreboard", () => {
       })
     });
     vi.doMock("../../src/components/Scoreboard.js", () => stub);
+    const loggerModule = await import("../../src/helpers/logger.js");
+    const errorSpy = vi.spyOn(loggerModule.default, "error").mockImplementation(() => {});
 
     await withMutedConsole(async () => {
       const mod = await import("../../src/helpers/setupScoreboard.js");
@@ -118,21 +134,20 @@ describe("setupScoreboard", () => {
     const scoreboard = await import("../../src/components/Scoreboard.js");
     expect(scoreboard.showTemporaryMessage).toHaveBeenCalledWith("Temp");
     expect(scoreboard.showTemporaryMessage).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[scoreboard] Helper "showTemporaryMessage" threw.',
+      expect.any(Error)
+    );
+    errorSpy.mockRestore();
   });
 
   it("skips helper execution when DOM is unavailable", async () => {
-    const originalWindow = global.window;
-    const originalDocument = global.document;
-
     vi.resetModules();
     const stub = createScoreboardStub();
     vi.doMock("../../src/components/Scoreboard.js", () => stub);
 
-    try {
+    await withNonDomEnvironment(async () => {
       // Simulate execution in a non-DOM environment before module import.
-      global.window = undefined;
-      global.document = undefined;
-
       await withMutedConsole(async () => {
         const mod = await import("../../src/helpers/setupScoreboard.js");
         mod.setupScoreboard(createControls());
@@ -140,9 +155,6 @@ describe("setupScoreboard", () => {
 
       const scoreboard = await import("../../src/components/Scoreboard.js");
       expect(scoreboard.initScoreboard).not.toHaveBeenCalled();
-    } finally {
-      global.window = originalWindow;
-      global.document = originalDocument;
-    }
+    });
   });
 });

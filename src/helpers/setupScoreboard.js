@@ -1,12 +1,13 @@
 import { realScheduler } from "./scheduler.js";
 import logger from "./logger.js";
+import * as scoreboardModule from "../components/Scoreboard.js";
 
 const noop = () => {};
 const domAvailable =
   typeof window !== "undefined" && typeof document !== "undefined" && document !== null;
 const loggedWarnings = new Set();
 const loggedErrors = new Set();
-let sharedScoreboardModule = null;
+const sharedScoreboardModule = scoreboardModule;
 
 /**
  * Log a warning or error exactly once.
@@ -53,16 +54,16 @@ function fallbackValue(name) {
  * @pseudocode
  * 1. Verify the shared module exposes the requested helper.
  * 2. Attempt to resolve the helper from the global getter when absent locally.
- * 3. Return a noop fallback when no helper is available.
+ * 3. Return undefined so `runHelper` can handle diagnostics and fallbacks.
  *
  * @param {string} name - The helper method name to retrieve.
- * @returns {Function|null} The requested helper or null when unavailable.
+ * @returns {Function|undefined} The requested helper or undefined when unavailable.
  */
 function getScoreboardMethod(name) {
   const directMethod =
     sharedScoreboardModule && typeof sharedScoreboardModule[name] === "function"
       ? sharedScoreboardModule[name]
-      : null;
+      : undefined;
 
   if (directMethod) {
     return directMethod;
@@ -80,7 +81,7 @@ function getScoreboardMethod(name) {
     }
   } catch {}
 
-  return noop;
+  return undefined;
 }
 
 try {
@@ -313,18 +314,3 @@ export const scoreboard = {
   updateRoundCounter,
   clearRoundCounter
 };
-
-async function ensureScoreboardModule() {
-  if (sharedScoreboardModule) {
-    return sharedScoreboardModule;
-  }
-  try {
-    sharedScoreboardModule = await import("../components/Scoreboard.js");
-  } catch (error) {
-    logOnce(loggedErrors, "error", "[scoreboard] Failed to load scoreboard module.", error);
-    sharedScoreboardModule = null;
-  }
-  return sharedScoreboardModule;
-}
-
-await ensureScoreboardModule();
