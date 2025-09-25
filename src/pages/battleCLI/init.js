@@ -117,7 +117,7 @@ export async function safeDispatch(eventName, payload) {
   } catch {}
 }
 
-function getMachine() {
+export function getMachine() {
   try {
     // Prefer debugHooks channel used by tests
     const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
@@ -174,7 +174,7 @@ let cachedStatDefs = null;
  * ensure countdown has remainingTime dataset
  * return #cli-root element
  */
-function ensureCliDomForTest({ reset = false } = {}) {
+export function ensureCliDomForTest({ reset = false } = {}) {
   if (typeof document === "undefined") return null;
 
   if (typeof window !== "undefined" && !window.__TEST__) {
@@ -222,7 +222,7 @@ function ensureCliDomForTest({ reset = false } = {}) {
  * @pseudocode
  * btn = byId('start-match'); if btn -> set tabindex=0 and focus it if page just initialized
  */
-function ensureStartButtonFocus() {
+export function ensureStartButtonFocus() {
   try {
     const btn = byId("start-match");
     if (btn) {
@@ -1088,7 +1088,7 @@ function clearStoreTimer(store, timerProperty) {
  * set `roundResolving`
  * dispatch "statSelected" on machine
  */
-function selectStat(stat) {
+export function selectStat(stat) {
   if (!stat) return;
   stopSelectionCountdown();
   clearStoreTimer(store, "statTimeoutId");
@@ -1123,6 +1123,15 @@ function selectStat(stat) {
       // eslint-disable-next-line no-console
       console.log("[TEST LOG] selectStat dispatching statSelected");
     } catch {}
+    try {
+      // Compare local binding with module export to detect spy replacement issues
+      import("./init.js").then((m) => {
+        try {
+          // eslint-disable-next-line no-console
+          console.log("[TEST LOG] moduleExportMatchesLocal=", m.safeDispatch === safeDispatch);
+        } catch {}
+      });
+    } catch {}
     safeDispatch("statSelected");
   } catch (err) {
     console.error("Error dispatching statSelected", err);
@@ -1141,7 +1150,7 @@ function selectStat(stat) {
  *   if autoSelect enabled: autoSelectStat(selectStat)
  *   else emit "statSelectionStalled"
  */
-function startSelectionCountdown(seconds = 30) {
+export function startSelectionCountdown(seconds = 30) {
   const el = byId("cli-countdown");
   if (!el) return;
   stopSelectionCountdown();
@@ -1722,6 +1731,16 @@ export function handleGlobalKey(key) {
  *   return true
  * return false
  */
+// Expose a tiny seam to control scheduling in tests without touching behavior.
+export const __scheduleMicrotask = (fn) => Promise.resolve().then(fn);
+
+export function getStatByIndex(idx) {
+  const n = Number(idx);
+  if (!Number.isFinite(n)) return null;
+  const index = n >= 1 && n <= STATS.length ? n - 1 : -1;
+  return index >= 0 ? STATS[index] : null;
+}
+
 export function handleWaitingForPlayerActionKey(key) {
   try {
     // eslint-disable-next-line no-console
@@ -1735,7 +1754,7 @@ export function handleWaitingForPlayerActionKey(key) {
     }
     // Defer non-critical work to keep key handler responsive.
     // Selection side effects may be heavy; schedule on microtask.
-    Promise.resolve().then(() => selectStat(stat));
+    __scheduleMicrotask(() => selectStat(stat));
     return true;
   }
   if (key === "enter") {
@@ -1748,7 +1767,7 @@ export function handleWaitingForPlayerActionKey(key) {
         const stat = getStatByIndex(idx);
         console.debug('[TEST DEBUG] resolved stat=', stat);
         if (stat) {
-          Promise.resolve().then(() => selectStat(stat));
+          __scheduleMicrotask(() => selectStat(stat));
           return true;
         }
       }
