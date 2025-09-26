@@ -1134,24 +1134,9 @@ export function selectStat(stat) {
   try {
     state.roundResolving = true;
     // Dispatch via the module export to ensure external spies (tests) observe the call.
-    // Schedule on a microtask to keep selection handler synchronous-looking.
-    try {
-      const schedule = initModule?.__scheduleMicrotask || __scheduleMicrotask;
-      const maybePromise = schedule(async () => {
-        const fn = initModule?.safeDispatch;
-        if (typeof fn === "function") {
-          await fn("statSelected");
-        } else {
-          console.error("[TEST LOG] safeDispatch not available on initModule");
-        }
-      });
-      if (maybePromise && typeof maybePromise.catch === "function") {
-        maybePromise.catch((err) => {
-          console.error("[TEST LOG] microtask dispatch error", err);
-        });
-      }
-    } catch (err) {
-      console.error("[TEST LOG] scheduling error", err);
+    const fn = initModule?.safeDispatch;
+    if (typeof fn === "function") {
+      fn("statSelected");
     }
   } catch (err) {
     console.error("Error dispatching statSelected", err);
