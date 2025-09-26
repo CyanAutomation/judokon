@@ -127,9 +127,27 @@ test.describe("CLI Keyboard Flows", () => {
     }
     const waitResult = await page.evaluate(async () => {
       try {
-        const stateApi = window.__TEST_API?.state;
-        if (!stateApi || typeof stateApi.waitForBattleState !== "function") {
-          return { status: "missing" };
+        const testApi = window.__TEST_API;
+        if (!testApi) {
+          return {
+            status: "missing",
+            details: "window.__TEST_API is not defined"
+          };
+        }
+
+        const stateApi = testApi.state;
+        if (!stateApi) {
+          return {
+            status: "missing",
+            details: "window.__TEST_API.state is not available"
+          };
+        }
+
+        if (typeof stateApi.waitForBattleState !== "function") {
+          return {
+            status: "missing",
+            details: "state.waitForBattleState is not a function"
+          };
         }
 
         const resolved = await stateApi.waitForBattleState("waitingForPlayerAction");
@@ -147,7 +165,11 @@ test.describe("CLI Keyboard Flows", () => {
     }
 
     if (waitResult.status === "missing") {
-      throw new Error("Test API waitForBattleState unavailable in startBattle");
+      const missingDetails =
+        typeof waitResult.details === "string" && waitResult.details.trim().length > 0
+          ? `: ${waitResult.details}`
+          : "";
+      throw new Error(`Test API waitForBattleState unavailable in startBattle${missingDetails}`);
     }
 
     if (waitResult.status === "error") {
