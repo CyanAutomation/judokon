@@ -232,7 +232,12 @@ class RoundStore {
 
   /**
    * Reset store to initial state.
-   * Ensures fresh match starts at round 1 UI while engine initializes.
+   *
+   * @pseudocode
+   * 1. Restore the constructor baseline (round 0 waiting state).
+   * 2. Clear readiness flags, callbacks, and transition log entries.
+   *
+   * Ensures the engine and scoreboard both reflect the pre-match round 0 state.
    */
   reset() {
     this.currentRound = {
@@ -254,23 +259,39 @@ class RoundStore {
   wireIntoScoreboardAdapter() {
     // Import scoreboard adapter dynamically to avoid circular dependencies
     return import("../setupScoreboard.js")
-      .then(({ updateRoundCounter }) => {
+      .then(({ updateRoundCounter, clearRoundCounter }) => {
+        const applyRoundNumber = (roundNumber) => {
+          const hasUpdate = typeof updateRoundCounter === "function";
+          const hasClear = typeof clearRoundCounter === "function";
+          if (roundNumber > 0) {
+            if (hasUpdate) {
+              updateRoundCounter(roundNumber);
+            }
+            return;
+          }
+          if (hasClear) {
+            clearRoundCounter();
+            return;
+          }
+          if (hasUpdate) {
+            updateRoundCounter(roundNumber);
+          }
+        };
+
         // Subscribe to round number changes
         this.onRoundNumberChange((newNumber) => {
           try {
-            updateRoundCounter(newNumber);
+            applyRoundNumber(newNumber);
           } catch (error) {
             console.warn("RoundStore: Failed to update round counter:", error);
           }
         });
 
         // Set initial round number if already set
-        if (this.currentRound.number > 0) {
-          try {
-            updateRoundCounter(this.currentRound.number);
-          } catch (error) {
-            console.warn("RoundStore: Failed to set initial round counter:", error);
-          }
+        try {
+          applyRoundNumber(this.currentRound.number);
+        } catch (error) {
+          console.warn("RoundStore: Failed to initialize round counter:", error);
         }
       })
       .catch((error) => {
