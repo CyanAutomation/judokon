@@ -41,7 +41,7 @@
   },
   {
     "source": "docs/validation-commands.md",
-    "mappedTo": null
+    "mappedTo": "design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks; design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference"
   },
   {
     "source": "docs/vector-search.md",

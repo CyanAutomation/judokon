@@ -271,6 +271,24 @@ test.describe("Feature Name", () => {
 - Identify performance bottlenecks
 - Regular review of slow tests
 
+### Quality Verification Commands (Operational Reference)
+
+Operational tooling complements the qualitative rubrics above. These commands help contributors audit test suites for common anti-patterns and reinforce JU-DO-KON!'s testing discipline. Pair them with the validation matrix in [PRD: Development Standards](./prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks).
+
+```bash
+# Unit test quality verification
+echo "Checking unit test patterns..."
+grep -r "dispatchEvent\|createEvent" tests/ && echo "❌ Found synthetic events" || echo "✅ No synthetic events"
+grep -r "console\.(warn\|error)" tests/ | grep -v "tests/utils/console.js" && echo "❌ Found unsilenced console" || echo "✅ Console discipline maintained"
+grep -r "setTimeout\|setInterval" tests/ | grep -v "fake\|mock" && echo "❌ Found real timers" || echo "✅ Timer discipline maintained"
+
+# Playwright test quality verification
+echo "Checking Playwright test patterns..."
+grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded waits" || echo "✅ No hardcoded timeouts"
+grep -r "page\.evaluate.*DOM\|innerHTML\|appendChild" playwright/ && echo "❌ Found DOM manipulation" || echo "✅ No DOM manipulation"
+echo "Semantic selectors count:" && grep -r "data-testid\|role=\|getByLabel" playwright/ | wc -l
+```
+
 ---
 
 ## Acceptance Criteria
