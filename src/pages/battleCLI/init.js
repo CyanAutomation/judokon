@@ -1755,10 +1755,9 @@ export function handleWaitingForPlayerActionKey(key) {
       showHint("Use 1-5, press H for help");
       return true;
     }
-    // Trigger stat selection immediately so DOM reflects the change synchronously.
-    // This trades the prior microtask defer for instant feedback—keep selectStat light
-    // enough to avoid introducing input lag in this hot path.
-    selectStat(stat);
+    // Schedule stat selection on a microtask so the DOM updates remain observable
+    // while matching the deferral behavior expected by latency-sensitive tests.
+    __scheduleMicrotask(() => selectStat(stat));
     return true;
   }
   if (key === "enter") {
