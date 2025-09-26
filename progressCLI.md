@@ -38,8 +38,8 @@ Recommended fixes:
 2. Ensure `resetMatch()` clears any lingering `.selected` classes synchronously before updating headers:
 
    ```js
-   const list = document.getElementById('cli-stats');
-   list?.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+   const list = document.getElementById("cli-stats");
+   list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
    ```
 
 3. (Optional) Add a 300ms debounce in the click handler that ultimately calls `selectStat()` for additional UX smoothness — prefer the guard for determinism in tests.

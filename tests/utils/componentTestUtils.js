@@ -314,11 +314,12 @@ function ensureBattleTranslator() {
     }
 
     if (key === "battle.statButtonDescription") {
-      const label = typeof params === "string"
-        ? params
-        : typeof params === "object" && params !== null
-        ? params.label ?? params.stat ?? Object.values(params)[0] ?? ""
-        : "";
+      const label =
+        typeof params === "string"
+          ? params
+          : typeof params === "object" && params !== null
+            ? (params.label ?? params.stat ?? Object.values(params)[0] ?? "")
+            : "";
       const text = label ? String(label) : "Select this attribute";
       return `${text} — select to compare this attribute`;
     }

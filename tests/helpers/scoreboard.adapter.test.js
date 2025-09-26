@@ -33,9 +33,7 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
     resetScoreboard();
     initScoreboard(header);
-    const roundStoreModule = await import(
-      "../../src/helpers/classicBattle/roundStore.js"
-    );
+    const roundStoreModule = await import("../../src/helpers/classicBattle/roundStore.js");
     roundStore = roundStoreModule.roundStore;
     const { initScoreboardAdapter } = await import(
       "../../src/helpers/classicBattle/scoreboardAdapter.js"
