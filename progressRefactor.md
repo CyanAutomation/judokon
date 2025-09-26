@@ -23,7 +23,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - Former `docs/product-docs.md` content now lives in `design/productRequirementsDocuments/prdPRDViewer.md#implementation-notes` (exists).
 - `docs/technical/architecture.md` / `design/architecture.md` → `prdArchitecture.md` (exists; collapse duplicate Markdown after integrating callouts).
 - `docs/technical/battleMarkup.md` / `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat Markdown as temporary appendix until canonical schema lives in PRD).
-- `docs/technical/dataSchemas.md` → `prdDataSchemas.md` (exists).
+- Data schema deep dive now lives in `design/productRequirementsDocuments/prdDataSchemas.md` (former `docs/technical/dataSchemas.md` has been retired).
 - `docs/technical/eventNamingAudit.md` / `design/eventNamingAudit.md` / `design/eventAudit/*.txt` → `prdEventContracts.md` (exists; move migration tables + listener inventories).
 - `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → `prdStateHandler.md` (exists).
 - `docs/technical/classicBattleTesting.md` / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
