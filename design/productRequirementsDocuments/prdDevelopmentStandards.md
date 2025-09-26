@@ -190,6 +190,66 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 
 ---
 
+## Validation Command Matrix & Operational Playbooks
+
+The development standards rely on a consistent validation workflow that protects quality across formatting, linting, testing, and documentation. This section captures the canonical command matrix previously hosted in `docs/validation-commands.md` and clarifies how contributors should apply it. Advanced test-quality verification commands now live alongside testing policies in [PRD: Testing Standards](./prdTestingStandards.md#quality-verification-commands-operational-reference).
+
+### Core Validation Commands
+
+| Focus Area | Command(s) | Purpose | When to Run |
+| --- | --- | --- | --- |
+| Code formatting | `npx prettier . --check`  \\ `npx prettier . --write` | Enforces repository-wide formatting discipline. | Run `--check` before every commit; use `--write` to auto-correct issues. |
+| Linting | `npx eslint .`  \\ `npx eslint . --fix` | Detects logic bugs and enforces coding conventions. | Execute prior to commit; rely on `--fix` for autofixable findings. |
+| Documentation validation | `npm run check:jsdoc`  \\ `npm run check:jsdoc:fix` | Confirms that public APIs include compliant JSDoc with `@pseudocode`. | Run after adding or updating exported functions and before commit. |
+| Unit tests | `npx vitest run`  \\ `npm run test:style` (on demand) | Guards core logic against regressions. | Required before every commit; run style tests when touching visual styling helpers. |
+| Playwright tests | `npx playwright test` | Validates end-to-end UI workflows. | Run before committing, especially for UI-affecting changes. |
+| Accessibility & contrast | `npm run check:contrast` | Ensures color contrast meets accessibility standards. | Mandatory after UI/styling updates and before commit. |
+| RAG system | `npm run rag:validate` | Confirms offline model hydration and hot-path safeguards for the RAG system. | Use after documentation or RAG-adjacent updates and prior to commit. |
+
+### Hot Path & Log Discipline Commands
+
+```bash
+# Detect dynamic imports in performance-critical paths
+grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFacade.js src/helpers/battle 2>/dev/null \
+  && echo "❌ Found dynamic import in hot path" && exit 1 || echo "✅ No dynamic imports in hot paths"
+
+# Check for unsilenced console output in tests
+grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
+  && echo "❌ Unsilenced console found" && exit 1 || echo "✅ Console discipline maintained"
+```
+
+### Combined Validation Suites
+
+- **Quick check (one-liner):**
+
+  ```bash
+  npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast
+  ```
+
+- **Full validation (including RAG preflight):**
+
+  ```bash
+  npm run check:jsdoc && npx prettier . --check && npx eslint . && npx vitest run && npx playwright test && npm run check:contrast && npm run rag:validate
+  ```
+
+### Audience-Specific Playbooks
+
+- **Human contributors:** Run the full quick-check suite (formatting, linting, JSDoc, unit tests, Playwright tests, contrast) before committing changes.
+- **AI agents:** Execute the quick-check suite **plus** `npm run rag:validate` and the hot-path/log discipline grep commands above to ensure automation does not introduce regressions.
+
+> **See also:** [PRD: Testing Standards](./prdTestingStandards.md#quality-verification-commands-operational-reference) for advanced test quality verification commands and anti-pattern checks tailored to unit and Playwright suites.
+
+### Troubleshooting & Performance Tips
+
+- **Prettier fails:** Run `npx prettier . --write` to auto-correct formatting issues.
+- **ESLint fails:** Run `npx eslint . --fix` for autofixable lint errors.
+- **Playwright fails:** Ensure the application server is available on `localhost:5000` (`npm start`).
+- **Tests fail with `localStorage` errors:** Clear browser `localStorage` manually before re-running.
+- **RAG validation fails:** Run `npm run rag:prepare:models` to hydrate offline models.
+- **General performance:** Parallelize tests where possible, avoid running `npm run test:style` unless necessary, and pre-hydrate offline RAG models in CI environments.
+
+---
+
 ## Acceptance Criteria
 
 - [ ] All new public functions include compliant JSDoc documentation

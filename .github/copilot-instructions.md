@@ -53,7 +53,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 
 **Content Ownership**: This file is the authoritative source for agent-specific rules, validation commands, and quality standards. Other documentation files reference this for agent-specific details.
 
-**Quick Reference**: [docs/validation-commands.md](./docs/validation-commands.md) | [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)
+**Quick Reference**: [Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) | [Test Quality Verification](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) | [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)
 
 ---
 
@@ -70,7 +70,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 7. **Hot path protection** - Use static imports in `src/helpers/classicBattle*`, `battleEngineFacade.js`
 8. **Machine-readable rules** - See JSON ruleset at bottom of document for programmatic access
 9. **Task contracts required** - Declare inputs/outputs/success/error before execution
-10. **Complete validation reference** - [docs/validation-commands.md](./docs/validation-commands.md) contains all commands and troubleshooting
+10. **Complete validation reference** - [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) aggregates workflow commands; pair with [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) for test-specific policies
 
 **JSON Ruleset Location**: [Line 545+](#machine-readable-ruleset) | **RAG Guide**: [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)
 
@@ -122,7 +122,7 @@ npm run validate:data
 npm run rag:validate
 ```
 
-**For complete validation commands, quality verification, and troubleshooting, see [docs/validation-commands.md](./docs/validation-commands.md).**ody with verification summary)
+**For complete validation commands, quality verification, and troubleshooting, see [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) and [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).**
 
 ---
 
@@ -741,7 +741,7 @@ logger.fatal("Database connection pool exhausted", {
 
 ## 🛠 Validation Commands
 
-**Complete command reference:** [docs/validation-commands.md](./docs/validation-commands.md)  
+**Complete command reference:** [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) | [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference)
 **See also**: [Quick Reference Cards](#-quick-reference-cards) for essential commands
 
 **Essential validation (run before commit):**
@@ -986,7 +986,7 @@ This JSON ruleset can be programmatically parsed for:
     "preserveFeatureFlags": true
   },
   "validationCommands": {
-    "centralReference": "docs/validation-commands.md",
+    "centralReference": "design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks",
     "essential": [
       "npx prettier . --check",
       "npx eslint .",
