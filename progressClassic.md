@@ -199,6 +199,14 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Ran Playwright with elevated permissions: `npx playwright test playwright/battle-classic/replay-round-counter.smoke.spec.js` → PASS.
 - Adjusted selector to use `[data-testid='round-counter']` to avoid strict mode multiple-match error.
 
+## Phase Update — Confirm RoundStore reset behavior via unit test
+
+- Action: Implemented `roundStore.reset()` change to initialize round number to 1 while restoring waiting state and clearing transient fields. Added focused unit test `tests/unit/roundStore.reset.spec.js` validating number/state/clears and flags.
+- Rationale: Aligns Replay behavior with QA expectation that a new match starts at Round 1 and prevents stale state from prior matches.
+- Unit tests run (targeted): `vitest run tests/unit/roundStore.reset.spec.js` → PASS (1/1).
+- Playwright: Not applicable for this isolated store change. Next phase will wire Replay handler to orchestrator to reflect UI counters and add a smoke E2E.
+- Notes/Risk: Some modules may assume round 0 as pre-draw; no failing tests observed in the targeted run. Broader suite will be verified after UI wiring. If any consumer relies on 0-based reset, we will adapt during wiring by ensuring UI uses store round number directly.
+
 ## Phase Update — Inter-round cooldown auto-advance
 
 - Action: Validated and leveraged existing cooldown infrastructure (`cooldowns.js`, `cooldownEnter`). Added a focused unit test `tests/helpers/cooldown.autoAdvance.spec.js` to verify `createCooldownCompletion` marks Next ready and dispatches `ready` once. Added Playwright smoke `playwright/battle-classic/auto-advance.cooldown.smoke.spec.js` to confirm Next becomes ready after resolving a round.

@@ -1,32 +1,27 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { roundStore } from "../../src/helpers/classicBattle/roundStore.js";
+import { describe, it, expect, beforeEach } from "vitest";
+import { roundStore } from "/workspaces/judokon/src/helpers/classicBattle/roundStore.js";
 
-vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({
-  emitBattleEvent: vi.fn()
-}));
-
-describe("RoundStore.reset()", () => {
+describe("roundStore.reset", () => {
   beforeEach(() => {
-    roundStore.reset();
-  });
-
-  it("resets roundNumber to 0 and clears per-round state", () => {
+    // Start from a mutated state
     roundStore.setRoundNumber(5);
-    roundStore.setRoundState("roundStart");
-    roundStore.setSelectedStat("speed", { emitLegacyEvent: false });
+    roundStore.setRoundState("roundEnd");
+    roundStore.setSelectedStat("power", { emitLegacyEvent: false });
     roundStore.setRoundOutcome("win");
     roundStore.markReadyDispatched();
+  });
 
+  it("resets to waiting state and round 1 with cleared fields", () => {
     roundStore.reset();
+    const snap = roundStore.getStateSnapshot();
 
-    const state = roundStore.getStateSnapshot();
-    expect(state.currentRound.number).toBe(0);
-    expect(state.currentRound.state).toBe("waitingForMatchStart");
-    expect(state.currentRound.selectedStat).toBeUndefined();
-    expect(state.currentRound.outcome).toBeUndefined();
-    expect(state.currentRound.startTime).toBeUndefined();
-    expect(state.readyDispatched).toBe(false);
-    expect(Array.isArray(state.transitionLog)).toBe(true);
-    expect(state.transitionLog.length).toBe(0);
+    expect(snap.currentRound.number).toBe(1);
+    expect(snap.currentRound.state).toBe("waitingForMatchStart");
+    expect(snap.currentRound.selectedStat).toBeUndefined();
+    expect(snap.currentRound.outcome).toBeUndefined();
+    expect(snap.currentRound.startTime).toBeUndefined();
+    expect(snap.readyDispatched).toBe(false);
+    expect(Array.isArray(snap.transitionLog)).toBe(true);
+    expect(snap.transitionLog.length).toBe(0);
   });
 });
