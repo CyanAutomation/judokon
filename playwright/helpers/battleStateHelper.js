@@ -179,7 +179,11 @@ export async function waitForRoundStats(page, { timeout = STAT_WAIT_TIMEOUT_MS }
             return Number(direct);
           }
 
-          if (normalizedKey !== key && Number.isFinite(Number(stats[normalizedKey]))) {
+          if (
+            normalizedKey !== key &&
+            normalizedKey in stats &&
+            Number.isFinite(Number(stats[normalizedKey]))
+          ) {
             return Number(stats[normalizedKey]);
           }
 
