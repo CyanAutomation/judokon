@@ -5,7 +5,34 @@ import statNamesData from "../../src/data/statNames.js";
 
 const harness = createBattleCLIHandlersHarness();
 
+function createTimerIdFactory() {
+  let current = 0;
+  return () => {
+    current += 1;
+    return current;
+  };
+}
+
+let nextTimeoutIdFactory;
+let nextIntervalIdFactory;
+
+function resetTimerIdFactories() {
+  nextTimeoutIdFactory = createTimerIdFactory();
+  nextIntervalIdFactory = createTimerIdFactory();
+}
+
+function getNextTimeoutId() {
+  return nextTimeoutIdFactory();
+}
+
+function getNextIntervalId() {
+  return nextIntervalIdFactory();
+}
+
+resetTimerIdFactories();
+
 beforeEach(async () => {
+  resetTimerIdFactories();
   await harness.setup();
 });
 
@@ -234,6 +261,7 @@ describe("battleCLI event handlers", () => {
       cleanupSetAutoContinue(true);
       cleanupSetAutoContinue = undefined;
     }
+    resetTimerIdFactories();
   });
 
   it("updates round message on scoreboard event", async () => {
@@ -275,6 +303,19 @@ describe("battleCLI event handlers", () => {
     const timers = useCanonicalTimers();
     const { handlers } = await setupHandlers();
     handlers.startSelectionCountdown(5);
+    const { selectionTimer: originalTimer, selectionInterval: originalInterval } =
+      handlers.getSelectionTimers();
+    if (originalTimer) {
+      if (typeof originalTimer.stop === "function") {
+        originalTimer.stop();
+      } else {
+        clearTimeout(originalTimer);
+      }
+    }
+    if (originalInterval) {
+      clearInterval(originalInterval);
+    }
+    handlers.setSelectionTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.pauseTimers();
     const { selection, cooldown } = handlers.getPausedTimes();
     expect(selection).toBe(5);
@@ -290,10 +331,7 @@ describe("battleCLI event handlers", () => {
       handlers.getCooldownTimers();
     clearTimeout(originalTimer);
     clearInterval(originalInterval);
-    handlers.setCooldownTimers(
-      setTimeout(() => {}, 7000),
-      setInterval(() => {}, 1000)
-    );
+    handlers.setCooldownTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.pauseTimers();
     const { cooldown, selection } = handlers.getPausedTimes();
     expect(cooldown).toBe(7);
@@ -305,15 +343,25 @@ describe("battleCLI event handlers", () => {
     const timers = useCanonicalTimers();
     const { handlers } = await setupHandlers();
     handlers.startSelectionCountdown(5);
+    const { selectionTimer: originalSelectionTimer, selectionInterval: originalSelectionInterval } =
+      handlers.getSelectionTimers();
+    if (originalSelectionTimer) {
+      if (typeof originalSelectionTimer.stop === "function") {
+        originalSelectionTimer.stop();
+      } else {
+        clearTimeout(originalSelectionTimer);
+      }
+    }
+    if (originalSelectionInterval) {
+      clearInterval(originalSelectionInterval);
+    }
+    handlers.setSelectionTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.handleCountdownStart({ detail: { duration: 7 } });
     const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
       handlers.getCooldownTimers();
     clearTimeout(originalTimer);
     clearInterval(originalInterval);
-    handlers.setCooldownTimers(
-      setTimeout(() => {}, 7000),
-      setInterval(() => {}, 1000)
-    );
+    handlers.setCooldownTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.pauseTimers();
     handlers.pauseTimers();
     const { selection, cooldown } = handlers.getPausedTimes();
@@ -469,10 +517,7 @@ describe("battleCLI event handlers", () => {
     const { handlers, mockDispatch, transitionToBattleState, getBottomLineText } =
       await setupHandlers();
     transitionToBattleState("cooldown");
-    handlers.setCooldownTimers(
-      setTimeout(() => {}, 0),
-      setInterval(() => {}, 100)
-    );
+    handlers.setCooldownTimers(getNextTimeoutId(), getNextIntervalId());
 
     handlers.handleCountdownStart({ detail: { duration: 3 } });
     const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
