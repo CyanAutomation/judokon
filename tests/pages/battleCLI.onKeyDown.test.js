@@ -200,9 +200,11 @@ describe("battleCLI onKeyDown", () => {
     expect(() => emitBattleEvent("matchOver")).not.toThrow();
   });
 
-  it("dispatches statSelected in waitingForPlayerAction state", () => {
+  it("dispatches statSelected in waitingForPlayerAction state", async () => {
     document.body.dataset.battleState = "waitingForPlayerAction";
     onKeyDown(new KeyboardEvent("keydown", { key: "1" }));
+    await Promise.resolve();
+    await Promise.resolve();
     expect(dispatchSpy).toHaveBeenCalledWith("statSelected");
   });
 
