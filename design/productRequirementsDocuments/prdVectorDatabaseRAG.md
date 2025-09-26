@@ -174,6 +174,83 @@ Each stored entry also includes a sparse term-frequency vector. Search requests 
 - Lower scoring results appear only when there are no strong matches.
 - Result messages such as "No strong matches found…" now use the `.search-result-empty` CSS class. Each result entry uses `.search-result-item` and is fully justified with spacing between items.
 
+---
+
+## Operations & Tooling
+
+### Quick Start
+
+```javascript
+import queryRag from "./src/helpers/queryRag.js";
+
+const matches = await queryRag("How does the battle engine work?");
+```
+
+`queryRag` should be the first stop for any “How/Why/What/Where” question. The helper fetches the top semantic matches from the
+client embedding store and returns scored results that agents can feed directly into prompts, code comments, or task contracts.
+See [`design/agentWorkflows/exampleVectorQueries.md`](../../design/agentWorkflows/exampleVectorQueries.md) for prompt patterns and tag combinations.
+
+### Command Line Interface
+
+- **Query from the terminal**
+
+  ```bash
+  npm run rag:query "How does the battle engine work?"
+  ```
+
+  Sample output surfaces the top excerpts that match the query, mirroring the in-browser demo and the `queryRag` helper.
+
+- **Evaluate retrieval quality**
+
+  ```bash
+  node scripts/evaluation/evaluateRAG.js
+  ```
+
+  The evaluator reads `scripts/evaluation/queries.json` and reports **MRR@5**, **Recall@3**, and **Recall@5** so teams can monitor search accuracy when new sources are indexed.
+
+### Offline Workflow
+
+1. **Prepare the MiniLM model** (one-time per machine)
+
+   ```bash
+   npm run rag:prepare:models
+   # or use an existing download
+   npm run rag:prepare:models -- --from-dir /path/to/minilm
+   ```
+
+   These commands hydrate `src/models/minilm` with the quantized extractor files used by the query encoder.
+
+2. **Build compact offline assets**
+
+   ```bash
+   npm run build:offline-rag
+   ```
+
+   The build writes `src/data/offline_rag_vectors.bin` and `src/data/offline_rag_metadata.json` for browser usage without a network connection.
+
+3. **Query in strict offline mode**
+
+   ```bash
+   RAG_STRICT_OFFLINE=1 npm run rag:query "How does the battle engine work?"
+   ```
+
+   Set `RAG_ALLOW_LEXICAL_FALLBACK=1` to enable a degraded lexical search path when the MiniLM model is unavailable.
+
+### Evaluation & Metrics
+
+- **Performance profile**
+  - ⚡ ~2 second RAG queries vs. 30+ seconds of manual exploration.
+  - 🎯 62.5% success rate for implementation queries, 95% for design docs.
+  - 🧠 Coverage spans PRDs, design guidelines, test examples, and tooling docs.
+
+- **Retrieval quality workflow**
+
+  Run `node scripts/evaluation/evaluateRAG.js` from the project root to measure retrieval performance. The script reads the representative queries in `scripts/evaluation/queries.json` and reports:
+
+  - **MRR@5** – Mean Reciprocal Rank of the expected document within the top five results.
+  - **Recall@3** – Fraction of queries whose expected document appears in the top three results.
+  - **Recall@5** – Fraction of queries whose expected document appears in the top five results.
+
 ### UI Mockup
 
 ```text
@@ -212,14 +289,6 @@ No user settings or toggles are included. This is appropriate since the feature 
 - Do we want a UI search tool for developers and designers, or agent-only access?
 - Should embedding versioning be tracked per file (`v1_embeddings.json`)?
 
-## Retrieval Quality Evaluation
-
-Run `node scripts/evaluation/evaluateRAG.js` from the project root to measure retrieval performance. The script reads the representative queries in `scripts/evaluation/queries.json` and reports:
-
-- **MRR@5** – Mean Reciprocal Rank of the expected document within the top five results.
-- **Recall@3** – Fraction of queries whose expected document appears in the top three results.
-- **Recall@5** – Fraction of queries whose expected document appears in the top five results.
-
 ## Tasks
 
 - [x] 1.0 Build Embedding Generation System
@@ -249,11 +318,11 @@ Run `node scripts/evaluation/evaluateRAG.js` from the project root to measure re
   - [x] 5.1 Create markdown prompt templates
   - [x] 5.2 Provide usage examples with test agents
   - [x] 5.3 Log agent response coverage and latency
-  - [x] 5.4 Expose a simple API or utility function for programmatic search access
+- [x] 5.4 Expose a simple API or utility function for programmatic search access
 
-## Appendix: Vector Search Workflow (merged from `docs/vector-search.md`)
+## UI Workflow
 
-This appendix documents the Vector Search page workflow that was previously maintained in `docs/vector-search.md`.
+The Vector Search page orchestrates semantic queries without leaking business logic into the DOM layer:
 
 1. **Query expansion and encoding** – `buildQueryVector` splits the user's
    query into terms, expands synonyms via `vectorSearch.expandQueryWithSynonyms`,
@@ -270,7 +339,7 @@ This appendix documents the Vector Search page workflow that was previously main
 The workflow keeps heavy logic out of the DOM layer and enables unit testing of
 pure utilities.
 
-Acceptance notes for PRD tests:
+### Acceptance Notes for PRD Tests
 
 - Unit tests should cover `buildQueryVector` for proper expansion and vector dimensions.
 - Integration tests should simulate `handleSearch` and assert `applyResultsState` transitions for `loading` → `results` / `empty` / `error` paths.

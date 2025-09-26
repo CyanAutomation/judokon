@@ -37,7 +37,7 @@ P2 - Test Hooks: Document promises/event names exposed for tests (e.g., `getRoun
 
 Acceptance Criteria:
 
-- The list matches the helpers referenced in `design/testing/classicBattleTesting.md` and `docs/testing-modes.md`.
+- The list matches the helpers referenced in `design/testing/classicBattleTesting.md` and `prdTestMode.md#mode-interactions-and-automation-hooks`.
 
 P2 - Recovery Paths: Define how the state machine recovers from failed transitions (e.g., missing orchestrator, event failures).
 
@@ -110,7 +110,7 @@ The state machine exposes or coordinates the following test hooks (used by Playw
 
 Acceptance Criteria (test hooks):
 
-- The list of promises and event names matches `design/testing/classicBattleTesting.md` and `docs/testing-modes.md`.
+- The list of promises and event names matches `design/testing/classicBattleTesting.md` and `prdTestMode.md#mode-interactions-and-automation-hooks`.
 - Playwright fixtures and test helpers consume these promises to deterministically await state transitions.
 
 ## Recovery Paths and Error Handling

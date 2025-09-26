@@ -214,7 +214,7 @@ npm run rag:query "How does the battle engine work?"
 
 **Performance:** 15x faster than manual exploration (2-second queries), with 62.5% accuracy for implementation queries and 95% for design docs.
 
-For complete RAG system documentation, offline usage, evaluation tools, and advanced configuration, see **[docs/rag-system.md](./docs/rag-system.md)**.
+For complete RAG system documentation, offline usage, evaluation tools, and workflow diagrams, see **[Operations & Tooling](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)** and **[UI Workflow](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#ui-workflow)** in the Vector Database PRD.
 
 ## ⚡ Module Loading Policy
 

@@ -37,7 +37,7 @@
   },
   {
     "source": "docs/testing-modes.md",
-    "mappedTo": null
+    "mappedTo": "prdTestMode.md#mode-interactions-and-automation-hooks"
   },
   {
     "source": "docs/validation-commands.md",

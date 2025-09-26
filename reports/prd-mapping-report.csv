@@ -7,7 +7,7 @@
 "docs/round-selection.md","prdRoundSelection.md"
 "docs/roundUI.md",""
 "docs/testing-guide.md",""
-"docs/testing-modes.md",""
+"docs/testing-modes.md","prdTestMode.md#mode-interactions-and-automation-hooks"
 "docs/validation-commands.md",""
 "docs/vector-search.md",""
 "design/architecture.md","prdArchitecture.md"

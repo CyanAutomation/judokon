@@ -28,10 +28,11 @@ Acceptance Criteria:
 - Modal displays when no saved preference and `?autostart` is not set.
 - Selecting an option stores preference in localStorage and starts the match.
 
-Notes: Implementation guidance from `docs/round-selection.md`:
+-Notes:
 
-- On page load, `initRoundSelectModal` checks for `?autostart=1` or a saved selection and starts a match immediately if found.
-- If modal fails to load, log the error and surface a fallback **Start Match** button that begins a match with default settings.
+  1. On page load, `initRoundSelectModal` checks for `?autostart=1` or a saved selection and starts a match immediately if found.
+  2. When no preference or autostart override is available, present the modal so the player can choose a win target; selecting an option stores it, logs telemetry, and launches the match.
+  3. If the modal fails to load, log the error and surface a fallback **Start Match** button that begins a match with default settings.
 
 P1 - Autostart Behavior: `?autostart=1` bypasses modal and starts a default-length match.
 
@@ -58,5 +59,5 @@ Acceptance Criteria:
 
 ## Dependencies and Open Questions
 
-- Cross-reference: `docs/round-selection.md`, `prdBattleClassic.md`, and `prdTestMode.md`.
+- Cross-reference: `prdBattleClassic.md` and `prdTestMode.md`.
 - Open question: Should the list of options be configurable via settings? Recommendation: keep static for now and raise as P3.

@@ -197,17 +197,17 @@ Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; v
 
 ## Appendix: CLI Usage & Developer Notes
 
-This appendix integrates the implementation and usage guidance from `docs/battle-cli.md` to keep developer-facing details with the PRD. The appendix is implementation-adjacent and does not change the PRD's functional requirements.
+This appendix consolidates the previously separate CLI usage, module structure, and testing guides so implementation details live alongside the authoritative PRD. The appendix is implementation-adjacent and does not change the PRD's functional requirements.
 
 ### Controls
 
-- Number keys `1–5`: select stats
-- `Enter`/`Space`: advance rounds
-- `Q`: quit match (confirmation required)
-- `H`: toggle help panel (must open within 1s)
-- `Esc`: close help or dismiss dialogs
+- Number keys `1–5`: select stats.
+- `Enter`/`Space`: advance rounds.
+- `Q`: quit match (confirmation required).
+- `H`: toggle help panel (must open within 1s).
+- `Esc`: close help or dismiss dialogs.
 
-### Interactive / Display Elements
+### Interactive & Display Elements
 
 - Stats: selectable via keyboard and clickable/tappable rows (≥44px).
 - State badge: `#battle-state-badge` reflects the current machine state for visibility and tests.
@@ -215,52 +215,50 @@ This appendix integrates the implementation and usage guidance from `docs/battle
 - Win target: Header selector (5/10/15) persisted to `localStorage` at `battleCLI.pointsToWin`.
 - Verbose log: Optional header toggle to enable an event/state transition log for debugging.
 
-### Bootstrap Helpers (developer)
+### Module Structure
+
+- `src/pages/battleCLI/state.js` centralizes mutable flags and the Escape key promise.
+- `src/pages/battleCLI/events.js` delegates keyboard handling to helpers: `handleArrowNav(e)`, `shouldProcessKey(key)`, and `routeKeyByState(key)`.
+- Stat list helpers encapsulate rendering logic: `loadStatDefs()`, `buildStatRows(stats, judoka)`, `renderHelpMapping(stats)`, and `ensureStatClickBinding(list)`.
+- Public entry points are exposed via `src/pages/index.js`, e.g. `import { battleCLI, onKeyDown } from "src/pages/index.js"`.
+
+### Bootstrap Helpers (Developer)
 
 - `autostartBattle()` — initializes and wires up the battle engine for the CLI surface.
 - `renderStatList()` — renders numeric-key-mapped stat rows and attaches input handlers.
 - `restorePointsToWin()` — restores persisted win target from `localStorage`.
 
-### Testing notes
+### Layout & Validation Status
 
-- CLI-specific Playwright tests live in `playwright/battle-cli.spec.js` and exercise keyboard selection flow, state badge updates, verbose log behaviour, and keyboard-only playthroughs.
-- Visual regression and accessibility checks should include the CLI view to confirm touch targets, contrast, and announcements.
+- **CLI Layout** is PRD compliant (last Playwright assessment 2024) with responsive grid behavior and 44px minimum touch targets.
+- `#cli-stats` relies on CSS Grid; `.cli-stat` maintains 44px minimum height and accessible focus rings.
+- Height reservations (`min-height: 8rem`) prevent layout instability and layout shift.
+- Terminal aesthetic: monospace typography, CLI gradient title bar, and retro color themes.
+- Accessibility coverage: ARIA live regions, screen reader labels, and keyboard navigation parity.
+- Validation suites live in `playwright/cli-layout-assessment.spec.js` and should stay aligned with PRD requirements.
 
-### Implementation details
+### Usage & Key Workflows
 
-- The CLI reuses the core Classic Battle engine and state machine without behavioral changes.
-- Stable data-attributes and IDs are added for tests (see Test Hooks acceptance criterion).
-- Styling is additive; the `src/styles/cli-immersive.css` stylesheet contains terminal-specific styles.
+- `onKeyDown` processes CLI key events and respects `shouldProcessKey`/`routeKeyByState` guardrails.
+- The `battleCLI` export exposes helpers (e.g., `renderStatList`) for integration tests and bootstrap scripts.
+- Background clicks advance the flow from `roundOver` or `cooldown` states but ignore stat row clicks to avoid misfires.
+- Round target acquisition requests `initRoundSelectModal` and falls back to a **Start match** button if the modal fails to load.
+- Numeric `?seed=` values enable deterministic test mode; clearing or providing invalid input disables test mode and restores default randomness.
 
-### Related docs
+### Testing Notes
 
-- Battle Engine Events API: `docs/components.md` (engine events and handlers)
-- Testing guidance: `docs/testing-guide.md`
-- Architecture overview: `design/architecture.md`
+- CLI-specific Playwright coverage (`playwright/battle-cli.spec.js`) exercises keyboard selection flow, state badge updates, verbose log behaviour, and keyboard-only playthroughs.
+- Layout validation is automated via `playwright/cli-layout-assessment.spec.js` to confirm responsive structure, touch targets, and CLI-specific accessibility.
+- Visual regression and accessibility checks include the CLI view to confirm touch targets, contrast, announcements, and terminal styling remain compliant.
 
-### Appendix: CLI Module Structure (from docs/battleCLI.md)
+### Headless & Test Modes
 
-This section captures developer-facing module structure and helpers from the former `docs/battleCLI.md` to ensure implementation notes remain with the authoritative PRD.
+- Enable deterministic, fast simulations with `setHeadlessMode(true)` (removes waits) and `setTestMode(true)` (deterministic RNG).
+- `getEscapeHandledPromise()` resolves when Escape handling completes, simplifying async tests.
 
-- `src/pages/battleCLI/state.js` — centralizes mutable flags and Escape key promise.
-- `src/pages/battleCLI/events.js` — keyboard handling delegates to helpers: `handleArrowNav(e)`, `shouldProcessKey(key)`, `routeKeyByState(key)`.
-- Stat list helpers: `loadStatDefs()`, `buildStatRows(stats, judoka)`, `renderHelpMapping(stats)`, `ensureStatClickBinding(list)`.
-- Public entry points exposed via `src/pages/index.js` (e.g., `import { battleCLI, onKeyDown } from "src/pages/index.js"`).
+### Battle State Helpers
 
-#### Layout & Accessibility Notes
-
-- `#cli-stats` uses CSS Grid with responsive columns; `.cli-stat` ensures ≥44px height.
-- `#cli-root`, `#cli-countdown`, and `#snackbar-container` are stable anchors for tests and automation.
-- Playwright validation exists (`playwright/cli-layout-assessment.spec.js`) and should be kept in sync with the PRD.
-
-#### Headless & Test Modes
-
-- Headless mode helpers: `setHeadlessMode(true)` to remove waits; `setTestMode(true)` to use deterministic RNG and fast simulations.
-- `getEscapeHandledPromise()` resolves for Escape handling to simplify async tests.
-
-#### Battle State Helpers
-
-- `handleBattleState` delegates UI updates and uses helpers like `updateUiForState(state)`, `ensureNextRoundButton()`, and `logStateChange(from,to)` to append verbose log entries.
+- `handleBattleState` orchestrates UI updates and delegates to helpers such as `updateUiForState(state)`, `ensureNextRoundButton()`, and `logStateChange(from, to)` to append timestamped entries to the verbose log.
 
 ---
 
