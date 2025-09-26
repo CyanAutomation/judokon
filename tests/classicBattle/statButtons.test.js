@@ -79,6 +79,7 @@ describe("Stat Buttons", () => {
       const expectedId = `stat-${stat}-desc`;
       expect(button.getAttribute("aria-describedby")).toBe(expectedId);
       const descEl = document.getElementById(expectedId);
+      expect(descEl).toBeTruthy();
       if (descEl) {
         expect(descEl.classList.contains("sr-only")).toBe(true);
       }

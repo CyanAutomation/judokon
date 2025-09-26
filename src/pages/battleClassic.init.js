@@ -1268,21 +1268,25 @@ function renderStatButtons(store) {
     const descId = `stat-${String(stat)}-desc`;
     btn.setAttribute("aria-describedby", descId);
     btn.setAttribute("aria-label", `Select ${stat} stat for battle`);
+    let desc;
     try {
-      let desc = document.getElementById(descId);
+      desc = document.getElementById(descId);
       if (!desc) {
         desc = document.createElement("span");
-        desc.id = descId;
-        desc.className = "sr-only";
-        desc.textContent = `${String(stat)} — select to compare this attribute`;
-        // Insert immediately after the button so screen readers can reference it
-        btn.after(desc);
       }
-    } catch {}
+      desc.id = descId;
+      desc.className = "sr-only";
+      desc.textContent = `${String(stat)} — select to compare this attribute`;
+    } catch {
+      desc = undefined;
+    }
     btn.addEventListener("click", () => {
       void handleStatButtonClick(store, stat, btn);
     });
     container.appendChild(btn);
+    if (desc) {
+      container.appendChild(desc);
+    }
   }
   requestAnimationFrame(() => {
     container.dataset.buttonsReady = "true";
