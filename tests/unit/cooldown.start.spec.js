@@ -5,7 +5,8 @@ describe("cooldown auto-advance wiring", () => {
   beforeEach(() => {
     // jsdom body for dataset checks used by cooldown
     if (typeof document !== "undefined") {
-      document.body.innerHTML = '<button id="next-button" disabled data-role="next-round">Next</button>';
+      document.body.innerHTML =
+        '<button id="next-button" disabled data-role="next-round">Next</button>';
       delete document.body.dataset.battleState;
     }
   });

@@ -166,11 +166,16 @@ export function createClassicBattleDebugAPI(view) {
       advanceAfterCooldown: async () => {
         try {
           // Prefer triggering the same handler bound to the Next button
-          const nextBtn = document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+          const nextBtn =
+            document.getElementById("next-button") ||
+            document.querySelector('[data-role="next-round"]');
           if (nextBtn) {
             // Wait until button is enabled/ready
             const start = Date.now();
-            while ((nextBtn.disabled || nextBtn.getAttribute("data-next-ready") !== "true") && Date.now() - start < 5000) {
+            while (
+              (nextBtn.disabled || nextBtn.getAttribute("data-next-ready") !== "true") &&
+              Date.now() - start < 5000
+            ) {
               await new Promise((r) => setTimeout(r, 50));
             }
             // Invoke the click handler programmatically via click() to follow public path
