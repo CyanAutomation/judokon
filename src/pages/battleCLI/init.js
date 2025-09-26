@@ -1136,7 +1136,9 @@ export function selectStat(stat) {
     // Dispatch via the module export to ensure external spies (tests) observe the call.
     const fn = initModule?.safeDispatch;
     if (typeof fn === "function") {
-      fn("statSelected");
+      fn("statSelected").catch((err) => {
+        console.error("Error dispatching statSelected", err);
+      });
     }
   } catch (err) {
     console.error("Error dispatching statSelected", err);
