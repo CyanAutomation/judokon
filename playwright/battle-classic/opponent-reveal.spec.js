@@ -388,8 +388,8 @@ test.describe("Classic Battle Opponent Reveal", () => {
 
         // Also inspect DOM synchronously for a hidden pre-reveal container
         const domState = await page.evaluate(() => {
-          const container = document.getElementById('opponent-card');
-          const hasHidden = !!container && container.classList.contains('opponent-hidden');
+          const container = document.getElementById("opponent-card");
+          const hasHidden = !!container && container.classList.contains("opponent-hidden");
           return { containerExists: !!container, hasHidden };
         });
 
@@ -582,8 +582,7 @@ test.describe("Classic Battle Opponent Reveal", () => {
         // Prefer deterministic side-effect: scoreboard update contains "You: <n>"
         const scoreText = await page.locator(selectors.scoreDisplay()).innerText();
         expect(PLAYER_SCORE_PATTERN.test(scoreText)).toBe(true);
-      }, MUTED_CONSOLE_LEVELS)
-    );
+      }, MUTED_CONSOLE_LEVELS));
   });
 
   test.describe("Edge Cases and Error Handling", () => {

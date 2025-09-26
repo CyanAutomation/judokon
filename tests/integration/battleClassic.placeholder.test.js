@@ -11,4 +11,3 @@ describe("battleClassic.html placeholder markup", () => {
     expect(html.includes('id="mystery-card-placeholder"')).toBe(true);
   });
 });
-
