@@ -85,6 +85,7 @@ const waitForCliApis = async (page, timeout = 8000) => {
  * Read and normalize the verbose log entries exposed by the CLI test API.
  * @param {import('@playwright/test').JSHandle<unknown>} testApiHandle - Handle returned from the CLI test API helper.
  * @returns {Promise<string[]>} Array of verbose log lines; non-array responses are coerced into trimmed strings.
+ * @pseudocode evaluate API handle, extract log entries, normalize to string array, handle errors gracefully
  */
 const readVerboseLog = async (testApiHandle) => {
   if (!testApiHandle) {
