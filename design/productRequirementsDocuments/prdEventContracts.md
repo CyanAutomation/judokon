@@ -155,3 +155,97 @@ Acceptance Criteria (tests):
 
 - Cross-reference: `prdBattleEngine.md`, `prdBattleClassic.md`, and `prdTestingStandards.md`.
 - Open question: Should events be namespaced with owner module (e.g., `engine:`) or product area (e.g., `battle:`)? Recommendation: use product area prefixes (e.g., `battle:`) with module ownership documented.
+
+## Audit Appendix
+
+### Categorized Event Inventory
+
+#### Timer Events (22)
+
+- `control.countdown.completed`
+- `control.countdown.started`
+- `cooldown.timer.expired`
+- `cooldown.timer.tick`
+- `countdownFinished`
+- `countdownStart`
+- `nextRoundTimerReady`
+- `round.timer.expired`
+- `round.timer.tick`
+- `roundTimeout`
+
+#### UI Events (6)
+
+- `control.readiness.required`
+- `opponentCardReady`
+- `statButtons:disable`
+- `statButtons:enable`
+
+#### State Events (20)
+
+- `battleStateChange`
+- `control.state.catalog`
+- `control.state.changed`
+- `debug.state.snapshot`
+- `match.concluded`
+- `matchOver`
+- `round.evaluated`
+- `round.selection.locked`
+- `round.started`
+- `roundOptionsReady`
+- `roundPrompt`
+- `roundResolved`
+- `roundStarted`
+
+#### Player Events (3)
+
+- `statSelected`
+- `statSelectionStalled`
+
+#### Scoreboard Events (11)
+
+- `scoreboardClearMessage`
+- `scoreboardShowMessage`
+
+#### Debug Events (13)
+
+- `debug.transition`
+- `debugPanelUpdate`
+
+#### Control Events (1)
+
+- `control.readiness.confirmed`
+
+#### Uncategorized Events (8)
+
+- `display.score.update`
+- `input.ignored`
+- `interrupt.requested`
+- `interrupt.resolved`
+- `opponentReveal`
+- `startClicked`
+
+### Recommended Naming Convention
+
+**Proposed structure:**
+
+- `timer.*`: `timer.roundExpired`, `timer.countdownStarted`, `timer.statSelectionExpired`, `timer.cooldownFinished`
+- `ui.*`: `ui.statButtonsEnabled`, `ui.statButtonsDisabled`, `ui.cardsRevealed`, `ui.countdownStarted`
+- `state.*`: `state.transitioned`, `state.matchStarted`, `state.roundStarted`, `state.matchOver`
+- `player.*`: `player.statSelected`, `player.interrupted`, `player.actionTimeout`
+- `scoreboard.*`: `scoreboard.messageShown`, `scoreboard.messageCleared`, `scoreboard.scoreUpdated`
+- `debug.*`: `debug.panelUpdated`, `debug.stateExposed`
+
+### Migration Mapping
+
+#### High-Priority Migrations
+
+| Current Name             | Proposed Name               | Category   | Priority |
+| ------------------------ | --------------------------- | ---------- | -------- |
+| `roundTimeout`           | `timer.roundExpired`        | timer      | High     |
+| `statButtons:enable`     | `ui.statButtonsEnabled`     | ui         | Medium   |
+| `statButtons:disable`    | `ui.statButtonsDisabled`    | ui         | Medium   |
+| `scoreboardShowMessage`  | `scoreboard.messageShown`   | scoreboard | Medium   |
+| `scoreboardClearMessage` | `scoreboard.messageCleared` | scoreboard | Medium   |
+| `debugPanelUpdate`       | `debug.panelUpdated`        | debug      | Medium   |
+| `matchOver`              | `state.matchOver`           | state      | High     |
+| `statSelected`           | `player.statSelected`       | player     | Medium   |

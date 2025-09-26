@@ -123,7 +123,7 @@ Acceptance Criteria:
 
 ## Appendix / Sources
 
-- See `design/architecture.md`, `design/eventNamingAudit.md`, and `design/stateHandlerAudit.md` for background.
+- See `design/architecture.md`, `design/productRequirementsDocuments/prdEventContracts.md#audit-appendix`, and `design/stateHandlerAudit.md` for background.
 
 ### Appendix: Project Architecture Overview (assimilated from `design/architecture.md`)
 
