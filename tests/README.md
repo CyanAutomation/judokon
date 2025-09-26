@@ -26,7 +26,7 @@ tests/
 
 ## Fake Timers Playbook
 
-JU-DO-KON! uses a canonical approach to fake timers for deterministic testing. See the [Testing Guide](../docs/testing-guide.md#fake-timers-playbook) for complete documentation.
+JU-DO-KON! uses a canonical approach to fake timers for deterministic testing. See the [PRD Fake Timer Playbook](../design/productRequirementsDocuments/prdTestingStandards.md#fake-timer-playbook) for complete documentation.
 
 ### Quick Reference
 
@@ -37,9 +37,11 @@ import { useCanonicalTimers } from "./setup/fakeTimers.js";
 
 describe("My Test", () => {
   let timers;
+  let done;
 
   beforeEach(() => {
     timers = useCanonicalTimers();
+    done = false;
   });
 
   afterEach(() => {
@@ -47,7 +49,9 @@ describe("My Test", () => {
   });
 
   it("should work with timers", async () => {
-    setTimeout(() => done = true, 100);
+    setTimeout(() => {
+      done = true;
+    }, 100);
     await timers.advanceTimersByTimeAsync(100);
     expect(done).toBe(true);
   });
@@ -67,11 +71,19 @@ For animation frame testing, use the standardized RAF mock:
 ```js
 import { install, uninstall, flushAll } from "./helpers/rafMock.js";
 
-beforeEach(() => install());
+let done;
+
+beforeEach(() => {
+  install();
+  done = false;
+});
+
 afterEach(() => uninstall());
 
 it("should handle RAF", () => {
-  requestAnimationFrame(() => done = true);
+  requestAnimationFrame(() => {
+    done = true;
+  });
   flushAll();
   expect(done).toBe(true);
 });
@@ -145,6 +157,7 @@ await pressKey("Enter");
 
 ## Related Documentation
 
-- [Testing Guide](../docs/testing-guide.md) - Complete testing strategies
+- [PRD: Testing Standards – Fake Timer Playbook](../design/productRequirementsDocuments/prdTestingStandards.md#fake-timer-playbook) - Canonical timer utilities
+- [PRD: Testing Standards – Playwright Readiness Helpers](../design/productRequirementsDocuments/prdTestingStandards.md#playwright-readiness-helpers) - Stable readiness signals
 - [PRD: Testing Standards – Quality Verification Commands](../design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) - Quality verification
 - [AGENTS.md](../AGENTS.md) - Agent-specific testing standards
