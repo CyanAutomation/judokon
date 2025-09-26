@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
 
 // Import the dynamic binding to hook roundResolved
-import * as roundUI from "/workspaces/judokon/src/helpers/classicBattle/roundUI.js";
+import { handleRoundResolvedEvent } from "/workspaces/judokon/src/helpers/classicBattle/roundUI.js";
 
 describe("roundUI auto-advance chain", () => {
-  it("calls startRoundCooldown on roundResolved", async () => {
+  it("invokes cooldown flow with injected deps", async () => {
     // Arrange DOM basics used by handlers
     global.document.body.innerHTML = `
       <div id="snackbar-container" role="status"></div>
@@ -14,20 +14,29 @@ describe("roundUI auto-advance chain", () => {
     `;
 
     // Spy required modules via dynamic handler call path
-    const scoreboard = await import("/workspaces/judokon/src/helpers/setupScoreboard.js");
-    vi.spyOn(scoreboard, "updateScore").mockImplementation(() => {});
+    const scoreboardModule = await import("/workspaces/judokon/src/helpers/setupScoreboard.js");
+    vi.spyOn(scoreboardModule, "updateScore").mockImplementation(() => {});
 
-    const rui = await import("/workspaces/judokon/src/helpers/classicBattle/roundUI.js");
-    const startRoundCooldownSpy = vi
-      .spyOn(rui, "startRoundCooldown")
-      .mockResolvedValue({ controls: { ready: Promise.resolve(), resolveReady: () => {} } });
+    const startRoundCooldown = vi.fn().mockResolvedValue({
+      controls: { ready: Promise.resolve() }
+    });
+    const computeNextRoundCooldown = vi.fn(() => 3);
+    const createRoundTimer = vi.fn(() => ({}));
+    const attachCooldownRenderer = vi.fn();
+    const scoreboard = { updateScore: vi.fn(), showMessage: vi.fn(), clearRoundCounter: vi.fn() };
 
-    // Rebind handlers (as in runtime) and dispatch roundResolved
-    roundUI.bindRoundUIEventHandlersDynamic();
     const result = { message: "ok", playerScore: 1, opponentScore: 0, matchEnded: false };
-    window.dispatchEvent(new CustomEvent("roundResolved", { detail: { result } }));
+    await handleRoundResolvedEvent(new CustomEvent("roundResolved", { detail: { result, store: {} } }), {
+      scoreboard,
+      computeNextRoundCooldown,
+      createRoundTimer,
+      attachCooldownRenderer,
+      isOrchestrated: () => false,
+      // inject the internal helper by property shadowing
+      startRoundCooldown
+    });
 
-    // Assert cooldown was started
-    expect(startRoundCooldownSpy).toHaveBeenCalled();
+    expect(computeNextRoundCooldown).toHaveBeenCalled();
+    expect(startRoundCooldown).toHaveBeenCalled();
   });
 });
