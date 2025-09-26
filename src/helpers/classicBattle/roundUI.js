@@ -731,6 +731,9 @@ export function bindRoundUIEventHandlersDynamic() {
   });
   onBattleEvent("statSelected", async (event) => {
     const module = await loadShowSnackbar();
+    try {
+      document.body?.setAttribute?.("data-stat-selected", "true");
+    } catch {}
     handleStatSelectedEvent(event, { showSnackbar: module?.showSnackbar });
   });
   onBattleEvent("roundResolved", async (event) => {

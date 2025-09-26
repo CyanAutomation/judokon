@@ -231,12 +231,16 @@ class RoundStore {
   }
 
   /**
-   * Reset store to initial state (for testing).
+   * Reset store to initial state.
+   * Ensures fresh match starts at round 1 UI while engine initializes.
    */
   reset() {
     this.currentRound = {
-      number: 0,
-      state: "waitingForMatchStart"
+      number: 1,
+      state: "waitingForMatchStart",
+      selectedStat: undefined,
+      outcome: undefined,
+      startTime: undefined
     };
     this.readyDispatched = false;
     this.callbacks = {};

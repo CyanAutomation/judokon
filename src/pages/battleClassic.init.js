@@ -563,7 +563,7 @@ function handleStatSelectionError(store, err) {
  * Prepares the UI before stat selection occurs and captures the timestamp of
  * the opponent choosing prompt for minimum duration enforcement.
  */
-function prepareUiBeforeSelection() {
+export function prepareUiBeforeSelection() {
   try {
     stopActiveSelectionTimer();
   } catch {}
@@ -1738,12 +1738,14 @@ async function init() {
           }
 
           try {
+            // Use unified replay/init path for clean state
             await handleReplay(store);
           } catch (err) {
             console.debug("battleClassic: handleReplay failed", err);
           }
 
           try {
+            // Ensure UI mirrors fresh match state
             updateScore(0, 0);
             updateRoundCounter(1);
 

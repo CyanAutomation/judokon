@@ -105,6 +105,24 @@ export async function setFlag(flag, value) {
   return updated;
 }
 
+/**
+ * Enable a feature flag immediately in-memory and persist asynchronously.
+ * Useful for default-on behavior during bootstrap where eventual persistence
+ * is acceptable.
+ *
+ * @param {string} flag
+ * @returns {void}
+ */
+export function enableFlag(flag) {
+  try {
+    cachedFlags = { ...cachedFlags, [flag]: { ...(cachedFlags[flag] || {}), enabled: true } };
+  } catch {}
+  // Fire-and-forget persistence; ignore errors in hot paths.
+  try {
+    setFlag(flag, true);
+  } catch {}
+}
+
 // Sync changes across tabs by relaying storage events.
 if (typeof window !== "undefined") {
   window.addEventListener("storage", async (e) => {

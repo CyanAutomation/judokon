@@ -332,6 +332,9 @@ async function emitSelectionEvent(store, stat, playerVal, opponentVal, opts) {
     ...opts,
     delayOpponentMessage: !forceDirectResolution
   };
+  try {
+    document.body?.setAttribute?.('data-stat-selected', 'true');
+  } catch {}
   emitBattleEvent("statSelected", { store, stat, playerVal, opponentVal, opts: eventOpts });
   // PRD taxonomy: mirror selection lock event (suppress in Vitest to keep
   // existing unit tests' call counts stable)

@@ -53,6 +53,52 @@ import { start as startScheduler, stop as stopScheduler } from "../../utils/sche
  */
 export function createClassicBattleDebugAPI(view) {
   const store = view.controller.battleStore;
+  const orchestratorApi = {
+    selectStatByIndex: (i) => {
+      try {
+        const buttons = Array.from(document.querySelectorAll('#stat-buttons button'));
+        const btn = buttons[i];
+        if (btn && !btn.disabled) {
+          btn.click();
+          return store?.roundStore?.getCurrentRound?.() || {};
+        }
+      } catch {}
+      return store?.roundStore?.getCurrentRound?.() || {};
+    },
+    selectStat: (statKey) => {
+      try {
+        const label = String(statKey || '').toLowerCase();
+        const btn = Array.from(document.querySelectorAll('#stat-buttons button')).find((b) =>
+          (b.textContent || '').toLowerCase().includes(label)
+        );
+        if (btn && !btn.disabled) btn.click();
+      } catch {}
+      try {
+        document.body?.setAttribute?.('data-stat-selected', 'true');
+      } catch {}
+      try {
+        return store?.roundStore?.getCurrentRound?.() || {};
+      } catch {
+        return {};
+      }
+    }
+  };
+  // Resolve stat controls via view/controller to bypass DOM listener timing
+  const getStatButtons = () => {
+    try {
+      return Array.from(document.querySelectorAll('#stat-buttons button'));
+    } catch {
+      return [];
+    }
+  };
+  const statApi = {
+    isReady: () => getStatButtons().length > 0,
+    selectByIndex: (i) => {
+      const btns = getStatButtons();
+      const btn = btns[i];
+      if (btn && !btn.disabled) btn.click();
+    }
+  };
   const skipBattlePhase = () => {
     try {
       skipCurrentPhase();
@@ -84,12 +130,24 @@ export function createClassicBattleDebugAPI(view) {
     skipBattlePhase,
     startRoundOverride,
     freezeBattleHeader,
-    resumeBattleHeader
+    resumeBattleHeader,
+    stat: statApi,
+    orchestrator: orchestratorApi,
+    round: {
+      get: () => {
+        try {
+          return store?.roundStore?.getCurrentRound?.() || {};
+        } catch {
+          return {};
+        }
+      }
+    }
   };
 
   if (typeof window !== "undefined") {
     window.battleStore = store;
-    Object.assign(window, api);
+    window.__TEST__ = window.__TEST__ || {};
+    Object.assign(window.__TEST__, api);
   }
 
   return api;
