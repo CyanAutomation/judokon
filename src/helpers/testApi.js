@@ -134,6 +134,7 @@ function normalizeMatchScores(primary, scoreboard) {
     const player = toFiniteNumber(candidate.player ?? candidate.playerScore);
     const opponent = toFiniteNumber(candidate.opponent ?? candidate.opponentScore);
     if (player === null || opponent === null) return null;
+    if (player < 0 || opponent < 0) return null;
     return { player, opponent };
   };
 
@@ -504,8 +505,11 @@ const stateApi = {
           } catch {}
         }
 
-        if (!result.dom) {
+        if (result.timedOut !== true) {
           await waitForNextFrame();
+        }
+
+        if (!result.dom) {
           result.dom = collectMatchUiSnapshot();
         }
 
@@ -546,11 +550,14 @@ const stateApi = {
         return;
       }
 
-      const immediateDom = collectMatchUiSnapshot();
-      if (immediateDom?.scoreboard?.matchEnded) {
-        finish({ detail: null, scores: null, timedOut: false, dom: immediateDom });
-        return;
-      }
+      Promise.resolve()
+        .then(() => {
+          const immediateDom = collectMatchUiSnapshot();
+          if (immediateDom?.scoreboard?.matchEnded) {
+            finish({ detail: null, scores: null, timedOut: false, dom: immediateDom });
+          }
+        })
+        .catch(() => {});
 
       timeoutId = setTimeout(() => {
         finish({ detail: null, scores: null, timedOut: true });

@@ -222,7 +222,10 @@ async function selectAdvantagedStat(page) {
   await fallbackButton.click();
 }
 
-async function resolveMatchFromCurrentRound(page, { timeout = 15000 } = {}) {
+async function resolveMatchFromCurrentRound(
+  page,
+  { timeout = 15000, statSelector = selectAdvantagedStat } = {}
+) {
   const matchPromise = page.evaluate((limit) => {
     const api = window.__TEST_API?.state;
     if (!api?.waitForMatchCompletion) {
@@ -231,7 +234,11 @@ async function resolveMatchFromCurrentRound(page, { timeout = 15000 } = {}) {
     return api.waitForMatchCompletion(limit);
   }, timeout);
 
-  await selectAdvantagedStat(page);
+  if (typeof statSelector !== "function") {
+    throw new Error("A stat selection strategy function is required to resolve the match.");
+  }
+
+  await statSelector(page);
 
   const match = await matchPromise;
   if (!match) {
@@ -243,7 +250,9 @@ async function resolveMatchFromCurrentRound(page, { timeout = 15000 } = {}) {
 
   const detailScores = match.scores ?? match.detail?.scores ?? null;
   if (!detailScores) {
-    throw new Error("Match completion payload did not include scores.");
+    throw new Error(
+      `Match completion payload did not include scores. Received: ${JSON.stringify(match)}`
+    );
   }
 
   const normalizedScores = {
@@ -252,7 +261,9 @@ async function resolveMatchFromCurrentRound(page, { timeout = 15000 } = {}) {
   };
 
   if (!Number.isFinite(normalizedScores.player) || !Number.isFinite(normalizedScores.opponent)) {
-    throw new Error("Match completion payload contained non-numeric scores.");
+    throw new Error(
+      `Match completion payload contained non-numeric scores. Player: ${detailScores.player}, Opponent: ${detailScores.opponent}`
+    );
   }
 
   return {
@@ -293,7 +304,6 @@ test.describe("Classic Battle End Game Flow", () => {
         expectDecisiveFinalScore(scores);
 
         // Confirm the match end modal is presented to the user
-        expect(match.dom?.modal?.visible).toBe(true);
         await waitForModalOpen(page);
         const matchEndModal = page.locator("#match-end-modal").first();
         await expect(matchEndModal).toBeVisible();
