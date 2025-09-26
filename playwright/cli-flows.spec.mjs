@@ -9,6 +9,13 @@ const buildCliUrl = (testInfo) => {
   return new URL("/src/pages/battleCLI.html", baseUrl).toString();
 };
 
+/**
+ * Wait for CLI test APIs to be available and return a handle for direct API access.
+ * @param {import('@playwright/test').Page} page - Playwright page object
+ * @param {number} timeout - Timeout in ms (default: 8000)
+ * @returns {Promise<import('@playwright/test').JSHandle<unknown>>} Test API handle - caller must dispose
+ * @pseudocode wait for test API, verify helpers, return JSHandle
+ */
 const waitForCliApis = async (page, timeout = 8000) => {
   await waitForTestApi(page, { timeout });
 
