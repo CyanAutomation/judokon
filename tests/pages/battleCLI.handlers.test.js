@@ -7,8 +7,11 @@ import statNamesData from "../../src/data/statNames.js";
 const harness = createBattleCLIHandlersHarness();
 
 // Create timer ID manager with reset function renamed for clarity
-const { getNextTimeoutId, getNextIntervalId, reset: resetTimerIdFactories } =
-  createTimerIdManager();
+const {
+  getNextTimeoutId,
+  getNextIntervalId,
+  reset: resetTimerIdFactories
+} = createTimerIdManager();
 
 beforeEach(async () => {
   resetTimerIdFactories();
@@ -300,10 +303,7 @@ describe("battleCLI event handlers", () => {
     const { handlers } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 7 } });
     const originalCooldownTimers = handlers.getCooldownTimers();
-    cleanupTimers(
-      originalCooldownTimers.cooldownTimer,
-      originalCooldownTimers.cooldownInterval
-    );
+    cleanupTimers(originalCooldownTimers.cooldownTimer, originalCooldownTimers.cooldownInterval);
     handlers.setCooldownTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.pauseTimers();
     const { cooldown, selection } = handlers.getPausedTimes();
@@ -324,10 +324,7 @@ describe("battleCLI event handlers", () => {
     handlers.setSelectionTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.handleCountdownStart({ detail: { duration: 7 } });
     const originalCooldownTimers = handlers.getCooldownTimers();
-    cleanupTimers(
-      originalCooldownTimers.cooldownTimer,
-      originalCooldownTimers.cooldownInterval
-    );
+    cleanupTimers(originalCooldownTimers.cooldownTimer, originalCooldownTimers.cooldownInterval);
     handlers.setCooldownTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.pauseTimers();
     handlers.pauseTimers();

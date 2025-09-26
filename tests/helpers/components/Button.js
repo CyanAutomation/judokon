@@ -32,8 +32,8 @@ export function createButton(text, options = {}) {
       // Gate warning behind a test-only flag to satisfy console discipline
       try {
         // If explicitly allowed, emit; otherwise, suppress during tests
-        const allow = typeof globalThis !== 'undefined' && globalThis.__ALLOW_TEST_LOGS__;
-        if (allow && typeof console !== 'undefined' && console.warn) {
+        const allow = typeof globalThis !== "undefined" && globalThis.__ALLOW_TEST_LOGS__;
+        if (allow && typeof console !== "undefined" && console.warn) {
           console.warn("Invalid SVG markup provided for icon.");
         }
       } catch {}
