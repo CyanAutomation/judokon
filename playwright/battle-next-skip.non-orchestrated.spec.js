@@ -1,5 +1,4 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { waitForBattleReady } from "./fixtures/waits.js";
 import { withMutedConsole } from "../tests/utils/console.js";
 
 /**
@@ -28,17 +27,21 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     await page.getByRole("dialog").waitFor();
     await page.getByRole("button", { name: "Medium" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible();
-    await waitForBattleReady(page);
+    await page.evaluate(() =>
+      window.__TEST_API?.state?.waitForBattleState?.("waitingForPlayerAction"),
+    );
 
     // Use existing battle infrastructure instead of synthetic DOM
     const nextButton = page.locator("#next-button, [data-role='next-round']").first();
-    await nextButton.waitFor({ timeout: 3000 });
+    await page.evaluate(() =>
+      window.__TEST_API?.state?.waitForNextButtonReady?.(0),
+    );
 
     // Make a stat selection so the round resolves and cooldown begins
     await page.getByRole("button", { name: /power/i }).click();
 
     // Wait for cooldown to complete and next button to be ready
-    await expect(nextButton).toHaveAttribute("data-next-ready", "true", { timeout: 5000 });
+    await expect(nextButton).toHaveAttribute("data-next-ready", "true");
 
     // Click next button
     await nextButton.click();
