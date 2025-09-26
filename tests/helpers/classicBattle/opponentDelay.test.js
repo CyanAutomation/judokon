@@ -28,7 +28,9 @@ beforeEach(() => {
     clearTimer,
     updateTimer: vi.fn(),
     updateScore: vi.fn(),
-    showAutoSelect: vi.fn()
+    showAutoSelect: vi.fn(),
+    updateRoundCounter: vi.fn(),
+    clearRoundCounter: vi.fn()
   }));
 
   vi.mock("../../../src/helpers/showSnackbar.js", () => ({

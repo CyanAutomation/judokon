@@ -450,7 +450,9 @@ export function createTimerServiceHarness(customConfig = {}) {
         showTemporaryMessage: vi.fn(() => () => {}),
         showAutoSelect: vi.fn(),
         clearTimer: vi.fn(),
-        updateTimer: vi.fn()
+        updateTimer: vi.fn(),
+        updateRoundCounter: vi.fn(),
+        clearRoundCounter: vi.fn()
       }),
       "../../src/helpers/timerUtils.js": () => ({
         getDefaultTimer: () => 30

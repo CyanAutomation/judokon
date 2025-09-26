@@ -65,7 +65,9 @@ vi.mock("../../src/helpers/showSnackbar.js", () => ({
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   clearTimer: vi.fn(),
-  updateTimer: vi.fn()
+  updateTimer: vi.fn(),
+  updateRoundCounter: vi.fn(),
+  clearRoundCounter: vi.fn()
 }));
 
 vi.mock("../../src/helpers/classicBattle/battleEvents.js", () => ({

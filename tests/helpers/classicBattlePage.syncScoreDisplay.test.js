@@ -55,7 +55,9 @@ describe("syncScoreDisplay", () => {
         el.textContent = `You: ${p}\nOpponent: ${o}`;
       },
       clearTimer: vi.fn(),
-      updateTimer: vi.fn()
+      updateTimer: vi.fn(),
+      updateRoundCounter: vi.fn(),
+      clearRoundCounter: vi.fn()
     }));
 
     vi.doMock("../../src/config/loadSettings.js", () => ({

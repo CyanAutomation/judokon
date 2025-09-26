@@ -6,7 +6,9 @@ vi.mock("../../src/helpers/battle/battleUI.js", () => ({
 }));
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
-  showMessage: vi.fn()
+  showMessage: vi.fn(),
+  updateRoundCounter: vi.fn(),
+  clearRoundCounter: vi.fn()
 }));
 
 import { showResult } from "../../src/helpers/battle/battleUI.js";

@@ -16,7 +16,8 @@ describe("classic battle orchestrator UI events", () => {
       showMessage,
       clearTimer: vi.fn(),
       updateTimer: vi.fn(),
-      updateRoundCounter: vi.fn()
+      updateRoundCounter: vi.fn(),
+      clearRoundCounter: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/debugPanel.js", () => ({
       updateDebugPanel

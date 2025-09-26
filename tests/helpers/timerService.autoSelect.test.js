@@ -14,7 +14,9 @@ describe("timerService with auto-select", () => {
       showMessage: () => {},
       showAutoSelect: () => {},
       showTemporaryMessage: () => () => {},
-      updateTimer: () => {}
+      updateTimer: () => {},
+      updateRoundCounter: () => {},
+      clearRoundCounter: () => {}
     }));
     vi.doMock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
       updateDebugPanel: () => {}
