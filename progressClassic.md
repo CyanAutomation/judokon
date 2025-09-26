@@ -29,17 +29,14 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Symptom: Clicking Replay resets scores to 0 but retains the previous round number (e.g., "Round 7").
 - Reproducibility: High.
 - Likely root cause:
-
   - `roundStore.reset()` or the replay flow resets scores but not the round index variable, or the UI reads round number from a stale store instance.
 
 - Concrete fix steps:
-
   1. Audit `roundStore.reset()` and the `Replay` handler to ensure they reset all fields: roundNumber, roundHistory, deck, and any per-round timers/counters.
   2. Add a deterministic `reset()` unit test for `roundStore` that asserts roundNumber becomes 1 (or 0 if the UX expects pre-draw state).
   3. When Replay is clicked, explicitly call the orchestrator's `initNewMatch()` rather than ad-hoc property resets to ensure a single source of truth.
 
 - Tests:
-
   - `tests/store/roundStore.reset.spec.js` — unit test for reset behavior.
   - `playwright/replay-reset.spec.js` — E2E test: finish a match, click Replay, assert Round text and deck are reset.
 
@@ -50,17 +47,14 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Symptom: PRD says a 3‑s cooldown should auto-advance; the UI requires clicking **Next**.
 - Reproducibility: Reproducible.
 - Likely root cause:
-
   - The UI shows a Next button but the auto-advance timer is not wired into the orchestrator or is disabled by default (feature flag or missing implementation).
 
 - Concrete fix steps:
-
   1. Add or enable a deterministic inter-round timer in the orchestrator (`battleOrchestrator.startInterRoundCooldown(seconds)`).
   2. Show a visible countdown snackbar and start the cooldown on round end; when it reaches 0, call the same function that **Next** calls.
   3. Keep **Next** as a user-driven override that cancels the cooldown and advances immediately.
 
 - Tests:
-
   - `tests/helpers/cooldown.spec.js` — unit tests for cooldown start/stop behavior.
   - `playwright/auto-advance.spec.js` — E2E test: assert auto-advance after 3s and that Next cancels/short-circuits it.
 
@@ -71,17 +65,14 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Symptom: Opponent reveal is instantaneous; no state shows that opponent is selecting.
 - Reproducibility: Reproducible.
 - Likely root cause:
-
   - No intermediate state between player selection and reveal. The reveal flow performs immediate resolution rather than an explicit staged sequence. Please note that a snackbar should be used for this information - not the scoreboard.
 
 - Concrete fix steps:
-
   1. Introduce an explicit `opponentSelecting` intermediate state emitted by the orchestration layer after the player selects a stat.
   2. UI: disable stat buttons, use Snackbar to show "Opponent is choosing..." and start a short (configurable) delay (e.g., 300–600ms) before revealing the opponent.
   3. Ensure the reveal logic reads from authoritative engine output (not from UI caches).
 
 - Tests:
-
   - `tests/components/opponentState.spec.js` — integration test that asserts the disabled state and scoreboard text appear before reveal.
   - `playwright/opponent-choose.spec.js` — E2E test verifying the intermediate state and timing.
 
@@ -92,13 +83,11 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Symptom: Number keys 1–5 don't select stats; `statHotkeys` is false by default.
 - Reproducibility: Reproducible.
 - Recommendation & fix steps:
-
   1. Default to enabling `statHotkeys` in `src/config/settingsDefaults.js` or make it a user-visible settings toggle in the Settings UI.
   2. Ensure keyboard handlers are accessible-only (avoid interfering with typing in inputs) and support focus-based selection.
   3. Add visible hints (tooltips or small labels) for hotkeys.
 
 - Tests:
-
   - `tests/keyboard/statHotkeys.spec.js` — unit/integration test that presses keys and asserts selection.
 
 - Risk: Low — ensure it doesn't conflict with other keyboard shortcuts.
@@ -108,13 +97,11 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Symptom: Tab navigation highlights home logo first, making primary controls harder to reach with keyboard.
 - Reproducibility: Reproducible.
 - Fix strategy:
-
   1. Prefer structural HTML ordering to achieve correct tab order (move stat controls earlier in DOM) rather than relying on `tabindex` unless necessary.
   2. Add visual focus indicators (outline or box-shadow) to stat buttons.
   3. If structural changes are costly, apply `tabindex="0"` on stat buttons and use `tabindex="-1"` on non-critical navigation links.
 
 - Tests:
-
   - `playwright/taborder.spec.js` — E2E test that tabs from initial focus and asserts the expected focus sequence.
 
 - Risk: Low — be careful not to break accessibility semantics or keyboard navigation elsewhere.
@@ -123,12 +110,10 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 
 - Symptom: No explicit instruction or snackbar to guide new players.
 - Fix steps:
-
   1. Implement a reusable `Snackbar` (if not already present) and display "Choose a stat" at the start of each stat-selection phase.
   2. For accessibility, place this message in an `aria-live="polite"` region so screen readers announce it.
 
 - Tests:
-
   - `tests/components/snackbar.spec.js` — integration test to assert message presence on round start.
 
 - Risk: Very low.
@@ -137,17 +122,14 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 
 - Symptom: Spec requires displaying "Waiting..." when drift > 2s; tests observed minor drifts but no message.
 - Likely root cause:
-
   - Either the drift detection is unimplemented or the UI path to display the message isn't connected. Please note that this info should be shown via a Snackbar, not the Scoreboard.
 
 - Fix steps:
-
   1. Audit the `timer` module (likely `src/helpers/timer.js`) and the orchestrator for a drift detection routine. If absent, implement a lightweight drift detector that compares engine time vs UI time and emits `driftExceeded` when > 2s.
   2. UI should display "Waiting..." in a snackbar and pause user-initiated countdown displays until sync is regained.
   3. When sync is restored, remove the banner and resume.
 
 - Tests:
-
   - `tests/helpers/timer.drift.spec.js` — unit tests for drift detection logic using mocked clocks.
   - `playwright/timer-drift.spec.js` — E2E test that forces drift (mock engine time) and asserts UI behaviour.
 
@@ -157,12 +139,10 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 
 - Symptom: `aria-describedby` attributes are missing; screen readers only announce the label.
 - Fix steps:
-
   1. Add hidden descriptive elements for each stat (e.g., `<span id="stat-power-desc" class="sr-only">Power — strength of throws</span>`) and update stat buttons with `aria-describedby` referencing them.
   2. Where dynamic labels change (e.g., tooltips), place them inside `aria-live` regions if they need to be announced.
 
 - Tests:
-
   - Accessibility audit: axe-core run in Playwright or CI, plus `tests/accessibility/statButtons.spec.js` for ARIA attributes.
 
 - Risk: Low.
