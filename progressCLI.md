@@ -1,79 +1,178 @@
-# QA Report & Fix Plan for Battle CLI
+# QA Report & Fix Plan — Battle CLI
 
-This document outlines the findings of a quality assurance review for the Battle CLI (`src/pages/battleCLI.html`) and proposes a plan to address the identified issues. The original report was validated against the codebase, and all findings were confirmed to be accurate.
+This document verifies a QA review of the Classic Battle CLI surface and updates the original findings with precise validation, confidence, and concrete fixes (file + function pointers included). I inspected the following files while validating these items:
 
-## High-Severity Issues
+- `src/pages/battleCLI/init.js`
+- `src/pages/battleCLI/events.js`
+- `src/helpers/modalManager.js`
+- Other helper modules referenced where applicable (auto-select, timers, orchestrator)
 
-### 1. Multiple Stat Highlights Persist Across Rounds
+---
 
-*   **Observation**: Selected stat rows remain highlighted into the next round. Rapidly clicking multiple stats before a round resolves can cause several rows to be highlighted simultaneously. These highlights accumulate, creating confusion.
-*   **Validation**:
-    *   The `selectStat()` function in `src/pages/battleCLI/init.js` clears previous selections, but rapid, non-debounced inputs can still cause a race condition, leading to multiple highlights.
-    *   The `resetMatch()` function does not clear stat highlights, causing them to persist when a new match is started.
-*   **Severity**: **High** – This visual bug significantly impacts UI clarity and can affect testing determinism.
-*   **Fix Plan**:
-    1.  **Debounce Stat Selection**: Wrap the `selectStat` call in a debounce function to prevent multiple selections in quick succession.
-    2.  **Clear Highlights on Reset**: Modify the `resetMatch()` function to explicitly clear all `.selected` classes from stat rows, ensuring a clean state for new matches.
+## Executive summary
 
-## Medium-Severity Issues
+- Total issues validated: 7
+- Highest-impact items (fix first):
+  1. Multiple stat highlights persisting across rounds (High)
+  2. Enter/Space propagation causing "Invalid key" (Medium)
+  3. Esc not closing help shortcuts (Medium)
 
-### 2. "Enter"/"Space" as "Next" Control Fails
+---
 
-*   **Observation**: The acceptance criteria specify that `Enter` or `Space` should advance to the next round, skipping the cooldown. Currently, this action shows an "Invalid key" message and has no effect.
-*   **Validation**: The `handleCooldownKey` and `handleRoundOverKey` functions correctly listen for `Enter`/`Space`. However, an unhandled key event likely bubbles up to a default handler that displays the "Invalid key" message. The logic needs to properly stop event propagation.
-*   **Severity**: **Medium** – A clear departure from specified keyboard controls.
-*   **Fix Plan**:
-    1.  **Stop Event Propagation**: In all keyboard handlers (`handleCooldownKey`, `handleRoundOverKey`, etc.), ensure `event.stopPropagation()` and `event.preventDefault()` are called after handling a key to prevent it from reaching other listeners.
-    2.  **Consolidate Key Handling**: Refactor key handling into a single, state-aware function to manage all inputs and prevent conflicting handlers.
+## Findings, validation, and recommended fixes
 
-### 3. "Esc" Does Not Close Help Panel
+Each issue below includes: observation, evidence (code locations), confidence, recommended code changes, and suggested tests.
 
-*   **Observation**: The help panel (`[H]`) can only be closed by pressing `H` again. The PRD specifies that `Esc` should also close it.
-*   **Validation**: The help panel is registered with a `modalManager` that *should* handle the `Esc` key. The failure suggests an issue in how the modal is registered or a bug in the manager itself. The `globalKeyHandlers` object is missing an explicit `Esc` handler.
-*   **Severity**: **Medium** – An accessibility and keyboard navigation issue.
-*   **Fix Plan**:
-    1.  **Add `Esc` Handler**: Add a case for the `Escape` key in the main `onKeyDown` event listener that explicitly calls `hideCliShortcuts()`.
-    2.  **Verify Modal Manager**: Investigate `modalManager.js` to ensure it correctly invokes the `close` callback on `Esc` and fix any identified bugs.
+### 1) Multiple stat highlights persist across rounds — High
 
-### 4. Native `confirm` Dialog Used for Win-Target Changes
+- Observation: Selected stat rows sometimes remain highlighted after the round or accumulate when rapid inputs occur.
+- Evidence:
+  - `selectStat()` clears previous selections but can be invoked multiple times in short succession; implementation: `src/pages/battleCLI/init.js` (function `selectStat`, ~line 1106).
+  - `resetMatch()` does not explicitly clear `.selected` elements during synchronous UI reset: `src/pages/battleCLI/init.js` (function `resetMatch`, ~line 445).
+- Confidence: High
 
-*   **Observation**: Changing the win target triggers a native browser `confirm()` dialog. This is unstyled, inaccessible, and disrupts the user experience.
-*   **Validation**: The `restorePointsToWin()` function explicitly calls `window.confirm()`.
-*   **Severity**: **Medium** – An accessibility and UX consistency issue.
-*   **Fix Plan**:
-    1.  **Implement Custom Modal**: Replace the `window.confirm()` call with a custom, accessible modal created using the project's `createModal` component.
-    2.  **Style Modal**: Ensure the new modal matches the retro terminal aesthetic of the CLI.
-    3.  **Manage Focus**: Implement proper focus trapping within the modal.
+Recommended fixes:
 
-## Low-Severity Issues
+1. Add a reentrancy guard in `selectStat()` to ignore subsequent calls while a selection is being applied, e.g. a guard using `state.roundResolving` or a new `state.selectionApplying` flag. This prevents microtask/race double-invocations.
 
-### 5. Timers Continue During Help and Quit Modals
+2. Ensure `resetMatch()` clears any lingering `.selected` classes synchronously before updating headers:
 
-*   **Observation**: The round countdown timer does not pause when the help panel or quit confirmation dialog is open.
-*   **Validation**:
-    *   `showQuitModal()` correctly calls `pauseTimers()` and `resumeTimers()`.
-    *   The `h` key handler for the help panel **does not** call the timer-pausing functions.
-*   **Severity**: **Low** – A minor divergence from expected behavior.
-*   **Fix Plan**:
-    1.  **Pause on Help**: Modify the `h` key handler in `globalKeyHandlers` to call `pauseTimers()` when the help panel is opened and `resumeTimers()` when it is closed.
+   ```js
+   const list = document.getElementById('cli-stats');
+   list?.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+   ```
 
-### 6. Ambiguous State When Quitting Mid-Match
+3. (Optional) Add a 300ms debounce in the click handler that ultimately calls `selectStat()` for additional UX smoothness — prefer the guard for determinism in tests.
 
-*   **Observation**: Quitting a match sometimes incorrectly displays the "Play again / Return to lobby" footer, which should only appear at the end of a match.
-*   **Validation**: The `showQuitModal()` function correctly navigates the user away but may be triggering an `interrupt` that is misinterpreted by the game's state machine, leading to a premature `matchOver` event.
-*   **Severity**: **Low** – A UX inconsistency.
-*   **Fix Plan**:
-    1.  **Refine Quit Logic**: Ensure the `interrupt` event dispatched on quit leads to a unique "quit" state rather than incorrectly transitioning to "matchOver". The UI should immediately return to the lobby without showing the end-of-match screen.
+Tests to add:
 
-### 7. Other Low-Severity Findings & Fixes
+- Unit: repeatedly call `selectStat()` and assert only one `.selected` element is present and `store.playerChoice` is stable.
+- Playwright: rapidly click multiple stat rows and assert only the final selection is highlighted and shown in `#snackbar-container`/`#cli-countdown`.
 
-*   **Rapid Multi-Input Not Debounced**:
-    *   **Fix**: Apply a `300ms` debounce to the stat selection handler.
-*   **Persistent Highlight After Quitting**:
-    *   **Fix**: This will be resolved by the fix for **Issue #1**.
-*   **Verbose Logs Not Exposed**:
-    *   **Fix**: Add a toggle to display a verbose log panel and a shortcut to scroll it, per PRD guidelines.
-*   **Error Messaging**:
-    *   **Fix**: Reroute all error and hint messages to the `#snackbar-container` instead of overwriting the timer text.
+---
 
-This revised report now serves as a comprehensive action plan. I will await your review before proceeding with implementation.
+### 2) Enter/Space as "Next" control sometimes shows "Invalid key" — Medium
+
+- Observation: Pressing `Enter` or `Space` should advance rounds (in cooldown/roundOver), but occasionally the UI displays "Invalid key".
+- Evidence:
+  - `handleCooldownKey` and `handleRoundOverKey` accept Enter/Space. See `src/pages/battleCLI/init.js` (exports) and `src/pages/battleCLI/events.js` (routing to handlers).
+  - `onKeyDown(e)` (in `src/pages/battleCLI/events.js`) currently routes keys but does not call `e.preventDefault()`/`e.stopPropagation()` when a handler returns `true`.
+- Confidence: High
+
+Recommended fixes:
+
+1. In `onKeyDown(e)` (file: `src/pages/battleCLI/events.js`), after `const handled = routeKeyByState(lower);` do:
+
+   ```js
+   if (handled === true) {
+     e.preventDefault();
+     e.stopPropagation();
+   }
+   ```
+
+   This centralizes propagation control. Avoid scattering `preventDefault()` across handlers.
+
+2. Revisit `shouldProcessKey()` to ensure keys like `Escape` are not filtered out before modal handlers get a chance (see issue #3). Either special-case `Escape` at the top of `onKeyDown` or relax `shouldProcessKey` for `Escape` while still ignoring typing contexts.
+
+Tests to add:
+
+- Unit: simulate `onKeyDown` with Enter/Space and assert that `preventDefault`/`stopPropagation` are called when a handler handled the key.
+- Playwright: in cooldown/roundOver, pressing Enter/Space advances without showing "Invalid key".
+
+---
+
+### 3) Escape (Esc) does not close the help panel — Medium
+
+- Observation: PRD requires `Esc` to close the CLI shortcuts panel; currently `Esc` is ignored.
+- Evidence:
+  - `shouldProcessKey()` returns false for `escape` (see `src/pages/battleCLI/events.js`), preventing the key from reaching the routing logic/modal manager.
+  - Shortcuts panel is shown via `showCliShortcuts()` and registered with `registerModal()`; `hideCliShortcuts()` exists but `Esc` won't trigger it because of the early filter.
+- Confidence: High
+
+Recommended fixes:
+
+1. Either handle `Escape` before calling `shouldProcessKey()` in `onKeyDown`, or modify `shouldProcessKey()` to allow `escape` through (but still ignore normal typing contexts).
+
+2. Ensure the modal manager's `onEsc` (imported in `init.js`) is wired and that `registerModal()` / `unregisterModal()` usage is correct (they appear to be used in `showCliShortcuts()` / `hideCliShortcuts()`).
+
+Tests to add:
+
+- Unit: call `onKeyDown` with `Escape` while shortcuts are open and assert `hideCliShortcuts()` or modal `close` is invoked.
+- Playwright: open shortcuts with `H` then press `Esc` — panel should close and timers should resume if paused.
+
+---
+
+### 4) Native `confirm()` used for win-target changes — Medium
+
+- Observation: Changing the win target uses `window.confirm(...)`, which is unstyled and not ideal for accessibility/consistency.
+- Evidence: `restorePointsToWin()` in `src/pages/battleCLI/init.js` calls `window.confirm("changing win target resets scores. start a new match?")`.
+- Confidence: High
+
+Recommended fixes:
+
+1. Replace `window.confirm()` with `createModal()` (already used by `showQuitModal()`) to present an accessible, styled confirmation dialog.
+
+2. Ensure focus trapping and correct keyboard actions (Enter/Space confirm, Esc cancel), update `localStorage` only after confirmation, then call `resetMatch()`.
+
+Tests to add:
+
+- Playwright: change the points-to-win selector, confirm via the modal, and assert scores reset and `localStorage` was updated.
+
+---
+
+### 5) Timers continue while help panel is open — Low
+
+- Observation: Opening the help panel does not pause countdown timers while `showQuitModal()` does call pause/resume.
+- Evidence: `showQuitModal()` calls `pauseTimers()`; `showCliShortcuts()` does not. See `src/pages/battleCLI/init.js` (functions `showQuitModal` and `showCliShortcuts`).
+- Confidence: Medium
+
+Recommended fixes:
+
+1. Call `pauseTimers()` when opening the shortcuts overlay (`showCliShortcuts`) and resume on close (`hideCliShortcuts`) or via modal `close` event.
+
+Tests to add:
+
+- Playwright: open shortcuts and assert `#cli-countdown` paused, close and assert resumed.
+
+---
+
+### 6) Ambiguous state when quitting mid-match — Low
+
+- Observation: Quitting sometimes triggers end-of-match UI (play-again/start buttons) that should only show on natural match end.
+- Evidence: `showQuitModal()` dispatches `safeDispatch('interrupt', { reason: 'quit' })`. If the orchestrator maps `interrupt` to flows that emit `matchOver`, the CLI may briefly show end-of-match UI.
+- Confidence: Medium
+
+Recommended fixes:
+
+1. Where possible, dispatch a dedicated `quit` or `userQuit` event, and update the orchestrator mapping to treat it as a navigation/cleanup (not `matchOver`). If orchestrator changes are undesirable, add a `quitting` guard in the CLI that prevents rendering end-of-match UI when quitting.
+
+Tests to add:
+
+- Playwright: in-match quit → confirm → lobby loads with no end-of-match footer flash.
+
+---
+
+### 7) Misc & minor improvements
+
+- Rapid multi-input: addressed by `selectStat` guard (issue #1). Optionally add a 300ms debounce on click bindings for smoother UX.
+- Verbose logs toggle: hooks exist in `init.js` (`toggleVerbose` / `cliVerbose`); ensure the UI toggle is present and unit-tested.
+- Error messaging: use `showBottomLine()` / `#snackbar-container` for error/hint messages instead of mutating `#cli-countdown` directly. This centralizes user messages and preserves countdown semantics.
+
+---
+
+## Recommended implementation order (practical)
+
+1. Add reentrancy guard in `selectStat()` and clear `.selected` in `resetMatch()` (fast, high-impact).
+2. Update `onKeyDown(e)` to call `preventDefault`/`stopPropagation` for handled keys and allow `Escape` to reach modal handlers.
+3. Replace `window.confirm()` in `restorePointsToWin()` with `createModal()`.
+4. Pause/resume timers on help open/close.
+5. Tidy quit flow: prefer dedicated `quit` event or CLI `quitting` guard.
+
+## Acceptance & verification checklist
+
+- [ ] Unit tests added: `selectStat` reentrancy, `onKeyDown` propagation, modal `Esc` behaviour, `restorePointsToWin` modal.
+- [ ] Playwright flows: rapid stat selection, Enter/Space advancing, shortcuts pause timers, quit flow confirmation.
+- [ ] Lint / format: prettier/eslint pass.
+- [ ] No unsilenced console.warn/error in tests.
+
+---
