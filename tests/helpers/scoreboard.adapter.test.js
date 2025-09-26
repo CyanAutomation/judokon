@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import { mount, clearBody } from "./domUtils.js";
 
@@ -13,10 +13,16 @@ import {
 
 describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
   let timers;
+  /** @type {undefined | (() => void)} */
+  let disposeScoreboard;
+  let disposeScoreboardAdapter;
+  let roundStore;
   beforeEach(async () => {
     timers = useCanonicalTimers();
     vi.resetModules();
     __resetBattleEventTarget();
+    disposeScoreboard = undefined;
+    disposeScoreboardAdapter = undefined;
     const { container } = mount();
     const header = document.createElement("header");
     header.innerHTML = `
@@ -29,13 +35,27 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
     resetScoreboard();
     initScoreboard(header);
-    const { initScoreboardAdapter } = await import(
+    ({ roundStore } = await import(
+      "../../src/helpers/classicBattle/roundStore.js"
+    ));
+    const scoreboardAdapterModule = await import(
       "../../src/helpers/classicBattle/scoreboardAdapter.js"
     );
-    initScoreboardAdapter();
+    const { initScoreboardAdapter, disposeScoreboardAdapter: disposeAdapter } =
+      scoreboardAdapterModule;
+    disposeScoreboardAdapter = disposeAdapter;
+    disposeScoreboard = initScoreboardAdapter();
   });
 
   afterEach(() => {
+    if (typeof disposeScoreboard === "function") {
+      disposeScoreboard();
+    } else if (typeof disposeScoreboardAdapter === "function") {
+      disposeScoreboardAdapter();
+    }
+    if (roundStore && typeof roundStore.reset === "function") {
+      roundStore.reset();
+    }
     clearBody();
     timers.cleanup();
   });
