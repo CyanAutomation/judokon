@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { roundStore } from "/workspaces/judokon/src/helpers/classicBattle/roundStore.js";
+import { roundStore } from "@/helpers/classicBattle/roundStore.js";
 
 describe("roundStore.reset", () => {
   beforeEach(() => {
