@@ -3,7 +3,7 @@
 This document summarizes the key steps and rules for submitting pull requests.
 It consolidates the instructions from `AGENTS.md` and the design documents so contributors can quickly confirm the required checks and documentation standards.
 
-**Content Ownership**: This file provides practical contributor guidance. For comprehensive agent rules, see [AGENTS.md](./AGENTS.md). For detailed validation commands, see [docs/validation-commands.md](./docs/validation-commands.md).
+**Content Ownership**: This file provides practical contributor guidance. For comprehensive agent rules, see [AGENTS.md](./AGENTS.md). For detailed validation workflows, see [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) and the test-focused playbooks in [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 
 The project ships directly as static ES modules without a build step.
 
@@ -22,7 +22,7 @@ When running terminal searches like `grep` or `find`, exclude `client_embeddings
 
 Before committing any changes, run the following commands from the repository root. Fix any issues and rerun the checks until they all pass.
 
-For complete command documentation, troubleshooting, and advanced quality verification, see **[docs/validation-commands.md](./docs/validation-commands.md)**.
+For complete command documentation, troubleshooting, and advanced quality verification, see **[PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks)** and **[PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference)**.
 
 **Core validation suite:**
 
@@ -44,7 +44,7 @@ npm run test:style # run style tests when needed
 
 ### Test Quality Verification
 
-In addition to the core checks above, verify test quality standards compliance using the advanced verification commands detailed in [docs/validation-commands.md](./docs/validation-commands.md#advanced-quality-verification):
+In addition to the core checks above, verify test quality standards compliance using the advanced verification commands detailed in [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference):
 
 **Quick quality check:**
 
@@ -57,7 +57,7 @@ grep -r "console\.(warn\|error)" tests/ | grep -v "tests/utils/console.js" && ec
 grep -r "waitForTimeout\|setTimeout" playwright/ && echo "❌ Found hardcoded waits" || echo "✅ No hardcoded timeouts"
 ```
 
-**For complete quality verification commands, see [docs/validation-commands.md](./docs/validation-commands.md).**
+**For complete quality verification commands, see [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).**
 
 **Test Helpers Documentation:** See [tests/helpers/README.md](./tests/helpers/README.md) for shared utilities and best practices for writing reliable unit tests.
 

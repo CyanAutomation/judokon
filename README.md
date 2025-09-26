@@ -130,7 +130,7 @@ AI agents should begin by reading:
 - ✅ Generate or evaluate PRDs for new features
 
 Before committing code changes, run the full validation suite to verify docs, formatting, lint, tests, and contrast.
-For the complete command reference and troubleshooting, see [docs/validation-commands.md](./docs/validation-commands.md).
+For the complete command reference and troubleshooting, see [PRD: Development Standards – Validation Command Matrix](./design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) and the test-focused playbooks in [PRD: Testing Standards – Quality Verification Commands](./design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference).
 For contributor-specific guidance, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 **Quick validation (essential checks):**

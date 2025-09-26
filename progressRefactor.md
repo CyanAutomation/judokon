@@ -93,7 +93,7 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Assimilate (append legacy alignment notes and migration checklist)
   - Rationale: Legacy alignment concerns the CLI behavior; `prdBattleCLI.md` should document compatibility and migration steps.
 
-- `design/eventNamingAudit.md` -> `prdEventContracts.md`
+- `design/eventNamingAudit.md` -> `design/productRequirementsDocuments/prdEventContracts.md#audit-appendix`
   - Action: Assimilate (append audit tables and migration checklist)
   - Rationale: Event naming and listener contract audits belong under the event contracts PRD.
 
