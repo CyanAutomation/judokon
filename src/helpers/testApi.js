@@ -19,6 +19,149 @@ import { isEnabled } from "./featureFlags.js";
 import { resolveRoundForTest as resolveRoundForCliTest } from "../pages/battleCLI/testSupport.js";
 import { getRoundsPlayed } from "./battleEngineFacade.js";
 
+const FRAME_DELAY_MS = 16;
+
+function toFiniteNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function readScoreboardSnapshot() {
+  try {
+    const node = document.getElementById("score-display");
+    if (!node) return null;
+
+    const dataset = {};
+    if (node.dataset) {
+      for (const [key, val] of Object.entries(node.dataset)) {
+        dataset[key] = val;
+      }
+    }
+
+    const pickFromDataset = (keys) => {
+      for (const key of keys) {
+        const numeric = toFiniteNumber(dataset[key]);
+        if (numeric !== null) return numeric;
+      }
+      return null;
+    };
+
+    const text = String(node.textContent ?? "");
+    let player = pickFromDataset(["player", "playerScore", "you", "user"]);
+    let opponent = pickFromDataset(["opponent", "opponentScore", "cpu", "enemy"]);
+
+    if (player === null || opponent === null) {
+      const match = text.match(/You:[^0-9]*([0-9]+)[\s\S]*Opponent:[^0-9]*([0-9]+)/i);
+      if (match) {
+        player = toFiniteNumber(match[1]);
+        opponent = toFiniteNumber(match[2]);
+      }
+    }
+
+    const endedAttr = dataset.matchEnded ?? node.getAttribute?.("data-match-ended");
+    const matchEnded =
+      typeof endedAttr === "string"
+        ? endedAttr.trim().toLowerCase() === "true"
+        : endedAttr === true;
+
+    return {
+      text,
+      dataset,
+      player,
+      opponent,
+      matchEnded
+    };
+  } catch {
+    return null;
+  }
+}
+
+function readMatchEndModalSnapshot() {
+  try {
+    const modal = document.getElementById("match-end-modal");
+    if (!modal) {
+      return { present: false, visible: false, title: null, ariaHidden: null };
+    }
+
+    const ariaHidden = modal.getAttribute("aria-hidden");
+    const computed =
+      typeof window !== "undefined" && typeof window.getComputedStyle === "function"
+        ? window.getComputedStyle(modal)
+        : null;
+
+    let visible = modal.hidden !== true;
+    if (ariaHidden && ariaHidden !== "false") {
+      visible = false;
+    }
+    if (computed) {
+      const opacity = toFiniteNumber(computed.opacity);
+      if (
+        computed.display === "none" ||
+        computed.visibility === "hidden" ||
+        computed.pointerEvents === "none" ||
+        (opacity !== null && opacity <= 0.01)
+      ) {
+        visible = false;
+      }
+    }
+
+    const title = modal.querySelector?.("#match-end-title")?.textContent?.trim() ?? null;
+
+    return { present: true, visible, title, ariaHidden };
+  } catch {
+    return { present: false, visible: false, title: null, ariaHidden: null };
+  }
+}
+
+function collectMatchUiSnapshot() {
+  let battleState = null;
+  try {
+    battleState = document.body?.dataset?.battleState ?? null;
+  } catch {
+    battleState = null;
+  }
+
+  return {
+    battleState,
+    scoreboard: readScoreboardSnapshot(),
+    modal: readMatchEndModalSnapshot()
+  };
+}
+
+function normalizeMatchScores(primary, scoreboard) {
+  const ensureScores = (candidate) => {
+    if (!candidate || typeof candidate !== "object") return null;
+    const player = toFiniteNumber(candidate.player ?? candidate.playerScore);
+    const opponent = toFiniteNumber(candidate.opponent ?? candidate.opponentScore);
+    if (player === null || opponent === null) return null;
+    return { player, opponent };
+  };
+
+  const normalizedPrimary = ensureScores(primary);
+  if (normalizedPrimary) return normalizedPrimary;
+
+  if (scoreboard) {
+    const fallback = ensureScores({
+      player: scoreboard.player,
+      opponent: scoreboard.opponent
+    });
+    if (fallback) return fallback;
+  }
+
+  return null;
+}
+
+async function waitForNextFrame() {
+  try {
+    if (typeof requestAnimationFrame === "function") {
+      await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+      return;
+    }
+  } catch {}
+
+  await new Promise((resolve) => setTimeout(resolve, FRAME_DELAY_MS));
+}
+
 function isDevelopmentEnvironment() {
   if (typeof process !== "undefined" && process.env?.NODE_ENV === "development") {
     return true;
@@ -328,6 +471,90 @@ const stateApi = {
       };
 
       check();
+    });
+  },
+
+  /**
+   * Await the match conclusion payload emitted via `match.concluded`.
+   *
+   * @param {number} timeout Timeout in milliseconds before aborting.
+   * @returns {Promise<{eventName:string,detail:object|null,scores:{player:number,opponent:number}|null,winner:string|null,reason:string|null,elapsedMs:number,timedOut:boolean,dom:object|null}>}
+   * @pseudocode
+   * 1. Subscribe to `match.concluded` and start a timeout guard.
+   * 2. When the event fires, wait a frame so UI bindings settle.
+   * 3. Capture the emitted detail, normalized scores, and modal/scoreboard DOM state.
+   * 4. Resolve with the collected payload; on timeout resolve with `timedOut=true`.
+   */
+  async waitForMatchCompletion(timeout = 10000) {
+    const startTime = Date.now();
+
+    return new Promise((resolve) => {
+      let finished = false;
+      let timeoutId;
+      let listenerBound = false;
+
+      const finish = async (result) => {
+        if (finished) return;
+        finished = true;
+
+        if (timeoutId) clearTimeout(timeoutId);
+        if (listenerBound) {
+          try {
+            offBattleEvent("match.concluded", handleMatchConcluded);
+          } catch {}
+        }
+
+        if (!result.dom) {
+          await waitForNextFrame();
+          result.dom = collectMatchUiSnapshot();
+        }
+
+        const detail = result.detail ?? null;
+        const scores = normalizeMatchScores(
+          result.scores ?? detail?.scores,
+          result.dom?.scoreboard
+        );
+
+        resolve({
+          eventName: "match.concluded",
+          detail,
+          scores,
+          winner: result.winner ?? detail?.winner ?? null,
+          reason: result.reason ?? detail?.reason ?? null,
+          elapsedMs: Date.now() - startTime,
+          timedOut: result.timedOut === true,
+          dom: result.dom ?? null
+        });
+      };
+
+      const handleMatchConcluded = (event) => {
+        const detail = event?.detail ?? null;
+        const scores = normalizeMatchScores(detail?.scores);
+        finish({ detail, scores, timedOut: false });
+      };
+
+      try {
+        onBattleEvent("match.concluded", handleMatchConcluded);
+        listenerBound = true;
+      } catch (error) {
+        finish({
+          detail: null,
+          scores: null,
+          timedOut: true,
+          reason: error?.message ?? "listener-error"
+        });
+        return;
+      }
+
+      const immediateDom = collectMatchUiSnapshot();
+      if (immediateDom?.scoreboard?.matchEnded) {
+        finish({ detail: null, scores: null, timedOut: false, dom: immediateDom });
+        return;
+      }
+
+      timeoutId = setTimeout(() => {
+        finish({ detail: null, scores: null, timedOut: true });
+      }, timeout);
     });
   },
 
