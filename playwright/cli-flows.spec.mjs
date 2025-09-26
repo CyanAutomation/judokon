@@ -139,7 +139,8 @@ test.describe("CLI Keyboard Flows", () => {
         if (!testApi) {
           return {
             status: "missing",
-            details: "window.__TEST_API is not defined"
+            details:
+              "window.__TEST_API is not defined; ensure the test environment is fully initialized"
           };
         }
 
@@ -147,14 +148,16 @@ test.describe("CLI Keyboard Flows", () => {
         if (!stateApi) {
           return {
             status: "missing",
-            details: "window.__TEST_API.state is not available"
+            details:
+              "window.__TEST_API.state is not available; verify the Test API exposes state helpers"
           };
         }
 
         if (typeof stateApi.waitForBattleState !== "function") {
           return {
             status: "missing",
-            details: "state.waitForBattleState is not a function"
+            details:
+              "state.waitForBattleState is not a function; confirm the CLI helpers are up to date"
           };
         }
 
@@ -173,10 +176,7 @@ test.describe("CLI Keyboard Flows", () => {
     }
 
     if (waitResult.status === "missing") {
-      const missingDetails =
-        typeof waitResult.details === "string" && waitResult.details.trim().length > 0
-          ? `: ${waitResult.details}`
-          : "";
+      const missingDetails = waitResult.details ? `: ${waitResult.details}` : "";
       throw new Error(`Test API waitForBattleState unavailable in startBattle${missingDetails}`);
     }
 
