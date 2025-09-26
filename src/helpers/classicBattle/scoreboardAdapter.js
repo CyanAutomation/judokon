@@ -47,15 +47,29 @@ function extractSeconds(detail) {
   return typeof seconds === "number" && Number.isFinite(seconds) ? seconds : null;
 }
 
+function parseRoundNumber(value) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+
 function handleRoundStart(event) {
   try {
     clearMessage();
   } catch {}
   const detail = event?.detail || {};
-  const roundNumber =
-    typeof detail.roundNumber === "number" ? detail.roundNumber : detail.roundIndex;
-  if (typeof roundNumber === "number" && Number.isFinite(roundNumber)) {
-    roundStore.setRoundNumber(roundNumber, { emitLegacyEvent: false });
+  const roundNumber = parseRoundNumber(detail.roundNumber);
+  const roundIndex = parseRoundNumber(detail.roundIndex);
+  const normalizedRoundNumber = roundNumber ?? roundIndex;
+  if (typeof normalizedRoundNumber === "number") {
+    roundStore.setRoundNumber(normalizedRoundNumber, { emitLegacyEvent: false });
   } else {
     try {
       clearRoundCounter();

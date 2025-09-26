@@ -93,4 +93,10 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     expect(scoreText).toContain("You: 2");
     expect(scoreText).toContain("Opponent: 1");
   });
+
+  it("accepts string round numbers when starting a round", async () => {
+    emitBattleEvent("display.round.start", { roundNumber: "3" });
+    await vi.advanceTimersByTimeAsync(220);
+    expect(document.getElementById("round-counter").textContent).toBe("Round 3");
+  });
 });
