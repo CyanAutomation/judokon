@@ -95,6 +95,9 @@ function disposeClassicBattleOrchestrator() {
 /**
  * Safely dispatch an event to the classic battle machine.
  *
+ * @param {string} eventName
+ * @param {*} [payload]
+ * @returns {Promise<*>} Resolves with the dispatch result when handled, or `undefined` if no handler is available.
  * @pseudocode
  * 1. Try debugHooks channel first to get the live machine and call `dispatch`.
  * 2. Fallback to orchestrator's `dispatchBattleEvent` if available (when not mocked).
@@ -118,6 +121,15 @@ export async function safeDispatch(eventName, payload) {
   } catch {}
 }
 
+/**
+ * Retrieve the current classic battle machine via the debug hooks channel.
+ *
+ * @returns {object|null} The active battle machine when available, otherwise `null`.
+ * @pseudocode
+ * 1. Read the `getClassicBattleMachine` getter from debug hooks.
+ * 2. Invoke the getter if it exists and return the machine instance.
+ * 3. Return `null` when the getter is missing or throws.
+ */
 export function getMachine() {
   try {
     // Prefer debugHooks channel used by tests
@@ -1080,6 +1092,8 @@ function clearStoreTimer(store, timerProperty) {
 /**
  * Apply the chosen stat and notify the state machine.
  *
+ * @param {string} stat Stat key chosen by the player.
+ * @returns {void}
  * @pseudocode
  * stopSelectionCountdown()
  * clear pending selection timers and auto-select callbacks
@@ -1122,9 +1136,9 @@ export function selectStat(stat) {
     // Dispatch via the module export to ensure external spies (tests) observe the call.
     // Schedule on a microtask to keep selection handler synchronous-looking.
     try {
-      const schedule = initModule.__scheduleMicrotask || __scheduleMicrotask;
+      const schedule = initModule?.__scheduleMicrotask || __scheduleMicrotask;
       const maybePromise = schedule(async () => {
-        const fn = initModule.safeDispatch;
+        const fn = initModule?.safeDispatch;
         if (typeof fn === "function") {
           await fn("statSelected");
         } else {
@@ -1147,7 +1161,8 @@ export function selectStat(stat) {
 /**
  * Start a countdown for stat selection and handle expiry.
  *
- * @param {number} [seconds=5]
+ * @param {number} [seconds=30] - Countdown duration in whole seconds.
+ * @returns {void}
  * @pseudocode
  * stopSelectionCountdown()
  * set remaining=seconds and update countdown element
@@ -1647,6 +1662,17 @@ async function startRoundWrapper() {
 }
 
 // Deprecated internal alias retained for backward-compat within module
+/**
+ * Look up a stat identifier from {@link STATS} by its 1-based position.
+ * Expects callers to pass the CLI-facing 1-based index.
+ *
+ * @param {number|string} index1Based
+ * @returns {string|null}
+ * @pseudocode
+ * i ← Number(index1Based) − 1
+ * if STATS[i] exists → return STATS[i]
+ * return null
+ */
 function getStatByIndex(index1Based) {
   const i = Number(index1Based) - 1;
   return STATS[i] || null;
@@ -1711,17 +1737,11 @@ export function handleGlobalKey(key) {
   return false;
 }
 
-/**
- * Handle key presses while waiting for the player to select a stat.
- * @param {string} key
- * @pseudocode
- * if key is between '1' and '9':
- *   lookup stat by index
- *   if stat missing: return false
- *   selectStat(stat)
- *   return true
- * return false
- */
+// Expose a tiny seam to control scheduling in tests without touching behavior.
+export const __scheduleMicrotask = (fn) => Promise.resolve().then(fn);
+
+export { getStatByIndex };
+
 /**
  * Handle key input while waiting for the player's stat selection.
  *
@@ -1738,11 +1758,6 @@ export function handleGlobalKey(key) {
  *   return true
  * return false
  */
-// Expose a tiny seam to control scheduling in tests without touching behavior.
-export const __scheduleMicrotask = (fn) => Promise.resolve().then(fn);
-
-export { getStatByIndex };
-
 export function handleWaitingForPlayerActionKey(key) {
   try {
     console.log("[TEST LOG] handleWaitingForPlayerActionKey called with", key);

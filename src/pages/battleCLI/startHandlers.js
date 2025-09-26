@@ -1,6 +1,7 @@
 /**
  * Wire up Start Match affordances for the CLI.
  *
+ * @param {Document|null} [doc] Document object to bind against, optionally injected for tests.
  * @returns {void}
  * @pseudocode
  * startBtn = #start-match -> on click dispatch CustomEvent('startclicked')

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 import {
   emitBattleEvent,
   __resetBattleEventTarget
@@ -201,11 +202,16 @@ describe("battleCLI onKeyDown", () => {
   });
 
   it("dispatches statSelected in waitingForPlayerAction state", async () => {
-    document.body.dataset.battleState = "waitingForPlayerAction";
-    onKeyDown(new KeyboardEvent("keydown", { key: "1" }));
-    // Wait for microtask scheduling to complete
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(dispatchSpy).toHaveBeenCalledWith("statSelected");
+    const timers = useCanonicalTimers();
+    try {
+      document.body.dataset.battleState = "waitingForPlayerAction";
+      onKeyDown(new KeyboardEvent("keydown", { key: "1" }));
+      await Promise.resolve();
+      await timers.runAllTimersAsync();
+      expect(dispatchSpy).toHaveBeenCalledWith("statSelected");
+    } finally {
+      timers.cleanup();
+    }
   });
 
   it("dispatches continue in roundOver state", () => {
