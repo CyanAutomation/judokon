@@ -1122,23 +1122,23 @@ export function selectStat(stat) {
     // Dispatch via the module export to ensure external spies (tests) observe the call.
     // Schedule on a microtask to keep selection handler synchronous-looking.
     try {
-      const schedule = initModule?.__scheduleMicrotask ?? __scheduleMicrotask;
+      const schedule = initModule.__scheduleMicrotask || __scheduleMicrotask;
       const maybePromise = schedule(async () => {
-        try {
-          const fn = initModule?.safeDispatch;
-          if (typeof fn === "function") {
-            await fn("statSelected");
-          }
-        } catch (err) {
-          try {
-            console.error("[TEST LOG] dispatch error", err);
-          } catch {}
+        const fn = initModule.safeDispatch;
+        if (typeof fn === "function") {
+          await fn("statSelected");
+        } else {
+          console.error("[TEST LOG] safeDispatch not available on initModule");
         }
       });
-      if (typeof maybePromise?.catch === "function") {
-        maybePromise.catch(() => {});
+      if (maybePromise && typeof maybePromise.catch === "function") {
+        maybePromise.catch((err) => {
+          console.error("[TEST LOG] microtask dispatch error", err);
+        });
       }
-    } catch {}
+    } catch (err) {
+      console.error("[TEST LOG] scheduling error", err);
+    }
   } catch (err) {
     console.error("Error dispatching statSelected", err);
   }
