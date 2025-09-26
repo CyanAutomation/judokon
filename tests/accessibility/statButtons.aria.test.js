@@ -8,14 +8,9 @@ describe("Stat buttons ARIA descriptions", () => {
   });
 
   it("adds aria-describedby per stat with hidden description", async () => {
-    const mod = await import("../../src/pages/battleClassic.init.js");
     // Render a minimal set by calling the internal function via a selection start
     // We can't import renderStatButtons directly (not exported), so call startRoundCycle helpers
     // Instead, exercise the code path by invoking the exposed function that renders buttons
-    const store = {};
-    // Call the function indirectly by using the named export used in code (renderStatButtons is local)
-    // Recreate minimal behavior: call the default export initializer which will eventually render buttons
-    // For unit-level determinism, call the hidden function via mod.__proto__ trick if present.
     // Fallback: manually create buttons to simulate and run the ARIA logic
     const container = document.getElementById("stat-buttons");
     const STATS = ["speed", "power", "technique"];
