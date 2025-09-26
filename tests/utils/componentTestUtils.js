@@ -13,6 +13,9 @@
 
 import { createCard } from "../../src/components/Card.js";
 import { SidebarList } from "../../src/components/SidebarList.js";
+import { setupClassicBattleDom } from "../helpers/classicBattle/utils.js";
+import { renderStatButtons } from "../../src/pages/battleClassic.init.js";
+import { applyStatLabels } from "../../src/helpers/classicBattle/uiHelpers.js";
 
 /**
  * Natural click simulation that uses real event handlers
@@ -133,6 +136,102 @@ export function createTestSidebarList(items, onSelect) {
       }
     }
   };
+}
+
+/**
+ * Create a Classic Battle stat buttons harness using production rendering code.
+ *
+ * @pseudocode
+ * 1. Call `setupClassicBattleDom` to prepare required DOM nodes and mocks.
+ * 2. Ensure `requestAnimationFrame` exists for code paths that depend on it.
+ * 3. Invoke `renderStatButtons({})` to build the buttons via application logic.
+ * 4. Return accessors for the rendered container and stat buttons plus cleanup.
+ *
+ * @returns {Promise<{
+ *   container: HTMLElement|null,
+ *   getButton: (stat: string) => HTMLButtonElement|null,
+ *   getButtons: () => HTMLButtonElement[],
+ *   cleanup: () => void
+ * }>} Harness helpers for stat button tests.
+ */
+export async function createStatButtonsHarness() {
+  const env = setupClassicBattleDom();
+  const restoreRAF = ensureRequestAnimationFrame();
+  const cleanupNextButton = ensureNextButton();
+
+  renderStatButtons({});
+  await applyStatLabels();
+
+  const container = document.getElementById("stat-buttons");
+
+  const cleanup = () => {
+    env.timerSpy?.useRealTimers?.();
+    env.restoreRAF?.();
+    restoreRAF();
+    cleanupNextButton();
+    document.body.innerHTML = "";
+  };
+
+  const getButtons = () => {
+    if (!container) return [];
+    return Array.from(container.querySelectorAll("button[data-stat]"));
+  };
+
+  const getButton = (stat) => {
+    if (!container) return null;
+    return container.querySelector(`button[data-stat="${stat}"]`);
+  };
+
+  return { container, getButtons, getButton, cleanup };
+}
+
+function ensureRequestAnimationFrame() {
+  const previous = globalThis.requestAnimationFrame;
+  if (typeof previous === "function") {
+    return () => {
+      globalThis.requestAnimationFrame = previous;
+    };
+  }
+
+  globalThis.requestAnimationFrame = (cb) => {
+    const id = setTimeout(() => {
+      try {
+        cb(Date.now());
+      } catch {}
+    }, 0);
+    return id;
+  };
+
+  return () => {
+    if (typeof previous === "function") {
+      globalThis.requestAnimationFrame = previous;
+      return;
+    }
+    try {
+      delete globalThis.requestAnimationFrame;
+    } catch {
+      globalThis.requestAnimationFrame = undefined;
+    }
+  };
+}
+
+function ensureNextButton() {
+  try {
+    const existing = document.getElementById("next-button");
+    if (existing) {
+      return () => {};
+    }
+    const btn = document.createElement("button");
+    btn.id = "next-button";
+    document.body.appendChild(btn);
+    return () => {
+      if (btn.parentNode) {
+        btn.parentNode.removeChild(btn);
+      }
+    };
+  } catch {
+    return () => {};
+  }
 }
 
 /**

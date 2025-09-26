@@ -1,48 +1,31 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { STATS } from "../../src/helpers/BattleEngine.js";
+import { createStatButtonsHarness } from "../utils/componentTestUtils.js";
 
 describe("Stat buttons ARIA descriptions", () => {
   beforeEach(() => {
-    document.body.innerHTML = `
-      <div id="stat-buttons"></div>
-    `;
+    document.body.innerHTML = "";
   });
 
   it("adds aria-describedby per stat with hidden description", async () => {
-    // Render a minimal set by calling the internal function via a selection start
-    // We can't import renderStatButtons directly (not exported), so call startRoundCycle helpers
-    // Instead, exercise the code path by invoking the exposed function that renders buttons
-    // Fallback: manually create buttons to simulate and run the ARIA logic
-    const container = document.getElementById("stat-buttons");
-    const STATS = ["speed", "power", "technique"];
-    for (const stat of STATS) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.setAttribute("data-stat", stat);
-      container.appendChild(btn);
-    }
-    // Emulate renderStatButtons ARIA logic by creating labels as battleClassic does
-    for (const stat of STATS) {
-      const btn = container.querySelector(`[data-stat="${stat}"]`);
-      const descId = `stat-${stat}-desc`;
-      btn.setAttribute("aria-describedby", descId);
-      let desc = document.getElementById(descId);
-      if (!desc) {
-        desc = document.createElement("span");
-        desc.id = descId;
-        desc.className = "sr-only";
-        desc.textContent = `${stat} — select to compare this attribute`;
-        btn.after(desc);
-      }
-    }
+    const harness = await createStatButtonsHarness();
 
-    for (const stat of STATS) {
-      const btn = container.querySelector(`[data-stat="${stat}"]`);
-      expect(btn).toBeTruthy();
-      const descId = btn.getAttribute("aria-describedby");
-      expect(descId).toBeTruthy();
-      const desc = document.getElementById(descId);
-      expect(desc).toBeTruthy();
-      expect(desc.className).toContain("sr-only");
+    try {
+      expect(harness.container).toBeTruthy();
+      for (const stat of STATS) {
+        const button = harness.getButton(stat);
+        expect(button).toBeTruthy();
+
+        const descId = button?.getAttribute("aria-describedby");
+        expect(descId).toBe(`stat-desc-${stat}`);
+
+        const desc = descId ? document.getElementById(descId) : null;
+        expect(desc).toBeTruthy();
+        expect(desc?.classList.contains("sr-only")).toBe(true);
+        expect((desc?.textContent || "").trim().length).toBeGreaterThan(0);
+      }
+    } finally {
+      harness.cleanup();
     }
   });
 });
