@@ -6,11 +6,9 @@ import statNamesData from "../../src/data/statNames.js";
 
 const harness = createBattleCLIHandlersHarness();
 
-const {
-  getNextTimeoutId,
-  getNextIntervalId,
-  reset: resetTimerIdFactories
-} = createTimerIdManager();
+// Create timer ID manager with reset function renamed for clarity
+const { getNextTimeoutId, getNextIntervalId, reset: resetTimerIdFactories } =
+  createTimerIdManager();
 
 beforeEach(async () => {
   resetTimerIdFactories();
@@ -284,11 +282,11 @@ describe("battleCLI event handlers", () => {
     const timers = useCanonicalTimers();
     const { handlers } = await setupHandlers();
     handlers.startSelectionCountdown(5);
-    {
-      const { selectionTimer: originalTimer, selectionInterval: originalInterval } =
-        handlers.getSelectionTimers();
-      cleanupTimers(originalTimer, originalInterval);
-    }
+    const originalSelectionTimers = handlers.getSelectionTimers();
+    cleanupTimers(
+      originalSelectionTimers.selectionTimer,
+      originalSelectionTimers.selectionInterval
+    );
     handlers.setSelectionTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.pauseTimers();
     const { selection, cooldown } = handlers.getPausedTimes();
@@ -301,11 +299,11 @@ describe("battleCLI event handlers", () => {
     const timers = useCanonicalTimers();
     const { handlers } = await setupHandlers();
     handlers.handleCountdownStart({ detail: { duration: 7 } });
-    {
-      const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
-        handlers.getCooldownTimers();
-      cleanupTimers(originalTimer, originalInterval);
-    }
+    const originalCooldownTimers = handlers.getCooldownTimers();
+    cleanupTimers(
+      originalCooldownTimers.cooldownTimer,
+      originalCooldownTimers.cooldownInterval
+    );
     handlers.setCooldownTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.pauseTimers();
     const { cooldown, selection } = handlers.getPausedTimes();
@@ -318,18 +316,18 @@ describe("battleCLI event handlers", () => {
     const timers = useCanonicalTimers();
     const { handlers } = await setupHandlers();
     handlers.startSelectionCountdown(5);
-    {
-      const { selectionTimer: originalTimer, selectionInterval: originalInterval } =
-        handlers.getSelectionTimers();
-      cleanupTimers(originalTimer, originalInterval);
-    }
+    const originalSelectionTimers = handlers.getSelectionTimers();
+    cleanupTimers(
+      originalSelectionTimers.selectionTimer,
+      originalSelectionTimers.selectionInterval
+    );
     handlers.setSelectionTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.handleCountdownStart({ detail: { duration: 7 } });
-    {
-      const { cooldownTimer: originalTimer, cooldownInterval: originalInterval } =
-        handlers.getCooldownTimers();
-      cleanupTimers(originalTimer, originalInterval);
-    }
+    const originalCooldownTimers = handlers.getCooldownTimers();
+    cleanupTimers(
+      originalCooldownTimers.cooldownTimer,
+      originalCooldownTimers.cooldownInterval
+    );
     handlers.setCooldownTimers(getNextTimeoutId(), getNextIntervalId());
     handlers.pauseTimers();
     handlers.pauseTimers();
