@@ -1,8 +1,24 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+import { createManualTimingControls } from "../utils/manualTimingControls.js";
+import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
 
 describe("battleCLI timer consolidation", () => {
+  let timing;
+  let restoreTime;
+
+  beforeEach(() => {
+    timing = createManualTimingControls();
+    restoreTime = timing.mockTime();
+    setScheduler(timing.scheduler);
+  });
+
   afterEach(async () => {
+    await timing?.runAll();
+    restoreTime?.();
+    setScheduler(realScheduler);
+    timing = undefined;
+    restoreTime = undefined;
     vi.restoreAllMocks();
     await cleanupBattleCLI();
     vi.resetModules();
@@ -27,7 +43,7 @@ describe("battleCLI timer consolidation", () => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("round.timer.tick", { remainingMs: 5000 });
 
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await timing.runAll();
 
     // CLI mode renders its own countdown element, so the shared scoreboard adapter intentionally
     // skips binding the timer listener. Verify that the shared timer remains untouched here.
@@ -60,7 +76,7 @@ describe("battleCLI timer consolidation", () => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("round.timer.tick", { remainingMs: 3000 });
 
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await timing.runAll();
 
     expect(updateTimerSpy).toHaveBeenCalledWith(3);
     expect(sharedTimer?.textContent?.trim()).toBe("Time Left: 3s");
