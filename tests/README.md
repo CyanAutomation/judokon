@@ -26,7 +26,7 @@ tests/
 
 ## Fake Timers Playbook
 
-JU-DO-KON! uses a canonical approach to fake timers for deterministic testing. See the [Testing Guide](../docs/testing-guide.md#fake-timers-playbook) for complete documentation.
+JU-DO-KON! uses a canonical approach to fake timers for deterministic testing. See the [Testing Standards PRD](../design/productRequirementsDocuments/prdTestingStandards.md#7-fake-timers-playbook-p1) for complete documentation.
 
 ### Quick Reference
 
@@ -145,6 +145,6 @@ await pressKey("Enter");
 
 ## Related Documentation
 
-- [Testing Guide](../docs/testing-guide.md) - Complete testing strategies
+- [Testing Standards PRD](../design/productRequirementsDocuments/prdTestingStandards.md#prd-testing-standards) - Complete testing strategies
 - [Validation Commands](../docs/validation-commands.md) - Quality verification
 - [AGENTS.md](../AGENTS.md) - Agent-specific testing standards

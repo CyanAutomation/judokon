@@ -129,7 +129,7 @@ The `.github/workflows/pw-test-value.yml` workflow runs this evaluation on pull 
     "markdown_report": "reports/pw-test-value/pw-test-value.md"
   },
   "policy": {
-    "file": "docs/TestValuePolicy.md",
+    "file": "design/productRequirementsDocuments/prdTestingStandards.md",
     "section_header": "E2E (Playwright) Specifics",
     "key_rules": [
       "Prefer user-facing locators: `getByRole`, `getByText`, `getByTestId`.",
@@ -153,4 +153,4 @@ When asked to write E2E tests, you **MUST** aim for a score in the "KEEP" catego
   - `package.json` (see `scripts` starting with `e2e:`)
   - `playwright.config.js`
 - **CI Workflow**: `.github/workflows/pw-test-value.yml`
-- **Contributor Policy**: `docs/TestValuePolicy.md`
+- **Contributor Policy**: `design/productRequirementsDocuments/prdTestingStandards.md`

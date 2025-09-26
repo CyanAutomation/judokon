@@ -95,6 +95,48 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 - **Refactor (5-7)**: Tests needing improvement but worth salvaging
 - **Remove/Merge (≤4)**: Low-value tests requiring removal or consolidation
 
+#### Detailed Rubric Guidance and Examples
+
+- **Intent Clarity**: Begin files with lightweight metadata that ties the test to a requirement, spec ID, or bug ticket. Descriptive `describe`/`it` names such as `"authenticate should return a user object on successful authentication"` help reviewers understand scope instantly.
+
+  ```javascript
+  /**
+   * Spec-ID: AUTH-001
+   * Linked-Req: PRD-4.2 (User Login)
+   * Covers: src/helpers/auth.js
+   */
+  import { authenticate } from "../src/helpers/auth";
+
+  describe("authenticate", () => {
+    it("should return a user object on successful authentication", () => {
+      // ...
+    });
+  });
+  ```
+
+- **Assertion Quality**: Prefer semantic assertions that fail loudly and specifically. Snapshots may supplement but should not be the only guardrail.
+
+  ```javascript
+  it("should return the correct user payload", () => {
+    const user = { id: 1, name: "Alice" };
+    expect(authenticate("valid", "creds")).toEqual(user);
+  });
+  ```
+
+- **Isolation & Robustness**: Deterministic timer control is mandatory for time-dependent logic. Use the canonical fake-timer helpers (see [Fake Timers Playbook](#7-fake-timers-playbook-p1)) instead of real `setTimeout` calls.
+
+  ```javascript
+  it("should time out after 5000ms", async () => {
+    const timers = useCanonicalTimers();
+    myFunctionThatTimesOut();
+    await timers.advanceTimersByTimeAsync(5000);
+    expect(onTimeout).toHaveBeenCalled();
+    timers.cleanup();
+  });
+  ```
+
+- **Cost vs Coverage**: Avoid redundant setup or sprawling fixture data. Each test should reach assertions quickly and verify meaningful behavior tied to a PRD requirement.
+
 ### 2. Playwright Test Guidelines (P1)
 
 **Core Philosophy:**
@@ -141,6 +183,36 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 - Implement proper wait conditions (`waitForSelector`, `waitForLoadState`)
 - Avoid hardcoded timeouts in favor of condition-based waiting
 - Structure tests to reflect actual user workflows
+
+#### Detailed Rubric Guidance and Examples
+
+- **Intent Clarity**: Titles should describe the user journey and expected outcome. Include spec metadata where helpful.
+
+  ```javascript
+  /**
+   * Spec-ID: CART-003
+   * Linked-Req: PRD-7.1 (Add to Cart)
+   */
+  test("should allow user to add an item to the cart from the product page", async ({ page }) => {
+    // ...
+  });
+  ```
+
+- **Assertion Quality**: Favor accessible locators (`getByRole`, `getByTestId`) and semantic expectations.
+
+  ```javascript
+  const submitButton = page.getByRole("button", { name: /Sign In/i });
+  await submitButton.click();
+  await expect(page.getByText("Welcome, Alice!")).toBeVisible();
+  ```
+
+- **Robustness & Flake Resistance**: Lean on Playwright's auto-waiting features and web-first assertions. Hard-coded sleeps (`page.waitForTimeout`) are prohibited because they introduce flakiness.
+
+  ```javascript
+  await expect(page.getByRole("heading", { name: "Shopping Cart" })).toBeVisible({ timeout: 5000 });
+  ```
+
+- **Cost vs Coverage**: Tests that intermittently fail carry negative value. Exercise `npm run e2e:flake-scan` whenever a scenario introduces new waits or asynchronous flows.
 
 ### 3. Test Naming Conventions (P1)
 
@@ -271,6 +343,99 @@ test.describe("Feature Name", () => {
 - Identify performance bottlenecks
 - Regular review of slow tests
 
+### 7. Fake Timers Playbook (P1)
+
+**Canonical Helpers:**
+
+- `useCanonicalTimers()` – installs deterministic fake timers with automatic cleanup helpers.
+- `withFakeTimers(fn)` – wraps an async test body with canonical setup/teardown.
+- `advanceTimersByTimeAsync(ms)` / `runAllTimersAsync()` – async-safe helpers for advancing timers.
+
+**Preferred Test Structure:**
+
+```javascript
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
+
+describe("My Timer Test", () => {
+  let timers;
+
+  beforeEach(() => {
+    timers = useCanonicalTimers();
+  });
+
+  afterEach(() => {
+    timers.cleanup();
+  });
+
+  it("should handle timeouts", async () => {
+    let called = false;
+    setTimeout(() => (called = true), 1000);
+
+    await timers.advanceTimersByTimeAsync(1000);
+    expect(called).toBe(true);
+  });
+});
+```
+
+**Best Practices:**
+
+- Always `await` async timer helpers to avoid race conditions.
+- Avoid mixing real and fake timers within a single test suite.
+- Use wrapper utilities when timers should span the entire test body.
+- Pair with RAF mocks when animations share control flow; install mocks after timers initialize and clean them up together.
+
+**Anti-Patterns to Avoid:**
+
+- Direct calls to `vi.useFakeTimers()` without the canonical helpers.
+- Synchronous timer flushes inside async tests (e.g., `vi.runAllTimers()` without `await`).
+- Real sleeps (`setTimeout` or `waitForTimeout`) in deterministic timer suites.
+
+### 8. Playwright Readiness Helpers (P1)
+
+**Stable Readiness Signals:**
+
+- `await waitForBattleReady(page)` – ensures Classic Battle UI bindings complete.
+- `await waitForSettingsReady(page)` – waits for settings UI initialization.
+- `await waitForBattleState(page, "waitingForPlayerAction", 10000)` – targets specific machine states.
+- `await page.evaluate(() => window.battleReadyPromise)` – raw fallback for full initialization.
+
+**Avoid:**
+
+- Waiting on `#next-round-timer` visibility at page load (races with snackbar rendering).
+- Relying on pre-match countdown timers; instead, target prompts like "Select your move" or `#stat-buttons[data-buttons-ready="true"]`.
+
+**Supporting Utilities:**
+
+- `playwright/fixtures/waits.js` exports readiness helpers and state waiters.
+- Screenshot storage lives under `playwright/*-snapshots/`; use `SKIP_SCREENSHOTS=true` when screenshots are not required locally.
+
+### 9. Classic Battle Promise Utilities (P1)
+
+**Initialization Workflow:**
+
+- Import `initClassicBattleTest({ afterMock: true })` from `tests/helpers/initClassicBattleTest.js` immediately after `vi.doMock` when Classic Battle modules are mocked inside a test. The helper:
+  - Calls `__resetClassicBattleBindings()` to clear previous listeners.
+  - Forces `__ensureClassicBattleBindings({ force: true })` to rebuild the event bus and honor new mocks.
+  - Returns the `src/helpers/classicBattle.js` module for direct interaction.
+
+**Deterministic Promises:**
+
+- `getRoundPromptPromise()` – resolves when the selection prompt (snackbar) displays.
+- `getCountdownStartedPromise()` – resolves when the next-round countdown begins.
+- `getRoundResolvedPromise()` – resolves when outcomes and scores finalize (assert via `#round-message`).
+- `getRoundTimeoutPromise()` – resolves when timeout logic activates.
+- `getStatSelectionStalledPromise()` – surfaces stall prompts for delayed selections.
+
+**UI Assertions:**
+
+- Outcome text lives in `#round-message`.
+- Countdown and hints appear via snackbar utilities (`showSnackbar` / `updateSnackbar`).
+
+**State and Debug Hooks:**
+
+- `battleStateChange` events drive DOM mirroring and waiter resolution; prefer emitting this event over mutating DOM datasets directly.
+- `exposeDebugState` / `readDebugState` helpers allow tests to inspect Classic Battle internals without global pollution.
+
 ---
 
 ## Acceptance Criteria
@@ -374,3 +539,6 @@ This PRD consolidates content from the following design/codeStandards files:
 - `evaluatingUnitTests.md` - Unit test quality assessment rubric and philosophy
 - `evaluatingPlaywrightTests.md` - End-to-end test evaluation criteria and best practices
 - `testNamingStandards.md` - File naming and test structure conventions
+- `docs/TestValuePolicy.md` - Detailed rubrics and examples for high-value tests
+- `docs/testing-guide.md` - Fake timer playbook, readiness helpers, and operational testing workflows
+- `docs/technical/classicBattleTesting.md` - Classic Battle promise utilities and rebinding policy

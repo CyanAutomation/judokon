@@ -55,5 +55,5 @@ The CLI reuses the core battle engine and state machine from the standard Classi
 ## Related Documentation
 
 - [Battle Engine Events API](./components.md) - Engine event system
-- [Testing Guide](./testing-guide.md) - Testing strategies and utilities
+- [Testing Standards PRD](../design/productRequirementsDocuments/prdTestingStandards.md#prd-testing-standards) - Testing strategies and utilities
 - [Architecture](technical/architecture.md) - Overall system design

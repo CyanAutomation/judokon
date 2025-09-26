@@ -235,7 +235,7 @@ This appendix integrates the implementation and usage guidance from `docs/battle
 ### Related docs
 
 - Battle Engine Events API: `docs/components.md` (engine events and handlers)
-- Testing guidance: `docs/testing-guide.md`
+- Testing guidance: `design/productRequirementsDocuments/prdTestingStandards.md`
 - Architecture overview: `design/architecture.md`
 
 ### Appendix: CLI Module Structure (from docs/battleCLI.md)

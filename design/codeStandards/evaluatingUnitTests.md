@@ -135,7 +135,7 @@ This system is designed to be understood and used by AI agents.
     "markdown_report": "reports/test-value/test-value.md"
   },
   "policy": {
-    "file": "docs/TestValuePolicy.md",
+    "file": "design/productRequirementsDocuments/prdTestingStandards.md",
     "key_rules": [
       "New tests SHOULD include a metadata header.",
       "Snapshot-only tests are discouraged and will receive a low 'assertionQuality' score.",
@@ -161,4 +161,4 @@ The implementation of this system is distributed across several files:
   - `stryker.conf.js`
   - `package.json` (see `scripts` and `devDependencies`)
 - **CI Workflow**: `.github/workflows/test-value.yml`
-- **Contributor Policy**: `docs/TestValuePolicy.md`
+- **Contributor Policy**: `design/productRequirementsDocuments/prdTestingStandards.md`
