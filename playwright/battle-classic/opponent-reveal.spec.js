@@ -202,15 +202,6 @@ async function startMatch(page, selector) {
   }
 }
 
-async function expireSelectionTimer(page) {
-  const expired = await page.evaluate(() => {
-    return window.__TEST_API?.timers?.expireSelectionTimer?.() ?? null;
-  });
-
-  expect(expired).not.toBeNull();
-  expect(expired).toBe(true);
-}
-
 /**
  * Convenience helper to start a match and wait for stat availability.
  * @pseudocode
