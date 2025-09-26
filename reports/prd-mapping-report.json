@@ -17,7 +17,7 @@
   },
   {
     "source": "docs/product-docs.md",
-    "mappedTo": null
+    "mappedTo": "design/productRequirementsDocuments/prdPRDViewer.md#implementation-notes"
   },
   {
     "source": "docs/rag-system.md",

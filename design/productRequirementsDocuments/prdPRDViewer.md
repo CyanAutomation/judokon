@@ -110,6 +110,14 @@ Non-technical stakeholders struggle even more with raw markdown formatting, lead
 - Requires an up-to-date file list from the `design/productRequirementsDocuments` directory.
 - Deep-linking uses the `?doc=` query parameter so URLs can bookmark a specific PRD.
 
+### Implementation notes
+
+- History helpers in `src/helpers/prdReader/history.js` coordinate URL updates. Initial loads call `replaceHistory` to
+  canonicalize the `?doc=` parameter without polluting the stack, while in-app navigation uses `pushHistory` so browser
+  back/forward buttons step through the same document order as the sidebar.
+- The viewer binds `popstate` events through `bindHistory`, ensuring sidebar selection and the main content stay in sync
+  when users navigate via the browser chrome or external history controls.
+
 ---
 
 ## Mockups / Visual Reference

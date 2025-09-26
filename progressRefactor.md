@@ -20,7 +20,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/testing-guide.md` / `docs/validation-commands.md` / `docs/TestValuePolicy.md` → `prdTestingStandards.md` plus `prdCodeStandards.md` (exists; ensure evaluation rubrics and command matrix live in PRDs).
 - `docs/components.md` → `prdUIDesignSystem.md` (exists).
 - `docs/roundUI.md` → `prdBattleMarkup.md` or `prdUIDesignSystem.md` (decide based on whether the content is markup contract vs component style guidance).
-- `docs/product-docs.md` → `prdPRDViewer.md` (exists).
+- Former `docs/product-docs.md` content now lives in `design/productRequirementsDocuments/prdPRDViewer.md#implementation-notes` (exists).
 - `docs/technical/architecture.md` / `design/architecture.md` → `prdArchitecture.md` (exists; collapse duplicate Markdown after integrating callouts).
 - `docs/technical/battleMarkup.md` / `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat Markdown as temporary appendix until canonical schema lives in PRD).
 - `docs/technical/dataSchemas.md` → `prdDataSchemas.md` (exists).
@@ -61,8 +61,8 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Assimilate (migrate component descriptions and examples into PRD appendix)
   - Rationale: Component-level guidance supports the UI design system and should be consolidated under `prdUIDesignSystem.md`.
 
-- `docs/product-docs.md` -> `prdPRDViewer.md`
-  - Action: Stub (create redirect stub pointing to `prdPRDViewer.md` and note owner)
+- Former `docs/product-docs.md` content lives in `design/productRequirementsDocuments/prdPRDViewer.md#implementation-notes`
+  - Action: Stub (create redirect stub pointing to the implementation-notes anchor and note owner)
   - Rationale: This is documentation about product docs themselves; the PRD viewer PRD is the natural owner.
 
 - `docs/rag-system.md` -> `prdVectorDatabaseRAG.md`
