@@ -196,15 +196,15 @@ The development standards rely on a consistent validation workflow that protects
 
 ### Core Validation Commands
 
-| Focus Area | Command(s) | Purpose | When to Run |
-| --- | --- | --- | --- |
-| Code formatting | `npx prettier . --check`  \\ `npx prettier . --write` | Enforces repository-wide formatting discipline. | Run `--check` before every commit; use `--write` to auto-correct issues. |
-| Linting | `npx eslint .`  \\ `npx eslint . --fix` | Detects logic bugs and enforces coding conventions. | Execute prior to commit; rely on `--fix` for autofixable findings. |
-| Documentation validation | `npm run check:jsdoc`  \\ `npm run check:jsdoc:fix` | Confirms that public APIs include compliant JSDoc with `@pseudocode`. | Run after adding or updating exported functions and before commit. |
-| Unit tests | `npx vitest run`  \\ `npm run test:style` (on demand) | Guards core logic against regressions. | Required before every commit; run style tests when touching visual styling helpers. |
-| Playwright tests | `npx playwright test` | Validates end-to-end UI workflows. | Run before committing, especially for UI-affecting changes. |
-| Accessibility & contrast | `npm run check:contrast` | Ensures color contrast meets accessibility standards. | Mandatory after UI/styling updates and before commit. |
-| RAG system | `npm run rag:validate` | Confirms offline model hydration and hot-path safeguards for the RAG system. | Use after documentation or RAG-adjacent updates and prior to commit. |
+| Focus Area               | Command(s)                                           | Purpose                                                                      | When to Run                                                                         |
+| ------------------------ | ---------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Code formatting          | `npx prettier . --check` \\ `npx prettier . --write` | Enforces repository-wide formatting discipline.                              | Run `--check` before every commit; use `--write` to auto-correct issues.            |
+| Linting                  | `npx eslint .` \\ `npx eslint . --fix`               | Detects logic bugs and enforces coding conventions.                          | Execute prior to commit; rely on `--fix` for autofixable findings.                  |
+| Documentation validation | `npm run check:jsdoc` \\ `npm run check:jsdoc:fix`   | Confirms that public APIs include compliant JSDoc with `@pseudocode`.        | Run after adding or updating exported functions and before commit.                  |
+| Unit tests               | `npx vitest run` \\ `npm run test:style` (on demand) | Guards core logic against regressions.                                       | Required before every commit; run style tests when touching visual styling helpers. |
+| Playwright tests         | `npx playwright test`                                | Validates end-to-end UI workflows.                                           | Run before committing, especially for UI-affecting changes.                         |
+| Accessibility & contrast | `npm run check:contrast`                             | Ensures color contrast meets accessibility standards.                        | Mandatory after UI/styling updates and before commit.                               |
+| RAG system               | `npm run rag:validate`                               | Confirms offline model hydration and hot-path safeguards for the RAG system. | Use after documentation or RAG-adjacent updates and prior to commit.                |
 
 ### Hot Path & Log Discipline Commands
 

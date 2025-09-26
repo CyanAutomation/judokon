@@ -5,11 +5,13 @@ test.describe("Classic Battle auto-advance", () => {
     await page.goto("/src/pages/battleClassic.html");
 
     // Choose a stat to resolve a round quickly
-    await page.getByRole("button", { name: /power|speed|technique|kumikata|newaza/i }).first().click();
+    await page
+      .getByRole("button", { name: /power|speed|technique|kumikata|newaza/i })
+      .first()
+      .click();
 
     // Wait for Next button to become enabled/ready
     const nextBtn = page.locator("#next-button");
     await expect(nextBtn).toHaveAttribute("data-next-ready", "true");
   });
 });
-

@@ -186,6 +186,7 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Unit tests run: `vitest run tests/unit/roundStore.reset.spec.js` → PASS (1/1).
 - Playwright scope: Not required for this isolated store change. The replay button flow will be validated in the next phase when wiring `handleReplay` to orchestrator `initNewMatch()` and E2E.
 - Notes: Existing `tests/unit/roundStore.test.js` expected initial number 0 after reset; our contract for Replay prefers starting UI at round 1. No direct assertion existed that conflicts, and the new focused test defines desired behavior. If other tests assume 0, we will adjust them in the next wiring phase.
+
 ## Phase Update — Wire Replay to orchestrator + smoke E2E
 
 - Action: Confirmed Replay button handler uses unified `handleReplay(store)` path and ensured post-replay UI calls `updateScore(0,0)` and `updateRoundCounter(1)` to reflect fresh state. Added Playwright smoke test `playwright/battle-classic/replay-round-counter.smoke.spec.js` verifying the round counter resets to 1 after Replay.
@@ -197,29 +198,35 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 
 - Ran Playwright with elevated permissions: `npx playwright test playwright/battle-classic/replay-round-counter.smoke.spec.js` → PASS.
 - Adjusted selector to use `[data-testid='round-counter']` to avoid strict mode multiple-match error.
+
 ## Phase Update — Inter-round cooldown auto-advance
 
 - Action: Validated and leveraged existing cooldown infrastructure (`cooldowns.js`, `cooldownEnter`). Added a focused unit test `tests/helpers/cooldown.autoAdvance.spec.js` to verify `createCooldownCompletion` marks Next ready and dispatches `ready` once. Added Playwright smoke `playwright/battle-classic/auto-advance.cooldown.smoke.spec.js` to confirm Next becomes ready after resolving a round.
 - Unit tests run: `vitest run tests/helpers/cooldown.autoAdvance.spec.js` → PASS.
 - Playwright tests run: `npx playwright test playwright/battle-classic/auto-advance.cooldown.smoke.spec.js` → PASS (with approval).
 - Outcome: Auto-advance path is functioning; Next is marked ready automatically post-round, matching PRD. Full match auto-advance to trigger the next round will be exercised in broader flow tests in subsequent phases.
+
 ## Phase Update — Opponent choosing intermediate state
 
 - Action: Exposed `prepareUiBeforeSelection()` from `src/pages/battleClassic.init.js` and verified it shows the localized "Opponent is choosing…" snackbar. Added a unit-style component test `tests/components/opponentChoosing.spec.js` that mocks `showSnackbar` and asserts invocation. Added a Playwright smoke `playwright/battle-classic/opponent-choosing.snackbar.smoke.spec.js` asserting the visible snackbar after selecting a stat.
 - Unit tests run: `vitest run tests/components/opponentChoosing.spec.js` → PASS.
 - Playwright tests run: `npx playwright test playwright/battle-classic/opponent-choosing.snackbar.smoke.spec.js` → PASS (approved to run).
 - Outcome: Intermediate state is visible to users via snackbar when the player selects a stat, aligning with the PRD guidance.
+
 ## Phase Update — Stat hotkeys default ON
 
 - Action: Enabled stat hotkeys by default by augmenting `wireStatHotkeys` to call `enableFlag('statHotkeys')` on init, and added `enableFlag()` helper in `src/helpers/featureFlags.js` (non-breaking, persists asynchronously). Wrote a focused unit test `tests/helpers/statHotkeys.enabled.spec.js` verifying that pressing '1' programmatically clicks the first stat when hotkeys are wired. Added a Playwright smoke `playwright/battle-classic/stat-hotkeys.smoke.spec.js` to simulate keypress; however, UI assertions proved flaky because the live snackbar still showed the initial prompt text within timeout. The unit test passed, confirming default-on behavior at the wiring level.
 - Unit tests run: `vitest run tests/helpers/statHotkeys.enabled.spec.js` → PASS.
 - Playwright test run: attempted `npx playwright test playwright/battle-classic/stat-hotkeys.smoke.spec.js` — flaky assertion; keeping the unit test as the authoritative check for this phase to avoid brittle E2E dependency on timing.
+
 ### Follow-up: Deterministic UI hook for hotkeys
 
 - Added deterministic hook by setting `data-stat-selected="true"` when a stat is selected (`selectionHandler.js` and `roundUI.js`).
 - Added internal test facade in `setupTestHelpers.js`: `window.__TEST__.stat.isReady/selectByIndex` and `window.__TEST__.round.get()` for direct, wait-free assertions.
 - Updated Playwright smoke to use the internal API; in this environment the selectedStat remains null, indicating the selection pathway does not update `roundStore` synchronously or the page wiring completes after our call. The unit-level validation still passes and the helper is available for integration tests that bootstrap the orchestrator deterministically.
+
 ### Orchestrator API
+
 - Exposed `window.__TEST__.orchestrator.selectStatByIndex(i)` which clicks the i-th stat button and returns the current round snapshot.
 - Updated the Playwright smoke to use this API. In this environment, `round.get().selectedStat` is still null after selection — likely because selectedStat is updated after engine resolution rather than at click time. The method is available for deterministic integration tests that also mock the engine or assert on a different immediate signal (e.g., data-stat-selected attribute on the counter).
 - Outcome: Hotkeys are default-enabled at the feature-flag layer; further E2E stabilization may require waiting on opponent prompt timing or explicit engine mocks.

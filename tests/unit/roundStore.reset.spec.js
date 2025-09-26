@@ -30,4 +30,3 @@ describe("RoundStore.reset()", () => {
     expect(state.transitionLog.length).toBe(0);
   });
 });
-
