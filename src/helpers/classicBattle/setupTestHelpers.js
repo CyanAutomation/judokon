@@ -153,7 +153,15 @@ export function createClassicBattleDebugAPI(view) {
         await Promise.resolve();
         // Emit canonical roundResolved to mirror production pipeline
         try {
-          const ev = new CustomEvent("roundResolved", { detail: { test: true } });
+          const result = {
+            message: "Test round resolved",
+            playerScore: 1,
+            opponentScore: 0,
+            matchEnded: false
+          };
+          const ev = new CustomEvent("roundResolved", {
+            detail: { result, store }
+          });
           window.dispatchEvent(ev);
         } catch {}
         // If still not progressing, attempt to skip the phase via handler

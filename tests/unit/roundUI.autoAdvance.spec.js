@@ -26,10 +26,10 @@ describe("roundUI auto-advance chain", () => {
 
     // Rebind handlers (as in runtime) and dispatch roundResolved
     roundUI.bindRoundUIEventHandlersDynamic();
-    window.dispatchEvent(new CustomEvent("roundResolved", { detail: { test: true } }));
+    const result = { message: "ok", playerScore: 1, opponentScore: 0, matchEnded: false };
+    window.dispatchEvent(new CustomEvent("roundResolved", { detail: { result } }));
 
     // Assert cooldown was started
     expect(startCooldownSpy).toHaveBeenCalled();
   });
 });
-
