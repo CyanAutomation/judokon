@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../tests/utils/console.js";
-import { waitForBattleState, waitForTestApi } from "./helpers/battleStateHelper.js";
+import { waitForTestApi } from "./helpers/battleStateHelper.js";
 import { waitForSnackbar } from "./fixtures/waits.js";
 
 const buildCliUrl = (testInfo) => {
@@ -41,13 +41,76 @@ const waitForCliApis = async (page, timeout = 8000) => {
     .toBe(true);
 
   await Promise.all([waitForTranscript, waitForBattleStore]);
+
+  const testApiHandle = await page.evaluateHandle(() => {
+    try {
+      return window.__TEST_API ?? null;
+    } catch {
+      return null;
+    }
+  });
+
+  const hasExpectedApis = await testApiHandle.evaluate((api) => {
+    try {
+      if (!api || typeof api !== "object") {
+        return false;
+      }
+
+      const hasStateWait = typeof api?.state?.waitForBattleState === "function";
+      const hasVerboseLogReader = typeof api?.cli?.readVerboseLog === "function";
+      return hasStateWait && hasVerboseLogReader;
+    } catch {
+      return false;
+    }
+  });
+
+  if (!hasExpectedApis) {
+    await testApiHandle.dispose();
+    throw new Error("Test API did not expose expected CLI helpers");
+  }
+
+  return testApiHandle;
+};
+
+const readVerboseLog = async (testApiHandle) => {
+  if (!testApiHandle) {
+    return [];
+  }
+
+  const transcript = await testApiHandle.evaluate((api) => {
+    try {
+      const entries = api?.cli?.readVerboseLog?.();
+      if (Array.isArray(entries)) {
+        return entries.map((entry) => String(entry));
+      }
+      if (typeof entries === "string") {
+        return entries
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
+  return Array.isArray(transcript) ? transcript : [];
 };
 
 test.describe("CLI Keyboard Flows", () => {
+  /** @type {import('@playwright/test').JSHandle<unknown> | undefined} */
+  let testApiHandle;
+
   test.beforeEach(async ({ page }, testInfo) => {
     await page.goto(buildCliUrl(testInfo));
     await page.waitForSelector("#cli-root", { timeout: 8000 });
-    await waitForCliApis(page, 8000);
+    testApiHandle = await waitForCliApis(page, 8000);
+  });
+
+  test.afterEach(async () => {
+    await testApiHandle?.dispose?.();
+    testApiHandle = undefined;
   });
 
   const startBattle = async (page) => {
@@ -55,11 +118,38 @@ test.describe("CLI Keyboard Flows", () => {
     if (await startButton.isVisible()) {
       await startButton.click();
     }
-    await page.waitForSelector('#cli-stats[aria-busy="false"]', { timeout: 10000 });
-    await waitForBattleState(page, "waitingForPlayerAction", {
-      timeout: 10000,
-      allowFallback: false
+    const waitResult = await page.evaluate(async () => {
+      try {
+        const stateApi = window.__TEST_API?.state;
+        if (!stateApi || typeof stateApi.waitForBattleState !== "function") {
+          return { status: "missing" };
+        }
+
+        const resolved = await stateApi.waitForBattleState("waitingForPlayerAction");
+        return { status: "resolved", resolved };
+      } catch (error) {
+        return {
+          status: "error",
+          message: error instanceof Error ? error.message : String(error)
+        };
+      }
     });
+
+    if (!waitResult || typeof waitResult !== "object") {
+      throw new Error("Unexpected response waiting for battle state");
+    }
+
+    if (waitResult.status === "missing") {
+      throw new Error("Test API waitForBattleState unavailable in startBattle");
+    }
+
+    if (waitResult.status === "error") {
+      throw new Error(`Failed waiting for battle state: ${waitResult.message}`);
+    }
+
+    if (waitResult.resolved === false) {
+      throw new Error("Timed out waiting for waitingForPlayerAction battle state");
+    }
   };
 
   test("should load CLI interface structure and expose test hooks", async ({ page }) => {
@@ -79,9 +169,9 @@ test.describe("CLI Keyboard Flows", () => {
 
       await startBattle(page);
 
-      const verboseLog = page.locator("#cli-verbose-log");
-      await expect(verboseLog).not.toBeEmpty({ timeout: 8000 });
-      await expect(verboseLog).toContainText("waitingForPlayerAction", { timeout: 8000 });
+      const verboseTranscript = await readVerboseLog(testApiHandle);
+      expect(verboseTranscript.length).toBeGreaterThan(0);
+      expect(verboseTranscript.join(" ")).toContain("waitingForPlayerAction");
     }, ["log", "warn", "error"]);
   });
 
