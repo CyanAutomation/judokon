@@ -206,9 +206,11 @@ This file revises the original QA findings for Classic Battle Mode and converts 
   - `vitest run tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js` → PASS
   - `vitest run tests/helpers/classicBattle/initInterRoundCooldown.event.test.js` → PASS
   - `vitest run tests/helpers/classicBattle/nextButton.manualClick.test.js` → PASS
-- Playwright: Requesting approval to run a focused E2E confirming the UI advances automatically after the cooldown and that a manual Next click cancels/short-circuits the countdown.
-  - Proposed spec path: `playwright/auto-advance.spec.js` (or existing equivalent if present).
-- Outcome: Feature confirmed by unit/integration tests; awaiting E2E confirmation under real DOM/RAF timing.
+- Playwright: Ran focused E2E `playwright/auto-advance.smoke.spec.js` with elevated permissions.
+  - Initial run: FAIL — counter/message didn’t change; test relied on optional `__TEST__` API path.
+  - Fix: Updated the smoke test to select the first stat when the test API is absent, ensuring the round actually resolves in the prod-like build.
+  - Rerun: PASS — countdown appears and the round counter/message updates automatically without clicking Next.
+- Outcome: E2E path verified as working; the failure was a test-driver gap rather than runtime wiring. No runtime code changes were necessary.
 - Notes: Cooldown duration is resolved by `computeNextRoundCooldown()`; manual Next uses `onNextButtonClick` to cancel active timers or advance when ready. No dynamic imports in the hot path were introduced.
 
 ## Phase Update — Confirm RoundStore reset behavior via unit test

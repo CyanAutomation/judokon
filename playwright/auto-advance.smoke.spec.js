@@ -21,7 +21,7 @@ test.describe("Classic Battle – auto-advance", () => {
     const roundCounter = page.locator('[data-testid="round-counter"], #round-counter');
     await expect(roundMsg).toBeVisible({ timeout: 10000 });
 
-    // Drive end-of-round deterministically via test API if exposed
+    // Drive end-of-round deterministically via test API if exposed; otherwise select a stat
     await page.waitForLoadState("networkidle");
     const hasTestApi = await page.evaluate(() => typeof window.__TEST__ !== "undefined");
     if (hasTestApi) {
@@ -30,6 +30,13 @@ test.describe("Classic Battle – auto-advance", () => {
           await window.__TEST__?.round?.finish?.();
         } catch {}
       });
+    }
+    if (!hasTestApi) {
+      // Select the first available stat to complete the round
+      const firstStat = page.locator('#stat-buttons button').first();
+      await firstStat.click();
+      // Wait for resolution into cooldown
+      await page.waitForTimeout(500); // allow UI to transition
     }
 
     // Expect a countdown snackbar to appear
