@@ -271,47 +271,45 @@ class RoundStore {
    * Wire RoundStore into scoreboard adapter.
    * This replaces event-driven round number updates with direct store subscriptions.
    */
-  wireIntoScoreboardAdapter() {
-    // Import scoreboard adapter dynamically to avoid circular dependencies
-    return import("../setupScoreboard.js")
-      .then(({ updateRoundCounter, clearRoundCounter }) => {
-        const applyRoundNumber = (roundNumber) => {
-          const hasUpdate = typeof updateRoundCounter === "function";
-          const hasClear = typeof clearRoundCounter === "function";
-          if (roundNumber > 0) {
-            if (hasUpdate) {
-              updateRoundCounter(roundNumber);
-            }
-            return;
-          }
-          if (hasClear) {
-            clearRoundCounter();
-            return;
-          }
-          if (hasUpdate) {
-            updateRoundCounter(roundNumber);
-          }
-        };
+  wireIntoScoreboardAdapter({ updateRoundCounter, clearRoundCounter } = {}) {
+    const safeUpdate =
+      typeof updateRoundCounter === "function" ? updateRoundCounter : () => {};
+    const safeClear =
+      typeof clearRoundCounter === "function" ? clearRoundCounter : () => {};
 
-        // Subscribe to round number changes
-        this.onRoundNumberChange((newNumber) => {
-          try {
-            applyRoundNumber(newNumber);
-          } catch (error) {
-            console.warn("RoundStore: Failed to update round counter:", error);
-          }
-        });
+    const applyRoundNumber = (roundNumber) => {
+      if (typeof roundNumber !== "number" || !Number.isFinite(roundNumber)) {
+        return;
+      }
 
-        // Set initial round number if already set
-        try {
-          applyRoundNumber(this.currentRound.number);
-        } catch (error) {
-          console.warn("RoundStore: Failed to initialize round counter:", error);
-        }
-      })
-      .catch((error) => {
-        console.warn("RoundStore: Failed to wire into scoreboard adapter:", error);
-      });
+      if (roundNumber > 0) {
+        safeUpdate(roundNumber);
+        return;
+      }
+
+      if (roundNumber === 0) {
+        safeClear();
+        return;
+      }
+
+      safeUpdate(roundNumber);
+    };
+
+    const handleRoundNumberChange = (newNumber) => {
+      try {
+        applyRoundNumber(newNumber);
+      } catch (error) {
+        console.warn("RoundStore: Failed to update round counter:", error);
+      }
+    };
+
+    this.onRoundNumberChange(handleRoundNumberChange);
+
+    try {
+      applyRoundNumber(this.currentRound.number);
+    } catch (error) {
+      console.warn("RoundStore: Failed to initialize round counter:", error);
+    }
   }
 
   /**

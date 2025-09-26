@@ -6,6 +6,7 @@ import {
   updateTimer,
   showAutoSelect,
   clearRoundCounter,
+  updateRoundCounter,
   updateScore
 } from "../setupScoreboard.js";
 import { onBattleEvent, offBattleEvent } from "./battleEvents.js";
@@ -185,7 +186,12 @@ export function initScoreboardAdapter() {
 
   wireScoreboardListeners();
 
-  scoreboardReadyPromise = Promise.resolve(roundStore.wireIntoScoreboardAdapter());
+  scoreboardReadyPromise = Promise.resolve(
+    roundStore.wireIntoScoreboardAdapter({
+      updateRoundCounter,
+      clearRoundCounter
+    })
+  );
 
   return disposeScoreboardAdapter;
 }

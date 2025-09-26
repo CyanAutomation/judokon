@@ -14,6 +14,7 @@ import {
 
 // Mock setupScoreboard to track calls
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
+  clearRoundCounter: vi.fn(),
   updateRoundCounter: vi.fn(),
   showMessage: vi.fn(),
   clearMessage: vi.fn(),
