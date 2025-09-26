@@ -15,6 +15,7 @@
 - On the `opponentReveal` event, the handler (`src/helpers/classicBattle/uiEventHandlers.js`) removes `opponent-hidden` (if present), clears the container content, and renders the real opponent card. Because the container was hidden the whole time, the placeholder is never visible.
 
 ## Root Cause
+
 Hiding the entire `#opponent-card` container at init prevents the built-in Mystery Card placeholder from ever being displayed. The reveal handler then clears the placeholder and immediately renders the real card, so users never see the placeholder state.
 
 ## Constraints and Related Code

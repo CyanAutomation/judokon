@@ -12,7 +12,6 @@
 export async function flushMicrotasks(iterations = 1) {
   const total = Number.isFinite(iterations) && iterations > 0 ? Math.ceil(iterations) : 1;
   for (let remaining = total; remaining > 0; remaining -= 1) {
-    // eslint-disable-next-line no-await-in-loop -- deliberate sequencing to process microtasks serially
     await Promise.resolve();
   }
 }
