@@ -26,7 +26,9 @@ test.describe("Classic Battle – auto-advance", () => {
     const hasTestApi = await page.evaluate(() => typeof window.__TEST__ !== "undefined");
     if (hasTestApi) {
       await page.evaluate(async () => {
-        try { await window.__TEST__?.round?.finish?.(); } catch {}
+        try {
+          await window.__TEST__?.round?.finish?.();
+        } catch {}
       });
     }
 
@@ -38,14 +40,21 @@ test.describe("Classic Battle – auto-advance", () => {
     // Trigger public Next handler after readiness (programmatic click) then verify change
     if (hasTestApi) {
       await page.evaluate(async () => {
-        try { await window.__TEST__?.round?.advanceAfterCooldown?.(); } catch {}
+        try {
+          await window.__TEST__?.round?.advanceAfterCooldown?.();
+        } catch {}
       });
     }
     const beforeText = (await roundCounter.textContent().catch(() => roundMsg.textContent())) || "";
-    await expect.poll(async () => {
-      const t1 = await roundCounter.textContent().catch(() => null);
-      const t2 = await roundMsg.textContent().catch(() => null);
-      return (t1 || t2 || "").trim();
-    }, { message: "expected round message/counter to update" }).not.toBe(beforeText);
+    await expect
+      .poll(
+        async () => {
+          const t1 = await roundCounter.textContent().catch(() => null);
+          const t2 = await roundMsg.textContent().catch(() => null);
+          return (t1 || t2 || "").trim();
+        },
+        { message: "expected round message/counter to update" }
+      )
+      .not.toBe(beforeText);
   });
 });
