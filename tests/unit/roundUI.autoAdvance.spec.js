@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
 import * as scoreboard from "@/helpers/setupScoreboard.js";
-import * as roundUI from "@/helpers/classicBattle/roundUI.js";
+import { handleRoundResolvedEvent } from "@/helpers/classicBattle/roundUI.js";
 import * as roundManager from "@/helpers/classicBattle/roundManager.js";
 
 describe("roundUI auto-advance chain", () => {
@@ -26,7 +26,7 @@ describe("roundUI auto-advance chain", () => {
     const result = { message: "ok", playerScore: 1, opponentScore: 0, matchEnded: false };
     const event = new CustomEvent("roundResolved", { detail: { result, store: {} } });
 
-    await roundUI.handleRoundResolvedEvent(event, {
+    await handleRoundResolvedEvent(event, {
       scoreboard,
       computeNextRoundCooldown,
       createRoundTimer,
