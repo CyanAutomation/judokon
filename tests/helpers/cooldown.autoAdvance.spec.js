@@ -27,4 +27,3 @@ describe("Inter-round cooldown auto-advance", () => {
     expect(dispatch).toHaveBeenCalledWith("ready");
   });
 });
-

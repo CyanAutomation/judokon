@@ -9,9 +9,7 @@ describe("Stat hotkeys default enabled", () => {
   });
 
   it("pressing '1' clicks first stat when wireStatHotkeys is used", async () => {
-    const { wireStatHotkeys } = await import(
-      "../../src/helpers/classicBattle/statButtons.js"
-    );
+    const { wireStatHotkeys } = await import("../../src/helpers/classicBattle/statButtons.js");
     const first = document.getElementById("stat-1");
     const second = document.getElementById("stat-2");
     const buttons = [first, second];
@@ -24,4 +22,3 @@ describe("Stat hotkeys default enabled", () => {
     expect(clickSpy).toHaveBeenCalledTimes(1);
   });
 });
-

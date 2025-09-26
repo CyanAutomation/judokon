@@ -11,9 +11,7 @@ describe("Opponent choosing intermediate state", () => {
   });
 
   it("shows 'Opponent is choosing…' via snackbar when preparing selection", async () => {
-    const { prepareUiBeforeSelection } = await import(
-      "../../src/pages/battleClassic.init.js"
-    );
+    const { prepareUiBeforeSelection } = await import("../../src/pages/battleClassic.init.js");
     // Trigger
     prepareUiBeforeSelection();
     // Assert snackbar invoked with i18n key text (proxy via string contains)
