@@ -6,7 +6,9 @@ vi.mock("../../src/helpers/classicBattle/timerService.js", () => ({
 
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   clearMessage: vi.fn(),
-  clearTimer: vi.fn()
+  clearTimer: vi.fn(),
+  updateRoundCounter: vi.fn(),
+  clearRoundCounter: vi.fn()
 }));
 
 vi.mock("../../src/helpers/classicBattle/uiService.js", () => ({

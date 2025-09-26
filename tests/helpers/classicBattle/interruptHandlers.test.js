@@ -13,7 +13,9 @@ vi.mock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   showMessage: vi.fn(),
   clearTimer: vi.fn(),
-  updateTimer: vi.fn()
+  updateTimer: vi.fn(),
+  updateRoundCounter: vi.fn(),
+  clearRoundCounter: vi.fn()
 }));
 vi.mock("../../../src/helpers/classicBattle/skipHandler.js", () => ({
   resetSkipState: vi.fn()

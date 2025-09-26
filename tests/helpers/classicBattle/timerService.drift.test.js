@@ -19,7 +19,9 @@ describe("timerService drift handling", () => {
       showTemporaryMessage: () => () => {},
       showAutoSelect: vi.fn(),
       clearTimer: vi.fn(),
-      updateTimer: vi.fn()
+      updateTimer: vi.fn(),
+      updateRoundCounter: vi.fn(),
+      clearRoundCounter: vi.fn()
     }));
     vi.doMock("../../../src/helpers/timerUtils.js", () => ({
       getDefaultTimer: () => 30
@@ -46,7 +48,9 @@ describe("timerService drift handling", () => {
       showTemporaryMessage: () => () => {},
       showAutoSelect: vi.fn(),
       clearTimer: vi.fn(),
-      updateTimer: vi.fn()
+      updateTimer: vi.fn(),
+      updateRoundCounter: vi.fn(),
+      clearRoundCounter: vi.fn()
     }));
     vi.doMock("../../../src/helpers/classicBattle/uiHelpers.js", () => ({
       enableNextRoundButton: vi.fn(),

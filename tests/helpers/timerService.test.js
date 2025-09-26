@@ -13,7 +13,9 @@ vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   showMessage: () => {},
   showAutoSelect: () => {},
   showTemporaryMessage: () => () => {},
-  updateTimer: vi.fn()
+  updateTimer: vi.fn(),
+  updateRoundCounter: vi.fn(),
+  clearRoundCounter: vi.fn()
 }));
 
 vi.mock("../../src/helpers/classicBattle/uiHelpers.js", () => ({
