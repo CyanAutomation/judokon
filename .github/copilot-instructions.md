@@ -53,7 +53,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 
 **Content Ownership**: This file is the authoritative source for agent-specific rules, validation commands, and quality standards. Other documentation files reference this for agent-specific details.
 
-**Quick Reference**: [docs/validation-commands.md](./docs/validation-commands.md) | [docs/rag-system.md](./docs/rag-system.md)
+**Quick Reference**: [docs/validation-commands.md](./docs/validation-commands.md) | [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)
 
 ---
 
@@ -72,7 +72,7 @@ grep -RIn "await import\(" src/helpers/classicBattle src/helpers/battleEngineFac
 9. **Task contracts required** - Declare inputs/outputs/success/error before execution
 10. **Complete validation reference** - [docs/validation-commands.md](./docs/validation-commands.md) contains all commands and troubleshooting
 
-**JSON Ruleset Location**: [Line 545+](#machine-readable-ruleset) | **RAG Guide**: [docs/rag-system.md](./docs/rag-system.md)
+**JSON Ruleset Location**: [Line 545+](#machine-readable-ruleset) | **RAG Guide**: [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling)
 
 ---
 
@@ -148,7 +148,7 @@ npm run rag:validate
 
 This project contains a high-performance vector database with over 2,300 indexed chunks (2,328 currently) covering documentation, code standards, and game rules. RAG queries return results in ~2 seconds with 62.5% accuracy for finding correct sources.
 
-**See also**: [Quick Reference Cards](#-quick-reference-cards) | [docs/rag-system.md](./docs/rag-system.md) for complete usage guide
+**See also**: [Quick Reference Cards](#-quick-reference-cards) | [Vector Database RAG Operations](./design/productRequirementsDocuments/prdVectorDatabaseRAG.md#operations--tooling) for complete usage guide
 
 ### 🚀 Performance Benefits
 
