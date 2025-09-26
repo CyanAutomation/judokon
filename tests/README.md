@@ -146,5 +146,5 @@ await pressKey("Enter");
 ## Related Documentation
 
 - [Testing Guide](../docs/testing-guide.md) - Complete testing strategies
-- [Validation Commands](../docs/validation-commands.md) - Quality verification
+- [PRD: Testing Standards – Quality Verification Commands](../design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference) - Quality verification
 - [AGENTS.md](../AGENTS.md) - Agent-specific testing standards

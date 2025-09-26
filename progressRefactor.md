@@ -23,9 +23,9 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - Former `docs/product-docs.md` content now lives in `design/productRequirementsDocuments/prdPRDViewer.md#implementation-notes` (exists).
 - `docs/technical/architecture.md` / `design/architecture.md` → `prdArchitecture.md` (exists; collapse duplicate Markdown after integrating callouts).
 - `docs/technical/battleMarkup.md` / `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat Markdown as temporary appendix until canonical schema lives in PRD).
-- `docs/technical/dataSchemas.md` → `prdDataSchemas.md` (exists).
+- Data schema deep dive now lives in `design/productRequirementsDocuments/prdDataSchemas.md` (former `docs/technical/dataSchemas.md` has been retired).
 - `docs/technical/eventNamingAudit.md` / `design/eventNamingAudit.md` / `design/eventAudit/*.txt` → `prdEventContracts.md` (exists; move migration tables + listener inventories).
-- `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → `prdStateHandler.md` (exists).
+- `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → now consolidated into `design/productRequirementsDocuments/prdStateHandler.md` (compliance table + priorities live in PRD).
 - `docs/technical/classicBattleTesting.md` / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
 - `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md` / `prdTooltipViewer.md` (exists).
 - `design/testing/classicBattleTesting.md`, `design/codeStandards/*.md`, and similar deep dives remain valuable as implementation notes; decide per file whether to fold content into the owning PRD or keep them as linked appendices with a clear authority statement.
@@ -40,7 +40,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 ## Documents to assimilate or cross-reference
 
 - `docs/technical/eventNamingAudit.md`, `design/eventNamingAudit.md`, `design/eventAudit/*.txt` → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
-- `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → integrate diagrams + compliance table into `prdStateHandler.md`.
+- `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → ✅ integrated into `prdStateHandler.md` (table + follow-up actions captured in PRD).
 - `docs/technical/battleMarkup.md` & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
 - `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md`, `docs/TestValuePolicy.md`, `design/codeStandards/evaluatingPlaywrightTests.md`, `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
 - `docs/validation-commands.md` → split command matrix between `prdTestingStandards.md` (test suite) and `prdDevelopmentStandards.md` (agent/dev workflows); keep CLI script references synchronized.
@@ -93,7 +93,7 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Assimilate (append legacy alignment notes and migration checklist)
   - Rationale: Legacy alignment concerns the CLI behavior; `prdBattleCLI.md` should document compatibility and migration steps.
 
-- `design/eventNamingAudit.md` -> `prdEventContracts.md`
+- `design/eventNamingAudit.md` -> `design/productRequirementsDocuments/prdEventContracts.md#audit-appendix`
   - Action: Assimilate (append audit tables and migration checklist)
   - Rationale: Event naming and listener contract audits belong under the event contracts PRD.
 
@@ -101,7 +101,7 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Assimilate (accessibility contrast guidance into UI PRD)
   - Rationale: Theme and contrast guidance is a UI concern and should sit under the design system PRD.
 
-- `design/stateHandlerAudit.md` -> `prdStateHandler.md`
+- `design/stateHandlerAudit.md` -> `prdStateHandler.md` (source removed; PRD now canonical)
   - Action: Assimilate (add diagrams, compliance table, and acceptance criteria)
   - Rationale: State handler audits and compliance belong with the state handler PRD.
 

@@ -261,7 +261,7 @@ CLI-specific tests live in `playwright/battle-cli.spec.js` and verify:
 
 For comprehensive testing quality standards, including anti-patterns and preferred patterns for both unit and Playwright tests, see:
 
-- [Validation Commands](./validation-commands.md#advanced-quality-verification)
+- [PRD: Testing Standards – Quality Verification Commands](../design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference)
 - [AGENTS.md](../AGENTS.md#unit-test-quality-standards) - Unit test standards
 - [AGENTS.md](../AGENTS.md#playwright-test-quality-standards) - Playwright test standards
 
@@ -274,3 +274,5 @@ For comprehensive testing quality standards, including anti-patterns and preferr
 - [Settings Menu PRD](../design/productRequirementsDocuments/prdSettingsMenu.md#settings-api) - Cached settings helpers and feature flag lifecycle
 - [Snackbar PRD](../design/productRequirementsDocuments/prdSnackbar.md#dom-container-contract) - Notification container contract and helper usage
 - [Validation Commands](./validation-commands.md) - Complete command reference
+- [Components](./components.md) - Component testing strategies
+- [PRD: Development Standards – Validation Command Matrix](../design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks) - Complete validation workflow reference

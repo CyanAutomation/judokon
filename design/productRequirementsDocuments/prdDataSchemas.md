@@ -85,6 +85,31 @@ Acceptance Criteria (validator):
 - A repository example exists showing how to validate a `judoka` payload using AJV or equivalent.
 - CI job (or local script) can run a schema validation step against sample data and fail when validation errors exist.
 
+## Schema Validation Workflow
+
+- Run `npm run validate:data` to validate all schema/data pairs. The command executes `scripts/validateData.js`, which loads each schema and data module and validates them in-process using Ajv.
+- Ensure every new schema/data pair is covered by the workflow (e.g., `gameModes`, `weightCategories`, `navigationItems`, `aesopsMeta`, `gameTimers`).
+- Treat the validation script as part of the core CI contract—include it in local pre-merge checks and rerun it whenever schemas or data modules change.
+- When adding fields to a data file, update the matching schema with the new property, mark it as `required` when applicable, and re-run validation. Update dependent tests or helpers at the same time to avoid drift.
+
+### Ajv integration expectations
+
+- Ajv is the canonical validation engine. When adding new schemas, prefer Ajv programmatic usage over ad-hoc validation logic.
+- Configure Ajv with `allErrors: true` so contributors see complete error details during validation runs.
+- Use `ajv.errorsText(validate.errors)` (or equivalent) when surfacing validation failures in scripts to produce actionable error messages.
+
+### `$id` and shared definitions
+
+- Every schema file MUST declare a unique `$id` so other schemas can reference it without relative paths.
+- Shared structures belong in `src/schemas/commonDefinitions.schema.json`. Use `$ref` to import definitions (e.g., `https://judokon.dev/schemas/commonDefinitions.schema.json#/definitions/Stats`).
+- Keep shared definitions small and composable. When multiple schemas repeat identical structures, factor them into the shared definitions file instead of duplicating validation rules.
+
+### Enum and constraint maintenance
+
+- Model constrained fields with `enum` or `pattern` clauses so the validation workflow catches incorrect values. Example: enforce valid Gokyo technique `category`/`subCategory` combinations via `enum` lists.
+- The `CountryCode` and `WeightClass` enums in `src/schemas/commonDefinitions.schema.json` are the canonical sources for ISO country codes and IJF weight classes. Update those arrays (either manually or via generation scripts) and re-run `npm run validate:data` to confirm downstream data still conforms.
+- Maintain consistent casing for JSON keys (default to camelCase) so schema expectations align with helper utilities and tests.
+
 P2 - Versioning & Deprecation Policy: Define minor/major change rules and how to announce/rollout changes.
 
 Acceptance Criteria:

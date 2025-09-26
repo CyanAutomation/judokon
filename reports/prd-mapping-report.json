@@ -41,7 +41,7 @@
   },
   {
     "source": "docs/validation-commands.md",
-    "mappedTo": null
+    "mappedTo": "design/productRequirementsDocuments/prdDevelopmentStandards.md#validation-command-matrix--operational-playbooks; design/productRequirementsDocuments/prdTestingStandards.md#quality-verification-commands-operational-reference"
   },
   {
     "source": "docs/vector-search.md",
@@ -61,7 +61,7 @@
   },
   {
     "source": "design/eventNamingAudit.md",
-    "mappedTo": null
+    "mappedTo": "prdEventContracts.md#audit-appendix"
   },
   {
     "source": "design/retroThemeContrast.md",
@@ -69,6 +69,6 @@
   },
   {
     "source": "design/stateHandlerAudit.md",
-    "mappedTo": null
+    "mappedTo": "design/productRequirementsDocuments/prdStateHandler.md"
   }
 ]

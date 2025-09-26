@@ -98,6 +98,43 @@ Acceptance Criteria (fallbacks):
 - Auto-select behavior is documented and deterministic in `testMode` (seeded RNG).
 - Orchestrator-missing paths reproduce the same external events (same event names/payloads) so consumers are unaffected.
 
+## Compliance Audit (2025-09-10)
+
+The former `docs/technical/stateHandlerAudit.md` compliance report is now captured here to keep implementation status aligned with the product requirements.
+
+- **States in contract**: 12
+- **Total required onEnter actions**: 29
+- **Implemented**: 20 (69%)
+- **Missing**: 9 (31%)
+- **Critical gaps**: 2 (Priority 1)
+
+| State | Type | Required Actions | Status | Missing Actions | Priority Notes | Handler |
+| --- | --- | --- | --- | --- | --- | --- |
+| `waitingForMatchStart` | initial | render:matchLobby<br>reset:scoresAndUI | ✅ Fully compliant (2/2) | — | — | `waitingForMatchStartEnter.js` |
+| `matchStart` | normal | init:matchContext<br>store:winTargetSelection<br>reset:scores<br>set:firstPlayerUser | ✅ Fully compliant (4/4) | — | — | `matchStartEnter.js` |
+| `cooldown` | normal | timer:startShortCountdown<br>announce:nextRoundInUI | ❌ Missing (0/2) | timer:startShortCountdown<br>announce:nextRoundInUI | 🚨 Priority 1 (timer:startShortCountdown)<br>⚠️ Priority 2 (announce:nextRoundInUI) | `cooldownEnter.js` |
+| `roundStart` | normal | draw:randomJudokaBothSides<br>reveal:roundCards<br>set:activePlayerUser | ✅ Fully compliant (3/3) | — | — | `roundStartEnter.js` |
+| `waitingForPlayerAction` | normal | prompt:chooseStat<br>timer:startStatSelection<br>a11y:exposeTimerStatus | ✅ Fully compliant (3/3) | — | — | `waitingForPlayerActionEnter.js` |
+| `roundDecision` | normal | compare:selectedStat<br>compute:roundOutcome<br>announce:roundOutcome | ⚠️ Partially implemented (1/3) | compare:selectedStat<br>compute:roundOutcome | 🚨 Priority 1 (compare:selectedStat)<br>ℹ️ Priority 3 (compute:roundOutcome) | `roundDecisionEnter.js` |
+| `roundOver` | normal | update:score<br>update:UIRoundSummary | ❌ Missing (0/2) | update:score<br>update:UIRoundSummary | ⚠️ Priority 2 (both) | `roundOverEnter.js` |
+| `matchDecision` | normal | compute:matchOutcome<br>render:matchSummary | ❌ Missing (0/2) | compute:matchOutcome<br>render:matchSummary | ⚠️ Priority 2 (render:matchSummary)<br>ℹ️ Priority 3 (compute:matchOutcome) | `matchDecisionEnter.js` |
+| `matchOver` | final | show:matchResultScreen | ❌ Missing (0/1) | show:matchResultScreen | ⚠️ Priority 2 | `matchOverEnter.js` |
+| `interruptRound` | normal | timer:clearIfRunning<br>rollback:roundContextIfNeeded<br>log:analyticsInterruptRound | ✅ Fully compliant (3/3) | — | — | `interruptRoundEnter.js` |
+| `roundModification` | normal | open:roundModificationPanel | ✅ Fully compliant (1/1) | — | — | `roundModificationEnter.js` |
+| `interruptMatch` | normal | timer:clearIfRunning<br>teardown:matchContext<br>log:analyticsInterruptMatch | ✅ Fully compliant (3/3) | — | — | `interruptMatchEnter.js` |
+
+### Missing action follow-ups
+
+- **Critical (Priority 1)**: Implement `timer:startShortCountdown` (cooldown) and `compare:selectedStat` (roundDecision) to restore battle flow guarantees.
+- **Important (Priority 2)**: Add UI feedback for cooldown (`announce:nextRoundInUI`), persist score/summary updates after each round, render the final match result screen, and ensure the match summary view renders on match end.
+- **Nice-to-have (Priority 3)**: Complete computed outcome helpers (`compute:roundOutcome`, `compute:matchOutcome`) to align analytics with UI messaging.
+
+### Recommended next steps
+
+1. Address Priority 1 gaps before shipping related UI/engine changes.
+2. Verify whether missing actions exist but were not detected by the audit; if so, update the implementation or the detection heuristics.
+3. Backfill unit and integration tests for any newly implemented handlers and re-run the Classic Battle end-to-end suite.
+
 ## Test Hooks / Observable Promises
 
 The state machine exposes or coordinates the following test hooks (used by Playwright helpers and unit tests):

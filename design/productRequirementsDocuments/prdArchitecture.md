@@ -121,10 +121,6 @@ Acceptance Criteria:
 
 - Action: Owners of Battle Engine, Classic Battle UI, and Vector Search should populate the canonical inventory section in this PRD with full contract entries and reference schemas/diagrams.
 
-## Appendix / Sources
-
-- See `design/architecture.md`, `design/eventNamingAudit.md`, and `design/stateHandlerAudit.md` for background.
-
 ### Appendix: Project Architecture Overview (assimilated from `design/architecture.md`)
 
 This appendix preserves the implementation and agent-facing notes from the former `design/architecture.md`.
