@@ -15,4 +15,4 @@
 "design/battleMarkup.md","prdBattleMarkup.md"
 "design/eventNamingAudit.md","prdEventContracts.md#audit-appendix"
 "design/retroThemeContrast.md",""
-"design/stateHandlerAudit.md",""
+"design/stateHandlerAudit.md","design/productRequirementsDocuments/prdStateHandler.md"
