@@ -207,12 +207,18 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Playwright: Not applicable for this isolated store change. Next phase will wire Replay handler to orchestrator to reflect UI counters and add a smoke E2E.
 - Notes/Risk: Some modules may assume round 0 as pre-draw; no failing tests observed in the targeted run. Broader suite will be verified after UI wiring. If any consumer relies on 0-based reset, we will adapt during wiring by ensuring UI uses store round number directly.
 
-## Phase Update — Inter-round cooldown auto-advance (wiring + unit test)
+## Phase Update — Inter-round cooldown auto-advance (wiring + tests)
 
 - Action: Validated existing cooldown orchestration path by invoking `startCooldown` with overrides to ensure non-orchestrated readiness and countdown emission. Added focused unit test `tests/unit/cooldown.start.spec.js` asserting `control.countdown.started` emission and presence of a resolvable `ready` promise (auto-advance trigger path).
 - Rationale: Ensures the inter-round cooldown starts, emits a visible countdown hook, and resolves readiness to auto-advance without manual Next.
 - Unit tests run (targeted): `vitest run tests/unit/cooldown.start.spec.js` → PASS (1/1).
-- Playwright: Added `playwright/auto-advance.smoke.spec.js` and executed with elevation. Observed UI loads and countdown element appears, but round message did not change within timeout — likely missing explicit round-complete trigger in this route or test needs a deterministic finish-round helper. Will adjust in next phase to drive round completion through public UI/API hooks, then re-run the single spec.
+- Playwright: Added `playwright/auto-advance.smoke.spec.js` and executed with elevation. Countdown element `[data-testid="next-round-timer"]` appears after triggering round end via test API, but round message/counter did not update within timeout. This suggests the round-complete trigger path used in tests does not currently cause an auto-advance in this environment (or needs additional wiring). I added a guarded `window.__TEST__.round.finish()` helper in `src/helpers/classicBattle/setupTestHelpers.js` to end rounds deterministically; next step is to align the helper with orchestrator events so it mirrors production end-of-round semantics and retries.
+
+### Iteration: Align helper with orchestrator events
+
+- Action: Updated `window.__TEST__.round.finish()` to dispatch the canonical `roundResolved` CustomEvent after selecting a stat, then fallback to `skipBattlePhase()`.
+- Result: Single-spec run still times out on round change (remains on "Round 1"). Countdown element shows, indicating cooldown started, but the round counter did not increment in this route. Hypothesis: scoreboard/round counter in this entrypoint relies on a specific adapter update or `handleReplay/startRound` call after cooldown expiry. Next step is to expose a test-only hook to await cooldown completion and then call the public `Next` handler programmatically, verifying both paths (auto and manual), without clicking the button directly.
+ - Iteration 2: Added `window.__TEST__.round.advanceAfterCooldown()` to wait for Next readiness and programmatically invoke the public Next handler via the button's click() once ready. Single-spec run still times out on round change; the UI remains at Round 1. This suggests the scoreboard round counter in this page is not wired to increment on the tested path. Proposed follow-up in the next phase: trace `roundResolved` → `startCooldown` → `startRound` chain in `roundUI`/`roundManager` for Classic page and add a targeted integration unit test around `handleRoundResolvedEvent` to assert that `startCooldown` resolves and `startRound` is called, then adjust wiring if needed.
 - Notes/Risk: The test uses absolute import path due to Vite/Vitest module resolution in this environment; repo code remains unchanged. No hot-path dynamic import added.
 
 ## Phase Update — Inter-round cooldown auto-advance

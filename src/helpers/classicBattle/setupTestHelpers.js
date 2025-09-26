@@ -140,6 +140,45 @@ export function createClassicBattleDebugAPI(view) {
         } catch {
           return {};
         }
+      },
+      // Deterministically finish the current round for tests
+      finish: async () => {
+        try {
+          // Prefer selecting the first enabled stat for a natural flow
+          if (statApi.isReady()) {
+            statApi.selectByIndex(0);
+          }
+        } catch {}
+        // Wait a short tick to allow resolution
+        await Promise.resolve();
+        // Emit canonical roundResolved to mirror production pipeline
+        try {
+          const ev = new CustomEvent("roundResolved", { detail: { test: true } });
+          window.dispatchEvent(ev);
+        } catch {}
+        // If still not progressing, attempt to skip the phase via handler
+        try {
+          await skipBattlePhase();
+        } catch {}
+        return true;
+      },
+      // Wait for cooldown readiness and trigger public Next handler
+      advanceAfterCooldown: async () => {
+        try {
+          // Prefer triggering the same handler bound to the Next button
+          const nextBtn = document.getElementById("next-button") || document.querySelector('[data-role="next-round"]');
+          if (nextBtn) {
+            // Wait until button is enabled/ready
+            const start = Date.now();
+            while ((nextBtn.disabled || nextBtn.getAttribute("data-next-ready") !== "true") && Date.now() - start < 5000) {
+              await new Promise((r) => setTimeout(r, 50));
+            }
+            // Invoke the click handler programmatically via click() to follow public path
+            nextBtn.click();
+            return true;
+          }
+        } catch {}
+        return false;
       }
     }
   };
