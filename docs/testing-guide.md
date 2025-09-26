@@ -269,5 +269,8 @@ For comprehensive testing quality standards, including anti-patterns and preferr
 
 - [Test Mode automation hooks](../design/productRequirementsDocuments/prdTestMode.md#mode-interactions-and-automation-hooks) - Headless mode, readiness promises, and feature flag governance
 - [Battle CLI Guide](./battle-cli.md) - CLI-specific testing
-- [Components](./components.md) - Component testing strategies
+- [Battle Scoreboard PRD](../design/productRequirementsDocuments/prdBattleScoreboard.md#dom-integration--usage) - Scoreboard DOM helpers and reset discipline
+- [Battle Engine PRD](../design/productRequirementsDocuments/prdBattleEngine.md#event-subscription-api) - Event emitter contract for engine-driven tests
+- [Settings Menu PRD](../design/productRequirementsDocuments/prdSettingsMenu.md#settings-api) - Cached settings helpers and feature flag lifecycle
+- [Snackbar PRD](../design/productRequirementsDocuments/prdSnackbar.md#dom-container-contract) - Notification container contract and helper usage
 - [Validation Commands](./validation-commands.md) - Complete command reference

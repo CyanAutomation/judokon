@@ -74,12 +74,31 @@ Modules access player preferences via helpers in
 Feature flags are handled by `src/helpers/featureFlags.js`:
 
 - `isEnabled(flag)` – check whether a flag is enabled.
-- `setFlag(flag, value)` – persist a flag change and emit a `change` event via `featureFlagsEmitter`.
+- `setFlag(flag, value)` – persist a flag change and emit a `change` event via
+  `featureFlagsEmitter`.
+- `featureFlagsEmitter.on("change", handler)` – subscribe to live flag
+  updates.
 
-`loadSettings()` should run during startup to populate the cache, avoiding
-direct `localStorage` reads throughout the app by using `src/helpers/storage.js`.
-Pages should query `featureFlags.isEnabled` rather than reading
-`settings.featureFlags` directly.
+#### Lifecycle & Caching
+
+- Call `loadSettings()` during startup to populate the cache **once**. All
+  subsequent getters should read from the cached object rather than reaching
+  into storage repeatedly.
+- Pages should query `featureFlags.isEnabled` instead of touching
+  `settings.featureFlags` directly; this keeps flag persistence and live
+  updates centralized in the helper module.
+- Modules that toggle flags must rely on `setFlag` so that persistence and
+  event emission remain deterministic across classic battle, CLI, and future
+  modes.
+
+#### Display Modes
+
+- Supported themes: **Light**, **Dark**, and **Retro** (terminal-style
+  green-on-black that replaces the retired high-contrast mode).
+- The active mode is reflected via `document.body.dataset.theme` (e.g.
+  `data-theme="retro"`) for downstream CSS hooks.
+- Changing the display mode in the settings menu must update the dataset value
+  instantly and persist via the settings cache.
 
 On load, the Settings page must pre-populate each control with values from
 `settings.json` so players immediately see their saved preferences.
