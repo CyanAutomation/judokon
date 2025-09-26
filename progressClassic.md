@@ -199,6 +199,18 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Ran Playwright with elevated permissions: `npx playwright test playwright/battle-classic/replay-round-counter.smoke.spec.js` → PASS.
 - Adjusted selector to use `[data-testid='round-counter']` to avoid strict mode multiple-match error.
 
+## Phase Update — Inter-round cooldown auto-advance
+
+- Action: Verified and exercised auto-advance wiring through existing classic battle cooldown modules. No code changes required in this phase; the logic already exists in `src/helpers/classicBattle/roundManager.js` (startCooldown) and is triggered by `cooldownEnter` handlers.
+- Unit tests run (targeted):
+  - `vitest run tests/helpers/classicBattle/cooldownEnter.autoAdvance.test.js` → PASS
+  - `vitest run tests/helpers/classicBattle/initInterRoundCooldown.event.test.js` → PASS
+  - `vitest run tests/helpers/classicBattle/nextButton.manualClick.test.js` → PASS
+- Playwright: Requesting approval to run a focused E2E confirming the UI advances automatically after the cooldown and that a manual Next click cancels/short-circuits the countdown.
+  - Proposed spec path: `playwright/auto-advance.spec.js` (or existing equivalent if present).
+- Outcome: Feature confirmed by unit/integration tests; awaiting E2E confirmation under real DOM/RAF timing.
+- Notes: Cooldown duration is resolved by `computeNextRoundCooldown()`; manual Next uses `onNextButtonClick` to cancel active timers or advance when ready. No dynamic imports in the hot path were introduced.
+
 ## Phase Update — Confirm RoundStore reset behavior via unit test
 
 - Action: Implemented `roundStore.reset()` change to initialize round number to 1 while restoring waiting state and clearing transient fields. Added focused unit test `tests/unit/roundStore.reset.spec.js` validating number/state/clears and flags.
