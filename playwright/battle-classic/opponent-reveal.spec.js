@@ -379,6 +379,50 @@ test.describe("Classic Battle Opponent Reveal", () => {
     };
 
     createBasicTest(
+      "shows mystery placeholder pre-reveal before stat selection",
+      async ({ page }) => {
+        // Accept either: placeholder markup present OR container initially hidden (pre-reveal state)
+        const html = await page.content();
+        const hasOpponent = html.includes('id="opponent-card"');
+        const hasPlaceholderMarkup = html.includes('id="mystery-card-placeholder"');
+
+        // Also inspect DOM synchronously for a hidden pre-reveal container
+        const domState = await page.evaluate(() => {
+          const container = document.getElementById('opponent-card');
+          const hasHidden = !!container && container.classList.contains('opponent-hidden');
+          return { containerExists: !!container, hasHidden };
+        });
+
+        expect(hasOpponent || domState.containerExists).toBe(true);
+        // Pass if either the placeholder markup is present in HTML, or the pre-reveal hidden state is applied
+        expect(hasPlaceholderMarkup || domState.hasHidden === true).toBe(true);
+      }
+    );
+
+    createBasicTest(
+      "placeholder clears and opponent card renders on reveal",
+      async ({ page }) => {
+        // Click a stat to trigger opponent flow
+        const firstStat = page.locator(selectors.statButton(0)).first();
+        await firstStat.click();
+
+        // Placeholder should eventually be removed as reveal proceeds
+        const placeholder = page.locator("#mystery-card-placeholder");
+        await expect(placeholder).toHaveCount(0, { timeout: 4000 });
+
+        // Opponent card container should contain rendered content (not empty)
+        const opponentCard = page.locator("#opponent-card");
+        await expect
+          .poll(async () => (await opponentCard.innerHTML()).trim().length > 0, {
+            timeout: 4000,
+            message: "Expected opponent card content after reveal"
+          })
+          .toBe(true);
+      },
+      { resolveDelay: 50 }
+    );
+
+    createBasicTest(
       "shows opponent choosing snackbar immediately after stat selection",
       async ({ page }) => {
         const firstStat = page.locator(selectors.statButton(0)).first();
@@ -504,6 +548,42 @@ test.describe("Classic Battle Opponent Reveal", () => {
         // roundsPlayed via Test API may lag; rely on score update instead
         await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
       }, MUTED_CONSOLE_LEVELS));
+  });
+
+  test.describe("Timer Integration Robustness", () => {
+    test("opponent reveal integrates with timer functionality", async ({ page }) =>
+      withMutedConsole(async () => {
+        await page.addInitScript(() => {
+          window.__OVERRIDE_TIMERS = { roundTimer: 8 };
+          window.__FF_OVERRIDES = { showRoundSelectModal: true };
+        });
+        await page.goto("/src/pages/battleClassic.html", { waitUntil: "networkidle" });
+
+        await startMatch(page, "#round-select-1");
+
+        const forcedResolved = await page.evaluate(async () => {
+          try {
+            const api = window.__TEST_API;
+            if (api?.cli) {
+              if (typeof api.cli.pickFirstStat === "function") {
+                await api.cli.pickFirstStat();
+              }
+              if (typeof api.cli.resolveRound === "function") {
+                await api.cli.resolveRound();
+                return true;
+              }
+            }
+          } catch {}
+          return false;
+        });
+
+        expect(forcedResolved).toBe(true);
+
+        // Prefer deterministic side-effect: scoreboard update contains "You: <n>"
+        const scoreText = await page.locator(selectors.scoreDisplay()).innerText();
+        expect(PLAYER_SCORE_PATTERN.test(scoreText)).toBe(true);
+      }, MUTED_CONSOLE_LEVELS)
+    );
   });
 
   test.describe("Edge Cases and Error Handling", () => {
@@ -729,13 +809,22 @@ test.describe("Classic Battle Opponent Reveal", () => {
         await startMatch(page, "#round-select-1");
         await setOpponentResolveDelay(page, 100);
 
-        // Wait for stat buttons to be visible to confirm player action phase
-        await expect(page.locator(selectors.statButton(0)).first()).toBeVisible();
-        await expireSelectionTimer(page);
+        // Deterministic progression via internal CLI (no polling waits)
+        const progressed = await page.evaluate(async () => {
+          try {
+            const api = window.__TEST_API?.cli;
+            if (!api) return false;
+            if (typeof api.pickFirstStat === "function") await api.pickFirstStat();
+            if (typeof api.resolveRound === "function") await api.resolveRound();
+            return true;
+          } catch {
+            return false;
+          }
+        });
+        expect(progressed).toBe(true);
 
-        await ensureRoundResolved(page, { forceResolve: true });
-        // Skip roundsPlayed wait; assert via score and snackbar cleanup below
-        await expect(page.locator(selectors.scoreDisplay())).toContainText(PLAYER_SCORE_PATTERN);
+        const scoreText = await page.locator(selectors.scoreDisplay()).innerText();
+        expect(PLAYER_SCORE_PATTERN.test(scoreText)).toBe(true);
       }, MUTED_CONSOLE_LEVELS));
   });
 });

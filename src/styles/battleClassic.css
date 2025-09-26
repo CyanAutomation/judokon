@@ -120,12 +120,18 @@
 }
 
 /* Mystery Card styles */
+#opponent-card {
+  /* Ensure container provides space for the placeholder */
+  width: 100%;
+  min-height: 0; /* allow grid item to size to content */
+}
+
 #mystery-card-placeholder {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%;
+  /* Let aspect-ratio define the height based on width */
   aspect-ratio: 3/4;
   background-color: var(--color-surface);
 }
