@@ -212,7 +212,7 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Action: Validated existing cooldown orchestration path by invoking `startCooldown` with overrides to ensure non-orchestrated readiness and countdown emission. Added focused unit test `tests/unit/cooldown.start.spec.js` asserting `control.countdown.started` emission and presence of a resolvable `ready` promise (auto-advance trigger path).
 - Rationale: Ensures the inter-round cooldown starts, emits a visible countdown hook, and resolves readiness to auto-advance without manual Next.
 - Unit tests run (targeted): `vitest run tests/unit/cooldown.start.spec.js` → PASS (1/1).
-- Playwright: Preparing a minimal smoke spec to assert snackbar countdown then auto-advance to next round. Requires elevated permissions to run; will request on next step.
+- Playwright: Added `playwright/auto-advance.smoke.spec.js` and executed with elevation. Observed UI loads and countdown element appears, but round message did not change within timeout — likely missing explicit round-complete trigger in this route or test needs a deterministic finish-round helper. Will adjust in next phase to drive round completion through public UI/API hooks, then re-run the single spec.
 - Notes/Risk: The test uses absolute import path due to Vite/Vitest module resolution in this environment; repo code remains unchanged. No hot-path dynamic import added.
 
 ## Phase Update — Inter-round cooldown auto-advance
