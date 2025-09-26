@@ -794,8 +794,9 @@ export function initStatButtons(store) {
  */
 export async function applyStatLabels() {
   const names = await loadStatNames().catch(() => ({}));
-  const entries = Object.keys(STATS || {});
-  for (const key of entries) {
+  const statKeys = Array.isArray(STATS) ? STATS : Object.keys(STATS || {});
+  for (const rawKey of statKeys) {
+    const key = String(rawKey);
     const selector = `#stat-buttons [data-stat='${key}']`;
     /** @type {HTMLButtonElement|null} */
     const btn = document.querySelector(selector);
