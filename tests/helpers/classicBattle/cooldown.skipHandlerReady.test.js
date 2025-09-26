@@ -25,7 +25,9 @@ describe("skip handler clears fallback timer", () => {
       showMessage: () => {},
       showAutoSelect: () => {},
       showTemporaryMessage: () => () => {},
-      updateTimer: vi.fn()
+      updateTimer: vi.fn(),
+      updateRoundCounter: vi.fn(),
+      clearRoundCounter: vi.fn()
     }));
     vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
       showSnackbar: vi.fn(),
