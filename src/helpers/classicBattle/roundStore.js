@@ -236,7 +236,7 @@ class RoundStore {
    */
   reset() {
     this.currentRound = {
-      number: 1,
+      number: 0,
       state: "waitingForMatchStart",
       selectedStat: undefined,
       outcome: undefined,

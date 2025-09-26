@@ -10,7 +10,7 @@ describe("RoundStore.reset()", () => {
     roundStore.reset();
   });
 
-  it("resets roundNumber to 1 and clears per-round state", () => {
+  it("resets roundNumber to 0 and clears per-round state", () => {
     roundStore.setRoundNumber(5);
     roundStore.setRoundState("roundStart");
     roundStore.setSelectedStat("speed", { emitLegacyEvent: false });
@@ -20,7 +20,7 @@ describe("RoundStore.reset()", () => {
     roundStore.reset();
 
     const state = roundStore.getStateSnapshot();
-    expect(state.currentRound.number).toBe(1);
+    expect(state.currentRound.number).toBe(0);
     expect(state.currentRound.state).toBe("waitingForMatchStart");
     expect(state.currentRound.selectedStat).toBeUndefined();
     expect(state.currentRound.outcome).toBeUndefined();
