@@ -35,6 +35,32 @@ Test Mode is an internal mode for developers and QA engineers to safely test fea
 | P2       | Seed Management                | Allow setting or displaying the current seed value for reproducibility. |
 | P2       | Storage/Sync                   | Persist Test Mode state in settings and update UI on storage changes.   |
 
+### Mode Interactions and Automation Hooks
+
+#### Headless Mode Alignment
+
+- When the developer `headless` switch is enabled alongside Test Mode, all animation and cooldown delays collapse to `0`, ensuring deterministic yet instantaneous battle loops for automation.
+- The headless helper must remain externally togglable (`setHeadlessMode(true|false)`) so tooling can opt into fast-forward simulations without persisting the state across sessions.
+- Headless execution must preserve feature behavior parity—only timing gates change.
+
+#### Combined Usage Patterns
+
+- Documented best practice is to enable both headless and Test Mode during automated battle simulations (e.g., `setHeadlessMode(true); setTestMode(true);`).
+- Combined usage must keep RNG determinism intact even while timing delays are removed.
+- The Settings UI and developer helpers should make the interaction between these switches explicit to avoid misconfiguration during CI or scripted runs.
+
+#### Readiness Promises and Test Harness Hooks
+
+- Expose and maintain window-scoped promises that signal readiness for Classic Battle (`battleReadyPromise`), stat button reactivation (`statButtonsReadyPromise`), and settings UI availability (`settingsReadyPromise`).
+- Playwright fixtures rely on corresponding helpers (`waitForBattleReady`, `waitForSettingsReady`, `waitForBattleState`) to synchronize deterministic flows; the PRD treats these as part of the Test Mode contract.
+- Timer management helpers (`timerUtils`, `autoSelectHandlers`, `pauseTimers`, `resumeTimers`) must continue to function when Test Mode is active so that pause/resume flows stay consistent across UI, CLI, and automated harnesses.
+
+#### Feature Flag Notes
+
+- The `enableTestMode` feature flag controls visibility of developer affordances such as the battle debug panel (live match data, copy-to-clipboard state snapshot).
+- Additional feature flags (e.g., `statHotkeys`) that enhance testing ergonomics should reference this PRD and document dependencies on Test Mode being active.
+- Any new testing-focused UI surface must include gating guidance in this section before rollout.
+
 ### Acceptance Criteria
 
 - Test Mode can be enabled/disabled via the Settings page toggle (feature flag only).

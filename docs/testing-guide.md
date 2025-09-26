@@ -267,7 +267,7 @@ For comprehensive testing quality standards, including anti-patterns and preferr
 
 ## Related Documentation
 
-- [Testing Modes](./testing-modes.md) - Headless, test mode, and debug configurations
+- [Test Mode automation hooks](../design/productRequirementsDocuments/prdTestMode.md#mode-interactions-and-automation-hooks) - Headless mode, readiness promises, and feature flag governance
 - [Battle CLI Guide](./battle-cli.md) - CLI-specific testing
 - [Components](./components.md) - Component testing strategies
 - [Validation Commands](./validation-commands.md) - Complete command reference
