@@ -69,6 +69,7 @@ import {
 } from "./dom.js";
 import { createCliDomFragment } from "./cliDomTemplate.js";
 import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
+import * as initModule from "./init.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -1120,23 +1121,24 @@ export function selectStat(stat) {
     state.roundResolving = true;
     // Dispatch via the module export to ensure external spies (tests) observe the call.
     // Schedule on a microtask to keep selection handler synchronous-looking.
-    Promise.resolve()
-      .then(async () => {
+    try {
+      const schedule = initModule?.__scheduleMicrotask ?? __scheduleMicrotask;
+      const maybePromise = schedule(async () => {
         try {
-          const m = await import("./init.js");
-          try {
-            console.log("[TEST LOG] imported safeDispatch isMock=", !!m.safeDispatch?.mock);
-          } catch {}
-          if (m && typeof m.safeDispatch === "function") {
-            await m.safeDispatch("statSelected");
+          const fn = initModule?.safeDispatch;
+          if (typeof fn === "function") {
+            await fn("statSelected");
           }
         } catch (err) {
           try {
-            console.error("[TEST LOG] dynamic import dispatch error", err);
+            console.error("[TEST LOG] dispatch error", err);
           } catch {}
         }
-      })
-      .catch(() => {});
+      });
+      if (typeof maybePromise?.catch === "function") {
+        maybePromise.catch(() => {});
+      }
+    } catch {}
   } catch (err) {
     console.error("Error dispatching statSelected", err);
   }
