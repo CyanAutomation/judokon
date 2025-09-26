@@ -90,12 +90,35 @@ This inconsistency led to confusion, missed information, and reduced trust in th
 - Depends on `src/helpers/showSnackbar.js` for API and logic.
 - Depends on `src/styles/snackbar.css` for styling and animation.
 
+## DOM Container Contract
+
+Pages that surface snackbars must render a persistent container near the end of
+`<body>` before any script that might trigger notifications during load:
+
+```html
+<div id="snackbar-container" role="status" aria-live="polite"></div>
+```
+
+If the container is missing at runtime, the helper will create a fallback with
+the same ID. Always ship the explicit container to avoid duplicate nodes when
+multiple bundles initialise concurrently.
+
 ## Usage Guidance
 
 - Use snackbars for brief, non-blocking feedback only. For critical errors or actions requiring user input, use modal dialogs.
 - Always provide clear, concise messages (max 1–2 lines).
 - Trigger snackbars via `showSnackbar(message)` for new notifications, or `updateSnackbar(message)` to change the current message.
 - Do not use snackbars for persistent or complex information.
+
+```js
+import { showSnackbar, updateSnackbar } from "./src/helpers/showSnackbar.js";
+
+showSnackbar("Match started!");
+updateSnackbar("Round 1 begins");
+```
+
+Both helpers reuse the existing container element so successive notifications
+share animation, timers, and accessibility attributes.
 
 ## Tasks
 

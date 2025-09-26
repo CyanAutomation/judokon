@@ -195,6 +195,43 @@ stateDiagram-v2
 - **destroy()**
   Stops timers, unsubscribes, resets state.
 
+### Event Subscription API
+
+Battle Engine instances behave as lightweight event emitters so game modes can
+subscribe directly to lifecycle updates:
+
+```js
+import BattleEngine from "./src/helpers/BattleEngine.js";
+
+const engine = new BattleEngine({ pointsToWin: 3 });
+
+engine.on("roundStarted", ({ round }) => {
+  console.log(`Round ${round} begins`);
+});
+
+engine.on("roundEnded", (payload) => {
+  console.log(`Round ended: ${payload.outcome}`);
+});
+```
+
+- `on(eventName, handler)` attaches a subscriber. Call `off`/`destroy` to
+  remove listeners.
+- Event payloads expose deterministic snapshots so UIs can render without
+  pulling internal engine state.
+- The emitter mirrors the canonical catalog:
+  - `roundStarted` → `{ round }`
+  - `roundEnded` → `{ delta, outcome, matchEnded, playerScore, opponentScore }`
+  - `timerTick` → `{ remaining, phase: 'round' | 'cooldown' }`
+  - `matchEnded` → same payload as `roundEnded`
+  - `error` → `{ message }`
+
+### Usage Notes
+
+- Engine code contains only match logic. Presentation layers subscribe and map
+  events to UI helpers (scoreboard, snackbars, state badges).
+- Consumers must respect control events as authoritative and avoid inferring
+  transitions from domain timers alone.
+
 ---
 
 ## 9. Lifecycle & Idempotency

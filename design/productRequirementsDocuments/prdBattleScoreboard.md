@@ -104,6 +104,52 @@ The scoreboard listens **only** to the canonical events from the Battle Engine/O
 - **getSnapshot() → StateModel**
   Returns the current internal state (for tests/debugging).
 
+### DOM Integration & Usage
+
+The scoreboard module exposes DOM helpers that guarantee a consistent element
+structure across battle modes:
+
+```js
+import {
+  createScoreboard,
+  initScoreboard,
+  resetScoreboard,
+  Scoreboard
+} from "../src/components/Scoreboard.js";
+
+const container = createScoreboard();
+document.body.appendChild(container);
+
+resetScoreboard();
+initScoreboard(container);
+```
+
+- `createScoreboard()` returns a ready-to-append container that already
+  includes the required round message, timer, round counter, and score nodes.
+- `initScoreboard(rootEl)` wires the singleton scoreboard instance to the DOM
+  and subscribes it to the canonical battle events.
+- `resetScoreboard()` **must** be called before re-initialising the default
+  instance in tests or hot-module scenarios so that stale listeners and DOM
+  references are cleared deterministically.
+
+When constructing custom harnesses, the `Scoreboard` class can be instantiated
+directly for advanced control:
+
+```js
+const scoreboard = new Scoreboard({
+  messageEl: container.querySelector("#round-message"),
+  timerEl: container.querySelector("#next-round-timer"),
+  roundCounterEl: container.querySelector("#round-counter"),
+  scoreEl: container.querySelector("#score-display")
+});
+
+scoreboard.showMessage("Ready!");
+scoreboard.updateScore(1, 0);
+```
+
+Both helper flows reuse the same DOM nodes so that transient UI (snackbars)
+and persistent state (scoreboard) remain isolated but coordinated.
+
 ---
 
 ## 9. Lifecycle & Idempotency
