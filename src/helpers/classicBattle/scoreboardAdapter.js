@@ -56,6 +56,7 @@ function handleRoundStart(event) {
   const roundNumber =
     typeof detail.roundNumber === "number" ? detail.roundNumber : detail.roundIndex;
   if (typeof roundNumber === "number" && Number.isFinite(roundNumber)) {
+    roundStore.setRoundNumber(roundNumber, { emitLegacyEvent: false });
     try {
       updateRoundCounter(roundNumber);
     } catch {}

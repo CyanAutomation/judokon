@@ -107,8 +107,11 @@ class RoundStore {
   /**
    * Set the current round number.
    * @param {number} number - New round number (1-based)
+   * @param {{ emitLegacyEvent?: boolean }} [options] - Optional behavior overrides
    */
-  setRoundNumber(number) {
+  setRoundNumber(number, options = {}) {
+    const { emitLegacyEvent = true } =
+      typeof options === "object" && options !== null ? options : {};
     const oldNumber = this.currentRound.number;
     if (oldNumber === number) return;
 
@@ -119,10 +122,12 @@ class RoundStore {
       this.callbacks.onRoundNumberChange(number, oldNumber);
     }
 
-    // Emit legacy event for backward compatibility
-    emitBattleEvent("display.round.start", {
-      roundNumber: number
-    });
+    if (emitLegacyEvent) {
+      // Emit legacy event for backward compatibility
+      emitBattleEvent("display.round.start", {
+        roundNumber: number
+      });
+    }
   }
 
   /**
