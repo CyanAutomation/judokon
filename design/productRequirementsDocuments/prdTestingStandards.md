@@ -49,9 +49,7 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 
 ## Functional Requirements
 
-<a id="unit-test-quality-standards"></a>
-
-### 1. Unit Test Quality Standards (P1)
+### <a id="unit-test-quality-standards"></a>1. Unit Test Quality Standards (P1)
 
 **Core Philosophy:**
 
@@ -140,13 +138,21 @@ it("should return the correct user payload", () => {
 - Keep mocking surface area lean (≤4 spies per test) and reset mocks/timers in `afterEach` to avoid cross-test pollution.
 
 ```javascript
+let timers;
+
+beforeEach(() => {
+  timers = useCanonicalTimers();
+});
+
+afterEach(() => {
+  timers.cleanup();
+});
+
 it("should time out after 5000ms", async () => {
-  const timers = useCanonicalTimers();
   let called = false;
   setTimeout(() => (called = true), 5000);
   await timers.advanceTimersByTimeAsync(5000);
   expect(called).toBe(true);
-  timers.cleanup();
 });
 ```
 
@@ -155,9 +161,7 @@ it("should time out after 5000ms", async () => {
 - Target the highest-signal scenarios first (critical paths, regression reproductions) and avoid redundant tests.
 - Keep runtimes short by favoring deterministic async helpers over real timers and minimizing expensive setup.
 
-<a id="playwright-test-guidelines"></a>
-
-### 2. Playwright Test Guidelines (P1)
+### <a id="playwright-test-guidelines"></a>2. Playwright Test Guidelines (P1)
 
 **Core Philosophy:**
 
@@ -373,9 +377,7 @@ test.describe("Feature Name", () => {
 - Identify performance bottlenecks
 - Regular review of slow tests
 
-<a id="fake-timer-playbook"></a>
-
-### Fake Timer Playbook (P1)
+### <a id="fake-timer-playbook"></a>Fake Timer Playbook (P1)
 
 **Purpose:** Ensure deterministic, fast tests for time-dependent logic by enforcing a canonical fake timer workflow.
 
@@ -479,9 +481,7 @@ describe("Timer + RAF Test", () => {
 
 - Replace legacy `beforeEach(() => vi.useFakeTimers())` patterns with `useCanonicalTimers()` and ensure cleanup occurs.
 
-<a id="playwright-readiness-helpers"></a>
-
-### Playwright Readiness Helpers (P1)
+### <a id="playwright-readiness-helpers"></a>Playwright Readiness Helpers (P1)
 
 **Goal:** Promote robust, declarative readiness checks for Classic Battle and supporting surfaces.
 
@@ -511,9 +511,7 @@ describe("Timer + RAF Test", () => {
 - **Country Panel:** Ensure the Browse Judoka country panel toggles `hidden`, exposes `aria-label="Country filter panel"`, and loads sliders lazily.
 - **CLI Testing:** `playwright/battle-cli.spec.js` validates CLI badges, verbose logging, and keyboard selection flows.
 
-<a id="classic-battle-promise-utilities"></a>
-
-### Classic Battle Promise Utilities (P1)
+### <a id="classic-battle-promise-utilities"></a>Classic Battle Promise Utilities (P1)
 
 **Purpose:** Provide deterministic hooks for Classic Battle orchestration in unit and integration tests.
 
