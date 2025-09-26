@@ -13,9 +13,9 @@ const buildCliUrl = (testInfo) => {
  * Waits for CLI test APIs to be available and returns a handle for direct API access.
  * Callers must dispose the returned handle once their assertions complete.
  *
- * @param {import("@playwright/test").Page} page Playwright page object under test.
+ * @param {import('@playwright/test').Page} page Playwright page object under test.
  * @param {number} [timeout=8000] Timeout in milliseconds to wait for CLI helpers.
- * @returns {Promise<import("@playwright/test").JSHandle<unknown>>} Handle for CLI test APIs.
+ * @returns {Promise<import('@playwright/test').JSHandle<unknown>>} Handle for CLI test APIs.
  * @pseudocode wait for test API, verify helpers, return JSHandle
  */
 const waitForCliApis = async (page, timeout = 8000) => {
