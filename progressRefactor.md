@@ -6,7 +6,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 - Confirmed that every PRD referenced below exists under `design/productRequirementsDocuments/`.
 - There is no `design/technical/` directory; the duplicated audits live under `docs/technical/` and at the root of `design/`. Language below reflects the actual paths.
-- Additional documents surfaced during validation require explicit mapping: `docs/TestValuePolicy.md`, `docs/rag-system.md`, `docs/technical/architecture.md`, `docs/technical/classicBattleTesting.md`, `design/architecture.md`, `design/testing/classicBattleTesting.md`, and the `design/eventAudit/` artifacts.
+- Additional documents surfaced during validation require explicit mapping: `docs/rag-system.md`, `docs/technical/architecture.md`, `design/architecture.md`, `design/testing/classicBattleTesting.md`, and the `design/eventAudit/` artifacts. (✅ `docs/TestValuePolicy.md` and `docs/technical/classicBattleTesting.md` are now assimilated into `prdTestingStandards.md`.)
 - The Battle CLI topic is split between `docs/battle-cli.md` (usage) and `docs/battleCLI.md` (module structure). Those guides should be merged while migrating content into `prdBattleCLI.md`.
 - `design/codeStandards/` already holds deep dives referenced by `prdCodeStandards.md`; make sure those references stay canonical when content moves.
 
@@ -17,7 +17,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/vector-search.md` → `prdVectorDatabaseRAG.md` (exists).
 - `docs/rag-system.md` → `prdVectorDatabaseRAG.md` (PRD covers RAG operations; incorporate agent usage guidance or reference it from PRD).
 - `docs/testing-modes.md` (removed) → `prdTestMode.md` (Mode Interactions & Automation Hooks) and `prdTestingStandards.md` (helper ownership).
-- `docs/testing-guide.md` / `docs/validation-commands.md` / `docs/TestValuePolicy.md` → `prdTestingStandards.md` plus `prdCodeStandards.md` (exists; ensure evaluation rubrics and command matrix live in PRDs).
+- `docs/testing-guide.md` / `docs/validation-commands.md` / `docs/TestValuePolicy.md` (retired) → `prdTestingStandards.md` plus `prdCodeStandards.md` (exists; ensure evaluation rubrics and command matrix live in PRDs).
 - `docs/components.md` → `prdUIDesignSystem.md` (exists).
 - `docs/roundUI.md` → `prdBattleMarkup.md` or `prdUIDesignSystem.md` (decide based on whether the content is markup contract vs component style guidance).
 - Former `docs/product-docs.md` content now lives in `design/productRequirementsDocuments/prdPRDViewer.md#implementation-notes` (exists).
@@ -26,7 +26,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - Data schema deep dive now lives in `design/productRequirementsDocuments/prdDataSchemas.md` (former `docs/technical/dataSchemas.md` has been retired).
 - `docs/technical/eventNamingAudit.md` / `design/eventNamingAudit.md` / `design/eventAudit/*.txt` → `prdEventContracts.md` (exists; move migration tables + listener inventories).
 - `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → now consolidated into `design/productRequirementsDocuments/prdStateHandler.md` (compliance table + priorities live in PRD).
-- `docs/technical/classicBattleTesting.md` / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
+- `docs/technical/classicBattleTesting.md` (retired) / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
 - `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md` / `prdTooltipViewer.md` (exists).
 - `design/testing/classicBattleTesting.md`, `design/codeStandards/*.md`, and similar deep dives remain valuable as implementation notes; decide per file whether to fold content into the owning PRD or keep them as linked appendices with a clear authority statement.
 
@@ -42,7 +42,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/technical/eventNamingAudit.md`, `design/eventNamingAudit.md`, `design/eventAudit/*.txt` → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
 - `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → ✅ integrated into `prdStateHandler.md` (table + follow-up actions captured in PRD).
 - `docs/technical/battleMarkup.md` & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
-- `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md`, `docs/TestValuePolicy.md`, `design/codeStandards/evaluatingPlaywrightTests.md`, `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
+- `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), `design/codeStandards/evaluatingPlaywrightTests.md`, `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
 - `docs/validation-commands.md` → split command matrix between `prdTestingStandards.md` (test suite) and `prdDevelopmentStandards.md` (agent/dev workflows); keep CLI script references synchronized.
 - `docs/rag-system.md` → summarize agent workflow in `prdVectorDatabaseRAG.md` and link to `design/agentWorkflows/` examples.
 - `docs/technical/architecture.md`, `design/architecture.md` → migrate architectural overview into `prdArchitecture.md` (with diagrams referenced from `design/architecture/` if needed).
@@ -53,9 +53,9 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 Below are the unmapped documents discovered in the inventory scan with a recommended PRD target, a suggested action (assimilate, stub, or create new PRD), and a short rationale. If you approve, I will implement these as stubs or appendices on a feature branch.
 
-- `docs/TestValuePolicy.md` -> `prdTestingStandards.md`
-  - Action: Assimilate (append acceptance criteria + testing rubric)
-  - Rationale: This doc belongs with test value definitions and evaluation rules used by Playwright/Vitest; `prdTestingStandards.md` should own the policy.
+- `docs/TestValuePolicy.md` (retired) -> `prdTestingStandards.md`
+  - Action: ✅ Assimilated (acceptance criteria + testing rubric now live in PRD)
+  - Rationale: This doc belongs with test value definitions and evaluation rules used by Playwright/Vitest; `prdTestingStandards.md` now owns the policy.
 
 - `docs/components.md` -> `prdUIDesignSystem.md`
   - Action: Assimilate (migrate component descriptions and examples into PRD appendix)
@@ -236,7 +236,7 @@ Next recommended actions (short list):
 Options for how I can proceed now:
 
 - A) Implement Phase‑1 across the repo on a feature branch (recommended): assimilate mapped sources into PRDs and remove originals in the same commits; run validations and open a PR.
-- B) Create a single example PR for your review (safe incremental): apply the assimilation+delete pattern to one source file (suggested: `docs/TestValuePolicy.md` → append to `prdTestingStandards.md`) and run validations.
+- B) Create a single example PR for your review (safe incremental): apply the assimilation+delete pattern to one source file (suggested: `docs/TestValuePolicy.md` → append to `prdTestingStandards.md`) and run validations. ✅ Completed; use current PR as reference pattern.
 - C) Improve the mapping script first: add a manual-mapping override or a fuzzy-match pass; regenerate the mapping report; then pick A or B.
 
 If you pick A or B, tell me the branch name you prefer (default: `prd-migration/phase1`). If you pick B, confirm which example source file to migrate first. If you pick C, tell me if you prefer a manual mapping JSON or fuzzy matching logic.
