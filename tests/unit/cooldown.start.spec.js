@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as roundManager from "/workspaces/judokon/src/helpers/classicBattle/roundManager.js";
+import * as roundManager from "@/helpers/classicBattle/roundManager.js";
 
 describe("cooldown auto-advance wiring", () => {
   beforeEach(() => {
