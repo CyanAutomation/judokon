@@ -1,45 +1,57 @@
 import { describe, it, expect, vi } from "vitest";
 
-// Import the dynamic binding to hook roundResolved
-import { handleRoundResolvedEvent } from "/workspaces/judokon/src/helpers/classicBattle/roundUI.js";
+import * as scoreboard from "@/helpers/setupScoreboard.js";
+import * as roundUI from "@/helpers/classicBattle/roundUI.js";
+import * as roundManager from "@/helpers/classicBattle/roundManager.js";
 
 describe("roundUI auto-advance chain", () => {
-  it("invokes cooldown flow with injected deps", async () => {
-    // Arrange DOM basics used by handlers
-    global.document.body.innerHTML = `
+  it("starts the round cooldown pipeline when a round resolves", async () => {
+    document.body.innerHTML = `
       <div id="snackbar-container" role="status"></div>
       <p id="round-message" role="status"></p>
       <p id="next-round-timer" data-testid="next-round-timer"></p>
       <button id="next-button" disabled data-role="next-round">Next</button>
     `;
 
-    // Spy required modules via dynamic handler call path
-    const scoreboardModule = await import("/workspaces/judokon/src/helpers/setupScoreboard.js");
-    vi.spyOn(scoreboardModule, "updateScore").mockImplementation(() => {});
+    vi.spyOn(scoreboard, "showMessage").mockImplementation(() => {});
+    vi.spyOn(scoreboard, "updateScore").mockImplementation(() => {});
+    vi.spyOn(scoreboard, "clearRoundCounter").mockImplementation(() => {});
+    vi.spyOn(roundManager, "handleReplay").mockResolvedValue(undefined);
 
-    const startRoundCooldown = vi.fn().mockResolvedValue({
-      controls: { ready: Promise.resolve() }
-    });
-    const computeNextRoundCooldown = vi.fn(() => 3);
-    const createRoundTimer = vi.fn(() => ({}));
+    const timerInstance = { start: vi.fn(() => Promise.resolve()) };
+    const createRoundTimer = vi.fn(() => timerInstance);
     const attachCooldownRenderer = vi.fn();
-    const scoreboard = { updateScore: vi.fn(), showMessage: vi.fn(), clearRoundCounter: vi.fn() };
+    const computeNextRoundCooldown = vi.fn(() => 5);
 
     const result = { message: "ok", playerScore: 1, opponentScore: 0, matchEnded: false };
-    await handleRoundResolvedEvent(
-      new CustomEvent("roundResolved", { detail: { result, store: {} } }),
-      {
-        scoreboard,
-        computeNextRoundCooldown,
-        createRoundTimer,
-        attachCooldownRenderer,
-        isOrchestrated: () => false,
-        // inject the internal helper by property shadowing
-        startRoundCooldown
-      }
-    );
+    const event = new CustomEvent("roundResolved", { detail: { result, store: {} } });
 
-    expect(computeNextRoundCooldown).toHaveBeenCalled();
-    expect(startRoundCooldown).toHaveBeenCalled();
+    await roundUI.handleRoundResolvedEvent(event, {
+      scoreboard,
+      computeNextRoundCooldown,
+      createRoundTimer,
+      attachCooldownRenderer,
+      isOrchestrated: () => false,
+      resetStatButtons: vi.fn(),
+      syncScoreDisplay: vi.fn(),
+      updateDebugPanel: vi.fn()
+    });
+
+    expect(computeNextRoundCooldown).toHaveBeenCalledTimes(1);
+    expect(createRoundTimer).toHaveBeenCalledTimes(1);
+
+    const createdTimer = createRoundTimer.mock.results[0]?.value;
+    expect(createdTimer).toBe(timerInstance);
+    expect(timerInstance.start).toHaveBeenCalledTimes(1);
+    expect(timerInstance.start).toHaveBeenCalledWith(5);
+
+    expect(attachCooldownRenderer).toHaveBeenCalledWith(
+      timerInstance,
+      5,
+      expect.objectContaining({
+        waitForOpponentPrompt: false,
+        maxPromptWaitMs: 0
+      })
+    );
   });
 });
