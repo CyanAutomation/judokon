@@ -1650,17 +1650,20 @@ async function startRoundWrapper() {
 
 // Deprecated internal alias retained for backward-compat within module
 /**
- * Look up a stat identifier from {@link STATS} by its 1-based position.
- * Expects callers to pass the CLI-facing 1-based index.
+ * @summary Resolve a CLI stat selection key to its stat identifier.
  *
- * @param {number|string} index1Based
- * @returns {string|null}
+ * Converts the CLI-facing 1-based index into the corresponding entry within
+ * {@link STATS}. Callers receive `null` when the index is outside the valid
+ * range.
+ *
+ * @param {number|string} index1Based - 1-based index from user input.
+ * @returns {string|null} Matching stat identifier or `null` when invalid.
  * @pseudocode
  * i ← Number(index1Based) − 1
  * if STATS[i] exists → return STATS[i]
  * return null
  */
-function getStatByIndex(index1Based) {
+export function getStatByIndex(index1Based) {
   const i = Number(index1Based) - 1;
   return STATS[i] || null;
 }
@@ -1724,10 +1727,18 @@ export function handleGlobalKey(key) {
   return false;
 }
 
-// Expose a tiny seam to control scheduling in tests without touching behavior.
+/**
+ * @summary Defer a callback to the next microtask tick via `Promise.resolve`.
+ *
+ * Exposed for tests that need to await asynchronous UI updates without
+ * altering production timing semantics.
+ *
+ * @param {() => void} fn - Callback to schedule for the next microtask.
+ * @returns {Promise<void>} Promise that resolves after the callback runs.
+ * @pseudocode
+ * return Promise.resolve().then(fn)
+ */
 export const __scheduleMicrotask = (fn) => Promise.resolve().then(fn);
-
-export { getStatByIndex };
 
 /**
  * Handle key input while waiting for the player's stat selection.
