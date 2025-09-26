@@ -17,6 +17,7 @@
 ## Root Cause
 
 The codebase currently ensures the opponent container is visible during init. If users still do not see the placeholder, the likely causes are:
+
 - CSS or layout causing the container to be offscreen or sized to zero (check `.battle-layout` sizing and `#opponent-card` dimensions).
 - A race that immediately triggers `opponentReveal` and clears the placeholder before it is perceptible.
 - Test/environment differences assuming the container starts hidden.
@@ -37,12 +38,12 @@ Conclusion: The earlier assumption that init hides the container is inaccurate; 
    - Confirm there is a perceptible gap before `opponentReveal` clears the placeholder. If needed, gate reveal with the existing opponent prompt delay configuration.
 3. Keep existing reveal flow intact.
    - On `opponentReveal`, continue to clear the placeholder and render the real card.
-3. Tests
+4. Tests
    - Playwright: Extend/adjust the opponent-reveal spec to assert:
      - Before reveal: `#opponent-card` is visible and contains `#mystery-card-placeholder`.
      - After reveal: placeholder is gone, and the rendered card exists (e.g., `.card-container`).
    - Vitest (optional, integration): Load real HTML and simulate `opponentReveal` to verify placeholder removal and card render.
-4. Documentation
+5. Documentation
    - Add a short note in `prdMysteryCard.md` explaining runtime behavior: the placeholder is visible pre-reveal and removed on `opponentReveal`.
 
 ## Acceptance and Validation
@@ -125,6 +126,7 @@ Conclusion: The earlier assumption that init hides the container is inaccurate; 
   - Timer integration: uses `window.__TEST_API.cli.pickFirstStat()` + `resolveRound()` for deterministic progression, and validates via scoreboard text (no polling on state strings).
 
 Re-run (elevated): `npx playwright test playwright/battle-classic/opponent-reveal.spec.js`
+
 - Outcome: 16 tests, 13 passed, 3 failed before hardening; follow-up hardening applied as above. Please run on CI/local to confirm final stability.
 - Re-run (elevated): `npx playwright test playwright/battle-classic/opponent-reveal.spec.js`
 - Outcome: Pending on your CI/local; environment here can be flaky but changes target the observed failures.

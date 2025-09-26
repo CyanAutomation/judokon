@@ -56,7 +56,7 @@ export function createClassicBattleDebugAPI(view) {
   const orchestratorApi = {
     selectStatByIndex: (i) => {
       try {
-        const buttons = Array.from(document.querySelectorAll('#stat-buttons button'));
+        const buttons = Array.from(document.querySelectorAll("#stat-buttons button"));
         const btn = buttons[i];
         if (btn && !btn.disabled) {
           btn.click();
@@ -67,14 +67,14 @@ export function createClassicBattleDebugAPI(view) {
     },
     selectStat: (statKey) => {
       try {
-        const label = String(statKey || '').toLowerCase();
-        const btn = Array.from(document.querySelectorAll('#stat-buttons button')).find((b) =>
-          (b.textContent || '').toLowerCase().includes(label)
+        const label = String(statKey || "").toLowerCase();
+        const btn = Array.from(document.querySelectorAll("#stat-buttons button")).find((b) =>
+          (b.textContent || "").toLowerCase().includes(label)
         );
         if (btn && !btn.disabled) btn.click();
       } catch {}
       try {
-        document.body?.setAttribute?.('data-stat-selected', 'true');
+        document.body?.setAttribute?.("data-stat-selected", "true");
       } catch {}
       try {
         return store?.roundStore?.getCurrentRound?.() || {};
@@ -86,7 +86,7 @@ export function createClassicBattleDebugAPI(view) {
   // Resolve stat controls via view/controller to bypass DOM listener timing
   const getStatButtons = () => {
     try {
-      return Array.from(document.querySelectorAll('#stat-buttons button'));
+      return Array.from(document.querySelectorAll("#stat-buttons button"));
     } catch {
       return [];
     }
