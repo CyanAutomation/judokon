@@ -30,9 +30,9 @@ Acceptance Criteria:
 
 -Notes:
 
-  1. On page load, `initRoundSelectModal` checks for `?autostart=1` or a saved selection and starts a match immediately if found.
-  2. When no preference or autostart override is available, present the modal so the player can choose a win target; selecting an option stores it, logs telemetry, and launches the match.
-  3. If the modal fails to load, log the error and surface a fallback **Start Match** button that begins a match with default settings.
+1. On page load, `initRoundSelectModal` checks for `?autostart=1` or a saved selection and starts a match immediately if found.
+2. When no preference or autostart override is available, present the modal so the player can choose a win target; selecting an option stores it, logs telemetry, and launches the match.
+3. If the modal fails to load, log the error and surface a fallback **Start Match** button that begins a match with default settings.
 
 P1 - Autostart Behavior: `?autostart=1` bypasses modal and starts a default-length match.
 

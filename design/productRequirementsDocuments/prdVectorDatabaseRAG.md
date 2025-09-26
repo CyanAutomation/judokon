@@ -246,7 +246,6 @@ See [`design/agentWorkflows/exampleVectorQueries.md`](../../design/agentWorkflow
 - **Retrieval quality workflow**
 
   Run `node scripts/evaluation/evaluateRAG.js` from the project root to measure retrieval performance. The script reads the representative queries in `scripts/evaluation/queries.json` and reports:
-
   - **MRR@5** – Mean Reciprocal Rank of the expected document within the top five results.
   - **Recall@3** – Fraction of queries whose expected document appears in the top three results.
   - **Recall@5** – Fraction of queries whose expected document appears in the top five results.
