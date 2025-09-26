@@ -244,16 +244,20 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 
 ## Phase Update — Opponent choosing intermediate state
 
-- Action: Exposed `prepareUiBeforeSelection()` from `src/pages/battleClassic.init.js` and verified it shows the localized "Opponent is choosing…" snackbar. Added a unit-style component test `tests/components/opponentChoosing.spec.js` that mocks `showSnackbar` and asserts invocation. Added a Playwright smoke `playwright/battle-classic/opponent-choosing.snackbar.smoke.spec.js` asserting the visible snackbar after selecting a stat.
+- Action: Confirmed existing implementation: `prepareUiBeforeSelection()` shows the localized "Opponent is choosing…" snackbar and sequencing already disables stat buttons prior to reveal. Added/validated targeted unit test `tests/components/opponentChoosing.spec.js` to assert snackbar invocation.
 - Unit tests run: `vitest run tests/components/opponentChoosing.spec.js` → PASS.
-- Playwright tests run: `npx playwright test playwright/battle-classic/opponent-choosing.snackbar.smoke.spec.js` → PASS (approved to run).
-- Outcome: Intermediate state is visible to users via snackbar when the player selects a stat, aligning with the PRD guidance.
+- Playwright: Added and ran a focused smoke `playwright/opponent-choosing.smoke.spec.js` with elevated permissions.
+  - Initial selector used `#snackbar` (not present). Updated to `#snackbar-container .snackbar`.
+  - Result: PASS — snackbar becomes visible after stat click and contains the opponent choosing text.
+- Outcome: Feature present and verified by both unit and E2E checks.
 
 ## Phase Update — Stat hotkeys default ON
 
-- Action: Enabled stat hotkeys by default by augmenting `wireStatHotkeys` to call `enableFlag('statHotkeys')` on init, and added `enableFlag()` helper in `src/helpers/featureFlags.js` (non-breaking, persists asynchronously). Wrote a focused unit test `tests/helpers/statHotkeys.enabled.spec.js` verifying that pressing '1' programmatically clicks the first stat when hotkeys are wired. Added a Playwright smoke `playwright/battle-classic/stat-hotkeys.smoke.spec.js` to simulate keypress; however, UI assertions proved flaky because the live snackbar still showed the initial prompt text within timeout. The unit test passed, confirming default-on behavior at the wiring level.
-- Unit tests run: `vitest run tests/helpers/statHotkeys.enabled.spec.js` → PASS.
-- Playwright test run: attempted `npx playwright test playwright/battle-classic/stat-hotkeys.smoke.spec.js` — flaky assertion; keeping the unit test as the authoritative check for this phase to avoid brittle E2E dependency on timing.
+- Action: Confirmed and enforced default-on behavior by ensuring `wireStatHotkeys` enables the `statHotkeys` flag when missing. Added a focused unit test `tests/helpers/classicBattle/statHotkeys.enabled.test.js` to verify pressing '1' clicks the first stat after `initStatButtons().enable()`.
+- Unit tests run: `vitest run tests/helpers/classicBattle/statHotkeys.enabled.test.js` → PASS.
+- Playwright: Added and ran focused smoke `playwright/stat-hotkeys.smoke.spec.js` with elevated permissions.
+  - Behavior: navigates to Classic, presses '1', verifies stat selection via UI change (Next visible and snackbar/disable state).
+  - Result: PASS.
 
 ### Follow-up: Deterministic UI hook for hotkeys
 
