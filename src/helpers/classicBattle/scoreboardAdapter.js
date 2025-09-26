@@ -189,7 +189,10 @@ export function initScoreboardAdapter() {
 
   wireScoreboardListeners();
 
-  scoreboardReadyPromise = Promise.resolve(roundStore.wireIntoScoreboardAdapter());
+  scoreboardReadyPromise = roundStore.wireIntoScoreboardAdapter(
+    updateRoundCounter,
+    clearRoundCounter
+  );
 
   return disposeScoreboardAdapter;
 }
