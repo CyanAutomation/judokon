@@ -81,11 +81,12 @@ describe("handleStatSelection helpers", () => {
     timers.cleanup();
   });
 
-  it("ignores repeated selections", async () => {
+  it("ignores repeated selections and emits events in correct order", async () => {
     await handleStatSelection(store, "power", { playerVal: 1, opponentVal: 2 });
     await handleStatSelection(store, "speed", { playerVal: 3, opponentVal: 4 });
 
     expect(stopTimer).toHaveBeenCalledTimes(1);
+    // Expect statSelected, roundReset, then input.ignored events
     expect(emitBattleEvent).toHaveBeenCalledTimes(3);
     expect(emitBattleEvent).toHaveBeenNthCalledWith(1, "statSelected", expect.any(Object));
     expect(emitBattleEvent).toHaveBeenNthCalledWith(2, "roundReset", { reason: "playerSelection" });

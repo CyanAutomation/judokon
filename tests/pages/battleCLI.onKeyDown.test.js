@@ -203,8 +203,8 @@ describe("battleCLI onKeyDown", () => {
   it("dispatches statSelected in waitingForPlayerAction state", async () => {
     document.body.dataset.battleState = "waitingForPlayerAction";
     onKeyDown(new KeyboardEvent("keydown", { key: "1" }));
-    await Promise.resolve();
-    await Promise.resolve();
+    // Wait for microtask scheduling to complete
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(dispatchSpy).toHaveBeenCalledWith("statSelected");
   });
 
