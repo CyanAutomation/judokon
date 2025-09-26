@@ -74,7 +74,14 @@ describe("Stat Buttons", () => {
     const statButtons = container.querySelectorAll("button");
     expect(statButtons.length).toBeGreaterThan(0);
     statButtons.forEach((button) => {
-      expect(button.getAttribute("aria-describedby")).toBe("round-message");
+      const stat = button.dataset.stat;
+      expect(stat).toBeTruthy();
+      const expectedId = `stat-${stat}-desc`;
+      expect(button.getAttribute("aria-describedby")).toBe(expectedId);
+      const descEl = document.getElementById(expectedId);
+      if (descEl) {
+        expect(descEl.classList.contains("sr-only")).toBe(true);
+      }
       expect(button.getAttribute("aria-label")).toMatch(/^Select \w+ stat for battle$/);
     });
   });
