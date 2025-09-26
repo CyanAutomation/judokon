@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
 // Import the dynamic binding to hook roundResolved
-import * as roundUI from "/workspaces/judokon/src/helpers/classicBattle/roundUI.js";
+import * as roundUI from "@/helpers/classicBattle/roundUI.js";
 
 describe("roundUI auto-advance chain", () => {
   it("calls startRoundCooldown on roundResolved", async () => {
@@ -14,20 +14,27 @@ describe("roundUI auto-advance chain", () => {
     `;
 
     // Spy required modules via dynamic handler call path
-    const scoreboard = await import("/workspaces/judokon/src/helpers/setupScoreboard.js");
-    vi.spyOn(scoreboard, "updateScore").mockImplementation(() => {});
+    const scoreboard = await import("@/helpers/setupScoreboard.js");
+    const updateScoreSpy = vi.spyOn(scoreboard, "updateScore").mockImplementation(() => {});
 
-    const rui = await import("/workspaces/judokon/src/helpers/classicBattle/roundUI.js");
-    const startRoundCooldownSpy = vi
-      .spyOn(rui, "startRoundCooldown")
-      .mockResolvedValue({ controls: { ready: Promise.resolve(), resolveReady: () => {} } });
+    const rui = await import("@/helpers/classicBattle/roundUI.js");
+    expect(rui.startRoundCooldown).toBe(roundUI.startRoundCooldown);
 
     // Rebind handlers (as in runtime) and dispatch roundResolved
-    roundUI.bindRoundUIEventHandlersDynamic();
     const result = { message: "ok", playerScore: 1, opponentScore: 0, matchEnded: false };
-    window.dispatchEvent(new CustomEvent("roundResolved", { detail: { result } }));
+    const event = new CustomEvent("roundResolved", { detail: { result } });
+    const createRoundTimer = () => ({ start: vi.fn() });
+    const attachCooldownRenderer = vi.fn();
+    await rui.handleRoundResolvedEvent(event, {
+      scoreboard,
+      computeNextRoundCooldown: () => 5,
+      createRoundTimer,
+      attachCooldownRenderer
+    });
 
     // Assert cooldown was started
-    expect(startRoundCooldownSpy).toHaveBeenCalled();
+    await Promise.resolve();
+    expect(updateScoreSpy).toHaveBeenCalled();
+    expect(attachCooldownRenderer).toHaveBeenCalledWith(expect.any(Object), 5, expect.any(Object));
   });
 });
