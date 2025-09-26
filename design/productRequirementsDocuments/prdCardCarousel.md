@@ -128,6 +128,32 @@ generated carousel so each card's real portrait loads once it becomes visible.
 
 ---
 
+### Carousel Controller API
+
+`CarouselController` manages page-based carousels with keyboard, swipe, and
+resize support. Pages receive the controller instance when calling
+`buildCardCarousel` and can interact with it to manage carousel state.
+
+#### Constructor
+
+`new CarouselController(container, wrapper, { threshold = 50 })`
+
+- `container`: element holding carousel pages.
+- `wrapper`: element that receives controls and markers.
+- `threshold`: minimum swipe distance in pixels before navigation triggers.
+
+#### Methods
+
+- `next()` / `prev()` – Navigate to the adjacent page.
+- `setPage(index)` – Jump directly to a specific page.
+- `update()` – Refresh button states, markers, and accessibility messaging.
+- `destroy()` – Remove listeners, teardown DOM hooks, and release references.
+
+Use `destroy()` when a page removes the carousel from the DOM to avoid stray
+listeners or leaked references during navigation.
+
+---
+
 ## Design and UX: Considerations
 
 | Feature        | Description                                                                                                  |

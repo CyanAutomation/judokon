@@ -61,7 +61,7 @@
   },
   {
     "source": "design/eventNamingAudit.md",
-    "mappedTo": "prdEventContracts.md#audit-appendix"
+    "mappedTo": "design/productRequirementsDocuments/prdEventContracts.md#audit-appendix"
   },
   {
     "source": "design/retroThemeContrast.md",

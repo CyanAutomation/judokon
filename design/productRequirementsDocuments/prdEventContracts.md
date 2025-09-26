@@ -160,7 +160,7 @@ Acceptance Criteria (tests):
 
 ### Categorized Event Inventory
 
-#### Timer Events (22)
+#### Timer Events (10)
 
 - `control.countdown.completed`
 - `control.countdown.started`
@@ -173,14 +173,14 @@ Acceptance Criteria (tests):
 - `round.timer.tick`
 - `roundTimeout`
 
-#### UI Events (6)
+#### UI Events (4)
 
 - `control.readiness.required`
 - `opponentCardReady`
 - `statButtons:disable`
 - `statButtons:enable`
 
-#### State Events (20)
+#### State Events (13)
 
 - `battleStateChange`
 - `control.state.catalog`
@@ -196,17 +196,17 @@ Acceptance Criteria (tests):
 - `roundResolved`
 - `roundStarted`
 
-#### Player Events (3)
+#### Player Events (2)
 
 - `statSelected`
 - `statSelectionStalled`
 
-#### Scoreboard Events (11)
+#### Scoreboard Events (2)
 
 - `scoreboardClearMessage`
 - `scoreboardShowMessage`
 
-#### Debug Events (13)
+#### Debug Events (2)
 
 - `debug.transition`
 - `debugPanelUpdate`
@@ -215,7 +215,7 @@ Acceptance Criteria (tests):
 
 - `control.readiness.confirmed`
 
-#### Uncategorized Events (8)
+#### Uncategorized Events (6)
 
 - `display.score.update`
 - `input.ignored`
@@ -249,3 +249,67 @@ Acceptance Criteria (tests):
 | `debugPanelUpdate`       | `debug.panelUpdated`        | debug      | Medium   |
 | `matchOver`              | `state.matchOver`           | state      | High     |
 | `statSelected`           | `player.statSelected`       | player     | Medium   |
+
+### Current Event Names Analysis
+
+**All unique event names currently in use:**
+
+```js
+"battleStateChange";
+"control.countdown.completed";
+"control.countdown.started";
+"control.readiness.confirmed";
+"control.readiness.required";
+"control.state.catalog";
+"control.state.changed";
+"cooldown.timer.expired";
+"cooldown.timer.tick";
+"countdownFinished";
+"countdownStart";
+"debug.state.snapshot";
+"debug.transition";
+"debugPanelUpdate";
+"display.score.update";
+"input.ignored";
+"interrupt.requested";
+"interrupt.resolved";
+"match.concluded";
+"matchOver";
+"nextRoundTimerReady";
+"opponentCardReady";
+"opponentReveal";
+"round.evaluated";
+"round.selection.locked";
+"round.started";
+"round.timer.expired";
+"round.timer.tick";
+"roundOptionsReady";
+"roundPrompt";
+"roundResolved";
+"roundStarted";
+"roundTimeout";
+"scoreboardClearMessage";
+"scoreboardShowMessage";
+"startClicked";
+"statButtons:disable";
+"statButtons:enable";
+"statSelected";
+"statSelectionStalled";
+```
+
+### Test Integration Points
+
+**Test helper functions that need updating:**
+
+- `getCountdownStartedPromise`
+- `getEscapeHandledPromise`
+- `getRoundTimeoutPromise`
+- `waitForNextRoundReadyEvent`
+
+### Implementation Recommendations
+
+1. **Implement backward-compatible alias system** to avoid breaking changes.
+2. **Update emitters gradually** using feature flags.
+3. **Create migration timeline** with deprecation warnings.
+4. **Update test helpers** to use new event names with backward compatibility.
+5. **Document event contracts** for future consistency.

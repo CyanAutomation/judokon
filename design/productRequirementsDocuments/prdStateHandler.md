@@ -112,7 +112,7 @@ The former `docs/technical/stateHandlerAudit.md` compliance report is now captur
 | --- | --- | --- | --- | --- | --- | --- |
 | `waitingForMatchStart` | initial | render:matchLobby<br>reset:scoresAndUI | ✅ Fully compliant (2/2) | — | — | `waitingForMatchStartEnter.js` |
 | `matchStart` | normal | init:matchContext<br>store:winTargetSelection<br>reset:scores<br>set:firstPlayerUser | ✅ Fully compliant (4/4) | — | — | `matchStartEnter.js` |
-| `cooldown` | normal | timer:startShortCountdown<br>announce:nextRoundInUI | ❌ Missing (0/2) | timer:startShortCountdown<br>announce:nextRoundInUI | 🚨 Priority 1 (timer:startShortCountdown)<br>⚠️ Priority 2 (announce:nextRoundInUI) | `cooldownEnter.js` |
+| `cooldown` | normal | timer:startShortCountdown<br>announce:nextRoundInUI | ❌ Missing (0/2) | timer:startShortCountdown<br>announce:nextRoundInUI | 🚨 Priority 1 (timer:startShortCountdown)<br>🚨 Priority 1 (announce:nextRoundInUI) | `cooldownEnter.js` |
 | `roundStart` | normal | draw:randomJudokaBothSides<br>reveal:roundCards<br>set:activePlayerUser | ✅ Fully compliant (3/3) | — | — | `roundStartEnter.js` |
 | `waitingForPlayerAction` | normal | prompt:chooseStat<br>timer:startStatSelection<br>a11y:exposeTimerStatus | ✅ Fully compliant (3/3) | — | — | `waitingForPlayerActionEnter.js` |
 | `roundDecision` | normal | compare:selectedStat<br>compute:roundOutcome<br>announce:roundOutcome | ⚠️ Partially implemented (1/3) | compare:selectedStat<br>compute:roundOutcome | 🚨 Priority 1 (compare:selectedStat)<br>ℹ️ Priority 3 (compute:roundOutcome) | `roundDecisionEnter.js` |
@@ -125,14 +125,17 @@ The former `docs/technical/stateHandlerAudit.md` compliance report is now captur
 
 ### Missing action follow-ups
 
-- **Critical (Priority 1)**: Implement `timer:startShortCountdown` (cooldown) and `compare:selectedStat` (roundDecision) to restore battle flow guarantees.
-- **Important (Priority 2)**: Add UI feedback for cooldown (`announce:nextRoundInUI`), persist score/summary updates after each round, render the final match result screen, and ensure the match summary view renders on match end.
+- **Critical (Priority 1)**:
+  - Implement `timer:startShortCountdown` (cooldown) — integrate with the shared timer utilities (`timerService`) so the countdown emits tick events that can be consumed by UI handlers.
+  - Implement `announce:nextRoundInUI` (cooldown) — surface countdown updates through the snackbar / match header so players receive immediate feedback during cooldown.
+  - Implement `compare:selectedStat` (roundDecision) — ensure the handler performs stat comparison, determines the winning side, and sets the payload consumed by `announce:roundOutcome`.
+- **Important (Priority 2)**: Persist score/summary updates after each round, render the final match result screen, and ensure the match summary view renders on match end.
 - **Nice-to-have (Priority 3)**: Complete computed outcome helpers (`compute:roundOutcome`, `compute:matchOutcome`) to align analytics with UI messaging.
 
 ### Recommended next steps
 
 1. Address Priority 1 gaps before shipping related UI/engine changes.
-2. Verify whether missing actions exist but were not detected by the audit; if so, update the implementation or the detection heuristics.
+2. Verify whether missing actions exist but were not detected by the audit by re-running `node scripts/auditStateHandlers.mjs` and manually inspecting the referenced handler files; if implementations exist, update the audit heuristics or document alternative patterns in this PRD.
 3. Backfill unit and integration tests for any newly implemented handlers and re-run the Classic Battle end-to-end suite.
 
 ## Test Hooks / Observable Promises

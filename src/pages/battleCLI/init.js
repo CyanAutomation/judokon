@@ -70,6 +70,7 @@ import {
 import { createCliDomFragment } from "./cliDomTemplate.js";
 import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
 import * as initModule from "./init.js";
+import * as initModule from "./init.js";
 
 // Initialize engine and subscribe to engine events when available.
 try {

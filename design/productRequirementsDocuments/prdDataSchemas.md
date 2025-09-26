@@ -25,7 +25,7 @@ P1 - Canonical Schemas: Publish canonical schemas for `judoka`, `card`, `navigat
 
 Acceptance Criteria:
 
-- Each schema exists under `src/data/schemas/` or `design/dataSchemas/` and includes field types and optionality.
+- Each schema exists under `src/schemas/` (canonical source for runtime/CI validation). Prototype explorations may live under `design/dataSchemas/`, but the production contract is always the `src/schemas/` copy.
 
 ## Canonical `judoka` schema (example)
 
@@ -55,7 +55,7 @@ Below is a minimal JSON Schema for the `judoka` object. This is a canonical exam
 }
 ```
 
-Place this file at `design/dataSchemas/judoka.schema.json` (canonical source). A build step or copy may publish a curated set to `src/data/schemas/` for runtime/CI validation.
+Place this file at `src/schemas/judoka.schema.json` (canonical source). Design discussions can stage drafts under `design/dataSchemas/`, but the build and validation tooling loads schemas exclusively from `src/schemas/`.
 
 P1 - Validation Utilities: Provide validator utilities or schema references for runtime validation in dev/test.
 
@@ -69,7 +69,7 @@ We recommend using a lightweight runtime validator (AJV) during development and 
 
 ```js
 import Ajv from "ajv";
-import judokaSchema from "../../design/dataSchemas/judoka.schema.json";
+import judokaSchema from "../../src/schemas/judoka.schema.json";
 
 const ajv = new Ajv({ allErrors: true });
 const validate = ajv.compile(judokaSchema);
@@ -109,6 +109,19 @@ Acceptance Criteria (validator):
 - Model constrained fields with `enum` or `pattern` clauses so the validation workflow catches incorrect values. Example: enforce valid Gokyo technique `category`/`subCategory` combinations via `enum` lists.
 - The `CountryCode` and `WeightClass` enums in `src/schemas/commonDefinitions.schema.json` are the canonical sources for ISO country codes and IJF weight classes. Update those arrays (either manually or via generation scripts) and re-run `npm run validate:data` to confirm downstream data still conforms.
 - Maintain consistent casing for JSON keys (default to camelCase) so schema expectations align with helper utilities and tests.
+
+### Implementation references
+
+- **Gokyo technique categories**: Use the canonical taxonomy when modeling `gokyo` data. Valid `category` values are `Nage-waza` or `Katame-waza`. Valid `subCategory` values are:
+  - `Te-waza`
+  - `Koshi-waza`
+  - `Ashi-waza`
+  - `Ma-sutemi-waza`
+  - `Yoko-sutemi-waza`
+  - `Osae-komi-waza`
+  - `Shime-waza`
+  - `Kansetsu-waza`
+- **Country code utilities**: `src/utils/countryCodes.js` provides `getCountryByCode`, `getCodeByCountry`, and `listCountries` helpers backed by `src/data/countryCodeMapping.json`. Reference these utilities when implementing data workflows so schema changes stay aligned with runtime lookups.
 
 P2 - Versioning & Deprecation Policy: Define minor/major change rules and how to announce/rollout changes.
 

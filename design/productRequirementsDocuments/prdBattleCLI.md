@@ -218,8 +218,12 @@ This appendix consolidates the previously separate CLI usage, module structure, 
 ### Module Structure
 
 - `src/pages/battleCLI/state.js` centralizes mutable flags and the Escape key promise.
-- `src/pages/battleCLI/events.js` delegates keyboard handling to helpers: `handleArrowNav(e)`, `shouldProcessKey(key)`, and `routeKeyByState(key)`.
-- Stat list helpers encapsulate rendering logic: `loadStatDefs()`, `buildStatRows(stats, judoka)`, `renderHelpMapping(stats)`, and `ensureStatClickBinding(list)`.
+- `src/pages/battleCLI/events.js` delegates keyboard handling to helpers: `handleArrowNav(e)` (arrow key focus management), `shouldProcessKey(key)` (guards against invalid input/state), and `routeKeyByState(key)` (dispatches to state-appropriate handlers).
+- Stat list helpers encapsulate rendering logic:
+  - `loadStatDefs()` — loads stat metadata and resolves feature flags.
+  - `buildStatRows(stats, judoka)` — composes stat rows with numeric key mappings and judoka data.
+  - `renderHelpMapping(stats)` — syncs the on-screen help legend with the active stat definitions.
+  - `ensureStatClickBinding(list)` — binds click/tap handlers and preserves pointer parity with keyboard controls.
 - Public entry points are exposed via `src/pages/index.js`, e.g. `import { battleCLI, onKeyDown } from "src/pages/index.js"`.
 
 ### Bootstrap Helpers (Developer)

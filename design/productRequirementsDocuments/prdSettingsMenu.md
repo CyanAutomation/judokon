@@ -69,7 +69,16 @@ Players need to easily adjust game settings to personalize their experience, imp
 Modules access player preferences via helpers in
 `src/helpers/settingsUtils.js`:
 
-- `getSetting(key)` – synchronous access to cached settings.
+```js
+import { getSetting } from "./src/helpers/settingsUtils.js";
+
+const currentTheme = getSetting("displayMode");
+```
+
+- **`getSetting(key)`** – Read a setting value from the cache.
+- Default values come from `DEFAULT_SETTINGS` in
+  `src/config/settingsDefaults.js`.
+- Values are overlaid with any persisted user preferences.
 
 Feature flags are handled by `src/helpers/featureFlags.js`:
 
