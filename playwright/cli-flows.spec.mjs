@@ -176,7 +176,9 @@ test.describe("CLI Keyboard Flows", () => {
     }
 
     if (waitResult.status === "missing") {
-      const missingDetails = waitResult.details ? `: ${waitResult.details}` : "";
+      const detailText =
+        typeof waitResult.details === "string" ? waitResult.details.trim() : "";
+      const missingDetails = detailText ? `: ${detailText}` : "";
       throw new Error(`Test API waitForBattleState unavailable in startBattle${missingDetails}`);
     }
 
