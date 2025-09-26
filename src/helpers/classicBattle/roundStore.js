@@ -106,12 +106,21 @@ class RoundStore {
 
   /**
    * Set the current round number.
+   *
+   * @pseudocode
+   * 1. Normalize options to an object before destructuring.
+   * 2. Exit early when number remains unchanged.
+   * 3. Notify subscribers of the new round number.
+   * 4. Emit legacy event unless explicitly disabled.
+   *
    * @param {number} number - New round number (1-based)
    * @param {{ emitLegacyEvent?: boolean }} [options] - Optional behavior overrides
+   * @param {boolean} [options.emitLegacyEvent=true] - Whether to emit the legacy display.round.start event
    */
   setRoundNumber(number, options = {}) {
-    const { emitLegacyEvent = true } =
+    const safeOptions =
       typeof options === "object" && options !== null ? options : {};
+    const { emitLegacyEvent = true } = safeOptions;
     const oldNumber = this.currentRound.number;
     if (oldNumber === number) return;
 

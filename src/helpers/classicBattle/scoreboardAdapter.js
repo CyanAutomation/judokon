@@ -5,7 +5,6 @@ import {
   clearTimer,
   updateTimer,
   showAutoSelect,
-  updateRoundCounter,
   clearRoundCounter,
   updateScore
 } from "../setupScoreboard.js";
@@ -57,9 +56,6 @@ function handleRoundStart(event) {
     typeof detail.roundNumber === "number" ? detail.roundNumber : detail.roundIndex;
   if (typeof roundNumber === "number" && Number.isFinite(roundNumber)) {
     roundStore.setRoundNumber(roundNumber, { emitLegacyEvent: false });
-    try {
-      updateRoundCounter(roundNumber);
-    } catch {}
   } else {
     try {
       clearRoundCounter();
