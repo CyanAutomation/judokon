@@ -5,6 +5,7 @@ import {
   clearTimer,
   updateTimer,
   showAutoSelect,
+  updateRoundCounter,
   clearRoundCounter,
   updateScore
 } from "../setupScoreboard.js";
@@ -47,12 +48,24 @@ function extractSeconds(detail) {
   return typeof seconds === "number" && Number.isFinite(seconds) ? seconds : null;
 }
 
+/**
+ * Parse and normalize a round number from various input types.
+ *
+ * @pseudocode
+ * 1. Return finite numbers as-is when already numeric.
+ * 2. Accept non-empty strings and attempt numeric conversion.
+ * 3. Return null whenever parsing fails (NaN, infinite, empty input, etc.).
+ *
+ * @param {number | string | *} value value to parse as a round number
+ * @returns {number | null} finite number if valid, null otherwise
+ */
 function parseRoundNumber(value) {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : null;
   }
 
   if (typeof value === "string" && value.trim().length > 0) {
+    // Number(...) tolerates leading/trailing whitespace (e.g., " 3 "), which we accept intentionally.
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
@@ -68,7 +81,7 @@ function handleRoundStart(event) {
   const roundNumber = parseRoundNumber(detail.roundNumber);
   const roundIndex = parseRoundNumber(detail.roundIndex);
   const normalizedRoundNumber = roundNumber ?? roundIndex;
-  if (typeof normalizedRoundNumber === "number") {
+  if (normalizedRoundNumber !== null) {
     roundStore.setRoundNumber(normalizedRoundNumber, { emitLegacyEvent: false });
   } else {
     try {

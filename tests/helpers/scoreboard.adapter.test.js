@@ -35,9 +35,7 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     const { initScoreboard, resetScoreboard } = await import("../../src/components/Scoreboard.js");
     resetScoreboard();
     initScoreboard(header);
-    ({ roundStore } = await import(
-      "../../src/helpers/classicBattle/roundStore.js"
-    ));
+    ({ roundStore } = await import("../../src/helpers/classicBattle/roundStore.js"));
     const scoreboardAdapterModule = await import(
       "../../src/helpers/classicBattle/scoreboardAdapter.js"
     );
@@ -98,5 +96,29 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     emitBattleEvent("display.round.start", { roundNumber: "3" });
     await vi.advanceTimersByTimeAsync(220);
     expect(document.getElementById("round-counter").textContent).toBe("Round 3");
+  });
+
+  it("handles edge cases in round number parsing", async () => {
+    const counter = () => document.getElementById("round-counter").textContent;
+
+    emitBattleEvent("display.round.start", { roundNumber: " 7 " });
+    await vi.advanceTimersByTimeAsync(220);
+    expect(counter()).toBe("Round 7");
+
+    emitBattleEvent("display.round.start", { roundIndex: "5" });
+    await vi.advanceTimersByTimeAsync(220);
+    expect(counter()).toBe("Round 5");
+
+    emitBattleEvent("display.round.start", { roundNumber: "invalid" });
+    await vi.advanceTimersByTimeAsync(220);
+    expect(counter()).toBe("");
+
+    emitBattleEvent("display.round.start", { roundNumber: "" });
+    await vi.advanceTimersByTimeAsync(220);
+    expect(counter()).toBe("");
+
+    emitBattleEvent("display.round.start", { roundNumber: "   " });
+    await vi.advanceTimersByTimeAsync(220);
+    expect(counter()).toBe("");
   });
 });
