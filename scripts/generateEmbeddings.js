@@ -597,7 +597,12 @@ async function getFiles() {
   const dataFiles = (await glob("src/data/*.{json,js}", { cwd: rootDir })).filter((f) => {
     const base = path.basename(f);
     if (base.startsWith("client_embeddings.")) return false;
-    return !["aesopsFables.json", "aesopsMeta.json", "countryCodeMapping.json", "offline_rag_metadata.json"].includes(base);
+    return ![
+      "aesopsFables.json",
+      "aesopsMeta.json",
+      "countryCodeMapping.json",
+      "offline_rag_metadata.json"
+    ].includes(base);
   });
   const jsFiles = await glob(["src/**/*.{js,ts}", "tests/**/*.{js,ts}"], {
     cwd: rootDir,
