@@ -797,7 +797,8 @@ export async function applyStatLabels() {
   const statKeys = Array.isArray(STATS) ? STATS : Object.keys(STATS || {});
   for (const rawKey of statKeys) {
     const key = String(rawKey);
-    const selector = `#stat-buttons [data-stat='${key}']`;
+    const selectorKey = key.replace(/['"\\]/g, "\\$&");
+    const selector = `#stat-buttons [data-stat='${selectorKey}']`;
     /** @type {HTMLButtonElement|null} */
     const btn = document.querySelector(selector);
     if (!btn) continue;
@@ -816,7 +817,10 @@ export async function applyStatLabels() {
         btn.after(desc);
       }
       btn.setAttribute("aria-describedby", descId);
-    } catch {}
+    } catch (error) {
+      // Ignore failures so a single missing element does not break the render loop in tests.
+      void error;
+    }
   }
 }
 

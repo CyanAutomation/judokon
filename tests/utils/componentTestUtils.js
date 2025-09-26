@@ -11,11 +11,13 @@
  * 4. Offer cleanup utilities for test lifecycle management
  */
 
+import { vi } from "vitest";
 import { createCard } from "../../src/components/Card.js";
 import { SidebarList } from "../../src/components/SidebarList.js";
 import { setupClassicBattleDom } from "../helpers/classicBattle/utils.js";
 import { renderStatButtons } from "../../src/pages/battleClassic.init.js";
 import { applyStatLabels } from "../../src/helpers/classicBattle/uiHelpers.js";
+import * as i18n from "../../src/helpers/i18n.js";
 
 /**
  * Natural click simulation that uses real event handlers
@@ -155,34 +157,15 @@ export function createTestSidebarList(items, onSelect) {
  * }>} Harness helpers for stat button tests.
  */
 export async function createStatButtonsHarness() {
-  const env = setupClassicBattleDom();
-  const restoreRAF = ensureRequestAnimationFrame();
-  const cleanupNextButton = ensureNextButton();
+  const envHandles = initializeStatButtonsEnvironment();
+  const container = await renderStatButtonsWithLabels();
 
-  renderStatButtons({});
-  await applyStatLabels();
-
-  const container = document.getElementById("stat-buttons");
-
-  const cleanup = () => {
-    env.timerSpy?.useRealTimers?.();
-    env.restoreRAF?.();
-    restoreRAF();
-    cleanupNextButton();
-    document.body.innerHTML = "";
+  return {
+    container,
+    getButtons: () => getStatButtons(container),
+    getButton: (stat) => getStatButton(container, stat),
+    cleanup: () => cleanupStatButtonsEnvironment(envHandles)
   };
-
-  const getButtons = () => {
-    if (!container) return [];
-    return Array.from(container.querySelectorAll("button[data-stat]"));
-  };
-
-  const getButton = (stat) => {
-    if (!container) return null;
-    return container.querySelector(`button[data-stat="${stat}"]`);
-  };
-
-  return { container, getButtons, getButton, cleanup };
 }
 
 function ensureRequestAnimationFrame() {
@@ -193,24 +176,46 @@ function ensureRequestAnimationFrame() {
     };
   }
 
+  const hadFakeTimers = typeof vi.isFakeTimers === "function" ? vi.isFakeTimers() : false;
+  if (!hadFakeTimers && typeof vi.useFakeTimers === "function") {
+    vi.useFakeTimers();
+  }
+
+  const previousCancel = globalThis.cancelAnimationFrame;
   globalThis.requestAnimationFrame = (cb) => {
     const id = setTimeout(() => {
       try {
-        cb(Date.now());
-      } catch {}
-    }, 0);
+        cb(performance?.now?.() ?? Date.now());
+      } catch (error) {
+        // Best-effort invocation; ignore handler failures to keep harness cleanup resilient.
+        void error;
+      }
+    }, 16);
     return id;
+  };
+  globalThis.cancelAnimationFrame = (id) => {
+    clearTimeout(id);
   };
 
   return () => {
+    if (!hadFakeTimers && typeof vi.useRealTimers === "function") {
+      vi.useRealTimers();
+    }
     if (typeof previous === "function") {
       globalThis.requestAnimationFrame = previous;
-      return;
+    } else {
+      try {
+        delete globalThis.requestAnimationFrame;
+      } catch (error) {
+        // Older environments may throw; fall back to undefined assignment.
+        void error;
+        globalThis.requestAnimationFrame = undefined;
+      }
     }
-    try {
-      delete globalThis.requestAnimationFrame;
-    } catch {
-      globalThis.requestAnimationFrame = undefined;
+    if (typeof previousCancel === "function") {
+      globalThis.cancelAnimationFrame = previousCancel;
+    } else {
+      delete globalThis.cancelAnimationFrame;
     }
   };
 }
@@ -229,9 +234,105 @@ function ensureNextButton() {
         btn.parentNode.removeChild(btn);
       }
     };
-  } catch {
+  } catch (error) {
+    // DOM unavailable in this environment; caller treats button as optional.
+    void error;
     return () => {};
   }
+}
+
+function initializeStatButtonsEnvironment() {
+  const env = setupClassicBattleDom();
+  const restoreRAF = ensureRequestAnimationFrame();
+  const cleanupNextButton = ensureNextButton();
+  const restoreTranslator = ensureBattleTranslator();
+
+  return { env, restoreRAF, cleanupNextButton, restoreTranslator };
+}
+
+async function renderStatButtonsWithLabels() {
+  renderStatButtons({});
+  await applyStatLabels();
+  return document.getElementById("stat-buttons");
+}
+
+function getStatButtons(container) {
+  if (!container) {
+    return [];
+  }
+  return Array.from(container.querySelectorAll("button[data-stat]"));
+}
+
+function getStatButton(container, stat) {
+  if (!container) {
+    return null;
+  }
+  return container.querySelector(`button[data-stat="${stat}"]`);
+}
+
+function cleanupStatButtonsEnvironment({ env, restoreRAF, cleanupNextButton, restoreTranslator }) {
+  try {
+    env.timerSpy?.useRealTimers?.();
+  } catch (error) {
+    // Some tests may not install fake timers; ignore so cleanup is best-effort.
+    void error;
+  }
+  try {
+    restoreRAF?.();
+  } catch (error) {
+    void error;
+  }
+  try {
+    env.restoreRAF?.();
+  } catch (error) {
+    void error;
+  }
+  try {
+    cleanupNextButton?.();
+  } catch (error) {
+    void error;
+  }
+  try {
+    restoreTranslator?.();
+  } catch (error) {
+    void error;
+  }
+  document.body.innerHTML = "";
+}
+
+function ensureBattleTranslator() {
+  const original = i18n.t;
+  const spy = vi.spyOn(i18n, "t").mockImplementation((key, params = {}) => {
+    let existing;
+    try {
+      existing = original(key, params);
+      if (existing && existing !== key) {
+        return existing;
+      }
+    } catch (error) {
+      void error;
+    }
+
+    if (key === "battle.statButtonDescription") {
+      const label = typeof params === "string"
+        ? params
+        : typeof params === "object" && params !== null
+        ? params.label ?? params.stat ?? Object.values(params)[0] ?? ""
+        : "";
+      const text = label ? String(label) : "Select this attribute";
+      return `${text} — select to compare this attribute`;
+    }
+
+    return existing ?? original(key, params);
+  });
+
+  return () => {
+    try {
+      spy.mockRestore();
+    } catch (error) {
+      void error;
+    }
+  };
 }
 
 /**

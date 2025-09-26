@@ -22,7 +22,7 @@ describe("Stat buttons ARIA descriptions", () => {
         const desc = descId ? document.getElementById(descId) : null;
         expect(desc).toBeTruthy();
         expect(desc?.classList.contains("sr-only")).toBe(true);
-        expect((desc?.textContent || "").trim().length).toBeGreaterThan(0);
+        expect(desc?.textContent?.trim()).toMatch(/select to compare|choose this attribute/i);
       }
     } finally {
       harness.cleanup();
