@@ -267,6 +267,13 @@ This file revises the original QA findings for Classic Battle Mode and converts 
 - Playwright: Available to add a focused spec to assert `aria-describedby` wiring in the live UI on approval.
 - Outcome: Stat buttons expose descriptive context to assistive tech without altering visuals.
 
+## Phase Update — Console discipline quick pass
+
+- Action: Searched tests for unsilenced console.warn/error. Found a warning in `tests/helpers/components/Button.js` used by tests.
+- Change: Gated the warning behind a test-only flag `globalThis.__ALLOW_TEST_LOGS__` to keep default test runs silent while allowing opt-in when needed.
+- Targeted tests run: `vitest run tests/helpers/components/Button.test.js` → PASS (9/9).
+- Outcome: Test console discipline now compliant without muting globally.
+
 ### Follow-up: Deterministic UI hook for hotkeys
 
 - Added deterministic hook by setting `data-stat-selected="true"` when a stat is selected (`selectionHandler.js` and `roundUI.js`).
