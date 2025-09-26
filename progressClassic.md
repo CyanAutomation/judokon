@@ -259,6 +259,14 @@ This file revises the original QA findings for Classic Battle Mode and converts 
   - Behavior: navigates to Classic, presses '1', verifies stat selection via UI change (Next visible and snackbar/disable state).
   - Result: PASS.
 
+## Phase Update — Add ARIA descriptions for stats
+
+- Action: Added hidden descriptions for each stat button and wired `aria-describedby` to per-stat `sr-only` spans in `renderStatButtons()` within `src/pages/battleClassic.init.js`.
+- Unit test: Added `tests/accessibility/statButtons.aria.test.js` validating that stat buttons have `aria-describedby` pointing to an existing hidden element.
+- Unit tests run: `vitest run tests/accessibility/statButtons.aria.test.js` → PASS.
+- Playwright: Available to add a focused spec to assert `aria-describedby` wiring in the live UI on approval.
+- Outcome: Stat buttons expose descriptive context to assistive tech without altering visuals.
+
 ### Follow-up: Deterministic UI hook for hotkeys
 
 - Added deterministic hook by setting `data-stat-selected="true"` when a stat is selected (`selectionHandler.js` and `roundUI.js`).

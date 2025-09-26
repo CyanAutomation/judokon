@@ -33,7 +33,7 @@ test.describe("Classic Battle – auto-advance", () => {
     }
     if (!hasTestApi) {
       // Select the first available stat to complete the round
-      const firstStat = page.locator('#stat-buttons button').first();
+      const firstStat = page.locator("#stat-buttons button").first();
       await firstStat.click();
       // Wait for resolution into cooldown
       await page.waitForTimeout(500); // allow UI to transition

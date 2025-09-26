@@ -20,7 +20,7 @@ describe("Stat hotkeys default ON", () => {
     if (!isEnabled("statHotkeys")) enableFlag("statHotkeys");
 
     const clicked = vi.fn();
-    const first = document.querySelector('#stat-buttons button[data-stat]');
+    const first = document.querySelector("#stat-buttons button[data-stat]");
     first.addEventListener("click", clicked);
 
     const api = initStatButtons({});
@@ -33,4 +33,3 @@ describe("Stat hotkeys default ON", () => {
     expect(clicked).toHaveBeenCalledOnce();
   });
 });
-

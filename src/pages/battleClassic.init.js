@@ -1264,8 +1264,21 @@ function renderStatButtons(store) {
     btn.setAttribute("data-stat", String(stat));
     btn.setAttribute("data-player", "0");
     btn.setAttribute("data-testid", "stat-button");
-    btn.setAttribute("aria-describedby", "round-message");
+    // Accessibility: label and description per stat
+    const descId = `stat-${String(stat)}-desc`;
+    btn.setAttribute("aria-describedby", descId);
     btn.setAttribute("aria-label", `Select ${stat} stat for battle`);
+    try {
+      let desc = document.getElementById(descId);
+      if (!desc) {
+        desc = document.createElement("span");
+        desc.id = descId;
+        desc.className = "sr-only";
+        desc.textContent = `${String(stat)} — select to compare this attribute`;
+        // Insert immediately after the button so screen readers can reference it
+        btn.after(desc);
+      }
+    } catch {}
     btn.addEventListener("click", () => {
       void handleStatButtonClick(store, stat, btn);
     });

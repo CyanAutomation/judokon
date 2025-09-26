@@ -75,7 +75,6 @@ Note: The CLI surface intentionally avoids displaying emoji in its runtime UI; v
 - As a screen-reader user, I want clear announcements for prompts, timers, and outcomes.
 - As a tester, I want stable selectors and deterministic runs for automation.
 - As a returning player, I want to jump in quickly for a short session.
-- As a player, I want to cancel or change stat selection before the timer expires.
 
 ---
 

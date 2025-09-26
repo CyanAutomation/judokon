@@ -6,8 +6,11 @@ import statNamesData from "../../src/data/statNames.js";
 
 const harness = createBattleCLIHandlersHarness();
 
-const { getNextTimeoutId, getNextIntervalId, reset: resetTimerIdFactories } =
-  createTimerIdManager();
+const {
+  getNextTimeoutId,
+  getNextIntervalId,
+  reset: resetTimerIdFactories
+} = createTimerIdManager();
 
 beforeEach(async () => {
   resetTimerIdFactories();
