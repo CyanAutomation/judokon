@@ -28,14 +28,12 @@ test("skips cooldown without orchestrator", async ({ page }) => {
     await page.getByRole("button", { name: "Medium" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible();
     await page.evaluate(() =>
-      window.__TEST_API?.state?.waitForBattleState?.("waitingForPlayerAction"),
+      window.__TEST_API?.state?.waitForBattleState?.("waitingForPlayerAction")
     );
 
     // Use existing battle infrastructure instead of synthetic DOM
     const nextButton = page.locator("#next-button, [data-role='next-round']").first();
-    await page.evaluate(() =>
-      window.__TEST_API?.state?.waitForNextButtonReady?.(0),
-    );
+    await page.evaluate(() => window.__TEST_API?.state?.waitForNextButtonReady?.(0));
 
     // Make a stat selection so the round resolves and cooldown begins
     await page.getByRole("button", { name: /power/i }).click();
