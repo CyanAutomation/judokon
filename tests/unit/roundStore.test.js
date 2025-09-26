@@ -19,9 +19,9 @@ describe("RoundStore", () => {
   });
 
   describe("initial state", () => {
-    it("should start with round 0 and waitingForMatchStart state", () => {
+    it("should start with the initial round and waitingForMatchStart state", () => {
       const round = roundStore.getCurrentRound();
-      expect(round.number).toBe(0);
+      expect(round.number).toBe(1);
       expect(round.state).toBe("waitingForMatchStart");
     });
 
@@ -165,7 +165,7 @@ describe("RoundStore", () => {
 
       roundStore.setRoundNumber(2);
 
-      expect(callback).toHaveBeenCalledWith(2, 0);
+      expect(callback).toHaveBeenCalledWith(2, 1);
     });
 
     it("should call stat selected callback", () => {

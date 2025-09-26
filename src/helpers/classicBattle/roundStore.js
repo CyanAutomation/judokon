@@ -44,7 +44,7 @@ class RoundStore {
   constructor() {
     /** @type {RoundData} */
     this.currentRound = {
-      number: 0,
+      number: 1,
       state: "waitingForMatchStart"
     };
 
@@ -234,14 +234,14 @@ class RoundStore {
    * Reset store to initial state.
    *
    * @pseudocode
-   * 1. Restore the constructor baseline (round 0 waiting state).
+   * 1. Restore the constructor baseline (round 1 waiting state).
    * 2. Clear readiness flags, callbacks, and transition log entries.
    *
-   * Ensures the engine and scoreboard both reflect the pre-match round 0 state.
+   * Ensures the engine and scoreboard both reflect the pre-match round 1 state.
    */
   reset() {
     this.currentRound = {
-      number: 0,
+      number: 1,
       state: "waitingForMatchStart",
       selectedStat: undefined,
       outcome: undefined,
