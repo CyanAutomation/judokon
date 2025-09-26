@@ -26,15 +26,18 @@ describe("roundUI auto-advance chain", () => {
     const scoreboard = { updateScore: vi.fn(), showMessage: vi.fn(), clearRoundCounter: vi.fn() };
 
     const result = { message: "ok", playerScore: 1, opponentScore: 0, matchEnded: false };
-    await handleRoundResolvedEvent(new CustomEvent("roundResolved", { detail: { result, store: {} } }), {
-      scoreboard,
-      computeNextRoundCooldown,
-      createRoundTimer,
-      attachCooldownRenderer,
-      isOrchestrated: () => false,
-      // inject the internal helper by property shadowing
-      startRoundCooldown
-    });
+    await handleRoundResolvedEvent(
+      new CustomEvent("roundResolved", { detail: { result, store: {} } }),
+      {
+        scoreboard,
+        computeNextRoundCooldown,
+        createRoundTimer,
+        attachCooldownRenderer,
+        isOrchestrated: () => false,
+        // inject the internal helper by property shadowing
+        startRoundCooldown
+      }
+    );
 
     expect(computeNextRoundCooldown).toHaveBeenCalled();
     expect(startRoundCooldown).toHaveBeenCalled();
