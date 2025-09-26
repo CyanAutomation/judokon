@@ -118,8 +118,7 @@ class RoundStore {
    * @param {boolean} [options.emitLegacyEvent=true] - Whether to emit the legacy display.round.start event
    */
   setRoundNumber(number, options = {}) {
-    const safeOptions =
-      typeof options === "object" && options !== null ? options : {};
+    const safeOptions = typeof options === "object" && options !== null ? options : {};
     const { emitLegacyEvent = true } = safeOptions;
     const oldNumber = this.currentRound.number;
     if (oldNumber === number) return;
