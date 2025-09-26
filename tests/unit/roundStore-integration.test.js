@@ -15,10 +15,13 @@ import {
 // Mock setupScoreboard to track calls
 vi.mock("../../src/helpers/setupScoreboard.js", () => ({
   updateRoundCounter: vi.fn(),
+  clearRoundCounter: vi.fn(),
   showMessage: vi.fn(),
   clearMessage: vi.fn(),
+  showTemporaryMessage: vi.fn(),
   updateTimer: vi.fn(),
   clearTimer: vi.fn(),
+  showAutoSelect: vi.fn(),
   updateScore: vi.fn()
 }));
 

@@ -5,6 +5,7 @@ import {
   clearTimer,
   updateTimer,
   showAutoSelect,
+  updateRoundCounter,
   clearRoundCounter,
   updateScore
 } from "../setupScoreboard.js";
@@ -199,10 +200,10 @@ export function initScoreboardAdapter() {
 
   wireScoreboardListeners();
 
-  scoreboardReadyPromise = roundStore.wireIntoScoreboardAdapter(
+  scoreboardReadyPromise = roundStore.wireIntoScoreboardAdapter({
     updateRoundCounter,
     clearRoundCounter
-  );
+  });
 
   return disposeScoreboardAdapter;
 }

@@ -274,40 +274,38 @@ class RoundStore {
    * @param {() => void} [clearRoundCounter]
    * @returns {Promise<void>} Resolved promise for scoreboard ready chaining
    */
-  wireIntoScoreboardAdapter(updateRoundCounter, clearRoundCounter) {
+  wireIntoScoreboardAdapter(params = {}) {
+    const safeParams = typeof params === "object" && params !== null ? params : {};
+    const { updateRoundCounter, clearRoundCounter } = safeParams;
+
+    const safeUpdate =
+      typeof updateRoundCounter === "function" ? updateRoundCounter : () => {};
+    const safeClear =
+      typeof clearRoundCounter === "function"
+        ? clearRoundCounter
+        : (roundNumber) => {
+            safeUpdate(roundNumber);
+          };
+
     const applyRoundNumber = (roundNumber) => {
-      const hasUpdate = typeof updateRoundCounter === "function";
-      const hasClear = typeof clearRoundCounter === "function";
-      if (roundNumber > 0) {
-        if (hasUpdate) {
-          updateRoundCounter(roundNumber);
+      try {
+        if (roundNumber > 0) {
+          safeUpdate(roundNumber);
+          return;
         }
-        return;
-      }
-      if (hasClear) {
-        clearRoundCounter();
-        return;
-      }
-      if (hasUpdate) {
-        updateRoundCounter(roundNumber);
+        safeClear(roundNumber);
+      } catch (error) {
+        if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
+          console.warn("RoundStore: Failed to update round counter:", error);
+        }
       }
     };
 
-    // Subscribe to round number changes
-    this.onRoundNumberChange((newNumber) => {
-      try {
-        applyRoundNumber(newNumber);
-      } catch (error) {
-        console.warn("RoundStore: Failed to update round counter:", error);
-      }
-    });
+    this.callbacks.onRoundNumberChange = (newNumber) => {
+      applyRoundNumber(newNumber);
+    };
 
-    // Set initial round number if already set
-    try {
-      applyRoundNumber(this.currentRound.number);
-    } catch (error) {
-      console.warn("RoundStore: Failed to initialize round counter:", error);
-    }
+    applyRoundNumber(this.currentRound.number);
 
     return Promise.resolve();
   }
