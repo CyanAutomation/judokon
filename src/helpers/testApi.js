@@ -1166,6 +1166,32 @@ const cliApi = {
   },
 
   /**
+   * Read the CLI verbose log and normalize the text entries.
+   *
+   * @returns {string[]} Array of timestamped state transition lines.
+   * @pseudocode
+   * 1. If `document` is unavailable, return an empty array.
+   * 2. Locate `<pre id="cli-verbose-log">`; return empty array when missing.
+   * 3. Split `textContent` into lines, trimming whitespace around each.
+   * 4. Filter blank lines and return the resulting array.
+   */
+  readVerboseLog() {
+    try {
+      if (typeof document === "undefined") return [];
+      const pre = document.getElementById("cli-verbose-log");
+      if (!pre) return [];
+      const text = typeof pre.textContent === "string" ? pre.textContent : "";
+      if (!text) return [];
+      return text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+    } catch {
+      return [];
+    }
+  },
+
+  /**
    * Deterministically complete the active CLI round without long waits.
    *
    * @param {object} [roundInput] - Event-like payload forwarded to resolveRound.
