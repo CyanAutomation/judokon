@@ -150,7 +150,7 @@ describe("battleCLI onKeyDown", () => {
     expect(confirm).toBeTruthy();
     expect(dispatchSpy).not.toHaveBeenCalled();
     confirm.click();
-    expect(dispatchSpy).toHaveBeenCalledWith("interrupt", { reason: "quit" });
+    expect(dispatchSpy).toHaveBeenCalledWith("quit", { reason: "userQuit" });
   });
 
   const cancelActions = ["cancel", "escape", "backdrop"];
