@@ -730,6 +730,10 @@ function showCliShortcuts() {
     if (body) body.style.display = "";
     sec?.removeAttribute("hidden");
     close?.setAttribute("aria-expanded", "true");
+    // Pause active timers while shortcuts overlay is open
+    try {
+      pauseTimers();
+    } catch {}
     state.shortcutsOverlay = { close: hideCliShortcuts };
     registerModal(state.shortcutsOverlay);
   }
@@ -757,6 +761,10 @@ function hideCliShortcuts() {
     if (sec) sec.setAttribute("hidden", "");
     close?.setAttribute("aria-expanded", "false");
   }
+  // Resume timers when shortcuts overlay closes
+  try {
+    resumeTimers();
+  } catch {}
   try {
     state.shortcutsReturnFocus?.focus();
   } catch {}
@@ -1666,7 +1674,7 @@ export function restorePointsToWin() {
         frag.appendChild(actions);
         const modal = createModal(frag, {
           labelledBy: h2,
-          describedBy: p,
+          describedBy: p
         });
         // attach modal to DOM so buttons exist
         document.body.appendChild(modal.element);
@@ -1680,14 +1688,16 @@ export function restorePointsToWin() {
           cancelBtn.addEventListener("click", () => resolve(false), { once: true });
           // Close on Escape via global modal manager
           const escHandler = () => resolve(false);
-          document.addEventListener("keydown", function onKey(e){
+          document.addEventListener("keydown", function onKey(e) {
             if (e.key === "Escape") {
               document.removeEventListener("keydown", onKey);
               escHandler();
             }
           });
           // Open the modal after wiring handlers
-          try { modal.open(); } catch {}
+          try {
+            modal.open();
+          } catch {}
         }).then(async (confirmed) => {
           closeModal();
           if (confirmed) {
