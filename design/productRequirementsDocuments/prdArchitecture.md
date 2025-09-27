@@ -123,33 +123,124 @@ Acceptance Criteria:
 
 ### Appendix: Project Architecture Overview (assimilated from `design/architecture.md`)
 
-This appendix preserves the implementation and agent-facing notes from the former `design/architecture.md`.
+This appendix preserves the implementation and agent-facing notes from the former `design/architecture.md` and the legacy `docs/technical/architecture.md` so that architecture guidance is centralized in this PRD.
 
 #### Entry Points
 
-- `game.js` — exports setup helpers and `initGame`. `gameBootstrap.js` listens for `DOMContentLoaded` and invokes `initGame` in production.
+- `game.js` — exports setup helpers and the `initGame` function used across surfaces. The module imports helpers to build the card carousel, fetch JSON data, render judoka cards, and wires navigation + feature-flag hooks. It triggers initial card setup, activates navigation affordances, and performs feature-flag checks.
+- `gameBootstrap.js` — lightweight bootstrap that waits for `DOMContentLoaded` and then invokes `initGame` in production contexts.
 
 #### helpers/
 
-Reusable utilities organized by concern (card building, data fetching, random card generation). Prefer small, single-purpose functions. Key helpers: `generateRandomCard()`, `renderJudokaCard()`, `navigationBar.js`, `setupBottomNavbar.js`.
+Reusable utilities are organized by concern (card building, data fetching, random card generation, navigation helpers). Prefer small, single-purpose functions. Frequently used helpers include:
 
-Engine vs UI layers: Core battle logic lives in `helpers/battleEngine.js` with no DOM access. UI scripts call the engine via the facade in `helpers/api/battleUI.js`.
+- `generateRandomCard()` – selects a card entry using seeded randomness.
+- `renderJudokaCard()` – injects card markup into the DOM with reveal animations.
+- `navigationBar.js` – injects active game modes into the persistent nav bar.
+- `setupBottomNavbar.js` – wires navigation into the DOM and returns cleanup utilities.
 
-#### helpers/vector search
+##### helpers/navigation
 
-Vector-search pages import DOM-free utilities from `helpers/api/vectorSearchPage.js` for match selection, tag formatting, and MiniLM extractor loading.
+- `helpers/navigation/navigationService.js` centralizes validation and URL helpers (e.g., orientation-aware routing).
+- `helpers/navigation/navigationUI.js` provides DOM builders like `buildMenu(gameModes, { orientation })` and `setupHamburger(breakpoint?)`, returning either the created menu element or cleanup functions for resize listeners.
+
+##### helpers/vector search
+
+Vector-search pages import DOM-free utilities from `helpers/api/vectorSearchPage.js` to manage match selection, tag formatting, and MiniLM extractor loading. Page scripts remain focused on wiring the DOM while the helper handles retrieval logic.
+
+##### helpers/country service
+
+`helpers/api/countryService.js` loads and caches `countryCodeMapping.json`, exposing `loadCountryMapping`, `getCountryName`, and `getFlagUrl`. UI modules such as `helpers/country/codes.js` and `helpers/country/list.js` consume these APIs so that country data flows from the data file through the service to rendered flag buttons.
 
 #### Data
 
-- `judoka.json`, `tooltips.json`, `cards.json` — canonical static JSON sources.
+- `judoka.json`, `tooltips.json`, and `cards.json` are canonical static JSON sources for stats, tooltip text, and rarity tiers.
+
+#### Components
+
+UI rendering logic under `/components/` is intentionally lightweight, DOM-driven, and exposes state through `data-*` attributes for observability. Key modules include:
+
+- `Card.js` – generates complete card HTML with attached metadata.
+- `TooltipManager.js` – injects tooltip spans into DOM elements.
+- `StatsPanel.js` – renders interactive stat comparisons for the classic battle.
 
 #### AI Agent Design Considerations
 
-- State exposure via `data-*` attributes, toggleable debug panels, stable ID/class naming, modular JS/HTML, and observable hashes/query params.
+JU-DO-KON! is built to support AI agents in development, testing, and contribution tasks. Architecture guardrails include:
 
-#### Event Bus & State Manager
+- 🏷️ **State exposure** via `data-*` attributes such as `data-stat="power"` or `data-feature="debugMode"`.
+- 🧪 **Toggleable debug panels** including a battle debug overlay with copy-to-clipboard support.
+- 🔗 **Stable ID/class naming** for deterministic DOM queries.
+- 🧩 **Modular JS & HTML** enabling targeted edits and reuse.
+- 🧭 **Observable hashes & query params** like `#mobile` or `?debug=true` to activate UI variants.
 
-- The Classic Battle orchestrator emits `battleStateChange` events; `document.body.dataset.battleState` mirrors the current state.
-- State progression: `waitingForMatchStart` → `matchStart` → `cooldown` → ... → `matchOver`.
+#### Annotated Key Components for Agents
 
-See the original `design/architecture.md` for annotated components and agent-facing tables; content has been integrated into this PRD to centralize architecture guidance.
+```markdown
+### Component: TooltipManager
+
+- Loads: `/data/tooltips.json`
+- Injects tooltips into: `.tooltip[data-tooltip-id]`
+- Used by: card panels, game instructions, stat explanations
+
+### Component: CardRenderer
+
+- Reads data from: `/data/judoka.json`
+- Adds: `data-stat-*` attributes for each stat category
+- Observed by: AI agents comparing or extracting stat values
+
+### Component: FeatureFlagController
+
+- Renders flags from: `/src/pages/settings.html`
+- Writes active flags to DOM via: `data-feature-*`
+- Supports agent testing for: UI variants, experimental features
+
+### Component: LayoutDebugPanel
+
+- Controlled by: Settings toggle (`data-feature="layoutDebug"`)
+- Adds outlines to all visible DOM elements for inspection
+```
+
+#### Observable Features for Agent Testing
+
+| Feature            | Observable Element    | Description                                             |
+| ------------------ | --------------------- | ------------------------------------------------------- |
+| Feature Flags      | `data-feature-*`      | Each flag in the Settings panel updates this attribute  |
+| Layout Debug Panel | `data-debug="layout"` | Injects red outlines around DOM components              |
+| Viewport Simulator | `#mobile` URL hash    | Simulates mobile layout at 375px width                  |
+| Card Stats         | `data-stat="grip"`    | Embedded in rendered card DOM                           |
+| Tooltip Coverage   | `data-tooltip-id`     | Indicates linked tooltip key, used to validate coverage |
+
+#### Files and Interfaces AI Agents Should Know
+
+| Path                                   | Purpose                                        |
+| -------------------------------------- | ---------------------------------------------- |
+| `/src/pages/settings.html`             | UI to toggle feature flags and debug tools     |
+| `/data/judoka.json`                    | Master stat source for all cards               |
+| `/data/tooltips.json`                  | Tooltip text keys and display logic            |
+| `/data/cards.json`                     | Rarity tiers and card presentation rules       |
+| `/components/Card.js`                  | Card rendering logic                           |
+| `/components/TooltipManager.js`        | Adds `data-tooltip-id` spans                    |
+| `/components/FeatureFlagController.js` | Activates features via the DOM                 |
+| `/game.js`                             | Entry point that wires modules together        |
+| `/helpers/`                            | Modular logic (card building, navigation, etc.)|
+
+#### Battle State Events
+
+- The Classic Battle orchestrator emits state transitions through `emitBattleEvent('battleStateChange', detail)` where `detail` is `{ from: string|null, to: string, event?: string|null }`.
+- Consumers subscribe with `onBattleEvent('battleStateChange', handler)` and may also inspect `document.body.dataset.battleState` for compatibility/debugging.
+- Transition hooks leverage helpers such as `emitDiagnostics`, `emitReadiness`, and `emitStateChange` and share an `{ event: outcome }` map for interrupt handling.
+
+#### Classic Battle State Manager
+
+- Core progression: `waitingForMatchStart` → `matchStart` → `cooldown` → `roundStart` → `waitingForPlayerAction` → `roundDecision` → `roundOver` → `matchDecision` → `matchOver`.
+- Interrupt paths dispatch to `interruptRound` or `interruptMatch` to restart rounds, return to lobby, abort matches, or run admin-only `roundModification` flows before resuming.
+- `roundManager.startRound(store)` draws cards and initializes round UI, while `roundManager.startCooldown(store)` computes cooldowns and coordinates the Next button enablement.
+- When cooldown expires (or the player clicks Next), the orchestrator dispatches `ready` to trigger the following round.
+
+#### Classic Battle Event Bus
+
+- JU-DO-KON! uses a lightweight internal event bus (`classicBattle/battleEvents.js`) as the single source for battle events. DOM events are no longer dispatched.
+- Publish events with `emitBattleEvent(type, detail)` and subscribe with `onBattleEvent(type, handler)`; the battle machine instance remains private to `orchestrator.js`, with getters exposed only for tests.
+
+These callouts consolidate the previously scattered helper tables and observable feature lists directly within the Architecture PRD.
