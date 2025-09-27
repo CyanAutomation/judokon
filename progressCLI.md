@@ -205,4 +205,4 @@ Outcome: Targeted unit tests passed; Esc now reaches modal handling codepaths.
 - Targeted Vitest: executed subset for "battleCLI points select". Three specs passed; one spec assertion expecting `window.confirm` was updated accordingly. No broader suite run.
 - Playwright: not executed in this phase; will request elevation on next phase covering end-to-end UI confirmation.
 
-Outcome: Points-to-win change now uses consistent, styled modal; unit tests adjusted and passing locally for the focused subset. Ready for review.
+Outcome: Points-to-win change now uses consistent, styled modal; unit tests adjusted and passing locally for the focused subset. Playwright focused runs passed (`battle-cli-restart`, `replay.spec` related to points-to-win adjustments). Ready for review.
