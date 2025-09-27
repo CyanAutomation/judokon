@@ -1177,7 +1177,11 @@ const cliApi = {
    */
   readVerboseLog() {
     try {
-      if (typeof document === "undefined" || typeof document.getElementById !== "function") {
+      if (
+        typeof document === "undefined" ||
+        !document ||
+        typeof document.getElementById !== "function"
+      ) {
         return [];
       }
 
@@ -1189,18 +1193,10 @@ const cliApi = {
         return [];
       }
 
-      const normalizedLines = String(textContent)
+      return String(textContent)
         .split(/\r?\n/)
-        .map((line) => {
-          try {
-            return String(line ?? "").trim();
-          } catch {
-            return "";
-          }
-        })
+        .map((line) => String(line).trim())
         .filter((line) => line.length > 0);
-
-      return Array.isArray(normalizedLines) ? normalizedLines : [];
     } catch (error) {
       logDevWarning("Failed to read CLI verbose log", error);
       return [];
