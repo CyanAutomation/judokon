@@ -206,7 +206,18 @@ test.describe("CLI Keyboard Flows", () => {
 
       await startBattle(page);
 
-      const verboseTranscript = await readVerboseLog(testApiHandle);
+      /** @type {string[]} */
+      let verboseTranscript = [];
+      await expect
+        .poll(
+          async () => {
+            verboseTranscript = await readVerboseLog(testApiHandle);
+            return verboseTranscript.length > 0;
+          },
+          { timeout: 8000 }
+        )
+        .toBe(true);
+
       expect(verboseTranscript.length).toBeGreaterThan(0);
       expect(verboseTranscript.join(" ")).toContain("waitingForPlayerAction");
     }, ["log", "warn", "error"]);
