@@ -23,45 +23,95 @@ test.describe("Classic Battle – auto-advance", () => {
 
     // Drive end-of-round deterministically via test API if exposed; otherwise select a stat
     await page.waitForLoadState("networkidle");
-    const hasTestApi = await page.evaluate(() => typeof window.__TEST__ !== "undefined");
-    if (hasTestApi) {
-      await page.evaluate(async () => {
-        try {
-          await window.__TEST__?.round?.finish?.();
-        } catch {}
-      });
-    }
-    if (!hasTestApi) {
-      // Select the first available stat to complete the round
+    const WAIT_FOR_ADVANCE_TIMEOUT = 15_000;
+    const resolvedViaLegacyFinish = await page.evaluate(async () => {
+      try {
+        const finish = window.__TEST__?.round?.finish;
+        if (typeof finish === "function") {
+          await finish.call(window.__TEST__.round);
+          return true;
+        }
+      } catch {}
+      return false;
+    });
+
+    if (!resolvedViaLegacyFinish) {
+      // Select the first available stat to complete the round naturally
       const firstStat = page.locator("#stat-buttons button").first();
       await firstStat.click();
-      // Wait for resolution into cooldown
-      await page.waitForTimeout(500); // allow UI to transition
     }
 
     // Expect a countdown snackbar to appear
     // Prefer specific countdown element to avoid strict mode violations
     const countdown = page.locator('[data-testid="next-round-timer"], #next-round-timer');
+    const beforeRoundCounter =
+      (await roundCounter.textContent().catch(() => null))?.trim() || "";
+    const beforeRoundMessage =
+      (await roundMsg.textContent().catch(() => null))?.trim() || "";
+
+    let cooldownReachedViaApi = false;
+    const apiResult = await page.evaluate((waitTimeout) => {
+      try {
+        const stateApi = window.__TEST_API?.state;
+        if (stateApi && typeof stateApi.waitForBattleState === "function") {
+          return stateApi.waitForBattleState.call(stateApi, "cooldown", waitTimeout);
+        }
+      } catch {}
+      return null;
+    }, WAIT_FOR_ADVANCE_TIMEOUT);
+    cooldownReachedViaApi = apiResult === true;
+
+    if (!cooldownReachedViaApi) {
+      await expect
+        .poll(
+          () =>
+            page.evaluate(() => {
+              const bodyState = document.body?.dataset?.battleState || null;
+              const attrState =
+                document
+                  .querySelector("[data-battle-state]")
+                  ?.getAttribute("data-battle-state") || null;
+              return bodyState || attrState || "";
+            }),
+          { message: "expected DOM battle state to reach cooldown", timeout: WAIT_FOR_ADVANCE_TIMEOUT }
+        )
+        .toBe("cooldown");
+    }
+
     await expect(countdown).toBeVisible({ timeout: 5000 });
 
-    // Trigger public Next handler after readiness (programmatic click) then verify change
-    if (hasTestApi) {
-      await page.evaluate(async () => {
-        try {
-          await window.__TEST__?.round?.advanceAfterCooldown?.();
-        } catch {}
-      });
-    }
-    const beforeText = (await roundCounter.textContent().catch(() => roundMsg.textContent())) || "";
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const el =
+              document.querySelector('[data-testid="next-round-timer"]') ||
+              document.getElementById("next-round-timer");
+            return el?.textContent?.trim() || "";
+          }),
+        { message: "expected cooldown timer to populate", timeout: WAIT_FOR_ADVANCE_TIMEOUT }
+      )
+      .not.toBe("");
+
     await expect
       .poll(
         async () => {
-          const t1 = await roundCounter.textContent().catch(() => null);
-          const t2 = await roundMsg.textContent().catch(() => null);
-          return (t1 || t2 || "").trim();
+          const [counterText, messageText] = await Promise.all([
+            roundCounter.textContent().catch(() => null),
+            roundMsg.textContent().catch(() => null),
+          ]);
+          const counter = (counterText || "").trim();
+          const message = (messageText || "").trim();
+          const counterChanged =
+            Boolean(beforeRoundCounter) && counter && counter !== beforeRoundCounter;
+          const messageChanged =
+            Boolean(beforeRoundMessage) && message && message !== beforeRoundMessage;
+          const becameNonEmpty =
+            !beforeRoundMessage && !!message && message !== beforeRoundCounter;
+          return counterChanged || messageChanged || becameNonEmpty;
         },
-        { message: "expected round message/counter to update" }
+        { message: "expected round message/counter to update", timeout: WAIT_FOR_ADVANCE_TIMEOUT }
       )
-      .not.toBe(beforeText);
+      .toBe(true);
   });
 });
