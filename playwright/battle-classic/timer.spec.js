@@ -43,9 +43,7 @@ async function waitForCountdownDecrease(page, initialValue, timeoutMs = 5000) {
     );
   }
 
-  throw new Error(
-    `Countdown did not decrease within ${timeoutMs}ms (last value ${lastSeen})`
-  );
+  throw new Error(`Countdown did not decrease within ${timeoutMs}ms (last value ${lastSeen})`);
 }
 
 test.describe("Classic Battle timer", () => {
@@ -82,20 +80,13 @@ test.describe("Classic Battle timer", () => {
       expect(typeof initialCountdown).toBe("number");
       expect(initialCountdown).toBeGreaterThan(0);
       const initialCountdownValue = /** @type {number} */ (initialCountdown);
-      await expect(timerLocator).toContainText(
-        new RegExp(`Time Left: ${initialCountdownValue}s`)
-      );
+      await expect(timerLocator).toContainText(new RegExp(`Time Left: ${initialCountdownValue}s`));
 
-      const decreasedCountdown = await waitForCountdownDecrease(
-        page,
-        initialCountdownValue
-      );
+      const decreasedCountdown = await waitForCountdownDecrease(page, initialCountdownValue);
 
       expect(decreasedCountdown).toBeLessThan(initialCountdownValue);
 
-      await expect(timerLocator).toContainText(
-        new RegExp(`Time Left: ${decreasedCountdown}s`)
-      );
+      await expect(timerLocator).toContainText(new RegExp(`Time Left: ${decreasedCountdown}s`));
 
       // Verify battle state is properly initialized
       await expect(page.locator("body")).toHaveAttribute("data-target", "10");
