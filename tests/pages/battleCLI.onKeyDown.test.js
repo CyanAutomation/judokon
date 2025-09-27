@@ -153,6 +153,24 @@ describe("battleCLI onKeyDown", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("interrupt", { reason: "quit" });
   });
 
+  it("does not flash match-over UI when quitting mid-match", async () => {
+    // Simulate waitingForPlayerAction; open quit and confirm
+    document.body.dataset.battleState = "waitingForPlayerAction";
+    const countdown = document.getElementById("cli-countdown");
+    const roundMsg = document.getElementById("round-message");
+    onKeyDown(new KeyboardEvent("keydown", { key: "q" }));
+    const confirm = document.getElementById("confirm-quit-button");
+    expect(confirm).toBeTruthy();
+    // Spy on UI that would indicate match-over flash
+    const roundMsgSet = vi.spyOn(roundMsg, "replaceChildren");
+    const setText = vi.spyOn(countdown, "textContent", "set");
+    confirm.click();
+    // No immediate match-over text mutations expected in CLI on quit confirm
+    expect(roundMsgSet).not.toHaveBeenCalled();
+    expect(setText).not.toHaveBeenCalledWith(expect.stringMatching(/match over|winner/i));
+    roundMsgSet.mockRestore();
+  });
+
   const cancelActions = ["cancel", "escape", "backdrop"];
   it.each(cancelActions)(
     "resumes timers and closes modal when quit is canceled via %s",
@@ -229,8 +247,13 @@ describe("battleCLI onKeyDown", () => {
     document.body.dataset.battleState = "cooldown";
     for (const key of ["Enter", " "]) {
       dispatchSpy.mockClear();
-      onKeyDown(new KeyboardEvent("keydown", { key }));
+      const evt = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+      const prevent = vi.spyOn(evt, "preventDefault");
+      const stop = vi.spyOn(evt, "stopPropagation");
+      onKeyDown(evt);
       expect(dispatchSpy).toHaveBeenCalledWith("ready");
+      expect(prevent).toHaveBeenCalled();
+      expect(stop).toHaveBeenCalled();
     }
   });
 

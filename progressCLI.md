@@ -207,6 +207,23 @@ Outcome: Targeted unit tests passed; Esc now reaches modal handling codepaths.
 
 Outcome: Points-to-win change now uses consistent, styled modal; unit tests adjusted and passing locally for the focused subset. Playwright focused runs passed (`battle-cli-restart`, `replay.spec` related to points-to-win adjustments). Ready for review.
 
+## 2025-09-27 — Phase: Enter/Space propagation verified
+
+- Added focused unit assertion that `onKeyDown` calls `preventDefault()` and `stopPropagation()` when handling Enter/Space during `cooldown`, ensuring no stray "Invalid key" messages or native side-effects.
+- File: `tests/pages/battleCLI.onKeyDown.test.js` — enhanced existing test "dispatches ready in cooldown state for Enter and Space" to also verify propagation control.
+- Focused Vitest run: `npx vitest run tests/pages/battleCLI.onKeyDown.test.js -t "dispatches ready in cooldown state for Enter and Space"` → PASS.
+- Playwright: pending; will request elevation to run a minimal spec that advances on Enter/Space without showing invalid key messaging.
+
+Outcome: Propagation behavior is now covered by unit tests and passes locally. Next step is a targeted Playwright check for Enter/Space advancement.
+
+### 2025-09-27 — Playwright focused verification (Enter/Space advance)
+
+- Command: `npx playwright test -g "Enter|Space.*advance|advance.*Enter|Space"`
+- Scope: minimal subset matching Enter/Space advancement scenarios in CLI.
+- Result: PASS (2 tests). No "Invalid key" snackbar observed; rounds advance correctly in `cooldown` and `roundOver` contexts.
+
+Outcome: E2E behavior matches unit-level propagation; no regressions observed in focused run.
+
 ## 2025-09-27 — Phase: Pause/resume timers on help (shortcuts) overlay
 
 - Implemented pause on open and resume on close for the CLI shortcuts panel:
@@ -226,3 +243,14 @@ Outcome: Countdown and selection timers pause while the help/shortcuts overlay i
 - Focused Playwright: ran quit-related scenarios to ensure no end-of-match UI flash → PASS (3 tests).
 
 Outcome: Quit now cleanly navigates without flashing match-over UI; unit and Playwright focused checks passed.
+
+## 2025-09-27 — Phase: Broaden quit flow coverage
+
+- Added unit test to ensure quitting mid-match does not flash match-over UI in the CLI surface.
+  - File: `tests/pages/battleCLI.onKeyDown.test.js` — new case "does not flash match-over UI when quitting mid-match" asserts no immediate round-message/countdown mutation indicative of match-over.
+- Focused Vitest run: `npx vitest run tests/pages/battleCLI.onKeyDown.test.js -t "does not flash match-over UI when quitting mid-match"` → PASS.
+- Focused Playwright run for quit flow:
+  - Command: `npx playwright test -g "Classic Battle quit flow"`
+  - Result: PASS (2 tests). Confirmation modal appears from both Quit and Main Menu entries; no regressions observed.
+
+Outcome: Quit paths validated at unit and e2e levels for modal behavior and absence of match-over flash. Further scenarios (e.g., cancel via Esc/backdrop) already covered in unit; can extend e2e if desired.
