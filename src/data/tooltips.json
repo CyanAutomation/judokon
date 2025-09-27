@@ -18,9 +18,9 @@
     "languageToggle": "**Language toggle**\nSwitch quote language between English and pseudo-Japanese.",
     "quitMatch": "**Quit match**\nReturn to the menu.",
     "drawCard": "**Draw card**\nGet a new random judoka card.",
-    "roundQuick": "**Quick**\\nFirst to 5 points wins.",
-    "roundMedium": "**Medium**\\nFirst to 10 points wins.",
-    "roundLong": "**Long**\\nFirst to 15 points wins.",
+    "roundQuick": "**Quick**\\nFirst to 3 points wins.",
+    "roundMedium": "**Medium**\\nFirst to 5 points wins.",
+    "roundLong": "**Long**\\nFirst to 10 points wins.",
     "next": "**Next**\nStart the next round or skip the current phase.",
     "toggleLayout": "**Toggle layout**\nSwitch between grid and carousel.",
     "copyDebug": "**Copy debug info**\nCopy current diagnostics to clipboard."

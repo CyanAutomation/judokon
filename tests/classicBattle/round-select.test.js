@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 describe("Classic Battle round select modal", () => {
-  test("selecting 15 sets pointsToWin and marks target", async () => {
+  test("selecting Long (10) sets pointsToWin and marks target", async () => {
     process.env.VITEST = "true"; // ensure modal avoids extra event dispatch
     const file = resolve(process.cwd(), "src/pages/battleClassic.html");
     const html = readFileSync(file, "utf-8");
@@ -25,7 +25,20 @@ describe("Classic Battle round select modal", () => {
     await roundPrompt;
 
     const { getPointsToWin } = await import("../../src/helpers/battleEngineFacade.js");
-    expect(getPointsToWin()).toBe(15);
-    expect(document.body.dataset.target).toBe("15");
+    expect(getPointsToWin()).toBe(10);
+    expect(document.body.dataset.target).toBe("10");
+  });
+
+  test("round options match PRD values [3,5,10]", async () => {
+    const rounds = await import("../../src/data/battleRounds.js");
+    const values = rounds.default.map((r) => r.value);
+    expect(values).toEqual([3, 5, 10]);
+  });
+
+  test("tooltips reflect correct win targets", async () => {
+    const tooltips = await import("../../src/data/tooltips.json");
+    expect(tooltips.default.ui.roundQuick).toContain("First to 3 points");
+    expect(tooltips.default.ui.roundMedium).toContain("First to 5 points");
+    expect(tooltips.default.ui.roundLong).toContain("First to 10 points");
   });
 });

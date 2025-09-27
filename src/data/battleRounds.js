@@ -17,7 +17,7 @@ const rounds = [
     id: 1,
     label: "Quick",
     skill: 1,
-    value: 5,
+    value: 3,
     default: false,
     category: "classicBattle",
     description: "A LOW round count total"
@@ -26,7 +26,7 @@ const rounds = [
     id: 2,
     label: "Medium",
     skill: 2,
-    value: 10,
+    value: 5,
     default: true,
     category: "classicBattle",
     description: "A MEDIUM round count total (default)"
@@ -35,7 +35,7 @@ const rounds = [
     id: 3,
     label: "Long",
     skill: 3,
-    value: 15,
+    value: 10,
     default: false,
     category: "classicBattle",
     description: "A HIGH round count total"

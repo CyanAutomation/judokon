@@ -13,6 +13,7 @@ import { logEvent } from "../telemetry.js";
 import { t } from "../i18n.js";
 import rounds from "../../data/battleRounds.js";
 import { syncWinTargetDropdown } from "./winTargetSync.js";
+import { showSnackbar } from "../showSnackbar.js";
 
 /**
  * Check if the URL requests an automatic start.
@@ -55,6 +56,9 @@ async function startRound(value, onStart, emitEvents) {
   // Sync the settings dropdown to reflect the new win target
   try {
     syncWinTargetDropdown();
+  } catch {}
+  try {
+    showSnackbar(`First to ${value} points wins.`);
   } catch {}
   try {
     if (typeof onStart === "function") {
