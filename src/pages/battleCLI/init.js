@@ -71,6 +71,8 @@ import { createCliDomFragment } from "./cliDomTemplate.js";
 import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.js";
 import * as initModule from "./init.js";
 
+const hasDocument = typeof document !== "undefined";
+
 // Initialize engine and subscribe to engine events when available.
 try {
   if (
@@ -447,10 +449,12 @@ export async function resetMatch() {
   handleCountdownFinished();
   state.roundResolving = false;
   clearVerboseLog();
-  try {
-    document.getElementById("play-again-button")?.remove();
-    document.getElementById("start-match-button")?.remove();
-  } catch {}
+  if (hasDocument) {
+    try {
+      document.getElementById("play-again-button")?.remove();
+      document.getElementById("start-match-button")?.remove();
+    } catch {}
+  }
   // Perform synchronous UI reset to prevent glitches
   updateRoundHeader(0, engineFacade.getPointsToWin?.());
   updateScoreLine();
@@ -507,6 +511,7 @@ async function startCallback() {
  */
 async function renderStartButton() {
   await resetPromise;
+  if (!hasDocument) return;
   const main = byId("cli-main");
   if (!main) return;
   // If the static Start button exists in the template, prefer wiring it rather than injecting a duplicate
@@ -751,6 +756,7 @@ function hideCliShortcuts() {
 }
 
 function showBottomLine(text) {
+  if (!hasDocument) return;
   // Render as a single bottom line using the snackbar container
   try {
     // Lazily create a minimal snackbar child if missing
@@ -803,6 +809,7 @@ function sanitizeHintText(text) {
  * @param {string} text - Hint text to display.
  */
 function showHint(text) {
+  if (!hasDocument) return;
   const container = byId("snackbar-container");
   if (!container) return;
   const bar = document.createElement("div");
@@ -843,6 +850,7 @@ function showHint(text) {
  * @returns {HTMLElement} Modal container element.
  */
 function ensureModalContainer() {
+  if (!hasDocument) return null;
   let el = byId("modal-container");
   if (!el) {
     el = document.createElement("div");
@@ -931,6 +939,7 @@ function pauseTimers() {
  * reset stored remaining values
  */
 function resumeTimers() {
+  if (!hasDocument) return;
   console.log("[TIMER] resumeTimers called");
   if (
     document.body?.dataset?.battleState === "waitingForPlayerAction" &&
@@ -974,6 +983,7 @@ function resumeTimers() {
  * open modal
  */
 function showQuitModal() {
+  if (!hasDocument) return;
   pauseTimers();
   isQuitting = false;
   if (!quitModal) {
@@ -1118,7 +1128,7 @@ export function selectStat(stat) {
   choiceEl?.setAttribute("aria-selected", "true");
 
   // Move focus to the stat list for accessibility
-  if (list && !list.contains(document.activeElement)) {
+  if (hasDocument && list && !list.contains(document.activeElement)) {
     list.focus();
   }
 
@@ -1301,7 +1311,7 @@ export function handleStatListArrowKey(key) {
   const list = byId("cli-stats");
   const rows = list ? Array.from(list.querySelectorAll(".cli-stat")) : [];
   if (!list || rows.length === 0) return false;
-  const current = document.activeElement?.closest?.(".cli-stat");
+  const current = hasDocument ? document.activeElement?.closest?.(".cli-stat") : null;
   let idx = rows.indexOf(current);
   if (idx === -1) {
     idx = key === "ArrowUp" || key === "ArrowLeft" ? rows.length - 1 : 0;
@@ -1365,6 +1375,7 @@ async function loadStatDefs() {
  * @returns {Array<HTMLElement>} Array of constructed row elements.
  */
 function buildStatRows(stats, judoka) {
+  if (!hasDocument) return [];
   const rows = [];
   stats
     .slice()
@@ -1407,6 +1418,7 @@ function buildStatRows(stats, judoka) {
  * @returns {void}
  */
 function renderHelpMapping(stats) {
+  if (!hasDocument) return;
   try {
     const help = byId("cli-help");
     if (!help) {
@@ -1481,7 +1493,7 @@ function handleStatClick(statDiv, event) {
   event.preventDefault();
   const idx = statDiv?.dataset?.statIndex;
   if (!idx) return;
-  const state = document.body?.dataset?.battleState || "";
+  const state = hasDocument ? document.body?.dataset?.battleState || "" : "";
   if (state !== "waitingForPlayerAction") return;
   const stat = getStatByIndex(idx);
   if (!stat) return;
@@ -1539,6 +1551,7 @@ export async function renderStatList(judoka) {
 }
 
 function renderHiddenPlayerStats(judoka) {
+  if (!hasDocument) return;
   try {
     const card = byId("player-card");
     if (!card) return;
@@ -1693,7 +1706,9 @@ const globalKeyHandlers = {
     if (sec) {
       if (sec.hidden) {
         state.shortcutsReturnFocus =
-          document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          hasDocument && document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
         showCliShortcuts();
         byId("cli-shortcuts-close")?.focus();
       } else {
@@ -1772,12 +1787,13 @@ export function handleWaitingForPlayerActionKey(key) {
     return true;
   }
   if (key === "enter") {
-    const active = document.activeElement?.closest?.(".cli-stat");
+    const activeElement = hasDocument ? document.activeElement : null;
+    const active = activeElement?.closest?.(".cli-stat");
     console.debug(
       "[TEST DEBUG] handleWaitingForPlayerActionKey enter active=",
       !!active,
       "activeElem=",
-      document.activeElement
+      activeElement
     );
     if (active) {
       const idx = active.dataset.statIndex;
@@ -2002,6 +2018,7 @@ const stateAdvanceHandlers = {
 };
 
 function onClickAdvance(event) {
+  if (!hasDocument) return;
   try {
     if (state.roundResolving) return;
     if (state.ignoreNextAdvanceClick) {
@@ -2085,7 +2102,7 @@ function handleRoundResolved(e) {
     setRoundMessage(`${result.message} (${display} – You: ${playerVal} Opponent: ${opponentVal})`);
     updateScoreLine();
     // Ensure cli-score is updated with the correct scores from the result
-    const cliScore = document.getElementById("cli-score");
+    const cliScore = hasDocument ? document.getElementById("cli-score") : null;
     if (cliScore) {
       // Prefer explicit values from the result when available, otherwise
       // fall back to the canonical engine scores to avoid writing "undefined".
@@ -2128,6 +2145,7 @@ function handleRoundResolved(e) {
  * 4. Append the controls section to the main container.
  */
 function handleMatchOver() {
+  if (!hasDocument) return;
   const main = byId("cli-main");
   if (!main || byId("play-again-button")) return;
   const section = document.createElement("section");
@@ -2193,9 +2211,11 @@ function handleScoreboardClearMessage() {
  */
 function updateUiForState(state) {
   updateBattleStateBadge(state);
-  try {
-    document.getElementById("next-round-button")?.remove();
-  } catch {}
+  if (hasDocument) {
+    try {
+      document.getElementById("next-round-button")?.remove();
+    } catch {}
+  }
   if (state === "matchStart") {
     clearVerboseLog();
   }
@@ -2222,6 +2242,7 @@ function updateUiForState(state) {
  * @returns {void}
  */
 function ensureNextRoundButton() {
+  if (!hasDocument) return;
   try {
     const main = byId("cli-main");
     if (!main || document.getElementById("next-round-button")) return;
@@ -2677,33 +2698,35 @@ export async function init() {
   await resetMatch();
   await resetPromise;
 
-  // Phase 2: Initialize shared Scoreboard alongside CLI-specific logic
-  try {
-    // Setup shared Scoreboard component with timer controls
-    const timerControls = {
-      pauseTimer: () => {}, // CLI handles its own timers
-      resumeTimer: () => {} // CLI handles its own timers
-    };
-    setupScoreboard(timerControls);
+  if (hasDocument) {
+    // Phase 2: Initialize shared Scoreboard alongside CLI-specific logic
+    try {
+      // Setup shared Scoreboard component with timer controls
+      const timerControls = {
+        pauseTimer: () => {}, // CLI handles its own timers
+        resumeTimer: () => {} // CLI handles its own timers
+      };
+      setupScoreboard(timerControls);
 
-    // Initialize PRD battle scoreboard adapter for canonical events
-    initBattleScoreboardAdapter();
+      // Initialize PRD battle scoreboard adapter for canonical events
+      initBattleScoreboardAdapter();
 
-    // Reveal standard scoreboard nodes (remove hidden state)
-    const standardNodes = document.querySelector(".standard-scoreboard-nodes");
-    if (standardNodes) {
-      standardNodes.style.display = "block";
-      standardNodes.removeAttribute("aria-hidden");
+      // Reveal standard scoreboard nodes (remove hidden state)
+      const standardNodes = document.querySelector(".standard-scoreboard-nodes");
+      if (standardNodes) {
+        standardNodes.style.display = "block";
+        standardNodes.removeAttribute("aria-hidden");
+      }
+    } catch (error) {
+      console.warn("Failed to initialize shared Scoreboard in CLI:", error);
     }
-  } catch (error) {
-    console.warn("Failed to initialize shared Scoreboard in CLI:", error);
-  }
 
-  // Hide legacy CLI scoreboard nodes to avoid duplication
-  const cliRound = document.getElementById("cli-round");
-  if (cliRound) cliRound.style.display = "none";
-  const cliScore = document.getElementById("cli-score");
-  if (cliScore) cliScore.style.display = "none";
+    // Hide legacy CLI scoreboard nodes to avoid duplication
+    const cliRound = document.getElementById("cli-round");
+    if (cliRound) cliRound.style.display = "none";
+    const cliScore = document.getElementById("cli-score");
+    if (cliScore) cliScore.style.display = "none";
+  }
 
   try {
     await initRoundSelectModal(startCallback);
@@ -2716,7 +2739,9 @@ export async function init() {
 }
 
 if (typeof window === "undefined" || !window.__TEST__) {
-  if (document.readyState === "loading") {
+  if (!hasDocument) {
+    init();
+  } else if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
