@@ -3,6 +3,18 @@ import "./commonMocks.js";
 
 let modalOpenMock;
 let modalElement;
+let clearTimeoutSpy;
+
+const createFakeTimeoutHandle = (label) => {
+  const handle = {
+    label,
+    cleared: false,
+    clear: vi.fn(() => {
+      handle.cleared = true;
+    })
+  };
+  return handle;
+};
 
 vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   interruptMatch: vi.fn()
@@ -52,6 +64,11 @@ beforeEach(() => {
   };
   vi.clearAllMocks();
   vi.resetModules();
+  clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout").mockImplementation((handle) => {
+    if (handle && typeof handle.clear === "function") {
+      handle.clear();
+    }
+  });
   modalOpenMock = null;
   modalElement = null;
   document.body.innerHTML = "";
@@ -63,12 +80,16 @@ afterEach(() => {
   }
   window.addEventListener = origAdd;
   window.removeEventListener = origRemove;
+  if (clearTimeoutSpy) {
+    clearTimeoutSpy.mockRestore();
+    clearTimeoutSpy = undefined;
+  }
 });
 
 function createStore() {
   return {
-    statTimeoutId: setTimeout(() => {}, 1000),
-    autoSelectId: setTimeout(() => {}, 1000),
+    statTimeoutId: createFakeTimeoutHandle("stat"),
+    autoSelectId: createFakeTimeoutHandle("auto"),
     compareRaf: 123
   };
 }
@@ -87,6 +108,7 @@ describe("initInterruptHandlers", () => {
     const { resetSkipState } = await import("../../../src/helpers/classicBattle/skipHandler.js");
 
     const store = createStore();
+    const { statTimeoutId, autoSelectId } = store;
     initInterruptHandlers(store);
 
     window.dispatchEvent(new Event("pagehide"));
@@ -94,6 +116,8 @@ describe("initInterruptHandlers", () => {
     expect(store.statTimeoutId).toBeNull();
     expect(store.autoSelectId).toBeNull();
     expect(store.compareRaf).toBe(0);
+    expect(statTimeoutId.clear).toHaveBeenCalledTimes(1);
+    expect(autoSelectId.clear).toHaveBeenCalledTimes(1);
     expect(cancel).toHaveBeenCalledWith(123);
     expect(resetSkipState).toHaveBeenCalled();
     expect(clearTimer).toHaveBeenCalled();
