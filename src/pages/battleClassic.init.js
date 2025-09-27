@@ -274,11 +274,6 @@ function calculateRemainingOpponentMessageTime() {
   return 0;
 }
 
-// Attempt initial binding for home button early; store will be passed after init
-try {
-  bindHomeButton({});
-} catch {}
-
 function recordRoundCycleTrigger(source) {
   lastRoundCycleTriggerSource = source;
   lastRoundCycleTriggerTimestamp = getCurrentTimestamp();
@@ -1782,10 +1777,9 @@ async function init() {
     } catch (err) {
       console.debug("battleClassic: wiring quit button failed", err);
     }
-    // Wire Main Menu button to open confirmation modal
+    // Wire Main Menu button with battle store-aware handler
     try {
-      const homeBtn = document.getElementById("home-button");
-      if (homeBtn) homeBtn.addEventListener("click", () => quitMatch(store, homeBtn));
+      bindHomeButton(store);
     } catch (err) {
       console.debug("battleClassic: wiring home button failed", err);
     }
