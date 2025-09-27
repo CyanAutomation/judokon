@@ -6,10 +6,15 @@ import {
 } from "../../src/helpers/classicBattle/battleEvents.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
+const fakeTimeout = vi.fn(() => Symbol("timeout"));
+const fakeInterval = vi.fn(() => Symbol("interval"));
+
 describe("battleCLI onKeyDown", () => {
   let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy, emitSpy;
 
   beforeEach(async () => {
+    fakeTimeout.mockClear();
+    fakeInterval.mockClear();
     vi.resetModules();
     __resetBattleEventTarget();
     window.__TEST__ = true;
@@ -153,8 +158,8 @@ describe("battleCLI onKeyDown", () => {
     "resumes timers and closes modal when quit is canceled via %s",
     async (action) => {
       document.body.dataset.battleState = "waitingForPlayerAction";
-      const selT = setTimeout(() => {}, 1000);
-      const selI = setInterval(() => {}, 1000);
+      const selT = fakeTimeout();
+      const selI = fakeInterval();
       __test.setSelectionTimers(selT, selI);
       const countdown = document.getElementById("cli-countdown");
       countdown.dataset.remainingTime = "3";
@@ -168,7 +173,7 @@ describe("battleCLI onKeyDown", () => {
       } else {
         document.querySelector(".modal-backdrop").click();
       }
-      expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
+      expect(__test.getSelectionTimers().selectionTimer).toBe(selT);
       const confirm = document.getElementById("confirm-quit-button");
       const backdrop = confirm?.closest(".modal-backdrop");
       expect(backdrop?.hasAttribute("hidden")).toBe(true);
@@ -176,10 +181,10 @@ describe("battleCLI onKeyDown", () => {
   );
 
   it("clears timers when confirming quit", () => {
-    const cooldownT = setTimeout(() => {}, 1000);
-    const cooldownI = setInterval(() => {}, 1000);
-    const selT = setTimeout(() => {}, 1000);
-    const selI = setInterval(() => {}, 1000);
+    const cooldownT = fakeTimeout();
+    const cooldownI = fakeInterval();
+    const selT = fakeTimeout();
+    const selI = fakeInterval();
     const spyTimeout = vi.spyOn(globalThis, "clearTimeout");
     const spyInterval = vi.spyOn(globalThis, "clearInterval");
     __test.setCooldownTimers(cooldownT, cooldownI);
