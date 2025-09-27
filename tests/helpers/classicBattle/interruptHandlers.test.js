@@ -5,9 +5,8 @@ let modalOpenMock;
 let modalElement;
 let clearTimeoutSpy;
 
-const createFakeTimeoutHandle = (label) => {
+const createFakeTimeoutHandle = () => {
   const handle = {
-    label,
     cleared: false,
     clear: vi.fn(() => {
       handle.cleared = true;
@@ -65,7 +64,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.resetModules();
   clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout").mockImplementation((handle) => {
-    if (handle && typeof handle.clear === "function") {
+    if (handle && typeof handle === "object" && typeof handle.clear === "function") {
       handle.clear();
     }
   });
@@ -88,8 +87,8 @@ afterEach(() => {
 
 function createStore() {
   return {
-    statTimeoutId: createFakeTimeoutHandle("stat"),
-    autoSelectId: createFakeTimeoutHandle("auto"),
+    statTimeoutId: createFakeTimeoutHandle(),
+    autoSelectId: createFakeTimeoutHandle(),
     compareRaf: 123
   };
 }
