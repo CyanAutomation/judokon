@@ -30,9 +30,9 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
-    // Check that Quick mode was selected (5 points to win)
+    // Check that Quick mode was selected (3 points to win)
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Round 1 Target: 5");
+    await expect(header).toContainText("Round 1 Target: 3");
   });
 
   test("should select Medium with number key 2", async ({ page }) => {
@@ -42,9 +42,9 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
-    // Check that Medium mode was selected (10 points to win)
+    // Check that Medium mode was selected (5 points to win)
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Round 1 Target: 10");
+    await expect(header).toContainText("Round 1 Target: 5");
   });
 
   test("should select Long with number key 3", async ({ page }) => {
@@ -54,9 +54,9 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
-    // Check that Long mode was selected (15 points to win)
+    // Check that Long mode was selected (10 points to win)
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Round 1 Target: 15");
+    await expect(header).toContainText("Round 1 Target: 10");
   });
 
   test("should navigate with arrow keys and select with Enter", async ({ page }) => {
@@ -91,9 +91,9 @@ test.describe("Round Select Modal - Keyboard Navigation", () => {
     await page.waitForSelector(".modal-backdrop", { state: "hidden" });
     await page.waitForSelector("#cli-stats", { state: "visible" });
 
-    // Check that Long mode was selected (15 points to win)
+    // Check that Long mode was selected (10 points to win)
     const header = page.locator("#cli-header");
-    await expect(header).toContainText("Round 1 Target: 15");
+    await expect(header).toContainText("Round 1 Target: 10");
   });
 
   test("should handle Up arrow wrapping", async ({ page }) => {
