@@ -1,6 +1,8 @@
 // Playwright smoke test: verifies inter-round cooldown auto-advances
 import { test, expect } from "@playwright/test";
 
+const WAIT_FOR_ADVANCE_TIMEOUT = 15_000;
+
 test.describe("Classic Battle – auto-advance", () => {
   test("shows countdown and auto-advances without Next", async ({ page }) => {
     await page.goto("/index.html");
@@ -23,8 +25,7 @@ test.describe("Classic Battle – auto-advance", () => {
 
     // Drive end-of-round deterministically via test API if exposed; otherwise select a stat
     await page.waitForLoadState("networkidle");
-    const WAIT_FOR_ADVANCE_TIMEOUT = 15_000;
-    const resolvedViaLegacyFinish = await page.evaluate(async () => {
+    const roundFinishedViaTestApi = await page.evaluate(async () => {
       try {
         const finish = window.__TEST__?.round?.finish;
         if (typeof finish === "function") {
@@ -35,7 +36,7 @@ test.describe("Classic Battle – auto-advance", () => {
       return false;
     });
 
-    if (!resolvedViaLegacyFinish) {
+    if (!roundFinishedViaTestApi) {
       // Select the first available stat to complete the round naturally
       const firstStat = page.locator("#stat-buttons button").first();
       await firstStat.click();
@@ -50,11 +51,15 @@ test.describe("Classic Battle – auto-advance", () => {
       (await roundMsg.textContent().catch(() => null))?.trim() || "";
 
     let cooldownReachedViaApi = false;
-    const apiResult = await page.evaluate((waitTimeout) => {
+    const apiResult = await page.evaluate(async (waitTimeout) => {
       try {
         const stateApi = window.__TEST_API?.state;
         if (stateApi && typeof stateApi.waitForBattleState === "function") {
-          return stateApi.waitForBattleState.call(stateApi, "cooldown", waitTimeout);
+          return await stateApi.waitForBattleState.call(
+            stateApi,
+            "cooldown",
+            waitTimeout
+          );
         }
       } catch {}
       return null;
@@ -102,13 +107,15 @@ test.describe("Classic Battle – auto-advance", () => {
           ]);
           const counter = (counterText || "").trim();
           const message = (messageText || "").trim();
+
           const counterChanged =
-            Boolean(beforeRoundCounter) && counter && counter !== beforeRoundCounter;
+            beforeRoundCounter && counter && counter !== beforeRoundCounter;
           const messageChanged =
-            Boolean(beforeRoundMessage) && message && message !== beforeRoundMessage;
-          const becameNonEmpty =
-            !beforeRoundMessage && !!message && message !== beforeRoundCounter;
-          return counterChanged || messageChanged || becameNonEmpty;
+            beforeRoundMessage && message && message !== beforeRoundMessage;
+          const messageAppeared =
+            !beforeRoundMessage && message && message !== beforeRoundCounter;
+
+          return Boolean(counterChanged || messageChanged || messageAppeared);
         },
         { message: "expected round message/counter to update", timeout: WAIT_FOR_ADVANCE_TIMEOUT }
       )
