@@ -1177,16 +1177,30 @@ const cliApi = {
    */
   readVerboseLog() {
     try {
-      if (typeof document === "undefined") return [];
+      if (typeof document === "undefined" || typeof document.getElementById !== "function") {
+        return [];
+      }
+
       const pre = document.getElementById("cli-verbose-log");
       if (!pre) return [];
-      const text = pre.textContent ?? "";
-      const normalizedLines = String(text)
-        .split("\n")
-        .map((line) => line.trim())
+
+      const textContent = pre.textContent;
+      if (textContent == null) {
+        return [];
+      }
+
+      const normalizedLines = String(textContent)
+        .split(/\r?\n/)
+        .map((line) => {
+          try {
+            return String(line ?? "").trim();
+          } catch {
+            return "";
+          }
+        })
         .filter((line) => line.length > 0);
 
-      return normalizedLines;
+      return Array.isArray(normalizedLines) ? normalizedLines : [];
     } catch (error) {
       logDevWarning("Failed to read CLI verbose log", error);
       return [];
