@@ -278,8 +278,7 @@ class RoundStore {
     const safeParams = typeof params === "object" && params !== null ? params : {};
     const { updateRoundCounter, clearRoundCounter } = safeParams;
 
-    const safeUpdate =
-      typeof updateRoundCounter === "function" ? updateRoundCounter : () => {};
+    const safeUpdate = typeof updateRoundCounter === "function" ? updateRoundCounter : () => {};
     const safeClear =
       typeof clearRoundCounter === "function"
         ? clearRoundCounter
