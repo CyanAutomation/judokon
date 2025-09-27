@@ -1229,6 +1229,42 @@ const cliApi = {
       dispatched: resolution?.dispatched ?? false,
       emitted: resolution?.emitted ?? false
     };
+  },
+
+  /**
+   * Read the verbose log contents for CLI assertions.
+   *
+   * @returns {string[]} Trimmed verbose log lines; empty when unavailable.
+   * @pseudocode
+   * if document undefined -> return []
+   * pre = document.getElementById("cli-verbose-log")
+   * if !pre or textContent not string -> return []
+   * return pre.textContent.split("\n").map(trim).filter(Boolean)
+   */
+  readVerboseLog() {
+    if (typeof document === "undefined") {
+      return [];
+    }
+
+    let pre;
+    try {
+      pre = document.getElementById("cli-verbose-log");
+    } catch {
+      return [];
+    }
+
+    if (!pre || typeof pre.textContent !== "string") {
+      return [];
+    }
+
+    try {
+      return pre.textContent
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+    } catch {
+      return [];
+    }
   }
 };
 
