@@ -17,6 +17,7 @@ function getListener(spy, type) {
 
 describe("battleCLI points select", () => {
   let confirmSpy;
+  let clickConfirm;
 
   beforeEach(() => {
     const machine = { dispatch: vi.fn() };
@@ -25,7 +26,12 @@ describe("battleCLI points select", () => {
       vi.fn(() => machine)
     );
     window.__TEST_MACHINE__ = machine;
+    // Hook into modal confirm button for new modal-based confirmation
     confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    clickConfirm = async () => {
+      const btn = document.querySelector('[data-testid="confirm-points-to-win"]');
+      if (btn) btn.click();
+    };
   });
 
   afterEach(async () => {
@@ -51,7 +57,9 @@ describe("battleCLI points select", () => {
 
     select.value = "10";
     const changeHandler = getListener(changeSpy, "change");
+    const p = Promise.resolve().then(() => clickConfirm());
     await changeHandler(new Event("change"));
+    await p;
 
     expect(confirmSpy).toHaveBeenCalled();
     expect(setPointsToWin).toHaveBeenCalledWith(10);
@@ -83,7 +91,9 @@ describe("battleCLI points select", () => {
     select.value = String(target);
     updateRoundHeaderSpy.mockClear();
     const changeHandler = getListener(changeSpy, "change");
+    const p2 = Promise.resolve().then(() => clickConfirm());
     await changeHandler(new Event("change"));
+    await p2;
 
     expect(getPointsToWin()).toBe(target);
     expect(setPointsToWin).toHaveBeenCalledWith(target);
@@ -112,7 +122,9 @@ describe("battleCLI points select", () => {
 
     const selectChange = getListener(selectSpy, "change");
     select.value = "10";
+    const p3 = Promise.resolve().then(() => clickConfirm());
     await selectChange(new Event("change"));
+    await p3;
 
     expect(getPointsToWin()).toBe(10);
 
