@@ -187,15 +187,15 @@ Component modules own DOM rendering concerns and expose internal state via `data
 
 #### Files and Interfaces Agents Should Know
 
-| Path                                   | Purpose                                        |
-| -------------------------------------- | ---------------------------------------------- |
-| `/src/pages/settings.html`             | UI to toggle feature flags and debug tools     |
-| `/data/judoka.json`                    | Master stat source for all cards               |
-| `/data/tooltips.json`                  | Text keys used in tooltips                     |
-| `/components/Card.js`                  | Card rendering logic                           |
-| `/components/TooltipManager.js`        | Adds `data-tooltip-id` spans                   |
-| `/components/FeatureFlagController.js` | Activates features via the DOM                 |
-| `/game.js`                             | Entry point that wires modules together        |
+| Path                                   | Purpose                                         |
+| -------------------------------------- | ----------------------------------------------- |
+| `/src/pages/settings.html`             | UI to toggle feature flags and debug tools      |
+| `/data/judoka.json`                    | Master stat source for all cards                |
+| `/data/tooltips.json`                  | Text keys used in tooltips                      |
+| `/components/Card.js`                  | Card rendering logic                            |
+| `/components/TooltipManager.js`        | Adds `data-tooltip-id` spans                    |
+| `/components/FeatureFlagController.js` | Activates features via the DOM                  |
+| `/game.js`                             | Entry point that wires modules together         |
 | `/helpers/`                            | Modular logic (e.g., card building, navigation) |
 
 #### Event Bus & State Manager

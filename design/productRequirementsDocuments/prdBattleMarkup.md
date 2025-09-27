@@ -168,24 +168,24 @@ Classic battle pages rely on specific element IDs so helper scripts can attach l
 
 ### Required IDs
 
-| ID                      | Required data hooks                                        | Purpose                                                         |
-| ----------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `round-message`         | `data-testid="round-message"`                             | Announces prompts and round outcomes.                                                                  |
-| `next-round-timer`      | `data-testid="next-round-timer"`                          | Displays the inter-round countdown.                                                                    |
-| `round-counter`         | `data-testid="round-counter"`                             | Shows current round number.                                                                            |
-| `score-display`         | `data-testid="score-display"`                             | Lists player and opponent scores.                                                                      |
-| `test-mode-banner`      | `data-testid="test-mode-banner"`                          | Indicates when test mode is active.                                                                    |
-| `debug-panel`           | `data-testid="debug-panel"`                               | Collapsible container for debugging info.                                                              |
-| `debug-output`          | `data-testid="debug-output"`                              | `<pre>` element inside the debug panel.                                                                |
-| `battle-area`           | `data-testid="battle-area"`                               | Wrapper containing player and opponent cards.                                                          |
-| `player-card`           | `data-testid="player-card"`                               | Container for the player's card.                                                                       |
-| `opponent-card`         | `data-testid="opponent-card"`                             | Container for the opponent's card.                                                                     |
-| `stat-buttons`          | `data-testid="stat-buttons"`                              | Group of stat selection buttons.                                                                       |
-| `round-result`          | `data-testid="round-result"`                              | Displays the result of the round.                                                                      |
-| `next-button`           | `data-role="next-round"`, `data-testid="next-button"`    | Advances to the next round when ready. Pressing it always skips the cooldown regardless of the `skipRoundCooldown` flag. |
-| `stat-help`             | `data-testid="stat-help"`                                 | Opens stat selection help.                                                                             |
-| `quit-match-button`     | `data-testid="quit-match"`                                | Triggers the quit match flow.                                                                          |
-| `battle-state-progress` | `data-testid="battle-state-progress"` (optional)          | Optional list tracking match state transitions; pre-populates from the current state and remaps interrupts to core states.                                   |
+| ID                      | Required data hooks                                   | Purpose                                                                                                                    |
+| ----------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `round-message`         | `data-testid="round-message"`                         | Announces prompts and round outcomes.                                                                                      |
+| `next-round-timer`      | `data-testid="next-round-timer"`                      | Displays the inter-round countdown.                                                                                        |
+| `round-counter`         | `data-testid="round-counter"`                         | Shows current round number.                                                                                                |
+| `score-display`         | `data-testid="score-display"`                         | Lists player and opponent scores.                                                                                          |
+| `test-mode-banner`      | `data-testid="test-mode-banner"`                      | Indicates when test mode is active.                                                                                        |
+| `debug-panel`           | `data-testid="debug-panel"`                           | Collapsible container for debugging info.                                                                                  |
+| `debug-output`          | `data-testid="debug-output"`                          | `<pre>` element inside the debug panel.                                                                                    |
+| `battle-area`           | `data-testid="battle-area"`                           | Wrapper containing player and opponent cards.                                                                              |
+| `player-card`           | `data-testid="player-card"`                           | Container for the player's card.                                                                                           |
+| `opponent-card`         | `data-testid="opponent-card"`                         | Container for the opponent's card.                                                                                         |
+| `stat-buttons`          | `data-testid="stat-buttons"`                          | Group of stat selection buttons.                                                                                           |
+| `round-result`          | `data-testid="round-result"`                          | Displays the result of the round.                                                                                          |
+| `next-button`           | `data-role="next-round"`, `data-testid="next-button"` | Advances to the next round when ready. Pressing it always skips the cooldown regardless of the `skipRoundCooldown` flag.   |
+| `stat-help`             | `data-testid="stat-help"`                             | Opens stat selection help.                                                                                                 |
+| `quit-match-button`     | `data-testid="quit-match"`                            | Triggers the quit match flow.                                                                                              |
+| `battle-state-progress` | `data-testid="battle-state-progress"` (optional)      | Optional list tracking match state transitions; pre-populates from the current state and remaps interrupts to core states. |
 
 ### Data attributes and test hooks
 
