@@ -12,6 +12,7 @@
  */
 
 import { emitBattleEvent } from "./battleEvents.js";
+import { guard } from "./guard.js";
 
 /**
  * @typedef {Object} RoundData
@@ -56,6 +57,12 @@ class RoundStore {
 
     /** @type {Array<{from: string, to: string, event: string, ts: number}>} */
     this.transitionLog = [];
+
+    /** @type {((newNumber: number, oldNumber: number) => void) | null} */
+    this.scoreboardRoundNumberHandler = null;
+
+    /** @type {((newNumber: number, oldNumber: number) => void) | null} */
+    this.previousRoundNumberCallback = null;
   }
 
   /**
@@ -264,6 +271,8 @@ class RoundStore {
     this.readyDispatched = false;
     this.callbacks = {};
     this.transitionLog = [];
+    this.scoreboardRoundNumberHandler = null;
+    this.previousRoundNumberCallback = null;
   }
 
   /**
@@ -281,28 +290,38 @@ class RoundStore {
     const safeUpdate = typeof updateRoundCounter === "function" ? updateRoundCounter : () => {};
     const safeClear =
       typeof clearRoundCounter === "function"
-        ? clearRoundCounter
-        : (roundNumber) => {
-            safeUpdate(roundNumber);
+        ? () => {
+            clearRoundCounter();
+          }
+        : () => {
+            safeUpdate(0);
           };
 
     const applyRoundNumber = (roundNumber) => {
-      try {
-        if (roundNumber > 0) {
-          safeUpdate(roundNumber);
-          return;
-        }
-        safeClear(roundNumber);
-      } catch (error) {
-        if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
-          console.warn("RoundStore: Failed to update round counter:", error);
-        }
+      if (roundNumber > 0) {
+        guard(() => safeUpdate(roundNumber));
+        return;
+      }
+
+      guard(() => safeClear());
+    };
+
+    const existingRoundNumberCallback =
+      this.callbacks.onRoundNumberChange === this.scoreboardRoundNumberHandler
+        ? this.previousRoundNumberCallback
+        : this.callbacks.onRoundNumberChange;
+
+    const scoreboardRoundNumberHandler = (newNumber, oldNumber) => {
+      applyRoundNumber(newNumber);
+
+      if (typeof existingRoundNumberCallback === "function") {
+        guard(() => existingRoundNumberCallback(newNumber, oldNumber));
       }
     };
 
-    this.callbacks.onRoundNumberChange = (newNumber) => {
-      applyRoundNumber(newNumber);
-    };
+    this.previousRoundNumberCallback = existingRoundNumberCallback || null;
+    this.scoreboardRoundNumberHandler = scoreboardRoundNumberHandler;
+    this.callbacks.onRoundNumberChange = scoreboardRoundNumberHandler;
 
     applyRoundNumber(this.currentRound.number);
 
@@ -315,9 +334,12 @@ class RoundStore {
    */
   disconnectFromScoreboardAdapter() {
     // Only clear if there was actually a callback set
-    if (this.callbacks.onRoundNumberChange) {
-      this.callbacks.onRoundNumberChange = null;
+    if (this.callbacks.onRoundNumberChange === this.scoreboardRoundNumberHandler) {
+      this.callbacks.onRoundNumberChange = this.previousRoundNumberCallback;
     }
+
+    this.scoreboardRoundNumberHandler = null;
+    this.previousRoundNumberCallback = null;
   }
 }
 
