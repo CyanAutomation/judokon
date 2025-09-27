@@ -224,6 +224,20 @@ Outcome: Propagation behavior is now covered by unit tests and passes locally. N
 
 Outcome: E2E behavior matches unit-level propagation; no regressions observed in focused run.
 
+## 2025-09-27 — Phase: Shortcuts pause/resume timers verification
+
+- Verified shortcuts overlay pause/resume behavior via focused tests.
+- Unit (existing): `battleCLI.onKeyDown` suite covers toggle and Esc-close; no changes needed.
+- Playwright (focused):
+  - `cli-flows.spec.mjs` — ran tests matching help toggle and quit-cancel resume countdown behavior:
+    - should toggle help when pressing H and clear invalid key message → PASS
+    - shortcuts panel is initially hidden → PASS
+    - shortcuts panel can be toggled → PASS
+    - should resume countdown timers when quitting is canceled → PASS
+  - Command: `npx playwright test -g "should toggle help when pressing H and clear invalid key message|resume countdown timers when quitting is canceled|shortcuts panel can be toggled|shortcuts panel is initially hidden"`
+
+Outcome: Shortcuts open/close work as expected; countdown continues after canceling quit, consistent with pause/resume wiring. No regressions observed in the focused run.
+
 ## 2025-09-27 — Phase: Pause/resume timers on help (shortcuts) overlay
 
 - Implemented pause on open and resume on close for the CLI shortcuts panel:
