@@ -58,19 +58,19 @@ A simple "unhiding" of the standard nodes is insufficient as they will not inher
 The most effective way to achieve this is to merge the two implementations:
 
 1.  **HTML (`src/pages/battleCLI.html`):**
-    *   The hidden `div.standard-scoreboard-nodes` should be made visible by removing `style="display: none"` and `aria-hidden="true"`.
-    *   The existing `.cli-status` div, which contains the custom scoreboard, should be repurposed to wrap the now-visible standard scoreboard elements.
-    *   The IDs `#cli-round` and `#cli-score` must be moved from the custom `div` elements to the corresponding standard elements (`p#round-counter` and `p#score-display`).
-    *   The original custom `div` elements for the scoreboard can then be safely removed.
+    - The hidden `div.standard-scoreboard-nodes` should be made visible by removing `style="display: none"` and `aria-hidden="true"`.
+    - The existing `.cli-status` div, which contains the custom scoreboard, should be repurposed to wrap the now-visible standard scoreboard elements.
+    - The IDs `#cli-round` and `#cli-score` must be moved from the custom `div` elements to the corresponding standard elements (`p#round-counter` and `p#score-display`).
+    - The original custom `div` elements for the scoreboard can then be safely removed.
 
 2.  **CSS (`src/pages/battleCLI.css`):**
-    *   The CSS rules currently targeting `#cli-round` and `#cli-score` will now correctly apply to the standard scoreboard elements, preserving the intended CLI look and feel, including the absolute positioning of the round counter.
-    *   The styles for `.standard-scoreboard-nodes` should be reviewed and potentially removed if they are no longer needed, as the container `div` will now be `.cli-status`.
+    - The CSS rules currently targeting `#cli-round` and `#cli-score` will now correctly apply to the standard scoreboard elements, preserving the intended CLI look and feel, including the absolute positioning of the round counter.
+    - The styles for `.standard-scoreboard-nodes` should be reviewed and potentially removed if they are no longer needed, as the container `div` will now be `.cli-status`.
 
 ### Opportunities for Improvement
 
-*   **Reduced Complexity:** This change will remove redundant HTML and JavaScript, simplifying the `battleCLI` implementation.
-*   **Consistency:** The CLI page will now use the same underlying scoreboard logic as the classic battle page, making future updates easier and reducing the chance of bugs.
-*   **Adherence to Architecture:** This refactoring aligns the `battleCLI` page with the intended component-based architecture of the application.
+- **Reduced Complexity:** This change will remove redundant HTML and JavaScript, simplifying the `battleCLI` implementation.
+- **Consistency:** The CLI page will now use the same underlying scoreboard logic as the classic battle page, making future updates easier and reducing the chance of bugs.
+- **Adherence to Architecture:** This refactoring aligns the `battleCLI` page with the intended component-based architecture of the application.
 
 By following this plan, we can successfully integrate the reusable scoreboard component into the CLI page without any loss of the existing styling or structure.
