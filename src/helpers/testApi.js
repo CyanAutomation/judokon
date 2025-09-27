@@ -1232,34 +1232,35 @@ const cliApi = {
   },
 
   /**
-   * Read the verbose log contents for CLI assertions.
+   * Read the verbose CLI log rendered in the DOM.
    *
-   * @param {string} [elementId="cli-verbose-log"] - ID of the log element to read
-   * @returns {string[]} Trimmed verbose log lines; empty when unavailable.
+   * @returns {string[]} Trimmed, non-empty log lines.
    * @pseudocode
-   * if document undefined -> return []
-   * pre = document.getElementById(elementId || "cli-verbose-log")
-   * if !pre or textContent not string -> return []
-   * return pre.textContent.split("\n").map(trim).filter(Boolean)
+   * try
+   *   if window/document unavailable -> return []
+   *   logEl = document.getElementById("cli-verbose-log")
+   *   if no logEl -> return []
+   *   text = logEl.textContent ?? ""
+   *   return text.split("\n").map(trim).filter(Boolean)
+   * catch -> return []
    */
-  readVerboseLog(elementId = "cli-verbose-log") {
-    if (typeof document === "undefined") {
-      return [];
-    }
-
-    let pre;
+  readVerboseLog() {
     try {
-      pre = document.getElementById(elementId || "cli-verbose-log");
-    } catch {
-      return [];
-    }
+      if (typeof window === "undefined" || typeof document === "undefined") {
+        return [];
+      }
 
-    if (!pre || typeof pre.textContent !== "string") {
-      return [];
-    }
+      const logElement = document.getElementById("cli-verbose-log");
+      if (!logElement) {
+        return [];
+      }
 
-    try {
-      return pre.textContent
+      const textContent = typeof logElement.textContent === "string" ? logElement.textContent : "";
+      if (!textContent) {
+        return [];
+      }
+
+      return textContent
         .split("\n")
         .map((line) => line.trim())
         .filter(Boolean);
