@@ -15,35 +15,40 @@ async function readCountdown(page) {
 }
 
 async function waitForCountdownDecrease(page, initialValue, timeoutMs = 5000) {
-  const deadline = Date.now() + timeoutMs;
-  let lastSeen = initialValue;
+  const hasCountdownHelper = await page.evaluate(
+    () => typeof window.__TEST_API?.timers?.getCountdown === "function"
+  );
 
-  while (Date.now() < deadline) {
-    const current = await readCountdown(page);
-    if (typeof current === "number") {
-      lastSeen = current;
-      if (current < initialValue) {
-        return current;
-      }
-    }
-
-    await page.evaluate(
-      () =>
-        new Promise((resolve) => {
-          if (typeof requestAnimationFrame === "function") {
-            requestAnimationFrame(() => resolve());
-            return;
-          }
-          if (typeof queueMicrotask === "function") {
-            queueMicrotask(resolve);
-            return;
-          }
-          setTimeout(resolve, 0);
-        })
+  if (!hasCountdownHelper) {
+    throw new Error(
+      "__TEST_API.timers.getCountdown is not available; ensure timer helpers are exposed in the page context."
     );
   }
 
-  throw new Error(`Countdown did not decrease within ${timeoutMs}ms (last value ${lastSeen})`);
+  try {
+    const countdownHandle = await page.waitForFunction(
+      (initial) => {
+        const current = window.__TEST_API?.timers?.getCountdown?.();
+        return typeof current === "number" && current < initial ? current : undefined;
+      },
+      initialValue,
+      { timeout: timeoutMs, polling: "raf" }
+    );
+
+    const value = await countdownHandle.jsonValue();
+    await countdownHandle.dispose();
+    return /** @type {number} */ (value);
+  } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      const lastSeen = await readCountdown(page);
+      const lastValue = typeof lastSeen === "number" ? lastSeen : "unavailable";
+      throw new Error(
+        `Countdown did not decrease below ${initialValue} within ${timeoutMs}ms (last observed ${lastValue})`
+      );
+    }
+
+    throw error;
+  }
 }
 
 test.describe("Classic Battle timer", () => {
