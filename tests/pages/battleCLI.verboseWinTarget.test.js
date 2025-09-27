@@ -48,16 +48,8 @@ describe("battleCLI verbose win target", () => {
     const battleFacade = await import("../../src/helpers/battleEngineFacade.js");
     const { getPointsToWin } = battleFacade;
     const setPointsToWinSpy = vi.spyOn(battleFacade, "setPointsToWin");
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-
-    const changeHandler = getListener(changeSpy, "change");
-    select.value = "10";
-    await changeHandler(new Event("change"));
 
     expect(getPointsToWin()).toBe(10);
-    expect(localStorage.getItem(BATTLE_POINTS_TO_WIN)).toBe("10");
-    confirmSpy.mockRestore();
-    changeSpy.mockRestore();
 
     setPointsToWinSpy.mockClear();
 

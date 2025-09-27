@@ -2499,8 +2499,6 @@ export async function setupFlags() {
     await setFlag("cliVerbose", enable);
     verboseEnabled = !!enable;
 
-    verboseEnabled = !!enable;
-
     try {
       const setter = engineFacade.setPointsToWin;
       if (hasStoredTarget && typeof setter === "function") {

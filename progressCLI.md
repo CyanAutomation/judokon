@@ -216,3 +216,13 @@ Outcome: Points-to-win change now uses consistent, styled modal; unit tests adju
 - Focused Playwright: ran a small group of specs mentioning shortcuts/help/pause/resume → PASS (7 tests).
 
 Outcome: Countdown and selection timers pause while the help/shortcuts overlay is visible and resume when it closes, verified by targeted unit and Playwright tests.
+
+## 2025-09-27 — Phase: Quit flow hardening (avoid match-over flash)
+
+- Updated quit confirmation path in `src/pages/battleCLI/init.js:showQuitModal`:
+  - After user confirms, dispatch `interrupt` with `{ reason: "quit" }` first to preserve existing UI/test expectations, then optionally dispatch `quit` with `{ reason: "userQuit" }` for future handlers. This prevents unintended match-over UI flashes while keeping backward compatibility.
+- Classic Battle quit modal behavior: ensured immediate UI feedback remains consistent in `src/helpers/classicBattle/quitModal.js` by calling `showResult(getOutcomeMessage("quit"))` upon confirm alongside existing flows, preserving tests.
+- Targeted unit tests: ran focused onKeyDown/quit and quitModal specs → PASS.
+- Focused Playwright: ran quit-related scenarios to ensure no end-of-match UI flash → PASS (3 tests).
+
+Outcome: Quit now cleanly navigates without flashing match-over UI; unit and Playwright focused checks passed.
