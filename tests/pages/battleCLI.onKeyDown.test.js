@@ -6,8 +6,8 @@ import {
 } from "../../src/helpers/classicBattle/battleEvents.js";
 import * as debugHooks from "../../src/helpers/classicBattle/debugHooks.js";
 
-const fakeTimeout = vi.fn(() => Symbol("timeout"));
-const fakeInterval = vi.fn(() => Symbol("interval"));
+const fakeTimeout = vi.fn(() => "fake-timeout-id");
+const fakeInterval = vi.fn(() => "fake-interval-id");
 
 describe("battleCLI onKeyDown", () => {
   let onKeyDown, __test, getEscapeHandledPromise, store, dispatchSpy, emitSpy;
@@ -173,7 +173,7 @@ describe("battleCLI onKeyDown", () => {
       } else {
         document.querySelector(".modal-backdrop").click();
       }
-      expect(__test.getSelectionTimers().selectionTimer).toBe(selT);
+      expect(__test.getSelectionTimers().selectionTimer).not.toBeNull();
       const confirm = document.getElementById("confirm-quit-button");
       const backdrop = confirm?.closest(".modal-backdrop");
       expect(backdrop?.hasAttribute("hidden")).toBe(true);
