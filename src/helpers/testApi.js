@@ -703,6 +703,47 @@ const timerApi = {
   },
 
   /**
+   * Retrieve the active countdown value displayed in the UI.
+   *
+   * @pseudocode
+   * 1. Locate the timer element using the shared data-testid/id selectors.
+   * 2. Attempt to parse a numeric value from dataset attributes (`data-remaining-time`).
+   * 3. Fallback to parsing the text content that follows the `Time Left: {n}s` pattern.
+   * 4. Return the parsed integer when available; otherwise return `null` to indicate no countdown.
+   *
+   * @returns {number|null} Countdown seconds or `null` when unavailable.
+   */
+  getCountdown() {
+    try {
+      if (typeof document === "undefined") return null;
+
+      const timerEl =
+        document.querySelector('[data-testid="next-round-timer"]') ||
+        document.getElementById("next-round-timer");
+      if (!timerEl) return null;
+
+      const parseIntSafe = (value) => {
+        const numeric = Number.parseInt(String(value ?? ""), 10);
+        return Number.isNaN(numeric) ? null : numeric;
+      };
+
+      const datasetValue =
+        timerEl.getAttribute("data-remaining-time") ?? timerEl.dataset?.remainingTime;
+      const fromDataset = parseIntSafe(datasetValue);
+      if (fromDataset !== null) {
+        return fromDataset;
+      }
+
+      const textMatch = (timerEl.textContent || "").match(/Time Left:\s*(\d+)s/i);
+      if (!textMatch) return null;
+
+      return parseIntSafe(textMatch[1]);
+    } catch {
+      return null;
+    }
+  },
+
+  /**
    * Skip cooldown immediately without waiting
    */
   skipCooldown() {
