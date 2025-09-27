@@ -14,7 +14,7 @@
  *    - If successful, copy/cache files into models/minilm.
  * 5. On failure, print actionable guidance for strict-offline environments.
  */
-import { mkdir, stat, cp, writeFile } from "node:fs/promises";
+import { mkdir, stat, cp } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 

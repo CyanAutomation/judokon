@@ -41,6 +41,8 @@ describe("battleCLI verbose win target", () => {
 
     await mod.init();
 
+    expect(() => getListener(changeSpy, "change")).not.toThrow();
+
     const initModule = await import("../../src/pages/battleCLI/init.js");
     const { toggleVerbose } = await initModule.setupFlags();
     expect(toggleVerbose).toEqual(expect.any(Function));
