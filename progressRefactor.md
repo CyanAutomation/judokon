@@ -6,7 +6,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 - Confirmed that every PRD referenced below exists under `design/productRequirementsDocuments/`.
 - There is no `design/technical/` directory; the duplicated audits live under `docs/technical/` and at the root of `design/`. Language below reflects the actual paths.
-- Additional documents surfaced during validation require explicit mapping: `docs/rag-system.md`, `docs/technical/architecture.md`, `design/architecture.md`, `design/testing/classicBattleTesting.md`, and the `design/eventAudit/` artifacts. (✅ `docs/TestValuePolicy.md` and `docs/technical/classicBattleTesting.md` are now assimilated into `prdTestingStandards.md`.)
+- Additional documents surfaced during validation require explicit mapping: `docs/rag-system.md`, the former architecture overviews (now consolidated under `design/productRequirementsDocuments/prdArchitecture.md`), `design/testing/classicBattleTesting.md`, and the `design/eventAudit/` artifacts. (✅ `docs/TestValuePolicy.md` and `docs/technical/classicBattleTesting.md` are now assimilated into `prdTestingStandards.md`.)
 - The Battle CLI topic is split between `docs/battle-cli.md` (usage) and `docs/battleCLI.md` (module structure). Those guides should be merged while migrating content into `prdBattleCLI.md`.
 - `design/codeStandards/` already holds deep dives referenced by `prdCodeStandards.md`; make sure those references stay canonical when content moves.
 
@@ -21,7 +21,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/components.md` → `prdUIDesignSystem.md` (exists).
 - `docs/roundUI.md` → `prdBattleMarkup.md` or `prdUIDesignSystem.md` (decide based on whether the content is markup contract vs component style guidance).
 - Former `docs/product-docs.md` content now lives in `design/productRequirementsDocuments/prdPRDViewer.md#implementation-notes` (exists).
-- `docs/technical/architecture.md` / `design/architecture.md` → `prdArchitecture.md` (exists; collapse duplicate Markdown after integrating callouts).
+- ✅ Architecture overview (former `docs/technical/architecture.md` / `design/architecture.md`) now lives in `design/productRequirementsDocuments/prdArchitecture.md` (appendix is authoritative).
 - `docs/technical/battleMarkup.md` (retired) / `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat Markdown as temporary appendix until canonical schema lives in PRD).
 - Data schema deep dive now lives in `design/productRequirementsDocuments/prdDataSchemas.md` (former `docs/technical/dataSchemas.md` has been retired).
 - `docs/technical/eventNamingAudit.md` / `design/eventNamingAudit.md` / `design/eventAudit/*.txt` → `prdEventContracts.md` (exists; move migration tables + listener inventories).
@@ -45,7 +45,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), `design/codeStandards/evaluatingPlaywrightTests.md`, `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
 - `docs/validation-commands.md` → split command matrix between `prdTestingStandards.md` (test suite) and `prdDevelopmentStandards.md` (agent/dev workflows); keep CLI script references synchronized.
 - `docs/rag-system.md` → summarize agent workflow in `prdVectorDatabaseRAG.md` and link to `design/agentWorkflows/` examples.
-- `docs/technical/architecture.md`, `design/architecture.md` → migrate architectural overview into `prdArchitecture.md` (with diagrams referenced from `design/architecture/` if needed).
+- ✅ Architecture overview migrated into `design/productRequirementsDocuments/prdArchitecture.md` (appendix) with diagrams referenced from `design/architecture/` as needed.
 - `docs/technical/classicBattleTesting.md`, `design/testing/classicBattleTesting.md` → embed deterministic testing checklist in `prdBattleClassic.md` and `prdTestingStandards.md`, then archive duplicates.
 - `docs/components.md` and `docs/roundUI.md` → integrate into `prdUIDesignSystem.md` and ensure `prdBattleMarkup.md` owns DOM contracts.
 
