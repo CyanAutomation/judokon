@@ -1189,7 +1189,7 @@ const cliApi = {
       if (!pre) return [];
 
       const textContent = pre.textContent;
-      if (textContent == null) {
+      if (textContent === null || textContent === undefined) {
         return [];
       }
 
