@@ -84,17 +84,19 @@ Currently, only ~45% of new players complete their first battle across all modes
 
 ### Round UI Flow
 
+This section outlines how each round broadcasts state changes to keep the UI, Scoreboard, and automation hooks aligned.
+
 Classic Battle emits three deterministic UI events per round that coordinate the stat buttons, Scoreboard, and cooldown timers:
 
-1. **`roundStarted`** — resets button states, preps the countdown timers, and synchronises the Scoreboard (see [Functional Requirements – Scoreboard Integration](#functional-requirements)).
+1. **`roundStarted`** — resets button states, preps the countdown timers, and synchronises the Scoreboard (see [Functional Requirements](#functional-requirements)).
 2. **`statSelected`** — highlights the chosen stat button, locks out further picks, and optionally surfaces the "You picked" snackbar referenced in [Technical Considerations](#technical-considerations).
 3. **`roundResolved`** — pushes the outcome to the Scoreboard, updates scores, schedules the inter-round countdown, and clears any stat highlight before the next `roundStarted` event.
 
-Round resolution is implemented as a helper chain for clarity and testing hooks. `evaluateOutcome` compares the selected stats, `dispatchOutcomeEvents` moves the battle state forward, `updateScoreboard` keeps UI counters aligned with engine data, and `emitRoundResolved` broadcasts the final result for downstream listeners (e.g., [Feature Flags – `enableTestMode`](#feature-flags)).
+Round resolution is implemented as a helper chain for clarity and testing hooks. `evaluateOutcome` compares the selected stats, `dispatchOutcomeEvents` moves the battle state forward, `updateScoreboard` keeps UI counters aligned with engine data, and `emitRoundResolved` broadcasts the final result for downstream listeners (e.g., [Feature Flags](#feature-flags)).
 
 To avoid repeated DOM queries inside timers and handlers, the shared round store caches references to the player card, opponent card, stat buttons, and scoreboard containers.
 
-### Headless / Fast-Forward Mode
+### Headless Fast-Forward Mode
 
 Automated simulations can enable headless mode to bypass reveal delays and cooldown waits:
 
@@ -104,7 +106,7 @@ import { setHeadlessMode } from "../helpers/headlessMode.js";
 setHeadlessMode(true); // skip cooldown and reveal delays
 ```
 
-When headless mode is active, rounds resolve back-to-back, dramatically increasing throughput for QA suites and feature-flagged diagnostics (see [Functional Requirements – Debug/Testing Mode](#functional-requirements)).
+When headless mode is active, rounds resolve back-to-back, dramatically increasing throughput for QA suites and feature-flagged diagnostics (see [Functional Requirements](#functional-requirements)).
 
 ---
 
