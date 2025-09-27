@@ -1166,6 +1166,44 @@ const cliApi = {
   },
 
   /**
+   * Read the CLI verbose log and normalize the text entries.
+   *
+   * @returns {string[]} Array of timestamped state transition lines.
+   * @pseudocode
+   * 1. If `document` is unavailable, return an empty array.
+   * 2. Locate `<pre id="cli-verbose-log">`; return empty array when missing.
+   * 3. Split `textContent` into lines, trimming whitespace around each.
+   * 4. Filter blank lines and return the resulting array.
+   */
+  readVerboseLog() {
+    try {
+      if (
+        typeof document === "undefined" ||
+        !document ||
+        typeof document.getElementById !== "function"
+      ) {
+        return [];
+      }
+
+      const pre = document.getElementById("cli-verbose-log");
+      if (!pre) return [];
+
+      const textContent = pre.textContent;
+      if (textContent === null || textContent === undefined) {
+        return [];
+      }
+
+      return String(textContent)
+        .split(/\r?\n/)
+        .map((line) => String(line).trim())
+        .filter((line) => line.length > 0);
+    } catch (error) {
+      logDevWarning("Failed to read CLI verbose log", error);
+      return [];
+    }
+  },
+
+  /**
    * Deterministically complete the active CLI round without long waits.
    *
    * @param {object} [roundInput] - Event-like payload forwarded to resolveRound.
@@ -1229,41 +1267,6 @@ const cliApi = {
       dispatched: resolution?.dispatched ?? false,
       emitted: resolution?.emitted ?? false
     };
-  },
-
-  /**
-   * Read the verbose CLI log rendered in the DOM.
-   *
-   * @returns {string[]} Trimmed, non-empty log lines.
-   * @pseudocode
-   * try
-   *   if window/document unavailable -> return []
-   *   logEl = document.getElementById("cli-verbose-log")
-   *   if no logEl -> return []
-   *   text = logEl.textContent ?? ""
-   *   return text.split("\n").map(trim).filter(Boolean)
-   * catch -> return []
-   */
-  readVerboseLog() {
-    try {
-      if (typeof window === "undefined" || typeof document === "undefined") {
-        return [];
-      }
-
-      const logElement = document.getElementById("cli-verbose-log");
-      if (!logElement) {
-        return [];
-      }
-
-      const textContent = logElement.textContent ?? "";
-
-      return textContent
-        .split("\n")
-        .map((line) => line.trim())
-        .filter(Boolean);
-    } catch {
-      return [];
-    }
   }
 };
 

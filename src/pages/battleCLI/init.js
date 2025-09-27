@@ -72,6 +72,8 @@ import { resolveRoundForTest as resolveRoundForTestHelper } from "./testSupport.
 import * as initModule from "./init.js";
 
 const hasDocument = typeof document !== "undefined";
+const getSafeDocument = () => (hasDocument ? document : null);
+const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -1141,8 +1143,11 @@ export function selectStat(stat) {
   choiceEl?.setAttribute("aria-selected", "true");
 
   // Move focus to the stat list for accessibility
-  if (hasDocument && list && !list.contains(document.activeElement)) {
-    list.focus();
+  if (list) {
+    const activeElement = getActiveElement();
+    if (!list.contains(activeElement)) {
+      list.focus();
+    }
   }
 
   try {
@@ -1327,7 +1332,8 @@ export function handleStatListArrowKey(key) {
   const list = byId("cli-stats");
   const rows = list ? Array.from(list.querySelectorAll(".cli-stat")) : [];
   if (!list || rows.length === 0) return false;
-  const current = hasDocument ? document.activeElement?.closest?.(".cli-stat") : null;
+  const activeElement = getActiveElement();
+  const current = activeElement?.closest?.(".cli-stat") ?? null;
   let idx = rows.indexOf(current);
   if (idx === -1) {
     idx = key === "ArrowUp" || key === "ArrowLeft" ? rows.length - 1 : 0;
@@ -1509,7 +1515,8 @@ function handleStatClick(statDiv, event) {
   event.preventDefault();
   const idx = statDiv?.dataset?.statIndex;
   if (!idx) return;
-  const state = hasDocument ? document.body?.dataset?.battleState || "" : "";
+  const doc = getSafeDocument();
+  const state = doc?.body?.dataset?.battleState ?? "";
   if (state !== "waitingForPlayerAction") return;
   const stat = getStatByIndex(idx);
   if (!stat) return;
@@ -1755,10 +1762,9 @@ const globalKeyHandlers = {
     const sec = byId("cli-shortcuts");
     if (sec) {
       if (sec.hidden) {
+        const activeElement = getActiveElement();
         state.shortcutsReturnFocus =
-          hasDocument && document.activeElement instanceof HTMLElement
-            ? document.activeElement
-            : null;
+          activeElement instanceof HTMLElement ? activeElement : null;
         showCliShortcuts();
         byId("cli-shortcuts-close")?.focus();
       } else {
@@ -1837,7 +1843,7 @@ export function handleWaitingForPlayerActionKey(key) {
     return true;
   }
   if (key === "enter") {
-    const activeElement = hasDocument ? document.activeElement : null;
+    const activeElement = getActiveElement();
     const active = activeElement?.closest?.(".cli-stat");
     console.debug(
       "[TEST DEBUG] handleWaitingForPlayerActionKey enter active=",
