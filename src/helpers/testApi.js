@@ -1255,10 +1255,7 @@ const cliApi = {
         return [];
       }
 
-      const textContent = typeof logElement.textContent === "string" ? logElement.textContent : "";
-      if (!textContent) {
-        return [];
-      }
+      const textContent = logElement.textContent ?? "";
 
       return textContent
         .split("\n")
