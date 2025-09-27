@@ -3,6 +3,20 @@ import * as init from "../../../src/pages/battleCLI/init.js";
 // Import DOM helpers used within module under test to stub safely
 import * as domMod from "../../../src/pages/battleCLI/dom.js";
 
+describe("battleCLI init import guards", () => {
+  it("does not throw when document is undefined", async () => {
+    const originalDocument = globalThis.document;
+    vi.resetModules();
+    try {
+      globalThis.document = undefined;
+      await expect(import("../../../src/pages/battleCLI/init.js")).resolves.toBeTruthy();
+    } finally {
+      globalThis.document = originalDocument;
+      vi.resetModules();
+    }
+  });
+});
+
 describe("battleCLI waitingForPlayerAction handler latency", () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="cli-countdown"></div>';
