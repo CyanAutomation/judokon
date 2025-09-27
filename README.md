@@ -45,7 +45,7 @@ Headless mode forces cooldowns to `0` and skips opponent reveal sleeps. Test mod
 
 Stat selections now dispatch events and rely on the state machine for round resolution. `handleStatSelection` performs direct resolution only when the orchestrator is absent (e.g., certain tests or CLI utilities).
 
-See [design/battleMarkup.md](design/battleMarkup.md) for the canonical DOM ids used by classic battle scripts.
+See [prdBattleMarkup](design/productRequirementsDocuments/prdBattleMarkup.md#appendix-classic-battle-markup) for the canonical DOM IDs used by classic battle scripts.
 
 ## 🔌 Engine API
 
