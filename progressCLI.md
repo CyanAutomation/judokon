@@ -196,3 +196,13 @@ Outcome: No regressions detected in targeted unit tests. Ready for review.
 - Playwright: pending (will request elevation next phase for only the relevant scenarios).
 
 Outcome: Targeted unit tests passed; Esc now reaches modal handling codepaths.
+
+## 2025-09-27 — Phase: Replace confirm() with modal for points-to-win
+
+- Replaced `window.confirm(...)` in `src/pages/battleCLI/init.js:restorePointsToWin` with an accessible modal built via `createModal(...)`.
+- Modal includes Confirm/Cancel buttons (`data-testid` hooks added) and supports Escape to cancel. It’s appended to `document.body` and opened programmatically.
+- Updated tests in `tests/pages/battleCLI.pointsToWin.test.js` to interact with the modal by clicking the confirm button instead of relying on `window.confirm`.
+- Targeted Vitest: executed subset for "battleCLI points select". Three specs passed; one spec assertion expecting `window.confirm` was updated accordingly. No broader suite run.
+- Playwright: not executed in this phase; will request elevation on next phase covering end-to-end UI confirmation.
+
+Outcome: Points-to-win change now uses consistent, styled modal; unit tests adjusted and passing locally for the focused subset. Ready for review.
