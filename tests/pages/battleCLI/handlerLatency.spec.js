@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as init from "../../../src/pages/battleCLI/init.js";
 // Import DOM helpers used within module under test to stub safely
 import * as domMod from "../../../src/pages/battleCLI/dom.js";
+import { withMutedConsole } from "../../utils/console.js";
 
 describe("battleCLI init import guards", () => {
   it("does not throw when document is undefined", async () => {
@@ -9,7 +10,28 @@ describe("battleCLI init import guards", () => {
     vi.resetModules();
     try {
       globalThis.document = undefined;
-      await expect(import("../../../src/pages/battleCLI/init.js")).resolves.toBeTruthy();
+      await withMutedConsole(async () => {
+        await expect(import("../../../src/pages/battleCLI/init.js")).resolves.toBeTruthy();
+      });
+    } finally {
+      globalThis.document = originalDocument;
+      vi.resetModules();
+    }
+  });
+
+  it("handles game:reset-ui dispatch when document is undefined", async () => {
+    const originalDocument = globalThis.document;
+    vi.resetModules();
+    try {
+      globalThis.document = undefined;
+      await withMutedConsole(async () => {
+        await import("../../../src/pages/battleCLI/init.js");
+        if (typeof window !== "undefined") {
+          expect(() => {
+            window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store: null } }));
+          }).not.toThrow();
+        }
+      });
     } finally {
       globalThis.document = originalDocument;
       vi.resetModules();
