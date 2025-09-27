@@ -1035,13 +1035,10 @@ function showQuitModal() {
       isQuitting = true;
       quitModal.close();
       clearBottomLine();
-      try {
-        // Emit both: maintain backward-compat while enabling dedicated quit handling
-        await safeDispatch("quit", { reason: "userQuit" });
-      } catch {}
-      try {
-        await safeDispatch("interrupt", { reason: "quit" });
-      } catch {}
+      // Maintain backward-compat: first dispatch interrupt expected by tests/UI,
+      // then optionally emit dedicated quit for future handlers.
+      try { await safeDispatch("interrupt", { reason: "quit" }); } catch {}
+      try { await safeDispatch("quit", { reason: "userQuit" }); } catch {}
       try {
         // Use a relative path so deployments under a subpath (e.g. GitHub Pages)
         // navigate back to the lobby correctly.
