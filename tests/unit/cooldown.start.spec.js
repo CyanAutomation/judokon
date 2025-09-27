@@ -1,7 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as roundManager from "@/helpers/classicBattle/roundManager.js";
 
 describe("cooldown auto-advance wiring", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   beforeEach(() => {
     // jsdom body for dataset checks used by cooldown
     if (typeof document !== "undefined") {
@@ -13,7 +21,9 @@ describe("cooldown auto-advance wiring", () => {
 
   it("emits countdown started and resolves ready at expiry", async () => {
     const bus = { emit: vi.fn() };
-    const scheduler = { setTimeout: (fn, ms) => setTimeout(fn, ms) };
+    const scheduler = {
+      setTimeout: vi.fn((fn, ms) => setTimeout(fn, ms))
+    };
     const showSnackbar = vi.fn();
     const dispatchBattleEvent = vi.fn();
 
@@ -29,7 +39,7 @@ describe("cooldown auto-advance wiring", () => {
     expect(bus.emit).toHaveBeenCalledWith("control.countdown.started", expect.any(Object));
 
     // Fast-forward timers to ensure expiry triggers
-    await new Promise((r) => setTimeout(r, 10));
+    await vi.runAllTimersAsync();
     // Ready promise should be present
     expect(controls).toBeTruthy();
     expect(typeof controls.ready?.then).toBe("function");
