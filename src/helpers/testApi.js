@@ -717,19 +717,17 @@ const timerApi = {
     try {
       if (typeof document === "undefined") return null;
 
-      const timerEl =
-        document.querySelector('[data-testid="next-round-timer"]') ||
-        document.getElementById("next-round-timer");
+      const timerEl = document.querySelector('[data-testid="next-round-timer"]');
       if (!timerEl) return null;
 
-      const parseIntSafe = (value) => {
+      const parseTimerValue = (value) => {
         const numeric = Number.parseInt(String(value ?? ""), 10);
         return Number.isNaN(numeric) ? null : numeric;
       };
 
       const datasetValue =
         timerEl.getAttribute("data-remaining-time") ?? timerEl.dataset?.remainingTime;
-      const fromDataset = parseIntSafe(datasetValue);
+      const fromDataset = parseTimerValue(datasetValue);
       if (fromDataset !== null) {
         return fromDataset;
       }
@@ -737,7 +735,7 @@ const timerApi = {
       const textMatch = (timerEl.textContent || "").match(/Time Left:\s*(\d+)s/i);
       if (!textMatch) return null;
 
-      return parseIntSafe(textMatch[1]);
+      return parseTimerValue(textMatch[1]);
     } catch {
       return null;
     }
