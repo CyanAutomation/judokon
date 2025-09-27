@@ -812,6 +812,19 @@ function stubGlobal(name, value) {
   };
 }
 
+/**
+ * Captures and controls microtask execution for deterministic testing.
+ *
+ * @pseudocode
+ * 1. Intercept queueMicrotask calls and store callbacks in a pending array
+ * 2. Provide drain function that executes all pending callbacks in batches
+ * 3. Include safety limit to prevent infinite loops from recursive scheduling
+ * 4. Optionally attach drain method to test controller for easy access
+ * 5. Return cleanup function to restore original queueMicrotask behavior
+ *
+ * @param {Object} [controller] - Optional test controller to attach drainPendingMicrotasks method
+ * @returns {{ drain: Function, restore: Function }} Control object with drain and cleanup methods
+ */
 function captureMicrotaskQueue(controller) {
   const pending = [];
   const restoreQueueMicrotask = stubGlobal("queueMicrotask", (callback) => {
@@ -824,11 +837,16 @@ function captureMicrotaskQueue(controller) {
     while (pending.length > 0) {
       batches += 1;
       if (batches > maxIterations) {
-        throw new Error(`Microtask queue did not settle after ${maxIterations} drains`);
+        throw new Error(
+          `Microtask queue did not settle after ${maxIterations} drains while executing pending test microtasks. ` +
+            "This likely indicates recursive queueMicrotask scheduling or an infinite loop in the callbacks under test."
+        );
       }
       const callbacks = pending.splice(0);
       for (const callback of callbacks) {
-        callback();
+        if (typeof callback === "function") {
+          callback();
+        }
       }
     }
   };
@@ -1309,7 +1327,8 @@ describe("Classic Battle page scaffold (behavioral)", () => {
         resetStatButtons();
         // Advance one frame to process queued RAF callbacks after reset
         currentEnv.testController.advanceFrame();
-        currentEnv.testController.drainPendingMicrotasks?.();
+        expect(typeof currentEnv.testController.drainPendingMicrotasks).toBe("function");
+        currentEnv.testController.drainPendingMicrotasks();
         expect(button.disabled).toBe(false);
       } finally {
         restoreRAF();
