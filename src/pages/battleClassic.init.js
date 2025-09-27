@@ -10,7 +10,8 @@ import { computeRoundResult } from "../helpers/classicBattle/roundResolver.js";
 import {
   disableStatButtons,
   setStatButtonsEnabled,
-  resolveStatButtonsReady
+  resolveStatButtonsReady,
+  wireStatHotkeys
 } from "../helpers/classicBattle/statButtons.js";
 import { quitMatch } from "../helpers/classicBattle/quitModal.js";
 import { bindUIHelperEventHandlersDynamic } from "../helpers/classicBattle/uiEventHandlers.js";
@@ -64,6 +65,7 @@ let isStartingRoundCycle = false;
 // Suppress duplicate round cycle starts when manual Next clicks trigger both
 // `round.start` and `ready` back-to-back.
 let lastManualRoundStartTimestamp = 0;
+let detachStatHotkeys;
 const READY_SUPPRESSION_WINDOW_MS = (() => {
   if (typeof window === "undefined") {
     return 200;
@@ -1250,6 +1252,12 @@ function renderStatButtons(store) {
   } catch (err) {
     console.debug("battleClassic: disableNextRoundButton before selection failed", err);
   }
+  try {
+    if (typeof detachStatHotkeys === "function") {
+      detachStatHotkeys();
+    }
+  } catch {}
+  detachStatHotkeys = undefined;
   container.innerHTML = "";
   for (const stat of STATS) {
     const btn = document.createElement("button");
@@ -1295,6 +1303,9 @@ function renderStatButtons(store) {
       () => resolveStatButtonsReady(),
       () => {}
     );
+    try {
+      detachStatHotkeys = wireStatHotkeys(buttons);
+    } catch {}
   } catch {} // Ignore errors if setting stat buttons enabled fails
 }
 
