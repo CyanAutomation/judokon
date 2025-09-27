@@ -120,7 +120,7 @@ class RoundStore {
    * 3. Notify subscribers of the new round number.
    * 4. Emit legacy event unless explicitly disabled.
    *
-   * @param {number} number - New round number (1-based)
+   * @param {number} number - New round number (1-based, zero allowed for pre-match state)
    * @param {{ emitLegacyEvent?: boolean }} [options] - Optional behavior overrides
    * @param {boolean} [options.emitLegacyEvent=true] - Whether to emit the legacy display.round.start event
    */
@@ -297,7 +297,7 @@ class RoundStore {
           };
 
     const applyRoundNumber = (roundNumber) => {
-      if (roundNumber > 0) {
+      if (typeof roundNumber === "number" && Number.isFinite(roundNumber) && roundNumber >= 0) {
         guard(() => safeUpdate(roundNumber));
         return;
       }
