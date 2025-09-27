@@ -18,6 +18,7 @@ const debugPanelToggleListeners = new WeakMap();
  * 2. Return the element or null if not found.
  */
 function getDebugOutputEl() {
+  if (typeof document === "undefined") return null;
   return document.getElementById("debug-output");
 }
 
@@ -69,6 +70,7 @@ function ensureDebugCopyButton(panel) {
  * @returns {HTMLElement|null} The structured debug panel or null.
  */
 function ensureDebugPanelStructure(panel, { createIfMissing = false } = {}) {
+  if (typeof document === "undefined") return null;
   let node = panel;
   if (!node && !createIfMissing) return null;
   if (!node) {
@@ -349,6 +351,7 @@ export function updateDebugPanel() {
  * 3. Otherwise remove the placeholder panel from the DOM.
  */
 export function initDebugPanel() {
+  if (typeof document === "undefined") return;
   const debugPanel = document.getElementById("debug-panel");
   if (!debugPanel) return;
   const battleArea = document.getElementById("battle-area");
@@ -381,6 +384,7 @@ export function initDebugPanel() {
  * 2. If `enabled` is false and a panel exists, hide and remove it.
  */
 export function setDebugPanelEnabled(enabled) {
+  if (typeof document === "undefined") return;
   const battleArea = document.getElementById("battle-area");
   let panel = document.getElementById("debug-panel");
   if (enabled) {
