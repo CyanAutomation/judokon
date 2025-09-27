@@ -48,6 +48,18 @@ function extractSeconds(detail) {
   return typeof seconds === "number" && Number.isFinite(seconds) ? seconds : null;
 }
 
+/**
+ * Normalize battle round numbers that may be provided as numbers or strings.
+ *
+ * @param {unknown} value potential round value from an event payload
+ * @returns {number | null} finite round number when valid, otherwise null
+ * @pseudocode
+ *   if value is a finite number → return value
+ *   else if value is a string whose trimmed form is not empty
+ *     parsed ← Number(value) // Number() automatically trims surrounding whitespace
+ *     if parsed is finite → return parsed
+ *   return null for all other types or when parsing fails
+ */
 function parseRoundNumber(value) {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : null;
