@@ -2797,9 +2797,9 @@ export async function init() {
     }
 
     // Hide legacy CLI scoreboard nodes to avoid duplication
-    const cliRound = document.getElementById("cli-round");
+    const cliRound = byId("cli-round");
     if (cliRound) cliRound.style.display = "none";
-    const cliScore = document.getElementById("cli-score");
+    const cliScore = byId("cli-score");
     if (cliScore) cliScore.style.display = "none";
   }
 
