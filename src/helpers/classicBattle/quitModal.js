@@ -59,6 +59,10 @@ function createQuitConfirmation(store, onConfirm) {
       } catch {}
     }
     modal.close();
+    // Also inform UI layer immediately for consistency with tests expecting a message
+    try {
+      showResult(getOutcomeMessage("quit"));
+    } catch {}
     // Drive state machine to interruption path
     await dispatchBattleEvent("interrupt");
     const state = getBattleState();

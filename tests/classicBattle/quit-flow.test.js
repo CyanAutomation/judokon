@@ -71,13 +71,10 @@ describe("Classic Battle quit flow", () => {
     confirmBtn.click();
     await navComplete;
 
-    expect(showEndModalSpy).toHaveBeenCalledWith(
-      expect.any(Object),
-      {
-        outcome: "quit",
-        scores: { player: 0, opponent: 0 }
-      }
-    );
+    expect(showEndModalSpy).toHaveBeenCalledWith(expect.any(Object), {
+      outcome: "quit",
+      scores: { player: 0, opponent: 0 }
+    });
     expect(dispatchedEvents).toEqual(["interrupt", "toLobby"]);
     expect(navigateSpy).toHaveBeenCalledTimes(1);
     expect(document.activeElement?.id).toBe("quit-button");

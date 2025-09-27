@@ -116,10 +116,7 @@ export async function prepareLocalModel(options = {}) {
           continue;
         }
       }
-      // As a minimal fallback, create placeholder files to satisfy presence checks
-      // (Note: real inference still requires actual weights; this is for dev scaffolding only.)
-      await ensureDir(path.dirname(full));
-      await writeFile(full, rel.endsWith(".onnx") ? Buffer.from([0]) : "{}", "utf8");
+      throw new Error(`Model file is missing or empty after hydration attempt: ${rel}`);
     }
   }
   return { ok: true, source: "transformers", destDir };
