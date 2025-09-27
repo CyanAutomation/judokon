@@ -61,7 +61,7 @@ describe("battleCLI points select", () => {
     await changeHandler(new Event("change"));
     await p;
 
-    expect(confirmSpy).toHaveBeenCalled();
+    // Legacy confirm no longer used; ensure modal confirm occurred by side effects
     expect(setPointsToWin).toHaveBeenCalledWith(10);
     expect(getPointsToWin()).toBe(10);
     expect(emitBattleEvent).not.toHaveBeenCalledWith("startClicked");

@@ -216,11 +216,3 @@ Assumptions made while verifying:
 - PRD reference `prdBattleClassic.md` is the authoritative design for win-targets.
 - The code paths mentioned in the original report exist at the file paths referenced; I did not change behavior beyond recommending fixes and tests.
 
-If you'd like, I can:
-
-- Open branches and implement the low-risk fixes (#1 and #4) with unit tests and run the test suite.
-- Add logging/instrumentation scaffolding for Issue #3 so we can reproduce and diagnose the hang.
-
----
-
-_Edits: reformatted, verified, and annotated the original QA report with concrete next steps and validation checks. Waiting for your review before making code changes._
