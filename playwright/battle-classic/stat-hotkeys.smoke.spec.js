@@ -1,10 +1,13 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Stat hotkeys", () => {
-  test("pressing 1 selects the first stat", async ({ page }) => {
+  test("clicking the first stat selects it", async ({ page }) => {
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = { ...(window.__FF_OVERRIDES || {}), statHotkeys: true };
-      window.__TEST__ = window.__TEST__ || {};
+      window.__FEATURE_FLAGS__ = {
+        ...(window.__FEATURE_FLAGS__ || {}),
+        statHotkeys: true
+      };
     });
     await page.goto("/src/pages/battleClassic.html");
 
@@ -14,22 +17,8 @@ test.describe("Stat hotkeys", () => {
       "data-buttons-ready",
       "true"
     );
-    await first.focus(); // ensure document receives keydown consistently
 
-    await page.evaluate(() => {
-      window.__TEST__ = window.__TEST__ || {};
-      if (typeof window.__TEST__.selectStatByIndex !== "function") {
-        window.__TEST__.selectStatByIndex = (index) => {
-          const buttons = document.querySelectorAll("#stat-buttons button");
-          const target = buttons[index];
-          if (target && !target.disabled) target.click();
-        };
-      }
-    });
-
-    await page.evaluate(() => {
-      window.__TEST__?.selectStatByIndex?.(0);
-    });
+    await first.click();
 
     await expect(page.locator("body")).toHaveAttribute(
       "data-stat-selected",
