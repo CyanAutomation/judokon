@@ -575,8 +575,13 @@ export class BattleEngine {
    *
    * @param {number} driftAmount - Amount of drift detected in seconds.
    */
-  handleTimerDrift(driftAmount) {
-    engineHandleTimerDrift(this, driftAmount);
+  handleTimerDrift(remainingTime) {
+    // Stop the current timer
+    this.stopTimer();
+    // Restart with corrected time
+    this.timer.startRound(this.timer.onTickCb, this.timer.onExpiredCb, remainingTime, (r) =>
+      this.handleTimerDrift(r)
+    );
   }
 
   /**

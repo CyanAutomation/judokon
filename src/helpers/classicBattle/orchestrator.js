@@ -580,7 +580,7 @@ function attachListeners(machineRef) {
   const engine = machineRef.context?.engine;
   if (engine) {
     engine.onTimerDrift = (drift) => {
-      emitBattleEvent("scoreboardShowMessage", `Timer drift detected: ${drift}s. Timer reset.`);
+      emitBattleEvent("scoreboardShowMessage", "Waiting…");
       emitBattleEvent("debugPanelUpdate");
       engine.handleTimerDrift(drift);
     };
