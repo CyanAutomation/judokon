@@ -3,9 +3,14 @@ import { withMutedConsole } from "../../tests/utils/console.js";
 
 async function readCountdown(page) {
   return page.evaluate(() => {
-    const getter = window.__TEST_API?.timers?.getCountdown;
-    if (typeof getter !== "function") return null;
-    return getter();
+    try {
+      const getter = window.__TEST_API?.timers?.getCountdown;
+      if (typeof getter !== "function") return null;
+      return getter();
+    } catch (error) {
+      console.warn("Failed to read countdown:", error);
+      return null;
+    }
   });
 }
 
@@ -74,8 +79,9 @@ test.describe("Classic Battle timer", () => {
 
       const initialCountdown = await readCountdown(page);
       expect(initialCountdown).not.toBeNull();
+      expect(typeof initialCountdown).toBe("number");
+      expect(initialCountdown).toBeGreaterThan(0);
       const initialCountdownValue = /** @type {number} */ (initialCountdown);
-      expect(initialCountdownValue).toBeGreaterThan(0);
       await expect(timerLocator).toContainText(
         new RegExp(`Time Left: ${initialCountdownValue}s`)
       );
