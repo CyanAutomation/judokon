@@ -7,16 +7,39 @@ describe("CLI input latency hardened test", () => {
   });
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
     document.body.innerHTML = "";
   });
 
-  it("uses microtask scheduling seam for selection (digit path)", async () => {
-    const schedule = vi.spyOn(init, "__scheduleMicrotask").mockImplementation((fn) => {
-      // Do not run immediately — verify deferral, then run
-      setTimeout(fn, 0);
+  it("uses microtask scheduling seam for selection (digit path)", () => {
+    let scheduledCallback;
+    const originalResolve = Promise.resolve.bind(Promise);
+    vi.spyOn(Promise, "resolve").mockImplementation((value) => {
+      // Only intercept the first microtask scheduling to capture the callback.
+      if (scheduledCallback) {
+        return originalResolve(value);
+      }
+
+      const placeholder = {
+        then(onFulfilled, onRejected) {
+          if (typeof onFulfilled === "function") {
+            scheduledCallback = onFulfilled;
+          }
+          return placeholder;
+        },
+        catch() {
+          return placeholder;
+        },
+        finally() {
+          return placeholder;
+        },
+        [Symbol.toStringTag]: "Promise"
+      };
+
+      return placeholder;
     });
     // Stub getStatByIndex via a local facade: the handler calls it via same module
-    const getStatByIndex = vi.spyOn(init, "getStatByIndex").mockReturnValue("power");
+    vi.spyOn(init, "getStatByIndex").mockReturnValue("power");
     // Spy selectStat via a getter on module; since it's not exported, observe via side-effect by mocking safeDispatch
     const dispatchSpy = vi.spyOn(init, "safeDispatch").mockImplementation(() => {});
 
@@ -24,12 +47,9 @@ describe("CLI input latency hardened test", () => {
     expect(handled).toBe(true);
     // Not yet called synchronously
     expect(dispatchSpy).not.toHaveBeenCalled();
-    // Flush our timeout (microtask stand-in)
-    await new Promise((r) => setTimeout(r, 0));
+    expect(typeof scheduledCallback).toBe("function");
+    // Manually trigger the deferred callback captured from the microtask
+    scheduledCallback();
     expect(dispatchSpy).toHaveBeenCalledWith("statSelected");
-
-    schedule.mockRestore();
-    getStatByIndex.mockRestore();
-    dispatchSpy.mockRestore();
   });
 });
