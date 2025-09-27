@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as roundManager from "@/helpers/classicBattle/roundManager.js";
 
 describe("cooldown auto-advance wiring", () => {
+  let bus;
+  let virtualTime;
+  let nextTimeoutId;
+  let creationOrder;
+  let pendingTimeouts;
+  let scheduler;
+  let flushScheduler;
+
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -20,47 +28,75 @@ describe("cooldown auto-advance wiring", () => {
     }
   });
 
-  it("emits countdown started and resolves ready at expiry", async () => {
-    const bus = { emit: vi.fn() };
-    let virtualTime = 0;
-    let nextTimeoutId = 0;
-    const pendingTimeouts = new Map();
-    const scheduler = {
+  beforeEach(() => {
+    bus = { emit: vi.fn() };
+    virtualTime = 0;
+    nextTimeoutId = 0;
+    creationOrder = 0;
+    pendingTimeouts = new Map();
+    scheduler = {
       setTimeout: vi.fn((fn, ms) => {
         const delay = Number(ms) || 0;
         const id = ++nextTimeoutId;
-        pendingTimeouts.set(id, { fn, due: virtualTime + Math.max(0, delay) });
+        pendingTimeouts.set(id, {
+          fn,
+          due: virtualTime + Math.max(0, delay),
+          created: ++creationOrder
+        });
         return id;
       }),
       clearTimeout: vi.fn((id) => {
-        pendingTimeouts.delete(id);
+        if (id == null) {
+          return false;
+        }
+        return pendingTimeouts.delete(id);
       })
     };
-    const flushScheduler = async (limit = 50) => {
+    flushScheduler = async (limit = 50) => {
       let iterations = 0;
+      let firstError;
       while (pendingTimeouts.size) {
         iterations += 1;
         if (iterations > limit) {
           throw new Error("flushScheduler exceeded iteration limit");
         }
-        const tasks = [...pendingTimeouts.entries()].sort(([, a], [, b]) => a.due - b.due);
-        pendingTimeouts.clear();
-        for (const [, task] of tasks) {
+        const tasks = [...pendingTimeouts.entries()].sort(([, a], [, b]) => {
+          if (a.due !== b.due) {
+            return a.due - b.due;
+          }
+          return a.created - b.created;
+        });
+        for (const [id, task] of tasks) {
+          if (!pendingTimeouts.has(id)) {
+            continue;
+          }
           const advanceBy = task.due - virtualTime;
           if (advanceBy > 0) {
             vi.advanceTimersByTime(advanceBy);
             virtualTime += advanceBy;
           }
-          const result = task.fn();
-          if (result && typeof result.then === "function") {
-            await result;
+          pendingTimeouts.delete(id);
+          try {
+            const result = task.fn();
+            if (result && typeof result.then === "function") {
+              await result;
+            }
+          } catch (error) {
+            if (!firstError) {
+              firstError = error;
+            }
           }
         }
       }
+      if (firstError) {
+        throw firstError;
+      }
     };
+  });
+
+  it("emits countdown started and resolves ready at expiry", async () => {
     const showSnackbar = vi.fn();
     const dispatchBattleEvent = vi.fn();
-
     const controls = roundManager.startCooldown({}, scheduler, {
       eventBus: bus,
       showSnackbar,
@@ -80,5 +116,22 @@ describe("cooldown auto-advance wiring", () => {
     expect(controls).toBeTruthy();
     expect(typeof controls.ready?.then).toBe("function");
     await expect(controls.ready).resolves.toBeUndefined();
+  });
+
+  it("skips cancelled timers when flushing scheduler", async () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    const firstId = scheduler.setTimeout(first, 100);
+    const secondId = scheduler.setTimeout(second, 200);
+
+    expect(scheduler.clearTimeout(firstId)).toBe(true);
+    expect(scheduler.clearTimeout(null)).toBe(false);
+
+    await flushScheduler();
+
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledTimes(1);
+    // Second timer should still be cleared from the pending map
+    expect(pendingTimeouts.has(secondId)).toBe(false);
   });
 });
