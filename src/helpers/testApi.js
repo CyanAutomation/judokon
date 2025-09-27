@@ -1180,13 +1180,15 @@ const cliApi = {
       if (typeof document === "undefined") return [];
       const pre = document.getElementById("cli-verbose-log");
       if (!pre) return [];
-      const text = typeof pre.textContent === "string" ? pre.textContent : "";
-      if (!text) return [];
-      return text
+      const text = pre.textContent ?? "";
+      const normalizedLines = String(text)
         .split("\n")
         .map((line) => line.trim())
         .filter((line) => line.length > 0);
-    } catch {
+
+      return normalizedLines;
+    } catch (error) {
+      logDevWarning("Failed to read CLI verbose log", error);
       return [];
     }
   },
@@ -1255,41 +1257,6 @@ const cliApi = {
       dispatched: resolution?.dispatched ?? false,
       emitted: resolution?.emitted ?? false
     };
-  },
-
-  /**
-   * Read the verbose CLI log rendered in the DOM.
-   *
-   * @returns {string[]} Trimmed, non-empty log lines.
-   * @pseudocode
-   * try
-   *   if window/document unavailable -> return []
-   *   logEl = document.getElementById("cli-verbose-log")
-   *   if no logEl -> return []
-   *   text = logEl.textContent ?? ""
-   *   return text.split("\n").map(trim).filter(Boolean)
-   * catch -> return []
-   */
-  readVerboseLog() {
-    try {
-      if (typeof window === "undefined" || typeof document === "undefined") {
-        return [];
-      }
-
-      const logElement = document.getElementById("cli-verbose-log");
-      if (!logElement) {
-        return [];
-      }
-
-      const textContent = logElement.textContent ?? "";
-
-      return textContent
-        .split("\n")
-        .map((line) => line.trim())
-        .filter(Boolean);
-    } catch {
-      return [];
-    }
   }
 };
 
