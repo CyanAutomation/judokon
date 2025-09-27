@@ -83,6 +83,9 @@ function handleRoundStart(event) {
   const normalizedRoundNumber = roundNumber ?? roundIndex;
   if (typeof normalizedRoundNumber === "number") {
     roundStore.setRoundNumber(normalizedRoundNumber, { emitLegacyEvent: false });
+    try {
+      updateRoundCounter(normalizedRoundNumber);
+    } catch {}
   } else {
     try {
       clearRoundCounter();

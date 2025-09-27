@@ -1043,6 +1043,9 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
     emitBattleEvent("display.round.start", { roundNumber: 3 });
 
+    expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBeGreaterThan(initialRoundCalls);
+    expect(scoreboardMock.updateRoundCounter.mock.calls.at(-1)).toEqual([3]);
+
     const roundEnded = engineMock.listeners.get("roundEnded");
     roundEnded?.({ playerScore: 4, opponentScore: 1 });
 
