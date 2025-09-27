@@ -17,8 +17,7 @@ import {
   resumeTimer as engineResumeTimer,
   stopTimer as engineStopTimer,
   handleTabInactive as engineHandleTabInactive,
-  handleTabActive as engineHandleTabActive,
-  handleTimerDrift as engineHandleTimerDrift
+  handleTabActive as engineHandleTabActive
 } from "./battle/engineTimer.js";
 
 export const STATS = ["power", "speed", "technique", "kumikata", "newaza"];
