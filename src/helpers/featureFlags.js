@@ -110,7 +110,12 @@ export async function setFlag(flag, value) {
  * Useful for default-on behavior during bootstrap where eventual persistence
  * is acceptable.
  *
- * @param {string} flag
+ * @pseudocode
+ * 1. Merge `{ enabled: true }` into the cached flag entry.
+ * 2. Attempt to persist the change by delegating to `setFlag(flag, true)`.
+ * 3. Ignore any errors because this helper is invoked in hot paths.
+ *
+ * @param {string} flag - Feature flag identifier to enable.
  * @returns {void}
  */
 export function enableFlag(flag) {
