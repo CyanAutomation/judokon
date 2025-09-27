@@ -16,10 +16,14 @@ describe("Classic Battle quit flow", () => {
     const navUtils = await import("../../src/helpers/navUtils.js");
     const eventDispatcher = await import("../../src/helpers/classicBattle/eventDispatcher.js");
     const eventBus = await import("../../src/helpers/classicBattle/eventBus.js");
-    const battleUI = await import("../../src/helpers/battle/index.js");
+    const endModal = await import("../../src/helpers/classicBattle/endModal.js");
 
-    vi.spyOn(battleEngine, "quitMatch").mockReturnValue({ outcome: "quit" });
-    const showResultSpy = vi.spyOn(battleUI, "showResult").mockImplementation(() => {});
+    vi.spyOn(battleEngine, "quitMatch").mockReturnValue({
+      outcome: "quit",
+      playerScore: 0,
+      opponentScore: 0
+    });
+    const showEndModalSpy = vi.spyOn(endModal, "showEndModal").mockImplementation(() => {});
     const dispatchedEvents = [];
     vi.spyOn(eventDispatcher, "dispatchBattleEvent").mockImplementation(async (eventName) => {
       dispatchedEvents.push(eventName);
@@ -67,7 +71,7 @@ describe("Classic Battle quit flow", () => {
     confirmBtn.click();
     await navComplete;
 
-    expect(showResultSpy).toHaveBeenCalledWith("You quit the match. You lose!");
+    expect(showEndModalSpy).toHaveBeenCalledWith(expect.any(Object), { outcome: "quit", scores: { player: 0, opponent: 0 } });
     expect(dispatchedEvents).toEqual(["interrupt", "toLobby"]);
     expect(navigateSpy).toHaveBeenCalledTimes(1);
     expect(document.activeElement?.id).toBe("quit-button");

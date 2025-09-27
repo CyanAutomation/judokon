@@ -206,3 +206,13 @@ Outcome: Targeted unit tests passed; Esc now reaches modal handling codepaths.
 - Playwright: not executed in this phase; will request elevation on next phase covering end-to-end UI confirmation.
 
 Outcome: Points-to-win change now uses consistent, styled modal; unit tests adjusted and passing locally for the focused subset. Playwright focused runs passed (`battle-cli-restart`, `replay.spec` related to points-to-win adjustments). Ready for review.
+
+## 2025-09-27 — Phase: Pause/resume timers on help (shortcuts) overlay
+
+- Implemented pause on open and resume on close for the CLI shortcuts panel:
+  - Added `pauseTimers()` call in `showCliShortcuts()`.
+  - Added `resumeTimers()` call in `hideCliShortcuts()`.
+- Targeted unit tests: executed focused tests mentioning shortcuts/timers → PASS.
+- Focused Playwright: ran a small group of specs mentioning shortcuts/help/pause/resume → PASS (7 tests).
+
+Outcome: Countdown and selection timers pause while the help/shortcuts overlay is visible and resume when it closes, verified by targeted unit and Playwright tests.
