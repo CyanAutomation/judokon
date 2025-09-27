@@ -1234,21 +1234,22 @@ const cliApi = {
   /**
    * Read the verbose log contents for CLI assertions.
    *
+   * @param {string} [elementId="cli-verbose-log"] - ID of the log element to read
    * @returns {string[]} Trimmed verbose log lines; empty when unavailable.
    * @pseudocode
    * if document undefined -> return []
-   * pre = document.getElementById("cli-verbose-log")
+   * pre = document.getElementById(elementId || "cli-verbose-log")
    * if !pre or textContent not string -> return []
    * return pre.textContent.split("\n").map(trim).filter(Boolean)
    */
-  readVerboseLog() {
+  readVerboseLog(elementId = "cli-verbose-log") {
     if (typeof document === "undefined") {
       return [];
     }
 
     let pre;
     try {
-      pre = document.getElementById("cli-verbose-log");
+      pre = document.getElementById(elementId || "cli-verbose-log");
     } catch {
       return [];
     }
@@ -1261,7 +1262,7 @@ const cliApi = {
       return pre.textContent
         .split("\n")
         .map((line) => line.trim())
-        .filter((line) => line.length > 0);
+        .filter(Boolean);
     } catch {
       return [];
     }

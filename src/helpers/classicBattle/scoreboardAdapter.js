@@ -85,7 +85,18 @@ function handleRoundStart(event) {
     roundStore.setRoundNumber(normalizedRoundNumber, { emitLegacyEvent: false });
     try {
       updateRoundCounter(normalizedRoundNumber);
-    } catch {}
+    } catch (error) {
+      // Log scoreboard update failures for debugging while preventing crashes
+      if (
+        typeof process !== "undefined" &&
+        process.env?.NODE_ENV !== "production"
+      ) {
+        console.warn(
+          "[scoreboardAdapter] Failed to update round counter",
+          error
+        );
+      }
+    }
   } else {
     try {
       clearRoundCounter();
