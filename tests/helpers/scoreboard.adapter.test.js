@@ -92,12 +92,16 @@ describe("scoreboardAdapter maps display.* events to Scoreboard", () => {
     expect(document.getElementById("round-counter").textContent).toBe("Round 3");
   });
 
-  it("handles string roundIndex values and clears invalid strings", async () => {
+  it("handles string roundIndex values, zero, and clears invalid strings", async () => {
     const roundCounter = () => document.getElementById("round-counter").textContent;
 
     emitBattleEvent("display.round.start", { roundIndex: "5" });
     await vi.advanceTimersByTimeAsync(220);
     expect(roundCounter()).toBe("Round 5");
+
+    emitBattleEvent("display.round.start", { roundIndex: 0 });
+    await vi.advanceTimersByTimeAsync(220);
+    expect(roundCounter()).toBe("Round 0");
 
     emitBattleEvent("display.round.start", { roundIndex: "not-a-number" });
     await vi.advanceTimersByTimeAsync(220);
