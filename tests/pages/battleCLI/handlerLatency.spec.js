@@ -27,9 +27,13 @@ describe("battleCLI init import guards", () => {
       await withMutedConsole(async () => {
         await import("../../../src/pages/battleCLI/init.js");
         if (typeof window !== "undefined") {
+          const dispatchSpy = vi.spyOn(window, "dispatchEvent");
+          const testEvent = new CustomEvent("game:reset-ui", { detail: { store: null } });
           expect(() => {
-            window.dispatchEvent(new CustomEvent("game:reset-ui", { detail: { store: null } }));
+            window.dispatchEvent(testEvent);
           }).not.toThrow();
+          expect(dispatchSpy).toHaveBeenCalledWith(testEvent);
+          dispatchSpy.mockRestore();
         }
       });
     } finally {

@@ -9,16 +9,30 @@ import { readDebugState } from "./debugHooks.js";
 const debugPanelToggleListeners = new WeakMap();
 
 /**
+ * Check if document is available for DOM operations.
+ *
+ * @returns {boolean} True if document is defined and available.
+ * @summary Determine whether DOM APIs can be safely accessed.
+ * @pseudocode
+ * 1. Return true when `typeof document !== "undefined"`.
+ * 2. Otherwise return false to signal DOM access should be skipped.
+ */
+function hasDocument() {
+  return typeof document !== "undefined";
+}
+
+/**
  * Get the debug output element from the DOM.
  *
  * @returns {HTMLElement|null} The debug output element or null if not found.
  * @summary Locate the debug output <pre> element for displaying debug state.
  * @pseudocode
- * 1. Query the DOM for element with id "debug-output".
- * 2. Return the element or null if not found.
+ * 1. Return null when the DOM is unavailable.
+ * 2. Query the DOM for element with id "debug-output".
+ * 3. Return the element or null if not found.
  */
 function getDebugOutputEl() {
-  if (typeof document === "undefined") return null;
+  if (!hasDocument()) return null;
   return document.getElementById("debug-output");
 }
 
@@ -70,7 +84,7 @@ function ensureDebugCopyButton(panel) {
  * @returns {HTMLElement|null} The structured debug panel or null.
  */
 function ensureDebugPanelStructure(panel, { createIfMissing = false } = {}) {
-  if (typeof document === "undefined") return null;
+  if (!hasDocument()) return null;
   let node = panel;
   if (!node && !createIfMissing) return null;
   if (!node) {
@@ -351,7 +365,7 @@ export function updateDebugPanel() {
  * 3. Otherwise remove the placeholder panel from the DOM.
  */
 export function initDebugPanel() {
-  if (typeof document === "undefined") return;
+  if (!hasDocument()) return;
   const debugPanel = document.getElementById("debug-panel");
   if (!debugPanel) return;
   const battleArea = document.getElementById("battle-area");
@@ -384,7 +398,7 @@ export function initDebugPanel() {
  * 2. If `enabled` is false and a panel exists, hide and remove it.
  */
 export function setDebugPanelEnabled(enabled) {
-  if (typeof document === "undefined") return;
+  if (!hasDocument()) return;
   const battleArea = document.getElementById("battle-area");
   let panel = document.getElementById("debug-panel");
   if (enabled) {

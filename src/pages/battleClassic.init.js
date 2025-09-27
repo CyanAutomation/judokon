@@ -1304,7 +1304,7 @@ function renderStatButtons(store) {
       () => {}
     );
     try {
-      detachStatHotkeys = wireStatHotkeys(buttons);
+      detachStatHotkeys = wireStatHotkeys(Array.from(buttons));
     } catch {}
   } catch {} // Ignore errors if setting stat buttons enabled fails
 }
