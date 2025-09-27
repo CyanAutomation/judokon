@@ -11,33 +11,7 @@ describe("CLI input latency hardened test", () => {
     document.body.innerHTML = "";
   });
 
-  it("uses microtask scheduling seam for selection (digit path)", () => {
-    let scheduledCallback;
-    const originalResolve = Promise.resolve.bind(Promise);
-    vi.spyOn(Promise, "resolve").mockImplementation((value) => {
-      // Only intercept the first microtask scheduling to capture the callback.
-      if (scheduledCallback) {
-        return originalResolve(value);
-      }
-
-      const placeholder = {
-        then(onFulfilled, onRejected) {
-          if (typeof onFulfilled === "function") {
-            scheduledCallback = onFulfilled;
-          }
-          return placeholder;
-        },
-        catch() {
-          return placeholder;
-        },
-        finally() {
-          return placeholder;
-        },
-        [Symbol.toStringTag]: "Promise"
-      };
-
-      return placeholder;
-    });
+  it("uses microtask scheduling seam for selection (digit path)", async () => {
     // Stub getStatByIndex via a local facade: the handler calls it via same module
     vi.spyOn(init, "getStatByIndex").mockReturnValue("power");
     // Spy selectStat via a getter on module; since it's not exported, observe via side-effect by mocking safeDispatch
@@ -47,9 +21,8 @@ describe("CLI input latency hardened test", () => {
     expect(handled).toBe(true);
     // Not yet called synchronously
     expect(dispatchSpy).not.toHaveBeenCalled();
-    expect(typeof scheduledCallback).toBe("function");
-    // Manually trigger the deferred callback captured from the microtask
-    scheduledCallback();
+    // Await the next microtask tick to allow the deferred selection to run
+    await new Promise((resolve) => queueMicrotask(resolve));
     expect(dispatchSpy).toHaveBeenCalledWith("statSelected");
   });
 });
