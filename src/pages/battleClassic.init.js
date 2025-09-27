@@ -559,6 +559,14 @@ function handleStatSelectionError(store, err) {
 /**
  * Prepares the UI before stat selection occurs and captures the timestamp of
  * the opponent choosing prompt for minimum duration enforcement.
+ *
+ * @pseudocode
+ * 1. Stop any active stat selection timer utilities.
+ * 2. Cancel the global `__battleClassicStopSelectionTimer` hook when available.
+ * 3. Show the "opponent choosing" snackbar and record the prompt timestamp.
+ * 4. Return any window-provided delay override value.
+ *
+ * @returns {number} Delay override in milliseconds, or `0` when none provided.
  */
 export function prepareUiBeforeSelection() {
   try {
