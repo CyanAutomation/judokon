@@ -1714,6 +1714,8 @@ async function init() {
       onEngine?.("matchEnded", (detail) => {
         try {
           const outcome = String(detail?.outcome || "");
+          // Skip showing end modal for quit, as it's handled directly in quit flow
+          if (outcome === "quit") return;
           const scores = {
             player: Number(detail?.playerScore) || 0,
             opponent: Number(detail?.opponentScore) || 0

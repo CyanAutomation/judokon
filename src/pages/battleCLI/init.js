@@ -1036,7 +1036,8 @@ function showQuitModal() {
       quitModal.close();
       clearBottomLine();
       try {
-        await safeDispatch("interrupt", { reason: "quit" });
+        // Prefer dedicated quit event to avoid mapping to matchOver visuals
+        await safeDispatch("quit", { reason: "userQuit" });
       } catch {}
       try {
         // Use a relative path so deployments under a subpath (e.g. GitHub Pages)

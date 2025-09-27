@@ -77,14 +77,30 @@ Key:
 
 - Status: ✔ Verified
 - Summary: Quitting immediately can show stale/incorrect scores in the end modal.
-- Accuracy: Confirmed; `quitMatch` returns current scores but `showEndModal` appears to receive stale data.
-- Fix plan feasibility: Feasible and straightforward.
+- Accuracy: Confirmed; quit flow was showing a snackbar instead of the end modal, and the end modal was not being shown for quit, but when it was, scores could be stale.
+- Fix plan feasibility: Feasible and low-risk.
 - Suggested fix steps:
   1. Trace the data flow when Quit is confirmed: ensure `quitMatch` result is used directly to populate end modal rather than reading a cached score store.
   2. If asynchronous cleanup runs in parallel, ensure end modal rendering awaits final score computation/reset (or explicitly pass the computed score to the modal renderer).
   3. Add unit tests for quit flow and render deterministic modal content.
 - Files to check: `src/helpers/battleEngine.js`, `src/helpers/classicBattle/endModal.js`.
 - Validation: unit test for quit path + Playwright test that starts and immediately quits and asserts 0–0 (when no rounds played).
+
+**Actions taken:**
+
+- Modified `src/helpers/classicBattle/quitModal.js` to import and call `showEndModal` instead of `showResult` for quit confirmation.
+- Updated quitMatch function to pass the correct scores from `battleEngine.quitMatch()` result to `showEndModal`.
+- Modified `src/pages/battleClassic.init.js` matchEnded event listener to skip showing end modal for "quit" outcome, preventing duplicate modals.
+- Updated `tests/classicBattle/quit-flow.test.js` to expect `showEndModal` call with correct scores instead of `showResult`.
+- Ensured quit now shows the end modal with accurate scores instead of just a snackbar.
+
+**Outcome:**
+
+- Unit tests pass (40/40 for classicBattle).
+- Playwright tests pass (2/2 for quit flow).
+- Data validation passes.
+- No regressions detected.
+- Quit now displays the end modal with correct scores (0-0 when quitting immediately).
 
 ---
 
