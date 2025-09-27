@@ -812,6 +812,43 @@ function stubGlobal(name, value) {
   };
 }
 
+function captureMicrotaskQueue(controller) {
+  const pending = [];
+  const restoreQueueMicrotask = stubGlobal("queueMicrotask", (callback) => {
+    pending.push(callback);
+  });
+
+  const drain = () => {
+    const maxIterations = 50;
+    let batches = 0;
+    while (pending.length > 0) {
+      batches += 1;
+      if (batches > maxIterations) {
+        throw new Error(`Microtask queue did not settle after ${maxIterations} drains`);
+      }
+      const callbacks = pending.splice(0);
+      for (const callback of callbacks) {
+        callback();
+      }
+    }
+  };
+
+  if (controller) {
+    controller.drainPendingMicrotasks = drain;
+  }
+
+  return {
+    drain,
+    restore() {
+      restoreQueueMicrotask();
+      pending.length = 0;
+      if (controller?.drainPendingMicrotasks === drain) {
+        delete controller.drainPendingMicrotasks;
+      }
+    }
+  };
+}
+
 function ensureElement(id, tag, initializer, parent = document.body) {
   let el = document.getElementById(id);
   if (!el) {
@@ -1240,8 +1277,6 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
     test("stat buttons re-enable when scheduler loop is idle", async () => {
       resetFallbackScores();
-      const env = getEnv();
-      const { timerSpy } = env;
       const { statControls, container } = await initBattle();
       const button = container.querySelector("button[data-stat]");
       expect(button).toBeTruthy();
@@ -1268,21 +1303,18 @@ describe("Classic Battle page scaffold (behavioral)", () => {
 
       const restoreRAF = stubGlobal("requestAnimationFrame", undefined);
       const restoreCancelRAF = stubGlobal("cancelAnimationFrame", undefined);
-
-      const restoreQueueMicrotask = stubGlobal("queueMicrotask", (cb) => {
-        setTimeout(cb, 0);
-      });
+      const microtaskControl = captureMicrotaskQueue(currentEnv.testController);
 
       try {
         resetStatButtons();
         // Advance one frame to process queued RAF callbacks after reset
         currentEnv.testController.advanceFrame();
-        await timerSpy.runAllTimersAsync();
+        currentEnv.testController.drainPendingMicrotasks?.();
         expect(button.disabled).toBe(false);
       } finally {
         restoreRAF();
         restoreCancelRAF();
-        restoreQueueMicrotask();
+        microtaskControl.restore();
       }
     });
   });
