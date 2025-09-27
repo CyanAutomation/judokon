@@ -1044,9 +1044,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     emitBattleEvent("display.round.start", { roundNumber: 3 });
 
     // One call comes directly from the adapter and the other from the round store hook
-    expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBe(
-      initialRoundCalls + 2
-    );
+    expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBe(initialRoundCalls + 2);
     expect(scoreboardMock.updateRoundCounter.mock.calls.at(-1)).toEqual([3]);
 
     const roundEnded = engineMock.listeners.get("roundEnded");
@@ -1055,9 +1053,7 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     // Ensure any RAF-scheduled UI updates have run
     currentEnv.testController.advanceFrame();
 
-    expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBe(
-      initialRoundCalls + 2
-    );
+    expect(scoreboardMock.updateRoundCounter.mock.calls.length).toBe(initialRoundCalls + 2);
     expect(scoreboardMock.updateScore.mock.calls.length).toBeGreaterThan(initialScoreCalls);
     expect(scoreboardMock.updateRoundCounter.mock.calls.at(-1)).toEqual([3]);
     expect(scoreboardMock.updateScore.mock.calls.at(-1)).toEqual([4, 1]);

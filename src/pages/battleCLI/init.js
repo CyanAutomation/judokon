@@ -152,6 +152,8 @@ let selectionFinishFn = null;
 let selectionTickHandler = null;
 let selectionExpiredHandler = null;
 let selectionCancelled = false;
+// Reentrancy guard to avoid duplicate selections/highlights in rapid inputs
+let selectionApplying = false;
 let quitModal = null;
 let isQuitting = false;
 let pausedSelectionRemaining = null;
@@ -446,6 +448,8 @@ export async function resetMatch() {
   stopSelectionCountdown();
   handleCountdownFinished();
   state.roundResolving = false;
+  // Clear any in-flight selection state and lingering UI highlights
+  selectionApplying = false;
   clearVerboseLog();
   try {
     document.getElementById("play-again-button")?.remove();
@@ -455,6 +459,12 @@ export async function resetMatch() {
   updateRoundHeader(0, engineFacade.getPointsToWin?.());
   updateScoreLine();
   setRoundMessage("");
+  try {
+    const list = document.getElementById("cli-stats");
+    list?.querySelectorAll(".selected").forEach((el) => el.classList.remove("selected"));
+    list?.querySelectorAll(".cli-stat").forEach((el) => el.setAttribute("aria-selected", "false"));
+    if (list && list.dataset.selectedIndex) delete list.dataset.selectedIndex;
+  } catch {}
   // Re-apply seed for deterministic behavior on match reset
   initSeed();
   // Perform asynchronous reset work
@@ -1105,6 +1115,9 @@ function clearStoreTimer(store, timerProperty) {
  */
 export function selectStat(stat) {
   if (!stat) return;
+  // Ignore re-entrant calls while a selection is being applied
+  if (selectionApplying || state.roundResolving) return;
+  selectionApplying = true;
   stopSelectionCountdown();
   clearStoreTimer(store, "statTimeoutId");
   clearStoreTimer(store, "autoSelectId");
@@ -1142,6 +1155,9 @@ export function selectStat(stat) {
     }
   } catch (err) {
     console.error("Error dispatching statSelected", err);
+  } finally {
+    // Allow future selections after dispatch has been initiated
+    selectionApplying = false;
   }
 }
 
