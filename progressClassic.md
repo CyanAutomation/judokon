@@ -200,6 +200,3 @@ If you'd like, I can:
 - Add logging/instrumentation scaffolding for Issue #3 so we can reproduce and diagnose the hang.
 
 ---
-
-_Edits: reformatted, verified, and annotated the original QA report with concrete next steps and validation checks. Waiting for your review before making code changes._
-

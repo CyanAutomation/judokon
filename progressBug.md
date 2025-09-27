@@ -4,13 +4,13 @@
 
 The goal is to centralize the scoreboard component for use in both `battleClassic.html` and `battleCLI.html`.
 
-*   **`prdBattleScoreboard.md`**: The PRD clearly outlines the need for a reusable scoreboard component, and even points to `src/components/Scoreboard.js` as the source for it.
+* **`prdBattleScoreboard.md`**: The PRD clearly outlines the need for a reusable scoreboard component, and even points to `src/components/Scoreboard.js` as the source for it.
 
-*   **`src/components/Scoreboard.js`**: This file contains the `createScoreboard` function, which dynamically creates the necessary HTML elements for the scoreboard. It also has a `Scoreboard` class and an `initScoreboard` function that wires up the logic. This is the reusable component we want to use.
+* **`src/components/Scoreboard.js`**: This file contains the `createScoreboard` function, which dynamically creates the necessary HTML elements for the scoreboard. It also has a `Scoreboard` class and an `initScoreboard` function that wires up the logic. This is the reusable component we want to use.
 
-*   **`src/pages/battleClassic.html`**: This file already includes the necessary HTML structure for the scoreboard with the correct IDs (`round-message`, `next-round-timer`, `round-counter`, `score-display`). The initialization logic is handled in `battleClassic.init.js`, which correctly calls `setupScoreboard`. This is the desired implementation.
+* **`src/pages/battleClassic.html`**: This file already includes the necessary HTML structure for the scoreboard with the correct IDs (`round-message`, `next-round-timer`, `round-counter`, `score-display`). The initialization logic is handled in `battleClassic.init.js`, which correctly calls `setupScoreboard`. This is the desired implementation.
 
-*   **`src/pages/battleCLI.html`**: This file uses a custom, separate implementation for the scoreboard (`cli-round` and `cli-score`). It also contains the standard scoreboard nodes, but they are hidden. The initialization logic in `battleCLI.init.js` does not use the shared `setupScoreboard` function.
+* **`src/pages/battleCLI.html`**: This file uses a custom, separate implementation for the scoreboard (`cli-round` and `cli-score`). It also contains the standard scoreboard nodes, but they are hidden. The initialization logic in `battleCLI.init.js` does not use the shared `setupScoreboard` function.
 
 ## Opportunity for Centralization
 
@@ -18,15 +18,15 @@ The clear opportunity is to refactor the CLI battle mode to use the shared score
 
 ## Proposed Fix Plan
 
-1.  **Modify `src/pages/battleCLI.html`**:
-    *   Remove the custom scoreboard elements (`cli-round` and `cli-score`).
-    *   Make the `standard-scoreboard-nodes` div visible by removing `style="display: none"` and `aria-hidden="true"`.
+1. **Modify `src/pages/battleCLI.html`**:
+    * Remove the custom scoreboard elements (`cli-round` and `cli-score`).
+    * Make the `standard-scoreboard-nodes` div visible by removing `style="display: none"` and `aria-hidden="true"`.
 
-2.  **Modify `src/pages/battleCLI.init.js`**:
-    *   Remove the `setCountdown` function as its functionality will be handled by the scoreboard component.
-    *   Update the `init` function to remove the call to `setCountdown` from the `window.__battleCLIinit` object.
+2. **Modify `src/pages/battleCLI.init.js`**:
+    * Remove the `setCountdown` function as its functionality will be handled by the scoreboard component.
+    * Update the `init` function to remove the call to `setCountdown` from the `window.__battleCLIinit` object.
 
-3.  **Modify `src/helpers/battleCLI.js` (imported as `init.js` in `battleCLI.init.js`)**:
-    *   Import `setupScoreboard` from `../helpers/setupScoreboard.js`.
-    *   Call `setupScoreboard()` in the `init` function.
-    *   Replace the direct DOM manipulations of `cli-round` and `cli-score` with calls to the scoreboard helper functions (`updateRoundCounter`, `updateScore`, `updateTimer`).
+3. **Modify `src/helpers/battleCLI.js` (imported as `init.js` in `battleCLI.init.js`)**:
+    * Import `setupScoreboard` from `../helpers/setupScoreboard.js`.
+    * Call `setupScoreboard()` in the `init` function.
+    * Replace the direct DOM manipulations of `cli-round` and `cli-score` with calls to the scoreboard helper functions (`updateRoundCounter`, `updateScore`, `updateTimer`).
