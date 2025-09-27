@@ -1634,25 +1634,59 @@ export function restorePointsToWin() {
       const val = Number(select.value);
       if (!validTargets.has(val)) return;
       try {
-        const confirmed =
-          typeof window !== "undefined"
-            ? window.confirm("Changing win target resets scores. Start a new match?")
-            : true;
-        if (confirmed) {
-          storage.set(val);
-          // Reset the match and reinitialize orchestrator before applying new target
+        const title = "Confirm Points To Win";
+        const desc = "Changing win target resets scores and restarts the match.";
+        const frag = document.createDocumentFragment();
+        const h2 = document.createElement("h2");
+        h2.id = "points-to-win-title";
+        h2.textContent = title;
+        const p = document.createElement("p");
+        p.id = "points-to-win-desc";
+        p.textContent = desc;
+        const actions = document.createElement("div");
+        const confirmBtn = document.createElement("button");
+        confirmBtn.type = "button";
+        confirmBtn.textContent = "Confirm";
+        confirmBtn.setAttribute("data-testid", "confirm-points-to-win");
+        const cancelBtn = document.createElement("button");
+        cancelBtn.type = "button";
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.setAttribute("data-testid", "cancel-points-to-win");
+        actions.appendChild(confirmBtn);
+        actions.appendChild(cancelBtn);
+        frag.appendChild(h2);
+        frag.appendChild(p);
+        frag.appendChild(actions);
+        const modal = createModal(frag, {
+          labelledBy: h2,
+          describedBy: p,
+        });
+        const closeModal = () => {
           try {
-            await resetMatch();
+            modal.close();
           } catch {}
-          engineFacade.setPointsToWin?.(val);
-          updateRoundHeader(0, val);
-          try {
-            await renderStartButton();
-          } catch {}
-          current = val;
-        } else {
-          select.value = String(current);
-        }
+        };
+        await new Promise((resolve) => {
+          confirmBtn.addEventListener("click", () => resolve(true), { once: true });
+          cancelBtn.addEventListener("click", () => resolve(false), { once: true });
+          modal.onEsc?.(() => resolve(false));
+        }).then(async (confirmed) => {
+          closeModal();
+          if (confirmed) {
+            storage.set(val);
+            try {
+              await resetMatch();
+            } catch {}
+            engineFacade.setPointsToWin?.(val);
+            updateRoundHeader(0, val);
+            try {
+              await renderStartButton();
+            } catch {}
+            current = val;
+          } else {
+            select.value = String(current);
+          }
+        });
       } catch {}
     });
   } catch {}
