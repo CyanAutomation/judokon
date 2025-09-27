@@ -140,8 +140,12 @@ export function onKeyDown(e) {
   const handled = routeKeyByState(lower);
   if (handled === true) {
     // Stop default behavior and bubbling for handled keys to avoid stray "Invalid key"
-    try { e.preventDefault(); } catch {}
-    try { e.stopPropagation(); } catch {}
+    try {
+      e.preventDefault();
+    } catch {}
+    try {
+      e.stopPropagation();
+    } catch {}
   }
   const countdown = byId("cli-countdown");
   if (!countdown) return;

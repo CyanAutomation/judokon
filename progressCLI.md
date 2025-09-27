@@ -186,3 +186,13 @@ Tests to add:
 - Playwright: not run in this phase (will request elevation in next phase when needed).
 
 Outcome: No regressions detected in targeted unit tests. Ready for review.
+
+## 2025-09-27 — Phase: Key handling propagation + Esc path
+
+- Updated `src/pages/battleCLI/events.js:onKeyDown` to call `preventDefault()` and `stopPropagation()` when a key was handled by routing, preventing stray "Invalid key" messages and native side effects.
+- Modified `shouldProcessKey` to allow `Escape` to pass filtering so modal manager/shortcuts can consume it. This enables closing the help panel via Esc.
+- Focused unit tests run:
+  - Ran Vitest subset around key handling (route/onKeyDown) → PASS (subset only).
+- Playwright: pending (will request elevation next phase for only the relevant scenarios).
+
+Outcome: Targeted unit tests passed; Esc now reaches modal handling codepaths.
