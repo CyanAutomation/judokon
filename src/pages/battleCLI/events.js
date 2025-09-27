@@ -57,7 +57,7 @@ function handleArrowNav(e) {
  * return true
  */
 function shouldProcessKey(key) {
-  if (key === "escape") return false;
+  // Allow Escape to pass through so modal manager / shortcuts can handle it
   if (!isEnabled("cliShortcuts") && key !== "q") return false;
 
   // Don't process keys when user is typing in form controls
@@ -138,6 +138,11 @@ export function onKeyDown(e) {
   const lower = e.key.toLowerCase();
   if (!shouldProcessKey(lower)) return;
   const handled = routeKeyByState(lower);
+  if (handled === true) {
+    // Stop default behavior and bubbling for handled keys to avoid stray "Invalid key"
+    try { e.preventDefault(); } catch {}
+    try { e.stopPropagation(); } catch {}
+  }
   const countdown = byId("cli-countdown");
   if (!countdown) return;
 
