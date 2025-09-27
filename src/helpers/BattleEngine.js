@@ -578,6 +578,8 @@ export class BattleEngine {
   handleTimerDrift(remainingTime) {
     // Stop the current timer
     this.stopTimer();
+    // Record the drift for diagnostics
+    this.lastTimerDrift = remainingTime;
     // Restart with corrected time
     this.timer.startRound(this.timer.onTickCb, this.timer.onExpiredCb, remainingTime, (r) =>
       this.handleTimerDrift(r)

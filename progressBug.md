@@ -30,3 +30,17 @@ The clear opportunity is to refactor the CLI battle mode to use the shared score
     * Import `setupScoreboard` from `../helpers/setupScoreboard.js`.
     * Call `setupScoreboard()` in the `init` function.
     * Replace the direct DOM manipulations of `cli-round` and `cli-score` with calls to the scoreboard helper functions (`updateRoundCounter`, `updateScore`, `updateTimer`).
+
+## Scoreboard Implementation Comparison
+
+A key difference between the two battle pages is the implementation of the scoreboard.
+
+### `battleClassic.html` (Standard Implementation)
+
+*   **Design and Layout:** The scoreboard is visually integrated into the main graphical UI. It's part of the header and uses standard HTML `<p>` elements with IDs like `round-counter` and `score-display`. The styling is consistent with the overall card-game theme.
+*   **Functionality:** It uses the centralized and reusable scoreboard component from `src/components/Scoreboard.js`. The logic for updating the round, score, and timers is handled by the `Scoreboard` class, making it a standardized and maintainable component.
+
+### `battleCLI.html` (Custom Implementation)
+
+*   **Design and Layout:** The scoreboard is designed to mimic a command-line interface. It uses custom `<div>` elements (`#cli-round`, `#cli-score`) within a `.cli-status` container, which is styled to look like a terminal's status line. This gives it a distinct, text-heavy, and compact visual structure that fits the CLI theme.
+*   **Functionality:** This version uses a completely separate, one-off implementation. The scoreboard is updated through direct DOM manipulation within the `battleCLI.js` helper. While it achieves the desired visual style, it does not use the shared `setupScoreboard` component, leading to duplicated logic. Interestingly, the standard scoreboard nodes exist in the HTML but are hidden, pointing to an initial intent to possibly use the shared component.
