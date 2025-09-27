@@ -238,6 +238,19 @@ Outcome: E2E behavior matches unit-level propagation; no regressions observed in
 
 Outcome: Shortcuts open/close work as expected; countdown continues after canceling quit, consistent with pause/resume wiring. No regressions observed in the focused run.
 
+## 2025-09-27 — Phase: Console discipline verification (tests)
+
+- Searched for unsilenced console.warn/error in tests and tightened discipline.
+- Changes:
+  - tests/helpers/components/Button.js: removed incidental console.warn in test helper (suppressed in tests; production path covered elsewhere).
+  - tests/helpers/domFactory.test.js: ensured withMutedConsole is used with explicit levels for warn/error in the console muting test.
+- Focused Vitest runs:
+  - domFactory console muting spec → PASS.
+- Validation:
+  - Grep scan shows no actionable unsilenced console.warn/error usages outside the console utility test harness.
+
+Outcome: Test suite complies with “no unsilenced console.warn/error” policy for focused areas touched in this phase.
+
 ## 2025-09-27 — Phase: Pause/resume timers on help (shortcuts) overlay
 
 - Implemented pause on open and resume on close for the CLI shortcuts panel:

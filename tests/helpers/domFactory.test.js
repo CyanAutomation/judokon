@@ -135,7 +135,7 @@ describe("domFactory", () => {
       await withMutedConsole(async () => {
         console.warn("test warn");
         console.error("test error");
-      });
+      }, ["warn", "error"]);
 
       expect(warnCalled).toBe(false);
       expect(errorCalled).toBe(false);
