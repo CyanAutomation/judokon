@@ -1,10 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
-import {
-  waitForBattleReady,
-  waitForNextButtonReady,
-  waitForTestApi
-} from "../helpers/battleStateHelper.js";
+import { waitForTestApi } from "../helpers/battleStateHelper.js";
 import { readRoundDiagnostics } from "../helpers/roundDiagnostics.js";
 import { applyDeterministicCooldown } from "../helpers/cooldownFixtures.js";
 import { TEST_ROUND_TIMER_MS } from "../helpers/testTiming.js";
@@ -21,7 +17,7 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(difficultyButton).toBeVisible();
       await difficultyButton.click();
 
-      await waitForBattleReady(page, { allowFallback: false });
+      await page.evaluate(() => window.__TEST_API.init.waitForBattleReady?.(0));
 
       const roundCounter = page.getByTestId("round-counter");
       await expect(roundCounter).toHaveText(/Round\s*1/);
@@ -30,7 +26,7 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(firstStatButton).toBeVisible();
       await firstStatButton.click();
 
-      await waitForNextButtonReady(page);
+      await page.evaluate(() => window.__TEST_API.state.waitForNextButtonReady?.(0));
 
       const nextButton = page.getByTestId("next-button");
       await expect(nextButton).toBeEnabled();
@@ -78,7 +74,7 @@ test.describe("Classic Battle cooldown + Next", () => {
       await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
       await page.getByRole("button", { name: "Medium" }).click();
 
-      await waitForBattleReady(page, { allowFallback: false });
+      await page.evaluate(() => window.__TEST_API.init.waitForBattleReady?.(0));
 
       await expect(statButtonsContainer).toHaveAttribute("data-buttons-ready", "true");
       await expect(roundCounter).toHaveText(/Round\s*1/);
@@ -88,7 +84,7 @@ test.describe("Classic Battle cooldown + Next", () => {
 
       await firstStatButton.click();
 
-      await waitForNextButtonReady(page);
+      await page.evaluate(() => window.__TEST_API.state.waitForNextButtonReady?.(0));
 
       const nextButton = page.getByTestId("next-button");
       await expect(nextButton).toHaveAttribute("data-next-ready", "true");
