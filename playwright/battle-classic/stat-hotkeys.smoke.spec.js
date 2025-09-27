@@ -9,16 +9,10 @@ test.describe("Stat hotkeys", () => {
 
     const first = page.getByRole("button", { name: /power/i }).first();
     await expect(first).toBeVisible();
-    await expect(page.locator("#stat-buttons")).toHaveAttribute(
-      "data-buttons-ready",
-      "true"
-    );
+    await expect(page.locator("#stat-buttons")).toHaveAttribute("data-buttons-ready", "true");
 
     await page.locator("body").press("1");
 
-    await expect(page.locator("body")).toHaveAttribute(
-      "data-stat-selected",
-      "true"
-    );
+    await expect(page.locator("body")).toHaveAttribute("data-stat-selected", "true");
   });
 });
