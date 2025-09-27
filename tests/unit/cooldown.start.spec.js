@@ -8,6 +8,7 @@ describe("cooldown auto-advance wiring", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {
@@ -21,8 +22,41 @@ describe("cooldown auto-advance wiring", () => {
 
   it("emits countdown started and resolves ready at expiry", async () => {
     const bus = { emit: vi.fn() };
+    let virtualTime = 0;
+    let nextTimeoutId = 0;
+    const pendingTimeouts = new Map();
     const scheduler = {
-      setTimeout: vi.fn((fn, ms) => setTimeout(fn, ms))
+      setTimeout: vi.fn((fn, ms) => {
+        const delay = Number(ms) || 0;
+        const id = ++nextTimeoutId;
+        pendingTimeouts.set(id, { fn, due: virtualTime + Math.max(0, delay) });
+        return id;
+      }),
+      clearTimeout: vi.fn((id) => {
+        pendingTimeouts.delete(id);
+      })
+    };
+    const flushScheduler = async (limit = 50) => {
+      let iterations = 0;
+      while (pendingTimeouts.size) {
+        iterations += 1;
+        if (iterations > limit) {
+          throw new Error("flushScheduler exceeded iteration limit");
+        }
+        const tasks = [...pendingTimeouts.entries()].sort(([, a], [, b]) => a.due - b.due);
+        pendingTimeouts.clear();
+        for (const [, task] of tasks) {
+          const advanceBy = task.due - virtualTime;
+          if (advanceBy > 0) {
+            vi.advanceTimersByTime(advanceBy);
+            virtualTime += advanceBy;
+          }
+          const result = task.fn();
+          if (result && typeof result.then === "function") {
+            await result;
+          }
+        }
+      }
     };
     const showSnackbar = vi.fn();
     const dispatchBattleEvent = vi.fn();
@@ -40,8 +74,11 @@ describe("cooldown auto-advance wiring", () => {
 
     // Fast-forward timers to ensure expiry triggers
     await vi.runAllTimersAsync();
+    await flushScheduler();
+    await new Promise((resolve) => process.nextTick(resolve));
     // Ready promise should be present
     expect(controls).toBeTruthy();
     expect(typeof controls.ready?.then).toBe("function");
+    await expect(controls.ready).resolves.toBeUndefined();
   });
 });
