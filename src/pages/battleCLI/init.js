@@ -1676,7 +1676,16 @@ export function restorePointsToWin() {
         await new Promise((resolve) => {
           confirmBtn.addEventListener("click", () => resolve(true), { once: true });
           cancelBtn.addEventListener("click", () => resolve(false), { once: true });
-          modal.onEsc?.(() => resolve(false));
+          // Close on Escape via global modal manager
+          const escHandler = () => resolve(false);
+          document.addEventListener("keydown", function onKey(e){
+            if (e.key === "Escape") {
+              document.removeEventListener("keydown", onKey);
+              escHandler();
+            }
+          });
+          // Open the modal after wiring handlers
+          try { modal.open(); } catch {}
         }).then(async (confirmed) => {
           closeModal();
           if (confirmed) {
