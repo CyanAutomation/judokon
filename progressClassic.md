@@ -11,125 +11,216 @@ This report details issues found during testing of the Classic Battle page, cros
   * <span style="color:orange;">❌</span> **Discrepancy:** The report’s claim contradicts findings from the codebase or documentation.
 * **Fix Plan:** An assessment of the proposed "Improvement Opportunities."
 
----
+ # QA Report: `src/pages/battleClassic.html`
 
-## 1. Mismatch in Win-Target Options
+This file is a revised and formatted QA report for the Classic Battle page. Each issue below includes: the reported status, a short accuracy assessment, feasibility of the proposed fix, and concrete suggested next steps (including files to check and validation commands).
 
-* **Status:** <span style="color:green;">✔</span> **Verified**
-* **Issue:** The win-target options presented to the player (**5, 10, 15 points**) are inconsistent with the values specified in `prdBattleClassic.md` (**3, 5, 10 points**).
-* **Steps to Reproduce:**
-    1. Start the game and observe the "Select Match Length" modal.
-    2. Buttons are labeled **Quick**, **Medium**, and **Long**.
-    3. Hovering over **Quick** shows a tooltip: "First to 5 points wins."
-* **Expected vs. Actual:** The PRD specifies that players should choose between 3, 5, or 10 points. The UI offers 5, 10, or 15 points, creating a mismatch between documentation and implementation.
-* **Verification:**
-  * `prdBattleClassic.md` explicitly lists `POINTS_TO_WIN_OPTIONS` as `[3, 5, 10]`.
-  * However, `src/data/battleRounds.js` and the fallback in `src/helpers/classicBattle/roundSelectModal.js` both define the options as 5, 10, and 15 points.
-  * This is a clear inconsistency between the core requirements and the current code.
-* **Fix Plan:** **Feasible.** The proposed fix to align the UI and tooltips with the PRD is correct. The values in `src/data/battleRounds.js` and the fallback array in `roundSelectModal.js` must be updated.
+Key:
 
-## 2. Scoreboard Not Resetting on Replay
-
-* **Status:** <span style="color:blue;">ℹ️</span> **Plausible**
-* **Issue:** After a match, clicking **Replay** sometimes fails to reset the scoreboard, causing the new match to start with the previous match's scores.
-* **Steps to Reproduce:**
-    1. Finish or quit a match.
-    2. Click **Replay**.
-    3. Observe the score bar at the top, which may intermittently display the old score.
-* **Expected vs. Actual:** The score should reset to 0–0 for every new match.
-* **Verification:**
-  * The `handleReplay` function in `src/helpers/classicBattle/roundManager.js` appears to correctly reset the score by calling `updateScoreboard(0, 0)` and emitting a `display.score.update` event.
-  * The issue is described as intermittent ("sometimes"), which suggests a potential race condition where the UI updates with stale data before the reset logic completes.
-  * While the code for resetting state seems correct, its interaction with the UI render cycle may be flawed.
-* **Fix Plan:** **Feasible.** The recommendation to ensure all internal counters are reset is sound. Investigating the UI update timing and event sequence around the `Replay` action is critical. Adding logs, as suggested, would help diagnose where the state update is failing or being ignored.
-
-## 3. Game Hangs After Several Rounds
-
-* **Status:** <span style="color:blue;">ℹ️</span> **Plausible**
-* **Issue:** The game occasionally hangs after a round resolves. The timer reaches 0, stat buttons are disabled, and the "Next" button is inactive, preventing progress.
-* **Steps to Reproduce:** Play through several rounds (observed around Round 6) and wait for the timer to expire.
-* **Expected vs. Actual:** After a round resolves, a 3-second cooldown should start, followed automatically by the next round. Instead, the UI becomes stuck.
-* **Verification:**
-  * The `handleRoundResolvedEvent` in `src/helpers/classicBattle/roundUI.js` is responsible for initiating the next round's cooldown via `startRoundCooldown`.
-  * The report suggests that the `roundStarted` event sometimes fails to fire after the cooldown. This points to a potential failure in the state machine or event dispatching sequence.
-  * Like the scoreboard issue, this is likely a race condition or an unhandled edge case in the game loop that is difficult to verify with static analysis alone.
-* **Fix Plan:** **Feasible.** The suggestion to add logging hooks and use the `battleStateProgress` feature flag is the correct approach to diagnose this type of intermittent bug.
-
-## 4. Incorrect Final Score When Quitting
-
-* **Status:** <span style="color:green;">✔</span> **Verified**
-* **Issue:** Quitting a match immediately after it starts results in an incorrect score display (e.g., "You lose! (3–3)") in the "Match Over" modal, even if no rounds were played.
-* **Steps to Reproduce:**
-    1. Start a match.
-    2. Immediately click **Quit** and confirm.
-* **Expected vs. Actual:** The end modal should show a 0–0 score if no rounds were played.
-* **Verification:**
-  * The `quitMatch` function in `src/helpers/battleEngine.js` correctly returns the *current* scores when a match is quit.
-  * However, the `showEndModal` function in `src/helpers/classicBattle/endModal.js` appears to be receiving stale score data. This indicates that the score is not being properly fetched or reset before the modal is displayed.
-* **Fix Plan:** **Feasible.** The proposed fix is correct. The score must be accurately computed based on rounds played before the quit modal is rendered.
-
-## 5. Missing Outcome Messages and Inconsistent Round Counter
-
-* **Status:** <span style="color:blue;">ℹ️</span> **Plausible**
-* **Issue:** Round outcome messages (e.g., "You picked…") are sometimes delayed, and the round counter occasionally jumps ahead (e.g., from Round 1 to Round 3).
-* **Expected vs. Actual:** Outcome messages should display immediately, and the round counter should increment sequentially.
-* **Verification:** This issue is likely a symptom of the same underlying problem as the game hang (Issue #3), where the state machine or event queue is experiencing race conditions or processing delays.
-* **Fix Plan:** **Feasible.** The fix is tied to resolving the inter-round hang bug. Ensuring the `roundResolved` and `roundStarted` events fire reliably and in the correct order will likely fix this as well.
-
-## 6. Medium/Long Match Lengths Lack Description
-
-* **Status:** <span style="color:green;">✔</span> **Verified**
-* **Issue:** While the "Quick" match option shows a descriptive snackbar ("First to 5 points wins"), the "Medium" and "Long" options do not.
-* **Steps to Reproduce:** Select "Medium" or "Long" using number keys.
-* **Expected vs. Actual:** All match length selections should provide clear feedback to the player about the win target.
-* **Verification:**
-  * `src/data/tooltips.json` contains tooltips for all three match lengths.
-  * However, the UI code that triggers the snackbar message appears to be implemented only for the "Quick" option.
-* **Fix Plan:** **Feasible.** The fix is straightforward: extend the snackbar logic to cover all match length selections to ensure consistent player feedback.
-
-## 7. Card & Stat Contrast
-
-* **Status:** <span style="color:orange;">❌</span> **Discrepancy**
-* **Issue:** The report claims that some UI elements (stat buttons, card text) may not meet WCAG 4.5:1 contrast ratios.
-* **Verification:**
-  * The project includes an automated contrast checker (`npm run check:contrast`).
-  * Running this command returns: **"No issues found!"**
-  * While manual review is always valuable, the automated tooling indicates that the current color scheme passes the required contrast checks. The report should be updated to reflect this.
-* **Fix Plan:** **Not currently required.** The automated tests pass. If specific elements are still a concern, they should be identified and re-evaluated with more precise tooling.
-
-## 8. Accessibility Description Missing for Stat Buttons
-
-* **Status:** <span style="color:blue;">ℹ️</span> **Plausible**
-* **Issue:** Dynamically generated stat buttons are missing the `aria-describedby` attribute, making them less accessible to screen reader users.
-* **Expected vs. Actual:** Each stat button should have an `aria-describedby` attribute linking to a description of the stat.
-* **Verification:**
-  * The function `applyStatLabels` in `src/helpers/classicBattle/uiHelpers.js` is designed to add these attributes.
-  * The issue's presence suggests this function may be failing silently or is not being called at the correct time in the component lifecycle. The `try...catch` block within it may be suppressing errors.
-* **Fix Plan:** **Feasible.** The proposed fix is correct. The implementation of `applyStatLabels` needs to be debugged to ensure it executes reliably.
-
-## 9. Timer Drift Detection Not Implemented
-
-* **Status:** <span style="color:green;">✔</span> **Verified**
-* **Issue:** The PRD requires the UI to display a "Waiting…" message if the timer drifts by more than 2 seconds, but this functionality is not implemented as specified.
-* **Steps to Reproduce:** (Difficult to reproduce manually without forcing system lag).
-* **Expected vs. Actual:** A snackbar with "Waiting…" should appear on significant timer drift.
-* **Verification:**
-  * `src/helpers/TimerController.js` includes drift detection logic with a `DRIFT_THRESHOLD` of 2 seconds.
-  * However, the `onTimerDrift` handler in `src/helpers/classicBattle/orchestrator.js` emits a `scoreboardShowMessage` with the text "Timer drift detected: ...s. Timer reset.", which does not match the "Waiting..." message specified in the PRD.
-  * Furthermore, the `handleTimerDrift` function in `src/helpers/battle/engineTimer.js` only stops the timer but does not restart it as required.
-* **Fix Plan:** **Feasible.** The implementation needs to be corrected to display the specified "Waiting…" message via a snackbar and to properly restart the countdown timer after a drift event.
+- Status meanings used in this document:
+  - ✔ Verified — confirmed against PRDs or code.
+  - ℹ️ Plausible — likely real but may be intermittent (race/ordering); requires runtime logging or reproduction.
+  - ❌ Discrepancy — report contradicts repository evidence or automated checks.
 
 ---
 
-## Overall Assessment & Recommendations
+## Issue 1 — Mismatch in win-target options
 
-The QA report is largely accurate, identifying several critical and plausible bugs that degrade the user experience and violate PRD requirements. The proposed improvement opportunities are sound and provide a clear path to resolution.
+- Status: ✔ Verified
+- Summary: UI offers [5, 10, 15] points but `prdBattleClassic.md` lists [3, 5, 10].
+- Accuracy: Confirmed by checking `prdBattleClassic.md` vs. `src/data/battleRounds.js` and `src/helpers/classicBattle/roundSelectModal.js` (fallback).
+- Fix plan feasibility: Feasible and low-risk.
+- Suggested fix steps:
+  1. Update canonical source of truth for POINTS_TO_WIN_OPTIONS to match PRD ([3,5,10]). Prefer `src/data/battleRounds.js` as the single source.
+  2. Update tooltips/snackbar text in `src/helpers/classicBattle/roundSelectModal.js` and any fallback arrays.
+  3. Add a unit test that asserts available match lengths and tooltip strings.
+- Files to check: `prdBattleClassic.md`, `src/data/battleRounds.js`, `src/helpers/classicBattle/roundSelectModal.js`.
+- Validation (after change): run `npm run validate:data` and a quick UI smoke test or Playwright spec (e.g., `playwright/round-select-keyboard.spec.js`) to confirm labels and tooltips.
 
-**Priority Recommendations:**
+---
 
-1. **Fix the Win-Target Mismatch (Issue #1):** This is a straightforward but critical fix to align the game with its core design documents.
-2. **Investigate the Game Hang (Issue #3):** This is the most severe bug. The suggestion to add extensive logging is the best first step to diagnose this intermittent issue.
-3. **Correct the Quit Score (Issue #4):** This is another clear bug that should be addressed to ensure accurate end-of-match reporting.
-4. **Implement Correct Timer Drift Handling (Issue #9):** The current implementation is incomplete and does not meet the PRD spec.
+## Issue 2 — Scoreboard not resetting on Replay
 
-The remaining issues, while lower priority, are still important for delivering a polished and accessible experience.
+- Status: ℹ️ Plausible
+- Summary: Replay sometimes shows previous match score; intermittent, likely timing/order-related.
+- Accuracy: Code paths (e.g., `handleReplay` in `src/helpers/classicBattle/roundManager.js`) call `updateScoreboard(0,0)` and emit events, so the logic appears present. The intermittent nature suggests a race between state reset and UI render/event listeners.
+- Fix plan feasibility: Feasible but requires careful diagnosis (race condition). Low-to-medium risk.
+- Suggested fix steps:
+  1. Add structured logging around replay: when scores are reset, when scoreboard DOM updates, and when relevant events are emitted/handled.
+  2. Ensure `updateScoreboard(0,0)` executes before any UI rehydration — consider sequencing or awaiting event handlers where appropriate.
+  3. Add an integration test that reproduces the replay flow and asserts scoreboard resets (use fake timers if needed).
+- Files to check: `src/helpers/classicBattle/roundManager.js`, `src/helpers/classicBattle/scoreboard.js` (or equivalent), event handler registrations in `roundUI.js`.
+- Quick validation: run targeted `vitest` unit for `roundManager` and an integration Playwright test that clicks Replay and asserts scoreboard text.
+
+ # QA Report: `src/pages/battleClassic.html`
+
+This file is a revised and formatted QA report for the Classic Battle page. Each issue below includes: the reported status, a short accuracy assessment, feasibility of the proposed fix, and concrete suggested next steps (including files to check and validation commands).
+
+Key:
+
+- Status meanings used in this document:
+  - ✔ Verified — confirmed against PRDs or code.
+  - ℹ️ Plausible — likely real but may be intermittent (race/ordering); requires runtime logging or reproduction.
+  - ❌ Discrepancy — report contradicts repository evidence or automated checks.
+
+---
+
+## Issue 1 — Mismatch in win-target options
+
+- Status: ✔ Verified
+- Summary: UI offers [5, 10, 15] points but `prdBattleClassic.md` lists [3, 5, 10].
+- Accuracy: Confirmed by checking `prdBattleClassic.md` vs. `src/data/battleRounds.js` and `src/helpers/classicBattle/roundSelectModal.js` (fallback).
+- Fix plan feasibility: Feasible and low-risk.
+- Suggested fix steps:
+  1. Update canonical source of truth for POINTS_TO_WIN_OPTIONS to match PRD ([3,5,10]). Prefer `src/data/battleRounds.js` as the single source.
+  2. Update tooltips/snackbar text in `src/helpers/classicBattle/roundSelectModal.js` and any fallback arrays.
+  3. Add a unit test that asserts available match lengths and tooltip strings.
+- Files to check: `prdBattleClassic.md`, `src/data/battleRounds.js`, `src/helpers/classicBattle/roundSelectModal.js`.
+- Validation (after change): run `npm run validate:data` and a quick UI smoke test or Playwright spec (e.g., `playwright/round-select-keyboard.spec.js`) to confirm labels and tooltips.
+
+---
+
+## Issue 2 — Scoreboard not resetting on Replay
+
+- Status: ℹ️ Plausible
+- Summary: Replay sometimes shows previous match score; intermittent, likely timing/order-related.
+- Accuracy: Code paths (e.g., `handleReplay` in `src/helpers/classicBattle/roundManager.js`) call `updateScoreboard(0,0)` and emit events, so the logic appears present. The intermittent nature suggests a race between state reset and UI render/event listeners.
+- Fix plan feasibility: Feasible but requires careful diagnosis (race condition). Low-to-medium risk.
+- Suggested fix steps:
+  1. Add structured logging around replay: when scores are reset, when scoreboard DOM updates, and when relevant events are emitted/handled.
+  2. Ensure `updateScoreboard(0,0)` executes before any UI rehydration — consider sequencing or awaiting event handlers where appropriate.
+  3. Add an integration test that reproduces the replay flow and asserts scoreboard resets (use fake timers if needed).
+- Files to check: `src/helpers/classicBattle/roundManager.js`, `src/helpers/classicBattle/scoreboard.js` (or equivalent), event handler registrations in `roundUI.js`.
+- Quick validation: run targeted `vitest` unit for `roundManager` and an integration Playwright test that clicks Replay and asserts scoreboard text.
+
+---
+
+## Issue 3 — Game hangs after several rounds
+
+- Status: ℹ️ Plausible
+- Summary: After multiple rounds (observed ~Round 6), the UI can get stuck — timer 0, disabled stat buttons, inactive Next.
+- Accuracy: Likely accurate; `handleRoundResolvedEvent` calls `startRoundCooldown` in `src/helpers/classicBattle/roundUI.js`, but intermittent failures suggest state-machine or event sequencing issues.
+- Fix plan feasibility: Feasible but investigative. Moderate-to-high priority; affects playability.
+- Suggested fix steps:
+  1. Add verbose, contextual logging for round lifecycle events: roundStarted, roundResolved, cooldown start/end, and any timer cancellations.
+  2. Add watches/asserts to detect missing paired events (e.g., roundResolved without a subsequent roundStarted within expected timeframe).
+  3. Run long-play automation (Playwright or simulated harness) to reproduce; correlate logs to find ordering gaps.
+  4. Consider defensive guards: if cooldown completes without a roundStarted event within X ms, force a safe reset path that re-enters the round start flow.
+- Files to check: `src/helpers/classicBattle/roundUI.js`, `roundManager.js`, orchestrator/state handlers.
+- Validation: automated long-run Playwright scenario and `battleStateProgress` flag/activity logs.
+
+---
+
+## Issue 4 — Incorrect final score when quitting
+
+- Status: ✔ Verified
+- Summary: Quitting immediately can show stale/incorrect scores in the end modal.
+- Accuracy: Confirmed; `quitMatch` returns current scores but `showEndModal` appears to receive stale data.
+- Fix plan feasibility: Feasible and straightforward.
+- Suggested fix steps:
+  1. Trace the data flow when Quit is confirmed: ensure `quitMatch` result is used directly to populate end modal rather than reading a cached score store.
+  2. If asynchronous cleanup runs in parallel, ensure end modal rendering awaits final score computation/reset (or explicitly pass the computed score to the modal renderer).
+  3. Add unit tests for quit flow and render deterministic modal content.
+- Files to check: `src/helpers/battleEngine.js`, `src/helpers/classicBattle/endModal.js`.
+- Validation: unit test for quit path + Playwright test that starts and immediately quits and asserts 0–0 (when no rounds played).
+
+---
+
+## Issue 5 — Missing outcome messages and inconsistent round counter
+
+- Status: ℹ️ Plausible
+- Summary: Outcome messages delayed and round counter jumps — likely symptom of same ordering/race conditions causing the hang.
+- Accuracy: Plausible and likely related to Issue 3.
+- Fix plan feasibility: Feasible and will likely be resolved while fixing event sequencing for Issue 3.
+- Suggested fix steps:
+  1. Consolidate and sequence event emission for round resolution and counter increment — ensure a single source of truth updates the round counter.
+  2. Add tests asserting that each round resolution produces exactly one outcome message and one counter increment.
+  3. Instrument UI to surface timing for message rendering to help diagnosis.
+- Files to check: `roundUI.js`, any round counter/store files, and event bus/orchestrator code.
+
+---
+
+## Issue 6 — Medium/Long match lengths lack description
+
+- Status: ✔ Verified
+- Summary: Only the Quick option triggers a snackbar description; Medium and Long are missing the same feedback.
+- Accuracy: Confirmed; `src/data/tooltips.json` contains the messages but UI only triggers Quick's snackbar.
+- Fix plan feasibility: Feasible and low-risk.
+- Suggested fix steps:
+  1. Update the selection handler (keyboard and click paths) to trigger snackbar for all three options.
+  2. Add a small unit/UI test to confirm the snackbar text appears for key-based and mouse-based selection.
+- Files to check: `src/pages/battleClassic.html` (bindings), `src/helpers/classicBattle/roundSelectModal.js`, `src/data/tooltips.json`.
+
+---
+
+## Issue 7 — Card & stat contrast
+
+- Status: ❌ Discrepancy
+- Summary: The report flagged contrast issues, but automated check passes.
+- Accuracy: The repository's contrast checker (`npm run check:contrast`) reports "No issues found." Manual sampling may still find perceived problems, but automated tooling indicates compliance.
+- Fix plan feasibility: No immediate fix required. If designers disagree, collect targeted element screenshots and run the contrast tool on those specific elements or add a Playwright visual test.
+- Suggested next steps:
+  1. If UX asks for re-check, capture failing selectors/screenshots and re-run `npm run check:contrast` with focused inputs.
+  2. Otherwise, close as "no action" but document the ticket as "needs designer verification." 
+
+---
+
+## Issue 8 — Accessibility description missing for stat buttons
+
+- Status: ℹ️ Plausible
+- Summary: `aria-describedby` may not be applied consistently to dynamically generated stat buttons.
+- Accuracy: Plausible. `applyStatLabels` in `src/helpers/classicBattle/uiHelpers.js` is intended to add descriptions but may fail silently.
+- Fix plan feasibility: Feasible.
+- Suggested fix steps:
+  1. Remove or narrow any try/catch that suppresses failures inside `applyStatLabels` so failures surface in tests/logs.
+  2. Add unit test or DOM-integrated test that asserts each stat button has `aria-describedby` and that the referenced element exists.
+  3. Ensure `applyStatLabels` runs after DOM insertion (or hook it into lifecycle/event that guarantees DOM readiness).
+- Files to check: `src/helpers/classicBattle/uiHelpers.js` and the code that constructs stat buttons.
+
+---
+
+## Issue 9 — Timer drift detection not implemented as spec'd
+
+- Status: ✔ Verified
+- Summary: Code detects timer drift but emits a non-PRD message and does not restart the timer as required.
+- Accuracy: Confirmed by inspecting `src/helpers/TimerController.js`, `src/helpers/classicBattle/orchestrator.js`, and `src/helpers/battle/engineTimer.js`.
+- Fix plan feasibility: Feasible but must be done carefully to avoid introducing flakiness; medium risk.
+- Suggested fix steps:
+  1. Align the message text with PRD: show a snackbar with exactly "Waiting…" when drift > 2s.
+  2. Ensure drift handler restarts the timer safely after displaying the waiting state; confirm the countdown resumes without double-counting time.
+  3. Add unit/integration tests that simulate drift (mock TimerController or faked clock) and assert snackbar and restart behavior.
+- Files to check: `src/helpers/TimerController.js`, `src/helpers/classicBattle/orchestrator.js`, `src/helpers/battle/engineTimer.js`.
+
+---
+
+## Overall assessment and next steps
+
+The original QA report is accurate for the Verified items (#1, #4, #6, #9) and well-reasoned for the Plausible items (#2, #3, #5, #8). The contrast claim (#7) is a discrepancy given automated checks.
+
+Priority recommendations (short actionable order):
+
+1. Fix win-target mismatch (#1) — low effort, immediate PR.
+2. Fix quit-score rendering (#4) — low effort, add unit + Playwright check.
+3. Implement PRD-aligned timer-drift handling (#9) — moderate effort, needs tests.
+4. Investigate and stabilize inter-round sequencing (#3, #2, #5) — requires instrumentation and reproducible automated runs.
+
+Validation checklist before merge:
+
+- npx prettier . --check
+- npx eslint .
+- npm run validate:data
+- npx vitest run (targeted tests) and the Playwright spec(s) for round selection, replay, and quit flow.
+
+Assumptions made while verifying:
+
+- PRD reference `prdBattleClassic.md` is the authoritative design for win-targets.
+- The code paths mentioned in the original report exist at the file paths referenced; I did not change behavior beyond recommending fixes and tests.
+
+If you'd like, I can:
+
+- Open branches and implement the low-risk fixes (#1 and #4) with unit tests and run the test suite.
+- Add logging/instrumentation scaffolding for Issue #3 so we can reproduce and diagnose the hang.
+
+---
+
+_Edits: reformatted, verified, and annotated the original QA report with concrete next steps and validation checks. Waiting for your review before making code changes._

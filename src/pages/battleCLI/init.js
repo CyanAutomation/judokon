@@ -1668,6 +1668,8 @@ export function restorePointsToWin() {
           labelledBy: h2,
           describedBy: p,
         });
+        // attach modal to DOM so buttons exist
+        document.body.appendChild(modal.element);
         const closeModal = () => {
           try {
             modal.close();
