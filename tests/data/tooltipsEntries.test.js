@@ -12,7 +12,7 @@ function get(obj, path) {
 
 describe("tooltips.json", () => {
   it("conforms to the UI tooltip manifest", () => {
-    // See docs/technical/ui-tooltips-manifest.md for the full manifest context.
+    // See design/productRequirementsDocuments/prdTooltipSystem.md#tooltip-manifest for the full manifest context.
     const seenIds = new Set();
     for (const entry of uiTooltipManifest) {
       const { tooltipId, source, component } = entry;

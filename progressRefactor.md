@@ -27,7 +27,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/technical/eventNamingAudit.md` / `design/eventNamingAudit.md` / `design/eventAudit/*.txt` → `prdEventContracts.md` (exists; move migration tables + listener inventories).
 - `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → now consolidated into `design/productRequirementsDocuments/prdStateHandler.md` (compliance table + priorities live in PRD).
 - `docs/technical/classicBattleTesting.md` (retired) / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
-- `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md` / `prdTooltipViewer.md` (exists).
+- UI tooltip manifest now lives in `prdTooltipSystem.md` (manifest section) and `prdTooltipViewer.md` (exists).
 - `design/testing/classicBattleTesting.md`, `design/codeStandards/*.md`, and similar deep dives remain valuable as implementation notes; decide per file whether to fold content into the owning PRD or keep them as linked appendices with a clear authority statement.
 
 ## Missing PRDs or extensions

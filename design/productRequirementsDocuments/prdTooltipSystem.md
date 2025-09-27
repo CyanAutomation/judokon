@@ -105,6 +105,26 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
 
 ---
 
+### Tooltip Manifest
+
+The Tooltip System owns the canonical manifest for every UI control that requires localized tooltip coverage. Designers and engineers must update this table whenever a control moves, renames, or gains tooltip copy so that downstream tests and fixtures stay aligned.
+
+| Tooltip key         | UI surface                                    | Spec source                                                                 |
+| ------------------- | --------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ui.languageToggle` | Meditation quote language toggle              | [`src/pages/meditation.html`](../../src/pages/meditation.html)               |
+| `ui.next`           | Classic Battle “Next” control                 | [`prdBattleClassic.md`](./prdBattleClassic.md)                               |
+| `ui.quitMatch`      | Classic Battle quit confirmation flow         | [`prdBattleClassic.md`](./prdBattleClassic.md)                               |
+| `ui.drawCard`       | Random Judoka draw button                     | [`src/helpers/randomJudokaPage.js`](../../src/helpers/randomJudokaPage.js)   |
+| `card.flag`         | Judoka card flag badge                        | [`src/helpers/cardTopBar.js`](../../src/helpers/cardTopBar.js)               |
+| `ui.roundQuick`     | Round length selector (5-point quick match)   | [`prdGameModes.md`](./prdGameModes.md)                                       |
+| `ui.roundMedium`    | Round length selector (10-point medium match) | [`prdGameModes.md`](./prdGameModes.md)                                       |
+| `ui.roundLong`      | Round length selector (15-point long match)   | [`prdGameModes.md`](./prdGameModes.md)                                       |
+| `ui.toggleLayout`   | Browse Judoka layout toggle                   | [`src/pages/browseJudoka.html`](../../src/pages/browseJudoka.html)           |
+
+Keep the manifest synchronized with [`tests/fixtures/uiTooltipManifest.js`](../../tests/fixtures/uiTooltipManifest.js) and [`tooltips.json`](../../src/data/tooltips.json) to maintain full coverage validation in [`tests/data/tooltipsEntries.test.js`](../../tests/data/tooltipsEntries.test.js).
+
+---
+
 ## Dependencies and Open Questions
 
 ### Dependencies
