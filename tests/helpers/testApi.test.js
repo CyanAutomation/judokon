@@ -120,6 +120,10 @@ describe("testApi.isTestMode", () => {
 
     exposeTestAPI();
 
+    const waitForBattleReadySpy = vi
+      .spyOn(window.__INIT_API, "waitForBattleReady")
+      .mockResolvedValue(true);
+
     expect(window.__TEST_API).toBe(getTestAPI());
     expect(window.__INIT_API).toBeDefined();
 
@@ -128,6 +132,7 @@ describe("testApi.isTestMode", () => {
     try {
       await expect(window.__INIT_API.waitForBattleReady(5)).resolves.toBe(true);
     } finally {
+      waitForBattleReadySpy.mockRestore();
       if (originalInitCalled === undefined) {
         delete window.__initCalled;
       } else {
