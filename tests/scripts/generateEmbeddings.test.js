@@ -70,14 +70,23 @@ describe("normalizeAndFilter", () => {
 
 describe("determineTags", () => {
   it("tags agent workflow PRDs with agent-workflow", () => {
-    const tags = determineTags(
+    const aiWorkflowTags = determineTags(
       "design/productRequirementsDocuments/prdAIAgentWorkflows.md",
       ".md",
       false
     );
-    expect(tags).toContain("prd");
-    expect(tags).toContain("design-doc");
-    expect(tags).toContain("agent-workflow");
+    expect(aiWorkflowTags).toContain("prd");
+    expect(aiWorkflowTags).toContain("design-doc");
+    expect(aiWorkflowTags).toContain("agent-workflow");
+
+    const vectorDbTags = determineTags(
+      "design/productRequirementsDocuments/prdVectorDatabaseRAG.md",
+      ".md",
+      false
+    );
+    expect(vectorDbTags).toContain("prd");
+    expect(vectorDbTags).toContain("design-doc");
+    expect(vectorDbTags).toContain("agent-workflow");
   });
 
   it("excludes agent-workflow for other PRDs", () => {
