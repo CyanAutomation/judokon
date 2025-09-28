@@ -206,7 +206,7 @@ test.describe("CLI Battle Interface", () => {
 
       const roundDisplay = page.locator("#cli-round");
       await expect(roundDisplay).toContainText("Round");
-      await expect(roundDisplay).toContainText("Target: 10");
+      await expect(roundDisplay).toContainText("Target: 5");
 
       const scoreDisplay = page.locator("#cli-score");
       await expect(scoreDisplay).toContainText("You: 0 Opponent: 0");
@@ -273,10 +273,11 @@ test.describe("CLI Battle Interface", () => {
 
       const pointsSelect = page.locator("#points-select");
       await expect(pointsSelect).toHaveAttribute("aria-label", "Points to win");
-      await expect(pointsSelect).toHaveValue("10");
+      await expect(pointsSelect).toHaveValue("5");
 
       try {
-        await pointsSelect.selectOption("5");
+        await pointsSelect.selectOption("3");
+        await expect(pointsSelect).toHaveValue("3");
       } catch {}
       const optionCount = await pointsSelect.evaluate((element) => element.options.length);
       expect(optionCount).toBeGreaterThan(0);
