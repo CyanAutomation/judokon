@@ -105,8 +105,8 @@ RoundStore is the canonical state container for Classic Battle rounds. It consol
 ### API contract (authoritative surface)
 
 ```javascript
-// Observable store imported from classicBattle helpers
-import { roundStore } from "src/helpers/classicBattle/roundStore.js";
+// Observable store imported from classicBattle helpers (relative from repo root)
+import { roundStore } from "../../src/helpers/classicBattle/roundStore.js";
 
 // Read current snapshot
 const current = roundStore.getCurrentRound();
@@ -138,20 +138,20 @@ The state handler owns writes to the store (round numbers, transitions, ready fl
 ### Migration phases
 
 1. **Phase 0 – Prototype (in flight):** Complete contract definition, spike integrations, and verify parity with existing debug helpers.
-2. **Phase 1 – Feature-flagged writes:** Ship RoundStore behind a `roundStore.enabled` flag. The state handler and battle engine mirror all transitions into the store while legacy events remain the read path.
-3. **Phase 2 – Consumer migration:** Gradually move scoreboard adapter, debug overlays, and Playwright helpers to read from RoundStore. Add assertions that compare store state with legacy events for early anomaly detection.
-4. **Phase 3 – Event deprecation:** Promote RoundStore to the authoritative read model, remove redundant event listeners, and delete compatibility shims once monitoring shows no drift for two releases.
+2. **Phase 1 – Feature-flagged writes:** Ship RoundStore behind a `roundStore.enabled` flag. The state handler and battle engine mirror all transitions into the store while legacy events remain the read path. **Success criteria:** End-to-end suites (unit, integration, Playwright) pass with the flag enabled and RoundStore snapshots match legacy event payloads in 100% of test fixtures.
+3. **Phase 2 – Consumer migration:** Gradually move scoreboard adapter, debug overlays, and Playwright helpers to read from RoundStore. Add assertions that compare store state with legacy events for early anomaly detection. **Success criteria:** At least two major consumers operate on RoundStore without performance regressions or telemetry alerts.
+4. **Phase 3 – Event deprecation:** Promote RoundStore to the authoritative read model, remove redundant event listeners, and delete compatibility shims once monitoring shows no drift for two releases. **Success criteria:** Legacy event system fully removed, store-backed consumers remain green across two releases, and CI suites stay passing.
 
 ### Risks and mitigations
 
-- **Double writes causing drift:** Gate store updates behind shared utilities so the state handler and engine call the same mutation helpers; add parity checks that fail fast when events disagree with store state.
+- **Double writes causing drift:** Gate store updates behind shared utilities so the state handler and engine call the same mutation helpers; add parity checks that fail fast when events disagree with store state; emit telemetry comparing RoundStore snapshots to legacy event payloads and alert when drift exceeds thresholds.
 - **Subscriber churn/perf regressions:** Provide batched notifications (`getStateSnapshot`) and encourage consumers to diff minimal fields to avoid redundant renders.
 - **Feature flag rollout gaps:** Document rollout playbook (flag defaults, telemetry, rollback) alongside deployment checklists so QA can toggle without code changes.
 - **Debug tooling desync:** Keep `battleDebug.logStateTransition` wired to the same RoundStore subscriptions so logs reflect store transitions rather than legacy events.
 
 ### Embedded integration example
 
-The previous `design/roundStore/integrationExample.js` helper is represented here to guide migrations:
+The example below replaces the removed helper asset and should be referenced for future migrations:
 
 ```javascript
 roundStore.onRoundNumberChange((newNumber, oldNumber) => {
@@ -165,9 +165,14 @@ roundStore.onRoundStateChange((newState, oldState) => {
 roundStore.setRoundState("cooldown");
 roundStore.setSelectedStat("strength");
 roundStore.setRoundOutcome("win");
+
+// Async example: wait for hydration before performing derived work
+await storeHydrationPromise;
+const latest = await analyticsClient.fetchLatestRoundState();
+await analyticsClient.compare(latest, roundStore.getCurrentRound());
 ```
 
-This pattern keeps event emissions optional during migration while guaranteeing that UI and analytics modules observe consistent state via the store.
+This pattern keeps event emissions optional during migration while guaranteeing that UI and analytics modules observe consistent state via the store. Pair subscriptions with the shared hydration promise (or equivalent readiness hook) so async consumers wait for a populated snapshot before performing derived work.
 
 ## Compliance Audit (2025-09-10)
 
