@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { withMutedConsole } from "../../tests/utils/console.js";
 
 test.describe("Classic Battle round select", () => {
-  test("user can select Long battle (15 points) and modal updates correctly", async ({ page }) => {
+  test("user can select Long battle (10 points) and modal updates correctly", async ({ page }) => {
     await withMutedConsole(async () => {
       // Force the round select modal to show in Playwright tests
       await page.addInitScript(() => {
@@ -24,14 +24,14 @@ test.describe("Classic Battle round select", () => {
       await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Long" })).toBeVisible();
 
-      // Click the Long option (15 points)
+      // Click the Long option (10 points)
       await page.getByRole("button", { name: "Long" }).click();
 
       // Verify modal is dismissed
       await expect(page.getByRole("dialog")).not.toBeVisible();
 
       // Verify battle state is updated (body should have target data attribute)
-      await expect(page.locator("body")).toHaveAttribute("data-target", "15");
+      await expect(page.locator("body")).toHaveAttribute("data-target", "10");
 
       // Verify round counter shows initial state
       await expect(page.getByTestId("round-counter")).toContainText("Round 1");

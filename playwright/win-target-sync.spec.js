@@ -13,10 +13,10 @@ async function openSettingsPanel(page) {
 
 test.describe("Round Selection - Win Target Synchronization", () => {
   const testCases = [
-    { key: "1", points: "5", name: "Quick" },
-    { key: "2", points: "10", name: "Medium" },
-    { key: "3", points: "15", name: "Long" },
-    { key: "1", points: "5", name: "Quick (sync check)" } // Additional case for sync
+    { key: "1", points: "3", name: "Quick" },
+    { key: "2", points: "5", name: "Medium" },
+    { key: "3", points: "10", name: "Long" },
+    { key: "1", points: "3", name: "Quick (sync check)" } // Additional case for sync
   ];
 
   test.beforeEach(async ({ page }) => {

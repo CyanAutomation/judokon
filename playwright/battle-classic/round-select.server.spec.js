@@ -21,14 +21,14 @@ test.describe("Classic Battle round select (server integration)", () => {
       await expect(page.getByRole("button", { name: "Medium" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Long" })).toBeVisible();
 
-      // Select Long battle (15 points)
+      // Select Long battle (10 points)
       await page.getByRole("button", { name: "Long" }).click();
 
       // Verify modal is dismissed
       await expect(page.getByRole("dialog")).not.toBeVisible();
 
       // Verify server correctly sets the target attribute
-      await expect(page.locator("body")).toHaveAttribute("data-target", "15");
+      await expect(page.locator("body")).toHaveAttribute("data-target", "10");
 
       // Verify battle state is properly initialized
       await expect(page.getByTestId("round-counter")).toContainText("Round 1");
@@ -49,12 +49,12 @@ test.describe("Classic Battle round select (server integration)", () => {
 
       await page.goto("/src/pages/battleClassic.html");
 
-      // Wait for modal and select Quick battle (5 points)
+      // Wait for modal and select Quick battle (3 points)
       await page.getByRole("dialog").waitFor();
       await page.getByRole("button", { name: "Quick" }).click();
 
       // Verify server correctly sets target for Quick battle
-      await expect(page.locator("body")).toHaveAttribute("data-target", "5");
+      await expect(page.locator("body")).toHaveAttribute("data-target", "3");
 
       // Verify battle initializes with correct state
       await expect(page.getByTestId("round-counter")).toContainText("Round 1");
@@ -72,7 +72,7 @@ test.describe("Classic Battle round select (server integration)", () => {
       await page.getByRole("button", { name: "Medium" }).click();
 
       // Verify server correctly updates target for Medium battle
-      await expect(page.locator("body")).toHaveAttribute("data-target", "10");
+      await expect(page.locator("body")).toHaveAttribute("data-target", "5");
     }, ["log", "info", "warn", "error", "debug"]);
   });
 });

@@ -66,7 +66,7 @@ test.describe("Classic Battle timer", () => {
       await expect(page.getByRole("dialog")).toBeVisible();
       await expect(page.getByText("Select Match Length")).toBeVisible();
 
-      // Select Medium battle (10 points) which should start a timer
+      // Select Medium battle (5 points) which should start a timer
       await page.getByRole("button", { name: "Medium" }).click();
 
       // Verify modal is dismissed
@@ -94,7 +94,7 @@ test.describe("Classic Battle timer", () => {
       await expect(timerLocator).toContainText(new RegExp(`Time Left: ${decreasedCountdown}s`));
 
       // Verify battle state is properly initialized
-      await expect(page.locator("body")).toHaveAttribute("data-target", "10");
+      await expect(page.locator("body")).toHaveAttribute("data-target", "5");
       await expect(page.getByTestId("round-counter")).toContainText("Round 1");
     }, ["log", "info", "warn", "error", "debug"]);
   });
@@ -108,7 +108,7 @@ test.describe("Classic Battle timer", () => {
 
       await page.goto("/src/pages/battleClassic.html");
 
-      // Wait for modal and select Long battle (15 points)
+      // Wait for modal and select Long battle (10 points)
       await page.getByRole("dialog").waitFor();
       await page.getByRole("button", { name: "Long" }).click();
 
@@ -117,7 +117,7 @@ test.describe("Classic Battle timer", () => {
       await expect(timerLocator).toContainText(/Time Left: \d+s/);
 
       // Verify battle state is set correctly
-      await expect(page.locator("body")).toHaveAttribute("data-target", "15");
+      await expect(page.locator("body")).toHaveAttribute("data-target", "10");
 
       // Verify round counter and score display are initialized
       await expect(page.getByTestId("round-counter")).toContainText("Round 1");
