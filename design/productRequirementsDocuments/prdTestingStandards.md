@@ -238,102 +238,6 @@ Notes & edge cases
 - Ensure mocks and spies are restored/cleaned in `afterEach` to avoid cross-test pollution.
 - When automating migration, exclude `tests/utils/console.js` from greps and CI checks to avoid false positives.
 
-
-### <a id="playwright-test-guidelines"></a>2. Playwright Test Guidelines (P1)
-
-**Core Philosophy:**
-
-- **User-centric**: Model realistic user journeys
-- **Robust & Reliable**: Consistent results, free from flakiness
-- **Efficient**: Fast and reliable execution
-
-**Quality Evaluation Rubric (0-10 scale):**
-
-**Intent Clarity (Weight: 2)**
-
-- Clear user flow descriptions using 'given/when/then', 'user navigates'
-- Links to requirements and specifications
-- Descriptive test scenarios
-
-**Behavioral Relevance (Weight: 2)**
-
-- Maps to critical user paths or documented bug fixes
-- Linked to PRDs, issues, or feature annotations
-- Covers essential user-facing functionality
-
-**Assertion Quality (Weight: 2)**
-
-- User-facing locators (`getByRole`, `getByTestId`)
-- Semantic assertions over screenshot-only tests
-- Minimal reliance on CSS/XPath selectors
-
-**Robustness (Weight: 2)**
-
-- Stable locator strategies
-- Proper wait conditions
-- Minimal hardcoded delays
-
-**Performance (Weight: 2)**
-
-- Efficient test execution
-- Appropriate parallelization
-- Minimal resource consumption
-
-**Best Practices:**
-
-- Use `data-testid` attributes for test-specific element identification
-- Implement proper wait conditions (`waitForSelector`, `waitForLoadState`)
-- Avoid hardcoded timeouts in favor of condition-based waiting
-- Structure tests to reflect actual user workflows
-
-#### Automated Evaluation Workflow
-
-- Run `npm run e2e:flake-scan` to execute Playwright specs three times, capture flake rates, and generate `pw-report.json` for analysis.
-- When a report already exists (local or CI), execute `npm run e2e:value`; the evaluator (`scripts/pw-value-evaluator.js`) parses metadata headers and locator usage to emit `reports/pw-test-value/pw-test-value.json` plus a Markdown summary.
-- CI enforcement mirrors local commands—tests scoring ≤4 trigger failures to block brittle specs. Monitor annotations in `.github/workflows/pw-test-value.yml` for policy controls.
-- Heuristics review intent clarity, locator quality (`getByRole`, `getByTestId`), avoidance of hard waits (`waitForTimeout`), and cost vs coverage metrics (duration vs semantic expects).
-- Store generated reports with the PR to document locator strategy, flake rate, and remediation notes when refactoring flaky tests.
-
-#### Implementation Guidance by Criterion
-
-##### Intent Clarity
-
-- Document the scenario with metadata headers (Spec-ID, linked requirement) and use descriptive test names describing the user goal and outcome.
-
-```javascript
-/**
- * Spec-ID: CART-003
- * Linked-Req: PRD-7.1 (Add to Cart)
- */
-test("should allow user to add an item to the cart from the product page", async ({ page }) => {
-  // ...
-});
-```
-
-##### Behavioral Relevance
-
-- Cover critical or high-risk flows first—checkout, authentication, match resolution—and link to the owning PRD section.
-- Ensure tests assert visible outcomes (snackbars, aria-live regions, scoreboard updates) rather than internal implementation cues.
-
-##### Assertion Quality
-
-- Prefer web-first locators (`getByRole`, `getByTestId`, `getByText`) and explicit expectations.
-
-```javascript
-const submitButton = page.getByRole("button", { name: /Sign In/i });
-await submitButton.click();
-await expect(page.getByText("Welcome, Alice!")).toBeVisible();
-```
-
-##### Robustness
-
-- Lean on Playwright's auto-waiting by using `await expect(...).toBeVisible()` instead of manual sleeps.
-- Never call `page.waitForTimeout()` in production tests; treat flakes as critical bugs and run `npm run e2e:flake-scan` to enforce discipline.
-
-##### Performance
-
-- Keep flows short, re-use fixtures, and parallelize where safe. If a wait is required, tie it to a readiness helper (see [Playwright Readiness Helpers](#playwright-readiness-helpers)) instead of arbitrary delays.
-
 ### 3. Test Naming Conventions (P1)
 
 **File Naming Standards:**
@@ -415,31 +319,13 @@ describe("FeatureName", () => {
       // Assert
       expect(result).toEqual(expectedValue);
     });
-      #### Intent Clarity (Playwright) (Weight: 2)
+  });
 });
 ```
 
-      #### Behavioral Relevance (Playwright) (Weight: 2)
+#### Automated Evaluation Workflow (Unit Tests)
 
-```javascript
-test.describe("Feature Name", () => {
-      #### Assertion Quality (Playwright) (Weight: 2)
-    await page.goto("/feature-page");
-    await page.waitForLoadState("networkidle");
-  });
-      #### Robustness (Playwright) (Weight: 2)
-  test("should complete user workflow", async ({ page }) => {
-    // Given user is on feature page
-    await expect(page.locator('[data-testid="feature-element"]')).toBeVisible();
-      #### Performance (Playwright) (Weight: 2)
-    // When user performs action
-    await page.click('[data-testid="action-button"]');
-
-      #### Automated Evaluation Workflow (Unit Tests)
-    await expect(page.locator('[data-testid="result"]')).toContainText("Expected Result");
-  });
-});
-      #### Automated Evaluation Workflow (Playwright)
+#### Automated Evaluation Workflow (Playwright)
 
 ### 6. Performance Optimization (P2)
 
