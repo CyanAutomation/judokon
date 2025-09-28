@@ -689,6 +689,17 @@ async function loadModel() {
   });
 }
 
+/**
+ * Derive the tag set for a given file path.
+ *
+ * @pseudocode
+ * 1. If the file is JSON or data JS, assign `data` tags with specific
+ *    subcategories for judoka or tooltip files.
+ * 2. If the file is JS/TS, categorize as either `code` or `test-code`.
+ * 3. Otherwise mark as PRD documentation and add specific tags based on the
+ *    document collection, including a precise match for agent workflow PRDs.
+ * 4. Return the accumulated tag list.
+ */
 function determineTags(relativePath, ext, isTest) {
   const isDataJs = relativePath.startsWith("src/data/") && ext === ".js";
   if (ext === ".json" || isDataJs) {
@@ -705,9 +716,10 @@ function determineTags(relativePath, ext, isTest) {
   const tags = ["prd"];
   if (relativePath.startsWith("design/productRequirementsDocuments")) {
     tags.push("design-doc");
+    const fileName = path.basename(relativePath);
     if (
-      relativePath.includes("prdAIAgentWorkflows") ||
-      relativePath.includes("prdVectorDatabaseRAG")
+      fileName === "prdAIAgentWorkflows.md" ||
+      fileName === "prdVectorDatabaseRAG.md"
     ) {
       tags.push("agent-workflow");
     }
@@ -1020,7 +1032,8 @@ export {
   normalizeText,
   normalizeAndFilter,
   extractAllowedValues,
-  createSparseVector
+  createSparseVector,
+  determineTags
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

@@ -5,7 +5,8 @@ import {
   JSON_FIELD_ALLOWLIST,
   BOILERPLATE_STRINGS,
   extractAllowedValues,
-  normalizeAndFilter
+  normalizeAndFilter,
+  determineTags
 } from "../../scripts/generateEmbeddings.js";
 
 describe("JSON_FIELD_ALLOWLIST", () => {
@@ -64,5 +65,28 @@ describe("normalizeAndFilter", () => {
     for (const boiler of BOILERPLATE_STRINGS) {
       expect(normalizeAndFilter(boiler, seen)).toBeUndefined();
     }
+  });
+});
+
+describe("determineTags", () => {
+  it("tags agent workflow PRDs with agent-workflow", () => {
+    const tags = determineTags(
+      "design/productRequirementsDocuments/prdAIAgentWorkflows.md",
+      ".md",
+      false
+    );
+    expect(tags).toContain("prd");
+    expect(tags).toContain("design-doc");
+    expect(tags).toContain("agent-workflow");
+  });
+
+  it("excludes agent-workflow for other PRDs", () => {
+    const tags = determineTags(
+      "design/productRequirementsDocuments/prdDevelopmentStandards.md",
+      ".md",
+      false
+    );
+    expect(tags).toContain("design-doc");
+    expect(tags).not.toContain("agent-workflow");
   });
 });
