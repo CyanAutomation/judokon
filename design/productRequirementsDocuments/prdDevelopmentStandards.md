@@ -188,36 +188,36 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 
 **Colour System & Rarity Mapping:**
 
-| Token / Context       | Value     | Usage                                    |
-| --------------------- | --------- | ---------------------------------------- |
-| Primary (`--color-primary`)   | #CB2504  | Buttons, highlights, CTAs                 |
-| Secondary (`--color-secondary`) | #0C3F7A | Navigation bars, stat blocks              |
-| Tertiary (`--color-tertiary`)   | #E8E8E8 | Backgrounds, outlines                     |
-| Link (`--link-color`)          | var(--color-secondary) | Anchor tags and focus outlines       |
-| Hover (`--button-hover-bg`)    | #0B5BB0 | Button hover state                        |
-| Active (`--button-active-bg`)  | #0C3F7A | Button active state                       |
-| Switch Off (`--switch-off-bg`) | #707070 | Toggle off background                     |
-| Switch On (`--switch-on-bg`)   | #007F00 | Toggle on background                      |
-| Button Text (`--button-text-color`) | #FFFFFF | Primary button text                 |
+| Token / Context                     | Value                  | Usage                          |
+| ----------------------------------- | ---------------------- | ------------------------------ |
+| Primary (`--color-primary`)         | #CB2504                | Buttons, highlights, CTAs      |
+| Secondary (`--color-secondary`)     | #0C3F7A                | Navigation bars, stat blocks   |
+| Tertiary (`--color-tertiary`)       | #E8E8E8                | Backgrounds, outlines          |
+| Link (`--link-color`)               | var(--color-secondary) | Anchor tags and focus outlines |
+| Hover (`--button-hover-bg`)         | #0B5BB0                | Button hover state             |
+| Active (`--button-active-bg`)       | #0C3F7A                | Button active state            |
+| Switch Off (`--switch-off-bg`)      | #707070                | Toggle off background          |
+| Switch On (`--switch-on-bg`)        | #007F00                | Toggle on background           |
+| Button Text (`--button-text-color`) | #FFFFFF                | Primary button text            |
 
 Additional rarity colour mapping keeps game identity distinct:
 
-| Rarity    | Background | Border  | Judogi Colour |
-| --------- | ---------- | ------- | ------------- |
-| Common    | #3C5AD6    | #3C5AD6 | White (#FFF)  |
-| Epic      | #C757DA    | #C757DA | Blue (#3C7DC4)|
-| Legendary | #E4AB19    | #E4AB19 | Blue (#3C7DC4)|
+| Rarity    | Background | Border  | Judogi Colour  |
+| --------- | ---------- | ------- | -------------- |
+| Common    | #3C5AD6    | #3C5AD6 | White (#FFF)   |
+| Epic      | #C757DA    | #C757DA | Blue (#3C7DC4) |
+| Legendary | #E4AB19    | #E4AB19 | Blue (#3C7DC4) |
 
 **Tokens, Shadows, and Motion:**
 
-| Token / Variable         | Value                      | Purpose                                       |
-| ------------------------ | -------------------------- | --------------------------------------------- |
-| `--radius-sm` / `--radius-md` / `--radius-lg` / `--radius-pill` | 4px / 8px / 12px / 9999px | Shared corner radii by component type |
-| `--shadow-base` / `--shadow-hover` | `0 4px 12px rgba(0,0,0,0.1)` / `0 8px 24px rgba(0,0,0,0.2)` | Elevation + hover effects |
-| `--transition-fast`      | `all 150ms ease`           | Snappy interaction animations                 |
-| `--color-slider-dot` / `--color-slider-active` | #666666 / #333333 | Carousel indicator styling          |
-| `--scroll-marker-size`   | 10px                       | Carousel scroll marker sizing                 |
-| `--logo-max-height`      | `min(8dvh, 44px)`          | Responsive logo scaling                       |
+| Token / Variable                                                | Value                                                       | Purpose                               |
+| --------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------- |
+| `--radius-sm` / `--radius-md` / `--radius-lg` / `--radius-pill` | 4px / 8px / 12px / 9999px                                   | Shared corner radii by component type |
+| `--shadow-base` / `--shadow-hover`                              | `0 4px 12px rgba(0,0,0,0.1)` / `0 8px 24px rgba(0,0,0,0.2)` | Elevation + hover effects             |
+| `--transition-fast`                                             | `all 150ms ease`                                            | Snappy interaction animations         |
+| `--color-slider-dot` / `--color-slider-active`                  | #666666 / #333333                                           | Carousel indicator styling            |
+| `--scroll-marker-size`                                          | 10px                                                        | Carousel scroll marker sizing         |
+| `--logo-max-height`                                             | `min(8dvh, 44px)`                                           | Responsive logo scaling               |
 
 **Accessibility & Responsiveness:**
 

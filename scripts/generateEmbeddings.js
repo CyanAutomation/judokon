@@ -717,10 +717,7 @@ function determineTags(relativePath, ext, isTest) {
   if (relativePath.startsWith("design/productRequirementsDocuments")) {
     tags.push("design-doc");
     const fileName = path.basename(relativePath);
-    if (
-      fileName === "prdAIAgentWorkflows.md" ||
-      fileName === "prdVectorDatabaseRAG.md"
-    ) {
+    if (fileName === "prdAIAgentWorkflows.md" || fileName === "prdVectorDatabaseRAG.md") {
       tags.push("agent-workflow");
     }
     if (
