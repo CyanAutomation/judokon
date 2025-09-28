@@ -158,10 +158,11 @@ export const SNACKBAR_FADE_MS = 2500;
 export const SNACKBAR_REMOVE_MS = 3000;
 
 /**
- * Maximum points needed to win a Classic Battle match.
+ * Default points needed to win a Classic Battle match.
  *
- * @summary This constant defines the score a player must achieve to win a
- * Classic Battle match. The first player to reach or exceed this score wins.
+ * @summary This constant defines the medium-length target score a player must
+ * achieve to win a Classic Battle match. The first player to reach or exceed
+ * this score wins.
  *
  * @constant {number}
  * @returns {number}
@@ -170,7 +171,7 @@ export const SNACKBAR_REMOVE_MS = 3000;
  * 2. After each round, compare the current scores against `CLASSIC_BATTLE_POINTS_TO_WIN`.
  * 3. If either player's score is equal to or greater than this value, the match ends, and that player is declared the winner.
  */
-export const CLASSIC_BATTLE_POINTS_TO_WIN = 10;
+export const CLASSIC_BATTLE_POINTS_TO_WIN = 5;
 
 /**
  * Maximum number of rounds allowed in a Classic Battle match.
