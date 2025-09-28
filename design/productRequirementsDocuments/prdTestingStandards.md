@@ -450,38 +450,56 @@ it(
 - Injects a controllable timing source into the scheduler instead of mutating global `requestAnimationFrame`.
 - Each controller instance is isolated to the test that created it.
 - Core methods:
-  - `advanceFrame()` triggers a single RAF tick.
-  - `advanceTime(ms)` fast-forwards delayed callbacks by the provided milliseconds.
+  - `advanceFrame()` triggers a single RAF tick and executes callbacks queued via scheduler frame APIs.
+  - `advanceTime(ms)` fast-forwards the scheduler clock by the provided milliseconds, executing every frame that would have fired in that window and triggering per-second callbacks.
   - `getFrameCount()` returns how many frames have executed.
   - `dispose()` restores real timing sources when the test completes.
 
 #### Usage Example
 
 ```javascript
-import { createTestController } from "../utils/scheduler.js";
+import { createTestController, onFrame, onSecondTick } from "../utils/scheduler.js";
 
 describe("animation scheduler", () => {
   let controller;
+  let frames;
+  let seconds;
 
   beforeEach(() => {
     controller = createTestController();
+    frames = 0;
+    seconds = 0;
+
+    onFrame(() => {
+      frames += 1;
+    });
+
+    onSecondTick(() => {
+      seconds += 1;
+    });
   });
 
   afterEach(() => {
     controller.dispose();
   });
 
-  it("advances frames deterministically", () => {
+  it("separates single-frame ticks from larger time skips", () => {
     controller.advanceFrame();
+    expect(frames).toBe(1);
+    expect(seconds).toBe(0);
+
     controller.advanceTime(1000);
-    expect(controller.getFrameCount()).toBe(1);
+    expect(frames).toBeGreaterThan(1);
+    expect(seconds).toBe(1);
   });
 });
 ```
 
+Use `advanceFrame()` when you want to execute exactly one RAF tick (e.g., stepping through choreographed animations). Use `advanceTime(ms)` when the behavior depends on elapsed time—this fast-forwards through as many frames as fit into the requested window and fires any per-second callbacks that would have triggered along the way.
+
 #### Migration Plan
 
-1. **Phase 1 – Enable hooks:** Add the test-only export and timing source injection supported by unit coverage.
+1. **Phase 1 – Enable hooks:** Add the test-only export and timing source injection with unit coverage that verifies (a) both frame and second-tick callbacks are driven by the injected timing source and (b) real timing sources are restored when the controller is disposed.
 2. **Phase 2 – Adopt hooks:** Replace global `requestAnimationFrame` patches in tests with `createTestController()` usage and remove monkey-patching.
 3. **Phase 3 – Document:** Update testing guides, add examples, and officially deprecate the legacy patterns.
 
@@ -489,7 +507,7 @@ describe("animation scheduler", () => {
 
 - **Low production risk:** Hook exists only in test builds and does not modify the public scheduler API.
 - **Feature flag ready:** Can be guarded for incremental rollout if regressions surface.
-- **Coverage-first:** Requires comprehensive tests to validate parity before retiring legacy helpers.
+- **Coverage-first:** Acceptance criterion — all existing RAF-dependent tests must pass using both the legacy helpers and the new controller before migration is considered complete.
 - **Documentation-first:** Centralized guidance (this playbook) reduces misconfiguration during migration.
 
 #### Mixed Timer + RAF Scenarios
