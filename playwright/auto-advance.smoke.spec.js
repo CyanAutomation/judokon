@@ -45,21 +45,15 @@ test.describe("Classic Battle – auto-advance", () => {
     // Expect a countdown snackbar to appear
     // Prefer specific countdown element to avoid strict mode violations
     const countdown = page.locator('[data-testid="next-round-timer"], #next-round-timer');
-    const beforeRoundCounter =
-      (await roundCounter.textContent().catch(() => null))?.trim() || "";
-    const beforeRoundMessage =
-      (await roundMsg.textContent().catch(() => null))?.trim() || "";
+    const beforeRoundCounter = (await roundCounter.textContent().catch(() => null))?.trim() || "";
+    const beforeRoundMessage = (await roundMsg.textContent().catch(() => null))?.trim() || "";
 
     let cooldownReachedViaApi = false;
     const apiResult = await page.evaluate(async (waitTimeout) => {
       try {
         const stateApi = window.__TEST_API?.state;
         if (stateApi && typeof stateApi.waitForBattleState === "function") {
-          return await stateApi.waitForBattleState.call(
-            stateApi,
-            "cooldown",
-            waitTimeout
-          );
+          return await stateApi.waitForBattleState.call(stateApi, "cooldown", waitTimeout);
         }
       } catch {}
       return null;
@@ -73,12 +67,14 @@ test.describe("Classic Battle – auto-advance", () => {
             page.evaluate(() => {
               const bodyState = document.body?.dataset?.battleState || null;
               const attrState =
-                document
-                  .querySelector("[data-battle-state]")
-                  ?.getAttribute("data-battle-state") || null;
+                document.querySelector("[data-battle-state]")?.getAttribute("data-battle-state") ||
+                null;
               return bodyState || attrState || "";
             }),
-          { message: "expected DOM battle state to reach cooldown", timeout: WAIT_FOR_ADVANCE_TIMEOUT }
+          {
+            message: "expected DOM battle state to reach cooldown",
+            timeout: WAIT_FOR_ADVANCE_TIMEOUT
+          }
         )
         .toBe("cooldown");
     }
@@ -103,17 +99,14 @@ test.describe("Classic Battle – auto-advance", () => {
         async () => {
           const [counterText, messageText] = await Promise.all([
             roundCounter.textContent().catch(() => null),
-            roundMsg.textContent().catch(() => null),
+            roundMsg.textContent().catch(() => null)
           ]);
           const counter = (counterText || "").trim();
           const message = (messageText || "").trim();
 
-          const counterChanged =
-            beforeRoundCounter && counter && counter !== beforeRoundCounter;
-          const messageChanged =
-            beforeRoundMessage && message && message !== beforeRoundMessage;
-          const messageAppeared =
-            !beforeRoundMessage && message && message !== beforeRoundCounter;
+          const counterChanged = beforeRoundCounter && counter && counter !== beforeRoundCounter;
+          const messageChanged = beforeRoundMessage && message && message !== beforeRoundMessage;
+          const messageAppeared = !beforeRoundMessage && message && message !== beforeRoundCounter;
 
           return Boolean(counterChanged || messageChanged || messageAppeared);
         },

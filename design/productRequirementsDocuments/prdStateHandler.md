@@ -123,10 +123,18 @@ roundStore.markReadyDispatched();
 roundStore.resetReadyDispatch();
 
 // Observation hooks for UI/analytics consumers
-roundStore.onRoundNumberChange((newNumber, oldNumber) => { /* … */ });
-roundStore.onRoundStateChange((newState, oldState) => { /* … */ });
-roundStore.onStatSelected((stat) => { /* … */ });
-roundStore.onRoundOutcome((outcome) => { /* … */ });
+roundStore.onRoundNumberChange((newNumber, oldNumber) => {
+  /* … */
+});
+roundStore.onRoundStateChange((newState, oldState) => {
+  /* … */
+});
+roundStore.onStatSelected((stat) => {
+  /* … */
+});
+roundStore.onRoundOutcome((outcome) => {
+  /* … */
+});
 
 // Diagnostics
 roundStore.getStateSnapshot();

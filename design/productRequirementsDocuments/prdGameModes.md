@@ -98,15 +98,15 @@ The engine contains no UI code. Game modes translate events into messages and de
 
 ## Prioritized Functional Requirements
 
-| Priority | Feature           | Description                                                                                        |
-| -------- | ----------------- | -------------------------------------------------------------------------------------------------- |
+| Priority | Feature           | Description                                                                                                                          |
+| -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | P1       | Classic Battle    | 1v1 battle vs opponent, stat-based combat to a user-selected 3/5/10 point win target (short/medium/long; default: medium (5 points)) |
-| P1       | Team Battle Modes | Gender-specific team-based battles                                                                 |
-| P1       | Judoka Creation   | Interface for new character creation                                                               |
-| P2       | Judoka Update     | Edit existing characters and save changes                                                          |
-| P2       | Browse Judoka     | Explore all characters with filtering                                                              |
-| P2       | Random Judoka     | View a new random profile per visit                                                                |
-| P3       | Meditation Mode   | Non-interactive rest screen with quotes                                                            |
+| P1       | Team Battle Modes | Gender-specific team-based battles                                                                                                   |
+| P1       | Judoka Creation   | Interface for new character creation                                                                                                 |
+| P2       | Judoka Update     | Edit existing characters and save changes                                                                                            |
+| P2       | Browse Judoka     | Explore all characters with filtering                                                                                                |
+| P2       | Random Judoka     | View a new random profile per visit                                                                                                  |
+| P3       | Meditation Mode   | Non-interactive rest screen with quotes                                                                                              |
 
 ---
 
