@@ -14,5 +14,5 @@
 "design/battleCLI-legacy-alignment.md",""
 "design/battleMarkup.md","prdBattleMarkup.md"
 "design/eventNamingAudit.md","design/productRequirementsDocuments/prdEventContracts.md#audit-appendix"
-"design/retroThemeContrast.md",""
+"design/retroThemeContrast.md","design/productRequirementsDocuments/prdUIDesignSystem.md#retro-theme-tokens--contrast-compliance"
 "design/stateHandlerAudit.md","design/productRequirementsDocuments/prdStateHandler.md"
