@@ -88,6 +88,23 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 - **Dark Theme**: `--color-primary` overridden to `#ff4530`, `--link-color` to `#3399ff`
 - **Retro Theme**: Terminal-style green (`#8cff6b`) on black (`#000000`) with 16.63:1 contrast ratio
 
+#### Retro Theme Tokens & Contrast Compliance
+
+| Token                 | Value     | Usage Notes                                               |
+| --------------------- | --------- | --------------------------------------------------------- |
+| `--color-background`  | `#000000` | Primary page background, retro terminal aesthetic         |
+| `--color-text`        | `#8cff6b` | Default copy, headings, and UI chrome in retro mode       |
+| `--color-primary`     | `#8cff6b` | Primary interactive accents and focus rings               |
+| `--color-secondary`   | `#8cff6b` | Secondary accents (intentionally matches primary)         |
+| `--button-bg`         | `#8cff6b` | Primary button background for high visibility             |
+| `--button-text-color` | `#000000` | Ensures button copy maintains legibility on neon surface  |
+
+**Contrast Verification:**
+
+- Foreground `#8cff6b` on background `#000000` — 16.63:1 contrast ratio
+- Foreground `#000000` on background `#8cff6b` — 16.63:1 contrast ratio
+- Validated with `npm run check:contrast` (wcag-contrast library) to confirm WCAG AA compliance
+
 **Accessibility Requirements:**
 
 - All color combinations must meet WCAG AA contrast ratio of 4.5:1 minimum
@@ -427,7 +444,7 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 
 This PRD consolidates content from the following design files:
 
-- `design/retroThemeContrast.md` - Retro theme color specifications and contrast validation
+- Retro theme color specifications and contrast validation (now canonical in [Retro Theme Tokens & Contrast Compliance](#retro-theme-tokens--contrast-compliance))
 - `design/codeStandards/codeUIDesignStandards.md` - Comprehensive UI design guidelines, typography, components, and accessibility standards
 - `design/codeStandards/settingsPageDesignGuidelines.md` - Settings interface design patterns and accessibility requirements
 - `src/styles/base.css` - CSS custom properties and design tokens currently in use

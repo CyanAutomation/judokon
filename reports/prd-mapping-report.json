@@ -65,7 +65,7 @@
   },
   {
     "source": "design/retroThemeContrast.md",
-    "mappedTo": null
+    "mappedTo": "design/productRequirementsDocuments/prdUIDesignSystem.md#retro-theme-tokens--contrast-compliance"
   },
   {
     "source": "design/stateHandlerAudit.md",
