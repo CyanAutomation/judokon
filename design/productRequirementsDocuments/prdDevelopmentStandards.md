@@ -42,6 +42,7 @@ Inconsistent development practices across the JU-DO-KON! codebase lead to reduce
 | P1       | Code Quality Rules            | Function length limits, modularity requirements, and refactoring guidelines |
 | P2       | UI Design System Integration  | Component design patterns, color systems, and accessibility standards       |
 | P2       | Settings Page Guidelines      | Specific layout and structure requirements for settings interfaces          |
+| P2       | PRD Authoring Standards       | Canonical structure, priorities, and acceptance criteria for all PRDs       |
 | P3       | Advanced Documentation        | Additional JSDoc tags and specialized documentation patterns                |
 
 ---
@@ -140,37 +141,107 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 
 ### 5. UI Design System Integration (P2)
 
-**Core Design Principles:**
+**Design Language & Principles:**
 
-- Touch-first interaction (minimum 48x48px targets)
-- Responsive feedback for all interactions
-- Visual hierarchy with clear information prioritization
-- Progressive disclosure of complex features
-- WCAG AA accessibility compliance
-- Consistent component reuse patterns
+- Bold, high-contrast visuals with playful energy tuned for players aged 8–12.
+- Touch-first interactions with minimum 48×48px targets and immediate feedback (scale, glow, ripple).
+- Progressive disclosure that keeps the primary path obvious while revealing detail on demand.
+- Consistent component reuse and modular layouts to maintain familiarity across screens.
+- WCAG AA accessibility compliance, keyboard navigation, and screen-reader support at every breakpoint.
 
-**Color System:**
+**Key Visual Themes:**
 
-- Primary: #CB2504 (buttons, highlights)
-- Structured token-based color usage
-- High contrast requirements for accessibility
-- Consistent application across components
+- Flat colour foundations enhanced with geometric background textures.
+- Layered judoka cards with z-depth and modular panels.
+- Emphasis typography (caps, bold, white-on-colour) that reinforces hierarchy.
+- Layout momentum achieved through animation, diagonals, and responsive grid shifts.
 
-**Component Structure:**
+**Navigation Systems:**
 
-- Flat color with geometric background textures
-- Layered card layouts with z-depth
-- Emphasis typography (caps, bold, white-on-color)
-- Panelled layout with modular sections
+- Top navigation bar remains fixed, screen-reader accessible, and scales the logo proportionally to viewport height.
+- Map navigation tiles behave as buttons with ARIA labels, glow/scale on hover, and animate on select.
+- Footer navigation stays visible, pairs icons with labels, highlights the active route using a secondary blue background and `aria-current="page"`, and forbids truncated labels. Inline icons use Material Symbols SVGs with `viewBox="0 -960 960 960"`.
+
+**Judoka Card System:**
+
+- Maintain a 2:3 card aspect ratio with clearly defined zones (rarity badge, weight class, portrait, stat block, signature move band).
+- Stat colour codes: 0–3 red, 4–7 yellow, 8–10 green for instant readability.
+- Interactions: tap reveals stats, hover adds scale/shadow, selection displays a glow and checkmark.
+- Name formatting pairs smaller sentence-case first names with large uppercase surnames aligned to a dark blue (#0C3F7A) backdrop.
+- Signature move band (common cards) uses #003B88 background with yellow (#FED843) text, square corners, shared padding, and `line-height: 1`.
+- Epic/Legendary rarity markers sit top-left; portrait backgrounds use warm gradients and keep judogi colour consistent (Pantone 285M / #3C7DC4).
+
+**Component Patterns:**
+
+- Card carousel supports horizontal scroll with scroll-snap-x, 3–5 visible cards, centred zoom, dot pagination, Material Symbols chevrons (with accessible names), swipe gestures, keyboard navigation, and scroll-edge blur.
+- Modals max at 600px wide, centre with dim backdrop, keep Cancel left / Save right, and preserve visible action buttons on mobile with confirmation toasts after Save.
+- Judoka editor uses sliders/steppers for stats, live previews (collapsible on mobile), dropdown for signature moves, and a sticky footer with Cancel + Save.
+- Buttons rely on `--button-*` tokens, maintain 44–48px minimum height, use shared border radii, and provide ripple + outline feedback via `setupButtonEffects()`.
+- Classic Battle layouts align player/opponent cards in a three-column grid (stacking on <480px) with stat buttons presented as evenly spaced grids.
+- Sidebar lists pulse selected items for 150 ms while honouring `prefers-reduced-motion`.
+
+**Typography Standards:**
+
+- Headings use Russo One with uppercase emphasis; body copy uses Open Sans for legibility.
+- Section titles adopt bold, large caps; action buttons remain uppercase and bold; supporting info stays light and small.
+- Maintain line-height at 1.4× for readability and apply 0.5% letter-spacing to Russo One headings.
+
+**Colour System & Rarity Mapping:**
+
+| Token / Context       | Value     | Usage                                    |
+| --------------------- | --------- | ---------------------------------------- |
+| Primary (`--color-primary`)   | #CB2504  | Buttons, highlights, CTAs                 |
+| Secondary (`--color-secondary`) | #0C3F7A | Navigation bars, stat blocks              |
+| Tertiary (`--color-tertiary`)   | #E8E8E8 | Backgrounds, outlines                     |
+| Link (`--link-color`)          | var(--color-secondary) | Anchor tags and focus outlines       |
+| Hover (`--button-hover-bg`)    | #0B5BB0 | Button hover state                        |
+| Active (`--button-active-bg`)  | #0C3F7A | Button active state                       |
+| Switch Off (`--switch-off-bg`) | #707070 | Toggle off background                     |
+| Switch On (`--switch-on-bg`)   | #007F00 | Toggle on background                      |
+| Button Text (`--button-text-color`) | #FFFFFF | Primary button text                 |
+
+Additional rarity colour mapping keeps game identity distinct:
+
+| Rarity    | Background | Border  | Judogi Colour |
+| --------- | ---------- | ------- | ------------- |
+| Common    | #3C5AD6    | #3C5AD6 | White (#FFF)  |
+| Epic      | #C757DA    | #C757DA | Blue (#3C7DC4)|
+| Legendary | #E4AB19    | #E4AB19 | Blue (#3C7DC4)|
+
+**Tokens, Shadows, and Motion:**
+
+| Token / Variable         | Value                      | Purpose                                       |
+| ------------------------ | -------------------------- | --------------------------------------------- |
+| `--radius-sm` / `--radius-md` / `--radius-lg` / `--radius-pill` | 4px / 8px / 12px / 9999px | Shared corner radii by component type |
+| `--shadow-base` / `--shadow-hover` | `0 4px 12px rgba(0,0,0,0.1)` / `0 8px 24px rgba(0,0,0,0.2)` | Elevation + hover effects |
+| `--transition-fast`      | `all 150ms ease`           | Snappy interaction animations                 |
+| `--color-slider-dot` / `--color-slider-active` | #666666 / #333333 | Carousel indicator styling          |
+| `--scroll-marker-size`   | 10px                       | Carousel scroll marker sizing                 |
+| `--logo-max-height`      | `min(8dvh, 44px)`          | Responsive logo scaling                       |
+
+**Accessibility & Responsiveness:**
+
+- Keyboard focusable controls with visible focus indicators on every element.
+- Tap targets ≥48px and responsive grid behaviour (mobile-first, desktop enhancements, tablet scaling).
+- Carousels support swipe, arrow keys, and screen readers; modals trap focus when open.
+- Navigation condenses into hamburger menus <480px while maintaining active state highlighting.
+
+**Branding & Tone:**
+
+- Respect logo safe zones, orientation, and colour fidelity; only use the SHIHO emblem in approved secondary contexts.
+- Keep interactions fun-first—snappy, playful, and kid-friendly without sacrificing clarity.
+- Use vibrant highlights sparingly to emphasise primary actions while preserving readability.
 
 ### 6. Settings Page Guidelines (P2)
 
 **Layout Requirements:**
 
-- Section grouping with `<fieldset>` elements and descriptive `<legend>` titles
-- Consistent form structure across all sections
-- Settings item containers using `<div class="settings-item">`
-- Responsive grid layout using `.game-mode-toggle-container` class
+- Organise settings into `<fieldset>` sections with descriptive `<legend>` headings (e.g., General, Game Modes, Feature Flags).
+- Maintain consistent form structure, either one form per section or a single form containing multiple fieldsets.
+- Wrap controls inside `<div class="settings-item">` containers to preserve spacing and modularity.
+- Apply `.game-mode-toggle-container` to fieldsets that should render responsive grids (3 columns desktop, single column mobile).
+- Preserve logical top-down hierarchy (title → general → advanced) and maintain tab order through DOM structure.
+- Display all sections simultaneously to simplify automated testing; avoid collapsible panels.
 
 **Structure Template:**
 
@@ -181,12 +252,69 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 </div>
 ```
 
-**Responsive Design:**
+**Styling Patterns:**
 
-- 3-column layout on desktop
-- 1-column stacked layout on mobile
-- Logical keyboard navigation order
-- Simultaneous section display (no collapsible containers)
+- Reuse `.settings-form` wrappers and consistent `<legend>` typography (Russo One, 24px).
+- Implement feature toggles with the existing `.switch` markup, including tooltip and automation attributes:
+
+  ```html
+  <label for="feature-enable-test-mode" class="switch">
+    <input
+      type="checkbox"
+      id="feature-enable-test-mode"
+      name="enableTestMode"
+      data-tooltip-id="settings.enableTestMode"
+      data-flag="enableTestMode"
+      aria-label="Test Mode"
+    />
+    <div class="slider round"></div>
+    <span>Test Mode</span>
+  </label>
+  ```
+
+- Style selects and radio buttons with existing dark backgrounds, padding, and rounded borders; avoid bespoke colour values—use CSS variables (`--color-primary`, `--button-bg`, etc.).
+- Honour Light, Dark, and Retro themes, ensuring snackbars use `--color-tertiary` with a contrasting border to avoid conflict with the navigation bar.
+- Apply spacing tokens (`--space-sm`, `--space-md`, etc.) and keep inputs at least 48px tall for touch accessibility.
+- Use `.settings-description` for general text and `.flag-description` for feature flag details (or standardise on one class when refactoring).
+
+**Accessibility & UX:**
+
+- All controls must be reachable via Tab with visible focus outlines; do not remove default focus styling.
+- Provide `aria-label` or `<label>` for every control; reference descriptive copy via `aria-describedby` when needed.
+- Announce state changes via native semantics, route error states through a dedicated `<div id="settings-error-popup" role="alert" aria-live="assertive">`, and ensure messages dismiss after ~3 seconds.
+- Guarantee colour contrast of 4.5:1 across all themes and surface immediate visual feedback for toggles.
+- Enforce consistent UX: settings auto-save via `updateSetting()`, reload with persisted values, and integrate with existing error feedback flows.
+- Include a clearly labelled `.settings-item` link to `changeLog.html` before the error container for transparency.
+- Provide a `Links` fieldset grouping supplemental pages (`changeLog.html`, `prdViewer.html`, `mockupViewer.html`, `tooltipViewer.html`, `vectorSearch.html`) arranged with `.settings-links-list` (3-column desktop, single column <768px, sequential tabindex such as 99+).
+
+**Feature Flags & Agent Observability:**
+
+- Implement feature flags with predictable IDs (`feature-<kebab-case>`) and camelCase `name` attributes; include `data-flag` for automation and `data-tooltip-id` for tooltip integration.
+- Place all feature flags within a dedicated `<fieldset id="feature-flags-container" class="game-mode-toggle-container settings-form">`.
+- Trigger snackbars via `showSnackbar()` when a flag changes to provide confirmation feedback.
+- Ensure internal state remains observable via DOM attributes and support AI-assisted workflows.
+
+### 7. PRD Authoring Standards (P2)
+
+**Required Sections:**
+
+- Every PRD must include a TL;DR overview, problem statement, goals/success metrics, user stories, prioritized functional requirements, acceptance criteria, non-functional requirements, dependencies, and open questions.
+- Functional requirements should appear in a prioritised table (typically P1/P2/P3) naming each feature and describing expected behaviour.
+- Acceptance criteria list measurable, testable statements (covering success and failure states) that map directly to the prioritized requirements.
+
+**Structure & Consistency:**
+
+- Use consistent headings (`## Goals`, `## User Stories`, `## Functional Requirements`, `## Acceptance Criteria`, etc.) so humans and agents can parse documents reliably.
+- Reference related PRDs where helpful and note dependencies that affect implementation (e.g., Classic Battle rules or Team Battle logic).
+- Maintain clarity and completeness—avoid vague language and ensure no critical requirement is omitted.
+
+**Authoring Guidelines:**
+
+- Acceptance criteria should cover happy paths, error handling, timing thresholds, and accessibility expectations where relevant.
+- Provide persona-driven user stories in the “As a [user], I want [action] so that [outcome]” format to tie requirements to real scenarios.
+- Capture non-functional considerations (performance budgets, accessibility targets, UX tone) alongside functional requirements.
+- Document outstanding questions and assumptions so follow-up work can close gaps quickly.
+- Treat these standards as mandatory for both human authors and AI agents generating new PRDs.
 
 ---
 
@@ -324,10 +452,11 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
 
 ## Source Files Consolidated
 
-This PRD consolidates content from the following design/codeStandards files:
+This PRD consolidates content previously maintained in `design/codeStandards/` (now retired):
 
-- `codeJSDocStandards.md` - JSDoc formatting and documentation requirements
-- `codeNamingPatterns.md` - Function naming conventions and patterns
-- `codePseudocodeStandards.md` - Pseudocode documentation standards
-- `codeUIDesignStandards.md` - UI design principles and component standards
-- `settingsPageDesignGuidelines.md` - Specific layout requirements for settings interfaces
+- `codeJSDocStandards.md` — JSDoc formatting and documentation requirements
+- `codeNamingPatterns.md` — Function naming conventions and patterns
+- `codePseudocodeStandards.md` — Pseudocode documentation standards
+- `codeUIDesignStandards.md` — UI design principles, component patterns, tokens, and accessibility rules
+- `settingsPageDesignGuidelines.md` — Layout, styling, accessibility, and feature flag requirements for the settings interface
+- `prdRulesForAgents.md` — Canonical PRD structure, prioritization rules, and acceptance criteria expectations
