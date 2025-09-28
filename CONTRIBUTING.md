@@ -129,7 +129,7 @@ AI contributors should follow a structured and predictable format when submittin
 Before scanning files for any question‑style prompt (for example, beginning with
 "Explain" or "How does"), run [`queryRag`](./src/helpers/queryRag.js) to collect
 relevant context from the embeddings. See
-[example vector queries](design/agentWorkflows/exampleVectorQueries.md#queryrag-helper)
+[example vector queries](design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns)
 for deeper patterns.
 
 ### 🎯 Scope of Work

@@ -707,7 +707,10 @@ function determineTags(relativePath, ext, isTest) {
     tags.push("design-doc");
   } else if (relativePath.startsWith("design/codeStandards")) {
     tags.push("design-guideline");
-  } else if (relativePath.startsWith("design/agentWorkflows")) {
+  } else if (
+    relativePath.startsWith("design/productRequirementsDocuments/prdAIAgentWorkflows") ||
+    relativePath.startsWith("design/productRequirementsDocuments/prdVectorDatabaseRAG")
+  ) {
     tags.push("agent-workflow");
   } else if (relativePath.startsWith("design/architecture")) {
     tags.push("architecture-doc");

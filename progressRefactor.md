@@ -44,7 +44,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/technical/battleMarkup.md` (retired) & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
 - `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), `design/codeStandards/evaluatingPlaywrightTests.md`, `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
 - `docs/validation-commands.md` → split command matrix between `prdTestingStandards.md` (test suite) and `prdDevelopmentStandards.md` (agent/dev workflows); keep CLI script references synchronized.
-- `docs/rag-system.md` → summarize agent workflow in `prdVectorDatabaseRAG.md` and link to `design/agentWorkflows/` examples.
+- `docs/rag-system.md` → summarize agent workflow in `prdVectorDatabaseRAG.md` and link to the [High-Success Query Patterns](design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns) section.
 - ✅ Architecture overview migrated into `design/productRequirementsDocuments/prdArchitecture.md` (appendix) with diagrams referenced from `design/architecture/` as needed.
 - `docs/technical/classicBattleTesting.md`, `design/testing/classicBattleTesting.md` → embed deterministic testing checklist in `prdBattleClassic.md` and `prdTestingStandards.md`, then archive duplicates.
 - `docs/components.md` and `docs/roundUI.md` → integrate into `prdUIDesignSystem.md` and ensure `prdBattleMarkup.md` owns DOM contracts.
