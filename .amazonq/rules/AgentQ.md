@@ -201,7 +201,7 @@ This project contains a high-performance vector database with over 2,300 indexed
 
 - **Strong Categories:** Design docs (95%), PRDs (90%), Architecture (85%)
 - **Improving Categories:** Implementation files (35% → targeting 60%)
-- **Detailed Guide:** See [`ragUsageGuide.md`](design/agentWorkflows/ragUsageGuide.md)
+- **Detailed Guide:** See [RAG Decision Workflow](design/productRequirementsDocuments/prdAIAgentWorkflows.md#1-rag-query-decision-tree-p1) and [High-Success Query Patterns](design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns)
 
 You **MUST** use RAG as your first step for questions related to:
 
@@ -292,7 +292,7 @@ RAG Provenance JSON schema:
 
 ```json
 {
-  "source": "design/agentWorkflows/exampleVectorQueries.md",
+  "source": "design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns",
   "confidence": "high",
   "quote": "Use queryRag for architectural questions."
 }
