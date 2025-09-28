@@ -338,7 +338,7 @@ const testMatches = await vectorSearch.findMatches(vec, 5, ["test", "function"])
 
 ## Source Files Consolidated
 
-This PRD consolidates content from the following design/agentWorkflows files:
+This PRD consolidates content from the retired agent workflow markdown set (formerly under `design/agentWorkflows/`):
 
 - `ragUsageGuide.md` - RAG usage patterns, decision trees, and optimization techniques
 - `exampleVectorQueries.md` - Vector search examples, embedding formats, and query templates

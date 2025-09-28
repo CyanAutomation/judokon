@@ -68,7 +68,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 ### Embedding Refresh Pipeline
 
 After editing PRDs, tooltips, game rules, or any markdown under
-`design/codeStandards` or `design/agentWorkflows`, run
+`design/codeStandards` or the agent workflow documentation in `design/productRequirementsDocuments/prdAIAgentWorkflows.md`, run
 `npm run generate:embeddings` from the repository root. The script at
 `scripts/generateEmbeddings.js` downloads the **quantized** `Xenova/all-MiniLM-L6-v2` model the first time it runs, so the command will fail without internet access. Cache the model locally or run it in an environment with a connection. Commit the updated `client_embeddings.json`—now pretty-printed for readability—so other agents work with the latest vectors. If you hit out-of-memory errors during generation, rerun the command with a higher heap limit (e.g. `node --max-old-space-size=8192 scripts/generateEmbeddings.js`). A GitHub Actions workflow could automate this
 regeneration whenever those folders change.
@@ -188,7 +188,7 @@ const matches = await queryRag("How does the battle engine work?");
 
 `queryRag` should be the first stop for any “How/Why/What/Where” question. The helper fetches the top semantic matches from the
 client embedding store and returns scored results that agents can feed directly into prompts, code comments, or task contracts.
-See [`design/agentWorkflows/exampleVectorQueries.md`](../../design/agentWorkflows/exampleVectorQueries.md) for prompt patterns and tag combinations.
+See [High-Success Query Patterns](#high-success-query-patterns) for prompt patterns and tag combinations.
 
 ### Command Line Interface
 
@@ -198,6 +198,67 @@ See [`design/agentWorkflows/exampleVectorQueries.md`](../../design/agentWorkflow
   npm run rag:query "How does the battle engine work?"
   ```
 
+
+### RAG Decision Workflow
+
+Use the same rapid decision tree published in the AI Agent Workflows PRD so agents can decide within seconds whether to call the vector database:
+
+```text
+User query contains "How", "Why", "What", "Where", "Which"? → USE RAG
+User requests examples or references? → USE RAG
+User mentions unfamiliar terms? → USE RAG
+When in doubt? → USE RAG FIRST
+```
+
+Operational expectations:
+
+- Default to `queryRag` before manual file exploration for any informational task.
+- Re-run the query with synonyms or category keywords when initial matches are weak.
+- Pull adjacent context via the `contextPath` field when you need surrounding paragraphs.
+- Only fall back to manual grep or tree walking after two optimized RAG attempts.
+
+### High-Success Query Patterns
+
+Ground every request in the proven templates from the AI Agent Workflows PRD to stay within the ≥62.5% success corridor:
+
+**Implementation Questions**
+
+- Include file types such as "JSON structure", "CSS styling", or "JavaScript function".
+- Add situational context like "configuration", "data format", or "UI component".
+- Anchor with technical verbs: "implementation", "validation", "guidelines".
+
+**Design Questions**
+
+- Lean on product nouns: "PRD", "design guidelines", "user experience".
+- Reference feature domains: "tooltip system", "battle mode", "navigation".
+- Specify surrounding context: "character design", "UI theme", "accessibility".
+
+**Architecture Questions**
+
+- Pair system terminology such as "component factory", "module structure", or "API design".
+- Declare the subsystem: "state management", "event handling", "data flow".
+
+**Examples**
+
+```text
+❌ Poor: "How do I add tooltips?"
+✅ Good: "tooltip implementation data structure JSON format"
+
+❌ Poor: "CSS styling help"
+✅ Good: "navigation bar button transition duration styling"
+
+❌ Poor: "Battle system logic"
+✅ Good: "classic battle mode game timer phases scoreboard"
+```
+
+### Operational Benchmarks
+
+Track usage against the shared success metrics for RAG-enabled workflows:
+
+- **Speed**: Maintain a 2-second average for RAG queries by preferring semantic expansion before manual search.
+- **Accuracy**: Keep the success rate of correct source retrieval at or above 62.5% by using the high-success query templates.
+- **Efficiency**: Demonstrate the 15× time savings versus manual exploration in task contracts and retrospectives.
+- **Coverage**: Achieve ≥95% precision on design document retrieval and ≥85% on architecture lookups when using filtered tag sets.
   Sample output surfaces the top excerpts that match the query, mirroring the in-browser demo and the `queryRag` helper.
 
 - **Evaluate retrieval quality**
