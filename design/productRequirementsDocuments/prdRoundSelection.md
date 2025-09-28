@@ -10,7 +10,7 @@ Round selection is the first user interaction in a match flow and affects match 
 
 ## Goals / Success Metrics
 
-- Provide an accessible modal that lets users choose points-to-win (e.g., 5/10/15).
+- Provide an accessible modal that lets users choose points-to-win (short/medium/long: 3/5/10).
 - Persist the last choice for returning players.
 - Support `?autostart=1` for automated flows and testing.
 
@@ -21,7 +21,7 @@ Round selection is the first user interaction in a match flow and affects match 
 
 ## Prioritized Functional Requirements
 
-P1 - Round Selection Modal: Modal appears at match start unless autostart or saved preference exists. Options: 5, 10, 15 points.
+P1 - Round Selection Modal: Modal appears at match start unless autostart or saved preference exists. Options: 3, 5, 10 points (short/medium/long).
 
 Acceptance Criteria:
 

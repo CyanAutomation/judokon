@@ -100,7 +100,7 @@ The engine contains no UI code. Game modes translate events into messages and de
 
 | Priority | Feature           | Description                                                                                        |
 | -------- | ----------------- | -------------------------------------------------------------------------------------------------- |
-| P1       | Classic Battle    | 1v1 battle vs opponent, stat-based combat to a user-selected 5/10/15 point win target (default 10) |
+| P1       | Classic Battle    | 1v1 battle vs opponent, stat-based combat to a user-selected 3/5/10 point win target (short/medium/long, default 5) |
 | P1       | Team Battle Modes | Gender-specific team-based battles                                                                 |
 | P1       | Judoka Creation   | Interface for new character creation                                                               |
 | P2       | Judoka Update     | Edit existing characters and save changes                                                          |
@@ -116,7 +116,7 @@ The engine contains no UI code. Game modes translate events into messages and de
 
 **Japanese**: 試合 (バトルモード)
 **URL**: `battleJudoka.html`
-A 1v1 stat-based match against an AI opponent using a deck of 25 random judoka cards. On first visit, a modal prompts the player to choose a win target of 5, 10, or 15 points (default 10); first to that target wins. [Read full PRD](prdBattleClassic.md)
+A 1v1 stat-based match against an AI opponent using a deck of 25 random judoka cards. On first visit, a modal prompts the player to choose a win target of 3, 5, or 10 points (short/medium/long; default 5); first to that target wins. [Read full PRD](prdBattleClassic.md)
 
 #### Goals
 
@@ -128,7 +128,7 @@ A 1v1 stat-based match against an AI opponent using a deck of 25 random judoka c
 - Draw one random card from each deck per round.
 - Player selects a stat to compare.
 - Higher stat wins; score increases by one.
-- End match when either player reaches a user-selected win target of 5, 10, or 15 points (default 10) or after 25 rounds.
+- End match when either player reaches a user-selected win target of 3, 5, or 10 points (default 5) or after 25 rounds.
 
 #### Acceptance Criteria
 

@@ -33,17 +33,17 @@ export const uiTooltipManifest = [
   },
   {
     tooltipId: "ui.roundQuick",
-    component: "Round length selector (5-point quick match)",
+    component: "Round length selector (3-point short match)",
     source: "design/productRequirementsDocuments/prdGameModes.md"
   },
   {
     tooltipId: "ui.roundMedium",
-    component: "Round length selector (10-point medium match)",
+    component: "Round length selector (5-point medium match)",
     source: "design/productRequirementsDocuments/prdGameModes.md"
   },
   {
     tooltipId: "ui.roundLong",
-    component: "Round length selector (15-point long match)",
+    component: "Round length selector (10-point long match)",
     source: "design/productRequirementsDocuments/prdGameModes.md"
   },
   {

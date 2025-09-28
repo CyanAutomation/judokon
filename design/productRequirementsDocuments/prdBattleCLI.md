@@ -211,7 +211,7 @@ This appendix consolidates the previously separate CLI usage, module structure, 
 - Stats: selectable via keyboard and clickable/tappable rows (≥44px).
 - State badge: `#battle-state-badge` reflects the current machine state for visibility and tests.
 - Bottom line / Snackbar: Status line renders in `#snackbar-container` for short messages and countdown hints.
-- Win target: Header selector (5/10/15) persisted to `localStorage` at `battleCLI.pointsToWin`.
+- Win target: Header selector (3/5/10 — short/medium/long) persisted to `localStorage` at `battleCLI.pointsToWin`.
 - Verbose log: Optional header toggle to enable an event/state transition log for debugging.
 
 ### Module Structure
