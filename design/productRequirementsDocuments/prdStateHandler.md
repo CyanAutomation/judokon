@@ -98,6 +98,77 @@ Acceptance Criteria (fallbacks):
 - Auto-select behavior is documented and deterministic in `testMode` (seeded RNG).
 - Orchestrator-missing paths reproduce the same external events (same event names/payloads) so consumers are unaffected.
 
+## RoundStore Centralization
+
+RoundStore is the canonical state container for Classic Battle rounds. It consolidates round number, transition history, ready dispatch tracking, and consumer notifications so the state handler and UI share a single source of truth rather than stitching together engine reads and legacy events.
+
+### API contract (authoritative surface)
+
+```javascript
+// Observable store imported from classicBattle helpers
+import { roundStore } from "src/helpers/classicBattle/roundStore.js";
+
+// Read current snapshot
+const current = roundStore.getCurrentRound();
+
+// Mutation entry points maintained by the state handler and orchestrator bridge
+roundStore.setRoundNumber(roundNumber);
+roundStore.setRoundState(nextState);
+roundStore.setSelectedStat(statKey);
+roundStore.setRoundOutcome(outcomePayload);
+
+// Ready dispatch coordination
+roundStore.isReadyDispatched();
+roundStore.markReadyDispatched();
+roundStore.resetReadyDispatch();
+
+// Observation hooks for UI/analytics consumers
+roundStore.onRoundNumberChange((newNumber, oldNumber) => { /* … */ });
+roundStore.onRoundStateChange((newState, oldState) => { /* … */ });
+roundStore.onStatSelected((stat) => { /* … */ });
+roundStore.onRoundOutcome((outcome) => { /* … */ });
+
+// Diagnostics
+roundStore.getStateSnapshot();
+roundStore.reset();
+```
+
+The state handler owns writes to the store (round numbers, transitions, ready flags) while feature consumers only subscribe or request read-only snapshots.
+
+### Migration phases
+
+1. **Phase 0 – Prototype (in flight):** Complete contract definition, spike integrations, and verify parity with existing debug helpers.
+2. **Phase 1 – Feature-flagged writes:** Ship RoundStore behind a `roundStore.enabled` flag. The state handler and battle engine mirror all transitions into the store while legacy events remain the read path.
+3. **Phase 2 – Consumer migration:** Gradually move scoreboard adapter, debug overlays, and Playwright helpers to read from RoundStore. Add assertions that compare store state with legacy events for early anomaly detection.
+4. **Phase 3 – Event deprecation:** Promote RoundStore to the authoritative read model, remove redundant event listeners, and delete compatibility shims once monitoring shows no drift for two releases.
+
+### Risks and mitigations
+
+- **Double writes causing drift:** Gate store updates behind shared utilities so the state handler and engine call the same mutation helpers; add parity checks that fail fast when events disagree with store state.
+- **Subscriber churn/perf regressions:** Provide batched notifications (`getStateSnapshot`) and encourage consumers to diff minimal fields to avoid redundant renders.
+- **Feature flag rollout gaps:** Document rollout playbook (flag defaults, telemetry, rollback) alongside deployment checklists so QA can toggle without code changes.
+- **Debug tooling desync:** Keep `battleDebug.logStateTransition` wired to the same RoundStore subscriptions so logs reflect store transitions rather than legacy events.
+
+### Embedded integration example
+
+The previous `design/roundStore/integrationExample.js` helper is represented here to guide migrations:
+
+```javascript
+roundStore.onRoundNumberChange((newNumber, oldNumber) => {
+  scoreboard.updateRoundCounter(newNumber);
+});
+
+roundStore.onRoundStateChange((newState, oldState) => {
+  battleDebug.logStateTransition(oldState, newState);
+});
+
+roundStore.setRoundState("cooldown");
+roundStore.setSelectedStat("strength");
+roundStore.setRoundOutcome("win");
+```
+
+This pattern keeps event emissions optional during migration while guaranteeing that UI and analytics modules observe consistent state via the store.
+
 ## Compliance Audit (2025-09-10)
 
 The former `docs/technical/stateHandlerAudit.md` compliance report is now captured here to keep implementation status aligned with the product requirements.
