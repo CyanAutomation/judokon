@@ -24,7 +24,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - ✅ Architecture overview (former `docs/technical/architecture.md` / `design/architecture.md`) now lives in `design/productRequirementsDocuments/prdArchitecture.md` (appendix is authoritative).
 - `docs/technical/battleMarkup.md` (retired) / `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat Markdown as temporary appendix until canonical schema lives in PRD).
 - Data schema deep dive now lives in `design/productRequirementsDocuments/prdDataSchemas.md` (former `docs/technical/dataSchemas.md` has been retired).
-- `docs/technical/eventNamingAudit.md` / `design/eventNamingAudit.md` / `design/eventAudit/*.txt` → `prdEventContracts.md` (exists; move migration tables + listener inventories).
+- Legacy event naming audit artifacts (`docs/technical/eventNamingAudit.md`, retired `design/eventNamingAudit.md`, and `design/eventAudit/*.txt`) → `prdEventContracts.md` (exists; migration tables + listener inventories now maintained in the PRD).
 - `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → now consolidated into `design/productRequirementsDocuments/prdStateHandler.md` (compliance table + priorities live in PRD).
 - `docs/technical/classicBattleTesting.md` (retired) / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
 - `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md#tooltip-manifest` / `prdTooltipViewer.md` (exists).
@@ -39,7 +39,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 ## Documents to assimilate or cross-reference
 
-- `docs/technical/eventNamingAudit.md`, `design/eventNamingAudit.md`, `design/eventAudit/*.txt` → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
+- Legacy event naming audit artifacts (including the retired `design/eventNamingAudit.md` and `design/eventAudit/*.txt`) → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
 - `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → ✅ integrated into `prdStateHandler.md` (table + follow-up actions captured in PRD).
 - `docs/technical/battleMarkup.md` (retired) & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
 - `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), `design/codeStandards/evaluatingPlaywrightTests.md`, `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
@@ -93,7 +93,7 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Assimilate (append legacy alignment notes and migration checklist)
   - Rationale: Legacy alignment concerns the CLI behavior; `prdBattleCLI.md` should document compatibility and migration steps.
 
-- `design/eventNamingAudit.md` -> `design/productRequirementsDocuments/prdEventContracts.md#audit-appendix`
+- Legacy event naming audit artifacts -> `design/productRequirementsDocuments/prdEventContracts.md#audit-appendix`
   - Action: Assimilate (append audit tables and migration checklist)
   - Rationale: Event naming and listener contract audits belong under the event contracts PRD.
 

@@ -60,10 +60,6 @@
     "mappedTo": "prdBattleMarkup.md"
   },
   {
-    "source": "design/eventNamingAudit.md",
-    "mappedTo": "design/productRequirementsDocuments/prdEventContracts.md#audit-appendix"
-  },
-  {
     "source": "design/retroThemeContrast.md",
     "mappedTo": "design/productRequirementsDocuments/prdUIDesignSystem.md#retro-theme-tokens--contrast-compliance"
   },

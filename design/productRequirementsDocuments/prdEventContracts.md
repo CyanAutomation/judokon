@@ -4,6 +4,8 @@
 
 Defines the canonical event names, payload schemas, emitters, consumers, and versioning policy used across JU-DO-KON!. Tests, the CLI, and integrations rely on these events; this document is the single source of truth.
 
+> **Status**: This PRD fully replaces the retired `design/eventNamingAudit.md` inventory. All event naming guidance, audit tables, and migration checklists now live here.
+
 ## Problem Statement / Why it matters
 
 Event names and payloads are often used as implicit contracts between modules. Without explicit documentation and a versioning plan, changes break tests and third-party integrations.
