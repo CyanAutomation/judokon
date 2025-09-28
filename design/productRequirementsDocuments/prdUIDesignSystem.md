@@ -90,14 +90,14 @@ The JU-DO-KON! project lacks a centralized, comprehensive design system that uni
 
 #### Retro Theme Tokens & Contrast Compliance
 
-| Token                 | Value     | Usage Notes                                               |
-| --------------------- | --------- | --------------------------------------------------------- |
-| `--color-background`  | `#000000` | Primary page background, retro terminal aesthetic         |
-| `--color-text`        | `#8cff6b` | Default copy, headings, and UI chrome in retro mode       |
-| `--color-primary`     | `#8cff6b` | Primary interactive accents and focus rings               |
-| `--color-secondary`   | `#8cff6b` | Secondary accents (intentionally matches primary)         |
-| `--button-bg`         | `#8cff6b` | Primary button background for high visibility             |
-| `--button-text-color` | `#000000` | Ensures button copy maintains legibility on neon surface  |
+| Token                 | Value     | Usage Notes                                              |
+| --------------------- | --------- | -------------------------------------------------------- |
+| `--color-background`  | `#000000` | Primary page background, retro terminal aesthetic        |
+| `--color-text`        | `#8cff6b` | Default copy, headings, and UI chrome in retro mode      |
+| `--color-primary`     | `#8cff6b` | Primary interactive accents and focus rings              |
+| `--color-secondary`   | `#8cff6b` | Secondary accents (intentionally matches primary)        |
+| `--button-bg`         | `#8cff6b` | Primary button background for high visibility            |
+| `--button-text-color` | `#000000` | Ensures button copy maintains legibility on neon surface |
 
 **Contrast Verification:**
 

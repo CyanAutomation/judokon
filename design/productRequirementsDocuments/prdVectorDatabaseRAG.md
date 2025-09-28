@@ -198,7 +198,6 @@ See [High-Success Query Patterns](#high-success-query-patterns) for prompt patte
   npm run rag:query "How does the battle engine work?"
   ```
 
-
 ### RAG Decision Workflow
 
 Use the same rapid decision tree published in the AI Agent Workflows PRD so agents can decide within seconds whether to call the vector database:

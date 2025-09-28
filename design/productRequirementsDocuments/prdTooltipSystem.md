@@ -107,17 +107,17 @@ To ensure tooltips are consistently helpful and aligned with JU-DO-KON!’s tone
 
 The tooltip system maintains a canonical manifest so that designers and engineers can coordinate updates between product specs, UI surfaces, and the localization bundle. The manifest also powers automated validation in `tests/data/tooltipsEntries.test.js`, which ensures every required control ships with tooltip coverage.
 
-| Tooltip key         | UI surface                                    | Spec source                                                                                                                |
-| ------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `ui.languageToggle` | Meditation quote language toggle              | [`src/pages/meditation.html`](../../src/pages/meditation.html)                                                             |
-| `ui.next`           | Classic Battle “Next” control                 | [`design/productRequirementsDocuments/prdBattleClassic.md`](../../design/productRequirementsDocuments/prdBattleClassic.md) |
-| `ui.quitMatch`      | Classic Battle quit confirmation flow         | [`design/productRequirementsDocuments/prdBattleClassic.md`](../../design/productRequirementsDocuments/prdBattleClassic.md) |
-| `ui.drawCard`       | Random Judoka draw button                     | [`src/helpers/randomJudokaPage.js`](../../src/helpers/randomJudokaPage.js)                                                 |
-| `card.flag`         | Judoka card flag badge                        | [`src/helpers/cardTopBar.js`](../../src/helpers/cardTopBar.js)                                                             |
-| `ui.roundQuick`     | Round length selector (3-point short match)   | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
-| `ui.roundMedium`    | Round length selector (5-point medium match)  | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
-| `ui.roundLong`      | Round length selector (10-point long match)   | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
-| `ui.toggleLayout`   | Browse Judoka layout toggle                   | [`src/pages/browseJudoka.html`](../../src/pages/browseJudoka.html)                                                         |
+| Tooltip key         | UI surface                                   | Spec source                                                                                                                |
+| ------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `ui.languageToggle` | Meditation quote language toggle             | [`src/pages/meditation.html`](../../src/pages/meditation.html)                                                             |
+| `ui.next`           | Classic Battle “Next” control                | [`design/productRequirementsDocuments/prdBattleClassic.md`](../../design/productRequirementsDocuments/prdBattleClassic.md) |
+| `ui.quitMatch`      | Classic Battle quit confirmation flow        | [`design/productRequirementsDocuments/prdBattleClassic.md`](../../design/productRequirementsDocuments/prdBattleClassic.md) |
+| `ui.drawCard`       | Random Judoka draw button                    | [`src/helpers/randomJudokaPage.js`](../../src/helpers/randomJudokaPage.js)                                                 |
+| `card.flag`         | Judoka card flag badge                       | [`src/helpers/cardTopBar.js`](../../src/helpers/cardTopBar.js)                                                             |
+| `ui.roundQuick`     | Round length selector (3-point short match)  | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
+| `ui.roundMedium`    | Round length selector (5-point medium match) | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
+| `ui.roundLong`      | Round length selector (10-point long match)  | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
+| `ui.toggleLayout`   | Browse Judoka layout toggle                  | [`src/pages/browseJudoka.html`](../../src/pages/browseJudoka.html)                                                         |
 
 **Update process**
 
