@@ -162,6 +162,14 @@ it("should time out after 5000ms", async () => {
 - Target the highest-signal scenarios first (critical paths, regression reproductions) and avoid redundant tests.
 - Keep runtimes short by favoring deterministic async helpers over real timers and minimizing expensive setup.
 
+#### Automated Evaluation Workflow
+
+- Generate source data by running `npx vitest --run --reporter=json` (or `npm run test`) and optionally `npm run mutate` for Stryker mutation scores.
+- Execute `npm run test:value` to score the suite; the orchestrator script (`scripts/test-value-evaluator.js`) reads metadata headers, assertion counts, and timing data to produce `reports/test-value/test-value.json` and `reports/test-value/test-value.md`.
+- Enforce CI policy with `npm run test:value:ci`, which fails when any modified file scores ≤4 (Remove/Merge classification).
+- Heuristics include header parsing (`Spec-ID`, `Linked-Req`), semantic vs snapshot assertions, timer discipline (e.g., `vi.useFakeTimers`), and optional mutation lift when reports exist.
+- Treat the generated reports as required artefacts during review—link to them in PR descriptions when introducing significant test changes.
+
 ### <a id="playwright-test-guidelines"></a>2. Playwright Test Guidelines (P1)
 
 **Core Philosophy:**
@@ -208,6 +216,14 @@ it("should time out after 5000ms", async () => {
 - Implement proper wait conditions (`waitForSelector`, `waitForLoadState`)
 - Avoid hardcoded timeouts in favor of condition-based waiting
 - Structure tests to reflect actual user workflows
+
+#### Automated Evaluation Workflow
+
+- Run `npm run e2e:flake-scan` to execute Playwright specs three times, capture flake rates, and generate `pw-report.json` for analysis.
+- When a report already exists (local or CI), execute `npm run e2e:value`; the evaluator (`scripts/pw-value-evaluator.js`) parses metadata headers and locator usage to emit `reports/pw-test-value/pw-test-value.json` plus a Markdown summary.
+- CI enforcement mirrors local commands—tests scoring ≤4 trigger failures to block brittle specs. Monitor annotations in `.github/workflows/pw-test-value.yml` for policy controls.
+- Heuristics review intent clarity, locator quality (`getByRole`, `getByTestId`), avoidance of hard waits (`waitForTimeout`), and cost vs coverage metrics (duration vs semantic expects).
+- Store generated reports with the PR to document locator strategy, flake rate, and remediation notes when refactoring flaky tests.
 
 #### Implementation Guidance by Criterion
 
@@ -726,8 +742,11 @@ echo "Semantic selectors count:" && grep -r "data-testid\|role=\|getByLabel" pla
 
 ## Source Files Consolidated
 
-This PRD consolidates content from the following design/codeStandards files:
+This PRD consolidates content previously housed in `design/codeStandards/` (now retired) and the supporting automation scripts:
 
-- `evaluatingUnitTests.md` - Unit test quality assessment rubric and philosophy
-- `evaluatingPlaywrightTests.md` - End-to-end test evaluation criteria and best practices
-- `testNamingStandards.md` - File naming and test structure conventions
+- `evaluatingUnitTests.md` — Unit test quality rubric, workflow (`npm run test:value`, `npm run mutate`), and report outputs in `reports/test-value/`
+- `evaluatingPlaywrightTests.md` — Playwright evaluation rubric, flake scan workflow (`npm run e2e:flake-scan`, `npm run e2e:value`), and reports in `reports/pw-test-value/`
+- `testNamingStandards.md` — File naming, describe/it conventions, and intent-driven messaging
+- `scripts/test-value-evaluator.js`, `scripts/utils/assertionScanner.js`, `scripts/utils/headerParser.js` — Unit test scoring implementation
+- `scripts/pw-value-evaluator.js`, `scripts/utils/pwAssertionScanner.js` — Playwright scoring implementation
+- `.github/workflows/test-value.yml`, `.github/workflows/pw-test-value.yml` — CI enforcement hooks for low-value tests

@@ -8,7 +8,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - There is no `design/technical/` directory; the duplicated audits live under `docs/technical/` and at the root of `design/`. Language below reflects the actual paths.
 - Additional documents surfaced during validation require explicit mapping: `docs/rag-system.md`, the former architecture overviews (now consolidated under `design/productRequirementsDocuments/prdArchitecture.md`), `design/testing/classicBattleTesting.md`, and the `design/eventAudit/` artifacts. (✅ `docs/TestValuePolicy.md` and `docs/technical/classicBattleTesting.md` are now assimilated into `prdTestingStandards.md`.)
 - The Battle CLI topic is split between `docs/battle-cli.md` (usage) and `docs/battleCLI.md` (module structure). Those guides should be merged while migrating content into `prdBattleCLI.md`.
-- `design/codeStandards/` already holds deep dives referenced by `prdCodeStandards.md`; make sure those references stay canonical when content moves.
+- The retired `design/codeStandards/` deep dives are now consolidated into `prdDevelopmentStandards.md` / `prdTestingStandards.md`; keep PRD references canonical when migrating remaining notes.
 
 ## Inventory & mapping (docs → PRD home)
 
@@ -28,7 +28,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → now consolidated into `design/productRequirementsDocuments/prdStateHandler.md` (compliance table + priorities live in PRD).
 - `docs/technical/classicBattleTesting.md` (retired) / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
 - `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md#tooltip-manifest` / `prdTooltipViewer.md` (exists).
-- `design/testing/classicBattleTesting.md`, `design/codeStandards/*.md`, and similar deep dives remain valuable as implementation notes; decide per file whether to fold content into the owning PRD or keep them as linked appendices with a clear authority statement.
+- `design/testing/classicBattleTesting.md`, the former `design/codeStandards/*.md`, and similar deep dives remain valuable as implementation notes; decide per file whether to fold residual content into the owning PRD or keep linked appendices with a clear authority statement.
 
 ## Missing PRDs or extensions
 
@@ -42,7 +42,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - Legacy event naming audit artifacts (including the retired `design/eventNamingAudit.md` and `design/eventAudit/*.txt`) → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
 - `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → ✅ integrated into `prdStateHandler.md` (table + follow-up actions captured in PRD).
 - `docs/technical/battleMarkup.md` (retired) & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
-- `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), `design/codeStandards/evaluatingPlaywrightTests.md`, `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
+- `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), and the former `design/codeStandards/evaluatingPlaywrightTests.md` / `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
 - `docs/validation-commands.md` → split command matrix between `prdTestingStandards.md` (test suite) and `prdDevelopmentStandards.md` (agent/dev workflows); keep CLI script references synchronized.
 - `docs/rag-system.md` → summarize agent workflow in `prdVectorDatabaseRAG.md` and link to the [High-Success Query Patterns](design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns) section.
 - ✅ Architecture overview migrated into `design/productRequirementsDocuments/prdArchitecture.md` (appendix) with diagrams referenced from `design/architecture/` as needed.

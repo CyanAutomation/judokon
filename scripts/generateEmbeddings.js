@@ -711,8 +711,13 @@ function determineTags(relativePath, ext, isTest) {
     ) {
       tags.push("agent-workflow");
     }
-  } else if (relativePath.startsWith("design/codeStandards")) {
-    tags.push("design-guideline");
+    if (
+      relativePath.includes("prdDevelopmentStandards") ||
+      relativePath.includes("prdTestingStandards") ||
+      relativePath.includes("prdCodeStandards")
+    ) {
+      tags.push("design-guideline");
+    }
   } else if (relativePath.startsWith("design/architecture")) {
     tags.push("architecture-doc");
   } else if (/^(README|CONTRIBUTING|MIGRATION)\.md$/.test(path.basename(relativePath))) {
