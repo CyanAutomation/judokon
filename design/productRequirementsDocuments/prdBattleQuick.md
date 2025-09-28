@@ -18,7 +18,7 @@ Quick Battle is Ju-Do-Kon!’s **fastest battle mode**. It is a **single-round, 
 
 ## Problem Statement
 
-Classic Battle introduces players to stats and outcomes, but even its shortest format (5-point win target) takes multiple rounds. Players sometimes want a **super-fast match** — to test a single card, to demo the game, or to play in very short breaks.
+Classic Battle introduces players to stats and outcomes, but even its shortest format (3-point win target) takes multiple rounds. Players sometimes want a **super-fast match** — to test a single card, to demo the game, or to play in very short breaks.
 
 Quick Battle addresses this by offering a **single-round resolution**, cutting friction while reusing the familiar battle loop.
 

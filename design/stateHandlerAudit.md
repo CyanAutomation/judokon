@@ -12,7 +12,7 @@ Generated: 2025-09-10T13:13:37.758Z
 ### waitingForMatchStart
 
 **ID**: 1 | **Type**: initial
-**Description**: Idle state before the match begins. UI shows Start/Ready and win target selection (5, 10, or 15).
+**Description**: Idle state before the match begins. UI shows Start/Ready and win target selection (3, 5, or 10 for short/medium/long).
 
 **Required onEnter actions**: 2
 

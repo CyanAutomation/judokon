@@ -114,9 +114,9 @@ The tooltip system maintains a canonical manifest so that designers and engineer
 | `ui.quitMatch`      | Classic Battle quit confirmation flow         | [`design/productRequirementsDocuments/prdBattleClassic.md`](../../design/productRequirementsDocuments/prdBattleClassic.md) |
 | `ui.drawCard`       | Random Judoka draw button                     | [`src/helpers/randomJudokaPage.js`](../../src/helpers/randomJudokaPage.js)                                                 |
 | `card.flag`         | Judoka card flag badge                        | [`src/helpers/cardTopBar.js`](../../src/helpers/cardTopBar.js)                                                             |
-| `ui.roundQuick`     | Round length selector (5-point quick match)   | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
-| `ui.roundMedium`    | Round length selector (10-point medium match) | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
-| `ui.roundLong`      | Round length selector (15-point long match)   | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
+| `ui.roundQuick`     | Round length selector (3-point short match)   | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
+| `ui.roundMedium`    | Round length selector (5-point medium match)  | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
+| `ui.roundLong`      | Round length selector (10-point long match)   | [`design/productRequirementsDocuments/prdGameModes.md`](../../design/productRequirementsDocuments/prdGameModes.md)         |
 | `ui.toggleLayout`   | Browse Judoka layout toggle                   | [`src/pages/browseJudoka.html`](../../src/pages/browseJudoka.html)                                                         |
 
 **Update process**

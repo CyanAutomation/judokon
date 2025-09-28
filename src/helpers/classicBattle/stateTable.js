@@ -106,7 +106,7 @@ export const CLASSIC_BATTLE_STATES = [
         on: "matchPointReached",
         target: "matchDecision",
         guard: "playerScore >= winTarget || opponentScore >= winTarget",
-        note: "Checks the user-selected win target (5/10/15)."
+        note: "Checks the user-selected win target (3/5/10)."
       },
       { on: "continue", target: "cooldown" },
       { on: "interrupt", target: "interruptRound" }

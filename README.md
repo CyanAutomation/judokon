@@ -146,7 +146,7 @@ This suite includes a DOM regression test (`tests/pages/battleJudoka.dom.test.js
 - Controls: number keys [1–5] select stats, Enter/Space advances, Q quits, H toggles a help panel, and Esc closes help or quit dialogs. Stats can also be selected by clicking or tapping, and rounds can be advanced with a click. Closing the help panel with its button ignores the next background click to avoid accidental advancement.
 - State badge: `#battle-state-badge` reflects the current machine state.
 - Bottom line: snackbars render as a single status line using `#snackbar-container`.
-- Win target: choose 5/10/15 from the header; persisted in localStorage under `battleCLI.pointsToWin`.
+- Win target: choose 3/5/10 (short/medium/long) from the header; persisted in localStorage under `battleCLI.pointsToWin`.
 - Optional verbose log: enable header toggle to record recent state transitions.
 - Bootstrap helpers: `autostartBattle()`, `renderStatList()`, and `restorePointsToWin()` orchestrate CLI startup.
 

@@ -14,7 +14,7 @@ Key:
 ## Issue 1 — Mismatch in win-target options
 
 - Status: ✔ Verified
-- Summary: UI offers [5, 10, 15] points but `prdBattleClassic.md` lists [3, 5, 10].
+- Summary: UI offers [3, 5, 10] points in alignment with `prdBattleClassic.md`.
 - Accuracy: Confirmed by checking `prdBattleClassic.md` vs. `src/data/battleRounds.js` and `src/helpers/classicBattle/roundSelectModal.js` (fallback).
 - Fix plan feasibility: Feasible and low-risk.
 - Suggested fix steps:
@@ -38,6 +38,7 @@ Key:
 - Playwright tests pass (6/6).
 - Data validation passes.
 - No regressions detected.
+- Documentation + spec now reflect the enforced 3/5/10 win target trio.
 
 ---
 
