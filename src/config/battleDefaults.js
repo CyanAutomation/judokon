@@ -19,7 +19,7 @@ export const POINTS_TO_WIN_OPTIONS = [3, 5, 10];
  * 2. Consumers should read and persist user selections separately.
  * @returns {number}
  */
-export const DEFAULT_POINTS_TO_WIN = 10;
+export const DEFAULT_POINTS_TO_WIN = 5;
 export const FEATURE_FLAGS = {
   autoSelect: { enabled: true },
   enableTestMode: { enabled: false },
