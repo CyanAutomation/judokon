@@ -49,7 +49,8 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 
 ## Functional Requirements
 
-### <a id="unit-test-quality-standards"></a>1. Unit Test Quality Standards (P1)
+<!-- id: unit-test-quality-standards -->
+### 1. Unit Test Quality Standards (P1)
 
 **Core Philosophy:**
 
@@ -59,116 +60,184 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 
 **Quality Evaluation Rubric (0-10 scale):**
 
-**Intent Clarity (Weight: 2)**
+#### Intent Clarity (Unit Tests) (Weight: 2)
 
 - Descriptive test titles using 'should', 'when', 'given/then' patterns
 - Clear links to requirements or specifications
 - Tests clearly state expected behavior
 
-**Behavioral Relevance (Weight: 2)**
+#### Behavioral Relevance (Unit Tests) (Weight: 2)
 
 - Tests relate to required features or documented bug fixes
 - Linked to PRDs, issue trackers, or bug reports
 - Cover critical user-facing functionality
 
-**Assertion Quality (Weight: 2)**
+#### Assertion Quality (Unit Tests) (Weight: 2)
 
 - High-quality semantic assertions (`.toEqual`, `.toBeCalledWith`)
 - Minimal reliance on snapshot-only tests
 - Precise, meaningful validation of behavior
 
-**Isolation and Robustness (Weight: 2)**
+#### Isolation and Robustness (Unit Tests) (Weight: 2)
 
 - Proper test isolation from external factors
 - Use of fake timers (`vi.useFakeTimers`) for time-dependent tests
 - Minimal heavy mocking (fewer than 4 spies per test)
 
-**Cost vs Coverage (Weight: 2)**
+#### Cost vs Coverage (Unit Tests) (Weight: 2)
 
 - Efficient test execution time
-- High value per line of test code
-- Appropriate coverage without redundancy
 
-**Scoring Classification:**
+### 2. Playwright Test Guidelines (P1)
 
-- **Keep (≥8)**: High-quality tests providing genuine value
-- **Refactor (5-7)**: Tests needing improvement but worth salvaging
-- **Remove/Merge (≤4)**: Low-value tests requiring removal or consolidation
+Core philosophy
 
-#### Implementation Guidance by Criterion
+- User-centric: model realistic user journeys
+- Robust & reliable: consistent results, free from flakiness
+- Efficient: fast and reliable execution
 
-##### Intent Clarity
+Quality evaluation (0-10 scale)
 
-- Begin files with optional metadata headers (`Spec-ID`, linked PRD, component under test) to establish traceability.
-- Use descriptive `describe`/`it` strings that follow the "should when" or "given/when/then" pattern so the reader understands intent immediately.
+#### Intent Clarity (Playwright) (Weight: 2)
+
+- Use clear user flow descriptions (given/when/then) and link tests to requirements where possible.
+
+#### Behavioral Relevance (Playwright) (Weight: 2)
+
+- Cover critical user paths; assert visible outcomes (snackbars, aria-live regions, scoreboard updates).
+
+#### Assertion Quality (Playwright) (Weight: 2)
+
+- Prefer web-first locators (`getByRole`, `getByTestId`, `getByText`) and explicit semantic expectations.
+
+#### Robustness (Playwright) (Weight: 2)
+
+- Use stable locators, proper wait conditions, and avoid hardcoded delays.
+
+#### Performance (Playwright) (Weight: 2)
+
+- Keep flows short, parallelize safely, and minimize resource consumption.
+
+Best practices
+
+- Use `data-testid` attributes for automation-specific selectors.
+- Prefer condition-based waiting (`waitForSelector`, `waitForLoadState`) over `waitForTimeout`.
+- Structure tests to reflect real user workflows.
+
+Automated evaluation workflow (Playwright)
+
+- Run `npm run e2e:flake-scan` to execute Playwright specs three times and measure flakiness.
+- Use `npm run e2e:value` to produce `reports/pw-test-value/pw-test-value.json` and a Markdown summary when a report exists.
+- CI will block tests scoring ≤4; reference `.github/workflows/pw-test-value.yml` for enforcement details.
+
+Implementation guidance
+
+##### Intent clarity
+
+Document scenarios with metadata headers (`Spec-ID`, `Linked-Req`) and give descriptive test names.
 
 ```javascript
 /**
- * Spec-ID: AUTH-001
- * Linked-Req: PRD-4.2 (User Login)
- * Covers: src/helpers/auth.js
+ * Spec-ID: CART-003
+ * Linked-Req: PRD-7.1 (Add to Cart)
  */
-describe("authenticate", () => {
-  it("should return a user object on successful authentication", () => {
-    // ...
-  });
+test("should allow user to add an item to the cart from the product page", async ({ page }) => {
+  // ...
 });
 ```
 
-##### Behavioral Relevance
+##### Behavioral relevance
 
-- Anchor tests to real requirements, bug reports, or production incidents whenever possible.
-- Focus on observable behavior; avoid tests that only guard implementation details or reassert library internals.
+- Prioritize high-value flows (checkout, authentication, match resolution) and assert visible UI outcomes.
 
-##### Assertion Quality
+##### Assertion quality
 
-- Prefer semantic assertions (`toEqual`, `toHaveBeenCalledWith`, explicit DOM queries) over snapshots to make failures actionable.
-- Avoid snapshot-only checks unless paired with targeted assertions that explain why the failure matters.
+Prefer web-first locators and explicit expectations:
 
 ```javascript
-it("should return the correct user payload", () => {
-  const user = { id: 1, name: "Alice" };
-  expect(authenticate("valid", "creds")).toEqual(user);
-});
+const submitButton = page.getByRole("button", { name: /Sign In/i });
+await submitButton.click();
+await expect(page.getByText("Welcome, Alice!")).toBeVisible();
 ```
 
-##### Isolation and Robustness
+##### Robustness
 
-- Use the canonical fake timer helpers (see [Fake Timer Playbook](#fake-timer-playbook)) to keep asynchronous flows deterministic.
-- For scheduler-driven animations or RAF-controlled flows, rely on `createTestController` (see [Scheduler Test Controller Playbook](#scheduler-test-controller-playbook)) instead of patching globals.
-- Keep mocking surface area lean (≤4 spies per test) and reset mocks/timers in `afterEach` to avoid cross-test pollution.
+- Rely on Playwright's auto-waiting and avoid `page.waitForTimeout()` in production specs.
+
+##### Performance
+
+- Reuse fixtures, keep tests short, and prefer readiness helpers (see Playwright Readiness Helpers) when waiting for complex conditions.
+- Proper muting instances: 32
+
+Patterns
+
+- ❌ Raw spying (to migrate):
 
 ```javascript
-let timers;
+const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+// ... test code
+errorSpy.mockRestore();
+```
 
-beforeEach(() => {
-  timers = useCanonicalTimers();
-});
+- ✅ Preferred (mute around the code that logs):
 
-afterEach(() => {
-  timers.cleanup();
-});
+```javascript
+import { withMutedConsole } from "../utils/console.js";
 
-it("should time out after 5000ms", async () => {
-  let called = false;
-  setTimeout(() => (called = true), 5000);
-  await timers.advanceTimersByTimeAsync(5000);
-  expect(called).toBe(true);
+await withMutedConsole(async () => {
+  // Test code that would normally error/warn
 });
 ```
 
-##### Cost vs Coverage
+- ✅ Allowed pattern for tests that assert logs:
 
-- Target the highest-signal scenarios first (critical paths, regression reproductions) and avoid redundant tests.
-- Keep runtimes short by favoring deterministic async helpers over real timers and minimizing expensive setup.
+```javascript
+import { withAllowedConsole } from "../utils/console.js";
 
-#### Automated Evaluation Workflow
+await withAllowedConsole(async () => {
+  // Test code where specific warnings/errors are expected
+});
+```
 
-- Generate source data by running `npx vitest --run --reporter=json` (or `npm run test`) and optionally `npm run mutate` for Stryker mutation scores.
-- Execute `npm run test:value` to score the suite; the orchestrator script (`scripts/test-value-evaluator.js`) reads metadata headers, assertion counts, and timing data to produce `reports/test-value/test-value.json` and `reports/test-value/test-value.md`.
-- Enforce CI policy with `npm run test:value:ci`, which fails when any modified file scores ≤4 (Remove/Merge classification).
-- Heuristics include header parsing (`Spec-ID`, `Linked-Req`), semantic vs snapshot assertions, timer discipline (e.g., `vi.useFakeTimers`), and optional mutation lift when reports exist.
-- Treat the generated reports as required artefacts during review—link to them in PR descriptions when introducing significant test changes.
+Migration guidance
+
+- Replace instances of `vi.spyOn(console, ...)` with `withMutedConsole` when the test should not assert on logs.
+- Use `withAllowedConsole` when the test verifies specific console output as part of behavior.
+- Avoid blind bulk sed replacements; prefer targeted changes for complex test files. Validate each migrated file by running the file's tests locally.
+
+Priority files (top migration targets):
+
+- `tests/helpers/dataUtils.test.js`
+- `tests/helpers/errorUtils.test.js`
+- `tests/helpers/classicBattle/debugIntegration.test.js`
+- `tests/helpers/timerService.cooldownGuard.test.js`
+- `tests/helpers/carouselController.test.js`
+- `tests/helpers/tooltip.test.js`
+- `tests/helpers/showSettingsError.test.js`
+- `tests/helpers/cardUtils.test.js`
+- `tests/helpers/classicBattle/uiHelpers.missingElements.test.js`
+- `tests/helpers/tooltipViewerPage.test.js`
+
+Verification commands
+
+- Check for remaining unsilenced console calls in tests (already referenced in PRD: Development Standards):
+
+```bash
+grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js"
+```
+
+- Run individual file tests after migration:
+
+```bash
+npm run test -- tests/helpers/dataUtils.test.js --reporter=verbose
+```
+
+Notes & edge cases
+
+- Some tests intentionally assert console output; convert those to `withAllowedConsole` rather than muting them.
+- Ensure mocks and spies are restored/cleaned in `afterEach` to avoid cross-test pollution.
+- When automating migration, exclude `tests/utils/console.js` from greps and CI checks to avoid false positives.
+
 
 ### <a id="playwright-test-guidelines"></a>2. Playwright Test Guidelines (P1)
 
@@ -346,31 +415,31 @@ describe("FeatureName", () => {
       // Assert
       expect(result).toEqual(expectedValue);
     });
-  });
+      #### Intent Clarity (Playwright) (Weight: 2)
 });
 ```
 
-**Playwright Test Template:**
+      #### Behavioral Relevance (Playwright) (Weight: 2)
 
 ```javascript
 test.describe("Feature Name", () => {
-  test.beforeEach(async ({ page }) => {
+      #### Assertion Quality (Playwright) (Weight: 2)
     await page.goto("/feature-page");
     await page.waitForLoadState("networkidle");
   });
-
+      #### Robustness (Playwright) (Weight: 2)
   test("should complete user workflow", async ({ page }) => {
     // Given user is on feature page
     await expect(page.locator('[data-testid="feature-element"]')).toBeVisible();
-
+      #### Performance (Playwright) (Weight: 2)
     // When user performs action
     await page.click('[data-testid="action-button"]');
 
-    // Then expected result occurs
+      #### Automated Evaluation Workflow (Unit Tests)
     await expect(page.locator('[data-testid="result"]')).toContainText("Expected Result");
   });
 });
-```
+      #### Automated Evaluation Workflow (Playwright)
 
 ### 6. Performance Optimization (P2)
 
@@ -394,7 +463,7 @@ test.describe("Feature Name", () => {
 - Identify performance bottlenecks
 - Regular review of slow tests
 
-### <a id="fake-timer-playbook"></a>Fake Timer Playbook (P1)
+### Fake Timer Playbook (P1) {#fake-timer-playbook}
 
 **Purpose:** Ensure deterministic, fast tests for time-dependent logic by enforcing a canonical fake timer workflow.
 
@@ -456,7 +525,7 @@ it(
 );
 ```
 
-### <a id="scheduler-test-controller-playbook"></a>Scheduler Test Controller Playbook (P1)
+### Scheduler Test Controller Playbook (P1) {#scheduler-test-controller-playbook}
 
 **Purpose:** Provide deterministic `requestAnimationFrame` control for scheduler-driven features without global monkey-patching.
 
@@ -568,7 +637,7 @@ describe("Timer + RAF Test", () => {
 
 - Replace legacy `beforeEach(() => vi.useFakeTimers())` patterns with `useCanonicalTimers()` and ensure cleanup occurs.
 
-### <a id="playwright-readiness-helpers"></a>Playwright Readiness Helpers (P1)
+### Playwright Readiness Helpers (P1) {#playwright-readiness-helpers}
 
 **Goal:** Promote robust, declarative readiness checks for Classic Battle and supporting surfaces.
 
@@ -598,7 +667,7 @@ describe("Timer + RAF Test", () => {
 - **Country Panel:** Ensure the Browse Judoka country panel toggles `hidden`, exposes `aria-label="Country filter panel"`, and loads sliders lazily.
 - **CLI Testing:** `playwright/battle-cli.spec.js` validates CLI badges, verbose logging, and keyboard selection flows.
 
-### <a id="classic-battle-promise-utilities"></a>Classic Battle Promise Utilities (P1)
+### Classic Battle Promise Utilities (P1) {#classic-battle-promise-utilities}
 
 **Purpose:** Provide deterministic hooks for Classic Battle orchestration in unit and integration tests.
 
