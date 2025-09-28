@@ -46,7 +46,7 @@ describe("cooldown auto-advance wiring", () => {
         return id;
       }),
       clearTimeout: vi.fn((id) => {
-        if (id == null) {
+        if (id === null || id === undefined) {
           return false;
         }
         return pendingTimeouts.delete(id);
