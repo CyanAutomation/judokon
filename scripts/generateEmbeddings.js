@@ -705,13 +705,14 @@ function determineTags(relativePath, ext, isTest) {
   const tags = ["prd"];
   if (relativePath.startsWith("design/productRequirementsDocuments")) {
     tags.push("design-doc");
+    if (
+      relativePath.includes("prdAIAgentWorkflows") ||
+      relativePath.includes("prdVectorDatabaseRAG")
+    ) {
+      tags.push("agent-workflow");
+    }
   } else if (relativePath.startsWith("design/codeStandards")) {
     tags.push("design-guideline");
-  } else if (
-    relativePath.startsWith("design/productRequirementsDocuments/prdAIAgentWorkflows") ||
-    relativePath.startsWith("design/productRequirementsDocuments/prdVectorDatabaseRAG")
-  ) {
-    tags.push("agent-workflow");
   } else if (relativePath.startsWith("design/architecture")) {
     tags.push("architecture-doc");
   } else if (/^(README|CONTRIBUTING|MIGRATION)\.md$/.test(path.basename(relativePath))) {
