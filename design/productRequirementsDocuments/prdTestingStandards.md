@@ -135,6 +135,7 @@ it("should return the correct user payload", () => {
 ##### Isolation and Robustness
 
 - Use the canonical fake timer helpers (see [Fake Timer Playbook](#fake-timer-playbook)) to keep asynchronous flows deterministic.
+- For scheduler-driven animations or RAF-controlled flows, rely on `createTestController` (see [Scheduler Test Controller Playbook](#scheduler-test-controller-playbook)) instead of patching globals.
 - Keep mocking surface area lean (≤4 spies per test) and reset mocks/timers in `afterEach` to avoid cross-test pollution.
 
 ```javascript
@@ -438,6 +439,58 @@ it(
   })
 );
 ```
+
+### <a id="scheduler-test-controller-playbook"></a>Scheduler Test Controller Playbook (P1)
+
+**Purpose:** Provide deterministic `requestAnimationFrame` control for scheduler-driven features without global monkey-patching.
+
+#### API Snapshot
+
+- `createTestController()` is a test-only export from `src/utils/scheduler.js` that is available when `__TEST__` is true.
+- Injects a controllable timing source into the scheduler instead of mutating global `requestAnimationFrame`.
+- Each controller instance is isolated to the test that created it.
+- Core methods:
+  - `advanceFrame()` triggers a single RAF tick.
+  - `advanceTime(ms)` fast-forwards delayed callbacks by the provided milliseconds.
+  - `getFrameCount()` returns how many frames have executed.
+  - `dispose()` restores real timing sources when the test completes.
+
+#### Usage Example
+
+```javascript
+import { createTestController } from "../utils/scheduler.js";
+
+describe("animation scheduler", () => {
+  let controller;
+
+  beforeEach(() => {
+    controller = createTestController();
+  });
+
+  afterEach(() => {
+    controller.dispose();
+  });
+
+  it("advances frames deterministically", () => {
+    controller.advanceFrame();
+    controller.advanceTime(1000);
+    expect(controller.getFrameCount()).toBe(1);
+  });
+});
+```
+
+#### Migration Plan
+
+1. **Phase 1 – Enable hooks:** Add the test-only export and timing source injection supported by unit coverage.
+2. **Phase 2 – Adopt hooks:** Replace global `requestAnimationFrame` patches in tests with `createTestController()` usage and remove monkey-patching.
+3. **Phase 3 – Document:** Update testing guides, add examples, and officially deprecate the legacy patterns.
+
+#### Risk & Mitigation
+
+- **Low production risk:** Hook exists only in test builds and does not modify the public scheduler API.
+- **Feature flag ready:** Can be guarded for incremental rollout if regressions surface.
+- **Coverage-first:** Requires comprehensive tests to validate parity before retiring legacy helpers.
+- **Documentation-first:** Centralized guidance (this playbook) reduces misconfiguration during migration.
 
 #### Mixed Timer + RAF Scenarios
 
