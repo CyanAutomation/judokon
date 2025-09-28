@@ -93,7 +93,7 @@ agents start with focused context.
 ## Updating Embeddings
 
 Run `npm run generate:embeddings` whenever you update any PRD, files in
-`src/data/`, or markdown under `design/codeStandards` or
+`src/data/`, or markdown under `design/productRequirementsDocuments` or
 `design/agentWorkflows`. The script (`scripts/generateEmbeddings.js`) fetches the
 **quantized** `Xenova/all-MiniLM-L6-v2` model on first run, so it requires
 internet access unless the model is cached. If the process runs out of memory,

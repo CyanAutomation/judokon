@@ -1,7 +1,7 @@
 [
   {
     "query": "settings feature flags order",
-    "expected_source": "design/codeStandards/settingsPageDesignGuidelines.md"
+    "expected_source": "design/productRequirementsDocuments/prdDevelopmentStandards.md#6-settings-page-guidelines-p2"
   },
   {
     "query": "judoka bio tone guidelines",

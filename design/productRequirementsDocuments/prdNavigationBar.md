@@ -38,7 +38,7 @@ The **JU-DO-KON!** game features multiple game modes and screens. Players need e
 
 - Reduce navigation-related exits by **20%**.
 - Increase average session duration per player by **15%**.
-- Ensure **44px minimum** touch target size (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+- Ensure **44px minimum** touch target size (see [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations)).
 - Achieve **≥60fps** animation performance on standard mid-tier devices.
 - Guarantee fallback application time of **<2 seconds** if `navigationItems.js` fails.
 - Meet a text contrast ratio of at least **4.5:1** against the navigation bar background.
@@ -117,7 +117,7 @@ The bottom navigation bar appears consistently across all game screens, populate
 
 ## Acceptance Criteria
 
-- Touch targets maintain **≥44px** size across all device resolutions (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+- Touch targets maintain **≥44px** size across all device resolutions (see [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations)).
 - Navigation is visible on **100%** of game screens.
 - Standard nav bar shows pre-seeded links whose visibility and order are driven by `navigationItems.js` via CSS.
 - Each link in the horizontal layout spans equal width to keep the bar balanced.
@@ -153,7 +153,7 @@ The standard navbar uses `--color-secondary` for its background and `--button-te
 
 ### Accessibility
 
-- **44px+** touch targets (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+- **44px+** touch targets (see [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations)).
 - High-contrast text labels (WCAG 4.5:1).
 - Screen reader support: all navigation elements properly labeled.
 - Respect OS **reduced motion** settings.

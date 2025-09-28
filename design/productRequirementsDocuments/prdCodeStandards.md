@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-This PRD consolidates developer-facing standards that affect product quality and public contracts: JSDoc/pseudocode requirements, testing standards, Playwright evaluation guidelines, and the rules agents must follow when changing public APIs. It references `design/codeStandards/` artifacts and codifies any sections that must be treated as product requirements.
+This PRD consolidates developer-facing standards that affect product quality and public contracts: JSDoc/pseudocode requirements, testing standards, Playwright evaluation guidelines, and the rules agents must follow when changing public APIs. It now references the consolidated PRDs—[Development Standards](./prdDevelopmentStandards.md) and [Testing Standards](./prdTestingStandards.md)—which supersede the retired `design/codeStandards/` artifacts.
 
 ## Problem Statement / Why it matters
 
@@ -51,5 +51,5 @@ Acceptance Criteria:
 
 ## Dependencies and Open Questions
 
-- Consolidates content from `design/codeStandards/*.md`.
+- Consolidates content from `design/productRequirementsDocuments/prdDevelopmentStandards.md` and `design/productRequirementsDocuments/prdTestingStandards.md`.
 - Open question: whether `@pseudocode` is required in private helper functions that are exported for testing only.

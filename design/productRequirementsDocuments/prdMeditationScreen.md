@@ -78,7 +78,7 @@ Players benefit from rhythm and pacing. Periods of calm after periods of intensi
 - **AC-3:** Screen loads within 1 second.
 - **AC-4:** Quote and KG image fade in within 300ms after assets load.
 - **AC-5:** Quote text has ARIA markup, scales responsively across breakpoints, and maintains contrast ratio of at least **4.5:1** (tested in `meditationContrast.test.js`).
-- **AC-6:** "Continue Your Journey" button uses `--radius-md`, stays ≥44px tall with tap target ≥44px × 44px, and is keyboard focusable. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
+- **AC-6:** "Continue Your Journey" button uses `--radius-md`, stays ≥44px tall with tap target ≥44px × 44px, and is keyboard focusable. See [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations).
 - **AC-7:** Layout adapts to screen orientation (portrait/landscape) and all interactive elements remain keyboard accessible, including the language toggle which is announced when it becomes visible.
 
 ---
@@ -211,7 +211,7 @@ Provides agency without pressure. Allows the player to re-enter gameplay at thei
   - [x] 2.4 Fallback to default calm message if quote data fails.
 - [x] **3.0 Implement Action Button Module**
   - [x] 3.1 Add large, thumb-friendly CTA button ("Continue Your Journey").
-  - [x] 3.2 Style CTA button with `var(--button-bg)` and `var(--button-hover-bg)`; ensure minimum 44px height and proper spacing (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)).
+  - [x] 3.2 Style CTA button with `var(--button-bg)` and `var(--button-hover-bg)`; ensure minimum 44px height and proper spacing (see [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations)).
 - [x] **4.0 Accessibility**
   - [x] 4.1 Add ARIA tags for screen readers.
 - [ ] **5.0 Performance & Load Time Optimization**

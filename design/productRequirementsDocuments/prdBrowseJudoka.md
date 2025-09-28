@@ -196,7 +196,7 @@ Search will be included in a future update to keep the initial scope focused.
 - Cards: Each card displays judoka stats; center card is enlarged by ~10%.
 - Page Markers: Display "current page of total" below the carousel with the active page highlighted; updates are announced via `aria-live` for screen readers.
 - Messages: Area below markers for dynamic feedback such as “No cards available” or error messages.
-- Touch Targets: Cards and buttons sized ≥44px for accessibility compliance. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness) for full guidelines.
+- Touch Targets: Cards and buttons sized ≥44px for accessibility compliance. See [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations) for full guidelines.
 - Responsive Adaptation: On mobile, 1–2 cards visible; on desktop, 3–5 cards visible.
 - On screens below 768px the filter bar stacks above the carousel to avoid card shrinkage.
 
@@ -210,7 +210,7 @@ Search will be included in a future update to keep the initial scope focused.
   - [x] 1.3 Invoke `buildCardCarousel` with loaded data.
 - [x] 2.0 Responsive Layout and Accessibility
   - [x] 2.1 Design card layouts for mobile (1-2 cards) and desktop (3-5 cards)
-  - [x] 2.2 Ensure touch targets ≥44px and WCAG 4.5:1 contrast compliance (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness))
+  - [x] 2.2 Ensure touch targets ≥44px and WCAG 4.5:1 contrast compliance (see [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations))
   - [x] 2.3 Add card enlargement on hover and keyboard focus highlighting
 - [x] 3.0 Error Handling and Edge Case Management
   - [x] 3.1 Display “No cards available” if list empty

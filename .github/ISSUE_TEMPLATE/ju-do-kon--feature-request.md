@@ -98,7 +98,7 @@ Upon clicking Country Filter:
 ### 📋 Checklist
 - [ ] I searched for existing feature requests.
 - [ ] I attached relevant visuals or links.
-- [ ] I reviewed `design/codeStandards/codeUIDesignStandards.md` for token usage.
+- [ ] I reviewed `design/productRequirementsDocuments/prdDevelopmentStandards.md#5-ui-design-system-integration-p2` for token usage.
 
 ---
 

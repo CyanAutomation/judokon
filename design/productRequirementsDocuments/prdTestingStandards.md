@@ -162,6 +162,37 @@ it("should time out after 5000ms", async () => {
 - Target the highest-signal scenarios first (critical paths, regression reproductions) and avoid redundant tests.
 - Keep runtimes short by favoring deterministic async helpers over real timers and minimizing expensive setup.
 
+#### Automated Workflow
+
+1. Ensure a `vitest-report.json` is available by running `npx vitest --run --reporter=json` (triggered automatically when needed).
+2. Optionally execute `npm run mutate` to generate a Stryker mutation report for higher-fidelity scoring.
+3. Parse metadata headers (`Spec-ID`, `Linked-Req`, `Covers`) and scan assertions to collect heuristics.
+4. Apply the rubric weights to calculate a 0–10 score for each test file.
+5. Emit both JSON and Markdown summaries to `reports/test-value/` for reviewer consumption.
+
+#### Local Evaluation Commands
+
+```bash
+# Generate the baseline reports
+npm run test
+
+# (Optional) Produce mutation coverage data
+npm run mutate
+
+# Score the unit test suite and write reports
+npm run test:value
+
+# Enforce the quality gate locally (fails on scores ≤4)
+npm run test:value:ci
+```
+
+#### CI & Agent Expectations
+
+- The `.github/workflows/test-value.yml` workflow runs automatically on pull requests.
+- Setting `CI_ENFORCE_LOW_VALUE=1` fails the build when new or modified tests score ≤4.
+- AI agents must target "KEEP" scores (≥8) and should run `npm run test:value` before committing new tests.
+- Reports serve as the authoritative audit trail for reviewers deciding whether to refactor or remove low-value tests.
+
 ### <a id="playwright-test-guidelines"></a>2. Playwright Test Guidelines (P1)
 
 **Core Philosophy:**
@@ -248,6 +279,30 @@ await expect(page.getByText("Welcome, Alice!")).toBeVisible();
 ##### Performance
 
 - Keep flows short, re-use fixtures, and parallelize where safe. If a wait is required, tie it to a readiness helper (see [Playwright Readiness Helpers](#playwright-readiness-helpers)) instead of arbitrary delays.
+
+#### Automated Workflow
+
+1. Generate a Playwright JSON report (e.g., `pw-report.json`) by running the test suite—`npm run e2e:flake-scan` executes each spec three times to detect flakes.
+2. Parse metadata headers and scan locator usage to compute ratios of semantic locators, screenshot assertions, and forbidden waits.
+3. Calculate rubric scores (intent clarity, relevance, assertion quality, robustness, cost) to classify each spec as Keep, Refactor, or Remove/Merge.
+4. Write results to `reports/pw-test-value/pw-test-value.json` and the companion Markdown summary for reviewers.
+
+#### Local Evaluation Commands
+
+```bash
+# Run the full flake scan (repeat-each) and generate value reports
+npm run e2e:flake-scan
+
+# Reuse an existing Playwright JSON report to compute scores quickly
+npm run e2e:value
+```
+
+#### CI & Agent Expectations
+
+- `.github/workflows/pw-test-value.yml` evaluates new and modified specs on every pull request.
+- Tests scoring ≤4 should be refactored or removed; agents must treat non-zero flake rates as blockers.
+- Favor user-facing locators (`getByRole`, `getByTestId`) and avoid direct DOM manipulation—violations are flagged automatically.
+- Keep Playwright suites lean; if a scenario becomes redundant or slow, fold coverage into higher-value flows before merging.
 
 ### 3. Test Naming Conventions (P1)
 
@@ -726,8 +781,8 @@ echo "Semantic selectors count:" && grep -r "data-testid\|role=\|getByLabel" pla
 
 ## Source Files Consolidated
 
-This PRD consolidates content from the following design/codeStandards files:
+This PRD supersedes the retired `design/codeStandards` testing references and centralizes their guidance:
 
-- `evaluatingUnitTests.md` - Unit test quality assessment rubric and philosophy
-- `evaluatingPlaywrightTests.md` - End-to-end test evaluation criteria and best practices
-- `testNamingStandards.md` - File naming and test structure conventions
+- `evaluatingUnitTests.md` – Unit test quality assessment rubric, automation workflow, and agent commands
+- `evaluatingPlaywrightTests.md` – Playwright quality rubric, flake scanning process, and locator policies
+- `testNamingStandards.md` – File naming and describe/it structure conventions for all test suites

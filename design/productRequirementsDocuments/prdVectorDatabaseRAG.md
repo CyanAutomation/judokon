@@ -68,7 +68,7 @@ Ultimately, these issues increase the risk of bugs reaching players, slow down t
 ### Embedding Refresh Pipeline
 
 After editing PRDs, tooltips, game rules, or any markdown under
-`design/codeStandards` or `design/agentWorkflows`, run
+`design/productRequirementsDocuments` or `design/agentWorkflows`, run
 `npm run generate:embeddings` from the repository root. The script at
 `scripts/generateEmbeddings.js` downloads the **quantized** `Xenova/all-MiniLM-L6-v2` model the first time it runs, so the command will fail without internet access. Cache the model locally or run it in an environment with a connection. Commit the updated `client_embeddings.json`—now pretty-printed for readability—so other agents work with the latest vectors. If you hit out-of-memory errors during generation, rerun the command with a higher heap limit (e.g. `node --max-old-space-size=8192 scripts/generateEmbeddings.js`). A GitHub Actions workflow could automate this
 regeneration whenever those folders change.

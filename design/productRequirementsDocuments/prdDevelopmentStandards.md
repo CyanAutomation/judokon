@@ -39,6 +39,7 @@ Inconsistent development practices across the JU-DO-KON! codebase lead to reduce
 | P1       | JSDoc Documentation Standards | Mandatory documentation format for all public functions and classes         |
 | P1       | Function Naming Conventions   | Consistent prefix-based naming patterns (create, setup, is)                 |
 | P1       | Pseudocode Documentation      | Structured high-level logic descriptions using @pseudocode marker           |
+| P1       | PRD Authoring Standards       | Required structure, priorities, and acceptance criteria for PRD content     |
 | P1       | Code Quality Rules            | Function length limits, modularity requirements, and refactoring guidelines |
 | P2       | UI Design System Integration  | Component design patterns, color systems, and accessibility standards       |
 | P2       | Settings Page Guidelines      | Specific layout and structure requirements for settings interfaces          |
@@ -77,6 +78,31 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 - Documentation must match actual function signature
 - Brief, clear descriptions using imperative style
 - No modification of comments marked with `@pseudocode`
+
+#### Language & Style
+
+- Write comments in clear, professional English with proper grammar and punctuation
+- Favor clarity over brevity; longer comments are acceptable when they improve comprehension
+- Maintain a neutral tone focused on intent and behavior
+
+#### Acceptance Criteria (JSDoc Specific)
+
+- Every exported class, function, or module exposes a structured JSDoc block
+- Functions longer than 20 lines include a summary comment unless self-explanatory
+- Parameters document type, name, and purpose—including optional/default information where applicable
+- Public API changes update the associated JSDoc in the same commit
+
+#### Edge Cases & Failure States
+
+- Missing or outdated documentation blocks must be resolved before merge approval
+- Comments marked with `@pseudocode` cannot be altered without explicit reviewer approval
+- Complex workarounds require JSDoc that references the tracking issue or follow-up task
+
+#### Additional Notes
+
+- JSDoc supplements, not replaces, expressive naming—keep code self-documenting where possible
+- Use tooling compatible with JSDoc generation to support automated documentation pipelines
+- Preserve `@pseudocode` markers so structured logic descriptions survive formatting tools and automation
 
 ### 2. Function Naming Conventions (P1)
 
@@ -119,8 +145,32 @@ function buildCarousel(cards, container, autoplay = false) { ... }
  * 6. Generate HTML list items for each merged object
  * 7. Update navigation bar with generated HTML
  * 8. Handle errors gracefully with fallback messaging
- */
+*/
 ```
+
+#### Language & Style
+
+- Explain intent using clear, plain English and imperative phrasing ("Initialize", "Render")
+- Focus on why operations occur, not line-by-line implementation details
+- Maintain a professional, concise tone that prioritizes comprehension
+
+#### Acceptance Criteria (Pseudocode Specific)
+
+- Complex workflows include numbered `@pseudocode` lists summarizing the logical flow
+- Every pseudocode block begins with the `@pseudocode` marker to keep tooling accurate
+- Updates to logic include matching pseudocode updates in the same change set
+
+#### Edge Cases & Failure States
+
+- Missing pseudocode on complex routines blocks merge until documentation is added
+- Outdated pseudocode must be corrected whenever functionality changes
+- Overly literal pseudocode that mirrors the code should be rewritten to emphasize decision points and intent
+
+#### Additional Notes
+
+- Reserve pseudocode for areas where it materially improves onboarding or maintenance
+- Surface guard clauses, error handling, and branching logic to aid reviewers and AI agents
+- Keep pseudocode colocated with the functions it describes to maintain context
 
 ### 4. Code Quality Standards (P1)
 
@@ -140,39 +190,97 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 
 ### 5. UI Design System Integration (P2)
 
-**Core Design Principles:**
+#### Purpose & Design Language
 
-- Touch-first interaction (minimum 48x48px targets)
-- Responsive feedback for all interactions
-- Visual hierarchy with clear information prioritization
-- Progressive disclosure of complex features
-- WCAG AA accessibility compliance
-- Consistent component reuse patterns
+- Maintain a bold, high-contrast visual identity optimized for players ages 8–12
+- Combine flat color fields, geometric textures, and layered card layouts to create depth
+- Ensure layouts scale from mobile to desktop while preserving continuity and recognizability
 
-**Color System:**
+#### Design Principles
 
-- Primary: #CB2504 (buttons, highlights)
-- Structured token-based color usage
-- High contrast requirements for accessibility
-- Consistent application across components
+- Touch-first interaction (minimum 48x48px targets with tactile feedback)
+- Responsive feedback for every interaction (scale, glow, ripple, or animation)
+- Clear visual hierarchy that highlights rarity tiers, modes, and progression
+- Progressive disclosure that reveals additional detail only when needed
+- Strict reuse of shared UI patterns to promote familiarity and reduce maintenance
+- WCAG AA accessibility compliance for contrast, focus states, and keyboard navigation
 
-**Component Structure:**
+#### Color System
 
-- Flat color with geometric background textures
-- Layered card layouts with z-depth
-- Emphasis typography (caps, bold, white-on-color)
-- Panelled layout with modular sections
+| Token / Usage           | Value      | Notes                                                     |
+| ----------------------- | ---------- | --------------------------------------------------------- |
+| `--color-primary`       | #CB2504    | Buttons, highlights, and key action accents               |
+| `--color-secondary`     | #0C3F7A    | Navigation, stat blocks, secondary surfaces               |
+| `--color-tertiary`      | #E8E8E8    | Backgrounds, outlines, panel separators                   |
+| `--link-color`          | `var(--color-secondary)` | Anchor tags and interactive text                      |
+| `--button-hover-bg`     | #0B5BB0    | Hover state for buttons                                   |
+| `--button-active-bg`    | #0C3F7A    | Active button state                                       |
+| `--switch-on-bg`        | #007F00    | Feature flag toggles (on state)                           |
+
+- Validate color choices with `npm run check:contrast` to maintain ≥4.5:1 ratios
+- Preserve vibrant judoka card palettes while keeping the UI shell muted for focus
+
+#### Rarity & Feature Color Mapping
+
+| Context         | Background | Notes                               |
+| --------------- | ---------- | ----------------------------------- |
+| Common cards    | #3C5AD6    | Pair with white judogi for clarity  |
+| Epic cards      | #C757DA    | Supports expressive, celebratory UI |
+| Legendary cards | #E4AB19    | High-energy, prestigious styling    |
+| Classic Battle  | #E53935    | Competitive, urgent presentation    |
+| Team Battle     | #8E24AA    | Cooperative, strategic tone         |
+| Update Judoka   | #00897B    | Constructive, calm vibe             |
+| Browse Judoka   | #3949AB    | Archival, structured interactions    |
+| Meditation      | #F9A825    | Reflective, low-intensity cadence   |
+
+#### Typography
+
+- Headings use Russo One; body copy uses Open Sans with 1.4× line height
+- Section titles appear in uppercase with generous tracking
+- Avoid all caps in body text and use `.settings-description` for secondary copy
+- Validate contrast in all themes, including dark and retro variants
+
+#### Imagery & Iconography
+
+- Use cut-out portrait art with clean edges, expressive poses, and subtle drop shadows
+- Layer characters above blurred backgrounds to reinforce depth and focus
+- Keep iconography bold and minimal so it remains legible on small screens
+
+#### Visual Hierarchy & Layout
+
+- Emphasize rarity tiers and ranking with scale, placement, and color weight
+- Group content using panelled sections, alternating backgrounds, and clear separators
+- Ensure CTAs and cards visually pop via elevation, blur, or scale changes
+
+#### Grid & Spacing System
+
+- Follow a 4-column responsive grid anchored by an 8px spacing rhythm
+- Align components to the grid baseline and maintain consistent padding and margins
+- Compose screens from reusable modules (card carousels, mode tiles, quote panels, galleries)
+
+#### Component Patterns
+
+- Card carousel: 3–5 visible cards with scroll snap and swipe affordances
+- Mode selection panels: bold icon + label tiles with hover/press feedback
+- Create/Edit modals: floating layout with left-aligned cancel, right-aligned save, and live previews
+- Meditation screen: language toggle, fade transitions, vertically separated CTAs
+
+#### Token Reference
+
+- Use `design/productRequirementsDocuments/prdUIDesignSystem.md#10-tokens` for the authoritative token list
+- Dark mode overrides adjust `--color-primary` to #ff4530 and `--link-color` to #3399ff
+- Re-run `npm run check:contrast` whenever introducing new UI surfaces or tokens
 
 ### 6. Settings Page Guidelines (P2)
 
-**Layout Requirements:**
+#### Layout Requirements
 
-- Section grouping with `<fieldset>` elements and descriptive `<legend>` titles
-- Consistent form structure across all sections
-- Settings item containers using `<div class="settings-item">`
-- Responsive grid layout using `.game-mode-toggle-container` class
+- Group controls with `<fieldset>` elements and descriptive `<legend>` titles
+- Maintain consistent form structure (either one form per section or a single form containing multiple fieldsets)
+- Wrap each control in `<div class="settings-item">` to guarantee spacing and alignment
+- Apply `.game-mode-toggle-container` for sections that should render in responsive grids
 
-**Structure Template:**
+#### Settings Item Structure
 
 ```html
 <div class="settings-item">
@@ -181,12 +289,68 @@ function buildCarousel(cards, container, autoplay = false) { ... }
 </div>
 ```
 
-**Responsive Design:**
+#### Responsive Design & Navigation
 
-- 3-column layout on desktop
-- 1-column stacked layout on mobile
-- Logical keyboard navigation order
-- Simultaneous section display (no collapsible containers)
+- Render three-column grids on desktop, stacking to a single column on mobile
+- Order markup top-to-bottom to match the desired tab sequence
+- Display all sections at once—avoid collapsible containers to simplify automation
+
+#### Styling Guidelines
+
+- Reuse existing classes (`.settings-form`, `.settings-item`, `.flag-description`) instead of creating new ones
+- Keep typography consistent: Russo One for headings, base font for descriptive text
+- Use CSS variables (e.g., `--color-primary`) rather than hard-coded hex values
+- Ensure toggles include `data-tooltip-id` (and `data-flag` for feature toggles) so helper systems can attach copy and automation hooks
+
+#### Accessibility & UX Expectations
+
+- Guarantee keyboard access with visible focus states and appropriate `aria-label` or `aria-describedby`
+- Maintain a minimum interactive size of 44×44px and provide immediate feedback (snackbar or UI state) on change
+- Screen readers should announce updates using native semantics or dedicated `role="alert"` regions
+- Preserve instant-apply behavior—settings save automatically without a dedicated "Save" button
+
+#### Feature Flags & Observability
+
+- Group feature toggles under a dedicated `Feature Flags` fieldset using `.game-mode-toggle-container`
+- Follow predictable naming conventions (`id="feature-kebab-case"`, `name="camelCase"`, include `data-flag`)
+- Confirm UI reflects persisted values on load and surface flag changes through snackbars or messaging hooks
+
+#### Links & Error Handling
+
+- Provide a `Links` fieldset containing navigation to `changeLog.html`, PRD viewer, mockup viewer, tooltip viewer, and vector search tools
+- Assign sequential `tabindex` values for supplemental links and ensure responsive stacking below 768px
+- Include an error container (e.g., `<div id="settings-error-popup" role="alert" aria-live="assertive">`) for surfaced issues and ensure messages auto-dismiss after a short timeout
+
+### 7. PRD Authoring Standards (P1)
+
+#### Required Sections
+
+- Title/TL;DR summarizing the feature purpose
+- Problem statement articulating the user or business gap
+- Goals and success metrics that justify the work
+- Persona-driven user stories following the "As a [user], I want [action] so that [outcome]" pattern
+- Prioritized functional requirements with P1/P2/P3 tagging and concise descriptions
+- Acceptance criteria translating requirements into verifiable outcomes
+- Non-functional requirements covering accessibility, performance, or UX constraints
+- Dependencies, open questions, and follow-up tasks or risks
+
+#### Prioritized Requirements Expectations
+
+- Present requirements in tabular form (Priority, Feature, Description) for readability and automation
+- Document discrete behaviors (timers, scoring, navigation) separately for clarity
+- Add supporting notes after the table when nuanced behavior needs further explanation
+
+#### Acceptance Criteria Discipline
+
+- Provide measurable, testable statements covering success and failure scenarios
+- Pair each high-priority requirement with at least one acceptance bullet that can be validated manually or via automation
+- Maintain consistent formatting (bulleted lists, present-tense imperatives) to support review checklists and linting
+
+#### Additional Authoring Notes
+
+- Reference related PRDs to document dependencies and prevent conflicting guidance
+- Use precise language that can map to automated tests or validation scripts
+- Update PRDs alongside implementation changes so they remain the canonical source of truth
 
 ---
 
@@ -324,10 +488,11 @@ grep -RInE "console\.(warn|error)\(" tests | grep -v "tests/utils/console.js" \
 
 ## Source Files Consolidated
 
-This PRD consolidates content from the following design/codeStandards files:
+This PRD supersedes the retired `design/codeStandards` documents and consolidates their guidance into this canonical reference:
 
-- `codeJSDocStandards.md` - JSDoc formatting and documentation requirements
-- `codeNamingPatterns.md` - Function naming conventions and patterns
-- `codePseudocodeStandards.md` - Pseudocode documentation standards
-- `codeUIDesignStandards.md` - UI design principles and component standards
-- `settingsPageDesignGuidelines.md` - Specific layout requirements for settings interfaces
+- `codeJSDocStandards.md` – JSDoc formatting and documentation requirements
+- `codeNamingPatterns.md` – Function naming conventions and patterns
+- `codePseudocodeStandards.md` – Pseudocode documentation standards
+- `codeUIDesignStandards.md` – UI design principles, tokens, and component guidelines
+- `settingsPageDesignGuidelines.md` – Layout, accessibility, and feature flag requirements for settings interfaces
+- `prdRulesForAgents.md` – Structure, priorities, and acceptance criteria expectations for new PRDs

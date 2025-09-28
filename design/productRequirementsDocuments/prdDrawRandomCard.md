@@ -170,7 +170,7 @@ instantly without movement.
 - **Fallback Visuals**:
   - If card loading fails, show a placeholder card (judoka id=0, from judoka.json).
 - **Tap Target Size**:
-  - All interactive elements (Draw button) must be ≥44px in height and width, with a recommended 64px for kid-friendly ease. See [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness).
+  - All interactive elements (Draw button) must be ≥44px in height and width, with a recommended 64px for kid-friendly ease. See [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations).
 - **Button Size**: Minimum 64px high, 300px wide — central and dominant. Use `--radius-pill` for a capsule shape.
 - **Card Size**: Large enough for excitement, but responsive — 70% of viewport width on mobile, 40% on tablet/desktop.
 - **Spacing**: Tight vertical stacking (~24px between card and button).
@@ -247,7 +247,7 @@ instantly without movement.
 - [ ] 4.0 Accessibility and UX Enhancements
 - [x] 4.1 Support Reduced Motion and global motion settings.
   - [x] 4.2 Ensure color contrast on cards meets WCAG AA standards. Verified in [`tests/helpers/randomJudokaPage.test.js`](../../tests/helpers/randomJudokaPage.test.js).
-  - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../codeStandards/codeUIDesignStandards.md#9-accessibility--responsiveness)). **[Button styled, but no runtime check]**
+  - [ ] 4.3 Set all tap targets to ≥44px, recommended 64px for better kid usability (see [UI Design Standards](../prdDevelopmentStandards.md#accessibility--ux-expectations)). **[Button styled, but no runtime check]**
   - [ ] 4.4 Play card-draw audio when sound is enabled in `settings.html`. **[Not implemented]**
   - [x] 4.5 Disable the “Draw Card” button while loading or animating a card.
   - [ ] 4.6 Add orientation-based layout rules for portrait vs. landscape. **[Not implemented]**
