@@ -50,6 +50,7 @@ Inconsistent testing practices across the JU-DO-KON! project lead to unreliable 
 ## Functional Requirements
 
 <!-- id: unit-test-quality-standards -->
+
 ### 1. Unit Test Quality Standards (P1)
 
 **Core Philosophy:**
