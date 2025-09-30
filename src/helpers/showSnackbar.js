@@ -27,35 +27,28 @@ let removeId;
  * @param {object} scheduler - The scheduler object to check for RAF support.
  * @returns {function} A function that behaves like requestAnimationFrame.
  */
+function getGlobalRequestAnimationFrame() {
+  if (typeof globalThis === "undefined") {
+    return null;
+  }
+  if (typeof globalThis.requestAnimationFrame === "function") {
+    return globalThis.requestAnimationFrame.bind(globalThis);
+  }
+  if (typeof globalThis.setTimeout === "function") {
+    return (callback) => globalThis.setTimeout(callback, 0);
+  }
+  return null;
+}
+
 function getSafeRequestAnimationFrame(scheduler) {
   if (scheduler && typeof scheduler.requestAnimationFrame === "function") {
     return scheduler.requestAnimationFrame.bind(scheduler);
   }
-  if (typeof globalThis !== "undefined") {
-    try {
-      if (typeof globalThis.requestAnimationFrame === "function") {
-        return globalThis.requestAnimationFrame.bind(globalThis);
-      }
-    } catch {}
-    try {
-      if (typeof globalThis.setTimeout === "function") {
-        return (callback) => {
-          try {
-            return globalThis.setTimeout(callback, 0);
-          } catch {
-            return undefined;
-          }
-        };
-      }
-    } catch {}
+  const globalFallback = getGlobalRequestAnimationFrame();
+  if (globalFallback) {
+    return globalFallback;
   }
-  return (callback) => {
-    try {
-      return setTimeout(callback, 0);
-    } catch {
-      return undefined;
-    }
-  };
+  return (callback) => setTimeout(callback, 0);
 }
 
 function resetState() {
