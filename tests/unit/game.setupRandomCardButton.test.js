@@ -2,10 +2,12 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 
 const createDeferred = () => {
   let resolve;
-  const promise = new Promise((res) => {
+  let reject;
+  const promise = new Promise((res, rej) => {
     resolve = res;
+    reject = rej;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 };
 
 afterEach(() => {
@@ -38,40 +40,85 @@ const setupTest = async () => {
 
 describe("setupRandomCardButton", () => {
   it("disables the button while a card is being generated and restores it afterwards", async () => {
-    const { setupRandomCardButton, button, container, generateRandomCard } = await setupTest();
+    const {
+      setupRandomCardButton,
+      button,
+      container,
+      generateRandomCard,
+      shouldReduceMotionSync
+    } = await setupTest();
     const deferred = createDeferred();
     generateRandomCard.mockReturnValueOnce(deferred.promise);
+    shouldReduceMotionSync.mockReturnValueOnce(true);
+    container.innerHTML = "<p>existing</p>";
 
-    const addEventListenerSpy = vi.spyOn(button, "addEventListener");
     setupRandomCardButton(button, container);
-    const handler = addEventListenerSpy.mock.calls[0][1];
-
-    const handlerPromise = handler(new Event("click"));
+    button.click();
 
     expect(button.classList.contains("hidden")).toBe(true);
     expect(button.disabled).toBe(true);
+    expect(container.innerHTML).toBe("");
+    expect(generateRandomCard).toHaveBeenCalledTimes(1);
+    expect(shouldReduceMotionSync).toHaveBeenCalledTimes(1);
+    expect(generateRandomCard).toHaveBeenCalledWith(
+      null,
+      null,
+      container,
+      true,
+      undefined,
+      { enableInspector: false }
+    );
 
     deferred.resolve();
-    await handlerPromise;
+    await deferred.promise;
+    await Promise.resolve();
 
     expect(button.classList.contains("hidden")).toBe(false);
     expect(button.disabled).toBe(false);
-    expect(generateRandomCard).toHaveBeenCalledTimes(1);
   });
 
   it("re-enables the button even if card generation fails", async () => {
     const { setupRandomCardButton, button, container, generateRandomCard } = await setupTest();
+    const deferred = createDeferred();
     const error = new Error("generation failed");
-    generateRandomCard.mockRejectedValueOnce(error);
+    generateRandomCard.mockReturnValueOnce(deferred.promise);
+    const rejectionEventPromise = new Promise((resolve) => {
+      const handler = (reason) => {
+        process.off("unhandledRejection", handler);
+        resolve(reason);
+      };
+      process.on("unhandledRejection", handler);
+    });
 
-    const addEventListenerSpy = vi.spyOn(button, "addEventListener");
     setupRandomCardButton(button, container);
-    const handler = addEventListenerSpy.mock.calls[0][1];
+    button.click();
 
-    await handler(new Event("click")).catch(() => {});
+    deferred.reject(error);
+
+    await expect(deferred.promise).rejects.toBe(error);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const unhandledReason = await rejectionEventPromise;
 
     expect(button.classList.contains("hidden")).toBe(false);
     expect(button.disabled).toBe(false);
     expect(generateRandomCard).toHaveBeenCalledTimes(1);
+    expect(unhandledReason).toBe(error);
+  });
+
+  it("does nothing when button or container is missing", async () => {
+    const { setupRandomCardButton } = await setupTest();
+
+    const container = document.createElement("div");
+    container.innerHTML = "content";
+    expect(() => setupRandomCardButton(null, container)).not.toThrow();
+    expect(container.innerHTML).toBe("content");
+
+    const button = document.createElement("button");
+    expect(() => setupRandomCardButton(button, null)).not.toThrow();
+    button.click();
+    expect(button.disabled).toBe(false);
+    expect(button.classList.contains("hidden")).toBe(false);
   });
 });
