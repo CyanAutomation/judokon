@@ -31,13 +31,31 @@ function getSafeRequestAnimationFrame(scheduler) {
   if (scheduler && typeof scheduler.requestAnimationFrame === "function") {
     return scheduler.requestAnimationFrame.bind(scheduler);
   }
-  if (typeof globalThis !== "undefined" && typeof globalThis.requestAnimationFrame === "function") {
-    return globalThis.requestAnimationFrame.bind(globalThis);
+  if (typeof globalThis !== "undefined") {
+    try {
+      if (typeof globalThis.requestAnimationFrame === "function") {
+        return globalThis.requestAnimationFrame.bind(globalThis);
+      }
+    } catch {}
+    try {
+      if (typeof globalThis.setTimeout === "function") {
+        return (callback) => {
+          try {
+            return globalThis.setTimeout(callback, 0);
+          } catch {
+            return undefined;
+          }
+        };
+      }
+    } catch {}
   }
-  if (typeof globalThis !== "undefined" && typeof globalThis.setTimeout === "function") {
-    return (callback) => globalThis.setTimeout(callback, 0);
-  }
-  return (callback) => setTimeout(callback, 0);
+  return (callback) => {
+    try {
+      return setTimeout(callback, 0);
+    } catch {
+      return undefined;
+    }
+  };
 }
 
 function resetState() {
