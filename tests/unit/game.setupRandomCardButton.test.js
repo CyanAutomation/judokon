@@ -97,6 +97,8 @@ describe("setupRandomCardButton", () => {
       process.off("unhandledRejection", handleUnhandledRejection);
     }
 
+    await new Promise((resolve) => process.nextTick(resolve));
+
     expect(unhandledRejections).toEqual([error]);
   });
 
