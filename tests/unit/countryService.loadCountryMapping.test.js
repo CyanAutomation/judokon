@@ -8,16 +8,16 @@ const debugLog = vi.fn();
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
   fetchJson,
-  importJsonModule,
+  importJsonModule
 }));
 
 vi.mock("../../src/helpers/storage.js", () => ({
   getItem,
-  setItem,
+  setItem
 }));
 
 vi.mock("../../src/helpers/debug.js", () => ({
-  debugLog,
+  debugLog
 }));
 
 describe("loadCountryMapping", () => {
@@ -41,7 +41,7 @@ describe("loadCountryMapping", () => {
     await expect(loadCountryMapping()).rejects.toThrow("import fail");
 
     const mapping = {
-      vu: { code: "vu", country: "Vanuatu", active: true },
+      vu: { code: "vu", country: "Vanuatu", active: true }
     };
 
     fetchJson.mockResolvedValueOnce(mapping);

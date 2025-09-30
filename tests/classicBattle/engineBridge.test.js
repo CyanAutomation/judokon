@@ -33,12 +33,8 @@ describe("bridgeEngineEvents", () => {
       STATS: ["speed", "power"]
     }));
 
-    const { bridgeEngineEvents } = await import(
-      "../../src/helpers/classicBattle/engineBridge.js"
-    );
-    const { emitBattleEvent } = await import(
-      "../../src/helpers/classicBattle/battleEvents.js"
-    );
+    const { bridgeEngineEvents } = await import("../../src/helpers/classicBattle/engineBridge.js");
+    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
 
     bridgeEngineEvents();
     bridgeEngineEvents();
@@ -67,16 +63,12 @@ describe("bridgeEngineEvents", () => {
     const roundTickDetail = { phase: "round", remaining: 5 };
     emitBattleEvent.mockClear();
     emit("timerTick", roundTickDetail);
-    expect(emitBattleEvent.mock.calls).toEqual([
-      ["round.timer.tick", { remainingMs: 5000 }]
-    ]);
+    expect(emitBattleEvent.mock.calls).toEqual([["round.timer.tick", { remainingMs: 5000 }]]);
 
     const cooldownTickDetail = { phase: "cooldown", remaining: 4 };
     emitBattleEvent.mockClear();
     emit("timerTick", cooldownTickDetail);
-    expect(emitBattleEvent.mock.calls).toEqual([
-      ["cooldown.timer.tick", { remainingMs: 4000 }]
-    ]);
+    expect(emitBattleEvent.mock.calls).toEqual([["cooldown.timer.tick", { remainingMs: 4000 }]]);
 
     const matchDetail = { outcome: "matchWinPlayer", playerScore: 4, opponentScore: 2 };
     emitBattleEvent.mockClear();

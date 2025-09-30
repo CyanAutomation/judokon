@@ -20,10 +20,7 @@ function getSafeRequestAnimationFrame(scheduler) {
   if (scheduler && typeof scheduler.requestAnimationFrame === "function") {
     return scheduler.requestAnimationFrame.bind(scheduler);
   }
-  if (
-    typeof globalThis !== "undefined" &&
-    typeof globalThis.requestAnimationFrame === "function"
-  ) {
+  if (typeof globalThis !== "undefined" && typeof globalThis.requestAnimationFrame === "function") {
     return globalThis.requestAnimationFrame.bind(globalThis);
   }
   return (callback) => scheduler.setTimeout(callback, 0);

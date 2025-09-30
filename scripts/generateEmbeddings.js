@@ -357,15 +357,12 @@ function createJsonProcessItem({
 }) {
   const extractFn = extractAllowedValuesFn || extractAllowedValues;
   return async (item, id, overrideText) => {
-    const overrideCandidate =
-      typeof overrideText === "string" ? overrideText.trim() : overrideText;
+    const overrideCandidate = typeof overrideText === "string" ? overrideText.trim() : overrideText;
     const textToEmbed =
       overrideCandidate === undefined || overrideCandidate === null || overrideCandidate === ""
         ? extractFn(base, item)
         : overrideCandidate;
-    const chunkText = textToEmbed
-      ? normalizeAndFilter(String(textToEmbed), seenTexts)
-      : undefined;
+    const chunkText = textToEmbed ? normalizeAndFilter(String(textToEmbed), seenTexts) : undefined;
     if (!chunkText) return;
     const intent = determineIntent(chunkText);
     const metadata = buildMetadata(relativePath);
