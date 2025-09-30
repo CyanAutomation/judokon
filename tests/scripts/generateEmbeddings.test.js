@@ -158,6 +158,32 @@ describe("JSON processing helpers", () => {
     );
   });
 
+  it("falls back to extractAllowedValues when overrideText is empty", async () => {
+    const extractor = vi.fn(async () => [0.111, 0.222]);
+    const writeEntry = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "From extractor");
+    const processItem = createJsonProcessItem({
+      base: "gameModes.json",
+      relativePath: "src/data/gameModes.json",
+      baseTags: ["data"],
+      extractor,
+      writeEntry,
+      seenTexts: new Set(),
+      extractAllowedValuesFn
+    });
+
+    await processItem({ name: "Classic" }, "item-3", "");
+
+    expect(extractAllowedValuesFn).toHaveBeenCalledWith("gameModes.json", { name: "Classic" });
+    expect(writeEntry).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "gameModes.json-item-3",
+        text: "from extractor",
+        embedding: [0.111, 0.222]
+      })
+    );
+  });
+
   it("processes array entries with the original item object", async () => {
     const items = [{ name: "Classic" }, { name: "Arcade" }];
     const processItem = vi.fn();
@@ -171,6 +197,25 @@ describe("JSON processing helpers", () => {
 
     expect(processItem).toHaveBeenNthCalledWith(1, items[0], "item-1", "allowed");
     expect(processItem).toHaveBeenNthCalledWith(2, items[1], "item-2", "allowed");
+  });
+
+  it("skips array entries without allowlisted text", async () => {
+    const items = [{ name: "Classic" }, { name: "Arcade" }, { name: "Endless" }];
+    const processItem = vi.fn();
+    const extractAllowedValuesFn = vi.fn((_, item) => {
+      if (item === items[0]) return undefined;
+      if (item === items[1]) return "";
+      return "Allowed text";
+    });
+
+    await processJsonArrayEntries(items, {
+      baseName: "gameModes.json",
+      processItem,
+      extractAllowedValuesFn
+    });
+
+    expect(processItem).toHaveBeenCalledTimes(1);
+    expect(processItem).toHaveBeenCalledWith(items[2], "item-3", "Allowed text");
   });
 
   it("processes object key paths with key-specific overrides", async () => {

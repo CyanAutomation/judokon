@@ -353,10 +353,16 @@ function createJsonProcessItem({
   extractor,
   writeEntry,
   seenTexts,
-  extractAllowedValuesFn = extractAllowedValues
+  extractAllowedValuesFn
 }) {
+  const extractFn = extractAllowedValuesFn || extractAllowedValues;
   return async (item, id, overrideText) => {
-    const textToEmbed = overrideText ?? extractAllowedValuesFn(base, item);
+    const overrideCandidate =
+      typeof overrideText === "string" ? overrideText.trim() : overrideText;
+    const textToEmbed =
+      overrideCandidate === undefined || overrideCandidate === null || overrideCandidate === ""
+        ? extractFn(base, item)
+        : overrideText;
     const chunkText = textToEmbed
       ? normalizeAndFilter(String(textToEmbed), seenTexts)
       : undefined;
@@ -1105,6 +1111,10 @@ async function generate() {
   );
 }
 
+/**
+ * Internal test helpers for JSON processing functions.
+ * @internal These functions are exposed only for testing purposes and should not be used in production code.
+ */
 const __jsonTestHelpers = {
   createJsonProcessItem,
   processJsonArrayEntries,
