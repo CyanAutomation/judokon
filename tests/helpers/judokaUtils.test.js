@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
-import {
-  importGetFallbackJudoka,
-  clearJudokaUtilsModuleCache
-} from "../utils/judokaUtilsTestUtils.js";
 
 const mockFetchJson = vi.fn();
 
@@ -15,8 +11,21 @@ afterEach(() => {
   vi.resetModules();
   vi.clearAllMocks();
   mockFetchJson.mockReset();
-  clearJudokaUtilsModuleCache();
 });
+
+/**
+ * Dynamically imports the `getFallbackJudoka` helper from the source module.
+ *
+ * @returns {Promise<typeof import("../../src/helpers/judokaUtils.js")["getFallbackJudoka"]>}
+ * A lazily imported reference to the helper under test.
+ * @pseudocode
+ * 1. Import the judoka utilities module dynamically for isolation.
+ * 2. Return the `getFallbackJudoka` export for the caller to invoke.
+ */
+async function importGetFallbackJudoka() {
+  const mod = await import("../../src/helpers/judokaUtils.js");
+  return mod.getFallbackJudoka;
+}
 
 /**
  * Executes the provided callback while capturing console.error output safely.
@@ -24,23 +33,25 @@ afterEach(() => {
  * @param {() => Promise<unknown>} callback - Function that triggers console.error.
  * @returns {Promise<{result: unknown, errorCalls: unknown[][]}>}
  * @pseudocode
- * 1. Spy on `console.error` before muting to intercept calls.
- * 2. Use `withMutedConsole` to silence real output during callback execution.
- * 3. Reassign `console.error` to the spy so calls are still recorded.
- * 4. Invoke the callback and collect the spy's recorded calls.
- * 5. Restore the console to its original implementation.
+ * 1. Use `withMutedConsole` to silence real error output during execution.
+ * 2. Replace `console.error` with a capturing stub that records arguments.
+ * 3. Invoke the callback and collect the recorded error calls.
+ * 4. Restore `console.error` to the muted implementation provided by the helper.
  */
 async function invokeWithConsoleErrorCapture(callback) {
-  const consoleErrorSpy = vi.spyOn(console, "error");
-  try {
-    const result = await withMutedConsole(async () => {
-      console.error = consoleErrorSpy;
-      return await callback();
-    }, ["error"]);
-    return { result, errorCalls: [...consoleErrorSpy.mock.calls] };
-  } finally {
-    consoleErrorSpy.mockRestore();
-  }
+  return withMutedConsole(async () => {
+    const errorCalls = [];
+    const original = console.error;
+    console.error = (...args) => {
+      errorCalls.push(args);
+    };
+    try {
+      const result = await callback();
+      return { result, errorCalls };
+    } finally {
+      console.error = original;
+    }
+  }, ["error"]);
 }
 
 describe("getFallbackJudoka", () => {
@@ -96,10 +107,19 @@ describe("getFallbackJudoka", () => {
     expect(errorCalls).toEqual([["Failed to load fallback judoka:", error]]);
   });
 
-  it("falls back when the fallback entry is missing in the fetched data", async () => {
-    mockFetchJson.mockResolvedValue([
-      { id: 1, firstname: "Other", surname: "Judoka" }
-    ]);
+  it.each([
+    {
+      name: "falls back when the fallback entry is missing in the fetched data",
+      mockData: [{ id: 1, firstname: "Other", surname: "Judoka" }],
+      expectedError: "Fallback judoka with id 0 not found"
+    },
+    {
+      name: "falls back when the fetched data is not an array",
+      mockData: null,
+      expectedError: "Fallback judoka with id 0 not found"
+    }
+  ])("$name", async ({ mockData, expectedError }) => {
+    mockFetchJson.mockResolvedValue(mockData);
 
     const getFallbackJudoka = await importGetFallbackJudoka();
 
@@ -116,27 +136,6 @@ describe("getFallbackJudoka", () => {
     expect(errorCalls).toHaveLength(1);
     const [, loggedError] = errorCalls[0];
     expect(loggedError).toBeInstanceOf(Error);
-    expect(loggedError.message).toBe("Fallback judoka with id 0 not found");
-  });
-
-  it("falls back when the fetched data is not an array", async () => {
-    mockFetchJson.mockResolvedValue(null);
-
-    const getFallbackJudoka = await importGetFallbackJudoka();
-
-    const { result: fallback, errorCalls } = await invokeWithConsoleErrorCapture(
-      () => getFallbackJudoka()
-    );
-
-    expect(fallback).toMatchObject({
-      id: 0,
-      firstname: "Tatsuuma",
-      surname: "Ushiyama"
-    });
-    expect(mockFetchJson).toHaveBeenCalledTimes(1);
-    expect(errorCalls).toHaveLength(1);
-    const [, loggedError] = errorCalls[0];
-    expect(loggedError).toBeInstanceOf(Error);
-    expect(loggedError.message).toBe("Fallback judoka with id 0 not found");
+    expect(loggedError.message).toBe(expectedError);
   });
 });
