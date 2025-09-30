@@ -1,6 +1,8 @@
 import { fetchJson } from "./dataUtils.js";
 import { DATA_DIR } from "./constants.js";
 
+let cachedFallback = null;
+
 /**
  * Retrieves the fallback judoka data (the entry with `id: 0`) from `judoka.json`.
  *
@@ -31,7 +33,7 @@ export async function getFallbackJudoka() {
       const entry = data.find((j) => j.id === 0);
       if (entry) {
         cachedFallback = entry;
-        return entry;
+        return cachedFallback;
       }
     }
     throw new Error("Fallback judoka with id 0 not found");
