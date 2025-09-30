@@ -14,7 +14,16 @@ import { applyResultsState } from "./vectorSearchPage/resultsState.js";
 
 let spinner;
 let resolveResultsPromise;
-window.vectorSearchResultsPromise = Promise.resolve();
+let currentResultsPromise = Promise.resolve();
+
+setVectorSearchResultsPromise(currentResultsPromise);
+
+function setVectorSearchResultsPromise(promise) {
+  currentResultsPromise = promise;
+  if (typeof window !== "undefined") {
+    window.vectorSearchResultsPromise = promise;
+  }
+}
 
 /**
  * Load surrounding context for a search result element.
@@ -90,9 +99,11 @@ async function loadResultContext(el) {
  */
 export async function handleSearch(event) {
   event.preventDefault();
-  window.vectorSearchResultsPromise = new Promise((resolve) => {
-    resolveResultsPromise = resolve;
-  });
+  setVectorSearchResultsPromise(
+    new Promise((resolve) => {
+      resolveResultsPromise = resolve;
+    })
+  );
   const { query, tbody, messageEl } = prepareSearchUi();
   if (!query) {
     applyResultsState(spinner, messageEl, "results");
