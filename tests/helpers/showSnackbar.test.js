@@ -7,6 +7,7 @@ vi.mock("../../src/utils/scheduler.js", () => ({
 }));
 import { showSnackbar, updateSnackbar } from "../../src/helpers/showSnackbar.js";
 import { SNACKBAR_FADE_MS, SNACKBAR_REMOVE_MS } from "../../src/helpers/constants.js";
+import { setScheduler, realScheduler } from "../../src/helpers/scheduler.js";
 
 beforeEach(() => {
   document.body.innerHTML = '<div id="snackbar-container" role="status" aria-live="polite"></div>';
@@ -49,5 +50,36 @@ describe("showSnackbar", () => {
     expect(container.getAttribute("role")).toBe("status");
     expect(container.getAttribute("aria-live")).toBe("polite");
     timers.cleanup();
+  });
+
+  it("falls back when scheduler omits requestAnimationFrame", () => {
+    const timers = useCanonicalTimers();
+    const container = document.getElementById("snackbar-container");
+    const originalRaf = globalThis.requestAnimationFrame;
+    const schedulerWithoutRaf = {
+      setTimeout: (...args) => globalThis.setTimeout(...args),
+      clearTimeout: (...args) => globalThis.clearTimeout(...args)
+    };
+
+    setScheduler(schedulerWithoutRaf);
+    globalThis.requestAnimationFrame = (cb) => {
+      cb(0);
+      return 0;
+    };
+
+    try {
+      expect(() => showSnackbar("Fallback")).not.toThrow();
+      const bar = container.firstElementChild;
+      expect(bar?.textContent).toBe("Fallback");
+      expect(bar?.classList.contains("show")).toBe(true);
+
+      updateSnackbar("Updated");
+      expect(container.firstElementChild?.textContent).toBe("Updated");
+      expect(container.firstElementChild?.classList.contains("show")).toBe(true);
+    } finally {
+      globalThis.requestAnimationFrame = originalRaf;
+      setScheduler(realScheduler);
+      timers.cleanup();
+    }
   });
 });

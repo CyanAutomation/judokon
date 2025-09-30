@@ -16,6 +16,19 @@ let bar;
 let fadeId;
 let removeId;
 
+function getSafeRequestAnimationFrame(scheduler) {
+  if (scheduler && typeof scheduler.requestAnimationFrame === "function") {
+    return scheduler.requestAnimationFrame.bind(scheduler);
+  }
+  if (
+    typeof globalThis !== "undefined" &&
+    typeof globalThis.requestAnimationFrame === "function"
+  ) {
+    return globalThis.requestAnimationFrame.bind(globalThis);
+  }
+  return (callback) => scheduler.setTimeout(callback, 0);
+}
+
 function resetState() {
   bar = null;
   fadeId = undefined;
@@ -76,6 +89,7 @@ export function showSnackbar(message) {
     }
   } catch {}
   const scheduler = getScheduler();
+  const requestFrame = getSafeRequestAnimationFrame(scheduler);
   scheduler.clearTimeout(fadeId);
   scheduler.clearTimeout(removeId);
   const container = document.getElementById("snackbar-container");
@@ -89,7 +103,7 @@ export function showSnackbar(message) {
   container.replaceChildren(bar);
   // Use a one-shot animation frame to toggle the class without
   // registering a persistent scheduler callback.
-  scheduler.requestAnimationFrame(() => bar?.classList.add("show"));
+  requestFrame(() => bar?.classList.add("show"));
   resetTimers();
 }
 
@@ -117,9 +131,9 @@ export function updateSnackbar(message) {
       document.body?.appendChild(container);
     }
   } catch {}
+  const scheduler = getScheduler();
   const container = document.getElementById("snackbar-container");
   if (!container) {
-    const scheduler = getScheduler();
     scheduler.clearTimeout(fadeId);
     scheduler.clearTimeout(removeId);
     resetState();
@@ -131,6 +145,8 @@ export function updateSnackbar(message) {
   }
   bar.textContent = message;
   bar.classList.add("show");
+  const requestFrame = getSafeRequestAnimationFrame(scheduler);
+  requestFrame(() => bar?.classList.add("show"));
   resetTimers();
 }
 
