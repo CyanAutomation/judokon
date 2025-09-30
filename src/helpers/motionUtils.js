@@ -9,14 +9,20 @@ import { getSetting } from "./settingsCache.js";
  * @pseudocode
  * 1. Call `getSetting("motionEffects")`.
  * 2. If the result is `false`, return `true`.
- * 3. Otherwise, return the value of
- *    `matchMedia('(prefers-reduced-motion: reduce)')`.
+ * 3. If `window` is unavailable or `window.matchMedia` is not a function, return `false`.
+ * 4. Otherwise, return the value of `matchMedia('(prefers-reduced-motion: reduce)')`.
  *
  * @returns {boolean} True if motion effects should be reduced.
  */
 export function shouldReduceMotionSync() {
   if (getSetting("motionEffects") === false) {
     return true;
+  }
+  if (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
+    return false;
   }
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -29,14 +35,18 @@ export function shouldReduceMotionSync() {
  * based on whether motion is enabled or should be reduced.
  *
  * @pseudocode
- * 1. Check the value of the `enabled` parameter.
- * 2. If `enabled` is `false` (meaning motion effects should be reduced), add the CSS class `reduce-motion` to `document.body`.
- * 3. If `enabled` is `true` (meaning motion effects are enabled), remove the CSS class `reduce-motion` from `document.body`.
+ * 1. If `document` or `document.body` is unavailable, exit early.
+ * 2. Check the value of the `enabled` parameter.
+ * 3. If `enabled` is `false` (meaning motion effects should be reduced), add the CSS class `reduce-motion` to `document.body`.
+ * 4. If `enabled` is `true` (meaning motion effects are enabled), remove the CSS class `reduce-motion` from `document.body`.
  *
  * @param {boolean} enabled - `true` if motion effects are enabled, `false` if they should be reduced.
  * @returns {void}
  */
 export function applyMotionPreference(enabled) {
+  if (typeof document === "undefined" || !document.body) {
+    return;
+  }
   if (!enabled) {
     document.body.classList.add("reduce-motion");
   } else {
