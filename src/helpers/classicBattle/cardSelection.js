@@ -198,12 +198,17 @@ export async function selectOpponentJudoka({
   };
 
   let selection = pickRandom();
+  let forcedFallback = false;
   if (playerJudoka) {
     let attempts = 0;
     const maxAttempts = Math.max(pool.length || 0, 5);
     while (selection?.id === playerJudoka.id && attempts < maxAttempts) {
       selection = pickRandom();
       attempts += 1;
+    }
+    if (selection?.id === playerJudoka.id) {
+      forcedFallback = true;
+      selection = null;
     }
   }
 
@@ -212,9 +217,13 @@ export async function selectOpponentJudoka({
   if (typeof fallbackProvider === "function") {
     try {
       const fallback = await fallbackProvider();
-      if (fallback && typeof qaLogger === "function") {
+      if (typeof qaLogger === "function") {
         try {
-          qaLogger("Using fallback judoka for opponent");
+          qaLogger(
+            forcedFallback
+              ? "Using fallback judoka after retry exhaustion"
+              : "Using fallback judoka for opponent"
+          );
         } catch {}
       }
       return fallback || null;

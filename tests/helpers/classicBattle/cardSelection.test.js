@@ -75,6 +75,29 @@ describe.sequential("classicBattle card selection", () => {
     expect(getOpponentJudoka()).toEqual(expect.objectContaining({ id: 2 }));
   });
 
+  it("falls back when only the player judoka is available", async () => {
+    const qaLogger = vi.fn();
+    const fallbackProvider = vi.fn().mockResolvedValue({ id: 99 });
+    const { selectOpponentJudoka, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+
+    const result = await selectOpponentJudoka({
+      availableJudoka: [{ id: 1 }],
+      playerJudoka: { id: 1 },
+      randomJudoka: vi.fn(() => ({ id: 1 })),
+      fallbackProvider,
+      qaLogger
+    });
+
+    expect(result).toEqual({ id: 99 });
+    expect(fallbackProvider).toHaveBeenCalledTimes(1);
+    expect(qaLogger).toHaveBeenCalledWith(
+      "Using fallback judoka after retry exhaustion"
+    );
+  });
+
   it("excludes hidden judoka from selection", async () => {
     fetchJsonMock.mockImplementation(async (p) => {
       if (p.includes("judoka")) {
