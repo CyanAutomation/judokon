@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import path from "node:path";
 import { readdir } from "node:fs/promises";
 import {
@@ -6,7 +6,8 @@ import {
   BOILERPLATE_STRINGS,
   extractAllowedValues,
   normalizeAndFilter,
-  determineTags
+  determineTags,
+  __jsonTestHelpers
 } from "../../scripts/generateEmbeddings.js";
 
 describe("JSON_FIELD_ALLOWLIST", () => {
@@ -97,5 +98,100 @@ describe("determineTags", () => {
     );
     expect(tags).toContain("design-doc");
     expect(tags).not.toContain("agent-workflow");
+  });
+});
+
+const { createJsonProcessItem, processJsonArrayEntries, processJsonObjectEntries } =
+  __jsonTestHelpers;
+
+describe("JSON processing helpers", () => {
+  it("uses overrideText when provided", async () => {
+    const extractor = vi.fn(async () => ({ data: [0.123, 0.456] }));
+    const writeEntry = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "should not be used");
+    const processItem = createJsonProcessItem({
+      base: "gameModes.json",
+      relativePath: "src/data/gameModes.json",
+      baseTags: ["data"],
+      extractor,
+      writeEntry,
+      seenTexts: new Set(),
+      extractAllowedValuesFn
+    });
+
+    await processItem({ name: "Classic Battle" }, "item-1", "Allowed Entry.");
+
+    expect(extractor).toHaveBeenCalledWith("allowed entry.", { pooling: "mean" });
+    expect(extractAllowedValuesFn).not.toHaveBeenCalled();
+    expect(writeEntry).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "gameModes.json-item-1",
+        text: "allowed entry.",
+        sparseVector: expect.any(Object)
+      })
+    );
+  });
+
+  it("falls back to extractAllowedValues when overrideText is missing", async () => {
+    const extractor = vi.fn(async () => [0.321, 0.654]);
+    const writeEntry = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "Rules detail.");
+    const processItem = createJsonProcessItem({
+      base: "gameModes.json",
+      relativePath: "src/data/gameModes.json",
+      baseTags: ["data"],
+      extractor,
+      writeEntry,
+      seenTexts: new Set(),
+      extractAllowedValuesFn
+    });
+
+    await processItem({ rules: { rounds: 3 } }, "item-2");
+
+    expect(extractAllowedValuesFn).toHaveBeenCalledWith("gameModes.json", { rules: { rounds: 3 } });
+    expect(writeEntry).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "gameModes.json-item-2",
+        text: "rules detail.",
+        embedding: [0.321, 0.654]
+      })
+    );
+  });
+
+  it("processes array entries with the original item object", async () => {
+    const items = [{ name: "Classic" }, { name: "Arcade" }];
+    const processItem = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "allowed");
+
+    await processJsonArrayEntries(items, {
+      baseName: "gameModes.json",
+      processItem,
+      extractAllowedValuesFn
+    });
+
+    expect(processItem).toHaveBeenNthCalledWith(1, items[0], "item-1", "allowed");
+    expect(processItem).toHaveBeenNthCalledWith(2, items[1], "item-2", "allowed");
+  });
+
+  it("processes object key paths with key-specific overrides", async () => {
+    const obj = { rules: { rounds: 3 } };
+    const processItem = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "Rounds: 3");
+
+    await processJsonObjectEntries(obj, {
+      baseName: "gameModes.json",
+      processItem,
+      extractAllowedValuesFn
+    });
+
+    expect(extractAllowedValuesFn).toHaveBeenCalledWith(
+      "gameModes.json",
+      { "rules.rounds": "3" }
+    );
+    expect(processItem).toHaveBeenCalledWith(
+      { "rules.rounds": "3" },
+      "rules.rounds",
+      "rules.rounds: Rounds: 3"
+    );
   });
 });

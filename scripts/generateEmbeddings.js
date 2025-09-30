@@ -327,6 +327,124 @@ function collectKeyPaths(obj, prefix = "", out = []) {
   return out;
 }
 
+/**
+ * Create a processor function that writes embedding entries for JSON data.
+ *
+ * @pseudocode
+ * 1. Accept base metadata (file name, path, tags) plus extractor/write helpers.
+ * 2. When invoked, favor `overrideText`; otherwise compute allowlisted text.
+ * 3. Normalize, tag, embed, and stream the entry while avoiding duplicates.
+ *
+ * @param {object} options - Dependencies for the processor.
+ * @param {string} options.base - Base filename used for entry ids.
+ * @param {string} options.relativePath - Source path for metadata.
+ * @param {Array<string>} options.baseTags - Initial tag list for the entry.
+ * @param {(text:string, opts:object)=>Promise<any>} options.extractor - Embedding extractor.
+ * @param {(entry:object)=>void} options.writeEntry - Writer that persists entries.
+ * @param {Set<string>} options.seenTexts - Tracker preventing duplicate chunks.
+ * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
+ *   - Function to derive allowlisted text when no override is provided.
+ * @returns {(item:any, id:string, overrideText?:string)=>Promise<void>} Async processor for a JSON entry.
+ */
+function createJsonProcessItem({
+  base,
+  relativePath,
+  baseTags,
+  extractor,
+  writeEntry,
+  seenTexts,
+  extractAllowedValuesFn = extractAllowedValues
+}) {
+  return async (item, id, overrideText) => {
+    const textToEmbed = overrideText ?? extractAllowedValuesFn(base, item);
+    const chunkText = textToEmbed
+      ? normalizeAndFilter(String(textToEmbed), seenTexts)
+      : undefined;
+    if (!chunkText) return;
+    const intent = determineIntent(chunkText);
+    const metadata = buildMetadata(relativePath);
+    const tagSet = new Set(baseTags);
+    tagSet.add(intent);
+    tagSet.add(metadata.role);
+    for (const mod of metadata.relations.imports) tagSet.add(mod);
+    for (const call of metadata.relations.calls) tagSet.add(call);
+    for (const pat of metadata.patterns) tagSet.add(pat);
+    for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
+    const tags = Array.from(tagSet);
+    const result = await extractor(chunkText, { pooling: "mean" });
+    const qa = createQaContext(chunkText);
+    const sparseVector = createSparseVector(chunkText);
+    writeEntry({
+      id: `${base}-${id}`,
+      text: chunkText,
+      ...(qa ? { qaContext: qa } : {}),
+      embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
+      sparseVector,
+      source: `${relativePath} [${id}]`,
+      contextPath: deriveContextPath({ source: `${relativePath} [${id}]`, tags }),
+      tags,
+      metadata,
+      version: 1
+    });
+  };
+}
+
+/**
+ * Process each element in a JSON array using the provided processor.
+ *
+ * @pseudocode
+ * 1. Iterate entries with their index.
+ * 2. Extract allowlisted text for each original item.
+ * 3. Skip entries without allowlisted content; otherwise call the processor.
+ *
+ * @param {Array<any>} items - JSON array to process.
+ * @param {object} options - Processing context.
+ * @param {string} options.baseName - Base filename for allowlist lookup.
+ * @param {Function} options.processItem - Processor created via `createJsonProcessItem`.
+ * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
+ *   - Optional allowlist extractor override.
+ * @returns {Promise<void>} Resolves when all entries are processed.
+ */
+async function processJsonArrayEntries(
+  items,
+  { baseName, processItem, extractAllowedValuesFn = extractAllowedValues }
+) {
+  for (const [index, item] of items.entries()) {
+    const allowed = extractAllowedValuesFn(baseName, item);
+    if (!allowed) continue;
+    await processItem(item, `item-${index + 1}`, allowed);
+  }
+}
+
+/**
+ * Process object key-path pairs using the provided processor.
+ *
+ * @pseudocode
+ * 1. Flatten the object into key-path/value tuples.
+ * 2. For each tuple, compute allowlisted text for that key path.
+ * 3. Skip tuples without allowlisted content; otherwise invoke the processor
+ *    with the original key-path structure and override text.
+ *
+ * @param {object} obj - Root object to flatten and process.
+ * @param {object} options - Processing context.
+ * @param {string} options.baseName - Base filename for allowlist lookup.
+ * @param {Function} options.processItem - Processor created via `createJsonProcessItem`.
+ * @param {(base:string, item:any)=>string|undefined} [options.extractAllowedValuesFn]
+ *   - Optional allowlist extractor override.
+ * @returns {Promise<void>} Resolves when all key paths are processed.
+ */
+async function processJsonObjectEntries(
+  obj,
+  { baseName, processItem, extractAllowedValuesFn = extractAllowedValues }
+) {
+  const flat = collectKeyPaths(obj);
+  for (const [keyPath, value] of flat) {
+    const allowed = extractAllowedValuesFn(baseName, { [keyPath]: value });
+    if (!allowed) continue;
+    await processItem({ [keyPath]: value }, keyPath, `${keyPath}: ${allowed}`);
+  }
+}
+
 function chunkMarkdown(text) {
   // Split by headings first to maintain logical sections
   const sections = text.split(/\n(?=#{1,6} )/);
@@ -854,54 +972,20 @@ async function generate() {
 
     if (isJson || isDataJs) {
       const json = isJson ? JSON.parse(text) : (await import(pathToFileURL(fullPath))).default;
-      const processItem = async (item, id, overrideText) => {
-        const textToEmbed = overrideText ?? extractAllowedValues(base, item);
-        const chunkText = textToEmbed
-          ? normalizeAndFilter(String(textToEmbed), seenTexts)
-          : undefined;
-        if (!chunkText) return;
-        const intent = determineIntent(chunkText);
-        const metadata = buildMetadata(relativePath);
-        const tagSet = new Set(baseTags);
-        tagSet.add(intent);
-        tagSet.add(metadata.role);
-        for (const mod of metadata.relations.imports) tagSet.add(mod);
-        for (const call of metadata.relations.calls) tagSet.add(call);
-        for (const pat of metadata.patterns) tagSet.add(pat);
-        for (const cc of detectCrossCutting(chunkText)) tagSet.add(cc);
-        const tags = Array.from(tagSet);
-        const result = await extractor(chunkText, { pooling: "mean" });
-        const qa = createQaContext(chunkText);
-        const sparseVector = createSparseVector(chunkText);
-        writeEntry({
-          id: `${base}-${id}`,
-          text: chunkText,
-          ...(qa ? { qaContext: qa } : {}),
-          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
-          sparseVector,
-          source: `${relativePath} [${id}]`,
-          contextPath: deriveContextPath({ source: `${relativePath} [${id}]`, tags }),
-          tags,
-          metadata,
-          version: 1
-        });
-      };
+      const processItem = createJsonProcessItem({
+        base,
+        relativePath,
+        baseTags,
+        extractor,
+        writeEntry,
+        seenTexts
+      });
 
       // Topic-aware data chunks: prefer key-path anchored entries
-      const baseName = base;
       if (Array.isArray(json)) {
-        for (const [index, item] of json.entries()) {
-          const allowed = extractAllowedValues(baseName, item);
-          if (!allowed) continue;
-          await processItem(item, `item-${index + 1}`, allowed);
-        }
+        await processJsonArrayEntries(json, { baseName: base, processItem });
       } else if (json && typeof json === "object") {
-        const flat = collectKeyPaths(json);
-        for (const [keyPath, value] of flat) {
-          const allowed = extractAllowedValues(baseName, { [keyPath]: value });
-          if (!allowed) continue;
-          await processItem({ [keyPath]: value }, keyPath, `${keyPath}: ${allowed}`);
-        }
+        await processJsonObjectEntries(json, { baseName: base, processItem });
       }
     } else if (isMarkdown) {
       const chunks = chunkMarkdown(text);
@@ -1021,6 +1105,12 @@ async function generate() {
   );
 }
 
+const __jsonTestHelpers = {
+  createJsonProcessItem,
+  processJsonArrayEntries,
+  processJsonObjectEntries
+};
+
 export {
   DATA_FIELD_ALLOWLIST,
   JSON_FIELD_ALLOWLIST,
@@ -1030,7 +1120,8 @@ export {
   normalizeAndFilter,
   extractAllowedValues,
   createSparseVector,
-  determineTags
+  determineTags,
+  /** @internal */ __jsonTestHelpers
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
