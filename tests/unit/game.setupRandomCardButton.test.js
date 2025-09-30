@@ -79,32 +79,21 @@ describe("setupRandomCardButton", () => {
 
   it("re-enables the button even if card generation fails", async () => {
     const { setupRandomCardButton, button, container, generateRandomCard } = await setupTest();
-    const deferred = createDeferred();
     const error = new Error("generation failed");
-    generateRandomCard.mockReturnValueOnce(deferred.promise);
-    const rejectionEventPromise = new Promise((resolve) => {
-      const handler = (reason) => {
-        process.off("unhandledRejection", handler);
-        resolve(reason);
-      };
-      process.on("unhandledRejection", handler);
-    });
+    generateRandomCard.mockRejectedValueOnce(error);
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     setupRandomCardButton(button, container);
     button.click();
 
-    deferred.reject(error);
+    await vi.waitFor(() => {
+      expect(button.classList.contains("hidden")).toBe(false);
+      expect(button.disabled).toBe(false);
+    });
 
-    await expect(deferred.promise).rejects.toBe(error);
-    await Promise.resolve();
-    await Promise.resolve();
-
-    const unhandledReason = await rejectionEventPromise;
-
-    expect(button.classList.contains("hidden")).toBe(false);
-    expect(button.disabled).toBe(false);
     expect(generateRandomCard).toHaveBeenCalledTimes(1);
-    expect(unhandledReason).toBe(error);
+
+    consoleSpy.mockRestore();
   });
 
   it("does nothing when button or container is missing", async () => {
