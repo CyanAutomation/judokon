@@ -40,8 +40,14 @@ export async function loadCountryMapping() {
       }
     })();
   }
-  mapping = await mappingPromise;
-  return mapping;
+  try {
+    mapping = await mappingPromise;
+    return mapping;
+  } catch (error) {
+    mappingPromise = undefined;
+    mapping = undefined;
+    throw error;
+  }
 }
 
 /**
