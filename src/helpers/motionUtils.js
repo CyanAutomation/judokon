@@ -9,7 +9,7 @@ import { getSetting } from "./settingsCache.js";
  * @pseudocode
  * 1. Call `getSetting("motionEffects")`.
  * 2. If the result is `false`, return `true`.
- * 3. If `window` is unavailable or `window.matchMedia` is not a function, return `false`.
+ * 3. If `window` is unavailable, `window.matchMedia` is not a function, or it is falsy, return `true`.
  * 4. Otherwise, return the value of `matchMedia('(prefers-reduced-motion: reduce)')`.
  *
  * @returns {boolean} True if motion effects should be reduced.
@@ -20,9 +20,10 @@ export function shouldReduceMotionSync() {
   }
   if (
     typeof window === "undefined" ||
-    typeof window.matchMedia !== "function"
+    typeof window.matchMedia !== "function" ||
+    !window.matchMedia
   ) {
-    return false;
+    return true;
   }
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
