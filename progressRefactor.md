@@ -89,7 +89,7 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Confirm assimilation (ensure Appendix contains the workflow and remove source or add stub)
   - Rationale: Vector search content belongs in the RAG PRD; if not already fully merged, finish assimilation.
 
-- `design/battleCLI-legacy-alignment.md` -> `prdBattleCLI.md`
+- ✅ Legacy alignment notes now live in `prdBattleCLI.md#recent-improvements-legacy-design-alignment` (source markdown removed).
   - Action: Assimilate (append legacy alignment notes and migration checklist)
   - Rationale: Legacy alignment concerns the CLI behavior; `prdBattleCLI.md` should document compatibility and migration steps.
 
