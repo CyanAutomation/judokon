@@ -167,7 +167,6 @@ export function setupRandomCardButton(button, container) {
         enableInspector: inspectorEnabled
       });
     } finally {
-      button.classList.remove("hidden");
       button.disabled = false;
     }
   });
