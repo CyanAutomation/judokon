@@ -16,6 +16,17 @@ let bar;
 let fadeId;
 let removeId;
 
+/**
+ * Get a safe requestAnimationFrame function with fallback support.
+ *
+ * @pseudocode
+ * 1. If scheduler has requestAnimationFrame, return bound scheduler method.
+ * 2. If globalThis has requestAnimationFrame, return bound global method.
+ * 3. Otherwise, return setTimeout-based fallback with 0ms delay.
+ *
+ * @param {object} scheduler - The scheduler object to check for RAF support.
+ * @returns {function} A function that behaves like requestAnimationFrame.
+ */
 function getSafeRequestAnimationFrame(scheduler) {
   if (scheduler && typeof scheduler.requestAnimationFrame === "function") {
     return scheduler.requestAnimationFrame.bind(scheduler);
@@ -26,7 +37,10 @@ function getSafeRequestAnimationFrame(scheduler) {
   ) {
     return globalThis.requestAnimationFrame.bind(globalThis);
   }
-  return (callback) => scheduler.setTimeout(callback, 0);
+  if (typeof globalThis !== "undefined" && typeof globalThis.setTimeout === "function") {
+    return (callback) => globalThis.setTimeout(callback, 0);
+  }
+  return (callback) => setTimeout(callback, 0);
 }
 
 function resetState() {
@@ -145,8 +159,6 @@ export function updateSnackbar(message) {
   }
   bar.textContent = message;
   bar.classList.add("show");
-  const requestFrame = getSafeRequestAnimationFrame(scheduler);
-  requestFrame(() => bar?.classList.add("show"));
   resetTimers();
 }
 

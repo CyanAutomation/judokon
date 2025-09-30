@@ -52,7 +52,7 @@ describe("showSnackbar", () => {
     timers.cleanup();
   });
 
-  it("falls back when scheduler omits requestAnimationFrame", () => {
+  it("gracefully handles scheduler without requestAnimationFrame using global fallback", () => {
     const timers = useCanonicalTimers();
     const container = document.getElementById("snackbar-container");
     const originalRaf = globalThis.requestAnimationFrame;
@@ -77,8 +77,12 @@ describe("showSnackbar", () => {
       expect(container.firstElementChild?.textContent).toBe("Updated");
       expect(container.firstElementChild?.classList.contains("show")).toBe(true);
     } finally {
-      globalThis.requestAnimationFrame = originalRaf;
-      setScheduler(realScheduler);
+      try {
+        globalThis.requestAnimationFrame = originalRaf;
+      } catch {}
+      try {
+        setScheduler(realScheduler);
+      } catch {}
       timers.cleanup();
     }
   });
