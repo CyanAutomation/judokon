@@ -90,8 +90,8 @@ describe("getFallbackJudoka", () => {
 
     const getFallbackJudoka = await importGetFallbackJudoka();
 
-    const { result: fallback, errorCalls } = await invokeWithConsoleErrorCapture(
-      () => getFallbackJudoka()
+    const { result: fallback, errorCalls } = await invokeWithConsoleErrorCapture(() =>
+      getFallbackJudoka()
     );
 
     mockFetchJson.mockClear();
@@ -123,8 +123,8 @@ describe("getFallbackJudoka", () => {
 
     const getFallbackJudoka = await importGetFallbackJudoka();
 
-    const { result: fallback, errorCalls } = await invokeWithConsoleErrorCapture(
-      () => getFallbackJudoka()
+    const { result: fallback, errorCalls } = await invokeWithConsoleErrorCapture(() =>
+      getFallbackJudoka()
     );
 
     expect(fallback).toMatchObject({

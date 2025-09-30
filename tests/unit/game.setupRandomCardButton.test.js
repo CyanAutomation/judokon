@@ -40,13 +40,8 @@ const setupTest = async () => {
 
 describe("setupRandomCardButton", () => {
   it("disables the button while a card is being generated and restores it afterwards", async () => {
-    const {
-      setupRandomCardButton,
-      button,
-      container,
-      generateRandomCard,
-      shouldReduceMotionSync
-    } = await setupTest();
+    const { setupRandomCardButton, button, container, generateRandomCard, shouldReduceMotionSync } =
+      await setupTest();
     const deferred = createDeferred();
     generateRandomCard.mockReturnValueOnce(deferred.promise);
     shouldReduceMotionSync.mockReturnValueOnce(true);
@@ -60,14 +55,9 @@ describe("setupRandomCardButton", () => {
     expect(container.innerHTML).toBe("");
     expect(generateRandomCard).toHaveBeenCalledTimes(1);
     expect(shouldReduceMotionSync).toHaveBeenCalledTimes(1);
-    expect(generateRandomCard).toHaveBeenCalledWith(
-      null,
-      null,
-      container,
-      true,
-      undefined,
-      { enableInspector: false }
-    );
+    expect(generateRandomCard).toHaveBeenCalledWith(null, null, container, true, undefined, {
+      enableInspector: false
+    });
 
     deferred.resolve();
     await deferred.promise;

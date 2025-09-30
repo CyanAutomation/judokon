@@ -93,9 +93,7 @@ describe.sequential("classicBattle card selection", () => {
 
     expect(result).toEqual({ id: 99 });
     expect(fallbackProvider).toHaveBeenCalledTimes(1);
-    expect(qaLogger).toHaveBeenCalledWith(
-      "Using fallback judoka after retry exhaustion"
-    );
+    expect(qaLogger).toHaveBeenCalledWith("Using fallback judoka after retry exhaustion");
   });
 
   it("excludes hidden judoka from selection", async () => {
