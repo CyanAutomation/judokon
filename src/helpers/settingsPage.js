@@ -72,8 +72,10 @@ export const settingsReadyPromise = new Promise((resolve) => {
   document.addEventListener("settings:ready", resolve, { once: true });
 });
 
-// Expose readiness for tests to await.
-window.settingsReadyPromise = settingsReadyPromise;
+// Expose readiness for tests to await in browser environments.
+if (typeof window !== "undefined") {
+  window.settingsReadyPromise = settingsReadyPromise;
+}
 
 let errorPopupTimeoutId;
 
