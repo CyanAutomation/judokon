@@ -157,12 +157,18 @@ export function setupRandomCardButton(button, container) {
   if (!button || !container) return;
   button.addEventListener("click", async () => {
     button.classList.add("hidden");
+    button.disabled = true;
     container.innerHTML = "";
 
     const prefersReducedMotion = shouldReduceMotionSync();
-    await generateRandomCard(null, null, container, prefersReducedMotion, undefined, {
-      enableInspector: inspectorEnabled
-    });
+    try {
+      await generateRandomCard(null, null, container, prefersReducedMotion, undefined, {
+        enableInspector: inspectorEnabled
+      });
+    } finally {
+      button.classList.remove("hidden");
+      button.disabled = false;
+    }
   });
 }
 
