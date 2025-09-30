@@ -353,7 +353,7 @@ function createJsonProcessItem({
   extractor,
   writeEntry,
   seenTexts,
-  extractAllowedValuesFn
+  extractAllowedValuesFn = extractAllowedValues
 }) {
   const extractFn = extractAllowedValuesFn || extractAllowedValues;
   return async (item, id, overrideText) => {
@@ -362,7 +362,7 @@ function createJsonProcessItem({
     const textToEmbed =
       overrideCandidate === undefined || overrideCandidate === null || overrideCandidate === ""
         ? extractFn(base, item)
-        : overrideText;
+        : overrideCandidate;
     const chunkText = textToEmbed
       ? normalizeAndFilter(String(textToEmbed), seenTexts)
       : undefined;
@@ -1113,7 +1113,14 @@ async function generate() {
 
 /**
  * Internal test helpers for JSON processing functions.
+ *
  * @internal These functions are exposed only for testing purposes and should not be used in production code.
+ * @property {typeof createJsonProcessItem} createJsonProcessItem - Builds a processor that normalizes,
+ *   embeds, and writes individual JSON entries.
+ * @property {typeof processJsonArrayEntries} processJsonArrayEntries - Iterates array items, skipping
+ *   entries without allowlisted text before invoking the provided processor.
+ * @property {typeof processJsonObjectEntries} processJsonObjectEntries - Walks objects to flatten key
+ *   paths and dispatch each value to the processor.
  */
 const __jsonTestHelpers = {
   createJsonProcessItem,
