@@ -58,7 +58,8 @@ describe("showSnackbar", () => {
     const originalRaf = globalThis.requestAnimationFrame;
     const schedulerWithoutRaf = {
       setTimeout: (...args) => globalThis.setTimeout(...args),
-      clearTimeout: (...args) => globalThis.clearTimeout(...args)
+      clearTimeout: (...args) => globalThis.clearTimeout(...args),
+      requestAnimationFrame: undefined
     };
 
     setScheduler(schedulerWithoutRaf);
