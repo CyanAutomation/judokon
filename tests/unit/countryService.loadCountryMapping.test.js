@@ -54,4 +54,27 @@ describe("loadCountryMapping", () => {
     expect(setItem).toHaveBeenCalledWith("countryCodeMapping", mapping);
     expect(setItem).toHaveBeenCalledTimes(1);
   });
+
+  it("returns cached mapping when already loaded even if a new load fails", async () => {
+    getItem.mockReturnValue(undefined);
+
+    const mapping = {
+      vu: { code: "vu", country: "Vanuatu", active: true },
+    };
+
+    fetchJson.mockResolvedValueOnce(mapping);
+
+    const { loadCountryMapping } = await import("../../src/helpers/api/countryService.js");
+
+    await expect(loadCountryMapping()).resolves.toEqual(mapping);
+
+    fetchJson.mockRejectedValueOnce(new Error("network down"));
+    importJsonModule.mockRejectedValueOnce(new Error("import fail"));
+
+    await expect(loadCountryMapping()).resolves.toEqual(mapping);
+
+    expect(fetchJson).toHaveBeenCalledTimes(1);
+    expect(importJsonModule).not.toHaveBeenCalled();
+    expect(getItem).toHaveBeenCalledTimes(1);
+  });
 });
