@@ -145,9 +145,10 @@ export function setupHideCardButton(button) {
  * @pseudocode
  * 1. Exit early if `button` or `container` is missing.
  * 2. On click:
- *    a. Hide `button` and clear `container`.
+ *    a. Hide and disable `button`, then clear `container`.
  *    b. Determine motion preference with `shouldReduceMotionSync`.
  *    c. Call `generateRandomCard` using the preference.
+ *    d. Ensure `button` is revealed and re-enabled after generation finishes or fails.
  *
  * @param {HTMLElement} button - Button to trigger card generation.
  * @param {HTMLElement} container - Element to display the card.
