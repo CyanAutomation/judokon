@@ -206,7 +206,7 @@ export async function selectOpponentJudoka({
       selection = pickRandom();
       attempts += 1;
     }
-    if (selection?.id === playerJudoka.id) {
+    if (selection?.id === playerJudoka.id || !selection) {
       forcedFallback = true;
       selection = null;
     }
@@ -217,7 +217,7 @@ export async function selectOpponentJudoka({
   if (typeof fallbackProvider === "function") {
     try {
       const fallback = await fallbackProvider();
-      if (typeof qaLogger === "function") {
+      if (fallback && typeof qaLogger === "function") {
         try {
           qaLogger(
             forcedFallback
