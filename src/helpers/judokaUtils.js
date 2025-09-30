@@ -70,8 +70,12 @@ export async function getFallbackJudoka() {
  * 1. Set the module-scoped `cachedFallback` reference back to `null`.
  * 2. Allow future calls to `getFallbackJudoka` to perform a fresh fetch.
  *
+ * @since 2024-05-21
+ *
  * @returns {void} Nothing.
  */
 export function resetFallbackCache() {
-  cachedFallback = null;
+  if (cachedFallback !== null) {
+    cachedFallback = null;
+  }
 }

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
+import { resetFallbackCache } from "../../src/helpers/judokaUtils.js";
 
-const mockFetchJson = vi.fn();
+const mockFetchJson = vi.hoisted(() => vi.fn());
 
 vi.mock("../../src/helpers/dataUtils.js", () => ({
   fetchJson: mockFetchJson
@@ -12,12 +13,7 @@ afterEach(async () => {
   vi.clearAllMocks();
   mockFetchJson.mockReset();
 
-  const { resetFallbackCache } = await import(
-    "../../src/helpers/judokaUtils.js"
-  );
-  if (resetFallbackCache) {
-    resetFallbackCache();
-  }
+  resetFallbackCache();
 });
 
 /**
