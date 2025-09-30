@@ -53,7 +53,7 @@
   },
   {
     "source": "design/battleCLI-legacy-alignment.md",
-    "mappedTo": null
+    "mappedTo": "design/productRequirementsDocuments/prdBattleCLI.md#recent-improvements-legacy-design-alignment"
   },
   {
     "source": "design/battleMarkup.md",
