@@ -7,10 +7,17 @@ vi.mock("../../src/helpers/dataUtils.js", () => ({
   fetchJson: mockFetchJson
 }));
 
-afterEach(() => {
+afterEach(async () => {
   vi.resetModules();
   vi.clearAllMocks();
   mockFetchJson.mockReset();
+
+  const { resetFallbackCache } = await import(
+    "../../src/helpers/judokaUtils.js"
+  );
+  if (resetFallbackCache) {
+    resetFallbackCache();
+  }
 });
 
 /**
@@ -41,7 +48,7 @@ async function importGetFallbackJudoka() {
 async function invokeWithConsoleErrorCapture(callback) {
   return withMutedConsole(async () => {
     const errorCalls = [];
-    const original = console.error;
+    const mutedConsoleError = console.error;
     console.error = (...args) => {
       errorCalls.push(args);
     };
@@ -49,7 +56,7 @@ async function invokeWithConsoleErrorCapture(callback) {
       const result = await callback();
       return { result, errorCalls };
     } finally {
-      console.error = original;
+      console.error = mutedConsoleError;
     }
   }, ["error"]);
 }
