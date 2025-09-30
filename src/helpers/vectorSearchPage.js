@@ -16,14 +16,24 @@ let spinner;
 let resolveResultsPromise;
 let currentResultsPromise = Promise.resolve();
 
-setVectorSearchResultsPromise(currentResultsPromise);
-
-function setVectorSearchResultsPromise(promise) {
+/**
+ * Synchronize the vector search results promise across module and window scopes.
+ *
+ * @pseudocode
+ * 1. Store the promise within the module scope for non-browser contexts.
+ * 2. When `window` exists, mirror the promise onto `window.vectorSearchResultsPromise`.
+ * 3. Keep both references aligned so callers can await results in any environment.
+ *
+ * @param {Promise<unknown>} promise - Promise representing the current search lifecycle.
+ */
+function syncVectorSearchPromise(promise) {
   currentResultsPromise = promise;
   if (typeof window !== "undefined") {
     window.vectorSearchResultsPromise = promise;
   }
 }
+
+syncVectorSearchPromise(currentResultsPromise);
 
 /**
  * Load surrounding context for a search result element.
@@ -99,7 +109,7 @@ async function loadResultContext(el) {
  */
 export async function handleSearch(event) {
   event.preventDefault();
-  setVectorSearchResultsPromise(
+  syncVectorSearchPromise(
     new Promise((resolve) => {
       resolveResultsPromise = resolve;
     })
