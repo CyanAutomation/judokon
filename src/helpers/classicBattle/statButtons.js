@@ -60,19 +60,22 @@ export function disableStatButtons(buttons, container) {
  * Resolve any promises waiting for stat buttons to be ready.
  *
  * @pseudocode
- * 1. Check if window.__resolveStatButtonsReady function exists.
- * 2. If it exists, call it to resolve the waiting promise.
- * 3. Otherwise, set window.statButtonsReadyPromise to a resolved promise.
- * 4. This ensures any code waiting for stat buttons is unblocked.
+ * 1. Resolve the target window from the provided argument or global scope.
+ * 2. If `target.__resolveStatButtonsReady` exists, invoke it to resolve the waiting promise.
+ * 3. Otherwise, assign a resolved promise to `target.statButtonsReadyPromise`.
+ * 4. If no target window is available (e.g., Node environments), exit early.
  *
- * @param {Window} [win=window] - Window object to use for global state
+ * @param {Window} [win] - Window object to use for global state when provided.
  * @returns {void}
  */
-export function resolveStatButtonsReady(win = window) {
-  if (typeof win.__resolveStatButtonsReady === "function") {
-    win.__resolveStatButtonsReady();
+export function resolveStatButtonsReady(win) {
+  const target = win ?? (typeof window !== "undefined" ? window : undefined);
+  if (!target) return;
+
+  if (typeof target.__resolveStatButtonsReady === "function") {
+    target.__resolveStatButtonsReady();
   } else {
-    win.statButtonsReadyPromise = Promise.resolve();
+    target.statButtonsReadyPromise = Promise.resolve();
   }
 }
 
