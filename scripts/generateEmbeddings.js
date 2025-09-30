@@ -854,8 +854,8 @@ async function generate() {
 
     if (isJson || isDataJs) {
       const json = isJson ? JSON.parse(text) : (await import(pathToFileURL(fullPath))).default;
-      const processItem = async (item, id) => {
-        const textToEmbed = extractAllowedValues(base, item);
+      const processItem = async (item, id, overrideText) => {
+        const textToEmbed = overrideText ?? extractAllowedValues(base, item);
         const chunkText = textToEmbed
           ? normalizeAndFilter(String(textToEmbed), seenTexts)
           : undefined;
@@ -893,14 +893,14 @@ async function generate() {
         for (const [index, item] of json.entries()) {
           const allowed = extractAllowedValues(baseName, item);
           if (!allowed) continue;
-          await processItem({ text: allowed }, `item-${index + 1}`);
+          await processItem(item, `item-${index + 1}`, allowed);
         }
       } else if (json && typeof json === "object") {
         const flat = collectKeyPaths(json);
         for (const [keyPath, value] of flat) {
           const allowed = extractAllowedValues(baseName, { [keyPath]: value });
           if (!allowed) continue;
-          await processItem({ text: `${keyPath}: ${allowed}` }, keyPath);
+          await processItem({ [keyPath]: value }, keyPath, `${keyPath}: ${allowed}`);
         }
       }
     } else if (isMarkdown) {
