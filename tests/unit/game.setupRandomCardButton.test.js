@@ -82,31 +82,32 @@ describe("setupRandomCardButton", () => {
     const { setupRandomCardButton, button, container, generateRandomCard } = await setupTest();
     const error = new Error("generation failed");
     generateRandomCard.mockRejectedValueOnce(error);
-    const addEventListenerSpy = vi.spyOn(button, "addEventListener");
+    const unhandledRejections = [];
+    const handleUnhandledRejection = (reason) => {
+      unhandledRejections.push(reason);
+    };
+    process.on("unhandledRejection", handleUnhandledRejection);
 
-    await withMutedConsole(async () => {
-      setupRandomCardButton(button, container);
-      const clickRegistration = addEventListenerSpy.mock.calls.find(
-        ([event]) => event === "click"
-      );
-      expect(clickRegistration).toBeDefined();
-      const [, clickHandler] = clickRegistration;
-      expect(clickHandler).toBeTypeOf("function");
+    try {
+      await withMutedConsole(async () => {
+        setupRandomCardButton(button, container);
+        button.click();
 
-      const clickPromise = clickHandler.call(button, new Event("click"));
+        expect(button.classList.contains("hidden")).toBe(true);
+        expect(button.disabled).toBe(true);
 
-      expect(button.classList.contains("hidden")).toBe(true);
-      expect(button.disabled).toBe(true);
+        await vi.waitFor(() => {
+          expect(button.classList.contains("hidden")).toBe(false);
+          expect(button.disabled).toBe(false);
+        });
 
-      await expect(clickPromise).rejects.toBe(error);
-
-      await vi.waitFor(() => {
-        expect(button.classList.contains("hidden")).toBe(false);
-        expect(button.disabled).toBe(false);
+        expect(generateRandomCard).toHaveBeenCalledTimes(1);
       });
+    } finally {
+      process.off("unhandledRejection", handleUnhandledRejection);
+    }
 
-      expect(generateRandomCard).toHaveBeenCalledTimes(1);
-    });
+    expect(unhandledRejections).toEqual([error]);
   });
 
   it("does nothing when button or container is missing", async () => {
