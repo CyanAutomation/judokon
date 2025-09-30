@@ -45,7 +45,6 @@ export async function loadCountryMapping() {
     return mapping;
   } catch (error) {
     mappingPromise = undefined;
-    mapping = undefined;
     throw error;
   }
 }
