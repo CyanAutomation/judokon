@@ -148,7 +148,7 @@ export function setupHideCardButton(button) {
  *    a. Hide and disable `button`, then clear `container`.
  *    b. Determine motion preference with `shouldReduceMotionSync`.
  *    c. Call `generateRandomCard` using the preference.
- *    d. Ensure `button` is revealed and re-enabled after generation finishes or fails.
+ *    d. Ensure `button` is re-enabled after generation finishes or fails, while it remains hidden.
  *
  * @param {HTMLElement} button - Button to trigger card generation.
  * @param {HTMLElement} container - Element to display the card.
