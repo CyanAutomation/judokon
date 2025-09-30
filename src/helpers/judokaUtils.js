@@ -62,3 +62,16 @@ export async function getFallbackJudoka() {
     return cachedFallback;
   }
 }
+
+/**
+ * Resets the cached fallback judoka so subsequent calls refetch data.
+ *
+ * @pseudocode
+ * 1. Set the module-scoped `cachedFallback` reference back to `null`.
+ * 2. Allow future calls to `getFallbackJudoka` to perform a fresh fetch.
+ *
+ * @returns {void} Nothing.
+ */
+export function resetFallbackCache() {
+  cachedFallback = null;
+}
