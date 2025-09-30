@@ -166,7 +166,7 @@ Scenario: we need to remove an optional field `legacyRank` that some clients sti
 
 Steps:
 
-1. Mark `legacyRank` as deprecated in the canonical schema (add to `design/dataSchemas/judoka.schema.json` docs) and update PRD with rationale.
+1. Mark `legacyRank` as deprecated in the canonical schema and update this PRD with rationale and developer notes.
 2. Implement a compatibility shim in the data ingestion layer that maps `legacyRank` → `metadata.legacyRank` or derives an equivalent if needed.
 3. Add CI tests that validate both the pre-migration and post-migration payloads.
 4. Deploy the shim and monitor errors/telemetry for 7 days.
@@ -188,7 +188,9 @@ Acceptance Criteria (migration):
 
 ## Appendix
 
-- Reference: `design/dataSchemas/README.md` and `src/data/judoka.json`.
+- Validation workflow recap: run `npm run validate:data` (executes `scripts/validateData.js` with Ajv) whenever schemas or data change.
+- Schema drafting: prototype JSON Schema explorations may live under `design/dataSchemas/`, but the canonical sources reside in `src/schemas/`.
+- Canonical data reference: see `src/data/judoka.json` for real payload examples aligned with this PRD.
 
 ## Dependencies and Open Questions
 
