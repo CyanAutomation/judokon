@@ -229,10 +229,7 @@ describe("JSON processing helpers", () => {
       extractAllowedValuesFn
     });
 
-    expect(extractAllowedValuesFn).toHaveBeenCalledWith(
-      "gameModes.json",
-      { "rules.rounds": "3" }
-    );
+    expect(extractAllowedValuesFn).toHaveBeenCalledWith("gameModes.json", { "rules.rounds": "3" });
     expect(processItem).toHaveBeenCalledWith(
       { "rules.rounds": "3" },
       "rules.rounds",

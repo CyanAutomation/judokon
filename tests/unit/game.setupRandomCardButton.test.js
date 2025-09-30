@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { withMutedConsole } from "../utils/console.js";
 
 const createDeferred = () => {
   let resolve;
@@ -40,13 +41,8 @@ const setupTest = async () => {
 
 describe("setupRandomCardButton", () => {
   it("disables the button while a card is being generated and restores it afterwards", async () => {
-    const {
-      setupRandomCardButton,
-      button,
-      container,
-      generateRandomCard,
-      shouldReduceMotionSync
-    } = await setupTest();
+    const { setupRandomCardButton, button, container, generateRandomCard, shouldReduceMotionSync } =
+      await setupTest();
     const deferred = createDeferred();
     generateRandomCard.mockReturnValueOnce(deferred.promise);
     shouldReduceMotionSync.mockReturnValueOnce(true);
@@ -60,14 +56,9 @@ describe("setupRandomCardButton", () => {
     expect(container.innerHTML).toBe("");
     expect(generateRandomCard).toHaveBeenCalledTimes(1);
     expect(shouldReduceMotionSync).toHaveBeenCalledTimes(1);
-    expect(generateRandomCard).toHaveBeenCalledWith(
-      null,
-      null,
-      container,
-      true,
-      undefined,
-      { enableInspector: false }
-    );
+    expect(generateRandomCard).toHaveBeenCalledWith(null, null, container, true, undefined, {
+      enableInspector: false
+    });
 
     deferred.resolve();
     await deferred.promise;
@@ -81,19 +72,31 @@ describe("setupRandomCardButton", () => {
     const { setupRandomCardButton, button, container, generateRandomCard } = await setupTest();
     const error = new Error("generation failed");
     generateRandomCard.mockRejectedValueOnce(error);
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const addEventListenerSpy = vi.spyOn(button, "addEventListener");
 
-    setupRandomCardButton(button, container);
-    button.click();
+    await withMutedConsole(async () => {
+      setupRandomCardButton(button, container);
+      const clickRegistration = addEventListenerSpy.mock.calls.find(
+        ([event]) => event === "click"
+      );
+      expect(clickRegistration).toBeDefined();
+      const [, clickHandler] = clickRegistration;
+      expect(clickHandler).toBeTypeOf("function");
 
-    await vi.waitFor(() => {
-      expect(button.classList.contains("hidden")).toBe(false);
-      expect(button.disabled).toBe(false);
+      const clickPromise = clickHandler.call(button, new Event("click"));
+
+      expect(button.classList.contains("hidden")).toBe(true);
+      expect(button.disabled).toBe(true);
+
+      await expect(clickPromise).rejects.toBe(error);
+
+      await vi.waitFor(() => {
+        expect(button.classList.contains("hidden")).toBe(false);
+        expect(button.disabled).toBe(false);
+      });
+
+      expect(generateRandomCard).toHaveBeenCalledTimes(1);
     });
-
-    expect(generateRandomCard).toHaveBeenCalledTimes(1);
-
-    consoleSpy.mockRestore();
   });
 
   it("does nothing when button or container is missing", async () => {
