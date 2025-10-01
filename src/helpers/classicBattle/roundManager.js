@@ -267,7 +267,12 @@ export async function startRound(store, onRoundStart) {
       suppressInProduction: true
     });
   }
-  try { if (typeof console !== "undefined" && !process?.env?.VITEST) console.debug(`classicBattle.trace emit:roundStarted t=${Date.now()} round=${roundNumber}`); } catch {}
+  try {
+    if (typeof console !== "undefined" && !process?.env?.VITEST)
+      console.debug(`classicBattle.trace emit:roundStarted t=${Date.now()} round=${roundNumber}`);
+  } catch {
+    /* ignore logging errors to preserve round start flow */
+  }
   emitBattleEvent("roundStarted", { store, roundNumber });
   // Synchronise centralized store
   try {
@@ -370,7 +375,14 @@ export function startCooldown(_store, scheduler, overrides = {}) {
     });
   }
   const cooldownSeconds = computeNextRoundCooldown();
-  try { if (typeof console !== "undefined" && !process?.env?.VITEST) console.debug(`classicBattle.trace schedule:nextRound t=${Date.now()} secs=${cooldownSeconds}`); } catch {}
+  try {
+    if (typeof console !== "undefined" && !process?.env?.VITEST)
+      console.debug(
+        `classicBattle.trace schedule:nextRound t=${Date.now()} secs=${cooldownSeconds}`
+      );
+  } catch {
+    /* ignore logging errors so cooldown scheduling proceeds */
+  }
   appendReadyTrace("cooldownDurationResolved", { seconds: cooldownSeconds });
   safeRound(
     "startCooldown.emitCountdownStarted",
