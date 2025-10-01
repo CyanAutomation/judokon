@@ -55,6 +55,20 @@ Key:
 - Files to check: `src/helpers/classicBattle/roundManager.js`, `src/helpers/classicBattle/scoreboard.js` (or equivalent), event handler registrations in `roundUI.js`.
 - Quick validation: run targeted `vitest` unit for `roundManager` and an integration Playwright test that clicks Replay and asserts scoreboard text.
 
+**Phase 1 actions (instrumentation + reproduction checks):**
+
+- Reviewed replay flow code paths: `src/helpers/classicBattle/endModal.js` (replay button wiring), `src/helpers/classicBattle/roundManager.js#L154` (`handleReplay`), and usage in `src/helpers/classicBattle/roundUI.js`.
+- Executed focused unit test: `tests/classicBattle/bootstrap.test.js` → “replay resets scoreboard” — PASS.
+- Executed focused Playwright specs: `playwright/battle-classic/replay.spec.js`, `playwright/battle-classic/replay-round-counter.smoke.spec.js`, and replay-related cases in `playwright/battle-classic/end-modal.spec.js` — all PASS.
+
+**Outcome:**
+
+- Could not reproduce the scoreboard-stale issue in targeted tests; both unit and UI e2e checks pass for replay-related flows. This suggests the bug is intermittent or environment/timing-related.
+
+**Next step (Phase 2):**
+
+- Add structured, scoped logging around `handleReplay` sequencing and scoreboard updates and create a long-run flaky-replay detector test to surface intermittent races.
+
 ---
 
 ## Issue 3 — Game hangs after several rounds
