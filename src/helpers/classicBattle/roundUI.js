@@ -151,7 +151,9 @@ export async function startRoundCooldown(resolved, config = {}) {
 
   // Add lifecycle tracing + guarded recovery: if cooldown completes without
   // a subsequent round start, emit a safe reset event to re-enter the flow.
+  try { if (!IS_VITEST) console.debug(`classicBattle.trace cooldown:start t=${Date.now()} secs=${seconds}`); } catch {}
   await startTimerSafely(timer, seconds);
+  try { if (!IS_VITEST) console.debug(`classicBattle.trace cooldown:end t=${Date.now()} secs=${seconds}`); } catch {}
   try {
     const target = getBattleEventTarget?.();
     if (target && typeof target.addEventListener === "function") {
@@ -159,6 +161,7 @@ export async function startRoundCooldown(resolved, config = {}) {
       const onStart = () => {
         started = true;
         target.removeEventListener("roundStarted", onStart);
+        try { if (!IS_VITEST) console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`); } catch {}
       };
       target.addEventListener("roundStarted", onStart);
       // After a short post-cooldown buffer, check if round started; if not, recover.
@@ -166,6 +169,7 @@ export async function startRoundCooldown(resolved, config = {}) {
         () => {
           try {
             if (!started) {
+              try { if (!IS_VITEST) console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`); } catch {}
               emitBattleEvent("game:reset-ui", {});
             }
           } catch {}
