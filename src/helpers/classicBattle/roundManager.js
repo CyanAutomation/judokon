@@ -156,10 +156,9 @@ export async function handleReplay(store) {
   const trace = (phase, extra = {}) => {
     try {
       // Avoid unsilenced console in tests; prefer Sentry if present.
-      // eslint-disable-next-line no-undef
+
       if (typeof Sentry !== "undefined" && Sentry?.logger) {
-        // eslint-disable-next-line no-undef
-        Sentry.logger.debug(Sentry.logger.fmt`replay:${phase}` , extra);
+        Sentry.logger.debug(Sentry.logger.fmt`replay:${phase}`, extra);
       }
     } catch {}
   };

@@ -148,7 +148,28 @@ export async function startRoundCooldown(resolved, config = {}) {
     }
   }
 
+  // Add lifecycle tracing + guarded recovery: if cooldown completes without
+  // a subsequent round start, emit a safe reset event to re-enter the flow.
   await startTimerSafely(timer, seconds);
+  try {
+    const target = getBattleEventTarget?.();
+    if (target && typeof target.addEventListener === "function") {
+      let started = false;
+      const onStart = () => {
+        started = true;
+        target.removeEventListener("roundStarted", onStart);
+      };
+      target.addEventListener("roundStarted", onStart);
+      // After a short post-cooldown buffer, check if round started; if not, recover.
+      setTimeout(() => {
+        try {
+          if (!started) {
+            emitBattleEvent("game:reset-ui", {});
+          }
+        } catch {}
+      }, Math.max(250, Number(seconds) * 1000 + 250));
+    }
+  } catch {}
 }
 
 function extractTimer(resolved) {

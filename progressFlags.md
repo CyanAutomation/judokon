@@ -30,7 +30,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
     - Status: Unimplemented
     - Confidence: Medium — behavior described (no banner) is consistent with an unwired flag
     - Effort to implement: Medium (wire flag to UI, add banner and optional developer tools)
-    - Recommended action: If flag should show a banner + northern dev-only features, implement a single entrypoint (feature flag manager) and a visible banner component guarded by an accessible data attribute.
+    - Recommended action: If flag should show a banner + developer-only features, implement a single entrypoint (feature flag manager) and a visible banner component guarded by an accessible data attribute.
 
 - `enableCardInspector`
     - Status: Not working / not visible

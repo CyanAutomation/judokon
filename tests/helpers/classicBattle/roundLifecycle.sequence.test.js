@@ -39,4 +39,3 @@ describe("classicBattle round lifecycle sequencing", () => {
     expect(idxCooldown === -1 || idxStarted === -1 || idxCooldown < idxStarted).toBe(true);
   });
 });
-

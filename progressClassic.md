@@ -107,6 +107,21 @@ Key:
 - Files to check: `src/helpers/classicBattle/roundUI.js`, `roundManager.js`, orchestrator/state handlers.
 - Validation: automated long-run Playwright scenario and `battleStateProgress` flag/activity logs.
 
+**Phase 1 actions (probe + unit sequencing):**
+
+- Added targeted unit test `tests/helpers/classicBattle/roundLifecycle.sequence.test.js` to assert ordering expectation between cooldown and next round start.
+- Added focused Playwright probe `playwright/battle-classic/long-run-hang-probe.spec.js` to advance multiple rounds and detect disabled stat buttons that never re-enable (potential hang).
+- Ran unit sequencing test — PASS.
+- Ran long-run Playwright probe — FAIL: first clickable stat button remained disabled and never re-enabled, timing out. This indicates a reproducible hang under probe conditions.
+
+**Outcome:**
+
+- The hang probe surfaced a condition where stat buttons remain disabled and do not recover, matching the reported intermittent hang. We now have a focused failing Playwright spec to iterate against in the next phase.
+
+**Next step (Phase 2):**
+
+- Add lifecycle tracing around `startRoundCooldown` and `handleRoundResolvedEvent` in `src/helpers/classicBattle/roundUI.js`, and add a defensive recovery if cooldown completes without `roundStarted` within an expected window.
+
 ---
 
 ## Issue 4 — Incorrect final score when quitting

@@ -53,11 +53,19 @@ test.describe("Classic Battle — Replay flaky detector", () => {
       await clickReplay();
 
       // Immediately after replay, scoreboard should be zero. Use tolerant retries.
-      const playerScore = page.locator("#player-score, [data-testid='player-score'], header #score-display");
-      const opponentScore = page.locator("#opponent-score, [data-testid='opponent-score'], header #score-display");
+      const playerScore = page.locator(
+        "#player-score, [data-testid='player-score'], header #score-display"
+      );
+      const opponentScore = page.locator(
+        "#opponent-score, [data-testid='opponent-score'], header #score-display"
+      );
 
       // If a unified score display is used, just ensure it contains You: 0 and Opponent: 0.
-      const text = (await page.locator("header #score-display").textContent().catch(() => "")) || "";
+      const text =
+        (await page
+          .locator("header #score-display")
+          .textContent()
+          .catch(() => "")) || "";
       if (text) {
         expect(text).toMatch(/You:\s*0/);
         expect(text).toMatch(/Opponent:\s*0/);
