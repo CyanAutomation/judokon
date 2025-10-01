@@ -93,6 +93,31 @@ export function getStatButtons() {
 }
 
 /**
+ * Explicitly enable all stat buttons by clearing disabled state and class.
+ * Safe to call multiple times; only touches known attributes/classes.
+ */
+export function enableStatButtons() {
+  getStatButtons().forEach((btn) => {
+    try {
+      btn.disabled = false;
+      btn.classList.remove("disabled");
+    } catch {}
+  });
+}
+
+/**
+ * Explicitly disable all stat buttons and add disabled class.
+ */
+export function disableStatButtons() {
+  getStatButtons().forEach((btn) => {
+    try {
+      btn.disabled = true;
+      if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
+    } catch {}
+  });
+}
+
+/**
  * Return the DOM element used for displaying round messages.
  *
  * @summary Return the element with id `round-message` or `null` if not found.

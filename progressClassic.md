@@ -124,9 +124,12 @@ Key:
 - Re-ran unit sequencing test — PASS.
 - Re-ran long-run Playwright probe — still FAILS due to buttons remaining disabled; guarded recovery did not trigger under probe timing, suggesting the issue is earlier (buttons never re-enabled before cooldown) or event not firing.
 
-**Outcome:**
+**Phase 3 actions (re-enable on resolution + retest):**
 
-- Probe remains failing; next phase will instrument `handleRoundResolvedEvent` to ensure stat buttons are re-enabled and to log button state transitions, and potentially emit `statButtons:enable` on cooldown completion.
+- In `handleStatSelectedEvent`, explicitly call `disableStatButtons()` alongside emitting `statButtons:disable`.
+- In `handleRoundResolvedEvent`, explicitly call `enableStatButtons()` and emit `statButtons:enable` after resolution scheduling.
+- Re-ran unit sequencing test — PASS.
+- Re-ran long-run Playwright probe — still FAILS (buttons disabled); indicates enable call may be overridden or button state not toggled as expected. Further tracing in `resetStatButtons()` and helpers is required.
 
 **Phase 3 actions (re-enable on resolution + retest):**
 
