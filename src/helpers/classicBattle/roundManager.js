@@ -152,6 +152,18 @@ function getStartRound(store) {
  * @returns {Promise<ReturnType<typeof startRound>>} Result of starting a fresh round.
  */
 export async function handleReplay(store) {
+  // Scoped replay trace for intermittent scoreboard-race debugging. Uses Sentry if available.
+  const trace = (phase, extra = {}) => {
+    try {
+      // Avoid unsilenced console in tests; prefer Sentry if present.
+      // eslint-disable-next-line no-undef
+      if (typeof Sentry !== "undefined" && Sentry?.logger) {
+        // eslint-disable-next-line no-undef
+        Sentry.logger.debug(Sentry.logger.fmt`replay:${phase}` , extra);
+      }
+    } catch {}
+  };
+  trace("begin", { t: Date.now() });
   persistLastJudokaStats(store, store?.currentPlayerJudoka, store?.currentOpponentJudoka);
   // Only create a new engine when one does not already exist. Tests call
   // `_resetForTest` frequently; unconditionally recreating the engine here
@@ -178,7 +190,9 @@ export async function handleReplay(store) {
   safeRound("handleReplay.ensureEngine", ensureEngine, {
     suppressInProduction: true
   });
+  trace("engine_ready");
   bridgeEngineEvents();
+  trace("events_bridged");
   if (typeof window !== "undefined") {
     safeRound(
       "handleReplay.dispatchResetEvent",
@@ -186,6 +200,7 @@ export async function handleReplay(store) {
       { suppressInProduction: true }
     );
   }
+  trace("ui_reset_dispatched");
   // Explicitly reset displayed scores to 0 after recreating the engine so
   // the scoreboard model reflects the fresh match state immediately.
   safeRound(
@@ -193,12 +208,16 @@ export async function handleReplay(store) {
     () => emitBattleEvent("display.score.update", { player: 0, opponent: 0 }),
     { suppressInProduction: true }
   );
+  trace("score_event_zeroed");
   const updateScoreboard = (operation) =>
     safeRound(operation, () => scoreboard.updateScore(0, 0), { suppressInProduction: true });
   updateScoreboard("handleReplay.scoreboardInitialReset");
+  trace("scoreboard_zeroed_initial");
   const startRoundFn = getStartRound(store);
   const res = await startRoundFn();
+  trace("round_started");
   updateScoreboard("handleReplay.scoreboardPostStart");
+  trace("scoreboard_zeroed_postStart");
   return res;
 }
 

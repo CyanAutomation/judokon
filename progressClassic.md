@@ -67,7 +67,21 @@ Key:
 
 **Next step (Phase 2):**
 
-- Add structured, scoped logging around `handleReplay` sequencing and scoreboard updates and create a long-run flaky-replay detector test to surface intermittent races.
+**Phase 2 actions (scoped logging + targeted unit checks):**
+
+- Added scoped replay tracing in `src/helpers/classicBattle/roundManager.js` within `handleReplay()` to record phases: begin, engine_ready, events_bridged, ui_reset_dispatched, score_event_zeroed, scoreboard_zeroed_initial, round_started, scoreboard_zeroed_postStart. Uses Sentry logger when available; silent otherwise (no unsilenced console in tests).
+- Re-ran focused unit tests:
+  - `tests/classicBattle/bootstrap.test.js` → “replay resets scoreboard” — PASS
+  - `tests/classicBattle/page-scaffold.test.js` → “replay draws fresh stats” — PASS
+
+**Outcome:**
+
+- Instrumentation added without regressions. Targeted unit tests continue to pass.
+ - Focused Playwright replay specs pass post-change (no regressions observed).
+
+**Next step (Phase 3):**
+
+- Add a long-run Playwright flaky-replay detector (e.g., repeat replay flow N times, assert scoreboard is zero each iteration) and run just that spec to attempt to surface timing issues.
 
 ---
 
