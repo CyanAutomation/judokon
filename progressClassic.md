@@ -128,6 +128,13 @@ Key:
 
 - Probe remains failing; next phase will instrument `handleRoundResolvedEvent` to ensure stat buttons are re-enabled and to log button state transitions, and potentially emit `statButtons:enable` on cooldown completion.
 
+**Phase 3 actions (re-enable on resolution + retest):**
+
+- In `handleStatSelectedEvent`, explicitly call `disableStatButtons()` alongside emitting `statButtons:disable`.
+- In `handleRoundResolvedEvent`, explicitly call `enableStatButtons()` and emit `statButtons:enable` once resolution logic schedules cooldown and UI reset, to avoid deadlock.
+- Re-ran unit sequencing test — PASS.
+- Re-ran the long-run Playwright probe — still FAILS (buttons remain disabled); indicates enable call may be overridden or class/disabled attribute not toggled by helpers in this context. Further tracing in `resetStatButtons()` and button state management is needed.
+
 ---
 
 ## Issue 4 — Incorrect final score when quitting
