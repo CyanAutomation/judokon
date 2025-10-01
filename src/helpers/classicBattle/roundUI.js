@@ -365,6 +365,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
 export function handleRoundStartedEvent(event, deps = {}) {
   const { applyRoundUI: applyRoundUiFn = applyRoundUI } = deps;
   const { store, roundNumber } = event?.detail || {};
+  try { if (!IS_VITEST) console.debug(`classicBattle.trace event:roundStarted t=${Date.now()} round=${roundNumber}`); } catch {}
   if (store && typeof roundNumber === "number") {
     applyRoundUiFn(store, roundNumber);
     // Final guard to ensure buttons are interactive at round start
@@ -390,7 +391,7 @@ export function handleRoundStartedEvent(event, deps = {}) {
 export function handleStatSelectedEvent(event, deps = {}) {
   const { showSnackbar: showSnackbarFn = showSnackbar } = deps;
   try {
-    if (!IS_VITEST) console.log("INFO: statSelected event handler");
+    if (!IS_VITEST) console.debug(`classicBattle.trace event:statSelected t=${Date.now()}`);
   } catch {}
   const { stat, store, opts } = event?.detail || {};
   if (!stat || !store || !store.statButtonEls) return;
@@ -471,9 +472,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
         })();
   const { store, result } = event?.detail || {};
   if (!result) return;
-  try {
-    if (!IS_VITEST) console.warn("[test] roundResolved event received");
-  } catch {}
+  try { if (!IS_VITEST) console.debug(`classicBattle.trace event:roundResolved t=${Date.now()}`); } catch {}
   try {
     scoreboardApi?.showMessage?.(result.message || "", { outcome: true });
   } catch {}

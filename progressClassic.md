@@ -148,6 +148,12 @@ Key:
 - Unit sequencing test — PASS.
 - Long-run Playwright probe — still FAILS (buttons disabled). Next: instrument listeners that might re-disable (e.g., any `statButtons:disable` consumers) and inspect scheduler timings.
 
+**Phase 6 actions (root-cause instrumentation):**
+
+- Added structured tracing in button helpers (`battleUI`): resetStatButtons (begin/scheduledEnable), enableStatButtons/disableStatButtons (begin/end) with button state snapshots.
+- Added lifecycle traces in `roundUI`: event:roundStarted/statSelected/roundResolved, plus tail enable in applyRoundUI and listeners for statButtons:* to observe unexpected toggles.
+- Unit sequencing test — PASS. Long-run probe — still FAILS; traces will be reviewed to pinpoint where re-disable occurs.
+
 **Phase 3 actions (re-enable on resolution + retest):**
 
 - In `handleStatSelectedEvent`, explicitly call `disableStatButtons()` alongside emitting `statButtons:disable`.

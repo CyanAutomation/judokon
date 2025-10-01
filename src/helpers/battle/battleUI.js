@@ -96,31 +96,50 @@ export function getStatButtons() {
  * Explicitly enable all stat buttons by clearing disabled state and class.
  * Safe to call multiple times; only touches known attributes/classes.
  */
+function snapshotButtons() {
+  const arr = [];
+  getStatButtons().forEach((btn) => {
+    arr.push({
+      stat: btn?.dataset?.stat || "",
+      disabled: !!btn?.disabled,
+      classes: Array.from(btn?.classList || [])
+    });
+  });
+  return arr;
+}
+function trace(tag, extra) {
+  try {
+    if (IS_VITEST) return;
+    const t = Date.now();
+    // eslint-disable-next-line no-console
+    console.debug(
+      `classicBattle.trace ${tag} t=${t} buttons=${JSON.stringify(snapshotButtons())} ${extra ? JSON.stringify(extra) : ""}`
+    );
+  } catch {}
+}
 export function enableStatButtons() {
+  trace("enableStatButtons:begin");
   getStatButtons().forEach((btn) => {
     try {
       btn.disabled = false;
       btn.classList.remove("disabled");
-      try {
-        if (!IS_VITEST) console.log("INFO: enableStatButtons -> enabled", btn.dataset.stat);
-      } catch {}
     } catch {}
   });
+  trace("enableStatButtons:end");
 }
 
 /**
  * Explicitly disable all stat buttons and add disabled class.
  */
 export function disableStatButtons() {
+  trace("disableStatButtons:begin");
   getStatButtons().forEach((btn) => {
     try {
       btn.disabled = true;
       if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
-      try {
-        if (!IS_VITEST) console.log("INFO: disableStatButtons -> disabled", btn.dataset.stat);
-      } catch {}
     } catch {}
   });
+  trace("disableStatButtons:end");
 }
 
 /**
@@ -158,7 +177,7 @@ export function resetStatButtons(
   }
 ) {
   try {
-    if (!IS_VITEST) console.log("INFO: resetStatButtons called");
+    trace("resetStatButtons:begin");
   } catch {}
   const { onFrame, cancel } = scheduler;
   getStatButtons().forEach((btn) => {
@@ -218,6 +237,7 @@ export function resetStatButtons(
     }
     cancelFallback = scheduleImmediate(runEnableOnce);
   });
+  trace("resetStatButtons:scheduledEnable");
 }
 
 let cancelFade;
