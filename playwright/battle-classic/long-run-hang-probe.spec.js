@@ -14,9 +14,11 @@ test.describe("Classic Battle — long-run hang probe", () => {
     const loops = 6;
     for (let i = 0; i < loops; i++) {
       const btn = page.locator(selectors.statButton(0));
+      // Wait until button becomes enabled before clicking to avoid disabled state hangs
+      await expect(btn.first()).toBeEnabled({ timeout: 10000 });
       await btn.first().click();
+      // After click, wait for next round message to be visible again
       await expect(page.locator(selectors.roundMessage())).toBeVisible();
     }
   });
 });
-
