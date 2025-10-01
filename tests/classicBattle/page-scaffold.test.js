@@ -4,8 +4,27 @@ import { createTestController } from "../../src/utils/scheduler.js";
 
 const engineMock = vi.hoisted(() => ({
   listeners: new Map(),
-  roundsPlayed: 0
+  roundsPlayed: 0,
+  on(event, handler) {
+    const existing = this.listeners.get(event);
+    if (typeof existing === "function") {
+      const composite = (...args) => {
+        try {
+          existing(...args);
+        } catch {}
+        handler(...args);
+      };
+      this.listeners.set(event, composite);
+    } else {
+      this.listeners.set(event, handler);
+    }
+  },
+  off(event) {
+    this.listeners.delete(event);
+  }
 }));
+
+const currentEngineRef = vi.hoisted(() => ({ instance: null }));
 
 const modalMock = vi.hoisted(() => ({
   onStart: null
@@ -23,17 +42,43 @@ vi.mock("../../src/helpers/classicBattle/battleEvents.js", async () => {
 });
 
 vi.mock("../../src/helpers/battleEngineFacade.js", () => {
+  const engineCreatedListeners = new Set();
+  const notifyEngineCreated = (engine) => {
+    for (const listener of engineCreatedListeners) {
+      try {
+        listener(engine);
+      } catch {}
+    }
+  };
+
   return {
     STATS: ["Power", "Speed", "Skill"],
     createBattleEngine: vi.fn(() => {
       engineMock.listeners.clear();
-      return {};
+      const bridgeKey = Symbol.for("classicBattle.bridgeEngineEvents.attached");
+      delete engineMock[bridgeKey];
+      const engine = {
+        on: engineMock.on.bind(engineMock),
+        off: engineMock.off.bind(engineMock)
+      };
+      currentEngineRef.instance = engine;
+      notifyEngineCreated(engine);
+      return engine;
     }),
     on: vi.fn((event, handler) => {
-      engineMock.listeners.set(event, handler);
+      engineMock.on(event, handler);
     }),
+    requireEngine: vi.fn(() => currentEngineRef.instance),
     getRoundsPlayed: vi.fn(() => engineMock.roundsPlayed),
-    isMatchEnded: vi.fn(() => false)
+    isMatchEnded: vi.fn(() => false),
+    onEngineCreated: vi.fn((listener) => {
+      if (typeof listener === "function") {
+        engineCreatedListeners.add(listener);
+      }
+      return () => {
+        engineCreatedListeners.delete(listener);
+      };
+    })
   };
 });
 

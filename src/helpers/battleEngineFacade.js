@@ -58,6 +58,39 @@ let battleEngine = null;
 // Use a WeakMap to store battle engines per window to avoid sharing across pages
 const battleEngines = new WeakMap();
 
+/** @type {Set<(engine: IBattleEngine|null) => void>} */
+const engineCreatedListeners = new Set();
+
+function notifyEngineCreated(engine) {
+  if (engineCreatedListeners.size === 0) return;
+  for (const listener of engineCreatedListeners) {
+    try {
+      listener(engine);
+    } catch {}
+  }
+}
+
+/**
+ * Register a callback invoked whenever a battle engine instance is created.
+ *
+ * @pseudocode
+ * 1. Ignore registrations when `listener` is not a function.
+ * 2. Add the listener to an internal `Set`.
+ * 3. Return an unsubscribe function that removes the listener.
+ *
+ * @param {(engine: IBattleEngine|null) => void} listener
+ * @returns {() => void} Unsubscribe handle.
+ */
+export function onEngineCreated(listener) {
+  if (typeof listener !== "function") {
+    return () => {};
+  }
+  engineCreatedListeners.add(listener);
+  return () => {
+    engineCreatedListeners.delete(listener);
+  };
+}
+
 /**
  * Internal guard that returns the active engine or throws if none exists.
  *
@@ -109,6 +142,7 @@ export function createBattleEngine(config = {}) {
   const currentEngine = typeof window !== "undefined" ? battleEngines.get(window) : battleEngine;
   if (currentEngine && !forceCreate && !isTest) {
     logger.log("battleEngineFacade: returning existing engine instance");
+    notifyEngineCreated(currentEngine);
     return currentEngine;
   }
 
@@ -128,6 +162,7 @@ export function createBattleEngine(config = {}) {
       setTestMode({ enabled: true, seed: Number(config.seed) });
     }
   } catch {}
+  notifyEngineCreated(battleEngine);
   return battleEngine;
 }
 
