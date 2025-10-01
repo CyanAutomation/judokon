@@ -77,7 +77,7 @@ Key:
 **Outcome:**
 
 - Instrumentation added without regressions. Targeted unit tests continue to pass.
- - Focused Playwright replay specs pass post-change (no regressions observed).
+- Focused Playwright replay specs pass post-change (no regressions observed).
 
 **Phase 3 actions (looping Playwright flaky detector):**
 

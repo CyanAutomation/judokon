@@ -16,6 +16,7 @@ import { createRoundTimer as defaultCreateRoundTimer } from "../timers/createRou
 import { computeNextRoundCooldown } from "../timers/computeNextRoundCooldown.js";
 import { attachCooldownRenderer as defaultAttachCooldownRenderer } from "../CooldownRenderer.js";
 import { syncScoreDisplay } from "./uiHelpers.js";
+import { enableStatButtons, disableStatButtons } from "../battle/index.js";
 import { runWhenIdle } from "./idleCallback.js";
 import { runAfterFrames } from "../../utils/rafUtils.js";
 import { getOpponentPromptTimestamp } from "./opponentPromptTracker.js";
@@ -387,6 +388,9 @@ export function handleStatSelectedEvent(event, deps = {}) {
       } catch {}
     }
   }
+  try {
+    disableStatButtons?.();
+  } catch {}
   emitBattleEvent("statButtons:disable");
 }
 
@@ -494,6 +498,12 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   } else if (!frameSchedulingSucceeded) {
     runResetOnce();
   }
+  // Proactively enable stat buttons on resolution to prevent deadlock,
+  // UI will disable them again on selection in the next round.
+  try {
+    enableStatButtons?.();
+    emitBattleEvent("statButtons:enable");
+  } catch {}
   const shouldCleanupDelayFlag = !!(store && typeof store === "object");
   try {
     if (result.matchEnded) {
