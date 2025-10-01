@@ -158,10 +158,13 @@ export function resetStatButtons(
   getStatButtons().forEach((btn) => {
     btn.classList.remove("selected");
     btn.style.removeProperty("background-color");
+    // Ensure disabled class is consistent with disabled attribute
     btn.disabled = true;
+    if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
     void btn.offsetWidth;
     const enableButton = () => {
       btn.disabled = false;
+      btn.classList.remove("disabled");
       btn.style.backgroundColor = "";
       btn.blur();
     };

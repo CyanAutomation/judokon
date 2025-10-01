@@ -129,7 +129,17 @@ Key:
 - In `handleStatSelectedEvent`, explicitly call `disableStatButtons()` alongside emitting `statButtons:disable`.
 - In `handleRoundResolvedEvent`, explicitly call `enableStatButtons()` and emit `statButtons:enable` after resolution scheduling.
 - Re-ran unit sequencing test — PASS.
-- Re-ran long-run Playwright probe — still FAILS (buttons disabled); indicates enable call may be overridden or button state not toggled as expected. Further tracing in `resetStatButtons()` and helpers is required.
+ - Re-ran long-run Playwright probe — still FAILS (buttons disabled); indicates enable call may be overridden or button state not toggled as expected. Further tracing in `resetStatButtons()` and helpers is required.
+
+**Phase 4 actions (resetStatButtons alignment + retest):**
+
+- Updated `resetStatButtons` to keep class and attribute state aligned (add `disabled` class when disabling; remove it when enabling on the next frame).
+- Re-ran unit sequencing test — PASS.
+- Re-ran long-run Playwright probe — still FAILS with disabled button, confirming the problem likely precedes or bypasses `resetStatButtons` re-enable cycle.
+
+**Outcome:**
+
+- Hang probe remains failing; next phase will add targeted tracing in `roundUI.applyRoundUI` and in button helpers to log enable/disable transitions and verify `resetStatButtons` is invoked between rounds. Will also consider emitting a `statButtons:enable` in `handleRoundStartedEvent` as a final guard.
 
 **Phase 3 actions (re-enable on resolution + retest):**
 

@@ -15,13 +15,6 @@ Below I document each flag's status, my confidence in the QA observation (based 
 
 ## Critical blocker
 
-### Classic Battle page is unplayable
-
-- Issue: Navigating to `battleClassic.html` produces a page where the primary "Next"/progress controls are disabled and a match cannot be started.
-- Impact: High — blocks verification of UI flags (for example `opponentDelayMessage`, `battleStateBadge`, `battleStateProgress`, `skipRoundCooldown`) and prevents UI-level QA for classic mode.
-- Confidence: High (explicit manual reproduction in QA notes).
-- Short-term mitigation: Add a failing test that reproduces the broken flow to capture the bug and prevent regressions once fixed.
-
 ## Flag status, confidence & feasibility
 
 Notes: "Confidence" indicates how likely the reported behavior is accurate given the QA notes and typical code patterns (High / Medium / Low). "Effort" is a rough implementation estimate (Low / Medium / High).
@@ -88,8 +81,6 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Feasibility analysis of the original fix plan
 
-- "Fix Classic Battle" — Feasible and high priority. Root cause could be a regression in event wiring, DOM queries, or a runtime error during initialization. Start by reproducing in a failing unit/integration test and instrumenting console errors. Effort: Medium.
-
 - "Decouple Hotkeys" — Feasible and low risk. This is a focused refactor: isolate hotkey registration and feature-flag checks. Add automated tests for keyboard interactions. Effort: Low.
 
 - UI/UX improvements (grouping flags, feedback, accessibility) — Feasible; mostly UI work and content updates. Effort: Low → Medium depending on accessibility remediation needed.
@@ -97,10 +88,6 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 - "Add Flag Metadata" and `data-feature-*` hooks — Feasible and high value for QA and tests. Effort: Low.
 
 ## Concrete prioritized implementation plan (short, testable steps)
-
-1. Capture the Classic Battle failure in an automated test and add withMutedConsole helper to collect errors. (owner: QA/dev) — Effort: Medium — Priority: P0
-     - Add a Playwright or vitest integration test that opens `battleClassic.html`, attempts to start a match, and asserts the Next button becomes enabled.
-     - Collect console errors and stack traces; add to the bug report.
 
 2. Minimal fix for Classic Battle hot path. (owner: core eng) — Effort: Medium — Priority: P0
      - Inspect initialization path (static imports only in hot paths). Look for recent changes to any battle initialization code and re-introduce a safe guard or early return.
@@ -134,16 +121,7 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ## Risk and rollback
 
-- Fixing Classic Battle is low-risk to the broader codebase if changes are limited to initialization guards and static imports. However, ensure regression tests exist before merging.
 - Adding UI features should include feature-flag gating so they can be turned off quickly.
-
-## Next steps (what I can do if you want me to proceed)
-
-1. Reproduce and add an automated test for the Classic Battle bug (I can create the Playwright or vitest test and the failing reproduction).  
-2. Implement the hotkey decoupling and a small PR that exposes `data-feature-*` attributes.  
-3. Implement low-risk UI stubs for `enableTestMode`, `enableCardInspector`, and `tooltipOverlayDebug` to make flags testable.
-
-If you'd like I can start with step 1 (add the failing test and capture console errors) — tell me whether you prefer Vitest or Playwright for the initial repro and I'll proceed.
 
 ---
 
@@ -153,4 +131,3 @@ If you'd like I can start with step 1 (add the failing test and capture console 
 - Feasibility analysis of the fix plan: Done (effort estimates + prioritized steps).  
 - Good Markdown formatting and revision: Done (this file).  
 
-Please review and tell me which next step you'd like me to take; I can open PRs with the tests and fixes as described.
