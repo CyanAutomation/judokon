@@ -118,9 +118,15 @@ Key:
 
 - The hang probe surfaced a condition where stat buttons remain disabled and do not recover, matching the reported intermittent hang. We now have a focused failing Playwright spec to iterate against in the next phase.
 
-**Next step (Phase 2):**
+**Phase 2 actions (lifecycle tracing + guarded recovery):**
 
-- Add lifecycle tracing around `startRoundCooldown` and `handleRoundResolvedEvent` in `src/helpers/classicBattle/roundUI.js`, and add a defensive recovery if cooldown completes without `roundStarted` within an expected window.
+- Added guarded recovery in `src/helpers/classicBattle/roundUI.js` inside `startRoundCooldown`: after timer completion, if no `roundStarted` is observed within an expected window, emit `game:reset-ui` to re-enter the safe path.
+- Re-ran unit sequencing test — PASS.
+- Re-ran long-run Playwright probe — still FAILS due to buttons remaining disabled; guarded recovery did not trigger under probe timing, suggesting the issue is earlier (buttons never re-enabled before cooldown) or event not firing.
+
+**Outcome:**
+
+- Probe remains failing; next phase will instrument `handleRoundResolvedEvent` to ensure stat buttons are re-enabled and to log button state transitions, and potentially emit `statButtons:enable` on cooldown completion.
 
 ---
 
