@@ -152,7 +152,8 @@ Key:
 
 - Added structured tracing in button helpers (`battleUI`): resetStatButtons (begin/scheduledEnable), enableStatButtons/disableStatButtons (begin/end) with button state snapshots.
 - Added lifecycle traces in `roundUI`: event:roundStarted/statSelected/roundResolved, plus tail enable in applyRoundUI and listeners for statButtons:* to observe unexpected toggles.
-- Unit sequencing test — PASS. Long-run probe — still FAILS; traces will be reviewed to pinpoint where re-disable occurs.
+- Added cooldown lifecycle traces in `roundUI.startRoundCooldown`: cooldown:start, cooldown:end, cooldown:observedRoundStarted, cooldown:recoveryResetUI when applicable.
+- Unit sequencing test — PASS. Long-run probe — still FAILS; error context indicates machineState=cooldown with Time Left 0s and all buttons disabled at Round 2 → likely missing `roundStarted` emission after cooldown.
 
 **Phase 3 actions (re-enable on resolution + retest):**
 
