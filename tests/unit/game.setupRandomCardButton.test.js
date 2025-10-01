@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
-import { waitForUnhandledRejectionProcessing } from "../utils/waitForUnhandledRejectionProcessing.js";
+import { flushUnhandledRejections } from "../utils/flushUnhandledRejections.js";
 
 const createDeferred = () => {
   let resolve;
@@ -98,8 +98,8 @@ describe("setupRandomCardButton", () => {
       process.off("unhandledRejection", handleUnhandledRejection);
     }
 
-    // Give Node.js a tick to surface the captured unhandled rejection before checking it.
-    await waitForUnhandledRejectionProcessing();
+    // Give Node.js a nextTick (not just a microtask flush) to surface the captured unhandled rejection.
+    await flushUnhandledRejections();
 
     expect(unhandledRejections).toEqual([error]);
   });
