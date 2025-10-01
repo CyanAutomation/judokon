@@ -1,26 +1,85 @@
-QA Report for Feature Flags in src/pages/settings.html
+# QA Report: Feature Flags
 
-| Flag (config key)                                 | Steps to reproduce & observations                                                                           | Issue                                                                                                                                                                                                                                                                                                        |                                                                                           |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| **enableTestMode**                                | Enabled **Test Mode** in settings. Reloaded the page to ensure persistence, then launched a Classic Battle. | No `Test Mode Active` banner or other deterministic testing indicators appeared. Gameplay remained unchanged.                                                                                                                                                                                                | **Unimplemented.** Flag toggles in UI but has no visible effect.                          |
-| **enableCardInspector**                           | Enabled **Card Inspector** and returned to battle pages.                                                    | There was no collapsible panel showing raw card JSON when viewing cards or during battle.                                                                                                                                                                                                                    | **Not working.** Flag does not expose card inspection tools.                              |
-| **viewportSimulation**                            | Enabled **Viewport Simulation**.                                                                            | No UI for selecting device presets or altering page width appeared in settings or battle pages.                                                                                                                                                                                                              | **Missing UI.** Flag toggles but does nothing.                                            |
-| **tooltipOverlayDebug**                           | Enabled **Tooltip Overlay Debug** and hovered over controls while tooltips were on.                         | No outlines highlighting tooltip targets were shown in any page.                                                                                                                                                                                                                                             | **Non‑functional.**                                                                       |
-| **battleStateBadge**                              | Enabled **Battle State Badge**, started a battle.                                                           | No badge indicating the current state appeared in the battle header; scoreboard remained the same.                                                                                                                                                                                                           | **Unimplemented.**                                                                        |
-| **battleStateProgress**                           | Enabled **Battle State Progress**.                                                                          | Expected sequence of states beneath the battle area never appeared; CLI logs were unaffected.                                                                                                                                                                                                                | **Non‑functional.**                                                                       |
-| **skipRoundCooldown**                             | Enabled **Skip Round Cooldown** in settings.                                                                | In the CLI battle, after each round the logs still included a `cooldown` state and there was a delay before the next round.                                                                                                                                                                                  | **Does not work.** Cooldown persists.                                                     |
-| **roundStore**                                    | The flag defaults to `true`.  Toggled it off and on.                                                        | Regardless of the setting, leaving a CLI match and starting a new one always reset the score to 0.  No persistent round data was observed.                                                                                                                                                                   | **No observable effect.** Possibly unimplemented or only intended for future refactoring. |
-| **opponentDelayMessage**                          | Enabled and disabled **Opponent Delay Message** while observing both CLI and classic battle.                | In the CLI there was no “Opponent is choosing…” message, so toggling had no effect; the Classic Battle page is broken (see below), preventing verification.                                                                                                                                                  | **Unable to verify** due to missing UI feedback.                                          |
-| **statHotkeys** interaction with **cliShortcuts** | Played a CLI match with `statHotkeys` ON and `cliShortcuts` OFF.                                            | Hotkeys did not function when CLI shortcuts were disabled. It appears that both flags are coupled; statHotkeys has no effect unless CLI shortcuts is enabled.                                                                                                                                                | **Interaction issue.** Documented coupling is not clear to users.                         |
-| **Classic Battle page broken**                    | Navigated to `battleClassic.html` using the “Classic Battle” tile.                                          | The page displayed an empty white card and disabled `Next` button; there was no match length selection and gameplay could not start.  This prevented testing of many UI‑centric flags such as `opponentDelayMessage`, `battleStateBadge`, `battleStateProgress` and `skipRoundCooldown` in the non‑CLI mode. | **Critical bug.** Classic battle is not playable.                                         |
+**Date:** October 1, 2025
+**Source File:** `src/pages/settings.html`
 
-Improvement opportunities
-Group flags by category. The advanced settings list mixes developer/debug toggles with user‑facing options (e.g., statHotkeys and autoSelect). Creating sections such as Gameplay Enhancements (stat hotkeys, auto‑select), Debugging Tools (test mode, card inspector, layout outlines, verbose logging), and Experimental Features (viewport simulation, battle state badge/progress, round store) would make the UI clearer.
-Add metadata in settings.json. Extending each flag with fields such as stability (alpha/beta/stable), description, owner and lastUpdated would aid developers in managing feature lifecycles and help QA understand risk levels.
-Expose data‑feature-* hooks. Adding unique data‑attributes to each toggle and to the UI elements they affect would make automated tests more reliable and help end‑to‑end testing frameworks quickly locate and toggle flags.
-Fallback behaviour or status messages. For unimplemented flags (test mode, viewport simulation, card inspector, etc.), display a non‑intrusive message like “Coming soon” or disable the toggle until the feature is functional. Users currently have no feedback that the flag does nothing.
-Improve accessibility. Keyboard navigation between toggles is inconsistent; the focus indicator is not visible when tabbing through the settings page. Toggling via space/enter should work, and each switch should have an aria-label referencing its tooltip. Screen‑reader announcements confirming the state change would improve usability for disabled players.
-Address performance of debug flags. Enabling Layout Debug Outlines overlays red borders across the entire page. While useful, it causes noticeable rendering jitter. Provide a lightweight alternative (outline only hovered elements) or warn users that performance may degrade.
-Clarify coupling between statHotkeys and cliShortcuts. If hotkeys only work when CLI shortcuts are enabled, the UI should either combine the flags or clearly document the dependency to avoid confusion.
-Surface non‑developer flags more prominently. Useful gameplay enhancers like statHotkeys and autoSelect are buried in the advanced section. Consider moving them to the general settings or adding quick‑access toggles on the battle screen.
+## 1. Executive Summary
 
+A review of the feature flags in the advanced settings shows that most are non-functional. Several key flags are either unimplemented or broken. A critical bug on the Classic Battle page (`battleClassic.html`) blocks testing of UI-centric features. The settings UI also has opportunities for improved clarity, developer experience, and accessibility.
+
+## 2. Critical Blockers
+
+### Classic Battle Page is Unplayable
+-   **Issue:** Navigating to `battleClassic.html` results in a broken page with a disabled "Next" button and no way to start a match.
+-   **Impact:** This is a **critical bug** that blocks testing for `opponentDelayMessage`, `battleStateBadge`, `battleStateProgress`, and `skipRoundCooldown` in the classic UI.
+
+## 3. Feature Flag Status
+
+### Debug & Testing Flags
+
+-   **`enableTestMode`**
+    -   **Status:** 🔴 **Unimplemented**
+    -   **Observations:** Enabling the flag has no visible effect. No "Test Mode Active" banner appears, and gameplay is unchanged.
+
+-   **`enableCardInspector`**
+    -   **Status:** 🔴 **Not Working**
+    -   **Observations:** No collapsible panel for inspecting raw card JSON appears on any screen.
+
+-   **`viewportSimulation`**
+    -   **Status:** 🔴 **Unimplemented**
+    -   **Observations:** The flag toggles, but no UI for device simulation appears.
+
+-   **`tooltipOverlayDebug`**
+    -   **Status:** 🔴 **Not Working**
+    -   **Observations:** No debug outlines are shown when hovering over tooltips.
+
+-   **`battleStateBadge`**
+    -   **Status:** 🔴 **Unimplemented**
+    -   **Observations:** No state badge appears in the battle header.
+
+-   **`battleStateProgress`**
+    -   **Status:** 🔴 **Not Working**
+    -   **Observations:** The expected state sequence display beneath the battle area never appears.
+
+### Gameplay & Engine Flags
+
+-   **`skipRoundCooldown`**
+    -   **Status:** 🔴 **Not Working**
+    -   **Observations:** The `cooldown` state and associated delay persist in CLI battles even when this flag is enabled.
+
+-   **`roundStore`**
+    -   **Status:** 🟡 **No Observable Effect**
+    -   **Observations:** Toggling the flag does not change behavior. Leaving and restarting a CLI match always resets the score. Its purpose is unclear.
+
+-   **`opponentDelayMessage`**
+    -   **Status:** ⚪ **Unable to Verify**
+    -   **Observations:** The CLI has no corresponding UI element. Verification in Classic Battle is blocked by the broken page bug.
+
+### Interaction Issues
+
+-   **`statHotkeys` & `cliShortcuts`**
+    -   **Status:** 🟡 **Interaction Issue**
+    -   **Observations:** `statHotkeys` only function if `cliShortcuts` is also enabled. This coupling is not communicated to the user.
+
+## 4. Recommendations & Fix Plan
+
+### High-Priority Fixes
+1.  **Fix Classic Battle:** Prioritize fixing the `battleClassic.html` page to unblock further QA on UI-related features.
+2.  **Decouple Hotkeys:** Separate the logic for `statHotkeys` and `cliShortcuts` or combine them into a single, clear "Enable Hotkeys" flag.
+
+### UI & UX Improvements
+-   **Group Flags by Category:** Reorganize the settings page into logical sections:
+    -   **Gameplay:** `statHotkeys`, `autoSelect`.
+    -   **Debugging Tools:** `enableTestMode`, `cardInspector`, `layoutOutlines`, `verboseLogging`.
+    -   **Experimental:** `viewportSimulation`, `battleStateBadge`, `roundStore`.
+-   **Provide User Feedback:** For unimplemented flags, either disable the toggle or show a "Coming Soon" message to manage user expectations.
+-   **Improve Accessibility:**
+    -   Ensure consistent keyboard navigation and a visible focus indicator.
+    -   Allow toggling via Space/Enter keys.
+    -   Add `aria-label` attributes to each switch and announce state changes for screen readers.
+-   **Surface Useful Flags:** Move gameplay enhancers like `statHotkeys` out of the advanced section to a more prominent location.
+
+### Developer Experience & Testability
+-   **Add Flag Metadata:** Extend `settings.json` to include `description`, `stability` (`alpha`, `beta`), `owner`, and `lastUpdated` fields for better lifecycle management.
+-   **Expose `data-feature-*` Hooks:** Add unique data attributes to toggles and the UI elements they control to create reliable hooks for automated testing.
+-   **Address Debug Performance:** Investigate the rendering jitter caused by `Layout Debug Outlines`. Consider a lighter-weight alternative, like outlining only on hover.

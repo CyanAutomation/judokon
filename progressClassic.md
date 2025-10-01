@@ -79,9 +79,17 @@ Key:
 - Instrumentation added without regressions. Targeted unit tests continue to pass.
  - Focused Playwright replay specs pass post-change (no regressions observed).
 
-**Next step (Phase 3):**
+**Phase 3 actions (looping Playwright flaky detector):**
 
-- Add a long-run Playwright flaky-replay detector (e.g., repeat replay flow N times, assert scoreboard is zero each iteration) and run just that spec to attempt to surface timing issues.
+- Added new spec `playwright/battle-classic/replay-flaky-detector.spec.js` that:
+  - Aligns with existing battleClassic setup (round select modal + points-to-win=1)
+  - Ends a round, clicks Replay, and asserts scoreboard is zero before the next round, repeating 3× to surface timing issues.
+- Ran focused unit test again to ensure no regressions: `tests/classicBattle/bootstrap.test.js` → PASS.
+- Ran only the new Playwright detector spec — PASS (no flake surfaced in this run).
+
+**Outcome:**
+
+- Detector spec added; no regressions observed. The intermittent issue did not reproduce during this limited loop; further stress may be required if reports persist.
 
 ---
 
