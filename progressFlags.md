@@ -90,15 +90,15 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 ## Concrete prioritized implementation plan (short, testable steps)
 
 2. Minimal fix for Classic Battle hot path. (owner: core eng) — Effort: Medium — Priority: P0
-     - Inspect initialization path (static imports only in hot paths). Look for recent changes to any battle initialization code and re-introduce a safe guard or early return.
-     - Add a regression test (unit + integration).
+   - Inspect initialization path (static imports only in hot paths). Look for recent changes to any battle initialization code and re-introduce a safe guard or early return.
+   - Add a regression test (unit + integration).
 
 3. Decouple or consolidate hotkeys. (owner: UX/core eng) — Effort: Low — Priority: P1
-     - Extract hotkey registration into its own module. If `statHotkeys` requires `cliShortcuts`, display helper text or combine into one flag.
+   - Extract hotkey registration into its own module. If `statHotkeys` requires `cliShortcuts`, display helper text or combine into one flag.
 
 4. Add `data-feature-*` hooks and settings metadata. (owner: infra/devtools) — Effort: Low — Priority: P1
-     - Update settings JSON schema to include `description`, `stability`, `owner`, `lastUpdated`.
-     - Add `data-feature-<name>` attributes to toggles and `data-hook-<name>` to UI elements they control.
+   - Update settings JSON schema to include `description`, `stability`, `owner`, `lastUpdated`.
+   - Add `data-feature-<name>` attributes to toggles and `data-hook-<name>` to UI elements they control.
 
 5. Implement small, visible debug components behind flags (banner, inspector, tooltip outlines). (owner: feature owner) — Effort: Low → Medium — Priority: P2
 
@@ -127,6 +127,6 @@ Notes: "Confidence" indicates how likely the reported behavior is accurate given
 
 ### Requirements coverage
 
-- Review and assessment of the QA report: Done (accuracy/confidence noted per flag).  
-- Feasibility analysis of the fix plan: Done (effort estimates + prioritized steps).  
-- Good Markdown formatting and revision: Done (this file).  
+- Review and assessment of the QA report: Done (accuracy/confidence noted per flag).
+- Feasibility analysis of the fix plan: Done (effort estimates + prioritized steps).
+- Good Markdown formatting and revision: Done (this file).

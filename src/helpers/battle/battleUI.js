@@ -101,7 +101,9 @@ export function enableStatButtons() {
     try {
       btn.disabled = false;
       btn.classList.remove("disabled");
-      try { if (!IS_VITEST) console.log("INFO: enableStatButtons -> enabled", btn.dataset.stat); } catch {}
+      try {
+        if (!IS_VITEST) console.log("INFO: enableStatButtons -> enabled", btn.dataset.stat);
+      } catch {}
     } catch {}
   });
 }
@@ -114,7 +116,9 @@ export function disableStatButtons() {
     try {
       btn.disabled = true;
       if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
-      try { if (!IS_VITEST) console.log("INFO: disableStatButtons -> disabled", btn.dataset.stat); } catch {}
+      try {
+        if (!IS_VITEST) console.log("INFO: disableStatButtons -> disabled", btn.dataset.stat);
+      } catch {}
     } catch {}
   });
 }

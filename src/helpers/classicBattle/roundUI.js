@@ -162,13 +162,16 @@ export async function startRoundCooldown(resolved, config = {}) {
       };
       target.addEventListener("roundStarted", onStart);
       // After a short post-cooldown buffer, check if round started; if not, recover.
-      setTimeout(() => {
-        try {
-          if (!started) {
-            emitBattleEvent("game:reset-ui", {});
-          }
-        } catch {}
-      }, Math.max(250, Number(seconds) * 1000 + 250));
+      setTimeout(
+        () => {
+          try {
+            if (!started) {
+              emitBattleEvent("game:reset-ui", {});
+            }
+          } catch {}
+        },
+        Math.max(250, Number(seconds) * 1000 + 250)
+      );
     }
   } catch {}
 }
@@ -284,7 +287,12 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
     if (!IS_VITEST) console.log("INFO: applyRoundUI called for round", roundNumber);
   } catch {}
   resetStatButtons();
-  try { if (!IS_VITEST) console.log("INFO: applyRoundUI -> requested resetStatButtons (will re-enable on next frame)"); } catch {}
+  try {
+    if (!IS_VITEST)
+      console.log(
+        "INFO: applyRoundUI -> requested resetStatButtons (will re-enable on next frame)"
+      );
+  } catch {}
   // Do not force-disable the Next button here; it should remain
   // ready after cooldown so tests and users can advance immediately.
   const roundResultEl = document.getElementById("round-result");
@@ -697,10 +705,14 @@ export function bindRoundUIEventHandlers() {
     const target = getBattleEventTarget();
     if (target && typeof target.addEventListener === "function") {
       target.addEventListener("statButtons:disable", () => {
-        try { if (!IS_VITEST) console.log("INFO: event statButtons:disable observed"); } catch {}
+        try {
+          if (!IS_VITEST) console.log("INFO: event statButtons:disable observed");
+        } catch {}
       });
       target.addEventListener("statButtons:enable", () => {
-        try { if (!IS_VITEST) console.log("INFO: event statButtons:enable observed"); } catch {}
+        try {
+          if (!IS_VITEST) console.log("INFO: event statButtons:enable observed");
+        } catch {}
       });
     }
   } catch {}

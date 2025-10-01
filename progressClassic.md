@@ -129,7 +129,7 @@ Key:
 - In `handleStatSelectedEvent`, explicitly call `disableStatButtons()` alongside emitting `statButtons:disable`.
 - In `handleRoundResolvedEvent`, explicitly call `enableStatButtons()` and emit `statButtons:enable` after resolution scheduling.
 - Re-ran unit sequencing test — PASS.
- - Re-ran long-run Playwright probe — still FAILS (buttons disabled); indicates enable call may be overridden or button state not toggled as expected. Further tracing in `resetStatButtons()` and helpers is required.
+- Re-ran long-run Playwright probe — still FAILS (buttons disabled); indicates enable call may be overridden or button state not toggled as expected. Further tracing in `resetStatButtons()` and helpers is required.
 
 **Phase 4 actions (resetStatButtons alignment + retest):**
 
@@ -139,7 +139,7 @@ Key:
 
 **Outcome:**
 
- - Hang probe remains failing; added more tracing and a final guard in `handleRoundStartedEvent` to ensure enable on round start, but the probe still fails. This suggests another component re-disables buttons post-start.
+- Hang probe remains failing; added more tracing and a final guard in `handleRoundStartedEvent` to ensure enable on round start, but the probe still fails. This suggests another component re-disables buttons post-start.
 
 **Phase 5 actions (tracing + start guard):**
 
