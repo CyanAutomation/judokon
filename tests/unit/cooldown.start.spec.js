@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as roundManager from "@/helpers/classicBattle/roundManager.js";
+import { waitForUnhandledRejectionProcessing } from "../utils/waitForUnhandledRejectionProcessing.js";
 
 describe("cooldown auto-advance wiring", () => {
   let bus;
@@ -111,7 +112,8 @@ describe("cooldown auto-advance wiring", () => {
     // Fast-forward timers to ensure expiry triggers
     await vi.runAllTimersAsync();
     await flushScheduler();
-    await new Promise((resolve) => process.nextTick(resolve));
+    // Allow the unhandled rejection handler registered in the test to run before assertions.
+    await waitForUnhandledRejectionProcessing();
     // Ready promise should be present
     expect(controls).toBeTruthy();
     expect(typeof controls.ready?.then).toBe("function");
