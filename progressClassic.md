@@ -139,7 +139,14 @@ Key:
 
 **Outcome:**
 
-- Hang probe remains failing; next phase will add targeted tracing in `roundUI.applyRoundUI` and in button helpers to log enable/disable transitions and verify `resetStatButtons` is invoked between rounds. Will also consider emitting a `statButtons:enable` in `handleRoundStartedEvent` as a final guard.
+ - Hang probe remains failing; added more tracing and a final guard in `handleRoundStartedEvent` to ensure enable on round start, but the probe still fails. This suggests another component re-disables buttons post-start.
+
+**Phase 5 actions (tracing + start guard):**
+
+- Added trace logs in `enableStatButtons`/`disableStatButtons` and `applyRoundUI`.
+- Added a final guard in `handleRoundStartedEvent` to call `enableStatButtons()` and emit `statButtons:enable` at round start.
+- Unit sequencing test — PASS.
+- Long-run Playwright probe — still FAILS (buttons disabled). Next: instrument listeners that might re-disable (e.g., any `statButtons:disable` consumers) and inspect scheduler timings.
 
 **Phase 3 actions (re-enable on resolution + retest):**
 

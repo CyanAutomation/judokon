@@ -284,6 +284,7 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
     if (!IS_VITEST) console.log("INFO: applyRoundUI called for round", roundNumber);
   } catch {}
   resetStatButtons();
+  try { if (!IS_VITEST) console.log("INFO: applyRoundUI -> requested resetStatButtons (will re-enable on next frame)"); } catch {}
   // Do not force-disable the Next button here; it should remain
   // ready after cooldown so tests and users can advance immediately.
   const roundResultEl = document.getElementById("round-result");
@@ -352,6 +353,12 @@ export function handleRoundStartedEvent(event, deps = {}) {
   const { store, roundNumber } = event?.detail || {};
   if (store && typeof roundNumber === "number") {
     applyRoundUiFn(store, roundNumber);
+    // Final guard to ensure buttons are interactive at round start
+    try {
+      enableStatButtons?.();
+      emitBattleEvent("statButtons:enable");
+      if (!IS_VITEST) console.log("INFO: handleRoundStartedEvent -> ensured stat buttons enabled");
+    } catch {}
   }
 }
 
