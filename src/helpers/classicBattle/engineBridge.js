@@ -1,6 +1,6 @@
 import { emitBattleEvent } from "./battleEvents.js";
 import * as engineFacade from "../battleEngineFacade.js";
-import { STATS } from "../battleEngineFacade.js";
+import { STATS, onEngineCreated } from "../battleEngineFacade.js";
 import { updateScore } from "../setupScoreboard.js";
 
 const trackedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
@@ -85,7 +85,6 @@ export function bridgeEngineEvents() {
     const onEngine = engineFacade.on;
     if (typeof onEngine !== "function") return;
     onEngine("roundEnded", handleRoundEnded);
-    roundEndedRegistered = true;
     onEngine("matchEnded", handleMatchEndedLegacy);
     onEngine("roundStarted", handleRoundStarted);
     onEngine("timerTick", handleTimerTick);
@@ -97,34 +96,10 @@ export function bridgeEngineEvents() {
   } catch {}
 }
 
-const originalCreateBattleEngine =
-  typeof engineFacade.createBattleEngine === "function" ? engineFacade.createBattleEngine : null;
-const originalOnEngine =
-  typeof engineFacade.on === "function" ? engineFacade.on : null;
-let roundEndedRegistered = false;
-
-if (originalOnEngine) {
-  engineFacade.on = function wrappedOn(event, handler) {
-    const result = originalOnEngine(event, handler);
-    if (event === "roundEnded") {
-      roundEndedRegistered = true;
-    } else if (event === "matchEnded" && !roundEndedRegistered) {
-      try {
-        originalOnEngine("roundEnded", handleRoundEnded);
-        roundEndedRegistered = true;
-      } catch {}
-    }
-    return result;
-  };
-}
-
-if (originalCreateBattleEngine) {
-  engineFacade.createBattleEngine = function wrappedCreateBattleEngine(...args) {
-    const engine = originalCreateBattleEngine(...args);
-    roundEndedRegistered = false;
+if (typeof onEngineCreated === "function") {
+  onEngineCreated(() => {
     try {
       bridgeEngineEvents();
     } catch {}
-    return engine;
-  };
+  });
 }

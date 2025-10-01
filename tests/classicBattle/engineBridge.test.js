@@ -30,7 +30,8 @@ describe("bridgeEngineEvents", () => {
       __esModule: true,
       on,
       requireEngine,
-      STATS: ["speed", "power"]
+      STATS: ["speed", "power"],
+      onEngineCreated: vi.fn(() => () => {})
     }));
 
     const { bridgeEngineEvents } = await import("../../src/helpers/classicBattle/engineBridge.js");
