@@ -1,16 +1,12 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
+import { useCanonicalTimers } from "../../setup/fakeTimers.js";
 
 // Targeted unit check: ensure that when a round resolves, cooldown begins,
 // and a subsequent round start is scheduled/emitted in order.
 
 describe("classicBattle round lifecycle sequencing", () => {
-  let roundUI;
-  let events;
-
   beforeEach(async () => {
-    vi.useFakeTimers();
-    events = new EventTarget();
-    roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
+    useCanonicalTimers();
   });
 
   afterEach(() => {

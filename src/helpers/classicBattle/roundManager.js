@@ -160,7 +160,9 @@ export async function handleReplay(store) {
       if (typeof Sentry !== "undefined" && Sentry?.logger) {
         Sentry.logger.debug(Sentry.logger.fmt`replay:${phase}`, extra);
       }
-    } catch {}
+    } catch {
+      // Sentry logging is opportunistic; errors are swallowed.
+    }
   };
   trace("begin", { t: Date.now() });
   persistLastJudokaStats(store, store?.currentPlayerJudoka, store?.currentOpponentJudoka);

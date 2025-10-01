@@ -336,6 +336,12 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
     store.stallTimeoutMs
   );
   updateDebugPanel();
+  // Ensure buttons end up enabled at the tail of round UI setup
+  try {
+    enableStatButtons?.();
+    emitBattleEvent("statButtons:enable");
+    if (!IS_VITEST) console.log("INFO: applyRoundUI -> ensured stat buttons enabled (tail)");
+  } catch {}
 }
 
 /**
@@ -686,6 +692,18 @@ export function bindRoundUIEventHandlers() {
   bindRoundStarted();
   bindStatSelected();
   bindRoundResolved();
+  // Instrument statButtons enable/disable events to observe unexpected toggles
+  try {
+    const target = getBattleEventTarget();
+    if (target && typeof target.addEventListener === "function") {
+      target.addEventListener("statButtons:disable", () => {
+        try { if (!IS_VITEST) console.log("INFO: event statButtons:disable observed"); } catch {}
+      });
+      target.addEventListener("statButtons:enable", () => {
+        try { if (!IS_VITEST) console.log("INFO: event statButtons:enable observed"); } catch {}
+      });
+    }
+  } catch {}
 }
 
 /**

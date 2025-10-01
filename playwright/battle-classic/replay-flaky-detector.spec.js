@@ -20,9 +20,6 @@ test.describe("Classic Battle — Replay flaky detector", () => {
     // Start first match
     await page.click("#round-select-2");
 
-    const getText = async (selector) =>
-      (await page.locator(selector).first().textContent())?.trim();
-
     // Helper to run a replay click via either end modal or scaffold button.
     const clickReplay = async () => {
       // Prefer data-testid on scaffold if present.
