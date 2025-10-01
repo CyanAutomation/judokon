@@ -18,10 +18,7 @@ export function shouldReduceMotionSync() {
   if (getSetting("motionEffects") === false) {
     return true;
   }
-  if (
-    typeof window === "undefined" ||
-    typeof window.matchMedia !== "function"
-  ) {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
     return true;
   }
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
