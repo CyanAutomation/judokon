@@ -168,6 +168,7 @@ export function setupRandomCardButton(button, container) {
       });
     } finally {
       button.disabled = false;
+      button.classList.remove("hidden");
     }
   });
 }
