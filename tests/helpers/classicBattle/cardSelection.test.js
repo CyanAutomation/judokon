@@ -95,9 +95,7 @@ describe.sequential("classicBattle card selection", () => {
     expect(result).toEqual({ id: 99 });
     expect(fallbackProvider).toHaveBeenCalledTimes(1);
     expect(randomJudokaMock).toHaveBeenCalledTimes(6);
-    expect(qaLogger).toHaveBeenCalledWith(
-      "Using fallback judoka after retry exhaustion"
-    );
+    expect(qaLogger).toHaveBeenCalledWith("Using fallback judoka after retry exhaustion");
   });
 
   it("falls back when random selection returns null", async () => {
@@ -120,9 +118,7 @@ describe.sequential("classicBattle card selection", () => {
     expect(result).toEqual({ id: 101 });
     expect(fallbackProvider).toHaveBeenCalledTimes(1);
     expect(randomJudokaMock).toHaveBeenCalledTimes(1);
-    expect(qaLogger).toHaveBeenCalledWith(
-      "Using fallback judoka after retry exhaustion"
-    );
+    expect(qaLogger).toHaveBeenCalledWith("Using fallback judoka after retry exhaustion");
   });
 
   it("excludes hidden judoka from selection", async () => {

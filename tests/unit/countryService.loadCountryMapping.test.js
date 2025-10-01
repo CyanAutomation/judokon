@@ -59,7 +59,7 @@ describe("loadCountryMapping", () => {
     getItem.mockReturnValue(undefined);
 
     const mapping = {
-      vu: { code: "vu", country: "Vanuatu", active: true },
+      vu: { code: "vu", country: "Vanuatu", active: true }
     };
 
     fetchJson.mockResolvedValueOnce(mapping);
