@@ -71,7 +71,8 @@ describe("skip handler clears fallback timer", () => {
         startRound: makeTimer,
         startCoolDown: makeTimer,
         stopTimer: vi.fn(),
-        STATS: ["a", "b"]
+        STATS: ["a", "b"],
+        onEngineCreated: vi.fn(() => () => {})
       };
     });
     const { mockCreateRoundTimer } = await import("../roundTimerMock.js");

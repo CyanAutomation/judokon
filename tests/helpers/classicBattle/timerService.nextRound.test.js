@@ -41,7 +41,8 @@ describe("timerService next round handling", () => {
       startCoolDown,
       stopTimer: vi.fn(),
       STATS: [],
-      requireEngine: () => ({ startCoolDown })
+      requireEngine: () => ({ startCoolDown }),
+      onEngineCreated: vi.fn(() => () => {})
     }));
     dispatchBattleEvent = vi.fn();
     vi.doMock("../../../src/helpers/classicBattle/eventDispatcher.js", () => ({

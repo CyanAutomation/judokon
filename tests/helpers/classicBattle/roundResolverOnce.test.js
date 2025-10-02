@@ -24,7 +24,8 @@ vi.mock("../../../src/helpers/battleEngineFacade.js", () => ({
   createBattleEngine: vi.fn(),
   stopTimer: vi.fn(),
   getRoundsPlayed: vi.fn(() => 0),
-  _resetForTest: vi.fn()
+  _resetForTest: vi.fn(),
+  onEngineCreated: vi.fn(() => () => {})
 }));
 vi.mock("../../../src/helpers/setupScoreboard.js", () => ({
   updateScore: vi.fn(),
