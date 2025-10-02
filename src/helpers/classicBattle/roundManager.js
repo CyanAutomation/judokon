@@ -1042,6 +1042,11 @@ export function _resetForTest(store) {
       if (typeof maybeMock === "function" && typeof maybeMock.mock === "object") {
         maybeMock("roundEnded", (detail) => {
           emitBattleEvent("roundResolved", detail);
+          try {
+            const player = Number(detail?.playerScore) || 0;
+            const opponent = Number(detail?.opponentScore) || 0;
+            emitBattleEvent("display.score.update", { player, opponent });
+          } catch {}
         });
         maybeMock("matchEnded", (detail) => {
           emitBattleEvent("matchOver", detail);
