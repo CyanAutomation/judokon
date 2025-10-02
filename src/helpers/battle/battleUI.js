@@ -114,8 +114,7 @@ function trace(tag, extra) {
 
     const debug = globalThis?.console?.debug;
     if (typeof debug !== "function") return;
-    debug.call(
-      globalThis.console,
+    debug(
       `classicBattle.trace ${tag} t=${t} buttons=${JSON.stringify(snapshotButtons())} ${extra ? JSON.stringify(extra) : ""}`
     );
   } catch {}
