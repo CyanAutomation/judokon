@@ -63,10 +63,19 @@ const engineCreatedListeners = new Set();
 
 function notifyEngineCreated(engine) {
   if (engineCreatedListeners.size === 0) return;
+
+  const shouldLogErrors =
+    (typeof process !== "undefined" && process?.env?.NODE_ENV !== "production") ||
+    (typeof window !== "undefined" && Boolean(window.__TEST__));
+
   for (const listener of engineCreatedListeners) {
     try {
       listener(engine);
-    } catch {}
+    } catch (error) {
+      if (shouldLogErrors && typeof console !== "undefined" && typeof console.warn === "function") {
+        console.warn("Engine creation listener failed:", error);
+      }
+    }
   }
 }
 

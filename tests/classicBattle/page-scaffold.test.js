@@ -1111,6 +1111,21 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     vi.resetModules();
   });
 
+  test("engine created listeners can unsubscribe", async () => {
+    const facade = await import("../../src/helpers/battleEngineFacade.js");
+    const listener = vi.fn();
+    const unsubscribe = facade.onEngineCreated(listener);
+
+    await facade.createBattleEngine({ forceCreate: true });
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    listener.mockClear();
+    unsubscribe();
+
+    await facade.createBattleEngine({ forceCreate: true });
+    expect(listener).not.toHaveBeenCalled();
+  });
+
   test("initializes scoreboard regions and default content", async () => {
     window.__FF_OVERRIDES = { battleStateBadge: true, showRoundSelectModal: true };
     const { init } = await import("../../src/pages/battleClassic.init.js");
