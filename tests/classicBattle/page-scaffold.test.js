@@ -1111,19 +1111,23 @@ describe("Classic Battle page scaffold (behavioral)", () => {
     vi.resetModules();
   });
 
-  test("engine created listeners can unsubscribe", async () => {
+  test("onEngineCreated listeners can unsubscribe and stop receiving notifications", async () => {
+    const { withMutedConsole } = await import("../utils/console.js");
     const facade = await import("../../src/helpers/battleEngineFacade.js");
     const listener = vi.fn();
     const unsubscribe = facade.onEngineCreated(listener);
 
-    await facade.createBattleEngine({ forceCreate: true });
-    expect(listener).toHaveBeenCalledTimes(1);
+    await withMutedConsole(async () => {
+      const firstEngine = await facade.createBattleEngine({ forceCreate: true });
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenCalledWith(firstEngine);
 
-    listener.mockClear();
-    unsubscribe();
+      listener.mockClear();
+      unsubscribe();
 
-    await facade.createBattleEngine({ forceCreate: true });
-    expect(listener).not.toHaveBeenCalled();
+      await facade.createBattleEngine({ forceCreate: true });
+      expect(listener).not.toHaveBeenCalled();
+    });
   });
 
   test("initializes scoreboard regions and default content", async () => {

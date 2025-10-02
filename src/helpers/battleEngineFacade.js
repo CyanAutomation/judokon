@@ -66,13 +66,13 @@ function notifyEngineCreated(engine) {
 
   const shouldLogErrors =
     (typeof process !== "undefined" && process?.env?.NODE_ENV !== "production") ||
-    (typeof window !== "undefined" && Boolean(window.__TEST__));
+    (typeof window !== "undefined" && window.__TEST__);
 
   for (const listener of engineCreatedListeners) {
     try {
       listener(engine);
     } catch (error) {
-      if (shouldLogErrors && typeof console !== "undefined" && typeof console.warn === "function") {
+      if (shouldLogErrors) {
         console.warn("Engine creation listener failed:", error);
       }
     }
