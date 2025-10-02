@@ -151,9 +151,15 @@ export async function startRoundCooldown(resolved, config = {}) {
 
   // Add lifecycle tracing + guarded recovery: if cooldown completes without
   // a subsequent round start, emit a safe reset event to re-enter the flow.
-  try { if (!IS_VITEST) console.debug(`classicBattle.trace cooldown:start t=${Date.now()} secs=${seconds}`); } catch {}
+  try {
+    if (!IS_VITEST)
+      console.debug(`classicBattle.trace cooldown:start t=${Date.now()} secs=${seconds}`);
+  } catch {}
   await startTimerSafely(timer, seconds);
-  try { if (!IS_VITEST) console.debug(`classicBattle.trace cooldown:end t=${Date.now()} secs=${seconds}`); } catch {}
+  try {
+    if (!IS_VITEST)
+      console.debug(`classicBattle.trace cooldown:end t=${Date.now()} secs=${seconds}`);
+  } catch {}
   try {
     const target = getBattleEventTarget?.();
     if (target && typeof target.addEventListener === "function") {
@@ -161,7 +167,10 @@ export async function startRoundCooldown(resolved, config = {}) {
       const onStart = () => {
         started = true;
         target.removeEventListener("roundStarted", onStart);
-        try { if (!IS_VITEST) console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`); } catch {}
+        try {
+          if (!IS_VITEST)
+            console.debug(`classicBattle.trace cooldown:observedRoundStarted t=${Date.now()}`);
+        } catch {}
       };
       target.addEventListener("roundStarted", onStart);
       // After a short post-cooldown buffer, check if round started; if not, recover.
@@ -169,7 +178,10 @@ export async function startRoundCooldown(resolved, config = {}) {
         () => {
           try {
             if (!started) {
-              try { if (!IS_VITEST) console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`); } catch {}
+              try {
+                if (!IS_VITEST)
+                  console.debug(`classicBattle.trace cooldown:recoveryResetUI t=${Date.now()}`);
+              } catch {}
               emitBattleEvent("game:reset-ui", {});
             }
           } catch {}
@@ -369,7 +381,10 @@ export function applyRoundUI(store, roundNumber, stallTimeoutMs = 5000) {
 export function handleRoundStartedEvent(event, deps = {}) {
   const { applyRoundUI: applyRoundUiFn = applyRoundUI } = deps;
   const { store, roundNumber } = event?.detail || {};
-  try { if (!IS_VITEST) console.debug(`classicBattle.trace event:roundStarted t=${Date.now()} round=${roundNumber}`); } catch {}
+  try {
+    if (!IS_VITEST)
+      console.debug(`classicBattle.trace event:roundStarted t=${Date.now()} round=${roundNumber}`);
+  } catch {}
   if (store && typeof roundNumber === "number") {
     applyRoundUiFn(store, roundNumber);
     // Final guard to ensure buttons are interactive at round start
@@ -476,7 +491,9 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
         })();
   const { store, result } = event?.detail || {};
   if (!result) return;
-  try { if (!IS_VITEST) console.debug(`classicBattle.trace event:roundResolved t=${Date.now()}`); } catch {}
+  try {
+    if (!IS_VITEST) console.debug(`classicBattle.trace event:roundResolved t=${Date.now()}`);
+  } catch {}
   try {
     scoreboardApi?.showMessage?.(result.message || "", { outcome: true });
   } catch {}

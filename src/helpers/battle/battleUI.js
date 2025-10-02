@@ -111,7 +111,7 @@ function trace(tag, extra) {
   try {
     if (IS_VITEST) return;
     const t = Date.now();
-    // eslint-disable-next-line no-console
+
     console.debug(
       `classicBattle.trace ${tag} t=${t} buttons=${JSON.stringify(snapshotButtons())} ${extra ? JSON.stringify(extra) : ""}`
     );
