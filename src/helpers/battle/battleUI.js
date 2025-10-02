@@ -112,7 +112,10 @@ function trace(tag, extra) {
     if (IS_VITEST) return;
     const t = Date.now();
 
-    console.debug(
+    const debug = globalThis?.console?.debug;
+    if (typeof debug !== "function") return;
+    debug.call(
+      globalThis.console,
       `classicBattle.trace ${tag} t=${t} buttons=${JSON.stringify(snapshotButtons())} ${extra ? JSON.stringify(extra) : ""}`
     );
   } catch {}
