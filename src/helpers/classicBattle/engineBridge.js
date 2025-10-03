@@ -1,9 +1,16 @@
 import { emitBattleEvent } from "./battleEvents.js";
 import * as engineFacade from "../battleEngineFacade.js";
-import { STATS, onEngineCreated } from "../battleEngineFacade.js";
 import { updateScore } from "../setupScoreboard.js";
 
 const trackedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
+
+function getEngineFacadeProperty(propName) {
+  try {
+    return engineFacade[propName];
+  } catch {
+    return undefined;
+  }
+}
 
 function getTrackableEngine() {
   if (typeof engineFacade.requireEngine !== "function") {
@@ -35,9 +42,10 @@ function handleMatchEndedLegacy(detail) {
 }
 
 function handleRoundStarted(detail) {
+  const stats = getEngineFacadeProperty("STATS");
   emitBattleEvent("round.started", {
     roundIndex: Number(detail?.round) || 0,
-    availableStats: Array.isArray(STATS) ? STATS.slice() : []
+    availableStats: Array.isArray(stats) ? stats.slice() : []
   });
 }
 
@@ -96,6 +104,7 @@ export function bridgeEngineEvents() {
   } catch {}
 }
 
+const onEngineCreated = getEngineFacadeProperty("onEngineCreated");
 if (typeof onEngineCreated === "function") {
   onEngineCreated(() => {
     try {
