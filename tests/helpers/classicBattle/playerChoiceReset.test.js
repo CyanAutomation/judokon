@@ -8,7 +8,8 @@ vi.doMock("../../../src/helpers/classicBattle/cardSelection.js", () => ({
 
 vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
   getRoundsPlayed: vi.fn(() => 0),
-  _resetForTest: vi.fn()
+  _resetForTest: vi.fn(),
+  onEngineCreated: vi.fn(() => () => {})
 }));
 
 vi.doMock("../../../src/helpers/classicBattle/battleEvents.js", () => ({

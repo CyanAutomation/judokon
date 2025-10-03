@@ -7,7 +7,8 @@ describe("_resetForTest", () => {
     const on = vi.fn();
     vi.doMock("../../../src/helpers/battleEngineFacade.js", () => ({
       createBattleEngine: vi.fn(),
-      on
+      on,
+      onEngineCreated: vi.fn(() => () => {})
     }));
     const { initClassicBattleTest } = await import("../initClassicBattleTest.js");
     await initClassicBattleTest({ afterMock: true });
