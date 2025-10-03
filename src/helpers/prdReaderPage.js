@@ -63,7 +63,7 @@ export class SidebarState {
   }
 }
 
-let cleanupTooltips = () => {};
+let cleanupTooltips;
 
 /**
  * Load PRD filenames and related metadata.
@@ -199,7 +199,7 @@ export function bindNavigation({ container, nextButtons, prevButtons, showNext, 
  */
 export function renderDocument(state, index) {
   const { container, titles, taskStats, titleEl, summaryEl, documents, DOMPurify } = state;
-  cleanupTooltips();
+  cleanupTooltips?.();
   container.innerHTML = DOMPurify.sanitize(documents[index] || "");
   container.classList.remove("fade-in");
   void container.offsetWidth;
@@ -210,9 +210,13 @@ export function renderDocument(state, index) {
     const percent = total ? Math.round((completed / total) * 100) : 0;
     summaryEl.textContent = `Tasks: ${completed}/${total} (${percent}%)`;
   }
-  initTooltips(container).then((fn) => {
-    cleanupTooltips = fn;
-  });
+  initTooltips(container)
+    .then((fn) => {
+      cleanupTooltips = fn;
+    })
+    .catch(() => {
+      cleanupTooltips = undefined;
+    });
 }
 
 /**
