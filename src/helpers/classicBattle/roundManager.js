@@ -1062,7 +1062,10 @@ export function _resetForTest(store) {
             const player = Number(detail?.playerScore) || 0;
             const opponent = Number(detail?.opponentScore) || 0;
             emitBattleEvent("display.score.update", { player, opponent });
-          } catch {}
+          } catch (error) {
+            // Scoreboard updates are opportunistic; swallow errors after recording usage.
+            void error;
+          }
         };
 
         maybeMock("roundEnded", emitFallbackRoundEvents);
