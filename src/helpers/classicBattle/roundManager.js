@@ -1040,14 +1040,32 @@ export function _resetForTest(store) {
     () => {
       const maybeMock = /** @type {any} */ (battleEngine).on;
       if (typeof maybeMock === "function" && typeof maybeMock.mock === "object") {
-        maybeMock("roundEnded", (detail) => {
+        /**
+         * Mirrors the production bridge's `handleRoundEnded` logic when the engine facade
+         * is mocked, ensuring scoreboard observers and round resolution listeners stay
+         * synchronized during test resets.
+         *
+         * @pseudocode
+         * ```
+         * on fallback roundEnded detail:
+         *   emit roundResolved(detail)
+         *   emit display.score.update({ player: Number(detail.playerScore) || 0,
+         *                               opponent: Number(detail.opponentScore) || 0 })
+         * ```
+         * @param {{ playerScore?: number|string, opponentScore?: number|string }} detail
+         *   Round payload provided by the mocked engine facade.
+         * @returns {void}
+         */
+        const emitFallbackRoundEvents = (detail) => {
           emitBattleEvent("roundResolved", detail);
           try {
             const player = Number(detail?.playerScore) || 0;
             const opponent = Number(detail?.opponentScore) || 0;
             emitBattleEvent("display.score.update", { player, opponent });
           } catch {}
-        });
+        };
+
+        maybeMock("roundEnded", emitFallbackRoundEvents);
         maybeMock("matchEnded", (detail) => {
           emitBattleEvent("matchOver", detail);
         });
