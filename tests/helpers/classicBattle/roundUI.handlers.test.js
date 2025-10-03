@@ -24,8 +24,9 @@ vi.mock("../../../src/helpers/classicBattle/uiService.js", () => ({
 vi.mock("../../../src/helpers/battle/index.js", () => ({
   resetStatButtons: vi.fn()
 }));
+const computeNextRoundCooldownMock = vi.fn(() => 3);
 vi.mock("../../../src/helpers/timers/computeNextRoundCooldown.js", () => ({
-  computeNextRoundCooldown: () => 3
+  computeNextRoundCooldown: computeNextRoundCooldownMock
 }));
 
 const snackbarMock = {
@@ -256,6 +257,45 @@ describe("round UI handlers", () => {
     const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
     expect(scoreboard.showMessage).toHaveBeenCalledWith("Win", { outcome: true });
   });
+
+  it.each([
+    ["undefined", undefined],
+    ["NaN", { seconds: NaN }]
+  ])(
+    "defaults to minimum cooldown when computeNextRoundCooldown returns %s",
+    async (_, cooldownResult) => {
+      vi.resetModules();
+      computeNextRoundCooldownMock.mockReset();
+      computeNextRoundCooldownMock.mockReturnValueOnce(cooldownResult);
+      computeNextRoundCooldownMock.mockReturnValue(3);
+      const attachCooldownRenderer = vi.fn(() => () => {});
+      const createRoundTimer = vi.fn(() => ({
+        on: vi.fn(),
+        off: vi.fn(),
+        start: vi.fn(async () => {})
+      }));
+      const roundUI = await import("../../../src/helpers/classicBattle/roundUI.js");
+
+      await roundUI.handleRoundResolvedEvent(
+        {
+          detail: {
+            store: {},
+            result: { matchEnded: false, message: "", playerScore: 0, opponentScore: 0 }
+          }
+        },
+        {
+          attachCooldownRenderer,
+          createRoundTimer
+        }
+      );
+
+      expect(createRoundTimer).toHaveBeenCalledTimes(1);
+      const timer = createRoundTimer.mock.results[0]?.value;
+      expect(timer?.start).toHaveBeenCalledWith(3);
+      const attachCall = attachCooldownRenderer.mock.calls[0];
+      expect(attachCall?.[1]).toBe(3);
+    }
+  );
 
   it("uses shared opponent prompt buffer when scheduling cooldown", async () => {
     vi.resetModules();
