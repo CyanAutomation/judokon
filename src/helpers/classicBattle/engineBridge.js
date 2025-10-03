@@ -5,11 +5,7 @@ import { updateScore } from "../setupScoreboard.js";
 const trackedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
 
 function getEngineFacadeProperty(propName) {
-  try {
-    return engineFacade[propName];
-  } catch {
-    return undefined;
-  }
+  return engineFacade[propName];
 }
 
 function getTrackableEngine() {
@@ -104,11 +100,35 @@ export function bridgeEngineEvents() {
   } catch {}
 }
 
-const onEngineCreated = getEngineFacadeProperty("onEngineCreated");
-if (typeof onEngineCreated === "function") {
-  onEngineCreated(() => {
-    try {
-      bridgeEngineEvents();
-    } catch {}
-  });
+const MAX_ENGINE_CREATED_REGISTRATION_ATTEMPTS = 5;
+const scheduleMicrotask =
+  typeof queueMicrotask === "function"
+    ? queueMicrotask
+    : (callback) => Promise.resolve().then(callback);
+
+let hasRegisteredEngineCreatedHook = false;
+
+function registerBridgeOnEngineCreated(attempt = 0) {
+  if (hasRegisteredEngineCreatedHook) {
+    return true;
+  }
+
+  const onEngineCreated = getEngineFacadeProperty("onEngineCreated");
+  if (typeof onEngineCreated === "function") {
+    onEngineCreated(() => {
+      try {
+        bridgeEngineEvents();
+      } catch {}
+    });
+    hasRegisteredEngineCreatedHook = true;
+    return true;
+  }
+
+  if (attempt < MAX_ENGINE_CREATED_REGISTRATION_ATTEMPTS) {
+    scheduleMicrotask(() => registerBridgeOnEngineCreated(attempt + 1));
+  }
+
+  return false;
 }
+
+registerBridgeOnEngineCreated();
