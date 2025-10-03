@@ -5,7 +5,11 @@ import { updateScore } from "../setupScoreboard.js";
 const trackedEngines = typeof WeakSet === "function" ? new WeakSet() : new Set();
 
 function getEngineFacadeProperty(propName) {
-  return engineFacade[propName];
+  try {
+    return engineFacade[propName];
+  } catch {
+    return undefined;
+  }
 }
 
 function getTrackableEngine() {
@@ -100,14 +104,25 @@ export function bridgeEngineEvents() {
   } catch {}
 }
 
+// Five attempts allow the facade module to finish bootstrapping across chained microtasks
+// while preventing runaway retries during initialization failures.
 const MAX_ENGINE_CREATED_REGISTRATION_ATTEMPTS = 5;
-const scheduleMicrotask =
-  typeof queueMicrotask === "function"
-    ? queueMicrotask
-    : (callback) => Promise.resolve().then(callback);
+const scheduleMicrotask = globalThis.queueMicrotask || ((callback) => Promise.resolve().then(callback));
 
 let hasRegisteredEngineCreatedHook = false;
 
+/**
+ * Register the classic battle bridge once the engine facade exposes `onEngineCreated`.
+ *
+ * @param {number} attempt - Current retry number (0-indexed).
+ * @returns {boolean} Whether the registration was completed during this invocation.
+ * @pseudocode
+ * 1. Exit early when already registered.
+ * 2. Read `onEngineCreated` from the engine facade.
+ * 3. If available, subscribe and mark as registered.
+ * 4. Otherwise, retry on the next microtask while attempts remain.
+ * 5. Emit a console warning after exhausting retries for easier diagnostics.
+ */
 function registerBridgeOnEngineCreated(attempt = 0) {
   if (hasRegisteredEngineCreatedHook) {
     return true;
@@ -126,9 +141,13 @@ function registerBridgeOnEngineCreated(attempt = 0) {
 
   if (attempt < MAX_ENGINE_CREATED_REGISTRATION_ATTEMPTS) {
     scheduleMicrotask(() => registerBridgeOnEngineCreated(attempt + 1));
+  } else if (typeof console !== "undefined" && typeof console.warn === "function") {
+    console.warn(
+      "Failed to register engine bridge after maximum attempts. Engine facade may not be properly initialized."
+    );
   }
 
   return false;
 }
 
-registerBridgeOnEngineCreated();
+scheduleMicrotask(() => registerBridgeOnEngineCreated());
