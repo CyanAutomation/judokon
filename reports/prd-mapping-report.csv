@@ -12,6 +12,6 @@
 "docs/vector-search.md",""
 "design/architecture.md","prdArchitecture.md"
 "design/battleCLI-legacy-alignment.md","design/productRequirementsDocuments/prdBattleCLI.md#recent-improvements-legacy-design-alignment"
-"design/battleMarkup.md","prdBattleMarkup.md"
+"design/productRequirementsDocuments/prdBattleMarkup.md#appendix-classic-battle-markup","prdBattleMarkup.md"
 "design/retroThemeContrast.md","design/productRequirementsDocuments/prdUIDesignSystem.md#retro-theme-tokens--contrast-compliance"
 "design/stateHandlerAudit.md","design/productRequirementsDocuments/prdStateHandler.md"

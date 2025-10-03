@@ -22,7 +22,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/roundUI.md` → `prdBattleMarkup.md` or `prdUIDesignSystem.md` (decide based on whether the content is markup contract vs component style guidance).
 - Former `docs/product-docs.md` content now lives in `design/productRequirementsDocuments/prdPRDViewer.md#implementation-notes` (exists).
 - ✅ Architecture overview (former `docs/technical/architecture.md` / `design/architecture.md`) now lives in `design/productRequirementsDocuments/prdArchitecture.md` (appendix is authoritative).
-- `docs/technical/battleMarkup.md` (retired) / `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat Markdown as temporary appendix until canonical schema lives in PRD).
+- `docs/technical/battleMarkup.md` (retired) / former `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat PRD appendix as authoritative until canonical schema lives in PRD).
 - Data schema deep dive now lives in `design/productRequirementsDocuments/prdDataSchemas.md` (former `docs/technical/dataSchemas.md` has been retired).
 - Legacy event naming audit artifacts (`docs/technical/eventNamingAudit.md`, retired `design/eventNamingAudit.md`, and `design/eventAudit/*.txt`) → `prdEventContracts.md` (exists; migration tables + listener inventories now maintained in the PRD).
 - `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → now consolidated into `design/productRequirementsDocuments/prdStateHandler.md` (compliance table + priorities live in PRD).
@@ -41,7 +41,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 - Legacy event naming audit artifacts (including the retired `design/eventNamingAudit.md` and `design/eventAudit/*.txt`) → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
 - `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → ✅ integrated into `prdStateHandler.md` (table + follow-up actions captured in PRD).
-- `docs/technical/battleMarkup.md` (retired) & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
+- `docs/technical/battleMarkup.md` (retired) & former `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
 - `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), and the former `design/codeStandards/evaluatingPlaywrightTests.md` / `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
 - `docs/validation-commands.md` → split command matrix between `prdTestingStandards.md` (test suite) and `prdDevelopmentStandards.md` (agent/dev workflows); keep CLI script references synchronized.
 - `docs/rag-system.md` → summarize agent workflow in `prdVectorDatabaseRAG.md` and link to the [High-Success Query Patterns](design/productRequirementsDocuments/prdVectorDatabaseRAG.md#high-success-query-patterns) section.
@@ -264,4 +264,4 @@ Please confirm which option you want (A/B/C) and I will implement it.
   - `docs/battle-cli.md` (content present in `prdBattleCLI.md`)
   - `docs/battleCLI.md` (content present in `prdBattleCLI.md`)
   - `docs/round-selection.md` (content present in `prdRoundSelection.md`)
-  - `design/battleMarkup.md` (content present in `prdBattleMarkup.md`)
+  - Former `design/battleMarkup.md` (content present in `prdBattleMarkup.md`)
