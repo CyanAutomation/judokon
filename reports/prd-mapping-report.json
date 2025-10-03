@@ -64,7 +64,7 @@
     "mappedTo": "design/productRequirementsDocuments/prdUIDesignSystem.md#retro-theme-tokens--contrast-compliance"
   },
   {
-    "source": "design/stateHandlerAudit.md",
-    "mappedTo": "design/productRequirementsDocuments/prdStateHandler.md"
+    "source": "design/productRequirementsDocuments/prdStateHandler.md#compliance-audit-2025-09-10",
+    "mappedTo": "design/productRequirementsDocuments/prdStateHandler.md#compliance-audit-2025-09-10"
   }
 ]
