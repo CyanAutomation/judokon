@@ -596,8 +596,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
             cooldownResult = computeCooldown();
           } catch {}
           const resolvedSeconds = parseSecondsFromResult(cooldownResult);
-          const safeSeconds = Number.isFinite(resolvedSeconds) ? resolvedSeconds : 3;
-          const secs = Math.max(3, safeSeconds);
+          const secs = Math.max(3, Number.isFinite(resolvedSeconds) ? resolvedSeconds : 3);
           const attachRendererOptions =
             deps.attachCooldownRendererOptions &&
             typeof deps.attachCooldownRendererOptions === "object"

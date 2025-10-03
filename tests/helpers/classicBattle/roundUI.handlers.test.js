@@ -290,6 +290,7 @@ describe("round UI handlers", () => {
       );
 
       expect(createRoundTimer).toHaveBeenCalledTimes(1);
+      expect(computeNextRoundCooldownMock).toHaveBeenCalledTimes(1);
       const timer = createRoundTimer.mock.results[0]?.value;
       expect(timer?.start).toHaveBeenCalledWith(3);
       const attachCall = attachCooldownRenderer.mock.calls[0];
