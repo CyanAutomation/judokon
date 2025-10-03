@@ -72,6 +72,52 @@ describe("prdReaderPage", () => {
     prdReader.testApi.cleanup();
   });
 
+  it("continues rendering when tooltip init fails", async () => {
+    const docs = {
+      "b.md": "# Second doc",
+      "a.md": "# First doc"
+    };
+    const parser = (md) => `<h1>${md}</h1>`;
+    const initError = new Error("tooltip failure");
+    const initMock = vi.fn(() => Promise.reject(initError));
+
+    vi.doMock("../../src/helpers/tooltip.js", async () => {
+      const actual = await vi.importActual("../../src/helpers/tooltip.js");
+      return {
+        ...actual,
+        initTooltips: initMock
+      };
+    });
+
+    const prdReader = createTestPrdReader(docs, parser);
+    const unhandled = vi.fn();
+    const rejectionHandler = (event) => {
+      unhandled(event);
+    };
+    window.addEventListener("unhandledrejection", rejectionHandler);
+
+    try {
+      await prdReader.testApi.initialize();
+      await Promise.resolve();
+
+      expect(prdReader.testApi.getCurrentContent()).toContain("First doc");
+      expect(initMock).toHaveBeenCalled();
+      const callsAfterInit = initMock.mock.calls.length;
+      expect(unhandled).not.toHaveBeenCalled();
+
+      prdReader.testApi.navigateNext();
+      await Promise.resolve();
+
+      expect(prdReader.testApi.getCurrentContent()).toContain("Second doc");
+      expect(prdReader.testApi.getSelectedIndex()).toBe(1);
+      expect(unhandled).not.toHaveBeenCalled();
+      expect(initMock.mock.calls.length).toBeGreaterThan(callsAfterInit);
+    } finally {
+      window.removeEventListener("unhandledrejection", rejectionHandler);
+      prdReader.testApi.cleanup();
+    }
+  });
+
   it("selects documents via sidebar", async () => {
     const docs = {
       "docB.md": "# Two",

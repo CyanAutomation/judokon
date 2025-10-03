@@ -5,7 +5,7 @@
   },
   {
     "query": "judoka bio tone guidelines",
-    "expected_source": "design/characterDesign/kgCharacterDesignDocument.md"
+    "expected_source": "design/productRequirementsDocuments/prdCharacterDesign.md"
   },
   {
     "query": "navbar button transition duration",
