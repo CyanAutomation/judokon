@@ -58,6 +58,8 @@ import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
  *
  * @summary This promise provides a reliable signal for external scripts or tests
  * to know when the Settings page's DOM is ready and its controls are initialized.
+ * When no DOM is available (e.g., in a Node environment), the promise resolves
+ * immediately to keep module imports side-effect free.
  *
  * @pseudocode
  * 1. A new `Promise` is created.
@@ -68,9 +70,13 @@ import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
  * @type {Promise<void>}
  * @param {(value?: void) => void} resolve - Internal resolver for readiness.
  */
-export const settingsReadyPromise = new Promise((resolve) => {
-  document.addEventListener("settings:ready", resolve, { once: true });
-});
+const hasDocument = typeof document !== "undefined";
+
+export const settingsReadyPromise = hasDocument
+  ? new Promise((resolve) => {
+      document.addEventListener("settings:ready", resolve, { once: true });
+    })
+  : Promise.resolve();
 
 // Expose readiness for tests to await in browser environments.
 if (typeof window !== "undefined") {
