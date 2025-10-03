@@ -198,14 +198,14 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 
 **Scene-Specific Prompt Table:**
 
-| Scene | Prompt Additions |
-| ----- | ---------------- |
-| Giving Advice | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred. |
-| Dynamic Jump | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering. |
-| Thinking Pose | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow. |
-| Holding a Sign | Holding a large signboard (“Welcome to Ju-Do-Kon!”) and a pointer stick. Background: dojo interior with mats. |
-| Casual Clothes | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky. |
-| Trophy Celebration | Holding a gold trophy above head, smiling proudly. Background: stage with spotlights and cheering crowd, blurred. |
+| Scene              | Prompt Additions                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Giving Advice      | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred.         |
+| Dynamic Jump       | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.                                  |
+| Thinking Pose      | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.                                   |
+| Holding a Sign     | Holding a large signboard (“Welcome to Ju-Do-Kon!”) and a pointer stick. Background: dojo interior with mats.                  |
+| Casual Clothes     | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky. |
+| Trophy Celebration | Holding a gold trophy above head, smiling proudly. Background: stage with spotlights and cheering crowd, blurred.              |
 
 **Example Prompts:**
 
