@@ -190,6 +190,48 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 - **Tutorial Context**: Clear, uncluttered backgrounds for focus
 - **Achievement Moments**: Spotlight emphasis with celebration elements
 
+### 7. Scenario Prompt Reference (P2)
+
+**Base Prompt Template:**
+
+A chibi-style cartoon character, 3-heads tall, with a large head and stout body. He has a bald head with thick black beard and eyebrows, big round eyes, and a wide, friendly smile with visible teeth. Skin tone is light-medium beige, representing Japanese ethnicity. He wears a blue judo gi with a black belt and a small Japan flag patch on the left chest. Art style uses bold black outlines, flat cell shading, and warm ambient lighting to emphasize a confident, friendly personality.
+
+**Scene-Specific Prompt Table:**
+
+| Scene | Prompt Additions |
+| ----- | ---------------- |
+| Giving Advice | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred. |
+| Dynamic Jump | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering. |
+| Thinking Pose | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow. |
+| Holding a Sign | Holding a large signboard (“Welcome to Ju-Do-Kon!”) and a pointer stick. Background: dojo interior with mats. |
+| Casual Clothes | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky. |
+| Trophy Celebration | Holding a gold trophy above head, smiling proudly. Background: stage with spotlights and cheering crowd, blurred. |
+
+**Example Prompts:**
+
+- **Prompt 1: Default Pose — Giving Advice**: KG stands energetically, pointing upward with one hand while smiling. Maintain the base prompt details with bold outlines, flat cell shading, warm lighting, and a slightly blurred dojo background.
+- **Prompt 2: Dynamic Action Pose — Jumping**: KG is mid-air with fists raised triumphantly, joyful expression, and stadium crowd background. Follow the base prompt for character description and art style.
+- **Prompt 3: Calm Pose — Thinking**: KG stands calmly with hand on chin, curious expression, on a clean white background with soft shadow. Base prompt proportions and art direction remain unchanged.
+- **Prompt 4: Holding a Sign — Tutorial Scene**: KG holds a wooden pointer stick and a large “Welcome to Ju-Do-Kon!” signboard within a dojo environment. Apply base prompt attributes with flat cell shading and warm lighting.
+- **Prompt 5: Casual Clothes Variation**: KG wears a red t-shirt and blue shorts, barefoot, smiling while waving and holding a water bottle. Set in a grassy outdoor training area with blue sky, consistent with the base prompt style.
+- **Prompt 6: Achievement Scene — Trophy**: KG holds a gold trophy above his head with both hands on a spotlighted stage featuring a cheering crowd. Preserve base prompt features, including chibi proportions and warm, flat shading.
+
+### 8. Design Do's and Don'ts (P1)
+
+**Do:**
+
+- Maintain the 3-heads tall chibi proportion.
+- Use dynamic, energetic poses that reinforce KG's encouraging personality.
+- Keep the gi neat with the black belt properly tied when in uniform.
+- Match facial expressions to the narrative context while preserving friendliness.
+- Retain flat, cartoonish rendering with bold outlines and warm lighting.
+
+**Don't:**
+
+- Render KG with realistic or overly detailed anatomy.
+- Remove or omit the Japan flag patch when KG wears the gi.
+- Introduce heavy shading, complex gradients, or textured rendering styles.
+
 ---
 
 ## Acceptance Criteria
@@ -310,7 +352,4 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 
 ## Source Files Consolidated
 
-This PRD consolidates content from the following design/characterDesign files:
-
-- `kgCharacterDesignDocument.md` - Comprehensive character specifications including proportions, features, and style guidelines
-- `kgCharacterPromptSheet.md` - Scene-specific prompts, color references, and implementation guidelines for character artwork creation
+This PRD now consolidates the full KG character design and prompt guidance that previously lived in separate Character Design Document and Character Prompt Sheet files. Those standalone documents have been retired; reference this PRD for the canonical, end-to-end specifications.
