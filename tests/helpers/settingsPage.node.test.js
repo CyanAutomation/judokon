@@ -7,9 +7,7 @@ describe("settingsPage module - environment compatibility", () => {
     vi.stubGlobal("window", undefined);
 
     try {
-      const { settingsReadyPromise } = await import(
-        "../../src/helpers/settingsPage.js"
-      );
+      const { settingsReadyPromise } = await import("../../src/helpers/settingsPage.js");
 
       await expect(settingsReadyPromise).resolves.toBeUndefined();
     } finally {

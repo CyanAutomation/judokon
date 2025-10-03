@@ -107,7 +107,8 @@ export function bridgeEngineEvents() {
 // Five attempts allow the facade module to finish bootstrapping across chained microtasks
 // while preventing runaway retries during initialization failures.
 const MAX_ENGINE_CREATED_REGISTRATION_ATTEMPTS = 5;
-const scheduleMicrotask = globalThis.queueMicrotask || ((callback) => Promise.resolve().then(callback));
+const scheduleMicrotask =
+  globalThis.queueMicrotask || ((callback) => Promise.resolve().then(callback));
 
 let hasRegisteredEngineCreatedHook = false;
 
