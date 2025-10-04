@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   resetStatButtons,
   showResult,
   getStatButtons,
-  getRoundMessageEl
+  getRoundMessageEl,
+  enableStatButtons,
+  disableStatButtons
 } from "../../src/helpers/battle/battleUI.js";
 
 const syncScheduler = {
@@ -52,6 +54,54 @@ describe("battleUI helpers", () => {
     const el = getRoundMessageEl();
     expect(el.textContent).toBe("Second");
     expect(el.classList.contains("fading")).toBe(true);
+  });
+
+  it("enableStatButtons skips falsy button references", () => {
+    const button = document.createElement("button");
+    button.disabled = true;
+    button.tabIndex = -1;
+    button.classList.add("disabled");
+    const querySpy = vi
+      .spyOn(document, "querySelectorAll")
+      .mockImplementation(() => [button, null]);
+
+    enableStatButtons();
+
+    expect(button.disabled).toBe(false);
+    expect(button.tabIndex).toBe(0);
+    expect(button.classList.contains("disabled")).toBe(false);
+    querySpy.mockRestore();
+  });
+
+  it("disableStatButtons skips falsy button references", () => {
+    const button = document.createElement("button");
+    button.disabled = false;
+    button.classList.remove("disabled");
+    const querySpy = vi
+      .spyOn(document, "querySelectorAll")
+      .mockImplementation(() => [button, undefined]);
+
+    disableStatButtons();
+
+    expect(button.disabled).toBe(true);
+    expect(button.classList.contains("disabled")).toBe(true);
+    querySpy.mockRestore();
+  });
+
+  it("resetStatButtons tolerates falsy button references", () => {
+    const button = document.createElement("button");
+    button.classList.add("selected");
+    button.style.backgroundColor = "red";
+    const querySpy = vi
+      .spyOn(document, "querySelectorAll")
+      .mockImplementation(() => [button, null]);
+
+    resetStatButtons(syncScheduler);
+
+    expect(button.classList.contains("selected")).toBe(false);
+    expect(button.disabled).toBe(false);
+    expect(button.style.backgroundColor).toBe("");
+    querySpy.mockRestore();
   });
 
   it("DOM helper functions return elements", () => {
