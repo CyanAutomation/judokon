@@ -54,12 +54,16 @@ function collectStatButtons(store) {
       );
     } catch {}
   }
-  try {
-    if (typeof document?.querySelectorAll === "function") {
-      return Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
-    }
-  } catch {}
-  return [];
+  if (!collectStatButtons._cachedButtons) {
+    try {
+      if (typeof document?.querySelectorAll === "function") {
+        collectStatButtons._cachedButtons = Array.from(
+          document.querySelectorAll("#stat-buttons button[data-stat]")
+        );
+      }
+    } catch {}
+  }
+  return collectStatButtons._cachedButtons || [];
 }
 
 function clearStatButtonSelections(store) {
@@ -532,8 +536,6 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     clearStatButtonSelections(store);
     try {
       disableStatButtons?.();
-    } catch {}
-    try {
       emitBattleEvent("statButtons:disable");
     } catch {}
   };

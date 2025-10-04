@@ -138,7 +138,9 @@ export function enableStatButtons() {
   getStatButtons().forEach((btn) => {
     try {
       btn.disabled = false;
-      btn.tabIndex = 0;
+      if (typeof btn.tabIndex === "number") {
+        btn.tabIndex = 0;
+      }
       btn.classList.remove("disabled", "selected");
       btn.style.removeProperty("background-color");
     } catch {}
