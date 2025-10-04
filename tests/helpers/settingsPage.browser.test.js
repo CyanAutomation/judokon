@@ -2,195 +2,64 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const modulePath = "../../src/helpers/settingsPage.js";
 
-const mockedModuleIds = [
-  "../../src/helpers/domReady.js",
-  "../../src/helpers/featureFlags.js",
-  "../../src/helpers/settingsStorage.js",
-  "../../src/helpers/tooltip.js",
-  "../../src/helpers/gameModeUtils.js",
-  "../../src/helpers/showSettingsError.js",
-  "../../src/helpers/displayMode.js",
-  "../../src/helpers/viewTransition.js",
-  "../../src/helpers/motionUtils.js",
-  "../../src/helpers/viewportDebug.js",
-  "../../src/helpers/tooltipOverlayDebug.js",
-  "../../src/helpers/layoutDebugPanel.js",
-  "../../src/helpers/showSnackbar.js",
-  "../../src/helpers/settings/applyInitialValues.js",
-  "../../src/helpers/settings/listenerUtils.js",
-  "../../src/helpers/settings/makeHandleUpdate.js",
-  "../../src/helpers/settings/createResetModal.js",
-  "../../src/helpers/settings/attachResetListener.js",
-  "../../src/helpers/settings/syncDisplayMode.js",
-  "../../src/helpers/settings/renderGameModes.js",
-  "../../src/helpers/settings/renderFeatureFlags.js"
-];
+const importSettingsModule = () => import(modulePath);
 
-const setupBrowserModuleMocks = () => {
-  vi.doMock("../../src/helpers/domReady.js", () => ({
-    onDomReady: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/featureFlags.js", () => ({
-    initFeatureFlags: vi.fn().mockResolvedValue({ featureFlags: {} }),
-    isEnabled: vi.fn().mockReturnValue(false)
-  }));
-  vi.doMock("../../src/helpers/settingsStorage.js", () => ({
-    resetSettings: vi.fn(),
-    updateSetting: vi.fn().mockResolvedValue({}),
-    loadSettings: vi.fn().mockResolvedValue({})
-  }));
-  vi.doMock("../../src/helpers/tooltip.js", () => ({
-    initTooltips: vi.fn().mockResolvedValue(vi.fn()),
-    getTooltips: vi.fn().mockResolvedValue({})
-  }));
-  vi.doMock("../../src/helpers/gameModeUtils.js", () => ({
-    loadGameModes: vi.fn().mockResolvedValue([])
-  }));
-  vi.doMock("../../src/helpers/showSettingsError.js", () => ({
-    showSettingsError: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/displayMode.js", () => ({
-    applyDisplayMode: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/viewTransition.js", () => ({
-    withViewTransition: vi.fn((callback) => callback())
-  }));
-  vi.doMock("../../src/helpers/motionUtils.js", () => ({
-    applyMotionPreference: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/viewportDebug.js", () => ({
-    toggleViewportSimulation: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/tooltipOverlayDebug.js", () => ({
-    toggleTooltipOverlayDebug: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/layoutDebugPanel.js", () => ({
-    toggleLayoutDebugPanel: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/showSnackbar.js", () => ({
-    showSnackbar: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/settings/applyInitialValues.js", () => ({
-    applyInitialControlValues: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/settings/listenerUtils.js", () => ({
-    attachToggleListeners: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/settings/makeHandleUpdate.js", () => ({
-    makeHandleUpdate: vi.fn(() => vi.fn())
-  }));
-  vi.doMock("../../src/helpers/settings/createResetModal.js", () => ({
-    createResetModal: vi.fn(() => ({
-      open: vi.fn()
-    }))
-  }));
-  vi.doMock("../../src/helpers/settings/attachResetListener.js", () => ({
-    attachResetListener: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/settings/syncDisplayMode.js", () => ({
-    syncDisplayMode: vi.fn((current) => current)
-  }));
-  vi.doMock("../../src/helpers/settings/renderGameModes.js", () => ({
-    renderGameModes: vi.fn()
-  }));
-  vi.doMock("../../src/helpers/settings/renderFeatureFlags.js", () => ({
-    renderFeatureFlags: vi.fn()
-  }));
+const dispatchSettingsReady = () => {
+  const event = new Event("settings:ready");
+  document.dispatchEvent(event);
+  return event;
 };
-
-const removeModuleMocks = () => {
-  mockedModuleIds.forEach((id) => {
-    vi.doUnmock(id);
-  });
-};
-
-const originalAddEventListener = document.addEventListener.bind(document);
-const originalRemoveEventListener = document.removeEventListener.bind(document);
-
-const trackedSettingsReadyListeners = new Set();
 
 describe("settingsReadyPromise in browser-like environments", () => {
   beforeEach(() => {
-    setupBrowserModuleMocks();
-    trackedSettingsReadyListeners.clear();
-    vi.spyOn(document, "addEventListener").mockImplementation((type, listener, options) => {
-      if (type === "settings:ready") {
-        trackedSettingsReadyListeners.add(listener);
-      }
-      return originalAddEventListener(type, listener, options);
-    });
-    vi.spyOn(document, "removeEventListener").mockImplementation((type, listener, options) => {
-      if (type === "settings:ready") {
-        trackedSettingsReadyListeners.delete(listener);
-      }
-      return originalRemoveEventListener(type, listener, options);
-    });
+    vi.resetModules();
+    delete window.settingsReadyPromise;
   });
 
   afterEach(() => {
-    trackedSettingsReadyListeners.forEach((listener) => {
-      originalRemoveEventListener("settings:ready", listener);
-    });
-    trackedSettingsReadyListeners.clear();
     vi.restoreAllMocks();
-    removeModuleMocks();
     vi.resetModules();
-    if ("settingsReadyPromise" in window) {
-      delete window.settingsReadyPromise;
-    }
+    delete window.settingsReadyPromise;
     document.body.innerHTML = "";
   });
 
-  const renderReadyEvent = (module) => {
-    const { renderSettingsControls } = module;
-    const defaultSettings = {
-      displayMode: "standard",
-      motionEffects: "off",
-      featureFlags: {}
-    };
-    renderSettingsControls(defaultSettings, [], {});
-  };
-
   it("waits for the settings:ready event before resolving", async () => {
-    const module = await import(modulePath);
-    const { settingsReadyPromise } = module;
+    const { settingsReadyPromise } = await importSettingsModule();
 
-    let state = "pending";
-    const trackedPromise = settingsReadyPromise.then(() => {
-      state = "resolved";
+    let resolvedValue;
+    const trackedPromise = settingsReadyPromise.then((value) => {
+      resolvedValue = value;
+      return value;
     });
 
-    // Allow any synchronous microtasks to flush to detect premature resolution.
     await Promise.resolve();
-    expect(state).toBe("pending");
+    expect(resolvedValue).toBeUndefined();
 
-    renderReadyEvent(module);
+    const readyEvent = dispatchSettingsReady();
 
-    await expect(trackedPromise).resolves.toBeUndefined();
-    expect(state).toBe("resolved");
+    await expect(trackedPromise).resolves.toBe(readyEvent);
+    expect(resolvedValue).toBe(readyEvent);
   });
 
-  it("resolves immediately if settings:ready has already been dispatched", async () => {
-    const module = await import(modulePath);
+  it("notifies handlers added after the readiness event", async () => {
+    const { settingsReadyPromise } = await importSettingsModule();
 
-    renderReadyEvent(module);
+    const readyEvent = dispatchSettingsReady();
+    await expect(settingsReadyPromise).resolves.toBe(readyEvent);
 
-    const { settingsReadyPromise } = module;
     const onResolve = vi.fn();
     settingsReadyPromise.then(onResolve);
 
     await Promise.resolve();
-    expect(onResolve).toHaveBeenCalledTimes(1);
-    await expect(settingsReadyPromise).resolves.toBeInstanceOf(Event);
+    expect(onResolve).toHaveBeenCalledWith(readyEvent);
   });
 
   it("exposes the readiness promise on window for tests", async () => {
-    const module = await import(modulePath);
-    const { settingsReadyPromise } = module;
+    const { settingsReadyPromise } = await importSettingsModule();
 
     expect(window.settingsReadyPromise).toBe(settingsReadyPromise);
 
-    renderReadyEvent(module);
-    await settingsReadyPromise;
+    const readyEvent = dispatchSettingsReady();
+    await expect(window.settingsReadyPromise).resolves.toBe(readyEvent);
   });
 });
