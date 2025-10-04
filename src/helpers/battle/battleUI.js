@@ -138,8 +138,10 @@ export function enableStatButtons() {
   getStatButtons().forEach((btn) => {
     try {
       btn.disabled = false;
-      if (typeof btn.tabIndex === "number") {
+      if (Number.isFinite(btn?.tabIndex)) {
         btn.tabIndex = 0;
+      } else if (typeof btn?.setAttribute === "function") {
+        btn.setAttribute("tabindex", "0");
       }
       btn.classList.remove("disabled", "selected");
       btn.style.removeProperty("background-color");
@@ -164,8 +166,10 @@ export function disableStatButtons() {
   getStatButtons().forEach((btn) => {
     try {
       btn.disabled = true;
-      if (typeof btn.tabIndex === "number") {
+      if (Number.isFinite(btn?.tabIndex)) {
         btn.tabIndex = -1;
+      } else if (typeof btn?.setAttribute === "function") {
+        btn.setAttribute("tabindex", "-1");
       }
       if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
     } catch {}
