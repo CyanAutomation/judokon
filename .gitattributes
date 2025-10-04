@@ -1,0 +1,11 @@
+# Prevent large model folders from being included in archive exports
+models/** export-ignore
+src/models/** export-ignore
+minilm_temp/** export-ignore
+
+# Treat tokenizer/model artifacts as binary
+*.bin binary
+*.onnx binary
+*.pt binary
+*.ckpt binary
+*.safetensors binary

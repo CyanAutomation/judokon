@@ -4,7 +4,33 @@
   "postCreateCommand": "which rg >/dev/null 2>&1 || (apt-get update && apt-get install -y ripgrep || true)",
   "customizations": {
     "vscode": {
-      "extensions": ["openai.chatgpt"]
+      "extensions": ["openai.chatgpt"],
+      "settings": {
+        // Reduce workspace scanning and file-watcher load for large/optional folders
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/models/**": true,
+          "**/src/models/**": true,
+          "**/minilm_temp/**": true,
+          "**/playwright/**": true,
+          "**/reports/**": true
+        },
+        "files.exclude": {
+          "**/models": true,
+          "**/minilm_temp": true,
+          "**/src/models": true,
+          "**/playwright/**/screenshot.spec.js-snapshots": true,
+          "**/reports": true
+        },
+        "search.exclude": {
+          "**/models/**": true,
+          "**/minilm_temp/**": true,
+          "**/src/models/**": true,
+          "**/playwright/**/screenshot.spec.js-snapshots": true,
+          "**/reports/**": true
+        },
+        "search.useIgnoreFiles": true
+      }
     }
   }
 }
