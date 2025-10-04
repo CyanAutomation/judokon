@@ -623,7 +623,9 @@ describe("classicBattle startCooldown", () => {
     );
     expect(dispatchResults.every((value) => value === false)).toBe(true);
 
-    expect(emitBattleEventSpy.mock.calls.filter(([eventName]) => eventName === "ready").length).toBeGreaterThan(0);
+    expect(
+      emitBattleEventSpy.mock.calls.filter(([eventName]) => eventName === "ready").length
+    ).toBeGreaterThan(0);
     expect(startRoundCycleSpy).toHaveBeenCalled();
     const readyEvent = startRoundCycleSpy.mock.calls.at(0)?.[0];
     expect(readyEvent?.type).toBe("ready");

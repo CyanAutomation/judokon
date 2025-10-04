@@ -49,8 +49,8 @@ function preloadUiService() {
 function collectStatButtons(store) {
   if (store && typeof store === "object" && store.statButtonEls) {
     try {
-      return Object.values(store.statButtonEls).filter((btn) =>
-        btn && typeof btn === "object" && typeof btn.classList !== "undefined"
+      return Object.values(store.statButtonEls).filter(
+        (btn) => btn && typeof btn === "object" && typeof btn.classList !== "undefined"
       );
     } catch {}
   }
@@ -80,9 +80,7 @@ function collectStatButtons(store) {
 function queryStatButtons() {
   try {
     if (typeof document?.querySelectorAll === "function") {
-      return Array.from(
-        document.querySelectorAll("#stat-buttons button[data-stat]")
-      );
+      return Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
     }
   } catch {}
   return [];
