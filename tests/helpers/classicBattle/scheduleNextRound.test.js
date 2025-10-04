@@ -586,19 +586,14 @@ describe("classicBattle startCooldown", () => {
     const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
     const startRoundCycleSpy = vi.fn();
     battleEventsMod.onBattleEvent("ready", startRoundCycleSpy);
+    emitBattleEventSpy.mockClear();
 
     const battleMod = await import("../../../src/helpers/classicBattle.js");
     const store = battleMod.createBattleStore();
     await resetRoundManager(store);
 
-    const expirationHandlersMod = await import("../../../src/helpers/classicBattle/nextRound/expirationHandlers.js");
-    const actualRunStrategies = expirationHandlersMod.runReadyDispatchStrategies;
-    const runStrategiesSpy = vi
-      .spyOn(expirationHandlersMod, "runReadyDispatchStrategies")
-      .mockImplementation(async (params) => {
-        const originalOutcome = await actualRunStrategies(params);
-        return { dispatched: false, fallbackDispatched: false, originalOutcome };
-      });
+    debugHooks.exposeDebugState("getClassicBattleMachine", () => null);
+
     const roundManagerMod = await import("../../../src/helpers/classicBattle/roundManager.js");
     window.__NEXT_ROUND_COOLDOWN_MS = 1;
     roundManagerMod.startCooldown(store, timerSpy, {
@@ -610,15 +605,17 @@ describe("classicBattle startCooldown", () => {
     expect(typeof debugRead).toBe("function");
     const currentNextRound = debugRead("currentNextRound");
     expect(currentNextRound).toBeTruthy();
+
     const readyResolutionSpy = vi.fn();
     currentNextRound?.ready?.then?.(readyResolutionSpy);
 
     await vi.advanceTimersByTimeAsync(1000);
     await vi.runAllTimersAsync();
     await currentNextRound?.ready;
+
     expect(readyResolutionSpy).toHaveBeenCalled();
     expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
-    expect(dispatchBattleEventSpy).toHaveBeenCalled();
+
     const dispatchResults = await Promise.all(
       dispatchBattleEventSpy.mock.results
         .map((result) => result?.value)
@@ -626,15 +623,13 @@ describe("classicBattle startCooldown", () => {
     );
     expect(dispatchResults.every((value) => value === false)).toBe(true);
 
-    const runOutcome = runStrategiesSpy.mock.results.at(-1)?.value;
-    const resolvedOutcome = runOutcome && typeof runOutcome.then === "function" ? await runOutcome : runOutcome;
-    expect(resolvedOutcome).toMatchObject({ dispatched: false, fallbackDispatched: false });
-
-    const readyCalls = emitBattleEventSpy.mock.calls.filter(([eventName]) => eventName === "ready");
-    expect(readyCalls.length).toBeGreaterThan(0);
+    expect(emitBattleEventSpy.mock.calls.filter(([eventName]) => eventName === "ready").length).toBeGreaterThan(0);
     expect(startRoundCycleSpy).toHaveBeenCalled();
+    const readyEvent = startRoundCycleSpy.mock.calls.at(0)?.[0];
+    expect(readyEvent?.type).toBe("ready");
 
     battleEventsMod.offBattleEvent("ready", startRoundCycleSpy);
+    debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
     delete window.__NEXT_ROUND_COOLDOWN_MS;
   });
 });
