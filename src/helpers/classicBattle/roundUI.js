@@ -90,7 +90,14 @@ function queryStatButtons() {
 
 function ensureStatButtonObservers() {
   if (collectStatButtons._observerAttached) {
-    return;
+    const root = collectStatButtons._observerRoot;
+    if (root && root.isConnected === false) {
+      collectStatButtons.invalidateCache();
+    } else if (!root) {
+      collectStatButtons._observerAttached = false;
+    } else {
+      return;
+    }
   }
   if (typeof MutationObserver !== "function") {
     collectStatButtons._observerAttached = true;
@@ -113,20 +120,17 @@ function ensureStatButtonObservers() {
 
 collectStatButtons.invalidateCache = function invalidateCache() {
   collectStatButtons._cachedButtons = undefined;
-  const observerRoot = collectStatButtons._observerRoot;
-  if (observerRoot && observerRoot.isConnected === false) {
-    if (
-      collectStatButtons._observer &&
-      typeof collectStatButtons._observer.disconnect === "function"
-    ) {
-      try {
-        collectStatButtons._observer.disconnect();
-      } catch {}
-    }
-    collectStatButtons._observer = undefined;
-    collectStatButtons._observerRoot = undefined;
-    collectStatButtons._observerAttached = false;
+
+  const observer = collectStatButtons._observer;
+  if (observer && typeof observer.disconnect === "function") {
+    try {
+      observer.disconnect();
+    } catch {}
   }
+
+  collectStatButtons._observer = undefined;
+  collectStatButtons._observerRoot = undefined;
+  collectStatButtons._observerAttached = false;
 };
 
 function clearStatButtonSelections(store) {
