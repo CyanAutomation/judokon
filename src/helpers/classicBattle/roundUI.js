@@ -54,17 +54,71 @@ function collectStatButtons(store) {
       );
     } catch {}
   }
-  if (!collectStatButtons._cachedButtons) {
+  ensureStatButtonObservers();
+
+  const cached = Array.isArray(collectStatButtons._cachedButtons)
+    ? collectStatButtons._cachedButtons
+    : null;
+  if (cached && cached.length > 0) {
+    const disconnected = cached.some((btn) => !btn || btn.isConnected === false);
+    if (!disconnected) {
+      return cached;
+    }
+  }
+
+  const buttons = queryStatButtons();
+  if (buttons.length > 0) {
+    collectStatButtons._cachedButtons = buttons;
+    return buttons;
+  }
+
+  collectStatButtons._cachedButtons = undefined;
+  return buttons;
+}
+
+function queryStatButtons() {
+  try {
+    if (typeof document?.querySelectorAll === "function") {
+      return Array.from(
+        document.querySelectorAll("#stat-buttons button[data-stat]")
+      );
+    }
+  } catch {}
+  return [];
+}
+
+function ensureStatButtonObservers() {
+  if (collectStatButtons._observerAttached) {
+    return;
+  }
+  if (typeof MutationObserver !== "function") {
+    collectStatButtons._observerAttached = true;
+    return;
+  }
+  try {
+    const root = document?.getElementById?.("stat-buttons");
+    if (!root) {
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      collectStatButtons.invalidateCache();
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    collectStatButtons._observerAttached = true;
+    collectStatButtons._observer = observer;
+  } catch {}
+}
+
+collectStatButtons.invalidateCache = function invalidateCache() {
+  collectStatButtons._cachedButtons = undefined;
+  if (collectStatButtons._observer && typeof collectStatButtons._observer.disconnect === "function") {
     try {
-      if (typeof document?.querySelectorAll === "function") {
-        collectStatButtons._cachedButtons = Array.from(
-          document.querySelectorAll("#stat-buttons button[data-stat]")
-        );
-      }
+      collectStatButtons._observer.disconnect();
     } catch {}
   }
-  return collectStatButtons._cachedButtons || [];
-}
+  collectStatButtons._observer = undefined;
+  collectStatButtons._observerAttached = false;
+};
 
 function clearStatButtonSelections(store) {
   const buttons = collectStatButtons(store);
