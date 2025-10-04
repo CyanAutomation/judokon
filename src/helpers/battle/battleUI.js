@@ -136,7 +136,12 @@ function trace(tag, extra) {
 export function enableStatButtons() {
   trace("enableStatButtons:begin");
   getStatButtons().forEach((btn) => {
-    if (!btn) return;
+    if (
+      !btn ||
+      (typeof btn !== "object" && typeof btn !== "function")
+    ) {
+      return;
+    }
     try {
       btn.disabled = false;
       if (Number.isFinite(btn.tabIndex)) {
@@ -165,7 +170,12 @@ export function enableStatButtons() {
 export function disableStatButtons() {
   trace("disableStatButtons:begin");
   getStatButtons().forEach((btn) => {
-    if (!btn) return;
+    if (
+      !btn ||
+      (typeof btn !== "object" && typeof btn !== "function")
+    ) {
+      return;
+    }
     try {
       btn.disabled = true;
       if (Number.isFinite(btn.tabIndex)) {
