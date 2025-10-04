@@ -222,6 +222,9 @@ export function resetStatButtons(
   } catch {}
   const { onFrame, cancel } = scheduler;
   getStatButtons().forEach((btn) => {
+    if (!btn) {
+      return;
+    }
     btn.classList.remove("selected");
     btn.style.removeProperty("background-color");
     // Ensure disabled class is consistent with disabled attribute
