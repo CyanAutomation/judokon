@@ -119,12 +119,28 @@ function trace(tag, extra) {
     );
   } catch {}
 }
+
+/**
+ * Explicitly enable all stat buttons by clearing disabled state and class.
+ * Safe to call multiple times; only touches known attributes/classes.
+ *
+ * @pseudocode
+ * 1. For each stat button:
+ *    - Set `disabled = false`.
+ *    - Set `tabIndex = 0` to return the button to the tab order.
+ *    - Remove the `disabled` and `selected` classes.
+ *    - Clear any inline `background-color` style.
+ *
+ * @returns {void}
+ */
 export function enableStatButtons() {
   trace("enableStatButtons:begin");
   getStatButtons().forEach((btn) => {
     try {
       btn.disabled = false;
-      btn.classList.remove("disabled");
+      btn.tabIndex = 0;
+      btn.classList.remove("disabled", "selected");
+      btn.style.removeProperty("background-color");
     } catch {}
   });
   trace("enableStatButtons:end");
@@ -132,12 +148,23 @@ export function enableStatButtons() {
 
 /**
  * Explicitly disable all stat buttons and add disabled class.
+ *
+ * @pseudocode
+ * 1. For each stat button:
+ *    - Set `disabled = true`.
+ *    - Set `tabIndex = -1` to remove it from the tab order.
+ *    - Add the `disabled` class when missing.
+ *
+ * @returns {void}
  */
 export function disableStatButtons() {
   trace("disableStatButtons:begin");
   getStatButtons().forEach((btn) => {
     try {
       btn.disabled = true;
+      if (typeof btn.tabIndex === "number") {
+        btn.tabIndex = -1;
+      }
       if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
     } catch {}
   });
