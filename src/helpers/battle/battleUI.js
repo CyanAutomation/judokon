@@ -136,11 +136,12 @@ function trace(tag, extra) {
 export function enableStatButtons() {
   trace("enableStatButtons:begin");
   getStatButtons().forEach((btn) => {
+    if (!btn) return;
     try {
       btn.disabled = false;
-      if (Number.isFinite(btn?.tabIndex)) {
+      if (Number.isFinite(btn.tabIndex)) {
         btn.tabIndex = 0;
-      } else if (typeof btn?.setAttribute === "function") {
+      } else if (typeof btn.setAttribute === "function") {
         btn.setAttribute("tabindex", "0");
       }
       btn.classList.remove("disabled", "selected");
@@ -164,11 +165,12 @@ export function enableStatButtons() {
 export function disableStatButtons() {
   trace("disableStatButtons:begin");
   getStatButtons().forEach((btn) => {
+    if (!btn) return;
     try {
       btn.disabled = true;
-      if (Number.isFinite(btn?.tabIndex)) {
+      if (Number.isFinite(btn.tabIndex)) {
         btn.tabIndex = -1;
-      } else if (typeof btn?.setAttribute === "function") {
+      } else if (typeof btn.setAttribute === "function") {
         btn.setAttribute("tabindex", "-1");
       }
       if (!btn.classList.contains("disabled")) btn.classList.add("disabled");
