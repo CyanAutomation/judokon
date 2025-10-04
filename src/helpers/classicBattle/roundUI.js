@@ -45,6 +45,32 @@ function preloadUiService() {
     })
     .catch(() => {});
 }
+
+function collectStatButtons(store) {
+  if (store && typeof store === "object" && store.statButtonEls) {
+    try {
+      return Object.values(store.statButtonEls).filter((btn) =>
+        btn && typeof btn === "object" && typeof btn.classList !== "undefined"
+      );
+    } catch {}
+  }
+  try {
+    if (typeof document?.querySelectorAll === "function") {
+      return Array.from(document.querySelectorAll("#stat-buttons button[data-stat]"));
+    }
+  } catch {}
+  return [];
+}
+
+function clearStatButtonSelections(store) {
+  const buttons = collectStatButtons(store);
+  buttons.forEach((btn) => {
+    try {
+      btn.classList.remove("selected");
+      btn.style?.removeProperty?.("background-color");
+    } catch {}
+  });
+}
 function scheduleUiServicePreload() {
   if (hasScheduledUiServicePreload) return;
   hasScheduledUiServicePreload = true;
@@ -447,7 +473,6 @@ export function handleStatSelectedEvent(event, deps = {}) {
  * @param {typeof computeNextRoundCooldown} [deps.computeNextRoundCooldown]
  * @param {() => any} [deps.createRoundTimer]
  * @param {(timer: any, secs: number) => void} [deps.attachCooldownRenderer]
- * @param {typeof resetStatButtons} [deps.resetStatButtons]
  * @param {typeof syncScoreDisplay} [deps.syncScoreDisplay]
  * @param {typeof updateDebugPanel} [deps.updateDebugPanel]
  * @pseudocode
@@ -455,7 +480,7 @@ export function handleStatSelectedEvent(event, deps = {}) {
  * 2. Surface the outcome message and update the score using the injected scoreboard API.
  * 3. When the match ends, clear the round counter, show the summary modal, and emit `matchOver`.
  * 4. Otherwise, compute the next-round cooldown and, if not orchestrated, configure and start the timer with injected helpers.
- * 5. Reset stat buttons on the next paint tick and refresh the debug panel.
+ * 5. Clear stat button visuals without re-enabling them and refresh the debug panel.
  * @returns {Promise<void>}
  */
 export async function handleRoundResolvedEvent(event, deps = {}) {
@@ -465,7 +490,6 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     computeNextRoundCooldown: computeNextRoundCooldownFn = computeNextRoundCooldown,
     createRoundTimer: createRoundTimerFn,
     attachCooldownRenderer: attachCooldownRendererFn,
-    resetStatButtons: resetStatButtonsFn = resetStatButtons,
     syncScoreDisplay: syncScoreDisplayFn = syncScoreDisplay,
     updateDebugPanel: updateDebugPanelFn = updateDebugPanel
   } = deps;
@@ -505,8 +529,12 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
     }
   } catch {}
   const runReset = () => {
+    clearStatButtonSelections(store);
     try {
-      if (typeof resetStatButtonsFn === "function") resetStatButtonsFn();
+      disableStatButtons?.();
+    } catch {}
+    try {
+      emitBattleEvent("statButtons:disable");
     } catch {}
   };
   let didReset = false;
