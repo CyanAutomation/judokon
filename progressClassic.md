@@ -156,6 +156,18 @@ Key:
 - Added `roundManager` traces: `emit:roundStarted` in `startRound`, and `schedule:nextRound` at cooldown initialization.
 - Unit sequencing test — PASS. Long-run probe — still FAILS; error context indicates machineState=cooldown with Time Left 0s and all buttons disabled at Round 2 → likely missing `roundStarted` emission after cooldown. Next step: parse console logs from the probe to see if `schedule:nextRound` occurs without a subsequent `emit:roundStarted`.
 
+**Phase 7 actions (instrumentation review + stress reruns):**
+
+- Installed Playwright Chromium bundle via `npx playwright install chromium` so stress probes can execute locally.
+- Reproduced the long-run probe under default settings: `npx playwright test playwright/battle-classic/long-run-hang-probe.spec.js` → PASS (~30s).
+- Exercised the spec with `--repeat-each=5` to chase flakes; all 5 iterations passed (~60s total).
+- Captured verbose Playwright logs (`DEBUG=pw:api`) over two iterations; saw repeated `element is not enabled` retries during cooldown but each loop eventually re-enabled before the 10s timeout and the test passed (~21s).
+- Targeted unit check remains green: `npx vitest run tests/helpers/classicBattle/roundLifecycle.sequence.test.js` → PASS.
+
+**Outcome:**
+
+- Unable to reproduce the stat-button hang after installing browsers and rerunning with stress/debug logging. Logs confirm temporary disabled states lasting ~1s during cooldown, but no permanent deadlock observed. Next step: inspect existing `classicBattle.trace` logs to correlate cooldown scheduling with stat-button enablement and narrow scenarios that could keep buttons disabled past the 10s probe window.
+
 **Phase 3 actions (re-enable on resolution + retest):**
 
 - In `handleStatSelectedEvent`, explicitly call `disableStatButtons()` alongside emitting `statButtons:disable`.
