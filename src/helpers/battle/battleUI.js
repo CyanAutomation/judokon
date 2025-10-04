@@ -136,10 +136,7 @@ function trace(tag, extra) {
 export function enableStatButtons() {
   trace("enableStatButtons:begin");
   getStatButtons().forEach((btn) => {
-    if (
-      !btn ||
-      (typeof btn !== "object" && typeof btn !== "function")
-    ) {
+    if (!btn) {
       return;
     }
     try {
@@ -170,10 +167,7 @@ export function enableStatButtons() {
 export function disableStatButtons() {
   trace("disableStatButtons:begin");
   getStatButtons().forEach((btn) => {
-    if (
-      !btn ||
-      (typeof btn !== "object" && typeof btn !== "function")
-    ) {
+    if (!btn) {
       return;
     }
     try {
