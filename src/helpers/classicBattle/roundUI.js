@@ -551,7 +551,7 @@ export function handleStatSelectedEvent(event, deps = {}) {
  * 2. Surface the outcome message and update the score using the injected scoreboard API.
  * 3. When the match ends, clear the round counter, show the summary modal, and emit `matchOver`.
  * 4. Otherwise, compute the next-round cooldown and, if not orchestrated, configure and start the timer with injected helpers.
- * 5. Clear stat button visuals without re-enabling them and refresh the debug panel.
+ * 5. Clear stat button visuals, reset their interactive state, and refresh the debug panel.
  * @returns {Promise<void>}
  */
 export async function handleRoundResolvedEvent(event, deps = {}) {
@@ -602,8 +602,7 @@ export async function handleRoundResolvedEvent(event, deps = {}) {
   const runReset = () => {
     clearStatButtonSelections(store);
     try {
-      disableStatButtons?.();
-      emitBattleEvent("statButtons:disable");
+      resetStatButtons?.();
     } catch {}
   };
   let didReset = false;
