@@ -60,10 +60,11 @@ function collectStatButtons(store) {
     ? collectStatButtons._cachedButtons
     : null;
   if (cached && cached.length > 0) {
-    const disconnected = cached.some((btn) => !btn || btn.isConnected === false);
-    if (!disconnected) {
+    const allConnected = cached.every((btn) => btn && btn.isConnected !== false);
+    if (allConnected) {
       return cached;
     }
+    collectStatButtons._cachedButtons = undefined;
   }
 
   const buttons = queryStatButtons();
@@ -106,18 +107,26 @@ function ensureStatButtonObservers() {
     observer.observe(root, { childList: true, subtree: true });
     collectStatButtons._observerAttached = true;
     collectStatButtons._observer = observer;
+    collectStatButtons._observerRoot = root;
   } catch {}
 }
 
 collectStatButtons.invalidateCache = function invalidateCache() {
   collectStatButtons._cachedButtons = undefined;
-  if (collectStatButtons._observer && typeof collectStatButtons._observer.disconnect === "function") {
-    try {
-      collectStatButtons._observer.disconnect();
-    } catch {}
+  const observerRoot = collectStatButtons._observerRoot;
+  if (observerRoot && observerRoot.isConnected === false) {
+    if (
+      collectStatButtons._observer &&
+      typeof collectStatButtons._observer.disconnect === "function"
+    ) {
+      try {
+        collectStatButtons._observer.disconnect();
+      } catch {}
+    }
+    collectStatButtons._observer = undefined;
+    collectStatButtons._observerRoot = undefined;
+    collectStatButtons._observerAttached = false;
   }
-  collectStatButtons._observer = undefined;
-  collectStatButtons._observerAttached = false;
 };
 
 function clearStatButtonSelections(store) {
