@@ -967,6 +967,9 @@ async function handleNextRoundExpiration(controls, btn, options = {}) {
       { suppressInProduction: true }
     );
   }
+  if (!dispatched && !fallbackDispatched) {
+    emitBattleEvent("ready");
+  }
   finalizeReadyControls(controls, dispatched, { forceResolve: !dispatched });
   safeRound(
     "handleNextRoundExpiration.traceEnd",

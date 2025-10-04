@@ -134,6 +134,16 @@ vi.mock("../../../src/helpers/battleEvents.js", async (importOriginal) => {
   };
 });
 
+vi.mock("../../../src/helpers/classicBattle/battleEvents.js", async (importOriginal) => {
+  // Wrap emitBattleEvent so the classic battle event bus remains observable in tests.
+  const actual = await importOriginal();
+  const emitBattleEvent = vi.fn((type, detail) => actual.emitBattleEvent(type, detail));
+  return {
+    ...actual,
+    emitBattleEvent
+  };
+});
+
 const dispatchBattleEventSpy = eventDispatcherMock.spy;
 
 async function resetRoundManager(store) {
@@ -331,6 +341,7 @@ describe("classicBattle startCooldown", () => {
       machineDispatchSpy.mock.calls.filter(([eventName]) => eventName === "ready");
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
+    await vi.advanceTimersByTimeAsync(1000);
     await vi.runAllTimersAsync();
     expect(getReadyDispatchCalls()).toHaveLength(1);
 
@@ -562,4 +573,68 @@ describe("classicBattle startCooldown", () => {
 
     setTestMode(false);
   }, 10000);
+
+  it("emits ready and starts the round cycle when machine dispatch declines", async () => {
+    document.getElementById("next-round-timer")?.remove();
+    const { nextButton } = createTimerNodes();
+    nextButton.disabled = true;
+
+    dispatchBattleEventSpy.mockResolvedValue(false);
+
+    const battleEventsMod = await import("../../../src/helpers/classicBattle/battleEvents.js");
+    battleEventsMod.__resetBattleEventTarget();
+    const emitBattleEventSpy = vi.spyOn(battleEventsMod, "emitBattleEvent");
+    const startRoundCycleSpy = vi.fn();
+    battleEventsMod.onBattleEvent("ready", startRoundCycleSpy);
+
+    const battleMod = await import("../../../src/helpers/classicBattle.js");
+    const store = battleMod.createBattleStore();
+    await resetRoundManager(store);
+
+    const expirationHandlersMod = await import("../../../src/helpers/classicBattle/nextRound/expirationHandlers.js");
+    const actualRunStrategies = expirationHandlersMod.runReadyDispatchStrategies;
+    const runStrategiesSpy = vi
+      .spyOn(expirationHandlersMod, "runReadyDispatchStrategies")
+      .mockImplementation(async (params) => {
+        const originalOutcome = await actualRunStrategies(params);
+        return { dispatched: false, fallbackDispatched: false, originalOutcome };
+      });
+    const roundManagerMod = await import("../../../src/helpers/classicBattle/roundManager.js");
+    window.__NEXT_ROUND_COOLDOWN_MS = 1;
+    roundManagerMod.startCooldown(store, timerSpy, {
+      dispatchBattleEvent: dispatchBattleEventSpy,
+      isOrchestrated: () => false
+    });
+
+    const debugRead = globalThis.__classicBattleDebugRead;
+    expect(typeof debugRead).toBe("function");
+    const currentNextRound = debugRead("currentNextRound");
+    expect(currentNextRound).toBeTruthy();
+    const readyResolutionSpy = vi.fn();
+    currentNextRound?.ready?.then?.(readyResolutionSpy);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.runAllTimersAsync();
+    await currentNextRound?.ready;
+    expect(readyResolutionSpy).toHaveBeenCalled();
+    expect(debugRead("handleNextRoundExpirationCalled")).toBe(true);
+    expect(dispatchBattleEventSpy).toHaveBeenCalled();
+    const dispatchResults = await Promise.all(
+      dispatchBattleEventSpy.mock.results
+        .map((result) => result?.value)
+        .filter((value) => value !== undefined)
+    );
+    expect(dispatchResults.every((value) => value === false)).toBe(true);
+
+    const runOutcome = runStrategiesSpy.mock.results.at(-1)?.value;
+    const resolvedOutcome = runOutcome && typeof runOutcome.then === "function" ? await runOutcome : runOutcome;
+    expect(resolvedOutcome).toMatchObject({ dispatched: false, fallbackDispatched: false });
+
+    const readyCalls = emitBattleEventSpy.mock.calls.filter(([eventName]) => eventName === "ready");
+    expect(readyCalls.length).toBeGreaterThan(0);
+    expect(startRoundCycleSpy).toHaveBeenCalled();
+
+    battleEventsMod.offBattleEvent("ready", startRoundCycleSpy);
+    delete window.__NEXT_ROUND_COOLDOWN_MS;
+  });
 });
