@@ -38,12 +38,10 @@
   --space-large: var(--space-lg);
 
   /* Navbar heights adjusted for mobile Safari */
-  --header-height: 8vh;
   --header-height: clamp(56px, 8vh, 64px);
   --footer-height: 8vh;
 
   @supports (height: 1dvh) {
-    --header-height: 8dvh;
     --header-height: clamp(56px, 8dvh, 64px);
     --footer-height: 8dvh;
   }
