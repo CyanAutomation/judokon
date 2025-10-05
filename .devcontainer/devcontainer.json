@@ -4,7 +4,6 @@
   "postCreateCommand": "which rg >/dev/null 2>&1 || (apt-get update && apt-get install -y ripgrep || true)",
   "customizations": {
     "vscode": {
-      "extensions": ["openai.chatgpt"],
       "settings": {
         // Reduce workspace scanning and file-watcher load for large/optional folders
         "files.watcherExclude": {
