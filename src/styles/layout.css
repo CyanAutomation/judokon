@@ -124,10 +124,10 @@ body {
 }
 
 .logo-container a:focus-visible {
-  outline: 2px solid var(--color-text-inverted);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-text-inverted) 60%, transparent);
+  outline: 3px solid var(--color-text-inverted);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 0 5px color-mix(in srgb, #000000 65%, var(--color-text-inverted));
 }
 
 .logo {
