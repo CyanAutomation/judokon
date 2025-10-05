@@ -14,11 +14,27 @@ import { isEnabled, enableFlag } from "../featureFlags.js";
  * @param {HTMLElement} [container] - Optional containing element to mark ready.
  * @returns {void}
  */
+function toButtonArray(buttons) {
+  if (!buttons) return [];
+  if (Array.isArray(buttons)) return buttons.filter(Boolean);
+  return Array.from(buttons).filter(Boolean);
+}
+
+function applyDisabledState(btn, disabled) {
+  if (!btn) return;
+  btn.disabled = disabled;
+  btn.tabIndex = disabled ? -1 : 0;
+  if (disabled) {
+    btn.classList.add("disabled");
+  } else {
+    btn.classList.remove("disabled");
+  }
+}
+
 export function enableStatButtons(buttons, container) {
-  buttons.forEach((btn) => {
-    btn.disabled = false;
-    btn.tabIndex = 0;
-    btn.classList.remove("disabled", "selected");
+  toButtonArray(buttons).forEach((btn) => {
+    applyDisabledState(btn, false);
+    btn.classList.remove("selected");
     btn.style.removeProperty("background-color");
   });
   if (container) container.dataset.buttonsReady = "true";
@@ -38,10 +54,8 @@ export function enableStatButtons(buttons, container) {
  * @returns {void}
  */
 export function disableStatButtons(buttons, container) {
-  buttons.forEach((btn) => {
-    btn.disabled = true;
-    btn.tabIndex = -1;
-    btn.classList.add("disabled");
+  toButtonArray(buttons).forEach((btn) => {
+    applyDisabledState(btn, true);
   });
   if (container) container.dataset.buttonsReady = "false";
 }

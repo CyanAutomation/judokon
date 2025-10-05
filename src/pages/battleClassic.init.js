@@ -1215,6 +1215,14 @@ function handleRoundCounterFallback(visibleRound) {
 async function handleStatButtonClick(store, stat, btn) {
   console.debug("battleClassic: stat button click handler invoked");
   if (!btn || btn.disabled) return;
+  const container = document.getElementById("stat-buttons");
+  const buttons = container
+    ? Array.from(container.querySelectorAll("button[data-stat]"))
+    : [];
+  if (buttons.length > 0) {
+    disableStatButtons(buttons, container);
+  }
+
   const delayOverride = prepareUiBeforeSelection();
   const { playerVal, opponentVal } = resolveStatValues(store, stat);
   let result;
@@ -1231,10 +1239,11 @@ async function handleStatButtonClick(store, stat, btn) {
   }
 
   // Disable stat buttons after selection to prevent multiple clicks
-  const container = document.getElementById("stat-buttons");
-  if (container) {
-    const buttons = container.querySelectorAll("button[data-stat]");
-    disableStatButtons(buttons, container);
+  if (buttons.length === 0 && container) {
+    const fallbackButtons = Array.from(container.querySelectorAll("button[data-stat]"));
+    if (fallbackButtons.length > 0) {
+      disableStatButtons(fallbackButtons, container);
+    }
   }
 
   if (result) {
