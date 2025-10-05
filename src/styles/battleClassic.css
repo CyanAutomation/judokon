@@ -20,6 +20,7 @@
   margin: var(--space-xs);
   box-shadow: var(--shadow-base);
   text-align: center;
+  color: var(--color-text);
 }
 
 .battle-status-header p {
