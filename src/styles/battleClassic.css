@@ -72,16 +72,55 @@
 .battle-controls {
   display: flex;
   gap: var(--space-sm);
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   flex-wrap: wrap;
   margin-top: var(--space-lg);
+  padding: var(--space-sm);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-base);
 }
 
-.battle-controls button {
-  flex: 1;
-  min-width: 120px;
-  max-width: 200px;
+.battle-controls .battle-control-button {
+  flex: 1 1 160px;
+  min-width: 140px;
+  max-width: 220px;
+  min-height: var(--touch-target-size, 48px);
+}
+
+.battle-controls .primary-button {
+  color: var(--color-text-inverted);
+}
+
+.battle-controls .primary-button:not(:disabled) {
+  background-color: var(--color-primary);
+  box-shadow: var(--shadow-hover);
+}
+
+.battle-controls .primary-button:not(:disabled):hover,
+.battle-controls .primary-button:not(:disabled):focus,
+.battle-controls .primary-button:not(:disabled):focus-visible {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+.battle-controls .primary-button:disabled {
+  box-shadow: none;
+}
+
+.battle-controls .secondary-button {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border, rgba(0, 0, 0, 0.1));
+  box-shadow: none;
+}
+
+.battle-controls .secondary-button:not(:disabled):hover,
+.battle-controls .secondary-button:not(:disabled):focus,
+.battle-controls .secondary-button:not(:disabled):focus-visible {
+  background-color: var(--color-tertiary);
+  box-shadow: var(--shadow-base);
 }
 
 /* Responsive adjustments */
@@ -95,7 +134,7 @@
     width: 100%;
   }
 
-  .battle-controls button {
+  .battle-controls .battle-control-button {
     width: 100%;
     max-width: none;
   }
