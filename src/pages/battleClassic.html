@@ -90,17 +90,35 @@
           </section>
 
           <!-- Controls section -->
-          <section class="controls" aria-label="Round controls">
-            <button id="home-button" type="button" data-testid="home-link" class="control-button">
+          <section class="battle-controls" aria-label="Round controls">
+            <button
+              id="home-button"
+              type="button"
+              data-testid="home-link"
+              class="battle-control-button secondary-button"
+            >
               Main Menu
             </button>
-            <button id="next-button" data-testid="next-button" data-role="next-round" disabled>
+            <button
+              id="next-button"
+              data-testid="next-button"
+              data-role="next-round"
+              class="battle-control-button primary-button"
+              disabled
+            >
               Next
             </button>
-            <button id="replay-button" data-testid="replay-button" data-role="replay">
+            <button
+              id="replay-button"
+              data-testid="replay-button"
+              data-role="replay"
+              class="battle-control-button secondary-button"
+            >
               Replay
             </button>
-            <button id="quit-button" data-role="quit">Quit</button>
+            <button id="quit-button" data-role="quit" class="battle-control-button secondary-button">
+              Quit
+            </button>
           </section>
         </div>
       </main>
