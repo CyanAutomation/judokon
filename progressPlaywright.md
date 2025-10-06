@@ -174,5 +174,8 @@ rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwri
 
 - Renamed `playwright/cli.spec.mjs` to `playwright/cli.spec.js` to match the documented merge.
 - Ran `npx playwright test playwright/cli.spec.js --reporter=list`: 1/1 passed in ~2.1s.
+- Verified `cli-flows-improved.spec.mjs` works correctly: 29/29 passed in ~58.8s.
+- Removed duplicate `playwright/cli-flows.spec.mjs` (301 lines) in favor of the improved version (662 lines).
+- Confirmed `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are included and working: 2/2 passed in ~11.8s.
 
-**Next:** Resolve duplicate CLI flow specs (`cli-flows.spec.mjs` vs `cli-flows-improved.spec.mjs`).
+**Status:** COMPLETED - All CLI spec duplicates resolved, key specs verified.

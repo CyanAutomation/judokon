@@ -212,7 +212,7 @@ const DATA_FIELD_ALLOWLIST = {
   "countryCodeMapping.json": false,
   "offline_rag_metadata.json": false,
   "gameModes.json": ["name", "japaneseName", "description", "rules"],
-  "gameTimers.js": ["description", "category"],
+  "gameTimers.js": ["description", "category", "name", "duration", "isTransition"],
   "gokyo.json": ["name", "japanese", "description", "style", "category", "subCategory"],
   "japaneseConverter.js": false,
   "judoka.json": [
@@ -226,10 +226,9 @@ const DATA_FIELD_ALLOWLIST = {
     "stats"
   ],
   "locations.json": ["name", "japaneseName", "description"],
-  "navigationItems.js": ["url", "category"],
+  "navigationItems.js": ["url", "category", "label", "name", "title", "order", "isHidden", "gameModeId"],
   "statNames.js": ["name", "japanese", "description", "category", "power", "speed", "technique"],
   "settings.json": ["displayMode", "aiDifficulty", "sound", "defaults", "volume"],
-  "navigationItems.js": ["url", "category", "label", "name", "title"],
   "svgCodes.json": ["name", "category"],
   "synonyms.json": true,
   "tooltips.json": true, // Allow all fields
@@ -301,14 +300,14 @@ function extractAllowedValues(base, item) {
       : DATA_FIELD_ALLOWLIST.default;
   if (allowlist === false) return undefined;
   if (Array.isArray(item)) {
-    return item.join(" ");
+    return item.map((v) => (typeof v === "object" ? JSON.stringify(v) : v)).join(" ");
   }
   if (typeof item === "object" && item !== null) {
     const values = [];
     const flat = flattenObject(item);
     for (const [key, value] of Object.entries(flat)) {
       if (allowlist === true || allowlist.some((allowedKey) => key.startsWith(allowedKey))) {
-        values.push(value);
+        values.push(`${key}: ${value}`);
       }
     }
     return values.length ? values.join(" ") : undefined;
@@ -444,7 +443,7 @@ async function processJsonObjectEntries(
   for (const [keyPath, value] of flat) {
     const allowed = extractAllowedValuesFn(baseName, { [keyPath]: value });
     if (!allowed) continue;
-    await processItem({ [keyPath]: value }, keyPath, `${keyPath}: ${allowed}`);
+    await processItem({ [keyPath]: value }, keyPath, allowed);
   }
 }
 
