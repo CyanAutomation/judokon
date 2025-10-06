@@ -68,9 +68,7 @@ async function main() {
   const testResultsDir = path.join(REPO_ROOT, "test-results");
   const jsonReportPath = path.join(runDir, "results.json");
 
-  console.log(
-    `▶️  Running long-run probe with repeat-each=${repeatEach}. Artifacts: ${runDir}`
-  );
+  console.log(`▶️  Running long-run probe with repeat-each=${repeatEach}. Artifacts: ${runDir}`);
 
   const cliArgs = [
     "playwright",
@@ -97,12 +95,7 @@ async function main() {
           await fs.cp(testResultsDir, path.join(runDir, "test-results"), {
             recursive: true
           });
-          console.log(
-            `🗂  Copied Playwright artifacts to ${path.join(
-              runDir,
-              "test-results"
-            )}`
-          );
+          console.log(`🗂  Copied Playwright artifacts to ${path.join(runDir, "test-results")}`);
         } catch (error) {
           if (error.code !== "ENOENT") {
             console.warn("⚠️  Unable to copy Playwright artifacts:", error);
@@ -110,13 +103,9 @@ async function main() {
         }
       } finally {
         if (code === 0) {
-          console.log(
-            `✅ Probe completed successfully. Reports stored in ${runDir}`
-          );
+          console.log(`✅ Probe completed successfully. Reports stored in ${runDir}`);
         } else {
-          console.error(
-            `❌ Probe failed with exit code ${code}. Inspect artifacts in ${runDir}`
-          );
+          console.error(`❌ Probe failed with exit code ${code}. Inspect artifacts in ${runDir}`);
         }
         process.exit(code ?? 1);
       }

@@ -49,20 +49,6 @@ async function applyQuickWinTarget(page, { waitForEngine = true, timeout = 5000 
         return null;
       }
     });
-      if (typeof readTarget === "function") {
-        return readTarget() === 1;
-      }
-
-      const store = window.__TEST_API?.inspect?.getBattleStore?.() ?? window.battleStore;
-      const engine = store?.engine;
-      if (!engine) {
-        return false;
-      }
-
-      const getter =
-        typeof engine.getPointsToWin === "function" ? engine.getPointsToWin() : engine.pointsToWin;
-      return Number(getter) === 1;
-    });
 
   await expect.poll(ensureTargetApplied, { timeout }).toBeTruthy();
 }
