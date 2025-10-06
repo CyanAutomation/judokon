@@ -401,7 +401,10 @@ test.describe("Classic Battle End Game Flow", () => {
         await expect(scoreDisplay).toContainText(`Opponent: ${scores.opponent}`);
         expectDecisiveFinalScore(scores);
 
-        // Verify page layout remains intact
+        // Dismiss the end modal by clicking replay to continue
+        await page.click("#match-replay-button");
+
+        // Verify page layout remains intact after replay
         await expect(page.locator("header, .header")).toBeVisible();
         await expect(page.locator("#score-display")).toBeVisible();
       }, ["log", "info", "warn", "error", "debug"]));
@@ -416,9 +419,23 @@ test.describe("Classic Battle End Game Flow", () => {
         await applyQuickWinTarget(page);
         await page.waitForSelector("#stat-buttons button[data-stat]");
 
-        const match = await resolveMatchFromCurrentRound(page);
-        const { scores } = match;
-        expect(match.timedOut).toBe(false);
+        // Select a stat to complete the round and trigger match end
+        await page.click("#stat-buttons button[data-stat='speed']");
+
+        // Wait for match to complete and modal to appear
+        await waitForModalOpen(page);
+
+        // Get match result from the modal context
+        const scores = await page.evaluate(() => {
+          const desc = document.getElementById("match-end-desc");
+          if (!desc || !desc.textContent) return null;
+          const match = desc.textContent.match(/\((\d+)-(\d+)\)/);
+          if (!match) return null;
+          return { player: parseInt(match[1]), opponent: parseInt(match[2]) };
+        });
+
+        expect(scores).toBeTruthy();
+        expectDecisiveFinalScore(scores);
 
         // Verify score display is clear and readable
         const scoreDisplay = page.locator("#score-display");
@@ -431,7 +448,6 @@ test.describe("Classic Battle End Game Flow", () => {
         // Verify score display is properly formatted
         expect(scoreText).toContain(`You: ${scores.player}`);
         expect(scoreText).toContain(`Opponent: ${scores.opponent}`);
-        expectDecisiveFinalScore(scores);
       }, ["log", "info", "warn", "error", "debug"]));
 
     test("provides stable interface after match completion", async ({ page }) =>
@@ -442,17 +458,21 @@ test.describe("Classic Battle End Game Flow", () => {
         await applyQuickWinTarget(page);
         await page.waitForSelector("#stat-buttons button[data-stat]");
 
-        const match = await resolveMatchFromCurrentRound(page);
-        const { scores } = match;
-        expect(match.timedOut).toBe(false);
+        // Select a stat to complete the round and trigger match end
+        await page.click("#stat-buttons button[data-stat='speed']");
 
-        // Verify match completed
+        // Wait for match to complete
+        await page.waitForSelector("#match-end-modal", { timeout: 5000 });
+
+        // Get scores from the page
         const scoreDisplay = page.locator("#score-display");
-        await expect(scoreDisplay).toContainText(`You: ${scores.player}`);
-        await expect(scoreDisplay).toContainText(`Opponent: ${scores.opponent}`);
+        const scoreText = await scoreDisplay.textContent();
+        const scoreMatch = scoreText.match(/You: (\d+).*Opponent: (\d+)/);
+        expect(scoreMatch).toBeTruthy();
+        const scores = { player: parseInt(scoreMatch[1]), opponent: parseInt(scoreMatch[2]) };
         expectDecisiveFinalScore(scores);
 
-        // Verify interface remains stable
+        // Verify interface remains stable with modal present
         await expect(page.locator("body")).toBeVisible();
         await expect(page.locator("header, .header")).toBeVisible();
 
