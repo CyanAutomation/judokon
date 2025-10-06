@@ -114,19 +114,34 @@
   max-width: 220px;
   min-height: var(--touch-target-size, 48px);
   --button-bg: var(--color-surface);
-  --button-hover-bg: color-mix(in srgb, var(--color-surface) 92%, var(--color-text) 8%);
-  --button-active-bg: color-mix(in srgb, var(--color-surface) 88%, var(--color-text) 12%);
+  --button-hover-bg: var(--color-surface);
+  --button-active-bg: var(--color-surface);
   --button-text-color: var(--color-text);
-  --button-disabled-bg: color-mix(in srgb, var(--color-surface) 84%, var(--color-text) 16%);
+  --button-disabled-bg: var(--color-surface);
 }
 
 .battle-controls .primary-button {
   --button-bg: var(--color-primary);
-  --button-hover-bg: color-mix(in srgb, var(--color-primary) 92%, var(--color-text-inverted) 8%);
-  --button-active-bg: color-mix(in srgb, var(--color-primary) 86%, var(--color-text-inverted) 14%);
+  --button-hover-bg: var(--color-primary);
+  --button-active-bg: var(--color-primary);
   --button-text-color: var(--color-text-inverted);
-  --button-disabled-bg: color-mix(in srgb, var(--color-primary) 45%, var(--color-surface) 55%);
+  --button-disabled-bg: var(--color-primary);
   color: var(--color-text-inverted);
+}
+
+/* Provide graceful fallback when color-mix() is unavailable (Chrome 111+, Firefox 113+, Safari 16.2+) */
+@supports (color: color-mix(in srgb, black 50%, white 50%)) {
+  .battle-controls .battle-control-button {
+    --button-hover-bg: color-mix(in srgb, var(--color-surface) 92%, var(--color-text) 8%);
+    --button-active-bg: color-mix(in srgb, var(--color-surface) 88%, var(--color-text) 12%);
+    --button-disabled-bg: color-mix(in srgb, var(--color-surface) 84%, var(--color-text) 16%);
+  }
+
+  .battle-controls .primary-button {
+    --button-hover-bg: color-mix(in srgb, var(--color-primary) 92%, var(--color-text-inverted) 8%);
+    --button-active-bg: color-mix(in srgb, var(--color-primary) 88%, var(--color-text-inverted) 12%);
+    --button-disabled-bg: color-mix(in srgb, var(--color-primary) 45%, var(--color-surface) 55%);
+  }
 }
 
 .battle-controls .primary-button:not(:disabled) {
@@ -136,7 +151,7 @@
 
 .battle-controls .battle-control-button:disabled {
   box-shadow: none;
-  opacity: 0.72;
+  opacity: 0.7;
 }
 
 .battle-controls .primary-button:not(:disabled):hover,
