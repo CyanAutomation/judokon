@@ -843,6 +843,9 @@ function determineTags(relativePath, ext, isTest) {
   if (ext === ".js" || ext === ".ts") {
     return [isTest ? "test-code" : "code"];
   }
+  if (ext === ".css") {
+    return ["styling", "css"];
+  }
   const tags = ["prd"];
   if (relativePath.startsWith("design/productRequirementsDocuments")) {
     tags.push("design-doc");

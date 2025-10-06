@@ -106,6 +106,64 @@ it("should handle RAF", () => {
 - Test complete user workflows
 - Located in `playwright/` directory
 
+## Playwright Test API Surface
+
+JU-DO-KON! uses a clear distinction between public and private test APIs for Playwright tests.
+
+### Public Test API (`window.__TEST_API`)
+
+The public test API provides stable, documented methods for controlling test behavior:
+
+```js
+// Timer control
+window.__TEST_API.timers.expireSelectionTimer()
+window.__TEST_API.timers.setCountdown(seconds)
+
+// State management
+window.__TEST_API.state.dispatchBattleEvent('matchOver')
+
+// Battle inspection
+const store = window.__TEST_API.inspect.getBattleStore()
+```
+
+**When to use:** For deterministic test flows that mirror production behavior. These APIs are stable and won't break without notice.
+
+### Private Test Fixtures (`window.testFixtures`)
+
+Private fixtures are injected into the page context for test-specific helpers:
+
+```js
+// Animation testing
+window.testFixtures.testHooks.disableHoverAnimations()
+window.testFixtures.testHooks.enableHoverAnimations()
+
+// Quick win setup
+await window.testFixtures.classicQuickWin.apply()
+const target = window.testFixtures.classicQuickWin.readTarget()
+```
+
+**When to use:** For test-only functionality that shouldn't be exposed in production. These are subject to change and should be documented as private.
+
+### Test Setup Variables
+
+Test setup variables are injected via `page.addInitScript()`:
+
+```js
+// Timer overrides
+window.__OVERRIDE_TIMERS = { roundTimer: 1 }
+
+// Feature flags
+window.__FF_OVERRIDES = { showRoundSelectModal: true }
+
+// Test mode
+window.__TEST_MODE = { enabled: true, seed: 42 }
+
+// Cooldown settings
+window.__NEXT_ROUND_COOLDOWN_MS = 500
+```
+
+**When to use:** For configuring test environment behavior. These should be moved to fixtures if they become complex.
+
 ## Running Tests
 
 ```bash
@@ -122,9 +180,62 @@ npx playwright test
 npx playwright test battle-classic/
 ```
 
+## Playwright Debugging
+
+### Targeted Test Execution
+
+```bash
+# Run specific test by name
+npx playwright test --grep "completes match with first-to-1 win condition"
+
+# Run tests in specific file
+npx playwright test playwright/battle-classic/end-modal.spec.js
+
+# Run with video recording
+npx playwright test --video=retain-on-failure
+```
+
+### Debugging Modal and UI Issues
+
+```bash
+# Capture screenshots on failure
+npx playwright test --screenshot=only-on-failure
+
+# Slow down execution for debugging
+npx playwright test --slowMo=1000
+
+# Headed mode for visual debugging
+npx playwright test --headed
+```
+
+### Test Fixtures and Helpers
+
+Located in `playwright/fixtures/`:
+
+- `commonSetup.js` - Base test configuration
+- `waits.js` - Wait helpers for UI states
+- `testHooks.js` - Animation and interaction helpers
+- `classicQuickWin.js` - Deterministic win setup
+
+### Common Test Patterns
+
+```js
+// Wait for modal to appear
+await waitForModalOpen(page)
+
+// Mute console during test
+await withMutedConsole(async () => {
+  // Test code that might log
+})
+
+// Quick win setup
+await applyQuickWinTarget(page)
+```
+
 ## Test Utilities
 
 ### Console Management
+
 ```js
 import { withMutedConsole } from "./utils/console.js";
 
@@ -134,6 +245,7 @@ await withMutedConsole(async () => {
 ```
 
 ### Component Testing
+
 ```js
 import { createTestComponent } from "./helpers/componentTestUtils.js";
 

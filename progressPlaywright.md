@@ -138,7 +138,7 @@ If you want, I can implement any (or all) of the following in a single small PR 
 1. Add a diagnostic helper and instrument `playwright/battle-classic/end-modal.spec.js` to capture the modal DOM, attributes, and `window.battleStore` state when the modal does not appear — and include a short explanation of how to reproduce locally. **COMPLETED:** Added diagnostics to `waitForMatchCompletion()` helper; ran full end-modal suite (8 tests passed in ~20.8s); no diagnostics triggered in this run, but code is in place for future failures.
 2. Create a `playwright/tests/waitHelpers.js` (or extend `playwright/fixtures/waits.js`) with small helpers for `waitForSnackbar`, `waitForModalOpen`, and `waitForCountdown` and refactor 3 specs to use them. **COMPLETED:** Extended `playwright/fixtures/waits.js` with `waitForSnackbar`, `waitForModalOpen`, and `waitForCountdown` helpers. Refactored `end-modal.spec.js`, `countdown.spec.js`, and `cli-flows.spec.mjs` to use the new helpers. All refactored tests pass (end-modal: 8/8 in 20.8s, countdown: 1/1 in 3.9s, cli-flows: 4/4 in 17.4s).
 3. Audit `playwright.config.js` and produce a small report listing the spec files matched by the test glob and any orphaned spec files.
-4. Update this `progressPlaywright.md` file (done) and add a short `tests/README.md` describing the Test API vs private hooks and how to run targeted Playwright debugging.
+4. Update this `progressPlaywright.md` file (done) and add a short `tests/README.md` describing the Test API vs private hooks and how to run targeted Playwright debugging. **COMPLETED:** Added comprehensive Playwright Test API documentation to `tests/README.md` including public vs private APIs, debugging commands, and common patterns.
 
 Tell me which of the items above you want me to implement first and I will open a small branch + PR (or make the changes directly in `main` if you prefer).
 
@@ -185,3 +185,12 @@ rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwri
 - `end-modal.spec.js`: 9/9 tests passed (35.1s total runtime).
 
 **Status:** COMPLETED - Test API surface audit complete. Moved `__testHooks` and `__classicQuickWin` to fixtures, updated specs, and resolved modal interaction issues in end-modal tests.
+
+**Documentation Task Completed:** Added comprehensive Playwright Test API documentation to `tests/README.md` including:
+
+- Public Test API (`window.__TEST_API`) usage and examples
+- Private Test Fixtures (`window.testFixtures`) with examples
+- Test Setup Variables and their purposes
+- Playwright debugging commands and techniques
+- Test fixtures and helpers reference
+- Common test patterns and utilities
