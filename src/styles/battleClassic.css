@@ -32,7 +32,7 @@
   font-size: var(--font-extra-large);
   font-weight: 700;
   letter-spacing: 0.02em;
-  margin-bottom: calc(var(--space-md) - var(--space-sm));
+  margin-bottom: var(--space-xs);
 }
 
 .battle-status-header #next-round-timer,
