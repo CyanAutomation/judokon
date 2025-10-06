@@ -52,26 +52,23 @@ import { renderFeatureFlags } from "./settings/renderFeatureFlags.js";
  * 1. Create `settingsReadyPromise` resolved when `settings:ready` is dispatched.
  * 2. Attach it to `window` so tests can await it.
  */
-/**
- * A promise that resolves when the Settings UI has finished rendering and
- * dispatched the `settings:ready` event.
- *
- * @summary This promise provides a reliable signal for external scripts or tests
- * to know when the Settings page's DOM is ready and its controls are initialized.
- * When no DOM is available (e.g., in a Node environment), the promise resolves
- * immediately to keep module imports side-effect free.
- *
- * @pseudocode
- * 1. A new `Promise` is created.
- * 2. A one-time event listener is attached to `document` for the `settings:ready` event.
- * 3. When the `settings:ready` event is dispatched (typically after `renderSettingsControls` completes), the promise resolves.
- * 4. This allows other parts of the application to `await` this promise to ensure the settings UI is fully loaded before interacting with it.
- *
- * @type {Promise<void>}
- * @param {(value?: void) => void} resolve - Internal resolver for readiness.
- */
 const hasDocument = typeof document !== "undefined";
 
+/**
+ * Promise that resolves once the Settings UI dispatches `settings:ready`.
+ *
+ * @summary Provides a synchronization point for scripts/tests awaiting the
+ * Settings page to finish rendering. Falls back to an already-resolved promise
+ * when no DOM is present, keeping server-side imports side-effect free.
+ *
+ * @pseudocode
+ * 1. Detect whether `document` is available via `hasDocument`.
+ * 2. If available, create a new `Promise` and attach a one-time `settings:ready`
+ *    listener that resolves it.
+ * 3. If not available, return `Promise.resolve()` so consumers can still await readiness.
+ *
+ * @returns {Promise<void>} Resolves once the settings interface signals readiness.
+ */
 export const settingsReadyPromise = hasDocument
   ? new Promise((resolve) => {
       document.addEventListener("settings:ready", resolve, { once: true });
