@@ -63,7 +63,7 @@
   width: 100%;
 }
 
-.controls-surface .stat-controls {
+#battle-area #controls .controls-surface .stat-controls {
   padding-top: 0;
   justify-content: center;
 }
