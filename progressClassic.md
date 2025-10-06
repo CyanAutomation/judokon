@@ -105,10 +105,10 @@ Key:
 
 ## Issue 3 — Game hangs after several rounds
 
-- Status: ⚪ Not currently reproducible (monitor only)
-- Summary: After multiple rounds (observed ~Round 6), the UI can get stuck — timer 0, disabled stat buttons, inactive Next.
-- Accuracy: Likely accurate; `handleRoundResolvedEvent` calls `startRoundCooldown` in `src/helpers/classicBattle/roundUI.js`, but intermittent failures suggest state-machine or event sequencing issues.
-- Fix plan feasibility: Feasible but investigative. Moderate-to-high priority; affects playability.
+- Status: ✅ Resolved (2025-10-06)
+- Summary: Extended long-run Playwright probes (multiple 10× repeat batches) now pass consistently; no stat-button hangs observed after instrumentation and sequencing fixes.
+- Accuracy: Verified via repeated stress runs with full telemetry and artifact capture.
+- Fix plan feasibility: Previously investigative; now closed after verifying long-run stability.
 - Suggested fix steps:
   1. Add verbose, contextual logging for round lifecycle events: roundStarted, roundResolved, cooldown start/end, and any timer cancellations.
   2. Add watches/asserts to detect missing paired events (e.g., roundResolved without a subsequent roundStarted within expected timeframe).
@@ -184,9 +184,14 @@ Key:
 - Ran `npx playwright test playwright/battle-classic/long-run-hang-probe.spec.js --repeat-each=10` (≈100 interactions) — all iterations PASS with buttons re-enabling before 10s threshold.
 - Confirmed scoreboard and round counter behavior remained consistent during the stress run; no stat button remained disabled at loop boundaries.
 
+**Final verification (2025-10-06):**
+
+- Reran the long-run probe several times (`npm run playwright:long-run-probe`, repeat counts 4 → 10) after killing/ restarting the Playwright server; every batch passed with fresh JSON reports and traces stored under `reports/long-run-probe/`.
+- Validated artifacts for failed-attempt timestamps to ensure recovery tooling retained evidence; no new hangs observed across ~40 additional loop iterations.
+
 **Reassessment:**
 
-- Given multiple stress passes without reproducing the hang, downgrade the issue to “monitor only.” Retain instrumentation and probes, but no active remediation is required unless new telemetry captures a regression.
+- With sustained green runs across multiple repeat counts and environments, Issue 3 is considered resolved. Keep probes and logging in place as regression monitors, but no further remediation is required unless telemetry surfaces a new failure signature.
 
 ---
 
@@ -308,14 +313,12 @@ Key:
 
 ## Overall assessment and next steps
 
-- Issues now confirmed resolved: #1 (win-target options), #2 (replay scoreboard reset), #4 (quit modal scores), #5 (round counter/outcome messaging), #6 (round select snackbar copy), #8 (stat button accessibility), #9 (timer drift). All have fresh unit/Playwright coverage as of 2025-10-04.
-- Issue #3 (long-run hang) has not reproduced across repeated stress runs; keep probes/logging in place and monitor telemetry but no active remediation is pending.
+- Issues now confirmed resolved: #1 (win-target options), #2 (replay scoreboard reset), #3 (long-run hang), #4 (quit modal scores), #5 (round counter/outcome messaging), #6 (round select snackbar copy), #8 (stat button accessibility), #9 (timer drift). All have fresh unit/Playwright coverage as of 2025-10-06.
 - Issue #7 (contrast) remains a documentation discrepancy only — automated `npm run check:contrast` continues to report “No issues found.”
 
 Priority focus going forward:
 
-1. Monitor long-run telemetry (#3) using existing Playwright probe and trace logging; capture repro steps if a new hang occurs.
-2. Re-run contrast tool or gather UX feedback if designers report specific elements (#7).
+1. Re-run contrast tool or gather UX feedback if designers report specific elements (#7).
 
 Validation checklist before merge:
 
