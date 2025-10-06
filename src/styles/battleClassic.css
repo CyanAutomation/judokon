@@ -22,6 +22,9 @@
 }
 
 #battle-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: var(--space-md);
 }
 
@@ -52,15 +55,15 @@
   align-items: center;
 }
 
-#battle-area #controls .slot-surface {
+.controls-surface {
   align-items: center;
 }
 
-#battle-area #controls .slot-surface > * {
+.controls-surface > * {
   width: 100%;
 }
 
-#battle-area #controls .stat-controls {
+.controls-surface .stat-controls {
   padding-top: 0;
   justify-content: center;
 }
