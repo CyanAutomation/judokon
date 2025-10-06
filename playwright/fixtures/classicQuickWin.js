@@ -5,5 +5,5 @@
 
 // Simulate a quick win by dispatching a win event
 export function triggerQuickWin() {
-  window.__TEST_API.state.dispatchBattleEvent('quickWin');
+  window.__TEST_API.state.dispatchBattleEvent("quickWin");
 }

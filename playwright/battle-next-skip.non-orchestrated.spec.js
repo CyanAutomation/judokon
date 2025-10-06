@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { withMutedConsole } from "../tests/utils/console.js";
-import { NEXT_ROUND_COOLDOWN_MS } from '../fixtures/nextRoundCooldown.js';
+import { NEXT_ROUND_COOLDOWN_MS } from "../fixtures/nextRoundCooldown.js";
 
 /**
  * Verify that the Next button can skip the cooldown when no orchestrator is running.

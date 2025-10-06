@@ -2,7 +2,7 @@ import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForModalOpen } from "../fixtures/waits.js";
 import { waitForRoundStats } from "../helpers/battleStateHelper.js";
-import { triggerQuickWin } from '../fixtures/classicQuickWin.js';
+import { triggerQuickWin } from "../fixtures/classicQuickWin.js";
 
 async function waitForBattleInitialization(page) {
   const getBattleStoreReady = () =>
@@ -521,7 +521,7 @@ test.describe("Classic Battle End Game Flow", () => {
       }, ["log", "info", "warn", "error", "debug"]));
   });
 
-  test('end modal appears after match completion', async ({ page }) => {
+  test("end modal appears after match completion", async ({ page }) => {
     await prepareClassicBattle(page);
 
     // Start and complete match

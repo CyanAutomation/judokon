@@ -226,7 +226,16 @@ const DATA_FIELD_ALLOWLIST = {
     "stats"
   ],
   "locations.json": ["name", "japaneseName", "description"],
-  "navigationItems.js": ["url", "category", "label", "name", "title", "order", "isHidden", "gameModeId"],
+  "navigationItems.js": [
+    "url",
+    "category",
+    "label",
+    "name",
+    "title",
+    "order",
+    "isHidden",
+    "gameModeId"
+  ],
   "statNames.js": ["name", "japanese", "description", "category", "power", "speed", "technique"],
   "settings.json": ["displayMode", "aiDifficulty", "sound", "defaults", "volume"],
   "svgCodes.json": ["name", "category"],
