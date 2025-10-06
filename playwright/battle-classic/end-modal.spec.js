@@ -519,7 +519,6 @@ test.describe("Classic Battle End Game Flow", () => {
     await page.waitForSelector("#stat-buttons button[data-stat]");
 
     const match = await resolveMatchFromCurrentRound(page);
-    const { scores } = match;
     expect(match.timedOut).toBe(false);
 
     // Confirm the match end modal is presented to the user
