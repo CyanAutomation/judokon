@@ -27,7 +27,7 @@ async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
   await waitForBrowseReady(page);
 
   if (disableAnimations) {
-    await page.evaluate(() => disableHoverAnimations());
+    await page.evaluate(() => window.testFixtures.disableHoverAnimations());
   }
 }
 
@@ -36,10 +36,17 @@ test.beforeEach(async ({ page }) => {
     disableAnimations();
     addDynamicCard();
   });
+
+  // Inject fixture functions for runtime use
+  await page.addInitScript(`
+    ${disableHoverAnimations.toString()}
+    ${reset.toString()}
+    window.testFixtures = { disableHoverAnimations, reset };
+  `);
 });
 
 test.afterEach(async ({ page }) => {
-  await page.evaluate(() => reset());
+  await page.evaluate(() => window.testFixtures.reset());
 });
 
 test.describe("Hover Zoom Functionality", () => {
@@ -152,7 +159,7 @@ test.describe("Hover Zoom Functionality", () => {
 
     test("handles test disable animations attribute", async ({ page }) => {
       await gotoBrowsePage(page);
-      await callBrowseHook(page, "disableHoverAnimations");
+      await page.evaluate(() => window.testFixtures.disableHoverAnimations());
 
       const firstCard = page.locator(".judoka-card").first();
 
