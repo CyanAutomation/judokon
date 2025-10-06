@@ -1,7 +1,7 @@
 # Material Design v1 – Reference Guide for JU-DO-KON!
 
 **Purpose:**
-This document encapsulates the *relevant* principles and patterns of **Google’s Material Design v1 (2014–2017)** — adapted for use within the JU-DO-KON! project.
+This document encapsulates the _relevant_ principles and patterns of **Google’s Material Design v1 (2014–2017)** — adapted for use within the JU-DO-KON! project.
 AI agents can use this guide to evaluate existing layouts (e.g. `battleClassic.html`) or propose visual, structural, and interactive improvements that align with Material v1’s spirit while maintaining JU-DO-KON!’s distinctive judo-themed style.
 
 ---
@@ -13,10 +13,10 @@ The interface should behave like a unified, tactile world made of layers of “d
 
 **Primary principles:**
 
-* **Material surfaces** are solid and consistent; they don’t merge or bend.
-* **Lighting and shadows** communicate hierarchy and focus.
-* **Motion** links cause and effect — interactions feel grounded in physics.
-* **Bold, graphic, intentional** visual language creates clarity and confidence.
+- **Material surfaces** are solid and consistent; they don’t merge or bend.
+- **Lighting and shadows** communicate hierarchy and focus.
+- **Motion** links cause and effect — interactions feel grounded in physics.
+- **Bold, graphic, intentional** visual language creates clarity and confidence.
 
 For JU-DO-KON!: use surfaces and elevation to create hierarchy between zones — e.g. the **battlefield**, **scoreboard**, and **player card** areas.
 
@@ -24,7 +24,7 @@ For JU-DO-KON!: use surfaces and elevation to create hierarchy between zones —
 
 ## 2. Layout & Structure
 
-Material v1 defines a *consistent spatial rhythm* and *grid logic*.
+Material v1 defines a _consistent spatial rhythm_ and _grid logic_.
 
 | Principle             | Material v1 Guidance                                                         | JU-DO-KON! Application                                                         |
 | --------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -41,7 +41,7 @@ Check if components align on an 8 px grid, and whether the visual hierarchy of s
 
 ## 3. Color System
 
-Material v1 colour theory centres on *bold primaries* and *contrasting accents*.
+Material v1 colour theory centres on _bold primaries_ and _contrasting accents_.
 
 | Role                   | Guidance                                                          | JU-DO-KON! Adaptation                                           |
 | ---------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
@@ -71,7 +71,7 @@ Typography in Material v1 establishes hierarchy through **scale, weight, and col
 | Body 1 / 2  | 14 sp     | Regular / Medium | Card stats, rules                             |                             |
 | Caption     | 12 sp     | Regular          | Footer hints, timers                          |                             |
 
-**Font:** *Roboto* or any geometric sans-serif (e.g. Inter).
+**Font:** _Roboto_ or any geometric sans-serif (e.g. Inter).
 Use consistent typographic rhythm (4 px baseline increments).
 
 **Agent evaluation tip:**
@@ -100,7 +100,7 @@ Check consistency of elevation and motion. A FAB or card should animate smoothly
 
 ## 6. Elevation & Shadows
 
-Elevation defines *layer depth*. Each component has a z-axis value (dp). Shadows visually communicate depth and focus.
+Elevation defines _layer depth_. Each component has a z-axis value (dp). Shadows visually communicate depth and focus.
 
 | Level  | Component Type          | Shadow Style                 |
 | ------ | ----------------------- | ---------------------------- |
@@ -120,7 +120,7 @@ Audit all visual surfaces — ensure elevation hierarchy matches functional hier
 
 ## 7. Motion & Animation
 
-Motion in Material v1 reinforces continuity and intent — *how elements appear, change, and disappear matters*.
+Motion in Material v1 reinforces continuity and intent — _how elements appear, change, and disappear matters_.
 
 | Motion Principle            | Guidance                                | Application in JU-DO-KON!                          |
 | --------------------------- | --------------------------------------- | -------------------------------------------------- |
@@ -138,10 +138,10 @@ Flag any motion that feels abrupt, directionless, or inconsistent in duration. M
 
 Every interactive element provides immediate visual or tactile feedback.
 
-* **Ripple effect**: on click/tap.
-* **Hover states**: subtle elevation or colour change.
-* **Pressed states**: brief increased shadow or tint.
-* **Disabled states**: reduced opacity (40–50%).
+- **Ripple effect**: on click/tap.
+- **Hover states**: subtle elevation or colour change.
+- **Pressed states**: brief increased shadow or tint.
+- **Disabled states**: reduced opacity (40–50%).
 
 **Agent evaluation tip:**
 Identify missing or inconsistent feedback states — particularly in buttons, card selections, and round transitions.
@@ -152,10 +152,10 @@ Identify missing or inconsistent feedback states — particularly in buttons, ca
 
 Material v1 established early accessibility baselines:
 
-* **Minimum touch target:** 48 × 48 dp.
-* **Readable type sizes:** ≥ 12 sp.
-* **Contrast:** 4.5:1 or higher.
-* **Responsive scaling:** maintain proportions on tablet/desktop.
+- **Minimum touch target:** 48 × 48 dp.
+- **Readable type sizes:** ≥ 12 sp.
+- **Contrast:** 4.5:1 or higher.
+- **Responsive scaling:** maintain proportions on tablet/desktop.
 
 **Agent evaluation tip:**
 Ensure all interactive elements meet size and contrast thresholds. Check responsiveness in both full and compact views.
@@ -164,28 +164,28 @@ Ensure all interactive elements meet size and contrast thresholds. Check respons
 
 ## 10. Application within JU-DO-KON!
 
-Material v1 should be treated as a *visual and interaction vocabulary* — not a constraint.
+Material v1 should be treated as a _visual and interaction vocabulary_ — not a constraint.
 JU-DO-KON!’s judo-inspired aesthetic can coexist with Material principles by focusing on:
 
-* **Surface logic:** cards and panels with defined elevation.
-* **Colour discipline:** bold primaries, clear accents.
-* **Grid rhythm:** consistent 8 px spacing.
-* **Meaningful motion:** transitions that convey cause and effect.
-* **Feedback clarity:** user actions always acknowledged.
+- **Surface logic:** cards and panels with defined elevation.
+- **Colour discipline:** bold primaries, clear accents.
+- **Grid rhythm:** consistent 8 px spacing.
+- **Meaningful motion:** transitions that convey cause and effect.
+- **Feedback clarity:** user actions always acknowledged.
 
 **Example agent tasks:**
 
-* Evaluate if Classic Battle layout uses consistent 8 px spacing and clear elevation.
-* Suggest if the scoreboard could use elevation or card-like framing.
-* Check colour contrast and text hierarchy against Material v1 rules.
-* Recommend motion or animation enhancements based on “authentic motion” principles.
+- Evaluate if Classic Battle layout uses consistent 8 px spacing and clear elevation.
+- Suggest if the scoreboard could use elevation or card-like framing.
+- Check colour contrast and text hierarchy against Material v1 rules.
+- Recommend motion or animation enhancements based on “authentic motion” principles.
 
 ---
 
 ## References
 
-* [Material Design v1 Archive (m1.material.io)](https://m1.material.io)
-* Google Material Design Specification (2014–2017)
-* Adapted for JU-DO-KON! Design System — © 2025
+- [Material Design v1 Archive (m1.material.io)](https://m1.material.io)
+- Google Material Design Specification (2014–2017)
+- Adapted for JU-DO-KON! Design System — © 2025
 
 ---
