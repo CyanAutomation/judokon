@@ -65,17 +65,19 @@ async function main() {
   const runDir = createRunDirectory(reportsRoot);
   await ensureDir(runDir);
 
+  const testResultsDir = path.join(REPO_ROOT, "test-results");
   const jsonReportPath = path.join(runDir, "results.json");
 
-  console.log(`▶️  Running long-run probe with repeat-each=${repeatEach}. Artifacts: ${runDir}`);
+  console.log(
+    `▶️  Running long-run probe with repeat-each=${repeatEach}. Artifacts: ${runDir}`
+  );
 
   const cliArgs = [
     "playwright",
     "test",
     "playwright/battle-classic/long-run-hang-probe.spec.js",
     `--repeat-each=${repeatEach}`,
-    "--reporter=list",
-    `--reporter=json=${jsonReportPath}`
+    "--reporter=list,json"
   ];
 
   const child = spawn("npx", cliArgs, {
@@ -83,19 +85,45 @@ async function main() {
     stdio: "inherit",
     env: {
       ...process.env,
-      PW_TEST_CAPTURE_TRACE: "on-first-retry"
+      PW_TEST_CAPTURE_TRACE: "on-first-retry",
+      PLAYWRIGHT_JSON_OUTPUT_FILE: jsonReportPath
     }
   });
 
   child.on("close", (code) => {
-    if (code === 0) {
-      console.log(`✅ Probe completed successfully. Reports stored in ${runDir}`);
-    } else {
-      console.error(
-        `❌ Probe failed with exit code ${code}. Inspect JSON report and Playwright artifacts in ${runDir}`
-      );
-    }
-    process.exit(code ?? 1);
+    (async () => {
+      try {
+        try {
+          await fs.cp(testResultsDir, path.join(runDir, "test-results"), {
+            recursive: true
+          });
+          console.log(
+            `🗂  Copied Playwright artifacts to ${path.join(
+              runDir,
+              "test-results"
+            )}`
+          );
+        } catch (error) {
+          if (error.code !== "ENOENT") {
+            console.warn("⚠️  Unable to copy Playwright artifacts:", error);
+          }
+        }
+      } finally {
+        if (code === 0) {
+          console.log(
+            `✅ Probe completed successfully. Reports stored in ${runDir}`
+          );
+        } else {
+          console.error(
+            `❌ Probe failed with exit code ${code}. Inspect artifacts in ${runDir}`
+          );
+        }
+        process.exit(code ?? 1);
+      }
+    })().catch((error) => {
+      console.error("Failed to finalize Playwright probe artifacts:", error);
+      process.exit(code ?? 1);
+    });
   });
 }
 
