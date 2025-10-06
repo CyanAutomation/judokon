@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
+import { disableAnimations, addDynamicCard } from './fixtures/testHooks.js';
 
 async function callBrowseHook(page, name, ...args) {
   await page.waitForFunction(
@@ -45,6 +46,13 @@ async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
     await callBrowseHook(page, "disableHoverAnimations");
   }
 }
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    disableAnimations();
+    addDynamicCard();
+  });
+});
 
 test.afterEach(async ({ page }) => {
   await resetBrowseHooks(page);

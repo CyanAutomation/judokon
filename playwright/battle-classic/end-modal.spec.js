@@ -2,6 +2,7 @@ import { test, expect } from "../fixtures/commonSetup.js";
 import { withMutedConsole } from "../../tests/utils/console.js";
 import { waitForModalOpen } from "../fixtures/waits.js";
 import { waitForRoundStats } from "../helpers/battleStateHelper.js";
+import { triggerQuickWin } from '../fixtures/classicQuickWin.js';
 
 async function waitForBattleInitialization(page) {
   const getBattleStoreReady = () =>
@@ -518,5 +519,32 @@ test.describe("Classic Battle End Game Flow", () => {
         // Verify page remains functional after match completion
         await expect(page.locator("body")).toBeVisible();
       }, ["log", "info", "warn", "error", "debug"]));
+  });
+
+  test('end modal appears after match completion', async ({ page }) => {
+    await prepareClassicBattle(page);
+
+    // Start and complete match
+    await page.click("#round-select-2");
+    await applyQuickWinTarget(page);
+    await page.waitForSelector("#stat-buttons button[data-stat]");
+
+    const match = await resolveMatchFromCurrentRound(page);
+    const { scores } = match;
+    expect(match.timedOut).toBe(false);
+
+    // Confirm the match end modal is presented to the user
+    await waitForModalOpen(page);
+    const matchEndModal = page.locator("#match-end-modal").first();
+    await expect(matchEndModal).toBeVisible();
+
+    // Wait for and verify end modal appears
+    const matchEndTitle = page.locator("#match-end-title").first();
+    await matchEndTitle.waitFor({ state: "visible" });
+    await expect(matchEndTitle).toHaveText("Match Over");
+
+    // Verify modal has replay and quit buttons
+    await expect(page.locator("#match-replay-button").first()).toBeVisible();
+    await expect(page.locator("#match-quit-button").first()).toBeVisible();
   });
 });

@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures/commonSetup.js";
 import { withMutedConsole } from "../tests/utils/console.js";
+import { NEXT_ROUND_COOLDOWN_MS } from '../fixtures/nextRoundCooldown.js';
 
 /**
  * Verify that the Next button can skip the cooldown when no orchestrator is running.
@@ -15,8 +16,7 @@ import { withMutedConsole } from "../tests/utils/console.js";
 test("skips cooldown without orchestrator", async ({ page }) => {
   await withMutedConsole(async () => {
     await page.addInitScript(() => {
-      // Short cooldown for fast test
-      window.__NEXT_ROUND_COOLDOWN_MS = 100;
+      window.__NEXT_ROUND_COOLDOWN_MS = NEXT_ROUND_COOLDOWN_MS;
       window.__FF_OVERRIDES = { showRoundSelectModal: true };
     });
 
