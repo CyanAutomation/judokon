@@ -236,4 +236,40 @@ describe("JSON processing helpers", () => {
       "rules.rounds: Rounds: 3"
     );
   });
+
+  it("avoids duplicating the key path when override already includes it", async () => {
+    const obj = { rules: { rounds: 3 } };
+    const processItem = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "rules.rounds: Already 3");
+
+    await processJsonObjectEntries(obj, {
+      baseName: "gameModes.json",
+      processItem,
+      extractAllowedValuesFn
+    });
+
+    expect(processItem).toHaveBeenCalledWith(
+      { "rules.rounds": "3" },
+      "rules.rounds",
+      "rules.rounds: Already 3"
+    );
+  });
+
+  it("normalizes overrides missing a space after the key path", async () => {
+    const obj = { rules: { rounds: 3 } };
+    const processItem = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "rules.rounds:Already 3");
+
+    await processJsonObjectEntries(obj, {
+      baseName: "gameModes.json",
+      processItem,
+      extractAllowedValuesFn
+    });
+
+    expect(processItem).toHaveBeenCalledWith(
+      { "rules.rounds": "3" },
+      "rules.rounds",
+      "rules.rounds: Already 3"
+    );
+  });
 });
