@@ -32,7 +32,7 @@
   font-size: var(--font-extra-large);
   font-weight: 700;
   letter-spacing: 0.02em;
-  margin-bottom: calc(var(--space-md) - var(--space-sm));
+  margin-bottom: var(--space-xs);
 }
 
 .battle-status-header #next-round-timer,
@@ -101,22 +101,29 @@
   max-width: 220px;
   min-height: var(--touch-target-size, 48px);
   --button-bg: var(--color-surface);
-  --button-hover-bg: var(--color-tertiary);
-  --button-active-bg: var(--color-tertiary);
+  --button-hover-bg: color-mix(in srgb, var(--color-surface) 92%, var(--color-text) 8%);
+  --button-active-bg: color-mix(in srgb, var(--color-surface) 88%, var(--color-text) 12%);
   --button-text-color: var(--color-text);
+  --button-disabled-bg: color-mix(in srgb, var(--color-surface) 84%, var(--color-text) 16%);
 }
 
 .battle-controls .primary-button {
   --button-bg: var(--color-primary);
-  --button-hover-bg: var(--color-primary);
-  --button-active-bg: var(--color-primary);
+  --button-hover-bg: color-mix(in srgb, var(--color-primary) 92%, var(--color-text-inverted) 8%);
+  --button-active-bg: color-mix(in srgb, var(--color-primary) 86%, var(--color-text-inverted) 14%);
   --button-text-color: var(--color-text-inverted);
+  --button-disabled-bg: color-mix(in srgb, var(--color-primary) 45%, var(--color-surface) 55%);
   color: var(--color-text-inverted);
 }
 
 .battle-controls .primary-button:not(:disabled) {
   background-color: var(--color-primary);
   box-shadow: var(--shadow-hover);
+}
+
+.battle-controls .battle-control-button:disabled {
+  box-shadow: none;
+  opacity: 0.72;
 }
 
 .battle-controls .primary-button:not(:disabled):hover,
