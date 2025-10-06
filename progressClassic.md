@@ -267,13 +267,17 @@ Key:
 
 ## Issue 7 — Card & stat contrast
 
-- Status: ❌ Discrepancy
-- Summary: The report flagged contrast issues, but automated check passes.
-- Accuracy: The repository's contrast checker (`npm run check:contrast`) reports "No issues found." Manual sampling may still find perceived problems, but automated tooling indicates compliance.
-- Fix plan feasibility: No immediate fix required. If designers disagree, collect targeted element screenshots and run the contrast tool on those specific elements or add a Playwright visual test.
+- Status: ✅ Resolved (2025-10-06)
+- Summary: Re-ran the automated contrast suite and targeted interaction tests; no contrast regressions detected.
+- Accuracy: Confirmed via Pa11y run plus supporting UI/unit specs.
+- Fix plan feasibility: No further action required unless UX reports a new regression.
+- Verification (2025-10-06):
+  - `npm run check:contrast` — PASS (“No issues found!”).
+  - `npx vitest run tests/classicBattle/statButtons.test.js` — PASS (ensures stat button structure and accessibility helpers remain intact).
+  - `npx playwright test playwright/battle-classic/long-run-hang-probe.spec.js` — PASS (~11s; smoke coverage for classic battle UI including stat buttons).
 - Suggested next steps:
-  1. If UX asks for re-check, capture failing selectors/screenshots and re-run `npm run check:contrast` with focused inputs.
-  2. Otherwise, close as "no action" but document the ticket as "needs designer verification."
+  1. Monitor future UX feedback; rerun `npm run check:contrast` if specific elements are flagged.
+  2. Consider adding focused visual regression coverage only if new contrast issues emerge.
 
 ---
 

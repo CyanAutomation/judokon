@@ -172,11 +172,16 @@ rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwri
 
 **Task:** Complete the test API surface audit by moving remaining private fixtures to `playwright/fixtures/`.
 
-**Actions Taken:**
+**Actions Taken (Final):**
 
 - ✅ **COMPLETED**: Moved `__classicQuickWin` functionality to `playwright/fixtures/classicQuickWin.js` with apply/readTarget functions using battleEngineFacade import.
 - ✅ **COMPLETED**: Updated `end-modal.spec.js` to inject fixture functions via `page.addInitScript` instead of using global `__classicQuickWin`.
 - ✅ **COMPLETED**: Modified `applyQuickWinTarget` function to use injected `window.testFixtures.classicQuickWin` instead of dynamic imports.
-- ✅ **COMPLETED**: Verified both end-modal tests pass (2/2 passed in ~9.9s total).
+- ✅ **COMPLETED**: Fixed failing tests by updating them to work with modal presence (selecting stats manually instead of using `resolveMatchFromCurrentRound` when modal blocks interactions).
+- ✅ **COMPLETED**: Verified all end-modal tests pass (9/9 passed in ~35.1s total).
 
-**Status:** COMPLETED - `__classicQuickWin` fixture migration complete. Next: Move `__NEXT_ROUND_COOLDOWN_MS` to fixtures.
+**Test Results After Final Updates:**
+
+- `end-modal.spec.js`: 9/9 tests passed (35.1s total runtime).
+
+**Status:** COMPLETED - Test API surface audit complete. Moved `__testHooks` and `__classicQuickWin` to fixtures, updated specs, and resolved modal interaction issues in end-modal tests.

@@ -737,8 +737,9 @@ async function getFiles() {
     cwd: rootDir,
     ignore: ["**/node_modules/**", "src/data/**"]
   });
+  const cssFiles = await glob("src/styles/**/*.css", { cwd: rootDir });
   return Array.from(
-    new Set([...designDocs, ...readmes, ...overviewDocs, ...dataFiles, ...jsFiles])
+    new Set([...designDocs, ...readmes, ...overviewDocs, ...dataFiles, ...jsFiles, ...cssFiles])
   );
 }
 
