@@ -1,18 +1,16 @@
 import { isEnabled, enableFlag } from "../featureFlags.js";
 
 /**
- * Enable an array of stat buttons and mark the container as ready.
+ * Normalize assorted button collections into a clean array of elements.
  *
  * @pseudocode
- * 1. For each button:
- *    - Set `disabled = false` and `tabIndex = 0` so it is keyboard focusable.
- *    - Remove visual markers `disabled` and `selected`.
- *    - Remove any explicit `background-color` style applied inline.
- * 2. If a `container` element is provided, set `container.dataset.buttonsReady = 'true'`.
+ * 1. If `buttons` is falsy, return an empty array.
+ * 2. If `buttons` is already an array, filter out falsy entries and return it.
+ * 3. Otherwise convert `buttons` (e.g., NodeList) to an array and filter out falsy entries.
  *
- * @param {HTMLElement[]} buttons - Button elements to enable.
- * @param {HTMLElement} [container] - Optional containing element to mark ready.
- * @returns {void}
+ * @param {HTMLElement[] | NodeListOf<HTMLElement> | null | undefined} buttons -
+ *   Collection of button-like values to normalize.
+ * @returns {HTMLElement[]} An array of valid button elements.
  */
 function toButtonArray(buttons) {
   if (!buttons) return [];
@@ -31,6 +29,22 @@ function applyDisabledState(btn, disabled) {
   }
 }
 
+/**
+ * Enable stat buttons and flag the container as ready for interaction.
+ *
+ * @pseudocode
+ * 1. Normalize `buttons` into an array via `toButtonArray`.
+ * 2. For each button:
+ *    - Call `applyDisabledState(btn, false)` to re-enable focus/interaction.
+ *    - Remove the `selected` CSS class.
+ *    - Remove any inline `background-color` styles.
+ * 3. If a `container` is provided, set `container.dataset.buttonsReady = 'true'`.
+ *
+ * @param {HTMLElement[] | NodeListOf<HTMLElement> | null | undefined} buttons -
+ *   Buttons to re-enable.
+ * @param {HTMLElement} [container] - Optional container that tracks readiness state.
+ * @returns {void}
+ */
 export function enableStatButtons(buttons, container) {
   toButtonArray(buttons).forEach((btn) => {
     applyDisabledState(btn, false);
