@@ -161,7 +161,18 @@ rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwri
 
 ## Next steps (who/what)
 
-1. Add diagnostics and attempt to reproduce the `end-modal` failure locally; if reproducible, iterate a small fix. (owner: test author — I can take this on)
-2. Re-audit the runner to ensure `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are included and remove old duplicates. (owner: infra)
+1. Add diagnostics and attempt to reproduce the `end-modal` failure locally; if reproducible, iterate a small fix. (owner: test author — I can take this on) **COMPLETED:** Diagnostics added and tests run successfully; no failures observed in current environment.
+2. Re-audit the runner to ensure `battle-cli-play.spec.js` and `battle-cli-restart.spec.js` are included and remove old duplicates. (owner: infra) **IN PROGRESS:** Renamed `cli.spec.mjs` to `cli.spec.js` and verified test passes (1/1 passed in ~2.1s).
 
 ---
+
+## Current Work: Spec Consolidation (October 6, 2025)
+
+**Task:** Consolidate duplicated or migrated Playwright specs to ensure a single canonical CLI spec exists and remove old duplicates.
+
+**Actions Taken:**
+
+- Renamed `playwright/cli.spec.mjs` to `playwright/cli.spec.js` to match the documented merge.
+- Ran `npx playwright test playwright/cli.spec.js --reporter=list`: 1/1 passed in ~2.1s.
+
+**Next:** Resolve duplicate CLI flow specs (`cli-flows.spec.mjs` vs `cli-flows-improved.spec.mjs`).
