@@ -1,26 +1,10 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import { disableAnimations, addDynamicCard } from './fixtures/testHooks.js';
-
-async function callBrowseHook(page, name, ...args) {
-  await page.waitForFunction(
-    (hookName) => typeof window.__testHooks?.browse?.[hookName] === "function",
-    name
-  );
-  return page.evaluate(
-    ([hookName, params]) => {
-      try {
-        return window.__testHooks?.browse?.[hookName]?.(...params);
-      } catch (error) {
-        throw new Error(`Test hook '${hookName}' failed: ${error.message}`);
-      }
-    },
-    [name, args]
-  );
-}
-
-async function resetBrowseHooks(page) {
-  await page.evaluate(() => window.__testHooks?.browse?.reset?.());
-}
+import {
+  disableAnimations,
+  addDynamicCard,
+  disableHoverAnimations,
+  reset
+} from "./fixtures/testHooks.js";
 
 async function expectToBeEnlarged(locator) {
   await expect(locator).toHaveAttribute("data-enlarged", "true");
@@ -43,7 +27,7 @@ async function gotoBrowsePage(page, { disableAnimations = false } = {}) {
   await waitForBrowseReady(page);
 
   if (disableAnimations) {
-    await callBrowseHook(page, "disableHoverAnimations");
+    await page.evaluate(() => disableHoverAnimations());
   }
 }
 
@@ -55,7 +39,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.afterEach(async ({ page }) => {
-  await resetBrowseHooks(page);
+  await page.evaluate(() => reset());
 });
 
 test.describe("Hover Zoom Functionality", () => {
