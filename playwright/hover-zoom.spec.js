@@ -1,10 +1,5 @@
 import { test, expect } from "./fixtures/commonSetup.js";
-import {
-  disableAnimations,
-  addDynamicCard,
-  disableHoverAnimations,
-  reset
-} from "./fixtures/testHooks.js";
+import { disableAnimations, addDynamicCard } from "./fixtures/testHooks.js";
 
 async function expectToBeEnlarged(locator) {
   await expect(locator).toHaveAttribute("data-enlarged", "true");
@@ -39,9 +34,58 @@ test.beforeEach(async ({ page }) => {
 
   // Inject fixture functions for runtime use
   await page.addInitScript(`
-    ${disableHoverAnimations.toString()}
-    ${reset.toString()}
-    window.testFixtures = { disableHoverAnimations, reset };
+    window.testFixturesState = {
+      animationsDisabled: false,
+      previousAnimationValue: null,
+      addedNodes: new Set()
+    };
+
+    function disableHoverAnimations() {
+      const body = document.body;
+      if (!body || window.testFixturesState.animationsDisabled) return;
+      window.testFixturesState.previousAnimationValue = body.hasAttribute("data-test-disable-animations")
+        ? body.getAttribute("data-test-disable-animations")
+        : null;
+      body.setAttribute("data-test-disable-animations", "true");
+      window.testFixturesState.animationsDisabled = true;
+    }
+
+    function enableHoverAnimations() {
+      const body = document.body;
+      if (!body || !window.testFixturesState.animationsDisabled) return;
+      if (window.testFixturesState.previousAnimationValue === null) {
+        body.removeAttribute("data-test-disable-animations");
+      } else {
+        body.setAttribute("data-test-disable-animations", window.testFixturesState.previousAnimationValue);
+      }
+      window.testFixturesState.animationsDisabled = false;
+    }
+
+    function reset() {
+      enableHoverAnimations();
+      for (const node of window.testFixturesState.addedNodes) {
+        if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
+      }
+      window.testFixturesState.addedNodes.clear();
+    }
+
+    function addCard(judoka) {
+      const card = document.createElement("div");
+      card.className = "judoka-card";
+      card.setAttribute("data-testid", \`card-\${judoka.firstname}-\${judoka.surname}\`);
+      card.innerHTML = \`
+        <div class="card-front">
+          <h3>\${judoka.firstname} \${judoka.surname}</h3>
+          <p>\${judoka.country}</p>
+        </div>
+      \`;
+      document.querySelector(".judoka-cards")?.appendChild(card) || document.body.appendChild(card);
+      window.testFixturesState.addedNodes.add(card);
+    }
+
+    window.testFixtures = { disableHoverAnimations, enableHoverAnimations, reset, addCard };
   `);
 });
 
@@ -277,7 +321,7 @@ test.describe("Hover Zoom Functionality", () => {
       await gotoBrowsePage(page);
 
       // Add a new card dynamically via the production card factory
-      await callBrowseHook(page, "addCard", {
+      await page.evaluate((judoka) => window.testFixtures.addCard(judoka), {
         firstname: "Dynamic",
         surname: "Card",
         country: "Testland",

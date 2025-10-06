@@ -26,7 +26,23 @@ export function addDynamicCard() {
   const card = document.createElement("div");
   card.setAttribute("data-testid", "dynamic-card");
   card.textContent = "Dynamic Card for Zoom Test";
+  card.className = "judoka-card";
   document.body.appendChild(card);
+  state.addedNodes.add(card);
+}
+
+// Add a test card with judoka data
+export function addCard(judoka) {
+  const card = document.createElement("div");
+  card.className = "judoka-card";
+  card.setAttribute("data-testid", `card-${judoka.firstname}-${judoka.surname}`);
+  card.innerHTML = `
+    <div class="card-front">
+      <h3>${judoka.firstname} ${judoka.surname}</h3>
+      <p>${judoka.country}</p>
+    </div>
+  `;
+  document.querySelector(".judoka-cards")?.appendChild(card) || document.body.appendChild(card);
   state.addedNodes.add(card);
 }
 
