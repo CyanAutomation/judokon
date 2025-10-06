@@ -334,7 +334,7 @@ Assumptions made while verifying:
 
 If you'd like, I can:
 
-- Schedule periodic CI jobs to run `playwright/battle-classic/long-run-hang-probe.spec.js --repeat-each=10` for ongoing coverage (#3).
+- Keep a periodic CI probe (`playwright/battle-classic/long-run-hang-probe.spec.js --repeat-each=10`) to catch regressions early (#3).
 - Assist UX with targeted contrast captures if new elements are flagged (#7).
 
 ---
