@@ -452,7 +452,18 @@ async function processJsonObjectEntries(
   for (const [keyPath, value] of flat) {
     const allowed = extractAllowedValuesFn(baseName, { [keyPath]: value });
     if (!allowed) continue;
-    await processItem({ [keyPath]: value }, keyPath, allowed);
+    const allowedText = String(allowed).trim();
+    const prefix = `${keyPath}: `;
+    let overrideText;
+    if (allowedText.startsWith(prefix)) {
+      overrideText = allowedText;
+    } else if (allowedText.startsWith(`${keyPath}:`)) {
+      const remainder = allowedText.slice(`${keyPath}:`.length).trimStart();
+      overrideText = `${prefix}${remainder}`;
+    } else {
+      overrideText = `${prefix}${allowedText}`;
+    }
+    await processItem({ [keyPath]: value }, keyPath, overrideText);
   }
 }
 
