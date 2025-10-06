@@ -1070,11 +1070,11 @@ async function generate() {
     }
     // Basic CSS support: if file extension is .css
     if (ext === ".css") {
-      const selectors = text.match(/^[^\{]+\{/gm) || [];
-      for (const [index, sel] of selectors.entries()) {
-        const chunkText = normalizeAndFilter(sel.replace("{", "").trim(), seenTexts);
+      const rules = text.match(/[^\}]+}/g) || [];
+      for (const [index, rule] of rules.entries()) {
+        const chunkText = normalizeAndFilter(rule, seenTexts);
         if (!chunkText) continue;
-        const idSuffix = `selector-${index + 1}`;
+        const idSuffix = `rule-${index + 1}`;
         const intent = determineIntent(chunkText);
         const metadata = buildMetadata(relativePath);
         const tagSet = new Set(["code", ...baseTags]);

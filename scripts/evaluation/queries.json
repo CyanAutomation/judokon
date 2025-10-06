@@ -9,7 +9,7 @@
   },
   {
     "query": "navbar button transition duration",
-    "expected_source": "src/styles/main.css"
+    "expected_source": "src/styles/buttons.css"
   },
   {
     "query": "how to add a new tooltip",
