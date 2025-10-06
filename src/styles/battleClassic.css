@@ -1,4 +1,17 @@
 /* Battle Classic specific styles */
+
+/* Allow the Classic Battle header to stay in flow so it doesn't overlap stat buttons */
+.home-screen {
+  padding-top: var(--space-sm);
+  padding-top: calc(env(safe-area-inset-top) + var(--space-sm));
+}
+
+.home-screen > .header {
+  position: sticky;
+  top: 0;
+  top: env(safe-area-inset-top);
+}
+
 .battle-content {
   display: flex;
   flex-direction: column;
