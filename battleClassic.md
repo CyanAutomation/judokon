@@ -35,3 +35,10 @@
 - **Targeted unit test**: `npx vitest run tests/helpers/classicBattle/roundLifecycle.sequence.test.js` → PASS (1/1).
 - **Playwright probe**: `npx playwright test playwright/battle-classic/long-run-hang-probe.spec.js --repeat-each=5` (requires elevated perms) → PASS (5/5) with no pointer-interception warnings.
 - **Outcome**: Stat buttons are now clickable throughout the long-run probe in Chromium headless; no hang repro or overlay detected post-fix.
+
+## 2025-10-06T21:25:50Z — Extended long-run probe
+
+- **Goal**: Stress the existing long-run probe after the header fix to watch for intermittent cooldown hangs.
+- **Unit regression check**: `npx vitest run tests/helpers/classicBattle/roundLifecycle.sequence.test.js` → PASS (1/1).
+- **Playwright probe**: `npx playwright test playwright/battle-classic/long-run-hang-probe.spec.js --repeat-each=10` (requires elevated perms) → PASS (10/10). No pointer-interception retries or disabled-button stalls observed in logs.
+- **Outcome**: Extended run still clean; continue monitoring with telemetry but no actionable hang reproduction at this time.
