@@ -59,6 +59,8 @@ This document cleans and expands the earlier assessment of Playwright specs. It 
    - `expect(true).toBe(true)`
    - `window.__test` and `__battleCLIinit` (private hooks)
 
+   **COMPLETED:** Created `scripts/check-playwright-patterns.js` script that checks for banned patterns in Playwright files. Added npm script `check:playwright-patterns`. Script found 0 violations in 50 files checked.
+
 2. Add a short diagnostic helper and assertion to `playwright/battle-classic/end-modal.spec.js` that captures `#match-end-modal` attributes and `window.battleStore` when the modal does not become visible despite `matchEnded` being true. This will make the failure reproducible and easier to debug.
 
 3. Consolidate duplicated or migrated specs (for example, ensure a single canonical CLI spec exists and remove old duplicates). Confirm the runner (`playwright.config.js`) globs include the canonical files.
@@ -194,3 +196,11 @@ rg "waitForTimeout|expect\(true\)\.toBe\(|window.__test|__battleCLIinit" playwri
 - Playwright debugging commands and techniques
 - Test fixtures and helpers reference
 - Common test patterns and utilities
+
+**Pattern Checker Task Completed:** Created Playwright pattern checker script and npm script:
+
+- Created `scripts/check-playwright-patterns.js` with ES module syntax
+- Checks for 6 banned patterns (waitForTimeout, placeholder assertions, private hooks, etc.)
+- Reports errors (blocking) vs warnings (advisory)
+- Added npm script `check:playwright-patterns`
+- Verified: 0 violations found in 50 Playwright files

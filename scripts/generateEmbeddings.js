@@ -1070,33 +1070,30 @@ async function generate() {
     }
     // Basic CSS support: if file extension is .css
     if (ext === ".css") {
-      const rules = text.match(/[^\}]+}/g) || [];
-      for (const [index, rule] of rules.entries()) {
-        const chunkText = normalizeAndFilter(rule, seenTexts);
-        if (!chunkText) continue;
-        const idSuffix = `rule-${index + 1}`;
-        const intent = determineIntent(chunkText);
-        const metadata = buildMetadata(relativePath);
-        const tagSet = new Set(["code", ...baseTags]);
-        tagSet.add("css");
-        tagSet.add(intent);
-        const tags = Array.from(tagSet);
-        const result = await extractor(chunkText, { pooling: "mean" });
-        const qa = createQaContext(chunkText);
-        const sparseVector = createSparseVector(chunkText);
-        writeEntry({
-          id: `${base}-${idSuffix}`,
-          text: chunkText,
-          ...(qa ? { qaContext: qa } : {}),
-          embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
-          sparseVector,
-          source: `${relativePath} [${idSuffix}]`,
-          contextPath: deriveContextPath({ source: `${relativePath} [${idSuffix}]`, tags }),
-          tags,
-          metadata,
-          version: 1
-        });
-      }
+      const chunkText = normalizeAndFilter(text, seenTexts);
+      if (!chunkText) continue;
+      const idSuffix = `full-file`;
+      const intent = determineIntent(chunkText);
+      const metadata = buildMetadata(relativePath);
+      const tagSet = new Set(["code", ...baseTags]);
+      tagSet.add("css");
+      tagSet.add(intent);
+      const tags = Array.from(tagSet);
+      const result = await extractor(chunkText, { pooling: "mean" });
+      const qa = createQaContext(chunkText);
+      const sparseVector = createSparseVector(chunkText);
+      writeEntry({
+        id: `${base}-${idSuffix}`,
+        text: chunkText,
+        ...(qa ? { qaContext: qa } : {}),
+        embedding: Array.from(result.data ?? result).map((v) => Number(v.toFixed(3))),
+        sparseVector,
+        source: `${relativePath} [${idSuffix}]`,
+        contextPath: deriveContextPath({ source: `${relativePath} [${idSuffix}]`, tags }),
+        tags,
+        metadata,
+        version: 1
+      });
     }
   }
 
