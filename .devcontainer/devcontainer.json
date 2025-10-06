@@ -29,7 +29,15 @@
           "**/reports/**": true
         },
         "search.useIgnoreFiles": true
-      }
+      },
+      "extensions": [
+        "google.gemini-cli-vscode-ide-companion",
+        "dbaeumer.vscode-eslint",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-playwright.playwright",
+        "DavidAnson.vscode-markdownlint"
+      ]
     }
   }
 }
