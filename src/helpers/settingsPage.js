@@ -67,7 +67,7 @@ const hasDocument = typeof document !== "undefined";
  *    listener that resolves it.
  * 3. If not available, return `Promise.resolve()` so consumers can still await readiness.
  *
- * @returns {Promise<void>} Resolves once the settings interface signals readiness.
+ * @type {Promise<void>}
  */
 export const settingsReadyPromise = hasDocument
   ? new Promise((resolve) => {

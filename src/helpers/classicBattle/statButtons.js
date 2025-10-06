@@ -3,6 +3,9 @@ import { isEnabled, enableFlag } from "../featureFlags.js";
 /**
  * Normalize assorted button collections into a clean array of elements.
  *
+ * @summary Collects stat button references for the exported enable/disable helpers.
+ * @remarks Corrects prior documentation that described enabling logic rather than normalization.
+ *
  * @pseudocode
  * 1. If `buttons` is falsy, return an empty array.
  * 2. If `buttons` is already an array, filter out falsy entries and return it.
