@@ -87,9 +87,17 @@
   min-width: 140px;
   max-width: 220px;
   min-height: var(--touch-target-size, 48px);
+  --button-bg: var(--color-surface);
+  --button-hover-bg: var(--color-tertiary);
+  --button-active-bg: var(--color-tertiary);
+  --button-text-color: var(--color-text);
 }
 
 .battle-controls .primary-button {
+  --button-bg: var(--color-primary);
+  --button-hover-bg: var(--color-primary);
+  --button-active-bg: var(--color-primary);
+  --button-text-color: var(--color-text-inverted);
   color: var(--color-text-inverted);
 }
 
@@ -105,14 +113,10 @@
   transform: translateY(-1px);
 }
 
-.battle-controls .primary-button:disabled {
-  box-shadow: none;
-}
-
 .battle-controls .secondary-button {
   background-color: var(--color-surface);
   color: var(--color-text);
-  border: 1px solid var(--color-border, rgba(0, 0, 0, 0.1));
+  border: 1px solid var(--color-border);
   box-shadow: none;
 }
 
@@ -123,7 +127,7 @@
   box-shadow: var(--shadow-base);
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments for battle control buttons */
 @media (max-width: 480px) {
   .battle-content {
     padding: var(--space-sm);
