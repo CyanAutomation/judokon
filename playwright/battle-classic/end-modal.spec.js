@@ -464,12 +464,16 @@ test.describe("Classic Battle End Game Flow", () => {
         // Wait for match to complete
         await page.waitForSelector("#match-end-modal", { timeout: 5000 });
 
-        // Get scores from the page
-        const scoreDisplay = page.locator("#score-display");
-        const scoreText = await scoreDisplay.textContent();
-        const scoreMatch = scoreText.match(/You: (\d+).*Opponent: (\d+)/);
-        expect(scoreMatch).toBeTruthy();
-        const scores = { player: parseInt(scoreMatch[1]), opponent: parseInt(scoreMatch[2]) };
+        // Get scores from the modal
+        const scores = await page.evaluate(() => {
+          const desc = document.getElementById("match-end-desc");
+          if (!desc || !desc.textContent) return null;
+          const match = desc.textContent.match(/\((\d+)-(\d+)\)/);
+          if (!match) return null;
+          return { player: parseInt(match[1]), opponent: parseInt(match[2]) };
+        });
+
+        expect(scores).toBeTruthy();
         expectDecisiveFinalScore(scores);
 
         // Verify interface remains stable with modal present
