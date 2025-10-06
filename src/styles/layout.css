@@ -114,7 +114,9 @@ body {
   padding: var(--space-xs);
   color: inherit;
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .logo-container a:hover,
