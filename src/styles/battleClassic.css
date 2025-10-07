@@ -173,7 +173,11 @@
 
   .battle-controls .primary-button {
     --button-hover-bg: color-mix(in srgb, var(--color-primary) 92%, var(--color-text-inverted) 8%);
-    --button-active-bg: color-mix(in srgb, var(--color-primary) 88%, var(--color-text-inverted) 12%);
+    --button-active-bg: color-mix(
+      in srgb,
+      var(--color-primary) 88%,
+      var(--color-text-inverted) 12%
+    );
     --button-disabled-bg: color-mix(in srgb, var(--color-primary) 45%, var(--color-surface) 55%);
   }
 }
