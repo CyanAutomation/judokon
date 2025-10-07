@@ -9,6 +9,11 @@
   --cli-accent: #9bdcff;
   --cli-warning: #ffcc00;
   --cli-focus: #ffd166;
+  --color-primary: #9bdcff;
+  --color-tertiary: #101820;
+  --color-text: #dce6ef;
+  --color-text-inverted: #050505;
+  --radius-lg: 4px;
 }
 
 :focus {
@@ -156,6 +161,12 @@ body {
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+}
+.cli-root #snackbar-container .snackbar {
+  background: var(--color-tertiary);
+  color: var(--color-text);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
 }
 /* Terminal-style separators with enhanced visual hierarchy */
 .ascii-sep {
