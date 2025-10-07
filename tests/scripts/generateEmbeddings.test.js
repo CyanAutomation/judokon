@@ -272,4 +272,40 @@ describe("JSON processing helpers", () => {
       "rules.rounds: Already 3"
     );
   });
+
+  it("handles overrides with multiple spaces after the key path", async () => {
+    const obj = { rules: { rounds: 3 } };
+    const processItem = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "rules.rounds:   Multiple   spaces");
+
+    await processJsonObjectEntries(obj, {
+      baseName: "gameModes.json",
+      processItem,
+      extractAllowedValuesFn
+    });
+
+    expect(processItem).toHaveBeenCalledWith(
+      { "rules.rounds": "3" },
+      "rules.rounds",
+      "rules.rounds: Multiple   spaces"
+    );
+  });
+
+  it("trims leading and trailing whitespace in overrides", async () => {
+    const obj = { rules: { rounds: 3 } };
+    const processItem = vi.fn();
+    const extractAllowedValuesFn = vi.fn(() => "  rules.rounds: Trimmed content  ");
+
+    await processJsonObjectEntries(obj, {
+      baseName: "gameModes.json",
+      processItem,
+      extractAllowedValuesFn
+    });
+
+    expect(processItem).toHaveBeenCalledWith(
+      { "rules.rounds": "3" },
+      "rules.rounds",
+      "rules.rounds: Trimmed content"
+    );
+  });
 });

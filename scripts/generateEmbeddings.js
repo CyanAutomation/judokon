@@ -455,10 +455,8 @@ async function processJsonObjectEntries(
     const allowedText = String(allowed).trim();
     const prefix = `${keyPath}: `;
     let overrideText;
-    if (allowedText.startsWith(prefix)) {
-      overrideText = allowedText;
-    } else if (allowedText.startsWith(`${keyPath}:`)) {
-      const remainder = allowedText.slice(`${keyPath}:`.length).trimStart();
+    if (allowedText.startsWith(keyPath) && allowedText.charAt(keyPath.length) === ":") {
+      const remainder = allowedText.slice(keyPath.length + 1).trimStart();
       overrideText = `${prefix}${remainder}`;
     } else {
       overrideText = `${prefix}${allowedText}`;
