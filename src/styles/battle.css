@@ -29,7 +29,7 @@
   margin: 0;
   font-size: clamp(16px, 4vw, 24px);
   font-weight: bold;
-  color: var(--color-text);
+  color: var(--color-text-inverted);
 }
 
 /* Non-color outcome cue: emphasize and prepend symbol when outcome is set */
