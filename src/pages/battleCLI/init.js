@@ -75,7 +75,12 @@ import * as initModule from "./init.js";
 const hasDocument = typeof document !== "undefined";
 const getSafeDocument = () => (hasDocument ? document : null);
 const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
-const MANUAL_FALLBACK_DELAY_MS = 50;
+/**
+ * Delay between manual fallback state transitions when the orchestrator is unavailable.
+ *
+ * @type {number}
+ */
+export const MANUAL_FALLBACK_DELAY_MS = 50;
 
 // Initialize engine and subscribe to engine events when available.
 try {
