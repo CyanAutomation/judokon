@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { withMutedConsole } from "../utils/console.js";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
-import * as battleEvents from "../../src/helpers/classicBattle/battleEvents.js";
 
 describe("battleCLI init helpers", () => {
   beforeEach(() => {
@@ -20,6 +20,7 @@ describe("battleCLI init helpers", () => {
       mockBattleEvents: false
     });
     await mod.init();
+    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
     const emitter = battleEvents.getBattleEventTarget?.();
     if (!emitter) {
       throw new Error("Battle event emitter unavailable");
@@ -43,6 +44,49 @@ describe("battleCLI init helpers", () => {
     await startClicked;
     expect(startClickedListener).toHaveBeenCalledTimes(1);
     expect(dispatchBattleEvent).toHaveBeenCalledWith("startClicked");
+  });
+
+  it("progresses battle states manually when the orchestrator is unavailable", async () => {
+    vi.useFakeTimers();
+    try {
+      const mod = await loadBattleCLI();
+      await mod.init();
+      const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+      const emitBattleEvent = battleEvents.emitBattleEvent;
+      if (!vi.isMockFunction(emitBattleEvent)) {
+        throw new Error("emitBattleEvent mock unavailable");
+      }
+      emitBattleEvent.mockClear();
+      const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+      const initialTimerCalls = setTimeoutSpy.mock.calls.length;
+      const debugHooks = await import("../../src/helpers/classicBattle/debugHooks.js");
+      debugHooks.exposeDebugState("getClassicBattleMachine", undefined);
+      const { dispatchBattleEvent } = await import(
+        "../../src/helpers/classicBattle/orchestrator.js"
+      );
+      dispatchBattleEvent.mockResolvedValue(false);
+      const battleCliModule = await import("../../src/pages/battleCLI/init.js");
+      await withMutedConsole(async () => {
+        const startPromise = battleCliModule.triggerMatchStart();
+        await vi.runAllTimersAsync();
+        await startPromise;
+      });
+      const stateChangeCalls = emitBattleEvent.mock.calls
+        .filter(([type]) => type === "battleStateChange")
+        .map(([, detail]) => detail?.to ?? null);
+      expect(stateChangeCalls).toEqual([
+        "matchStart",
+        "cooldown",
+        "roundStart",
+        "waitingForPlayerAction"
+      ]);
+      const manualTimerCalls = setTimeoutSpy.mock.calls.slice(initialTimerCalls);
+      const fallbackTimers = manualTimerCalls.filter(([, delay]) => delay === 50).slice(0, 3);
+      expect(fallbackTimers).toHaveLength(3);
+      expect(fallbackTimers.map(([, delay]) => delay)).toEqual([50, 50, 50]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("renders stats list", async () => {
