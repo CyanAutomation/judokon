@@ -32,11 +32,6 @@ export const CLI_DOM_TEMPLATE = `
         <div id="round-message" role="status" aria-live="polite" aria-atomic="true"></div>
         <div id="match-announcement" aria-live="assertive" aria-atomic="true" style="position: absolute; left: -10000px;"></div>
         <div id="cli-countdown" role="status" aria-live="polite" data-remaining-time="0"></div>
-        <div class="cli-actions" style="margin-top: 8px;">
-          <button id="start-match" data-testid="start-battle-button" class="primary-button">
-            Start match
-          </button>
-        </div>
       </section>
       <div class="ascii-sep">------------------------</div>
       <section aria-label="Match Settings" class="cli-block cli-settings">

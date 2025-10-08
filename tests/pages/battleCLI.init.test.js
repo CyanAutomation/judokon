@@ -14,7 +14,7 @@ describe("battleCLI init helpers", () => {
     vi.restoreAllMocks();
   });
 
-  it("emits startClicked when start button clicked", async () => {
+  it("emits startClicked when the start helper runs", async () => {
     const mod = await loadBattleCLI({
       stats: [{ statIndex: 1, name: "Speed" }],
       mockBattleEvents: false
@@ -24,6 +24,11 @@ describe("battleCLI init helpers", () => {
     if (!emitter) {
       throw new Error("Battle event emitter unavailable");
     }
+    const { dispatchBattleEvent } = await import(
+      "../../src/helpers/classicBattle/orchestrator.js"
+    );
+    dispatchBattleEvent.mockClear();
+    const battleCliModule = await import("../../src/pages/battleCLI/init.js");
     const startClickedListener = vi.fn();
     const startClicked = new Promise((resolve) =>
       emitter.addEventListener(
@@ -36,13 +41,10 @@ describe("battleCLI init helpers", () => {
       )
     );
     expect(startClickedListener).not.toHaveBeenCalled();
-    const startBtn = document.getElementById("start-match-button");
-    if (!startBtn) {
-      throw new Error("Start button was not rendered");
-    }
-    startBtn.click();
+    await battleCliModule.triggerMatchStart();
     await startClicked;
     expect(startClickedListener).toHaveBeenCalledTimes(1);
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("startClicked");
   });
 
   it("renders stats list", async () => {
