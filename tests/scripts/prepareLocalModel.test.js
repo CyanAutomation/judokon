@@ -49,6 +49,8 @@ describe("prepareLocalModel", () => {
 
     const pipelineMock = vi.fn(async () => {
       // The directories should be in place before pipeline is invoked.
+      await stat(cacheDir);
+      await stat(path.join(cacheDir, "minilm"));
       await stat(path.join(cacheDir, "minilm", "onnx"));
       await writeFile(path.join(destDir, "config.json"), "{}", "utf8");
       await writeFile(path.join(destDir, "tokenizer.json"), "{}", "utf8");
