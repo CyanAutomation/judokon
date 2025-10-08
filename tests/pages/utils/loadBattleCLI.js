@@ -80,11 +80,24 @@ export async function loadBattleCLI(options = {}) {
     startRound: vi.fn(),
     resetGame: vi.fn()
   }));
-  const dispatchBattleEvent = vi.fn().mockResolvedValue(true);
-  vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
-    initClassicBattleOrchestrator: vi.fn(),
-    dispatchBattleEvent
-  }));
+  const orchestrator = await import("../../../src/helpers/classicBattle/orchestrator.js");
+  const ensureMock = (method, implementation) => {
+    const target = orchestrator[method];
+    if (typeof target !== "function") {
+      throw new TypeError(`Expected orchestrator.${method} to be a function`);
+    }
+    if (!("mock" in target)) {
+      vi.spyOn(orchestrator, method);
+    }
+    const spy = orchestrator[method];
+    spy.mockReset();
+    if (implementation) {
+      spy.mockImplementation(implementation);
+    }
+    return spy;
+  };
+  ensureMock("initClassicBattleOrchestrator", () => Promise.resolve());
+  ensureMock("dispatchBattleEvent", () => Promise.resolve(true));
   if (mockBattleEvents) {
     // Provide a functional in-memory event bus for battle events so the page
     // can react to emitted events in tests (focus, countdown, etc.).
