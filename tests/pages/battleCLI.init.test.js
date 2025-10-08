@@ -24,9 +24,7 @@ describe("battleCLI init helpers", () => {
     if (!emitter) {
       throw new Error("Battle event emitter unavailable");
     }
-    const { dispatchBattleEvent } = await import(
-      "../../src/helpers/classicBattle/orchestrator.js"
-    );
+    const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
     dispatchBattleEvent.mockClear();
     const battleCliModule = await import("../../src/pages/battleCLI/init.js");
     const startClickedListener = vi.fn();
