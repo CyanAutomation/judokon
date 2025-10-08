@@ -72,13 +72,17 @@
 
         <!-- Battle area container -->
         <div id="battle-area">
-          <section class="card-slot player-slot" aria-label="Your card">
+          <section class="battle-slot card-slot player-slot" aria-label="Your card">
             <div class="slot-surface">
               <div id="player-card" aria-label="Your card"></div>
             </div>
           </section>
 
-          <section id="controls" aria-label="Stat selection and round controls">
+          <section
+            id="controls"
+            class="battle-slot controls-slot"
+            aria-label="Stat selection and round controls"
+          >
             <div class="slot-surface controls-surface">
               <div class="stat-selection stat-controls" role="group" aria-label="Choose a stat">
                 <div id="stat-buttons" data-testid="stat-buttons" data-buttons-ready="false"></div>
@@ -121,7 +125,7 @@
             </div>
           </section>
 
-          <section class="card-slot opponent-slot" aria-label="Opponent card">
+          <section class="battle-slot card-slot opponent-slot" aria-label="Opponent card">
             <div class="slot-surface">
               <div id="opponent-card" aria-label="Opponent card">
                 <div
