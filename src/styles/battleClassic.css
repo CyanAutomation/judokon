@@ -2,8 +2,10 @@
 
 .home-screen > .header {
   position: fixed;
+  inset-inline: 0;
   top: 0;
-  top: env(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
+  box-sizing: border-box;
 }
 
 .battle-content {
@@ -22,7 +24,10 @@
   justify-items: center;
   align-items: flex-start;
   gap: var(--space-md);
-  padding-top: var(--space-lg);
+  padding-top: max(
+    var(--space-lg),
+    calc(var(--header-clearance, calc(var(--header-height) + env(safe-area-inset-top))) - var(--space-md))
+  );
 }
 
 #battle-area > .card-slot,
