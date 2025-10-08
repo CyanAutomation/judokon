@@ -40,6 +40,45 @@ describe("prepareLocalModel", () => {
     }
   });
 
+  it("hydrates via transformers using src/models cache directory", async () => {
+    vi.resetModules();
+    const destRoot = path.join(process.cwd(), "src");
+    const cacheDir = path.join(destRoot, "models");
+    const destDir = path.join(cacheDir, "minilm");
+    await rm(destDir, { recursive: true, force: true });
+
+    const pipelineMock = vi.fn(async () => {
+      // The directories should be in place before pipeline is invoked.
+      await stat(path.join(cacheDir, "minilm", "onnx"));
+      await writeFile(path.join(destDir, "config.json"), "{}", "utf8");
+      await writeFile(path.join(destDir, "tokenizer.json"), "{}", "utf8");
+      await writeFile(path.join(destDir, "tokenizer_config.json"), "{}", "utf8");
+      await writeFile(path.join(destDir, "onnx", "model_quantized.onnx"), Buffer.from([1, 2, 3]));
+      return {};
+    });
+    const env = { allowLocalModels: false };
+    vi.doMock("@xenova/transformers", () => ({
+      pipeline: pipelineMock,
+      env
+    }));
+
+    const { prepareLocalModel } = await import("../../scripts/prepareLocalModel.mjs");
+    const res = await prepareLocalModel({ force: true });
+
+    expect(res.ok).toBe(true);
+    expect(res.source).toBe("transformers");
+    expect(env.cacheDir).toBe(cacheDir);
+    expect(env.localModelPath).toBe(destRoot);
+    expect(pipelineMock).toHaveBeenCalledWith(
+      "feature-extraction",
+      "Xenova/all-MiniLM-L6-v2",
+      { quantized: true }
+    );
+
+    vi.doUnmock("@xenova/transformers");
+    vi.resetModules();
+  });
+
   it("allows getExtractor to use local model path when present", async () => {
     // Arrange: ensure minimal config exists to take local path branch
     const dest = path.join(process.cwd(), "src", "models", "minilm");
