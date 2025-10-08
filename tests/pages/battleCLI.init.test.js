@@ -66,6 +66,7 @@ describe("battleCLI init helpers", () => {
       );
       dispatchBattleEvent.mockResolvedValue(false);
       const battleCliModule = await import("../../src/pages/battleCLI/init.js");
+      const { MANUAL_FALLBACK_DELAY_MS } = battleCliModule;
       await withMutedConsole(async () => {
         const startPromise = battleCliModule.triggerMatchStart();
         await vi.runAllTimersAsync();
@@ -81,9 +82,15 @@ describe("battleCLI init helpers", () => {
         "waitingForPlayerAction"
       ]);
       const manualTimerCalls = setTimeoutSpy.mock.calls.slice(initialTimerCalls);
-      const fallbackTimers = manualTimerCalls.filter(([, delay]) => delay === 50).slice(0, 3);
+      const fallbackTimers = manualTimerCalls
+        .filter(([, delay]) => delay === MANUAL_FALLBACK_DELAY_MS)
+        .slice(0, 3);
       expect(fallbackTimers).toHaveLength(3);
-      expect(fallbackTimers.map(([, delay]) => delay)).toEqual([50, 50, 50]);
+      expect(fallbackTimers.map(([, delay]) => delay)).toEqual([
+        MANUAL_FALLBACK_DELAY_MS,
+        MANUAL_FALLBACK_DELAY_MS,
+        MANUAL_FALLBACK_DELAY_MS
+      ]);
     } finally {
       vi.useRealTimers();
     }
