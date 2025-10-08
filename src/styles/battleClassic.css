@@ -134,6 +134,17 @@
 
 .battle-controls {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-md);
+}
+
+.battle-controls .controls-surface {
+  width: 100%;
+}
+
+.battle-controls__actions {
+  display: flex;
   gap: var(--space-sm);
   align-items: stretch;
   justify-content: center;
@@ -144,7 +155,7 @@
   box-shadow: none;
 }
 
-.battle-controls .battle-control-button {
+.battle-controls__actions .battle-control-button {
   flex: 1 1 160px;
   min-width: 140px;
   max-width: 220px;
@@ -156,7 +167,7 @@
   --button-disabled-bg: var(--color-surface);
 }
 
-.battle-controls .primary-button {
+.battle-controls__actions .primary-button {
   --button-bg: var(--color-primary);
   --button-hover-bg: var(--color-primary);
   --button-active-bg: var(--color-primary);
@@ -167,13 +178,13 @@
 
 /* Provide graceful fallback when color-mix() is unavailable (Chrome 111+, Firefox 113+, Safari 16.2+) */
 @supports (color: color-mix(in srgb, black 50%, white 50%)) {
-  .battle-controls .battle-control-button {
+  .battle-controls__actions .battle-control-button {
     --button-hover-bg: color-mix(in srgb, var(--color-surface) 92%, var(--color-text) 8%);
     --button-active-bg: color-mix(in srgb, var(--color-surface) 88%, var(--color-text) 12%);
     --button-disabled-bg: color-mix(in srgb, var(--color-surface) 84%, var(--color-text) 16%);
   }
 
-  .battle-controls .primary-button {
+  .battle-controls__actions .primary-button {
     --button-hover-bg: color-mix(in srgb, var(--color-primary) 92%, var(--color-text-inverted) 8%);
     --button-active-bg: color-mix(
       in srgb,
@@ -184,33 +195,33 @@
   }
 }
 
-.battle-controls .primary-button:not(:disabled) {
+.battle-controls__actions .primary-button:not(:disabled) {
   background-color: var(--color-primary);
   box-shadow: var(--shadow-hover);
 }
 
-.battle-controls .battle-control-button:disabled {
+.battle-controls__actions .battle-control-button:disabled {
   box-shadow: none;
   opacity: 0.7;
 }
 
-.battle-controls .primary-button:not(:disabled):hover,
-.battle-controls .primary-button:not(:disabled):focus,
-.battle-controls .primary-button:not(:disabled):focus-visible {
+.battle-controls__actions .primary-button:not(:disabled):hover,
+.battle-controls__actions .primary-button:not(:disabled):focus,
+.battle-controls__actions .primary-button:not(:disabled):focus-visible {
   box-shadow: var(--shadow-hover);
   transform: translateY(-1px);
 }
 
-.battle-controls .secondary-button {
+.battle-controls__actions .secondary-button {
   background-color: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
   box-shadow: none;
 }
 
-.battle-controls .secondary-button:not(:disabled):hover,
-.battle-controls .secondary-button:not(:disabled):focus,
-.battle-controls .secondary-button:not(:disabled):focus-visible {
+.battle-controls__actions .secondary-button:not(:disabled):hover,
+.battle-controls__actions .secondary-button:not(:disabled):focus,
+.battle-controls__actions .secondary-button:not(:disabled):focus-visible {
   background-color: var(--color-tertiary);
   box-shadow: var(--shadow-base);
 }
@@ -234,12 +245,12 @@
     width: 100%;
   }
 
-  .battle-controls {
+  .battle-controls__actions {
     flex-direction: column;
     width: 100%;
   }
 
-  .battle-controls .battle-control-button {
+  .battle-controls__actions .battle-control-button {
     width: 100%;
     max-width: none;
   }
