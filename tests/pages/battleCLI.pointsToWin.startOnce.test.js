@@ -23,10 +23,9 @@ describe("battleCLI start control", () => {
     const mod = await loadBattleCLI();
     const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
     const { emitBattleEvent } = battleEvents;
-    const {
-      initClassicBattleOrchestrator,
-      dispatchBattleEvent
-    } = await import("../../src/helpers/classicBattle/orchestrator.js");
+    const { initClassicBattleOrchestrator, dispatchBattleEvent } = await import(
+      "../../src/helpers/classicBattle/orchestrator.js"
+    );
     const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");
     initClassicBattleOrchestrator.mockResolvedValue();
     dispatchBattleEvent.mockImplementation(async (evt) => {

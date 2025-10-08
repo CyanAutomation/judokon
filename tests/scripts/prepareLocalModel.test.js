@@ -82,11 +82,9 @@ describe("prepareLocalModel", () => {
       const info = await stat(path.join(destDir, rel));
       expect(info.size).toBeGreaterThan(0);
     }
-    expect(pipelineMock).toHaveBeenCalledWith(
-      "feature-extraction",
-      "Xenova/all-MiniLM-L6-v2",
-      { quantized: true }
-    );
+    expect(pipelineMock).toHaveBeenCalledWith("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
+      quantized: true
+    });
 
     vi.doUnmock("@xenova/transformers");
     vi.resetModules();
