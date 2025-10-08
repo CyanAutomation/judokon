@@ -1,7 +1,7 @@
 /* Battle Classic specific styles */
 
 .home-screen > .header {
-  position: sticky;
+  position: fixed;
   top: 0;
   top: env(safe-area-inset-top);
 }
@@ -16,12 +16,13 @@
 }
 
 #battle-area {
+  /* Three-column grid: left card | controls | right card */
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   justify-items: center;
   align-items: flex-start;
   gap: var(--space-md);
-  padding-top: var(--header-height);
+  padding-top: var(--space-lg);
 }
 
 #battle-area > .card-slot,
