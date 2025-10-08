@@ -9,7 +9,7 @@
  *    - Copy files into destination, creating folders as needed.
  *    - Print success and exit.
  * 4. Else attempt to hydrate via @xenova/transformers (may download when network available):
- *    - Configure env.allowLocalModels, env.cacheDir (src/models), and env.localModelPath (src).
+ *    - Configure env.allowLocalModels, env.cacheDir (src/models), and env.localModelPath (destRoot).
  *    - Instantiate a quantized feature-extraction pipeline for Xenova/all-MiniLM-L6-v2.
  *    - If successful, copy/cache files into models/minilm.
  * 5. On failure, print actionable guidance for strict-offline environments.
@@ -89,6 +89,7 @@ export async function prepareLocalModel(options = {}) {
     env.localModelPath = destRoot;
     // Prepare dest directories to allow caching to land in-place
     await ensureDir(cacheDir);
+    await ensureDir(path.join(cacheDir, "minilm"));
     await ensureDir(path.join(cacheDir, "minilm", "onnx"));
     // Instantiating the pipeline may populate caches; we still ensure required files exist.
     await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
