@@ -20,7 +20,7 @@
 #battle-area {
   /* Three-column grid: left card | controls | right card */
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   justify-items: center;
   align-items: flex-start;
   gap: var(--space-md);
@@ -30,19 +30,18 @@
   );
 }
 
-#battle-area > .card-slot,
-#battle-area > #controls {
+#battle-area > .battle-slot {
   width: 100%;
   max-width: 420px;
 }
 
-#battle-area .card-slot {
+#battle-area .battle-slot {
   display: flex;
   justify-content: center;
   align-items: stretch;
 }
 
-#battle-area .slot-surface {
+#battle-area .battle-slot .slot-surface {
   background-color: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-base);
@@ -53,8 +52,22 @@
   width: 100%;
 }
 
+#battle-area .player-slot,
+#battle-area .opponent-slot {
+  background-color: transparent;
+  color: var(--color-text);
+}
+
 #battle-area .card-slot .slot-surface {
   align-items: center;
+}
+
+#battle-area .controls-slot .slot-surface {
+  align-items: center;
+}
+
+#battle-area .controls-slot .slot-surface > * {
+  width: 100%;
 }
 
 .controls-surface {
@@ -225,12 +238,7 @@
     grid-template-columns: 1fr;
   }
 
-  #battle-area > #controls {
-    grid-column: 1;
-  }
-
-  #battle-area > .card-slot,
-  #battle-area > #controls {
+  #battle-area > .battle-slot {
     width: 100%;
   }
 
