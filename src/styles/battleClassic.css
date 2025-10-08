@@ -158,7 +158,6 @@
   align-items: stretch;
   gap: var(--space-sm);
   margin: 0;
-  padding: var(--space-sm);
   width: 100%;
 }
 
@@ -167,7 +166,6 @@
   min-width: 140px;
   max-width: 220px;
   min-height: var(--touch-target-size, 48px);
-  border: 1px solid transparent;
   border-radius: var(--radius-pill);
   transition:
     background-color var(--transition-fast),
@@ -187,7 +185,6 @@
   --button-text-color: var(--color-text-inverted);
   --button-disabled-bg: var(--color-primary);
   color: var(--color-text-inverted);
-  border-color: transparent;
   box-shadow: var(--shadow-hover);
 }
 
