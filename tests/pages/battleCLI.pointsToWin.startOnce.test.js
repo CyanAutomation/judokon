@@ -19,28 +19,44 @@ describe("battleCLI start control", () => {
     await cleanupBattleCLI();
   });
 
-  it("falls back to Start button and begins match", async () => {
+  it("falls back to snackbar prompt and begins match on Enter", async () => {
     const mod = await loadBattleCLI();
-    const { emitBattleEvent } = await import("../../src/helpers/classicBattle/battleEvents.js");
-    const { initClassicBattleOrchestrator } = await import(
-      "../../src/helpers/classicBattle/orchestrator.js"
-    );
-    let machine;
-    initClassicBattleOrchestrator.mockImplementation(() => {
-      machine = {
-        dispatch: vi.fn((evt) => {
-          if (evt === "startClicked") {
-            emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
-          }
-        })
-      };
-      debugHooks.exposeDebugState("getClassicBattleMachine", () => machine);
-      return Promise.resolve();
+    const battleEvents = await import("../../src/helpers/classicBattle/battleEvents.js");
+    const { emitBattleEvent } = battleEvents;
+    const {
+      initClassicBattleOrchestrator,
+      dispatchBattleEvent
+    } = await import("../../src/helpers/classicBattle/orchestrator.js");
+    const { showSnackbar } = await import("../../src/helpers/showSnackbar.js");
+    initClassicBattleOrchestrator.mockResolvedValue();
+    dispatchBattleEvent.mockImplementation(async (evt) => {
+      if (evt === "startClicked") {
+        emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+      }
+      return true;
     });
     await mod.init();
-    const btn = document.getElementById("start-match-button");
-    expect(btn).toBeTruthy();
-    btn.click();
+    expect(showSnackbar).toHaveBeenCalledWith("Press Enter to start the match.");
+    const emitter = battleEvents.getBattleEventTarget?.();
+    if (!emitter) {
+      throw new Error("Battle event emitter unavailable");
+    }
+    const stateChangeListener = vi.fn();
+    const stateChange = new Promise((resolve) =>
+      emitter.addEventListener(
+        "battleStateChange",
+        (event) => {
+          stateChangeListener(event);
+          resolve(event);
+        },
+        { once: true }
+      )
+    );
+    const battleCliModule = await import("../../src/pages/battleCLI/init.js");
+    const handled = battleCliModule.handleWaitingForMatchStartKey("enter");
+    expect(handled).toBe(true);
+    await stateChange;
+    expect(dispatchBattleEvent).toHaveBeenCalledWith("startClicked");
     expect(emitBattleEvent).toHaveBeenCalledWith("battleStateChange", {
       to: "waitingForPlayerAction"
     });

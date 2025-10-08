@@ -20,6 +20,7 @@ import statNamesData from "../../data/statNames.js";
 import { fetchJson } from "../../helpers/dataUtils.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
+import { showSnackbar } from "../../helpers/showSnackbar.js";
 import {
   initFeatureFlags,
   isEnabled,
@@ -236,25 +237,6 @@ export function ensureCliDomForTest({ reset = false } = {}) {
 }
 
 /**
- * Ensure the Start Match button exists and is focus-first.
- * @returns {void}
- * @pseudocode
- * btn = byId('start-match'); if btn -> set tabindex=0 and focus it if page just initialized
- */
-export function ensureStartButtonFocus() {
-  try {
-    const btn = byId("start-match");
-    if (btn) {
-      btn.tabIndex = 0;
-      // Do not steal focus during tests unless explicitly requested
-      if (typeof window !== "undefined" && !window.__TEST__) {
-        btn.focus();
-      }
-    }
-  } catch {}
-}
-
-/**
  * Resolve the active round through the orchestrator for deterministic tests.
  *
  * @param {object} [eventLike]
@@ -435,7 +417,7 @@ let resetPromise = Promise.resolve();
  * handleCountdownFinished()
  * roundResolving = false
  * clearVerboseLog()
- * remove play-again/start buttons
+ * remove play-again button
  * resetPromise = async () => {
  *   disposeClassicBattleOrchestrator()
  *   await resetGame(store)
@@ -458,7 +440,6 @@ export async function resetMatch() {
   if (hasDocument) {
     try {
       document.getElementById("play-again-button")?.remove();
-      document.getElementById("start-match-button")?.remove();
     } catch {}
   }
   // Perform synchronous UI reset to prevent glitches
@@ -512,110 +493,97 @@ async function startCallback() {
 }
 
 /**
- * Render the Start button after the orchestrator reset completes.
+ * Notify the battle machine that the match should start.
  *
+ * @returns {Promise<void>}
  * @pseudocode
- * await resetPromise
- * if main missing or button exists → return
- * create section + button
- * on click → emit "startClicked" and dispatch to machine
- * remove section
+ * await resetPromise (ignore errors)
+ * emit `startClicked`
+ * try dispatch via debug machine
+ * else try safeDispatch
+ * if dispatch fails → emit manual battleStateChange fallback sequence
  */
-async function renderStartButton() {
-  await resetPromise;
-  if (!hasDocument) return;
-  const main = byId("cli-main");
-  if (!main) return;
-  // If the static Start button exists in the template, prefer wiring it rather than injecting a duplicate
-  // Support both new static button (#start-match) and legacy injected id (#start-match-button)
-  const staticBtn =
-    document.getElementById("start-match") || document.getElementById("start-match-button");
-  if (staticBtn) {
-    try {
-      // Also create legacy alias element for tests expecting #start-match-button
-      if (!document.getElementById("start-match-button")) {
-        try {
-          const alias = staticBtn.cloneNode(true);
-          alias.id = "start-match-button";
-          alias.setAttribute("data-testid", "start-battle-button");
-          staticBtn.insertAdjacentElement("afterend", alias);
-          // Mirror clicks to the canonical button
-          alias.addEventListener("click", () => staticBtn.click());
-        } catch {}
-      }
-      staticBtn.addEventListener(
-        "click",
-        async () => {
-          try {
-            emitBattleEvent("startClicked");
-          } catch {}
-          try {
-            const getter = debugHooks.readDebugState("getClassicBattleMachine");
-            const machine = typeof getter === "function" ? getter() : getter;
-            if (machine) machine.dispatch("startClicked");
-            else await safeDispatch("startClicked");
-          } catch {}
-        },
-        { once: true }
-      );
-    } catch {}
-    ensureStartButtonFocus();
+export async function triggerMatchStart() {
+  try {
+    await resetPromise;
+  } catch {}
+
+  try {
+    emitBattleEvent("startClicked");
+  } catch {}
+
+  try {
+    const getter = debugHooks?.readDebugState?.("getClassicBattleMachine");
+    const machine = typeof getter === "function" ? getter() : getter;
+    if (machine?.dispatch) {
+      await machine.dispatch("startClicked");
+      return;
+    }
+  } catch {}
+
+  let dispatched = false;
+  try {
+    const result = await safeDispatch("startClicked");
+    dispatched = result !== undefined ? Boolean(result) : !!result;
+  } catch {
+    dispatched = false;
+  }
+
+  if (dispatched) {
     return;
   }
-  if (byId("start-match-button")) return;
-  const section = document.createElement("section");
-  section.className = "cli-block";
-  const btn = createButton("Start match", {
-    id: "start-match-button",
-    className: "primary-button",
-    "data-testid": "start-battle-button"
-  });
-  btn.addEventListener("click", async () => {
-    try {
-      // Notify UI/event listeners that start was clicked
-      emitBattleEvent("startClicked");
-    } catch {}
 
-    // Remove button immediately to prevent double-clicks
-    section.remove();
+  try {
+    console.warn("[CLI] Orchestrator unavailable, using manual state progression");
+    emitBattleEvent("battleStateChange", { to: "matchStart" });
+    setTimeout(() => {
+      emitBattleEvent("battleStateChange", { to: "cooldown" });
+      setTimeout(() => {
+        emitBattleEvent("battleStateChange", { to: "roundStart" });
+        setTimeout(() => {
+          emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
+        }, 50);
+      }, 50);
+    }, 50);
+  } catch (err) {
+    console.debug("Failed to dispatch startClicked", err);
+  }
+}
 
-    try {
-      const getter = debugHooks.readDebugState("getClassicBattleMachine");
-      const machine = typeof getter === "function" ? getter() : getter;
-      if (machine) {
-        machine.dispatch("startClicked");
-      } else {
-        // Fallback: when orchestrator machine is unavailable, try to dispatch via orchestrator
-        let dispatched = false;
-        try {
-          dispatched = await safeDispatch("startClicked").catch(() => false);
-        } catch {}
+/**
+ * Announce that the match is ready to begin.
+ *
+ * @param {{ focusMain?: boolean }} [options]
+ * @returns {Promise<void>}
+ * @pseudocode
+ * await resetPromise (ignore errors)
+ * if no document → return
+ * call showSnackbar with "Press Enter to start the match."
+ * if focusMain → focus #cli-main (ensure tabindex)
+ */
+export async function announceMatchReady({ focusMain = false } = {}) {
+  try {
+    await resetPromise;
+  } catch {}
 
-        if (!dispatched) {
-          // Final fallback: manually progress through the state machine steps
-          console.warn("[CLI] Orchestrator unavailable, using manual state progression");
-          try {
-            // Simulate the state progression: matchStart -> cooldown -> roundStart -> waitingForPlayerAction
-            emitBattleEvent("battleStateChange", { to: "matchStart" });
-            setTimeout(() => {
-              emitBattleEvent("battleStateChange", { to: "cooldown" });
-              setTimeout(() => {
-                emitBattleEvent("battleStateChange", { to: "roundStart" });
-                setTimeout(() => {
-                  emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
-                }, 50);
-              }, 50);
-            }, 50);
-          } catch {}
-        }
-      }
-    } catch (err) {
-      console.debug("Failed to dispatch startClicked", err);
+  if (!hasDocument) return;
+
+  try {
+    showSnackbar("Press Enter to start the match.");
+  } catch {}
+
+  if (!focusMain) return;
+
+  try {
+    const main = byId("cli-main");
+    if (!main) return;
+    if (!main.hasAttribute("tabindex")) {
+      main.setAttribute("tabindex", "-1");
     }
-  });
-  section.append(btn);
-  main.insertBefore(section, main.firstChild);
-  ensureStartButtonFocus();
+    if (typeof window === "undefined" || !window.__TEST__) {
+      main.focus?.();
+    }
+  } catch {}
 }
 
 /**
@@ -1293,9 +1261,7 @@ export function autostartBattle() {
   try {
     const autostart = new URLSearchParams(location.search).get("autostart");
     if (autostart === "1") {
-      try {
-        safeDispatch("startClicked");
-      } catch {}
+      triggerMatchStart();
     }
   } catch {}
 }
@@ -1713,7 +1679,7 @@ export function restorePointsToWin() {
             engineFacade.setPointsToWin?.(val);
             updateRoundHeader(0, val);
             try {
-              await renderStartButton();
+              await announceMatchReady({ focusMain: true });
             } catch {}
             current = val;
           } else {
@@ -1916,9 +1882,7 @@ export function handleWaitingForPlayerActionKey(key) {
  */
 export function handleWaitingForMatchStartKey(key) {
   if (key === "enter") {
-    try {
-      emitBattleEvent("startClicked");
-    } catch {}
+    triggerMatchStart();
     return true;
   }
   return false;
@@ -2238,7 +2202,7 @@ function handleMatchOver() {
   btn.addEventListener("click", async () => {
     await resetMatch();
     section.remove();
-    emitBattleEvent("startClicked");
+    await triggerMatchStart();
   });
   section.append(btn);
   try {
@@ -2719,7 +2683,8 @@ export function wireEvents() {
  * await resetMatch()
  * await resetPromise
  * try initRoundSelectModal()
- * catch → await renderStartButton()
+ * catch → announce match ready with focus
+ * otherwise announce match ready without focus
  * wireEvents()
  */
 export async function init() {
@@ -2807,13 +2772,18 @@ export async function init() {
     if (cliScore) cliScore.style.display = "none";
   }
 
+  let announceWithFocus = false;
   try {
     await initRoundSelectModal(startCallback);
   } catch {
-    await renderStartButton();
+    announceWithFocus = true;
   }
-  // Always show the start button as a prominent, accessible entry point
-  await renderStartButton();
+
+  if (announceWithFocus) {
+    await announceMatchReady({ focusMain: true });
+  } else {
+    await announceMatchReady();
+  }
   wireEvents();
 }
 

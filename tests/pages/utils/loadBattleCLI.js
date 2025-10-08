@@ -80,8 +80,10 @@ export async function loadBattleCLI(options = {}) {
     startRound: vi.fn(),
     resetGame: vi.fn()
   }));
+  const dispatchBattleEvent = vi.fn().mockResolvedValue(true);
   vi.doMock("../../../src/helpers/classicBattle/orchestrator.js", () => ({
-    initClassicBattleOrchestrator: vi.fn()
+    initClassicBattleOrchestrator: vi.fn(),
+    dispatchBattleEvent
   }));
   if (mockBattleEvents) {
     // Provide a functional in-memory event bus for battle events so the page
@@ -153,6 +155,10 @@ export async function loadBattleCLI(options = {}) {
   vi.doMock("../../../src/helpers/classicBattle/roundSelectModal.js", () => ({
     initRoundSelectModal: vi.fn().mockRejectedValue(new Error("Modal init failed"))
   }));
+  const showSnackbar = vi.fn();
+  vi.doMock("../../../src/helpers/showSnackbar.js", () => ({
+    showSnackbar
+  }));
   {
     let __autoContinue = true;
     vi.doMock("../../../src/helpers/classicBattle/orchestratorHandlers.js", () => ({
@@ -203,7 +209,8 @@ export async function cleanupBattleCLI() {
     "../../../src/helpers/classicBattle/autoSelectStat.js",
     "../../../src/helpers/classicBattle/uiHelpers.js",
     "../../../src/helpers/classicBattle/orchestratorHandlers.js",
-    "../../../src/helpers/classicBattle/roundSelectModal.js"
+    "../../../src/helpers/classicBattle/roundSelectModal.js",
+    "../../../src/helpers/showSnackbar.js"
   ];
   mocked.forEach((m) => vi.doUnmock(m));
   try {
