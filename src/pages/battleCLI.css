@@ -9,11 +9,11 @@
   --cli-accent: #9bdcff;
   --cli-warning: #ffcc00;
   --cli-focus: #ffd166;
-  --color-primary: #9bdcff;
-  --color-tertiary: #101820;
-  --color-text: #dce6ef;
-  --color-text-inverted: #050505;
-  --radius-lg: 4px;
+  /* CLI-specific overrides for snackbar theming */
+  --cli-snackbar-primary: #9bdcff;
+  --cli-snackbar-bg: #101820;
+  --cli-snackbar-text: #dce6ef;
+  --cli-snackbar-radius: 4px;
 }
 
 :focus {
@@ -162,12 +162,7 @@ body {
   align-items: center;
   flex-wrap: wrap;
 }
-.cli-root #snackbar-container .snackbar {
-  background: var(--color-tertiary);
-  color: var(--color-text);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-lg);
-}
+
 /* Terminal-style separators with enhanced visual hierarchy */
 .ascii-sep {
   font-family: inherit;
@@ -188,6 +183,14 @@ body {
   content: ">> "; /* ASCII indicator for results */
   opacity: 0.8;
   color: #9cffcf;
+}
+
+/* CLI snackbar overrides */
+.cli-root #snackbar-container .snackbar {
+  background: var(--cli-snackbar-bg, var(--color-tertiary));
+  color: var(--cli-snackbar-text, var(--color-text));
+  border: 1px solid var(--cli-snackbar-primary, var(--color-primary));
+  border-radius: var(--cli-snackbar-radius, var(--radius-lg));
 }
 
 /* Standard Scoreboard nodes - Phase 1: Hidden but styled for CLI theme */
