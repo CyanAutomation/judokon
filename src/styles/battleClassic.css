@@ -98,16 +98,18 @@
   color: var(--color-text);
 }
 
-.battle-status-header p {
+.battle-status-header p,
+.battle-status-header h2 {
   min-height: 1.2em;
   margin: 0;
 }
 
 .battle-status-header #round-message.round-message-title {
-  font-size: var(--font-extra-large);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  margin-bottom: var(--space-sm);
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  margin-bottom: var(--space-md);
 }
 
 .battle-status-header #next-round-timer,
@@ -116,6 +118,7 @@
 .battle-status-header #battle-state-badge {
   font-size: var(--font-medium);
   font-weight: 500;
+  line-height: 1.4;
 }
 
 .stat-selection {
