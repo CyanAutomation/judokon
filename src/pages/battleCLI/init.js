@@ -535,16 +535,14 @@ export async function triggerMatchStart() {
 
   try {
     console.warn("[CLI] Orchestrator unavailable, using manual state progression");
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     emitBattleEvent("battleStateChange", { to: "matchStart" });
-    setTimeout(() => {
-      emitBattleEvent("battleStateChange", { to: "cooldown" });
-      setTimeout(() => {
-        emitBattleEvent("battleStateChange", { to: "roundStart" });
-        setTimeout(() => {
-          emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
-        }, 50);
-      }, 50);
-    }, 50);
+    await wait(50);
+    emitBattleEvent("battleStateChange", { to: "cooldown" });
+    await wait(50);
+    emitBattleEvent("battleStateChange", { to: "roundStart" });
+    await wait(50);
+    emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
   } catch (err) {
     console.debug("Failed to dispatch startClicked", err);
   }
