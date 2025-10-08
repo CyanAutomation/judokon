@@ -84,13 +84,14 @@ export async function prepareLocalModel(options = {}) {
   try {
     const { pipeline, env } = await import("@xenova/transformers");
     const cacheDir = path.join(destRoot, "models");
+    const localModelDir = path.join(cacheDir, "minilm");
     env.allowLocalModels = true;
     env.cacheDir = cacheDir;
-    env.localModelPath = destRoot;
+    env.localModelPath = localModelDir;
     // Prepare dest directories to allow caching to land in-place
     await ensureDir(cacheDir);
-    await ensureDir(path.join(cacheDir, "minilm"));
-    await ensureDir(path.join(cacheDir, "minilm", "onnx"));
+    await ensureDir(localModelDir);
+    await ensureDir(path.join(localModelDir, "onnx"));
     // Instantiating the pipeline may populate caches; we still ensure required files exist.
     await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
   } catch (err) {

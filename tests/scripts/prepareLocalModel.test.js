@@ -70,7 +70,18 @@ describe("prepareLocalModel", () => {
     expect(res.ok).toBe(true);
     expect(res.source).toBe("transformers");
     expect(env.cacheDir).toBe(cacheDir);
-    expect(env.localModelPath).toBe(destRoot);
+    expect(env.localModelPath).toBe(destDir);
+    // Ensure hydrated files were written into the expected cache directory
+    const hydratedFiles = [
+      "config.json",
+      "tokenizer.json",
+      "tokenizer_config.json",
+      path.join("onnx", "model_quantized.onnx")
+    ];
+    for (const rel of hydratedFiles) {
+      const info = await stat(path.join(destDir, rel));
+      expect(info.size).toBeGreaterThan(0);
+    }
     expect(pipelineMock).toHaveBeenCalledWith(
       "feature-extraction",
       "Xenova/all-MiniLM-L6-v2",
