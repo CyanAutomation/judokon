@@ -150,14 +150,13 @@
 
 .battle-controls {
   display: flex;
-  gap: var(--space-sm);
-  align-items: stretch;
-  justify-content: center;
   flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--space-sm);
   margin: 0;
-  padding: 0;
-  background-color: transparent;
-  box-shadow: none;
+  padding: var(--space-sm);
+  width: 100%;
 }
 
 .battle-controls .battle-control-button {
@@ -165,6 +164,12 @@
   min-width: 140px;
   max-width: 220px;
   min-height: var(--touch-target-size, 48px);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
   --button-bg: var(--color-surface);
   --button-hover-bg: var(--color-surface);
   --button-active-bg: var(--color-surface);
@@ -179,6 +184,8 @@
   --button-text-color: var(--color-text-inverted);
   --button-disabled-bg: var(--color-primary);
   color: var(--color-text-inverted);
+  border-color: transparent;
+  box-shadow: var(--shadow-hover);
 }
 
 /* Provide graceful fallback when color-mix() is unavailable (Chrome 111+, Firefox 113+, Safari 16.2+) */
@@ -205,6 +212,11 @@
   box-shadow: var(--shadow-hover);
 }
 
+.battle-controls .battle-control-button:focus-visible {
+  outline: 2px solid var(--color-focus, var(--link-color));
+  outline-offset: 3px;
+}
+
 .battle-controls .battle-control-button:disabled {
   box-shadow: none;
   opacity: 0.7;
@@ -220,7 +232,7 @@
 .battle-controls .secondary-button {
   background-color: var(--color-surface);
   color: var(--color-text);
-  border: 1px solid var(--color-border);
+  border-color: var(--color-border);
   box-shadow: none;
 }
 
