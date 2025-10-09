@@ -2773,8 +2773,6 @@ export async function init() {
     } catch (error) {
       console.warn("Failed to initialize shared Scoreboard in CLI:", error);
     }
-
-
   }
 
   let announceWithFocus = false;
