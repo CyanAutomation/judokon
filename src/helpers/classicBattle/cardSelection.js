@@ -130,7 +130,7 @@ export async function loadJudokaData({ fetcher = fetchJson, onError = showLoadEr
     try {
       onError?.(error);
     } catch {}
-    return [];
+    throw error;
   }
 }
 
@@ -377,7 +377,13 @@ export async function drawCards(options = {}) {
     lazyPortraitSetup
   } = options;
 
-  const allJudoka = await judokaLoader({ fetcher, onError: showLoadError });
+  let allJudoka = [];
+  try {
+    allJudoka = await judokaLoader({ fetcher, onError: showLoadError });
+  } catch (error) {
+    console.error("Failed to load judoka data:", error);
+    return { playerJudoka: null, opponentJudoka: null };
+  }
   const available = allJudoka.filter((j) => !j?.isHidden);
   const lookup = await gokyoLoader({ fetcher, lookupFactory, onError: showLoadError });
   if (!lookup) return { playerJudoka: null, opponentJudoka: null };
