@@ -20,6 +20,8 @@ import { vi } from "vitest";
  * @param {Array} [options.battleStats=[]] - Values for `BattleEngine.STATS`.
  * @returns {Promise<import("../../../src/pages/index.js")["battleCLI"]>} Loaded module.
  */
+const orchestratorSpies = new Set();
+
 export async function loadBattleCLI(options = {}) {
   const {
     verbose = false,
@@ -84,12 +86,15 @@ export async function loadBattleCLI(options = {}) {
   const ensureMock = (method, implementation) => {
     const target = orchestrator[method];
     if (typeof target !== "function") {
-      throw new TypeError(`Expected orchestrator.${method} to be a function`);
+      throw new TypeError(
+        `Expected orchestrator.${method} to be a function, but got ${typeof target}`
+      );
     }
     if (!("mock" in target)) {
       vi.spyOn(orchestrator, method);
     }
     const spy = orchestrator[method];
+    orchestratorSpies.add(spy);
     spy.mockReset();
     if (implementation) {
       spy.mockImplementation(implementation);
@@ -207,6 +212,12 @@ export async function cleanupBattleCLI() {
   document.body.innerHTML = "";
   delete window.__TEST__;
   vi.clearAllMocks();
+  orchestratorSpies.forEach((spy) => {
+    if (spy && typeof spy.mockRestore === "function") {
+      spy.mockRestore();
+    }
+  });
+  orchestratorSpies.clear();
   vi.unstubAllGlobals();
   localStorage.clear();
   const mocked = [
