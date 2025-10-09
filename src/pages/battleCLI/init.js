@@ -2769,11 +2769,7 @@ export async function init() {
       console.warn("Failed to initialize shared Scoreboard in CLI:", error);
     }
 
-    // Hide legacy CLI scoreboard nodes to avoid duplication
-    const cliRound = byId("cli-round");
-    if (cliRound) cliRound.style.display = "none";
-    const cliScore = byId("cli-score");
-    if (cliScore) cliScore.style.display = "none";
+
   }
 
   let announceWithFocus = false;

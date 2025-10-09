@@ -57,7 +57,6 @@ function handleArrowNav(e) {
  * return true
  */
 function shouldProcessKey(key) {
-  // Allow Escape to pass through so modal manager / shortcuts can handle it
   if (!isEnabled("cliShortcuts") && key !== "q") return false;
 
   // Don't process keys when user is typing in form controls

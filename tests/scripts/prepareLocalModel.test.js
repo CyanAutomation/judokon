@@ -102,7 +102,7 @@ describe("prepareLocalModel", () => {
     const cacheDir = path.join(destRoot, "models");
     const destDir = path.join(cacheDir, "minilm");
     const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
-    const cachedConfig = "{\"from\":\"cache\"}";
+    const cachedConfig = '{"from":"cache"}';
 
     await rm(destDir, { recursive: true, force: true });
     await rm(path.join(cacheDir, "Xenova"), { recursive: true, force: true });
@@ -117,7 +117,7 @@ describe("prepareLocalModel", () => {
     );
 
     await mkdir(path.join(destDir, "onnx"), { recursive: true });
-    await writeFile(path.join(destDir, "config.json"), "{\"stale\":true}", "utf8");
+    await writeFile(path.join(destDir, "config.json"), '{"stale":true}', "utf8");
 
     const pipelineMock = vi.fn(async () => ({}));
     const env = { allowLocalModels: false };
