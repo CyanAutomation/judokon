@@ -101,6 +101,8 @@ async function populateFromCache(cacheDir, destDir, options = {}) {
       await ensureDir(path.dirname(dst));
       await cp(src, dst, { force: true });
       copiedAny = true;
+    } else {
+      console.log(`Skipping existing file: ${rel} (use --force to overwrite)`);
     }
 
     if (!(await fileNonEmpty(dst))) {
@@ -127,15 +129,17 @@ export async function prepareLocalModel(options = {}) {
     const localModelDir = path.join(cacheDir, "minilm");
     env.allowLocalModels = true;
     env.cacheDir = cacheDir;
-    env.localModelPath = destRoot;
+    env.localModelPath = destDir;
     // Prepare dest directories to allow caching to land in-place
     await ensureDir(cacheDir);
     await ensureDir(localModelDir);
     await ensureDir(path.join(localModelDir, "onnx"));
-    await populateFromCache(cacheDir, destDir, options);
+    const seededFromCache = await populateFromCache(cacheDir, destDir, options);
     // Instantiating the pipeline may populate caches; we still ensure required files exist.
     await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
-    await populateFromCache(cacheDir, destDir, options);
+    if (options.force || !seededFromCache) {
+      await populateFromCache(cacheDir, destDir, options);
+    }
   } catch (err) {
     const msg = String(err?.message || err).toLowerCase();
     throw new Error(
@@ -148,7 +152,10 @@ export async function prepareLocalModel(options = {}) {
   for (const rel of REQUIRED) {
     const full = path.join(destDir, rel);
     if (!(await fileNonEmpty(full))) {
-      throw new Error(`Model file is missing or empty after hydration attempt: ${rel}`);
+      throw new Error(
+        `Model file is missing or empty after hydration attempt: ${rel}. ` +
+          "This may indicate a problem with the cache population or transformers pipeline."
+      );
     }
   }
   return { ok: true, source: "transformers", destDir };
