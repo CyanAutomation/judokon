@@ -75,6 +75,12 @@ import * as initModule from "./init.js";
 const hasDocument = typeof document !== "undefined";
 const getSafeDocument = () => (hasDocument ? document : null);
 const getActiveElement = () => getSafeDocument()?.activeElement ?? null;
+/**
+ * Delay between manual fallback state transitions when the orchestrator is unavailable.
+ *
+ * @type {number}
+ */
+export const MANUAL_FALLBACK_DELAY_MS = 50;
 
 // Initialize engine and subscribe to engine events when available.
 try {
@@ -537,11 +543,11 @@ export async function triggerMatchStart() {
     console.warn("[CLI] Orchestrator unavailable, using manual state progression");
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     emitBattleEvent("battleStateChange", { to: "matchStart" });
-    await wait(50);
+    await wait(MANUAL_FALLBACK_DELAY_MS);
     emitBattleEvent("battleStateChange", { to: "cooldown" });
-    await wait(50);
+    await wait(MANUAL_FALLBACK_DELAY_MS);
     emitBattleEvent("battleStateChange", { to: "roundStart" });
-    await wait(50);
+    await wait(MANUAL_FALLBACK_DELAY_MS);
     emitBattleEvent("battleStateChange", { to: "waitingForPlayerAction" });
   } catch (err) {
     console.debug("Failed to dispatch startClicked", err);

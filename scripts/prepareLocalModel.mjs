@@ -71,6 +71,46 @@ async function copyFromDir(fromDir, destDir) {
   }
 }
 
+async function populateFromCache(cacheDir, destDir, options = {}) {
+  const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
+  try {
+    await stat(cacheModelDir);
+  } catch {
+    return false;
+  }
+
+  await ensureDir(destDir);
+  await ensureDir(path.join(destDir, "onnx"));
+
+  let copiedAny = false;
+  for (const rel of REQUIRED) {
+    const src = path.join(cacheModelDir, rel);
+    const dst = path.join(destDir, rel);
+    try {
+      await stat(src);
+    } catch {
+      throw new Error(`Cached model is missing required file: ${rel}`);
+    }
+
+    let hasExisting = false;
+    try {
+      hasExisting = await fileNonEmpty(dst);
+    } catch {}
+
+    if (!hasExisting || options.force) {
+      await ensureDir(path.dirname(dst));
+      await cp(src, dst, { force: true });
+      copiedAny = true;
+    }
+
+    if (!(await fileNonEmpty(dst))) {
+      throw new Error(`Cached model produced empty file: ${rel}`);
+    }
+  }
+
+  return copiedAny;
+}
+
 export async function prepareLocalModel(options = {}) {
   const destDir = path.join(destRoot, "models", "minilm");
   const { fromDir } = options;
@@ -87,13 +127,15 @@ export async function prepareLocalModel(options = {}) {
     const localModelDir = path.join(cacheDir, "minilm");
     env.allowLocalModels = true;
     env.cacheDir = cacheDir;
-    env.localModelPath = localModelDir;
+    env.localModelPath = destRoot;
     // Prepare dest directories to allow caching to land in-place
     await ensureDir(cacheDir);
     await ensureDir(localModelDir);
     await ensureDir(path.join(localModelDir, "onnx"));
+    await populateFromCache(cacheDir, destDir, options);
     // Instantiating the pipeline may populate caches; we still ensure required files exist.
     await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { quantized: true });
+    await populateFromCache(cacheDir, destDir, options);
   } catch (err) {
     const msg = String(err?.message || err).toLowerCase();
     throw new Error(
@@ -104,23 +146,8 @@ export async function prepareLocalModel(options = {}) {
 
   // Validate files landed (either via cache or post-step)
   for (const rel of REQUIRED) {
-    const full = path.join(destRoot, "models", "minilm", rel);
-    try {
-      if (!(await fileNonEmpty(full))) throw new Error("empty");
-    } catch {
-      if (!options.force) {
-        let existingFileNonEmpty = false;
-        try {
-          existingFileNonEmpty = await fileNonEmpty(full);
-        } catch {} // Ignore error if file doesn't exist
-
-        if (existingFileNonEmpty) {
-          console.warn(
-            `Skipping placeholder for existing non-empty file: ${rel}. Use --force to overwrite.`
-          );
-          continue;
-        }
-      }
+    const full = path.join(destDir, rel);
+    if (!(await fileNonEmpty(full))) {
       throw new Error(`Model file is missing or empty after hydration attempt: ${rel}`);
     }
   }
