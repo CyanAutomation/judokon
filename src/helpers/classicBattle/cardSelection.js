@@ -378,15 +378,19 @@ export async function drawCards(options = {}) {
   } = options;
 
   let allJudoka = [];
+  let judokaLoadFailed = false;
   try {
     allJudoka = await judokaLoader({ fetcher, onError: showLoadError });
   } catch (error) {
+    judokaLoadFailed = true;
     console.error("Failed to load judoka data:", error);
+  }
+  const lookup = await gokyoLoader({ fetcher, lookupFactory, onError: showLoadError });
+  if (judokaLoadFailed) {
     return { playerJudoka: null, opponentJudoka: null };
   }
-  const available = allJudoka.filter((j) => !j?.isHidden);
-  const lookup = await gokyoLoader({ fetcher, lookupFactory, onError: showLoadError });
   if (!lookup) return { playerJudoka: null, opponentJudoka: null };
+  const available = allJudoka.filter((j) => !j?.isHidden);
 
   try {
     await loadSettingsFn();
