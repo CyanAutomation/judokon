@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
-import { mkdtemp, writeFile, mkdir, rm, stat } from "node:fs/promises";
+import { mkdtemp, writeFile, mkdir, rm, stat, readFile } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 
@@ -45,17 +45,23 @@ describe("prepareLocalModel", () => {
     const destRoot = path.join(process.cwd(), "src");
     const cacheDir = path.join(destRoot, "models");
     const destDir = path.join(cacheDir, "minilm");
+    const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
     await rm(destDir, { recursive: true, force: true });
+    await rm(path.join(cacheDir, "Xenova"), { recursive: true, force: true });
 
     const pipelineMock = vi.fn(async () => {
       // The directories should be in place before pipeline is invoked.
       await stat(cacheDir);
       await stat(path.join(cacheDir, "minilm"));
       await stat(path.join(cacheDir, "minilm", "onnx"));
-      await writeFile(path.join(destDir, "config.json"), "{}", "utf8");
-      await writeFile(path.join(destDir, "tokenizer.json"), "{}", "utf8");
-      await writeFile(path.join(destDir, "tokenizer_config.json"), "{}", "utf8");
-      await writeFile(path.join(destDir, "onnx", "model_quantized.onnx"), Buffer.from([1, 2, 3]));
+      await mkdir(path.join(cacheModelDir, "onnx"), { recursive: true });
+      await writeFile(path.join(cacheModelDir, "config.json"), "{}", "utf8");
+      await writeFile(path.join(cacheModelDir, "tokenizer.json"), "{}", "utf8");
+      await writeFile(path.join(cacheModelDir, "tokenizer_config.json"), "{}", "utf8");
+      await writeFile(
+        path.join(cacheModelDir, "onnx", "model_quantized.onnx"),
+        Buffer.from([1, 2, 3])
+      );
       return {};
     });
     const env = { allowLocalModels: false };
@@ -70,7 +76,7 @@ describe("prepareLocalModel", () => {
     expect(res.ok).toBe(true);
     expect(res.source).toBe("transformers");
     expect(env.cacheDir).toBe(cacheDir);
-    expect(env.localModelPath).toBe(destDir);
+    expect(env.localModelPath).toBe(destRoot);
     // Ensure hydrated files were written into the expected cache directory
     const hydratedFiles = [
       "config.json",
@@ -85,6 +91,63 @@ describe("prepareLocalModel", () => {
     expect(pipelineMock).toHaveBeenCalledWith("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
       quantized: true
     });
+
+    vi.doUnmock("@xenova/transformers");
+    vi.resetModules();
+  });
+
+  it("flattens cached transformers layout into src/models/minilm", async () => {
+    vi.resetModules();
+    const destRoot = path.join(process.cwd(), "src");
+    const cacheDir = path.join(destRoot, "models");
+    const destDir = path.join(cacheDir, "minilm");
+    const cacheModelDir = path.join(cacheDir, "Xenova", "all-MiniLM-L6-v2");
+    const cachedConfig = "{\"from\":\"cache\"}";
+
+    await rm(destDir, { recursive: true, force: true });
+    await rm(path.join(cacheDir, "Xenova"), { recursive: true, force: true });
+
+    await mkdir(path.join(cacheModelDir, "onnx"), { recursive: true });
+    await writeFile(path.join(cacheModelDir, "config.json"), cachedConfig, "utf8");
+    await writeFile(path.join(cacheModelDir, "tokenizer.json"), "{}", "utf8");
+    await writeFile(path.join(cacheModelDir, "tokenizer_config.json"), "{}", "utf8");
+    await writeFile(
+      path.join(cacheModelDir, "onnx", "model_quantized.onnx"),
+      Buffer.from([9, 9, 9])
+    );
+
+    await mkdir(path.join(destDir, "onnx"), { recursive: true });
+    await writeFile(path.join(destDir, "config.json"), "{\"stale\":true}", "utf8");
+
+    const pipelineMock = vi.fn(async () => ({}));
+    const env = { allowLocalModels: false };
+    vi.doMock("@xenova/transformers", () => ({
+      pipeline: pipelineMock,
+      env
+    }));
+
+    const { prepareLocalModel } = await import("../../scripts/prepareLocalModel.mjs");
+    const res = await prepareLocalModel({ force: true });
+
+    expect(res.ok).toBe(true);
+    expect(res.source).toBe("transformers");
+    expect(env.cacheDir).toBe(cacheDir);
+    expect(env.localModelPath).toBe(destRoot);
+
+    const expected = [
+      "config.json",
+      "tokenizer.json",
+      "tokenizer_config.json",
+      path.join("onnx", "model_quantized.onnx")
+    ];
+    for (const rel of expected) {
+      const info = await stat(path.join(destDir, rel));
+      expect(info.size).toBeGreaterThan(0);
+    }
+
+    const destConfig = await readFile(path.join(destDir, "config.json"), "utf8");
+    expect(destConfig).toBe(cachedConfig);
+    expect(pipelineMock).toHaveBeenCalled();
 
     vi.doUnmock("@xenova/transformers");
     vi.resetModules();
