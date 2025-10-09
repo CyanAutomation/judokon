@@ -52,6 +52,12 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => ({
       getPointsToWin: () => 5
     }));
+    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
+      setupScoreboard: vi.fn()
+    }));
+    vi.doMock("../../src/helpers/battleScoreboard.js", () => ({
+      initBattleScoreboardAdapter: vi.fn()
+    }));
   });
 
   afterEach(async () => {
@@ -59,6 +65,8 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     timers.cleanup();
     vi.clearAllMocks();
     vi.doUnmock(SCOREBOARD_MODULE_PATH);
+    vi.doUnmock("../../src/helpers/setupScoreboard.js");
+    vi.doUnmock("../../src/helpers/battleScoreboard.js");
     vi.resetModules();
     delete window.__TEST__;
     const scoreboardModule = await import(SCOREBOARD_MODULE_PATH);
@@ -85,9 +93,18 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
     // Verify legacy CLI scoreboard elements are hidden after init
     const cliRound = document.getElementById("cli-round");
+    expect(window.getComputedStyle(cliRound).display).toBe("none");
     expect(cliRound.style.display).toBe("none");
+    expect(cliRound.getAttribute("aria-hidden")).toBe("true");
+    expect(cliRound.getAttribute("aria-label")).toBe(
+      "Legacy round display (replaced by shared scoreboard)"
+    );
     const cliScore = document.getElementById("cli-score");
     expect(cliScore.style.display).toBe("none");
+    expect(cliScore.getAttribute("aria-hidden")).toBe("true");
+    expect(cliScore.getAttribute("aria-label")).toBe(
+      "Legacy score display (replaced by shared scoreboard)"
+    );
   });
 
   it("should update both CLI and standard elements when updating score", async () => {
@@ -114,6 +131,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
     // Verify legacy elements are hidden
     expect(cliScore.style.display).toBe("none");
+    expect(cliScore.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("should update both CLI and standard elements when updating round header", async () => {
@@ -139,6 +157,7 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
 
     // Verify legacy elements are hidden
     expect(cliRound.style.display).toBe("none");
+    expect(cliRound.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("should have standard scoreboard nodes visible after Phase 2", async () => {
@@ -171,7 +190,37 @@ describe("battleCLI dual-write scoreboard (Phase 2)", () => {
     // Verify legacy elements are hidden
     const cliRound = document.getElementById("cli-round");
     expect(cliRound.style.display).toBe("none");
+    expect(cliRound.getAttribute("aria-hidden")).toBe("true");
     const cliScore = document.getElementById("cli-score");
     expect(cliScore.style.display).toBe("none");
+    expect(cliScore.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("should retain legacy scoreboard elements when shared init throws", async () => {
+    vi.doMock("../../src/helpers/setupScoreboard.js", () => ({
+      setupScoreboard: vi.fn(() => {
+        throw new Error("boom");
+      })
+    }));
+    vi.doMock("../../src/helpers/battleScoreboard.js", () => ({
+      initBattleScoreboardAdapter: vi.fn(() => {
+        throw new Error("boom");
+      })
+    }));
+
+    const { setRoundMessage } = await importDomWithScoreboard();
+    await ensureCliDom();
+    const { init } = await import(INIT_MODULE_PATH);
+    await init(() => {}); // Dummy startCallback
+
+    expect(() => setRoundMessage("fallback message")).not.toThrow();
+
+    const cliRound = document.getElementById("cli-round");
+    expect(cliRound.style.display).not.toBe("none");
+    expect(cliRound.getAttribute("aria-hidden")).not.toBe("true");
+
+    const cliScore = document.getElementById("cli-score");
+    expect(cliScore.style.display).not.toBe("none");
+    expect(cliScore.getAttribute("aria-hidden")).not.toBe("true");
   });
 });
