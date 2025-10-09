@@ -6,114 +6,121 @@ This report has been revised based on a detailed code review. Each issue has bee
 
 ## 1. Win target setting does not persist or apply properly
 
-*   **Steps to reproduce:**
-    1.  On the Round 0 settings panel, change the “Win target” dropdown to 3 or 10.
-    2.  Start the match by selecting a stat or pressing Enter.
-    3.  Observe that the header still shows “Round 0 Target: 10” and the scoreboard resets to default “to 5” target; the setting reverts to 5 on reload.
+- **Steps to reproduce:**
+  1.  On the Round 0 settings panel, change the “Win target” dropdown to 3 or 10.
+  2.  Start the match by selecting a stat or pressing Enter.
+  3.  Observe that the header still shows “Round 0 Target: 10” and the scoreboard resets to default “to 5” target; the setting reverts to 5 on reload.
 
-*   **Finding:**
-    > The report is **accurate**. The root cause is twofold: 1) The initial win target is hardcoded in `battleCLI.html` instead of being dynamically set from `localStorage`. 2) The CLI-specific round display is incorrectly hidden in favor of a shared scoreboard component that is not updated with the win target.
+- **Finding:**
 
-*   **Severity:** High
+  > The report is **accurate**. The root cause is twofold: 1) The initial win target is hardcoded in `battleCLI.html` instead of being dynamically set from `localStorage`. 2) The CLI-specific round display is incorrectly hidden in favor of a shared scoreboard component that is not updated with the win target.
+
+- **Severity:** High
 
 ---
 
 ## 2. Verbose/observability mode missing
 
-*   **Steps to reproduce:**
-    1.  Enable the “Verbose” checkbox in the settings panel or load the page with `?cliVerbose=1`.
-    2.  Play several rounds.
-    3.  No log pane appears; there is no display of timestamps or state transitions.
+- **Steps to reproduce:**
+  1.  Enable the “Verbose” checkbox in the settings panel or load the page with `?cliVerbose=1`.
+  2.  Play several rounds.
+  3.  No log pane appears; there is no display of timestamps or state transitions.
 
-*   **Finding:**
-    > The report is **inaccurate**. The verbose log functionality is implemented. When enabled, it appears at the bottom of the page and correctly logs timestamped state transitions and other debug information. The issue may be that it's not obvious where to look for the output.
+- **Finding:**
 
-*   **Severity:** Low
+  > The report is **inaccurate**. The verbose log functionality is implemented. When enabled, it appears at the bottom of the page and correctly logs timestamped state transitions and other debug information. The issue may be that it's not obvious where to look for the output.
+
+- **Severity:** Low
 
 ---
 
 ## 3. ESC does not close the help overlay
 
-*   **Steps to reproduce:**
-    1.  During a round, press `H` to open the help overlay.
-    2.  Press `Esc`.
-    3.  Instead of closing, a hint “Invalid key, press H for help” appears and the overlay remains open.
+- **Steps to reproduce:**
+  1.  During a round, press `H` to open the help overlay.
+  2.  Press `Esc`.
+  3.  Instead of closing, a hint “Invalid key, press H for help” appears and the overlay remains open.
 
-*   **Finding:**
-    > The report is **accurate**. The `onKeyDown` event handler in `src/pages/battleCLI/events.js` incorrectly intercepts the `Esc` key press and prevents it from being handled by the modal manager.
+- **Finding:**
 
-*   **Severity:** Medium
+  > The report is **accurate**. The `onKeyDown` event handler in `src/pages/battleCLI/events.js` incorrectly intercepts the `Esc` key press and prevents it from being handled by the modal manager.
+
+- **Severity:** Medium
 
 ---
 
 ## 4. Help overlay does not pause timer
 
-*   **Steps to reproduce:**
-    *   Press `H` during a round to view the help panel. The round timer continues counting down in the background.
+- **Steps to reproduce:**
+  - Press `H` during a round to view the help panel. The round timer continues counting down in the background.
 
-*   **Finding:**
-    > The report is **inaccurate**. The code correctly pauses the timer when the help overlay is opened and resumes it when closed. This functionality is handled in `src/pages/battleCLI/init.js` within the `showCliShortcuts` and `hideCliShortcuts` functions. The report is likely outdated.
+- **Finding:**
 
-*   **Severity:** None
+  > The report is **inaccurate**. The code correctly pauses the timer when the help overlay is opened and resumes it when closed. This functionality is handled in `src/pages/battleCLI/init.js` within the `showCliShortcuts` and `hideCliShortcuts` functions. The report is likely outdated.
+
+- **Severity:** None
 
 ---
 
 ## 5. No warning colour change as timer approaches expiry
 
-*   **Steps to reproduce:**
-    *   The PRD lists a warning colour (#ffcc00) for the timer when nearly expired. In testing, the timer remained a consistent colour and did not change to warn the player.
+- **Steps to reproduce:**
+  - The PRD lists a warning colour (#ffcc00) for the timer when nearly expired. In testing, the timer remained a consistent colour and did not change to warn the player.
 
-*   **Finding:**
-    > The report is **accurate**. The timer update logic in `startSelectionCountdown` within `src/pages/battleCLI/init.js` is missing the color change feature.
+- **Finding:**
 
-*   **Severity:** Low
+  > The report is **accurate**. The timer update logic in `startSelectionCountdown` within `src/pages/battleCLI/init.js` is missing the color change feature.
+
+- **Severity:** Low
 
 ---
 
 ## 6. Settings interaction automatically starts match
 
-*   **Steps to reproduce:**
-    *   Interacting with the settings dropdown or seed input instantly starts the round. There is no separate “start match” action, making it easy to start accidentally while adjusting settings.
+- **Steps to reproduce:**
+  - Interacting with the settings dropdown or seed input instantly starts the round. There is no separate “start match” action, making it easy to start accidentally while adjusting settings.
 
-*   **Finding:**
-    > The report is **inaccurate**. Changing the win target prompts for confirmation before resetting the match, and changing the seed does not start the match. The match is started by pressing "Enter" in the initial state.
+- **Finding:**
 
-*   **Severity:** None
+  > The report is **inaccurate**. Changing the win target prompts for confirmation before resetting the match, and changing the seed does not start the match. The match is started by pressing "Enter" in the initial state.
+
+- **Severity:** None
 
 ---
 
 ## 7. Accessibility for screen‑readers unverified
 
-*   **Status:**
-    > The report is **partially accurate**. The code includes `aria-live` attributes on important elements like the round message and countdown timer. However, a full accessibility audit is still recommended to ensure compliance.
+- **Status:**
 
-*   **Severity:** Medium
+  > The report is **partially accurate**. The code includes `aria-live` attributes on important elements like the round message and countdown timer. However, a full accessibility audit is still recommended to ensure compliance.
+
+- **Severity:** Medium
 
 ---
 
 ## Improvement Opportunities
 
-*   **Fix Win Target Persistence:**
-    1.  In `src/pages/battleCLI.html`, remove the `selected` attribute from the `<option value="5" selected>`.
-    2.  In `src/pages/battleCLI.html`, clear the hardcoded text from `<div id="cli-round">Round 0 Target: 10</div>` to be `<div id="cli-round"></div>`.
-    3.  In `src/pages/battleCLI/init.js`, remove the lines `if (cliRound) cliRound.style.display = "none";` and `if (cliScore) cliScore.style.display = "none";` to ensure the CLI's native scoreboard is used.
-    4.  In `src/pages/battleCLI/dom.js`, ensure the `updateRoundHeader` function correctly formats the round and target, which it already does.
+- **Fix Win Target Persistence:**
+  1.  In `src/pages/battleCLI.html`, remove the `selected` attribute from the `<option value="5" selected>`.
+  2.  In `src/pages/battleCLI.html`, clear the hardcoded text from `<div id="cli-round">Round 0 Target: 10</div>` to be `<div id="cli-round"></div>`.
+  3.  In `src/pages/battleCLI/init.js`, remove the lines `if (cliRound) cliRound.style.display = "none";` and `if (cliScore) cliScore.style.display = "none";` to ensure the CLI's native scoreboard is used.
+  4.  In `src/pages/battleCLI/dom.js`, ensure the `updateRoundHeader` function correctly formats the round and target, which it already does.
 
-*   **Fix ESC Key Handling:**
-    *   In `src/pages/battleCLI/events.js`, modify the `shouldProcessKey` function to allow the `Escape` key to be processed by the modal manager. A simple fix is to remove the `if (key === 'escape') return false;` check and let the event bubble up.
+- **Fix ESC Key Handling:**
+  - In `src/pages/battleCLI/events.js`, modify the `shouldProcessKey` function to allow the `Escape` key to be processed by the modal manager. A simple fix is to remove the `if (key === 'escape') return false;` check and let the event bubble up.
 
-*   **Add Timer Warning Color:**
-    *   In `src/pages/battleCLI/init.js`, modify the `applyCountdownText` function inside `startSelectionCountdown` to check the remaining time. If it's below 5 seconds, add a class to the countdown element to change its color.
+- **Add Timer Warning Color:**
+  - In `src/pages/battleCLI/init.js`, modify the `applyCountdownText` function inside `startSelectionCountdown` to check the remaining time. If it's below 5 seconds, add a class to the countdown element to change its color.
 
-*   **Improve Verbose Log:**
-    *   While functional, the verbose log could be enhanced by capturing more `console.log` statements from the application. This can be achieved by wrapping `console.log` and redirecting the output to the verbose log when enabled.
+- **Improve Verbose Log:**
+  - While functional, the verbose log could be enhanced by capturing more `console.log` statements from the application. This can be achieved by wrapping `console.log` and redirecting the output to the verbose log when enabled.
 
-*   **Add Test Hooks:**
-    *   In `src/pages/battleCLI.html`, add the following IDs to the specified elements for better testability:
-        *   `cli-root`: `id="cli-root"` (already present)
-        *   `cli-countdown`: `id="cli-countdown"` (already present)
-        *   `round-message`: `id="round-message"` (already present)
-        *   `cli-stats`: `id="cli-stats"` (already present)
+- **Add Test Hooks:**
+  - In `src/pages/battleCLI.html`, add the following IDs to the specified elements for better testability:
+    - `cli-root`: `id="cli-root"` (already present)
+    - `cli-countdown`: `id="cli-countdown"` (already present)
+    - `round-message`: `id="round-message"` (already present)
+    - `cli-stats`: `id="cli-stats"` (already present)
 
-*   **Full Accessibility Audit:**
-    *   Conduct a full accessibility audit using screen reader tools to verify that all interactions and announcements are WCAG compliant.
+- **Full Accessibility Audit:**
+  - Conduct a full accessibility audit using screen reader tools to verify that all interactions and announcements are WCAG compliant.
