@@ -12,9 +12,9 @@ This report has been revised based on a detailed code review. Each issue has bee
     3.  Observe that the header still shows “Round 0 Target: 10” and the scoreboard resets to default “to 5” target; the setting reverts to 5 on reload.
 
 *   **Finding:**
-    > The report is **accurate**. The root cause is twofold: 1) The initial win target is hardcoded in `battleCLI.html` instead of being dynamically set from `localStorage`. 2) The CLI-specific round display is incorrectly hidden in favor of a shared scoreboard component that is not updated with the win target.
+    > The report is **inaccurate**. `restorePointsToWin` in `src/pages/battleCLI/init.js` pulls the saved target from `localStorage`, syncs the dropdown, and calls `updateRoundHeader` so the CLI header mirrors the engine-provided target. The HTML (`battleCLI.html`) no longer hardcodes a default value, and the CLI scoreboard remains visible and up to date.
 
-*   **Severity:** High
+*   **Severity:** None
 
 ---
 
@@ -26,7 +26,7 @@ This report has been revised based on a detailed code review. Each issue has bee
     3.  No log pane appears; there is no display of timestamps or state transitions.
 
 *   **Finding:**
-    > The report is **inaccurate**. The verbose log functionality is implemented. When enabled, it appears at the bottom of the page and correctly logs timestamped state transitions and other debug information. The issue may be that it's not obvious where to look for the output.
+    > The report is **inaccurate**. Enabling `cliVerbose` (either via checkbox or query param) toggles `#cli-verbose-section` through `setupFlags` and `logStateChange` appends timestamped entries to `#cli-verbose-log`, so the transcript renders at the bottom of the CLI. The output may simply be easy to overlook without an additional visual cue.
 
 *   **Severity:** Low
 
@@ -40,9 +40,9 @@ This report has been revised based on a detailed code review. Each issue has bee
     3.  Instead of closing, a hint “Invalid key, press H for help” appears and the overlay remains open.
 
 *   **Finding:**
-    > The report is **accurate**. The `onKeyDown` event handler in `src/pages/battleCLI/events.js` incorrectly intercepts the `Esc` key press and prevents it from being handled by the modal manager.
+    > The report is **partially accurate**. The shortcuts overlay registers with the shared modal manager (`registerModal` in `src/helpers/modalManager.js`), so pressing Escape does close it. The confusion stems from `onKeyDown` in `src/pages/battleCLI/events.js` letting the key fall through to the countdown error path, which surfaces the “Invalid key” message even though the overlay dismisses.
 
-*   **Severity:** Medium
+*   **Severity:** Low
 
 ---
 
@@ -52,7 +52,7 @@ This report has been revised based on a detailed code review. Each issue has bee
     *   Press `H` during a round to view the help panel. The round timer continues counting down in the background.
 
 *   **Finding:**
-    > The report is **inaccurate**. The code correctly pauses the timer when the help overlay is opened and resumes it when closed. This functionality is handled in `src/pages/battleCLI/init.js` within the `showCliShortcuts` and `hideCliShortcuts` functions. The report is likely outdated.
+    > The report is **inaccurate**. `showCliShortcuts` and `hideCliShortcuts` in `src/pages/battleCLI/init.js` call `pauseTimers`/`resumeTimers`, so opening the overlay halts both selection and cooldown timers until it closes. This behaviour matches the current implementation, so the prior observation is outdated.
 
 *   **Severity:** None
 
@@ -64,9 +64,9 @@ This report has been revised based on a detailed code review. Each issue has bee
     *   The PRD lists a warning colour (#ffcc00) for the timer when nearly expired. In testing, the timer remained a consistent colour and did not change to warn the player.
 
 *   **Finding:**
-    > The report is **accurate**. The timer update logic in `startSelectionCountdown` within `src/pages/battleCLI/init.js` is missing the color change feature.
+    > The report is **inaccurate**. `applyCountdownText` inside `startSelectionCountdown` (`src/pages/battleCLI/init.js`) sets the countdown colour to `#ffcc00` whenever fewer than five seconds remain and clears the inline style otherwise. The warning state is already implemented.
 
-*   **Severity:** Low
+*   **Severity:** None
 
 ---
 
@@ -76,7 +76,7 @@ This report has been revised based on a detailed code review. Each issue has bee
     *   Interacting with the settings dropdown or seed input instantly starts the round. There is no separate “start match” action, making it easy to start accidentally while adjusting settings.
 
 *   **Finding:**
-    > The report is **inaccurate**. Changing the win target prompts for confirmation before resetting the match, and changing the seed does not start the match. The match is started by pressing "Enter" in the initial state.
+    > The report is **inaccurate**. `restorePointsToWin` shows a confirmation modal before calling `resetMatch`, and `initSeed` simply stores the seed without dispatching `startClicked`. A match only starts when the player submits via Enter or space.
 
 *   **Severity:** None
 
