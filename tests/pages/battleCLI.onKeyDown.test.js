@@ -96,6 +96,16 @@ describe("battleCLI onKeyDown", () => {
     expect(document.activeElement).toBe(focusBtn);
   });
 
+  it("allows Escape to bubble without showing an error", () => {
+    const countdown = document.getElementById("cli-countdown");
+    onKeyDown(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(countdown.textContent).toBe("");
+    expect(countdown.dataset.status).toBeUndefined();
+    onKeyDown(new KeyboardEvent("keydown", { key: "Esc" }));
+    expect(countdown.textContent).toBe("");
+    expect(countdown.dataset.status).toBeUndefined();
+  });
+
   // Retro mode was removed; no longer handles 'R'.
 
   it("shows an invalid key message and clears on next valid key", () => {

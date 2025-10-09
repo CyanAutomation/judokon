@@ -98,3 +98,9 @@ This report has been revised based on a detailed code review. Each issue has bee
 - **Improve verbose-mode discoverability:** Ensure the production DOM includes a visible indicator (e.g., wire the existing `#verbose-indicator` from `cliDomTemplate.js` into `battleCLI.html`) or add a snackbar notice when verbose mode is enabled so players know where to look for logs.
 - **Protect countdown warning styling:** Add a focused test that drives `startSelectionCountdown` below five seconds and asserts the inline colour update, preventing regressions to the warning highlight.
 - **Full accessibility audit:** Run a screen-reader pass (NVDA/VoiceOver) that covers round announcements, countdown changes, and shortcut toggles, documenting any gaps and remediation steps.
+
+---
+
+## Task Progress
+
+- **Escape key error hint** — Extended `shouldProcessKey` in `src/pages/battleCLI/events.js` to ignore both `Escape` and the legacy `Esc` key value so the countdown no longer flashes “Invalid key” when modals close, and added coverage in `tests/pages/battleCLI.onKeyDown.test.js` to lock the behaviour. Tests: `npx vitest run tests/pages/battleCLI.onKeyDown.test.js` ✔, `npx playwright test playwright/cli.spec.js` ✔ (rerun with elevated permissions to bind the CLI test server).

@@ -51,13 +51,13 @@ function handleArrowNav(e) {
  * @param {string} key - Lowercased key value.
  * @returns {boolean} True when processing should continue.
  * @pseudocode
- * if key is 'escape': return false
+ * if key is 'escape' or 'esc': return false
  * if cliShortcuts disabled AND key != 'q': return false
  * if active element is input/textarea/select: return false
  * return true
  */
 function shouldProcessKey(key) {
-  if (key === "escape") return false;
+  if (key === "escape" || key === "esc") return false;
   if (!isEnabled("cliShortcuts") && key !== "q") return false;
 
   // Don't process keys when user is typing in form controls
