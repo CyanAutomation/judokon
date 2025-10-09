@@ -5,6 +5,8 @@ import * as scoreboardModule from "../components/Scoreboard.js";
 const noop = () => {};
 const domAvailable =
   typeof window !== "undefined" && typeof document !== "undefined" && document !== null;
+const SAFE_AREA_EXPRESSION = "env(safe-area-inset-top)";
+const headerClearanceObserverKey = Symbol("headerClearanceObserver");
 const loggedWarnings = new Set();
 const loggedErrors = new Set();
 const sharedScoreboardModule = scoreboardModule;
@@ -91,6 +93,63 @@ try {
 } catch {}
 
 /**
+ * Reflect the rendered header height in the nearest home screen container.
+ *
+ * @param {HTMLElement|null} header - The page header element.
+ * @returns {void}
+ */
+function observeHeaderClearance(header) {
+  if (!header || typeof header.closest !== "function") {
+    return;
+  }
+
+  const homeScreen = header.closest(".home-screen");
+  if (!homeScreen) {
+    return;
+  }
+
+  const applyClearance = () => {
+    try {
+      const rect = header.getBoundingClientRect();
+      if (!rect || !Number.isFinite(rect.height)) {
+        return;
+      }
+
+      const clearance = Math.max(0, rect.height);
+      homeScreen.style.setProperty(
+        "--header-clearance",
+        `calc(${clearance.toFixed(2)}px + ${SAFE_AREA_EXPRESSION})`
+      );
+    } catch {}
+  };
+
+  applyClearance();
+
+  if (typeof ResizeObserver === "function") {
+    try {
+      const existingObserver = header[headerClearanceObserverKey];
+      if (existingObserver && typeof existingObserver.disconnect === "function") {
+        existingObserver.disconnect();
+      }
+      const observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.target === header) {
+            applyClearance();
+            break;
+          }
+        }
+      });
+      observer.observe(header);
+      header[headerClearanceObserverKey] = observer;
+    } catch {}
+  } else if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+    try {
+      window.addEventListener("resize", applyClearance, { passive: true });
+    } catch {}
+  }
+}
+
+/**
  * Safely execute a scoreboard helper, providing resilience and diagnostics.
  *
  * @param {string} name - Helper identifier.
@@ -132,6 +191,10 @@ export function setupScoreboard(controls, scheduler = realScheduler) {
   safeControls.scheduler = scheduler;
   const headerTarget = domAvailable ? document.querySelector("header") : null;
   runHelper("initScoreboard", getScoreboardMethod("initScoreboard"), [headerTarget, safeControls]);
+
+  if (domAvailable) {
+    observeHeaderClearance(headerTarget);
+  }
 
   if (!domAvailable) {
     return;

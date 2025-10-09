@@ -39,6 +39,9 @@ test.describe("Classic Battle – auto-advance", () => {
     if (!roundFinishedViaTestApi) {
       // Select the first available stat to complete the round naturally
       const firstStat = page.locator("#stat-buttons button").first();
+      await expect(firstStat).toBeVisible();
+      await expect(firstStat).toBeEnabled();
+      await firstStat.click({ trial: true });
       await firstStat.click();
     }
 
