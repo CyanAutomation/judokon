@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
+import * as battleEvents from "../../src/helpers/classicBattle/battleEvents.js";
+import { dispatchBattleEvent } from "../../src/helpers/classicBattle/orchestrator.js";
 
 describe("battleCLI init helpers", () => {
   beforeEach(() => {
@@ -25,7 +27,6 @@ describe("battleCLI init helpers", () => {
     if (!emitter) {
       throw new Error("Battle event emitter unavailable");
     }
-    const { dispatchBattleEvent } = await import("../../src/helpers/classicBattle/orchestrator.js");
     dispatchBattleEvent.mockClear();
     const battleCliModule = await import("../../src/pages/battleCLI/init.js");
     const startClickedListener = vi.fn();
