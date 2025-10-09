@@ -26,10 +26,7 @@
   gap: var(--space-md);
   padding-top: max(
     var(--space-lg),
-    calc(
-      var(--header-clearance, calc(var(--header-height) + env(safe-area-inset-top))) -
-        var(--space-md)
-    )
+    var(--header-clearance, calc(var(--header-height) + env(safe-area-inset-top)))
   );
 }
 
