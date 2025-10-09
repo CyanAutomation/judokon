@@ -11,10 +11,10 @@ This report has been revised based on a detailed code review. Each issue has bee
   2.  Start the match by selecting a stat or pressing Enter.
   3.  Observe that the header still shows “Round 0 Target: 10” and the scoreboard resets to default “to 5” target; the setting reverts to 5 on reload.
 
-*   **Finding:**
+- **Finding:**
     > The report is **inaccurate**. `restorePointsToWin` in `src/pages/battleCLI/init.js` pulls the saved target from `localStorage`, syncs the dropdown, and calls `updateRoundHeader` so the CLI header mirrors the engine-provided target. The HTML (`battleCLI.html`) no longer hardcodes a default value, and the CLI scoreboard remains visible and up to date.
 
-*   **Severity:** None
+- **Severity:** None
 
 ---
 
@@ -25,7 +25,7 @@ This report has been revised based on a detailed code review. Each issue has bee
   2.  Play several rounds.
   3.  No log pane appears; there is no display of timestamps or state transitions.
 
-*   **Finding:**
+- **Finding:**
     > The report is **inaccurate**. Enabling `cliVerbose` (either via checkbox or query param) toggles `#cli-verbose-section` through `setupFlags` and `logStateChange` appends timestamped entries to `#cli-verbose-log`, so the transcript renders at the bottom of the CLI. The output may simply be easy to overlook without an additional visual cue.
 
 - **Severity:** Low
