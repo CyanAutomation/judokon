@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { withMutedConsole } from "../utils/console.js";
 import { BATTLE_POINTS_TO_WIN } from "../../src/config/storageKeys.js";
 import { loadBattleCLI, cleanupBattleCLI } from "./utils/loadBattleCLI.js";
-import * as battleEvents from "../../src/helpers/classicBattle/battleEvents.js";
 import { dispatchBattleEvent } from "../../src/helpers/classicBattle/orchestrator.js";
+import { useCanonicalTimers } from "../setup/fakeTimers.js";
 
 describe("battleCLI init helpers", () => {
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe("battleCLI init helpers", () => {
   });
 
   it("progresses battle states manually when the orchestrator is unavailable", async () => {
-    vi.useFakeTimers();
+    const timers = useCanonicalTimers();
     try {
       const mod = await loadBattleCLI();
       await mod.init();
@@ -70,7 +70,7 @@ describe("battleCLI init helpers", () => {
       const { MANUAL_FALLBACK_DELAY_MS } = battleCliModule;
       await withMutedConsole(async () => {
         const startPromise = battleCliModule.triggerMatchStart();
-        await vi.runAllTimersAsync();
+        await timers.runAllTimersAsync();
         await startPromise;
       });
       const stateChangeCalls = emitBattleEvent.mock.calls
@@ -93,7 +93,7 @@ describe("battleCLI init helpers", () => {
         MANUAL_FALLBACK_DELAY_MS
       ]);
     } finally {
-      vi.useRealTimers();
+      timers.cleanup();
     }
   });
 
