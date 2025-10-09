@@ -5,6 +5,11 @@ import * as scoreboardModule from "../components/Scoreboard.js";
 const noop = () => {};
 const domAvailable =
   typeof window !== "undefined" && typeof document !== "undefined" && document !== null;
+/**
+ * Expression for including the top safe area inset when computing header clearance.
+ *
+ * Using a constant keeps the calculation consistent between JavaScript and CSS.
+ */
 const SAFE_AREA_EXPRESSION = "env(safe-area-inset-top)";
 const headerClearanceObserverKey = Symbol("headerClearanceObserver");
 const loggedWarnings = new Set();
@@ -95,6 +100,13 @@ try {
 /**
  * Reflect the rendered header height in the nearest home screen container.
  *
+ * @pseudocode
+ * 1. Validate header element and resolve the nearest home screen container.
+ * 2. Measure the header height and clamp it to half the viewport height.
+ * 3. Apply the measurement to the home screen via a CSS custom property.
+ * 4. Observe future size changes with ResizeObserver when available.
+ * 5. Fall back to window resize events while retaining cleanup hooks.
+ *
  * @param {HTMLElement|null} header - The page header element.
  * @returns {void}
  */
@@ -108,45 +120,142 @@ function observeHeaderClearance(header) {
     return;
   }
 
-  const applyClearance = () => {
+  const applyClearance = createHeaderClearanceApplier(header, homeScreen);
+  applyClearance();
+
+  if (attachHeaderResizeObserver(header, applyClearance)) {
+    return;
+  }
+
+  attachHeaderResizeFallback(header, applyClearance);
+}
+
+function clampHeaderClearance(height) {
+  let clearance = Math.max(0, height);
+  if (typeof window !== "undefined" && Number.isFinite(window.innerHeight)) {
+    const maxClearance = window.innerHeight * 0.5;
+    clearance = Math.min(clearance, maxClearance);
+  }
+  return clearance;
+}
+
+function createHeaderClearanceApplier(header, homeScreen) {
+  return () => {
     try {
       const rect = header.getBoundingClientRect();
       if (!rect || !Number.isFinite(rect.height)) {
         return;
       }
 
-      const clearance = Math.max(0, rect.height);
+      const clearance = clampHeaderClearance(rect.height);
       homeScreen.style.setProperty(
         "--header-clearance",
         `calc(${clearance.toFixed(2)}px + ${SAFE_AREA_EXPRESSION})`
       );
     } catch {}
   };
+}
 
-  applyClearance();
-
-  if (typeof ResizeObserver === "function") {
+function disconnectHeaderClearanceObserver(header) {
+  const existingObserver = header[headerClearanceObserverKey];
+  if (existingObserver && typeof existingObserver.disconnect === "function") {
     try {
-      const existingObserver = header[headerClearanceObserverKey];
-      if (existingObserver && typeof existingObserver.disconnect === "function") {
-        existingObserver.disconnect();
-      }
-      const observer = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.target === header) {
-            applyClearance();
-            break;
-          }
-        }
-      });
-      observer.observe(header);
-      header[headerClearanceObserverKey] = observer;
-    } catch {}
-  } else if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
-    try {
-      window.addEventListener("resize", applyClearance, { passive: true });
+      existingObserver.disconnect();
     } catch {}
   }
+  delete header[headerClearanceObserverKey];
+}
+
+function attachHeaderResizeObserver(header, applyClearance) {
+  if (typeof ResizeObserver !== "function") {
+    return false;
+  }
+
+  try {
+    disconnectHeaderClearanceObserver(header);
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === header) {
+          applyClearance();
+          break;
+        }
+      }
+    });
+    observer.observe(header);
+
+    let cleanupObserver;
+
+    const disconnect = () => {
+      try {
+        observer.disconnect();
+      } catch {}
+      if (cleanupObserver && typeof cleanupObserver.disconnect === "function") {
+        try {
+          cleanupObserver.disconnect();
+        } catch {}
+      }
+      cleanupObserver = undefined;
+      delete header[headerClearanceObserverKey];
+    };
+
+    cleanupObserver = observeHeaderRemoval(header, disconnect);
+
+    header[headerClearanceObserverKey] = { disconnect };
+    return true;
+  } catch {}
+
+  return false;
+}
+
+function attachHeaderResizeFallback(header, applyClearance) {
+  if (typeof window === "undefined" || typeof window.addEventListener !== "function") {
+    return;
+  }
+
+  try {
+    disconnectHeaderClearanceObserver(header);
+
+    const resizeHandler = () => {
+      applyClearance();
+    };
+    const listenerOptions = { passive: true };
+    window.addEventListener("resize", resizeHandler, listenerOptions);
+    header[headerClearanceObserverKey] = {
+      disconnect: () => {
+        try {
+          window.removeEventListener("resize", resizeHandler, listenerOptions);
+        } catch {}
+        delete header[headerClearanceObserverKey];
+      },
+    };
+  } catch {}
+}
+
+function observeHeaderRemoval(header, disconnect) {
+  if (typeof MutationObserver !== "function") {
+    return undefined;
+  }
+
+  try {
+    const cleanupObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const removedNode of mutation.removedNodes) {
+          if (
+            removedNode === header ||
+            (typeof removedNode.contains === "function" && removedNode.contains(header))
+          ) {
+            disconnect();
+            return;
+          }
+        }
+      }
+    });
+    cleanupObserver.observe(document.body, { childList: true, subtree: true });
+    return cleanupObserver;
+  } catch {}
+
+  return undefined;
 }
 
 /**
