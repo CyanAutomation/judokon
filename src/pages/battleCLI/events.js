@@ -57,6 +57,7 @@ function handleArrowNav(e) {
  * return true
  */
 function shouldProcessKey(key) {
+  if (key === "escape") return false;
   if (!isEnabled("cliShortcuts") && key !== "q") return false;
 
   // Don't process keys when user is typing in form controls
