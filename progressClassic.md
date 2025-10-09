@@ -1,16 +1,50 @@
-# QA Report for src/pages/battleClassic.html - Revised
+
+# QA Report for `src/pages/battleClassic.html` - Revised
 
 This report has been revised based on a detailed code review. The root cause of the critical issues has been identified, and the fix plan has been updated accordingly.
 
-| Issue                                                                     | Steps to reproduce                                                                                                                                                                                                                                                                                                    | Expected behaviour                                                                                                                                                                                                                       | Observed behaviour                                                                                                                                       |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Match never starts**                                                    | Load `battleClassic.html` in a Chrome browser.  The page displays the score‑board header (“Round 0 – You: 0 Opponent: 0”) and two buttons (“Replay”, “Quit”).  There is no modal asking for the 3/5/10 point target.  Clicking **Replay** or **Quit** or pressing **Enter** does nothing, and the match never begins. | On first visit, a modal should ask the player to choose 3/5/10 points, then the match should start automatically with the first card drawn.  If test or headless mode is detected, the game should auto‑start and begin the first round. | **Finding:** The report is **accurate**. The root cause is a silent failure when loading `judoka.json`. The `loadJudokaData` function in `src/helpers/classicBattle/cardSelection.js` incorrectly returns an empty array on error instead of throwing an exception. This causes a cascade of failures, leading to the game getting stuck. |
-| **Quit flow unresponsive**                                                | With the game in the stuck state above, click **Quit**.                                                                                                                                                                                                                                                               | A confirmation modal should appear to allow the player to confirm or cancel quitting.                                                                                                                                                    | **Finding:** This is a symptom of the "Match never starts" issue. The game is not initialized, so the event listeners for the buttons are not attached. |
-| **Replay button does nothing**                                            | After loading the page or after finishing a match, click **Replay**.                                                                                                                                                                                                                                                  | The match should reset hands, scores and start a new round.                                                                                                                                                                              | **Finding:** This is a symptom of the "Match never starts" issue. The game is not initialized, so the event listeners for the buttons are not attached. |
-| **No way to return to main menu**                                         | In the stuck state, try to navigate away by clicking the logo or using the Main Menu button (not visible).                                                                                                                                                                                                            | A visible “Main Menu” button should allow quitting mid‑match and returning to the home page.                                                                                                                                             | **Finding:** This is a symptom of the "Match never starts" issue. The game is not initialized, so the UI is not fully rendered. |
-| **Stat buttons and card view never render**                               | Wait for a round to start.                                                                                                                                                                                                                                                                                            | Player and opponent cards should appear, with stat buttons (Power, Speed, Technique etc.) available for selection.                                                                                                                       | **Finding:** This is a symptom of the "Match neverstarts" issue. The game is not initialized, so the cards are not drawn.                              |
-| **Accessibility: missing descriptions for stat buttons (cannot confirm)** | Not testable due to match not starting.  When stat buttons eventually render, each should have an `aria-describedby` linking to a short description.                                                                                                                                                                  | N/A (blocked).                                                                                                                                                                                                                           | N/A                                                                                                                                                      |
-| **Dataset load failure not surfaced**                                     | If the engine fails to load `judoka.json`, the PRD specifies that an error with a “Retry” option must be shown.                                                                                                                                                                                                       | On failure to load data, the UI should display a message and a retry button.                                                                                                                                                             | **Finding:** The report is **accurate**. The `loadJudokaData` function calls an error handler that is supposed to show a modal, but it then returns an empty array, which prevents the error from propagating and being handled correctly. |
+---
+
+## 1. Match never starts
+
+*   **Steps to reproduce:**
+    1.  Load `battleClassic.html` in a Chrome browser.
+    2.  The page displays the scoreboard header ("Round 0 – You: 0 Opponent: 0") and two buttons (“Replay”, “Quit”).
+    3.  There is no modal asking for the 3/5/10 point target.
+    4.  Clicking **Replay** or **Quit** or pressing **Enter** does nothing, and the match never begins.
+
+*   **Expected behaviour:**
+    > On first visit, a modal should ask the player to choose 3/5/10 points, then the match should start automatically with the first card drawn. If test or headless mode is detected, the game should auto-start and begin the first round.
+
+*   **Observed behaviour:**
+    > **Finding:** The report is **accurate**. The root cause is a silent failure when loading `judoka.json`. The `loadJudokaData` function in `src/helpers/classicBattle/cardSelection.js` incorrectly returns an empty array on error instead of throwing an exception. This causes a cascade of failures, leading to the game getting stuck.
+
+---
+
+## 2. Dependent Issues (Symptoms of "Match never starts")
+
+*   **Quit flow unresponsive:** The game is not initialized, so the event listeners for the buttons are not attached.
+*   **Replay button does nothing:** The game is not initialized, so the event listeners for the buttons are not attached.
+*   **No way to return to main menu:** The game is not initialized, so the UI is not fully rendered.
+*   **Stat buttons and card view never render:** The game is not initialized, so the cards are not drawn.
+
+---
+
+## 3. Other Issues
+
+### Accessibility: missing descriptions for stat buttons (cannot confirm)
+
+*   **Status:** Not testable due to match not starting.
+*   **Expectation:** When stat buttons eventually render, each should have an `aria-describedby` linking to a short description.
+
+### Dataset load failure not surfaced
+
+*   **Steps to reproduce:** If the engine fails to load `judoka.json`, the PRD specifies that an error with a “Retry” option must be shown.
+*   **Expected behaviour:** On failure to load data, the UI should display a message and a retry button.
+*   **Observed behaviour:**
+    > **Finding:** The report is **accurate**. The `loadJudokaData` function calls an error handler that is supposed to show a modal, but it then returns an empty array, which prevents the error from propagating and being handled correctly.
+
+---
 
 ## Improvement Opportunities
 
