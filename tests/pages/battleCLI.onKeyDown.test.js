@@ -115,6 +115,17 @@ describe("battleCLI onKeyDown", () => {
     expect(countdown.dataset.status).toBeUndefined();
   });
 
+  it("does not clear an active countdown when Escape is pressed", () => {
+    const countdown = document.getElementById("cli-countdown");
+    countdown.textContent = "Time remaining: 3";
+    countdown.dataset.remainingTime = "3";
+    countdown.dataset.status = "error";
+    onKeyDown(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(countdown.textContent).toBe("Time remaining: 3");
+    expect(countdown.dataset.status).toBeUndefined();
+    expect(countdown.dataset.remainingTime).toBe("3");
+  });
+
   // Retro mode was removed; no longer handles 'R'.
 
   it("shows an invalid key message and clears on next valid key", () => {

@@ -94,7 +94,7 @@ This report has been revised based on a detailed code review. Each issue has bee
 ## Improvement Opportunities
 
 - **Add regression coverage for points-to-win:** Extend the CLI integration tests to exercise `restorePointsToWin`, verifying that a stored value updates both the dropdown and header after reload. This guards against future persistence regressions.
-- **Polish Escape key UX:** ✅ Done — `shouldProcessKey` now ignores both `Escape` and `Esc`, and `battleCLI.onKeyDown.test.js` asserts the countdown stays clear when the overlay closes.
+- **Polish Escape key UX:** ✅ Done — `shouldProcessKey` ignores both `Escape` and `Esc`, and `onKeyDown` now clears any lingering error message while allowing the modal manager to close overlays. `battleCLI.onKeyDown.test.js` locks the behaviour.
 - **Improve verbose-mode discoverability:** Ensure the production DOM includes a visible indicator (e.g., wire the existing `#verbose-indicator` from `cliDomTemplate.js` into `battleCLI.html`) or add a snackbar notice when verbose mode is enabled so players know where to look for logs.
 - **Protect countdown warning styling:** Add a focused test that drives `startSelectionCountdown` below five seconds and asserts the inline colour update, preventing regressions to the warning highlight.
 - **Full accessibility audit:** Run a screen-reader pass (NVDA/VoiceOver) that covers round announcements, countdown changes, and shortcut toggles, documenting any gaps and remediation steps.
@@ -103,4 +103,4 @@ This report has been revised based on a detailed code review. Each issue has bee
 
 ## Task Progress
 
-- **Escape key error hint** — Extended `shouldProcessKey` in `src/pages/battleCLI/events.js` to ignore both `Escape` and the legacy `Esc` key value so the countdown no longer flashes “Invalid key” when modals close, and added coverage in `tests/pages/battleCLI.onKeyDown.test.js` to lock the behaviour. Tests: `npx vitest run tests/pages/battleCLI.onKeyDown.test.js` ✔, `npx playwright test playwright/cli.spec.js` ✔ (rerun with elevated permissions to bind the CLI test server).
+- **Escape key error hint** — Verified `src/pages/battleCLI/events.js:59-70` clears stale error copy while keeping countdown text when a timer is active, and expanded coverage in `tests/pages/battleCLI.onKeyDown.test.js:99-132` for both idle and active countdown scenarios. Tests: `npx vitest run tests/pages/battleCLI.onKeyDown.test.js` ✔, `npx playwright test playwright/cli.spec.js` ✔ (rerun with elevated permissions to bind the CLI test server).
