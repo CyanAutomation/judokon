@@ -2773,6 +2773,19 @@ export async function init() {
     } catch (error) {
       console.warn("Failed to initialize shared Scoreboard in CLI:", error);
     }
+
+    // Hide legacy CLI scoreboard elements once the shared Scoreboard is active (or attempted)
+    const legacyRoundNode = document.getElementById("cli-round");
+    if (legacyRoundNode) {
+      legacyRoundNode.style.display = "none";
+      legacyRoundNode.setAttribute("aria-hidden", "true");
+    }
+
+    const legacyScoreNode = document.getElementById("cli-score");
+    if (legacyScoreNode) {
+      legacyScoreNode.style.display = "none";
+      legacyScoreNode.setAttribute("aria-hidden", "true");
+    }
   }
 
   let announceWithFocus = false;
