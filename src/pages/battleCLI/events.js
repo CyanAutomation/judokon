@@ -136,7 +136,19 @@ function routeKeyByState(key) {
 export function onKeyDown(e) {
   if (handleArrowNav(e)) return;
   const lower = e.key.toLowerCase();
-  if (!shouldProcessKey(lower)) return;
+  if (!shouldProcessKey(lower)) {
+    if (lower === "escape" || lower === "esc") {
+      const countdown = byId("cli-countdown");
+      if (countdown) {
+        delete countdown.dataset.status;
+        const remaining = Number(countdown.dataset.remainingTime);
+        if (!Number.isFinite(remaining) || remaining <= 0) {
+          countdown.textContent = "";
+        }
+      }
+    }
+    return;
+  }
   const handled = routeKeyByState(lower);
   if (handled === true) {
     // Stop default behavior and bubbling for handled keys to avoid stray "Invalid key"
