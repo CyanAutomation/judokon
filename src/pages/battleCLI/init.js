@@ -1205,6 +1205,11 @@ export function startSelectionCountdown(seconds = 30) {
     el.dataset.remainingTime = String(value);
     if (el.dataset.status === "error") return;
     el.textContent = `Time remaining: ${value}`;
+    if (value < 5) {
+      el.style.color = "#ffcc00";
+    } else {
+      el.style.color = "";
+    }
   };
   // Render initial
   if (typeof window !== "undefined" && window.__battleCLIinit?.setCountdown) {
