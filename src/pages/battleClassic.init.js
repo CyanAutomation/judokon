@@ -1687,6 +1687,28 @@ async function init() {
       console.debug("battleClassic: exposing store to window failed", err);
     }
     try {
+      if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+        if (window.__classicBattleRetryListener) {
+          window.removeEventListener(CARD_RETRY_EVENT, window.__classicBattleRetryListener);
+        }
+        const retryListener = async () => {
+          try {
+            await startRoundCycle(store);
+          } catch (err) {
+            console.error("battleClassic: startRoundCycle retry failed", err);
+            if (err instanceof JudokaDataLoadError) {
+              return;
+            }
+            showFatalInitError(err);
+          }
+        };
+        window.__classicBattleRetryListener = retryListener;
+        window.addEventListener(CARD_RETRY_EVENT, retryListener);
+      }
+    } catch (err) {
+      console.debug("battleClassic: registering retry listener failed", err);
+    }
+    try {
       const markFromEvent = () => {
         markCooldownStarted(store);
       };
@@ -1844,6 +1866,9 @@ async function init() {
           await startRoundCycle(store);
         } catch (err) {
           console.error("battleClassic: startRoundCycle failed", err);
+          if (err instanceof JudokaDataLoadError) {
+            return;
+          }
           showFatalInitError(err);
         }
       });
@@ -1897,13 +1922,27 @@ async function init() {
             if (skipDueToManual) {
               return;
             }
-            await startRoundCycle(store);
-            recordRoundCycleTrigger(eventType || "unknown");
+            try {
+              await startRoundCycle(store);
+              recordRoundCycleTrigger(eventType || "unknown");
+            } catch (err) {
+              console.error("battleClassic: startRoundCycle ready handler failed", err);
+              if (!(err instanceof JudokaDataLoadError)) {
+                showFatalInitError(err);
+              }
+            }
           });
         } else {
           trackRoundCycleEvent(eventType, { manualRoundStart }, eventDetail);
-          await startRoundCycle(store);
-          recordRoundCycleTrigger(eventType || "unknown");
+          try {
+            await startRoundCycle(store);
+            recordRoundCycleTrigger(eventType || "unknown");
+          } catch (err) {
+            console.error("battleClassic: startRoundCycle round.start handler failed", err);
+            if (!(err instanceof JudokaDataLoadError)) {
+              showFatalInitError(err);
+            }
+          }
         }
 
         try {
@@ -1915,7 +1954,14 @@ async function init() {
       onBattleEvent("ready", startIfNotEnded);
       onBattleEvent("roundStarted", async () => {
         if (isStartingRoundCycle) return;
-        await startRoundCycle(store, { skipStartRound: true });
+        try {
+          await startRoundCycle(store, { skipStartRound: true });
+        } catch (err) {
+          console.error("battleClassic: startRoundCycle roundStarted handler failed", err);
+          if (!(err instanceof JudokaDataLoadError)) {
+            showFatalInitError(err);
+          }
+        }
       });
     } catch {}
     // Mark initialization as complete for test hooks

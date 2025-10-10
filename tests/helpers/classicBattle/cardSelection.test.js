@@ -166,7 +166,7 @@ describe.sequential("classicBattle card selection", () => {
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([]);
 
-    const { drawCards, _resetForTest } = await import(
+    const { drawCards, _resetForTest, JudokaDataLoadError } = await import(
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
     _resetForTest();
@@ -175,14 +175,14 @@ describe.sequential("classicBattle card selection", () => {
       value: { ...window.location, reload: vi.fn() }
     });
 
-    await drawCards();
+    await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
 
     expect(document.getElementById("round-message").textContent).toBe("boom");
     const retry = document.getElementById("retry-draw-button");
     expect(retry).toBeTruthy();
   });
 
-  it("still loads gokyo data when judoka load fails", async () => {
+  it("propagates load errors and skips gokyo fetch when judoka load fails", async () => {
     const calls = [];
     fetchJsonMock.mockImplementation(async (path) => {
       calls.push(path);
@@ -192,17 +192,14 @@ describe.sequential("classicBattle card selection", () => {
       return [];
     });
 
-    const { drawCards, _resetForTest } = await import(
+    const { drawCards, _resetForTest, JudokaDataLoadError } = await import(
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
     _resetForTest();
 
-    const result = await drawCards();
-
-    expect(result).toEqual({ playerJudoka: null, opponentJudoka: null });
-    expect(calls.length).toBe(2);
+    await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
+    expect(calls.length).toBe(1);
     expect(calls[0]).toMatch(/judoka\.json/);
-    expect(calls[1]).toMatch(/gokyo\.json/);
   });
 
   it("clicking Retry re-fetches data in order", async () => {
@@ -216,7 +213,7 @@ describe.sequential("classicBattle card selection", () => {
       return [];
     });
 
-    const { drawCards, _resetForTest } = await import(
+    const { drawCards, _resetForTest, JudokaDataLoadError, CARD_RETRY_EVENT } = await import(
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
     _resetForTest();
@@ -225,18 +222,31 @@ describe.sequential("classicBattle card selection", () => {
       value: { ...window.location, reload: vi.fn() }
     });
 
-    await drawCards();
+    await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
 
     const retry = document.getElementById("retry-draw-button");
     expect(retry).toBeTruthy();
-    await retry.click();
-    await Promise.resolve();
+    await new Promise((resolve) => {
+      const handler = async () => {
+        window.removeEventListener(CARD_RETRY_EVENT, handler);
+        try {
+          await drawCards();
+        } catch (err) {
+          if (!(err instanceof JudokaDataLoadError)) {
+            throw err;
+          }
+        }
+        resolve();
+      };
+      window.addEventListener(CARD_RETRY_EVENT, handler);
+      retry.click();
+    });
 
     expect(calls.length).toBe(3);
-    // Expect sequence: judoka (fail), gokyo (success in same attempt), judoka (success on retry)
+    // Expect sequence: judoka (fail), judoka (success on retry), gokyo (success on retry)
     expect(calls[0]).toMatch(/judoka\.json/);
-    expect(calls[1]).toMatch(/gokyo\.json/);
-    expect(calls[2]).toMatch(/judoka\.json/);
+    expect(calls[1]).toMatch(/judoka\.json/);
+    expect(calls[2]).toMatch(/gokyo\.json/);
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
