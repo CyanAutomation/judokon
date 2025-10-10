@@ -352,4 +352,4 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 
 ## Source Files Consolidated
 
-This PRD now consolidates the full KG character design and prompt guidance that previously lived in separate Character Design Document and Character Prompt Sheet files. Those standalone documents have been retired; reference this PRD for the canonical, end-to-end specifications.
+This PRD now consolidates the full KG character design and prompt guidance that previously lived in separate Character Design Document and Character Prompt Sheet files. Those standalone documents have been retired; reference this PRD for the canonical, end-to-end specifications. Updated October 2024 to capture the consolidation release.
