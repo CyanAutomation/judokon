@@ -15,6 +15,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - Extended countdown regression coverage in `tests/pages/battleCLI.countdown.test.js` to assert the warning colour under five seconds and the reset when the timer restarts.
 - Added a persistence regression to `playwright/win-target-sync.spec.js` that exercises the confirm modal, reloads in a fresh page, and verifies the stored target survives as both dropdown value and header copy.
 - Drafted a VoiceOver/NVDA verification plan covering announcements, focus management, and verbose log discoverability so the remaining accessibility follow-up can be executed consistently.
+- Confirmed current CI environment cannot execute native screen-reader tooling; documented the manual test pass expectations and handoff notes below for human QA.
 
 ---
 
@@ -134,6 +135,7 @@ This revision re-validates every QA finding against the current CLI implementati
   - Match conclusion + restart prompt to validate outcome and next steps narration.
 - **Notes capture:** Log gaps per scenario (missing labels, incorrect live region behaviour, focus traps) in `docs/accessibility/audit-log.md` with reproduction steps and severity.
 - **Outcome:** Produce remediation backlog issues with acceptance criteria and include audit log link in follow-up.
+- **Execution status:** Automated agents in this repo cannot launch VoiceOver/NVDA in the sandbox; hand off this plan to manual QA and attach findings back to `progressCLI.md` once completed.
 
 ## Validation Evidence
 
