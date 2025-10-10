@@ -162,7 +162,7 @@ test("player can select a stat via keyboard", async ({ page }) => {
 2. Add a small selector helper under `playwright/helpers/selectors.js` that resolves logical names to selectors using the canonical mapping.
 3. Update a sample Playwright test to use the helper and show the end-to-end workflow.
 
-## Appendix: Classic Battle Markup (merged from the retired `design/battleMarkup.md`)
+## Appendix: Classic Battle Markup (merged from the retired standalone battle markup doc)
 
 Classic battle pages rely on specific element IDs so helper scripts can attach listeners and update the UI. The following IDs must be present for scripts to function.
 
