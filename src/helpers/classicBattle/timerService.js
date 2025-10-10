@@ -873,9 +873,12 @@ export function handleTimerExpiration({
     } catch {}
 
     const alreadyPicked = !!(store && store.selectionMade);
-    try {
-      console.warn(`[test] onExpired: selectionMade=${alreadyPicked}`);
-    } catch {}
+    const isVitest = typeof process !== "undefined" && process.env && process.env.VITEST;
+    if (isVitest) {
+      try {
+        console.warn(`[test] onExpired: selectionMade=${alreadyPicked}`);
+      } catch {}
+    }
 
     if (alreadyPicked) {
       return;
