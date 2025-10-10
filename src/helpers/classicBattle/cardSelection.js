@@ -70,9 +70,11 @@ function showLoadError(error) {
     msg = "A critical error occurred during data loading. Please try again.";
   }
 
-  try {
-    showMessage(msg);
-  } catch {}
+  if (typeof showMessage === "function") {
+    try {
+      showMessage(msg);
+    } catch {}
+  }
 
   const roundMessage = document.getElementById("round-message");
   if (roundMessage) {

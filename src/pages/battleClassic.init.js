@@ -1757,33 +1757,39 @@ async function init() {
     // Wire Main Menu button with battle store-aware handler
     bindHomeButton(store);
 
-    await initRoundSelectModal(async () => {
-      try {
-        if (typeof process !== "undefined" && process.env && process.env.VITEST) {
-          console.debug(
-            `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
-          );
+    try {
+      await initRoundSelectModal(async () => {
+        try {
+          if (typeof process !== "undefined" && process.env && process.env.VITEST) {
+            console.debug(
+              `[test] battleClassic.init onStart set body.dataset.target=${document.body.dataset.target}`
+            );
+          }
+        } catch {}
+        // Reflect state change in badge
+        const badge = document.getElementById("battle-state-badge");
+        if (badge && !badge.hidden) badge.textContent = "Round";
+        // Set data-battle-active attribute on body
+        document.body.setAttribute("data-battle-active", "true");
+        // Disable header navigation during battle
+        const headerLinks = document.querySelectorAll("header a");
+        headerLinks.forEach((link) => (link.style.pointerEvents = "none"));
+        // Begin first round
+        broadcastBattleState("matchStart");
+        try {
+          await startRoundCycle(store);
+        } catch (err) {
+          console.error("battleClassic: startRoundCycle failed", err);
+          if (err instanceof JudokaDataLoadError) {
+            return;
+          }
+          showFatalInitError(err);
         }
-      } catch {}
-      // Reflect state change in badge
-      const badge = document.getElementById("battle-state-badge");
-      if (badge && !badge.hidden) badge.textContent = "Round";
-      // Set data-battle-active attribute on body
-      document.body.setAttribute("data-battle-active", "true");
-      // Disable header navigation during battle
-      const headerLinks = document.querySelectorAll("header a");
-      headerLinks.forEach((link) => (link.style.pointerEvents = "none"));
-      // Begin first round
-      broadcastBattleState("matchStart");
-              try {
-                await startRoundCycle(store);
-              } catch (err) {
-                console.error("battleClassic: startRoundCycle failed", err);
-                if (err instanceof JudokaDataLoadError) {
-                  return;
-                }
-                showFatalInitError(err);
-              }    });
+      });
+    } catch (err) {
+      console.error("battleClassic: initRoundSelectModal failed", err);
+      showRoundSelectFallback(store);
+    }
 
     // In the simplified (non-orchestrated) page, start the next round when the
     // cooldown is considered finished. Some paths may dispatch `ready` directly
