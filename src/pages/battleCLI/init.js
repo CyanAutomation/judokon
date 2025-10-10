@@ -2434,7 +2434,10 @@ export async function setupFlags() {
       section.setAttribute("aria-expanded", verboseEnabled ? "true" : "false");
     }
     const indicator = byId("verbose-indicator");
-    if (indicator) indicator.style.display = verboseEnabled ? "inline" : "none";
+    if (indicator) {
+      indicator.style.display = verboseEnabled ? "inline" : "none";
+      indicator.setAttribute("aria-hidden", verboseEnabled ? "false" : "true");
+    }
     if (verboseEnabled) {
       try {
         // Scroll the verbose section into view when supported
