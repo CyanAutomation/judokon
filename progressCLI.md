@@ -114,6 +114,7 @@ This revision re-validates every QA finding against the current CLI implementati
 ## Recommended Follow-Up
 
 - **✅ Completed — Verbose indicator hook**: Added `#verbose-indicator`, synchronized `aria-hidden`, and covered the behaviour via `battleCLI.verboseFlag.test.js`.
+
 1. **Add countdown warning regression test (0.25 day)** — Extend `tests/pages/battleCLI.pointsToWin.test.js` or create a new spec that drives `startSelectionCountdown` below five seconds and asserts the `#cli-countdown` colour swap. This prevents silent CSS regressions.
 2. **Playwright persistence scenario (0.5 day)** — Introduce a CLI E2E test that toggles the win target, reloads, and verifies the header + scoreboard values to complement the unit coverage (`tests/pages/battleCLI.pointsToWin.test.js`).
 3. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
