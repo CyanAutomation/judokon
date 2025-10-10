@@ -50,6 +50,11 @@ describe("timerService", () => {
         return Promise.resolve();
       })
     }));
+    vi.doMock("../../src/helpers/modalManager.js", () => ({
+      closeAll: () => {},
+      register: () => {},
+      unregister: () => {}
+    }));
     vi.doMock("../../src/helpers/battleEngineFacade.js", () => {
       const makeTimer = (onTick, onExpired, duration) => {
         onTick(duration);
@@ -104,6 +109,26 @@ describe("timerService", () => {
     scheduler.tick(1000);
     expect(scoreboard.updateTimer).toHaveBeenCalledWith(0);
     expect(scoreboard.clearTimer).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not throw when document is undefined", async () => {
+    const originalDocument = global.document;
+
+    try {
+      // Remove the document reference to simulate non-browser environments.
+      delete global.document;
+
+      const { startTimer } = await import(
+        "../../src/helpers/classicBattle/timerService.js"
+      );
+
+      const timer = await startTimer(async () => {}, { selectionMade: false });
+
+      expect(timer).toBeDefined();
+      await timer?.stop?.();
+    } finally {
+      global.document = originalDocument;
+    }
   });
 
   it("enables next round when skipped before cooldown starts", async () => {
