@@ -71,30 +71,28 @@ function showLoadError(error) {
     msg = "A critical error occurred during data loading. Please try again.";
   }
 
-  // Track whether the round message has already been updated so we can avoid redundant DOM writes.
-  let roundMessageHandled = false;
+  const roundMessage = document.getElementById("round-message");
+  const originalRoundMessageText = roundMessage?.textContent ?? "";
+
+  // Track whether the round message has been written so we can avoid redundant DOM writes.
+  let messageWritten = false;
   try {
     scoreboardShowMessage(msg);
-    const roundMessage = document.getElementById("round-message");
-    if (roundMessage?.textContent === msg) {
-      roundMessageHandled = true;
+    if (!roundMessage || roundMessage.textContent !== originalRoundMessageText) {
+      messageWritten = true;
     }
-  } catch (showMessageError) {
-    console.debug("Falling back to manual round message update:", showMessageError);
-    const roundMessage = document.getElementById("round-message");
+  } catch {
     if (roundMessage) {
       if (roundMessage.textContent !== msg) {
         roundMessage.textContent = msg;
       }
-      roundMessageHandled = true;
+      messageWritten = true;
     }
   }
 
-  if (!roundMessageHandled) {
-    const roundMessage = document.getElementById("round-message");
-    if (roundMessage && roundMessage.textContent !== msg) {
-      roundMessage.textContent = msg;
-    }
+  if (!messageWritten && roundMessage && roundMessage.textContent !== msg) {
+    roundMessage.textContent = msg;
+    messageWritten = true;
   }
 
   const createAndShowModal = () => {
