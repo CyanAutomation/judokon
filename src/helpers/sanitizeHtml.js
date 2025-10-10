@@ -86,7 +86,7 @@ const EXECUTABLE_TAG_NAMES = Object.values(EXECUTABLE_TAGS);
 const SCRIPT_STYLE_NAME_GROUP = EXECUTABLE_TAG_NAMES.join("|");
 const SCRIPT_STYLE_OPEN_CAPTURE_SOURCE = "<\\s*(" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*(?:>|$)";
 const SCRIPT_STYLE_OPEN_TAG = new RegExp(
-  "<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*(?:>|$)",
+  "<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>",
   "gi"
 );
 const SCRIPT_STYLE_CLOSE_TAG = new RegExp(
@@ -95,22 +95,22 @@ const SCRIPT_STYLE_CLOSE_TAG = new RegExp(
 );
 const SCRIPT_CLOSING_SOURCE = "<\\s*\\/\\s*" + EXECUTABLE_TAGS.SCRIPT + "\\b[^>]*>";
 const STYLE_CLOSING_SOURCE = "<\\s*\\/\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*>";
-const SCRIPT_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.SCRIPT + "\\b[^>]*>";
-const STYLE_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*>";
+const SCRIPT_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.SCRIPT + "\\b[^>]*(?:>|$)";
+const STYLE_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*(?:>|$)";
 
-const SCRIPT_OPENER = new RegExp(SCRIPT_OPENING_SOURCE, "gi");
-const STYLE_OPENER = new RegExp(STYLE_OPENING_SOURCE, "gi");
-const SCRIPT_CLOSER = new RegExp(SCRIPT_CLOSING_SOURCE, "gi");
-const STYLE_CLOSER = new RegExp(STYLE_CLOSING_SOURCE, "gi");
-const OPENERS = Object.freeze({
-  [EXECUTABLE_TAGS.SCRIPT]: SCRIPT_OPENER,
-  [EXECUTABLE_TAGS.STYLE]: STYLE_OPENER
-});
-const CLOSERS = Object.freeze({
-  [EXECUTABLE_TAGS.SCRIPT]: SCRIPT_CLOSER,
-  [EXECUTABLE_TAGS.STYLE]: STYLE_CLOSER
-});
-const SCRIPT_STYLE_FINDER = new RegExp(SCRIPT_STYLE_OPEN_CAPTURE_SOURCE, "gi");
+function createExecutableRegexSet() {
+  return {
+    finder: new RegExp(SCRIPT_STYLE_OPEN_CAPTURE_SOURCE, "gi"),
+    openers: {
+      [EXECUTABLE_TAGS.SCRIPT]: new RegExp(SCRIPT_OPENING_SOURCE, "gi"),
+      [EXECUTABLE_TAGS.STYLE]: new RegExp(STYLE_OPENING_SOURCE, "gi")
+    },
+    closers: {
+      [EXECUTABLE_TAGS.SCRIPT]: new RegExp(SCRIPT_CLOSING_SOURCE, "gi"),
+      [EXECUTABLE_TAGS.STYLE]: new RegExp(STYLE_CLOSING_SOURCE, "gi")
+    }
+  };
+}
 
 function resetRegexState(...regexes) {
   for (const regex of regexes) {
@@ -118,7 +118,16 @@ function resetRegexState(...regexes) {
   }
 }
 
-function resolveBlockBoundaries(html, opener, closer, openEnd) {
+function resolveBlockBoundaries(html, opener, closer, openEnd, openerTerminated) {
+  if (!openerTerminated) {
+    return {
+      blockEnd: openEnd,
+      finderIndex: openEnd,
+      closed: false,
+      truncated: true
+    };
+  }
+
   let depth = 1;
   let searchIndex = openEnd;
 
@@ -126,39 +135,46 @@ function resolveBlockBoundaries(html, opener, closer, openEnd) {
     closer.lastIndex = searchIndex;
     const closingMatch = closer.exec(html);
     if (!closingMatch) {
-      return { blockEnd: openEnd, finderIndex: openEnd, closed: false };
+      return {
+        blockEnd: openEnd,
+        finderIndex: openEnd,
+        closed: false,
+        truncated: false
+      };
     }
 
     const closeIndex = closingMatch.index;
 
     opener.lastIndex = searchIndex;
     let nested;
-    let advanced = false;
     while ((nested = opener.exec(html)) && nested.index < closeIndex) {
       depth += 1;
       searchIndex = opener.lastIndex;
-      advanced = true;
-    }
-
-    if (!advanced && searchIndex === openEnd) {
-      searchIndex = closeIndex;
     }
 
     depth -= 1;
     searchIndex = Math.max(searchIndex, closer.lastIndex);
   }
 
-  return { blockEnd: closer.lastIndex, finderIndex: closer.lastIndex, closed: true };
+  return {
+    blockEnd: closer.lastIndex,
+    finderIndex: closer.lastIndex,
+    closed: true,
+    truncated: false
+  };
+}
+
+function escapeExecutableFragment(fragment) {
+  return fragment.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function stripExecutableBlocks(html) {
-  const finder = SCRIPT_STYLE_FINDER;
-  resetRegexState(finder, SCRIPT_OPENER, STYLE_OPENER, SCRIPT_CLOSER, STYLE_CLOSER);
+  const { finder, openers, closers } = createExecutableRegexSet();
 
   let cleaned = "";
   let lastIndex = 0;
   let iterations = 0;
-  const maxIterations = Math.max(16, Math.min(1000, html.length));
+  const maxIterations = Math.max(16, Math.min(5000, Math.ceil(html.length / 2)));
   let match;
 
   while ((match = finder.exec(html))) {
@@ -170,20 +186,31 @@ function stripExecutableBlocks(html) {
 
     const tagStart = match.index;
     const tagName = match[1].toLowerCase();
-    const opener = OPENERS[tagName];
-    const closer = CLOSERS[tagName];
+    const opener = openers[tagName];
+    const closer = closers[tagName];
 
     cleaned += html.slice(lastIndex, tagStart);
 
     const openEnd = finder.lastIndex;
-    const { blockEnd, finderIndex, closed } = resolveBlockBoundaries(html, opener, closer, openEnd);
+    const { blockEnd, finderIndex, closed, truncated } = resolveBlockBoundaries(
+      html,
+      opener,
+      closer,
+      openEnd,
+      match[0].endsWith(">")
+    );
 
     lastIndex = blockEnd;
     finder.lastIndex = Math.max(finder.lastIndex, finderIndex);
 
     resetRegexState(opener, closer);
 
-    if (!closed) continue;
+    if (!closed) {
+      if (truncated) {
+        cleaned += escapeExecutableFragment(html.slice(tagStart, blockEnd));
+      }
+      continue;
+    }
   }
 
   cleaned += html.slice(lastIndex);
