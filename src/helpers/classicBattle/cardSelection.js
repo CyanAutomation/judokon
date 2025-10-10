@@ -65,12 +65,21 @@ function qaInfo(text) {
  * @returns {void}
  */
 function showLoadError(error) {
-  const createAndShowModal = () => {
-    let msg = error?.message || "Unable to load data.";
-    if (msg.includes("Cannot access uninitialized variable")) {
-      msg = "A critical error occurred during data loading. Please try again.";
-    }
+  let msg = error?.message || "Unable to load data.";
+  if (msg.includes("Cannot access uninitialized variable")) {
+    msg = "A critical error occurred during data loading. Please try again.";
+  }
 
+  try {
+    showMessage(msg);
+  } catch {}
+
+  const roundMessage = document.getElementById("round-message");
+  if (roundMessage) {
+    roundMessage.textContent = msg;
+  }
+
+  const createAndShowModal = () => {
     if (!loadErrorModal) {
       const title = document.createElement("h2");
       title.id = "load-error-title";
@@ -132,6 +141,7 @@ function showLoadError(error) {
  * 1. Return cached data immediately when it exists as a non-empty array.
  * 2. Fetch and validate the `judoka.json` payload, throwing for empty or malformed results.
  * 3. Cache the validated dataset and surface load failures through `onError` before propagating.
+ * 4. Reset cache to null on any validation failure to ensure fresh attempts.
  *
  * @param {{fetcher?: (path: string) => Promise<any>, onError?: (error: any) => void}} [options]
  * @returns {Promise<object[]>}
@@ -140,6 +150,9 @@ export async function loadJudokaData({ fetcher = fetchJson, onError = showLoadEr
   if (Array.isArray(judokaData) && judokaData.length > 0) {
     return judokaData;
   }
+
+  judokaData = null;
+
   try {
     const data = await fetcher(`${DATA_DIR}judoka.json`);
 
