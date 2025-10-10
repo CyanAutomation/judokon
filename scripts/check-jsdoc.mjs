@@ -90,7 +90,7 @@ export function validateJsDoc(lines, index, symbolType = "function") {
   if (hasParams && !hasParamTag) return false;
   if (returnsValue && !hasReturnTag) return false;
 
-  const summary = lines[start + 1].replace(/\*/, "").trim();
+  const summary = lines[start + 1].replace(/^\s*\*+\s*/, "").trim();
   if (summary.length === 0) return false;
 
   return true;
