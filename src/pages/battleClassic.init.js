@@ -1794,18 +1794,23 @@ async function init() {
         // Set data-battle-active attribute on body
         document.body.setAttribute("data-battle-active", "true");
         // Disable header navigation during battle
-        const headerLinks = document.querySelectorAll("header a");
-        headerLinks.forEach((link) => (link.style.pointerEvents = "none"));
+        setHeaderNavigationLocked(true);
         // Begin first round
         broadcastBattleState("matchStart");
         try {
           await startRoundCycle(store);
         } catch (err) {
           console.error("battleClassic: startRoundCycle failed", err);
+          setHeaderNavigationLocked(false);
+          try {
+            document.body.removeAttribute("data-battle-active");
+          } catch {}
+          ensureLobbyBadge();
           if (err instanceof JudokaDataLoadError) {
             return;
           }
           showFatalInitError(err);
+          return;
         }
       });
     } catch (err) {

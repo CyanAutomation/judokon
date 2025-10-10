@@ -47,7 +47,7 @@ Given the above, the actionable plan now centers on polish and resilience rather
 
 ## 4. Opportunities & Recommendations
 
-- **Re-enable navigation on load failure fallback:** ✅ Implemented. `startRoundCycle` now unlocks header navigation and clears `data-battle-active` when it throws `JudokaDataLoadError`, with coverage in `tests/classicBattle/round-select.test.js` and Playwright `battle-classic/round-select.spec.js`.
+- **Re-enable navigation on load failure fallback:** ✅ Implemented (re-verified 2025-02-14). `startRoundCycle` now unlocks header navigation and clears `data-battle-active` when it throws `JudokaDataLoadError`, with coverage in `tests/classicBattle/round-select.test.js` and Playwright `battle-classic/round-select.spec.js`.
 - **Replace hot-path dynamic import:** ✅ Implemented. `isMatchEnded` is statically imported, eliminating the `await import()` in `startIfNotEnded` (`src/pages/battleClassic.init.js:21,1856`).
 - **Harden modal telemetry without console noise:** ✅ Implemented. `showEndModal` now uses structured counters/Sentry logging and the smoke spec asserts on `window.__classicBattleEndModalCount` (`src/helpers/classicBattle/endModal.js:25-95`, `playwright/battle-classic/smoke.spec.js`).
 - **Optional UX nicety:** The retry modal could indicate progress (disable the button while the retry is in flight, show a spinner) so users are less likely to spam retries; this is outside the original bug scope but would improve perceived robustness.
