@@ -133,7 +133,7 @@ function observeHeaderClearance(header) {
 /**
  * Clamp a measured header height to a safe viewport-relative value.
  *
- * @param {unknown} height - The measured header height.
+ * @param {number} height - The measured header height.
  * @returns {number} A non-negative, clamped clearance value.
  */
 function clampHeaderClearance(height) {
@@ -217,16 +217,23 @@ function attachHeaderResizeObserver(header, applyClearance) {
     let cleanupObserver;
 
     const disconnect = () => {
+      let cleanupError;
       if (cleanupObserver && typeof cleanupObserver.disconnect === "function") {
         try {
           cleanupObserver.disconnect();
-        } catch {}
-        cleanupObserver = undefined;
+        } catch (error) {
+          cleanupError = error;
+        }
       }
       try {
         observer.disconnect();
       } catch {}
+      cleanupObserver = undefined;
       delete header[headerClearanceObserverKey];
+
+      if (cleanupError) {
+        throw cleanupError;
+      }
     };
 
     cleanupObserver = observeHeaderRemoval(header, disconnect);
