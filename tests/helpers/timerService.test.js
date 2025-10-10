@@ -111,7 +111,7 @@ describe("timerService", () => {
     expect(scoreboard.clearTimer).toHaveBeenCalledTimes(1);
   });
 
-  it("does not throw when document is undefined", async () => {
+  it("handles missing document reference gracefully without throwing", async () => {
     const originalDocument = global.document;
 
     try {
@@ -127,7 +127,11 @@ describe("timerService", () => {
       expect(timer).toBeDefined();
       await timer?.stop?.();
     } finally {
-      global.document = originalDocument;
+      if (originalDocument !== undefined) {
+        global.document = originalDocument;
+      } else {
+        delete global.document;
+      }
     }
   });
 
