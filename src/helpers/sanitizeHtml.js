@@ -72,28 +72,35 @@ export async function getSanitizer() {
   }
 
   // Final fallback: minimal allowlist sanitizer good enough for tests
-  const ALLOW = new Set(["br", "strong", "em"]);
-  function sanitizeBasic(input) {
-    const str = String(input ?? "");
-    // Remove script/style blocks completely
-    let out = str
-      .replace(/<\/(?:script|style)>/gi, "")
-      .replace(/<(?:script|style)[^>]*>.*?/gis, "");
-    // Drop inline event handlers
-    out = out.replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "").replace(/\son[a-z]+\s*=\s*'[^']*'/gi, "");
-    // Allow only a small set of tags and strip attributes
-    out = out.replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, (m, tag) => {
-      const t = String(tag).toLowerCase();
-      if (!ALLOW.has(t)) {
-        return m.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      }
-      // Keep tag but remove attributes
-      const isEnd = m.startsWith("</");
-      return isEnd ? `</${t}>` : `<${t}>`;
-    });
-    return out;
-  }
   cached = { sanitize: sanitizeBasic };
   getSanitizer.__cached = cached;
   return cached;
 }
+
+const BASIC_ALLOW = new Set(["br", "strong", "em"]);
+
+function sanitizeBasic(input) {
+  const str = String(input ?? "");
+  // Remove script/style blocks completely
+  let out = str
+    .replace(/<\/(?:script|style)>/gi, "")
+    .replace(/<(?:script|style)[^>]*>.*?/gis, "");
+  // Drop inline event handlers (quoted or unquoted values)
+  out = out.replace(
+    /\son[a-z0-9:-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
+    ""
+  );
+  // Allow only a small set of tags and strip attributes
+  out = out.replace(/<\/?([a-z][a-z0-9:-]*)\b[^>]*>/gi, (m, tag) => {
+    const t = String(tag).toLowerCase();
+    if (!BASIC_ALLOW.has(t)) {
+      return m.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    // Keep tag but remove attributes
+    const isEnd = m.startsWith("</");
+    return isEnd ? `</${t}>` : `<${t}>`;
+  });
+  return out;
+}
+
+export const __TEST_ONLY__ = { sanitizeBasic };
