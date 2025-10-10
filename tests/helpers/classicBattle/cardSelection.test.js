@@ -374,13 +374,11 @@ describe.sequential("classicBattle card selection", () => {
     const setterSpy = roundMessage ? vi.spyOn(roundMessage, "textContent", "set") : null;
 
     const scoreboard = await import("../../../src/helpers/setupScoreboard.js");
-    const showMessageMock = vi
-      .spyOn(scoreboard, "showMessage")
-      .mockImplementation((message) => {
-        if (roundMessage) {
-          roundMessage.textContent = message;
-        }
-      });
+    const showMessageMock = vi.spyOn(scoreboard, "showMessage").mockImplementation((message) => {
+      if (roundMessage) {
+        roundMessage.textContent = message;
+      }
+    });
 
     try {
       const { loadJudokaData, _resetForTest, JudokaDataLoadError } = await import(
