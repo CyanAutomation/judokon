@@ -229,13 +229,9 @@ describe.sequential("classicBattle card selection", () => {
       return [];
     });
 
-    const {
-      drawCards,
-      _resetForTest,
-      JudokaDataLoadError,
-      CARD_RETRY_EVENT,
-      LOAD_ERROR_EXIT_EVENT
-    } = await import("../../../src/helpers/classicBattle/cardSelection.js");
+    const { drawCards, _resetForTest, JudokaDataLoadError, CARD_RETRY_EVENT } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
     _resetForTest();
     Object.defineProperty(window, "location", {
       configurable: true,
