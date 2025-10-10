@@ -46,18 +46,19 @@ test.describe("Classic Battle Opponent Messages", () => {
   runMessageTest(
     "shows mystery placeholder pre-reveal before stat selection",
     async ({ page }) => {
-      const html = await page.content();
-      const hasOpponent = html.includes('id="opponent-card"');
-      const hasPlaceholderMarkup = html.includes('id="mystery-card-placeholder"');
-
       const domState = await page.evaluate(() => {
         const container = document.getElementById("opponent-card");
+        const placeholder = document.getElementById("mystery-card-placeholder");
         const hasHidden = !!container && container.classList.contains("opponent-hidden");
-        return { containerExists: !!container, hasHidden };
+        return {
+          containerExists: Boolean(container),
+          hasHidden,
+          hasPlaceholder: Boolean(placeholder)
+        };
       });
 
-      expect(hasOpponent || domState.containerExists).toBe(true);
-      expect(hasPlaceholderMarkup || domState.hasHidden === true).toBe(true);
+      expect(domState.containerExists).toBe(true);
+      expect(domState.hasPlaceholder || domState.hasHidden === true).toBe(true);
     }
   );
 
