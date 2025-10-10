@@ -1006,13 +1006,13 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
 
   // Return a cleanup function or store the handler for later removal
   const cleanup = () => {
+    const unsubscribeExpired = removeExpiredCleanup;
+    removeExpiredCleanup = null;
+
     if (cleanupExecuted) {
       return;
     }
     cleanupExecuted = true;
-
-    const unsubscribeExpired = removeExpiredCleanup;
-    removeExpiredCleanup = null;
 
     if (typeof unsubscribeExpired === "function") {
       try {

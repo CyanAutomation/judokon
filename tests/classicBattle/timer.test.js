@@ -147,6 +147,7 @@ describe("Classic Battle round timer", () => {
   test("cleanup tolerates reentrant expiry and repeated stop calls", async () => {
     vi.resetModules();
     const timers = useCanonicalTimers();
+    let cleanupExecutionCount = 0;
 
     const originalAdd = document.addEventListener;
     const originalRemove = document.removeEventListener;
@@ -170,6 +171,7 @@ describe("Classic Battle round timer", () => {
             if (event === "expired" && typeof handler === "function") {
               expiredHandlers.add(handler);
               return () => {
+                cleanupExecutionCount += 1;
                 if (expiredHandlers.has(handler)) {
                   handler();
                   expiredHandlers.delete(handler);
@@ -205,19 +207,23 @@ describe("Classic Battle round timer", () => {
       const scoreboardModule = await import("../../src/helpers/setupScoreboard.js");
       scoreboardModule.setupScoreboard({ pauseTimer: () => {}, resumeTimer: () => {} });
 
+      const { withMutedConsole } = await import("../utils/console.js");
       const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
       const timer = await startTimer(async () => {}, { selectionMade: false });
 
       const [expiredHandler] = expiredHandlers;
       expect(typeof expiredHandler).toBe("function");
 
-      expect(() => expiredHandler()).not.toThrow();
-      expect(() => expiredHandler()).not.toThrow();
+      await withMutedConsole(async () => {
+        expect(() => expiredHandler()).not.toThrow();
+        expect(() => expiredHandler()).not.toThrow();
 
-      expect(timer.stop()).toBe("stopped");
-      expect(timer.stop()).toBe("stopped");
+        expect(timer.stop()).toBe("stopped");
+        expect(timer.stop()).toBe("stopped");
+      }, ["warn"]);
 
       expect(removeSpy).toHaveBeenCalledTimes(1);
+      expect(cleanupExecutionCount).toBe(1);
     } finally {
       spy.mockRestore();
       addSpy.mockRestore();

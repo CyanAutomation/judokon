@@ -1569,8 +1569,13 @@ async function startRoundCycle(store, options = {}) {
  * 2. Clicking the button starts the round cycle.
  */
 function showRoundSelectFallback(store) {
-  if (document.getElementById("round-select-fallback")) {
+  const fallbackAlreadyTracked = Boolean(store && store.__roundSelectFallbackShown);
+  if (fallbackAlreadyTracked || document.getElementById("round-select-fallback")) {
     return;
+  }
+
+  if (store) {
+    store.__roundSelectFallbackShown = true;
   }
 
   const msg = document.createElement("p");
@@ -1585,7 +1590,7 @@ function showRoundSelectFallback(store) {
     try {
       await startRoundCycle(store);
     } catch (err) {
-      console.debug("battleClassic: fallback start failed", err);
+      console.warn("battleClassic: fallback start failed", err);
     }
   });
 
@@ -1846,7 +1851,8 @@ async function init() {
       try {
         showRoundSelectFallback(store);
       } catch (fallbackError) {
-        console.debug("battleClassic: showRoundSelectFallback failed", fallbackError);
+        console.error("battleClassic: showRoundSelectFallback failed", fallbackError);
+        throw fallbackError;
       }
     }
 
