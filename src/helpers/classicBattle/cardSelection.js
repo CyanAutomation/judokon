@@ -65,72 +65,64 @@ function qaInfo(text) {
  * @returns {void}
  */
 function showLoadError(error) {
-  let msg = error?.message || "Unable to load data.";
-  if (msg.includes("Cannot access uninitialized variable")) {
-    msg = "A critical error occurred during data loading. Please try again.";
-  }
-
-  // Try to show message via scoreboard, fallback to direct DOM manipulation
-  try {
-    showMessage(msg);
-  } catch {
-    // Fallback: directly set the message in the DOM when scoreboard isn't initialized
-    const messageEl = document.getElementById("round-message");
-    if (messageEl) {
-      messageEl.textContent = msg;
+  const createAndShowModal = () => {
+    let msg = error?.message || "Unable to load data.";
+    if (msg.includes("Cannot access uninitialized variable")) {
+      msg = "A critical error occurred during data loading. Please try again.";
     }
-  }
 
-  // Also ensure the message is set directly for tests
-  const messageEl = document.getElementById("round-message");
-  if (messageEl) {
-    messageEl.textContent = msg;
-  }
-  if (!loadErrorModal) {
-    const title = document.createElement("h2");
-    title.id = "load-error-title";
-    title.textContent = "Load Error";
+    if (!loadErrorModal) {
+      const title = document.createElement("h2");
+      title.id = "load-error-title";
+      title.textContent = "Load Error";
 
-    const desc = document.createElement("p");
-    desc.id = "load-error-desc";
-    desc.textContent = msg;
+      const desc = document.createElement("p");
+      desc.id = "load-error-desc";
+      desc.textContent = msg;
 
-    const actions = document.createElement("div");
-    actions.className = "modal-actions";
+      const actions = document.createElement("div");
+      actions.className = "modal-actions";
 
-    const retry = createButton("Retry", { id: "retry-draw-button" });
-    retry.addEventListener("click", () => {
-      try {
-        loadErrorModal.close();
-      } catch {}
-      try {
-        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
-          window.dispatchEvent(new CustomEvent(CARD_RETRY_EVENT));
-          return;
+      const retry = createButton("Retry", { id: "retry-draw-button" });
+      retry.addEventListener("click", () => {
+        try {
+          loadErrorModal.close();
+        } catch {}
+        try {
+          if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+            window.dispatchEvent(new CustomEvent(CARD_RETRY_EVENT));
+            return;
+          }
+        } catch (dispatchError) {
+          console.debug("Failed to dispatch retry event:", dispatchError);
         }
-      } catch (dispatchError) {
-        console.debug("Failed to dispatch retry event:", dispatchError);
-      }
-      try {
-        if (typeof window !== "undefined" && window.location?.reload) {
-          window.location.reload();
+        try {
+          if (typeof window !== "undefined" && window.location?.reload) {
+            window.location.reload();
+          }
+        } catch (reloadError) {
+          console.debug("Failed to reload after retry dispatch failure:", reloadError);
         }
-      } catch (reloadError) {
-        console.debug("Failed to reload after retry dispatch failure:", reloadError);
-      }
-    });
-    actions.append(retry);
+      });
+      actions.append(retry);
 
-    const frag = document.createDocumentFragment();
-    frag.append(title, desc, actions);
+      const frag = document.createDocumentFragment();
+      frag.append(title, desc, actions);
 
-    loadErrorModal = createModal(frag, { labelledBy: title, describedBy: desc });
-    document.body.appendChild(loadErrorModal.element);
+      loadErrorModal = createModal(frag, { labelledBy: title, describedBy: desc });
+      document.body.appendChild(loadErrorModal.element);
+    } else {
+      const descEl = loadErrorModal.element.querySelector("#load-error-desc");
+      if (descEl) descEl.textContent = msg;
+    }
+    loadErrorModal.open();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", createAndShowModal);
   } else {
-    const descEl = loadErrorModal.element.querySelector("#load-error-desc");
-    if (descEl) descEl.textContent = msg;
+    createAndShowModal();
   }
-  loadErrorModal.open();
 }
 
 /**

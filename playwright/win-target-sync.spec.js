@@ -65,12 +65,29 @@ test.describe("Round Selection - Win Target Synchronization", () => {
 
     await expect(page.locator("#cli-header")).toContainText("Round 0 Target: 10");
     await expect(dropdown).toHaveValue("10");
+    const revisit = await page.context().newPage();
+    try {
+      await revisit.addInitScript(() => {
+        window.__FF_OVERRIDES = { showRoundSelectModal: true };
+      });
+      await revisit.goto("/src/pages/battleCLI.html");
+      await expect(revisit.locator(".modal-backdrop")).toBeVisible();
+      await expect.poll(async () =>
+        revisit.evaluate(() => {
+          try {
+            return localStorage.getItem("battle.pointsToWin");
+          } catch {
+            return null;
+          }
+        })
+      ).toBe("10");
+      await expect(revisit.locator("#points-select")).toHaveValue("10");
 
-    await page.reload();
-    await expect(page.locator(".modal-backdrop")).toBeVisible();
-    await expect(page.locator("#cli-header")).toContainText("Round 0 Target: 10");
-
-    await openSettingsPanel(page);
-    await expect(page.locator("#points-select")).toHaveValue("10");
+      await revisit.keyboard.press("3");
+      await expect(revisit.locator(".modal-backdrop")).toBeHidden();
+      await expect(revisit.locator("#cli-header")).toContainText("Round 0 Target: 10");
+    } finally {
+      await revisit.close();
+    }
   });
 });

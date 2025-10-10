@@ -13,6 +13,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - Added a header-level verbose-mode indicator to `src/pages/battleCLI.html` so `setupFlags` can surface observability status without scrolling.
 - Updated `setupFlags` to manage `aria-hidden` on the indicator and added `battleCLI.verboseFlag.test.js` coverage to ensure the UI reflects flag changes.
 - Extended countdown regression coverage in `tests/pages/battleCLI.countdown.test.js` to assert the warning colour under five seconds and the reset when the timer restarts.
+- Added a persistence regression to `playwright/win-target-sync.spec.js` that exercises the confirm modal, reloads in a fresh page, and verifies the stored target survives as both dropdown value and header copy.
 
 ---
 
@@ -116,8 +117,8 @@ This revision re-validates every QA finding against the current CLI implementati
 
 - **✅ Completed — Verbose indicator hook**: Added `#verbose-indicator`, synchronized `aria-hidden`, and covered the behaviour via `battleCLI.verboseFlag.test.js`.
 - **✅ Completed — Countdown warning regression test**: `battleCLI.countdown.test.js` now asserts the warning colour under five seconds and the reset on restart.
-1. **Playwright persistence scenario (0.5 day)** — Introduce a CLI E2E test that toggles the win target, reloads, and verifies the header + scoreboard values to complement the unit coverage (`tests/pages/battleCLI.pointsToWin.test.js`).
-2. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
+- **✅ Completed — Playwright persistence scenario**: `playwright/win-target-sync.spec.js` now exercises a reload in a fresh page context to confirm stored targets persist and stay synchronized with the header.
+1. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
 
 ## Validation Evidence
 
@@ -125,4 +126,5 @@ This revision re-validates every QA finding against the current CLI implementati
 - `npx vitest run tests/pages/battleCLI.verboseFlag.test.js`
 - `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`
 - `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
+- `npx playwright test playwright/win-target-sync.spec.js --reporter=line --workers=1`
 - `npx playwright test playwright/cli.spec.js --reporter=line --workers=1`
