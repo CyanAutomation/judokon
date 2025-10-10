@@ -392,8 +392,8 @@ describe.sequential("classicBattle card selection", () => {
         JudokaDataLoadError
       );
 
-      const lastMessageCall = showMessageMock.mock.calls.at(-1)?.[0];
-      expect(lastMessageCall ?? roundMessage?.textContent).toBe("boom");
+      expect(showMessageMock).toHaveBeenCalledWith("boom");
+      expect(showMessageMock).toHaveBeenCalledTimes(1);
       expect(roundMessage?.textContent).toBe("boom");
       expect(setterSpy?.mock.calls.length ?? 0).toBe(1);
     } finally {
@@ -409,13 +409,15 @@ describe.sequential("classicBattle card selection", () => {
     expect(roundMessage).toBeTruthy();
     const setterSpy = roundMessage ? vi.spyOn(roundMessage, "textContent", "set") : null;
 
+    const showMessageMock = vi.fn(() => {
+      throw new Error("scoreboard offline");
+    });
+
     vi.doMock("../../../src/helpers/setupScoreboard.js", async () => {
       const actual = await vi.importActual("../../../src/helpers/setupScoreboard.js");
       return {
         ...actual,
-        showMessage: vi.fn(() => {
-          throw new Error("scoreboard offline");
-        })
+        showMessage: showMessageMock
       };
     });
 
@@ -431,6 +433,8 @@ describe.sequential("classicBattle card selection", () => {
         JudokaDataLoadError
       );
 
+      expect(showMessageMock).toHaveBeenCalledWith("boom");
+      expect(showMessageMock).toHaveBeenCalledTimes(1);
       expect(roundMessage?.textContent).toBe("boom");
       expect(setterSpy?.mock.calls.length ?? 0).toBe(1);
     } finally {
