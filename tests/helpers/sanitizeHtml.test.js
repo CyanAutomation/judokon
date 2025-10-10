@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { performance } from "node:perf_hooks";
 import { describe, expect, it } from "vitest";
 import { __TEST_ONLY__ } from "../../src/helpers/sanitizeHtml.js";
 
@@ -81,11 +82,18 @@ describe("sanitizeHtml fallback sanitizer", () => {
     expect(result).toBe("bad");
   });
 
-  it("removes truncated executable openings missing closing brackets", () => {
+  it("neutralizes truncated executable openings missing closing brackets", () => {
     const input = "<div>safe</div><script src=x";
     const result = sanitizeBasic(input);
 
-    expect(result).toBe("&lt;div&gt;safe&lt;/div&gt;");
+    expect(result).toBe("&lt;div&gt;safe&lt;/div&gt;&lt;script src=x");
+  });
+
+  it("preserves content following truncated executable openings by escaping them", () => {
+    const input = "<div>safe</div><script src=x trailing text";
+    const result = sanitizeBasic(input);
+
+    expect(result).toBe("&lt;div&gt;safe&lt;/div&gt;&lt;script src=x trailing text");
   });
 
   it("removes executable tags with unusual spacing and casing", () => {
@@ -111,5 +119,16 @@ describe("sanitizeHtml fallback sanitizer", () => {
     const result = sanitizeBasic(input);
 
     expect(result).toBe(payload);
+  });
+
+  it("completes large-payload sanitization promptly", () => {
+    const payload = "x".repeat(25 * 1024);
+    const input = `<script>${payload}</script>${payload}`;
+    const start = performance.now();
+    const result = sanitizeBasic(input);
+    const durationMs = performance.now() - start;
+
+    expect(result).toBe(payload);
+    expect(durationMs).toBeLessThan(100);
   });
 });
