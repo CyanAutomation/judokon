@@ -2,13 +2,6 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Classic Battle page", () => {
   test("plays a full match and shows the end modal", async ({ page }) => {
-    const logs = [];
-    page.on("console", (msg) => {
-      if (msg.type() === "log") {
-        logs.push(msg.text());
-      }
-    });
-
     await page.addInitScript(() => {
       window.__FF_OVERRIDES = {
         showRoundSelectModal: true
@@ -52,8 +45,10 @@ test.describe("Classic Battle page", () => {
     // Assert that the end modal is visible
     await expect(page.locator("#match-end-modal")).toBeVisible();
 
-    // Assert that the showEndModal function was called
-    const showEndModalCalled = logs.some((log) => log.includes("showEndModal called with:"));
-    expect(showEndModalCalled).toBe(true);
+    // Assert that the showEndModal function incremented its structured counter
+    const callCount = await page.evaluate(
+      () => window.__classicBattleEndModalCount ?? 0
+    );
+    expect(callCount).toBeGreaterThan(0);
   });
 });

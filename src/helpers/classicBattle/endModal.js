@@ -26,7 +26,24 @@ export function showEndModal(store, detail = {}) {
   if (document.getElementById("match-end-modal")) {
     return;
   }
-  console.log("showEndModal called with:", detail);
+  try {
+    if (typeof window !== "undefined") {
+      const currentCount = Number(window.__classicBattleEndModalCount || 0);
+      window.__classicBattleEndModalCount = currentCount + 1;
+      window.__classicBattleLastEndModalDetail = detail || null;
+    }
+  } catch {}
+  try {
+    if (typeof Sentry !== "undefined" && Sentry?.logger) {
+      const { logger } = Sentry;
+      const info = logger.fmt`classicBattle:endModal outcome=${detail?.outcome ?? "unknown"}`;
+      logger.info(info, {
+        outcome: detail?.outcome ?? null,
+        playerScore: Number(detail?.scores?.player ?? 0),
+        opponentScore: Number(detail?.scores?.opponent ?? 0)
+      });
+    }
+  } catch {}
   const title = document.createElement("h2");
   title.id = "match-end-title";
   title.textContent = "Match Over";

@@ -1018,11 +1018,7 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
     const handler = visibilityHandler;
     visibilityHandler = null;
 
-    if (
-      handler &&
-      documentRef &&
-      typeof documentRef.removeEventListener === "function"
-    ) {
+    if (handler && documentRef && typeof documentRef.removeEventListener === "function") {
       try {
         documentRef.removeEventListener("visibilitychange", handler);
       } catch {}

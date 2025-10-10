@@ -24,7 +24,8 @@ import {
   createBattleEngine,
   STATS,
   on as onEngine,
-  getRoundsPlayed
+  getRoundsPlayed,
+  isMatchEnded
 } from "../helpers/battleEngineFacade.js";
 import { initRoundSelectModal } from "../helpers/classicBattle/roundSelectModal.js";
 import { startTimer, onNextButtonClick } from "../helpers/classicBattle/timerService.js";
@@ -1853,7 +1854,6 @@ async function init() {
         }
       }
 
-      const { isMatchEnded } = await import("../helpers/battleEngineFacade.js");
       if (typeof isMatchEnded === "function" && isMatchEnded()) return;
     };
     onBattleEvent("round.start", startIfNotEnded);
