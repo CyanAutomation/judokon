@@ -216,9 +216,9 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 - **Casual Clothes Variation**: Retain the base prompt style while KG wears a red t-shirt and blue shorts, waves with a water bottle in hand, and stands in a grassy outdoor training area under a blue sky.
 - **Achievement Scene — Trophy**: Keep the base prompt details and show KG lifting a gold trophy above his head on a spotlighted stage with a cheering crowd.
 
-### 8. Design Do's and Don'ts (P1)
+### 8. Implementation Guidelines (P1)
 
-**Do:**
+**Required Design Standards:**
 
 - Maintain the 3-heads tall chibi proportion.
 - Use dynamic, energetic poses that reinforce KG's encouraging personality.
@@ -226,11 +226,11 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 - Match facial expressions to the narrative context while preserving friendliness.
 - Retain flat, cartoonish rendering with bold outlines and warm lighting.
 
-**Don't:**
+**Design Restrictions:**
 
-- Render KG with realistic or overly detailed anatomy.
-- Remove or omit the Japan flag patch when KG wears the gi.
-- Introduce heavy shading, complex gradients, or textured rendering styles.
+- Do not render KG with realistic or overly detailed anatomy.
+- Do not remove or omit the Japan flag patch when KG wears the gi.
+- Do not introduce heavy shading, complex gradients, or textured rendering styles.
 
 ---
 
