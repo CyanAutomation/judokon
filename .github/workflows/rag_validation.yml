@@ -6,6 +6,9 @@ on:
   # Allows manual triggering
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+
 jobs:
   rag-validation:
     runs-on: ubuntu-latest
