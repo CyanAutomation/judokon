@@ -209,7 +209,9 @@ describe.sequential("classicBattle card selection", () => {
       if (calls.length === 1) {
         throw new Error("boom");
       }
-      // After retry, respond with empty arrays for both resources
+      if (p.includes("judoka")) {
+        return [{ id: 1 }];
+      }
       return [];
     });
 
@@ -249,6 +251,68 @@ describe.sequential("classicBattle card selection", () => {
     expect(calls[2]).toMatch(/gokyo\.json/);
   });
 
+  it("fails when judoka payload is empty", async () => {
+    fetchJsonMock.mockImplementation(async (path) => {
+      if (path.includes("judoka")) {
+        return [];
+      }
+      return [];
+    });
+
+    const { drawCards, _resetForTest, JudokaDataLoadError } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, reload: vi.fn() }
+    });
+
+    await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
+    expect(document.getElementById("round-message").textContent).toBe("Judoka dataset is empty.");
+    expect(document.getElementById("retry-draw-button")).toBeTruthy();
+  });
+
+  it("fails when judoka payload is not an array", async () => {
+    fetchJsonMock.mockImplementation(async (path) => {
+      if (path.includes("judoka")) {
+        return { nope: true };
+      }
+      return [];
+    });
+
+    const { drawCards, _resetForTest, JudokaDataLoadError } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, reload: vi.fn() }
+    });
+
+    await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
+    expect(document.getElementById("round-message").textContent).toBe(
+      "Invalid judoka dataset received."
+    );
+    expect(document.getElementById("retry-draw-button")).toBeTruthy();
+  });
+
+  it("caches successful judoka payloads", async () => {
+    const { loadJudokaData, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+
+    const fetcher = vi.fn().mockResolvedValue([{ id: 42 }]);
+
+    const first = await loadJudokaData({ fetcher });
+    const second = await loadJudokaData({ fetcher });
+
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(first).toBe(second);
+    expect(first).toEqual([{ id: 42 }]);
+  });
+
   it("logs an error when JudokaCard.render does not return an element", async () => {
     await vi.resetModules();
     // Force the JudokaCard module to return a non-HTMLElement deterministically
@@ -264,6 +328,12 @@ describe.sequential("classicBattle card selection", () => {
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
     _resetForTest();
+    fetchJsonMock.mockImplementation(async (path) => {
+      if (path.includes("judoka")) {
+        return [{ id: 1 }];
+      }
+      return [];
+    });
     await drawCards();
     expect(consoleSpy).toHaveBeenCalledWith("JudokaCard did not render an HTMLElement");
     const container = document.getElementById("opponent-card");
