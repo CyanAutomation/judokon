@@ -229,13 +229,9 @@ describe.sequential("classicBattle card selection", () => {
       return [];
     });
 
-    const {
-      drawCards,
-      _resetForTest,
-      JudokaDataLoadError,
-      CARD_RETRY_EVENT,
-      LOAD_ERROR_EXIT_EVENT
-    } = await import("../../../src/helpers/classicBattle/cardSelection.js");
+    const { drawCards, _resetForTest, JudokaDataLoadError, CARD_RETRY_EVENT } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
     _resetForTest();
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -280,7 +276,6 @@ describe.sequential("classicBattle card selection", () => {
 
   it("Return to Lobby button dispatches exit event", async () => {
     fetchJsonMock.mockRejectedValueOnce(new Error("boom"));
-
     const { drawCards, _resetForTest, JudokaDataLoadError, LOAD_ERROR_EXIT_EVENT } = await import(
       "../../../src/helpers/classicBattle/cardSelection.js"
     );
@@ -290,8 +285,8 @@ describe.sequential("classicBattle card selection", () => {
     window.addEventListener(LOAD_ERROR_EXIT_EVENT, exitListener);
 
     await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
+    await timers.runOnlyPendingTimersAsync();
 
     const exit = document.getElementById("exit-draw-button");
     expect(exit).toBeTruthy();
@@ -379,6 +374,7 @@ describe.sequential("classicBattle card selection", () => {
     const setterSpy = roundMessage ? vi.spyOn(roundMessage, "textContent", "set") : null;
 
     const showMessageMock = vi.fn((message) => {
+      console.log("showMessageMock", message);
       if (roundMessage) {
         roundMessage.textContent = message;
       }

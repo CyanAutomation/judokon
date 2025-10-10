@@ -47,53 +47,48 @@ describe("Classic Battle round select modal", () => {
     const file = resolve(process.cwd(), "src/pages/battleClassic.html");
     const html = readFileSync(file, "utf-8");
     document.documentElement.innerHTML = html;
-
-    const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
-    await initClassicBattleTest({ afterMock: true });
-
-    const cardSelection = await import("../../src/helpers/classicBattle/cardSelection.js");
-    const failure = new cardSelection.JudokaDataLoadError("boom");
-    const drawCardsSpy = vi
-      .spyOn(cardSelection, "drawCards")
-      .mockRejectedValueOnce(failure)
-      .mockImplementation(() => Promise.resolve({ playerJudoka: null, opponentJudoka: null }));
-
-    const mod = await import("../../src/pages/battleClassic.init.js");
-    await mod.init?.();
-
-    const quick = document.getElementById("round-select-1");
-    expect(quick).toBeTruthy();
-
-    quick.click();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(document.body.getAttribute("data-battle-active")).not.toBe("true");
-    document
-      .querySelectorAll("header a")
-      .forEach((link) => expect(link.style.pointerEvents).not.toBe("none"));
-
-    const exit = await new Promise((resolve, reject) => {
-      const start = Date.now();
-      const check = () => {
-        const btn = document.getElementById("exit-draw-button");
-        if (btn) {
-          resolve(btn);
-          return;
-        }
-        if (Date.now() - start > 1000) {
-          reject(new Error("exit button not found"));
-          return;
-        }
-        setTimeout(check, 10);
-      };
-      check();
+    const readyDescriptor = Object.getOwnPropertyDescriptor(document, "readyState");
+    Object.defineProperty(document, "readyState", {
+      configurable: true,
+      get: () => "complete"
     });
-    exit.click();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(document.getElementById("round-select-error")).toBeTruthy();
 
-    drawCardsSpy.mockRestore();
+    try {
+      const { initClassicBattleTest } = await import("../helpers/initClassicBattleTest.js");
+      await initClassicBattleTest({ afterMock: true });
+
+      const cardSelection = await import("../../src/helpers/classicBattle/cardSelection.js");
+      const failure = new cardSelection.JudokaDataLoadError("boom");
+      const drawCardsSpy = vi
+        .spyOn(cardSelection, "drawCards")
+        .mockRejectedValueOnce(failure)
+        .mockImplementation(() => Promise.resolve({ playerJudoka: null, opponentJudoka: null }));
+
+      const mod = await import("../../src/pages/battleClassic.init.js");
+      await mod.init?.();
+
+      const quick = document.getElementById("round-select-1");
+      expect(quick).toBeTruthy();
+
+      quick.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(document.body.getAttribute("data-battle-active")).not.toBe("true");
+      document
+        .querySelectorAll("header a")
+        .forEach((link) => expect(link.style.pointerEvents).not.toBe("none"));
+
+      window.dispatchEvent(new CustomEvent(cardSelection.LOAD_ERROR_EXIT_EVENT));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(document.getElementById("round-select-error")).toBeTruthy();
+
+      drawCardsSpy.mockRestore();
+    } finally {
+      if (readyDescriptor) {
+        Object.defineProperty(document, "readyState", readyDescriptor);
+      } else {
+        delete document.readyState;
+      }
+    }
   });
 });
