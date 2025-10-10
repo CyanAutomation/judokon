@@ -232,6 +232,26 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 - Do not remove or omit the Japan flag patch when KG wears the gi.
 - Do not introduce heavy shading, complex gradients, or textured rendering styles.
 
+**Do & Don't Checklist:**
+
+**Do:**
+
+- Keep line weights bold and consistent around the entire silhouette to preserve the cartoon cut-out style.
+- Anchor every pose with planted, balanced foot placement to avoid awkward or unstable silhouettes.
+- Pair mouth shapes and eyebrow angles intentionally so emotions read clearly at small sizes.
+- Reuse the canonical color palette swatches; document any temporary deviations with rationale and HEX values.
+- Stage supporting props so they reinforce KG’s role as coach (clipboards, tablets, trophies) rather than steal focus.
+- Provide layered source files (separate outlines, fills, highlights) to support downstream animation or recoloring.
+
+**Don't:**
+
+- Stretch or squash the head-to-body ratio beyond the 3-heads-tall silhouette.
+- Swap the black belt for other colors or remove belt knot detailing in the name of simplification.
+- Mix rendering styles (e.g., painterly textures, photoreal lighting) that conflict with the flat cel-shaded look.
+- Add aggressive weaponry, intimidating facial expressions, or other elements that contradict KG’s mentor tone.
+- Place busy background props directly behind KG’s face or hands where they compete with key gestures.
+- Export final art without transparent backgrounds or crop margins, which complicates UI placement.
+
 ---
 
 ## Acceptance Criteria
@@ -352,4 +372,4 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 
 ## Source Files Consolidated
 
-This PRD now consolidates the full KG character design and prompt guidance that previously lived in separate Character Design Document and Character Prompt Sheet files. Those standalone documents have been retired; reference this PRD for the canonical, end-to-end specifications. Updated October 2024 to capture the consolidation release.
+This PRD now consolidates the full KG character design and prompt guidance that previously lived in separate Character Design Document and Character Prompt Sheet files. Those standalone documents (`design/characterDesign/kgCharacterDesignDocument.md` and `design/characterDesign/kgCharacterPromptSheet.md`) have been formally retired and removed from the repository; reference this PRD for the canonical, end-to-end specifications. Updated October 2024 to capture the consolidation release.
