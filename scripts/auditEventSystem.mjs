@@ -64,9 +64,7 @@ function extractAppendixTable(markdown, heading) {
   }
 
   if (tableLines.length === 0) {
-    throw new MarkdownTableError(
-      `No markdown table found following heading "${heading}".`
-    );
+    throw new MarkdownTableError(`No markdown table found following heading "${heading}".`);
   }
 
   return parseMarkdownTable(tableLines);
@@ -142,7 +140,10 @@ function parseEventEmissions(markdown) {
  * Extract listener data from Appendix B of the PRD.
  */
 function parseEventListeners(markdown) {
-  const rows = extractAppendixTable(markdown, "### Appendix B: Listener Inventory (DOM & Event Bus)");
+  const rows = extractAppendixTable(
+    markdown,
+    "### Appendix B: Listener Inventory (DOM & Event Bus)"
+  );
   return rows.map((row) => {
     const event = row.Event.replace(/`/g, "");
     const modules = row["Listener modules"]
@@ -160,7 +161,10 @@ function parseEventListeners(markdown) {
  * Extract test usage data from Appendix C of the PRD.
  */
 function parseTestEventUsage(markdown) {
-  const rows = extractAppendixTable(markdown, "### Appendix C: Test Event Utilities and Dispatch Patterns");
+  const rows = extractAppendixTable(
+    markdown,
+    "### Appendix C: Test Event Utilities and Dispatch Patterns"
+  );
   return rows.map((row) => {
     const pattern = row.Pattern.replace(/`/g, "");
     const modules = row["Test modules"]
@@ -291,9 +295,7 @@ async function analyzeEventSystem() {
       if (error instanceof AuditError) {
         throw error;
       }
-      throw new MarkdownTableError(
-        `Failed to parse markdown tables in PRD: ${error.message}`
-      );
+      throw new MarkdownTableError(`Failed to parse markdown tables in PRD: ${error.message}`);
     }
 
     console.log("## Summary");

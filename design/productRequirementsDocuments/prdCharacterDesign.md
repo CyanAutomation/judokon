@@ -193,10 +193,12 @@ The JU-DO-KON! game requires a consistent, appealing character identity to serve
 ### 7. Scenario Prompt Reference (P2)
 
 **Version History:**
+
 - v2.0.0 (October 2024): Consolidated character design guidance with expanded prompt matrix and implementation checklist
 - v1.0.0: Initial character design specifications covering baseline poses, outfits, and expressions
 
 **When to Use Each Scenario:**
+
 - **Onboarding & Tutorials**: Use intro, teaching, and thinking scenarios when guiding players through new mechanics or explaining rules.
 - **Match Flow Moments**: Apply challenge, countdown, and victory scenarios during pre-match briefings, round transitions, and post-match celebrations.
 - **Out-of-Match Engagement**: Leverage celebration, community, and seasonal scenarios for events, rewards, and promotional beats outside active gameplay.
