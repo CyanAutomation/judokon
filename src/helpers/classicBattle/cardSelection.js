@@ -5,7 +5,7 @@ import { isEnabled } from "../featureFlags.js";
 import { fetchJson } from "../dataUtils.js";
 import { createGokyoLookup } from "../utils.js";
 import { DATA_DIR } from "../constants.js";
-import { showMessage, showTemporaryMessage } from "../setupScoreboard.js";
+import { showMessage as scoreboardShowMessage, showTemporaryMessage } from "../setupScoreboard.js";
 import { createModal } from "../../components/Modal.js";
 import { createButton } from "../../components/Button.js";
 import { JudokaCard } from "../../components/JudokaCard.js";
@@ -74,8 +74,8 @@ function showLoadError(error) {
   // overwrite it again when the primary path also succeeds later in the call stack.
   let fallbackApplied = false;
   try {
-    showMessage(msg);
-  } catch (showMessageError) {
+    scoreboardShowMessage(msg);
+  } catch {
     const roundMessage = document.getElementById("round-message");
     if (roundMessage) {
       roundMessage.textContent = msg;
