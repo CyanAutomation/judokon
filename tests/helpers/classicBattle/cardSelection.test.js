@@ -41,7 +41,14 @@ describe.sequential("classicBattle card selection", () => {
   it("draws a different card for the opponent", async () => {
     fetchJsonMock.mockImplementation(async (p) => {
       if (p.includes("judoka")) {
-        return [{ id: 1 }];
+        return [
+          {
+            id: 1,
+            name: "Opponent Alpha",
+            stats: { power: 12 },
+            isHidden: false
+          }
+        ];
       }
       return [];
     });
@@ -85,8 +92,10 @@ describe.sequential("classicBattle card selection", () => {
     _resetForTest();
 
     const result = await selectOpponentJudoka({
-      availableJudoka: [{ id: 1 }],
-      playerJudoka: { id: 1 },
+      availableJudoka: [
+        { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false }
+      ],
+      playerJudoka: { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false },
       randomJudoka: randomJudokaMock,
       fallbackProvider,
       qaLogger
@@ -108,8 +117,10 @@ describe.sequential("classicBattle card selection", () => {
     _resetForTest();
 
     const result = await selectOpponentJudoka({
-      availableJudoka: [{ id: 1 }],
-      playerJudoka: { id: 1 },
+      availableJudoka: [
+        { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false }
+      ],
+      playerJudoka: { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false },
       randomJudoka: randomJudokaMock,
       fallbackProvider,
       qaLogger
@@ -125,9 +136,9 @@ describe.sequential("classicBattle card selection", () => {
     fetchJsonMock.mockImplementation(async (p) => {
       if (p.includes("judoka")) {
         return [
-          { id: 1, isHidden: true },
-          { id: 2, isHidden: false },
-          { id: 3, isHidden: true }
+          { id: 1, name: "Hidden One", stats: { power: 5 }, isHidden: true },
+          { id: 2, name: "Visible Two", stats: { power: 7 }, isHidden: false },
+          { id: 3, name: "Hidden Three", stats: { power: 6 }, isHidden: true }
         ];
       }
       return [];
@@ -210,7 +221,14 @@ describe.sequential("classicBattle card selection", () => {
         throw new Error("boom");
       }
       if (p.includes("judoka")) {
-        return [{ id: 1 }];
+        return [
+          {
+            id: 1,
+            name: "Retry Success",
+            stats: { power: 9 },
+            isHidden: false
+          }
+        ];
       }
       return [];
     });
@@ -303,14 +321,20 @@ describe.sequential("classicBattle card selection", () => {
     );
     _resetForTest();
 
-    const fetcher = vi.fn().mockResolvedValue([{ id: 42 }]);
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue([
+        { id: 42, name: "Cache Hero", stats: { power: 11 }, isHidden: false }
+      ]);
 
     const first = await loadJudokaData({ fetcher });
     const second = await loadJudokaData({ fetcher });
 
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(first).toBe(second);
-    expect(first).toEqual([{ id: 42 }]);
+    expect(first).toEqual([
+      { id: 42, name: "Cache Hero", stats: { power: 11 }, isHidden: false }
+    ]);
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
@@ -341,7 +365,9 @@ describe.sequential("classicBattle card selection", () => {
       _resetForTest();
       fetchJsonMock.mockImplementation(async (path) => {
         if (path.includes("judoka")) {
-          return [{ id: 1 }];
+          return [
+            { id: 1, name: "Renderless", stats: { power: 8 }, isHidden: false }
+          ];
         }
         return [];
       });
