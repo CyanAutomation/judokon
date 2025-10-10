@@ -1,100 +1,69 @@
-# QA Report for `src/pages/battleClassic.html` - Revised
+# QA Report for `src/pages/battleClassic.html` – Updated
 
-This report has been revised based on a detailed code review. The root cause of the critical issues has been identified, and the fix plan has been updated accordingly.
+This revision reconciles the prior QA write-up with the current codebase and test suite. The previously documented “silent” card data failure is no longer reproducible: the live implementation surfaces load errors via dedicated UI, and regression coverage already protects that flow. The sections below document verified behaviour, assess the earlier fix plan, and note opportunities for further hardening.
 
 ---
 
 ## 1. Executive Summary
-
-- **Core Issue:** The Classic Battle mode fails to start due to a silent error in the data loading process. The `loadJudokaData` function in `src/helpers/classicBattle/cardSelection.js` incorrectly suppresses a critical data fetching error, returning an empty array instead of throwing an exception. This leads to a cascade of failures in the game's initialization sequence.
-- **Impact:** The game is unplayable. The UI freezes, and no interactive elements function correctly.
-- **Fix Plan:** A three-phase plan is proposed:
-    1. **Immediate Bugfix:** Correct the error handling in `loadJudokaData` to ensure errors are thrown and caught properly.
-    2. **Robust Error Handling:** Implement a global error handling mechanism in the startup sequence to provide clear feedback to the user on failure.
-    3. **Feature Completion:** Implement the missing end-of-match modal to provide a complete game loop.
+- **Current status:** Classic Battle boots successfully with the seeded data. When `judoka.json` fails to load, the user now receives a modal + retry affordance rather than an empty-state freeze (`loadJudokaData` rethrows `JudokaDataLoadError` and drives `showLoadError`; see `src/helpers/classicBattle/cardSelection.js:149-179`). No evidence of the “returns []” regression noted in the previous draft.
+- **User impact:** A data fetch failure is interruptive but recoverable; the header navigation remains disabled until retry or reload because the flow assumes the modal path, not a total escape hatch.
+- **Validation:** `npx vitest run` (targeted classic battle suite) and the Playwright smoke scenarios for Classic Battle both pass in the current workspace.
+- **Residual risks:** Repeated load failures leave the UI in “battle active” mode with nav links disabled; instrumentation still relies on a `console.log` call inside `showEndModal`, and there is a dynamic import in a hot event handler that should be simplified.
 
 ---
 
-## 2. Analysis of Core Issue: Silent Data Loading Failure
+## 2. Key Findings (Verified)
 
-The primary bug, "Match never starts," is a direct result of how data loading failures are handled. Here is a step-by-step breakdown of the failure:
+### Data loading and retry path
+- `loadJudokaData` throws on empty/malformed payloads and wraps unexpected errors in `JudokaDataLoadError`, resetting caches so retries fetch fresh data (`src/helpers/classicBattle/cardSelection.js:149-178`).
+- `drawCards` propagates those failures; upstream callers catch them to avoid double-reporting while leaving the retry modal in place (`src/helpers/classicBattle/cardSelection.js:425-435` and `src/pages/battleClassic.init.js:1779-1785`).
+- Unit tests exercise this flow, asserting that the retry modal appears and that retries re-sequence the JSON fetches (`tests/helpers/classicBattle/cardSelection.test.js:163-252`).
 
-1. **`init()` function in `battleClassic.init.js`:** The game's startup sequence begins here. It calls `initRoundSelectModal`, which in turn calls `drawCards` to prepare the initial game state.
-2. **`drawCards()` in `cardSelection.js`:** This function is responsible for loading the `judoka.json` data by calling `loadJudokaData`.
-3. **`loadJudokaData()` in `cardSelection.js`:** This is the root of the problem. When `fetchJson` fails to load `judoka.json`, the `catch` block is executed. Inside the `catch` block, the `onError` function is called (which attempts to show an error modal), but then the function returns an empty array `[]`.
-4. **Silent Failure Cascade:** The `drawCards` function receives the empty array from `loadJudokaData`. It does not treat this as a critical failure and proceeds with its logic, which is not designed to handle an empty dataset. This leads to a series of downstream errors and an incomplete initialization, leaving the game in a frozen, unresponsive state.
+### Startup error handling
+- The entire `init` sequence is wrapped in a top-level `try/catch` that surfaces fatal errors through `showFatalInitError`, while explicitly ignoring `JudokaDataLoadError` to avoid stacking duplicate UI (`src/pages/battleClassic.init.js:1679-1880`).
+- A dedicated listener replays the round cycle when the retry modal dispatches `CARD_RETRY_EVENT`, ensuring the first successful fetch resumes normal flow (`src/pages/battleClassic.init.js:1665-1678`).
 
----
-
-## 3. Phased Fix Plan
-
-### Phase 1: Immediate Bugfix
-
-This phase focuses on fixing the critical bug to make the game playable.
-
-1. **Modify `loadJudokaData` to Throw Errors:**
-    - **File:** `src/helpers/classicBattle/cardSelection.js`
-    - **Change:** In the `catch` block of the `loadJudokaData` function, after calling the `onError` handler, re-throw the error instead of returning an empty array. This will ensure that the error properly propagates up to the calling function (`drawCards`).
-
-2. **Handle Errors in `drawCards`:**
-    - **File:** `src/helpers/classicBattle/cardSelection.js`
-    - **Change:** Wrap the call to `loadJudokaData` within `drawCards` in a `try...catch` block. If an error is caught, `drawCards` should not proceed with drawing cards and should instead re-throw the error to be handled by the main `init` function.
-
-### Phase 2: Robust Error Handling
-
-This phase focuses on improving the user experience when errors occur.
-
-1. **Implement a Global Startup Error Handler:**
-    - **File:** `src/pages/battleClassic.init.js`
-    - **Change:** In the `init` function, wrap the main initialization logic in a `try...catch` block. If a critical error is caught (such as a failure to load `judoka.json`), the `catch` block should display a user-friendly error message and a "Retry" button. This will prevent the game from freezing and will give the user a clear course of action.
-
-2. **Surface Data Load Failures:**
-    - **File:** `src/helpers/classicBattle/cardSelection.js`
-    - **Change:** The `onError` handler in `loadJudokaData` should be improved to ensure the error modal is always displayed correctly, even if other parts of the UI have not been initialized. This will provide immediate feedback to the user when the data fails to load.
-
-### Phase 3: Feature Completion
-
-This phase focuses on implementing missing features to provide a complete and satisfying game experience.
-
-1. **Implement End-of-Match Modal:**
-    - **Issue:** The game currently lacks a clear end state. When a match is over, there is no modal to announce the winner or provide options to play again.
-    - **Suggestion:** Create a new modal component that displays the final score, declares the winner, and provides two buttons: "Replay" and "Quit." This modal should be triggered at the end of a match, providing a clear and satisfying conclusion to the game loop.
-
-2. **Accessibility Improvements:**
-    - **Issue:** The stat buttons, when they eventually render, are missing `aria-describedby` attributes, which are important for screen reader users.
-    - **Suggestion:** When the stat buttons are created, dynamically add an `aria-describedby` attribute to each button that links to a hidden `<span>` containing a brief description of the stat. This will improve the accessibility of the game for visually impaired players.
+### Match completion experience
+- `showEndModal` short-circuits if a modal already exists, preventing the duplicate-ID regression called out in the original report (`src/helpers/classicBattle/endModal.js:25-28`).
+- The Playwright smoke test covers a full match loop and asserts the modal appears exactly once (`playwright/battle-classic/smoke.spec.js:3-58`), providing high-signal assurance for this behaviour.
 
 ---
 
-## 4. Implementation Progress
+## 3. Fix Plan Review & Adjustments
 
-### Phase 1, Task 1: Immediate Bugfix
+| Original phase | Status | Notes |
+| -------------- | ------ | ----- |
+| **Phase 1 – Immediate bugfix** (rethrow from `loadJudokaData`, handle errors in `drawCards`) | Already in place | Both behaviours are present and covered by tests; no additional action required beyond keeping coverage green. |
+| **Phase 2 – Robust error handling** (global init catch, improved modal) | Complete | The current `init` guard and modal implementation match the intent. Focus should shift to UX polish when retries repeatedly fail. |
+| **Phase 3 – Feature completion** (end-of-match modal) | Complete | Guard rail exists and E2E coverage verifies it. Remaining work is quality-of-life tuning rather than feature gap closure. |
 
-- **Action Taken:** Modified the `catch` block in the `initRoundSelectModal` callback in `src/pages/battleClassic.init.js`. The conditional check for `JudokaDataLoadError` was removed, ensuring that any error caught during the `startRoundCycle` is passed to the `showFatalInitError` function.
-- **Outcome:** This change ensures that if the game fails to start due to a data loading error, the user will be presented with a clear error message and a "Retry" button. This fixes the primary bug of the game silently failing.
-- **Testing:**
-    - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
-    - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
+Given the above, the actionable plan now centers on polish and resilience rather than foundational bug fixes.
 
-### Phase 2, Task 1: Robust Error Handling
+---
 
-- **Action Taken:** Refactored the `init` function in `src/pages/battleClassic.init.js` to wrap all initialization logic in a single, top-level `try...catch` block. 
-- **Outcome:** This ensures that any error that occurs during the entire initialization process is caught and handled by the `showFatalInitError` function, providing a robust global error handler for the application startup.
-- **Testing:**
-    - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
-    - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
+## 4. Opportunities & Recommendations
 
-### Phase 2, Task 2: Surface Data Load Failures
+- **Re-enable navigation on load failure fallback:** When we set `data-battle-active` and disable header links before calling `startRoundCycle`, a persistent data load failure leaves the page in a semi-locked state. Consider deferring the nav lock until after `startRoundCycle` resolves or explicitly re-enabling links from the `JudokaDataLoadError` branch (`src/pages/battleClassic.init.js:1772-1784`).
+- **Replace hot-path dynamic import:** `startIfNotEnded` performs `await import("../helpers/battleEngineFacade.js")` even though the module is statically imported at the top of the file (`src/pages/battleClassic.init.js:1856-1857`). Swap this for the existing `isMatchEnded` reference (or move the helper to the initial import) to avoid dynamic imports in runtime-critical code.
+- **Harden modal telemetry without console noise:** `showEndModal` currently logs to `console.log` so tests can assert invocation (`src/helpers/classicBattle/endModal.js:25-95`). Replace that with the structured logger utilities (or gate it behind `process.env.VITEST`) and update the Playwright assertion accordingly to keep runtime consoles clean while preserving observability.
+- **Optional UX nicety:** The retry modal could indicate progress (disable the button while the retry is in flight, show a spinner) so users are less likely to spam retries; this is outside the original bug scope but would improve perceived robustness.
 
-- **Action Taken:** Improved the `showLoadError` function in `src/helpers/classicBattle/cardSelection.js` to be more robust. The function now ensures the DOM is loaded before creating the error modal. Also, reinstated the `if (err instanceof JudokaDataLoadError)` check in `src/pages/battleClassic.init.js` to prevent double error messages.
-- **Outcome:** This change ensures that a data loading error will be displayed in a modal, and it will be the only error message shown to the user.
-- **Testing:**
-    - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
-    - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
+---
 
-### Phase 3, Task 1: Implement End-of-Match Modal
+## 5. Validation Evidence
 
-- **Action Taken:** Investigated why the end-of-match modal was not being displayed. Found that multiple modals were being created with the same ID. Fixed the issue by adding a check in `showEndModal` to prevent creating a new modal if one already exists. Also created a new Playwright test to play a full match and verify that the end-of-match modal is displayed correctly.
-- **Outcome:** The end-of-match modal is now displayed correctly at the end of a match, providing a clear end state for the game.
-- **Testing:**
-    - Ran a new Playwright test (`playwright/battle-classic/smoke.spec.js`) that plays a full match and verifies that the end-of-match modal is displayed. The test passed.
+| Command | Result |
+| ------- | ------ |
+| `npx vitest run tests/classicBattle/bootstrap.test.js tests/classicBattle/page-scaffold.test.js tests/classicBattle/init-complete.test.js tests/classicBattle/round-select.test.js` | ✅ All 18 assertions passed |
+| `npx playwright test playwright/battle-classic/bootstrap.spec.js playwright/battle-classic/round-select.spec.js playwright/battle-classic/smoke.spec.js` | ✅ All 4 scenarios passed (executed with elevated permissions to allow local web server binding) |
+
+These suites cover the data-loading retry logic, UI scaffolding, and the end-of-match modal assertions referenced above.
+
+---
+
+## 6. Open Questions
+
+- Do we want the retry modal to offer an explicit “Return to lobby” escape when repeated fetches fail? If so, UX guidance is needed for how to revert the nav lock and scoreboard state.
+- Should the Classic Battle init hook emit structured telemetry (e.g., Sentry span) when `JudokaDataLoadError` occurs repeatedly? Current instrumentation only logs to the console via the modal code path.
+
+The answers will clarify whether additional engineering work is required beyond the polish items listed in Section 4.
