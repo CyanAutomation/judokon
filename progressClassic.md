@@ -9,7 +9,7 @@ This revision reconciles the prior QA write-up with the current codebase and tes
 - **Current status:** Classic Battle boots successfully with the seeded data. When `judoka.json` fails to load, the user now receives a modal + retry affordance rather than an empty-state freeze (`loadJudokaData` rethrows `JudokaDataLoadError` and drives `showLoadError`; see `src/helpers/classicBattle/cardSelection.js:149-179`). No evidence of the “returns []” regression noted in the previous draft.
 - **User impact:** A data fetch failure is interruptive but recoverable; the header navigation remains disabled until retry or reload because the flow assumes the modal path, not a total escape hatch.
 - **Validation:** `npx vitest run` (targeted classic battle suite) and the Playwright smoke scenarios for Classic Battle both pass in the current workspace.
-- **Residual risks:** Repeated load failures still rely on the retry modal without progress feedback, and the nav lock is only cleared after the first failure (repeat UX polish pending).
+- **Residual risks:** Repeated load failures now surface a disabled “Retrying...” state but still depend on the modal’s manual retry UX; nav lock clears after failure yet we lack a direct “return to lobby” option.
 
 ---
 
@@ -50,7 +50,7 @@ Given the above, the actionable plan now centers on polish and resilience rather
 - **Re-enable navigation on load failure fallback:** ✅ Implemented (re-verified 2025-02-14). `startRoundCycle` now unlocks header navigation and clears `data-battle-active` when it throws `JudokaDataLoadError`, with coverage in `tests/classicBattle/round-select.test.js` and Playwright `battle-classic/round-select.spec.js`.
 - **Replace hot-path dynamic import:** ✅ Implemented. `isMatchEnded` is statically imported, eliminating the `await import()` in `startIfNotEnded` (`src/pages/battleClassic.init.js:21,1856`).
 - **Harden modal telemetry without console noise:** ✅ Implemented. `showEndModal` now uses structured counters/Sentry logging and the smoke spec asserts on `window.__classicBattleEndModalCount` (`src/helpers/classicBattle/endModal.js:25-95`, `playwright/battle-classic/smoke.spec.js`).
-- **Optional UX nicety:** The retry modal could indicate progress (disable the button while the retry is in flight, show a spinner) so users are less likely to spam retries; this is outside the original bug scope but would improve perceived robustness.
+- **Optional UX nicety:** ✅ Implemented. The retry modal disables the button, marks it `aria-busy`, and swaps the label to “Retrying...” while the retry event dispatches (`src/helpers/classicBattle/cardSelection.js:82-126`), validated by `tests/helpers/classicBattle/cardSelection.test.js` and Playwright `battle-classic/smoke.spec.js`.
 
 ---
 

@@ -104,7 +104,24 @@ function showLoadError(error) {
       actions.className = "modal-actions";
 
       const retry = createButton("Retry", { id: "retry-draw-button" });
+      const originalLabel = retry.textContent;
+      const setLoadingState = (loading) => {
+        try {
+          retry.disabled = loading;
+          if (loading) {
+            retry.setAttribute("aria-disabled", "true");
+            retry.setAttribute("aria-busy", "true");
+            retry.textContent = "Retrying...";
+          } else {
+            retry.removeAttribute("aria-disabled");
+            retry.removeAttribute("aria-busy");
+            retry.textContent = originalLabel;
+          }
+        } catch {}
+      };
+
       retry.addEventListener("click", () => {
+        setLoadingState(true);
         try {
           loadErrorModal.close();
         } catch {}
@@ -115,6 +132,7 @@ function showLoadError(error) {
           }
         } catch (dispatchError) {
           console.debug("Failed to dispatch retry event:", dispatchError);
+          setLoadingState(false);
         }
         try {
           if (typeof window !== "undefined" && window.location?.reload) {
@@ -122,6 +140,7 @@ function showLoadError(error) {
           }
         } catch (reloadError) {
           console.debug("Failed to reload after retry dispatch failure:", reloadError);
+          setLoadingState(false);
         }
       });
       actions.append(retry);

@@ -243,6 +243,9 @@ describe.sequential("classicBattle card selection", () => {
       window.addEventListener(CARD_RETRY_EVENT, handler);
       retry.click();
     });
+    expect(retry.disabled).toBe(true);
+    expect(retry.getAttribute("aria-busy")).toBe("true");
+    expect(retry.textContent).toBe("Retrying...");
 
     expect(calls.length).toBe(3);
     // Expect sequence: judoka (fail), judoka (success on retry), gokyo (success on retry)
