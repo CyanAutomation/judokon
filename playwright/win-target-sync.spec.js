@@ -27,6 +27,14 @@ test.describe("Round Selection - Win Target Synchronization", () => {
     await expect(page.locator(".modal-backdrop")).toBeVisible();
   });
 
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => {
+      try {
+        localStorage.removeItem("battle.pointsToWin");
+      } catch {}
+    });
+  });
+
   for (const { key, points, name } of testCases) {
     test(`should sync win target dropdown when ${name} is selected`, async ({ page }) => {
       await page.keyboard.press(key);
@@ -43,4 +51,26 @@ test.describe("Round Selection - Win Target Synchronization", () => {
       await expect(header).toContainText(`Round 0 Target: ${points}`);
     });
   }
+
+  test("persists win target selection across reload", async ({ page }) => {
+    await openSettingsPanel(page);
+
+    const dropdown = page.locator("#points-select");
+    await dropdown.selectOption("10");
+
+    const confirmButton = page.locator('[data-testid="confirm-points-to-win"]');
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
+    await expect(confirmButton).toBeHidden();
+
+    await expect(page.locator("#cli-header")).toContainText("Round 0 Target: 10");
+    await expect(dropdown).toHaveValue("10");
+
+    await page.reload();
+    await expect(page.locator(".modal-backdrop")).toBeVisible();
+    await expect(page.locator("#cli-header")).toContainText("Round 0 Target: 10");
+
+    await openSettingsPanel(page);
+    await expect(page.locator("#points-select")).toHaveValue("10");
+  });
 });
