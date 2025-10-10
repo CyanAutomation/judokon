@@ -94,19 +94,17 @@ const SCRIPT_CLOSING_SOURCE = "<\\s*\\/\\s*" + EXECUTABLE_TAGS.SCRIPT + "\\b[^>]
 const STYLE_CLOSING_SOURCE = "<\\s*\\/\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*>";
 const SCRIPT_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.SCRIPT + "\\b[^>]*(?:>|$)";
 const STYLE_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*(?:>|$)";
+// The sanitizer typically runs synchronously on a single thread, but we allow for
+// a small amount of concurrent reuse when the consumer pipes several sanitization
+// calls through the same event loop tick (e.g. batching chat messages). A pool
+// size of eight comfortably covers that expected burstiness without holding onto
+// unnecessary RegExp instances.
+const MAX_EXECUTABLE_REGEX_POOL_SIZE = 8;
 const EXECUTABLE_REGEX_POOL = [];
 
 function createExecutableRegexSet() {
   if (EXECUTABLE_REGEX_POOL.length) {
-    const regexSet = EXECUTABLE_REGEX_POOL.pop();
-    resetRegexState(
-      regexSet.finder,
-      regexSet.openers[EXECUTABLE_TAGS.SCRIPT],
-      regexSet.openers[EXECUTABLE_TAGS.STYLE],
-      regexSet.closers[EXECUTABLE_TAGS.SCRIPT],
-      regexSet.closers[EXECUTABLE_TAGS.STYLE]
-    );
-    return regexSet;
+    return EXECUTABLE_REGEX_POOL.pop();
   }
 
   return {
@@ -131,7 +129,7 @@ function releaseExecutableRegexSet(regexSet) {
     regexSet.closers[EXECUTABLE_TAGS.STYLE]
   );
 
-  if (EXECUTABLE_REGEX_POOL.length < 8) {
+  if (EXECUTABLE_REGEX_POOL.length < MAX_EXECUTABLE_REGEX_POOL_SIZE) {
     EXECUTABLE_REGEX_POOL.push(regexSet);
   }
 }
@@ -193,27 +191,31 @@ function escapeExecutableFragment(fragment) {
 }
 
 function stripExecutableBlocks(html) {
-  const regexSet = createExecutableRegexSet();
-  const { finder, openers, closers } = regexSet;
-
-  let cleaned = "";
-  let lastIndex = 0;
-  let iterations = 0;
-  const maxIterations = Math.max(16, Math.min(5000, Math.ceil(html.length / 2)));
-  let match;
-
+  let regexSet;
   try {
+    regexSet = createExecutableRegexSet();
+    const { finder, openers, closers } = regexSet;
+
+    let cleaned = "";
+    let lastIndex = 0;
+    let iterations = 0;
+    let match;
+    const maxIterations = Math.max(16, Math.min(5000, Math.ceil(html.length / 2)));
+    let exceededIterationLimit = false;
+
     while ((match = finder.exec(html))) {
       iterations += 1;
-      if (iterations > maxIterations) {
-        cleaned += html.slice(lastIndex);
-        return cleaned;
-      }
 
       const tagStart = match.index;
       const tagName = match[1].toLowerCase();
       const opener = openers[tagName];
       const closer = closers[tagName];
+
+      if (iterations > maxIterations) {
+        exceededIterationLimit = true;
+        cleaned += html.slice(lastIndex);
+        break;
+      }
 
       cleaned += html.slice(lastIndex, tagStart);
 
@@ -239,10 +241,15 @@ function stripExecutableBlocks(html) {
       }
     }
 
-    cleaned += html.slice(lastIndex);
+    if (!exceededIterationLimit) {
+      cleaned += html.slice(lastIndex);
+    }
+
     return cleaned;
   } finally {
-    releaseExecutableRegexSet(regexSet);
+    if (regexSet) {
+      releaseExecutableRegexSet(regexSet);
+    }
   }
 }
 
