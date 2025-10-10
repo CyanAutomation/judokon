@@ -984,19 +984,26 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
     documentRef: root
   });
 
-  // Add visibility change handler to pause/resume timer
-  const visibilityHandler = () => {
-    if (document.hidden) {
-      timer.pause();
-    } else {
-      timer.resume();
-    }
-  };
-  document.addEventListener("visibilitychange", visibilityHandler);
+  const documentRef = root;
+  let visibilityHandler = null;
+
+  if (documentRef && typeof documentRef.addEventListener === "function") {
+    visibilityHandler = () => {
+      if (documentRef?.hidden) {
+        timer.pause();
+      } else {
+        timer.resume();
+      }
+    };
+
+    documentRef.addEventListener("visibilitychange", visibilityHandler);
+  }
 
   // Return a cleanup function or store the handler for later removal
   const cleanup = () => {
-    document.removeEventListener("visibilitychange", visibilityHandler);
+    if (visibilityHandler && typeof documentRef?.removeEventListener === "function") {
+      documentRef.removeEventListener("visibilitychange", visibilityHandler);
+    }
   };
 
   try {
