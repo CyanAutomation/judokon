@@ -84,8 +84,11 @@ const EXECUTABLE_TAGS = Object.freeze({
 });
 const EXECUTABLE_TAG_NAMES = Object.values(EXECUTABLE_TAGS);
 const SCRIPT_STYLE_NAME_GROUP = EXECUTABLE_TAG_NAMES.join("|");
-const SCRIPT_STYLE_OPEN_CAPTURE_SOURCE = "<\\s*(" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>";
-const SCRIPT_STYLE_OPEN_TAG = new RegExp("<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>", "gi");
+const SCRIPT_STYLE_OPEN_CAPTURE_SOURCE = "<\\s*(" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*(?:>|$)";
+const SCRIPT_STYLE_OPEN_TAG = new RegExp(
+  "<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*(?:>|$)",
+  "gi"
+);
 const SCRIPT_STYLE_CLOSE_TAG = new RegExp(
   "<\\s*\\/\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>",
   "gi"
@@ -95,26 +98,68 @@ const STYLE_CLOSING_SOURCE = "<\\s*\\/\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*>
 const SCRIPT_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.SCRIPT + "\\b[^>]*>";
 const STYLE_OPENING_SOURCE = "<\\s*" + EXECUTABLE_TAGS.STYLE + "\\b[^>]*>";
 
+const SCRIPT_OPENER = new RegExp(SCRIPT_OPENING_SOURCE, "gi");
+const STYLE_OPENER = new RegExp(STYLE_OPENING_SOURCE, "gi");
+const SCRIPT_CLOSER = new RegExp(SCRIPT_CLOSING_SOURCE, "gi");
+const STYLE_CLOSER = new RegExp(STYLE_CLOSING_SOURCE, "gi");
+const OPENERS = Object.freeze({
+  [EXECUTABLE_TAGS.SCRIPT]: SCRIPT_OPENER,
+  [EXECUTABLE_TAGS.STYLE]: STYLE_OPENER
+});
+const CLOSERS = Object.freeze({
+  [EXECUTABLE_TAGS.SCRIPT]: SCRIPT_CLOSER,
+  [EXECUTABLE_TAGS.STYLE]: STYLE_CLOSER
+});
+const SCRIPT_STYLE_FINDER = new RegExp(SCRIPT_STYLE_OPEN_CAPTURE_SOURCE, "gi");
+
+function resetRegexState(...regexes) {
+  for (const regex of regexes) {
+    regex.lastIndex = 0;
+  }
+}
+
+function resolveBlockBoundaries(html, opener, closer, openEnd) {
+  let depth = 1;
+  let searchIndex = openEnd;
+
+  while (depth > 0) {
+    closer.lastIndex = searchIndex;
+    const closingMatch = closer.exec(html);
+    if (!closingMatch) {
+      return { blockEnd: openEnd, finderIndex: openEnd, closed: false };
+    }
+
+    const closeIndex = closingMatch.index;
+
+    opener.lastIndex = searchIndex;
+    let nested;
+    let advanced = false;
+    while ((nested = opener.exec(html)) && nested.index < closeIndex) {
+      depth += 1;
+      searchIndex = opener.lastIndex;
+      advanced = true;
+    }
+
+    if (!advanced && searchIndex === openEnd) {
+      searchIndex = closeIndex;
+    }
+
+    depth -= 1;
+    searchIndex = Math.max(searchIndex, closer.lastIndex);
+  }
+
+  return { blockEnd: closer.lastIndex, finderIndex: closer.lastIndex, closed: true };
+}
+
 function stripExecutableBlocks(html) {
-  const finder = new RegExp(SCRIPT_STYLE_OPEN_CAPTURE_SOURCE, "gi");
-  const scriptOpener = new RegExp(SCRIPT_OPENING_SOURCE, "gi");
-  const styleOpener = new RegExp(STYLE_OPENING_SOURCE, "gi");
-  const scriptCloser = new RegExp(SCRIPT_CLOSING_SOURCE, "gi");
-  const styleCloser = new RegExp(STYLE_CLOSING_SOURCE, "gi");
-  const openers = {
-    [EXECUTABLE_TAGS.SCRIPT]: scriptOpener,
-    [EXECUTABLE_TAGS.STYLE]: styleOpener
-  };
-  const closers = {
-    [EXECUTABLE_TAGS.SCRIPT]: scriptCloser,
-    [EXECUTABLE_TAGS.STYLE]: styleCloser
-  };
+  const finder = SCRIPT_STYLE_FINDER;
+  resetRegexState(finder, SCRIPT_OPENER, STYLE_OPENER, SCRIPT_CLOSER, STYLE_CLOSER);
 
   let cleaned = "";
   let lastIndex = 0;
-  let match;
   let iterations = 0;
-  const maxIterations = Math.max(16, html.length);
+  const maxIterations = Math.max(16, Math.min(1000, html.length));
+  let match;
 
   while ((match = finder.exec(html))) {
     iterations += 1;
@@ -125,49 +170,20 @@ function stripExecutableBlocks(html) {
 
     const tagStart = match.index;
     const tagName = match[1].toLowerCase();
-    const opener = openers[tagName];
-    const closer = closers[tagName];
-
-    if (!opener || !closer) {
-      finder.lastIndex = match.index + match[0].length;
-      continue;
-    }
+    const opener = OPENERS[tagName];
+    const closer = CLOSERS[tagName];
 
     cleaned += html.slice(lastIndex, tagStart);
 
     const openEnd = finder.lastIndex;
-    let searchIndex = openEnd;
-    let depth = 1;
+    const { blockEnd, finderIndex, closed } = resolveBlockBoundaries(html, opener, closer, openEnd);
 
-    while (depth > 0) {
-      closer.lastIndex = searchIndex;
-      const closingMatch = closer.exec(html);
-      if (!closingMatch) {
-        lastIndex = openEnd;
-        finder.lastIndex = openEnd;
-        opener.lastIndex = 0;
-        closer.lastIndex = 0;
-        break;
-      }
+    lastIndex = blockEnd;
+    finder.lastIndex = Math.max(finder.lastIndex, finderIndex);
 
-      const closeIndex = closingMatch.index;
+    resetRegexState(opener, closer);
 
-      opener.lastIndex = searchIndex;
-      let nested;
-      while ((nested = opener.exec(html)) && nested.index < closeIndex) {
-        depth += 1;
-        searchIndex = opener.lastIndex;
-        opener.lastIndex = searchIndex;
-      }
-
-      depth -= 1;
-      searchIndex = closer.lastIndex;
-      lastIndex = searchIndex;
-    }
-
-    opener.lastIndex = 0;
-    closer.lastIndex = 0;
-    finder.lastIndex = Math.max(finder.lastIndex, lastIndex);
+    if (!closed) continue;
   }
 
   cleaned += html.slice(lastIndex);
