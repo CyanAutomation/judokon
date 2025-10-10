@@ -102,7 +102,7 @@ describe("check-jsdoc", () => {
          *
          * @pseudocode
          * 1. Do something.
-         * @returns {void}
+         * @returns {boolean}
          */
         export function myFunction() {
           return true;
@@ -137,5 +137,29 @@ describe("check-jsdoc", () => {
       const valid = validateJsDoc(lines, symbol.line - 1);
       expect(valid).toBe(true);
     });
+
+    it.each(["* * *", "**", "*   "])(
+      "should return false when the summary contains only asterisks and whitespace (%s)",
+      (summaryText) => {
+        const content = `
+        /**
+         * ${summaryText}
+         * @pseudocode
+         * 1. Do something.
+         * @returns {boolean}
+         */
+        export function myFunction() {
+          return true;
+        }
+      `;
+        const lines = content.split("\n");
+        const functionLine = lines.findIndex((line) =>
+          line.includes("export function myFunction")
+        );
+        const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
+        const valid = validateJsDoc(lines, symbol.line - 1);
+        expect(valid).toBe(false);
+      }
+    );
   });
 });
