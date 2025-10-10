@@ -16,6 +16,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - Added a persistence regression to `playwright/win-target-sync.spec.js` that exercises the confirm modal, reloads in a fresh page, and verifies the stored target survives as both dropdown value and header copy.
 - Drafted a VoiceOver/NVDA verification plan covering announcements, focus management, and verbose log discoverability so the remaining accessibility follow-up can be executed consistently.
 - Confirmed current CI environment cannot execute native screen-reader tooling; documented the manual test pass expectations and handoff notes below for human QA.
+- Added a shortcuts-overlay regression in `tests/pages/battleCLI.shortcuts.test.js` that proves timers pause when the help panel opens and resume with the preserved remaining time when it closes.
 
 ---
 
@@ -144,5 +145,6 @@ This revision re-validates every QA finding against the current CLI implementati
 - `npx vitest run tests/pages/battleCLI.verboseFlag.test.js`
 - `npx vitest run tests/pages/battleCLI.pointsToWin.test.js`
 - `npx vitest run tests/pages/battleCLI.onKeyDown.test.js`
+- `npx vitest run tests/pages/battleCLI.shortcuts.test.js`
 - `npx playwright test playwright/win-target-sync.spec.js --reporter=line --workers=1`
 - `npx playwright test playwright/cli.spec.js --reporter=line --workers=1`

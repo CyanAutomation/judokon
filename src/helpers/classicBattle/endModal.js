@@ -23,6 +23,9 @@ import { getOutcomeMessage } from "../api/battleUI.js";
  * @returns {import('../../components/Modal.js').Modal}
  */
 export function showEndModal(store, detail = {}) {
+  if (document.getElementById("match-end-modal")) {
+    return;
+  }
   console.log("showEndModal called with:", detail);
   const title = document.createElement("h2");
   title.id = "match-end-title";

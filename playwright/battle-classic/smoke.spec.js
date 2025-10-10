@@ -9,6 +9,12 @@ test.describe("Classic Battle page", () => {
       }
     });
 
+    await page.addInitScript(() => {
+      window.__FF_OVERRIDES = {
+        showRoundSelectModal: true,
+      };
+    });
+
     await page.goto("/src/pages/battleClassic.html");
 
     // 1. Click the round select button for a quick match

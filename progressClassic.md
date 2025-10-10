@@ -73,21 +73,28 @@ This phase focuses on implementing missing features to provide a complete and sa
 - **Action Taken:** Modified the `catch` block in the `initRoundSelectModal` callback in `src/pages/battleClassic.init.js`. The conditional check for `JudokaDataLoadError` was removed, ensuring that any error caught during the `startRoundCycle` is passed to the `showFatalInitError` function.
 - **Outcome:** This change ensures that if the game fails to start due to a data loading error, the user will be presented with a clear error message and a "Retry" button. This fixes the primary bug of the game silently failing.
 - **Testing:**
-  - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
-  - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
+    - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
+    - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
 
 ### Phase 2, Task 1: Robust Error Handling
 
-- **Action Taken:** Refactored the `init` function in `src/pages/battleClassic.init.js` to wrap all initialization logic in a single, top-level `try...catch` block.
+- **Action Taken:** Refactored the `init` function in `src/pages/battleClassic.init.js` to wrap all initialization logic in a single, top-level `try...catch` block. 
 - **Outcome:** This ensures that any error that occurs during the entire initialization process is caught and handled by the `showFatalInitError` function, providing a robust global error handler for the application startup.
 - **Testing:**
-  - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
-  - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
+    - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
+    - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
 
 ### Phase 2, Task 2: Surface Data Load Failures
 
 - **Action Taken:** Improved the `showLoadError` function in `src/helpers/classicBattle/cardSelection.js` to be more robust. The function now ensures the DOM is loaded before creating the error modal. Also, reinstated the `if (err instanceof JudokaDataLoadError)` check in `src/pages/battleClassic.init.js` to prevent double error messages.
 - **Outcome:** This change ensures that a data loading error will be displayed in a modal, and it will be the only error message shown to the user.
 - **Testing:**
-  - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
-  - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
+    - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
+    - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
+
+### Phase 3, Task 1: Implement End-of-Match Modal
+
+- **Action Taken:** Investigated why the end-of-match modal was not being displayed. Found that multiple modals were being created with the same ID. Fixed the issue by adding a check in `showEndModal` to prevent creating a new modal if one already exists. Also created a new Playwright test to play a full match and verify that the end-of-match modal is displayed correctly.
+- **Outcome:** The end-of-match modal is now displayed correctly at the end of a match, providing a clear end state for the game.
+- **Testing:**
+    - Ran a new Playwright test (`playwright/battle-classic/smoke.spec.js`) that plays a full match and verifies that the end-of-match modal is displayed. The test passed.
