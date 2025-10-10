@@ -85,10 +85,7 @@ const EXECUTABLE_TAGS = Object.freeze({
 const EXECUTABLE_TAG_NAMES = Object.values(EXECUTABLE_TAGS);
 const SCRIPT_STYLE_NAME_GROUP = EXECUTABLE_TAG_NAMES.join("|");
 const SCRIPT_STYLE_OPEN_CAPTURE_SOURCE = "<\\s*(" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*(?:>|$)";
-const SCRIPT_STYLE_OPEN_TAG = new RegExp(
-  "<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>",
-  "gi"
-);
+const SCRIPT_STYLE_OPEN_TAG = new RegExp("<\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>", "gi");
 const SCRIPT_STYLE_CLOSE_TAG = new RegExp(
   "<\\s*\\/\\s*(?:" + SCRIPT_STYLE_NAME_GROUP + ")\\b[^>]*>",
   "gi"

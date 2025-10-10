@@ -118,9 +118,7 @@ describe("timerService", () => {
       // Remove the document reference to simulate non-browser environments.
       delete global.document;
 
-      const { startTimer } = await import(
-        "../../src/helpers/classicBattle/timerService.js"
-      );
+      const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
 
       const timer = await startTimer(async () => {}, { selectionMade: false });
 
