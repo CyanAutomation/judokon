@@ -7,10 +7,10 @@ This report has been revised based on a detailed code review. The root cause of 
 ## 1. Match never starts
 
 - **Steps to reproduce:**
-  1.  Load `battleClassic.html` in a Chrome browser.
-  2.  The page displays the scoreboard header ("Round 0 – You: 0 Opponent: 0") and two buttons (“Replay”, “Quit”).
-  3.  There is no modal asking for the 3/5/10 point target.
-  4.  Clicking **Replay** or **Quit** or pressing **Enter** does nothing, and the match never begins.
+  1. Load `battleClassic.html` in a Chrome browser.
+  2. The page displays the scoreboard header ("Round 0 – You: 0 Opponent: 0") and two buttons (“Replay”, “Quit”).
+  3. There is no modal asking for the 3/5/10 point target.
+  4. Clicking **Replay** or **Quit** or pressing **Enter** does nothing, and the match never begins.
 
 - **Expected behaviour:**
 
@@ -49,8 +49,8 @@ This report has been revised based on a detailed code review. The root cause of 
 ## Improvement Opportunities
 
 - **Fix Data Loading Error Handling:**
-  1.  In `src/helpers/classicBattle/cardSelection.js`, modify the `loadJudokaData` function to re-throw the error after calling the `onError` handler. This will ensure that the error propagates up to the caller.
-  2.  In `src/helpers/classicBattle/cardSelection.js`, modify the `drawCards` function to handle the error from `loadJudokaData`. If the data is empty or the loading fails, it should not proceed with drawing cards and should ensure the error is visible to the user.
+  1. In `src/helpers/classicBattle/cardSelection.js`, modify the `loadJudokaData` function to re-throw the error after calling the `onError` handler. This will ensure that the error propagates up to the caller.
+  2. In `src/helpers/classicBattle/cardSelection.js`, modify the `drawCards` function to handle the error from `loadJudokaData`. If the data is empty or the loading fails, it should not proceed with drawing cards and should ensure the error is visible to the user.
 
 - **Implement a Robust Startup Sequence:**
   - The `init` function in `src/pages/battleClassic.init.js` should be made more robust. It should have a clear success/failure path. If any of the critical initialization steps fail (like loading data), the game should not attempt to start. Instead, it should display a clear error message to the user with an option to retry.

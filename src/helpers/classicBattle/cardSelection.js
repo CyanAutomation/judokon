@@ -17,6 +17,18 @@ let gokyoLookup = null;
 let opponentJudoka = null;
 let loadErrorModal = null;
 
+export class JudokaDataLoadError extends Error {
+  constructor(message, options = {}) {
+    super(message || "Failed to load judoka data");
+    this.name = "JudokaDataLoadError";
+    if (options && options.cause) {
+      this.cause = options.cause;
+    }
+  }
+}
+
+export const CARD_RETRY_EVENT = "classicBattle:retryCardDraw";
+
 /**
  * Display QA information messages during test mode.
  *
@@ -87,13 +99,24 @@ function showLoadError(error) {
     actions.className = "modal-actions";
 
     const retry = createButton("Retry", { id: "retry-draw-button" });
-    retry.addEventListener("click", async () => {
-      loadErrorModal.close();
+    retry.addEventListener("click", () => {
       try {
-        await drawCards();
-      } catch (retryError) {
-        console.debug("Failed to retry card draw:", retryError);
-        window.location.reload();
+        loadErrorModal.close();
+      } catch {}
+      try {
+        if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+          window.dispatchEvent(new CustomEvent(CARD_RETRY_EVENT));
+          return;
+        }
+      } catch (dispatchError) {
+        console.debug("Failed to dispatch retry event:", dispatchError);
+      }
+      try {
+        if (typeof window !== "undefined" && window.location?.reload) {
+          window.location.reload();
+        }
+      } catch (reloadError) {
+        console.debug("Failed to reload after retry dispatch failure:", reloadError);
       }
     });
     actions.append(retry);
@@ -130,7 +153,12 @@ export async function loadJudokaData({ fetcher = fetchJson, onError = showLoadEr
     try {
       onError?.(error);
     } catch {}
-    throw error;
+    if (error instanceof JudokaDataLoadError) {
+      throw error;
+    }
+    throw new JudokaDataLoadError(error?.message || "Failed to load judoka data", {
+      cause: error
+    });
   }
 }
 
@@ -378,17 +406,18 @@ export async function drawCards(options = {}) {
   } = options;
 
   let allJudoka = [];
-  let judokaLoadFailed = false;
   try {
     allJudoka = await judokaLoader({ fetcher, onError: showLoadError });
   } catch (error) {
-    judokaLoadFailed = true;
     console.error("Failed to load judoka data:", error);
+    if (error instanceof JudokaDataLoadError) {
+      throw error;
+    }
+    throw new JudokaDataLoadError(error?.message || "Failed to load judoka data", {
+      cause: error
+    });
   }
   const lookup = await gokyoLoader({ fetcher, lookupFactory, onError: showLoadError });
-  if (judokaLoadFailed) {
-    return { playerJudoka: null, opponentJudoka: null };
-  }
   if (!lookup) return { playerJudoka: null, opponentJudoka: null };
   const available = allJudoka.filter((j) => !j?.isHidden);
 
