@@ -79,12 +79,31 @@ export async function getSanitizer() {
 
 const BASIC_ALLOW = new Set(["br", "strong", "em"]);
 
+/**
+ * Performs a deterministic allowlist-based sanitization suitable for tests.
+ *
+ * @summary Removes executable markup (script/style tags, inline handlers) and
+ * only preserves very small subset of formatting tags while escaping all other
+ * HTML so that it renders as text.
+ * @pseudocode
+ * 1. Coerce input to string.
+ * 2. Remove paired <script>/<style> blocks and any stray opening or closing
+ *    tags for those elements.
+ * 3. Remove inline event handler attributes (quoted or unquoted values).
+ * 4. Escape any tag that is not in the BASIC_ALLOW list; strip attributes from
+ *    allowed tags while preserving their structure.
+ * 5. Return the sanitized string.
+ *
+ * @param {unknown} input
+ * @returns {string}
+ */
 function sanitizeBasic(input) {
   const str = String(input ?? "");
-  // Remove script/style blocks completely
+  // Remove script/style blocks completely, including nested content
   let out = str
-    .replace(/<\/(?:script|style)>/gi, "")
-    .replace(/<(?:script|style)[^>]*>.*?/gis, "");
+    .replace(/<\s*(?:script|style)\b[^>]*>[\s\S]*?<\s*\/\s*(?:script|style)\s*>/gi, "")
+    .replace(/<\s*\/\s*(?:script|style)\s*>/gi, "")
+    .replace(/<\s*(?:script|style)\b[^>]*>/gi, "");
   // Drop inline event handlers (quoted or unquoted values)
   out = out.replace(
     /\son[a-z0-9:-]*\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
