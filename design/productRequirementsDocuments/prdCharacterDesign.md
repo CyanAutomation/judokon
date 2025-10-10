@@ -198,23 +198,23 @@ A chibi-style cartoon character, 3-heads tall, with a large head and stout body.
 
 **Scene-Specific Prompt Table:**
 
-| Scene              | Prompt Additions                                                                                                               |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| Giving Advice      | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred.         |
-| Dynamic Jump       | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering.                                  |
-| Thinking Pose      | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow.                                   |
-| Holding a Sign     | Holding a large signboard (“Welcome to Ju-Do-Kon!”) and a pointer stick. Background: dojo interior with mats.                  |
+| Scene              | Prompt Additions |
+| ------------------ | ---------------- |
+| Giving Advice      | Pointing upward with one hand, smiling brightly. Background: dojo with tatami mats and wooden walls, slightly blurred. |
+| Dynamic Jump       | Mid-air jump, fists raised in triumph, joyful expression. Background: stadium crowd cheering. |
+| Thinking Pose      | Standing calmly, hand on chin, curious expression. Background: plain white with soft shadow. |
+| Holding a Sign     | Holding a large signboard ("Welcome to Ju-Do-Kon!") and a pointer stick. Background: dojo interior with mats. |
 | Casual Clothes     | Red t-shirt and blue shorts, barefoot, holding a water bottle, waving. Background: grassy outdoor training area with blue sky. |
-| Trophy Celebration | Holding a gold trophy above head, smiling proudly. Background: stage with spotlights and cheering crowd, blurred.              |
+| Trophy Celebration | Holding a gold trophy above head, smiling proudly. Background: stage with spotlights and cheering crowd, blurred. |
 
-**Example Prompts:**
+**Example Prompt Applications:**
 
-- **Prompt 1: Default Pose — Giving Advice**: KG stands energetically, pointing upward with one hand while smiling. Maintain the base prompt details with bold outlines, flat cell shading, warm lighting, and a slightly blurred dojo background.
-- **Prompt 2: Dynamic Action Pose — Jumping**: KG is mid-air with fists raised triumphantly, joyful expression, and stadium crowd background. Follow the base prompt for character description and art style.
-- **Prompt 3: Calm Pose — Thinking**: KG stands calmly with hand on chin, curious expression, on a clean white background with soft shadow. Base prompt proportions and art direction remain unchanged.
-- **Prompt 4: Holding a Sign — Tutorial Scene**: KG holds a wooden pointer stick and a large “Welcome to Ju-Do-Kon!” signboard within a dojo environment. Apply base prompt attributes with flat cell shading and warm lighting.
-- **Prompt 5: Casual Clothes Variation**: KG wears a red t-shirt and blue shorts, barefoot, smiling while waving and holding a water bottle. Set in a grassy outdoor training area with blue sky, consistent with the base prompt style.
-- **Prompt 6: Achievement Scene — Trophy**: KG holds a gold trophy above his head with both hands on a spotlighted stage featuring a cheering crowd. Preserve base prompt features, including chibi proportions and warm, flat shading.
+- **Default Pose — Giving Advice**: Use the base prompt to render KG pointing upward with one hand and smiling brightly in a slightly blurred dojo scene.
+- **Dynamic Action Pose — Jumping**: Apply the base prompt while KG jumps mid-air with fists raised triumphantly against a cheering stadium backdrop.
+- **Calm Pose — Thinking**: Follow the base prompt to depict KG resting a hand on his chin with a curious expression on a clean white background with a soft shadow.
+- **Holding a Sign — Tutorial Scene**: Use the base prompt and place KG holding a wooden pointer stick and a large "Welcome to Ju-Do-Kon!" signboard inside a dojo interior.
+- **Casual Clothes Variation**: Retain the base prompt style while KG wears a red t-shirt and blue shorts, waves with a water bottle in hand, and stands in a grassy outdoor training area under a blue sky.
+- **Achievement Scene — Trophy**: Keep the base prompt details and show KG lifting a gold trophy above his head on a spotlighted stage with a cheering crowd.
 
 ### 8. Design Do's and Don'ts (P1)
 
