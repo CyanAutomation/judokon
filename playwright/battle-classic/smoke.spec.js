@@ -46,9 +46,7 @@ test.describe("Classic Battle page", () => {
     await expect(page.locator("#match-end-modal")).toBeVisible();
 
     // Assert that the showEndModal function incremented its structured counter
-    const callCount = await page.evaluate(
-      () => window.__classicBattleEndModalCount ?? 0
-    );
+    const callCount = await page.evaluate(() => window.__classicBattleEndModalCount ?? 0);
     expect(callCount).toBeGreaterThan(0);
   });
 });

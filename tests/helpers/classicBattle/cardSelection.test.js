@@ -92,9 +92,7 @@ describe.sequential("classicBattle card selection", () => {
     _resetForTest();
 
     const result = await selectOpponentJudoka({
-      availableJudoka: [
-        { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false }
-      ],
+      availableJudoka: [{ id: 1, name: "Solo", stats: { power: 5 }, isHidden: false }],
       playerJudoka: { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false },
       randomJudoka: randomJudokaMock,
       fallbackProvider,
@@ -117,9 +115,7 @@ describe.sequential("classicBattle card selection", () => {
     _resetForTest();
 
     const result = await selectOpponentJudoka({
-      availableJudoka: [
-        { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false }
-      ],
+      availableJudoka: [{ id: 1, name: "Solo", stats: { power: 5 }, isHidden: false }],
       playerJudoka: { id: 1, name: "Solo", stats: { power: 5 }, isHidden: false },
       randomJudoka: randomJudokaMock,
       fallbackProvider,
@@ -239,9 +235,7 @@ describe.sequential("classicBattle card selection", () => {
       JudokaDataLoadError,
       CARD_RETRY_EVENT,
       LOAD_ERROR_EXIT_EVENT
-    } = await import(
-      "../../../src/helpers/classicBattle/cardSelection.js"
-    );
+    } = await import("../../../src/helpers/classicBattle/cardSelection.js");
     _resetForTest();
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -249,8 +243,8 @@ describe.sequential("classicBattle card selection", () => {
     });
 
     await expect(drawCards()).rejects.toBeInstanceOf(JudokaDataLoadError);
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
+    await timers.runOnlyPendingTimersAsync();
 
     const retry = document.getElementById("retry-draw-button");
     const exit = document.getElementById("exit-draw-button");
@@ -303,7 +297,7 @@ describe.sequential("classicBattle card selection", () => {
     expect(exit).toBeTruthy();
 
     exit.click();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await timers.runOnlyPendingTimersAsync();
 
     expect(exit.disabled).toBe(true);
     expect(exit.textContent).toBe("Returning...");
@@ -366,18 +360,14 @@ describe.sequential("classicBattle card selection", () => {
 
     const fetcher = vi
       .fn()
-      .mockResolvedValue([
-        { id: 42, name: "Cache Hero", stats: { power: 11 }, isHidden: false }
-      ]);
+      .mockResolvedValue([{ id: 42, name: "Cache Hero", stats: { power: 11 }, isHidden: false }]);
 
     const first = await loadJudokaData({ fetcher });
     const second = await loadJudokaData({ fetcher });
 
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(first).toBe(second);
-    expect(first).toEqual([
-      { id: 42, name: "Cache Hero", stats: { power: 11 }, isHidden: false }
-    ]);
+    expect(first).toEqual([{ id: 42, name: "Cache Hero", stats: { power: 11 }, isHidden: false }]);
   });
 
   it("logs an error when JudokaCard.render does not return an element", async () => {
@@ -408,9 +398,7 @@ describe.sequential("classicBattle card selection", () => {
       _resetForTest();
       fetchJsonMock.mockImplementation(async (path) => {
         if (path.includes("judoka")) {
-          return [
-            { id: 1, name: "Renderless", stats: { power: 8 }, isHidden: false }
-          ];
+          return [{ id: 1, name: "Renderless", stats: { power: 8 }, isHidden: false }];
         }
         return [];
       });

@@ -66,7 +66,7 @@ describe("Classic Battle round select modal", () => {
 
     quick.click();
     await new Promise((resolve) => setTimeout(resolve, 0));
-    document.dispatchEvent(new Event("DOMContentLoaded"));
+    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(document.body.getAttribute("data-battle-active")).not.toBe("true");
@@ -74,8 +74,22 @@ describe("Classic Battle round select modal", () => {
       .querySelectorAll("header a")
       .forEach((link) => expect(link.style.pointerEvents).not.toBe("none"));
 
-    const exit = document.getElementById("exit-draw-button");
-    expect(exit).toBeTruthy();
+    const exit = await new Promise((resolve, reject) => {
+      const start = Date.now();
+      const check = () => {
+        const btn = document.getElementById("exit-draw-button");
+        if (btn) {
+          resolve(btn);
+          return;
+        }
+        if (Date.now() - start > 1000) {
+          reject(new Error("exit button not found"));
+          return;
+        }
+        setTimeout(check, 10);
+      };
+      check();
+    });
     exit.click();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(document.getElementById("round-select-error")).toBeTruthy();
