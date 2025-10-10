@@ -130,7 +130,17 @@ function observeHeaderClearance(header) {
   attachHeaderResizeFallback(header, applyClearance);
 }
 
+/**
+ * Clamp a measured header height to a safe viewport-relative value.
+ *
+ * @param {unknown} height - The measured header height.
+ * @returns {number} A non-negative, clamped clearance value.
+ */
 function clampHeaderClearance(height) {
+  if (!Number.isFinite(height)) {
+    return 0;
+  }
+
   let clearance = Math.max(0, height);
   if (typeof window !== "undefined" && Number.isFinite(window.innerHeight)) {
     const maxClearance = window.innerHeight * 0.5;
@@ -139,6 +149,13 @@ function clampHeaderClearance(height) {
   return clearance;
 }
 
+/**
+ * Create a function that measures and applies header clearance styles.
+ *
+ * @param {HTMLElement} header - The observed header element.
+ * @param {HTMLElement} homeScreen - The container that consumes the CSS variable.
+ * @returns {() => void} Function that updates the header clearance variable.
+ */
 function createHeaderClearanceApplier(header, homeScreen) {
   return () => {
     try {
@@ -156,6 +173,12 @@ function createHeaderClearanceApplier(header, homeScreen) {
   };
 }
 
+/**
+ * Disconnect and clear any existing header clearance observer metadata.
+ *
+ * @param {HTMLElement} header - The header element that may be tracked.
+ * @returns {void}
+ */
 function disconnectHeaderClearanceObserver(header) {
   const existingObserver = header[headerClearanceObserverKey];
   if (existingObserver && typeof existingObserver.disconnect === "function") {
@@ -166,6 +189,13 @@ function disconnectHeaderClearanceObserver(header) {
   delete header[headerClearanceObserverKey];
 }
 
+/**
+ * Observe header size changes with ResizeObserver when available.
+ *
+ * @param {HTMLElement} header - The header element to monitor.
+ * @param {() => void} applyClearance - Callback that updates the clearance styles.
+ * @returns {boolean} True when the observer was attached successfully.
+ */
 function attachHeaderResizeObserver(header, applyClearance) {
   if (typeof ResizeObserver !== "function") {
     return false;
@@ -187,15 +217,15 @@ function attachHeaderResizeObserver(header, applyClearance) {
     let cleanupObserver;
 
     const disconnect = () => {
-      try {
-        observer.disconnect();
-      } catch {}
       if (cleanupObserver && typeof cleanupObserver.disconnect === "function") {
         try {
           cleanupObserver.disconnect();
         } catch {}
+        cleanupObserver = undefined;
       }
-      cleanupObserver = undefined;
+      try {
+        observer.disconnect();
+      } catch {}
       delete header[headerClearanceObserverKey];
     };
 
@@ -208,6 +238,13 @@ function attachHeaderResizeObserver(header, applyClearance) {
   return false;
 }
 
+/**
+ * Attach a resize event fallback when ResizeObserver is unavailable.
+ *
+ * @param {HTMLElement} header - The header element to monitor.
+ * @param {() => void} applyClearance - Callback that updates the clearance styles.
+ * @returns {void}
+ */
 function attachHeaderResizeFallback(header, applyClearance) {
   if (typeof window === "undefined" || typeof window.addEventListener !== "function") {
     return;
@@ -221,8 +258,20 @@ function attachHeaderResizeFallback(header, applyClearance) {
     };
     const listenerOptions = { passive: true };
     window.addEventListener("resize", resizeHandler, listenerOptions);
+    const cleanupObserver = observeHeaderRemoval(header, () => {
+      try {
+        window.removeEventListener("resize", resizeHandler, listenerOptions);
+      } catch {}
+      delete header[headerClearanceObserverKey];
+    });
+
     header[headerClearanceObserverKey] = {
       disconnect: () => {
+        if (cleanupObserver && typeof cleanupObserver.disconnect === "function") {
+          try {
+            cleanupObserver.disconnect();
+          } catch {}
+        }
         try {
           window.removeEventListener("resize", resizeHandler, listenerOptions);
         } catch {}
@@ -232,6 +281,13 @@ function attachHeaderResizeFallback(header, applyClearance) {
   } catch {}
 }
 
+/**
+ * Observe DOM mutations to detect when the header is removed.
+ *
+ * @param {HTMLElement} header - The header being monitored.
+ * @param {() => void} disconnect - Cleanup function invoked on removal.
+ * @returns {MutationObserver|undefined} The observer used for cleanup.
+ */
 function observeHeaderRemoval(header, disconnect) {
   if (typeof MutationObserver !== "function") {
     return undefined;
@@ -251,7 +307,28 @@ function observeHeaderRemoval(header, disconnect) {
         }
       }
     });
-    cleanupObserver.observe(document.body, { childList: true, subtree: true });
+    const rootNode = typeof header.getRootNode === "function" ? header.getRootNode() : undefined;
+    const container = (() => {
+      if (rootNode && rootNode !== header) {
+        if (rootNode.nodeType === 9 && rootNode.body) {
+          return rootNode.body;
+        }
+        if (rootNode.nodeType === 1) {
+          return rootNode;
+        }
+      }
+      if (header.parentNode) {
+        return header.parentNode;
+      }
+      if (typeof document !== "undefined" && document.body) {
+        return document.body;
+      }
+      return undefined;
+    })();
+
+    if (container) {
+      cleanupObserver.observe(container, { childList: true, subtree: true });
+    }
     return cleanupObserver;
   } catch {}
 
