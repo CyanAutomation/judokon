@@ -120,6 +120,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - **✅ Completed — Verbose indicator hook**: Added `#verbose-indicator`, synchronized `aria-hidden`, and covered the behaviour via `battleCLI.verboseFlag.test.js`.
 - **✅ Completed — Countdown warning regression test**: `battleCLI.countdown.test.js` now asserts the warning colour under five seconds and the reset on restart.
 - **✅ Completed — Playwright persistence scenario**: `playwright/win-target-sync.spec.js` now exercises a reload in a fresh page context to confirm stored targets persist and stay synchronized with the header.
+
 1. **Screen-reader verification (1 day)** — Execute the audit plan below with NVDA + VoiceOver sessions, capture findings in the accessibility log, and file remediation tickets as needed.
 
 ## Screen-Reader Audit Plan

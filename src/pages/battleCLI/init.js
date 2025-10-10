@@ -379,6 +379,8 @@ export const __test = {
   ensureStatClickBinding,
   restorePointsToWin,
   startRoundWrapper,
+  showShortcutsPanel: showCliShortcuts,
+  hideShortcutsPanel: hideCliShortcuts,
   // Expose init for tests to manually initialize without DOMContentLoaded
   init,
   // Phase 4: Removed handleScoreboardShowMessage and handleScoreboardClearMessage exports
