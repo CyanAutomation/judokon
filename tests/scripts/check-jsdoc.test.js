@@ -109,9 +109,7 @@ describe("check-jsdoc", () => {
         }
       `;
       const lines = content.split("\n");
-      const functionLine = lines.findIndex((line) =>
-        line.includes("export function myFunction")
-      );
+      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
       const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
       const valid = validateJsDoc(lines, symbol.line - 1);
       expect(valid).toBe(false);
@@ -130,9 +128,7 @@ describe("check-jsdoc", () => {
         }
       `;
       const lines = content.split("\n");
-      const functionLine = lines.findIndex((line) =>
-        line.includes("export function myFunction")
-      );
+      const functionLine = lines.findIndex((line) => line.includes("export function myFunction"));
       const symbol = { name: "myFunction", line: functionLine + 1, type: "function" };
       const valid = validateJsDoc(lines, symbol.line - 1);
       expect(valid).toBe(true);
