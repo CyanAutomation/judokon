@@ -989,6 +989,8 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
 
   const documentRef = root;
   let visibilityHandler = null;
+  let removeExpiredCleanup = null;
+  let cleanupExecuted = false;
 
   if (documentRef && typeof documentRef.addEventListener === "function") {
     visibilityHandler = () => {
@@ -1004,14 +1006,39 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
 
   // Return a cleanup function or store the handler for later removal
   const cleanup = () => {
+    if (cleanupExecuted) {
+      return;
+    }
+    cleanupExecuted = true;
+
+    if (typeof removeExpiredCleanup === "function") {
+      try {
+        removeExpiredCleanup();
+      } catch {}
+      removeExpiredCleanup = null;
+    }
+
     if (
       visibilityHandler &&
       documentRef &&
       typeof documentRef.removeEventListener === "function"
     ) {
-      documentRef.removeEventListener("visibilitychange", visibilityHandler);
+      try {
+        documentRef.removeEventListener("visibilitychange", visibilityHandler);
+      } catch {}
     }
+    visibilityHandler = null;
   };
+
+  removeExpiredCleanup = typeof timer?.on === "function" ? timer.on("expired", cleanup) : null;
+
+  if (typeof timer?.stop === "function") {
+    const originalStop = timer.stop.bind(timer);
+    timer.stop = () => {
+      cleanup();
+      return originalStop();
+    };
+  }
 
   try {
     setSkip?.(() => {

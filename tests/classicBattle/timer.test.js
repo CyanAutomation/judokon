@@ -71,6 +71,75 @@ describe("Classic Battle round timer", () => {
     }
   });
 
+  test("cleans up visibility listeners between sequential timers", async () => {
+    vi.resetModules();
+    const timers = useCanonicalTimers();
+    const listenerRefs = new Set();
+    const originalAdd = document.addEventListener;
+    const originalRemove = document.removeEventListener;
+    const addSpy = vi.spyOn(document, "addEventListener").mockImplementation((type, handler, options) => {
+      if (type === "visibilitychange" && typeof handler === "function") {
+        listenerRefs.add(handler);
+      }
+      return originalAdd.call(document, type, handler, options);
+    });
+    const removeSpy = vi.spyOn(document, "removeEventListener").mockImplementation((type, handler, options) => {
+      if (type === "visibilitychange" && typeof handler === "function") {
+        listenerRefs.delete(handler);
+      }
+      return originalRemove.call(document, type, handler, options);
+    });
+
+    const spy = vi.spyOn(timerUtils, "getDefaultTimer").mockImplementation((cat) => {
+      if (cat === "roundTimer") return 1;
+      return 3;
+    });
+
+    let unmock = null;
+
+    try {
+      const { createBattleHeader } = await import("../utils/testUtils.js");
+      const header = createBattleHeader();
+      document.body.appendChild(header);
+
+      const scoreboardModule = await import("../../src/helpers/setupScoreboard.js");
+      scoreboardModule.setupScoreboard({ pauseTimer: () => {}, resumeTimer: () => {} });
+
+      const { mockCreateRoundTimer } = await import("../helpers/roundTimerMock.js");
+      unmock = mockCreateRoundTimer({
+        scheduled: true,
+        tickCount: 1,
+        intervalMs: 1000,
+        stopEmitsExpired: false
+      });
+
+      const { startTimer } = await import("../../src/helpers/classicBattle/timerService.js");
+
+      for (const step of ["expire", "stop", "expire"]) {
+        const baseline = listenerRefs.size;
+        const timer = await startTimer(async () => {}, { selectionMade: false });
+        expect(listenerRefs.size - baseline).toBe(1);
+
+        if (step === "stop") {
+          timer.stop();
+        } else {
+          await timers.advanceTimersByTimeAsync(1000);
+        }
+
+        expect(listenerRefs.size).toBe(baseline);
+      }
+    } finally {
+      spy.mockRestore();
+      addSpy.mockRestore();
+      removeSpy.mockRestore();
+      if (unmock?.unmock) {
+        unmock.unmock();
+      }
+      timers.cleanup();
+      document.body.innerHTML = "";
+    }
+  });
+
   test("Next button dispatches countdown events and ready when skip flag is active", async () => {
     vi.resetModules();
     const timers = useCanonicalTimers();
