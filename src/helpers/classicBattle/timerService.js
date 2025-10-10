@@ -1006,6 +1006,11 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
 
   // Return a cleanup function or store the handler for later removal
   const cleanup = () => {
+    if (cleanupExecuted) {
+      return;
+    }
+    cleanupExecuted = true;
+
     const unsubscribeExpired = removeExpiredCleanup;
     removeExpiredCleanup = null;
 
@@ -1027,8 +1032,6 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
         documentRef.removeEventListener("visibilitychange", handler);
       } catch {}
     }
-
-    cleanupExecuted = true;
   };
 
   const handleExpired = () => {
@@ -1047,7 +1050,9 @@ export async function startTimer(onExpiredSelect, store = null, dependencies = {
       try {
         cleanup();
       } catch (error) {
-        console.warn("Timer cleanup failed:", error);
+        if (process?.env?.NODE_ENV !== "test") {
+          console.warn("Timer cleanup failed:", error);
+        }
       }
       return originalStop();
     };
