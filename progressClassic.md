@@ -83,3 +83,11 @@ This phase focuses on implementing missing features to provide a complete and sa
 - **Testing:**
     - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
     - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.
+
+### Phase 2, Task 2: Surface Data Load Failures
+
+- **Action Taken:** Improved the `showLoadError` function in `src/helpers/classicBattle/cardSelection.js` to be more robust. The function now ensures the DOM is loaded before creating the error modal. Also, reinstated the `if (err instanceof JudokaDataLoadError)` check in `src/pages/battleClassic.init.js` to prevent double error messages.
+- **Outcome:** This change ensures that a data loading error will be displayed in a modal, and it will be the only error message shown to the user.
+- **Testing:**
+    - Ran relevant unit tests (`tests/classicBattle/bootstrap.test.js`, `tests/classicBattle/page-scaffold.test.js`, `tests/classicBattle/init-complete.test.js`, `tests/classicBattle/round-select.test.js`). All tests passed.
+    - Ran relevant Playwright tests (`playwright/battle-classic/bootstrap.spec.js`, `playwright/battle-classic/round-select.spec.js`, `playwright/battle-classic/smoke.spec.js`). All tests passed.

@@ -14,6 +14,7 @@ This revision re-validates every QA finding against the current CLI implementati
 - Updated `setupFlags` to manage `aria-hidden` on the indicator and added `battleCLI.verboseFlag.test.js` coverage to ensure the UI reflects flag changes.
 - Extended countdown regression coverage in `tests/pages/battleCLI.countdown.test.js` to assert the warning colour under five seconds and the reset when the timer restarts.
 - Added a persistence regression to `playwright/win-target-sync.spec.js` that exercises the confirm modal, reloads in a fresh page, and verifies the stored target survives as both dropdown value and header copy.
+- Drafted a VoiceOver/NVDA verification plan covering announcements, focus management, and verbose log discoverability so the remaining accessibility follow-up can be executed consistently.
 
 ---
 
@@ -118,7 +119,21 @@ This revision re-validates every QA finding against the current CLI implementati
 - **✅ Completed — Verbose indicator hook**: Added `#verbose-indicator`, synchronized `aria-hidden`, and covered the behaviour via `battleCLI.verboseFlag.test.js`.
 - **✅ Completed — Countdown warning regression test**: `battleCLI.countdown.test.js` now asserts the warning colour under five seconds and the reset on restart.
 - **✅ Completed — Playwright persistence scenario**: `playwright/win-target-sync.spec.js` now exercises a reload in a fresh page context to confirm stored targets persist and stay synchronized with the header.
-1. **Screen-reader verification (1 day)** — Run NVDA + VoiceOver smoke tests covering round announcements, countdown updates, verbose log toggles, and modal focus traps. Capture findings in the accessibility log and file follow-up tickets as needed.
+1. **Screen-reader verification (1 day)** — Execute the audit plan below with NVDA + VoiceOver sessions, capture findings in the accessibility log, and file remediation tickets as needed.
+
+## Screen-Reader Audit Plan
+
+- **Environments:** macOS (VoiceOver) and Windows (NVDA) on latest Chrome + Firefox.
+- **Pre-setup:** Clear localStorage (`battle.pointsToWin`, feature flags), ensure verbose mode off by default; prepare keyboard layouts for both screen readers.
+- **Scenarios to cover:**
+  - Landing on CLI: confirm skip link, header announcement, and focus placement on modal backdrop.
+  - Round start flow: verify announcements for round prompt, countdown updates, and stat selection hints.
+  - Help overlay: ensure focus trap, pause/resume messaging, and exit via `Esc`/`Tab`.
+  - Verbose mode toggle: confirm indicator announcement, section visibility, and log navigation.
+  - Points-to-win change: confirm modal labels, focus return, and header update announcement.
+  - Match conclusion + restart prompt to validate outcome and next steps narration.
+- **Notes capture:** Log gaps per scenario (missing labels, incorrect live region behaviour, focus traps) in `docs/accessibility/audit-log.md` with reproduction steps and severity.
+- **Outcome:** Produce remediation backlog issues with acceptance criteria and include audit log link in follow-up.
 
 ## Validation Evidence
 
