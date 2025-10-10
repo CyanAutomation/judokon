@@ -62,9 +62,5 @@
   {
     "source": "design/retroThemeContrast.md",
     "mappedTo": "design/productRequirementsDocuments/prdUIDesignSystem.md#retro-theme-tokens--contrast-compliance"
-  },
-  {
-    "source": "design/stateHandlerAudit.md",
-    "mappedTo": "design/productRequirementsDocuments/prdStateHandler.md#compliance-audit-2025-09-10"
   }
 ]

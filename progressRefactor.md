@@ -6,7 +6,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 - Confirmed that every PRD referenced below exists under `design/productRequirementsDocuments/`.
 - There is no `design/technical/` directory; the duplicated audits live under `docs/technical/` and at the root of `design/`. Language below reflects the actual paths.
-- Additional documents surfaced during validation require explicit mapping: `docs/rag-system.md`, the former architecture overviews (now consolidated under `design/productRequirementsDocuments/prdArchitecture.md`), `design/testing/classicBattleTesting.md`, and the `design/eventAudit/` artifacts. (✅ `docs/TestValuePolicy.md` and `docs/technical/classicBattleTesting.md` are now assimilated into `prdTestingStandards.md`.)
+- Additional documents surfaced during validation require explicit mapping: `docs/rag-system.md`, the former architecture overviews (now consolidated under `design/productRequirementsDocuments/prdArchitecture.md`), `design/testing/classicBattleTesting.md`, and the event audit appendices now embedded in `design/productRequirementsDocuments/prdEventContracts.md` (formerly `design/eventAudit/`). (✅ `docs/TestValuePolicy.md` and `docs/technical/classicBattleTesting.md` are now assimilated into `prdTestingStandards.md`.)
 - The Battle CLI topic is split between `docs/battle-cli.md` (usage) and `docs/battleCLI.md` (module structure). Those guides should be merged while migrating content into `prdBattleCLI.md`.
 - The retired `design/codeStandards/` deep dives are now consolidated into `prdDevelopmentStandards.md` / `prdTestingStandards.md`; keep PRD references canonical when migrating remaining notes.
 
@@ -25,7 +25,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 - `docs/technical/battleMarkup.md` (retired) / former `design/battleMarkup.md` → `prdBattleMarkup.md` (exists; treat PRD appendix as authoritative until canonical schema lives in PRD).
 - Data schema deep dive now lives in `design/productRequirementsDocuments/prdDataSchemas.md` (former `docs/technical/dataSchemas.md` has been retired).
 - Legacy event naming audit artifacts (`docs/technical/eventNamingAudit.md`, retired `design/eventNamingAudit.md`, and `design/eventAudit/*.txt`) → `prdEventContracts.md` (exists; migration tables + listener inventories now maintained in the PRD).
-- `docs/technical/stateHandlerAudit.md` / `design/stateHandlerAudit.md` → now consolidated into `design/productRequirementsDocuments/prdStateHandler.md#compliance-audit-2025-09-10` (compliance table + priorities live in PRD).
+- Legacy state handler compliance audit → `design/productRequirementsDocuments/prdStateHandler.md#compliance-audit-2025-09-10` (compliance table + priorities live in PRD).
 - `docs/technical/classicBattleTesting.md` (retired) / `design/testing/classicBattleTesting.md` → `prdBattleClassic.md` (testing section) with a cross-link from `prdTestingStandards.md`.
 - `docs/technical/ui-tooltips-manifest.md` → `prdTooltipSystem.md#tooltip-manifest` / `prdTooltipViewer.md` (exists).
 - `design/testing/classicBattleTesting.md`, the former `design/codeStandards/*.md`, and similar deep dives remain valuable as implementation notes; decide per file whether to fold residual content into the owning PRD or keep linked appendices with a clear authority statement.
@@ -39,7 +39,7 @@ Produce a small, actionable plan to make `design/productRequirementsDocuments/` 
 
 ## Documents to assimilate or cross-reference
 
-- Legacy event naming audit artifacts (including the retired `design/eventNamingAudit.md` and `design/eventAudit/*.txt`) → combine into `prdEventContracts.md` with an audit appendix; leave a stub README pointing to the PRD.
+- Legacy event naming audit artifacts (including the retired `design/eventNamingAudit.md` and the former `design/eventAudit/*.txt` dumps) → combine into `prdEventContracts.md` with the authoritative audit appendices; leave a stub README pointing to the PRD.
 - `docs/technical/stateHandlerAudit.md` & `design/stateHandlerAudit.md` → ✅ integrated into `prdStateHandler.md#compliance-audit-2025-09-10` (table + follow-up actions captured in PRD).
 - `docs/technical/battleMarkup.md` (retired) & `design/battleMarkup.md` → integrate canonical markup into `prdBattleMarkup.md`; reference `design/dataSchemas/battleMarkup.json` and `battleMarkup.generated.js`.
 - `docs/testing-modes.md` (now covered by `prdTestMode.md#mode-interactions-and-automation-hooks`), `docs/testing-guide.md` (retired), `docs/TestValuePolicy.md` (retired), and the former `design/codeStandards/evaluatingPlaywrightTests.md` / `design/codeStandards/evaluatingUnitTests.md` → consolidate into `prdTestingStandards.md` with clear subsections for agent vs human workflows.
@@ -101,7 +101,7 @@ Below are the unmapped documents discovered in the inventory scan with a recomme
   - Action: Assimilate (accessibility contrast guidance into UI PRD)
   - Rationale: Theme and contrast guidance is a UI concern and should sit under the design system PRD.
 
-- `design/stateHandlerAudit.md` -> `prdStateHandler.md#compliance-audit-2025-09-10` (source removed; PRD now canonical)
+- State handler compliance audit → `prdStateHandler.md#compliance-audit-2025-09-10` (source removed; PRD now canonical)
   - Action: Assimilate (add diagrams, compliance table, and acceptance criteria)
   - Rationale: State handler audits and compliance belong with the state handler PRD.
 

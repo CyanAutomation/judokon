@@ -158,6 +158,92 @@ Acceptance Criteria (tests):
 - Cross-reference: `prdBattleEngine.md`, `prdBattleClassic.md`, and `prdTestingStandards.md`.
 - Open question: Should events be namespaced with owner module (e.g., `engine:`) or product area (e.g., `battle:`)? Recommendation: use product area prefixes (e.g., `battle:`) with module ownership documented.
 
+## Appendices
+
+### Appendix A: Battle Event Emitters Inventory
+
+The retired `design/eventAudit/eventEmissions.txt` inventory has been normalized here. Each row lists the logical event emitted through `emitBattleEvent` and the modules responsible for emission. Data was cross-checked against the primary event inventory above to ensure no loss of canonical event names.
+
+| Event | Emitter modules |
+| ----- | --------------- |
+| `battleStateChange` | `src/helpers/classicBattle/orchestrator.js` |
+| `control.countdown.completed` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js` |
+| `control.countdown.started` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js` |
+| `control.readiness.confirmed` | `src/helpers/classicBattle/orchestrator.js` |
+| `control.readiness.required` | `src/helpers/classicBattle/orchestrator.js` |
+| `control.state.catalog` | `src/helpers/classicBattle/orchestrator.js` |
+| `control.state.changed` | `src/helpers/classicBattle/orchestrator.js` |
+| `cooldown.timer.expired` | `src/helpers/classicBattle/roundManager.js` |
+| `cooldown.timer.tick` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js` |
+| `countdownFinished` | `src/helpers/classicBattle/timerService.js`<br>`src/helpers/classicBattle/uiService.js` |
+| `countdownStart` | `src/helpers/classicBattle/cooldowns.js` |
+| `debug.state.snapshot` | `src/helpers/classicBattle/orchestrator.js` |
+| `debug.transition` | `src/helpers/classicBattle/orchestrator.js` |
+| `debugPanelUpdate` | `src/helpers/classicBattle/eventDispatcher.js`<br>`src/helpers/classicBattle/handleRoundError.js`<br>`src/helpers/classicBattle/orchestrator.js`<br>`src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionHelpers.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js`<br>`src/helpers/classicBattle/stateTransitionListeners.js` |
+| `display.score.update` | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundResolver.js` |
+| `input.ignored` | `src/helpers/classicBattle/selectionHandler.js` |
+| `interrupt.requested` | `src/helpers/classicBattle/eventDispatcher.js` |
+| `interrupt.resolved` | `src/helpers/classicBattle/orchestrator.js` |
+| `match.concluded` | `src/helpers/classicBattle/engineBridge.js` |
+| `matchOver` | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js`<br>`src/helpers/classicBattle/roundUI.js`<br>`src/helpers/classicBattle/stateHandlers/matchOverEnter.js` |
+| `nextRoundTimerReady` | `src/helpers/classicBattle/cooldowns.js`<br>`src/helpers/classicBattle/roundManager.js` |
+| `opponentCardReady` | `src/helpers/classicBattle/controller.js` |
+| `opponentReveal` | `src/helpers/classicBattle/roundResolver.js` |
+| `round.evaluated` | `src/helpers/classicBattle/roundResolver.js` |
+| `round.selection.locked` | `src/helpers/classicBattle/selectionHandler.js` |
+| `round.started` | `src/helpers/classicBattle/engineBridge.js` |
+| `round.timer.expired` | `src/helpers/classicBattle/timerService.js` |
+| `round.timer.tick` | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/timerService.js` |
+| `roundOptionsReady` | `src/helpers/classicBattle/roundSelectModal.js` |
+| `roundPrompt` | `src/helpers/classicBattle/snackbar.js` |
+| `roundResolved` | `src/helpers/classicBattle/engineBridge.js`<br>`src/helpers/classicBattle/roundManager.js`<br>`src/helpers/classicBattle/roundResolver.js` |
+| `roundStarted` | `src/helpers/classicBattle/roundManager.js` |
+| `roundTimeout` | `src/helpers/classicBattle/testHooks.js`<br>`src/helpers/classicBattle/timerService.js` |
+| `scoreboardClearMessage` | `src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForMatchStartEnter.js` |
+| `scoreboardShowMessage` | `src/helpers/classicBattle/handleRoundError.js`<br>`src/helpers/classicBattle/orchestrator.js`<br>`src/helpers/classicBattle/stateHandlers/interruptMatchEnter.js`<br>`src/helpers/classicBattle/stateHandlers/interruptRoundEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundDecisionEnter.js`<br>`src/helpers/classicBattle/stateHandlers/roundModificationEnter.js` |
+| `startClicked` | `src/helpers/classicBattle/roundSelectModal.js` |
+| `statButtons:disable` | `src/helpers/classicBattle/roundUI.js`<br>`src/helpers/classicBattle/stateHandlers/waitingForPlayerActionExit.js` |
+| `statButtons:enable` | `src/helpers/classicBattle/stateHandlers/waitingForPlayerActionEnter.js` |
+| `statSelected` | `src/helpers/classicBattle/selectionHandler.js` |
+| `statSelectionStalled` | `src/helpers/classicBattle/autoSelectHandlers.js`<br>`src/helpers/classicBattle/testHooks.js` |
+
+### Appendix B: Listener Inventory (DOM & Event Bus)
+
+This appendix consolidates listener findings from `design/eventAudit/eventListeners.txt`, grouped by DOM or custom event name. Many listeners mirror event bus emissions above; others handle DOM lifecycle concerns such as orientation changes.
+
+| Event | Listener modules |
+| ----- | ---------------- |
+| `beforeunload` | `src/helpers/classicBattle/interruptHandlers.js` |
+| `change` | `src/helpers/classicBattle/controller.js`<br>`tests/helpers/featureFlags.test.js` |
+| `click` | `src/helpers/classicBattle/cardSelection.js`<br>`src/helpers/classicBattle/debugPanel.js`<br>`src/helpers/classicBattle/endModal.js`<br>`src/helpers/classicBattle/interruptHandlers.js`<br>`src/helpers/classicBattle/quitButton.js`<br>`src/helpers/classicBattle/quitModal.js`<br>`src/helpers/classicBattle/roundSelectModal.js`<br>`src/helpers/classicBattle/uiHelpers.js`<br>`src/helpers/classicBattle/uiService.js`<br>`tests/examples/testArchitectureDemo.test.js`<br>`tests/helpers/classicBattle/timerService.nextRound.test.js`<br>`tests/helpers/uiHelpers.resetBattleUI.test.js` |
+| `error` | `src/helpers/classicBattle/interruptHandlers.js` |
+| `featureFlagsChange` | `src/helpers/classicBattle/view.js` |
+| `game:reset-ui` | `src/helpers/classicBattle/uiHelpers.js` |
+| `keydown` | `src/helpers/classicBattle/statButtons.js`<br>`src/helpers/classicBattle/uiHelpers.js` |
+| `nav:ready` | `tests/helpers/bottomNavigation.test.js` |
+| `opponentCardReady` | `tests/helpers/classicBattle/controller.startRound.test.js` |
+| `orientationchange` | `src/helpers/classicBattle/uiHelpers.js` |
+| `pagehide` | `src/helpers/classicBattle/interruptHandlers.js`<br>`src/helpers/classicBattle/setupScheduler.js`<br>`src/helpers/classicBattle/setupUIBindings.js` |
+| `resize` | `src/helpers/classicBattle/uiHelpers.js` |
+| `round-start-error` | `src/helpers/classicBattle/uiHelpers.js` |
+| `roundStarted` | `tests/helpers/classicBattle/controller.startRound.test.js` |
+| `roundStartError` | `src/helpers/classicBattle/view.js`<br>`tests/helpers/classicBattle/controller.startRound.test.js` |
+| `toggle` | `src/helpers/classicBattle/debugPanel.js` |
+| `unhandledrejection` | `src/helpers/classicBattle/interruptHandlers.js` |
+| `visibilitychange` | `src/helpers/classicBattle/orchestrator.js` |
+
+### Appendix C: Test Event Utilities and Dispatch Patterns
+
+Audit traces from `design/eventAudit/testEventUsage.txt` now live here for test authors. These utilities observe or synthesize events and should remain stable to keep CI deterministic.
+
+| Pattern | Test modules |
+| ------- | ------------ |
+| `document.dispatchEvent(new KeyboardEvent("keydown", …))` | `tests/pages/battleCLI.onKeyDown.test.js` |
+| `getCountdownStartedPromise()` | `tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js` |
+| `getEscapeHandledPromise()` | `tests/pages/battleCLI.onKeyDown.test.js` |
+| `getRoundTimeoutPromise()` | `tests/helpers/classicBattle/timeoutInterrupt.cooldown.test.js` |
+| `waitForNextRoundReadyEvent(page)` | `playwright/fixtures/waits.js` |
+
 ## Audit Appendix
 
 ### Categorized Event Inventory
