@@ -182,6 +182,29 @@ describe.sequential("classicBattle card selection", () => {
     expect(retry).toBeTruthy();
   });
 
+  it("still loads gokyo data when judoka load fails", async () => {
+    const calls = [];
+    fetchJsonMock.mockImplementation(async (path) => {
+      calls.push(path);
+      if (path.includes("judoka")) {
+        throw new Error("boom");
+      }
+      return [];
+    });
+
+    const { drawCards, _resetForTest } = await import(
+      "../../../src/helpers/classicBattle/cardSelection.js"
+    );
+    _resetForTest();
+
+    const result = await drawCards();
+
+    expect(result).toEqual({ playerJudoka: null, opponentJudoka: null });
+    expect(calls.length).toBe(2);
+    expect(calls[0]).toMatch(/judoka\.json/);
+    expect(calls[1]).toMatch(/gokyo\.json/);
+  });
+
   it("clicking Retry re-fetches data in order", async () => {
     const calls = [];
     fetchJsonMock.mockImplementation(async (p) => {
